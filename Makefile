@@ -80,8 +80,19 @@ JAVA_FILES_AST = \
           src/dev/flang/ast/ValueType.java \
           src/dev/flang/ast/Visi.java \
 
+JAVA_FILES_PARSER = \
+          src/dev/flang/parser/FList.java \
+          src/dev/flang/parser/Lexer.java \
+          src/dev/flang/parser/Operator.java \
+          src/dev/flang/parser/OpExpr.java \
+          src/dev/flang/parser/Parser.java \
+
 CLASS_FILES_UTIL           = classes/dev/flang/util/__marker_for_make__
 CLASS_FILES_AST            = classes/dev/flang/__marker_for_make__
+CLASS_FILES_PARSER         = classes/dev/flang/parser/__marker_for_make__
+
+fuzion.ebnf: src/dev/flang/parser/Parser.java
+	which pcregrep && pcregrep -M "^[a-zA-Z].*:(\n|.)*?;" $^ >$@ || echo "*** need pcregrep tool installed" >$@
 
 $(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
 	mkdir -p classes
@@ -93,10 +104,16 @@ $(CLASS_FILES_AST): $(JAVA_FILES_AST) $(CLASS_FILES_UTIL)
 	javac -cp classes -d classes $(JAVA_FILES_AST)
 	touch $@
 
+$(CLASS_FILES_PARSER): $(JAVA_FILES_PARSER) $(CLASS_FILES_AST) fuzion.ebnf
+	mkdir -p classes
+	javac -cp classes -d classes $(JAVA_FILES_PARSER)
+	touch $@
+
 # phony target to compile all java sources
 .PHONY: javac
-javac: $(CLASS_FILES_AST)
+javac: $(CLASS_FILES_PARSER)
 
 clean:
 	rm -rf classes
+	rm -rf fuzion.ebnf
 	find . -name "*~" -exec rm {} \;
