@@ -35,12 +35,67 @@ JAVA_FILES_UTIL = \
 	  src/dev/flang/util/SourceFile.java \
 	  src/dev/flang/util/SourcePosition.java \
 
+JAVA_FILES_AST = \
+          src/dev/flang/ast/AdrToValue.java \
+          src/dev/flang/ast/Assign.java \
+          src/dev/flang/ast/Block.java \
+          src/dev/flang/ast/BoolConst.java \
+          src/dev/flang/ast/Box.java \
+          src/dev/flang/ast/Call.java \
+	  src/dev/flang/ast/Case.java \
+          src/dev/flang/ast/Check.java \
+	  src/dev/flang/ast/Cond.java \
+          src/dev/flang/ast/Consts.java \
+          src/dev/flang/ast/Contract.java \
+	  src/dev/flang/ast/Current.java \
+	  src/dev/flang/ast/Decompose.java \
+          src/dev/flang/ast/Expr.java \
+          src/dev/flang/ast/FeErrors.java \
+          src/dev/flang/ast/Feature.java \
+          src/dev/flang/ast/FeatureName.java \
+	  src/dev/flang/ast/FeatureVisitor.java \
+	  src/dev/flang/ast/FormalGenerics.java \
+          src/dev/flang/ast/Function.java \
+	  src/dev/flang/ast/FunctionReturnType.java \
+	  src/dev/flang/ast/Generic.java \
+          src/dev/flang/ast/If.java \
+          src/dev/flang/ast/IntConst.java \
+          src/dev/flang/ast/Impl.java \
+	  src/dev/flang/ast/IncompatibleResultsOnBranches.java \
+          src/dev/flang/ast/Loop.java \
+	  src/dev/flang/ast/Match.java \
+	  src/dev/flang/ast/Nop.java \
+	  src/dev/flang/ast/NoType.java \
+          src/dev/flang/ast/Old.java \
+          src/dev/flang/ast/RefType.java \
+	  src/dev/flang/ast/Resolution.java \
+	  src/dev/flang/ast/ReturnType.java \
+	  src/dev/flang/ast/Singleton.java \
+          src/dev/flang/ast/SingleType.java \
+          src/dev/flang/ast/Stmnt.java \
+          src/dev/flang/ast/StrConst.java \
+          src/dev/flang/ast/This.java \
+	  src/dev/flang/ast/Type.java \
+	  src/dev/flang/ast/Types.java \
+          src/dev/flang/ast/ValueType.java \
+          src/dev/flang/ast/Visi.java \
+
 CLASS_FILES_UTIL           = classes/dev/flang/util/__marker_for_make__
+CLASS_FILES_AST            = classes/dev/flang/__marker_for_make__
 
 $(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
 	mkdir -p classes
 	javac -d classes $(JAVA_FILES_UTIL)
 	touch $@
+
+$(CLASS_FILES_AST): $(JAVA_FILES_AST) $(CLASS_FILES_UTIL)
+	mkdir -p classes
+	javac -cp classes -d classes $(JAVA_FILES_AST)
+	touch $@
+
+# phony target to compile all java sources
+.PHONY: javac
+javac: $(CLASS_FILES_AST)
 
 clean:
 	rm -rf classes
