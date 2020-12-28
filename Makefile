@@ -87,9 +87,22 @@ JAVA_FILES_PARSER = \
           src/dev/flang/parser/OpExpr.java \
           src/dev/flang/parser/Parser.java \
 
+JAVA_FILES_IR = \
+          src/dev/flang/ir/Backend.java \
+          src/dev/flang/ir/BackendCallable.java \
+          src/dev/flang/ir/Clazz.java \
+          src/dev/flang/ir/Clazzes.java \
+          src/dev/flang/ir/DynamicBinding.java \
+          src/dev/flang/ir/IrErrors.java \
+
+JAVA_FILES_MIR = \
+          src/dev/flang/mir/MIR.java \
+
 CLASS_FILES_UTIL           = classes/dev/flang/util/__marker_for_make__
 CLASS_FILES_AST            = classes/dev/flang/__marker_for_make__
 CLASS_FILES_PARSER         = classes/dev/flang/parser/__marker_for_make__
+CLASS_FILES_IR             = classes/dev/flang/ir/__marker_for_make__
+CLASS_FILES_MIR            = classes/dev/flang/mir/__marker_for_make__
 
 fuzion.ebnf: src/dev/flang/parser/Parser.java
 	which pcregrep && pcregrep -M "^[a-zA-Z].*:(\n|.)*?;" $^ >$@ || echo "*** need pcregrep tool installed" >$@
@@ -109,9 +122,19 @@ $(CLASS_FILES_PARSER): $(JAVA_FILES_PARSER) $(CLASS_FILES_AST) fuzion.ebnf
 	javac -cp classes -d classes $(JAVA_FILES_PARSER)
 	touch $@
 
+$(CLASS_FILES_IR): $(JAVA_FILES_IR) $(CLASS_FILES_UTIL) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST)
+	mkdir -p classes
+	javac -cp classes -d classes $(JAVA_FILES_IR)
+	touch $@
+
+$(CLASS_FILES_MIR): $(JAVA_FILES_MIR) $(CLASS_FILES_IR)
+	mkdir -p classes
+	javac -cp classes -d classes $(JAVA_FILES_MIR)
+	touch $@
+
 # phony target to compile all java sources
 .PHONY: javac
-javac: $(CLASS_FILES_PARSER)
+javac: $(CLASS_FILES_MIR)
 
 clean:
 	rm -rf classes
