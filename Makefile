@@ -114,6 +114,21 @@ JAVA_FILES_FUIR = \
 JAVA_FILES_OPT = \
           src/dev/flang/opt/Optimizer.java \
 
+JAVA_FILES_BE_INTERPRETER = \
+          src/dev/flang/be/interpreter/Callable.java \
+          src/dev/flang/be/interpreter/ChoiceIdAsRef.java \
+          src/dev/flang/be/interpreter/Instance.java \
+          src/dev/flang/be/interpreter/Interpreter.java \
+          src/dev/flang/be/interpreter/JavaInterface.java \
+          src/dev/flang/be/interpreter/LValue.java \
+          src/dev/flang/be/interpreter/NativeFeature.java \
+          src/dev/flang/be/interpreter/Value.java \
+          src/dev/flang/be/interpreter/boolValue.java \
+          src/dev/flang/be/interpreter/i32Value.java \
+          src/dev/flang/be/interpreter/i64Value.java \
+          src/dev/flang/be/interpreter/u32Value.java \
+          src/dev/flang/be/interpreter/u64Value.java \
+
 CLASS_FILES_UTIL           = classes/dev/flang/util/__marker_for_make__
 CLASS_FILES_AST            = classes/dev/flang/__marker_for_make__
 CLASS_FILES_PARSER         = classes/dev/flang/parser/__marker_for_make__
@@ -124,6 +139,7 @@ CLASS_FILES_AIR            = classes/dev/flang/air/__marker_for_make__
 CLASS_FILES_ME             = classes/dev/flang/me/__marker_for_make__
 CLASS_FILES_FUIR           = classes/dev/flang/fuir/__marker_for_make__
 CLASS_FILES_OPT            = classes/dev/flang/opt/__marker_for_make__
+CLASS_FILES_BE_INTERPRETER = classes/dev/flang/be/interpreter/__marker_for_make__
 
 fuzion.ebnf: src/dev/flang/parser/Parser.java
 	which pcregrep && pcregrep -M "^[a-zA-Z].*:(\n|.)*?;" $^ >$@ || echo "*** need pcregrep tool installed" >$@
@@ -178,9 +194,14 @@ $(CLASS_FILES_OPT): $(JAVA_FILES_OPT) $(CLASS_FILES_AIR) $(CLASS_FILES_FUIR)
 	javac -cp classes -d classes $(JAVA_FILES_OPT)
 	touch $@
 
+$(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST), replace by $(CLASS_FILES_FUIR)
+	mkdir -p classes
+	javac -cp classes -d classes $(JAVA_FILES_BE_INTERPRETER)
+	touch $@
+
 # phony target to compile all java sources
 .PHONY: javac
-javac: $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT)
+javac: $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_INTERPRETER)
 
 clean:
 	rm -rf classes
