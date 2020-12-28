@@ -2303,7 +2303,7 @@ public class Feature extends ANY implements Stmnt, Comparable
    * During FINDING_USED_FEATURES, this sets the flag that this feature is used.
    *
    * @param dynamically true iff this feature is called dynamically, i.e., it
-   * has to be part of the vtree.
+   * has to be part of the dynamic binding data.
    *
    * @param usedAt the position this feature was used at, for creating usefule
    * error messages
@@ -3318,8 +3318,8 @@ public class Feature extends ANY implements Stmnt, Comparable
 
 
   /**
-   * allInnerAndInheritedFeatures NYI: This is used only in Clazz to setup
-   * vtree, it should not really be needed.
+   * allInnerAndInheritedFeatures returns a complete set of inner features, used
+   * by Clazz.layout and Clazz.hasState.
    *
    * @return
    */
