@@ -102,12 +102,16 @@ JAVA_FILES_FE = \
           src/dev/flang/fe/FrontEnd.java \
           src/dev/flang/fe/FrontEndOptions.java \
 
+JAVA_FILES_AIR = \
+          src/dev/flang/air/AIR.java \
+
 CLASS_FILES_UTIL           = classes/dev/flang/util/__marker_for_make__
 CLASS_FILES_AST            = classes/dev/flang/__marker_for_make__
 CLASS_FILES_PARSER         = classes/dev/flang/parser/__marker_for_make__
 CLASS_FILES_IR             = classes/dev/flang/ir/__marker_for_make__
 CLASS_FILES_MIR            = classes/dev/flang/mir/__marker_for_make__
 CLASS_FILES_FE             = classes/dev/flang/fe/__marker_for_make__
+CLASS_FILES_AIR            = classes/dev/flang/air/__marker_for_make__
 
 fuzion.ebnf: src/dev/flang/parser/Parser.java
 	which pcregrep && pcregrep -M "^[a-zA-Z].*:(\n|.)*?;" $^ >$@ || echo "*** need pcregrep tool installed" >$@
@@ -142,9 +146,14 @@ $(CLASS_FILES_FE): $(JAVA_FILES_FE) $(CLASS_FILES_PARSER) $(CLASS_FILES_AST) $(C
 	javac -cp classes -d classes $(JAVA_FILES_FE)
 	touch $@
 
+$(CLASS_FILES_AIR): $(JAVA_FILES_AIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR)
+	mkdir -p classes
+	javac -cp classes -d classes $(JAVA_FILES_AIR)
+	touch $@
+
 # phony target to compile all java sources
 .PHONY: javac
-javac: $(CLASS_FILES_FE)
+javac: $(CLASS_FILES_FE) $(CLASS_FILES_AIR)
 
 clean:
 	rm -rf classes
