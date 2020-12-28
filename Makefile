@@ -129,6 +129,9 @@ JAVA_FILES_BE_INTERPRETER = \
           src/dev/flang/be/interpreter/u32Value.java \
           src/dev/flang/be/interpreter/u64Value.java \
 
+JAVA_FILES_BE_C = \
+          src/dev/flang/be/c/C.java \
+
 CLASS_FILES_UTIL           = classes/dev/flang/util/__marker_for_make__
 CLASS_FILES_AST            = classes/dev/flang/__marker_for_make__
 CLASS_FILES_PARSER         = classes/dev/flang/parser/__marker_for_make__
@@ -140,6 +143,7 @@ CLASS_FILES_ME             = classes/dev/flang/me/__marker_for_make__
 CLASS_FILES_FUIR           = classes/dev/flang/fuir/__marker_for_make__
 CLASS_FILES_OPT            = classes/dev/flang/opt/__marker_for_make__
 CLASS_FILES_BE_INTERPRETER = classes/dev/flang/be/interpreter/__marker_for_make__
+CLASS_FILES_BE_C           = classes/dev/flang/be/c/__marker_for_make__
 
 fuzion.ebnf: src/dev/flang/parser/Parser.java
 	which pcregrep && pcregrep -M "^[a-zA-Z].*:(\n|.)*?;" $^ >$@ || echo "*** need pcregrep tool installed" >$@
@@ -199,9 +203,14 @@ $(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR) 
 	javac -cp classes -d classes $(JAVA_FILES_BE_INTERPRETER)
 	touch $@
 
+$(CLASS_FILES_BE_C): $(JAVA_FILES_BE_C) $(CLASS_FILES_FUIR)
+	mkdir -p classes
+	javac -cp classes -d classes $(JAVA_FILES_BE_C)
+	touch $@
+
 # phony target to compile all java sources
 .PHONY: javac
-javac: $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_INTERPRETER)
+javac: $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_INTERPRETER) $(CLASS_FILES_BE_C)
 
 clean:
 	rm -rf classes
