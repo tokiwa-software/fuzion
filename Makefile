@@ -111,6 +111,9 @@ JAVA_FILES_ME = \
 JAVA_FILES_FUIR = \
           src/dev/flang/fuir/FUIR.java \
 
+JAVA_FILES_OPT = \
+          src/dev/flang/opt/Optimizer.java \
+
 CLASS_FILES_UTIL           = classes/dev/flang/util/__marker_for_make__
 CLASS_FILES_AST            = classes/dev/flang/__marker_for_make__
 CLASS_FILES_PARSER         = classes/dev/flang/parser/__marker_for_make__
@@ -120,6 +123,7 @@ CLASS_FILES_FE             = classes/dev/flang/fe/__marker_for_make__
 CLASS_FILES_AIR            = classes/dev/flang/air/__marker_for_make__
 CLASS_FILES_ME             = classes/dev/flang/me/__marker_for_make__
 CLASS_FILES_FUIR           = classes/dev/flang/fuir/__marker_for_make__
+CLASS_FILES_OPT            = classes/dev/flang/opt/__marker_for_make__
 
 fuzion.ebnf: src/dev/flang/parser/Parser.java
 	which pcregrep && pcregrep -M "^[a-zA-Z].*:(\n|.)*?;" $^ >$@ || echo "*** need pcregrep tool installed" >$@
@@ -169,9 +173,14 @@ $(CLASS_FILES_FUIR): $(JAVA_FILES_FUIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR)
 	javac -cp classes -d classes $(JAVA_FILES_FUIR)
 	touch $@
 
+$(CLASS_FILES_OPT): $(JAVA_FILES_OPT) $(CLASS_FILES_AIR) $(CLASS_FILES_FUIR)
+	mkdir -p classes
+	javac -cp classes -d classes $(JAVA_FILES_OPT)
+	touch $@
+
 # phony target to compile all java sources
 .PHONY: javac
-javac: $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_FUIR)
+javac: $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT)
 
 clean:
 	rm -rf classes
