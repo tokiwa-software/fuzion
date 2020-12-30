@@ -1,0 +1,144 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature numOption
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# numOption -- optional numeric values
+#
+#
+# This is a pseudo-numeric type that handles one additional
+# value: nil.  Any operation on nil will result in nil for a
+# numeric result or false for a boolean result.
+numOption<T: numeric<T>> : choice<T, nil> is
+
+  // basic operations
+  prefix +? numOption<T> is
+    match numOption.this
+      v T   => +v
+      _ nil => nil
+
+  prefix -? numOption<T> is
+    match numOption.this
+      v T   => -v
+      _ nil => nil
+
+  infix +? (other numOption<T>) numOption<T> is
+    match numOption.this
+      v T   => match other
+                 w T   => v +? w
+                 _ nil => nil
+      _ nil => nil
+
+  infix -? (other numOption<T>) numOption<T> is
+    match numOption.this
+      v T   => match other
+                 w T   => v -? w
+                 _ nil => nil
+      _ nil => nil
+
+  infix *? (other numOption<T>) numOption<T> is
+    match numOption.this
+      v T   => match other
+                 w T   => v *? w
+                 _ nil => nil
+      _ nil => nil
+
+  infix /? (other numOption<T>) numOption<T>
+    pre
+      safety: !other.isZero
+  is
+    match numOption.this
+      v T   => match other
+                 w T   => v / w
+                 _ nil => nil
+      _ nil => nil
+
+  infix %? (other numOption<T>) numOption<T>
+    pre
+      safety: !other.isZero
+  is
+    match numOption.this
+      v T   => match other
+                 w T   => v % w
+                 _ nil => nil
+      _ nil => nil
+
+  // comparison
+  infix ==? (other numOption<T>) bool is
+    match numOption.this
+      v T   => match other
+                 w T   => v == w
+                 _ nil => false
+      _ nil => false
+
+  infix !=? (other numOption<T>) bool is
+    match numOption.this
+      v T   => match other
+                 w T   => v != w
+                 _ nil => false
+      _ nil => false
+
+  infix <?  (other numOption<T>) bool is
+    match numOption.this
+      v T   => match other
+                 w T   => v < w
+                 _ nil => false
+      _ nil => false
+
+  infix <=? (other numOption<T>) bool is
+    match numOption.this
+      v T   => match other
+                 w T   => v <= w
+                 _ nil => false
+      _ nil => false
+
+  infix >?  (other numOption<T>) bool is
+    match numOption.this
+      v T   => match other
+                 w T   => v > w
+                 _ nil => false
+      _ nil => false
+
+  infix >=? (other numOption<T>) bool is
+    match numOption.this
+      v T   => match other
+                 w T   => v >= w
+                 _ nil => false
+      _ nil => false
+
+  isZero => sign ==? 0
+
+  sign numOption<i32> is
+    match numOption.this
+      v T   => v.sign
+      _ nil => nil
+
+  abs numOption<T> is
+    match numOption.this
+      v T   => if v.sign >= 0 v else -v
+      _ nil => nil
+
+  redef asString string is
+    match numOption.this
+      v T   => v.asString
+      _ nil => "--no value--"

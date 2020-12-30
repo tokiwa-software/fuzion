@@ -1,0 +1,65 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature Array
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# Array -- one-dimensional array
+#
+Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
+
+// private:
+
+  data Object = getData(length)
+
+  for x in indices do
+    setel(data, x, init(x))
+
+  getData(l i32) Object is intrinsic
+  get(d Object, i i32) T is intrinsic
+  setel (d Object, i i32, o T) is intrinsic
+
+// public:
+
+  indices => 0..length-1
+
+  index [ ] (i i32) T
+    pre
+      safety: 0 <= i < length
+  is
+    result = get(data,i)
+
+  set [ ] (i i32, o T)
+    pre
+      safety: 0 <= i < length
+  // post   NYI
+    //Array.this[i] == o;
+  is
+    setel(data,i,o)
+
+  iterate(f fun (T)) is
+    asStream.consume(f)
+
+  redef asStream ref : stream<T> is
+    x := 0
+    redef hasNext => x < length
+    redef next => x = x + 1; get(data, x - 1)

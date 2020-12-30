@@ -1,0 +1,130 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature string
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# string -- immutable sequences of utf8 encoded unicode characters
+#
+string ref is
+
+  // converting a string to a string is just returning string.this
+  redef asString => string.this
+
+  // any concrete string must implement asBytes
+  asBytes ref streamable<i32> is abstract
+
+  // is this string empty?
+  isEmpty => !asBytes.asStream.hasNext
+
+  // length of this string in bytes
+  byteLength => asBytes.asStream.count
+
+  // concatenate string with string represenation of another object
+  infix + (other Object) ref : string  // NYI: code is very brittle: removing "ref" causes recursive value type error
+  {
+    redef asBytes streamable<i32>
+    {
+      byteStreamable  // NYI: this should be an anonymous inner feature
+    }
+
+    private byteStreamable ref : streamable<i32>  // NYI: code is very brittle: removing "ref" causes crash
+    {
+      redef asStream stream<i32>
+      {
+        byteStream  // NYI: this should be an anonymous inner feature
+      }
+
+      byteStream ref : stream<i32>  // NYI: code is very brittle: removing "ref" causes crash
+      {
+        head := string.this   .asBytes.asStream;
+        tail := other.asString.asBytes.asStream;
+
+        redef hasNext => head.hasNext || tail.hasNext;
+        redef next i32 { if head.hasNext { result = head.next; } else { result = tail.next; } }
+      }
+    }
+  }
+
+  // repeat string given number of times
+  infix * (n i32) ref : string  // NYI: code is very brittle: removing "ref" causes recursive value type error
+  require
+    n >= 0
+  {
+    redef asBytes streamable<i32>
+    {
+      byteStreamable  // NYI: this should be an anonymous inner feature
+    }
+
+    private byteStreamable ref : streamable<i32>  // NYI: code is very brittle: removing "ref" causes crash
+    {
+      redef asStream stream<i32>
+      {
+        byteStream  // NYI: this should be an anonymous inner feature
+      }
+
+      byteStream ref : stream<i32>  // NYI: code is very brittle: removing "ref" causes crash
+      {
+        i := 0
+        bytes := string.this.asBytes.asStream
+
+        redef hasNext => bytes.hasNext
+        redef next i32
+        {
+          result = bytes.next
+          if !bytes.hasNext
+            {
+              i = i + 1;
+              if i < n
+                {
+                  bytes = string.this.asBytes.asStream
+                }
+            }
+        }
+      }
+    }
+  }
+
+  // compare string byte-by-byte with other string
+  infix == (other string) =>
+  {
+    s1 :=       asBytes.asStream
+    s2 := other.asBytes.asStream
+    while s1.hasNext && s2.hasNext
+    until s1.next    != s2.next
+    {
+      false
+    }
+    else
+    {
+      !s1.hasNext && !s2.hasNext
+    }
+
+    /* NYI: when lazy evaluation works, this should be possible:
+
+    s1 :=       asBytes.asStream
+    s2 := other.asBytes.asStream
+    while s1.hasNext == s2.hasNext && (!s1.hasNext || s1.next == s2.next)
+    until !s1.hasNext
+
+    */
+  }

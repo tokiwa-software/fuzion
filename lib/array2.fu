@@ -1,0 +1,57 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature array(l1,l2)
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# array(length1, length2)
+#
+#
+# array provides two-dimensional arrays. These are actually
+# one-dimensional arrays with additional access functions with
+# two index parameters.
+array<T>(length1, length2 i32,
+         init2 fun (i32, i32) T)
+ : Array<T>(length1 * length2,
+            fun(i i32) => init2(i / length2,
+                                i % length2))
+  pre
+    safety: length1 >= 0,
+    safety: length2 >= 0,
+    safety: (length1 *? length2) >=? 0
+is
+
+  index [ ] (i1, i2 i32) T
+    pre
+      safety: 0 <= i1 < length1,
+      safety: 0 <= i2 < length2
+  is
+    array.this[i1 * length2 + i2]
+
+  set [ ] (i1, i2 i32, o T)
+    pre
+      safety: 0 <= i1 < length1,
+      safety: 0 <= i2 < length2
+//    post
+//      array.this[i1,i2] == o    -- NYI: There is no generic '==' operator (yet?)
+  is
+    array.this[i1 * length2 + i2] = o

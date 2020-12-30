@@ -1,0 +1,106 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature stream
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# stream -- a stream of values
+#
+# NYI: Check if stream should be replaced by a lazy list, which is a choice
+# of either nil or a Tuple (head, tail). This should avoid the need to store
+# mutable state.
+stream<T> ref is
+
+  consume (f fun (T)) { while hasNext { f(next); } }
+  infix | (f fun (T)) { while hasNext { f(next); } }
+  consume2(f fun (T) bool) { while hasNext && f(next); }
+  filter(f fun (T) bool) ref : stream<T>
+  {
+    cache T; // NYI: should be Option<T>;
+    cacheOk bool = false;
+    next2;
+    redef hasNext => cacheOk;
+    redef next T
+    {
+      result = cache;
+      cacheOk = false;
+      next2;
+    }
+    next2
+    {
+      while (!cacheOk && stream.this.hasNext)
+      {
+        cache = stream.this.next;
+        cacheOk = f(cache);
+      }
+    }
+  }
+  infix |& (f fun (T) bool) stream<T> { filter(f) }
+
+  infix ∀ (f fun (T) bool) bool
+  {
+    for
+      res := true, f(next);
+    until !res || !hasNext;
+  }
+
+  // create a new stream that contains the first elements of this stream for
+  // which f(e) is false
+  //
+  before(f fun (T) bool) ref : stream<T>
+  {
+    nextCache := stream.this.next; // NYI should be Option<T> and set to None if !stream.this.hasNext
+    redef hasNext => !f(nextCache);
+    redef next T
+    {
+      result = nextCache;
+      nextCache = stream.this.next;
+    }
+  }
+  hasNext bool is abstract
+  next T is abstract
+  print
+  {
+    consume(fun (x T) { stdout.print(x); if (hasNext) { stdout.print(", "); } });
+  }
+  count i32
+  {
+// NYI: This does not work yet:
+//    result = 0;
+//    consume(fun (x T) { result = result + 1; });
+    res := 0;
+    consume(fun (x T) { res = res + 1; });
+    res
+  }
+  take (n i32) => Array<T>(n, fun (_ i32) => next);
+
+  redef asString ref string
+  {
+    res string = "";
+
+    // NYI: x.asString does not work yet (becuase of generic type?)
+    // consume(fun (x T) { res = res + x.asString; if (hasNext) { res = res + ", " } });
+
+    s(o ref Object) => o.asString;
+    consume(fun (x T) { res = res + s(x); if (hasNext) { res = (res + ", ") } });
+    res
+  }

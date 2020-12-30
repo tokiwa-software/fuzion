@@ -1,0 +1,113 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature hasInterval
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# hasInterval -- feature for integers that can define an interval
+#
+hasInterval<T: hasInterval<T>> : integer<hasInterval<T>> is
+  max  T is abstract
+/*
+  zero T is abstract
+  one  T is abstract
+  infix +  (other T) T is abstract
+  infix -  (other T) T is abstract
+  infix <= (other T) bool is abstract
+  infix >= (other T) bool is abstract
+  infix <  (other T) bool is abstract
+  infix >  (other T) bool is abstract
+*/
+
+  // defining an integer interval from this to other, both inclusive
+  //
+  // special cases of interval a..b:
+  //
+  //   a <  b: the interval from a to b, both inclusive
+  //   a == b: the interval containing only one element, a
+  //   a >  b: an empty interval
+  infix .. (upper T) : streamable<T>
+  {
+    lower T is thiz
+    // lower => hasInterval.this  // NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
+
+    size T is if lower <= upper upper - lower + one else zero
+
+    // apply function f to all elements in this interval
+    iterate(f fun (T)) is
+      for
+        x := lower, x + one
+      while x <= upper
+        f(x);
+
+    // create a stream of all the elements of this interval, in order.
+    redef asStream ref : stream<T> is
+      x := lower
+      redef hasNext bool is x <= upper
+      redef next T is result = x; x = x + one
+
+    forAll(f fun (T)) { asStream.consume(f) }
+
+    infix ∀ (f fun (T) bool) bool { asStream ∀ f }
+
+    infix | (f fun (T)) { asStream.consume(f) }
+
+    forWhile(f fun (T) bool) { asStream.consume2(f) }
+
+    before(f fun (T) bool) stream<T> { asStream.before(f); }
+
+    filter   (f fun (T) bool) stream<T> { asStream.filter(f) } // NYI one-line comma separated decl "filter, infix |" does not work yet
+    infix |& (f fun (T) bool) stream<T> { asStream.filter(f) };
+
+    infix & (f fun (T) bool) stream<T> { asStream.filter(f) };
+
+    postfix | () stream<T> { asStream };
+
+    // Create a streamable that is steping through this interval skipping values. For a
+    // non-negative step parameter, the stream will return lower, lower+step,
+    // lower+2*step, etc. as long as these values are <= upper.
+    //
+    // For a negative step parameter, the stream will return upper, upper+step,
+    // upper+2*step, etc. as long as these values are >= lower.  Note that this means
+    // that a negative step will produce a non-empty stream for an empty interval with
+    // lower > upper!
+    //
+    infix : (step T) : streamable<T>
+    {
+      // create a stream of all the elements of this interval, in order.
+      redef asStream ref : stream<T>
+      {
+        x := lower;
+        redef hasNext bool { step > zero && x <= upper || step < zero && x >= upper }
+        redef next T { result = x; x = x + step; }
+      }
+      forAll(f fun (T)) { asStream.consume(f) }
+      infix | (f fun (T)) { asStream.consume(f) }
+    }
+  }
+
+  // the open interval this to the maximum T value
+  postfix .. () infix .. is
+    // hasInterval.this..max   // NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
+    thiz..max
+
+  // postfix .. : infix .. (max); // NYI: check: this should have the same effect using a sub-class

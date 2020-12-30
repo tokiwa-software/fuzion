@@ -1,0 +1,123 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature integer
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# integer
+#
+#
+# integer is the abstract ancestor of integer numbers that provides operations
+# from numeric plus a devision remainder operation %, bitwise logical operations,
+# shift operations and gcd. Also, integers can be used to build fractions.
+#
+integer<T : integer<T>> : numeric<T> is
+
+  // division remainder
+  redef infix %  (other T) T
+    pre
+      safety: other != zero
+  is abstract
+
+  // bitwise operations
+  infix &  (other T) T is abstract
+  infix |  (other T) T is abstract
+
+  // shift operations
+  infix >> (other T) T
+    pre
+      safety: other.sign >= 0
+  is abstract
+
+  infix << (other T) T
+    pre
+      safety: other.sign >= 0
+  is abstract
+
+  // greatest common divisor of integer.this and b
+  //
+  // note that this assumes zero to be divisible by any positive integer.
+  gcd(b T) T
+    pre
+      safety: sign >= 0,
+      safety: b.sign >= 0
+  is
+    if b == zero
+      thiz
+    else
+      b.gcd(thiz % b)  // tail recursion
+
+  // create a fraction
+  infix /-/ (other T) => fraction<T>(thiz, other)
+
+  // the constant '10' in whatever integer implementation we have, maximum in case of overflow
+  ten => from_u32(10)
+
+  // the value corresponding to v in whatever integer implementation we have, maximum in case of overflow
+  from_u32(v u32) T is
+    if v == 0 zero else from_u32(v-1) +^ one
+
+  // the u32 value corresponding to this
+  to_u32 u32
+    pre
+      thiz >= zero
+  is
+    if thiz > zero { ((thiz - one).to_u32 + 1) }
+    else 0
+
+  highest10 T
+    pre
+      integer.this.sign >= 0
+    post
+      integer.this == zero: result == one,
+      integer.this != zero: integer.this / ten < result <= integer.this
+  is
+    for
+      tens := one, tens * ten
+    while integer.this / ten >= tens
+
+  redef asString string is decimalStr
+
+  decimalStr ref : string is  // NYI: check why "ref" is needed here, make this an anonymous inner feature
+
+    redef asBytes => decimalBytes
+
+    decimalBytes ref : streamable<i32> is  // NYI: check why "ref" is needed here, make this an anonymous inner feature
+
+      redef asStream => decimalBytesStream
+
+      decimalBytesStream stream<i32> is
+        if integer.this.sign >= 0
+          posDecimalBytesStream
+        else
+          p := -? integer.this
+          match p
+            v i32 => ("-" + v).asBytes.asStream
+            _ nil => ("-" + -(integer.this / ten) + -(integer.this % ten)).asBytes.asStream
+
+      posDecimalBytesStream ref : stream<i32> is  // NYI: check why "ref" is needed here, make this an anonymous inner feature
+        p := integer.this.highest10;
+        redef hasNext => p.sign > 0;
+        redef next =>
+          r := 48 + (integer.this / p % ten).to_u32.as_i32
+          p = p / ten
+          r

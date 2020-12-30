@@ -1,0 +1,48 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature streamable
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# streamable -- ancestor for features that can be converted to a stream
+#
+streamable<T> ref is
+
+  asStream stream<T> is abstract
+
+/* NYI: Does not work yet:
+
+  forAll(f fun (T)) { asStream.consume(f) }
+
+  infix ∀ (f fun (T) bool) bool { asStream ∀ f }
+
+  infix | (f fun (T)) { asStream.consume(f) }
+
+  forWhile(f fun (T) bool) { asStream.consume2(f) }
+
+  before(f fun (T) bool) stream<T> { asStream.before(f); }
+
+  filter   (f fun (T) bool) stream<T> { asStream.filter(f) } // NYI one-line comma separated decl "filter, infix |" does not work yet
+  infix |& (f fun (T) bool) stream<T> { asStream.filter(f) };
+
+  postfix | () stream<T> { asStream };
+  */

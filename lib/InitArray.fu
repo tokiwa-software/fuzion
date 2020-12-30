@@ -1,0 +1,66 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature InitArray
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# InitArray -- convenience feature for array creation
+#
+# NYI: Replace by better syntactic sugar in the Fuzion parser / front end.
+InitArray<T>
+{
+  Nil { }
+  node (head T, tail list) ref
+  {
+    setTail(t list)
+    {
+      tail = t;
+    }
+  }
+  list : choice<Nil, node> { }
+
+  first list = Nil;
+  last list = Nil;
+  len i32 = 0;
+
+  infix + (v T) InitArray<T>
+  ensure
+    true // NYI: len == old len + 1
+  {
+    nju := node(v, Nil);
+    match (last)
+    {
+      Nil    => { first = nju;    last = nju; }
+      n node => { n.setTail(nju); last = nju; }
+    }
+    len = len + 1;
+    InitArray.this
+  }
+
+  postfix & Array<T>
+  {
+    result = Array<T>(len, fun (i i32) => { match first { n node => { first = n.tail; n.head }; Nil => { dummy } } });
+  }
+
+  dummy T { (InitArray.this &) [0] }
+
+}

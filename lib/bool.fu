@@ -1,0 +1,66 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature bool
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# bool -- Standard Fuzion type 'bool'
+#
+# We need to apologize to George Boole for crippling his name a bit,
+# just to safe us from typing one more letter.  But at least we stop
+# here and do not use boo, bo or similar.
+#
+bool : choice<FALSE, TRUE> is
+
+  // not
+  prefix ! bool is intrinsic
+
+  // or with lazy evaluation
+  infix ||  (lazy other bool) bool is intrinsic
+
+  // and with lazy evaluation
+  infix &&  (lazy other bool) bool is intrinsic
+
+  // or
+  infix |   (other bool) => bool.this || other
+
+  // and
+  infix &   (other bool) => bool.this && other
+
+  // equivalence
+  //
+  // note that we do not use '==' for this to avoid confusion since
+  // a == b == c for booleans might not behave as expected
+  // ('true <=> false <=> false' evaluates to 'true')
+  infix <=> (other bool) => if bool.this other else !other
+
+  // xor
+  infix ^   (other bool) => if bool.this (!other) else  other
+
+  // implies
+  infix :   (lazy other bool) bool is intrinsic  // !bool.this || other
+
+  // ternary ? : -- NYI: This will be replaced by a more powerful match syntax
+  ternary ? : <T>(lazy a, b T) => if bool.this a else b
+
+  // human readable string
+  redef asString => if bool.this "true" else "false"
