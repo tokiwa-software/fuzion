@@ -64,7 +64,7 @@ public class Parser extends Lexer
 
 
   /**
-   * Create a lexer for the given file
+   * Create a parser for the given file
    */
   public Parser(Path fname)
   {
