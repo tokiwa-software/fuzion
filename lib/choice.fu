@@ -29,7 +29,7 @@ choice<A...>
 {
 
 //a<X> X
-//require
-// choice.this ? X => true, *=> false;
+//  pre
+//    choice.this ? X => true, *=> false;
 
 }

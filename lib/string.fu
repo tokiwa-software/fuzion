@@ -67,7 +67,7 @@ string ref is
 
   // repeat string given number of times
   infix * (n i32) ref : string  // NYI: code is very brittle: removing "ref" causes recursive value type error
-  require
+  pre
     n >= 0
   {
     redef asBytes streamable<i32>

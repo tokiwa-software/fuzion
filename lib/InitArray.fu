@@ -43,7 +43,7 @@ InitArray<T>
   len i32 = 0;
 
   infix + (v T) InitArray<T>
-  ensure
+  post
     true // NYI: len == old len + 1
   {
     nju := node(v, Nil);
