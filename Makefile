@@ -24,6 +24,8 @@
 # must be at least java 11
 JAVA = java
 FUSION_HOME = $(shell pwd)
+BUILD_DIR = build
+CLASSES_DIR = build/classes
 
 JAVA_FILES_UTIL = \
           src/dev/flang/util/ANY.java \
@@ -135,93 +137,101 @@ JAVA_FILES_BE_C = \
 JAVA_FILES_TOOLS = \
           src/dev/flang/tools/Fusion.java \
 
-CLASS_FILES_UTIL           = classes/dev/flang/util/__marker_for_make__
-CLASS_FILES_AST            = classes/dev/flang/__marker_for_make__
-CLASS_FILES_PARSER         = classes/dev/flang/parser/__marker_for_make__
-CLASS_FILES_IR             = classes/dev/flang/ir/__marker_for_make__
-CLASS_FILES_MIR            = classes/dev/flang/mir/__marker_for_make__
-CLASS_FILES_FE             = classes/dev/flang/fe/__marker_for_make__
-CLASS_FILES_AIR            = classes/dev/flang/air/__marker_for_make__
-CLASS_FILES_ME             = classes/dev/flang/me/__marker_for_make__
-CLASS_FILES_FUIR           = classes/dev/flang/fuir/__marker_for_make__
-CLASS_FILES_OPT            = classes/dev/flang/opt/__marker_for_make__
-CLASS_FILES_BE_INTERPRETER = classes/dev/flang/be/interpreter/__marker_for_make__
-CLASS_FILES_BE_C           = classes/dev/flang/be/c/__marker_for_make__
-CLASS_FILES_TOOLS          = classes/dev/flang/tools/__marker_for_make__
+CLASS_FILES_UTIL           = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
+CLASS_FILES_AST            = $(CLASSES_DIR)/dev/flang/__marker_for_make__
+CLASS_FILES_PARSER         = $(CLASSES_DIR)/dev/flang/parser/__marker_for_make__
+CLASS_FILES_IR             = $(CLASSES_DIR)/dev/flang/ir/__marker_for_make__
+CLASS_FILES_MIR            = $(CLASSES_DIR)/dev/flang/mir/__marker_for_make__
+CLASS_FILES_FE             = $(CLASSES_DIR)/dev/flang/fe/__marker_for_make__
+CLASS_FILES_AIR            = $(CLASSES_DIR)/dev/flang/air/__marker_for_make__
+CLASS_FILES_ME             = $(CLASSES_DIR)/dev/flang/me/__marker_for_make__
+CLASS_FILES_FUIR           = $(CLASSES_DIR)/dev/flang/fuir/__marker_for_make__
+CLASS_FILES_OPT            = $(CLASSES_DIR)/dev/flang/opt/__marker_for_make__
+CLASS_FILES_BE_INTERPRETER = $(CLASSES_DIR)/dev/flang/be/interpreter/__marker_for_make__
+CLASS_FILES_BE_C           = $(CLASSES_DIR)/dev/flang/be/c/__marker_for_make__
+CLASS_FILES_TOOLS          = $(CLASSES_DIR)/dev/flang/tools/__marker_for_make__
 
-fuzion.ebnf: src/dev/flang/parser/Parser.java
-	which pcregrep && pcregrep -M "^[a-zA-Z].*:(\n|.)*?;" $^ >$@ || echo "*** need pcregrep tool installed" >$@
+FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
-$(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
-	mkdir -p classes
-	javac -d classes $(JAVA_FILES_UTIL)
-	touch $@
-
-$(CLASS_FILES_AST): $(JAVA_FILES_AST) $(CLASS_FILES_UTIL)
-	mkdir -p classes
-	javac -cp classes -d classes $(JAVA_FILES_AST)
-	touch $@
-
-$(CLASS_FILES_PARSER): $(JAVA_FILES_PARSER) $(CLASS_FILES_AST) fuzion.ebnf
-	mkdir -p classes
-	javac -cp classes -d classes $(JAVA_FILES_PARSER)
-	touch $@
-
-$(CLASS_FILES_IR): $(JAVA_FILES_IR) $(CLASS_FILES_UTIL) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST)
-	mkdir -p classes
-	javac -cp classes -d classes $(JAVA_FILES_IR)
-	touch $@
-
-$(CLASS_FILES_MIR): $(JAVA_FILES_MIR) $(CLASS_FILES_IR)
-	mkdir -p classes
-	javac -cp classes -d classes $(JAVA_FILES_MIR)
-	touch $@
-
-$(CLASS_FILES_FE): $(JAVA_FILES_FE) $(CLASS_FILES_PARSER) $(CLASS_FILES_AST) $(CLASS_FILES_MIR)
-	mkdir -p classes
-	javac -cp classes -d classes $(JAVA_FILES_FE)
-	touch $@
-
-$(CLASS_FILES_AIR): $(JAVA_FILES_AIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR)
-	mkdir -p classes
-	javac -cp classes -d classes $(JAVA_FILES_AIR)
-	touch $@
-
-$(CLASS_FILES_ME): $(JAVA_FILES_ME) $(CLASS_FILES_MIR) $(CLASS_FILES_AIR)
-	mkdir -p classes
-	javac -cp classes -d classes $(JAVA_FILES_ME)
-	touch $@
-
-$(CLASS_FILES_FUIR): $(JAVA_FILES_FUIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR)
-	mkdir -p classes
-	javac -cp classes -d classes $(JAVA_FILES_FUIR)
-	touch $@
-
-$(CLASS_FILES_OPT): $(JAVA_FILES_OPT) $(CLASS_FILES_AIR) $(CLASS_FILES_FUIR)
-	mkdir -p classes
-	javac -cp classes -d classes $(JAVA_FILES_OPT)
-	touch $@
-
-$(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST), replace by $(CLASS_FILES_FUIR)
-	mkdir -p classes
-	javac -cp classes -d classes $(JAVA_FILES_BE_INTERPRETER)
-	touch $@
-
-$(CLASS_FILES_BE_C): $(JAVA_FILES_BE_C) $(CLASS_FILES_FUIR)
-	mkdir -p classes
-	javac -cp classes -d classes $(JAVA_FILES_BE_C)
-	touch $@
-
-$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_BE_INTERPRETER)
-	mkdir -p classes
-	javac -cp classes -d classes $(JAVA_FILES_TOOLS)
-	touch $@
+.PHONY: all
+all: $(CLASS_FILES_TOOLS) $(FUZION_EBNF) $(BUILD_DIR)/lib
 
 # phony target to compile all java sources
 .PHONY: javac
 javac: $(CLASS_FILES_TOOLS)
 
+$(FUZION_EBNF): src/dev/flang/parser/Parser.java
+	mkdir -p $(@D)
+	which pcregrep && pcregrep -M "^[a-zA-Z].*:(\n|.)*?;" $^ >$@ || echo "*** need pcregrep tool installed" >$@
+
+$(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
+	mkdir -p $(CLASSES_DIR)
+	javac -d $(CLASSES_DIR) $(JAVA_FILES_UTIL)
+	touch $@
+
+$(CLASS_FILES_AST): $(JAVA_FILES_AST) $(CLASS_FILES_UTIL)
+	mkdir -p $(CLASSES_DIR)
+	javac -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_AST)
+	touch $@
+
+$(CLASS_FILES_PARSER): $(JAVA_FILES_PARSER) $(CLASS_FILES_AST) $(FUZION_EBNF)
+	mkdir -p $(CLASSES_DIR)
+	javac -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_PARSER)
+	touch $@
+
+$(CLASS_FILES_IR): $(JAVA_FILES_IR) $(CLASS_FILES_UTIL) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST)
+	mkdir -p $(CLASSES_DIR)
+	javac -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_IR)
+	touch $@
+
+$(CLASS_FILES_MIR): $(JAVA_FILES_MIR) $(CLASS_FILES_IR)
+	mkdir -p $(CLASSES_DIR)
+	javac -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_MIR)
+	touch $@
+
+$(CLASS_FILES_FE): $(JAVA_FILES_FE) $(CLASS_FILES_PARSER) $(CLASS_FILES_AST) $(CLASS_FILES_MIR)
+	mkdir -p $(CLASSES_DIR)
+	javac -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FE)
+	touch $@
+
+$(CLASS_FILES_AIR): $(JAVA_FILES_AIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR)
+	mkdir -p $(CLASSES_DIR)
+	javac -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_AIR)
+	touch $@
+
+$(CLASS_FILES_ME): $(JAVA_FILES_ME) $(CLASS_FILES_MIR) $(CLASS_FILES_AIR)
+	mkdir -p $(CLASSES_DIR)
+	javac -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_ME)
+	touch $@
+
+$(CLASS_FILES_FUIR): $(JAVA_FILES_FUIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR)
+	mkdir -p $(CLASSES_DIR)
+	javac -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR)
+	touch $@
+
+$(CLASS_FILES_OPT): $(JAVA_FILES_OPT) $(CLASS_FILES_AIR) $(CLASS_FILES_FUIR)
+	mkdir -p $(CLASSES_DIR)
+	javac -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_OPT)
+	touch $@
+
+$(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST), replace by $(CLASS_FILES_FUIR)
+	mkdir -p $(CLASSES_DIR)
+	javac -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_INTERPRETER)
+	touch $@
+
+$(CLASS_FILES_BE_C): $(JAVA_FILES_BE_C) $(CLASS_FILES_FUIR)
+	mkdir -p $(CLASSES_DIR)
+	javac -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_C)
+	touch $@
+
+$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_BE_INTERPRETER)
+	mkdir -p $(CLASSES_DIR)
+	javac -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS)
+	touch $@
+
+$(BUILD_DIR)/lib: lib
+	cp -rf $^ $@
+
 clean:
-	rm -rf classes
-	rm -rf fuzion.ebnf
+	rm -rf $(BUILD_DIR)
 	find . -name "*~" -exec rm {} \;
