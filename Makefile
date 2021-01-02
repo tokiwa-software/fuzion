@@ -23,9 +23,10 @@
 
 # must be at least java 11
 JAVA = java
-FUSION_HOME = $(shell pwd)
-BUILD_DIR = build
-CLASSES_DIR = build/classes
+BUILD_DIR = $(CURDIR)/build
+CLASSES_DIR = $(BUILD_DIR)/classes
+FUSION_HOME = $(BUILD_DIR)
+FUSIONX = $(JAVA) \$$(JAVA_OPTS) -cp $(FUSION_HOME)/classes dev.flang.tools.Fusion
 
 JAVA_FILES_UTIL = \
           src/dev/flang/util/ANY.java \
@@ -231,6 +232,19 @@ $(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(
 
 $(BUILD_DIR)/lib: lib
 	cp -rf $^ $@
+
+$(BUILD_DIR)/tests: tests
+	cp -rf $^ $@
+
+# phony target to run Fuzion tests and report number of failures
+.PHONY: run_tests
+run_tests: $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib $(BUILD_DIR)/tests
+	rm -rf $(BUILD_DIR)/run_tests.results
+	for test in $(shell echo $(BUILD_DIR)/tests/*); do \
+	  FUSION="$(FUSIONX)" make -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
+	done
+	echo `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`ls tests | wc -l` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed; \
+	cat $(BUILD_DIR)/run_tests.results | grep failed$$
 
 clean:
 	rm -rf $(BUILD_DIR)

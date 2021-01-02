@@ -1,0 +1,20 @@
+SquareRoot is
+
+  sqrt(a i32) i32
+    pre
+      a >= 0
+    post
+      (result * result <= a) && ((result+1) * (result+1) > a)
+  is
+    result = 1
+    for it in 0..99 do
+      n := a / result
+      result = (result + n) / 2
+    until (( result    * result     <= a) &&
+           ((result+1) * (result+1) >  a)    )
+    else
+      stdout.println("*** error, sqrt diverges")
+
+  stdout.println("sqrt(16) == " + sqrt(16))
+  stdout.println("sqrt(81) == " + sqrt(81))
+  stdout.println("sqrt(-16) == " + sqrt(-16)) // 1. should flag an error, precondition failed

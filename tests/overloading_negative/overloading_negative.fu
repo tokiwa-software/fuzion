@@ -1,0 +1,57 @@
+overloading_negative
+{
+  out := stdout;
+
+  chck(b bool, msg string)
+  {
+    s string;
+    if b
+      {
+        s = "PASSED: ";
+      }
+    else
+      {
+        s = "FAILED: ";
+      }
+    out.println(s + msg);
+  }
+
+  test1
+  {
+    a() { }
+    a(i i32) { }
+    a(i, j i32) { }
+
+    x := a();
+    y := a(42);
+    z := a(47,11);
+
+    a1 a;       // 1. should flag an error: ambiguous types
+    a2 a;       // 2. should flag an error: ambiguous types
+    a3 a;       // 3. should flag an error: ambiguous types
+    a1 = a();
+    a2 = a(42);
+    a3 = a(47,11);
+  }
+  test1;
+
+  test2
+  {
+    a() void { }
+    a(i i32) i32 { 13 }
+    a(i, j i32) string { "foo" }
+
+    x := a();
+    y := a(42);
+    z := a(47,11);
+
+    a1 a;       // 4. should flag an error: type not found
+    a2 a;       // 5. should flag an error: type not found
+    a3 a;       // 6. should flag an error: type not found
+    a1 = a();
+    a2 = a(42);
+    a3 = a(47,11);
+  }
+  test2;
+
+}

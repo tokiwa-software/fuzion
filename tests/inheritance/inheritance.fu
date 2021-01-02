@@ -1,0 +1,511 @@
+inheritance {
+
+  out := stdout;
+
+  curid i32; curid = 0;
+  id i32
+  {
+    result = curid;
+    curid = result + 1;
+  }
+
+  A ref {
+    ident i32; ident = id;
+    out.println("A's body" + ident);
+    x is abstract
+  }
+  B ref : A {
+    out.println("B's body" + ident);
+    redefine x { out.println("B.x"); }
+    xb { out.println("B.xb"); }
+  }
+  C ref : A {
+    redefine x { out.println("C.x"); }
+    xc { out.println("C.xc"); }
+  }
+  D ref : B, C {
+    redefine x { out.println("D.x"); }
+  }
+  E ref : D {
+    redefine x  { out.println("E.x" ); }
+    redefine xb { out.println("E.xb"); }
+    redefine xc { out.println("E.xc"); }
+  }
+  bi B; bi = B;
+  ci inheritance.C; ci = C;
+  aa inheritance.A; aa = bi;
+  bi.x;
+  ci.x;
+  aa.x;
+  aa = ci;
+  aa.x;
+  di inheritance.D; di = D;
+  ei inheritance.E; ei = E;
+  out.println("Calling non-redefed multiple");
+  di.x;
+  di.xb;
+  di.xc;
+  out.println("Calling redefed multiple");
+  ei.x;
+  ei.xb;
+  ei.xc;
+  out.println("Calling redefed multiple from non-redefed static ");
+  di = ei;
+  di.x;
+  di.xb;
+  di.xc;
+  bi = di;
+  ci = di;
+  bi.x;
+  bi.xb;
+  ci.x;
+  ci.xc;
+  aa = ei;
+  aa.x;
+
+
+  // mixing value and ref types along the inheritance chain:
+  mixValAndRef
+  {
+    // simple test: value type inheriting form ref type:
+    A ref
+    {
+      x := 3;
+      p { print };
+      print
+      {
+        out.println(x);
+      }
+    }
+    B : A { }
+    b := B;
+    b.p; // all type info is static in this call
+
+    c := 1000;
+    count => { c = c + 1; c }
+
+    // nested features with a ref (P, Q, R, S) and a value (Pv, Qv, Rv, Sv)
+    // variant and calls to features of the corresponding outer features.
+    P ref
+    {
+      id := count;
+      p { print }
+      print { out.println(id); }
+      Q ref
+      {
+        q { out.print("q"); p }
+        R ref
+        {
+          r { out.print("r"); p }
+          S ref
+          {
+            s { out.print("s"); p }
+          }
+          Sv : S { }
+        }
+        Rv : R { }
+      }
+      Qv : Q { }
+    }
+    Pv : P { }
+
+    out.println("only refs:");
+
+    P.p;
+    P.Q.q;
+    P.Q.R.r;
+    P.Q.R.S.s; // #1004
+
+    out.println("only values:");
+
+    Pv.p;
+    Pv.Qv.q;
+    Pv.Qv.Rv.r;
+    Pv.Qv.Rv.Sv.s; // #1008
+
+    out.println("mixed refs and values:");
+
+    P.p;
+    P.Q.q;
+    P.Q.R.r;
+    P.Q.R.S.s;
+    P.Q.R.Sv.s;
+    P.Q.Rv.r;
+    P.Q.Rv.S.s;
+    P.Q.Rv.Sv.s;  // #1016
+    P.Qv.q;
+    P.Qv.R.r;
+    P.Qv.R.S.s;
+    P.Qv.R.Sv.s;
+    P.Qv.Rv.r;
+    P.Qv.Rv.S.s;
+    P.Qv.Rv.Sv.s;
+    Pv.p;
+    Pv.Q.q;
+    Pv.Q.R.r;
+    Pv.Q.R.S.s;
+    Pv.Q.R.Sv.s;
+    Pv.Q.Rv.r;
+    Pv.Q.Rv.S.s;
+    Pv.Q.Rv.Sv.s;
+    Pv.Qv.q;
+    Pv.Qv.R.r;
+    Pv.Qv.R.S.s;
+    Pv.Qv.R.Sv.s;
+    Pv.Qv.Rv.r;
+    Pv.Qv.Rv.S.s;
+    Pv.Qv.Rv.Sv.s; // #1038
+  }
+  mixValAndRef;
+
+
+  // Inheritance from outer: stream.before inherits from stream:
+  (1..).before(fun (x i32) => x > 100)
+       .before(fun (x i32) => x > 40)
+       .before(fun (x i32) => x > 20)
+       .consume(fun (x i32) { out.println(x); });
+
+  // test for recursive inheritance/outer relation with refs
+  strm.u.print;
+  strm.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print;
+  strm ref
+  {
+    u ref : strm
+    {
+    }
+    print
+    {
+      out.println("strm.print");
+    }
+  }
+
+  // This works even though strm1 is a value type, but the inner feature u that inherits from strm1 is a ref
+  strm1.print;
+  strm1.u.print;
+  strm1.u.u.print;
+  strm1.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print;
+  strm1
+  {
+    u ref : strm1
+    {
+    }
+    print
+    {
+      out.println("strm1.print");
+    }
+  }
+
+  // this should work since it uses ref types
+  strm5.u.print;
+  strm5.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print;
+  strm5 ref
+  {
+    u ref : strm5Z
+    {
+    }
+    print
+    {
+      stdout.println("strm5.print");
+    }
+  }
+  strm5X ref : strm5  { }
+  strm5Y ref : strm5X { }
+  strm5Z ref : strm5Y { }
+
+  /* simple inheritance of outer feature example: */
+  cnt := 0;
+  Z;
+  Z ref
+  {
+    B ref : Z { }
+    if (cnt < 10)
+      {
+        cnt = cnt + 1;
+        B;
+      }
+  }
+
+  /* more complex inheritcane of outer feateature, with one more level of nesting: */
+  tricky_Inheritance
+  {
+    cnt := 0;
+    Z;
+    Z ref
+      {
+        out.println("tricky_Inheritance.Z: " + cnt);
+        B ref
+        {
+          q ref : Z
+          {
+            out.println("tricky_Inheritance.Z.B.q: " + cnt);
+          }
+        }
+        if (cnt < 10)
+          {
+            cnt = cnt + 1;
+            B.q;
+          }
+     }
+  }
+  tricky_Inheritance;
+
+  /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from value feature A */
+  call_inherited_from_parent_args
+  {
+    chck(b bool, msg string)
+    {
+      s string;
+      if b
+        {
+          s = "PASSED: ";
+        }
+      else
+        {
+          s = "FAILED: ";
+        }
+      out.println(s + msg);
+    }
+
+    cnt_A_y := 0;
+    cnt_C_y := 0;
+    A
+    {
+      x => y
+      y i32
+      {
+        cnt_A_y = cnt_A_y + 1;
+        out.println("inherit.A.y");
+        0
+      }
+
+      C ref : A
+      {
+        redefine y i32
+        {
+          cnt_C_y = cnt_C_y + 1;
+          out.println("inherit.C.y");
+          1
+        }
+      }
+      D(i i32)
+      {
+        out.println(i);
+        chck(i == 1, "call to y in arguments must be performed on heir instance");
+      }
+
+      B ref : x, y, C, D(y) { }
+    }
+
+    A.B;
+    chck(cnt_A_y == 2, "inherits calls to x and y must be performed in outer feature A");
+    chck(cnt_C_y == 1, "C.y must be called exactly once as argument to parent D(y)");
+  }
+  call_inherited_from_parent_args;
+
+  /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from ref feature A */
+  call_inherited_from_parent_args2
+  {
+    chck(b bool, msg string)
+    {
+      s string;
+      if b
+        {
+          s = "PASSED: ";
+        }
+      else
+        {
+          s = "FAILED: ";
+        }
+      out.println(s + msg);
+    }
+
+    cnt_A_y := 0;
+    cnt_C_y := 0;
+    A ref
+    {
+      x => y
+      y i32
+      {
+        cnt_A_y = cnt_A_y + 1;
+        out.println("inherit.A.y");
+        0
+      }
+
+      C ref : A
+      {
+        redefine y i32
+        {
+          cnt_C_y = cnt_C_y + 1;
+          out.println("inherit.C.y");
+          1
+        }
+      }
+      D(i i32)
+      {
+        out.println(i);
+        chck(i == 1, "call to y in arguments must be performed on heir instance");
+      }
+
+      B ref : x, y, C, D(x) { }
+    }
+
+    A.B;
+    chck(cnt_A_y == 2, "inherits calls to x and y must be performed in outer feature A");
+    chck(cnt_C_y == 1, "C.y must be called exactly once as argument to parent D(y)");
+  }
+  call_inherited_from_parent_args2;
+
+  /* check dynamic binding on call to A.x if ref feature B inherits from value feature A */
+  check_dyn_binding_when_inheriting_value
+  {
+    A
+    {
+      a { x }
+      x { out.println("A.x: FAILED."); }
+    }
+    B ref : A
+    {
+      a;
+      redefine x { out.println("B.x: PASSED."); }
+    }
+    B;
+  }
+  check_dyn_binding_when_inheriting_value;
+
+  /* calling inherited feature x from arguments to parent class D(x), feature x is inherited from value feature A and calls A.y which is redefined in C */
+  call_inherited_from_parent_args3
+  {
+    chck(b bool, msg string)
+    {
+      s string;
+      if b
+        {
+          s = "PASSED: ";
+        }
+      else
+        {
+          s = "FAILED: ";
+        }
+      out.println(s + msg);
+    }
+
+    cnt_A_y := 0;
+    cnt_C_y := 0;
+    A
+    {
+      x => y
+      y i32
+      {
+        cnt_A_y = cnt_A_y + 1;
+        out.println("inherit.A.y");
+        0
+      }
+
+      C ref : A
+      {
+        redefine y i32
+        {
+          cnt_C_y = cnt_C_y + 1;
+          out.println("inherit.C.y");
+          1
+        }
+      }
+      D(i i32)
+      {
+        out.println(i);
+        chck(i == 1, "call to y in arguments must be performed on heir instance");
+      }
+
+      B ref : x, y, C, D(x) { }
+    }
+
+    A.B;
+    chck(cnt_A_y == 2, "inherits calls to x and y must be performed in outer feature A");
+    chck(cnt_C_y == 1, "C.y must be called exactly once via x as argument to parent D(x)");
+  }
+  call_inherited_from_parent_args3;
+
+  inheritOuter
+  {
+    Acnt := 0;
+    Bcnt := 0;
+    Ccnt := 0;
+    Dcnt := 0;
+    Ecnt := 0;
+    Fcnt := 0;
+
+    A ref
+    {
+      Acnt = Acnt + 1;
+      B ref
+      {
+        Bcnt = Bcnt + 1;
+        C ref
+        {
+          Ccnt = Ccnt + 1;
+          D ref
+          {
+            Dcnt = Dcnt + 1;
+            E ref
+            {
+              Ecnt = Ecnt + 1;
+              F ref
+              {
+                Fcnt = Fcnt + 1;
+                F3 ref : F { }
+              }
+              E3 ref : E { }
+            }
+            D3 ref : D { }
+          }
+          C3 ref : C { }
+        }
+        B3 ref : B { }
+      }
+      A3 ref : A { }
+    }
+    A1 ref : A { }
+    B1 ref : A1.B { }
+    C1 ref : B1.C { }
+    D1 ref : C1.D { }
+    E1 ref : D1.E { }
+    F1 ref : E1.F { }
+    A2 ref : A.A3 { }
+    B2 ref : A2.B.B3 { }
+    C2 ref : B2.C.C3 { }
+    D2 ref : C2.D.D3 { }
+    E2 ref : D2.E.E3 { }
+    F2 ref : E2.F.F3 { }
+    A1;
+    B1;
+    C1;
+    D1;
+    E1;
+    F1;
+    A2;
+    B2;
+    C2;
+    D2;
+    E2;
+    F2;
+    chck("test Acnt", Acnt, 18);
+    chck("test Bcnt", Bcnt, 15);
+    chck("test Ccnt", Ccnt, 12);
+    chck("test Dcnt", Dcnt, 9);
+    chck("test Ecnt", Ecnt, 6);
+    chck("test Fcnt", Fcnt, 3);
+    chck(msg string, v, expected i32)
+    {
+      if (v == expected)
+        {
+          out.println(msg + ": PASSED.");
+        }
+      else
+        {
+          out.println(msg + ": " + v + " != " + expected + " *** FAILED.");
+        }
+    }
+  }
+  inheritOuter;
+
+}

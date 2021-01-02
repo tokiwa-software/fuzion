@@ -1,0 +1,116 @@
+choice_negative
+{
+  cyclic7
+  {
+    A
+    {
+      x A | i32 | string;  // 4. should flag an error: cyclic choice
+      x = "Hello";
+      s
+      {
+        match x
+        {
+          a A      => { stdout.println("A.x is A") }
+          i i32    => { stdout.println("A.x is i32") }
+          s string => { stdout.println("A.x is string") }
+        }
+      }
+    }
+  }
+  cyclic7.A.s; // NYI: would be nice if this was detected w/o a call to x
+
+  cyclic8
+  {
+    A
+    {
+      x ref A | i32 | string;
+      x = "Hello";
+      s
+      {
+        match x
+        {
+          a ref A  => { stdout.println("A.x is A") }
+          i i32    => { stdout.println("A.x is i32") }
+          s string => { stdout.println("A.x is string") }
+        }
+      }
+    }
+  }
+  cyclic8.A.s;
+
+  cyclic9
+  {
+    A
+    {
+      x i32 | A | string;  // 5. should flag an error: cyclic choice
+      x = "Hello";
+      s
+      {
+        match x
+        {
+          a A      => { stdout.println("A.x is A") }
+          i i32    => { stdout.println("A.x is i32") }
+          s string => { stdout.println("A.x is string") }
+        }
+      }
+    }
+  }
+  cyclic9.A.s; // NYI: would be nice if this was detected w/o a call to x
+
+  cyclic10
+  {
+    A
+    {
+      x i32 | ref A | string;
+      x = "Hello";
+      s
+      {
+        match x
+        {
+          a ref A  => { stdout.println("A.x is A") }
+          i i32    => { stdout.println("A.x is i32") }
+          s string => { stdout.println("A.x is string") }
+        }
+      }
+    }
+  }
+  cyclic10.A.s;
+
+  cyclic11
+  {
+    A
+    {
+      x i32 | string | A;  // 6. should flag an error: cyclic choice
+      x = "Hello";
+      s
+      {
+        match x
+        {
+          a A      => { stdout.println("A.x is A") }
+          i i32    => { stdout.println("A.x is i32") }
+          s string => { stdout.println("A.x is string") }
+        }
+      }
+    }
+  }
+  cyclic11.A.s; // NYI: would be nice if this was detected w/o a call to x
+
+  cyclic12
+  {
+    A
+    {
+      x i32 | string | ref A;
+      x = "Hello";
+      s
+      {
+        match x
+        {
+          a ref A  => { stdout.println("A.x is A") }
+          i i32    => { stdout.println("A.x is i32") }
+          s string => { stdout.println("A.x is string") }
+        }
+      }
+    }
+  }
+  cyclic12.A.s;
+}

@@ -1,0 +1,52 @@
+inheritance_negative
+{
+  out := stdout;
+
+  cyclic1 : cyclic1 { } // 1. should flag an error, cyclic inheritance
+
+  cyclic2a : cyclic2b { } // 2. should flag an error, cyclic inheritance
+  cyclic2b : cyclic2a { } // 2. should flag an error, cyclic inheritance
+
+  cyclic3a : cyclic3b { } // 3. should flag an error, cyclic inheritance
+  cyclic3b : cyclic3c { } // 3. should flag an error, cyclic inheritance
+  cyclic3c : cyclic3d { } // 3. should flag an error, cyclic inheritance
+  cyclic3d : cyclic3e { } // 3. should flag an error, cyclic inheritance
+  cyclic3e : cyclic3f { } // 3. should flag an error, cyclic inheritance
+  cyclic3f : cyclic3g { } // 3. should flag an error, cyclic inheritance
+  cyclic3g : cyclic3h { } // 3. should flag an error, cyclic inheritance
+  cyclic3h : cyclic3i { } // 3. should flag an error, cyclic inheritance
+  cyclic3i : cyclic3j { } // 3. should flag an error, cyclic inheritance
+  cyclic3j : cyclic3k { } // 3. should flag an error, cyclic inheritance
+  cyclic3k : cyclic3l { } // 3. should flag an error, cyclic inheritance
+  cyclic3l : cyclic3m { } // 3. should flag an error, cyclic inheritance
+  cyclic3m : cyclic3n { } // 3. should flag an error, cyclic inheritance
+  cyclic3n : cyclic3o { } // 3. should flag an error, cyclic inheritance
+  cyclic3o : cyclic3p { } // 3. should flag an error, cyclic inheritance
+  cyclic3p : cyclic3q { } // 3. should flag an error, cyclic inheritance
+  cyclic3q : cyclic3r { } // 3. should flag an error, cyclic inheritance
+  cyclic3r : cyclic3s { } // 3. should flag an error, cyclic inheritance
+  cyclic3s : cyclic3t { } // 3. should flag an error, cyclic inheritance
+  cyclic3t : cyclic3u { } // 3. should flag an error, cyclic inheritance
+  cyclic3u : cyclic3v { } // 3. should flag an error, cyclic inheritance
+  cyclic3v : cyclic3w { } // 3. should flag an error, cyclic inheritance
+  cyclic3w : cyclic3x { } // 3. should flag an error, cyclic inheritance
+  cyclic3x : cyclic3y { } // 3. should flag an error, cyclic inheritance
+  cyclic3y : cyclic3z { } // 3. should flag an error, cyclic inheritance
+  cyclic3z : cyclic3a { } // 3. should flag an error, cyclic inheritance
+
+  cycle4 : cycle4A, cycle4B, cycle4C, cycle4D.E.F, cycle4E { } // 4. should flag an error, cyclic inheritance
+  cycle4A { }
+  cycle4B { }
+  cycle4C { }
+  cycle4D
+  {
+    E
+    {
+      F : cycle4
+      {
+      }
+    }
+  }
+  cycle4E { }
+
+}

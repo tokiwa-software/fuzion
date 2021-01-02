@@ -1,0 +1,19 @@
+
+
+qwerty<T>
+{
+  stdout.println("QWERTY");
+  uiop
+  {
+    stdout.println("UIOP");
+    asdfg
+    {
+      stdout.println("ASDFG");
+      hjkl(x T)
+      {
+        stdout.print(x);
+        stdout.println("HJKL");
+      }
+    }
+  }
+}

@@ -1,0 +1,52 @@
+typecheck_negative {
+
+  assign
+  {
+    A<T>
+    {
+      B<U>
+      {
+        C<V>
+        {
+        }
+      }
+    }
+    p := A<i32>.B<u64>.C<bool>();
+    q := A<i64>.B<u64>.C<bool>();
+    r := A<i32>.B<bool>.C<bool>();
+    s := A<i32>.B<u64>.C<u32>();
+    t := A<i32>.B<u64>.C<u32>();
+    q = p; // 1. should flag an error, illegal assignment
+    r = p; // 2. should flag an error, illegal assignment
+    q = r; // 3. should flag an error, illegal assignment
+    r = q; // 4. should flag an error, illegal assignment
+    s = p; // 5. should flag an error, illegal assignment
+    s = q; // 6. should flag an error, illegal assignment
+    s = r; // 7. should flag an error, illegal assignment
+    t = s;
+    D<T> ref
+    {
+      E<U> ref
+      {
+        F<V> ref
+        {
+        }
+      }
+    }
+    u := D<i32>.E<u64>.F<bool>();
+    v := D<i64>.E<u64>.F<bool>();
+    w := D<i32>.E<bool>.F<bool>();
+    x := D<i32>.E<u64>.F<u32>();
+    y := D<i32>.E<u64>.F<u32>();
+    v = u; // 8. should flag an error, illegal assignment
+    w = u; // 9. should flag an error, illegal assignment
+    v = w; // 10. should flag an error, illegal assignment
+    w = v; // 11. should flag an error, illegal assignment
+    x = u; // 12. should flag an error, illegal assignment
+    x = v; // 13. should flag an error, illegal assignment
+    x = w; // 14. should flag an error, illegal assignment
+    y = x;
+  }
+  assign;
+
+}

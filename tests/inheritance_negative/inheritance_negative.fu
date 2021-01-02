@@ -1,0 +1,50 @@
+inheritance_negative
+{
+  out := stdout;
+
+  // this is forbidded since the second u in strm2.u.u is a value type with the same value type as outer type
+  strm2.u.print;
+  strm2.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print;
+  strm2 ref
+  {
+    u : strm2  // 1. should flag an error, inheritance of outer feature not permitted for value type
+    {
+    }
+    print
+    {
+      stdout.println("strm2.print");
+    }
+  }
+
+  // this should not work since it uses value types
+  strm3.u.print;
+  strm3.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print;
+  strm3
+  {
+    u : strm3  // 2. should flag an error, inheritance of outer feature not permitted for value type
+    {
+    }
+    print
+    {
+      stdout.println("strm3.print");
+    }
+  }
+
+  // this should not work since it uses value types
+  strm4.u.print;
+  strm4.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.u.print;
+  strm4 ref
+  {
+    u : strm4Z  // 3. should flag an error, inheritance of outer feature not permitted for value type
+    {
+    }
+    print
+    {
+      stdout.println("strm4.print");
+    }
+  }
+  strm4X ref : strm4  { }
+  strm4Y ref : strm4X { }
+  strm4Z ref : strm4Y { }
+
+}

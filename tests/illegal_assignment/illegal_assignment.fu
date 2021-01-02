@@ -1,0 +1,71 @@
+illegal_assignment {
+
+  Q ref {
+    A ref { x { stdout.println("*** should never be here ***"); } }
+    B ref { x { stdout.println("*** should never be here ***"); } }
+    C ref { x { stdout.println("*** should never be here ***"); } xc {}; }
+    D ref { x { stdout.println("*** should never be here ***"); } xb {}; xc {}; }
+    E ref { x { stdout.println("*** should never be here ***"); } xb {}; xc {}; }
+  }
+
+  curid i32; curid = 0;
+  id i32
+  {
+    result = curid;
+    curid = result + 1;
+  }
+
+  A ref {
+    ident i32; ident = id;
+    stdout.println("A's body" + ident);
+    x is abstract
+  }
+  B ref : A {
+    stdout.println("B's body" + ident);
+    redefine x { stdout.println("B.x"); }
+    xb { stdout.println("B.xb"); }
+  }
+  C ref : A {
+    redefine x { stdout.println("C.x"); }
+    xc { stdout.println("C.xc"); }
+  }
+  D ref : B, C {
+  }
+  E ref : D {
+    redefine x  { stdout.println("E.x" ); }
+    redefine xb { stdout.println("E.xb"); }
+    redefine xc { stdout.println("E.xc"); }
+  }
+  bi B; bi = B;
+  ci Q.C; ci = C;  // 1. should flag an error: illegal assignment
+  aa Q.A; aa = bi; // 2. should flag an error: illegal assignment
+  bi.x;
+  ci.x;
+  aa.x;
+  aa = ci; // 3. should flag an error: illegal assignment
+  aa.x;
+  di Q.D; di = D; // 4. should flag an error: illegal assignment
+  ei Q.E; ei = E; // 5. should flag an error: illegal assignment
+  stdout.println("Calling non-redefed multiple");
+  di.x;
+  di.xb;
+  di.xc;
+  stdout.println("Calling redefed multiple");
+  ei.x;
+  ei.xb;
+  ei.xc;
+  stdout.println("Calling redefed multiple from non-redefed static ");
+  di = ei;  // 6. should flag an error: illegal assignment
+  di.x;
+  di.xb;
+  di.xc;
+  bi = di;  // 7. should flag an error: illegal assignment
+  ci = di;  // 8. should flag an error: illegal assignment
+  bi.x;
+  bi.xb;
+  ci.x;
+  ci.xc;
+  aa = ei;  // 9. should flag an error: illegal assignment
+  aa.x;
+
+}

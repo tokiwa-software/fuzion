@@ -1,0 +1,68 @@
+lists {
+  List<T> {
+    xb { stdout.println("B.xb"); }
+    public Node (
+      public el T,
+      public n, p OptNode) ref : Object {
+    }
+
+    public Nil { }
+    OptNode : choice<Node,Nil> { }
+
+    h OptNode = Nil;
+    add(e T) {
+      h = Node(e,h,Nil);
+    }
+    print {
+      // for   -- NYI: must update i in the loop prolog
+      i := h;
+      while (i ? Node => { true }; Nil => false) {  // NYI: This screams for recursion
+        match i
+        {
+          n Node =>
+            {
+              stdout.println("print el in loop: " + n.el);
+              i = n.n;
+            }
+          Nil => { }
+        }
+      }
+    }
+    size i32 {
+      // for   -- NYI: must update i in the loop prolog
+      i := h;
+      while (i ? Node => { true }; Nil => false) {   // NYI: This screams for recursion
+        match i
+        {
+          n Node =>
+            {
+              result = result + 1;
+              i = n.n;
+            }
+          Nil => { }
+        }
+      }
+    }
+  }
+
+  li List<i32>; li = List<i32>;
+  li.add(3);
+  li.add(4);
+  li.add(5);
+  li.add(6);
+  li.add(7);
+  li.add(8);
+  li.add(9);
+  li.print;
+  stdout.println("size: " + li.size);
+
+  Complex(r, i i32) { };
+
+  lc List<Complex>; lc = List<Complex>;
+  lc.add(Complex(3,4));
+  lc.add(Complex(4,5));
+  lc.add(Complex(5,6));
+  lc.add(Complex(7,8));
+  lc.print;
+  stdout.println("size: " + lc.size);
+}

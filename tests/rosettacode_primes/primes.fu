@@ -1,0 +1,74 @@
+primes
+{
+  out := stdout;
+
+  primes(n i32)  // sieve using loops
+  {
+    for
+      a := Array<bool>(n+1, fun (i i32) => false);
+      i := 2, i + 1;
+    while i <= n
+    {
+      if !a[i]
+      {
+        out.print(i); out.print(" ");
+        for
+          j := i, j + i;
+        while j <= n
+        {
+          a[j] = true;
+        }
+      }
+    }
+  }
+  out.println("Primes using loop:"); primes(1000); out.println;
+
+  primes2(n i32)   // sieve using streams
+  {
+    a := Array<bool>(n+1, fun (i i32) => false);
+    (2..n).forAll(fun (i i32)
+      {
+        if (!a[i])
+        {
+          out.print(i); out.print(" ");
+          (1..n).forWhile(fun (j i32) bool { a[i*j] = true; (i*j+i) <= n });
+        }
+      });
+  }
+  out.println("Primes using streams:"); primes2(1000); out.println;
+
+  primes3(n i32)   // sieve using streams and filters
+  {
+    a := Array<bool>(n+1, fun (i i32) => false);
+    (2..n).filter(fun (i i32) bool { !a[i] }).consume(fun (i i32)
+      {
+          out.print(i); out.print(" ");
+          (1..n/i).forAll(fun (j i32) { a[i*j] = true; } );
+         /* with more syntactic sugar, this could become:
+
+          (1..n/i).forAll(j => a[i*j] = true);
+          */
+      });
+  }
+  out.println("Primes using streams and filters:"); primes3(1000); out.println;
+
+  primes4(n i32)   // sieve using pipes
+  {
+    a := Array<bool>(n+1, fun (i i32) => false);
+
+    (2..n) |& (fun (i i32) => !a[i]) | fun (i i32)
+      {
+          out.print(i); out.print(" ");
+          (1..n/i) | fun (j i32) { a[i*j] = true; };
+      };
+/*
+    (2..n) |& (i => !a[i]) | i =>
+      {
+          out.print(i); out.print(" ");
+          (1..n/i) | j => { a[i*j] = true; };
+      };
+      */
+  }
+  out.println("Primes using pipes:"); primes4(1000); out.println;
+
+}

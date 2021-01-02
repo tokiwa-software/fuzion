@@ -1,0 +1,66 @@
+forwardref_negative {
+
+  cyclic1
+  {
+    a := z; // 1. should flag an error, forward reference to uninitialized field
+    b := a;
+    c := b;
+    d := c;
+    e := d;
+    f := e;
+    g := f;
+    h := g;
+    i := h;
+    j := i;
+    k := j;
+    l := k;
+    m := l;
+    n := m;
+    o := n;
+    p := o;
+    q := p;
+    r := q;
+    s := r;
+    t := s;
+    u := t;
+    v := u;
+    w := v;
+    x := w;
+    y := x;
+    z := 1;
+  }
+  cyclic1;
+
+  cyclic2
+  {
+    a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z i32;
+    a = z; // 2. should flag an error, forward reference to uninitialized field
+    b = a;
+    c = b;
+    d = c;
+    e = d;
+    f = e;
+    g = f;
+    h = g;
+    i = h;
+    j = i;
+    k = j;
+    l = k;
+    m = l;
+    n = m;
+    o = n;
+    p = o;
+    q = p;
+    r = q;
+    s = r;
+    t = s;
+    u = t;
+    v = u;
+    w = v;
+    x = w;
+    y = x;
+    z = 1;
+  }
+  cyclic2;
+
+}

@@ -1,0 +1,339 @@
+looptest
+{
+
+  out := stdout;
+
+  chck(b bool, msg string)
+  {
+    s string;
+    if b
+      {
+        s = "PASSED: ";
+      }
+    else
+      {
+        s = "FAILED: ";
+      }
+    out.println(s + msg);
+  }
+
+  a := Array<i32>(100, fun (i i32) => { if (i % 23 == 0) { -2*i } else { i*i } });
+
+  out.println("testLoop0: plain while loop");
+  testLoop0(data Array<i32>, isWhatWeWant fun (i32) bool)
+  {
+    found := false;
+    ix := 0;
+    while ix < data.length && !found
+    {
+      element := data[ix];
+      if isWhatWeWant(element)
+      {
+        out.println("We found it at " + ix + ": " + element);
+        found = true;
+      }
+      ix = ix + 1;
+    }
+    if !found
+    {
+      out.println("Not found! ix is " + ix);
+    }
+  }
+
+  out.print("searching first smaller   -50: "); testLoop0(a, fun (i i32) => i <    -50);
+  out.print("searching first smaller  -100: "); testLoop0(a, fun (i i32) => i <   -100);
+  out.print("searching first larger     10: "); testLoop0(a, fun (i i32) => i >     10);
+  out.print("searching first larger    100: "); testLoop0(a, fun (i i32) => i >    100);
+  out.print("searching first larger   1000: "); testLoop0(a, fun (i i32) => i >   1000);
+  out.print("searching first larger  10000: "); testLoop0(a, fun (i i32) => i >  10000);
+  out.print("searching first larger 100000: "); testLoop0(a, fun (i i32) => i > 100000);
+
+  out.println("testLoop1: plain while-until loop");
+  testLoop1(data Array<i32>, isWhatWeWant fun (i32) bool)
+  {
+    ix := 0;
+    while ix < data.length
+    {
+      element := data[ix];
+      ix = ix + 1;
+    }
+    until isWhatWeWant(element)
+    {
+      out.println("We found it at " + ix + ": " + element);
+    }
+    else
+    {
+      out.println("Not found! ix is " + ix);
+    }
+  }
+
+  out.print("searching first smaller   -50: "); testLoop1(a, fun (i i32) => i <    -50);
+  out.print("searching first smaller  -100: "); testLoop1(a, fun (i i32) => i <   -100);
+  out.print("searching first larger     10: "); testLoop1(a, fun (i i32) => i >     10);
+  out.print("searching first larger    100: "); testLoop1(a, fun (i i32) => i >    100);
+  out.print("searching first larger   1000: "); testLoop1(a, fun (i i32) => i >   1000);
+  out.print("searching first larger  10000: "); testLoop1(a, fun (i i32) => i >  10000);
+  out.print("searching first larger 100000: "); testLoop1(a, fun (i i32) => i > 100000);
+
+  out.println("testLoop2: loop with index variables");
+  testLoop2(data Array<i32>, isWhatWeWant fun (i32) bool)
+  {
+    for ix := 0, ix + 1
+    while ix < data.length
+    {
+      element := data[ix];
+    }
+    until isWhatWeWant(element)
+    {
+      out.println("We found it at " + ix + ": " + element);
+    }
+    else
+    {
+      out.println("Not found! ix is " + ix);
+    }
+  }
+
+  out.print("searching first smaller   -50: "); testLoop2(a, fun (i i32) => i <    -50);
+  out.print("searching first smaller  -100: "); testLoop2(a, fun (i i32) => i <   -100);
+  out.print("searching first larger     10: "); testLoop2(a, fun (i i32) => i >     10);
+  out.print("searching first larger    100: "); testLoop2(a, fun (i i32) => i >    100);
+  out.print("searching first larger   1000: "); testLoop2(a, fun (i i32) => i >   1000);
+  out.print("searching first larger  10000: "); testLoop2(a, fun (i i32) => i >  10000);
+  out.print("searching first larger 100000: "); testLoop2(a, fun (i i32) => i > 100000);
+
+  out.println("testLoop3: loop with index variables, variant and invariant");
+  testLoop3(data Array<i32>, isWhatWeWant fun (i32) bool)
+  {
+    for ix := 0, ix + 1
+    variant data.length - ix
+    invariant (0..ix-1) ∀ (fun (x i32) => !isWhatWeWant(data[x]))
+    while ix < data.length
+    {
+      element := data[ix];
+    }
+    until isWhatWeWant(element)
+    {
+      out.println("We found it at " + ix + ": " + element);
+    }
+    else
+    {
+      out.println("Not found! ix is " + ix);
+    }
+  }
+
+  out.print("searching first smaller   -50: "); testLoop3(a, fun (i i32) => i <    -50);
+  out.print("searching first smaller  -100: "); testLoop3(a, fun (i i32) => i <   -100);
+  out.print("searching first larger     10: "); testLoop3(a, fun (i i32) => i >     10);
+  out.print("searching first larger    100: "); testLoop3(a, fun (i i32) => i >    100);
+  out.print("searching first larger   1000: "); testLoop3(a, fun (i i32) => i >   1000);
+  out.print("searching first larger  10000: "); testLoop3(a, fun (i i32) => i >  10000);
+  out.print("searching first larger 100000: "); testLoop3(a, fun (i i32) => i > 100000);
+
+  out.println("testLoop4: loop with index variables, empty body");
+  testLoop4(data Array<i32>, isWhatWeWant fun (i32) bool)
+  {
+    for ix := 0, ix + 1
+    variant data.length - ix
+    invariant (0..ix-1) ∀ (fun (x i32) => !isWhatWeWant(data[x]))
+    while ix < data.length
+    until isWhatWeWant(data[ix])
+    {
+      out.println("We found it at " + ix + ": " + data[ix]);
+    }
+    else
+    {
+      out.println("Not found! ix is " + ix);
+    }
+  }
+
+  out.print("searching first smaller   -50: "); testLoop4(a, fun (i i32) => i <    -50);
+  out.print("searching first smaller  -100: "); testLoop4(a, fun (i i32) => i <   -100);
+  out.print("searching first larger     10: "); testLoop4(a, fun (i i32) => i >     10);
+  out.print("searching first larger    100: "); testLoop4(a, fun (i i32) => i >    100);
+  out.print("searching first larger   1000: "); testLoop4(a, fun (i i32) => i >   1000);
+  out.print("searching first larger  10000: "); testLoop4(a, fun (i i32) => i >  10000);
+  out.print("searching first larger 100000: "); testLoop4(a, fun (i i32) => i > 100000);
+
+  out.println("testLoop5: loop with index variables, no while and empty body");
+  testLoop5(data Array<i32>, isWhatWeWant fun (i32) bool)
+  {
+    for ix := 0, ix + 1
+    variant data.length - ix
+    invariant (0..ix-1) ∀ (fun (x i32) => !isWhatWeWant(data[x]))
+    until ix >= data.length || isWhatWeWant(data[ix])
+    {
+      if (ix < data.length)
+      {
+        out.println("We found it at " + ix + ": " + data[ix]);
+      }
+      else
+      {
+        out.println("Not found! ix is " + ix);
+      }
+    }
+  }
+
+  out.print("searching first smaller   -50: "); testLoop5(a, fun (i i32) => i <    -50);
+  out.print("searching first smaller  -100: "); testLoop5(a, fun (i i32) => i <   -100);
+  out.print("searching first larger     10: "); testLoop5(a, fun (i i32) => i >     10);
+  out.print("searching first larger    100: "); testLoop5(a, fun (i i32) => i >    100);
+  out.print("searching first larger   1000: "); testLoop5(a, fun (i i32) => i >   1000);
+  out.print("searching first larger  10000: "); testLoop5(a, fun (i i32) => i >  10000);
+  out.print("searching first larger 100000: "); testLoop5(a, fun (i i32) => i > 100000);
+
+  out.println("testLoop6: loop which returns a string");
+  testLoop6(data Array<i32>, isWhatWeWant fun (i32) bool) =>
+  {
+    for ix := 0, ix + 1
+    variant data.length - ix
+    invariant (0..ix-1) ∀ (fun (x i32) => !isWhatWeWant(data[x]))
+    while ix < data.length
+    {
+      element := data[ix];
+    }
+    until isWhatWeWant(element)
+    {
+      element
+    }
+    else
+    {
+      -999999
+    }
+  }
+
+  out.print("searching first smaller   -50: "); out.print(testLoop6(a, fun (i i32) => i <    -50)); out.println;
+  out.print("searching first smaller  -100: "); out.print(testLoop6(a, fun (i i32) => i <   -100)); out.println;
+  out.print("searching first larger     10: "); out.print(testLoop6(a, fun (i i32) => i >     10)); out.println;
+  out.print("searching first larger    100: "); out.print(testLoop6(a, fun (i i32) => i >    100)); out.println;
+  out.print("searching first larger   1000: "); out.print(testLoop6(a, fun (i i32) => i >   1000)); out.println;
+  out.print("searching first larger  10000: "); out.print(testLoop6(a, fun (i i32) => i >  10000)); out.println;
+  out.print("searching first larger 100000: "); out.print(testLoop6(a, fun (i i32) => i > 100000)); out.println;
+
+  out.println("testLoop7: loop return 3333 on success and 4444 in else branch");
+  testLoop7(data Array<i32>, isWhatWeWant fun (i32) bool) i32
+  {
+    for ix := 0, ix + 1;
+    while ix < data.length
+    {
+      element := data[ix];
+    }
+    until isWhatWeWant(data[ix])
+    {
+      3333
+    }
+    else
+    {
+      4444
+    }
+  }
+  chck(testLoop7(a, fun (i i32) => i >    100) == 3333, "testLoop7 returns 3333 in until branch");
+  chck(testLoop7(a, fun (i i32) => i >  10000) == 4444, "testLoop7 returns 4444 in else branch");
+
+  out.print("testLoop8: loop return success index as default and 4444 in else branch");
+  testLoop8(data Array<i32>, isWhatWeWant fun (i32) bool) i32
+  {
+    for ix := 0, ix + 1;
+    while ix < data.length
+    {
+      element := data[ix];
+      ix
+    }
+    until isWhatWeWant(data[ix])
+    else
+    {
+      4444
+    }
+  }
+  chck(testLoop8(a, fun (i i32) => i >    100) ==   11, "testLoop8 returns   11 in index branch");
+  chck(testLoop8(a, fun (i i32) => i >  10000) == 4444, "testLoop8 returns 4444 in else branch");
+
+  out.println("testLoop9: loop return 3333 on success, index as default");
+  testLoop9(data Array<i32>, isWhatWeWant fun (i32) bool) i32
+  {
+    for ix := 0, ix + 1;
+    while ix < data.length
+    {
+      element := data[ix];
+    }
+    until isWhatWeWant(data[ix])
+    {
+      3333
+    }
+  }
+  chck(testLoop9(a, fun (i i32) => i >    100) == 3333, "testLoop9 returns 3333 in until branch");
+  chck(testLoop9(a, fun (i i32) => i >  10000) ==  100, "testLoop9 returns  100 in index branch");
+
+  out.println("testLoop10: loop return 4444 on else branch, no success possible");
+  testLoop10(data Array<i32>, isWhatWeWant fun (i32) bool) i32
+  {
+    for ix := 0, ix + 1;
+    while ix < data.length
+    {
+      element := data[ix];
+    }
+    else
+    {
+      4444
+    }
+  }
+  chck(testLoop10(a, fun (i i32) => i >    100) == 4444, "testLoop10 returns 4444 in else branch");
+  chck(testLoop10(a, fun (i i32) => i >  10000) == 4444, "testLoop10 returns 4444 in else branch")
+
+  out.println("testLoop11: loop returns last index");
+  testLoop11(data Array<i32>, isWhatWeWant fun (i32) bool) i32
+  {
+    for ix := 0, ix + 1;
+    while ix < data.length;
+  }
+  chck(testLoop11(a, fun (i i32) => i >    100) ==  100, "testLoop11 returns 100 in index branch");
+  chck(testLoop11(a, fun (i i32) => i >  10000) ==  100, "testLoop11 returns 100 in index branch");
+
+  out.println("testLoop12: loop returns found or not");
+  testLoop12(data Array<i32>, isWhatWeWant fun (i32) bool) bool
+  {
+    for
+      ix := 0, ix + 1;
+      found := false, found || isWhatWeWant(data[ix-1]);
+    while ix < data.length;
+  }
+  chck(testLoop12(a, fun (i i32) => i >    100) <=>  true , "testLoop12 returns true  in index branch");
+  chck(testLoop12(a, fun (i i32) => i >  10000) <=> false, "testLoop12 returns false in index branch");
+
+  out.println("testLoop13: sum up the elements");
+  testLoop13(data Array<i32>) i32
+  {
+    for
+      ix  := 0, ix + 1;
+      sum := 0, sum + data[ix - 1];
+    while ix < data.length
+  }
+  chck(testLoop13(a) ==  312020, "testLoop13 returns 312020 in index branch");
+
+  testWriteToDeclaredVar =>
+  {
+    for
+      i i32 = 0, i+2;
+      j := 100, i*i;
+    until i >= 100
+      {
+        (i, j)
+      }
+  }
+  chck(testWriteToDeclaredVar.values.0 == 100  , "testWriteToDeclaredVar returns (100, 10000)");
+  chck(testWriteToDeclaredVar.values.1 == 10000, "testWriteToDeclaredVar returns (100, 10000)");
+
+  testWriteToDeclaredVar2 =>
+  {
+    for
+      i i32 = 0, i+2;
+      j := 100, i*i;
+    do
+      {
+        (i, j)
+      }
+    until i >= 100
+  }
+  chck(testWriteToDeclaredVar2.values.0 == 100  , "testWriteToDeclaredVar returns (100, 10000)");
+  chck(testWriteToDeclaredVar2.values.1 == 10000, "testWriteToDeclaredVar returns (100, 10000)");
+
+}

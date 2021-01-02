@@ -1,0 +1,8 @@
+doubledeclaration_negative {
+
+  cyclic1
+   {
+     a := 3;
+   }
+
+}

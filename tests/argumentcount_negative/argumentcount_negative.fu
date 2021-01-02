@@ -1,0 +1,60 @@
+generics_negative {
+
+  opengenerics11 ref : Function<i32>
+  {
+    redefine call() i32 { 42 };
+  }
+  opengenerics12 ref : Function<i32>
+  {
+    redefine call(x i32) i32 { 42 }; // 1. should flag an error, wrong number of arguments
+  }
+  opengenerics13 ref : Function<i32>
+  {
+    redefine call(x, y i32) i32 { 42 }; // 2. should flag an error, wrong number of arguments
+  }
+
+  opengenerics14 ref : Function<i32, bool>
+  {
+    redefine call() i32 { 42 }; // 3. should flag an error, wrong number of arguments
+  }
+  opengenerics15 ref : Function<i32, bool>
+  {
+    redefine call(x bool) i32 { 42 };
+  }
+  opengenerics16 ref : Function<i32, bool>
+  {
+    redefine call(x bool, y bool) i32 { 42 }; // 4. should flag an error, wrong number of arguments
+  }
+
+  opengenerics17 ref : Routine<>
+  {
+    redefine call() { };
+  }
+  opengenerics18 ref : Routine<>
+  {
+    redefine call(x i32) { }; // 5. should flag an error, wrong number of arguments
+  }
+  opengenerics19 ref : Routine<>
+  {
+    redefine call(x, y i32) { }; // 6. should flag an error, wrong number of arguments
+  }
+
+  opengenerics20 ref : Routine<bool>
+  {
+    redefine call() { }; // 7. should flag an error, wrong number of arguments
+  }
+  opengenerics21 ref : Routine<bool>
+  {
+    redefine call(x bool) { };
+  }
+  opengenerics22 ref : Routine<i32>
+  {
+    redefine call(x, y bool) { }; // 8. should flag an error, wrong number of arguments
+  }
+
+  r3 Routine<>         = opengenerics21;  // 9. should flag an error: incompatible number of generic arguments
+  r4 Routine<i32,bool> = opengenerics21;  // 10. should flag an error: incompatible number of generic arguments
+
+  f3 Function<i32,i32>   = opengenerics15;   // 11. should flag an error: incompatible types due to incompatible generics
+  f4 Function<bool,bool> = opengenerics15;   // 12. should flag an error: incompatible types due to incompatible generics
+}
