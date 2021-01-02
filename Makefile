@@ -17,7 +17,9 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of class ANY
+#  Source code of main Makefile
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
