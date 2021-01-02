@@ -157,7 +157,7 @@ CLASS_FILES_TOOLS          = $(CLASSES_DIR)/dev/flang/tools/__marker_for_make__
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
 .PHONY: all
-all: $(CLASS_FILES_TOOLS) $(FUZION_EBNF) $(BUILD_DIR)/lib
+all: $(CLASS_FILES_TOOLS) $(FUZION_EBNF) $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
 
 # phony target to compile all java sources
 .PHONY: javac
@@ -235,6 +235,11 @@ $(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(
 $(BUILD_DIR)/lib: lib
 	mkdir -p $(@D)
 	cp -rf $^ $@
+
+$(BUILD_DIR)/bin/fz: bin/fz
+	mkdir -p $(@D)
+	cp -rf $^ $@
+	chmod +x $@
 
 $(BUILD_DIR)/tests: tests
 	mkdir -p $(@D)
