@@ -233,9 +233,11 @@ $(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(
 	touch $@
 
 $(BUILD_DIR)/lib: lib
+	mkdir -p $(@D)
 	cp -rf $^ $@
 
 $(BUILD_DIR)/tests: tests
+	mkdir -p $(@D)
 	cp -rf $^ $@
 
 # phony target to run Fuzion tests and report number of failures
