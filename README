@@ -1,0 +1,19 @@
+The Fuzion language implementation
+==================================
+
+This is work under development, documentation is mostly not existing.
+
+Please check https://flang.dev for language and implementation design.
+
+To build:
+
+  > make
+
+To run an example:
+
+  > cd build
+  > export PATH=$PWD/bin:$PATH
+  > cd tests/rosettacode_factors_of_an_integer
+  > fz factors
+
+Have fun!
