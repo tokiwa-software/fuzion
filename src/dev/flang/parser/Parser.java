@@ -390,7 +390,7 @@ visiList    : e=visi ( COMMA visiList
   /**
    * Parse qualified name
    *
-qual        : name ( DOT qual
+qual        : name ( dot qual
                    |
                    )
             ;
@@ -412,7 +412,7 @@ qual        : name ( DOT qual
 name        : IDENT
             | opName
             | "ternary" QUESTION COLON
-            | "index" LBRACKET ( DOT DOT RBRACKET
+            | "index" LBRACKET ( ".." RBRACKET
                                | RBRACKET
                                )
             | "set" ( LBRACKET RBRACKET
@@ -648,11 +648,11 @@ featNames   : qual (COMMA featNames
   /**
    * Parse formGens
    *
-formGens    : LESS formGensBody MORE
-            | '<' '>'
+formGens    : "<" formGensBody ">"
+            | "<" ">"
             |
             ;
-formGensBody: l=genericList ( ELLIPSIS
+formGensBody: l=genericList ( "..."
                             |
                             )
             |
@@ -1098,7 +1098,7 @@ callList    : call ( COMMA callList
    * Parse call
    *
 call        : name ( actualGens actualArgs callTail
-                   | DOT ( INTEGER callTail
+                   | dot ( INTEGER callTail
                          | call
                    )
             ;
@@ -1178,7 +1178,7 @@ indexCall   : ( LBRACKET exprList RBRACKET
 callTail    : ( indexCall
               |
               )
-              ( DOT call
+              ( dot call
               |
               )
             ;
@@ -1201,8 +1201,8 @@ callTail    : ( indexCall
   /**
    * Parse actualGens
    *
-actualGens  : LESS typeList MORE
-            | LESS MORE
+actualGens  : "<" typeList ">"
+            | "<" ">"
             |
             ;
    */
@@ -1526,7 +1526,7 @@ tuple       : LPAREN RPAREN
    *
 term        : simpleterm ( indexCall
                          |
-                         )           ( DOT call
+                         )           ( dot call
                                      |
                                      )
             ;
@@ -2394,8 +2394,8 @@ assign      : name EQ exprInLine
 decompose   : decomp
             | decompDecl
             ;
-decomp      : '(' argNames ')' ('=' | ':=' ) exprInLine
-decompDecl  : formArgs          '='          exprInLine
+decomp      : "(" argNames ")" ("=" | ":=" ) exprInLine
+decompDecl  : formArgs          "="          exprInLine
             ;
    */
   Stmnt decompose()
@@ -2536,7 +2536,7 @@ anonymous   : returnType
   /**
    * Parse qualThis
    *
-qualThis    : name ( DOT name )* DOT "this"
+qualThis    : name ( dot name )* dot "this"
             ;
    */
   This qualThis()
@@ -2939,7 +2939,7 @@ funTypeArgs : LPAREN a=typeLst RPAREN
    * Parse simpletype
    *
 simpletype  : name actualGens
-              ( DOT simpletype
+              ( dot simpletype
               |
               )
             ;
@@ -3053,7 +3053,7 @@ comma       : COMMA
   /**
    * Parse colon if it is found
    *
-colon       : ':'
+colon       : ":"
             ;
    *
    * @return true iff a colon was found and skipped.
@@ -3065,12 +3065,12 @@ colon       : ':'
 
 
   /**
-   * Parse '.' if it is found
+   * Parse "." if it is found
    *
-DOT         : '.'
+dot         : "."
             ;
    *
-   * @return true iff a '.' was found and skipped.
+   * @return true iff a "." was found and skipped.
    */
   boolean skipDot()
   {
@@ -3087,12 +3087,12 @@ DOT         : '.'
 
 
   /**
-   * Parse '(' if it is found
+   * Parse "(" if it is found
    *
-LPAREN      : '('
+LPAREN      : "("
             ;
    *
-   * @return true iff a '(' was found and skipped.
+   * @return true iff a "(" was found and skipped.
    */
   boolean skipLParen()
   {
