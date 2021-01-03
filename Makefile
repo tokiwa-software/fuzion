@@ -165,7 +165,7 @@ javac: $(CLASS_FILES_TOOLS)
 
 $(FUZION_EBNF): src/dev/flang/parser/Parser.java
 	mkdir -p $(@D)
-	which pcregrep && pcregrep -M "^[a-zA-Z].*:(\n|.)*?;" $^ >$@ || echo "*** need pcregrep tool installed" >$@
+	which pcregrep && pcregrep -M "^[a-zA-Z0-9]+[ ]*:(\n|.)*?;" $^ >$@ || echo "*** need pcregrep tool installed" >$@
 
 $(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)
