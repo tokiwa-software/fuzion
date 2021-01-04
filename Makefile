@@ -252,7 +252,7 @@ run_tests: $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib $(BUILD_DIR)/tests
 	for test in $(shell echo $(BUILD_DIR)/tests/*); do \
 	  FUSION="$(FUSIONX)" make -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
 	done
-	echo `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`ls tests | wc -l` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed; \
+	echo `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`ls $(BUILD_DIR)/tests | wc -l` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed; \
 	cat $(BUILD_DIR)/run_tests.results | grep failed$$
 
 clean:
