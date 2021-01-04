@@ -28,8 +28,7 @@ JAVA = java
 SRC = src
 BUILD_DIR = $(CURDIR)/build
 CLASSES_DIR = $(BUILD_DIR)/classes
-FUSION_HOME = $(BUILD_DIR)
-FUSIONX = $(JAVA) \$$(JAVA_OPTS) -cp $(FUSION_HOME)/classes dev.flang.tools.Fusion
+FUSIONX = $(JAVA) \$$(JAVA_OPTS) -cp $(CLASSES_DIR) dev.flang.tools.Fusion
 
 JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/ANY.java \
