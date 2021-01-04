@@ -25,7 +25,8 @@
 
 # must be at least java 11
 JAVA = java
-SRC = src
+FZ_SRC = $(CURDIR)
+SRC = $(FZ_SRC)/src
 BUILD_DIR = $(CURDIR)/build
 CLASSES_DIR = $(BUILD_DIR)/classes
 FUSIONX = $(JAVA) \$$(JAVA_OPTS) -cp $(CLASSES_DIR) dev.flang.tools.Fusion
@@ -157,7 +158,7 @@ CLASS_FILES_TOOLS          = $(CLASSES_DIR)/dev/flang/tools/__marker_for_make__
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
 .PHONY: all
-all: $(CLASS_FILES_TOOLS) $(FUZION_EBNF) $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
+all: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
 
 # phony target to compile all java sources
 .PHONY: javac
@@ -232,16 +233,16 @@ $(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(
 	javac -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS)
 	touch $@
 
-$(BUILD_DIR)/lib: lib
+$(BUILD_DIR)/lib: $(FZ_SRC)/lib
 	mkdir -p $(@D)
 	cp -rf $^ $@
 
-$(BUILD_DIR)/bin/fz: bin/fz
+$(BUILD_DIR)/bin/fz: $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib
 	mkdir -p $(@D)
-	cp -rf $^ $@
+	cp -rf $(FZ_SRC)/bin/fz $@
 	chmod +x $@
 
-$(BUILD_DIR)/tests: tests
+$(BUILD_DIR)/tests: $(FZ_SRC)/tests
 	mkdir -p $(@D)
 	cp -rf $^ $@
 
