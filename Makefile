@@ -25,120 +25,121 @@
 
 # must be at least java 11
 JAVA = java
+SRC = src
 BUILD_DIR = $(CURDIR)/build
 CLASSES_DIR = $(BUILD_DIR)/classes
 FUSION_HOME = $(BUILD_DIR)
 FUSIONX = $(JAVA) \$$(JAVA_OPTS) -cp $(FUSION_HOME)/classes dev.flang.tools.Fusion
 
 JAVA_FILES_UTIL = \
-          src/dev/flang/util/ANY.java \
-	  src/dev/flang/util/Errors.java \
-	  src/dev/flang/util/FusionOptions.java \
-	  src/dev/flang/util/List.java \
-	  src/dev/flang/util/Map2Int.java \
-	  src/dev/flang/util/MapComparable2Int.java \
-	  src/dev/flang/util/SourceFile.java \
-	  src/dev/flang/util/SourcePosition.java \
+          $(SRC)/dev/flang/util/ANY.java \
+          $(SRC)/dev/flang/util/Errors.java \
+          $(SRC)/dev/flang/util/FusionOptions.java \
+          $(SRC)/dev/flang/util/List.java \
+          $(SRC)/dev/flang/util/Map2Int.java \
+          $(SRC)/dev/flang/util/MapComparable2Int.java \
+          $(SRC)/dev/flang/util/SourceFile.java \
+          $(SRC)/dev/flang/util/SourcePosition.java \
 
 JAVA_FILES_AST = \
-          src/dev/flang/ast/AdrToValue.java \
-          src/dev/flang/ast/Assign.java \
-          src/dev/flang/ast/Block.java \
-          src/dev/flang/ast/BoolConst.java \
-          src/dev/flang/ast/Box.java \
-          src/dev/flang/ast/Call.java \
-	  src/dev/flang/ast/Case.java \
-          src/dev/flang/ast/Check.java \
-	  src/dev/flang/ast/Cond.java \
-          src/dev/flang/ast/Consts.java \
-          src/dev/flang/ast/Contract.java \
-	  src/dev/flang/ast/Current.java \
-	  src/dev/flang/ast/Decompose.java \
-          src/dev/flang/ast/Expr.java \
-          src/dev/flang/ast/FeErrors.java \
-          src/dev/flang/ast/Feature.java \
-          src/dev/flang/ast/FeatureName.java \
-	  src/dev/flang/ast/FeatureVisitor.java \
-	  src/dev/flang/ast/FormalGenerics.java \
-          src/dev/flang/ast/Function.java \
-	  src/dev/flang/ast/FunctionReturnType.java \
-	  src/dev/flang/ast/Generic.java \
-          src/dev/flang/ast/If.java \
-          src/dev/flang/ast/IntConst.java \
-          src/dev/flang/ast/Impl.java \
-	  src/dev/flang/ast/IncompatibleResultsOnBranches.java \
-          src/dev/flang/ast/Loop.java \
-	  src/dev/flang/ast/Match.java \
-	  src/dev/flang/ast/Nop.java \
-	  src/dev/flang/ast/NoType.java \
-          src/dev/flang/ast/Old.java \
-          src/dev/flang/ast/RefType.java \
-	  src/dev/flang/ast/Resolution.java \
-	  src/dev/flang/ast/ReturnType.java \
-	  src/dev/flang/ast/Singleton.java \
-          src/dev/flang/ast/SingleType.java \
-          src/dev/flang/ast/Stmnt.java \
-          src/dev/flang/ast/StrConst.java \
-          src/dev/flang/ast/This.java \
-	  src/dev/flang/ast/Type.java \
-	  src/dev/flang/ast/Types.java \
-          src/dev/flang/ast/ValueType.java \
-          src/dev/flang/ast/Visi.java \
+          $(SRC)/dev/flang/ast/AdrToValue.java \
+          $(SRC)/dev/flang/ast/Assign.java \
+          $(SRC)/dev/flang/ast/Block.java \
+          $(SRC)/dev/flang/ast/BoolConst.java \
+          $(SRC)/dev/flang/ast/Box.java \
+          $(SRC)/dev/flang/ast/Call.java \
+          $(SRC)/dev/flang/ast/Case.java \
+          $(SRC)/dev/flang/ast/Check.java \
+          $(SRC)/dev/flang/ast/Cond.java \
+          $(SRC)/dev/flang/ast/Consts.java \
+          $(SRC)/dev/flang/ast/Contract.java \
+          $(SRC)/dev/flang/ast/Current.java \
+          $(SRC)/dev/flang/ast/Decompose.java \
+          $(SRC)/dev/flang/ast/Expr.java \
+          $(SRC)/dev/flang/ast/FeErrors.java \
+          $(SRC)/dev/flang/ast/Feature.java \
+          $(SRC)/dev/flang/ast/FeatureName.java \
+          $(SRC)/dev/flang/ast/FeatureVisitor.java \
+          $(SRC)/dev/flang/ast/FormalGenerics.java \
+          $(SRC)/dev/flang/ast/Function.java \
+          $(SRC)/dev/flang/ast/FunctionReturnType.java \
+          $(SRC)/dev/flang/ast/Generic.java \
+          $(SRC)/dev/flang/ast/If.java \
+          $(SRC)/dev/flang/ast/IntConst.java \
+          $(SRC)/dev/flang/ast/Impl.java \
+          $(SRC)/dev/flang/ast/IncompatibleResultsOnBranches.java \
+          $(SRC)/dev/flang/ast/Loop.java \
+          $(SRC)/dev/flang/ast/Match.java \
+          $(SRC)/dev/flang/ast/Nop.java \
+          $(SRC)/dev/flang/ast/NoType.java \
+          $(SRC)/dev/flang/ast/Old.java \
+          $(SRC)/dev/flang/ast/RefType.java \
+          $(SRC)/dev/flang/ast/Resolution.java \
+          $(SRC)/dev/flang/ast/ReturnType.java \
+          $(SRC)/dev/flang/ast/Singleton.java \
+          $(SRC)/dev/flang/ast/SingleType.java \
+          $(SRC)/dev/flang/ast/Stmnt.java \
+          $(SRC)/dev/flang/ast/StrConst.java \
+          $(SRC)/dev/flang/ast/This.java \
+          $(SRC)/dev/flang/ast/Type.java \
+          $(SRC)/dev/flang/ast/Types.java \
+          $(SRC)/dev/flang/ast/ValueType.java \
+          $(SRC)/dev/flang/ast/Visi.java \
 
 JAVA_FILES_PARSER = \
-          src/dev/flang/parser/FList.java \
-          src/dev/flang/parser/Lexer.java \
-          src/dev/flang/parser/Operator.java \
-          src/dev/flang/parser/OpExpr.java \
-          src/dev/flang/parser/Parser.java \
+          $(SRC)/dev/flang/parser/FList.java \
+          $(SRC)/dev/flang/parser/Lexer.java \
+          $(SRC)/dev/flang/parser/Operator.java \
+          $(SRC)/dev/flang/parser/OpExpr.java \
+          $(SRC)/dev/flang/parser/Parser.java \
 
 JAVA_FILES_IR = \
-          src/dev/flang/ir/Backend.java \
-          src/dev/flang/ir/BackendCallable.java \
-          src/dev/flang/ir/Clazz.java \
-          src/dev/flang/ir/Clazzes.java \
-          src/dev/flang/ir/DynamicBinding.java \
-          src/dev/flang/ir/IrErrors.java \
+          $(SRC)/dev/flang/ir/Backend.java \
+          $(SRC)/dev/flang/ir/BackendCallable.java \
+          $(SRC)/dev/flang/ir/Clazz.java \
+          $(SRC)/dev/flang/ir/Clazzes.java \
+          $(SRC)/dev/flang/ir/DynamicBinding.java \
+          $(SRC)/dev/flang/ir/IrErrors.java \
 
 JAVA_FILES_MIR = \
-          src/dev/flang/mir/MIR.java \
+          $(SRC)/dev/flang/mir/MIR.java \
 
 JAVA_FILES_FE = \
-          src/dev/flang/fe/FrontEnd.java \
-          src/dev/flang/fe/FrontEndOptions.java \
+          $(SRC)/dev/flang/fe/FrontEnd.java \
+          $(SRC)/dev/flang/fe/FrontEndOptions.java \
 
 JAVA_FILES_AIR = \
-          src/dev/flang/air/AIR.java \
+          $(SRC)/dev/flang/air/AIR.java \
 
 JAVA_FILES_ME = \
-          src/dev/flang/me/MiddleEnd.java \
+          $(SRC)/dev/flang/me/MiddleEnd.java \
 
 JAVA_FILES_FUIR = \
-          src/dev/flang/fuir/FUIR.java \
+          $(SRC)/dev/flang/fuir/FUIR.java \
 
 JAVA_FILES_OPT = \
-          src/dev/flang/opt/Optimizer.java \
+          $(SRC)/dev/flang/opt/Optimizer.java \
 
 JAVA_FILES_BE_INTERPRETER = \
-          src/dev/flang/be/interpreter/Callable.java \
-          src/dev/flang/be/interpreter/ChoiceIdAsRef.java \
-          src/dev/flang/be/interpreter/Instance.java \
-          src/dev/flang/be/interpreter/Interpreter.java \
-          src/dev/flang/be/interpreter/JavaInterface.java \
-          src/dev/flang/be/interpreter/LValue.java \
-          src/dev/flang/be/interpreter/NativeFeature.java \
-          src/dev/flang/be/interpreter/Value.java \
-          src/dev/flang/be/interpreter/boolValue.java \
-          src/dev/flang/be/interpreter/i32Value.java \
-          src/dev/flang/be/interpreter/i64Value.java \
-          src/dev/flang/be/interpreter/u32Value.java \
-          src/dev/flang/be/interpreter/u64Value.java \
+          $(SRC)/dev/flang/be/interpreter/Callable.java \
+          $(SRC)/dev/flang/be/interpreter/ChoiceIdAsRef.java \
+          $(SRC)/dev/flang/be/interpreter/Instance.java \
+          $(SRC)/dev/flang/be/interpreter/Interpreter.java \
+          $(SRC)/dev/flang/be/interpreter/JavaInterface.java \
+          $(SRC)/dev/flang/be/interpreter/LValue.java \
+          $(SRC)/dev/flang/be/interpreter/NativeFeature.java \
+          $(SRC)/dev/flang/be/interpreter/Value.java \
+          $(SRC)/dev/flang/be/interpreter/boolValue.java \
+          $(SRC)/dev/flang/be/interpreter/i32Value.java \
+          $(SRC)/dev/flang/be/interpreter/i64Value.java \
+          $(SRC)/dev/flang/be/interpreter/u32Value.java \
+          $(SRC)/dev/flang/be/interpreter/u64Value.java \
 
 JAVA_FILES_BE_C = \
-          src/dev/flang/be/c/C.java \
+          $(SRC)/dev/flang/be/c/C.java \
 
 JAVA_FILES_TOOLS = \
-          src/dev/flang/tools/Fusion.java \
+          $(SRC)/dev/flang/tools/Fusion.java \
 
 CLASS_FILES_UTIL           = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
 CLASS_FILES_AST            = $(CLASSES_DIR)/dev/flang/__marker_for_make__
@@ -163,7 +164,7 @@ all: $(CLASS_FILES_TOOLS) $(FUZION_EBNF) $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz $(
 .PHONY: javac
 javac: $(CLASS_FILES_TOOLS)
 
-$(FUZION_EBNF): src/dev/flang/parser/Parser.java
+$(FUZION_EBNF): $(SRC)/dev/flang/parser/Parser.java
 	mkdir -p $(@D)
 	which pcregrep && pcregrep -M "^[a-zA-Z0-9]+[ ]*:(\n|.)*?;" $^ >$@ || echo "*** need pcregrep tool installed" >$@
 
