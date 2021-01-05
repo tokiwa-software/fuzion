@@ -75,6 +75,9 @@ public class SourcePosition extends ANY implements Comparable
   /*--------------------------  constructors  ---------------------------*/
 
 
+  /**
+   * Create source position for given source file, line and column.
+   */
   public SourcePosition(SourceFile sourceFile, int l, int c)
   {
     if (PRECONDITIONS) require
