@@ -77,6 +77,12 @@ public class SourcePosition extends ANY implements Comparable
 
   /**
    * Create source position for given source file, line and column.
+   *
+   * @param sourceFile the source file
+   *
+   * @param l the line number, starting at 1
+   *
+   * @param c the colun, starting at 1.
    */
   public SourcePosition(SourceFile sourceFile, int l, int c)
   {
