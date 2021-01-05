@@ -39,7 +39,9 @@ import java.util.TreeSet;
 public class Errors extends ANY
 {
 
+
   /*----------------------------  constants  ----------------------------*/
+
 
   /**
    * String used for identifier, operators, etc. if their name is unknown due to
@@ -55,7 +57,7 @@ public class Errors extends ANY
    * Ser of errors that have been shown so far. This is used to avoid presenting
    * error repeatedly.
    */
-  static final TreeSet<Error> errors = new TreeSet<>();
+  private static final TreeSet<Error> _errors_ = new TreeSet<>();
 
 
   /**
@@ -64,7 +66,8 @@ public class Errors extends ANY
    * due to AST conversions done meanwhile, so we produce only one error in this
    * case.
    */
-  static final boolean DISTINGUISH_BY_DETAILMESSAGE = false;
+  private static final boolean DISTINGUISH_BY_DETAILMESSAGE = false;
+
 
   /**
    * Total number of errors encountered so far
@@ -222,9 +225,9 @@ public class Errors extends ANY
        detail != null);
 
     Error e = new Error(pos, msg, detail);
-    if (!errors.contains(e))
+    if (!_errors_.contains(e))
       {
-        errors.add(e);
+        _errors_.add(e);
         if (count > 0)
           {
             System.err.println("------------");
