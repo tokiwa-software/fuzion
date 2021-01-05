@@ -824,7 +824,7 @@ public class SourceFile extends ANY
    *
    * @param l a line number
    *
-   * @return if 0 < l < lines().length, the contents of that lines. Ohterwise,
+   * @return if 0 < l < lines().length, the contents of that line. Otherwise,
    * if l <= 0, "<line does not exist>", otherwise "<end of file>".
    */
   public String line(int l)
