@@ -35,6 +35,10 @@ import java.io.InputStreamReader;
 /**
  * SourcePosition represents a position in a source code file.
  *
+ * NYI: SourcePosition is quite expensive and typically allocated often as part
+ * of an parsed abstract syntax tree.  Instead, we could use an int or long id
+ * consisting of a file id an a byte offset in that file.
+ *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */
 public class SourcePosition extends ANY implements Comparable
@@ -43,10 +47,16 @@ public class SourcePosition extends ANY implements Comparable
   /*----------------------------  variables  ----------------------------*/
 
 
+  /**
+   * The source file this position refers to.
+   */
   public final SourceFile _sourceFile;
 
-  public final int line;
-  public final int column;
+  /**
+   * character position in _sourceFile.
+   */
+  private final int _line;
+  private final int _column;
 
 
   /**
@@ -71,8 +81,8 @@ public class SourcePosition extends ANY implements Comparable
       (sourceFile != null);
 
     this._sourceFile = sourceFile;
-    this.line = l;
-    this.column = c;
+    this._line = l;
+    this._column = c;
   }
 
 
@@ -123,14 +133,14 @@ public class SourcePosition extends ANY implements Comparable
   public String showInSource()
   {
     StringBuilder sb = new StringBuilder();
-    sb.append(_sourceFile.line(line));
+    sb.append(_sourceFile.line(_line));
 
     // add LF in case this is the last line of a file that does not end in a line break
     if (sb.length() > 0 && sb.charAt(sb.length()-1) != '\n')
       {
         sb.append("\n");
       }
-    for (int j=0; j < column-1; j++)
+    for (int j=0; j < _column-1; j++)
       {
         sb.append(' ');
       }
@@ -154,7 +164,7 @@ public class SourcePosition extends ANY implements Comparable
   {
     return isBuiltIn()
       ? "<built-in>:"
-      : fileName() + ":" + line + ":" + column + ":";
+      : fileName() + ":" + _line + ":" + _column + ":";
   }
 
 
@@ -174,11 +184,11 @@ public class SourcePosition extends ANY implements Comparable
     int result = fileName().compareTo(o.fileName());
     if (result == 0)
       {
-        result = line < o.line ? -1 : line > o.line ? +1 : 0;
+        result = _line < o._line ? -1 : _line > o._line ? +1 : 0;
       }
     if (result == 0)
       {
-        result = column < o.column ? -1 : column > o.column ? +1 : 0;
+        result = _column < o._column ? -1 : _column > o._column ? +1 : 0;
       }
     return result;
   }
