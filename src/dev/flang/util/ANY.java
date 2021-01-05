@@ -61,7 +61,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void require(boolean cond1) {
+  public static void require(boolean cond1)
+  {
     if (!cond1) throw new Error("require-condition1 failed!");
   }
 
@@ -75,7 +76,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void require(boolean cond1, boolean cond2) {
+  public static void require(boolean cond1, boolean cond2)
+  {
     if (!cond1) throw new Error("require-condition1 failed!");
     if (!cond2) throw new Error("require-condition2 failed!");
   }
@@ -92,7 +94,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void require(boolean cond1, boolean cond2, boolean cond3) {
+  public static void require(boolean cond1, boolean cond2, boolean cond3)
+  {
     if (!cond1) throw new Error("require-condition1 failed!");
     if (!cond2) throw new Error("require-condition2 failed!");
     if (!cond3) throw new Error("require-condition3 failed!");
@@ -112,7 +115,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void require(boolean cond1, boolean cond2, boolean cond3, boolean cond4) {
+  public static void require(boolean cond1, boolean cond2, boolean cond3, boolean cond4)
+  {
     if (!cond1) throw new Error("require-condition1 failed!");
     if (!cond2) throw new Error("require-condition2 failed!");
     if (!cond3) throw new Error("require-condition3 failed!");
@@ -135,7 +139,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void require(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5) {
+  public static void require(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5)
+  {
     if (!cond1) throw new Error("require-condition1 failed!");
     if (!cond2) throw new Error("require-condition2 failed!");
     if (!cond3) throw new Error("require-condition3 failed!");
@@ -161,7 +166,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void require(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6) {
+  public static void require(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6)
+  {
     if (!cond1) throw new Error("require-condition1 failed!");
     if (!cond2) throw new Error("require-condition2 failed!");
     if (!cond3) throw new Error("require-condition3 failed!");
@@ -190,7 +196,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void require(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6, boolean cond7) {
+  public static void require(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6, boolean cond7)
+  {
     if (!cond1) throw new Error("require-condition1 failed!");
     if (!cond2) throw new Error("require-condition2 failed!");
     if (!cond3) throw new Error("require-condition3 failed!");
@@ -211,7 +218,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void ensure(boolean cond1) {
+  public static void ensure(boolean cond1)
+  {
     if (!cond1)
       throw new Error("ensure-condition failed!");
   }
@@ -226,7 +234,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void ensure(boolean cond1, boolean cond2) {
+  public static void ensure(boolean cond1, boolean cond2)
+  {
     if (!cond1)
       throw new Error("ensure-condition1 failed!");
     if (!cond2)
@@ -245,7 +254,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void ensure(boolean cond1, boolean cond2, boolean cond3) {
+  public static void ensure(boolean cond1, boolean cond2, boolean cond3)
+  {
     if (!cond1)
       throw new Error("ensure-condition1 failed!");
     if (!cond2)
@@ -268,7 +278,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void ensure(boolean cond1, boolean cond2, boolean cond3, boolean cond4) {
+  public static void ensure(boolean cond1, boolean cond2, boolean cond3, boolean cond4)
+  {
     if (!cond1)
       throw new Error("ensure-condition1 failed!");
     if (!cond2)
@@ -295,7 +306,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void ensure(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5) {
+  public static void ensure(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5)
+  {
     if (!cond1)
       throw new Error("ensure-condition1 failed!");
     if (!cond2)
@@ -326,7 +338,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void ensure(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6) {
+  public static void ensure(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6)
+  {
     if (!cond1)
       throw new Error("ensure-condition1 failed!");
     if (!cond2)
@@ -352,7 +365,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void check(boolean cond1) {
+  public static void check(boolean cond1)
+  {
     if (!cond1)
       throw new Error("check-condition failed!");
   }
@@ -367,7 +381,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void check(boolean cond1, boolean cond2) {
+  public static void check(boolean cond1, boolean cond2)
+  {
     if (!cond1)
       throw new Error("check-condition1 failed!");
     if (!cond2)
@@ -386,7 +401,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void check(boolean cond1, boolean cond2, boolean cond3) {
+  public static void check(boolean cond1, boolean cond2, boolean cond3)
+  {
     if (!cond1)
       throw new Error("check-condition1 failed!");
     if (!cond2)
@@ -409,7 +425,8 @@ public class ANY
    *
    * @throws Error in case any argument is false
    */
-  public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4) {
+  public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4)
+  {
     if (!cond1)
       throw new Error("check-condition1 failed!");
     if (!cond2)
