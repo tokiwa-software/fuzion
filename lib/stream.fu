@@ -35,7 +35,7 @@ stream<T> ref is
   consume2(f fun (T) bool) { while hasNext && f(next); }
   filter(f fun (T) bool) ref : stream<T>
   {
-    cache T; // NYI: should be Option<T>;
+    cache T; # NYI: should be Option<T>;
     cacheOk bool = false;
     next2;
     redef hasNext => cacheOk;
@@ -63,12 +63,12 @@ stream<T> ref is
     until !res || !hasNext;
   }
 
-  // create a new stream that contains the first elements of this stream for
-  // which f(e) is false
-  //
+  # create a new stream that contains the first elements of this stream for
+  # which f(e) is false
+  #
   before(f fun (T) bool) ref : stream<T>
   {
-    nextCache := stream.this.next; // NYI should be Option<T> and set to None if !stream.this.hasNext
+    nextCache := stream.this.next; # NYI should be Option<T> and set to None if !stream.this.hasNext
     redef hasNext => !f(nextCache);
     redef next T
     {
@@ -84,9 +84,9 @@ stream<T> ref is
   }
   count i32
   {
-// NYI: This does not work yet:
-//    result = 0;
-//    consume(fun (x T) { result = result + 1; });
+# NYI: This does not work yet:
+#    result = 0;
+#    consume(fun (x T) { result = result + 1; });
     res := 0;
     consume(fun (x T) { res = res + 1; });
     res
@@ -97,8 +97,8 @@ stream<T> ref is
   {
     res string = "";
 
-    // NYI: x.asString does not work yet (becuase of generic type?)
-    // consume(fun (x T) { res = res + x.asString; if (hasNext) { res = res + ", " } });
+    # NYI: x.asString does not work yet (becuase of generic type?)
+    # consume(fun (x T) { res = res + x.asString; if (hasNext) { res = res + ", " } });
 
     s(o ref Object) => o.asString;
     consume(fun (x T) { res = res + s(x); if (hasNext) { res = (res + ", ") } });

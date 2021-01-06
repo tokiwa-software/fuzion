@@ -28,8 +28,8 @@
 choice<A...>
 {
 
-//a<X> X
-//  pre
-//    choice.this ? X => true, *=> false;
+#a<X> X
+#  pre
+#    choice.this ? X => true, *=> false;
 
 }

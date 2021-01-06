@@ -31,36 +31,36 @@
 #
 bool : choice<FALSE, TRUE> is
 
-  // not
+  # not
   prefix ! bool is intrinsic
 
-  // or with lazy evaluation
+  # or with lazy evaluation
   infix ||  (lazy other bool) bool is intrinsic
 
-  // and with lazy evaluation
+  # and with lazy evaluation
   infix &&  (lazy other bool) bool is intrinsic
 
-  // or
+  # or
   infix |   (other bool) => bool.this || other
 
-  // and
+  # and
   infix &   (other bool) => bool.this && other
 
-  // equivalence
-  //
-  // note that we do not use '==' for this to avoid confusion since
-  // a == b == c for booleans might not behave as expected
-  // ('true <=> false <=> false' evaluates to 'true')
+  # equivalence
+  #
+  # note that we do not use '==' for this to avoid confusion since
+  # a == b == c for booleans might not behave as expected
+  # ('true <=> false <=> false' evaluates to 'true')
   infix <=> (other bool) => if bool.this other else !other
 
-  // xor
+  # xor
   infix ^   (other bool) => if bool.this (!other) else  other
 
-  // implies
-  infix :   (lazy other bool) bool is intrinsic  // !bool.this || other
+  # implies
+  infix :   (lazy other bool) bool is intrinsic  # !bool.this || other
 
-  // ternary ? : -- NYI: This will be replaced by a more powerful match syntax
+  # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
   ternary ? : <T>(lazy a, b T) => if bool.this a else b
 
-  // human readable string
+  # human readable string
   redef asString => if bool.this "true" else "false"

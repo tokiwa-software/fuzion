@@ -23,6 +23,6 @@
 #
 # -----------------------------------------------------------------------
 
-// Current debug level, used by condition qualified debug(i32)
-//
+# Current debug level, used by condition qualified debug(i32)
+#
 debugLevel i32 is intrinsic

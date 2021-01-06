@@ -32,30 +32,30 @@ u32(val u32) : wrappingInteger<u32>, hasInterval<u32> is
   redef zero u32 is 0
   redef one  u32 is 1
 
-  // overflow checking
+  # overflow checking
 
-  // would negation -thiz cause an overflow?
+  # would negation -thiz cause an overflow?
   redef wrappedOnNeg => !isZero
 
-  // would addtion thiz + other cause an overflow or underflow?
+  # would addtion thiz + other cause an overflow or underflow?
   redef overflowOnAdd (other u32) => max -° u32.this < other
   redef underflowOnAdd(other u32) => false
 
-  // would subtraction thiz - other cause an overflow or underflow?
+  # would subtraction thiz - other cause an overflow or underflow?
   redef overflowOnSub (other u32) => false
   redef underflowOnSub(other u32) => u32.this < other
 
-  // would multiplication thiz * other cause an overflow or underflow?
+  # would multiplication thiz * other cause an overflow or underflow?
   redef overflowOnMul (other u32) => as_i64 *° other.as_i64 > max.as_i64
   redef underflowOnMul(other u32) => false
 
-  // neg, add, sub, mul with wrap-around semantics
+  # neg, add, sub, mul with wrap-around semantics
   redef prefix -° u32 is intrinsic
   redef infix +° (other u32) u32 is intrinsic
   redef infix -° (other u32) u32 is intrinsic
   redef infix *° (other u32) u32 is intrinsic
 
-  // division and remainder with check for div-by-zero
+  # division and remainder with check for div-by-zero
   redef infix / (other u32)
     pre
       safety: other != 0
@@ -65,19 +65,19 @@ u32(val u32) : wrappingInteger<u32>, hasInterval<u32> is
       safety: other != 0
    => mod(other)
 
-  // private division and remainder with crash in case of div-by-zero
+  # private division and remainder with crash in case of div-by-zero
   private div (other u32) u32 is intrinsic
   private mod (other u32) u32 is intrinsic
 
-  // bitwise and and or operations
+  # bitwise and and or operations
   redef infix &  (other u32) u32 is intrinsic
   redef infix |  (other u32) u32 is intrinsic
 
-  // shift operations (unsigned)
+  # shift operations (unsigned)
   redef infix >> (other u32) u32 is intrinsic
   redef infix << (other u32) u32 is intrinsic
 
-  // comparison
+  # comparison
   redef infix == (other u32) bool is intrinsic
   redef infix != (other u32) bool is intrinsic
   redef infix <  (other u32) bool is intrinsic

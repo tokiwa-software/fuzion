@@ -44,7 +44,7 @@ InitArray<T>
 
   infix + (v T) InitArray<T>
   post
-    true // NYI: len == old len + 1
+    true # NYI: len == old len + 1
   {
     nju := node(v, Nil);
     match (last)

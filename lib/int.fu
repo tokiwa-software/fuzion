@@ -25,4 +25,4 @@
 
 # int -- signed integer values of arbitrary size
 #
-int() : integer<int> is // NYI
+int() : integer<int> is # NYI

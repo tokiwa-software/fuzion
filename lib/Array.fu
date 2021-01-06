@@ -27,7 +27,7 @@
 #
 Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
 
-// private:
+# private:
 
   data Object = getData(length)
 
@@ -38,7 +38,7 @@ Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
   get(d Object, i i32) T is intrinsic
   setel (d Object, i i32, o T) is intrinsic
 
-// public:
+# public:
 
   indices => 0..length-1
 
@@ -51,8 +51,8 @@ Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
   set [ ] (i i32, o T)
     pre
       safety: 0 <= i < length
-  // post   NYI
-    //Array.this[i] == o;
+  # post   NYI
+    #Array.this[i] == o;
   is
     setel(data,i,o)
 

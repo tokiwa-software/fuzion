@@ -31,7 +31,7 @@
 # numeric result or false for a boolean result.
 numOption<T: numeric<T>> : choice<T, nil> is
 
-  // basic operations
+  # basic operations
   prefix +? numOption<T> is
     match numOption.this
       v T   => +v
@@ -83,7 +83,7 @@ numOption<T: numeric<T>> : choice<T, nil> is
                  _ nil => nil
       _ nil => nil
 
-  // comparison
+  # comparison
   infix ==? (other numOption<T>) bool is
     match numOption.this
       v T   => match other

@@ -41,7 +41,7 @@ streamable<T> ref is
 
   before(f fun (T) bool) stream<T> { asStream.before(f); }
 
-  filter   (f fun (T) bool) stream<T> { asStream.filter(f) } // NYI one-line comma separated decl "filter, infix |" does not work yet
+  filter   (f fun (T) bool) stream<T> { asStream.filter(f) } # NYI one-line comma separated decl "filter, infix |" does not work yet
   infix |& (f fun (T) bool) stream<T> { asStream.filter(f) };
 
   postfix | () stream<T> { asStream };

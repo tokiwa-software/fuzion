@@ -32,30 +32,30 @@ i32(val i32) : wrappingInteger<i32>, hasInterval<i32> is
   redef zero i32 is 0
   redef one  i32 is 1
 
-  // overflow checking
+  # overflow checking
 
-  // would negation -thiz cause an overflow?
+  # would negation -thiz cause an overflow?
   redef wrappedOnNeg => isMin
 
-  // would addtion thiz + other cause an overflow or underflow?
+  # would addtion thiz + other cause an overflow or underflow?
   redef overflowOnAdd (other i32) => i32.this > 0 && max -° i32.this < other
   redef underflowOnAdd(other i32) => i32.this < 0 && min -° i32.this > other
 
-  // would subtraction thiz - other cause an overflow or underflow?
+  # would subtraction thiz - other cause an overflow or underflow?
   redef overflowOnSub (other i32) => i32.this > 0 && i32.this -° max > other
   redef underflowOnSub(other i32) => i32.this < 0 && i32.this -° min < other
 
-  // would multiplication thiz * other cause an overflow or underflow?
+  # would multiplication thiz * other cause an overflow or underflow?
   redef overflowOnMul (other i32) => as_i64 *° other.as_i64 > max.as_i64
   redef underflowOnMul(other i32) => as_i64 *° other.as_i64 < min.as_i64
 
-  // neg, add, sub, mul with wrap-around semantics
+  # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i32 is intrinsic
   redef infix +° (other i32) i32 is intrinsic
   redef infix -° (other i32) i32 is intrinsic
   redef infix *° (other i32) i32 is intrinsic
 
-  // division and remainder with check for div-by-zero
+  # division and remainder with check for div-by-zero
   redef infix / (other i32)
     pre
       safety: other != 0
@@ -65,19 +65,19 @@ i32(val i32) : wrappingInteger<i32>, hasInterval<i32> is
       safety: other != 0
    => mod(other)
 
-  // private division and remainder with crash in case of div-by-zero
+  # private division and remainder with crash in case of div-by-zero
   private div (other i32) i32 is intrinsic
   private mod (other i32) i32 is intrinsic
 
-  // bitwise and and or operations
+  # bitwise and and or operations
   redef infix &  (other i32) i32 is intrinsic
   redef infix |  (other i32) i32 is intrinsic
 
-  // shift operations (signed)
+  # shift operations (signed)
   redef infix >> (other i32) i32 is intrinsic
   redef infix << (other i32) i32 is intrinsic
 
-  // comparison
+  # comparison
   redef infix == (other i32) bool is intrinsic
   redef infix != (other i32) bool is intrinsic
   redef infix <  (other i32) bool is intrinsic
@@ -85,7 +85,7 @@ i32(val i32) : wrappingInteger<i32>, hasInterval<i32> is
   redef infix >  (other i32) bool is intrinsic
   redef infix >= (other i32) bool is intrinsic
 
-  // conversion to u32, i64 and u64, with range check
+  # conversion to u32, i64 and u64, with range check
   as_u32 u32
     pre
       debug: i32.this >= 0
@@ -98,7 +98,7 @@ i32(val i32) : wrappingInteger<i32>, hasInterval<i32> is
     is
       as_i64.as_u64
 
-  // casting to unsigned, adding 1<<32 if negative
+  # casting to unsigned, adding 1<<32 if negative
   castTo_u32 u32 is intrinsic
   castTo_u64 u64 is castTo_u32.as_u64
 

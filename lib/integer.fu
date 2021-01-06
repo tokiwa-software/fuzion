@@ -32,17 +32,17 @@
 #
 integer<T : integer<T>> : numeric<T> is
 
-  // division remainder
+  # division remainder
   redef infix %  (other T) T
     pre
       safety: other != zero
   is abstract
 
-  // bitwise operations
+  # bitwise operations
   infix &  (other T) T is abstract
   infix |  (other T) T is abstract
 
-  // shift operations
+  # shift operations
   infix >> (other T) T
     pre
       safety: other.sign >= 0
@@ -53,9 +53,9 @@ integer<T : integer<T>> : numeric<T> is
       safety: other.sign >= 0
   is abstract
 
-  // greatest common divisor of integer.this and b
-  //
-  // note that this assumes zero to be divisible by any positive integer.
+  # greatest common divisor of integer.this and b
+  #
+  # note that this assumes zero to be divisible by any positive integer.
   gcd(b T) T
     pre
       safety: sign >= 0,
@@ -64,19 +64,19 @@ integer<T : integer<T>> : numeric<T> is
     if b == zero
       thiz
     else
-      b.gcd(thiz % b)  // tail recursion
+      b.gcd(thiz % b)  # tail recursion
 
-  // create a fraction
+  # create a fraction
   infix /-/ (other T) => fraction(thiz, other)
 
-  // the constant '10' in whatever integer implementation we have, maximum in case of overflow
+  # the constant '10' in whatever integer implementation we have, maximum in case of overflow
   ten => from_u32(10)
 
-  // the value corresponding to v in whatever integer implementation we have, maximum in case of overflow
+  # the value corresponding to v in whatever integer implementation we have, maximum in case of overflow
   from_u32(v u32) T is
     if v == 0 zero else from_u32(v-1) +^ one
 
-  // the u32 value corresponding to this
+  # the u32 value corresponding to this
   to_u32 u32
     pre
       thiz >= zero
@@ -97,11 +97,11 @@ integer<T : integer<T>> : numeric<T> is
 
   redef asString string is decimalStr
 
-  decimalStr ref : string is  // NYI: check why "ref" is needed here, make this an anonymous inner feature
+  decimalStr ref : string is  # NYI: check why "ref" is needed here, make this an anonymous inner feature
 
     redef asBytes => decimalBytes
 
-    decimalBytes ref : streamable<i32> is  // NYI: check why "ref" is needed here, make this an anonymous inner feature
+    decimalBytes ref : streamable<i32> is  # NYI: check why "ref" is needed here, make this an anonymous inner feature
 
       redef asStream => decimalBytesStream
 
@@ -114,7 +114,7 @@ integer<T : integer<T>> : numeric<T> is
             v i32 => ("-" + v).asBytes.asStream
             _ nil => ("-" + -(integer.this / ten) + -(integer.this % ten)).asBytes.asStream
 
-      posDecimalBytesStream ref : stream<i32> is  // NYI: check why "ref" is needed here, make this an anonymous inner feature
+      posDecimalBytesStream ref : stream<i32> is  # NYI: check why "ref" is needed here, make this an anonymous inner feature
         p := integer.this.highest10;
         redef hasNext => p.sign > 0;
         redef next =>

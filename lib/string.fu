@@ -27,34 +27,34 @@
 #
 string ref is
 
-  // converting a string to a string is just returning string.this
+  # converting a string to a string is just returning string.this
   redef asString => string.this
 
-  // any concrete string must implement asBytes
+  # any concrete string must implement asBytes
   asBytes ref streamable<i32> is abstract
 
-  // is this string empty?
+  # is this string empty?
   isEmpty => !asBytes.asStream.hasNext
 
-  // length of this string in bytes
+  # length of this string in bytes
   byteLength => asBytes.asStream.count
 
-  // concatenate string with string represenation of another object
-  infix + (other Object) ref : string  // NYI: code is very brittle: removing "ref" causes recursive value type error
+  # concatenate string with string represenation of another object
+  infix + (other Object) ref : string  # NYI: code is very brittle: removing "ref" causes recursive value type error
   {
     redef asBytes streamable<i32>
     {
-      byteStreamable  // NYI: this should be an anonymous inner feature
+      byteStreamable  # NYI: this should be an anonymous inner feature
     }
 
-    private byteStreamable ref : streamable<i32>  // NYI: code is very brittle: removing "ref" causes crash
+    private byteStreamable ref : streamable<i32>  # NYI: code is very brittle: removing "ref" causes crash
     {
       redef asStream stream<i32>
       {
-        byteStream  // NYI: this should be an anonymous inner feature
+        byteStream  # NYI: this should be an anonymous inner feature
       }
 
-      byteStream ref : stream<i32>  // NYI: code is very brittle: removing "ref" causes crash
+      byteStream ref : stream<i32>  # NYI: code is very brittle: removing "ref" causes crash
       {
         head := string.this   .asBytes.asStream;
         tail := other.asString.asBytes.asStream;
@@ -65,24 +65,24 @@ string ref is
     }
   }
 
-  // repeat string given number of times
-  infix * (n i32) ref : string  // NYI: code is very brittle: removing "ref" causes recursive value type error
+  # repeat string given number of times
+  infix * (n i32) ref : string  # NYI: code is very brittle: removing "ref" causes recursive value type error
   pre
     n >= 0
   {
     redef asBytes streamable<i32>
     {
-      byteStreamable  // NYI: this should be an anonymous inner feature
+      byteStreamable  # NYI: this should be an anonymous inner feature
     }
 
-    private byteStreamable ref : streamable<i32>  // NYI: code is very brittle: removing "ref" causes crash
+    private byteStreamable ref : streamable<i32>  # NYI: code is very brittle: removing "ref" causes crash
     {
       redef asStream stream<i32>
       {
-        byteStream  // NYI: this should be an anonymous inner feature
+        byteStream  # NYI: this should be an anonymous inner feature
       }
 
-      byteStream ref : stream<i32>  // NYI: code is very brittle: removing "ref" causes crash
+      byteStream ref : stream<i32>  # NYI: code is very brittle: removing "ref" causes crash
       {
         i := 0
         bytes := string.this.asBytes.asStream
@@ -104,7 +104,7 @@ string ref is
     }
   }
 
-  // compare string byte-by-byte with other string
+  # compare string byte-by-byte with other string
   infix == (other string) =>
   {
     s1 :=       asBytes.asStream

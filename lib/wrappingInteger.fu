@@ -31,27 +31,27 @@
 #
 wrappingInteger<T: wrappingInteger<T>> : integer<T> is
 
-  // overflow checking
+  # overflow checking
 
-  // would negation -thiz cause an overflow?
+  # would negation -thiz cause an overflow?
   wrappedOnNeg bool is abstract
 
-  // would addtion thiz + other cause an overflow or underflow?
+  # would addtion thiz + other cause an overflow or underflow?
   overflowOnAdd(other T) bool is abstract
   underflowOnAdd(other T) bool is abstract
   wrappedOnAdd(other T) => overflowOnAdd(other) || underflowOnAdd(other)
 
-  // would subtraction thiz - other cause an overflow or underflow?
+  # would subtraction thiz - other cause an overflow or underflow?
   overflowOnSub(other T) bool is abstract
   underflowOnSub(other T) bool is abstract
   wrappedOnSub(other T) => overflowOnSub(other) || underflowOnSub(other)
 
-  // would multiplication thiz * other cause an overflow or underflow?
+  # would multiplication thiz * other cause an overflow or underflow?
   overflowOnMul(other T) bool is abstract
   underflowOnMul(other T) bool is abstract
   wrappedOnMul(other T) => overflowOnMul(other) || underflowOnMul(other)
 
-  // neg, add, sub, mul with wrap-around semantics
+  # neg, add, sub, mul with wrap-around semantics
   prefix -° T is abstract
   infix +° (other T) T is abstract
   infix -° (other T) T is abstract
@@ -63,42 +63,42 @@ wrappingInteger<T: wrappingInteger<T>> : integer<T> is
   isMin => thiz == min
   isMax => thiz == max
 
-  // basic operations with runtime error on overflow
+  # basic operations with runtime error on overflow
 
-  // negation, with check for overflow
+  # negation, with check for overflow
   redef prefix - T
     pre
       debug: !wrappedOnNeg
   is -° thiz
 
-  // addition, with check for overflow
+  # addition, with check for overflow
   redef infix +  (other T) T
     pre
       debug: !overflowOnAdd(other),
       debug: !underflowOnAdd(other)
   is thiz +° other
 
-  // substraction, with check for overflow
+  # substraction, with check for overflow
   redef infix -  (other T) T
     pre
       debug: !overflowOnAdd(other),
       debug: !underflowOnAdd(other)
   is thiz -° other
 
-  // multiplication, with check for overflow
+  # multiplication, with check for overflow
   redef infix *  (other T) T
     pre
       debug: !overflowOnMul(other),
       debug: !underflowOnMul(other)
   is thiz *° other
 
-  // overflow checking operations
+  # overflow checking operations
   redef prefix -?          numOption<T> is if wrappedOnNeg        nil else -thiz
   redef infix +? (other T) numOption<T> is if wrappedOnAdd(other) nil else thiz + other
   redef infix -? (other T) numOption<T> is if wrappedOnSub(other) nil else thiz - other
   redef infix *? (other T) numOption<T> is if wrappedOnMul(other) nil else thiz * other
 
-  // saturating  operations
+  # saturating  operations
   redef prefix -^          => if wrappedOnNeg if thiz > zero min else max else - thiz
   redef infix +^ (other T) => if overflowOnAdd(other) max else if underflowOnAdd(other) min else thiz + other
   redef infix -^ (other T) => if overflowOnSub(other) max else if underflowOnSub(other) min else thiz - other

@@ -35,24 +35,24 @@
 # there are currently no checks or preconditions for overflows in the numerator
 # or the denominator.
 #
-fraction<B : integer<B>> (num,    // numerator
-                          den B   // denominatior
+fraction<B : integer<B>> (num,    # numerator
+                          den B   # denominatior
                           ) : numeric<fraction<B>>
   pre
-    safety: den.sign > 0 // denominator must be positive
+    safety: den.sign > 0 # denominator must be positive
 is
 
-// private:
+# private:
 
-  // just for brevity
+  # just for brevity
   a => fraction.this
 
-// public:
+# public:
 
-  // enable generic features in ancestors
+  # enable generic features in ancestors
   redef thiz => fraction.this
 
-  // reduce numerator and denominator by their gcd:
+  # reduce numerator and denominator by their gcd:
   reduce =>
     gcd := num.abs.gcd(den)
     if gcd == num.one
@@ -64,7 +64,7 @@ is
   redef zero => fraction(num.zero, num.one)
   redef one  => fraction(num.zero, num.one)
 
-  // basic operations
+  # basic operations
   redef prefix + => a
   redef infix +  (b fraction<B>) => fraction(num * b.den + b.num * den, den * b.den).reduce
   redef infix -  (b fraction<B>) => fraction(num * b.den - b.num * den, den * b.den).reduce
@@ -74,7 +74,7 @@ is
       safety: b != zero
   is fraction(num * b.den                  , den * b.num).reduce
 
-  // comparison
+  # comparison
   redef infix == (b fraction<B>) =>  (a - b).num.isZero
   redef infix != (b fraction<B>) => !(a - b).num.isZero
   redef infix <  (b fraction<B>) =>  (a - b).num.sign <  0

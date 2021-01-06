@@ -38,28 +38,28 @@ hasInterval<T: hasInterval<T>> : integer<hasInterval<T>> is
   infix >  (other T) bool is abstract
 */
 
-  // defining an integer interval from this to other, both inclusive
-  //
-  // special cases of interval a..b:
-  //
-  //   a <  b: the interval from a to b, both inclusive
-  //   a == b: the interval containing only one element, a
-  //   a >  b: an empty interval
+  # defining an integer interval from this to other, both inclusive
+  #
+  # special cases of interval a..b:
+  #
+  #   a <  b: the interval from a to b, both inclusive
+  #   a == b: the interval containing only one element, a
+  #   a >  b: an empty interval
   infix .. (upper T) : streamable<T>
   {
     lower T is thiz
-    // lower => hasInterval.this  // NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
+    # lower => hasInterval.this  # NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
 
     size T is if lower <= upper upper - lower + one else zero
 
-    // apply function f to all elements in this interval
+    # apply function f to all elements in this interval
     iterate(f fun (T)) is
       for
         x := lower, x + one
       while x <= upper
         f(x);
 
-    // create a stream of all the elements of this interval, in order.
+    # create a stream of all the elements of this interval, in order.
     redef asStream ref : stream<T> is
       x := lower
       redef hasNext bool is x <= upper
@@ -75,25 +75,25 @@ hasInterval<T: hasInterval<T>> : integer<hasInterval<T>> is
 
     before(f fun (T) bool) stream<T> { asStream.before(f); }
 
-    filter   (f fun (T) bool) stream<T> { asStream.filter(f) } // NYI one-line comma separated decl "filter, infix |" does not work yet
+    filter   (f fun (T) bool) stream<T> { asStream.filter(f) } # NYI one-line comma separated decl "filter, infix |" does not work yet
     infix |& (f fun (T) bool) stream<T> { asStream.filter(f) };
 
     infix & (f fun (T) bool) stream<T> { asStream.filter(f) };
 
     postfix | () stream<T> { asStream };
 
-    // Create a streamable that is steping through this interval skipping values. For a
-    // non-negative step parameter, the stream will return lower, lower+step,
-    // lower+2*step, etc. as long as these values are <= upper.
-    //
-    // For a negative step parameter, the stream will return upper, upper+step,
-    // upper+2*step, etc. as long as these values are >= lower.  Note that this means
-    // that a negative step will produce a non-empty stream for an empty interval with
-    // lower > upper!
-    //
+    # Create a streamable that is steping through this interval skipping values. For a
+    # non-negative step parameter, the stream will return lower, lower+step,
+    # lower+2*step, etc. as long as these values are <= upper.
+    #
+    # For a negative step parameter, the stream will return upper, upper+step,
+    # upper+2*step, etc. as long as these values are >= lower.  Note that this means
+    # that a negative step will produce a non-empty stream for an empty interval with
+    # lower > upper!
+    #
     infix : (step T) : streamable<T>
     {
-      // create a stream of all the elements of this interval, in order.
+      # create a stream of all the elements of this interval, in order.
       redef asStream ref : stream<T>
       {
         x := lower;
@@ -105,9 +105,9 @@ hasInterval<T: hasInterval<T>> : integer<hasInterval<T>> is
     }
   }
 
-  // the open interval this to the maximum T value
+  # the open interval this to the maximum T value
   postfix .. () infix .. is
-    // hasInterval.this..max   // NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
+    # hasInterval.this..max   # NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
     thiz..max
 
-  // postfix .. : infix .. (max); // NYI: check: this should have the same effect using a sub-class
+  # postfix .. : infix .. (max); # NYI: check: this should have the same effect using a sub-class

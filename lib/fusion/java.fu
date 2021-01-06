@@ -28,7 +28,7 @@ public fusion.java single is
   public getStaticField<T>(clazz string, field string) T is intrinsic
 
   public JavaObject(private javaRef Object) ref is
-  { // NYI! required!
+  { # NYI! required!
   }
 
   public callVirtual(method string,

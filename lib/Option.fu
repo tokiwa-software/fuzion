@@ -23,8 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
-// Option represents an optional value of type T
-//
-// NYI: move to universe.fu
+# Option represents an optional value of type T
+#
+# NYI: move to universe.fu
 
 Option<T> : choice<T, nil> is

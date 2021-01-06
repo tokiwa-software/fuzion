@@ -55,7 +55,7 @@ is
       safety: 0 <= i1 < length1,
       safety: 0 <= i2 < length2,
       safety: 0 <= i3 < length3
-//    post
-//      array.this[i1,i2] == o    -- NYI: There is no generic '==' operator (yet?)
+#    post
+#      array.this[i1,i2] == o    -- NYI: There is no generic '==' operator (yet?)
   is
     array.this[(i1 * length2 + i2) * length3 + i3] = o
