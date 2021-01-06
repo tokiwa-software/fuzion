@@ -573,11 +573,14 @@ public class Lexer extends SourceFile
             }
           case K_SHARP   :   // '#'
             {
-              token = codePointInLine(_curPos) == 1 ? skipUntilEOL() // comment until end of line
-                                                    : skipOp();
+              boolean SHARP_COMMENT_ONLY_IF_IN_COL_1 = false;
+              token =
+                !SHARP_COMMENT_ONLY_IF_IN_COL_1 ||
+                codePointInLine(_curPos) == 1      ? skipUntilEOL() // comment until end of line
+                                                   : skipOp();
               break;
             }
-          case K_OP      :   // '+'|'-'|'*'|'%'|'|'|'~'|'#'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^'|'.')+;
+          case K_OP      :   // '+'|'-'|'*'|'%'|'|'|'~'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^'|'.')+;
             {
               token = skipOp();
               break;
