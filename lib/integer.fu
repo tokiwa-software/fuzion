@@ -67,7 +67,7 @@ integer<T : integer<T>> : numeric<T> is
       b.gcd(thiz % b)  // tail recursion
 
   // create a fraction
-  infix /-/ (other T) => fraction<T>(thiz, other)
+  infix /-/ (other T) => fraction(thiz, other)
 
   // the constant '10' in whatever integer implementation we have, maximum in case of overflow
   ten => from_u32(10)
