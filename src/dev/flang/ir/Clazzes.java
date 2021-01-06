@@ -263,8 +263,8 @@ public class Clazzes extends ANY
   {
     if (PRECONDITIONS) require
       (actualType == Types.intern(actualType),
-       Errors.count > 0 || !actualType.isGenericArgument(),
-       Errors.count > 0 || actualType.isFreeFromFormalGenerics());
+       Errors.count() > 0 || !actualType.isGenericArgument(),
+       Errors.count() > 0 || actualType.isFreeFromFormalGenerics());
 
     Clazz result = null;
     Clazz o = outer;
@@ -310,7 +310,7 @@ public class Clazzes extends ANY
         if (result == newcl)
           {
             check
-              (Errors.count > 0 || result.feature().state().atLeast(Feature.State.RESOLVED));
+              (Errors.count() > 0 || result.feature().state().atLeast(Feature.State.RESOLVED));
             if (result.feature().state().atLeast(Feature.State.RESOLVED))
               {
                 clazzesToBeVisited.add(result);
@@ -525,7 +525,7 @@ public class Clazzes extends ANY
       (a != null, outerClazz != null);
 
     check
-      (Errors.count > 0 || a.getOuter != null);
+      (Errors.count() > 0 || a.getOuter != null);
 
     if (a.getOuter != null)
       {
@@ -594,7 +594,7 @@ public class Clazzes extends ANY
   public static void findClazzes(Call c, Clazz outerClazz)
   {
     if (PRECONDITIONS) require
-      (Errors.count > 0 || c.calledFeature_ != null && c.target != null);
+      (Errors.count() > 0 || c.calledFeature_ != null && c.target != null);
 
     if (c.calledFeature_ == null  || c.target == null)
       {
@@ -832,7 +832,7 @@ public class Clazzes extends ANY
 
     else
       {
-        if (Errors.count == 0)
+        if (Errors.count() == 0)
           {
             throw new Error("" + e.getClass() + " should no longer exist at runtime");
           }
@@ -892,7 +892,7 @@ public class Clazzes extends ANY
   {
     if (PRECONDITIONS) require
       (!thiz.isOpenGeneric(),
-       Errors.count > 0 || thiz.isFreeFromFormalGenerics());
+       Errors.count() > 0 || thiz.isFreeFromFormalGenerics());
 
     Clazz outerClazz;
     if (thiz.outer() != null)

@@ -757,7 +757,7 @@ public class Feature extends ANY implements Stmnt, Comparable
     if (this.state().atLeast(State.RESOLVED_DECLARATIONS))
       {
         check(f.isAnonymousInnerFeature());
-        check(Errors.count > 0 || !this.declaredOrInheritedFeatures_.containsKey(fn));
+        check(Errors.count() > 0 || !this.declaredOrInheritedFeatures_.containsKey(fn));
         this.declaredOrInheritedFeatures_.put(fn, f);
       }
   }
@@ -856,7 +856,7 @@ public class Feature extends ANY implements Stmnt, Comparable
         for (Call p: inherits)
           {
             check
-              (Errors.count > 0 || p.calledFeature() != null);
+              (Errors.count() > 0 || p.calledFeature() != null);
 
             if (p.calledFeature() == Types.resolved.f_choice)
               {
@@ -885,7 +885,7 @@ public class Feature extends ANY implements Stmnt, Comparable
   {
     if (PRECONDITIONS) require
       (state_.atLeast(State.RESOLVING_TYPES),
-       Errors.count > 0);
+       Errors.count() > 0);
 
     if (this == Types.resolved.f_choice)
       { // if this == choice, there are only formal generics, so nothing to erase
@@ -895,7 +895,7 @@ public class Feature extends ANY implements Stmnt, Comparable
         for (Call p: inherits)
           {
             check
-              (Errors.count > 0 || p.calledFeature() != null);
+              (Errors.count() > 0 || p.calledFeature() != null);
 
             if (p.calledFeature() == Types.resolved.f_choice)
               {
@@ -1128,7 +1128,7 @@ public class Feature extends ANY implements Stmnt, Comparable
             p.isInheritanceCall_ = true;
             Feature parent = p.calledFeature();
             check
-              (Errors.count > 0 || parent != null);
+              (Errors.count() > 0 || parent != null);
             if (parent != null)
               {
                 parent.resolveInheritance(res);
@@ -1549,7 +1549,7 @@ public class Feature extends ANY implements Stmnt, Comparable
         // choice type is leaf
         Feature cf = p.calledFeature();
         check
-          (Errors.count > 0 || cf != null);
+          (Errors.count() > 0 || cf != null);
 
         if (cf != null && cf.isChoice() && cf != Types.resolved.f_choice)
           {
@@ -1666,7 +1666,7 @@ public class Feature extends ANY implements Stmnt, Comparable
     for (Feature frml : arguments)
       {
         check
-          (Errors.count > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
         Type frmlT = frml.resultType();
         check(frmlT == Types.intern(frmlT));
@@ -1860,7 +1860,7 @@ public class Feature extends ANY implements Stmnt, Comparable
     var a = handDown(new Type[] { t }, heir);
 
     check
-      (Errors.count > 0 || a.length == 1);
+      (Errors.count() > 0 || a.length == 1);
 
     return a.length == 1 ? a[0] : Types.t_ERROR;
   }
@@ -1949,7 +1949,7 @@ public class Feature extends ANY implements Stmnt, Comparable
                   {
                     // original arg list may be shorter if last arg is open generic:
                     check
-                      (Errors.count > 0 ||
+                      (Errors.count() > 0 ||
                        i < arguments.size() ||
                        arguments.get(arguments.size()-1).resultType().isOpenGeneric());
                     int ai = Math.min(arguments.size() - 1, i);
@@ -2540,7 +2540,7 @@ public class Feature extends ANY implements Stmnt, Comparable
       {
         Feature cf = p.calledFeature();
         check
-          (Errors.count > 0 || cf != null);
+          (Errors.count() > 0 || cf != null);
 
         if (cf != null)
           {
@@ -3099,13 +3099,13 @@ public class Feature extends ANY implements Stmnt, Comparable
   public Type resultType()
   {
     if (PRECONDITIONS) require
-      (Errors.count > 0 || state_.atLeast(State.RESOLVED_TYPES));
+      (Errors.count() > 0 || state_.atLeast(State.RESOLVED_TYPES));
 
     Type result = state_.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw() : null;
     if (result == null)
       {
         check
-          (Errors.count > 0);
+          (Errors.count() > 0);
 
         result = Types.t_ERROR;
       }
@@ -3201,9 +3201,9 @@ public class Feature extends ANY implements Stmnt, Comparable
 
     if (POSTCONDITIONS) ensure
       (result != null,
-       Errors.count > 0 || result.isRef() == isThisRef(),
+       Errors.count() > 0 || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.count > 0 || result.featureOfType() == this,
+       Errors.count() > 0 || result.featureOfType() == this,
        true || // this condition is very expensive to check and obviously true:
        !state_.atLeast(State.RESOLVED_TYPES) || result == Types.intern(result)
        );
@@ -3335,7 +3335,7 @@ public class Feature extends ANY implements Stmnt, Comparable
       {
         Feature cf = p.calledFeature();
         check
-          (Errors.count > 0 || cf != null);
+          (Errors.count() > 0 || cf != null);
 
         if (cf != null)
           {
@@ -3380,16 +3380,16 @@ public class Feature extends ANY implements Stmnt, Comparable
    */
   public int newFeatureIndex(String name) {
     indices_for = indices_for + "\n"+numFeatureIndices+": "+name;
-    if (Errors.count == 0 && declaredOrInheritedFeatures().size() <= numFeatureIndices) {
+    if (Errors.count() == 0 && declaredOrInheritedFeatures().size() <= numFeatureIndices) {
       System.out.println(""+declaredOrInheritedFeatures().size()+" >= "+numFeatureIndices+" for >>"+this._featureName.baseName()+"<<");
       //      System.out.println("INNER: "+declaredOrInheritedFeatures());
       System.out.println(indices_for);
     }
     if (PRECONDITIONS) require
-      (Errors.count > 0 || declaredOrInheritedFeatures().size() > numFeatureIndices);
+      (Errors.count() > 0 || declaredOrInheritedFeatures().size() > numFeatureIndices);
 
     int result;
-    if (Errors.count > 0 && numFeatureIndices >= declaredFeatures().size())
+    if (Errors.count() > 0 && numFeatureIndices >= declaredFeatures().size())
       {
         result = 0;
       }

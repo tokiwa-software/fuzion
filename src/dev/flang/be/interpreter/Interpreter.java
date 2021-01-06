@@ -598,7 +598,7 @@ public class Interpreter extends Backend
     if (innerClazz == null)
       {
         check
-          (Errors.count > 0);
+          (Errors.count() > 0);
         result = (args, argTypes) -> { Errors.fatal("null feature called"); return Value.NO_VALUE; };
       }
     else

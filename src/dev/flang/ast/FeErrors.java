@@ -284,7 +284,7 @@ public class FeErrors extends ANY
   static void whileConditionMustBeBool(SourcePosition pos, Type type)
   {
     check
-      (count > 0 || type != Types.t_ERROR);
+      (count() > 0 || type != Types.t_ERROR);
 
     if (type != Types.t_ERROR)
       {
@@ -297,7 +297,7 @@ public class FeErrors extends ANY
   static void untilConditionMustBeBool(SourcePosition pos, Type type)
   {
     check
-      (count > 0 || type != Types.t_ERROR);
+      (count() > 0 || type != Types.t_ERROR);
 
     if (type != Types.t_ERROR)
       {
@@ -310,7 +310,7 @@ public class FeErrors extends ANY
   static void ifConditionMustBeBool(SourcePosition pos, Type type)
   {
     check
-      (count > 0 || type != Types.t_ERROR);
+      (count() > 0 || type != Types.t_ERROR);
 
     if (type != Types.t_ERROR)
       {
@@ -514,7 +514,7 @@ public class FeErrors extends ANY
   static void missingResultTypeForField(Feature f)
   {
     check
-      (count > 0 || !f.featureName().baseName().equals(ERROR_STRING));
+      (count() > 0 || !f.featureName().baseName().equals(ERROR_STRING));
 
     if (!f.featureName().baseName().equals(ERROR_STRING))
       {
@@ -536,7 +536,7 @@ public class FeErrors extends ANY
   static void blockMustEndWithExpression(SourcePosition pos, Type expectedType)
   {
     check
-      (count > 0  || expectedType != Types.t_ERROR);
+      (count() > 0  || expectedType != Types.t_ERROR);
 
     if (expectedType != Types.t_ERROR)
       {

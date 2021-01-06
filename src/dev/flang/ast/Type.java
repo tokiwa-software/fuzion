@@ -571,7 +571,7 @@ public class Type extends ANY implements Comparable
     if (PRECONDITIONS) require
       (checkedForGeneric,
        t.checkedForGeneric,
-       Errors.count > 0 || !t.isOpenGeneric(),
+       Errors.count() > 0 || !t.isOpenGeneric(),
        featureOfType().generics.sizeMatches(_generics));
 
     Type result = t;
@@ -604,9 +604,9 @@ public class Type extends ANY implements Comparable
   {
     if (PRECONDITIONS) require
       (checkedForGeneric,
-       Errors.count > 0 ||
+       Errors.count() > 0 ||
        f.generics.sizeMatches(actualGenerics),
-       Errors.count > 0 || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics);
+       Errors.count() > 0 || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics);
 
     Type result = this;
     if (f != null)
@@ -658,7 +658,7 @@ public class Type extends ANY implements Comparable
   private static List<Type> actualTypes(Feature f, List<Type> genericsToReplace, List<Type> actualGenerics)
   {
     if (PRECONDITIONS) require
-      (Errors.count > 0 ||
+      (Errors.count() > 0 ||
        f.generics.sizeMatches(actualGenerics));
 
     List<Type> result = genericsToReplace;
@@ -876,7 +876,7 @@ public class Type extends ANY implements Comparable
             if (outer_.isGenericArgument())
               { // an error message was generated already during findGenerics()
                 check
-                  (Errors.count > 0);
+                  (Errors.count() > 0);
                 return Types.t_ERROR;
               }
             o = outer_.featureOfType();
@@ -1002,14 +1002,14 @@ public class Type extends ANY implements Comparable
   public Feature featureOfType()
   {
     if (PRECONDITIONS) require
-      (Errors.count > 0 || !isGenericArgument());
+      (Errors.count() > 0 || !isGenericArgument());
 
     Feature result = feature;
 
     if (result == null)
       {
         check
-          (Errors.count > 0);
+          (Errors.count() > 0);
 
         result = Types.f_ERROR;
       }
@@ -1154,7 +1154,7 @@ public class Type extends ANY implements Comparable
                name.equals(feature._featureName.baseName()) ||
                Types.INTERNAL_NAMES.contains(name) && feature.isUniverse(),
                generic == null || name.equals(generic._name),
-               (feature == null) ^ (generic == null) || (Errors.count > 0));
+               (feature == null) ^ (generic == null) || (Errors.count() > 0));
 
             result = name.compareTo(other.name);
           }
@@ -1249,7 +1249,7 @@ public class Type extends ANY implements Comparable
           }
         else if (generic != null)
           {
-            check(Errors.count > 0);
+            check(Errors.count() > 0);
           }
       }
     return result;
@@ -1265,7 +1265,7 @@ public class Type extends ANY implements Comparable
   private boolean isChoiceMatch(Type actual)
   {
     if (PRECONDITIONS) require
-      (feature != null || Errors.count > 0);
+      (feature != null || Errors.count() > 0);
 
     boolean result = false;
     if (feature != null && !isRef())
@@ -1314,9 +1314,9 @@ public class Type extends ANY implements Comparable
     if (PRECONDITIONS) require
       (Types.intern(this  ) == this,
        Types.intern(actual) == actual,
-       this  .feature != null || this  .isGenericArgument() || Errors.count > 0,
-       actual.feature != null || actual.isGenericArgument() || Errors.count > 0,
-       Errors.count > 0 || this != Types.t_ERROR && actual != Types.t_ERROR);
+       this  .feature != null || this  .isGenericArgument() || Errors.count() > 0,
+       actual.feature != null || actual.isGenericArgument() || Errors.count() > 0,
+       Errors.count() > 0 || this != Types.t_ERROR && actual != Types.t_ERROR);
 
     boolean result;
     if (assignableTo != null)
@@ -1345,7 +1345,7 @@ public class Type extends ANY implements Comparable
         if (isRef() /* && actual.isRef() -- NYI: allow autoboxing! */)
           {
             check
-              (actual.feature != null || Errors.count > 0);
+              (actual.feature != null || Errors.count() > 0);
             if (actual.feature != null)
               {
                 for (Call p: actual.feature.inherits)

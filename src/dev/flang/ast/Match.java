@@ -234,7 +234,7 @@ public class Match extends Expr
     Feature ct = sf.choiceTag_;
 
     check
-      (Errors.count > 0 || ct != null);
+      (Errors.count() > 0 || ct != null);
 
     if (ct != null)
       {

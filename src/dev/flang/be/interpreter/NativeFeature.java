@@ -270,7 +270,7 @@ public class NativeFeature extends ANY
              n.equals("bool.infix &&") ||
              n.equals("bool.infix :")   )
       {
-        if (Errors.count == 0)
+        if (Errors.count() == 0)
           {
             Errors.error(f.pos, "intrinsic feature not supported by backend",
                          "intrinsic '"+n+"' should be handled by front end");

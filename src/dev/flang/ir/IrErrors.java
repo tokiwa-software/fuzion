@@ -60,9 +60,9 @@ public class IrErrors extends ANY
        msg != null,
        detail != null);
 
-    int old = Errors.count;
+    int old = Errors.count();
     Errors.error(pos, msg, detail);
-    int delta = Errors.count - old;  // Errors detects duplicates, so the count might not have changed.
+    int delta = Errors.count() - old;  // Errors detects duplicates, so the count might not have changed.
     count += delta;
   }
 

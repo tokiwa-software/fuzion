@@ -436,7 +436,7 @@ public class Call extends Expr
     if (name == null)
       { /* this is an anonymous feature declaration */
         check
-          (Errors.count > 0  || calledFeature_ != null);
+          (Errors.count() > 0  || calledFeature_ != null);
 
         if (calledFeature_ != null)
           {
@@ -631,7 +631,7 @@ public class Call extends Expr
       {
         var targetFeature = targetFeature(res, thiz);
         check
-          (Errors.count > 0 || targetFeature != null);
+          (Errors.count() > 0 || targetFeature != null);
         if (targetFeature != null && targetFeature != Types.f_ERROR)
           {
             var fs = calledFeatureCandidates(targetFeature, res, thiz);
@@ -676,8 +676,8 @@ public class Call extends Expr
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count > 0 || calledFeature() != null,
-       Errors.count > 0 || target          != null);
+      (Errors.count() > 0 || calledFeature() != null,
+       Errors.count() > 0 || target          != null);
   }
 
 
@@ -688,7 +688,7 @@ public class Call extends Expr
   public Feature calledFeature()
   {
     if (PRECONDITIONS) require
-      (Errors.count > 0 || calledFeatureKnown());
+      (Errors.count() > 0 || calledFeatureKnown());
 
     Feature result = calledFeature_ != null ? calledFeature_ : Types.f_ERROR;
 
@@ -906,7 +906,7 @@ public class Call extends Expr
             // resolvedFormalArgumentTypes array would invalidate
             // argnum for following arguments.
             check
-              (Errors.count > 0 || argnum == resolvedFormalArgumentTypes.length - 1);
+              (Errors.count() > 0 || argnum == resolvedFormalArgumentTypes.length - 1);
             if (argnum != resolvedFormalArgumentTypes.length -1)
               {
                 a = new Type[] { Types.t_ERROR }; /* do not change resolvedFormalArgumentTypes array length */
@@ -918,7 +918,7 @@ public class Call extends Expr
     else
       {
         check
-          (Errors.count > 0 || argnum <= resolvedFormalArgumentTypes.length);
+          (Errors.count() > 0 || argnum <= resolvedFormalArgumentTypes.length);
 
         if (argnum < resolvedFormalArgumentTypes.length)
           {
@@ -952,7 +952,7 @@ public class Call extends Expr
     for (int i = 0; i < n; i++)
       {
         check
-          (Errors.count > 0 || argnum + i <= resolvedFormalArgumentTypes.length);
+          (Errors.count() > 0 || argnum + i <= resolvedFormalArgumentTypes.length);
 
         if (argnum + i < resolvedFormalArgumentTypes.length)
           {
@@ -1029,7 +1029,7 @@ public class Call extends Expr
     for (Feature frml : fargs)
       {
         check
-          (Errors.count > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
         int argnum = count;  // effectively final copy of count
         frml.whenResolvedTypes
@@ -1167,7 +1167,7 @@ public class Call extends Expr
     for (Feature frml : calledFeature_.arguments)
       {
         check
-          (Errors.count > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
         Type t = frml.resultTypeIfPresent(res, NO_GENERICS);
         if (t.isGenericArgument() && t.genericArgument().feature() == calledFeature_)
@@ -1268,7 +1268,7 @@ public class Call extends Expr
     FormalGenerics.resolve(generics, outer);
 
     check
-      (Errors.count > 0 || calledFeature_ != null);
+      (Errors.count() > 0 || calledFeature_ != null);
 
     if (calledFeature_ == null)
       {
@@ -1499,7 +1499,7 @@ public class Call extends Expr
   {
     Expr result = this;
     //    if (true) return result;
-    if (Errors.count == 0)
+    if (Errors.count() == 0)
       {
         // convert
         //   a && b into if a b     else false
@@ -1526,7 +1526,7 @@ public class Call extends Expr
   public void findUsedFeatures(Resolution res)
   {
     if (PRECONDITIONS) require
-      (Errors.count > 0 || calledFeature_ != null);
+      (Errors.count() > 0 || calledFeature_ != null);
 
     var cf = calledFeature_;
     if (cf != null)
@@ -1552,7 +1552,7 @@ public class Call extends Expr
   public boolean isDynamic()
   {
     if (PRECONDITIONS) require
-      (Errors.count > 0 || calledFeature_ != null);
+      (Errors.count() > 0 || calledFeature_ != null);
 
     var cf = calledFeature_;
     return

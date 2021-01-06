@@ -253,7 +253,7 @@ public class Assign extends ANY implements Stmnt
       {
         var fo = outer.findDeclaredInheritedOrOuterFeatures(name, null, decompose == null ? this : null, decompose);
         check
-          (Errors.count > 0 || fo == null || fo.features.size() == 1);
+          (Errors.count() > 0 || fo == null || fo.features.size() == 1);
         f = (fo == null || fo.features.size() == 0) ? null : fo.features.values().iterator().next();
       }
     if      (f == null                 ) { FeErrors.assignmentTargetNotFound(this,    outer); }
@@ -292,7 +292,7 @@ public class Assign extends ANY implements Stmnt
   public void propagateExpectedType(Resolution res, Feature outer)
   {
     check
-      (assignedField != null || Errors.count > 0);
+      (assignedField != null || Errors.count() > 0);
 
     if (assignedField != null)
       {
@@ -310,7 +310,7 @@ public class Assign extends ANY implements Stmnt
   public void box(Feature outer)
   {
     check
-      (assignedField != null || Errors.count > 0);
+      (assignedField != null || Errors.count() > 0);
 
     if (assignedField != null)
       {
@@ -328,7 +328,7 @@ public class Assign extends ANY implements Stmnt
   public void checkTypes()
   {
     check
-      (assignedField != null || Errors.count > 0);
+      (assignedField != null || Errors.count() > 0);
 
     if (assignedField != null)
       {
@@ -340,7 +340,7 @@ public class Assign extends ANY implements Stmnt
           (actlT == Types.intern(actlT));
 
         check
-          (Errors.count > 0 || (frmlT != Types.t_ERROR &&
+          (Errors.count() > 0 || (frmlT != Types.t_ERROR &&
                                 actlT != Types.t_ERROR    ));
 
         if (!frmlT.isAssignableFromOrContainsError(actlT))
@@ -349,7 +349,7 @@ public class Assign extends ANY implements Stmnt
           }
 
         check
-          (Errors.count > 0 || this.getOuter.type().featureOfType() == assignedField.outer());
+          (Errors.count() > 0 || this.getOuter.type().featureOfType() == assignedField.outer());
       }
   }
 

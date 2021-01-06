@@ -324,7 +324,7 @@ public class Generic extends ANY
   {
     if (PRECONDITIONS) require
       (!isOpen(),
-       Errors.count > 0 || _formalGenerics.sizeMatches(actualGenerics));
+       Errors.count() > 0 || _formalGenerics.sizeMatches(actualGenerics));
 
     Type result;
     if (_select >= 0)
@@ -350,7 +350,7 @@ public class Generic extends ANY
             i--;
           }
         check
-          (Errors.count > 0 || actuals.hasNext());
+          (Errors.count() > 0 || actuals.hasNext());
         result = actuals.hasNext() ? actuals.next() : Types.t_ERROR;
       }
     return result;

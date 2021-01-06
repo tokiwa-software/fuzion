@@ -194,8 +194,8 @@ Hellq is
   {
     if (PRECONDITIONS) require
       (!Clazzes.closed,
-       Errors.count > 0 || !actualType.isGenericArgument(),
-       Errors.count > 0 || actualType.isFreeFromFormalGenerics(),
+       Errors.count() > 0 || !actualType.isGenericArgument(),
+       Errors.count() > 0 || actualType.isFreeFromFormalGenerics(),
        actualType.featureOfType().outer() == null || outer.feature().inheritsFrom(actualType.featureOfType().outer()),
        actualType == Types.t_ERROR ||
        actualType == Types.t_VOID  || actualType.featureOfType().outer() != null || outer == null);
@@ -255,7 +255,7 @@ Hellq is
   public Type actualType(Type t)
   {
     if (PRECONDITIONS) require
-      (Errors.count > 0 || !t.isOpenGeneric());
+      (Errors.count() > 0 || !t.isOpenGeneric());
 
     t = type.actualType(t);
     if (outer != null)
@@ -274,7 +274,7 @@ Hellq is
   public Clazz actualClazz(Type t)
   {
     if (PRECONDITIONS) require
-      (Errors.count > 0 || !t.isOpenGeneric());
+      (Errors.count() > 0 || !t.isOpenGeneric());
 
     return Clazzes.clazz(actualType(t));
   }
@@ -362,7 +362,7 @@ Hellq is
   void layoutAndHandleCycle()
   {
     List<SourcePosition> cycle = layout();
-    if (cycle != null && Errors.count <= IrErrors.count)
+    if (cycle != null && Errors.count() <= IrErrors.count)
       {
         StringBuilder cycleString = new StringBuilder();
         for (SourcePosition p : cycle)
@@ -564,7 +564,7 @@ Hellq is
     Feature af = findRedefinition(f);
 
     check
-      (Errors.count > 0 || af != null);
+      (Errors.count() > 0 || af != null);
 
     Clazz innerClazz = null;
     if (af != null)
@@ -757,7 +757,7 @@ Hellq is
           Feature cf = c.calledFeature();
 
           check
-            (Errors.count > 0 || cf != null);
+            (Errors.count() > 0 || cf != null);
 
           if (cf != null)
             {
@@ -789,7 +789,7 @@ Hellq is
           {
             Feature af = findRedefinition(ff);
             check
-              (Errors.count > 0 || af != null);
+              (Errors.count() > 0 || af != null);
             if (af != null &&
                 (af.isField() ||
                  af.isSingleton() /* NYI: ugly, try to avoid special handling for SingleType here */)

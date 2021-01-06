@@ -72,7 +72,7 @@ public class Errors extends ANY
   /**
    * Total number of errors encountered so far
    */
-  public static int count = 0;
+  private static int _count_ = 0;
 
 
   /**
@@ -141,7 +141,7 @@ public class Errors extends ANY
    */
   public static int count()
   {
-    return count;
+    return _count_;
   }
 
 
@@ -155,8 +155,8 @@ public class Errors extends ANY
    */
   static String errorMessage(String s)
   {
-    count++;
-    return "error " + count + ": " + s;
+    _count_++;
+    return "error " + _count_ + ": " + s;
   }
 
 
@@ -228,12 +228,12 @@ public class Errors extends ANY
     if (!_errors_.contains(e))
       {
         _errors_.add(e);
-        if (count > 0)
+        if (_count_ > 0)
           {
             System.err.println("------------");
           }
         pos.show(errorMessage(msg), detail);
-        if (count >= MAX_ERROR_MESSAGES)
+        if (_count_ >= MAX_ERROR_MESSAGES)
           {
             showStatistics();
             System.exit(1);
@@ -270,7 +270,7 @@ public class Errors extends ANY
    */
   public static void showStatistics()
   {
-    println(singularOrPlural(count, "error"));
+    println(singularOrPlural(_count_, "error"));
   }
 
   public static String argumentsString(int count)

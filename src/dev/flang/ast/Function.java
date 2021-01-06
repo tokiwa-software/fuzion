@@ -319,7 +319,7 @@ public class Function extends Expr
       {
         Feature f = this.call_.calledFeature();
         check
-          (Errors.count > 0 || f != null);
+          (Errors.count() > 0 || f != null);
 
         if (f != null)
           {
@@ -381,7 +381,7 @@ public class Function extends Expr
     Feature f = this.feature_ == null ? this.call_.calledFeature()
                                       : this.feature_;
     check
-      (Errors.count > 0 || f != null);
+      (Errors.count() > 0 || f != null);
 
     if (f != null)
       {
@@ -402,7 +402,7 @@ public class Function extends Expr
     Feature f = this.feature_ == null ? this.call_.calledFeature()
                                       : this.feature_;
     check
-      (Errors.count > 0 || f != null);
+      (Errors.count() > 0 || f != null);
 
     if (f != null)
       {
@@ -475,7 +475,7 @@ public class Function extends Expr
   public Expr resolveSyntacticSugar2(Resolution res, Feature outer)
   {
     Expr result = this;
-    if (Errors.count == 0)  // avoid null pointer hdlg in case calledFeature not found etc.
+    if (Errors.count() == 0)  // avoid null pointer hdlg in case calledFeature not found etc.
       {
         if (this.feature_ == null)
           { /* We have an expression of the form

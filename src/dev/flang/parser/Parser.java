@@ -2030,7 +2030,7 @@ blockOpt    : block
       var indented = firstIndent > oldIndent;
       var ok = indented && progress;
       check
-        (Errors.count > 0 || progress);
+        (Errors.count() > 0 || progress);
       if (ok && lastLineNum != lineNum(pos))
         { // a new line, so check its indentation:
           var curIndent = indent(pos);

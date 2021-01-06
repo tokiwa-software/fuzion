@@ -74,7 +74,7 @@ public class AdrToValue extends Expr
       (pos != null,
        adr != null,
        adr.type().isRef(),
-       Errors.count > 0 || type.featureOfType() == outer,
+       Errors.count() > 0 || type.featureOfType() == outer,
        !type.featureOfType().isThisRef()
        );
 
