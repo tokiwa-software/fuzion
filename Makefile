@@ -256,6 +256,7 @@ run_tests: $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib $(BUILD_DIR)/tests
 	echo `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`ls $(BUILD_DIR)/tests | wc -l` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed; \
 	cat $(BUILD_DIR)/run_tests.results | grep failed$$
 
+.PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
 	find $(FZ_SRC) -name "*~" -exec rm {} \;
