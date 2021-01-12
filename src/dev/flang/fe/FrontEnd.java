@@ -209,9 +209,7 @@ public class FrontEnd extends ANY
                 Files.list(d._dir)
                   .forEach(p ->
                            {
-                             if ((p.getFileName().toString().endsWith(".fz") ||
-                                  p.getFileName().toString().endsWith(".fu") /* NYI: remove once no .fu files are left */)
-                                  && Files.isReadable(p))
+                             if (p.getFileName().toString().endsWith(".fz") && Files.isReadable(p))
                                {
                                  Feature inner = parseFile(p);
                                  check
