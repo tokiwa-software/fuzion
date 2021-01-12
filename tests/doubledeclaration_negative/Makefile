@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 NAME = doubledeclaration_negative
-EXPECTED_ERRORS = `cat *.fu | grep "should.flag.an.error"  | sed "s ^.*//  g"| sort -n | uniq | wc -l`
+EXPECTED_ERRORS = `cat *.fz | grep "should.flag.an.error"  | sed "s ^.*//  g"| sort -n | uniq | wc -l`
 
 all:
 	$(FUSION) $(NAME) 2>err.txt || echo -n

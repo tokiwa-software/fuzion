@@ -17,22 +17,15 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature FALSE
+#  Source code of Fuzion standard library feature false
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# boolean value "false"
+# boolean values "false" as a constant of type >>bool<<.
 #
-# Note that this value is of type >>FALSE<<, not of type >>bool<<, i.e., if it
-# is used for type inference as in
-#
-#    myBoolean := FALSE;
-#
-# you will get a variable of type >>FALSE<<, it will not be possible to assign
-# >>TRUE<< to it. You can use >>false<< as an alternative to get type >>bool<<.
-#
-# NYI: move to universe.fu
+# NYI: move to universe.fz
 
-FALSE { }
+# NYI: Make this a const field as soon as initializing fields in universe works
+false bool { FALSE };

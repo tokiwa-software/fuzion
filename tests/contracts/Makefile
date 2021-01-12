@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 NAME = SquareRoot
-EXPECTED_ERRORS = `cat $(NAME).fu | grep "should.flag.an.error"  | sed "s ^.*//  g"| sort -n | uniq | wc -l`
+EXPECTED_ERRORS = `cat $(NAME).fz | grep "should.flag.an.error"  | sed "s ^.*//  g"| sort -n | uniq | wc -l`
 
 all:
 	$(FUSION) $(NAME) 2>err.txt || echo -n

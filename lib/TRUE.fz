@@ -17,15 +17,22 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature true
+#  Source code of Fuzion standard library feature TRUE
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# boolean values "false" as a constant of type >>bool<<.
+# boolean value "true"
 #
-# NYI: move to universe.fu
+# Note that this value is of type >>TRUE<<, not of type >>bool<<, i.e., if it
+# is used for type inference as in
+#
+#    myBoolean := TRUE;
+#
+# you will get a variable of type >>TRUE<<, it will not be possible to assign
+# >>FALSE<< to it. You can use >>true<< as an alternative to get type >>bool<<.
+#
+# NYI: move to universe.fz
 
-# NYI: Make this a const field as soon as initializing fields in universe works
-true bool { TRUE };
+TRUE { }

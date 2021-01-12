@@ -146,7 +146,7 @@ public class Clazz extends ANY implements Comparable
   /**
    * NYI: under developemnt: An attempt to track the 'real' outer clazz, i.e.,
    * the outer clazz as seen through the inheritance chain.  Does not work well
-   * yet, see Hellq.fu:
+   * yet, see Hellq.fz:
 
 Hellq is
   a is

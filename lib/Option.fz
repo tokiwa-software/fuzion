@@ -17,22 +17,14 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature TRUE
+#  Source code of Fuzion standard library feature Option
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# boolean value "true"
+# Option represents an optional value of type T
 #
-# Note that this value is of type >>TRUE<<, not of type >>bool<<, i.e., if it
-# is used for type inference as in
-#
-#    myBoolean := TRUE;
-#
-# you will get a variable of type >>TRUE<<, it will not be possible to assign
-# >>FALSE<< to it. You can use >>true<< as an alternative to get type >>bool<<.
-#
-# NYI: move to universe.fu
+# NYI: move to universe.fz
 
-TRUE { }
+Option<T> : choice<T, nil> is

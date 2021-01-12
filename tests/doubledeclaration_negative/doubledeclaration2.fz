@@ -17,15 +17,10 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature false
+#  Source code of Fuzion test doubledeclaration2
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# boolean values "false" as a constant of type >>bool<<.
-#
-# NYI: move to universe.fu
-
-# NYI: Make this a const field as soon as initializing fields in universe works
-false bool { FALSE };
+doubledeclaration_negative.cyclic1.a := 4;  // 1. should flag an error, feauture already declared in doubledeclaration_negative.fz

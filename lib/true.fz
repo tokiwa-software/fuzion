@@ -17,14 +17,15 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature Option
+#  Source code of Fuzion standard library feature true
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# Option represents an optional value of type T
+# boolean values "false" as a constant of type >>bool<<.
 #
-# NYI: move to universe.fu
+# NYI: move to universe.fz
 
-Option<T> : choice<T, nil> is
+# NYI: Make this a const field as soon as initializing fields in universe works
+true bool { TRUE };

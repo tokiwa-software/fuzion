@@ -17,16 +17,22 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature nil
+#  Source code of Fuzion standard library feature FALSE
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# nil -- value for Options that are not present
+# boolean value "false"
 #
-# This is a dataless value that is preferred to represent instances that are
-# not present, e.g, in an Option.
+# Note that this value is of type >>FALSE<<, not of type >>bool<<, i.e., if it
+# is used for type inference as in
 #
-# NYI: move to universe.fu
-nil is
+#    myBoolean := FALSE;
+#
+# you will get a variable of type >>FALSE<<, it will not be possible to assign
+# >>TRUE<< to it. You can use >>false<< as an alternative to get type >>bool<<.
+#
+# NYI: move to universe.fz
+
+FALSE { }

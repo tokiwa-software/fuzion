@@ -156,11 +156,11 @@ public class FrontEnd extends ANY
 
 
   /**
-   * NYI: Under development: load universe from sys/universe.fu.
+   * NYI: Under development: load universe from sys/universe.fz.
    */
   Feature loadUniverse()
   {
-    Feature result = parseFile(FUSION_HOME.resolve("sys").resolve("universe.fu"));
+    Feature result = parseFile(FUSION_HOME.resolve("sys").resolve("universe.fz"));
     result.findDeclarations(null);
     new Resolution(_options, result, (r, f) -> loadInnerFeatures(r, f));
     return result;
@@ -209,7 +209,9 @@ public class FrontEnd extends ANY
                 Files.list(d._dir)
                   .forEach(p ->
                            {
-                             if (p.getFileName().toString().endsWith(".fu") && Files.isReadable(p))
+                             if ((p.getFileName().toString().endsWith(".fz") ||
+                                  p.getFileName().toString().endsWith(".fu") /* NYI: remove once no .fu files are left */)
+                                  && Files.isReadable(p))
                                {
                                  Feature inner = parseFile(p);
                                  check

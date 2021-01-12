@@ -17,10 +17,15 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion test doubledeclaration2
+#  Source code of Fuzion standard library feature void
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-doubledeclaration_negative.cyclic1.a := 4;  // 1. should flag an error, feauture already declared in doubledeclaration_negative.fu
+# void -- value to be used as result of features that do not return a result
+#
+# This is a dataless value that is intendend to be used to return no data.
+#
+# NYI: move to universe.fz
+void is
