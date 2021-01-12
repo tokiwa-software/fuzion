@@ -25,7 +25,7 @@
 
 # must be at least java 11
 JAVA = java
-FZ_SRC = $(CURDIR)
+FZ_SRC = $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = $(CURDIR)/build
 CLASSES_DIR = $(BUILD_DIR)/classes
@@ -258,4 +258,4 @@ run_tests: $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib $(BUILD_DIR)/tests
 
 clean:
 	rm -rf $(BUILD_DIR)
-	find . -name "*~" -exec rm {} \;
+	find $(FZ_SRC) -name "*~" -exec rm {} \;
