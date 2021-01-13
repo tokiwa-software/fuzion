@@ -311,6 +311,7 @@ public class C extends Backend
                   switch (_fuir.featureKind(cf))
                     {
                     case Routine  :
+                    case Intrinsic:
                       {
                         String n = featureMangledName(cf);
                         cout.println("" + n + "(");
@@ -324,15 +325,6 @@ public class C extends Backend
                         var t = stack.pop();
                         var tc = _fuir.callTargetClazz(cl, c, i);
                         stack.push(t + "[" + _fuir.callFieldOffset(tc, c, i) + "]");
-                        break;
-                      }
-                    case Intrinsic:
-                      {
-                        String n = featureMangledName(cf);
-                        cout.print("  " + n + "(");
-                        passArgs(stack, ac);
-                        cout.println(");");
-                        stack.push("(/*NYI: Call result of " + n + " */ 0)");
                         break;
                       }
                     case Abstract :
