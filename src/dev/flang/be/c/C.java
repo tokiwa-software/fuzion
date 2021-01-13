@@ -52,6 +52,16 @@ public class C extends Backend
 {
 
 
+  /*----------------------------  constants  ----------------------------*/
+
+
+  private enum CompilePhase
+  {
+    FORWARDS,
+    IMPLEMENTATIONS
+  }
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -114,20 +124,17 @@ public class C extends Backend
                      "} slot_t;\n"+
                      "void fz_exitForCompilerTest(int code) { exit(code); }\n"+
                      "void fz_fusion__std__out__write(int c) { char cc = (char) c; fwrite(&cc, 1, 1, stdout); }\n");
-        if (true)  // NYI: remove
+        for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
           {
-            for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
-              {
-                typesForClazz(c);
-              }
-            for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
-              {
-                compileClazz(c);
-              }
+            typesForClazz(c);
           }
-        else
+        for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
           {
-            compileClazz(cl);
+            compileClazz(c, CompilePhase.FORWARDS);
+          }
+        for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
+          {
+            compileClazz(c, CompilePhase.IMPLEMENTATIONS);
           }
         cout.println("int main(int argc, char **args) { " + featureMangledName(f) + "(); }\n");
       }
@@ -413,28 +420,51 @@ public class C extends Backend
   }
 
 
-  public void compileClazz(int cl)
+  public void compileClazz(int cl, CompilePhase phase)
   {
-    var f = _fuir.clazz2FeatureId(cl);
-    var name = _fuir.featureBaseName(f);
-    switch (_fuir.featureKind(f))
+    switch (phase)
       {
-      case Routine:
+      case FORWARDS:
         {
-          cout.print("void " + featureMangledName(f) + "() {\n"+
-                     " " + clazzTypeName(cl) + " *cur = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
-                     (_fuir.clazzIsRef(cl) ? " cur->clazzId = " + clazzId2num(cl) + ";\n" : ""));
-          var c = _fuir.featureCode(f);
-          var stack = new Stack<String>();
-          createCode(cl, stack, c);
-          cout.println("}");
+          var f = _fuir.clazz2FeatureId(cl);
+          switch (_fuir.featureKind(f))
+            {
+            case Routine:
+              {
+                cout.print("void " + featureMangledName(f) + "();\n");
+                break;
+              }
+            case Field:
+              break;
+            default:
+              break;
+            }
           break;
         }
-      case Field:
-        break;
-      default:
-        cout.println("// NYI: code for "+_fuir.featureKind(f)+" "+ featureMangledName(f));
-        break;
+      case IMPLEMENTATIONS:
+        {
+          var f = _fuir.clazz2FeatureId(cl);
+          switch (_fuir.featureKind(f))
+            {
+            case Routine:
+              {
+                cout.print("void " + featureMangledName(f) + "() {\n"+
+                           " " + clazzTypeName(cl) + " *cur = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
+                           (_fuir.clazzIsRef(cl) ? " cur->clazzId = " + clazzId2num(cl) + ";\n" : ""));
+                var c = _fuir.featureCode(f);
+                var stack = new Stack<String>();
+                createCode(cl, stack, c);
+                cout.println("}");
+                break;
+              }
+            case Field:
+              break;
+            default:
+              cout.println("// NYI: code for "+_fuir.featureKind(f)+" "+ featureMangledName(f));
+              break;
+            }
+          break;
+        }
       }
   }
 
