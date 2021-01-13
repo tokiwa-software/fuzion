@@ -104,8 +104,9 @@ public class C extends Backend
                      "#include <stdio.h>\n"+
                      "#include <unistd.h>\n"+
                      "#include <stdint.h>\n"+
-                     "typedef union {\n"+
-                     " slot_t * ref;\n"+
+                     "typedef union slot_u * slot_r;\n"+
+                     "typedef union slot_u {\n"+
+                     " slot_r ref;\n"+
                      " int32_t i32;\n"+
                      " uint32_t u32;\n"+
                      " int64_t i64;\n"+
@@ -308,7 +309,7 @@ public class C extends Backend
                     {
                     case Routine  :
                       {
-                        cout.println("" + featureMangledName(cf) + " (" + args + ")");
+                        cout.println("" + featureMangledName(cf) + "(" + args + ");");
                         stack.push("(/*NYI: Call result*/0)");
                         break;
                       }
