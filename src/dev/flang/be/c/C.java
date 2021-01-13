@@ -129,7 +129,7 @@ public class C extends Backend
           {
             compileClazz(cl);
           }
-        cout.println("int main(char **args, int argc) { " + featureMangledName(f) + "(); }\n");
+        cout.println("int main(int argc, char **args) { " + featureMangledName(f) + "(); }\n");
       }
     catch (IOException io)
       { // NYI: proper error handling
