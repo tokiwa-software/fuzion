@@ -300,15 +300,11 @@ public class C extends Backend
             {
               var cf = _fuir.callCalledFeature(c, i);
               var ac = _fuir.callArgCount(c, i);
-              String args = "";
-              for (var ai = 0; ai < ac; ai++)
-                {
-                  var a = stack.pop();
-                  args = ai > 0 ? a + ", " + args : a;
-                }
               if (_fuir.callIsDynamic(c, i))
                 {
-                  cout.println("// NYI : dynamic call to feature: " + featureMangledName(cf) + " (" + args + ")");
+                  cout.println("// NYI : dynamic call to feature: " + featureMangledName(cf) + " (");
+                  passArgs(stack, ac);
+                  cout.println(")");
                 }
               else
                 {
@@ -316,8 +312,11 @@ public class C extends Backend
                     {
                     case Routine  :
                       {
-                        cout.println("" + featureMangledName(cf) + "(" + args + ");");
-                        stack.push("(/*NYI: Call result*/0)");
+                        String n = featureMangledName(cf);
+                        cout.println("" + n + "(");
+                        passArgs(stack, ac);
+                        cout.println(");");
+                        stack.push("(/*NYI: Call result of " + n + " */ 0)");
                         break;
                       }
                     case Field    :
@@ -329,15 +328,18 @@ public class C extends Backend
                       }
                     case Intrinsic:
                       {
-                        cout.print("  "+featureMangledName(cf)+"(");
+                        String n = featureMangledName(cf);
+                        cout.print("  " + n + "(");
                         passArgs(stack, ac);
                         cout.println(");");
-                        stack.push("(/*NYI: Call result*/0)");
+                        stack.push("(/*NYI: Call result of " + n + " */ 0)");
                         break;
                       }
                     case Abstract :
                       {
-                        cout.println("// NYI : Call abstract: " + featureMangledName(cf) + " (" + args + ")");
+                        cout.println("// NYI : Call abstract: " + featureMangledName(cf) + " (");
+                        passArgs(stack, ac);
+                        cout.println(");");
                         break;
                       }
                     }
