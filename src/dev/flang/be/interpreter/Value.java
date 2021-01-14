@@ -51,6 +51,18 @@ public abstract class Value extends ANY
   public static Value NO_VALUE = new Value() { };
 
 
+  /**
+   * Dummy value to be returned by intrinsic features that return an empty self.
+   */
+  public static Value EMPTY_VALUE = new Value()
+    {
+      void storeNonRef(LValue slot, int size)
+      {
+        // treat as NOP.
+      }
+    };
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 

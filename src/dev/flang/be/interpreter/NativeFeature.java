@@ -95,7 +95,7 @@ public class NativeFeature extends ANY
         result = (args, argTypes) ->
           {
             System.out.write(args.get(1).i32Value());
-            return Value.NO_VALUE;
+            return Value.EMPTY_VALUE;
           };
       }
     else if (n.equals("fusion.std.out.flush"))
@@ -103,7 +103,7 @@ public class NativeFeature extends ANY
         result = (args, argTypes) ->
           {
             System.out.flush();
-            return Value.NO_VALUE;
+            return Value.EMPTY_VALUE;
           };
       }
     else if (n.equals("exitForCompilerTest") ||  // NYI: Remove global exit, just for minimal compiled programs!
@@ -113,7 +113,7 @@ public class NativeFeature extends ANY
           {
             int rc = args.get(1).i32Value();
             System.exit(rc);
-            return Value.NO_VALUE;
+            return Value.EMPTY_VALUE;
           };
       }
     else if (n.equals("fusion.java.getStaticField"))
@@ -191,7 +191,7 @@ public class NativeFeature extends ANY
             String sig  = sigI.string;
             Object thiz = thizI.javaRef;
             JavaInterface.callVirtual(name,sig,thiz,argI);
-            return Value.NO_VALUE;
+            return Value.EMPTY_VALUE;
           };
       }
     else if (n.equals("Array.getData"))
@@ -212,7 +212,7 @@ public class NativeFeature extends ANY
             if (x < 0 || x >= ai.refs.length)
               {
                 Errors.fatal("array index out of bounds: " + x + " not in 0.."+(ai.refs.length-1)+"\n"+Interpreter.callStack());
-                res = Value.NO_VALUE;
+                res = Value.NO_VALUE; // just to keep javac from complaining
               }
                 // NYI: Properly determine generic argument type of array
             else if (a.clazz().type == Types.resolved.t_conststring /* NYI: Hack */ ||
@@ -259,7 +259,7 @@ public class NativeFeature extends ANY
                     ai.refs[x] = v;
                   }
               }
-            return Value.NO_VALUE;
+            return Value.EMPTY_VALUE;
           };
       }
     else if (n.equals("debug"        ) ||
