@@ -146,11 +146,11 @@ public class Clazzes extends ANY
             }
           if (_size > 0)
             {
-              if (_clazz.size == 0)
+              if (_clazz._size == 0)
                 {
-                  _clazz.size = _size;
+                  _clazz._size = _size;
                 }
-              check(_clazz.size == _size);
+              check(_clazz._size == _size);
             }
         }
       return _clazz;
@@ -270,10 +270,10 @@ public class Clazzes extends ANY
     Clazz o = outer;
     while (o != null && result == null)
       {
-        if (o.type == actualType && actualType != Types.t_ERROR)
+        if (o._type == actualType && actualType != Types.t_ERROR)
           { // a recursive outer-relation
             result = o;  // is ok for a ref type, we can just return the original outer clazz
-            if (!o.isRef() && o.type.featureOfType().impl != Impl.INTRINSIC)
+            if (!o.isRef() && o._type.featureOfType().impl != Impl.INTRINSIC)
               {  // but a recursive chain of value types is not permitted
 
                 // NYI: recursive chain of value types should be detected during
@@ -282,13 +282,13 @@ public class Clazzes extends ANY
                 chain.append("1: "+actualType+" at "+actualType.pos.show()+"\n");
                 int i = 2;
                 Clazz c = outer;
-                while (c.type != actualType)
+                while (c._type != actualType)
                   {
-                    chain.append(""+i+": "+c.type+" at "+c.type.pos.show()+"\n");
-                    c = c.outer;
+                    chain.append(""+i+": "+c._type+" at "+c._type.pos.show()+"\n");
+                    c = c._outer;
                     i++;
                   }
-                chain.append(""+i+": "+c.type+" at "+c.type.pos.show()+"\n");
+                chain.append(""+i+": "+c._type+" at "+c._type.pos.show()+"\n");
                 Errors.error(actualType.pos,
                              "Recursive value type is not allowed",
                              "Value type " + actualType + " equals type of outer feature.\n"+
@@ -296,7 +296,7 @@ public class Clazzes extends ANY
                              chain);
               }
           }
-        o = o.outer;
+        o = o._outer;
       }
     if (result == null)
       {
@@ -327,7 +327,7 @@ public class Clazzes extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (actualType == result.type);
+      (actualType == result._type);
 
     return result;
   }
@@ -737,7 +737,7 @@ public class Clazzes extends ANY
             Feature f = tclazz.feature();
             if (f.outerRefOrNull() == cf)
               { // a "normal" outer ref for the outer clazz surrounding this instance
-                result = tclazz.outer;
+                result = tclazz._outer;
               }
             else
               {
@@ -767,7 +767,7 @@ public class Clazzes extends ANY
                     if (baseLen > 0)
                       { // NYI: do not rebase, but directly create a class with a different outer clazz!
                         var base = frame._realOuter[baseLen-1];
-                        t = t.rebase(base.type, sd);
+                        t = t.rebase(base._type, sd);
                       }
                   }
                 result = frame.actualClazz(t);
@@ -913,7 +913,7 @@ public class Clazzes extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (thiz.isRef() == result.type.isRef());
+      (thiz.isRef() == result._type.isRef());
 
     return result;
   }
@@ -940,7 +940,7 @@ public class Clazzes extends ANY
 
     if (!thiz.outerMostInSource())
       {
-        outerClazz = clazzWithSpecificOuter(thiz.outer(), outerClazz.outer);
+        outerClazz = clazzWithSpecificOuter(thiz.outer(), outerClazz._outer);
       }
 
     Type t = Types.intern(thiz);

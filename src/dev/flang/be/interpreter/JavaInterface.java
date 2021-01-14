@@ -247,7 +247,7 @@ public class JavaInterface
         Instance inst = new Instance(resultClass);
         inst.javaRef = o;
         result = inst;
-        var resultFeat = resultClass.type.featureOfType();
+        var resultFeat = resultClass._type.featureOfType();
         var resultOuter = resultFeat.outer();
         if (resultOuter != null)
           {

@@ -118,7 +118,7 @@ public class Intrinsics extends ANY
       }
     else if (n.equals("fusion.java.getStaticField"))
       {
-        var actualGenerics = innerClazz.type._generics;
+        var actualGenerics = innerClazz._type._generics;
         if ((actualGenerics == null) || (actualGenerics.size() != 1))
           {
             System.err.println("fusion.java.getStaticField called with wrong number of actual generic arguments");
@@ -215,12 +215,12 @@ public class Intrinsics extends ANY
                 res = Value.NO_VALUE; // just to keep javac from complaining
               }
                 // NYI: Properly determine generic argument type of array
-            else if (a.clazz().type == Types.resolved.t_conststring /* NYI: Hack */ ||
-                     a.clazz().type._generics.getFirst().name.equals("i32"))
+            else if (a.clazz()._type == Types.resolved.t_conststring /* NYI: Hack */ ||
+                     a.clazz()._type._generics.getFirst().name.equals("i32"))
               {
                 res = new i32Value(ai.nonrefs[x]);
               }
-            else if (a.clazz().type._generics.getFirst().name.equals("bool"))
+            else if (a.clazz()._type._generics.getFirst().name.equals("bool"))
               {
                 res = new boolValue(ai.nonrefs[x] != 0);
               }
@@ -246,11 +246,11 @@ public class Intrinsics extends ANY
               {
                 Value v = args.get(3);
                 // NYI: Properly determine generic argument type of array
-                if (a.clazz().type._generics.getFirst().name.equals("i32"))
+                if (a.clazz()._type._generics.getFirst().name.equals("i32"))
                   {
                     ai.nonrefs[x] = v.i32Value();
                   }
-                else if (a.clazz().type._generics.getFirst().name.equals("bool"))
+                else if (a.clazz()._type._generics.getFirst().name.equals("bool"))
                   {
                     ai.nonrefs[x] = v.boolValue() ? 1 : 0;
                   }

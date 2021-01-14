@@ -150,7 +150,7 @@ public class Interpreter extends Backend
     mainargs.add(Instance.universe); // outer instance
     // mainargs.add(null); // NYI: args
     ArrayList<Type> argTypes = new ArrayList<>();
-    argTypes.add(Clazzes.universe.get().type);
+    argTypes.add(Clazzes.universe.get()._type);
     try
       {
         callable(_fuir.main(), Clazzes.universe.get()).call(mainargs, argTypes);
@@ -221,7 +221,7 @@ public class Interpreter extends Backend
         Clazz vClazz = staticClazz.getRuntimeClazz(a.tid_ + 1);
         if (vClazz != Clazzes.VOID.getIfCreated())
           {
-            setField(a.assignedField, sClazz, thiz, v, vClazz.type);
+            setField(a.assignedField, sClazz, thiz, v, vClazz._type);
           }
         result = Value.NO_VALUE;
       }
@@ -411,7 +411,7 @@ public class Interpreter extends Backend
                     Value v = getField(f, vc, val);
                     // NYI: Check that this works well for internal fields such as choice tags.
                     // System.out.println("Box "+vc+" => "+rc+" copying "+f.qualifiedName()+" "+v);
-                    setField(f, rc, result, v, rc.clazzForField(f).type);
+                    setField(f, rc, result, v, rc.clazzForField(f)._type);
                   }
               }
             if (vc.isChoice())
@@ -559,7 +559,7 @@ public class Interpreter extends Backend
       {
         var outer = getSingletonInstance(outerF);
         var sc = Clazzes.singletonClazz(thiz);
-        result = getField(thiz, sc.outer, outer);
+        result = getField(thiz, sc._outer, outer);
 
         if (result == null)
           {
@@ -570,7 +570,7 @@ public class Interpreter extends Backend
             ArrayList<Type> argTypes = new ArrayList<>();
             argTypes.add(outerF.resultType());
             callOnInstance(thiz, sc, res, args, argTypes);
-            setField(thiz, sc.outer, outer, res, thiz.resultType()); // singletonClazz_.type);
+            setField(thiz, sc._outer, outer, res, thiz.resultType()); // singletonClazz_._type);
             result = res;
           }
       }
@@ -818,7 +818,7 @@ public class Interpreter extends Backend
     if (PRECONDITIONS) require
       (choiceClazz.isChoice(),
        choiceClazz.feature() == thiz,
-       choiceClazz.type != staticTypeOfValue);
+       choiceClazz._type != staticTypeOfValue);
 
     int tag = choiceClazz.getChoiceTag(staticTypeOfValue);
     Clazz  vclazz  = choiceClazz.getChoiceClazz(tag);
@@ -837,7 +837,7 @@ public class Interpreter extends Backend
         setField(thiz.choiceTag_, choiceClazz, choice, new i32Value(tag), Types.resolved.t_i32);
       }
     check
-      (vclazz.type.isAssignableFrom(staticTypeOfValue));
+      (vclazz._type.isAssignableFrom(staticTypeOfValue));
     setFieldNoChoice(thiz, vclazz, valSlot, v);
   }
 
@@ -1111,13 +1111,13 @@ public class Interpreter extends Backend
     if (PRECONDITIONS) require
       (fclazz != null,
        slot != null,
-       v != null || thiz.isChoice() || fclazz.type == Types.resolved.t_void);
+       v != null || thiz.isChoice() || fclazz._type == Types.resolved.t_void);
 
     if (fclazz.isRef())
       {
         setRefField   (thiz,        slot, v);
       }
-    else if (fclazz.type != Types.resolved.t_void)  // NYI: remove these assignments in earlier phase
+    else if (fclazz._type != Types.resolved.t_void)  // NYI: remove these assignments in earlier phase
       {
         setNonRefField(thiz, fclazz, slot, v);
       }
@@ -1153,7 +1153,7 @@ public class Interpreter extends Backend
         LValue slot   = fieldSlot(thiz, staticClazz, fclazz, curValue);
 
         if (fclazz.isChoice() &&
-            fclazz.type != staticTypeOfValue &&
+            fclazz._type != staticTypeOfValue &&
             !thiz.isOuterRef() /* outerref might be an adr of a value type */
             )
           {
@@ -1184,7 +1184,7 @@ public class Interpreter extends Backend
     var or = thiz.outerRef_;
     if (or != null && or.isUsed())
       {
-        setField(or, staticClazz, cur, outer, staticClazz.outer.type);
+        setField(or, staticClazz, cur, outer, staticClazz._outer._type);
       }
   }
 

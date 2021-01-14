@@ -72,19 +72,19 @@ public class Clazz extends ANY implements Comparable
   /**
    *
    */
-  public final Type type;
+  public final Type _type;
 
 
   /**
    *
    */
-  public final Clazz outer;
+  public final Clazz _outer;
 
 
   /**
    *
    */
-  int size = Integer.MIN_VALUE;
+  int _size = Integer.MIN_VALUE;
 
 
   public final Map<Feature, Clazz> clazzForField_ = new TreeMap<>();
@@ -98,7 +98,7 @@ public class Clazz extends ANY implements Comparable
    * depending on the actual generic parameters given in this class or its super
    * classes.
    */
-  ArrayList<Object> runtimeClazzes = new ArrayList<>();
+  ArrayList<Object> _runtimeClazzes = new ArrayList<>();
 
 
   /**
@@ -200,13 +200,13 @@ Hellq is
        actualType == Types.t_ERROR ||
        actualType == Types.t_VOID  || actualType.featureOfType().outer() != null || outer == null);
 
-    this.type = actualType;
-    this.outer = outer;
+    this._type = actualType;
+    this._outer = outer;
     var d = feature().depth();
     this._realOuter = new Clazz[d+1];
     for (int i = 0; i <= d; i++)
       {
-        this._realOuter[i] = outer != null && i < outer._realOuter.length ? outer._realOuter[i] : this;
+        this._realOuter[i] = outer != null && i < this._outer._realOuter.length ? this._outer._realOuter[i] : this;
       }
 
     if (isChoice())
@@ -241,10 +241,10 @@ Hellq is
   public int size()
   {
     if (PRECONDITIONS) require
-      (size >= 0,
+      (this._size >= 0,
        !layouting_);
 
-    return size;
+    return this._size;
   }
 
 
@@ -257,10 +257,10 @@ Hellq is
     if (PRECONDITIONS) require
       (Errors.count() > 0 || !t.isOpenGeneric());
 
-    t = type.actualType(t);
-    if (outer != null)
+    t = this._type.actualType(t);
+    if (this._outer != null)
       {
-        t = outer.actualType(t);
+        t = this._outer.actualType(t);
       }
     return Types.intern(t);
   }
@@ -291,10 +291,10 @@ Hellq is
    */
   public List<Type> actualGenerics(List<Type> generics)
   {
-    generics = type.replaceGenerics(generics);
-    if (outer != null)
+    generics = this._type.replaceGenerics(generics);
+    if (this._outer != null)
       {
-        generics = outer.actualGenerics(generics);
+        generics = this._outer.actualGenerics(generics);
       }
     return generics;
   }
@@ -305,7 +305,7 @@ Hellq is
    */
   public Feature feature()
   {
-    return type.featureOfType();
+    return this._type.featureOfType();
   }
 
 
@@ -314,7 +314,7 @@ Hellq is
    */
   public boolean isRef()
   {
-    return type.isRef();
+    return this._type.isRef();
   }
 
 
@@ -369,7 +369,7 @@ Hellq is
           {
             cycleString.append(p.show()).append("\n");
           }
-        IrErrors.error(type.pos,
+        IrErrors.error(this._type.pos,
                        "Cyclic field nesting is not permitted",
                        "Cyclic value field nesting would result in infinitely large objects.\n" +
                        "Cycle of nesting found during clazz layout:\n" +
@@ -389,12 +389,12 @@ Hellq is
     List<SourcePosition> result = null;
     if (layouting_)
       {
-        result = new List<>(type.pos);
+        result = new List<>(this._type.pos);
       }
-    else if (size == Integer.MIN_VALUE)
+    else if (this._size == Integer.MIN_VALUE)
       {
         layouting_ = true;
-        size = 0;
+        this._size = 0;
         if (isChoice())
           {
             int maxSz = 0;
@@ -415,9 +415,9 @@ Hellq is
                     maxSz = sz > maxSz ? sz : maxSz;
                   }
               }
-            choiceValsOffset_ = size;
+            choiceValsOffset_ = this._size;
             choiceValsSize_ = maxSz;
-            size += maxSz;
+            this._size += maxSz;
           }
 
         for (var f: feature().allInnerAndInheritedFeatures())
@@ -434,7 +434,7 @@ Hellq is
       }
     if (result != null)
       {
-        result.add(type.pos);
+        result.add(this._type.pos);
       }
     return result;
   }
@@ -463,8 +463,8 @@ Hellq is
       {
         Clazz fieldClazz = actualClazz(f.resultType());
         clazzForField_.put(f, fieldClazz);
-        offsetForField_.put(f, size);
-        Type ft = fieldClazz.type;
+        offsetForField_.put(f, this._size);
+        Type ft = fieldClazz._type;
         int fsz = 0;
         if        (ft.isRef() || f.isSingleton()) { fsz = 1;
         } else if (ft == Types.resolved.t_i32   ) { fsz = 1;
@@ -482,7 +482,7 @@ Hellq is
               fsz = fieldClazz.size();
             }
         }
-        size = size + fsz;
+        this._size = this._size + fsz;
       }
     return result;
   }
@@ -584,7 +584,7 @@ Hellq is
         innerClazz.isInstantiated_ = true;
         innerClazz.instantiationPos_ = p;
         check
-          (innerClazz.type.featureOfType() == af);
+          (innerClazz._type.featureOfType() == af);
       }
 
     if (POSTCONDITIONS) ensure
@@ -622,39 +622,39 @@ Hellq is
    */
   public String toString()
   {
-    if (type == Types.t_VOID)
+    if (this._type == Types.t_VOID)
       {
         return "--VOID--";
       }
-    else if (type == Types.t_UNDEFINED)
+    else if (this._type == Types.t_UNDEFINED)
       {
         return "--UNDEFINED--";
       }
-    else if (type == Types.t_ADDRESS)
+    else if (this._type == Types.t_ADDRESS)
       {
         return "--ADDRESS--";
       }
-    else if (type == Types.t_ERROR)
+    else if (this._type == Types.t_ERROR)
       {
         return "--ERROR--";
       }
-    else if (outer == null)
+    else if (this._outer == null)
       {
-        return type.toString();
+        return this._type.toString();
       }
     else
       {
         return ""
-          + ((outer == Clazzes.universe.get())
+          + ((this._outer == Clazzes.universe.get())
              ? ""
-             : outer.toString() + ".")
-          + (type.isRef()
+             : this._outer.toString() + ".")
+          + (this._type.isRef()
              ? "ref "
              : ""
              )
-          + feature().featureName().baseName() + (type._generics.isEmpty()
+          + feature().featureName().baseName() + (this._type._generics.isEmpty()
                               ? ""
-                              : "<" + type._generics + ">");
+                              : "<" + this._type._generics + ">");
       }
   }
 
@@ -666,7 +666,7 @@ Hellq is
    */
   public String toString2()
   {
-    return "CLAZZ:" + type + (outer != null ? " in "+outer : "");
+    return "CLAZZ:" + this._type + (this._outer != null ? " in " + this._outer : "");
   }
 
 
@@ -679,7 +679,7 @@ Hellq is
    */
   public boolean isAssignableFrom(Clazz other)
   {
-    return (this==other) || this.type.isAssignableFrom(other.type);
+    return (this==other) || this._type.isAssignableFrom(other._type);
   }
 
 
@@ -699,8 +699,8 @@ Hellq is
    */
   private int compareOuter(Clazz other)
   {
-    var to = outer;
-    var oo = other.outer;
+    var to = this ._outer;
+    var oo = other._outer;
     return
       to == oo                   ? 0 :
       to == null                 ? -1 :
@@ -722,20 +722,20 @@ Hellq is
       (other != null,
        this .getClass() == Clazz.class,
        other.getClass() == Clazz.class,
-       this.type  == Types.intern(this.type),
-       other.type == Types.intern(other.type));
+       this ._type == Types.intern(this ._type),
+       other._type == Types.intern(other._type));
 
     result = compareOuter(other);
     if (result == 0)
       {
-        result = type.compareTo(other.type);
+        result = this._type.compareTo(other._type);
       }
     return result;
   }
 
   public boolean dependsOnGenerics()  //  NYI: Only used in caching for Type.clazz, which should be removed
   {
-    return !type._generics.isEmpty() || (outer != null && outer.dependsOnGenerics());
+    return !this._type._generics.isEmpty() || (this._outer != null && this._outer.dependsOnGenerics());
   }
 
 
@@ -838,12 +838,12 @@ Hellq is
        id < feature().runtimeClazzIdCount());
 
     int cnt = feature().runtimeClazzIdCount();
-    runtimeClazzes.ensureCapacity(cnt);
-    while (runtimeClazzes.size() < cnt)
+    this._runtimeClazzes.ensureCapacity(cnt);
+    while (this._runtimeClazzes.size() < cnt)
       {
-        runtimeClazzes.add(null);
+        this._runtimeClazzes.add(null);
       }
-    runtimeClazzes.set(id, data);
+    this._runtimeClazzes.set(id, data);
 
     if (POSTCONDITIONS) ensure
       (getRuntimeData(id) == data);
@@ -863,7 +863,7 @@ Hellq is
       (id < feature().runtimeClazzIdCount(),
        id >= 0);
 
-    return runtimeClazzes.get(id);
+    return this._runtimeClazzes.get(id);
   }
 
 
@@ -992,7 +992,7 @@ Hellq is
     int index = 0;
     for (Clazz g : choiceGenerics_)
       {
-        if (g.type.isAssignableFrom(staticTypeOfValue))
+        if (g._type.isAssignableFrom(staticTypeOfValue))
           {
             check
               (result < 0);

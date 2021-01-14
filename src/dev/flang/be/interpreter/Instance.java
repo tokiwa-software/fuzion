@@ -142,9 +142,9 @@ public class Instance extends Value
     Clazz result = clazz;
     if ((result != null) && !result.isRef() && !result.feature().isSingleton()) // NYI: ugly special handling of singleton
       {
-        System.out.println("result.type is "+result.type+" "+result.type.isRef());
+        System.out.println("result.type is "+result._type+" "+result._type.isRef());
         System.out.println("result.feature is "+result.feature().qualifiedName()+(result.feature().isSingleton() ? " single" : " not single"));
-        throw new Error("No clazz in a value instance: type "+result.type+" value "+this);
+        throw new Error("No clazz in a value instance: type "+result._type+" value "+this);
       }
     return result;
   }
@@ -315,7 +315,7 @@ public class Instance extends Value
    */
   public String toString()
   {
-    return "instance["+(clazz == null ? null : clazz.type)+"]"+this.hashCode();
+    return "instance["+(clazz == null ? null : clazz._type)+"]"+this.hashCode();
   }
 
 

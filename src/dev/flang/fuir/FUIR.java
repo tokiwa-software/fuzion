@@ -140,7 +140,7 @@ public class FUIR extends ANY
       {
         for (var cl : Clazzes.all())
           {
-            if (cl.type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
+            if (cl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
               {
                 _clazzIds.add(cl);
                 _featureIds.add(cl.feature());
