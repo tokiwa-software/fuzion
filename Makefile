@@ -127,7 +127,7 @@ JAVA_FILES_BE_INTERPRETER = \
           $(SRC)/dev/flang/be/interpreter/Interpreter.java \
           $(SRC)/dev/flang/be/interpreter/JavaInterface.java \
           $(SRC)/dev/flang/be/interpreter/LValue.java \
-          $(SRC)/dev/flang/be/interpreter/NativeFeature.java \
+          $(SRC)/dev/flang/be/interpreter/Intrinsics.java \
           $(SRC)/dev/flang/be/interpreter/Value.java \
           $(SRC)/dev/flang/be/interpreter/boolValue.java \
           $(SRC)/dev/flang/be/interpreter/i32Value.java \

@@ -31,7 +31,7 @@ import java.util.TreeSet;
 
 import dev.flang.be.c.C;
 
-import dev.flang.be.interpreter.NativeFeature;
+import dev.flang.be.interpreter.Intrinsics;
 import dev.flang.be.interpreter.Interpreter;
 
 import dev.flang.fe.FrontEnd;
@@ -120,7 +120,7 @@ class Fusion extends ANY
    */
   final boolean ENABLE_UNSAFE_INTRINSICS = Boolean.getBoolean("fusion.enableUnsafeIntrinsics");
   {
-    NativeFeature.ENABLE_UNSAFE_INTRINSICS = ENABLE_UNSAFE_INTRINSICS;  // NYI: Add to Fusion IR or BE Config
+    Intrinsics.ENABLE_UNSAFE_INTRINSICS = ENABLE_UNSAFE_INTRINSICS;  // NYI: Add to Fusion IR or BE Config
   }
 
 
@@ -129,7 +129,7 @@ class Fusion extends ANY
    */
   final int FUSION_DEBUG_LEVEL = Integer.getInteger("fusion.debugLevel", 1);
   {
-    NativeFeature.FUSION_DEBUG_LEVEL = FUSION_DEBUG_LEVEL;  // NYI: Add to Fusion IR or BE Config
+    Intrinsics.FUSION_DEBUG_LEVEL = FUSION_DEBUG_LEVEL;  // NYI: Add to Fusion IR or BE Config
   }
 
 
@@ -138,7 +138,7 @@ class Fusion extends ANY
    */
   final boolean FUSION_SAFETY = new Boolean(System.getProperty("fusion.safety", "true"));
   {
-    NativeFeature.FUSION_SAFETY = FUSION_SAFETY;  // NYI: Add to Fusion IR or BE Config
+    Intrinsics.FUSION_SAFETY = FUSION_SAFETY;  // NYI: Add to Fusion IR or BE Config
   }
 
 

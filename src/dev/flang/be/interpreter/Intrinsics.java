@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa GmbH, Berlin
  *
- * Source of class NativeFeature
+ * Source of class Intrinsics
  *
  *---------------------------------------------------------------------*/
 
@@ -40,11 +40,11 @@ import dev.flang.util.List;
 
 
 /**
- * NativeFeature provides the implementation of Fusion's intrinsic features.
+ * Intrinsics provides the implementation of Fusion's intrinsic features.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */
-public class NativeFeature extends ANY
+public class Intrinsics extends ANY
 {
 
   /*----------------------------  constants  ----------------------------*/

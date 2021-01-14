@@ -675,7 +675,7 @@ public class Interpreter extends Backend
           }
         else if (f.impl == Impl.INTRINSIC)
           {
-            result = NativeFeature.call(innerClazz);
+            result = Intrinsics.call(innerClazz);
           }
         else
           {
