@@ -61,6 +61,11 @@ public class C extends Backend
     IMPLEMENTATIONS
   }
 
+  /**
+   * Name of local variable containing current instance
+   */
+  private static final String CURRENT = "cur";
+
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -340,7 +345,7 @@ public class C extends Backend
             }
           case Current:
             {
-              stack.push("current");
+              stack.push(CURRENT);
               break;
             }
           case If:
@@ -443,8 +448,8 @@ public class C extends Backend
             case Routine:
               {
                 cout.print("void " + featureMangledName(f) + "() {\n"+
-                           " " + clazzTypeName(cl) + " *cur = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
-                           (_fuir.clazzIsRef(cl) ? " cur->clazzId = " + clazzId2num(cl) + ";\n" : ""));
+                           " " + clazzTypeName(cl) + " *" + CURRENT + " = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
+                           (_fuir.clazzIsRef(cl) ? " " + CURRENT + ">clazzId = " + clazzId2num(cl) + ";\n" : ""));
                 var c = _fuir.featureCode(f);
                 var stack = new Stack<String>();
                 createCode(cl, stack, c);
