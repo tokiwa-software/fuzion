@@ -128,7 +128,7 @@ public class C extends Backend
                      " uint64_t u64;\n"+
                      "} slot_t;\n"+
                      "void fz_exitForCompilerTest(int code) { exit(code); }\n"+
-                     "void fz_fusion__std__out__write(int c) { char cc = (char) c; fwrite(&cc, 1, 1, stdout); }\n");
+                     "void fz_fusion__std__out__write(slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); }\n");
         for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
           {
             typesForClazz(c);
