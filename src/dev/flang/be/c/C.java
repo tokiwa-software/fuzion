@@ -329,7 +329,7 @@ public class C extends Backend
                       {
                         var t = stack.pop();
                         var tc = _fuir.callTargetClazz(cl, c, i);
-                        stack.push(t + "[" + _fuir.callFieldOffset(tc, c, i) + "]");
+                        stack.push(t + "->fields[" + _fuir.callFieldOffset(tc, c, i) + "]");
                         break;
                       }
                     case Abstract :
