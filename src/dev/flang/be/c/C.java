@@ -55,11 +55,15 @@ public class C extends Backend
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * C code generation phase for generating C functions for features.
+   */
   private enum CompilePhase
   {
-    FORWARDS,
-    IMPLEMENTATIONS
+    FORWARDS,         // generate forward declarations only
+    IMPLEMENTATIONS,  // generate C functions
   }
+
 
   /**
    * Name of local variable containing current instance
@@ -70,14 +74,28 @@ public class C extends Backend
   /*----------------------------  variables  ----------------------------*/
 
 
+  /**
+   * The intermidiate code we are compiling.
+   */
   private final FUIR _fuir;
 
 
+  /**
+   * Writer to create the C code to.
+   */
   private PrintWriter cout;
+
 
   /*---------------------------  consructors  ---------------------------*/
 
 
+  /**
+   * Create C code backend for given intermidiate code.
+   *
+   * @param fuir the intermeidate code.
+   *
+   * @param opt options to control compilation.
+   */
   public C(FusionOptions opt,
            FUIR fuir)
   {
@@ -105,6 +123,9 @@ public class C extends Backend
   }
 
 
+  /**
+   * Create the C code from the intermediate code.
+   */
   public void compile()
   {
     var cl = _fuir.mainClazzId();
@@ -159,6 +180,18 @@ public class C extends Backend
   }
 
 
+  /**
+   * Mangle an arbitrary unicode string into a legal C identifier.
+   *
+   * NYI: This might produce a string longer than a legal C identifier name,
+   * which seems to be 31 according to
+   * https://stackoverflow.com/questions/2352209/max-identifier-length
+   *
+   * @param s an arbitrary string
+   *
+   * @return a string usable as C function name, i.e., starting with a letter or
+   * '_' followed by letters, digits or '_'.
+   */
   String mangle(String s)
   {
     StringBuilder sb = new StringBuilder();
@@ -207,6 +240,13 @@ public class C extends Backend
   }
 
 
+  /**
+   * Append mangled name of given feature to StringBuilder.
+   *
+   * @param f a feature id
+   *
+   * @param sb a StringBuilder
+   */
   public void featureMangledName(int f, StringBuilder sb)
   {
     if (!_fuir.featureIsUniverse(f) &&
@@ -219,6 +259,13 @@ public class C extends Backend
   }
 
 
+  /**
+   * Create mangled name of a given feature.
+   *
+   * @param f a feature id.
+   *
+   * @return a corresponding valid C function name
+   */
   public String featureMangledName(int f)
   {
     var sb = new StringBuilder("fz_");
@@ -226,11 +273,21 @@ public class C extends Backend
     return sb.toString();
   }
 
+  /**
+   * NYI: Documentation, just discard the sign?
+   */
   int clazzId2num(int cl)
   {
-    return cl & 0xFFFffff;
+    return cl & 0xFFFffff; // NYI: give a name to this constant
   }
 
+  /**
+   * Create a C identifier for the type of an instance of the given clazz.
+   *
+   * @param cl a clazz id.
+   *
+   * @return corresponding C type name
+   */
   String clazzTypeName(int cl)
   {
     StringBuilder sb = new StringBuilder("fztype_");
@@ -240,6 +297,12 @@ public class C extends Backend
   }
 
 
+  /**
+   * Create declarations of the C types required for the given clazz.  Write
+   * code to cout.
+   *
+   * @param cl a clazz id.
+   */
   public void typesForClazz(int cl)
   {
     var f = _fuir.clazz2FeatureId(cl);
@@ -258,6 +321,14 @@ public class C extends Backend
       }
   }
 
+  /**
+   * Create C code to pass given number of argument from the stack to a called
+   * feature.  Write code to cout.
+   *
+   * @param stack the stack containing the C code of the args.
+   *
+   * @param argCount the number of arguments.
+   */
   void passArgs(Stack<String> stack, int argCount)
   {
     if (argCount > 0)
@@ -273,6 +344,16 @@ public class C extends Backend
   }
 
 
+  /**
+   * Create C code for code block c of clazz cl with given stack contents at
+   * beginning of the block.  Write code to cout.
+   *
+   * @param cl clazz id
+   *
+   * @param stack the stack containing the current arguments waiting to be used
+   *
+   * @param c the code block to compile
+   */
   void createCode(int cl, Stack<String> stack, int c)
   {
     for (int i = 0; _fuir.withinCode(c, i); i++)
@@ -419,6 +500,14 @@ public class C extends Backend
   }
 
 
+  /**
+   * Create code for given clazz cl in given code generation phase
+   *
+   * @param cl id of clazz to compile
+   *
+   * @param phase specifies what code to generate (forward declarations or
+   * function declarations)
+   */
   public void compileClazz(int cl, CompilePhase phase)
   {
     switch (phase)
