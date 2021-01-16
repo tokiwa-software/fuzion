@@ -548,6 +548,17 @@ public class C extends Backend
                 cout.print(" {\n"+
                            " " + clazzTypeName(cl) + " *" + CURRENT + " = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
                            (_fuir.clazzIsRef(cl) ? " " + CURRENT + ">clazzId = " + clazzId2num(cl) + ";\n" : ""));
+
+                var ac = _fuir.clazzArgCount(cl);
+                for (int i = 0; i < ac; i++)
+                  {
+                    var af = _fuir.clazzArg(cl, i);
+                    if (af >= 0) // af < 0 for unused argument fields.
+                      {
+                        var offset = _fuir.clazzFieldOffset(cl, af);
+                        cout.print(" cur->fields[" + offset + "] = arg" + i +";\n");
+                      }
+                  }
                 var c = _fuir.featureCode(f);
                 var stack = new Stack<String>();
                 createCode(cl, stack, c);

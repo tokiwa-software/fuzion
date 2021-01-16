@@ -189,6 +189,47 @@ public class FUIR extends ANY
   }
 
 
+  /**
+   * Get the feature id of the given argument of clazz cl
+   *
+   * @param cl clazz id
+   *
+   * @parem arg argument number 0, 1, .. clazzArgCount(cl)-1
+   *
+   * @return feature id of the argument or -1 if no such feature exists (the
+   * argument is unused).
+   */
+  public int clazzArg(int cl, int arg)
+  {
+    // NYI: This does not handle open generic args such as in Function.call yet.
+    var c = _clazzIds.get(cl);
+    var a = c.feature().arguments.get(arg);
+    int f = _featureIds.get(a);
+    if (f < FEATURE_BASE)
+      {
+        f = -1;  // NYI: Would be nicer to either include unused feature as well or to remove the argument altogether
+      }
+    return f;
+  }
+
+
+  /**
+   * Get the offset of a field in an instance of given clazz.
+   *
+   * @param cl a clazz id
+   *
+   * @param f a feature id of a field in cl
+   *
+   * @return the offset of f in an instance of cl
+   */
+  public int clazzFieldOffset(int cl, int f)
+  {
+    var c = _clazzIds.get(cl);
+    var ff = _featureIds.get(f);
+    return c.offsetForField_.get(ff);
+  }
+
+
   /*------------------------  accessing features  -----------------------*/
 
 
