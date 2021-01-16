@@ -182,6 +182,12 @@ public class FUIR extends ANY
     return _clazzIds.get(cl).isRef();
   }
 
+  public int clazzArgCount(int cl)
+  {
+    // NYI: This does not handle open generic args such as in Function.call yet.
+    return _clazzIds.get(cl).feature().arguments.size();
+  }
+
 
   /*------------------------  accessing features  -----------------------*/
 

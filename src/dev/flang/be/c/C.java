@@ -148,7 +148,7 @@ public class C extends Backend
                      " int64_t i64;\n"+
                      " uint64_t u64;\n"+
                      "} slot_t;\n"+
-                     "void fz_exitForCompilerTest(int code) { exit(code); }\n"+
+                     "void fz_exitForCompilerTest(slot_t code) { exit(code.i32); }\n"+
                      "void fz_fusion__std__out__write(slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); }\n");
         for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
           {
@@ -450,30 +450,10 @@ public class C extends Backend
               stack.push(bc ? "TRUE" : "FALSE");
               break;
             }
-          case i32Const:
-            {
-              var ic = _fuir.i32Const(c, i);
-              stack.push("((int32_t)" + ic + ")");
-              break;
-            }
-          case u32Const:
-            {
-              var ic = _fuir.u32Const(c, i);
-              stack.push("((uint32_t)" + ic + ")");
-              break;
-            }
-          case i64Const:
-            {
-              var ic = _fuir.i64Const(c, i);
-              stack.push("((int64_t)" + ic + ")");
-              break;
-            }
-          case u64Const:
-            {
-              var ic = _fuir.u64Const(c, i);
-              stack.push("((uint64_t)" + ic + ")");
-              break;
-            }
+          case i32Const: { var ic = _fuir.i32Const(c, i); stack.push("((slot_t) { .i32 = " + ic + "})"); break; }
+          case u32Const: { var ic = _fuir.u32Const(c, i); stack.push("((slot_t) { .u32 = " + ic + "})"); break; }
+          case i64Const: { var ic = _fuir.i64Const(c, i); stack.push("((slot_t) { .i64 = " + ic + "})"); break; }
+          case u64Const: { var ic = _fuir.u64Const(c, i); stack.push("((slot_t) { .u64 = " + ic + "})"); break; }
           case strConst:
             {
               stack.push("(/* NYI: String const */ \"\")");
@@ -501,6 +481,28 @@ public class C extends Backend
 
 
   /**
+   */
+  private void cFunctionDecl(int cl)
+  {
+    var f = _fuir.clazz2FeatureId(cl);
+    cout.print("void " + featureMangledName(f) + "(");
+    var ac = _fuir.clazzArgCount(cl);
+    if (ac == 0)
+      {
+        cout.print("void");
+      }
+    else
+      {
+        for (int i = 0; i < ac; i++)
+          {
+            cout.print("slot_t arg" + i + (i < ac-1 ? "," : ""));
+          }
+      }
+    cout.print(")");
+  }
+
+
+  /**
    * Create code for given clazz cl in given code generation phase
    *
    * @param cl id of clazz to compile
@@ -519,7 +521,8 @@ public class C extends Backend
             {
             case Routine:
               {
-                cout.print("void " + featureMangledName(f) + "();\n");
+                cFunctionDecl(cl);
+                cout.print(";\n");
                 break;
               }
             case Field:
@@ -536,7 +539,8 @@ public class C extends Backend
             {
             case Routine:
               {
-                cout.print("void " + featureMangledName(f) + "() {\n"+
+                cFunctionDecl(cl);
+                cout.print(" {\n"+
                            " " + clazzTypeName(cl) + " *" + CURRENT + " = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
                            (_fuir.clazzIsRef(cl) ? " " + CURRENT + ">clazzId = " + clazzId2num(cl) + ";\n" : ""));
                 var c = _fuir.featureCode(f);
