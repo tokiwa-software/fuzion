@@ -481,6 +481,11 @@ public class C extends Backend
 
 
   /**
+   * Create code for the C function implemeting the routine corresponding to the
+   * given clazz.  Write code to cout.
+   *
+   * @param cl id of clazz to compile
+   *
    */
   private void cFunctionDecl(int cl)
   {
