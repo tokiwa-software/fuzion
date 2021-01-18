@@ -577,6 +577,7 @@ public class C extends Backend
             {
             case Routine:
               {
+                cout.print("// code for clazz "+_fuir.clazzAsString(cl)+":\n");
                 cFunctionDecl(cl);
                 cout.print(" {\n"+
                            " " + clazzTypeName(cl) + " *" + CURRENT + " = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
