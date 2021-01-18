@@ -101,8 +101,10 @@ class Fusion extends ANY
   static TreeMap<String, Backend> _allBackends_ = new TreeMap<>();
 
 
+  static final String CMD = System.getProperty("fuzion.command", "fz");
+
   static final String USAGE =
-    "Usage: Fusion [-h|--help] [" + _allBackendArgs_ + "] (<main>|-)\n";
+    "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] (<main>|-)\n";
 
 
   /*----------------------------  variables  ----------------------------*/
