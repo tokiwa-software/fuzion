@@ -631,6 +631,8 @@ public class FUIR extends ANY
     var call = (Call) _codeIds.get(c).get(ix);
     var outerClazz = _clazzIds.get(cl);
     Clazz tclazz = Clazzes.clazz(call.target, outerClazz);
+    check
+      (tclazz._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
     return _clazzIds.add(tclazz);
   }
 
