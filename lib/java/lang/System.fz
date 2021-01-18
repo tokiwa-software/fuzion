@@ -23,10 +23,6 @@
 #
 # -----------------------------------------------------------------------
 
-public java.lang.System
-{
-  out java.io.PrintStream
-  {
+public java.lang.System is
+  out java.io.PrintStream is
     result = fusion.java.getStaticField<java.io.PrintStream>("java.lang.System","out")
-  }
-}

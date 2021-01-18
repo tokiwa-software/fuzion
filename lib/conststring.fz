@@ -27,4 +27,4 @@
 #
 conststring ref : string, Array<i32>(0, fun (i i32) => 0) is
 
-  redef asBytes ref streamable<i32> { conststring.this }
+  redef asBytes ref streamable<i32> is conststring.this

@@ -23,10 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-public java.io.PrintStream(private javaRef2 Object) ref : fusion.java.JavaObject(Object)
-{
-  public println(s string)
-  {
+public java.io.PrintStream(private javaRef2 Object) ref : fusion.java.JavaObject(Object) is
+
+  public println(s string) is
     fusion.java.callVirtual("println","(Ljava/lang/String;)V",PrintStream.this,s)
-  }
-}

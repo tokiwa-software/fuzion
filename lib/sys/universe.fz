@@ -25,6 +25,4 @@
 
 # universe -- implicit outer feature of features not declared inside another feature
 #
-public universe
-{
-}
+public universe is
