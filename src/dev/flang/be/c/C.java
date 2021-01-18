@@ -369,10 +369,43 @@ public class C extends Backend
             }
           case Assign:
             {
-              var field = "NYI: _fuir.assignedField(c, i);";
-              var outer = stack.pop();
-              var value = stack.pop();
-              cout.println("// NYI: Assign "+outer+"."+field+" = "+value);
+              var field = _fuir.assignedField(c, i);  // field we are assigning to
+              var outer = stack.pop();                // instance containing assigned field
+              var value = stack.pop();                // value assigned to field
+              var outercl = _fuir.assignOuterClazz(cl, c, i);  // static clazz of outer
+              var valuecl = _fuir.assignValueClazz(cl, c, i);  // static clazz of value
+              if (valuecl != -1) // void value. NYI: better remove the Assign altogether from the IR in this case
+                {
+                  var fclazz = _fuir.assignClazzForField(outercl, field);  // static clazz of assigned field
+                  String offset;
+                  if (_fuir.clazzIsRef(outercl))
+                    {
+                      offset = "/* NYI: dynamic binding needed */";
+                    }
+                  else
+                    {
+                      offset = Integer.toString(_fuir.clazzFieldOffset(outercl, field));
+                    }
+                  if (_fuir.clazzIsChoice(fclazz) &&
+                      fclazz != valuecl &&  // NYI: interpreter checks fclazz._type != staticTypeOfValue
+                      !_fuir.featureIsOuterRef(field) /* outerref might be an adr of a value type */
+                      )
+                    {
+                      cout.println("// NYI: Assign to choice field "+outer+"."+_fuir.featureAsString(field)+" = "+value);
+                    }
+                  else if (_fuir.clazzIsRef(fclazz))
+                    {
+                      cout.println("// NYI: Assign ref value "+outer+"."+_fuir.featureAsString(field)+" = "+value);
+                    }
+                  else
+                    {
+                      cout.println(" " + outer + "->fields[" + offset + "] = " + value + ";");
+                    }
+                }
+              else
+                {
+                  cout.println("// NOP assignment to " + _fuir.featureAsString(field) + " of void type removed");
+                }
               break;
             }
           case Box:

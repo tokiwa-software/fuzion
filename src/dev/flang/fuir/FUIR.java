@@ -230,6 +230,26 @@ public class FUIR extends ANY
   }
 
 
+  /**
+   * is the given clazz a choice clazz
+   *
+   * @param cl a clazz id
+   */
+  public boolean clazzIsChoice(int cl)
+  {
+    return _clazzIds.get(cl).isChoice();
+  }
+
+
+  // String representation of clazz, for debugging only
+  public String clazzAsString(int cl)
+  {
+    return cl == -1
+      ? "-- no clazz --"
+      : _clazzIds.get(cl).toString();
+  }
+
+
   /*------------------------  accessing features  -----------------------*/
 
 
@@ -266,6 +286,32 @@ public class FUIR extends ANY
       default: throw new Error ("Unexpected feature impl kind: "+ff.impl.kind_);
       }
   }
+
+
+  /**
+   * Is the given feature a reference to an outer feature?
+   *
+   * @param f a feature id
+   *
+   * @return true for automatically generated references to outer features
+   */
+  public boolean featureIsOuterRef(int f)
+  {
+    return _featureIds.get(f).isOuterRef();
+  }
+
+
+  // String representation of feature, for debugging only
+  public String featureAsString(int f)
+  {
+    return f == -1
+      ? "-- no field --"
+      : _featureIds.get(f).qualifiedName();
+  }
+
+
+  /*--------------------------  stack handling  -------------------------*/
+
 
   List<Stmnt> toStack(Stmnt s)
   {
@@ -480,6 +526,66 @@ public class FUIR extends ANY
         System.err.println("Stmnt not supported in FUIR.codeAt: "+e.getClass());
       }
     return result;
+  }
+
+  public int assignedField(int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Assign);
+
+    var a = (Assign) _codeIds.get(c).get(ix);
+    return _featureIds.add(a.assignedField);
+  }
+
+  public int assignOuterClazz(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Assign);
+
+    var outerClazz = _clazzIds.get(cl);
+    var a = (Assign) _codeIds.get(c).get(ix);
+    var ocl = Clazzes.clazz(a.getOuter, outerClazz);
+    if (ocl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
+      {
+        // NYI: Check Clazzes.isUsed(thizFeature, ocl)
+        return _clazzIds.add(ocl);
+      }
+    else
+      {
+        return -1;
+      }
+  }
+
+  public int assignValueClazz(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Assign);
+
+    var outerClazz = _clazzIds.get(cl);
+    var a = (Assign) _codeIds.get(c).get(ix);
+    var vcl = Clazzes.clazz(a.value, outerClazz);
+    if (vcl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
+      {
+        return _clazzIds.add(vcl);
+      }
+    else
+      {
+        return -1;
+      }
+  }
+
+  public int assignClazzForField(int outerClazz, int field)
+  {
+    var ocl = _clazzIds.get(outerClazz);
+    var f = _featureIds.get(field);
+    var fclazz = ocl.clazzForField(f);
+    return _clazzIds.add(fclazz);
   }
 
   public int callCalledFeature(int c, int ix)
