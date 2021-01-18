@@ -57,7 +57,7 @@ hasInterval<T: hasInterval<T>> : integer<hasInterval<T>> is
       for
         x := lower, x + one
       while x <= upper
-        f(x);
+        f(x)
 
     # create a stream of all the elements of this interval, in order.
     redef asStream ref : stream<T> is
@@ -73,7 +73,7 @@ hasInterval<T: hasInterval<T>> : integer<hasInterval<T>> is
 
     forWhile(f fun (T) bool) is asStream.consume2(f)
 
-    before(f fun (T) bool) stream<T> is asStream.before(f);
+    before(f fun (T) bool) stream<T> is asStream.before(f)
 
     filter   (f fun (T) bool) stream<T> is asStream.filter(f)  # NYI one-line comma separated decl "filter, infix |" does not work yet
     infix |& (f fun (T) bool) stream<T> is asStream.filter(f)
@@ -95,7 +95,7 @@ hasInterval<T: hasInterval<T>> : integer<hasInterval<T>> is
 
       # create a stream of all the elements of this interval, in order.
       redef asStream ref : stream<T> is
-        x := lower;
+        x := lower
         redef hasNext bool is step > zero && x <= upper || step < zero && x >= upper
         redef next T is result = x; x = x + step
 
@@ -107,4 +107,4 @@ hasInterval<T: hasInterval<T>> : integer<hasInterval<T>> is
     # hasInterval.this..max   # NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
     thiz..max
 
-  # postfix .. : infix .. (max); # NYI: check: this should have the same effect using a sub-class
+  # postfix .. : infix .. (max) is  # NYI: check: this should have the same effect using a sub-class

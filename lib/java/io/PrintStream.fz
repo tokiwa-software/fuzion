@@ -27,6 +27,6 @@ public java.io.PrintStream(private javaRef2 Object) ref : fusion.java.JavaObject
 {
   public println(s string)
   {
-    fusion.java.callVirtual("println","(Ljava/lang/String;)V",PrintStream.this,s);
+    fusion.java.callVirtual("println","(Ljava/lang/String;)V",PrintStream.this,s)
   }
 }

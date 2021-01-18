@@ -27,6 +27,6 @@ public java.lang.System
 {
   out java.io.PrintStream
   {
-    result = fusion.java.getStaticField<java.io.PrintStream>("java.lang.System","out");
+    result = fusion.java.getStaticField<java.io.PrintStream>("java.lang.System","out")
   }
 }

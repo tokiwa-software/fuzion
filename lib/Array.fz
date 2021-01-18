@@ -52,7 +52,7 @@ Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
     pre
       safety: 0 <= i < length
   # post   NYI
-    #Array.this[i] == o;
+    #Array.this[i] == o
   is
     setel(data,i,o)
 

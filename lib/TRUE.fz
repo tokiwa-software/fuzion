@@ -28,7 +28,7 @@
 # Note that this value is of type >>TRUE<<, not of type >>bool<<, i.e., if it
 # is used for type inference as in
 #
-#    myBoolean := TRUE;
+#    myBoolean := TRUE
 #
 # you will get a variable of type >>TRUE<<, it will not be possible to assign
 # >>FALSE<< to it. You can use >>true<< as an alternative to get type >>bool<<.
