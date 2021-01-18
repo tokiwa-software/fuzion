@@ -23,9 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-sys single {
-  out single {
-    print(s Object) => stdout.print(s);
-    println(s Object) => stdout.println(s);
-  }
-}
+sys single is
+  out single is
+    print  (s Object) => stdout.print  (s)
+    println(s Object) => stdout.println(s)

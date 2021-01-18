@@ -25,6 +25,4 @@
 
 # Tuple -- feature used for syntactic sugar for tuples such as (a,b,c)
 #
-Tuple<A...>(values A)
-{
-}
+Tuple<A...>(values A) is

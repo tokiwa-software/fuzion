@@ -25,7 +25,6 @@
 
 # conststring -- feature used for string constants in Fuzion source code
 #
-conststring ref : string, Array<i32>(0, fun (i i32) => 0)
-{
+conststring ref : string, Array<i32>(0, fun (i i32) => 0) is
+
   redef asBytes ref streamable<i32> { conststring.this }
-}

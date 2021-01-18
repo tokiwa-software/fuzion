@@ -25,8 +25,8 @@
 
 # Object -- parent feature of all features that do not have an explicit parent
 #
-Object ref
-{
+Object ref is
+
   # NYI: For now, === and !== are used for ref equality checks, == and != for value equality
   infix === (o Object) bool is intrinsic
   infix !== (o Object) bool is intrinsic
@@ -39,5 +39,3 @@ Object ref
   # that any feature in Object would also inherit from object, so the frame
   # object of that feature would inherit its outer feature, which would cause
   # problems in case of recursion, see tests/inheritance_negative2.fz
-
-};

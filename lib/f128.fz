@@ -25,10 +25,9 @@
 
 # f128 -- 128 bit floating point values
 #
-f128 value {
+f128 value is
   val f128;
   infix + (other f128) f128 is intrinsic
   infix - (other f128) f128 is intrinsic
   infix * (other f128) f128 is intrinsic
   infix / (other f128) f128 is intrinsic
-}

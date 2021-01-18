@@ -31,18 +31,18 @@ streamable<T> ref is
 
 /* NYI: Does not work yet:
 
-  forAll(f fun (T)) { asStream.consume(f) }
+  forAll(f fun (T)) is asStream.consume(f)
 
-  infix ∀ (f fun (T) bool) bool { asStream ∀ f }
+  infix ∀ (f fun (T) bool) bool is asStream ∀ f
 
-  infix | (f fun (T)) { asStream.consume(f) }
+  infix | (f fun (T)) is asStream.consume(f)
 
-  forWhile(f fun (T) bool) { asStream.consume2(f) }
+  forWhile(f fun (T) bool) is asStream.consume2(f)
 
-  before(f fun (T) bool) stream<T> { asStream.before(f); }
+  before(f fun (T) bool) stream<T> is asStream.before(f)
 
-  filter   (f fun (T) bool) stream<T> { asStream.filter(f) } # NYI one-line comma separated decl "filter, infix |" does not work yet
-  infix |& (f fun (T) bool) stream<T> { asStream.filter(f) };
+  filter   (f fun (T) bool) stream<T> is asStream.filter(f)  # NYI one-line comma separated decl "filter, infix |" does not work yet
+  infix |& (f fun (T) bool) stream<T> is asStream.filter(f)
 
-  postfix | () stream<T> { asStream };
+  postfix | () stream<T> is asStream
   */

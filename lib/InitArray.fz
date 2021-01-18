@@ -26,41 +26,32 @@
 # InitArray -- convenience feature for array creation
 #
 # NYI: Replace by better syntactic sugar in the Fuzion parser / front end.
-InitArray<T>
-{
-  Nil { }
-  node (head T, tail list) ref
-  {
-    setTail(t list)
-    {
-      tail = t;
-    }
-  }
-  list : choice<Nil, node> { }
+InitArray<T> is
 
-  first list = Nil;
-  last list = Nil;
-  len i32 = 0;
+  Nil is
+  node (head T, tail list) ref is
+
+    setTail(t list) is
+      tail = t
+
+  list : choice<Nil, node> is
+
+  first list = Nil
+  last list = Nil
+  len i32 = 0
 
   infix + (v T) InitArray<T>
   post
     true # NYI: len == old len + 1
-  {
-    nju := node(v, Nil);
+  is
+    nju := node(v, Nil)
     match (last)
-    {
-      Nil    => { first = nju;    last = nju; }
-      n node => { n.setTail(nju); last = nju; }
-    }
-    len = len + 1;
+      Nil    => first = nju;    last = nju
+      n node => n.setTail(nju); last = nju
+    len = len + 1
     InitArray.this
-  }
 
-  postfix & Array<T>
-  {
-    result = Array<T>(len, fun (i i32) => { match first { n node => { first = n.tail; n.head }; Nil => { dummy } } });
-  }
+  postfix & Array<T> is
+    result = Array<T>(len, fun (i i32) => { match first { n node => { first = n.tail; n.head }; Nil => { dummy } } })
 
-  dummy T { (InitArray.this &) [0] }
-
-}
+  dummy T is (InitArray.this &) [0]

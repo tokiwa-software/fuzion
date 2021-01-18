@@ -28,4 +28,4 @@
 # NYI: move to universe.fz
 
 # NYI: Make this a const field as soon as initializing fields in universe works
-true bool { TRUE };
+true bool is TRUE

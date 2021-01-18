@@ -30,77 +30,60 @@
 # mutable state.
 stream<T> ref is
 
-  consume (f fun (T)) { while hasNext { f(next); } }
-  infix | (f fun (T)) { while hasNext { f(next); } }
-  consume2(f fun (T) bool) { while hasNext && f(next); }
-  filter(f fun (T) bool) ref : stream<T>
-  {
-    cache T; # NYI: should be Option<T>;
-    cacheOk bool = false;
-    next2;
-    redef hasNext => cacheOk;
-    redef next T
-    {
-      result = cache;
-      cacheOk = false;
-      next2;
-    }
+  consume (f fun (T)) is while hasNext f(next)
+  infix | (f fun (T)) is while hasNext f(next)
+  consume2(f fun (T) bool) is while hasNext && f(next)
+  filter(f fun (T) bool) ref : stream<T> is
+    cache T  # NYI: should be Option<T>
+    cacheOk bool = false
     next2
-    {
-      while (!cacheOk && stream.this.hasNext)
-      {
-        cache = stream.this.next;
-        cacheOk = f(cache);
-      }
-    }
-  }
-  infix |& (f fun (T) bool) stream<T> { filter(f) }
+    redef hasNext => cacheOk
+    redef next T is
+      result = cache
+      cacheOk = false
+      next2
+    next2 is
+      while !cacheOk && stream.this.hasNext
+        cache = stream.this.next
+        cacheOk = f(cache)
+  infix |& (f fun (T) bool) stream<T> is filter(f)
 
-  infix ∀ (f fun (T) bool) bool
-  {
+  infix ∀ (f fun (T) bool) bool is
     for
-      res := true, f(next);
-    until !res || !hasNext;
-  }
+      res := true, f(next)
+    until !res || !hasNext
 
   # create a new stream that contains the first elements of this stream for
   # which f(e) is false
   #
-  before(f fun (T) bool) ref : stream<T>
-  {
-    nextCache := stream.this.next; # NYI should be Option<T> and set to None if !stream.this.hasNext
-    redef hasNext => !f(nextCache);
-    redef next T
-    {
-      result = nextCache;
-      nextCache = stream.this.next;
-    }
-  }
+  before(f fun (T) bool) ref : stream<T> is
+    nextCache := stream.this.next  # NYI should be Option<T> and set to None if !stream.this.hasNext
+    redef hasNext => !f(nextCache)
+    redef next T is
+      result = nextCache
+      nextCache = stream.this.next
+
   hasNext bool is abstract
   next T is abstract
-  print
-  {
-    consume(fun (x T) { stdout.print(x); if (hasNext) { stdout.print(", "); } });
-  }
-  count i32
-  {
-# NYI: This does not work yet:
-#    result = 0;
-#    consume(fun (x T) { result = result + 1; });
-    res := 0;
-    consume(fun (x T) { res = res + 1; });
-    res
-  }
-  take (n i32) => Array<T>(n, fun (_ i32) => next);
 
-  redef asString ref string
-  {
-    res string = "";
+  print is
+    consume(fun (x T) is stdout.print(x); if (hasNext) stdout.print(", ") )
+
+  count i32 is
+# NYI: This does not work yet:
+#    result = 0
+#    consume(fun (x T) is result = result + 1 )
+    res := 0
+    consume(fun (x T) is res = res + 1)
+    res
+  take (n i32) => Array<T>(n, fun (_ i32) => next)
+
+  redef asString ref string is
+    res string = ""
 
     # NYI: x.asString does not work yet (becuase of generic type?)
-    # consume(fun (x T) { res = res + x.asString; if (hasNext) { res = res + ", " } });
+    # consume(fun (x T) is res = res + x.asString; if hasNext res = res + ", ")
 
-    s(o ref Object) => o.asString;
-    consume(fun (x T) { res = res + s(x); if (hasNext) { res = (res + ", ") } });
+    s(o ref Object) => o.asString
+    consume(fun (x T) is res = res + s(x); if hasNext res = res + ", ")
     res
-  }

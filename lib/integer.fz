@@ -81,7 +81,7 @@ integer<T : integer<T>> : numeric<T> is
     pre
       thiz >= zero
   is
-    if thiz > zero { ((thiz - one).to_u32 + 1) }
+    if (thiz > zero) ((thiz - one).to_u32 + 1)
     else 0
 
   highest10 T
@@ -115,8 +115,8 @@ integer<T : integer<T>> : numeric<T> is
             _ nil => ("-" + -(integer.this / ten) + -(integer.this % ten)).asBytes.asStream
 
       posDecimalBytesStream ref : stream<i32> is  # NYI: check why "ref" is needed here, make this an anonymous inner feature
-        p := integer.this.highest10;
-        redef hasNext => p.sign > 0;
+        p := integer.this.highest10
+        redef hasNext => p.sign > 0
         redef next =>
           r := 48 + (integer.this / p % ten).to_u32.as_i32
           p = p / ten

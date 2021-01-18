@@ -45,8 +45,8 @@ hasInterval<T: hasInterval<T>> : integer<hasInterval<T>> is
   #   a <  b: the interval from a to b, both inclusive
   #   a == b: the interval containing only one element, a
   #   a >  b: an empty interval
-  infix .. (upper T) : streamable<T>
-  {
+  infix .. (upper T) : streamable<T> is
+
     lower T is thiz
     # lower => hasInterval.this  # NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
 
@@ -65,22 +65,22 @@ hasInterval<T: hasInterval<T>> : integer<hasInterval<T>> is
       redef hasNext bool is x <= upper
       redef next T is result = x; x = x + one
 
-    forAll(f fun (T)) { asStream.consume(f) }
+    forAll(f fun (T)) is asStream.consume(f)
 
-    infix ∀ (f fun (T) bool) bool { asStream ∀ f }
+    infix ∀ (f fun (T) bool) bool is asStream ∀ f
 
-    infix | (f fun (T)) { asStream.consume(f) }
+    infix | (f fun (T)) is asStream.consume(f)
 
-    forWhile(f fun (T) bool) { asStream.consume2(f) }
+    forWhile(f fun (T) bool) is asStream.consume2(f)
 
-    before(f fun (T) bool) stream<T> { asStream.before(f); }
+    before(f fun (T) bool) stream<T> is asStream.before(f);
 
-    filter   (f fun (T) bool) stream<T> { asStream.filter(f) } # NYI one-line comma separated decl "filter, infix |" does not work yet
-    infix |& (f fun (T) bool) stream<T> { asStream.filter(f) };
+    filter   (f fun (T) bool) stream<T> is asStream.filter(f)  # NYI one-line comma separated decl "filter, infix |" does not work yet
+    infix |& (f fun (T) bool) stream<T> is asStream.filter(f)
 
-    infix & (f fun (T) bool) stream<T> { asStream.filter(f) };
+    infix & (f fun (T) bool) stream<T> is asStream.filter(f)
 
-    postfix | () stream<T> { asStream };
+    postfix | () stream<T> is asStream
 
     # Create a streamable that is steping through this interval skipping values. For a
     # non-negative step parameter, the stream will return lower, lower+step,
@@ -91,19 +91,16 @@ hasInterval<T: hasInterval<T>> : integer<hasInterval<T>> is
     # that a negative step will produce a non-empty stream for an empty interval with
     # lower > upper!
     #
-    infix : (step T) : streamable<T>
-    {
+    infix : (step T) : streamable<T> is
+
       # create a stream of all the elements of this interval, in order.
-      redef asStream ref : stream<T>
-      {
+      redef asStream ref : stream<T> is
         x := lower;
-        redef hasNext bool { step > zero && x <= upper || step < zero && x >= upper }
-        redef next T { result = x; x = x + step; }
-      }
-      forAll(f fun (T)) { asStream.consume(f) }
-      infix | (f fun (T)) { asStream.consume(f) }
-    }
-  }
+        redef hasNext bool is step > zero && x <= upper || step < zero && x >= upper
+        redef next T is result = x; x = x + step
+
+      forAll  (f fun (T)) is asStream.consume(f)
+      infix | (f fun (T)) is asStream.consume(f)
 
   # the open interval this to the maximum T value
   postfix .. () infix .. is

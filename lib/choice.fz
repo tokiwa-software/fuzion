@@ -25,11 +25,8 @@
 
 # choice -- feature used for choice types
 #
-choice<A...>
-{
+choice<A...> is
 
-#a<X> X
-#  pre
-#    choice.this ? X => true, *=> false;
-
-}
+#  a<X> X
+#    pre
+#      choice.this ? X => true, *=> false;
