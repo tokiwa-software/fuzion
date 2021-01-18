@@ -301,6 +301,24 @@ public class FUIR extends ANY
   }
 
 
+  /**
+   * Get the id of the result field of a given feature.
+   *
+   * @param f a feature id
+   *
+   * @return feature id of f's result field or -1 if f has no result field or a
+   * result field that contains no data
+   */
+  public int featureResultField(int f)
+  {
+    var ff = _featureIds.get(f);
+    var r = ff.resultField();
+    return r == null // NYI: should also check if result type if void or empty
+      ? -1
+      : _featureIds.add(r);
+  }
+
+
   // String representation of feature, for debugging only
   public String featureAsString(int f)
   {

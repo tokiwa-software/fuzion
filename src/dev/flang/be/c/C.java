@@ -86,6 +86,12 @@ public class C extends Backend
   private PrintWriter cout;
 
 
+  /**
+   * Counter for unique temp variables to hold function results
+   */
+  private int _resultId = 0;
+
+
   /*---------------------------  consructors  ---------------------------*/
 
 
@@ -432,11 +438,23 @@ public class C extends Backend
                     case Routine  :
                     case Intrinsic:
                       {
+                        var r = _fuir.featureResultField(cf);
+                        String res;
+                        if (r != -1)
+                          {
+                            res = "fzres_" + (_resultId++);
+                            cout.print(" slot_t " + res + " = ");
+                          }
+                        else
+                          {
+                            res = "-- no result --";
+                            cout.print(" ");
+                          }
                         String n = featureMangledName(cf);
-                        cout.println("" + n + "(");
+                        cout.print("" + n + "(");
                         passArgs(stack, ac);
                         cout.println(");");
-                        stack.push("(/*NYI: Call result of " + n + " */ 0)");
+                        stack.push(res);
                         break;
                       }
                     case Field    :
@@ -523,7 +541,12 @@ public class C extends Backend
   private void cFunctionDecl(int cl)
   {
     var f = _fuir.clazz2FeatureId(cl);
-    cout.print("void " + featureMangledName(f) + "(");
+    var res = _fuir.featureResultField(f);
+    cout.print(res == -1
+               ? "void "
+               : "slot_t ");
+    cout.print(featureMangledName(f));
+    cout.print("(");
     var ac = _fuir.clazzArgCount(cl);
     if (ac == 0)
       {
@@ -572,6 +595,7 @@ public class C extends Backend
         }
       case IMPLEMENTATIONS:
         {
+          _resultId = 0;  // reset counter for unique temp variables for function results
           var f = _fuir.clazz2FeatureId(cl);
           switch (_fuir.featureKind(f))
             {
@@ -596,6 +620,11 @@ public class C extends Backend
                 var c = _fuir.featureCode(f);
                 var stack = new Stack<String>();
                 createCode(cl, stack, c);
+                var res = _fuir.featureResultField(f);
+                if (res != -1)
+                  {
+                    cout.println(" return cur->fields[" + _fuir.clazzFieldOffset(cl, res) + "];");
+                  }
                 cout.println("}");
                 break;
               }
