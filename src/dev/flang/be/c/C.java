@@ -154,8 +154,9 @@ public class C extends Backend
                      " int64_t i64;\n"+
                      " uint64_t u64;\n"+
                      "} slot_t;\n"+
-                     "void fz_exitForCompilerTest(slot_t code) { exit(code.i32); }\n"+
-                     "void fz_fusion__std__out__write(slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); }\n");
+                     "slot_t fz_exitForCompilerTest(slot_t code) { exit(code.i32); return ((slot_t) { }); }\n"+
+                     "slot_t fz_fusion__std__out__write(slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); return ((slot_t) { }); }\n"+
+                     "slot_t fz_i32__infix_wpO(slot_t i) { return ((slot_t) { .i32 = '?' }); }\n");
         for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
           {
             typesForClazz(c);
@@ -440,7 +441,8 @@ public class C extends Backend
                       {
                         var r = _fuir.featureResultField(cf);
                         String res;
-                        if (r != -1)
+                        if (r != -1 ||
+                            _fuir.featureKind(cf) == FUIR.FeatureKind.Intrinsic)
                           {
                             res = "fzres_" + (_resultId++);
                             cout.print(" slot_t " + res + " = ");
