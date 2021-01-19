@@ -482,9 +482,10 @@ public class C extends Backend
                       }
                     case Abstract :
                       {
-                        _c.println("// NYI : Call abstract: " + featureMangledName(cf) + " (");
+                        _c.print("// NYI : Call abstract: " + featureMangledName(cf) + " (");
                         passArgs(stack, ac);
                         _c.println(");");
+                        stack.push("/* NYI : Abstract result */ NULL");
                         break;
                       }
                     }
