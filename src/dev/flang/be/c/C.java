@@ -26,12 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.c;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
+
 import java.util.Stack;
 
 import dev.flang.ir.Backend;
@@ -89,20 +85,7 @@ public class C extends Backend
   /**
    * Writer to create the C code to.
    */
-  private PrintWriter _cout;
-
-
-  /**
-   * Indentation counter for generated code, just for code readability.
-   */
-  private int _c_indentation = 0;
-
-
-  /**
-   * Column within current line of last character written to C code.  0 for
-   * beginning of the line.
-   */
-  private int _c_col = 0;
+  private CFile _c;
 
 
   /**
@@ -149,73 +132,6 @@ public class C extends Backend
 
 
   /**
-   * helper for c_print: Print a string that does not contain any LF.  If at
-   * beginning of line, indent _c_indentation times.
-   *
-   * @param s the string
-   */
-  private void c_print0(String s)
-  {
-    if (PRECONDITIONS) require
-      (s.indexOf("\n") < 0);
-
-    var l = s.length();
-    if (l > 0)
-      {
-        if (_c_col == 0)
-          {
-            for (int i = 0; i < _c_indentation; i++)
-              {
-                _cout.print(" ");
-              }
-          }
-        _cout.print(s);
-        _c_col += l;
-      }
-  }
-
-
-  /**
-   * Print the given C string, indenting new lines _c_indentation times.
-   *
-   * @param s the string to print, may contain '\n'.
-   */
-  void c_print(String s)
-  {
-    int start = 0;
-    do
-      {
-        int end = s.indexOf('\n', start);
-        if (end >= 0)
-          {
-            c_print0(s.substring(start, end));
-            _cout.print("\n");
-            _c_col = 0;
-            start = end + 1;
-          }
-        else
-          {
-            c_print0(s.substring(start));
-            start = s.length();
-          }
-      }
-    while (start < s.length());
-  }
-
-
-  /**
-   * Print the given C string, indenting new lines _c_indentation times, follwed
-   * by LF.
-   *
-   * @param s the string to print, may contain '\n'.
-   */
-  void c_println(String s)
-  {
-    c_print(s + "\n");
-  }
-
-
-  /**
    * Create the C code from the intermediate code.
    */
   public void compile()
@@ -227,22 +143,23 @@ public class C extends Backend
     System.out.println(" + " + cname);
     try
       {
-        _cout = new PrintWriter(Files.newBufferedWriter(Path.of(cname), StandardCharsets.UTF_8));
-        c_println("#include <stdlib.h>\n"+
-                  "#include <stdio.h>\n"+
-                  "#include <unistd.h>\n"+
-                  "#include <stdint.h>\n"+
-                  "typedef union slot_u * slot_r;\n"+
-                  "typedef union slot_u {\n"+
-                  " slot_r ref;\n"+
-                  " int32_t i32;\n"+
-                  " uint32_t u32;\n"+
-                  " int64_t i64;\n"+
-                  " uint64_t u64;\n"+
-                  "} slot_t;\n"+
-                  "slot_t fz_exitForCompilerTest    (void /* fztype__mm_universe_mm_0_   */ *cur, slot_t code) { exit(code.i32); return ((slot_t) { }); }\n"+
-                  "slot_t fz_fusion__std__out__write(void /* fztype_fusion__std__out_17_ */ *cur, slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); return ((slot_t) { }); }\n"+
-                  "slot_t fz_i32__infix_wpO(slot_t cur, slot_t i) { return ((slot_t) { .i32 = cur.i32 + i.i32 }); }\n");
+        _c = new CFile(cname);
+        _c.println
+          ("#include <stdlib.h>\n"+
+           "#include <stdio.h>\n"+
+           "#include <unistd.h>\n"+
+           "#include <stdint.h>\n"+
+           "typedef union slot_u * slot_r;\n"+
+           "typedef union slot_u {\n"+
+           " slot_r ref;\n"+
+           " int32_t i32;\n"+
+           " uint32_t u32;\n"+
+           " int64_t i64;\n"+
+           " uint64_t u64;\n"+
+           "} slot_t;\n"+
+           "slot_t fz_exitForCompilerTest    (void /* fztype__mm_universe_mm_0_   */ *cur, slot_t code) { exit(code.i32); return ((slot_t) { }); }\n"+
+           "slot_t fz_fusion__std__out__write(void /* fztype_fusion__std__out_17_ */ *cur, slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); return ((slot_t) { }); }\n"+
+           "slot_t fz_i32__infix_wpO(slot_t cur, slot_t i) { return ((slot_t) { .i32 = cur.i32 + i.i32 }); }\n");
         for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
           {
             typesForClazz(c);
@@ -255,7 +172,7 @@ public class C extends Backend
           {
             compileClazz(c, CompilePhase.IMPLEMENTATIONS);
           }
-        c_println("int main(int argc, char **args) { " + featureMangledName(f) + "(NULL); }");
+        _c.println("int main(int argc, char **args) { " + featureMangledName(f) + "(NULL); }");
       }
     catch (IOException io)
       { // NYI: proper error handling
@@ -264,10 +181,10 @@ public class C extends Backend
       }
     finally
       {
-        if (_cout != null)
+        if (_c != null)
           {
-            _cout.close();
-            _cout = null;
+            _c.close();
+            _c = null;
           }
       }
   }
@@ -403,10 +320,11 @@ public class C extends Backend
       {
       case Routine:
         {
-          c_print("typedef struct {\n" +
-                  (_fuir.clazzIsRef(cl) ? "  uint32_t clazzId;\n" : "") +
-                  "  slot_t fields["+_fuir.clazzSize(cl)+"];\n"+
-                  "} " + clazzTypeName(cl) + ";\n");
+          _c.print
+            ("typedef struct {\n" +
+             (_fuir.clazzIsRef(cl) ? "  uint32_t clazzId;\n" : "") +
+             "  slot_t fields["+_fuir.clazzSize(cl)+"];\n"+
+             "} " + clazzTypeName(cl) + ";\n");
           break;
         }
       default:
@@ -429,9 +347,9 @@ public class C extends Backend
     if (argCount > 0)
       {
         passArgs(stack, argCount-1);
-        c_print(",");
+        _c.print(",");
       }
-    c_print(a);
+    _c.print(a);
   }
 
 
@@ -482,20 +400,20 @@ public class C extends Backend
                       !_fuir.featureIsOuterRef(field) /* outerref might be an adr of a value type */
                       )
                     {
-                      c_println("// NYI: Assign to choice field "+outer+"."+_fuir.featureAsString(field)+" = "+value);
+                      _c.println("// NYI: Assign to choice field "+outer+"."+_fuir.featureAsString(field)+" = "+value);
                     }
                   else if (_fuir.clazzIsRef(fclazz))
                     {
-                      c_println("// NYI: Assign ref value "+outer+"."+_fuir.featureAsString(field)+" = "+value);
+                      _c.println("// NYI: Assign ref value "+outer+"."+_fuir.featureAsString(field)+" = "+value);
                     }
                   else
                     {
-                      c_println("" + outer + "->fields[" + offset + "] = " + value + ";");
+                      _c.println("" + outer + "->fields[" + offset + "] = " + value + ";");
                     }
                 }
               else
                 {
-                  c_println("// NOP assignment to " + _fuir.featureAsString(field) + " of void type removed");
+                  _c.println("// NOP assignment to " + _fuir.featureAsString(field) + " of void type removed");
                 }
               break;
             }
@@ -503,7 +421,7 @@ public class C extends Backend
             {
               var v = stack.pop();
               stack.push("*** boxed("+v+") ***");
-              c_println("// NYI: Box " + v + "!");
+              _c.println("// NYI: Box " + v + "!");
               break;
             }
           case Call:
@@ -512,9 +430,9 @@ public class C extends Backend
               var ac = _fuir.callArgCount(c, i);
               if (_fuir.callIsDynamic(c, i))
                 {
-                  c_println("// NYI : dynamic call to feature: " + featureMangledName(cf) + " (");
+                  _c.println("// NYI : dynamic call to feature: " + featureMangledName(cf) + " (");
                   passArgs(stack, ac);
-                  c_println(")");
+                  _c.println(")");
                 }
               else
                 {
@@ -530,16 +448,16 @@ public class C extends Backend
                             _fuir.featureKind(cf) == FUIR.FeatureKind.Intrinsic)
                           {
                             res = "fzres_" + (_resultId++);
-                            c_print("slot_t " + res + " = ");
+                            _c.print("slot_t " + res + " = ");
                           }
                         else
                           {
                             res = "(/*-- no result --*/ NULL)";
                           }
                         String n = featureMangledName(cf);
-                        c_print("" + n + "(");
+                        _c.print("" + n + "(");
                         passArgs(stack, ac);
-                        c_println(");");
+                        _c.println(");");
                         stack.push(res);
                         if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.featureAsString(cf)+": "+stack);
                         break;
@@ -553,9 +471,9 @@ public class C extends Backend
                       }
                     case Abstract :
                       {
-                        c_println("// NYI : Call abstract: " + featureMangledName(cf) + " (");
+                        _c.println("// NYI : Call abstract: " + featureMangledName(cf) + " (");
                         passArgs(stack, ac);
-                        c_println(");");
+                        _c.println(");");
                         break;
                       }
                     }
@@ -573,16 +491,16 @@ public class C extends Backend
               var block     = _fuir.i32Const(c, i + 1);
               var elseBlock = _fuir.i32Const(c, i + 2);
               i = i + 2;
-              c_println("if ("+cond+") {");
-              _c_indentation ++;
+              _c.println("if ("+cond+") {");
+              _c.indent();
               createCode(cl, stack, block);
-              _c_indentation --;
-              c_println("} else {");
+              _c.unindent();
+              _c.println("} else {");
               // NYI: clone stack
-              _c_indentation ++;
+              _c.indent();
               createCode(cl, stack, elseBlock);
-              _c_indentation --;
-              c_println("}");
+              _c.unindent();
+              _c.println("}");
               // NYI: join stacks
               break;
             }
@@ -604,7 +522,7 @@ public class C extends Backend
           case Match:
             {
               var v = stack.pop();
-              c_println("// NYI: match " + v + "!");
+              _c.println("// NYI: match " + v + "!");
               stack.push("*** match("+v+") result ***");
               break;
             }
@@ -638,27 +556,27 @@ public class C extends Backend
   {
     var f = _fuir.clazz2FeatureId(cl);
     var res = _fuir.featureResultField(f);
-    c_print(res == -1
+    _c.print(res == -1
             ? "void "
             : "slot_t ");
-    c_print(featureMangledName(f));
-    c_print("(");
+    _c.print(featureMangledName(f));
+    _c.print("(");
     var oc = _fuir.clazzOuterClazz(cl);
     String comma = "";
     if (oc != -1)
       {
-        c_print(clazzTypeName(oc));
-        c_print(" *fzouter");
+        _c.print(clazzTypeName(oc));
+        _c.print(" *fzouter");
         comma = ", ";
       }
     var ac = _fuir.clazzArgCount(cl);
     for (int i = 0; i < ac; i++)
       {
-        c_print(comma);
-        c_print("slot_t arg" + i);
+        _c.print(comma);
+        _c.print("slot_t arg" + i);
         comma = ", ";
       }
-    c_print(")");
+    _c.print(")");
   }
 
 
@@ -682,7 +600,7 @@ public class C extends Backend
             case Routine:
               {
                 cFunctionDecl(cl);
-                c_print(";\n");
+                _c.print(";\n");
                 break;
               }
             case Field:
@@ -700,11 +618,11 @@ public class C extends Backend
             {
             case Routine:
               {
-                c_print("\n// code for clazz "+_fuir.clazzAsString(cl)+":\n");
+                _c.print("\n// code for clazz "+_fuir.clazzAsString(cl)+":\n");
                 cFunctionDecl(cl);
-                c_print(" {\n");
-                _c_indentation ++;
-                c_print("" + clazzTypeName(cl) + " *" + CURRENT + " = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
+                _c.print(" {\n");
+                _c.indent();
+                _c.print("" + clazzTypeName(cl) + " *" + CURRENT + " = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
                         (_fuir.clazzIsRef(cl) ? CURRENT + "->clazzId = " + clazzId2num(cl) + ";\n" : ""));
 
                 var ac = _fuir.clazzArgCount(cl);
@@ -714,7 +632,7 @@ public class C extends Backend
                     if (af >= 0) // af < 0 for unused argument fields.
                       {
                         var offset = _fuir.clazzFieldOffset(cl, af);
-                        c_print("cur->fields[" + offset + "] = arg" + i +";\n");
+                        _c.print("cur->fields[" + offset + "] = arg" + i +";\n");
                       }
                   }
                 var c = _fuir.featureCode(f);
@@ -723,16 +641,16 @@ public class C extends Backend
                 var res = _fuir.featureResultField(f);
                 if (res != -1)
                   {
-                    c_println("return cur->fields[" + _fuir.clazzFieldOffset(cl, res) + "];");
+                    _c.println("return cur->fields[" + _fuir.clazzFieldOffset(cl, res) + "];");
                   }
-                _c_indentation --;
-                c_println("}");
+                _c.unindent();
+                _c.println("}");
                 break;
               }
             case Field:
               break;
             default:
-              c_println("// NYI: code for "+_fuir.featureKind(f)+" "+ featureMangledName(f));
+              _c.println("// NYI: code for "+_fuir.featureKind(f)+" "+ featureMangledName(f));
               break;
             }
           break;

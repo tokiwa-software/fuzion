@@ -137,6 +137,7 @@ JAVA_FILES_BE_INTERPRETER = \
 
 JAVA_FILES_BE_C = \
           $(SRC)/dev/flang/be/c/C.java \
+          $(SRC)/dev/flang/be/c/CFile.java \
 
 JAVA_FILES_TOOLS = \
           $(SRC)/dev/flang/tools/Fusion.java \
