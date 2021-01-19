@@ -68,6 +68,13 @@ public class C extends Backend
 
 
   /**
+   * C constants corresponding to Fuzion's true and false values.
+   */
+  private static final String FZ_FALSE =  "((slot_t) { .i32 = 0 })";
+  private static final String FZ_TRUE  =  "((slot_t) { .i32 = 1 })";
+
+
+  /**
    * Debugging output
    */
   private static final boolean SHOW_STACK_ON_CALL = false;
@@ -491,7 +498,7 @@ public class C extends Backend
               var block     = _fuir.i32Const(c, i + 1);
               var elseBlock = _fuir.i32Const(c, i + 2);
               i = i + 2;
-              _c.println("if ("+cond+") {");
+              _c.println("if (" + cond + ".i32 != 0) {");
               _c.indent();
               createCode(cl, stack, block);
               _c.unindent();
@@ -507,7 +514,7 @@ public class C extends Backend
           case boolConst:
             {
               var bc = _fuir.boolConst(c, i);
-              stack.push(bc ? "TRUE" : "FALSE");
+              stack.push(bc ? FZ_TRUE : FZ_FALSE);
               break;
             }
           case i32Const: { var ic = _fuir.i32Const(c, i); stack.push("((slot_t) { .i32 = " + ic + "})"); break; }
