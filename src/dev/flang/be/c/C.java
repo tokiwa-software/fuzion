@@ -164,9 +164,13 @@ public class C extends Backend
            " int64_t i64;\n"+
            " uint64_t u64;\n"+
            "} slot_t;\n"+
-           "slot_t fz_exitForCompilerTest    (void /* fztype__mm_universe_mm_0_   */ *cur, slot_t code) { exit(code.i32); return ((slot_t) { }); }\n"+
-           "slot_t fz_fusion__std__out__write(void /* fztype_fusion__std__out_17_ */ *cur, slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); return ((slot_t) { }); }\n"+
-           "slot_t fz_i32__infix_wpO(slot_t cur, slot_t i) { return ((slot_t) { .i32 = cur.i32 + i.i32 }); }\n");
+           "slot_t fz_exitForCompilerTest    (void /* fztype__mm_universe_mm_0_   */ *cur, slot_t code) { exit(code.i32); return ((slot_t) { }); }\n" +
+           "slot_t fz_fusion__std__out__write(void /* fztype_fusion__std__out_17_ */ *cur, slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); return ((slot_t) { }); }\n" +
+           "slot_t fz_i32__prefix_wmO(slot_t cur          ) { return ((slot_t) { .i32 = - cur.i32       }); }\n" +
+           "slot_t fz_i32__infix_wmO (slot_t cur, slot_t i) { return ((slot_t) { .i32 = cur.i32 - i.i32 }); }\n" +
+           "slot_t fz_i32__infix_wpO (slot_t cur, slot_t i) { return ((slot_t) { .i32 = cur.i32 + i.i32 }); }\n" +
+           "slot_t fz_i32__infix_wg  (slot_t cur, slot_t i) { return cur.i32 > i.i32 ? " + FZ_TRUE + " : " + FZ_FALSE + "; }\n" +
+           "slot_t fz_i32__infix_wl  (slot_t cur, slot_t i) { return cur.i32 < i.i32 ? " + FZ_TRUE + " : " + FZ_FALSE + "; }\n");
         for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
           {
             typesForClazz(c);
