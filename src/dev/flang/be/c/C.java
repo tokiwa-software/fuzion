@@ -160,9 +160,9 @@ public class C extends Backend
                      " int64_t i64;\n"+
                      " uint64_t u64;\n"+
                      "} slot_t;\n"+
-                     "slot_t fz_exitForCompilerTest(slot_t code) { exit(code.i32); return ((slot_t) { }); }\n"+
-                     "slot_t fz_fusion__std__out__write(slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); return ((slot_t) { }); }\n"+
-                     "slot_t fz_i32__infix_wpO(slot_t i) { return ((slot_t) { .i32 = '?' }); }\n");
+                     "slot_t fz_exitForCompilerTest    (void /* fztype__mm_universe_mm_0_   */ *cur, slot_t code) { exit(code.i32); return ((slot_t) { }); }\n"+
+                     "slot_t fz_fusion__std__out__write(void /* fztype_fusion__std__out_17_ */ *cur, slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); return ((slot_t) { }); }\n"+
+                     "slot_t fz_i32__infix_wpO(slot_t cur, slot_t i) { return ((slot_t) { .i32 = cur.i32 + i.i32 }); }\n");
         for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
           {
             typesForClazz(c);
@@ -175,7 +175,7 @@ public class C extends Backend
           {
             compileClazz(c, CompilePhase.IMPLEMENTATIONS);
           }
-        cout.println("int main(int argc, char **args) { " + featureMangledName(f) + "(); }\n");
+        cout.println("int main(int argc, char **args) { " + featureMangledName(f) + "(NULL); }\n");
       }
     catch (IOException io)
       { // NYI: proper error handling
@@ -334,9 +334,10 @@ public class C extends Backend
       }
   }
 
+
   /**
-   * Create C code to pass given number of argument from the stack to a called
-   * feature.  Write code to cout.
+   * Create C code to pass given number of arguments plus one implicit target
+   * argument from the stack to a called feature.  Write code to cout.
    *
    * @param stack the stack containing the C code of the args.
    *
@@ -344,16 +345,13 @@ public class C extends Backend
    */
   void passArgs(Stack<String> stack, int argCount)
   {
+    var a = stack.pop();
     if (argCount > 0)
       {
-        var a = stack.pop();
         passArgs(stack, argCount-1);
-        if (argCount > 1)
-          {
-            cout.print(",");
-          }
-        cout.print(a);
+        cout.print(",");
       }
+    cout.print(a);
   }
 
 
@@ -456,7 +454,7 @@ public class C extends Backend
                           }
                         else
                           {
-                            res = "-- no result --";
+                            res = "(/*-- no result --*/ NULL)";
                             cout.print(" ");
                           }
                         String n = featureMangledName(cf);
@@ -562,17 +560,20 @@ public class C extends Backend
                : "slot_t ");
     cout.print(featureMangledName(f));
     cout.print("(");
-    var ac = _fuir.clazzArgCount(cl);
-    if (ac == 0)
+    var oc = _fuir.clazzOuterClazz(cl);
+    String comma = "";
+    if (oc != -1)
       {
-        cout.print("void");
+        cout.print(clazzTypeName(oc));
+        cout.print(" *fzouter");
+        comma = ", ";
       }
-    else
+    var ac = _fuir.clazzArgCount(cl);
+    for (int i = 0; i < ac; i++)
       {
-        for (int i = 0; i < ac; i++)
-          {
-            cout.print("slot_t arg" + i + (i < ac-1 ? "," : ""));
-          }
+        cout.print(comma);
+        cout.print("slot_t arg" + i);
+        comma = ", ";
       }
     cout.print(")");
   }
