@@ -77,6 +77,7 @@ public class C extends Backend
   /**
    * Debugging output
    */
+  private static final boolean SHOW_STACK_AFTER_STMNT = false;
   private static final boolean SHOW_STACK_ON_CALL = false;
 
 
@@ -553,6 +554,7 @@ public class C extends Backend
               System.err.println("*** error: C backend does not handle statments of type " + s);
             }
           }
+        if (SHOW_STACK_AFTER_STMNT) System.out.println("After " + s +" in "+_fuir.clazzAsString(cl)+": "+stack);
       }
   }
 
