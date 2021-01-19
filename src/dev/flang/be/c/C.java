@@ -527,6 +527,11 @@ public class C extends Backend
               stack.push("*** match("+v+") result ***");
               break;
             }
+          case Singleton:
+            {
+              stack.push("(/*-- NYI: Singleton result --*/ NULL)");
+              break;
+            }
           case NOP:
           case Unknown: // NYI: remove
             {

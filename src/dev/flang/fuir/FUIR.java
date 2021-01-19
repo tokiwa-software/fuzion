@@ -96,6 +96,7 @@ public class FUIR extends ANY
     u64Const,
     strConst,
     Match,
+    Singleton,
     Unknown,
   }
 
@@ -537,7 +538,7 @@ public class FUIR extends ANY
     else if (e instanceof Singleton)
       {
         var s = (Singleton) e;
-        result = ExprKind.NOP;
+        result = ExprKind.Singleton;
       }
     else
       {
