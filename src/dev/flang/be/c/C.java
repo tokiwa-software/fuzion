@@ -71,6 +71,12 @@ public class C extends Backend
   private static final String CURRENT = "cur";
 
 
+  /**
+   * Debugging output
+   */
+  private static final boolean SHOW_STACK_ON_CALL = false;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -439,6 +445,7 @@ public class C extends Backend
                     case Routine  :
                     case Intrinsic:
                       {
+                        if (SHOW_STACK_ON_CALL) System.out.println("Befor call to "+_fuir.featureAsString(cf)+": "+stack);
                         var r = _fuir.featureResultField(cf);
                         String res;
                         if (r != -1 ||
@@ -457,6 +464,7 @@ public class C extends Backend
                         passArgs(stack, ac);
                         cout.println(");");
                         stack.push(res);
+                        if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.featureAsString(cf)+": "+stack);
                         break;
                       }
                     case Field    :
