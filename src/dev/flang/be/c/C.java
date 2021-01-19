@@ -89,7 +89,7 @@ public class C extends Backend
   /**
    * Writer to create the C code to.
    */
-  private PrintWriter cout;
+  private PrintWriter _cout;
 
 
   /**
@@ -147,22 +147,22 @@ public class C extends Backend
     System.out.println(" + " + cname);
     try
       {
-        cout = new PrintWriter(Files.newBufferedWriter(Path.of(cname), StandardCharsets.UTF_8));
-        cout.println("#include <stdlib.h>\n"+
-                     "#include <stdio.h>\n"+
-                     "#include <unistd.h>\n"+
-                     "#include <stdint.h>\n"+
-                     "typedef union slot_u * slot_r;\n"+
-                     "typedef union slot_u {\n"+
-                     " slot_r ref;\n"+
-                     " int32_t i32;\n"+
-                     " uint32_t u32;\n"+
-                     " int64_t i64;\n"+
-                     " uint64_t u64;\n"+
-                     "} slot_t;\n"+
-                     "slot_t fz_exitForCompilerTest    (void /* fztype__mm_universe_mm_0_   */ *cur, slot_t code) { exit(code.i32); return ((slot_t) { }); }\n"+
-                     "slot_t fz_fusion__std__out__write(void /* fztype_fusion__std__out_17_ */ *cur, slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); return ((slot_t) { }); }\n"+
-                     "slot_t fz_i32__infix_wpO(slot_t cur, slot_t i) { return ((slot_t) { .i32 = cur.i32 + i.i32 }); }\n");
+        _cout = new PrintWriter(Files.newBufferedWriter(Path.of(cname), StandardCharsets.UTF_8));
+        _cout.println("#include <stdlib.h>\n"+
+                      "#include <stdio.h>\n"+
+                      "#include <unistd.h>\n"+
+                      "#include <stdint.h>\n"+
+                      "typedef union slot_u * slot_r;\n"+
+                      "typedef union slot_u {\n"+
+                      " slot_r ref;\n"+
+                      " int32_t i32;\n"+
+                      " uint32_t u32;\n"+
+                      " int64_t i64;\n"+
+                      " uint64_t u64;\n"+
+                      "} slot_t;\n"+
+                      "slot_t fz_exitForCompilerTest    (void /* fztype__mm_universe_mm_0_   */ *cur, slot_t code) { exit(code.i32); return ((slot_t) { }); }\n"+
+                      "slot_t fz_fusion__std__out__write(void /* fztype_fusion__std__out_17_ */ *cur, slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); return ((slot_t) { }); }\n"+
+                      "slot_t fz_i32__infix_wpO(slot_t cur, slot_t i) { return ((slot_t) { .i32 = cur.i32 + i.i32 }); }\n");
         for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
           {
             typesForClazz(c);
@@ -175,7 +175,7 @@ public class C extends Backend
           {
             compileClazz(c, CompilePhase.IMPLEMENTATIONS);
           }
-        cout.println("int main(int argc, char **args) { " + featureMangledName(f) + "(NULL); }\n");
+        _cout.println("int main(int argc, char **args) { " + featureMangledName(f) + "(NULL); }\n");
       }
     catch (IOException io)
       { // NYI: proper error handling
@@ -184,10 +184,10 @@ public class C extends Backend
       }
     finally
       {
-        if (cout != null)
+        if (_cout != null)
           {
-            cout.close();
-            cout = null;
+            _cout.close();
+            _cout = null;
           }
       }
   }
@@ -312,7 +312,7 @@ public class C extends Backend
 
   /**
    * Create declarations of the C types required for the given clazz.  Write
-   * code to cout.
+   * code to _cout.
    *
    * @param cl a clazz id.
    */
@@ -323,10 +323,10 @@ public class C extends Backend
       {
       case Routine:
         {
-          cout.print("typedef struct {\n" +
-                     (_fuir.clazzIsRef(cl) ? "  uint32_t clazzId;\n" : "") +
-                     "  slot_t fields["+_fuir.clazzSize(cl)+"];\n"+
-                     "} " + clazzTypeName(cl) + ";\n");
+          _cout.print("typedef struct {\n" +
+                      (_fuir.clazzIsRef(cl) ? "  uint32_t clazzId;\n" : "") +
+                      "  slot_t fields["+_fuir.clazzSize(cl)+"];\n"+
+                      "} " + clazzTypeName(cl) + ";\n");
           break;
         }
       default:
@@ -337,7 +337,7 @@ public class C extends Backend
 
   /**
    * Create C code to pass given number of arguments plus one implicit target
-   * argument from the stack to a called feature.  Write code to cout.
+   * argument from the stack to a called feature.  Write code to _cout.
    *
    * @param stack the stack containing the C code of the args.
    *
@@ -349,15 +349,15 @@ public class C extends Backend
     if (argCount > 0)
       {
         passArgs(stack, argCount-1);
-        cout.print(",");
+        _cout.print(",");
       }
-    cout.print(a);
+    _cout.print(a);
   }
 
 
   /**
    * Create C code for code block c of clazz cl with given stack contents at
-   * beginning of the block.  Write code to cout.
+   * beginning of the block.  Write code to _cout.
    *
    * @param cl clazz id
    *
@@ -402,20 +402,20 @@ public class C extends Backend
                       !_fuir.featureIsOuterRef(field) /* outerref might be an adr of a value type */
                       )
                     {
-                      cout.println("// NYI: Assign to choice field "+outer+"."+_fuir.featureAsString(field)+" = "+value);
+                      _cout.println("// NYI: Assign to choice field "+outer+"."+_fuir.featureAsString(field)+" = "+value);
                     }
                   else if (_fuir.clazzIsRef(fclazz))
                     {
-                      cout.println("// NYI: Assign ref value "+outer+"."+_fuir.featureAsString(field)+" = "+value);
+                      _cout.println("// NYI: Assign ref value "+outer+"."+_fuir.featureAsString(field)+" = "+value);
                     }
                   else
                     {
-                      cout.println(" " + outer + "->fields[" + offset + "] = " + value + ";");
+                      _cout.println(" " + outer + "->fields[" + offset + "] = " + value + ";");
                     }
                 }
               else
                 {
-                  cout.println("// NOP assignment to " + _fuir.featureAsString(field) + " of void type removed");
+                  _cout.println("// NOP assignment to " + _fuir.featureAsString(field) + " of void type removed");
                 }
               break;
             }
@@ -423,7 +423,7 @@ public class C extends Backend
             {
               var v = stack.pop();
               stack.push("*** boxed("+v+") ***");
-              cout.println("// NYI: Box " + v + "!");
+              _cout.println("// NYI: Box " + v + "!");
               break;
             }
           case Call:
@@ -432,9 +432,9 @@ public class C extends Backend
               var ac = _fuir.callArgCount(c, i);
               if (_fuir.callIsDynamic(c, i))
                 {
-                  cout.println("// NYI : dynamic call to feature: " + featureMangledName(cf) + " (");
+                  _cout.println("// NYI : dynamic call to feature: " + featureMangledName(cf) + " (");
                   passArgs(stack, ac);
-                  cout.println(")");
+                  _cout.println(")");
                 }
               else
                 {
@@ -450,17 +450,17 @@ public class C extends Backend
                             _fuir.featureKind(cf) == FUIR.FeatureKind.Intrinsic)
                           {
                             res = "fzres_" + (_resultId++);
-                            cout.print(" slot_t " + res + " = ");
+                            _cout.print(" slot_t " + res + " = ");
                           }
                         else
                           {
                             res = "(/*-- no result --*/ NULL)";
-                            cout.print(" ");
+                            _cout.print(" ");
                           }
                         String n = featureMangledName(cf);
-                        cout.print("" + n + "(");
+                        _cout.print("" + n + "(");
                         passArgs(stack, ac);
-                        cout.println(");");
+                        _cout.println(");");
                         stack.push(res);
                         if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.featureAsString(cf)+": "+stack);
                         break;
@@ -474,9 +474,9 @@ public class C extends Backend
                       }
                     case Abstract :
                       {
-                        cout.println("// NYI : Call abstract: " + featureMangledName(cf) + " (");
+                        _cout.println("// NYI : Call abstract: " + featureMangledName(cf) + " (");
                         passArgs(stack, ac);
-                        cout.println(");");
+                        _cout.println(");");
                         break;
                       }
                     }
@@ -494,12 +494,12 @@ public class C extends Backend
               var block     = _fuir.i32Const(c, i + 1);
               var elseBlock = _fuir.i32Const(c, i + 2);
               i = i + 2;
-              cout.println("if ("+cond+") {");
+              _cout.println("if ("+cond+") {");
               createCode(cl, stack, block);
-              cout.println("} else {");
+              _cout.println("} else {");
               // NYI: clone stack
               createCode(cl, stack, elseBlock);
-              cout.println("}");
+              _cout.println("}");
               // NYI: join stacks
               break;
             }
@@ -521,7 +521,7 @@ public class C extends Backend
           case Match:
             {
               var v = stack.pop();
-              cout.println("// NYI: match " + v + "!");
+              _cout.println("// NYI: match " + v + "!");
               stack.push("*** match("+v+") result ***");
               break;
             }
@@ -546,7 +546,7 @@ public class C extends Backend
 
   /**
    * Create code for the C function implemeting the routine corresponding to the
-   * given clazz.  Write code to cout.
+   * given clazz.  Write code to _cout.
    *
    * @param cl id of clazz to compile
    *
@@ -555,27 +555,27 @@ public class C extends Backend
   {
     var f = _fuir.clazz2FeatureId(cl);
     var res = _fuir.featureResultField(f);
-    cout.print(res == -1
+    _cout.print(res == -1
                ? "void "
                : "slot_t ");
-    cout.print(featureMangledName(f));
-    cout.print("(");
+    _cout.print(featureMangledName(f));
+    _cout.print("(");
     var oc = _fuir.clazzOuterClazz(cl);
     String comma = "";
     if (oc != -1)
       {
-        cout.print(clazzTypeName(oc));
-        cout.print(" *fzouter");
+        _cout.print(clazzTypeName(oc));
+        _cout.print(" *fzouter");
         comma = ", ";
       }
     var ac = _fuir.clazzArgCount(cl);
     for (int i = 0; i < ac; i++)
       {
-        cout.print(comma);
-        cout.print("slot_t arg" + i);
+        _cout.print(comma);
+        _cout.print("slot_t arg" + i);
         comma = ", ";
       }
-    cout.print(")");
+    _cout.print(")");
   }
 
 
@@ -599,7 +599,7 @@ public class C extends Backend
             case Routine:
               {
                 cFunctionDecl(cl);
-                cout.print(";\n");
+                _cout.print(";\n");
                 break;
               }
             case Field:
@@ -617,11 +617,11 @@ public class C extends Backend
             {
             case Routine:
               {
-                cout.print("// code for clazz "+_fuir.clazzAsString(cl)+":\n");
+                _cout.print("// code for clazz "+_fuir.clazzAsString(cl)+":\n");
                 cFunctionDecl(cl);
-                cout.print(" {\n"+
-                           " " + clazzTypeName(cl) + " *" + CURRENT + " = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
-                           (_fuir.clazzIsRef(cl) ? " " + CURRENT + ">clazzId = " + clazzId2num(cl) + ";\n" : ""));
+                _cout.print(" {\n"+
+                            " " + clazzTypeName(cl) + " *" + CURRENT + " = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
+                            (_fuir.clazzIsRef(cl) ? " " + CURRENT + ">clazzId = " + clazzId2num(cl) + ";\n" : ""));
 
                 var ac = _fuir.clazzArgCount(cl);
                 for (int i = 0; i < ac; i++)
@@ -630,7 +630,7 @@ public class C extends Backend
                     if (af >= 0) // af < 0 for unused argument fields.
                       {
                         var offset = _fuir.clazzFieldOffset(cl, af);
-                        cout.print(" cur->fields[" + offset + "] = arg" + i +";\n");
+                        _cout.print(" cur->fields[" + offset + "] = arg" + i +";\n");
                       }
                   }
                 var c = _fuir.featureCode(f);
@@ -639,15 +639,15 @@ public class C extends Backend
                 var res = _fuir.featureResultField(f);
                 if (res != -1)
                   {
-                    cout.println(" return cur->fields[" + _fuir.clazzFieldOffset(cl, res) + "];");
+                    _cout.println(" return cur->fields[" + _fuir.clazzFieldOffset(cl, res) + "];");
                   }
-                cout.println("}");
+                _cout.println("}");
                 break;
               }
             case Field:
               break;
             default:
-              cout.println("// NYI: code for "+_fuir.featureKind(f)+" "+ featureMangledName(f));
+              _cout.println("// NYI: code for "+_fuir.featureKind(f)+" "+ featureMangledName(f));
               break;
             }
           break;
