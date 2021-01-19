@@ -359,7 +359,7 @@ public class C extends Backend
     if (argCount > 0)
       {
         passArgs(stack, argCount-1);
-        _c.print(",");
+        _c.print(", ");
       }
     _c.print(a);
   }
