@@ -38,6 +38,7 @@ import dev.flang.ir.Clazz;
 import dev.flang.fuir.FUIR;
 
 import dev.flang.util.FusionOptions;
+import dev.flang.util.FuzionConstants;
 
 
 /**
@@ -101,11 +102,21 @@ public class C extends Backend
 
 
   /**
+   * Prefix for fields in an instance
+   */
+  private static final String FIELD_PREFIX = "fzF_";
+
+
+  /**
    * C constants corresponding to Fuzion's true and false values.
    */
   private static final String FZ_FALSE =  "((" + TYPE_PREFIX + "bool) { 0 })";
   private static final String FZ_TRUE  =  "((" + TYPE_PREFIX + "bool) { 1 })";
 
+  /**
+   * The name of the tag field in instances of bool.fz.
+   */
+  private static final String BOOL_TAG_NAME = "fzF_0_" + mangle(FuzionConstants.CHOICE_TAG_NAME);
 
   /**
    * Debugging output
@@ -252,7 +263,7 @@ public class C extends Backend
    * @return a string usable as C function name, i.e., starting with a letter or
    * '_' followed by letters, digits or '_'.
    */
-  String mangle(String s)
+  static String mangle(String s)
   {
     StringBuilder sb = new StringBuilder();
     final int length = s.length();
@@ -301,7 +312,24 @@ public class C extends Backend
 
 
   /**
-   * Append mangled name of given feature to StringBuilder.
+   * Get the base name of the given feature and mangle it.  Do not include outer
+   * feature's name.
+   *
+   * @parma f a feature id
+   *
+   * @return a mangled name such as "infix_wp" if f was "infix +".
+   */
+  String mangledFeatureBaseName(int f)
+  {
+    return mangle(_fuir.featureBaseName(f));
+  }
+
+
+  /**
+   * Append mangled name of given feature to StringBuilder.  Prepend with outer
+   * feature's mangled name.
+   *
+   * Ex. Feature "i32.prefix -"  will result in  "i32__prefix_wm"
    *
    * @param f a feature id
    *
@@ -315,12 +343,12 @@ public class C extends Backend
         featureMangledName(_fuir.featureOuter(f), sb);
         sb.append("__");
       }
-    sb.append(mangle(_fuir.featureBaseName(f)));
+    sb.append(mangledFeatureBaseName(f));
   }
 
 
   /**
-   * Create mangled name of a given feature.
+   * Create mangled name of a given feature, including outer feature.
    *
    * @param f a feature id.
    *
@@ -433,7 +461,8 @@ public class C extends Backend
                         }
                       else
                         {
-                          var fieldName = "field" + i; // NYI: better mangle the Fuzion field name into this for readability
+                          var cf = _fuir.clazzField(cl, i);
+                          var fieldName = FIELD_PREFIX + i + "_" + mangledFeatureBaseName(cf); // NYI: better mangle the Fuzion field name into this for readability
                           _c.print
                             (" " + clazzTypeName(fcl) + " " + fieldName + ";\n");
                         }
@@ -510,14 +539,14 @@ public class C extends Backend
               if (valuecl != -1) // void value. NYI: better remove the Assign altogether from the IR in this case
                 {
                   var fclazz = _fuir.assignClazzForField(outercl, field);  // static clazz of assigned field
-                  String offset;
+                  String slot;
                   if (_fuir.clazzIsRef(outercl))
                     {
-                      offset = "/* NYI: dynamic binding needed */";
+                      slot = "/* NYI: dynamic binding needed */";
                     }
                   else
                     {
-                      offset = Integer.toString(_fuir.clazzFieldOffset(outercl, field));
+                      slot = "." + FIELD_PREFIX + _fuir.clazzFieldOffset(outercl, field) + "_" + mangledFeatureBaseName(field);
                     }
                   if (_fuir.clazzIsChoice(fclazz) &&
                       fclazz != valuecl &&  // NYI: interpreter checks fclazz._type != staticTypeOfValue
@@ -532,7 +561,8 @@ public class C extends Backend
                     }
                   else
                     {
-                      _c.println("(" + outer + ").field" + offset + " = " + value + ";");
+                      String fieldName = FIELD_PREFIX + _fuir.clazzFieldOffset(outercl, field) + "_" + mangledFeatureBaseName(field);
+                      _c.println("(" + outer + ")" + slot + " = " + value + ";");
                     }
                 }
               else
@@ -590,7 +620,16 @@ public class C extends Backend
                       {
                         var t = stack.pop();
                         var tc = _fuir.callTargetClazz(cl, c, i);
-                        stack.push("(" + t + ").field" + _fuir.callFieldOffset(tc, c, i));
+                        String slot;
+                        if (_fuir.clazzIsRef(tc))
+                          {
+                            slot = "/* NYI: dynamic binding needed */";
+                          }
+                        else
+                          {
+                            slot = "." + FIELD_PREFIX + _fuir.callFieldOffset(tc, c, i) + "_" + mangledFeatureBaseName(cf);
+                          }
+                        stack.push("(" + t + ") " + slot );
                         break;
                       }
                     case Abstract :
@@ -616,7 +655,7 @@ public class C extends Backend
               var block     = _fuir.i32Const(c, i + 1);
               var elseBlock = _fuir.i32Const(c, i + 2);
               i = i + 2;
-              _c.println("if (" + cond + ".field0 != 0) {");
+              _c.println("if (" + cond + "." + BOOL_TAG_NAME + " != 0) {");
               _c.indent();
               createCode(cl, stack, block);
               _c.unindent();
@@ -774,7 +813,7 @@ public class C extends Backend
                     if (af >= 0) // af < 0 for unused argument fields.
                       {
                         var offset = _fuir.clazzFieldOffset(cl, af);
-                        _c.print(CURRENT + "->field" + offset + " = arg" + i +";\n");
+                        _c.print(CURRENT + "->" + FIELD_PREFIX + offset + "_" + mangledFeatureBaseName(af) + " = arg" + i +";\n");
                       }
                   }
                 var c = _fuir.featureCode(f);
@@ -786,7 +825,7 @@ public class C extends Backend
                     var rf = _fuir.featureResultField(f);
                     if (rf != -1)
                       {
-                        _c.println("return " + CURRENT + "->field" + _fuir.clazzFieldOffset(cl, rf) + ";");
+                        _c.println("return " + CURRENT + "->" + FIELD_PREFIX + _fuir.clazzFieldOffset(cl, rf) + "_" + mangledFeatureBaseName(rf) + ";");
                       }
                     else
                       {

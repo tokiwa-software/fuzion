@@ -179,6 +179,10 @@ public class FUIR extends ANY
    *
    * NYI: slots are an artifact from the interpreter, should not appear in the IR
    *
+   * @param cl a clazz id
+   *
+   * @param i a slot index in cl
+   *
    * @return the clazz id or -1 if no field at this slot or -2 if field type is
    * VOID, so no field is needed.
    */
@@ -203,6 +207,36 @@ public class FUIR extends ANY
               {
                 return _clazzIds.add(fcl);
               }
+          }
+      }
+    return -1;
+  }
+
+
+  /**
+   * Return the field at slot i in the given clazz
+   *
+   * NYI: slots are an artifact from the interpreter, should not appear in the IR
+   *
+   * @param cl a clazz id
+   *
+   * @param i a slot index in cl
+   *
+   * @return the feature id or -1 if no field at this slot
+   */
+  public int clazzField(int cl, int i)
+  {
+    if (PRECONDITIONS)
+      require
+        (i >= 0 && i < clazzSize(cl));
+
+    var cc = _clazzIds.get(cl);
+    for (var e : cc.offsetForField_.entrySet())
+      {
+        if (e.getValue() == i)
+          {
+            var f = e.getKey();
+            return _featureIds.add(f);
           }
       }
     return -1;
