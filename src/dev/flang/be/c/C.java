@@ -233,7 +233,7 @@ public class C extends Backend
           {
             compileClazz(c, CompilePhase.IMPLEMENTATIONS);
           }
-        _c.println("int main(int argc, char **args) { " + featureMangledName(f) + "(NULL); }");
+        _c.println("int main(int argc, char **args) { " + clazzMangledName(cl) + "(NULL); }");
       }
     catch (IOException io)
       { // NYI: proper error handling
@@ -326,49 +326,6 @@ public class C extends Backend
 
 
   /**
-   * Append mangled name of given feature to StringBuilder.  Prepend with outer
-   * feature's mangled name.
-   *
-   * Ex. Feature "i32.prefix -"  will result in  "i32__prefix_wm"
-   *
-   * @param f a feature id
-   *
-   * @param sb a StringBuilder
-   */
-  public void featureMangledName(int f, StringBuilder sb)
-  {
-    if (!_fuir.featureIsUniverse(f) &&
-        !_fuir.featureIsUniverse(_fuir.featureOuter(f)))
-      {
-        featureMangledName(_fuir.featureOuter(f), sb);
-        sb.append("__");
-      }
-    sb.append(mangledFeatureBaseName(f));
-  }
-
-
-  /**
-   * Create mangled name of a given feature, including outer feature.
-   *
-   * @param f a feature id.
-   *
-   * @return a corresponding valid C function name
-   */
-  public String featureMangledName(int f)
-  {
-    var sb = new StringBuilder(C_FUNCTION_PREFIX);
-    featureMangledName(f, sb);
-    String res = sb.toString();
-
-    if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
-      {
-        System.err.println("*** WARNING: Max C99 identifier length exceeded for '" + res + "'");
-      }
-
-    return res;
-  }
-
-  /**
    * NYI: Documentation, just discard the sign?
    */
   int clazzId2num(int cl)
@@ -386,7 +343,7 @@ public class C extends Backend
   String clazzTypeName(int cl)
   {
     StringBuilder sb = new StringBuilder(TYPE_PREFIX);
-    featureMangledName(_fuir.clazz2FeatureId(cl), sb);
+    clazzMangledName(cl, sb);
     // NYI: there might be name conflicts due to different generic instances, so
     // we need to add the clazz id or the actual generics if this is the case:
     //
@@ -580,16 +537,17 @@ public class C extends Backend
             }
           case Call:
             {
-              var cf = _fuir.callCalledFeature(c, i);
               var ac = _fuir.callArgCount(c, i);
-              if (_fuir.callIsDynamic(c, i))
+              if (_fuir.callIsDynamic(cl, c, i))
                 {
-                  _c.println("// NYI : dynamic call to feature: " + featureMangledName(cf) + " (");
+                  _c.println("// NYI : dynamic call to feature: " + _fuir.callDebugString(c, i) + " (");
                   passArgs(stack, ac);
                   _c.println(")");
                 }
               else
                 {
+                  var cc = _fuir.callCalledClazz(cl, c, i);
+                  var cf = _fuir.clazz2FeatureId(cc);
                   switch (_fuir.featureKind(cf))
                     {
                     case Routine  :
@@ -608,7 +566,7 @@ public class C extends Backend
                                 _c.print(clazzTypeName(rt) + " " + res + " = ");
                               }
                           }
-                        String n = featureMangledName(cf);
+                        String n = clazzMangledName(cc);
                         _c.print("" + n + "(");
                         passArgs(stack, ac);
                         _c.println(");");
@@ -616,14 +574,14 @@ public class C extends Backend
                         if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.featureAsString(cf)+": "+stack);
                         break;
                       }
-                    case Field    :
+                    case Field:
                       {
                         var t = stack.pop();
                         var tc = _fuir.callTargetClazz(cl, c, i);
                         String slot;
                         if (_fuir.clazzIsRef(tc))
                           {
-                            slot = "/* NYI: dynamic binding needed */";
+                            slot = "/* NYI: read field from ref not supported yet */";
                           }
                         else
                           {
@@ -632,14 +590,8 @@ public class C extends Backend
                         stack.push("(" + t + ") " + slot );
                         break;
                       }
-                    case Abstract :
-                      {
-                        _c.print("// NYI : Call abstract: " + featureMangledName(cf) + " (");
-                        passArgs(stack, ac);
-                        _c.println(");");
-                        stack.push("(/* NYI : Abstract result */ " + DUMMY + ")");
-                        break;
-                      }
+                    case Abstract: throw new Error("This should not happen: Calling abstract '" + _fuir.featureAsString(cf) + "'");
+                    default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.featureKind(cf));
                     }
                 }
               break;
@@ -711,6 +663,30 @@ public class C extends Backend
 
 
   /**
+   * Append mangled name of given feature to StringBuilder.  Prepend with outer
+   * feature's mangled name.
+   *
+   * Ex. Feature "i32.prefix -"  will result in  "i32__prefix_wm"
+   *
+   * @param f a feature id
+   *
+   * @param sb a StringBuilder
+   */
+  public void clazzMangledName(int cl, StringBuilder sb)
+  {
+    var o = _fuir.clazzOuterClazz(cl);
+    if (o != -1 &&
+        _fuir.clazzOuterClazz(o) != -1)
+      { // add o a prefix unless cl or o are universe
+        clazzMangledName(o, sb);
+        sb.append("__");
+      }
+    var f = _fuir.clazz2FeatureId(cl);
+    sb.append(mangledFeatureBaseName(f));
+  }
+
+
+  /**
    * Create unique a mangled name for a clazz that can be used in C identifiers
    * (i.e., it starts with letter or '_' and contains only ASCII letters, digits
    * or '_'.
@@ -719,8 +695,16 @@ public class C extends Backend
    */
   String clazzMangledName(int cl)
   {
-    var f = _fuir.clazz2FeatureId(cl);
-    return featureMangledName(f);
+    var sb = new StringBuilder(C_FUNCTION_PREFIX);
+    clazzMangledName(cl, sb);
+    String res = sb.toString();
+
+    if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
+      {
+        System.err.println("*** WARNING: Max C99 identifier length exceeded for '" + res + "'");
+      }
+
+    return res;
   }
 
 
@@ -857,7 +841,7 @@ public class C extends Backend
             case Field:
               break;
             default:
-              _c.println("// NYI: code for "+_fuir.featureKind(f)+" "+ featureMangledName(f));
+              _c.println("// NYI: code for "+_fuir.featureKind(f)+" "+ clazzMangledName(cl));
               break;
             }
           break;

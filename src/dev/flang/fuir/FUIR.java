@@ -751,16 +751,48 @@ public class FUIR extends ANY
     return _clazzIds.add(fclazz);
   }
 
-  public int callCalledFeature(int c, int ix)
+
+  public String callDebugString(int c, int ix)
   {
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Call);
 
-    var cl = (Call) _codeIds.get(c).get(ix);
-    return _featureIds.add(cl.calledFeature());
+    var call = (Call) _codeIds.get(c).get(ix);
+    return call.calledFeature().qualifiedName();
   }
+
+
+  /**
+   * Get the inner clazz on for a non dynamic call
+   *
+   * @param cl index of clazz containing the call
+   *
+   * @param c code block containing the call
+   *
+   * @param ix index of the call
+   *
+   * @return the clazz that has to be called
+   */
+  public int callCalledClazz(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Call,
+       callIsDynamic(cl, c, ix));
+
+    var outerClazz = _clazzIds.get(cl);
+    var call = (Call) _codeIds.get(c).get(ix);
+    var tclazz = Clazzes.clazz(call.target, outerClazz);
+    var cf = call.calledFeature();
+    var innerClazz = tclazz.lookup(cf, outerClazz.actualGenerics(call.generics), call.pos);
+    check
+      (innerClazz._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
+    return _clazzIds.add(innerClazz);
+  }
+
 
   public int callArgCount(int c, int ix)
   {
@@ -769,19 +801,21 @@ public class FUIR extends ANY
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Call);
 
-    var cl = (Call) _codeIds.get(c).get(ix);
-    return cl._actuals.size();
+    var call = (Call) _codeIds.get(c).get(ix);
+    return call._actuals.size();
   }
 
-  public boolean callIsDynamic(int c, int ix)
+  public boolean callIsDynamic(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Call);
 
+    var outerClazz = _clazzIds.get(cl);
     var call = (Call) _codeIds.get(c).get(ix);
-    return call.isDynamic();
+    var tclazz = Clazzes.clazz(call.target, outerClazz);
+    return call.isDynamic() && tclazz.isRef();
   }
 
   public int callTargetClazz(int cl, int c, int ix)
@@ -826,7 +860,7 @@ public class FUIR extends ANY
       (ix >= 0,
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Call,
-       callIsDynamic(c, ix));
+       callIsDynamic(cl, c, ix));
 
     var call = (Call) _codeIds.get(c).get(ix);
     var outerClazz = _clazzIds.get(cl);
