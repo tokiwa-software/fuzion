@@ -69,6 +69,13 @@ public class C extends Backend
 
 
   /**
+   * Value to be used during compiler development for expressions that are not
+   * yet implemented.
+   */
+  private static final String DUMMY = "NYI_DUMMY_VALUE";
+
+
+  /**
    * Name of local variable containing current instance
    */
   private static final String CURRENT = "fzCur";
@@ -190,6 +197,8 @@ public class C extends Backend
            " int64_t i64;\n"+
            " uint64_t u64;\n"+
            "} slot_t;\n"+
+           "\n" +
+           "#define " + DUMMY + " NULL\n"+
            "slot_t fzC_exitForCompilerTest    (void /* fztype__mm_universe_mm_0_   */ *cur, slot_t code) { exit(code.i32); return ((slot_t) { }); }\n" +
            "slot_t fzC_fusion__std__out__write(void /* fztype_fusion__std__out_17_ */ *cur, slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); return ((slot_t) { }); }\n" +
            "slot_t fzC_i32__prefix_wmO(slot_t cur          ) { return ((slot_t) { .i32 = - cur.i32       }); }\n" +
@@ -507,7 +516,7 @@ public class C extends Backend
                           }
                         else
                           {
-                            res = "(/*-- no result --*/ NULL)";
+                            res = "(/*-- no result --*/ " + DUMMY + ")";
                           }
                         String n = featureMangledName(cf);
                         _c.print("" + n + "(");
@@ -529,7 +538,7 @@ public class C extends Backend
                         _c.print("// NYI : Call abstract: " + featureMangledName(cf) + " (");
                         passArgs(stack, ac);
                         _c.println(");");
-                        stack.push("/* NYI : Abstract result */ NULL");
+                        stack.push("(/* NYI : Abstract result */ " + DUMMY + ")");
                         break;
                       }
                     }
@@ -584,7 +593,7 @@ public class C extends Backend
             }
           case Singleton:
             {
-              stack.push("(/*-- NYI: Singleton result --*/ NULL)");
+              stack.push("(/*-- NYI: Singleton result --*/ " + DUMMY + ")");
               break;
             }
           case NOP:
