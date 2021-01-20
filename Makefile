@@ -35,6 +35,7 @@ JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/ANY.java \
           $(SRC)/dev/flang/util/Errors.java \
           $(SRC)/dev/flang/util/FusionOptions.java \
+          $(SRC)/dev/flang/util/FuzionConstants.java \
           $(SRC)/dev/flang/util/List.java \
           $(SRC)/dev/flang/util/Map2Int.java \
           $(SRC)/dev/flang/util/MapComparable2Int.java \

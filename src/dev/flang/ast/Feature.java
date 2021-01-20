@@ -40,6 +40,7 @@ import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
@@ -102,7 +103,7 @@ public class Feature extends ANY implements Stmnt, Comparable
       "i64.val",
       "u32.val",
       "u64.val",
-      "bool.--choice-tag--",
+      "bool." + FuzionConstants.CHOICE_TAG_NAME,
       "fusion.java.JavaObject.javaRef",
       "java.io.PrintStream.javaRef2",
       "conststring",
@@ -1517,7 +1518,7 @@ public class Feature extends ANY implements Stmnt, Comparable
     choiceTag_ = new Feature(pos,
                              Consts.VISIBILITY_PRIVATE,
                              Types.resolved.t_i32,
-                             "--choice-tag--",
+                             FuzionConstants.CHOICE_TAG_NAME,
                              this)
       {
         /**
