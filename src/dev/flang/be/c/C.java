@@ -447,7 +447,7 @@ public class C extends Backend
                         {
                           var cf = _fuir.clazzField(cl, i);
                           _c.print
-                            (" " + clazzTypeName(fcl) + " " + fieldName(i, cf) + ";\n");
+                            (" " + clazzTypeName(fcl) + (_fuir.clazzIsRef(fcl) ? "*" : "") + " " + fieldName(i, cf) + ";\n");
                         }
                     }
                   _c.print
@@ -508,8 +508,9 @@ public class C extends Backend
         switch (s)
           {
           case AdrToValue:
-            {
-              // NYI: can this be a NOP?
+            { // dereference an outer reference
+              var v = stack.pop();
+              stack.push("(*(" + v + "))");
               break;
             }
           case Assign:
@@ -814,6 +815,13 @@ public class C extends Backend
                 _c.indent();
                 _c.print("" + clazzTypeName(cl) + " *" + CURRENT + " = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
                         (_fuir.clazzIsRef(cl) ? CURRENT + "->clazzId = " + clazzId2num(cl) + ";\n" : ""));
+
+                var or = _fuir.clazzOuterRef(cl);
+                if (or != -1)
+                  {
+                    var deref = _fuir.clazzIsOuterRefAdrOfValue(cl) ? "" : "*";
+                    _c.print(CURRENT + "->" + fieldNameInClazz(cl, or) + " = " + deref + "fzouter;\n");
+                  }
 
                 var ac = _fuir.clazzArgCount(cl);
                 for (int i = 0; i < ac; i++)

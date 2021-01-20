@@ -349,7 +349,8 @@ public class FUIR extends ANY
   {
     var c = _clazzIds.get(cl);
     var ff = _featureIds.get(f);
-    return c.offsetForField_.get(ff);
+    var off = c.offsetForField_.get(ff);
+    return off;  // implicit unboxing, NullPointer in case field not found!
   }
 
 
@@ -378,11 +379,56 @@ public class FUIR extends ANY
   }
 
 
+  /**
+   * If a clazz's instance contains an outer ref field, return this field.
+   *
+   * @param cl a clazz id
+   *
+   * @return feature id of cl's outer ref field or -1 if no such field exists.
+   */
+  public int clazzOuterRef(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    var ff = cc.feature();
+    var or = ff.outerRefOrNull();
+    return
+      or == null                         ? -1 :
+      cc.offsetForField_.get(or) == null ? -1 : _featureIds.add(or);
+  }
+
+
+  /**
+   * Check if the outer ref within instance of cl is really a ref (true) or a
+   * copy of the outer (immutable) value instance
+   *
+   * @param cl a clazz id
+   *
+   * @return true iff cl's outer ref is an address
+   */
+  public boolean clazzIsOuterRefAdrOfValue(int cl)
+  {
+    if (PRECONDITIONS) require
+      (clazzOuterRef(cl) != -1);
+
+    var cc = _clazzIds.get(cl);
+    var ff = cc.feature();
+    return ff.isOuterRefAdrOfValue();
+  }
+
+
+  /**
+   * Check if a clazz is the standard lib i32.fz.
+   *
+   * @param cl a clazz id
+   *
+   * @return true iff cl is i32.fz.
+   */
   public boolean clazzIsI32(int cl)
   {
     var cc = _clazzIds.get(cl);
     return cc == Clazzes.i32.getIfCreated();
   }
+
 
   // String representation of clazz, for debugging only
   public String clazzAsString(int cl)
