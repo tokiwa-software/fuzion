@@ -36,7 +36,6 @@ public class FusionOptions extends ANY
 {
 
 
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -61,6 +60,7 @@ public class FusionOptions extends ANY
   private boolean _tailRecursionInsteadOfLoops; // NYI: move to FrontendOptions
   public void setTailRec() { _tailRecursionInsteadOfLoops = true; }
   public boolean tailRecursionInsteadOfLoops() { return _tailRecursionInsteadOfLoops; }
+
 
   /*--------------------------  constructors  ---------------------------*/
 
