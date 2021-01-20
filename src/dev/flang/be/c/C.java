@@ -71,7 +71,7 @@ public class C extends Backend
   /**
    * Name of local variable containing current instance
    */
-  private static final String CURRENT = "cur";
+  private static final String CURRENT = "fzCur";
 
 
   /**
@@ -689,7 +689,7 @@ public class C extends Backend
                     if (af >= 0) // af < 0 for unused argument fields.
                       {
                         var offset = _fuir.clazzFieldOffset(cl, af);
-                        _c.print("cur->fields[" + offset + "] = arg" + i +";\n");
+                        _c.print(CURRENT + "->fields[" + offset + "] = arg" + i +";\n");
                       }
                   }
                 var c = _fuir.featureCode(f);
@@ -698,7 +698,7 @@ public class C extends Backend
                 var res = _fuir.featureResultField(f);
                 if (res != -1)
                   {
-                    _c.println("return cur->fields[" + _fuir.clazzFieldOffset(cl, res) + "];");
+                    _c.println("return " + CURRENT + "->fields[" + _fuir.clazzFieldOffset(cl, res) + "];");
                   }
                 _c.unindent();
                 _c.println("}");
