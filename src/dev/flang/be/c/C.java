@@ -62,6 +62,13 @@ public class C extends Backend
 
 
   /**
+   * Maximum length of (external) function names in C.  Since name mangling
+   * easily results in lengthy names, we have to be careful not to exeed this.
+   */
+  private static final int MAX_C99_IDENTIFIER_LENGTH = 31;
+
+
+  /**
    * Name of local variable containing current instance
    */
   private static final String CURRENT = "cur";
@@ -292,7 +299,14 @@ public class C extends Backend
   {
     var sb = new StringBuilder("fz_");
     featureMangledName(f, sb);
-    return sb.toString();
+    String res = sb.toString();
+
+    if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
+      {
+        System.err.println("*** WARNING: Max C99 identifier length exceeded for '" + res + "'");
+      }
+
+    return res;
   }
 
   /**
@@ -314,8 +328,19 @@ public class C extends Backend
   {
     StringBuilder sb = new StringBuilder("fztype_");
     featureMangledName(_fuir.clazz2FeatureId(cl), sb);
-    sb.append("_").append(clazzId2num(cl)).append("_");
-    return sb.toString();
+    // NYI: there might be name conflicts due to different generic instances, so
+    // we need to add the clazz id or the actual generics if this is the case:
+    //
+    //   sb.append("_").append(clazzId2num(cl)).append("_");
+
+    String res = sb.toString();
+
+    if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
+      {
+        System.err.println("*** WARNING: Max C99 identifier length exceeded for '" + res + "'");
+      }
+
+    return res;
   }
 
 
