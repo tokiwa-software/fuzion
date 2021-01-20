@@ -36,6 +36,7 @@ import java.util.TreeMap;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 import dev.flang.fuir.FUIR;
@@ -628,7 +629,7 @@ public class Interpreter extends Backend
             else if (outerClazz == Clazzes.bool.getIfCreated())
               {
                 check
-                  (f.qualifiedName().equals("bool.--choice-tag--"));
+                  (f.qualifiedName().equals("bool." + FuzionConstants.CHOICE_TAG_NAME));
                 result = (args, argTypes) -> args.get(0);
               }
             else
@@ -1076,7 +1077,7 @@ public class Interpreter extends Backend
     else if (staticClazz == Clazzes.bool.getIfCreated() && curValue instanceof boolValue)
       {
         check
-          (thiz.qualifiedName().equals("bool.--choice-tag--"));
+          (thiz.qualifiedName().equals("bool." + FuzionConstants.CHOICE_TAG_NAME));
         result = curValue;
       }
     else
