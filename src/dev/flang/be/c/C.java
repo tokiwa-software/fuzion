@@ -326,6 +326,33 @@ public class C extends Backend
 
 
   /**
+   * Get the name of a field
+   *
+   * @param offset the slot offset of the field, needed to disambiguate fields
+   * with equal name.
+   *
+   * @param field the field id
+   */
+  String fieldName(int offset, int field)
+  {
+    return FIELD_PREFIX + offset + "_" + mangledFeatureBaseName(field);
+  }
+
+  /**
+   * Get the name of a field from an instances of a given clazz
+   *
+   * @param cl clazz id of the clazz that contains the field.
+   *
+   * @param field the field id
+   */
+  String fieldNameInClazz(int cl, int field)
+  {
+    int offset = _fuir.clazzFieldOffset(cl, field);
+    return fieldName(offset, field);
+  }
+
+
+  /**
    * NYI: Documentation, just discard the sign?
    */
   int clazzId2num(int cl)
@@ -419,9 +446,8 @@ public class C extends Backend
                       else
                         {
                           var cf = _fuir.clazzField(cl, i);
-                          var fieldName = FIELD_PREFIX + i + "_" + mangledFeatureBaseName(cf); // NYI: better mangle the Fuzion field name into this for readability
                           _c.print
-                            (" " + clazzTypeName(fcl) + " " + fieldName + ";\n");
+                            (" " + clazzTypeName(fcl) + " " + fieldName(i, cf) + ";\n");
                         }
                     }
                   _c.print
@@ -503,7 +529,7 @@ public class C extends Backend
                     }
                   else
                     {
-                      slot = "." + FIELD_PREFIX + _fuir.clazzFieldOffset(outercl, field) + "_" + mangledFeatureBaseName(field);
+                      slot = "." + fieldNameInClazz(outercl, field);
                     }
                   if (_fuir.clazzIsChoice(fclazz) &&
                       fclazz != valuecl &&  // NYI: interpreter checks fclazz._type != staticTypeOfValue
@@ -518,7 +544,6 @@ public class C extends Backend
                     }
                   else
                     {
-                      String fieldName = FIELD_PREFIX + _fuir.clazzFieldOffset(outercl, field) + "_" + mangledFeatureBaseName(field);
                       _c.println("(" + outer + ")" + slot + " = " + value + ";");
                     }
                 }
@@ -585,7 +610,7 @@ public class C extends Backend
                           }
                         else
                           {
-                            slot = "." + FIELD_PREFIX + _fuir.callFieldOffset(tc, c, i) + "_" + mangledFeatureBaseName(cf);
+                            slot = "." + fieldName(_fuir.callFieldOffset(tc, c, i), cf);
                           }
                         stack.push("(" + t + ") " + slot );
                         break;
@@ -796,8 +821,7 @@ public class C extends Backend
                     var af = _fuir.clazzArg(cl, i);
                     if (af >= 0) // af < 0 for unused argument fields.
                       {
-                        var offset = _fuir.clazzFieldOffset(cl, af);
-                        _c.print(CURRENT + "->" + FIELD_PREFIX + offset + "_" + mangledFeatureBaseName(af) + " = arg" + i +";\n");
+                        _c.print(CURRENT + "->" + fieldNameInClazz(cl, af) + " = arg" + i +";\n");
                       }
                   }
                 var c = _fuir.featureCode(f);
@@ -809,7 +833,7 @@ public class C extends Backend
                     var rf = _fuir.featureResultField(f);
                     if (rf != -1)
                       {
-                        _c.println("return " + CURRENT + "->" + FIELD_PREFIX + _fuir.clazzFieldOffset(cl, rf) + "_" + mangledFeatureBaseName(rf) + ";");
+                        _c.println("return " + CURRENT + "->" + fieldNameInClazz(cl, rf) + ";");
                       }
                     else
                       {
