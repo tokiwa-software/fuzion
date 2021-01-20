@@ -75,6 +75,24 @@ public class C extends Backend
 
 
   /**
+   * Prefix for types declared for clazz instances
+   */
+  private static final String TYPE_PREFIX = "fzT_";
+
+
+  /**
+   * Prefix for C functions created for Fuzion routines or intrinsics
+   */
+  private static final String C_FUNCTION_PREFIX = "fzC_";
+
+
+  /**
+   * Prefix for temporary local variables
+   */
+  private static final String TEMP_VAR_PREFIX = "fzM_";
+
+
+  /**
    * C constants corresponding to Fuzion's true and false values.
    */
   private static final String FZ_FALSE =  "((slot_t) { .i32 = 0 })";
@@ -172,13 +190,13 @@ public class C extends Backend
            " int64_t i64;\n"+
            " uint64_t u64;\n"+
            "} slot_t;\n"+
-           "slot_t fz_exitForCompilerTest    (void /* fztype__mm_universe_mm_0_   */ *cur, slot_t code) { exit(code.i32); return ((slot_t) { }); }\n" +
-           "slot_t fz_fusion__std__out__write(void /* fztype_fusion__std__out_17_ */ *cur, slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); return ((slot_t) { }); }\n" +
-           "slot_t fz_i32__prefix_wmO(slot_t cur          ) { return ((slot_t) { .i32 = - cur.i32       }); }\n" +
-           "slot_t fz_i32__infix_wmO (slot_t cur, slot_t i) { return ((slot_t) { .i32 = cur.i32 - i.i32 }); }\n" +
-           "slot_t fz_i32__infix_wpO (slot_t cur, slot_t i) { return ((slot_t) { .i32 = cur.i32 + i.i32 }); }\n" +
-           "slot_t fz_i32__infix_wg  (slot_t cur, slot_t i) { return cur.i32 > i.i32 ? " + FZ_TRUE + " : " + FZ_FALSE + "; }\n" +
-           "slot_t fz_i32__infix_wl  (slot_t cur, slot_t i) { return cur.i32 < i.i32 ? " + FZ_TRUE + " : " + FZ_FALSE + "; }\n");
+           "slot_t fzC_exitForCompilerTest    (void /* fztype__mm_universe_mm_0_   */ *cur, slot_t code) { exit(code.i32); return ((slot_t) { }); }\n" +
+           "slot_t fzC_fusion__std__out__write(void /* fztype_fusion__std__out_17_ */ *cur, slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); return ((slot_t) { }); }\n" +
+           "slot_t fzC_i32__prefix_wmO(slot_t cur          ) { return ((slot_t) { .i32 = - cur.i32       }); }\n" +
+           "slot_t fzC_i32__infix_wmO (slot_t cur, slot_t i) { return ((slot_t) { .i32 = cur.i32 - i.i32 }); }\n" +
+           "slot_t fzC_i32__infix_wpO (slot_t cur, slot_t i) { return ((slot_t) { .i32 = cur.i32 + i.i32 }); }\n" +
+           "slot_t fzC_i32__infix_wg  (slot_t cur, slot_t i) { return cur.i32 > i.i32 ? " + FZ_TRUE + " : " + FZ_FALSE + "; }\n" +
+           "slot_t fzC_i32__infix_wl  (slot_t cur, slot_t i) { return cur.i32 < i.i32 ? " + FZ_TRUE + " : " + FZ_FALSE + "; }\n");
         for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
           {
             typesForClazz(c);
@@ -297,7 +315,7 @@ public class C extends Backend
    */
   public String featureMangledName(int f)
   {
-    var sb = new StringBuilder("fz_");
+    var sb = new StringBuilder(C_FUNCTION_PREFIX);
     featureMangledName(f, sb);
     String res = sb.toString();
 
@@ -326,7 +344,7 @@ public class C extends Backend
    */
   String clazzTypeName(int cl)
   {
-    StringBuilder sb = new StringBuilder("fztype_");
+    StringBuilder sb = new StringBuilder(TYPE_PREFIX);
     featureMangledName(_fuir.clazz2FeatureId(cl), sb);
     // NYI: there might be name conflicts due to different generic instances, so
     // we need to add the clazz id or the actual generics if this is the case:
@@ -484,7 +502,7 @@ public class C extends Backend
                         if (r != -1 ||
                             _fuir.featureKind(cf) == FUIR.FeatureKind.Intrinsic)
                           {
-                            res = "fzres_" + (_resultId++);
+                            res = TEMP_VAR_PREFIX + (_resultId++);
                             _c.print("slot_t " + res + " = ");
                           }
                         else
