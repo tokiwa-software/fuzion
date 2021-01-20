@@ -29,6 +29,7 @@ package dev.flang.be.c;
 import java.io.IOException;
 
 import java.util.Stack;
+import java.util.TreeSet;
 
 import dev.flang.ir.Backend;
 import dev.flang.ir.BackendCallable;
@@ -102,8 +103,8 @@ public class C extends Backend
   /**
    * C constants corresponding to Fuzion's true and false values.
    */
-  private static final String FZ_FALSE =  "((slot_t) { .i32 = 0 })";
-  private static final String FZ_TRUE  =  "((slot_t) { .i32 = 1 })";
+  private static final String FZ_FALSE =  "((" + TYPE_PREFIX + "bool) { 0 })";
+  private static final String FZ_TRUE  =  "((" + TYPE_PREFIX + "bool) { 1 })";
 
 
   /**
@@ -132,6 +133,15 @@ public class C extends Backend
    * Counter for unique temp variables to hold function results
    */
   private int _resultId = 0;
+
+
+  /**
+   * Set of clazz ids for all the clazzes whose types have been declared
+   * already.  Types are declared recursively with types of inner fields
+   * declared before outer types.  This set keeps track which types have been
+   * declared already to avoid duplicates.
+   */
+  private final TreeSet<Integer> _declaredTypes = new TreeSet<>();
 
 
   /*---------------------------  consructors  ---------------------------*/
@@ -198,14 +208,8 @@ public class C extends Backend
            " uint64_t u64;\n"+
            "} slot_t;\n"+
            "\n" +
-           "#define " + DUMMY + " NULL\n"+
-           "slot_t fzC_exitForCompilerTest    (void /* fztype__mm_universe_mm_0_   */ *cur, slot_t code) { exit(code.i32); return ((slot_t) { }); }\n" +
-           "slot_t fzC_fusion__std__out__write(void /* fztype_fusion__std__out_17_ */ *cur, slot_t c) { char cc = (char) c.i32; fwrite(&cc, 1, 1, stdout); return ((slot_t) { }); }\n" +
-           "slot_t fzC_i32__prefix_wmO(slot_t cur          ) { return ((slot_t) { .i32 = - cur.i32       }); }\n" +
-           "slot_t fzC_i32__infix_wmO (slot_t cur, slot_t i) { return ((slot_t) { .i32 = cur.i32 - i.i32 }); }\n" +
-           "slot_t fzC_i32__infix_wpO (slot_t cur, slot_t i) { return ((slot_t) { .i32 = cur.i32 + i.i32 }); }\n" +
-           "slot_t fzC_i32__infix_wg  (slot_t cur, slot_t i) { return cur.i32 > i.i32 ? " + FZ_TRUE + " : " + FZ_FALSE + "; }\n" +
-           "slot_t fzC_i32__infix_wl  (slot_t cur, slot_t i) { return cur.i32 < i.i32 ? " + FZ_TRUE + " : " + FZ_FALSE + "; }\n");
+           "void * " + DUMMY + "0;\n"+
+           "#define " + DUMMY + " (*" + DUMMY + "0)\n");
         for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
           {
             typesForClazz(c);
@@ -372,6 +376,15 @@ public class C extends Backend
 
 
   /**
+   * Is the given clazz the stdlib clazz i32?
+   */
+  public boolean isI32(int cl)
+  {
+    return _fuir.clazzIsI32(cl);
+  }
+
+
+  /**
    * Create declarations of the C types required for the given clazz.  Write
    * code to _cout.
    *
@@ -384,11 +397,54 @@ public class C extends Backend
       {
       case Routine:
         {
-          _c.print
-            ("typedef struct {\n" +
-             (_fuir.clazzIsRef(cl) ? "  uint32_t clazzId;\n" : "") +
-             "  slot_t fields["+_fuir.clazzSize(cl)+"];\n"+
-             "} " + clazzTypeName(cl) + ";\n");
+          if (!_declaredTypes.contains(cl))
+            {
+              _declaredTypes.add(cl);
+              if (isI32(cl))  // special handling of stdlib clazzes known to the compiler
+                {
+                  _c.print("typedef int32_t");
+                }
+              else
+                {
+                  // first, make sure types used for inner fields are declared:
+                  for (int i = 0; i < _fuir.clazzSize(cl); i++)
+                    {
+                      var fcl = _fuir.clazzFieldSlotClazz(cl, i);
+                      if (fcl != -1 && fcl != -2)
+                        {
+                          typesForClazz(fcl);
+                        }
+                    }
+
+                  // next, declare the type itself
+                  _c.print
+                    ("typedef struct {\n" +
+                     (_fuir.clazzIsRef(cl) ? "  uint32_t clazzId;\n" : ""));
+                  for (int i = 0; i < _fuir.clazzSize(cl); i++)
+                    {
+                      var fcl = _fuir.clazzFieldSlotClazz(cl, i);  // NYI: Slots are an interpreter artifact, should just iterate the fields instead
+                      if (fcl == -1)
+                        {
+                          _c.print(" /* slot " + i + " not used */\n");
+                        }
+                      else if (fcl == -2) // NYI: ugly inline constant
+                        {
+                          _c.print(" /* slot " + i + " is VOID */\n");
+                        }
+                      else
+                        {
+                          var fieldName = "field" + i; // NYI: better mangle the Fuzion field name into this for readability
+                          _c.print
+                            (" " + clazzTypeName(fcl) + " " + fieldName + ";\n");
+                        }
+                    }
+                  _c.print
+                    ("}");
+
+                }
+              _c.print
+                (" " + clazzTypeName(cl) + ";\n");
+            }
           break;
         }
       default:
@@ -412,8 +468,12 @@ public class C extends Backend
       {
         passArgs(stack, argCount-1);
         _c.print(", ");
+        _c.print(a);
       }
-    _c.print(a);
+    else
+      { // ref to outer instance, passed by reference
+        _c.print("&(" + a + ")");
+      }
   }
 
 
@@ -472,7 +532,7 @@ public class C extends Backend
                     }
                   else
                     {
-                      _c.println("" + outer + "->fields[" + offset + "] = " + value + ";");
+                      _c.println("(" + outer + ").field" + offset + " = " + value + ";");
                     }
                 }
               else
@@ -507,16 +567,16 @@ public class C extends Backend
                       {
                         if (SHOW_STACK_ON_CALL) System.out.println("Befor call to "+_fuir.featureAsString(cf)+": "+stack);
                         var r = _fuir.featureResultField(cf);
-                        String res;
+                        String res = "(/*-- no result --*/ " + DUMMY + ")";
                         if (r != -1 ||
                             _fuir.featureKind(cf) == FUIR.FeatureKind.Intrinsic)
                           {
-                            res = TEMP_VAR_PREFIX + (_resultId++);
-                            _c.print("slot_t " + res + " = ");
-                          }
-                        else
-                          {
-                            res = "(/*-- no result --*/ " + DUMMY + ")";
+                            var rt = _fuir.callResultType(cl, c, i);
+                            if (rt != -1)
+                              {
+                                res = TEMP_VAR_PREFIX + (_resultId++);
+                                _c.print(clazzTypeName(rt) + " " + res + " = ");
+                              }
                           }
                         String n = featureMangledName(cf);
                         _c.print("" + n + "(");
@@ -530,7 +590,7 @@ public class C extends Backend
                       {
                         var t = stack.pop();
                         var tc = _fuir.callTargetClazz(cl, c, i);
-                        stack.push(t + "->fields[" + _fuir.callFieldOffset(tc, c, i) + "]");
+                        stack.push("(" + t + ").field" + _fuir.callFieldOffset(tc, c, i));
                         break;
                       }
                     case Abstract :
@@ -547,7 +607,7 @@ public class C extends Backend
             }
           case Current:
             {
-              stack.push(CURRENT);
+              stack.push("*" + CURRENT);
               break;
             }
           case If:
@@ -556,7 +616,7 @@ public class C extends Backend
               var block     = _fuir.i32Const(c, i + 1);
               var elseBlock = _fuir.i32Const(c, i + 2);
               i = i + 2;
-              _c.println("if (" + cond + ".i32 != 0) {");
+              _c.println("if (" + cond + ".field0 != 0) {");
               _c.indent();
               createCode(cl, stack, block);
               _c.unindent();
@@ -575,10 +635,10 @@ public class C extends Backend
               stack.push(bc ? FZ_TRUE : FZ_FALSE);
               break;
             }
-          case i32Const: { var ic = _fuir.i32Const(c, i); stack.push("((slot_t) { .i32 = " + ic + "})"); break; }
-          case u32Const: { var ic = _fuir.u32Const(c, i); stack.push("((slot_t) { .u32 = " + ic + "})"); break; }
-          case i64Const: { var ic = _fuir.i64Const(c, i); stack.push("((slot_t) { .i64 = " + ic + "})"); break; }
-          case u64Const: { var ic = _fuir.u64Const(c, i); stack.push("((slot_t) { .u64 = " + ic + "})"); break; }
+          case i32Const: { var ic = _fuir.i32Const(c, i); stack.push("((int32_t ) " + ic + ")"); break; }  // NYI: Check C99 standard if this is always ok!
+          case u32Const: { var ic = _fuir.u32Const(c, i); stack.push("((uint32_t) " + ic + ")"); break; }
+          case i64Const: { var ic = _fuir.i64Const(c, i); stack.push("((int64_t ) " + ic + ")"); break; }
+          case u64Const: { var ic = _fuir.u64Const(c, i); stack.push("((uint64_t) " + ic + ")"); break; }
           case strConst:
             {
               stack.push("(/* NYI: String const */ \"\")");
@@ -612,6 +672,20 @@ public class C extends Backend
 
 
   /**
+   * Create unique a mangled name for a clazz that can be used in C identifiers
+   * (i.e., it starts with letter or '_' and contains only ASCII letters, digits
+   * or '_'.
+   *
+   * @param cl id of a clazz
+   */
+  String clazzMangledName(int cl)
+  {
+    var f = _fuir.clazz2FeatureId(cl);
+    return featureMangledName(f);
+  }
+
+
+  /**
    * Create code for the C function implemeting the routine corresponding to the
    * given clazz.  Write code to _cout.
    *
@@ -620,12 +694,11 @@ public class C extends Backend
    */
   private void cFunctionDecl(int cl)
   {
-    var f = _fuir.clazz2FeatureId(cl);
-    var res = _fuir.featureResultField(f);
+    var res = _fuir.clazzResultClazz(cl);
     _c.print(res == -1
-            ? "void "
-            : "slot_t ");
-    _c.print(featureMangledName(f));
+             ? "void "
+             : clazzTypeName(res) + " ");
+    _c.print(clazzMangledName(cl));
     _c.print("(");
     var oc = _fuir.clazzOuterClazz(cl);
     String comma = "";
@@ -639,7 +712,9 @@ public class C extends Backend
     for (int i = 0; i < ac; i++)
       {
         _c.print(comma);
-        _c.print("slot_t arg" + i);
+        var at = _fuir.clazzArgClazz(cl, i);
+        var t = at == -1 ? "slot_t" : clazzTypeName(at);
+        _c.print(t + " arg" + i);
         comma = ", ";
       }
     _c.print(")");
@@ -664,6 +739,7 @@ public class C extends Backend
           switch (_fuir.featureKind(f))
             {
             case Routine:
+            case Intrinsic:
               {
                 cFunctionDecl(cl);
                 _c.print(";\n");
@@ -698,20 +774,46 @@ public class C extends Backend
                     if (af >= 0) // af < 0 for unused argument fields.
                       {
                         var offset = _fuir.clazzFieldOffset(cl, af);
-                        _c.print(CURRENT + "->fields[" + offset + "] = arg" + i +";\n");
+                        _c.print(CURRENT + "->field" + offset + " = arg" + i +";\n");
                       }
                   }
                 var c = _fuir.featureCode(f);
                 var stack = new Stack<String>();
                 createCode(cl, stack, c);
-                var res = _fuir.featureResultField(f);
+                var res = _fuir.clazzResultClazz(cl);
                 if (res != -1)
                   {
-                    _c.println("return " + CURRENT + "->fields[" + _fuir.clazzFieldOffset(cl, res) + "];");
+                    var rf = _fuir.featureResultField(f);
+                    if (rf != -1)
+                      {
+                        _c.println("return " + CURRENT + "->field" + _fuir.clazzFieldOffset(cl, rf) + ";");
+                      }
+                    else
+                      {
+                        _c.println("return *" + CURRENT + ";");
+                      }
                   }
                 _c.unindent();
                 _c.println("}");
                 break;
+              }
+            case Intrinsic:
+              {
+                _c.print("\n// code for intrinsic " + _fuir.clazzAsString(cl) + ":\n");
+                cFunctionDecl(cl);
+                _c.print(" {\n");
+                switch (clazzMangledName(cl))
+                  {
+                  case C_FUNCTION_PREFIX + "exitForCompilerTest"    : _c.print(" exit(arg0);\n"); break;
+                  case C_FUNCTION_PREFIX + "fusion__std__out__write": _c.print(" fwrite(&arg0, 1, 1, stdout);\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__prefix_wmO"        : _c.print(" return - *fzouter;\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wmO"         : _c.print(" return *fzouter - arg0;\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wpO"         : _c.print(" return *fzouter + arg0;\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wg"          : _c.print(" return *fzouter > arg0 ? " + FZ_TRUE + " : " + FZ_FALSE + ";\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wl"          : _c.print(" return *fzouter < arg0 ? " + FZ_TRUE + " : " + FZ_FALSE + ";\n"); break;
+                  default:                                            _c.print(" /* NYI: code for intrinsic " + _fuir.clazzAsString(cl) + "missing */\n"); break;
+                  }
+                _c.print("}\n");
               }
             case Field:
               break;

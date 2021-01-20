@@ -173,6 +173,64 @@ public class FUIR extends ANY
     return _clazzIds.get(cl).size();
   }
 
+
+  /**
+   * Return the clazz of the field at given slot
+   *
+   * NYI: slots are an artifact from the interpreter, should not appear in the IR
+   *
+   * @return the clazz id or -1 if no field at this slot or -2 if field type is
+   * VOID, so no field is needed.
+   */
+  public int clazzFieldSlotClazz(int cl, int i)
+  {
+    if (PRECONDITIONS)
+      require
+        (i >= 0 && i < clazzSize(cl));
+
+    var cc = _clazzIds.get(cl);
+    for (var e : cc.offsetForField_.entrySet())
+      {
+        if (e.getValue() == i)
+          {
+            var f = e.getKey();
+            var fcl = cc.actualClazz(f.resultType());
+            if (fcl._type == Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
+              {
+                return -2;
+              }
+            else
+              {
+                return _clazzIds.add(fcl);
+              }
+          }
+      }
+    return -1;
+  }
+
+
+  /**
+   * Get the clazz of the result of calling a clazz
+   *
+   * @param cl a clazz id
+   *
+   * @return clazz id of cl's result or -1 if the result is a stateless value
+   */
+  public int clazzResultClazz(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    var rcl = cc.actualClazz(cc.feature().resultType());
+    if (rcl._type != Types.t_VOID && rcl.size() > 0)
+      {
+        return _clazzIds.add(rcl);
+      }
+    else
+      {
+        return -1;
+      }
+  }
+
+
   public int clazz2FeatureId(int cl)
   {
     return _featureIds.get(_clazzIds.get(cl).feature());
@@ -187,6 +245,36 @@ public class FUIR extends ANY
   {
     // NYI: This does not handle open generic args such as in Function.call yet.
     return _clazzIds.get(cl).feature().arguments.size();
+  }
+
+
+  /**
+   * Get the clazz id of the type of the given argument of clazz cl
+   *
+   * @param cl clazz id
+   *
+   * @parem arg argument number 0, 1, .. clazzArgCount(cl)-1
+   *
+   * @return feature id of the argument or -1 if no such feature exists (the
+   * argument is unused).
+   */
+  public int clazzArgClazz(int cl, int arg)
+  {
+    // NYI: This does not handle open generic args such as in Function.call yet.
+    var c = _clazzIds.get(cl);
+    var a = c.feature().arguments.get(arg);
+    int rcid;
+    var rc = c.actualClazz(a.resultType());
+    if (rc._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
+      {
+        // NYI: Check Clazzes.isUsed(thizFeature, ocl)
+        rcid = _clazzIds.add(rc);
+      }
+    else
+      {
+        rcid = -1;
+      }
+    return rcid;
   }
 
 
@@ -255,6 +343,12 @@ public class FUIR extends ANY
     return o == null ? -1 : _clazzIds.get(o);
   }
 
+
+  public boolean clazzIsI32(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    return cc == Clazzes.i32.getIfCreated();
+  }
 
   // String representation of clazz, for debugging only
   public String clazzAsString(int cl)
@@ -618,6 +712,8 @@ public class FUIR extends ANY
     var ocl = _clazzIds.get(outerClazz);
     var f = _featureIds.get(field);
     var fclazz = ocl.clazzForField(f);
+    check
+      (fclazz._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
     return _clazzIds.add(fclazz);
   }
 
@@ -668,6 +764,27 @@ public class FUIR extends ANY
       (tclazz._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
     return _clazzIds.add(tclazz);
   }
+
+  public int callResultType(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Call);
+
+    var call = (Call) _codeIds.get(c).get(ix);
+    var outerClazz = _clazzIds.get(cl);
+    var rcl = outerClazz.actualClazz(call.type());
+    if (rcl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
+      {
+        return _clazzIds.add(rcl);
+      }
+    else
+      {
+        return -1;
+      }
+  }
+
 
   public int callFieldOffset(int cl, int c, int ix)
   {
