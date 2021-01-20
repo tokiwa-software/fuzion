@@ -3532,9 +3532,9 @@ public class Feature extends ANY implements Stmnt, Comparable
   }
 
   /**
-   * Check if this has an outerRef and this outerRef is equal to f.
+   * Check if this has an outerRef and return it if this is the case
    *
-   * @param f a field that was added as an outer ref.
+   * @return the outer ref if it exists, null otherwise.
    */
   public Feature outerRefOrNull()
   {
