@@ -151,6 +151,17 @@ public class CFile extends ANY
 
 
   /**
+   * Print the given CExpr.
+   *
+   * @param e the expression to print;
+   */
+  public void print(CExpr e)
+  {
+    print(e.code());
+  }
+
+
+  /**
    * Print the given C string, indenting new lines _c_indentation times, follwed
    * by LF.
    *

@@ -80,7 +80,7 @@ public class C extends Backend
   /**
    * Name of local variable containing current instance
    */
-  private static final String CURRENT = "fzCur";
+  private static final CExpr CURRENT = CExpr.ident("fzCur");
 
 
   /**
@@ -110,8 +110,8 @@ public class C extends Backend
   /**
    * C constants corresponding to Fuzion's true and false values.
    */
-  private static final String FZ_FALSE =  "((" + TYPE_PREFIX + "bool) { 0 })";
-  private static final String FZ_TRUE  =  "((" + TYPE_PREFIX + "bool) { 1 })";
+  private static final CExpr FZ_FALSE =  CExpr.compoundLiteral(TYPE_PREFIX + "bool", "0");
+  private static final CExpr FZ_TRUE  =  CExpr.compoundLiteral(TYPE_PREFIX + "bool", "1");
 
   /**
    * The name of the tag field in instances of bool.fz.
@@ -473,7 +473,7 @@ public class C extends Backend
    *
    * @param argCount the number of arguments.
    */
-  void passArgs(Stack<String> stack, int argCount)
+  void passArgs(Stack<CExpr> stack, int argCount)
   {
     var a = stack.pop();
     if (argCount > 0)
@@ -484,7 +484,7 @@ public class C extends Backend
       }
     else
       { // ref to outer instance, passed by reference
-        _c.print(ccodeAdrOf(a));
+        _c.print(a.adrOf());
       }
   }
 
@@ -499,7 +499,7 @@ public class C extends Backend
    *
    * @param c the code block to compile
    */
-  void createCode(int cl, Stack<String> stack, int c)
+  void createCode(int cl, Stack<CExpr> stack, int c)
   {
     for (int i = 0; _fuir.withinCode(c, i); i++)
       {
@@ -509,7 +509,7 @@ public class C extends Backend
           case AdrToValue:
             { // dereference an outer reference
               var v = stack.pop();
-              stack.push(ccodeDeRef(v));
+              stack.push(v.deref());
               break;
             }
           case Assign:
@@ -537,7 +537,7 @@ public class C extends Backend
                     }
                   else
                     {
-                      _c.println(fieldAccess + " = " + value + ";");
+                      _c.print(fieldAccess.assign(value)); _c.println(";");
                     }
                 }
               else
@@ -549,7 +549,7 @@ public class C extends Backend
           case Box:
             {
               var v = stack.pop();
-              stack.push("*** boxed("+v+") ***");
+              stack.push(CExpr.dummy("NYI: boxed"));
               _c.println("// NYI: Box " + v + "!");
               break;
             }
@@ -572,12 +572,13 @@ public class C extends Backend
                     case Intrinsic:
                       {
                         if (SHOW_STACK_ON_CALL) System.out.println("Befor call to "+_fuir.clazzAsString(cc)+": "+stack);
-                        String res = "(/*-- no result --*/ " + DUMMY + ")";
+                        CExpr res = CExpr.ident(DUMMY); // NYI: no result, needed as a workaround for functions returning current instance
                         var rt = _fuir.callResultType(cl, c, i);
                         if (rt != -1)
                           {
-                            res = TEMP_VAR_PREFIX + (_resultId++);
-                            _c.print(clazzTypeName(rt) + " " + res + " = ");
+                            var tmp = TEMP_VAR_PREFIX + (_resultId++);
+                            res = CExpr.ident(tmp);
+                            _c.print(clazzTypeName(rt) + " " + tmp + " = ");
                           }
                         String n = clazzMangledName(cc);
                         _c.print("" + n + "(");
@@ -603,7 +604,7 @@ public class C extends Backend
             }
           case Current:
             {
-              stack.push(ccodeDeRef(CURRENT));
+              stack.push(CURRENT.deref());
               break;
             }
           case If:
@@ -612,7 +613,7 @@ public class C extends Backend
               var block     = _fuir.i32Const(c, i + 1);
               var elseBlock = _fuir.i32Const(c, i + 2);
               i = i + 2;
-              _c.println("if (" + cond + "." + BOOL_TAG_NAME + " != 0) {");
+              _c.println("if (" + cond.field(BOOL_TAG_NAME).code() + " != 0) {");
               _c.indent();
               createCode(cl, stack, block);
               _c.unindent();
@@ -631,25 +632,25 @@ public class C extends Backend
               stack.push(bc ? FZ_TRUE : FZ_FALSE);
               break;
             }
-          case i32Const: { var ic = _fuir.i32Const(c, i); stack.push("((int32_t ) " + ic + ")"); break; }  // NYI: Check C99 standard if this is always ok!
-          case u32Const: { var ic = _fuir.u32Const(c, i); stack.push("((uint32_t) " + ic + ")"); break; }
-          case i64Const: { var ic = _fuir.i64Const(c, i); stack.push("((int64_t ) " + ic + ")"); break; }
-          case u64Const: { var ic = _fuir.u64Const(c, i); stack.push("((uint64_t) " + ic + ")"); break; }
+          case i32Const: { var ic = _fuir.i32Const(c, i); stack.push(CExpr. int32const(ic)); break; }
+          case u32Const: { var ic = _fuir.u32Const(c, i); stack.push(CExpr.uint32const(ic)); break; }
+          case i64Const: { var ic = _fuir.i64Const(c, i); stack.push(CExpr. int64const(ic)); break; }
+          case u64Const: { var ic = _fuir.u64Const(c, i); stack.push(CExpr.uint64const(ic)); break; }
           case strConst:
             {
-              stack.push("(/* NYI: String const */ \"\")");
+              stack.push(CExpr.dummy("NYI: String const"));
               break;
             }
           case Match:
             {
               var v = stack.pop();
               _c.println("// NYI: match " + v + "!");
-              stack.push("*** match("+v+") result ***");
+              stack.push(CExpr.dummy("NYI: match result"));
               break;
             }
           case Singleton:
             {
-              stack.push("(/*-- NYI: Singleton result --*/ " + DUMMY + ")");
+              stack.push(CExpr.ident(DUMMY)); // NYI: Singleton result
               break;
             }
           case NOP:
@@ -792,14 +793,15 @@ public class C extends Backend
                 cFunctionDecl(cl);
                 _c.print(" {\n");
                 _c.indent();
-                _c.print("" + clazzTypeName(cl) + " *" + CURRENT + " = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
-                        (_fuir.clazzIsRef(cl) ? CURRENT + "->clazzId = " + clazzId2num(cl) + ";\n" : ""));
+                _c.print("" + clazzTypeName(cl) + " *" + CURRENT.code() + " = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
+                         (_fuir.clazzIsRef(cl) ? CURRENT.deref().field("clazzId").assign(CExpr.int32const(clazzId2num(cl))).code() + ";\n" : ""));
 
                 var or = _fuir.clazzOuterRef(cl);
                 if (or != -1)
                   {
-                    var deref = _fuir.clazzIsOuterRefAdrOfValue(cl) ? "" : "*";
-                    _c.print(CURRENT + "->" + fieldNameInClazz(cl, or) + " = " + deref + "fzouter;\n");
+                    var fzouter = CExpr.ident("fzouter");
+                    var outer = _fuir.clazzIsOuterRefAdrOfValue(cl) ? fzouter : fzouter.deref();
+                    _c.print(CURRENT.deref().field(fieldNameInClazz(cl, or)).assign(outer).code() + ";\n");
                   }
 
                 var ac = _fuir.clazzArgCount(cl);
@@ -808,11 +810,11 @@ public class C extends Backend
                     var af = _fuir.clazzArg(cl, i);
                     if (af >= 0) // af < 0 for unused argument fields.
                       {
-                        _c.print(CURRENT + "->" + fieldNameInClazz(cl, af) + " = arg" + i +";\n");
+                        _c.print(CURRENT.deref().field(fieldNameInClazz(cl, af)).assign(CExpr.ident("arg" + i)).code() + ";\n");
                       }
                   }
                 var c = _fuir.featureCode(f);
-                var stack = new Stack<String>();
+                var stack = new Stack<CExpr>();
                 createCode(cl, stack, c);
                 var res = _fuir.clazzResultClazz(cl);
                 if (res != -1)
@@ -820,11 +822,11 @@ public class C extends Backend
                     var rf = _fuir.featureResultField(f);
                     if (rf != -1)
                       {
-                        _c.println("return " + CURRENT + "->" + fieldNameInClazz(cl, rf) + ";");
+                        _c.println("return " + CURRENT.deref().field(fieldNameInClazz(cl, rf)).code() + ";");
                       }
                     else
                       {
-                        _c.println("return *" + CURRENT + ";");
+                        _c.println("return " + CURRENT.deref().code() + ";");
                       }
                   }
                 _c.unindent();
@@ -843,8 +845,8 @@ public class C extends Backend
                   case C_FUNCTION_PREFIX + "i32__prefix_wmO"        : _c.print(" return - *fzouter;\n"); break;
                   case C_FUNCTION_PREFIX + "i32__infix_wmO"         : _c.print(" return *fzouter - arg0;\n"); break;
                   case C_FUNCTION_PREFIX + "i32__infix_wpO"         : _c.print(" return *fzouter + arg0;\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wg"          : _c.print(" return *fzouter > arg0 ? " + FZ_TRUE + " : " + FZ_FALSE + ";\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wl"          : _c.print(" return *fzouter < arg0 ? " + FZ_TRUE + " : " + FZ_FALSE + ";\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wg"          : _c.print(" return *fzouter > arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wl"          : _c.print(" return *fzouter < arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
                   default:                                            _c.print(" /* NYI: code for intrinsic " + _fuir.clazzAsString(cl) + "missing */\n"); break;
                   }
                 _c.print("}\n");
@@ -862,142 +864,6 @@ public class C extends Backend
 
 
   /**
-   * Check if given expression is alphanumeric, i.e., a C identifier or integer constant.
-   *
-   * @param expr a C expression
-   *
-   * @return true iff a only contains A..Za..z0..9
-   */
-  boolean isAlphanumeric(String expr)
-  {
-    boolean alphaNumeric = true;
-    for (int i=0; i < expr.length(); i++)
-      {
-        var c = expr.charAt(i);
-        alphaNumeric = alphaNumeric && ('A' <= c && c <= 'Z' ||
-                                        'a' <= c && c <= 'z' ||
-                                        '0' <= c && c <= '9' ||
-                                        c == '_');
-      }
-    return alphaNumeric;
-  }
-
-
-  /**
-   * Check if given expression uses only C precedence 1 operators (see
-   * https://en.cppreference.com/w/c/language/operator_precedence).
-   *
-   * These are
-   *
-   * 	++ -- 	Suffix/postfix increment and decrement 	Left-to-right
-   *    () 	Function call
-   *    [] 	Array subscripting
-   *    . 	Structure and union member access
-   *    -> 	Structure and union member access through pointer
-   *    (type){list} 	Compound literal(C99)
-   *
-   * @param expr a C expression
-   *
-   * @return true if expr contains only identifiers, constants and precedence 1
-   * expressions, false if higher precendence expressions are found or if
-   * detection was too lazy.
-   */
-  boolean isCPrec1Expr(String expr)
-  {
-    return isAlphanumeric(expr.replace("->", "ARROW").replace(".", "DOT"));
-  }
-
-
-  /**
-   * Add parentheses around C expression unless it is already enclosed in
-   * parentheses or it is alphanumeric
-   *
-   * @param expr a C expression
-   *
-   * @return a C expression that evaluates to the same value as expr and that is
-   * either enclosed in parentheses or alphanumeric.
-   */
-  String ccodeParentheses(String expr)
-  {
-    return
-      expr.startsWith("(" ) && expr.endsWith(")") ? expr :
-      isAlphanumeric(expr)                        ? expr : "(" + expr + ")";
-  }
-
-
-  /**
-   * Add parentheses around C expression unless it is already enclosed in
-   * parentheses or it is a C expression with only precedence 1 operators
-   *
-   * @param expr a C expression
-   *
-   * @return a C expression that evaluates to the same value as expr and that is
-   * either enclosed in parentheses or isCPrec1Expr(result)
-   */
-  String ccodeParenthesesP1(String expr)
-  {
-    if (expr.startsWith("(") && expr.endsWith(")"))
-      {
-        expr = expr.substring(1, expr.length()-1);
-      }
-
-    return isCPrec1Expr(expr) ? expr : "(" + expr + ")";
-  }
-
-
-  /**
-   * Create code to take address of C expression, adding parentheses as needed.
-   *
-   * @param expr a C expression
-   *
-   * @return a C expression that evaluates to the address of expr
-   */
-  String ccodeAdrOf(String expr)
-  {
-    if      (expr.startsWith("*" ) && isCPrec1Expr(expr.substring(1))) { return expr.substring(1); }
-    else if (expr.startsWith("*(") && expr.endsWith(")")             ) { return expr.substring(2, expr.length()-1); }
-    else                                                               { return "&" + ccodeParenthesesP1(expr); }
-  }
-
-
-  /**
-   * Create code to take dereferences a C expression, adding parentheses as needed.
-   *
-   * @param expr a C expression
-   *
-   * @return a C expression that evaluates to the data referenced by pointer
-   * given as expr
-   */
-  String ccodeDeRef(String expr)
-  {
-    if      (expr.startsWith("&" ) && isCPrec1Expr(expr.substring(1))) { return expr.substring(1); }
-    else if (expr.startsWith("&(") && expr.endsWith(")")             ) { return expr.substring(2, expr.length()-1); }
-    else                                                               { return "*" + ccodeParenthesesP1(expr); }
-  }
-
-
-  /**
-   * Create code to take reads a field form a struct
-   *
-   * @param expr a C expression
-   *
-   * @param fieldName a C identifier
-   *
-   * @return a C expression that evaluates to the entry fieldName in the struct
-   * given as expr
-   */
-  String ccodeAccessField(String expr,
-                          String fieldName)
-  {
-    String r;
-    if      (expr.startsWith("*" ) && isCPrec1Expr(expr.substring(1))) { r =                    expr.substring(1)                   + "->" + fieldName; }
-    else if (expr.startsWith("*(") && expr.endsWith(")")             ) { r = ccodeParenthesesP1(expr.substring(2, expr.length()-1)) + "->" + fieldName; }
-    else                                                               { r = ccodeParenthesesP1(expr                              ) + "."  + fieldName; }
-    return r;
-  }
-
-
-  /**
    * Create C code to access a field, dereferencing if needed.
    *
    * @param outercl the clazz id of the type of outer, used to tell if outer is ref or value
@@ -1006,13 +872,13 @@ public class C extends Backend
    *
    * @param fieldName C identifier that gives the name of the field
    */
-  String ccodeAccessField(int outercl, String outer, String fieldName)
+  CExpr ccodeAccessField(int outercl, CExpr outer, String fieldName)
   {
     if (_fuir.clazzIsRef(outercl))
       {
-        outer = ccodeDeRef(outer);
+        outer = outer.deref();
       }
-    return ccodeAccessField(outer, fieldName);
+    return outer.field(fieldName);
   }
 
 }
