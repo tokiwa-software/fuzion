@@ -484,7 +484,7 @@ public class C extends Backend
       }
     else
       { // ref to outer instance, passed by reference
-        _c.print("&(" + a + ")");
+        _c.print(ccodeAdrOf(a));
       }
   }
 
@@ -504,13 +504,12 @@ public class C extends Backend
     for (int i = 0; _fuir.withinCode(c, i); i++)
       {
         var s = _fuir.codeAt(c, i);
-        // System.out.println("Code at "+i+": " + s);
         switch (s)
           {
           case AdrToValue:
             { // dereference an outer reference
               var v = stack.pop();
-              stack.push("(*(" + v + "))");
+              stack.push(ccodeDeRef(v));
               break;
             }
           case Assign:
@@ -523,15 +522,8 @@ public class C extends Backend
               if (valuecl != -1) // void value. NYI: better remove the Assign altogether from the IR in this case
                 {
                   var fclazz = _fuir.assignClazzForField(outercl, field);  // static clazz of assigned field
-                  String slot;
-                  if (_fuir.clazzIsRef(outercl))
-                    {
-                      slot = "/* NYI: dynamic binding needed */";
-                    }
-                  else
-                    {
-                      slot = "." + fieldNameInClazz(outercl, field);
-                    }
+                  var fieldName = fieldNameInClazz(outercl, field);
+                  var fieldAccess = ccodeAccessField(outercl, outer, fieldName);
                   if (_fuir.clazzIsChoice(fclazz) &&
                       fclazz != valuecl &&  // NYI: interpreter checks fclazz._type != staticTypeOfValue
                       !_fuir.featureIsOuterRef(field) /* outerref might be an adr of a value type */
@@ -545,7 +537,7 @@ public class C extends Backend
                     }
                   else
                     {
-                      _c.println("(" + outer + ")" + slot + " = " + value + ";");
+                      _c.println(fieldAccess + " = " + value + ";");
                     }
                 }
               else
@@ -599,16 +591,8 @@ public class C extends Backend
                       {
                         var t = stack.pop();
                         var tc = _fuir.callTargetClazz(cl, c, i);
-                        String slot;
-                        if (_fuir.clazzIsRef(tc))
-                          {
-                            slot = "/* NYI: read field from ref not supported yet */";
-                          }
-                        else
-                          {
-                            slot = "." + fieldName(_fuir.callFieldOffset(tc, c, i), cf);
-                          }
-                        stack.push("(" + t + ")" + slot );
+                        var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
+                        stack.push(ccodeAccessField(tc, t, field));
                         break;
                       }
                     case Abstract: throw new Error("This should not happen: Calling abstract '" + _fuir.clazzAsString(cc) + "'");
@@ -619,7 +603,7 @@ public class C extends Backend
             }
           case Current:
             {
-              stack.push("*" + CURRENT);
+              stack.push(ccodeDeRef(CURRENT));
               break;
             }
           case If:
@@ -874,6 +858,161 @@ public class C extends Backend
           break;
         }
       }
+  }
+
+
+  /**
+   * Check if given expression is alphanumeric, i.e., a C identifier or integer constant.
+   *
+   * @param expr a C expression
+   *
+   * @return true iff a only contains A..Za..z0..9
+   */
+  boolean isAlphanumeric(String expr)
+  {
+    boolean alphaNumeric = true;
+    for (int i=0; i < expr.length(); i++)
+      {
+        var c = expr.charAt(i);
+        alphaNumeric = alphaNumeric && ('A' <= c && c <= 'Z' ||
+                                        'a' <= c && c <= 'z' ||
+                                        '0' <= c && c <= '9' ||
+                                        c == '_');
+      }
+    return alphaNumeric;
+  }
+
+
+  /**
+   * Check if given expression uses only C precedence 1 operators (see
+   * https://en.cppreference.com/w/c/language/operator_precedence).
+   *
+   * These are
+   *
+   * 	++ -- 	Suffix/postfix increment and decrement 	Left-to-right
+   *    () 	Function call
+   *    [] 	Array subscripting
+   *    . 	Structure and union member access
+   *    -> 	Structure and union member access through pointer
+   *    (type){list} 	Compound literal(C99)
+   *
+   * @param expr a C expression
+   *
+   * @return true if expr contains only identifiers, constants and precedence 1
+   * expressions, false if higher precendence expressions are found or if
+   * detection was too lazy.
+   */
+  boolean isCPrec1Expr(String expr)
+  {
+    return isAlphanumeric(expr.replace("->", "ARROW").replace(".", "DOT"));
+  }
+
+
+  /**
+   * Add parentheses around C expression unless it is already enclosed in
+   * parentheses or it is alphanumeric
+   *
+   * @param expr a C expression
+   *
+   * @return a C expression that evaluates to the same value as expr and that is
+   * either enclosed in parentheses or alphanumeric.
+   */
+  String ccodeParentheses(String expr)
+  {
+    return
+      expr.startsWith("(" ) && expr.endsWith(")") ? expr :
+      isAlphanumeric(expr)                        ? expr : "(" + expr + ")";
+  }
+
+
+  /**
+   * Add parentheses around C expression unless it is already enclosed in
+   * parentheses or it is a C expression with only precedence 1 operators
+   *
+   * @param expr a C expression
+   *
+   * @return a C expression that evaluates to the same value as expr and that is
+   * either enclosed in parentheses or isCPrec1Expr(result)
+   */
+  String ccodeParenthesesP1(String expr)
+  {
+    if (expr.startsWith("(") && expr.endsWith(")"))
+      {
+        expr = expr.substring(1, expr.length()-1);
+      }
+
+    return isCPrec1Expr(expr) ? expr : "(" + expr + ")";
+  }
+
+
+  /**
+   * Create code to take address of C expression, adding parentheses as needed.
+   *
+   * @param expr a C expression
+   *
+   * @return a C expression that evaluates to the address of expr
+   */
+  String ccodeAdrOf(String expr)
+  {
+    if      (expr.startsWith("*" ) && isCPrec1Expr(expr.substring(1))) { return expr.substring(1); }
+    else if (expr.startsWith("*(") && expr.endsWith(")")             ) { return expr.substring(2, expr.length()-1); }
+    else                                                               { return "&" + ccodeParenthesesP1(expr); }
+  }
+
+
+  /**
+   * Create code to take dereferences a C expression, adding parentheses as needed.
+   *
+   * @param expr a C expression
+   *
+   * @return a C expression that evaluates to the data referenced by pointer
+   * given as expr
+   */
+  String ccodeDeRef(String expr)
+  {
+    if      (expr.startsWith("&" ) && isCPrec1Expr(expr.substring(1))) { return expr.substring(1); }
+    else if (expr.startsWith("&(") && expr.endsWith(")")             ) { return expr.substring(2, expr.length()-1); }
+    else                                                               { return "*" + ccodeParenthesesP1(expr); }
+  }
+
+
+  /**
+   * Create code to take reads a field form a struct
+   *
+   * @param expr a C expression
+   *
+   * @param fieldName a C identifier
+   *
+   * @return a C expression that evaluates to the entry fieldName in the struct
+   * given as expr
+   */
+  String ccodeAccessField(String expr,
+                          String fieldName)
+  {
+    String r;
+    if      (expr.startsWith("*" ) && isCPrec1Expr(expr.substring(1))) { r =                    expr.substring(1)                   + "->" + fieldName; }
+    else if (expr.startsWith("*(") && expr.endsWith(")")             ) { r = ccodeParenthesesP1(expr.substring(2, expr.length()-1)) + "->" + fieldName; }
+    else                                                               { r = ccodeParenthesesP1(expr                              ) + "."  + fieldName; }
+    return r;
+  }
+
+
+  /**
+   * Create C code to access a field, dereferencing if needed.
+   *
+   * @param outercl the clazz id of the type of outer, used to tell if outer is ref or value
+   *
+   * @param outer C expression that result in the instance that contains the field
+   *
+   * @param fieldName C identifier that gives the name of the field
+   */
+  String ccodeAccessField(int outercl, String outer, String fieldName)
+  {
+    if (_fuir.clazzIsRef(outercl))
+      {
+        outer = ccodeDeRef(outer);
+      }
+    return ccodeAccessField(outer, fieldName);
   }
 
 }
