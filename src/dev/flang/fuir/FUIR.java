@@ -36,6 +36,7 @@ import dev.flang.ast.Current; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.Feature; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
+import dev.flang.ast.Impl; // NYI: remove dependency
 import dev.flang.ast.IntConst; // NYI: remove dependency
 import dev.flang.ast.Loop; // NYI: remove dependency
 import dev.flang.ast.Match; // NYI: remove dependency
@@ -813,6 +814,27 @@ public class FUIR extends ANY
   /**
    * Get the inner clazz on for a non dynamic call
    *
+   * @param outerClazz the caller
+   *
+   * @param call the call
+   *
+   * @return the clazz that has to be called
+   */
+  private Clazz callCalledClazz(Clazz outerClazz, Call call)
+  {
+    if (PRECONDITIONS) require
+      (call != null,
+       outerClazz != null);
+
+    var cf = call.calledFeature();
+    var tclazz = Clazzes.clazz(call.target, outerClazz);
+    return tclazz.lookup(cf, outerClazz.actualGenerics(call.generics), call.pos);
+  }
+
+
+  /**
+   * Get the inner clazz on for a non dynamic call
+   *
    * @param cl index of clazz containing the call
    *
    * @param c code block containing the call
@@ -827,13 +849,11 @@ public class FUIR extends ANY
       (ix >= 0,
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Call,
-       callIsDynamic(cl, c, ix));
+       !callIsDynamic(cl, c, ix));
 
     var outerClazz = _clazzIds.get(cl);
     var call = (Call) _codeIds.get(c).get(ix);
-    var tclazz = Clazzes.clazz(call.target, outerClazz);
-    var cf = call.calledFeature();
-    var innerClazz = tclazz.lookup(cf, outerClazz.actualGenerics(call.generics), call.pos);
+    var innerClazz = callCalledClazz(outerClazz, call);
     check
       (innerClazz._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
     return _clazzIds.add(innerClazz);
@@ -879,6 +899,7 @@ public class FUIR extends ANY
     return _clazzIds.add(tclazz);
   }
 
+
   public int callResultType(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
@@ -886,17 +907,20 @@ public class FUIR extends ANY
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Call);
 
-    var call = (Call) _codeIds.get(c).get(ix);
     var outerClazz = _clazzIds.get(cl);
-    var rcl = outerClazz.actualClazz(call.type());
-    if (rcl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
+    var call = (Call) _codeIds.get(c).get(ix);
+    var innerClazz = callCalledClazz(outerClazz, call);
+    var cf = innerClazz.feature();
+    var r = cf.resultField();
+    if (r != null || cf.impl.kind_ == Impl.Kind.Intrinsic) // NYI: Can we remove the ugly pecial handling of intrinsics here?
       {
-        return _clazzIds.add(rcl);
+        var rcl = outerClazz.actualClazz(call.type());
+        if (rcl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
+          {
+            return _clazzIds.add(rcl);
+          }
       }
-    else
-      {
-        return -1;
-      }
+    return -1;
   }
 
 

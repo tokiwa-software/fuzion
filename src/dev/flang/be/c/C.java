@@ -579,25 +579,20 @@ public class C extends Backend
                     case Routine  :
                     case Intrinsic:
                       {
-                        if (SHOW_STACK_ON_CALL) System.out.println("Befor call to "+_fuir.featureAsString(cf)+": "+stack);
-                        var r = _fuir.featureResultField(cf);
+                        if (SHOW_STACK_ON_CALL) System.out.println("Befor call to "+_fuir.clazzAsString(cc)+": "+stack);
                         String res = "(/*-- no result --*/ " + DUMMY + ")";
-                        if (r != -1 ||
-                            _fuir.featureKind(cf) == FUIR.FeatureKind.Intrinsic)
+                        var rt = _fuir.callResultType(cl, c, i);
+                        if (rt != -1)
                           {
-                            var rt = _fuir.callResultType(cl, c, i);
-                            if (rt != -1)
-                              {
-                                res = TEMP_VAR_PREFIX + (_resultId++);
-                                _c.print(clazzTypeName(rt) + " " + res + " = ");
-                              }
+                            res = TEMP_VAR_PREFIX + (_resultId++);
+                            _c.print(clazzTypeName(rt) + " " + res + " = ");
                           }
                         String n = clazzMangledName(cc);
                         _c.print("" + n + "(");
                         passArgs(stack, ac);
                         _c.println(");");
                         stack.push(res);
-                        if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.featureAsString(cf)+": "+stack);
+                        if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
                         break;
                       }
                     case Field:
@@ -616,7 +611,7 @@ public class C extends Backend
                         stack.push("(" + t + ")" + slot );
                         break;
                       }
-                    case Abstract: throw new Error("This should not happen: Calling abstract '" + _fuir.featureAsString(cf) + "'");
+                    case Abstract: throw new Error("This should not happen: Calling abstract '" + _fuir.clazzAsString(cc) + "'");
                     default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.featureKind(cf));
                     }
                 }
