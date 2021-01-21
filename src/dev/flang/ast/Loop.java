@@ -346,7 +346,9 @@ public class Loop extends Expr
           {
             _block = new Block(pos, new List<Stmnt>());
           }
-        statements.add(new If(pos, _whileCond, _block));
+        statements.add(_whileCond != null
+                       ? new If(pos, _whileCond, _block)
+                       : _block);
         _block.statements_.add(new Call(pos, loopName, new List<Expr>()));
 
         if (_prolog == null)
