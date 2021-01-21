@@ -94,6 +94,11 @@ public class If extends Expr
   public If(SourcePosition pos, Expr c, Expr b, Expr elseB)
   {
     super(pos);
+
+    if (PRECONDITIONS) require
+                         (c != null,
+                          b != null);
+
     this.cond = c;
     this.block = Block.fromExpr(b);
     this.elseBlock = Block.fromExpr(elseB);
