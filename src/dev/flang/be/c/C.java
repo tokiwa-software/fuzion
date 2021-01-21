@@ -613,7 +613,7 @@ public class C extends Backend
                           {
                             slot = "." + fieldName(_fuir.callFieldOffset(tc, c, i), cf);
                           }
-                        stack.push("(" + t + ") " + slot );
+                        stack.push("(" + t + ")" + slot );
                         break;
                       }
                     case Abstract: throw new Error("This should not happen: Calling abstract '" + _fuir.featureAsString(cf) + "'");
