@@ -859,11 +859,11 @@ public class C extends Backend
                   case C_FUNCTION_PREFIX + "exitForCompilerTest"    : _c.print(" exit(arg0);\n"); break;
                   case C_FUNCTION_PREFIX + "fusion__std__out__write": _c.print(" fwrite(&arg0, 1, 1, stdout);\n"); break;
                   case C_FUNCTION_PREFIX + "i32__prefix_wmO"        : _c.print(" return - *fzouter;\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wmO"         : _c.print(" return *fzouter - arg0;\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wpO"         : _c.print(" return *fzouter + arg0;\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wg"          : _c.print(" return *fzouter > arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wmO"         : _c.print(" return *fzouter -  arg0;\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wpO"         : _c.print(" return *fzouter +  arg0;\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wg"          : _c.print(" return *fzouter >  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
                   case C_FUNCTION_PREFIX + "i32__infix_wge"         : _c.print(" return *fzouter >= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wl"          : _c.print(" return *fzouter < arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wl"          : _c.print(" return *fzouter <  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
                   case C_FUNCTION_PREFIX + "i32__infix_wle"         : _c.print(" return *fzouter <= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
                   default:                                            _c.print(" fprintf(stderr, \"*** error: NYI: code for intrinsic " + _fuir.clazzAsString(cl) + " missing!\\n\"); exit(1);\n"); break;
                   }
