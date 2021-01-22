@@ -863,7 +863,7 @@ public class C extends Backend
                   case C_FUNCTION_PREFIX + "i32__infix_wpO"         : _c.print(" return *fzouter + arg0;\n"); break;
                   case C_FUNCTION_PREFIX + "i32__infix_wg"          : _c.print(" return *fzouter > arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
                   case C_FUNCTION_PREFIX + "i32__infix_wl"          : _c.print(" return *fzouter < arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
-                  default:                                            _c.print(" /* NYI: code for intrinsic " + _fuir.clazzAsString(cl) + "missing */\n"); break;
+                  default:                                            _c.print(" fprintf(stderr, \"*** error: NYI: code for intrinsic " + _fuir.clazzAsString(cl) + " missing!\\n\"); exit(1);\n"); break;
                   }
                 _c.print("}\n");
               }
