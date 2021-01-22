@@ -461,6 +461,11 @@ public class FUIR extends ANY
     return _featureIds.add(_featureIds.get(f).outer());
   }
 
+  public boolean fieldIsOuterRef(int f)
+  {
+    return _featureIds.get(f).isOuterRef();
+  }
+
   public FeatureKind featureKind(int f)
   {
     var ff = _featureIds.get(f);

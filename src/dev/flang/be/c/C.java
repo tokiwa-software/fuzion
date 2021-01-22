@@ -446,8 +446,17 @@ public class C extends Backend
                       else
                         {
                           var cf = _fuir.clazzField(cl, i);
-                          _c.print
-                            (" " + clazzTypeName(fcl) + (_fuir.clazzIsRef(fcl) ? "*" : "") + " " + fieldName(i, cf) + ";\n");
+                          String type;
+                          if (_fuir.fieldIsOuterRef(cf))
+                            {
+                              var ocl = _fuir.clazzOuterClazz(cl);
+                              type = clazzTypeName(ocl) + "*";
+                            }
+                          else
+                            {
+                              type = clazzTypeName(fcl) + (_fuir.clazzIsRef(fcl) ? "*" : "");
+                            }
+                          _c.print(" " + type + " " + fieldName(i, cf) + ";\n");
                         }
                     }
                   _c.print
@@ -508,8 +517,9 @@ public class C extends Backend
           {
           case AdrToValue:
             { // dereference an outer reference
-              var v = stack.pop();
-              stack.push(v.deref());
+              var a = stack.pop();
+              var v = a;  /* a.deref(); --  NYI: AdrToValue is NOP for now since outer refs as values not supported in C backend yet */
+              stack.push(v);
               break;
             }
           case Assign:
@@ -593,7 +603,12 @@ public class C extends Backend
                         var t = stack.pop();
                         var tc = _fuir.callTargetClazz(cl, c, i);
                         var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
-                        stack.push(ccodeAccessField(tc, t, field));
+                        CExpr res = ccodeAccessField(tc, t, field);
+                        if (_fuir.fieldIsOuterRef(cf))  // NYI: Better have a specific Statement for this
+                          {
+                            res = res.deref();
+                          }
+                        stack.push(res);
                         break;
                       }
                     case Abstract: throw new Error("This should not happen: Calling abstract '" + _fuir.clazzAsString(cc) + "'");
@@ -799,8 +814,7 @@ public class C extends Backend
                 var or = _fuir.clazzOuterRef(cl);
                 if (or != -1)
                   {
-                    var fzouter = CExpr.ident("fzouter");
-                    var outer = _fuir.clazzIsOuterRefAdrOfValue(cl) ? fzouter : fzouter.deref();
+                    var outer = CExpr.ident("fzouter");
                     _c.print(CURRENT.deref().field(fieldNameInClazz(cl, or)).assign(outer).code() + ";\n");
                   }
 
