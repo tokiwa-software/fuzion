@@ -622,6 +622,7 @@ public class FUIR extends ANY
           {
             toStack(l, lo._prolog);
           }
+        l.add(s);
         // NYI: rest...
       }
     else if (s instanceof Match)
