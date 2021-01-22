@@ -113,10 +113,12 @@ public class C extends Backend
   private static final CExpr FZ_FALSE =  CExpr.compoundLiteral(TYPE_PREFIX + "bool", "0");
   private static final CExpr FZ_TRUE  =  CExpr.compoundLiteral(TYPE_PREFIX + "bool", "1");
 
+
   /**
    * The name of the tag field in instances of bool.fz.
    */
   private static final String BOOL_TAG_NAME = "fzF_0_" + mangle(FuzionConstants.CHOICE_TAG_NAME);
+
 
   /**
    * Debugging output
