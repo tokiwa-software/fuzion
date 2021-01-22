@@ -325,11 +325,10 @@ abstract class CExpr extends ANY
    */
   CExpr adrOf()
   {
-    CExpr inner = this;
-    return new Unary(inner, '&')
+    return new Unary(this, '&')
       {
         // redefine deref since inner.adrOf().deref() == inner
-        CExpr deref() { return inner; }
+        CExpr deref() { return _inner; }
     };
   }
 
