@@ -770,7 +770,7 @@ argList     : argument ( COMMA argList
 argument    : visibility
               modifiers
               argNames
-              type
+              ( type | "infer" )    # NYI: allow to leave out type instead of "infer"
               contract
             ;
    */
@@ -787,7 +787,7 @@ argument    : visibility
                 Visi v = visibility();
                 int m = modifiers();
                 List<String> n = argNames();
-                Type t = type();
+                Type t = skip(Token.t_infer) ? Types.t_INFER : type();
                 Contract c = contract();
                 for (String s : n)
                   {
@@ -820,7 +820,7 @@ argument    : visibility
               {
                 visibility();
                 modifiers();
-                result = skipArgNames() && skipType();
+                result = skipArgNames() && (skip(Token.t_infer) || skipType());
                 if (result)
                   {
                     contract();
@@ -867,7 +867,7 @@ argument    : visibility
             skipName();
           }
         while (skipComma());
-        if (isTypePrefix())
+        if (skip(Token.t_infer) || isTypePrefix())
           {
             return FormalOrActual.formal;
           }

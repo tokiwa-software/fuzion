@@ -66,6 +66,12 @@ public class Types extends ANY
    */
   static final String ADDRESS_NAME = "--ADDRESS--";
 
+  /**
+   * Dummy name used for Types.t_ADDRESS which is used for argument types that
+   * need to be inferred from the actual arguments.
+   */
+  static final String INFER_NAME = "--INFER--";
+
 
   /**
    * Dummy name used for void type t_VOID which is used for expressions that do
@@ -96,12 +102,16 @@ public class Types extends ANY
    */
   static Set<String> INTERNAL_NAMES = Collections.<String>unmodifiableSet
     (new TreeSet<>(Arrays.asList(ADDRESS_NAME,
+                                 INFER_NAME,
                                  VOID_NAME,
                                  UNDEFINED_NAME,
                                  ERROR_NAME)));
 
   /* artificial type for the address of a value type, used for outer refs to value instances */
   public static Type t_ADDRESS = new Type(ADDRESS_NAME);
+
+  /* artificial type for type that must be inferred from actual argument */
+  public static Type t_INFER = new Type(INFER_NAME);
 
   /* artificial type for Expr that does not return a value */
   public static Type t_VOID = new Type(VOID_NAME); // NYI: Use t_void instead
@@ -186,6 +196,7 @@ public class Types extends ANY
       f_Array_length  = f_Array.get("length");
       resolved = this;
       t_ADDRESS  .resolveArtificialType(universe);
+      t_INFER    .resolveArtificialType(universe);
       t_VOID     .resolveArtificialType(universe);
       t_UNDEFINED.resolveArtificialType(universe);
       t_ERROR    .resolveArtificialType(f_ERROR);
