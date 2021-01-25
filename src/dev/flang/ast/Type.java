@@ -1152,7 +1152,7 @@ public class Type extends ANY implements Comparable
             check
               (feature == null ||
                name.equals(feature._featureName.baseName()) ||
-               Types.INTERNAL_NAMES.contains(name) && feature.isUniverse(),
+               Types.INTERNAL_NAMES.contains(name),
                generic == null || name.equals(generic._name),
                (feature == null) ^ (generic == null) || (Errors.count() > 0));
 

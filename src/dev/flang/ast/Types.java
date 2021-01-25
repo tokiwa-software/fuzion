@@ -195,7 +195,7 @@ public class Types extends ANY
       f_Array_data    = f_Array.get("data");
       f_Array_length  = f_Array.get("length");
       resolved = this;
-      t_ADDRESS  .resolveArtificialType(universe);
+      t_ADDRESS  .resolveArtificialType(universe.get("Object"));
       t_INFER    .resolveArtificialType(universe);
       t_VOID     .resolveArtificialType(universe);
       t_UNDEFINED.resolveArtificialType(universe);

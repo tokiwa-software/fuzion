@@ -3481,16 +3481,8 @@ public class Feature extends ANY implements Stmnt, Comparable
     if (!o.isSingleton()
         && (impl.code_ != null || contract != null))
       {
-        Type outerRefType;
-        if (isOuterRefAdrOfValue())
-          {
-            // NYI: For now, just use "ref Object" for an outer ref, but
-            outerRefType = new Type(pos, OBJECT_NAME, Type.NONE, null, null, true);
-          }
-        else
-          {
-            outerRefType = o.thisType();
-          }
+        Type outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
+                                                   : o.thisType();
         outerRef_ = new Feature(pos,
                                 Consts.VISIBILITY_PRIVATE,
                                 outerRefType,
