@@ -133,7 +133,9 @@ public class List<T>
 
 
   /**
-   * toString
+   * toString for a list A, B, C will create
+   *
+   *   "A, B, C"
    *
    * @return
    */
@@ -144,7 +146,11 @@ public class List<T>
 
 
   /**
-   * toString
+   * toString for a list A, B, C will create
+   *
+   *   "A term" +
+   *   "B term" +
+   *   "C term"
    *
    * @param term
    *
@@ -157,7 +163,11 @@ public class List<T>
 
 
   /**
-   * toString
+   * toString for a list A, B, C will create
+   *
+   *   "A sep term" +
+   *   "B sep term" +
+   *   "C term"
    *
    * @param sep
    *
