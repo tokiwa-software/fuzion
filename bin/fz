@@ -29,8 +29,8 @@
 
 FZ_CMD=$0
 JAVA=java
-FUSION_BIN=`dirname "$0"`
-FUSION_HOME="$FUSION_BIN/.."
-FUSION_CLASSES="$FUSION_HOME/classes"
+FUZION_BIN=`dirname "$0"`
+FUZION_HOME="$FUZION_BIN/.."
+FUZION_CLASSES="$FUZION_HOME/classes"
 
-$JAVA -Xss3m -cp "$FUSION_CLASSES" -Dfuzion.command=$FZ_CMD dev.flang.tools.Fusion "$@"
+$JAVA -Xss3m -cp "$FUZION_CLASSES" -Dfuzion.command=$FZ_CMD dev.flang.tools.Fusion "$@"
