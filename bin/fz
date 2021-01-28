@@ -24,13 +24,24 @@
 # -----------------------------------------------------------------------
 
 # usage: fz <main-feature>
+#
+# env vars that may be set:
+#
+#   FUZION_HOME            the fuzion installation directory
+#   FUZION_JAVA            the java command used to run Fuzion
+#   FUZION_JAVA_STACK_SIZE the stack size parameter passed to the JAVA command
+#   FUZION_JAVA_OPTIONS    options to be passed to the JAVA command (if set, will
+#                          override stack size)
 
 #!/bin/bash
 
-FZ_CMD=$0
-JAVA=java
+FUZION_CMD=$0
 FUZION_BIN=`dirname "$0"`
-FUZION_HOME="$FUZION_BIN/.."
-FUZION_CLASSES="$FUZION_HOME/classes"
 
-$JAVA -Xss3m -cp "$FUZION_CLASSES" -Dfuzion.command=$FZ_CMD dev.flang.tools.Fusion "$@"
+: ${FUZION_HOME="$FUZION_BIN/.."}
+: ${FUZION_JAVA=java}
+: ${FUZION_JAVA_CLASSPATH="$FUZION_HOME/classes"}
+: ${FUZION_JAVA_STACK_SIZE=3m}
+: ${FUZION_JAVA_OPTIONS="-Xss$FUZION_JAVA_STACK_SIZE"}
+
+$FUZION_JAVA $FUZION_JAVA_OPTIONS -cp "$FUZION_JAVA_CLASSPATH" -Dfuzion.command=$FUZION_CMD dev.flang.tools.Fusion "$@"
