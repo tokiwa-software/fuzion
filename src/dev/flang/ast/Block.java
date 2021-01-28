@@ -332,7 +332,33 @@ public class Block extends Expr
    */
   public String toString()
   {
-    return "\n{\n"+statements_.toString("",";\n")+"}\n";
+    return new StringBuilder().append("{\n").append(toString("  ")).append("}").toString();
+  }
+
+
+  /**
+   * toString
+   *
+   * @return
+   */
+  public String toString(String prefix)
+  {
+    String s = statements_.toString("", "\n");
+    StringBuilder sb = new StringBuilder();
+    if (s.length() > 0)
+      {
+        sb.append(prefix);
+      }
+    for (int i=0; i<s.length(); i++)
+      {
+        var c = s.charAt(i);
+        sb.append(c);
+        if (c == '\n' && i < s.length()-1)
+          {
+            sb.append(prefix);
+          }
+      }
+    return sb.toString();
   }
 
 }

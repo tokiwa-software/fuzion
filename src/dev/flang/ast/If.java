@@ -331,11 +331,11 @@ public class If extends Expr
   public String toString()
   {
     return
-      "if "+cond+" "+block.toString()+
+      "if "+cond+"\n"+block.toString("  ")+
       (elseIf != null
        ? "else "+elseIf
        : (elseBlock != null
-          ? "else"+elseBlock.toString()
+          ? "else\n"+elseBlock.toString("  ")
           : ""
           )
        );
