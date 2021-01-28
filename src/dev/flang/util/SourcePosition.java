@@ -55,8 +55,8 @@ public class SourcePosition extends ANY implements Comparable
   /**
    * character position in _sourceFile.
    */
-  private final int _line;
-  private final int _column;
+  public final int _line;
+  public final int _column;
 
 
   /**
