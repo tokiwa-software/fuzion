@@ -145,7 +145,7 @@ JAVA_FILES_TOOLS = \
           $(SRC)/dev/flang/tools/Fusion.java \
 
 CLASS_FILES_UTIL           = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
-CLASS_FILES_AST            = $(CLASSES_DIR)/dev/flang/__marker_for_make__
+CLASS_FILES_AST            = $(CLASSES_DIR)/dev/flang/ast/__marker_for_make__
 CLASS_FILES_PARSER         = $(CLASSES_DIR)/dev/flang/parser/__marker_for_make__
 CLASS_FILES_IR             = $(CLASSES_DIR)/dev/flang/ir/__marker_for_make__
 CLASS_FILES_MIR            = $(CLASSES_DIR)/dev/flang/mir/__marker_for_make__
