@@ -142,6 +142,7 @@ public class SourcePosition extends ANY implements Comparable
   public String showInSource()
   {
     StringBuilder sb = new StringBuilder();
+    sb.append(Terminal.BLUE);
     sb.append(_sourceFile.line(_line));
 
     // add LF in case this is the last line of a file that does not end in a line break
@@ -149,11 +150,13 @@ public class SourcePosition extends ANY implements Comparable
       {
         sb.append("\n");
       }
+    sb.append(Terminal.YELLOW);
     for (int j=0; j < _column-1; j++)
       {
-        sb.append(' ');
+        sb.append('-');
       }
     sb.append('^');
+    sb.append(Terminal.RESET);
     return sb.toString();
   }
 
@@ -171,9 +174,11 @@ public class SourcePosition extends ANY implements Comparable
    */
   public String fileNameWithPosition()
   {
-    return isBuiltIn()
-      ? "<built-in>:"
-      : fileName() + ":" + _line + ":" + _column + ":";
+    return Terminal.GREEN +
+      (isBuiltIn()
+       ? "<built-in>:"
+       : fileName() + ":" + _line + ":" + _column + ":") +
+      Terminal.REGULAR_COLOR;
   }
 
 

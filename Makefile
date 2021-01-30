@@ -41,6 +41,7 @@ JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/MapComparable2Int.java \
           $(SRC)/dev/flang/util/SourceFile.java \
           $(SRC)/dev/flang/util/SourcePosition.java \
+          $(SRC)/dev/flang/util/Terminal.java \
 
 JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/AdrToValue.java \

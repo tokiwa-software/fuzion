@@ -156,7 +156,7 @@ public class Errors extends ANY
   static String errorMessage(String s)
   {
     _count_++;
-    return "error " + _count_ + ": " + s;
+    return Terminal.BOLD_RED + "error " + _count_ + Terminal.RESET + ": " + s;
   }
 
 
@@ -169,7 +169,7 @@ public class Errors extends ANY
    */
   static String warningMessage(String s)
   {
-    return "warning: " + s;
+    return Terminal.BOLD_YELLOW + "warning" + Terminal.RESET + ": " + s;
   }
 
 
@@ -228,9 +228,16 @@ public class Errors extends ANY
     if (!_errors_.contains(e))
       {
         _errors_.add(e);
-        if (_count_ > 0)
+        if (true)  // true: a blank line before errors, false: sepration line between errors
           {
-            System.err.println("------------");
+            System.out.println();
+          }
+        else
+          {
+            if (_count_ > 0)
+              {
+                System.err.println("------------");
+              }
           }
         pos.show(errorMessage(msg), detail);
         if (_count_ >= MAX_ERROR_MESSAGES)
