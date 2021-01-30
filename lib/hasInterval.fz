@@ -25,7 +25,7 @@
 
 # hasInterval -- feature for integers that can define an interval
 #
-hasInterval<T: hasInterval<T>> : integer<hasInterval<T>> is
+hasInterval<T: hasInterval<T>> : integer<T> is
   max  T is abstract
 /*
   zero T is abstract
