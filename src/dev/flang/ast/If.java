@@ -164,18 +164,38 @@ public class If extends Expr
 
 
   /**
+   * true if this If or any nested else-if-branches end with a missing
+   * else-branch. If so, there is an execution path that does not take any of
+   * the branches, so the result type is VOID.
+   */
+  private boolean hasUntakenElseBranch()
+  {
+    return
+      elseIf != null ? elseIf.hasUntakenElseBranch()
+                     : elseBlock == null;
+  }
+
+
+  /**
    * Helper routine for typeOrNull to determine the type of this if statement on
    * demand, i.e., as late as possible.
    */
   private Type typeFromIfOrElse()
   {
     Type result = null;
-    Iterator<Expr> it = branches();
-    while (it.hasNext())
+    if (hasUntakenElseBranch())
       {
-        Type t = it.next().type();
-        result = result == null ? t
-                                : result.union(t);
+        result = Types.t_VOID;
+      }
+    else
+      {
+        Iterator<Expr> it = branches();
+        while (it.hasNext())
+          {
+            Type t = it.next().type();
+            result = result == null ? t
+                                    : result.union(t);
+          }
       }
     return result;
   }
