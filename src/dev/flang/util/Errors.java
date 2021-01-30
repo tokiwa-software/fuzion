@@ -230,7 +230,7 @@ public class Errors extends ANY
         _errors_.add(e);
         if (true)  // true: a blank line before errors, false: sepration line between errors
           {
-            System.out.println();
+            System.err.println();
           }
         else
           {
