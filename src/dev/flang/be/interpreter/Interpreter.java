@@ -704,6 +704,10 @@ public class Interpreter extends Backend
           {
             result = Intrinsics.call(innerClazz);
           }
+        else if (innerClazz == Clazzes.universe.get())
+          {
+            result = (args, argTypes) -> callOnInstance(f, innerClazz, Instance.universe, args, argTypes);
+          }
         else
           {
             result = (args, argTypes) -> callOnInstance(f, innerClazz, new Instance(innerClazz), args, argTypes);
