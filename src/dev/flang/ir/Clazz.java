@@ -543,9 +543,14 @@ Hellq is
     if (tf != Types.f_ERROR && f != Types.f_ERROR)
       {
         var chain = tf.findInheritanceChain(f.outer());
-        for (var p: chain)
+        check
+          (chain != null || Errors.count() > 0);
+        if (chain != null)
           {
-            fn = f.outer().handDown(f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
+            for (var p: chain)
+              {
+                fn = f.outer().handDown(f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
+              }
           }
       }
     return feature().findDeclaredOrInheritedFeature(fn);
