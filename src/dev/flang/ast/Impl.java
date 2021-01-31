@@ -295,7 +295,11 @@ public class Impl extends ANY
         Feature resultField = outer.resultField();
         if ((resultField != null) && !outer.hasAssignmentsToResult())
           {
-            code_ = code_.propagateExpectedType(res, outer, outer.resultType());
+            var t = outer.resultType();
+            if (t != Types.t_VOID)
+              {
+                code_ = code_.propagateExpectedType(res, outer, t);
+              }
           }
       }
   }
@@ -326,7 +330,10 @@ public class Impl extends ANY
     if (this.code_ != null)
       {
         Feature resultField = outer.resultField();
-        if ((resultField != null) && !outer.hasAssignmentsToResult())
+        if ((resultField != null) &&
+            !outer.hasAssignmentsToResult() &&
+            resultField.resultType() != Types.t_VOID  // This may happen for loops that may or may not produce a result
+            )
           {
             var endPos = (this.code_ instanceof Block) ? ((Block) this.code_).closingBracePos_ : this.code_.pos;
             Assign ass = new Assign(res,
