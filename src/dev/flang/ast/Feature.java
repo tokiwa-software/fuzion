@@ -481,6 +481,45 @@ public class Feature extends ANY implements Stmnt, Comparable
 
 
   /**
+   * Loop index variable field
+   *
+   * @param pos the soucecode position, used for error messages.
+   *
+   * @param v the visibility
+   *
+   * @param t the result type, null in case it is inferred from initialValue
+   *
+   * @param qname the name of this feature
+   *
+   * @param initialValue the initial value used for type inference in case t == null
+   *
+   * @param outerOfInitialValue the feature that contains the expression initialValue
+   */
+  Feature(SourcePosition pos,
+          Visi v,
+          Type t,
+          String qname,
+          Expr initialValue,
+          Feature outerOfInitialValue)
+  {
+    this(pos,
+         v,
+         0,
+         t == null ? NoType.INSTANCE : new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
+         new List<String>(qname),
+         FormalGenerics.NONE,
+         new List<Feature>(),
+         new List<Call>(),
+         null,
+         initialValue == null ? Impl.FIELD
+                              : new Impl(pos, initialValue, outerOfInitialValue));
+
+    if (PRECONDITIONS) require
+                         ((t == null) == (initialValue != null));
+  }
+
+
+  /**
    * Constructor for argument features
    *
    * @param pos the soucecode position, used for error messages.
@@ -610,9 +649,10 @@ public class Feature extends ANY implements Stmnt, Comparable
     this.arguments  = a;
     this._featureName = FeatureName.get(n, a.size());
     this.inherits   = (i.isEmpty() &&
-                       (p.kind_ != Impl.Kind.FieldDef ) &&
-                       (p.kind_ != Impl.Kind.FieldInit) &&
-                       (p.kind_ != Impl.Kind.Field) &&
+                       (p.kind_ != Impl.Kind.FieldActual) &&
+                       (p.kind_ != Impl.Kind.FieldDef   ) &&
+                       (p.kind_ != Impl.Kind.FieldInit  ) &&
+                       (p.kind_ != Impl.Kind.Field      ) &&
                        (qname.size() != 1 || (!qname.getFirst().equals(OBJECT_NAME  ) &&
                                               !qname.getFirst().equals(UNIVERSE_NAME))))
       ? new List<Call>(new Call(pos, OBJECT_NAME, Expr.NO_EXPRS))
@@ -1260,6 +1300,11 @@ public class Feature extends ANY implements Stmnt, Comparable
             thisType_ = thisType().resolve(this);
           }
 
+        if ((impl.kind_ == Impl.Kind.FieldActual) && (impl.initialValue.typeOrNull() == null))
+          {
+            impl.initialValue.visit(new ResolveTypes(res), impl._outerOfInitialValue);
+          }
+
         state_ = State.RESOLVED_TYPES;
         while (!whenResolvedTypes.isEmpty())
           {
@@ -1390,6 +1435,7 @@ public class Feature extends ANY implements Stmnt, Comparable
       case FieldDef:     // a field with implicit type
         result = false;
       case Field:        // a field
+      case FieldActual:  // a field with implicit type taken from actual argument to call
       case RoutineDef:   // normal feature with code and implicit result type
       case Routine:      // normal feature with code
         result = true;
@@ -1437,6 +1483,7 @@ public class Feature extends ANY implements Stmnt, Comparable
       {
       case FieldInit:    // a field with initialization syntactic sugar
       case FieldDef:     // a field with implicit type
+      case FieldActual:  // a field with implicit type taken from actual argument to call
       case Field:        // a field
         {
           Errors.error(pos,
@@ -2468,7 +2515,8 @@ public class Feature extends ANY implements Stmnt, Comparable
     check
       (this.outer() == outer);
 
-    if (impl.kind_ == Impl.Kind.FieldDef)
+    if (impl.kind_ == Impl.Kind.FieldDef    ||
+        impl.kind_ == Impl.Kind.FieldActual    )
       {
         if ((returnType != NoType.INSTANCE))
           {
@@ -3007,7 +3055,8 @@ public class Feature extends ANY implements Stmnt, Comparable
       {
         result = outer().resultTypeRaw();
       }
-    else if (impl.kind_ == Impl.Kind.FieldDef)
+    else if (impl.kind_ == Impl.Kind.FieldDef ||
+             impl.kind_ == Impl.Kind.FieldActual)
       {
         check
           (!state().atLeast(State.TYPES_INFERENCED));
@@ -3549,9 +3598,10 @@ public class Feature extends ANY implements Stmnt, Comparable
     boolean result = false;
     switch (impl.kind_)
       {
-      case FieldInit:
-      case FieldDef :
-      case Field    : result = true; break;
+      case FieldInit  :
+      case FieldDef   :
+      case FieldActual:
+      case Field      : result = true; break;
       default: break;
       }
     return result;

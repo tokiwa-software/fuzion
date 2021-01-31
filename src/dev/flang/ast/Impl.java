@@ -71,11 +71,14 @@ public class Impl extends ANY
    */
   Expr initialValue;
 
+  Feature _outerOfInitialValue = null;
+
 
   public enum Kind
   {
     FieldInit,    // a field with initialization syntactic sugar
     FieldDef,     // a field with implicit type
+    FieldActual,  // an argument field with type defined by actual argument
     FieldIter,    // a field f declared as an iterator index in a loop (eg., for f in myset { print(f); } )
     Field,        // a field
     RoutineDef,   // normal feature with code and implicit result type
@@ -102,15 +105,55 @@ public class Impl extends ANY
    *
    * @param isDefinition true if this implementation is a definition
    * using ":=", i.e., no type is needed.
+   *
+   * @param kind the kind, must not be FieldActual.
    */
   public Impl(SourcePosition pos, Expr e, Kind kind)
   {
-    if (kind == Kind.FieldInit ||
-        kind == Kind.FieldDef  ||
+    this(pos, e, null, kind);
+  }
+
+
+  /**
+   * Implementation of a argument field feature whose type if inferred from the
+   * actual argument.
+   *
+   * @param pos the soucecode position, used for error messages.
+   *
+   * @param e the actual argument to a call to a.outer()
+   *
+   * @param outerOfInitialValue the outer feature that contains e.
+   */
+  public Impl(SourcePosition pos, Expr e, Feature outerOfInitialValue)
+  {
+    this(pos, e, outerOfInitialValue, Kind.FieldActual);
+  }
+
+
+  /**
+   * Implementation of a feature
+   *
+   * @param pos the soucecode position, used for error messages.
+   *
+   * @param e the code or initial value
+   *
+   * @param outerOfInitialValue for kind == FieldActual: the outer feature that contains e, null otherwise.
+   *
+   * @param kind the kind
+   */
+  private Impl(SourcePosition pos, Expr e, Feature outerOfInitialValue, Kind kind)
+  {
+    if (PRECONDITIONS) require
+                         ((kind == Kind.FieldActual) == (outerOfInitialValue != null));
+
+    if (kind == Kind.FieldInit   ||
+        kind == Kind.FieldDef    ||
+        kind == Kind.FieldActual ||
         kind == Kind.FieldIter   )
       {
         this.code_ = null;
         this.initialValue = e;
+        this._outerOfInitialValue = outerOfInitialValue;
       }
     else
       {
@@ -178,6 +221,7 @@ public class Impl extends ANY
         break;
 
       case FieldDef:
+      case FieldActual:
         // Field definition of the form
         //
         //   i := 0;
@@ -362,13 +406,14 @@ public class Impl extends ANY
     } else {
       switch (kind_)
         {
-        case FieldInit : result = " = "  + initialValue.getClass() + ": " +initialValue; break;
-        case FieldDef  : result = " := " + initialValue.getClass() + ": " +initialValue; break;
-        case Field     : result = "";                                                    break;
-        case RoutineDef: result = " => " + code_.toString();                             break;
-        case Routine   : result =          code_.toString();                             break;
-        case Abstract  : result = "is abstract";                                         break;
-        case Intrinsic : result = "is intrinsic";                                        break;
+        case FieldInit  : result = " = "  + initialValue.getClass() + ": " +initialValue; break;
+        case FieldDef   : result = " := " + initialValue.getClass() + ": " +initialValue; break;
+        case FieldActual: result = " typefrom(" + initialValue.pos() + ")";               break;
+        case Field      : result = "";                                                    break;
+        case RoutineDef : result = " => " + code_.toString();                             break;
+        case Routine    : result =          code_.toString();                             break;
+        case Abstract   : result = "is abstract";                                         break;
+        case Intrinsic  : result = "is intrinsic";                                        break;
         default: throw new Error("Unexpected Kind: "+kind_);
         }
     }

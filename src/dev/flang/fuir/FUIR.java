@@ -475,6 +475,7 @@ public class FUIR extends ANY
       case RoutineDef: return FeatureKind.Routine;
       case Field:
       case FieldDef:
+      case FieldActual:
       case FieldInit: return FeatureKind.Field;
       case Intrinsic: return FeatureKind.Intrinsic;
       case Abstract: return FeatureKind.Abstract;
