@@ -97,11 +97,37 @@ public class Interpreter extends Backend
   public static String callStack()
   {
     StringBuilder sb = new StringBuilder("Call stack:\n");
+    Clazz lastFrame = null;
+    Call lastCall = null;
+    int repeat = 0;
     for (var i = _callStack.size()-1; i >= 0; i--)
       {
-        if (i<_callStackFrames.size())
-          sb.append(_callStackFrames.get(i)).append(": ");
-        sb.append(_callStack.get(i).pos.show()).append("\n");
+        Clazz frame = i<_callStackFrames.size() ? _callStackFrames.get(i) : null;
+        Call call = _callStack.get(i);
+        if (frame == lastFrame && call == lastCall)
+          {
+            repeat++;
+          }
+        else
+          {
+            if (repeat > 0)
+              {
+                sb.append("...  repeated ").append(repeat).append(" times  ...\n\n");
+                repeat = 0;
+              }
+            if (frame != null)
+              {
+                sb.append(frame).append(": ");
+              }
+            sb.append(call.pos.show()).append("\n");
+            lastFrame = frame;
+            lastCall = call;
+          }
+      }
+    if (repeat > 0)
+      {
+        sb.append("  ...  repeated ").append(repeat).append(" times  ...\n\n");
+        repeat = 0;
       }
     return sb.toString();
   }
