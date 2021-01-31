@@ -141,7 +141,7 @@ public class List<T>
    */
   public String toString()
   {
-    return toString(", ","");
+    return toString("", ", ", "");
   }
 
 
@@ -158,16 +158,18 @@ public class List<T>
    */
   public String toString(String term)
   {
-    return toString("",term);
+    return toString("", term, term);
   }
 
 
   /**
    * toString for a list A, B, C will create
    *
-   *   "A sep term" +
-   *   "B sep term" +
-   *   "C term"
+   *   "pre A sep B sep C term"
+   *
+   * or for an empty list
+   *
+   *   ""
    *
    * @param sep
    *
@@ -175,18 +177,19 @@ public class List<T>
    *
    * @return
    */
-  public String toString(String sep,String term)
+  public String toString(String pre, String sep, String term)
   {
     StringBuffer res = new StringBuffer();
     Iterator it = iterator();
     if (it.hasNext())
       {
-        res.append(it.next());
+        res.
+          append(pre).
+          append(it.next());
         while (it.hasNext())
           {
             res
               .append(sep)
-              .append(term)
               .append(it.next());
           }
         res.append(term);

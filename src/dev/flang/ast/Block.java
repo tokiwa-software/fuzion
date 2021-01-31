@@ -343,7 +343,7 @@ public class Block extends Expr
    */
   public String toString(String prefix)
   {
-    String s = statements_.toString("", "\n");
+    String s = statements_.toString("\n");
     StringBuilder sb = new StringBuilder();
     if (s.length() > 0)
       {
