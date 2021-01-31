@@ -168,6 +168,27 @@ public class Call extends Expr
   public int sid_ = -1 , atid_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
 
+  /**
+   * Is this a tail recursive call?
+   *
+   * This is used to allow cyclic type inferencing of the form
+   *
+   *   f is
+   *     if c
+   *       x
+   *     else
+   *       f
+   *
+   * Which must return a value of x's type.
+   *
+   * NYI: This is currently set explicitly by Loop.java. It should be a function
+   * that automatically detects tail recursive calls, i.e., calls without
+   * dynamic binding with target == current and with no code apart from setting
+   * the result to the returned value after the call.
+   */
+  public boolean _isTailRecursive = false;
+
+
   /*-------------------------- constructors ---------------------------*/
 
 
@@ -1087,7 +1108,7 @@ public class Call extends Expr
         if (!open)
           {
             t = tt.actualType(t);
-            if (calledFeature_.returnType.isConstructorType())
+            if (calledFeature_.returnType.isConstructorType() && t != Types.t_ANY)
               {  /* specialize t for the target type here */
                 t = new Type(t, t._generics, tt);
               }
@@ -1285,19 +1306,28 @@ public class Call extends Expr
                                                                   "call",
                                                                   "Called feature: "+calledFeature_.qualifiedName()+"\n"))
           {
-            Type t = calledFeature_.resultTypeIfPresent(res, generics);
+            Type t = _isTailRecursive ? Types.t_ANY : calledFeature_.resultTypeIfPresent(res, generics);
             if (t == null)
               {
                 calledFeature_.whenResolvedTypes
                   (() ->
                    {
-                     resolveType(res,
-                                 calledFeature_.resultTypeForTypeInference(pos, res, generics), calledFeature_.outer());
+                     Type t2 = calledFeature_.resultTypeForTypeInference(pos, res, generics);
+                     resolveType(res, t2, calledFeature_.outer());
                    });
               }
             else
               {
                 resolveType(res, t, calledFeature_.outer());
+                if (_isTailRecursive)
+                  {
+                    calledFeature_.whenResolvedTypes
+                      (() ->
+                       {
+                         Type t2 = calledFeature_.resultTypeForTypeInference(pos, res, generics);
+                         resolveType(res, t2, calledFeature_.outer());
+                       });
+                  }
 
                 // Convert a call "f.g(a,b)" into "f.g.call(f,g)" in case f.g takes no
                 // arguments and returns a Function or Routine

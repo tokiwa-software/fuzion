@@ -1426,12 +1426,16 @@ public class Type extends ANY implements Comparable
       that == Types.t_ERROR       ? Types.t_ERROR     :
       this == Types.t_UNDEFINED   ? Types.t_UNDEFINED :
       that == Types.t_UNDEFINED   ? Types.t_UNDEFINED :
+      this == Types.t_ANY         ? that              :
+      that == Types.t_ANY         ? this              :
       this.isAssignableFrom(that) ? this :
       that.isAssignableFrom(this) ? that : Types.t_UNDEFINED;
 
     if (POSTCONDITIONS) ensure
       (result == Types.t_UNDEFINED ||
        result == Types.t_ERROR     ||
+       this == Types.t_ANY && result == that ||
+       that == Types.t_ANY && result == this ||
        result.isAssignableFrom(this) && result.isAssignableFrom(that));
 
     return result;
