@@ -234,6 +234,27 @@ public class If extends Expr
 
 
   /**
+   * Some Expressions do not produce a result, e.g., a Block that is empty or
+   * whose last statement is not an expression that produces a result or an if
+   * with one branch not producing a result.
+   */
+  boolean producesResult()
+  {
+    boolean result = !hasUntakenElseBranch();
+    if (result)
+      {
+        var it = branches();
+        while (it.hasNext())
+          {
+            var e = it.next();
+            result = result && e.producesResult();
+          }
+      }
+    return result;
+  }
+
+
+  /**
    * check the types in this if, in particular, chack that the condition is of
    * type bool.
    *
