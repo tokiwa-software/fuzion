@@ -29,7 +29,7 @@ FZ_SRC = $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = $(CURDIR)/build
 CLASSES_DIR = $(BUILD_DIR)/classes
-FUZIONX = $(JAVA) \$$(JAVA_OPTS) -cp $(CLASSES_DIR) dev.flang.tools.Fusion
+FUZIONX = $(JAVA) \$$(JAVA_OPTS) -cp $(CLASSES_DIR) dev.flang.tools.Fuzion
 
 JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/ANY.java \
