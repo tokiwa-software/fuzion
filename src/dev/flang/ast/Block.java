@@ -122,7 +122,12 @@ public class Block extends Expr
 
 
   /**
-   * Create a block that consists only of one expression.
+   * Create a block that consists only of one expression.  null if e == null.
+   *
+   * @param e an expression or null
+   *
+   * @return e if e is a Block, otherwise a new block that contains e or null if
+   * e is null.
    */
   static Block fromExpr(Expr e)
   {
@@ -142,6 +147,21 @@ public class Block extends Expr
     return result;
   }
 
+
+  /**
+   * Create a block from one expression, or an empty block if expression is
+   * null.
+   *
+   * @param e an expression or null
+   *
+   * @return e if e is a Block, otherwise a new block that is either empty or
+   * contains e (if e not null).
+   */
+  static Block newIfNull(SourcePosition pos, Expr e)
+  {
+    var b = fromExpr(e);
+    return b == null ? new Block(pos, new List<>()) : b;
+  }
 
   /*-----------------------------  methods  -----------------------------*/
 
