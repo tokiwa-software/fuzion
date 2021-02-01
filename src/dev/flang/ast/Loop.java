@@ -28,15 +28,16 @@ package dev.flang.ast;
 
 import java.util.Iterator;
 
+import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 
 /**
- * Loops are very generic in Fusion. The basic loop structure consists of a list
- * of index variables, a loop failure condition, a loop body, a loop success
- * condition and a loop epilog consiting of a branch executed after successful
- * loop termination and one after failed loop termination.
+ * Loops are very generic in Fusion.  The basic loop structure consists of a
+ * list of index variables, a loop failure condition, a loop body, a loop
+ * success condition and a loop epilog consiting of a branch executed after
+ * successful loop termination and one after failed loop termination.
  *
  * In general, this is
 
@@ -46,9 +47,9 @@ import dev.flang.util.SourcePosition;
     x3 := init3, next3;
     x4 in set4;
     x5 := init5, next5;
-  while <continueCond>
+  while <whileCond>
     <body>
-  until <successCond>
+  until <untilCond>
     <success>
   else
     <failure>
@@ -58,9 +59,9 @@ import dev.flang.util.SourcePosition;
  * index variables
 
   // loop prolog
-  success := false;
   x1 := init1;
   stream2 := set2.asStream;
+  ### loopElse will be put here ###
   if (stream2.hasNext)
     {
       x2 := stream2.next;
@@ -71,75 +72,80 @@ import dev.flang.util.SourcePosition;
           x4 := stream4.next;
           x5 := init5;
 
- * in case any of the code block <success> or <failure> is missing and there are
- * no streams, the prolog also sets a result to the value of the last index
- * variable
+          ### loop will be put here ###
 
-          res := x5
-
-* if initialization was sucessful, we set a flag that keeps the loop running
-* before entring the loop
-
-          continue := true;
-
- * Next, while continue is true we run the loop by first checking if
- * <continueCond> holds. If not, the loop has failed, otherwilse the loop can
- * run and execute <body>
-
-          while continue && <continueCond>
-            {
-              <body>
-
- * next, we check if the loop must terminate with success since <successCode>
- * holds;
-
-              continue = false;
-              if <successCond>
-                {
-                  success = true;
-                }
-
- * if the loop was not yet successul, we have to update the index variables. In
- * case any of these updates fails, we exit the loop with state == failure.
-
-              else
-                {
-                  x1 = next1;
-                  if (stream2.hasNext)
-                    {
-                      x2 = stream2.next;
-                      x3 = next3;
-                      if (stream4.hasNext)
-                        {
-                          x4 = stream4.next;
-                          x5 = next5;
-
- * Again, in case any of the code blocks <success> or <failure> is missing, we
- * update the result to the value of the last index variable
-
-                          res := x5
-
- * and we record that we continue
-
-                          continue = true;
-                        }
-                    }
-                }
-            }
+        }
+      else
+        {
+           loopElse
         }
     }
+  else
+    {
+      loopElse
+    }
 
- * finally, in the epilog, we executed <success> or <failure> depending on state:
+ * The loop will be implemented using a tail recursive feature as follows
 
-      if (success)
-        res = <success>
+  loop(x1, x2, x3, x4, x5, ... inferred-type) =>
+     if whileCond
+       <body>
+       if untilCond
+         <success>
+         ### OPTIONAL TRUE ###
+       else ### nextIteration will be put here ###
+         loop(x1,x2,x3,x4,x5,...)   // tail recursion
+       else
+         <failure>
+     else
+       <failure>
+  loop(x1,x2,x3,x4,x5,...)
+
+ * The part marked
+ *
+ *   ### nextIteration will be put here ###
+ *
+ * is code that calculates the next values of the index variables similar
+ * to the prolog
+
+  // nextIteration:
+  x1 := next1;
+  ### loopElse will be put here ###
+  if (stream2.hasNext)
+    {
+      x2 := stream2.next;
+      x3 := next3;
+      if (stream4.hasNext)
+        {
+          x4 := stream4.next;
+          x5 := next5;
+
+          ### loop tail recursive call will be put here ###
+
+        }
       else
-        res = <failure>
+        {
+          loopElse
+        }
+    }
+  else
+    {
+      loopElse
+    }
 
+ * If needed, the code for the <failure> case will be put into a loopElse
+ * feature that can be called at different locations:
+
+  loopElse() =>
+    <failure>
+    ### OPTIONAL FALSE ###
+
+ * In case <success> or <failure> are missing or do (syntactically) not produce
+ * a result, an automatic result TRUE or FALSE, resp., will be added.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */
-public class Loop extends Expr
+public class Loop extends ANY
 {
 
   /*-------------------------  static variables -------------------------*/
@@ -151,91 +157,73 @@ public class Loop extends Expr
   static private long _id_ = 0;
 
 
+  /**
+   * env var to enable debug output for code generated for loops:
+   */
+  static private final boolean FUZION_DEBUG_LOOPS = "true".equals(System.getenv("FUZION_DEBUG_LOOPS"));
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
   /**
    * The list of index variables of this loop, never null
    */
-  final List<Feature> _indexVars;
-
-
-  /**
-   * The list of iterator variables of this loop, a subset of _indexVars
-   */
-  final List<Feature> _iteratorVars;
+  private final List<Feature> _indexVars;
 
 
   /**
    * The list of next values for index variables, may contain null for index
    * variables that do not get update
    */
-  public final List<Expr> _nextValues;
-
-
-  /**
-   * loop variant or null if not present.
-   */
-  Expr _var;
-
-
-  /**
-   * loop invariant or null if not present.
-   */
-  final List<Cond> _inv;
+  private final List<Feature> _nextValues;
 
 
   /**
    * Loop prolog: Code block that initializes the index variables with their
    * initial values. May be null if none.
    */
-  public Block _prolog;
+  private final Block _prolog;
+  private List<Stmnt> _prologSuccessBlock;
 
-
-  /**
-   * condition that must hold to enter the first and any following loop
-   * iteration. null means true.
-   */
-  public Expr _whileCond;
-
-
-  /**
-   * Loop body. May be null if no loop body present.
-   */
-  public Block _block;
-
-
-  /**
-   * condition that must hold to exit the loop successfully after last
-   * iteration.  null means false.
-   */
-  public Expr _untilCond;
 
   /**
    * Code to be executed to update index variables after _untilCond was checked
    * to be false.
    */
-  public Block _nextIteration;
+  private Expr _nextIteration = null;
+  private List<Stmnt> _nextItSuccessBlock = null;
 
 
   /**
-   * Code to be executed when loop exits after successful check of
-   * _untilCond.  May be null.
+   * Success block or null.
    */
-  public Block _successBlock;
+  private Block _successBlock;
 
 
   /**
-   * Code to be executed when loop exits after failed check of _whileCond.  May
-   * be null.
+   * Else block or null if not present. Parsed twice since we might need the code twice.
    */
-  public Expr _elseBlock;
+  private Expr _elseBlock0;
+  private Expr _elseBlock1;
 
 
   /**
-   * Result type of the value returned by this loop's _successBlock and _elseBlock
+   * Position of the "else" keyword if present, or something close to it if not
    */
-  public Type _type;
+  private SourcePosition _elsePos;
+
+  /**
+   * In case the else-clause has to be put into a routine, these are two
+   * routines, the first for the prolog, the other for the rest of the loop.
+   */
+  private Feature[] _loopElse;
+
+
+  /**
+   * The name of this loop's tail recursive routine, without surrounding "--"
+   */
+  private final String _rawLoopName;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -252,207 +240,116 @@ public class Loop extends Expr
    * @param nv next values for index variables, may contain null for index
    * variables that do not get update
    *
-   * @param v loop variant or null
+   * @param var loop variant or null
    *
-   * @param i loop invariant or null
+   * @param inv loop invariant or null
    *
-   * @param w loop while condition or null for true.
+   * @param whileCond loop while condition or null for true.
    *
-   * @param b loop body or null for empty loop
+   * @param block loop body or null for empty loop
    *
-   * @param u condition to exit loop successfully, null for false.
+   * @param untilCond condition to exit loop successfully, null for false.
    *
-   * @param ub block to execute on successful loop exit, null for none.
+   * @param successBlock block to execute on successful loop exit, null for none.
    *
-   * @param eb block to execute on unsuccessful loop exit, null for none.
+   * @param elseBlock block to execute on unsuccessful loop exit, null for none.
    */
-  public Loop(SourcePosition pos, List<Feature> iv, List<Expr> nv, Expr v, List<Cond> i, Expr w, Block b, Expr u, Block ub, Expr eb)
+  public Loop(SourcePosition pos,
+              List<Feature> iv,
+              List<Feature> nv,
+              Expr var,        /* NYI: loop variant currently ignored */
+              List<Cond> inv,  /* NYI: loop invariant currently ignored */
+              Expr whileCond,
+              Block block,
+              Expr untilCond,
+              Block sb,
+              Expr eb0,
+              Expr eb1)
   {
-    super(pos);
-
     if (PRECONDITIONS) require
       (iv != null,
        nv != null,
        iv.size() == nv.size(),
-       ub == null || u != null,
-       eb == null || eb instanceof Block || eb instanceof If);
+       sb == null || untilCond != null,
+       eb0 == null || eb0 instanceof Block || eb0 instanceof If);
 
+    var prologPos = pos;
+    var nextItPos = pos;
+    var succPos = pos; // NYI: if present, use position of success block, otherwise of "until" condition
+    _elsePos   = pos;  // NYI: if present, use position of "else" keyword
     _indexVars = iv;
-    _iteratorVars = new List<>();
-    _var = v;
-    _inv = i;
-    _whileCond = w;
-    _block = b;
-    if (b != null)
-      {
-        /* declarations in block remain visible, details are handled by Feature.findFieldDefInScope */
-        b._newScope = false;
-      }
-    _untilCond = u;
-    _successBlock = ub;
-    _elseBlock = eb;
     _nextValues = nv;
-    addPrologAndNextIteration();
-    if (!iterates() && _whileCond == null && _elseBlock != null)
+    block = Block.newIfNull(pos, block);
+    _successBlock = sb;
+    _elseBlock0 = eb0;
+    _elseBlock1 = eb1;
+    _rawLoopName = "loop" +  _id_++ ;
+    var loopName = "--" + _rawLoopName + "--";
+    var iterates = iterates();
+    if (!iterates && whileCond == null && _elseBlock0 != null)
       {
-        FeErrors.loopElseBlockRequiresWhileOrIterator(pos, _elseBlock);
+        FeErrors.loopElseBlockRequiresWhileOrIterator(pos, _elseBlock0);
       }
-  }
-  public Expr tailRec()
-  {
-    Expr result = this;
-    if (!iterates() && _indexVars.isEmpty() && _untilCond == null && _successBlock == null && _elseBlock == null)
+
+    defaultSuccessAndElseBlocks(iterates, whileCond, untilCond, succPos);
+    if (_elseBlock0 != null && iterates)
       {
-        /* create the following:
-
-           if prolog    // true if prolog is null
-             loop is
-               if whileCond   // true if whileCond is null
-                 block
-                 if !untilCond   // true if untilCond is null
-                   if nextIteration   // true if nextIteration is null
-                     loop (tail recursion)
-                 else
-                   successBlock  // nop if successBlock is null
-               else
-                 elseBlock   // nop if elseBlock is null
-             loop
-        */
-
-        var loopName = "--loop<"+ _id_++ +">--";
-        var statements = new List<Stmnt>();
-        var formalArguments = new List<Feature>();
-        var initialActuals = new List<Expr>();
-        var nextActuals = new List<Expr>();
-        initialArguments(formalArguments, initialActuals, nextActuals);
-        var loopBlock = new Block(pos, statements);
-        Feature loop = new Feature(pos,
-                                   Consts.VISIBILITY_INVISIBLE,
-                                   Consts.MODIFIER_FINAL,
-                                   NoType.INSTANCE,
-                                   new List<String>(loopName),
-                                   FormalGenerics.NONE,
-                                   formalArguments,
-                                   Function.NO_CALLS,
-                                   new Contract(null,null,null),
-                                   new Impl(pos, loopBlock, Impl.Kind.Routine));
-        if (_block == null)
-          {
-            _block = new Block(pos, new List<Stmnt>());
-          }
-        statements.add(_whileCond != null
-                       ? new If(pos, _whileCond, _block)
-                       : _block);
-        _block.statements_.add(new Call(pos, loopName, new List<Expr>()));
-
-        if (_prolog == null)
-          {
-            _prolog = new Block(pos, new List<Stmnt>());
-          }
-        _prolog.statements_.add(loop);
-        _prolog.statements_.add(new Call(pos, loopName, new List<Expr>()));
-        result = _prolog;
+        moveElseBlockToRoutine();
+        _elseBlock0 = callLoopElse(false);
       }
-    return result;
-  }
 
-  Expr resolveSyntacticSugar2(Resolution res, Feature outer)
-  {
-    Expr result = this;
-    if (false) // NYI: remove
-    if (!iterates() && _indexVars.isEmpty() && _untilCond == null && _successBlock == null && _elseBlock == null) // res._options.tailRecursionInsteadOfLoops())
+    _prologSuccessBlock = new List<>();
+    _prolog             = new Block(prologPos, _prologSuccessBlock);
+    if (!_indexVars.isEmpty())
       {
-        /* create the following:
-
-           if prolog    // true if prolog is null
-             loop is
-               if whileCond   // true if whileCond is null
-                 block
-                 if !untilCond   // true if untilCond is null
-                   if nextIteration   // true if nextIteration is null
-                     loop (tail recursion)
-                 else
-                   successBlock  // nop if successBlock is null
-               else
-                 elseBlock   // nop if elseBlock is null
-             loop
-        */
-
-        var loopName = "--loop<"+ _id_++ +">--";
-        var statements = new List<Stmnt>();
-        var formalArguments = new List<Feature>();
-        var initialActuals = new List<Expr>();
-        var nextActuals = new List<Expr>();
-        initialArguments(formalArguments, initialActuals, nextActuals);
-        var loopBlock = new Block(pos, statements);
-        Feature loop = new Feature(pos,
-                                   Consts.VISIBILITY_INVISIBLE,
-                                   Consts.MODIFIER_FINAL,
-                                   NoType.INSTANCE,
-                                   new List<String>(loopName),
-                                   FormalGenerics.NONE,
-                                   formalArguments,
-                                   Function.NO_CALLS,
-                                   new Contract(null,null,null),
-                                   new Impl(pos, loopBlock, Impl.Kind.Routine));
-        loop.findDeclarations(outer);
-        if (_block == null)
-          {
-            _block = new Block(pos, new List<Stmnt>());
-          }
-        statements.add(new If(pos, _whileCond, _block));
-        loopBlock.visit(new FeatureVisitor()
-          {
-            public Expr action (Current c, Feature outer)
-            {
-              var getOuter = new Current(pos, loop.thisType());
-              Feature or = loop.outerRef();
-              Expr getOuter2 = new Call(pos, or._featureName.baseName(), Call.NO_GENERICS, Expr.NO_EXPRS, getOuter, or, null)
-                .resolveTypes(res, loop);
-              return getOuter2;
-            }
-          }, outer);
-        loop.scheduleForResolution(res);
-        res.resolveTypes();
-        _block.statements_.add(new Call(pos, new Current(pos, outer.thisType()), loop, -1).resolveTypes(res, loop));
-
-        if (_prolog == null)
-          {
-            _prolog = new Block(pos, new List<Stmnt>());
-          }
-        _prolog.statements_.add(new Call(pos, new Current(pos, outer.thisType()), loop, -1).resolveTypes(res, outer));
-        result = _prolog;
-        System.out.println("replaced loop by tailrec: "+pos.show());
-
-        /* interpreter code:
-        var l = (Loop) s;
-        result = Value.NO_VALUE;
-        if (l._prolog != null)
-          {
-            result = execute(l._prolog, staticClazz, cur);
-          }
-        boolean success = false;
-        while (!success &&
-               (!l._iterates || result.i32Value() == 1) &&
-               (l._whileCond == null || execute(l._whileCond, staticClazz, cur).boolValue()))
-          {
-            if (l._block != null)
-              {
-                result = execute(l._block, staticClazz, cur);
-              }
-            success = l._untilCond != null && execute(l._untilCond, staticClazz, cur).boolValue();
-            if (!success && l._nextIteration != null)
-              {
-                result = execute(l._nextIteration, staticClazz, cur);
-              }
-          }
-
-        result = success
-          ? l._successBlock != null ? execute(l._successBlock, staticClazz, cur) : result
-          : l._elseBlock    != null ? execute(l._elseBlock   , staticClazz, cur) : result;
-        */
+        _nextItSuccessBlock = new List<>();
+        _nextIteration = new Block(nextItPos, _nextItSuccessBlock);
+        addIterators();
       }
-    return result;
+
+    var formalArguments = new List<Feature>();
+    var initialActuals = new List<Expr>();
+    var nextActuals = new List<Expr>();
+    initialArguments(formalArguments, initialActuals, nextActuals);
+    var initialCall       = new Call(pos, loopName, initialActuals);
+    var tailRecursiveCall = new Call(pos, loopName, nextActuals   );
+    tailRecursiveCall._isTailRecursive = true;
+    if (_nextIteration == null)
+      {
+        _nextIteration = tailRecursiveCall;
+      }
+    else
+      {
+        _nextItSuccessBlock.add(tailRecursiveCall);
+      }
+
+    if (untilCond != null)
+      {
+        _nextIteration = new If(untilCond.pos(),
+                                untilCond,
+                                Block.newIfNull(succPos, _successBlock),
+                                _nextIteration);
+      }
+    block.statements_.add(_nextIteration);
+    if (whileCond != null)
+      {
+        block = Block.fromExpr(new If(whileCond.pos(), whileCond, block, _elseBlock0));
+      }
+    Feature loop = new Feature(block.pos(),
+                               Consts.VISIBILITY_INVISIBLE,
+                               Consts.MODIFIER_FINAL,
+                               NoType.INSTANCE,
+                               new List<String>(loopName),
+                               FormalGenerics.NONE,
+                               formalArguments,
+                               Function.NO_CALLS,
+                               new Contract(null,null,null),
+                               new Impl(block.pos(), block, Impl.Kind.RoutineDef))
+      {
+        public boolean resultInternal() { return true; }
+      };
+    _prologSuccessBlock.add(loop);
+    _prologSuccessBlock.add(initialCall);
   }
 
 
@@ -460,125 +357,194 @@ public class Loop extends Expr
 
 
   /**
-   * Helper routine to add code to prolog and nextIt statements for index vars
+   * Return the AST for this loop using a tail recursive call.
+   */
+  public Expr tailRecursiveLoop()
+  {
+    if (FUZION_DEBUG_LOOPS)
+      {
+        System.out.println(_prolog);
+      }
+    return _prolog;
+  }
+
+
+  /**
+   * Is any of the _indexVars an iteration ('x in set')?
+   */
+  private boolean iterates()
+  {
+    var result = false;
+    for (var f : _indexVars)
+      {
+        result = result || f.impl.kind_ == Impl.Kind.FieldIter;
+      }
+    return result;
+  }
+
+
+  /**
+   * Create default code for success and else blocks if not present.  Default code is used for
    *
-   * @param prolog statements of loop prolog that will receive the code to set initial values of the index vars
+   * 1. loops with index variables that are no iterators and no else block nor
+   *    success block: The last index variable is returned by both success and
+   *    else blocks.
    *
-   * @param nextIt statements of loop's next iteration block that will update the index variables.
+   * 2. loops that can fail and succeed but that syntactically cannot return a
+   *    value (a call can syntactically return a value, even though the called
+   *    function may return void, an assignment or empty block can not). In this
+   *    case, success block returns true and else block returns false.
+   *
+   */
+  private void defaultSuccessAndElseBlocks(boolean iterates, Expr whileCond, Expr untilCond, SourcePosition succPos)
+  {
+    if (!iterates && _elseBlock0 == null && _successBlock == null && !_indexVars.isEmpty())
+      { /* add last index var as implicit result */
+        Feature lastIndexVar = _indexVars.getLast();
+        var readLastIndexVar0 = new Call(lastIndexVar.pos, lastIndexVar._featureName.baseName());
+        var readLastIndexVar1 = new Call(lastIndexVar.pos, lastIndexVar._featureName.baseName());
+        var readLastIndexVar2 = new Call(lastIndexVar.pos, lastIndexVar._featureName.baseName());
+        _elseBlock0   = Block.fromExpr(readLastIndexVar0);
+        _elseBlock1   = Block.fromExpr(readLastIndexVar1);
+        _successBlock = Block.fromExpr(readLastIndexVar2);
+      }
+    else if (/* loop can fail: */ (iterates || whileCond != null) &&
+             /* loop can succeed: */ (untilCond != null) &&
+             /* success and else block do not end in expression: */
+             (_successBlock == null || !_successBlock.producesResult() ||
+              _elseBlock0 == null   || !_elseBlock0  .producesResult())    )
+      { /* add implicit TRUE / FALSE results to success and else blocks: */
+        _successBlock = Block.newIfNull(succPos, _successBlock);
+        _successBlock.statements_.add(BoolConst.TRUE );
+        if (_elseBlock0 == null)
+          {
+            _elseBlock0 = BoolConst.FALSE;
+            _elseBlock1 = BoolConst.FALSE;
+          }
+        else
+          {
+            var e0 = Block.fromExpr(_elseBlock0);
+            var e1 = Block.fromExpr(_elseBlock1);
+            e0.statements_.add(BoolConst.FALSE);
+            e1.statements_.add(BoolConst.FALSE);
+            _elseBlock0 = e0;
+            _elseBlock1 = e1;
+          }
+      }
+  }
+
+
+  /**
+   * Create code that moves the else block into dedicated routines.
+   */
+  private void moveElseBlockToRoutine()
+  {
+    _loopElse = new Feature[2];
+    for (int ei=0; ei<2; ei++)
+      {
+        var name = "--" + _rawLoopName + "else" + ei +" --";
+        _loopElse[ei] = new Feature(_elsePos,
+                                    Consts.VISIBILITY_INVISIBLE,
+                                    Consts.MODIFIER_FINAL,
+                                    NoType.INSTANCE,
+                                    new List<String>(name),
+                                    FormalGenerics.NONE,
+                                    new List<>(),
+                                    Function.NO_CALLS,
+                                    new Contract(null,null,null),
+                                    new Impl(_elsePos, ei == 0 ? _elseBlock0 : _elseBlock1, Impl.Kind.RoutineDef))
+          {
+            public boolean resultInternal() { return true; }
+          };
+      }
+  }
+
+
+  /**
+   * Create a call to the feature that contains the else block of this loop.
+   *
+   * @param inProlog true for a call in the loop prolog, false for a call after
+   * successful execution of the prolog.
+   *
+   * @return an expression that performs the call
+   */
+  private Expr callLoopElse(boolean inProlog)
+  {
+    if (PRECONDITIONS) require
+                         (_loopElse != null);
+
+    return new Call(_elsePos,
+                    _loopElse[inProlog ? 0 : 1].featureName().baseName(),
+                    Expr.NO_EXPRS);
+  }
+
+
+  /**
+   * Helper routine to determine the formal and actual arguments to be passed to the tail recursive loop
+   *
+   * @param formalArguments will receive the formal argument declarations
+   *
+   * @param initialActuals will receive the initial actual arguments after prolog
+   *
+   * @param nextActuals will receive the actual arguments after nextIteration
    */
   private void initialArguments(List<Feature> formalArguments,
                                 List<Expr> initialActuals,
                                 List<Expr> nextActuals)
   {
+    int i = -1;
     Iterator<Feature> ivi = _indexVars.iterator();
-    Iterator<Expr> nvi = _nextValues.iterator();
+    Iterator<Feature> nvi = _nextValues.iterator();
     while (ivi.hasNext())
       {
+        i++;
         Feature f = ivi.next();
-        Expr n = nvi.next();
-        if (f.impl.kind_ == Impl.Kind.FieldIter)
-          {
-            //            check
-            //              (n == null);
-            //            _iteratorVars.add(f);
-            //            String streamName = "--loopIterationStream" + (_id_++) + "--";
-            //            Call asStream = new Call(f.pos, f.impl.initialValue, "asStream", Call.NO_GENERICS, Call.NO_PARENTHESES);
-            //            Feature stream = new Feature(f.pos,
-            //                                         Consts.VISIBILITY_INVISIBLE,
-            //                                         /* modifiers */   0,
-            //                                         /* return type */ NoType.INSTANCE,
-            //                                         /* name */        new List<>(streamName),
-            //                                         /* generics */    FormalGenerics.NONE,
-            //                                         /* args */        new List<Feature>(),
-            //                                         /* inherits */    new List<Call>(),
-            //                                         /* contract */    null,
-            //                                         /* impl */        new Impl(f.pos, asStream, Impl.Kind.FieldDef));
-            //            prolog.add(stream);
-            //            Call hasNext1 = new Call(f.pos, new Call(f.pos, streamName) { public String toString() { return "call1: "+super.toString(); } }, "hasNext" );
-            //            Call hasNext2 = new Call(f.pos, new Call(f.pos, streamName) { public String toString() { return "call2: "+super.toString(); } }, "hasNext" );
-            //            Call next1    = new Call(f.pos, new Call(f.pos, streamName) { public String toString() { return "call3: "+super.toString(); } }, "next");
-            //            Call next2    = new Call(f.pos, new Call(f.pos, streamName) { public String toString() { return "call4: "+super.toString(); } }, "next");
-            //            List<Stmnt> prolog2 = new List<>();
-            //            List<Stmnt> nextIt2 = new List<>();
-            //            If ifHasNext1 = new If(f.pos, hasNext1, new Block(f.pos, prolog2));
-            //            If ifHasNext2 = new If(f.pos, hasNext2, new Block(f.pos, nextIt2));
-            //            ifHasNext1.setElse(new Block(f.pos, new List<Stmnt>(new IntConst(0))));
-            //            ifHasNext2.setElse(new Block(f.pos, new List<Stmnt>(new IntConst(0))));
-            //            prolog.add(ifHasNext1);
-            //            nextIt.add(ifHasNext2);
-            //            prolog = prolog2;
-            //            nextIt = nextIt2;
-            //            f.impl = new Impl(f.impl.pos, next1, Impl.Kind.FieldDef);
-            //            n = next2;
-            //
-            var streamName = "NYI";
-            Feature stream = null;
-            Feature arg = new Feature(f.pos,
-                                      Consts.VISIBILITY_INVISIBLE,
-                                      stream.resultType(),
-                                      streamName);
-            initialActuals.add(new Call(f.pos, streamName));
-            nextActuals   .add(new Call(f.pos, streamName));
-          }
-        else
-          {
-            int i = 0; // NYI
-            Feature arg = new Feature(f.pos,
-                                      Consts.VISIBILITY_INVISIBLE,
-                                      _indexVars.get(i).resultType(),
-                                      f.featureName().baseName());
-            formalArguments.add(arg);
-            initialActuals.add(f.impl.code_);
-            nextActuals.add(n);
-          }
-      }
-  }
-
-
-
-  /**
-   * Helper routine for constructor to create prolog and nextIteration for index
-   * vars.
-   */
-  private void addPrologAndNextIteration()
-  {
-    if (_indexVars.isEmpty())
-      {
-        _prolog        = null;
-        _nextIteration = null;
-      }
-    else
-      {
-        List<Stmnt> prolog = new List<>();
-        List<Stmnt> nextIt = new List<>();
-        _prolog        = new Block(pos(), prolog);
-        _nextIteration = new Block(pos(), nextIt);
-        addIterators(prolog, nextIt);
+        Feature n = nvi.next();
+        check
+          (f.impl.kind_ != Impl.Kind.FieldIter);
+        var ia = new Call(f.pos, f.featureName().baseName());
+        var na = new Call(f.pos, f.featureName().baseName());
+        var type = (f.impl.kind_ == Impl.Kind.FieldDef)
+          ? null        // index var with type inference from initial actual
+          : _indexVars.get(i).returnType.functionReturnType();
+        var arg = new Feature(f.pos,
+                              Consts.VISIBILITY_INVISIBLE,
+                              type,
+                              f.featureName().baseName(),
+                              type == null ? ia : null,
+                              null /* NYI outer */);
+        arg._isIndexVarUpdatedByLoop = true;
+        formalArguments.add(arg);
+        initialActuals .add(ia);
+        nextActuals    .add(na);
       }
   }
 
 
   /**
-   * Helper routine to add code to prolog and nextIt statements for index vars
-   *
-   * @param prolog statements of loop prolog that will receive the code to set initial values of the index vars
-   *
-   * @param nextIt statements of loop's next iteration block that will update the index variables.
+   * Helper routine to add code to _prologSuccessBlock and _nextItSuccessBlock
+   * for index vars.
    */
-  private void addIterators(List<Stmnt> prolog, List<Stmnt> nextIt)
+  private void addIterators()
   {
-    Iterator<Feature> ivi = _indexVars.iterator();
-    Iterator<Expr> nvi = _nextValues.iterator();
+    boolean mustDeclareLoopElse = _loopElse != null;
+    int iteratorCount = 0;
+    var ivi = _indexVars .iterator();
+    var nvi = _nextValues.iterator();
     while (ivi.hasNext())
       {
         Feature f = ivi.next();
-        Expr n = nvi.next();
+        Feature n = nvi.next();
         if (f.impl.kind_ == Impl.Kind.FieldIter)
           {
-            check
-              (n == null);
-            _iteratorVars.add(f);
-            String streamName = "--loopIterationStream" + (_id_++) + "--";
+            if (mustDeclareLoopElse)
+              { // we declare loopElse function after all non-iterating index
+                // vars such that the else clause can access these vars.
+                _prologSuccessBlock.add(_loopElse[0]);
+                _nextItSuccessBlock.add(_loopElse[1]);
+                mustDeclareLoopElse = false;
+              }
+            var streamName = "--" + _rawLoopName + "stream" + (iteratorCount++) + "--";
             Call asStream = new Call(f.pos, f.impl.initialValue, "asStream", Call.NO_GENERICS, Call.NO_PARENTHESES);
             Feature stream = new Feature(f.pos,
                                          Consts.VISIBILITY_INVISIBLE,
@@ -590,400 +556,33 @@ public class Loop extends Expr
                                          /* inherits */    new List<Call>(),
                                          /* contract */    null,
                                          /* impl */        new Impl(f.pos, asStream, Impl.Kind.FieldDef));
-            prolog.add(stream);
-            Call hasNext1 = new Call(f.pos, new Call(f.pos, streamName) { public String toString() { return "call1: "+super.toString(); } }, "hasNext" );
-            Call hasNext2 = new Call(f.pos, new Call(f.pos, streamName) { public String toString() { return "call2: "+super.toString(); } }, "hasNext" );
-            Call next1    = new Call(f.pos, new Call(f.pos, streamName) { public String toString() { return "call3: "+super.toString(); } }, "next");
-            Call next2    = new Call(f.pos, new Call(f.pos, streamName) { public String toString() { return "call4: "+super.toString(); } }, "next");
+            stream._isIndexVarUpdatedByLoop = true;  // hack to prevent error FeErrors.initialValueNotAllowed(this)
+            _prologSuccessBlock.add(stream);
+            Call hasNext1 = new Call(f.pos, new Call(f.pos, streamName), "hasNext" );
+            Call hasNext2 = new Call(f.pos, new Call(f.pos, streamName), "hasNext" );
+            Call next1    = new Call(f.pos, new Call(f.pos, streamName), "next");
+            Call next2    = new Call(f.pos, new Call(f.pos, streamName), "next");
             List<Stmnt> prolog2 = new List<>();
             List<Stmnt> nextIt2 = new List<>();
             If ifHasNext1 = new If(f.pos, hasNext1, new Block(f.pos, prolog2));
             If ifHasNext2 = new If(f.pos, hasNext2, new Block(f.pos, nextIt2));
-            ifHasNext1.setElse(new Block(f.pos, new List<Stmnt>(new IntConst(0))));
-            ifHasNext2.setElse(new Block(f.pos, new List<Stmnt>(new IntConst(0))));
-            prolog.add(ifHasNext1);
-            nextIt.add(ifHasNext2);
-            prolog = prolog2;
-            nextIt = nextIt2;
-            f.impl = new Impl(f.impl.pos, next1, Impl.Kind.FieldDef);
-            n = next2;
-          }
-        prolog.add(f);
-        f._isIndexVarUpdatedByLoop = true;
-        nextIt.add(new Assign(f.pos, f, n, true));
-      }
-    if (!_iteratorVars.isEmpty())
-      {  /* no user-visible result in case index variable is iterator, since
-          * iterated data can be empty, so we would not reach end of
-          * prolog */
-        prolog.add(new IntConst(1));
-        nextIt.add(new IntConst(1));
-      }
-    else if ((_successBlock == null || _elseBlock == null) /* if until block and else block is present, result comes from them */
-             && !_indexVars.isEmpty() /* if there is no index variable, there is no result */
-             )
-      {
-        Feature res = _indexVars.getLast();
-        prolog.add(new Call(res.pos, res._featureName.baseName()));
-        nextIt.add(new Call(res.pos, res._featureName.baseName()));
-      }
-  }
-
-
-  /**
-   * Is any of the _indexVars an iteration (x in data)?
-   */
-  public final boolean iterates()
-  {
-    return !_iteratorVars.isEmpty();
-  }
-
-
-  /**
-   * Check if ix is an index variable that might be undefined in this loop's
-   * else block. This is true for index variables that either are iterator
-   * variables or that are declared after the first iterator variable.
-   *
-   * This is used during call resolution to determine if ix is visible in an
-   * else block.
-   *
-   * @param ix any Feature
-   *
-   * @param true iff ix is an iterator variable or an index variable declared
-   * after an iterator variable in this loop.
-   */
-  boolean mightNotBeSetInElse(Feature ix)
-  {
-    boolean result = false;
-    for (var iv : _iteratorVars)
-      {
-        result |= ix == iv;
-      }
-    return result;
-  }
-
-
-  /**
-   * Helper routine for typeOrNull to determine the type of this loop on demand,
-   * i.e., as late as possible.
-   */
-  private Type typeFromSuccessOrFailure()
-  {
-    Type tProlog    = _prolog        != null ? _prolog       .type() : Types.t_VOID;
-    Type tNextIt    = _nextIteration != null ? _nextIteration.type() : Types.t_VOID;
-    check
-      (tProlog == tNextIt);
-    Type tIndexVars = iterates() ? Types.t_VOID : tProlog;
-    Type tBlock     = _block         != null ? _block        .type() : tIndexVars;
-    Type tfailure   = _elseBlock     != null ? _elseBlock    .type() : tIndexVars;
-    Type tsuccess   = _successBlock  != null ? _successBlock .type() : tBlock;
-
-    return
-      (_untilCond == null) // no until condition means loop exit is possible via failure only
-      ? tfailure
-      : (!iterates() && _whileCond == null) // no iterators and no while condition means loop exit is possible via success only
-      ? tsuccess
-      : tsuccess.union(tfailure);
-  }
-
-
-  /**
-   * typeOrNull returns the type of this expression or Null if the type is still
-   * unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or null if not known.
-   */
-  public Type typeOrNull()
-  { // NYI: remove: when loop has been replaced by tail recursion, this is no longer needed
-    if (_type == null)
-      {
-        _type = typeFromSuccessOrFailure();
-      }
-    if (_type == Types.t_UNDEFINED)
-      {
-        List<Expr> branches = new List<>();
-        List<String> names = new List<>();
-        Block i = _prolog;
-        Block u = _successBlock;
-        Block b = _block;
-        Expr e = _elseBlock;
-        if (i != null && (u == null || e == null))
-          {
-            branches.add(i);
-            names.add("index");
-          }
-        if (b != null && _untilCond != null && u == null)
-          {
-            branches.add(b);
-            names.add("loop body");
-          }
-        if (u != null)
-          {
-            branches.add(u);
-            names.add("until");
-          }
-        if (e != null)
-          {
-            branches.add(e);
-            names.add("else");
-          }
-        check // if u and e are both null, _type should be VOID, so we should not be here
-          (u != null || e != null);
-        new IncompatibleResultsOnBranches
-          (pos,
-           branches.size() == 2 ? "Incompatible types in loop's " + names.get(0) + " and " + names.get(1) + " blocks" :
-           "Loop defines only " + names.get(0) + " block, but it requires either both, an until and an else block, or an index block",
-           branches.iterator());
-        return Types.t_ERROR;
-      }
-    return _type; // == null ? Types.t_VOID : _type; // NYI: should be just _type
-  }
-
-
-  /**
-   * Convert this Expression into an assignment to the given field.  In case
-   * this is a statment with several branches such as an "if" or a "match"
-   * statement, add corresponding assignments in each branch and convert this
-   * into a statement that does not produce a value.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param outer the feature that contains this expression
-   *
-   * @param r the field this should be assigned to.
-   *
-   * @return the Stmnt this Expr is to be replaced with, typically an Assign
-   * that performs the assignment to r.
-   */
-  Loop assignToField(Resolution res, Feature outer, Feature r)
-  { // NYI: remove: when loop has been replaced by tail recursion, this is no longer needed
-    if (_successBlock != null)
-      {
-        _successBlock = _successBlock.assignToField(res, outer, r);
-      }
-    if (_elseBlock instanceof If)
-      {
-        _elseBlock = ((If) _elseBlock).assignToField(res, outer, r);
-      }
-    else if (_elseBlock instanceof Block)
-      {
-        _elseBlock = ((Block) _elseBlock).assignToField(res, outer, r);
-      }
-    else if (_elseBlock != null)
-      {
-        throw new Error("Loop._elseBlock must be If or Block");
-      }
-    if (_successBlock == null && _untilCond != null && _block != null)
-      {
-        _block.assignToField(res, outer, r);
-      }
-    if (_successBlock == null && _untilCond != null && _block == null ||
-        _elseBlock == null && (_whileCond != null || iterates()))
-      {
-        check
-          ((_prolog != null) == (_nextIteration != null));
-        if (_prolog != null)
-          {
-            _prolog        = _prolog.assignToField       (res, outer, r);
-            _nextIteration = _nextIteration.assignToField(res, outer, r);
-          }
-      }
-    return this;
-  }
-
-
-  /**
-   * During type inference: Inform this expression that it is used in an
-   * environment that expects the given type.  In particular, if this
-   * expression's result is assigned to a field, this will be called with the
-   * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param outer the feature that contains this expression
-   *
-   * @param t the expected type.
-   */
-  public void propagateExpectedType(Resolution res, Feature outer)
-  { // NYI: remove: when loop has been replaced by tail recursion, this is no longer needed
-    if (_whileCond != null)
-      {
-        _whileCond = _whileCond.propagateExpectedType(res, outer, Types.resolved.t_bool);
-      }
-    if (_untilCond != null)
-      {
-        _untilCond = _untilCond.propagateExpectedType(res, outer, Types.resolved.t_bool);
-      }
-    if (_var != null)
-      {
-        _var = _var.propagateExpectedType(res, outer, Types.resolved.t_i64);
-      }
-  }
-
-
-
-  /**
-   * During type inference: Inform this expression that it is used in an
-   * environment that expects the given type.  In particular, if this
-   * expression's result is assigned to a field, this will be called with the
-   * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param outer the feature that contains this expression
-   *
-   * @param t the expected type.
-   *
-   * @return either this or a new Expr that replaces thiz and produces the
-   * result. In particular, if the result is assigned to a temporary field, this
-   * will be replaced by the statement that reads the field.
-   */
-  public Expr propagateExpectedType(Resolution res, Feature outer, Type t)
-  { // NYI: remove: when loop has been replaced by tail recursion, this is no longer needed
-    // A loop with VOID result assigned to an expected bool type will be changed
-    // to return true on success, false otherwise:
-    Type tsf = typeFromSuccessOrFailure();
-    if (t == Types.resolved.t_bool &&
-        (tsf == Types.t_UNDEFINED || tsf == Types.t_VOID || tsf == Types.resolved.t_void))
-      { // the expected type is bool and the actual type is void or undefined,
-        // and the loop may succeed (through _untilCond) and fail (iteration end
-        // or _whileCond), so we add true/false as the result in _successBlock /
-        // _elseBlock:
-        if (_successBlock == null)
-          {
-            _successBlock = new Block(pos, new List<Stmnt>());
-          }
-        if (!(_elseBlock instanceof Block))
-          {
-            _elseBlock = new Block(pos, _elseBlock == null ? new List<Stmnt>()
-                                                           : new List<Stmnt>(_elseBlock));
-          }
-        Call T = new Call(pos, new Singleton(pos, Types.resolved.universe), Types.resolved.f_TRUE ); T.resolveTypes(res, outer);
-        Call F = new Call(pos, new Singleton(pos, Types.resolved.universe), Types.resolved.f_FALSE); F.resolveTypes(res, outer);
-        _successBlock      .statements_.add(T);
-        ((Block)_elseBlock).statements_.add(F);
-      }
-    return addFieldForResult(res, outer, t);
-  }
-
-
-  /**
-   * visit all the features, expressions, statements within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this.
-   */
-  public Expr visit(FeatureVisitor v, Feature outer)
-  { // NYI: remove: when loop has been replaced by tail recursion, this is no longer needed
-    Expr result = this;
-    if (v.actionBefore(this, outer))
-      {
-        if (_prolog != null)
-          {
-            _prolog = _prolog.visit(v, outer);
-          }
-        if (_var != null)
-          {
-            _var = _var.visit(v, outer);
-          }
-        if (_inv != null)
-          {
-            for(Cond c: _inv)
+            if (_loopElse != null)
               {
-                c.visit(v, outer);
+                ifHasNext1.setElse(Block.fromExpr(callLoopElse(true )));
+                ifHasNext2.setElse(Block.fromExpr(callLoopElse(false)));
               }
+            _prologSuccessBlock.add(ifHasNext1);
+            _nextItSuccessBlock.add(ifHasNext2);
+            _prologSuccessBlock = prolog2;
+            _nextItSuccessBlock = nextIt2;
+            f.impl = new Impl(f.impl.pos, next1, Impl.Kind.FieldDef);
+            n.impl = new Impl(n.impl.pos, next2, Impl.Kind.FieldDef);
           }
-        if (_whileCond != null)
-          {
-            _whileCond = _whileCond.visit(v, outer);
-          }
-        if (_block != null)
-          {
-            _block = _block.visit(v, outer);
-          }
-        if (_untilCond != null)
-          {
-            _untilCond = _untilCond.visit(v, outer);
-          }
-        if (_nextIteration != null)
-          {
-            _nextIteration = _nextIteration.visit(v, outer);
-          }
-        if (_successBlock != null)
-          {
-            _successBlock = _successBlock.visit(v, outer);
-          }
-        if (_elseBlock != null)
-          {
-            _elseBlock = _elseBlock.visit(v, outer);
-          }
-        result = v.action(this, outer);
+        _prologSuccessBlock.add(f);
+        _nextItSuccessBlock.add(n);
+        f._isIndexVarUpdatedByLoop = true;
+        n._isIndexVarUpdatedByLoop = true;
       }
-    return result;
-  }
-
-
-  /**
-   * Does this statement consist of nothing but declarations? I.e., it has no
-   * code that actually would be executed at runtime.
-   */
-  public boolean containsOnlyDeclarations()
-  { // NYI: remove: when loop has been replaced by tail recursion, this is no longer needed
-    return false;
-  };
-
-
-  /**
-   * check the types in this loop, in particular check that while- and
-   * until-conditions are of type bool.
-   *
-   * @param outer the root feature that contains this statement.
-   */
-  public void checkTypes()
-  { // NYI: remove: when loop has been replaced by tail recursion, this is no longer needed
-    if (_whileCond != null)
-      {
-        Type t = _whileCond.type();
-        if (!Types.resolved.t_bool.isAssignableFrom(t))
-          {
-            FeErrors.whileConditionMustBeBool(_whileCond.pos, t);
-          }
-      }
-    if (_untilCond != null)
-      {
-        Type t = _untilCond.type();
-        if (!Types.resolved.t_bool.isAssignableFrom(t))
-          {
-            FeErrors.untilConditionMustBeBool(_untilCond.pos, t);
-          }
-      }
-  }
-
-
-  /**
-   * toString
-   *
-   * @return
-   */
-  public String toString()
-  {
-    return
-      (_prolog != null ? "for " + _prolog + "\n" : "") +
-      (_nextIteration != null ? "next " + _nextIteration + "\n" : "") +
-      (_inv==null ? "" : "invariant "+_inv+"\n")+
-      (_var==null ? "" : "variant "  +_var+"\n")+
-      (_whileCond != null ? "while " + _whileCond + "\n" : "do ") +
-      (_block != null ? _block : "") +
-      (_untilCond != null ? "until " + _untilCond + "\n" : "") +
-      (_successBlock != null ? "on success" + _successBlock : "" ) +
-      (_elseBlock != null ? "else" + _elseBlock : "" );
   }
 
 }

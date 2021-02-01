@@ -2124,7 +2124,7 @@ loopEpilog  : "until" exprAtMinIndent blockOpt elseBlockOpt
     SourcePosition pos = posObject();
     int oldLine = sameLine(-1);
     List<Feature> indexVars  = new List<>();
-    List<Expr>    nextValues = new List<>();
+    List<Feature> nextValues = new List<>();
     var hasFor   =              skip(      Token.t_for    ); if (hasFor) { indexVars(indexVars, nextValues); }
     var hasVar   =              skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()      : null;
                                                              var i   = hasFor || v != null ? invariant(true)   : null;
@@ -2132,13 +2132,15 @@ loopEpilog  : "until" exprAtMinIndent blockOpt elseBlockOpt
     var hasDo    = !hasWhile && skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? blockOpt()        : null;
     var hasUntil =              skip(true, Token.t_until  ); var u   = hasUntil            ? exprAtMinIndent() : null;
                                                              var ub  = hasUntil            ? blockOpt()        : null;
+                                                             var els1 =               fork().elseBlockOpt();
                                                              var els =                       elseBlockOpt();
+
     if (!hasWhile && !hasDo && !hasUntil && els == null)
       {
         syntaxError(pos(), "Expected loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
       }
     sameLine(oldLine);
-    return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els).tailRec();
+    return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1).tailRecursiveLoop();
   }
 
 
@@ -2149,7 +2151,7 @@ indexVars   : indexVar (semi indexVars)
             |
             ;
    */
-  void indexVars(List<Feature> indexVars, List<Expr> nextValues)
+  void indexVars(List<Feature> indexVars, List<Feature> nextValues)
   {
     while (isIndexVarPrefix())
       {
@@ -2172,45 +2174,59 @@ indexVar    : visibility
               )
             ;
 implFldIter : "in" exprInLine
-nextValue   : COMMA exprInLine
+nextValue   : COMMA exprAtMinIndent
             |
             ;
    */
-  void indexVar(List<Feature> indexVars, List<Expr> nextValues)
+  void indexVar(List<Feature> indexVars, List<Feature> nextValues)
   {
     SourcePosition pos = posObject();
-    Visi v = visibility();
-    int m = modifiers();
-    String n = name();
-    ReturnType r;
-    Contract c;
-    Impl p;
+    Parser forked = fork();  // tricky: in case there is no nextValue, we
+                             // re-parse the initial value expr and use it
+                             // as nextValue
+    Visi       v1  =        visibility();
+    Visi       v2  = forked.visibility();
+    int        m1  =        modifiers();
+    int        m2  = forked.modifiers();
+    String     n1  =        name();
+    String     n2  = forked.name();
     boolean hasType = isType();
-    r = hasType ? new FunctionReturnType(type())
-                : NoType.INSTANCE;
-    c = contract();
-    Expr nextValue = null;
-    if (skip(Token.t_in))
+    ReturnType r1 = hasType ? new FunctionReturnType(       type()) : NoType.INSTANCE;
+    ReturnType r2 = hasType ? new FunctionReturnType(forked.type()) : NoType.INSTANCE;
+    Contract   c1 =        contract();
+    Contract   c2 = forked.contract();
+    Impl p1, p2;
+    if (       skip(Token.t_in) &&
+        forked.skip(Token.t_in)    )
       {
-        p = new Impl(posObject(), exprInLine(), Impl.Kind.FieldIter);
+        p1 = new Impl(posObject(),        exprInLine() /* NYI: better exprAtMinIndent() to be same as FieldInit and FIeldDef? */, Impl.Kind.FieldIter);
+        p2 = new Impl(posObject(), forked.exprInLine() /* NYI: better exprAtMinIndent() to be same as FieldInit and FIeldDef? */, Impl.Kind.FieldIter);
       }
     else
       {
-        Parser forked = fork();  // tricky: in case there is no nextValue, we
-                                 // re-parse the initial value expr and use it
-                                 // as nextValue
-        forked.skip(Token.t_op);
-        p = hasType ? implFldInit()
-                    : implFldDef();
-        nextValue = (skipComma() ? this : forked).exprInLine();
+        p1 = hasType ?        implFldInit() :        implFldDef();
+        p2 = hasType ? forked.implFldInit() : forked.implFldDef();
+        // up to here, this and forked parse the same, i.e, v1, m1, .. p1 is the
+        // same as v2, m2, .. p2.  Now, we check if there is a comma, which
+        // means there is a differen value for the second and following
+        // iterations:
+        if (skipComma())
+          {
+            p2 = new Impl(pos, exprAtMinIndent(), p2.kind_);
+          }
       }
-    Feature f = new Feature(pos,v,m,r,new List<>(n),
-                            FormalGenerics.NONE,
-                            new List<Feature>(),
-                            new List<Call>(),
-                            c,p);
-    indexVars.add(f);
-    nextValues.add(nextValue);
+    Feature f1 = new Feature(pos,v1,m1,r1,new List<>(n1),
+                             FormalGenerics.NONE,
+                             new List<Feature>(),
+                             new List<Call>(),
+                             c1,p1);
+    Feature f2 = new Feature(pos,v2,m2,r2,new List<>(n2),
+                             FormalGenerics.NONE,
+                             new List<Feature>(),
+                             new List<Call>(),
+                             c2,p2);
+    indexVars.add(f1);
+    nextValues.add(f2);
   }
 
 

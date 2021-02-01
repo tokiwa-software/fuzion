@@ -23,5 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
+JAVA_STACK_SIZE = 4m # reqquired since tail recursion is not optimized yet
+JAVA_OPTS = -Xss$(JAVA_STACK_SIZE)
+
 all:
 	$(FUSION) looptest 2>err.txt

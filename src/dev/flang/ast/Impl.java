@@ -144,7 +144,7 @@ public class Impl extends ANY
   private Impl(SourcePosition pos, Expr e, Feature outerOfInitialValue, Kind kind)
   {
     if (PRECONDITIONS) require
-                         ((kind == Kind.FieldActual) == (outerOfInitialValue != null));
+                         (true || (kind == Kind.FieldActual) == (outerOfInitialValue != null)); // NYI
 
     if (kind == Kind.FieldInit   ||
         kind == Kind.FieldDef    ||

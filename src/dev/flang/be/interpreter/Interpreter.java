@@ -59,7 +59,6 @@ import dev.flang.ast.Feature; // NYI: remove dependency! Use dev.flang.fuir inst
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.IntConst; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Loop; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Match; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Old; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -278,35 +277,6 @@ public class Interpreter extends Backend
           {
             result = execute(stmnt, staticClazz, cur);
           }
-      }
-
-    else if (s instanceof Loop)
-      {
-        var l = (Loop) s;
-        result = Value.NO_VALUE;
-        if (l._prolog != null)
-          {
-            result = execute(l._prolog, staticClazz, cur);
-          }
-        boolean success = false;
-        while (!success &&
-               (!l.iterates() || result.i32Value() == 1) &&
-               (l._whileCond == null || execute(l._whileCond, staticClazz, cur).boolValue()))
-          {
-            if (l._block != null)
-              {
-                result = execute(l._block, staticClazz, cur);
-              }
-            success = l._untilCond != null && execute(l._untilCond, staticClazz, cur).boolValue();
-            if (!success && l._nextIteration != null)
-              {
-                result = execute(l._nextIteration, staticClazz, cur);
-              }
-          }
-
-        result = success
-          ? l._successBlock != null ? execute(l._successBlock, staticClazz, cur) : result
-          : l._elseBlock    != null ? execute(l._elseBlock   , staticClazz, cur) : result;
       }
 
     else if (s instanceof If)

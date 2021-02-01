@@ -261,9 +261,9 @@ looptest
     while ix < data.length
     {
       element := data[ix];
-      ix
     }
     until isWhatWeWant(data[ix])
+      ix
     else
     {
       4444
@@ -283,6 +283,10 @@ looptest
     until isWhatWeWant(data[ix])
     {
       3333
+    }
+    else
+    {
+      ix
     }
   }
   chck(testLoop9(a, fun (i i32) => i >    100) == 3333, "testLoop9 returns 3333 in until branch");
@@ -352,11 +356,8 @@ looptest
     for
       i i32 = 0, i+2;
       j := 100, i*i;
-    do
-      {
-        (i, j)
-      }
     until i >= 100
+      (i, j)
   }
   chck(testWriteToDeclaredVar2.values.0 == 100  , "testWriteToDeclaredVar returns (100, 10000)");
   chck(testWriteToDeclaredVar2.values.1 == 10000, "testWriteToDeclaredVar returns (100, 10000)");

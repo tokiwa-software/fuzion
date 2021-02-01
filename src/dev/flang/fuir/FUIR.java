@@ -38,7 +38,6 @@ import dev.flang.ast.Feature; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.Impl; // NYI: remove dependency
 import dev.flang.ast.IntConst; // NYI: remove dependency
-import dev.flang.ast.Loop; // NYI: remove dependency
 import dev.flang.ast.Match; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
 import dev.flang.ast.Singleton; // NYI: remove dependency
@@ -615,16 +614,6 @@ public class FUIR extends ANY
             toStack(l, a);
           }
         l.add(c);
-      }
-    else if (s instanceof Loop)
-      {
-        var lo = (Loop) s;
-        if (lo._prolog != null)
-          {
-            toStack(l, lo._prolog);
-          }
-        l.add(s);
-        // NYI: rest...
       }
     else if (s instanceof Match)
       {

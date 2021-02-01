@@ -1061,7 +1061,12 @@ public class Feature extends ANY implements Stmnt, Comparable
 
     if (impl.initialValue != null &&
         outer.pos._sourceFile != pos._sourceFile &&
-        pos._sourceFile._fileName != SourceFile.STDIN)
+        pos._sourceFile._fileName != SourceFile.STDIN &&
+        !_isIndexVarUpdatedByLoop  /* required for loop in universe, e.g.
+                                    *
+                                    *   echo "for i in 1..10 do stdout.println(i)" | fz -
+                                    */
+        )
       { // declaring field with initial value in different file than outer
         // feature.  We would have to add this to the statements of the outer
         // feature.  But if there are several such fields, in what order?
@@ -1313,7 +1318,10 @@ public class Feature extends ANY implements Stmnt, Comparable
 
         if ((impl.kind_ == Impl.Kind.FieldActual) && (impl.initialValue.typeOrNull() == null))
           {
-            impl.initialValue.visit(new ResolveTypes(res), impl._outerOfInitialValue);
+            impl.initialValue.visit(new ResolveTypes(res),
+                                    true /* NYI: impl_outerOfInitialValue not set yet */
+                                    ? outer().outer() :
+                                    impl._outerOfInitialValue);
           }
 
         state_ = State.RESOLVED_TYPES;
@@ -1670,8 +1678,6 @@ public class Feature extends ANY implements Stmnt, Comparable
             public Call  action(Call     c, Feature outer) { c.propagateExpectedType(res, outer); return c; }
             public void  action(Impl     i, Feature outer) { i.propagateExpectedType(res, outer); }
             public void  action(If       i, Feature outer) { i.propagateExpectedType(res, outer); }
-            // NYI: remove: when loop has been replaced by tail recursion, this is no longer needed
-            public Expr  action(Loop     l, Feature outer) { l.propagateExpectedType(res, outer); return l; }
           });
 
         state_ = State.TYPES_INFERENCED;
@@ -2058,8 +2064,6 @@ public class Feature extends ANY implements Stmnt, Comparable
             public void  action(Assign  a, Feature outer) { a.checkTypes();                }
             public Call  action(Call    c, Feature outer) { c.checkTypes(outer); return c; }
             public void  action(If      i, Feature outer) { i.checkTypes();                }
-            // NYI: remove: when loop has been replaced by tail recursion, this is no longer needed
-            public Expr  action(Loop    l, Feature outer) { l.checkTypes();      return l; }
           });
         checkTypes();
 
@@ -2143,8 +2147,6 @@ public class Feature extends ANY implements Stmnt, Comparable
             public Stmnt action(Feature  f, Feature outer) { return new Nop(pos);                         }
             public Expr  action(Function f, Feature outer) { return f.resolveSyntacticSugar2(res, outer); }
             public void  action(Impl     i, Feature outer) {        i.resolveSyntacticSugar2(res, outer); }
-            // NYI: remove: when loop has been replaced by tail recursion, this is no longer needed
-            public Expr  action(Loop     l, Feature outer) { return l.resolveSyntacticSugar2(res, outer); }
           });
 
         state_ = State.RESOLVED_SUGAR2;
@@ -2897,29 +2899,6 @@ public class Feature extends ANY implements Stmnt, Comparable
         public void  actionAfter(Case c, Feature outer)
         {
           curres[0] = stack.pop();
-        }
-        // NYI: remove: when loop has been replaced by tail recursion, this is no longer needed
-        public boolean actionBefore(Loop l, Feature outer)
-        {
-          Feature curBeforeLoop = curres[0];
-          if (l._prolog        != null) { l._prolog.visit(this, outer); }
-          Feature curAfterProlog = curres[0];
-          Feature curAfterPrologEvenIfLoopNotExecuted = l.mightNotBeSetInElse(curAfterProlog) ? curBeforeLoop : curAfterProlog;
-          if (l._var           != null) { l._var.visit(this, outer); }
-          curres[0] = curAfterPrologEvenIfLoopNotExecuted;
-          if (l._inv           != null) { for (var cond : l._inv) { cond.visit(this, outer); } }
-          curres[0] = curAfterProlog;
-          if (l._whileCond     != null) { l._whileCond.visit(this, outer); }
-          if (l._block         != null) { l._block.visit(this, outer); }
-          if (l._untilCond     != null) { l._untilCond.visit(this, outer); }
-          Feature curAfterUntil = curres[0];
-          if (l._nextIteration != null) { l._nextIteration.visit(this, outer); }
-          curres[0] = curAfterUntil;
-          if (l._successBlock  != null) { l._successBlock.visit(this, outer); }
-          curres[0] = curAfterPrologEvenIfLoopNotExecuted;
-          if (l._elseBlock     != null) { l._elseBlock.visit(this, outer); }
-          curres[0] = curBeforeLoop;
-          return false;
         }
         public Stmnt action(Feature f, Feature outer)
         {

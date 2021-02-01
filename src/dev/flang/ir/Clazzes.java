@@ -47,7 +47,6 @@ import dev.flang.ast.FunctionReturnType; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.IntConst; // NYI: remove dependency!
-import dev.flang.ast.Loop; // NYI: remove dependency!
 import dev.flang.ast.Match; // NYI: remove dependency!
 import dev.flang.ast.Old; // NYI: remove dependency!
 import dev.flang.ast.Singleton; // NYI: remove dependency!
@@ -798,12 +797,6 @@ public class Clazzes extends ANY
         result = i32.get();
       }
 
-    else if (e instanceof Loop)
-      {
-        var l = (Loop) e;
-        result = outerClazz.actualClazz(l._type);
-      }
-
     else if (e instanceof Match)
       {
         var m = (Match) e;
@@ -844,7 +837,6 @@ public class Clazzes extends ANY
 
     return result;
   }
-
 
 
   /**

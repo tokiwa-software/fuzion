@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-JAVA_STACK_SIZE = 16m # reqquired for manorboy(10)
+JAVA_STACK_SIZE = 16m # required for manorboy(10)
 JAVA_OPTS = -Xss$(JAVA_STACK_SIZE)
 
 all:

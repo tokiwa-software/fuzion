@@ -70,10 +70,6 @@ public abstract class FeatureVisitor extends ANY
   public Expr    action      (Function  f, Feature outer) { return f; }
   public void    action      (Generic   g, Feature outer) { }
   public void    action      (If        i, Feature outer) { }
-  // NYI: remove: when loop has been replaced by tail recursion, this is no longer needed
-  public Expr    action      (Loop      l, Feature outer) { return l; }
-  // NYI: remove: when loop has been replaced by tail recursion, this is no longer needed
-  public boolean actionBefore(Loop      l, Feature outer) { return true; }  // result implies visit loop contents
   public void    action      (Impl      i, Feature outer) { }
   public void    action      (Match     m, Feature outer) { }
   public Expr    action      (This      t, Feature outer) { return t; }

@@ -281,6 +281,7 @@ public class FeErrors extends ANY
           abstracts);
   }
 
+  /* NYI: currently unused, need to check if a "while (23)" produces a useful error message
   static void whileConditionMustBeBool(SourcePosition pos, Type type)
   {
     check
@@ -293,7 +294,9 @@ public class FeErrors extends ANY
               "Actual type is " + type);
       }
   }
+  */
 
+  /* NYI: currently unused, need to check if a "do until (23)" produces a useful error message
   static void untilConditionMustBeBool(SourcePosition pos, Type type)
   {
     check
@@ -302,10 +305,11 @@ public class FeErrors extends ANY
     if (type != Types.t_ERROR)
       {
         error(pos,
-              "Loop termination condition following 'unil' must be assignable to type 'bool'",
+              "Loop termination condition following 'until' must be assignable to type 'bool'",
               "Actual type is " + type);
       }
   }
+  */
 
   static void ifConditionMustBeBool(SourcePosition pos, Type type)
   {
