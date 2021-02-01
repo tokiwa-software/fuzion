@@ -463,8 +463,6 @@ public class Feature extends ANY implements Stmnt, Comparable
    * @param t the result type
    *
    * @param qname the name of this feature
-   *
-   * @param c the contract
    */
   Feature(SourcePosition pos,
           Visi v,
