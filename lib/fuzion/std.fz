@@ -17,12 +17,12 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature fusion
+#  Source code of Fuzion standard library feature fuzion.std
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# fusion --
-#
-fusion single is
+fuzion.std is
+
+  exit(code i32) is intrinsic

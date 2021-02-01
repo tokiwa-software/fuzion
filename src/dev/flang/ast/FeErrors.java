@@ -343,9 +343,9 @@ public class FeErrors extends ANY
   /**
    * This shows an incompatibility between front end and API.
    *
-   * @param qname something like "fusion.java.JavaObject.javaRef"
+   * @param qname something like "fuzion.java.JavaObject.javaRef"
    *
-   * @param outer the outer feature of what cause a problem, e.g. fusion.java
+   * @param outer the outer feature of what cause a problem, e.g. fuzion.java
    *
    * @param name name of the feature that caused a problem, e.g., "JavaObject"
    */
@@ -389,7 +389,7 @@ public class FeErrors extends ANY
   static void cannotRedefineGeneric(SourcePosition pos, Feature f, Feature existing)
   {
     cannotRedefine(pos, f, existing, "Cannot redefine feature with generic arguments",
-                   "To solve this, ask the Fusion team to remove this restriction :-)."); // NYI: inheritance and generics
+                   "To solve this, ask the Fuzion team to remove this restriction :-)."); // NYI: inheritance and generics
   }
 
   static void redefineModifierMissing(SourcePosition pos, Feature f, Feature existing)
@@ -511,8 +511,8 @@ public class FeErrors extends ANY
   {
     error(f.pos,
           "Initial value not allowed for feature not embedded in outer feature",
-          "Fusion currently does not know when to execute this initializer, so it is forbidden.\n" +
-          "To solve this, move the declaration inside another feature or ask the Fusion team for help.");
+          "Fuzion currently does not know when to execute this initializer, so it is forbidden.\n" +
+          "To solve this, move the declaration inside another feature or ask the Fuzion team for help.");
   }
 
   static void missingResultTypeForField(Feature f)

@@ -90,7 +90,7 @@ public class Intrinsics extends ANY
     var f = innerClazz.feature();
     String n = f.qualifiedName();
     // NYI: We must check the argument count in addition to the name!
-    if (n.equals("fusion.std.out.write"))
+    if (n.equals("fuzion.std.out.write"))
       {
         result = (args, argTypes) ->
           {
@@ -98,7 +98,7 @@ public class Intrinsics extends ANY
             return Value.EMPTY_VALUE;
           };
       }
-    else if (n.equals("fusion.std.out.flush"))
+    else if (n.equals("fuzion.std.out.flush"))
       {
         result = (args, argTypes) ->
           {
@@ -107,7 +107,7 @@ public class Intrinsics extends ANY
           };
       }
     else if (n.equals("exitForCompilerTest") ||  // NYI: Remove global exit, just for minimal compiled programs!
-             n.equals("fusion.std.exit"))
+             n.equals("fuzion.std.exit"))
       {
         result = (args, argTypes) ->
           {
@@ -116,12 +116,12 @@ public class Intrinsics extends ANY
             return Value.EMPTY_VALUE;
           };
       }
-    else if (n.equals("fusion.java.getStaticField"))
+    else if (n.equals("fuzion.java.getStaticField"))
       {
         var actualGenerics = innerClazz._type._generics;
         if ((actualGenerics == null) || (actualGenerics.size() != 1))
           {
-            System.err.println("fusion.java.getStaticField called with wrong number of actual generic arguments");
+            System.err.println("fuzion.java.getStaticField called with wrong number of actual generic arguments");
             System.exit(1);
           }
         Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
@@ -136,30 +136,30 @@ public class Intrinsics extends ANY
             Instance fieldI = (Instance) args.get(2);
             if (clazzI == null)
               {
-                System.err.println("fusion.java.getStaticField called with null class argument");
+                System.err.println("fuzion.java.getStaticField called with null class argument");
                 System.exit(1);
               }
             if (fieldI == null)
               {
-                System.err.println("fusion.java.getStaticField called with null field argument");
+                System.err.println("fuzion.java.getStaticField called with null field argument");
                 System.exit(1);
               }
             String clazz = clazzI.string;
             String field = fieldI.string;
             if (clazz == null)
               {
-                System.err.println("fusion.java.getStaticField called with non-String class argument");
+                System.err.println("fuzion.java.getStaticField called with non-String class argument");
                 System.exit(1);
               }
             if (field == null)
               {
-                System.err.println("fusion.java.getStaticField called with non-String field argument");
+                System.err.println("fuzion.java.getStaticField called with non-String field argument");
                 System.exit(1);
               }
             return JavaInterface.getStaticField(clazz, field, resultClazz);
           };
       }
-    else if (n.equals("fusion.java.callVirtual"))
+    else if (n.equals("fuzion.java.callVirtual"))
       {
         result = (args, argTypes) ->
           {
@@ -174,17 +174,17 @@ public class Intrinsics extends ANY
             Instance argI  = (Instance) args.get(4);
             if (nameI == null)
               {
-                System.err.println("fusion.java.callVirtual called with null name argument");
+                System.err.println("fuzion.java.callVirtual called with null name argument");
                 System.exit(1);
               }
             if (sigI == null)
               {
-                System.err.println("fusion.java.callVirtual called with null signature argument");
+                System.err.println("fuzion.java.callVirtual called with null signature argument");
                 System.exit(1);
               }
             if (thizI == null)
               {
-                System.err.println("fusion.java.callVirtual called with null thiz argument");
+                System.err.println("fuzion.java.callVirtual called with null thiz argument");
                 System.exit(1);
               }
             String name = nameI.string;

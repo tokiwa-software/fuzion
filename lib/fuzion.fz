@@ -17,27 +17,12 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature fusion.std.out
+#  Source code of Fuzion standard library feature fuzion
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-public fusion.std.out single is
-
-  public print(s ref Object) void is
-    for c in s.asString.asBytes do
-      write(c)
-    flush
-
-  public println(s ref Object) void is
-    for c in s.asString.asBytes do
-      write(c)
-    println
-
-  public println void is
-    write(10)
-    flush
-
-  public write(b i32) is intrinsic
-  public flush is intrinsic
+# fuzion --
+#
+fuzion single is

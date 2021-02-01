@@ -32,7 +32,7 @@ import java.util.TreeSet;
 
 
 /**
- * Errors handles compilation error messages for Fusion
+ * Errors handles compilation error messages for Fuzion
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */
@@ -79,7 +79,7 @@ public class Errors extends ANY
    * Maximum number of error messages that are displayed. If this limit is
    * reached, we terminate with return code 1.
    */
-  public static int MAX_ERROR_MESSAGES = Integer.getInteger("fusion.maxErrorCount", Integer.MAX_VALUE);
+  public static int MAX_ERROR_MESSAGES = Integer.getInteger("fuzion.maxErrorCount", Integer.MAX_VALUE);
 
 
   /*-----------------------------  classes  -----------------------------*/

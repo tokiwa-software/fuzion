@@ -17,13 +17,13 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature fusion.java
+#  Source code of Fuzion standard library feature fuzion.java
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-public fusion.java single is
+public fuzion.java single is
 
   public getStaticField<T>(clazz string, field string) T is intrinsic
 

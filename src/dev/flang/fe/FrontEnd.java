@@ -232,10 +232,10 @@ public class FrontEnd extends ANY
 
 
   /**
-   * Load and parse the fusion source file for the feature with the
+   * Load and parse the fuzion source file for the feature with the
    * given file name
    *
-   * @param name a qualified name, e.g. "fusion.std.out"
+   * @param name a qualified name, e.g. "fuzion.std.out"
    *
    * @return the parsed source file or null in case of an error.
    */

@@ -113,14 +113,14 @@ class Fusion extends ANY
   /**
    * Level of verbosity of output
    */
-  final int VERBOSE = Integer.getInteger("fusion.verbose", 0);
+  final int VERBOSE = Integer.getInteger("fuzion.verbose", 0);
 
 
   /**
-   * Flag to enable intrinsic functions such as fusion.java.callVirtual. These are
+   * Flag to enable intrinsic functions such as fuzion.java.callVirtual. These are
    * not allowed if run in a web playground.
    */
-  final boolean ENABLE_UNSAFE_INTRINSICS = Boolean.getBoolean("fusion.enableUnsafeIntrinsics");
+  final boolean ENABLE_UNSAFE_INTRINSICS = Boolean.getBoolean("fuzion.enableUnsafeIntrinsics");
   {
     Intrinsics.ENABLE_UNSAFE_INTRINSICS = ENABLE_UNSAFE_INTRINSICS;  // NYI: Add to Fusion IR or BE Config
   }
@@ -129,7 +129,7 @@ class Fusion extends ANY
   /**
    * Default result of debugLevel:
    */
-  final int FUSION_DEBUG_LEVEL = Integer.getInteger("fusion.debugLevel", 1);
+  final int FUSION_DEBUG_LEVEL = Integer.getInteger("fuzion.debugLevel", 1);
   {
     Intrinsics.FUSION_DEBUG_LEVEL = FUSION_DEBUG_LEVEL;  // NYI: Add to Fusion IR or BE Config
   }
@@ -138,7 +138,7 @@ class Fusion extends ANY
   /**
    * Default result of safety:
    */
-  final boolean FUSION_SAFETY = new Boolean(System.getProperty("fusion.safety", "true"));
+  final boolean FUSION_SAFETY = new Boolean(System.getProperty("fuzion.safety", "true"));
   {
     Intrinsics.FUSION_SAFETY = FUSION_SAFETY;  // NYI: Add to Fusion IR or BE Config
   }

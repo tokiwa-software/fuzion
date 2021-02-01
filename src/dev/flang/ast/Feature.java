@@ -104,7 +104,7 @@ public class Feature extends ANY implements Stmnt, Comparable
       "u32.val",
       "u64.val",
       "bool." + FuzionConstants.CHOICE_TAG_NAME,
-      "fusion.java.JavaObject.javaRef",
+      "fuzion.java.JavaObject.javaRef",
       "java.io.PrintStream.javaRef2",
       "conststring",
     };
@@ -686,8 +686,8 @@ public class Feature extends ANY implements Stmnt, Comparable
 
   /**
    * Compare the fully qualified name of this feature with the names provided by
-   * the iterator, i.e., return true iff it returns "fusion", "std", "out",
-   * etc. and this feature is fusion.std.out.
+   * the iterator, i.e., return true iff it returns "fuzion", "std", "out",
+   * etc. and this feature is fuzion.std.out.
    *
    * @param it an iterator producing the elements of a fully qualified name
    *
@@ -3324,7 +3324,7 @@ public class Feature extends ANY implements Stmnt, Comparable
   /**
    * qualifiedName returns the qualified name of this feature
    *
-   * @return the qualified name, e.g. "fusion.std.out.println"
+   * @return the qualified name, e.g. "fuzion.std.out.println"
    */
   public String qualifiedName()
   {

@@ -57,13 +57,13 @@ public class JavaInterface
         Field f = cl.getDeclaredField(field);
         if (!Modifier.isStatic(f.getModifiers()))
           {
-            System.err.println("fusion.java.getStaticField called for field "+f+" which is not static");
+            System.err.println("fuzion.java.getStaticField called for field "+f+" which is not static");
             System.exit(1);
           }
         Class t = f.getType();
         if (t.isPrimitive())
           {
-            System.err.println("fusion.java.getStaticField called for field of primitive type, which is not yet supported");
+            System.err.println("fuzion.java.getStaticField called for field of primitive type, which is not yet supported");
             System.exit(1);
             result = null;
           }
@@ -75,19 +75,19 @@ public class JavaInterface
       }
     catch (IllegalAccessException e)
       {
-        System.err.println("IllegalAccessException when calling fusion.java.getStaticField for field "+clazz+"."+field);
+        System.err.println("IllegalAccessException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
         System.exit(1);
         result = null;
       }
     catch (ClassNotFoundException e)
       {
-        System.err.println("ClassNotFoundException when calling fusion.java.getStaticField for field "+clazz+"."+field);
+        System.err.println("ClassNotFoundException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
         System.exit(1);
         result = null;
       }
     catch (NoSuchFieldException e)
       {
-        System.err.println("NoSuchFieldException when calling fusion.java.getStaticField for field "+clazz+"."+field);
+        System.err.println("NoSuchFieldException when calling fuzion.java.getStaticField for field "+clazz+"."+field);
         System.exit(1);
         result = null;
       }
@@ -275,13 +275,13 @@ public class JavaInterface
       }
     catch (NoSuchMethodException e)
       {
-        System.err.println("NoSuchMethodException when calling fusion.java.callVirtual for field "+thiz.getClass()+"."+name+sig);
+        System.err.println("NoSuchMethodException when calling fuzion.java.callVirtual for field "+thiz.getClass()+"."+name+sig);
         System.exit(1);
         m = null;
       }
     if (m == null)
       {
-        System.err.println("fusion.java.callVirtual: method "+name+sig+" not found in target "+thiz.getClass());
+        System.err.println("fuzion.java.callVirtual: method "+name+sig+" not found in target "+thiz.getClass());
         System.exit(1);
       }
     Object arg = instanceToJavaObject(argI);
@@ -291,13 +291,13 @@ public class JavaInterface
       }
     catch (IllegalAccessException e)
       {
-        System.err.println("fusion.java.callVirtual: method "+name+sig+" causes IllegalAccessException");
+        System.err.println("fuzion.java.callVirtual: method "+name+sig+" causes IllegalAccessException");
         System.exit(1);
         res = null;
       }
     catch (InvocationTargetException e)
       {
-        System.err.println("fusion.java.callVirtual: method "+name+sig+" causes InvocationTargetException");
+        System.err.println("fuzion.java.callVirtual: method "+name+sig+" causes InvocationTargetException");
         System.exit(1);
         res = null;
       }
