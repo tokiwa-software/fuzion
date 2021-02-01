@@ -852,10 +852,23 @@ public class Feature extends ANY implements Stmnt, Comparable
         resultField_ = new Feature(pos,
                                    Consts.VISIBILITY_PRIVATE,
                                    t,
-                                   impl.kind_ == Impl.Kind.Routine ? "result"
-                                                                   : "--result--",
+                                   resultInternal() ? "--result--"
+                                                    : "result",
                                    this);
       }
+  }
+
+
+  /**
+   * Check if the result variable should be internal, i.e., have a name that is
+   * not accessible by source code.  This is true for routines defined usings
+   * '=>" (RoutineDef) and also for internally used routines created for loops.
+   * In these cases, the result variable of the enclosing outer feature can be
+   * accessed without qualification.
+   */
+  public boolean resultInternal()
+  {
+    return impl.kind_ == Impl.Kind.RoutineDef;
   }
 
 
