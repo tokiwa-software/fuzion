@@ -34,7 +34,7 @@ FUSIONX = $(JAVA) \$$(JAVA_OPTS) -cp $(CLASSES_DIR) dev.flang.tools.Fusion
 JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/ANY.java \
           $(SRC)/dev/flang/util/Errors.java \
-          $(SRC)/dev/flang/util/FusionOptions.java \
+          $(SRC)/dev/flang/util/FuzionOptions.java \
           $(SRC)/dev/flang/util/FuzionConstants.java \
           $(SRC)/dev/flang/util/List.java \
           $(SRC)/dev/flang/util/Map2Int.java \
@@ -143,7 +143,7 @@ JAVA_FILES_BE_C = \
           $(SRC)/dev/flang/be/c/CFile.java \
 
 JAVA_FILES_TOOLS = \
-          $(SRC)/dev/flang/tools/Fusion.java \
+          $(SRC)/dev/flang/tools/Fuzion.java \
 
 CLASS_FILES_UTIL           = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
 CLASS_FILES_AST            = $(CLASSES_DIR)/dev/flang/ast/__marker_for_make__

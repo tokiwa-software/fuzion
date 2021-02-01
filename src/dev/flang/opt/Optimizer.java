@@ -31,7 +31,7 @@ import dev.flang.air.AIR;
 import dev.flang.fuir.FUIR;
 
 import dev.flang.util.ANY;
-import dev.flang.util.FusionOptions;
+import dev.flang.util.FuzionOptions;
 
 
 /**
@@ -49,7 +49,7 @@ public class Optimizer extends ANY
   /**
    * Configuration
    */
-  public final FusionOptions _options;
+  public final FuzionOptions _options;
 
 
   public final AIR _air;
@@ -58,7 +58,7 @@ public class Optimizer extends ANY
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public Optimizer(FusionOptions options, AIR air)
+  public Optimizer(FuzionOptions options, AIR air)
   {
     _options = options;
     _air = air;

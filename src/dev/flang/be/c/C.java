@@ -37,7 +37,7 @@ import dev.flang.ir.Clazz;
 
 import dev.flang.fuir.FUIR;
 
-import dev.flang.util.FusionOptions;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.FuzionConstants;
 
 
@@ -167,7 +167,7 @@ public class C extends Backend
    *
    * @param opt options to control compilation.
    */
-  public C(FusionOptions opt,
+  public C(FuzionOptions opt,
            FUIR fuir)
   {
     _fuir = fuir;

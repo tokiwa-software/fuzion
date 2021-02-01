@@ -34,7 +34,7 @@ import dev.flang.ir.Clazz;
 import dev.flang.ir.Clazzes;
 
 import dev.flang.util.ANY;
-import dev.flang.util.FusionOptions;
+import dev.flang.util.FuzionOptions;
 
 
 /**
@@ -52,7 +52,7 @@ public class MiddleEnd extends ANY
   /**
    * Configuration
    */
-  public final FusionOptions _options;
+  public final FuzionOptions _options;
 
 
   public final MIR _mir;
@@ -61,7 +61,7 @@ public class MiddleEnd extends ANY
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public MiddleEnd(FusionOptions options, MIR mir)
+  public MiddleEnd(FuzionOptions options, MIR mir)
   {
     _options = options;
     _mir = mir;

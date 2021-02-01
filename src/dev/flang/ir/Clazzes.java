@@ -56,7 +56,7 @@ import dev.flang.ast.Types; // NYI: remove dependency!
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FusionOptions;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -181,7 +181,7 @@ public class Clazzes extends ANY
   /**
    * NYI: This will eventually be part of a Fusion IR Config class.
    */
-  public static FusionOptions _options_;
+  public static FuzionOptions _options_;
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -218,7 +218,7 @@ public class Clazzes extends ANY
   /**
    * Initilize Clazzes with given Options.
    */
-  public static void init(FusionOptions options)
+  public static void init(FuzionOptions options)
   {
     _options_ = options;
     universe.get();

@@ -160,7 +160,7 @@ public class FrontEnd extends ANY
    */
   Feature loadUniverse()
   {
-    Feature result = parseFile(FUSION_HOME.resolve("sys").resolve("universe.fz"));
+    Feature result = parseFile(FUZION_HOME.resolve("sys").resolve("universe.fz"));
     result.findDeclarations(null);
     new Resolution(_options, result, (r, f) -> loadInnerFeatures(r, f));
     return result;
@@ -251,7 +251,7 @@ public class FrontEnd extends ANY
 
 
   /* NYI: Cleanup: move this directory handling to dev.flang.util.Dir or similar: */
-  private static final Path FUSION_HOME;
+  private static final Path FUZION_HOME;
   private static final Path CURRENT_DIRECTORY;
   private static final Path[] SOURCE_PATHS;
   private static final Dir[] SOURCE_DIRS;
@@ -261,8 +261,8 @@ public class FrontEnd extends ANY
     String clname = cl.getName().replace(".",File.separator)+ ".class";
     String p = Feature.class.getClassLoader().getResource(clname).getPath();
     p = p.substring(0, p.length() - clname.length());
-    FUSION_HOME = Path.of(p).getParent();
-    SOURCE_PATHS = new Path[] { FUSION_HOME.resolve("lib"), CURRENT_DIRECTORY };
+    FUZION_HOME = Path.of(p).getParent();
+    SOURCE_PATHS = new Path[] { FUZION_HOME.resolve("lib"), CURRENT_DIRECTORY };
     SOURCE_DIRS = new Dir[SOURCE_PATHS.length];
     for (int i = 0; i < SOURCE_PATHS.length; i++)
       {

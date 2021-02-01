@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa GmbH, Berlin
  *
- * Source of class Fusion
+ * Source of class Fuzion
  *
  *---------------------------------------------------------------------*/
 
@@ -46,18 +46,18 @@ import dev.flang.util.Errors;
 
 
 /**
- * Fusion is the main class of the Fusion interpreter and compiler.
+ * Fuzion is the main class of the Fuzion interpreter and compiler.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */
-class Fusion extends ANY
+class Fuzion extends ANY
 {
 
   /*----------------------------  constants  ----------------------------*/
 
 
   /**
-   * Fusion Backends:
+   * Fuzion Backends:
    */
   static enum Backend
   {
@@ -122,25 +122,25 @@ class Fusion extends ANY
    */
   final boolean ENABLE_UNSAFE_INTRINSICS = Boolean.getBoolean("fuzion.enableUnsafeIntrinsics");
   {
-    Intrinsics.ENABLE_UNSAFE_INTRINSICS = ENABLE_UNSAFE_INTRINSICS;  // NYI: Add to Fusion IR or BE Config
+    Intrinsics.ENABLE_UNSAFE_INTRINSICS = ENABLE_UNSAFE_INTRINSICS;  // NYI: Add to Fuzion IR or BE Config
   }
 
 
   /**
    * Default result of debugLevel:
    */
-  final int FUSION_DEBUG_LEVEL = Integer.getInteger("fuzion.debugLevel", 1);
+  final int FUZION_DEBUG_LEVEL = Integer.getInteger("fuzion.debugLevel", 1);
   {
-    Intrinsics.FUSION_DEBUG_LEVEL = FUSION_DEBUG_LEVEL;  // NYI: Add to Fusion IR or BE Config
+    Intrinsics.FUZION_DEBUG_LEVEL = FUZION_DEBUG_LEVEL;  // NYI: Add to Fusion IR or BE Config
   }
 
 
   /**
    * Default result of safety:
    */
-  final boolean FUSION_SAFETY = new Boolean(System.getProperty("fuzion.safety", "true"));
+  final boolean FUZION_SAFETY = new Boolean(System.getProperty("fuzion.safety", "true"));
   {
-    Intrinsics.FUSION_SAFETY = FUSION_SAFETY;  // NYI: Add to Fusion IR or BE Config
+    Intrinsics.FUZION_SAFETY = FUZION_SAFETY;  // NYI: Add to Fusion IR or BE Config
   }
 
 
@@ -173,7 +173,7 @@ class Fusion extends ANY
    */
   public static void main(String[] args)
   {
-    new Fusion(args);
+    new Fuzion(args);
   }
 
 
@@ -181,19 +181,19 @@ class Fusion extends ANY
 
 
   /**
-   * Constructor for the fusion class
+   * Constructor for the Fuzion class
    *
    * @param args the command line arguments.  One argument is
    * currently supported: the main feature name.
    */
-  private Fusion(String[] args)
+  private Fuzion(String[] args)
   {
     try
       {
         parseArgs(args);
         var options = new FrontEndOptions(VERBOSE,
-                                          FUSION_SAFETY,
-                                          FUSION_DEBUG_LEVEL,
+                                          FUZION_SAFETY,
+                                          FUZION_DEBUG_LEVEL,
                                           _readStdin,
                                           _main);
         if (_backend == Backend.c)

@@ -28,7 +28,7 @@ package dev.flang.ast;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FusionOptions;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 
 
@@ -138,7 +138,7 @@ public class Resolution extends ANY
   final InnerFeaturesLoader innerFeaturesLoader; // =  (f) -> loadInnerFeatures(f);
 
 
-  final FusionOptions _options;
+  final FuzionOptions _options;
 
 
   final Feature universe;
@@ -205,7 +205,7 @@ public class Resolution extends ANY
   /**
    * Constructor to Resolve the universe.
    */
-  public Resolution(FusionOptions options,
+  public Resolution(FuzionOptions options,
                     Feature universe,
                     InnerFeaturesLoader ifl)
   {

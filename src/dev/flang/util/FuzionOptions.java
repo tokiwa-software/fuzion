@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa GmbH, Berlin
  *
- * Source of class FusionOptions
+ * Source of class FuzionOptions
  *
  *---------------------------------------------------------------------*/
 
@@ -32,7 +32,7 @@ package dev.flang.util;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */
-public class FusionOptions extends ANY
+public class FuzionOptions extends ANY
 {
 
 
@@ -68,7 +68,7 @@ public class FusionOptions extends ANY
   /**
    * Costructor initializing fields as given.
    */
-  public FusionOptions(int verbose, boolean fusionSafety, int fusionDebugLevel)
+  public FuzionOptions(int verbose, boolean fusionSafety, int fusionDebugLevel)
   {
     if (PRECONDITIONS) require
                          (verbose >= 0);

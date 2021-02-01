@@ -59,13 +59,13 @@ public class Intrinsics extends ANY
   /**
    * Result of debugLevel:
    */
-  public static int FUSION_DEBUG_LEVEL = 1;
+  public static int FUZION_DEBUG_LEVEL = 1;
 
 
   /**
    * Result of safety
    */
-  public static boolean FUSION_SAFETY = true;
+  public static boolean FUZION_SAFETY = true;
 
 
   /*----------------------------  variables  ----------------------------*/

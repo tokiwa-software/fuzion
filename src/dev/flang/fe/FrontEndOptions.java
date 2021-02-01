@@ -28,7 +28,7 @@ package dev.flang.fe;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FusionOptions;
+import dev.flang.util.FuzionOptions;
 
 
 /**
@@ -36,7 +36,7 @@ import dev.flang.util.FusionOptions;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */
-public class FrontEndOptions extends FusionOptions
+public class FrontEndOptions extends FuzionOptions
 {
 
 

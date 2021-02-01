@@ -17,7 +17,7 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of fz command, the main Fusion tools entry point
+#  Source code of fz command, the main Fuzion tools entry point
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
@@ -44,4 +44,4 @@ FUZION_BIN=`dirname "$0"`
 : ${FUZION_JAVA_STACK_SIZE=5m}
 : ${FUZION_JAVA_OPTIONS="-Xss$FUZION_JAVA_STACK_SIZE"}
 
-$FUZION_JAVA $FUZION_JAVA_OPTIONS -cp "$FUZION_JAVA_CLASSPATH" -Dfuzion.command=$FUZION_CMD dev.flang.tools.Fusion "$@"
+$FUZION_JAVA $FUZION_JAVA_OPTIONS -cp "$FUZION_JAVA_CLASSPATH" -Dfuzion.command=$FUZION_CMD dev.flang.tools.Fuzion "$@"
