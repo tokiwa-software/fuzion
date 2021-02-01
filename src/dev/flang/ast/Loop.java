@@ -28,7 +28,6 @@ package dev.flang.ast;
 
 import java.util.Iterator;
 
-import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -296,12 +295,7 @@ public class Loop extends Expr
     addPrologAndNextIteration();
     if (!iterates() && _whileCond == null && _elseBlock != null)
       {
-        Errors.error(pos, "Loop without while condition cannot have an else block",
-                     "Since the else block is executed if the while condition is false " +
-                     "or an iteration ended, it does not make sense " +
-                     "to have an else condition unless there is a while clause or an iterator " +
-                     "index variable.\n" +
-                     "The else block of this loop is declared at " + _elseBlock.pos.show());
+        FeErrors.loopElseBlockRequiresWhileOrIterator(pos, _elseBlock);
       }
   }
   public Expr tailRec()

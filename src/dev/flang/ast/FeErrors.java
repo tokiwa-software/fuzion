@@ -555,6 +555,16 @@ public class FeErrors extends ANY
           "_constraint: " + g.constraint() + " declared at " + g.constraint().generic._pos);
   }
 
+  static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
+  {
+    error(pos, "Loop without while condition cannot have an else block",
+          "Since the else block is executed if the while condition is false " +
+          "or an iteration ended, it does not make sense " +
+          "to have an else condition unless there is a while clause or an iterator " +
+          "index variable.\n" +
+          "The else block of this loop is declared at " + elseBlock.pos.show());
+  }
+
 }
 
 /* end of file */
