@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 all:
-	$(FUSION) inheritance 2>err.txt
+	$(FUZION) inheritance 2>err.txt

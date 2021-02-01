@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 all:
-	$(FUSION) HelloWorld 2>err.txt
+	$(FUZION) HelloWorld 2>err.txt

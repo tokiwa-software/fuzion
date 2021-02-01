@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 all:
-	$(FUSION) redef_args 2>err.txt
+	$(FUZION) redef_args 2>err.txt

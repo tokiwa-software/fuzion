@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 all:
-	$(FUSION) tupletest 2>err.txt
+	$(FUZION) tupletest 2>err.txt

@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 all:
-	$(FUSION) typeinference 2>err.txt
+	$(FUZION) typeinference 2>err.txt

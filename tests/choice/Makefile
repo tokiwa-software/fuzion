@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 all:
-	$(FUSION) choicetest 2>err.txt
+	$(FUZION) choicetest 2>err.txt

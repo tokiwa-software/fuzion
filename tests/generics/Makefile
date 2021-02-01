@@ -24,4 +24,4 @@
 # -----------------------------------------------------------------------
 
 all:
-	$(FUSION) genericstest 2>err.txt
+	$(FUZION) genericstest 2>err.txt

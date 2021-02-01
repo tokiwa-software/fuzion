@@ -27,7 +27,7 @@ NAME = illegal_assignment
 EXPECTED_ERRORS = `cat $(NAME).fz | grep "should.flag.an.error"  | sed "s ^.*//  g"| sort -n | uniq | wc -l`
 
 all:
-	$(FUSION) $(NAME) 2>err.txt || echo -n
+	$(FUZION) $(NAME) 2>err.txt || echo -n
 	cat err.txt  | grep "should.flag.an.error" | sed "s ^.*//  g"| sort -n | uniq | wc -l | grep ^$(EXPECTED_ERRORS)$$ && echo "test passed." || exit 1
 
 show:

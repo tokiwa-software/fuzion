@@ -27,4 +27,4 @@ JAVA_STACK_SIZE = 16m # NYI: Remove once tail recursion is supported by backends
 JAVA_OPTS = -Xss$(JAVA_STACK_SIZE)
 
 all:
-	$(FUSION) factors 2>err.txt
+	$(FUZION) factors 2>err.txt

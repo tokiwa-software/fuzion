@@ -29,7 +29,7 @@ FZ_SRC = $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = $(CURDIR)/build
 CLASSES_DIR = $(BUILD_DIR)/classes
-FUSIONX = $(JAVA) \$$(JAVA_OPTS) -cp $(CLASSES_DIR) dev.flang.tools.Fusion
+FUZIONX = $(JAVA) \$$(JAVA_OPTS) -cp $(CLASSES_DIR) dev.flang.tools.Fusion
 
 JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/ANY.java \
@@ -255,7 +255,7 @@ $(BUILD_DIR)/tests: $(FZ_SRC)/tests
 run_tests: $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib $(BUILD_DIR)/tests
 	rm -rf $(BUILD_DIR)/run_tests.results
 	for test in $(shell echo $(BUILD_DIR)/tests/*); do \
-	  FUSION="$(FUSIONX)" make -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
+	  FUZION="$(FUZIONX)" make -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
 	done
 	echo `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`ls $(BUILD_DIR)/tests | wc -l` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed; \
 	cat $(BUILD_DIR)/run_tests.results | grep failed$$
