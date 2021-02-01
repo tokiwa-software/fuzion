@@ -101,11 +101,11 @@ public class If extends Expr
 
     this.cond = c;
     this.block = Block.fromExpr(b);
-    //this.block._newScope = true;
+    this.block._newScope = true;
     this.elseBlock = Block.fromExpr(elseB);
     if (this.elseBlock != null)
       {
-        //this.elseBlock._newScope = true;
+        this.elseBlock._newScope = true;
       }
   }
 
@@ -127,7 +127,7 @@ public class If extends Expr
     elseBlock = b;
     if (this.elseBlock != null)
       {
-        //this.elseBlock._newScope = true;
+        this.elseBlock._newScope = true;
       }
   }
 

@@ -2551,10 +2551,37 @@ public class Feature extends ANY implements Stmnt, Comparable
       }
     if (impl.initialValue != null)
       {
+        /* add assignment of initial value: */
         result = new Block
           (pos, new List<>
            (this,
             new Assign(res, pos, this, impl.initialValue, outer)
+            {
+              public Assign visit(FeatureVisitor v, Feature outer)
+              {
+                /* During findFieldDefInScope, we check field uses in impl, but
+                 * we have to avoid doing this again in this assignment since a declaration
+                 *
+                 *   x := 3
+                 *   x := x + 1
+                 *
+                 * is converted into
+                 *
+                 *   Feature x with impl kind FieldDef, initialvalue 3
+                 *   x := 3
+                 *   Feature x with impl kind FieldDef, initialvalue x + 1
+                 *   x := x + 1
+                 *
+                 * so the second assignment would find the second x, which is
+                 * wrong.
+                 *
+                 * Alternatively, we could add this assignment in a later phase.
+                 */
+                return v.visitAssignFromFieldImpl()
+                  ? super.visit(v, outer)
+                  : this;
+              }
+            }
             ));
       }
     return result;
@@ -2800,23 +2827,37 @@ public class Feature extends ANY implements Stmnt, Comparable
           }
       }
 
-    // then iterate the statements making fields visible as they are declared
-    // and checking which one is visible when we reach call:
-    impl.code_.visit(new FeatureVisitor()
+    var fv = new FeatureVisitor()
       {
+
+        /* we do not want to check assignments of initial values, see above in
+         * resolveTypes() */
+        boolean visitAssignFromFieldImpl() { return false; }
+
+        void found()
+        {
+          if (PRECONDITIONS) require
+            (curres[1] == null);
+
+          curres[1] = curres[0];
+        }
+
         public Call action(Call c, Feature outer)
         {
           if (c == call)
             { // Found the call, so we got the result!
-              curres[1] = curres[0];
+              found();
             }
-          // NYI: Special handling for anonymous inner features that currently do not appear as statements
-          if (c.calledFeatureKnown() &&
-              c.calledFeature().isAnonymousInnerFeature() &&
-              c.calledFeature().featureName().baseName().startsWith("--anonymous") &&
-              c.calledFeature() == inner)
+          else
             {
-              curres[1] = curres[0];
+              // NYI: Special handling for anonymous inner features that currently do not appear as statements
+              if (c.calledFeatureKnown() &&
+                  c.calledFeature().isAnonymousInnerFeature() &&
+                  c.calledFeature().featureName().baseName().startsWith("--anonymous") &&
+                  c.calledFeature() == inner)
+                {
+                  found();
+                }
             }
           return c;
         }
@@ -2824,14 +2865,14 @@ public class Feature extends ANY implements Stmnt, Comparable
         {
           if (a == assign)
             { // Found the assign, so we got the result!
-              curres[1] = curres[0];
+              found();
             }
         }
         public Stmnt action(Decompose d, Feature outer)
         {
           if (d == decompose)
             { // Found the assign, so we got the result!
-              curres[1] = curres[0];
+              found();
             }
           return d;
         }
@@ -2888,7 +2929,7 @@ public class Feature extends ANY implements Stmnt, Comparable
             }
           if (f == inner)
             {
-              curres[1] = curres[0];
+              found();
             }
           return f;
         }
@@ -2896,11 +2937,29 @@ public class Feature extends ANY implements Stmnt, Comparable
         {
           if (inner != null && f._wrapper == inner)
             {
-              curres[1]  = curres[0];
+              found();
             }
           return f;
         }
-      }, this);
+      };
+
+    for (var c : contract.req)
+      {
+        c.cond.visit(fv, this);
+      }
+
+    for (Call p: inherits)
+      {
+        p.visit(fv, this);
+      }
+
+    // then iterate the statements making fields visible as they are declared
+    // and checking which one is visible when we reach call:
+    if (impl.code_ != null)
+      {
+        impl.code_.visit(fv, this);
+      }
+
     return curres[1];
   }
 
@@ -2986,11 +3045,7 @@ public class Feature extends ANY implements Stmnt, Comparable
               {
                 var fn = e.getKey();
                 var f = e.getValue();
-                if (f.impl.kind_ == Impl.Kind.FieldDef
-                    || (f.isField() &&
-                        (f.outer()==null || f.outer().resultField_ != f) &&
-                        !f.isDeclaredInMainBlock() &&
-                        !f.isArgument()))
+                if (f.isField() && (f.outer()==null || f.outer().resultField_ != f))
                   {
                     fields.add(fn);
                   }
@@ -3001,7 +3056,7 @@ public class Feature extends ANY implements Stmnt, Comparable
                 fs = new TreeMap<>(fs);
                 for (var fn : fields)
                   {
-                    if (f == null || fn != f.featureName())
+                    if (f != null && fn != f.featureName())
                       {
                         fs.remove(fn);
                       }
