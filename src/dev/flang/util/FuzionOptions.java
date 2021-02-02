@@ -48,13 +48,13 @@ public class FuzionOptions extends ANY
   /**
    * runtime safety-checks enabled?
    */
-  final boolean _fusionSafety;
+  final boolean _fuzionSafety;
 
 
   /**
    * level of runtime debug checks
    */
-  final int _fusionDebugLevel;
+  final int _fuzionDebugLevel;
 
 
   private boolean _tailRecursionInsteadOfLoops; // NYI: move to FrontendOptions
@@ -68,14 +68,14 @@ public class FuzionOptions extends ANY
   /**
    * Costructor initializing fields as given.
    */
-  public FuzionOptions(int verbose, boolean fusionSafety, int fusionDebugLevel)
+  public FuzionOptions(int verbose, boolean fuzionSafety, int fuzionDebugLevel)
   {
     if (PRECONDITIONS) require
                          (verbose >= 0);
 
     _verbose = verbose;
-    _fusionSafety = fusionSafety;
-    _fusionDebugLevel = fusionDebugLevel;
+    _fuzionSafety = fuzionSafety;
+    _fuzionDebugLevel = fuzionDebugLevel;
 
   }
 
@@ -95,19 +95,19 @@ public class FuzionOptions extends ANY
   }
 
 
-  public boolean fusionSafety()
+  public boolean fuzionSafety()
   {
-    return _fusionSafety;
+    return _fuzionSafety;
   }
 
-  public int fusionDebugLevel()
+  public int fuzionDebugLevel()
   {
-    return _fusionDebugLevel;
+    return _fuzionDebugLevel;
   }
 
-  public boolean fusionDebug()
+  public boolean fuzionDebug()
   {
-    return fusionDebugLevel() > 0;
+    return fuzionDebugLevel() > 0;
   }
 
 

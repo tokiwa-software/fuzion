@@ -1542,9 +1542,9 @@ public class Call extends Expr
         else if (calledFeature_ == Types.resolved.f_bool_NOT    ) { result = newIf(target, BoolConst.FALSE, BoolConst.TRUE ); }
 
         // intrinsic features for pre- and postconditions
-        else if (calledFeature_ == Types.resolved.f_safety      ) { result = BoolConst.get(res._options.fusionSafety());      }
-        else if (calledFeature_ == Types.resolved.f_debug       ) { result = BoolConst.get(res._options.fusionDebug());       }
-        else if (calledFeature_ == Types.resolved.f_debugLevel  ) { result = new IntConst (res._options.fusionDebugLevel());  }
+        else if (calledFeature_ == Types.resolved.f_safety      ) { result = BoolConst.get(res._options.fuzionSafety());      }
+        else if (calledFeature_ == Types.resolved.f_debug       ) { result = BoolConst.get(res._options.fuzionDebug());       }
+        else if (calledFeature_ == Types.resolved.f_debugLevel  ) { result = new IntConst (res._options.fuzionDebugLevel());  }
       }
     return result;
   }

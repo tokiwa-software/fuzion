@@ -61,11 +61,11 @@ public class FrontEndOptions extends FuzionOptions
   /**
    * Costructor initializing fields as given.
    */
-  public FrontEndOptions(int verbose, boolean fusionSafety, int fusionDebugLevel, boolean readStdin, String main)
+  public FrontEndOptions(int verbose, boolean fuzionSafety, int fuzionDebugLevel, boolean readStdin, String main)
   {
     super(verbose,
-          fusionSafety,
-          fusionDebugLevel);
+          fuzionSafety,
+          fuzionDebugLevel);
 
     if (PRECONDITIONS) require
                          (verbose >= 0,
