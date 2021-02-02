@@ -857,7 +857,7 @@ public class C extends Backend
                 switch (clazzMangledName(cl))
                   {
                   case C_FUNCTION_PREFIX + "exitForCompilerTest"    : _c.print(" exit(arg0);\n"); break;
-                  case C_FUNCTION_PREFIX + "fusion__std__out__write": _c.print(" fwrite(&arg0, 1, 1, stdout);\n"); break;
+                  case C_FUNCTION_PREFIX + "fuzion__std__out__write": _c.print(" fwrite(&arg0, 1, 1, stdout);\n"); break;
                   case C_FUNCTION_PREFIX + "i32__prefix_wmO"        : _c.print(" return - *fzouter;\n"); break;
                   case C_FUNCTION_PREFIX + "i32__infix_wmO"         : _c.print(" return *fzouter -  arg0;\n"); break;
                   case C_FUNCTION_PREFIX + "i32__infix_wpO"         : _c.print(" return *fzouter +  arg0;\n"); break;
