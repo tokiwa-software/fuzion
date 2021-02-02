@@ -131,7 +131,7 @@ class Fuzion extends ANY
    */
   final int FUZION_DEBUG_LEVEL = Integer.getInteger("fuzion.debugLevel", 1);
   {
-    Intrinsics.FUZION_DEBUG_LEVEL = FUZION_DEBUG_LEVEL;  // NYI: Add to Fusion IR or BE Config
+    Intrinsics.FUZION_DEBUG_LEVEL = FUZION_DEBUG_LEVEL;  // NYI: Add to Fuzion IR or BE Config
   }
 
 
@@ -140,7 +140,7 @@ class Fuzion extends ANY
    */
   final boolean FUZION_SAFETY = new Boolean(System.getProperty("fuzion.safety", "true"));
   {
-    Intrinsics.FUZION_SAFETY = FUZION_SAFETY;  // NYI: Add to Fusion IR or BE Config
+    Intrinsics.FUZION_SAFETY = FUZION_SAFETY;  // NYI: Add to Fuzion IR or BE Config
   }
 
 
