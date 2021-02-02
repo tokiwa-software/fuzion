@@ -568,7 +568,7 @@ public class Lexer extends SourceFile
             {
               Errors.error(sourcePos(),
                            "Unknown code point in source file",
-                           "Unknown code point " + Integer.toHexString(p) + " is not permitted by Fusion's grammar.");
+                           "Unknown code point " + Integer.toHexString(p) + " is not permitted by Fuzion's grammar.");
               token = Token.t_skip;
               break;
             }
