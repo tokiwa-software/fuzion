@@ -30,7 +30,7 @@ import dev.flang.util.ANY;
 
 
 /**
- * Backend gives an abstract view of the Backend as seen from the Fusion IR.
+ * Backend gives an abstract view of the Backend as seen from the Fuzion IR.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */

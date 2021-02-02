@@ -32,7 +32,7 @@ import dev.flang.util.ANY;
 
 
 /**
- * The AIR contains the intermediate representation of a fusion applications.
+ * The AIR contains the intermediate representation of a fuzion applications.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */

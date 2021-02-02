@@ -35,7 +35,7 @@ import dev.flang.ast.*;
 
 
 /**
- * Parser performs the syntactic analysis of Fusion source code.
+ * Parser performs the syntactic analysis of Fuzion source code.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */

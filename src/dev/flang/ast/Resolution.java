@@ -33,7 +33,7 @@ import dev.flang.util.List;
 
 
 /**
- * Resolution provides feature resolution for Fusion.
+ * Resolution provides feature resolution for Fuzion.
  *
  * The purpose of feature resolution is to determine the actual types of all
  * fields, expressions and features, to replace syntactic sugar (such as

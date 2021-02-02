@@ -55,7 +55,7 @@ import dev.flang.util.MapComparable2Int;
 
 
 /**
- * The FUIR contains the intermediate representation of fusion applications.
+ * The FUIR contains the intermediate representation of fuzion applications.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */

@@ -32,7 +32,7 @@ import dev.flang.util.ANY;
 
 
 /**
- * The MIR contains the module-intermediate representation of Fusion features.
+ * The MIR contains the module-intermediate representation of Fuzion features.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */

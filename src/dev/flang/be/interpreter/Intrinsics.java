@@ -33,6 +33,7 @@ import dev.flang.ast.Type; // NYI: remove dependency! Use dev.flang.fuir instead
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
 
 import dev.flang.ir.Clazz;
+import dev.flang.ir.Clazzes;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -40,7 +41,7 @@ import dev.flang.util.List;
 
 
 /**
- * Intrinsics provides the implementation of Fusion's intrinsic features.
+ * Intrinsics provides the implementation of Fuzion's intrinsic features.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */
@@ -51,7 +52,7 @@ public class Intrinsics extends ANY
 
 
   /**
-   * NYI: This will eventually be part of a Fusion IR / BE Config class.
+   * NYI: This will eventually be part of a Fuzion IR / BE Config class.
    */
   public static Boolean ENABLE_UNSAFE_INTRINSICS = null;
 

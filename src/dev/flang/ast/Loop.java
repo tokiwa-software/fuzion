@@ -34,7 +34,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Loops are very generic in Fusion.  The basic loop structure consists of a
+ * Loops are very generic in Fuzion.  The basic loop structure consists of a
  * list of index variables, a loop failure condition, a loop body, a loop
  * success condition and a loop epilog consiting of a branch executed after
  * successful loop termination and one after failed loop termination.

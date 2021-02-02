@@ -38,7 +38,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Errors handles compilation error messages for Fusion
+ * Errors handles compilation error messages for Fuzion
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */

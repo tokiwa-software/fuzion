@@ -71,7 +71,7 @@ import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instea
 
 
 /**
- * Interpreter contains interpreter for Fusion application that is present as
+ * Interpreter contains interpreter for Fuzion application that is present as
  * intermediate code.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)

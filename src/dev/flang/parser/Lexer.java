@@ -35,7 +35,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Lexer performs the lexical analysis of Fusion source code.
+ * Lexer performs the lexical analysis of Fuzion source code.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */

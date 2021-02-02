@@ -179,7 +179,7 @@ public class Clazzes extends ANY
 
 
   /**
-   * NYI: This will eventually be part of a Fusion IR Config class.
+   * NYI: This will eventually be part of a Fuzion IR Config class.
    */
   public static FuzionOptions _options_;
 
