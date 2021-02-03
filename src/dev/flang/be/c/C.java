@@ -572,9 +572,47 @@ public class C extends Backend
               var ac = _fuir.callArgCount(c, i);
               if (_fuir.callIsDynamic(cl, c, i))
                 {
-                  _c.println("// NYI : dynamic call to feature: " + _fuir.callDebugString(c, i) + " (");
-                  passArgs(stack, ac);
-                  _c.println(")");
+                  _c.println("// NYI: Dynamic binding for call to " + _fuir.callDebugString(c, i) + " not supported");
+                  var cc = _fuir.callCalledClazz(cl, c, i);
+                  var cf = _fuir.clazz2FeatureId(cc);
+                  switch (_fuir.featureKind(cf))
+                    {
+                    case Abstract :  _c.println("// NYI : dynamic call to abstract: " + _fuir.callDebugString(c, i));
+                    case Routine  :
+                    case Intrinsic:
+                      {
+                        if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
+                        CExpr res = CExpr.ident(DUMMY); // NYI: no result, needed as a workaround for functions returning current instance
+                        var rt = _fuir.callResultType(cl, c, i);
+                        if (rt != -1)
+                          {
+                            var tmp = TEMP_VAR_PREFIX + (_resultId++);
+                            res = CExpr.ident(tmp);
+                            _c.print(clazzTypeName(rt) + " " + tmp + " = ");
+                          }
+                        String n = clazzMangledName(cc);
+                        _c.print("" + n + "(");
+                        passArgs(stack, ac);
+                        _c.println(");");
+                        stack.push(res);
+                        if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
+                        break;
+                      }
+                    case Field:
+                      {
+                        var t = stack.pop();
+                        var tc = _fuir.callTargetClazz(cl, c, i);
+                        var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
+                        CExpr res = ccodeAccessField(tc, t, field);
+                        if (_fuir.fieldIsOuterRef(cf))  // NYI: Better have a specific Statement for this
+                          {
+                            res = res.deref();
+                          }
+                        stack.push(res);
+                        break;
+                      }
+                    default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.featureKind(cf));
+                    }
                 }
               else
                 {
