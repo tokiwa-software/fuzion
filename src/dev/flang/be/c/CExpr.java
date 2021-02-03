@@ -408,7 +408,14 @@ abstract class CExpr extends ANY
   }
 
 
-  public String toString() { throw new Error();  }
+
+  /**
+   * Create String for debugging-output.
+   */
+  public String toString()
+  {
+    return "C-Expression '" + code() + "'";
+  }
 
 }
 
