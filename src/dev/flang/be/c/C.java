@@ -86,7 +86,8 @@ public class C extends Backend
   /**
    * Prefix for types declared for clazz instances
    */
-  private static final String TYPE_PREFIX = "fzT_";
+  private static final String REF_TYPE_PREFIX = "fzTr_";
+  private static final String VAL_TYPE_PREFIX = "fzT_";
 
 
   /**
@@ -110,8 +111,8 @@ public class C extends Backend
   /**
    * C constants corresponding to Fuzion's true and false values.
    */
-  private static final CExpr FZ_FALSE =  CExpr.compoundLiteral(TYPE_PREFIX + "bool", "0");
-  private static final CExpr FZ_TRUE  =  CExpr.compoundLiteral(TYPE_PREFIX + "bool", "1");
+  private static final CExpr FZ_FALSE =  CExpr.compoundLiteral(VAL_TYPE_PREFIX + "bool", "0");
+  private static final CExpr FZ_TRUE  =  CExpr.compoundLiteral(VAL_TYPE_PREFIX + "bool", "1");
 
 
   /**
@@ -371,7 +372,7 @@ public class C extends Backend
    */
   String clazzTypeName(int cl)
   {
-    StringBuilder sb = new StringBuilder(TYPE_PREFIX);
+    StringBuilder sb = new StringBuilder(_fuir.clazzIsRef(cl) ? REF_TYPE_PREFIX : VAL_TYPE_PREFIX);
     clazzMangledName(cl, sb);
     // NYI: there might be name conflicts due to different generic instances, so
     // we need to add the clazz id or the actual generics if this is the case:
