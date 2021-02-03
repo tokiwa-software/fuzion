@@ -546,11 +546,11 @@ public class C extends Backend
                     }
                   else if (_fuir.clazzIsRef(fclazz))
                     {
-                      _c.println("// NYI: Assign ref value "+outer+"."+_fuir.featureAsString(field)+" = "+value);
+                      _c.print(fieldAccess.assign(value)); _c.println(";  /* ref type */");
                     }
                   else
                     {
-                      _c.print(fieldAccess.assign(value)); _c.println(";");
+                      _c.print(fieldAccess.assign(value)); _c.println(";  /* value type */");
                     }
                 }
               else
