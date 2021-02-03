@@ -35,6 +35,8 @@ import dev.flang.ir.Backend;
 import dev.flang.ir.BackendCallable;
 import dev.flang.ir.Clazz;
 
+import dev.flang.ir.Clazzes; // NYI: remove this dependency!
+
 import dev.flang.fuir.FUIR;
 
 import dev.flang.util.Errors;
@@ -173,6 +175,7 @@ public class C extends Backend
            FUIR fuir)
   {
     _fuir = fuir;
+    Clazzes.findAllClasses(this, _fuir.main()); /* NYI: remove this, should be done within FUIR */
   }
 
 

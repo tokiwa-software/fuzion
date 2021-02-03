@@ -371,10 +371,9 @@ class Fuzion extends ANY
         var mir = new FrontEnd(options).createMIR();
         var air = new MiddleEnd(options, mir).air();
         var fuir = new Optimizer(options, air).fuir();
-        var interp = new Interpreter(fuir);
         switch (_backend)
           {
-          case interpreter: interp.run(); break;
+          case interpreter: new Interpreter(fuir).run(); break;
           case c          : new C(options, fuir).compile(); break;
           default         : Errors.fatal("*** backend '" + _backend + "' not supported yet"); break;
           }
