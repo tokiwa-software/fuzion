@@ -54,7 +54,7 @@ public class Intervals<PROPERTY> extends ANY
    */
   public Intervals(PROPERTY p)
   {
-    add(Integer.MIN_VALUE, Integer.MAX_VALUE, p);
+    _map.put(Integer.MIN_VALUE, p);
   }
 
 
