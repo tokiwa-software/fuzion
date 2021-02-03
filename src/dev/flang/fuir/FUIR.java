@@ -916,6 +916,10 @@ public class FUIR extends ANY
             return _clazzIds.add(rcl);
           }
       }
+    else if (innerClazz.isRef() || innerClazz.size() > 0)
+      {
+        return _clazzIds.add(innerClazz);
+      }
     return -1;
   }
 
