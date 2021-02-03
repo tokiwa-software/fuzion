@@ -584,7 +584,7 @@ public class C extends Backend
                     case Routine  :
                     case Intrinsic:
                       {
-                        if (SHOW_STACK_ON_CALL) System.out.println("Befor call to "+_fuir.clazzAsString(cc)+": "+stack);
+                        if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
                         CExpr res = CExpr.ident(DUMMY); // NYI: no result, needed as a workaround for functions returning current instance
                         var rt = _fuir.callResultType(cl, c, i);
                         if (rt != -1)
