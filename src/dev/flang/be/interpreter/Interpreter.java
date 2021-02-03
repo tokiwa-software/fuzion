@@ -153,11 +153,7 @@ public class Interpreter extends Backend
   {
     _fuir = fuir;
     Clazzes.findAllClasses(this, _fuir.main());
-    if (Errors.count() > 0)
-      {
-        Errors.showStatistics();
-        System.exit(1);
-      }
+    Errors.showAndExit();
     Clazzes.showStatistics();
   }
 

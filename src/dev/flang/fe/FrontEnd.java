@@ -122,10 +122,9 @@ public class FrontEnd extends ANY
 
     res.resolve(); // NYI: This should become the middle end phase!
 
-    if (false && Errors.count() > 0)  // NYI: Eventually, we might want to stop here in case of errors. This is disabled just to check the robustness of the next steps
+    if (false)  // NYI: Eventually, we might want to stop here in case of errors. This is disabled just to check the robustness of the next steps
       {
-        Errors.showStatistics();
-        System.exit(1);
+        Errors.showAndExit();
       }
     if (d != null && Errors.count() == 0)
       {

@@ -242,8 +242,7 @@ public class Errors extends ANY
         pos.show(errorMessage(msg), detail);
         if (_count_ >= MAX_ERROR_MESSAGES)
           {
-            showStatistics();
-            System.exit(1);
+            showAndExit();
           }
       }
   }
@@ -273,11 +272,16 @@ public class Errors extends ANY
 
 
   /**
-   * Show number of errors encountered during compilation.
+   * Check if any errors found.  If so, show the number of errors and
+   * System.exit(1).
    */
-  public static void showStatistics()
+  public static void showAndExit()
   {
-    println(singularOrPlural(_count_, "error"));
+    if (_count_ > 0)
+      {
+        println(singularOrPlural(_count_, "error"));
+        System.exit(1);
+      }
   }
 
   public static String argumentsString(int count)

@@ -176,6 +176,7 @@ public class C extends Backend
   {
     _fuir = fuir;
     Clazzes.findAllClasses(this, _fuir.main()); /* NYI: remove this, should be done within FUIR */
+    Errors.showAndExit();
   }
 
 
