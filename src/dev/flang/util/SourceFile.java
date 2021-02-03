@@ -858,6 +858,33 @@ public class SourceFile extends ANY
   }
 
 
+  /**
+   * Get the length of this file in bytes
+   *
+   * @return the length
+   */
+  public int byteLength()
+  {
+    return _bytes.length;
+  }
+
+
+  /**
+   * Get the byte at the given position
+   *
+   * @param i an index in the file
+   *
+   * @return the byte at given index
+   */
+  public byte byteAt(int i)
+  {
+    if (PRECONDITIONS) require
+                         (i >= 0,
+                          i < byteLength());
+
+    return _bytes[i];
+  }
+
 }
 
 /* end of file */

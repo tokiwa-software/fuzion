@@ -42,6 +42,7 @@ import dev.flang.me.MiddleEnd;
 import dev.flang.opt.Optimizer;
 
 import dev.flang.util.ANY;
+import dev.flang.util.List;
 import dev.flang.util.Errors;
 
 
@@ -104,7 +105,8 @@ class Fuzion extends ANY
   static final String CMD = System.getProperty("fuzion.command", "fz");
 
   static final String USAGE =
-    "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] (<main>|-)\n";
+    "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] (<main> | -)  --or--\n" +
+    "       " + CMD + " -pretty ({<file>} | -)\n";
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -190,26 +192,7 @@ class Fuzion extends ANY
   {
     try
       {
-        parseArgs(args);
-        var options = new FrontEndOptions(VERBOSE,
-                                          FUZION_SAFETY,
-                                          FUZION_DEBUG_LEVEL,
-                                          _readStdin,
-                                          _main);
-        if (_backend == Backend.c)
-          {
-            options.setTailRec();
-          }
-        var mir = new FrontEnd(options).createMIR();
-        var air = new MiddleEnd(options, mir).air();
-        var fuir = new Optimizer(options, air).fuir();
-        var interp = new Interpreter(fuir);
-        switch (_backend)
-          {
-          case interpreter: interp.run(); break;
-          case c          : new C(options, fuir).compile(); break;
-          default         : Errors.fatal("*** backend '" + _backend + "' not supported yet"); break;
-          }
+        parseArgs(args).run();
       }
     catch(Throwable e)
       {
@@ -223,14 +206,104 @@ class Fuzion extends ANY
 
 
   /**
-   * Parse the given command line args and store the result in _readStdIn,
-   * _main, _backend.  System.exit() in case of error or -help.
+   * Parse the given command line args and create a runnable to run the
+   * corresponding tool.  System.exit() in case of error or -help.
    *
    * @param args the command line arguments
    *
-   * @return NYI: Should better return an instance of FuionOptions
+   * @return a Runnable to run the selected tool.
    */
-  private void parseArgs(String[] args)
+  private Runnable parseArgs(String[] args)
+  {
+    if (args.length >= 1 && args[0].equals("-pretty"))
+      {
+        return parseArgsPretty(args);
+      }
+    else
+      {
+        return parseArgsForBackend(args);
+      }
+  }
+
+
+  /**
+   * Parse the given command line args for the pretty printer and create a
+   * runnable that executes it.  System.exit() in case of error or -help.
+   *
+   * @param args the command line arguments
+   *
+   * @return a Runnable to run the pretty printer.
+   */
+  private Runnable parseArgsPretty(String[] args)
+  {
+    var duplicates = new TreeSet<String>();
+    var sourceFiles = new List<String>();
+    for (var a : args)
+      {
+        if (duplicates.contains(a))
+          {
+            Errors.fatal("*** duplicate argument: '" + a + "'\n" + USAGE);
+          }
+        duplicates.add(a);
+        if (a.equals("-pretty"))
+          { // ignore, we know this already
+          }
+        else if (a.equals("-h"    ) ||
+                 a.equals("-help" ) ||
+                 a.equals("--help")    )
+          {
+            System.out.println(USAGE);
+            System.exit(0);
+          }
+        else if (a.equals("-"))
+          {
+            _readStdin = true;
+          }
+        else if (a.startsWith("-"))
+          {
+            Errors.fatal("*** unknown argument: '" + a + "'\n" + USAGE);
+          }
+        else
+          {
+            sourceFiles.add(a);
+          }
+      }
+    if (sourceFiles.isEmpty() && !_readStdin)
+      {
+        Errors.fatal("*** no source files given\n" + USAGE);
+      }
+    else if (!sourceFiles.isEmpty() && _readStdin)
+      {
+        Errors.fatal("*** cannot process both, stdin input '-' and a list of source files\n" + USAGE);
+      }
+    return () ->
+      {
+        if (_readStdin)
+          {
+            new Pretty();
+          }
+        else
+          {
+            for (var s : sourceFiles)
+              {
+                new Pretty(s);
+              }
+          }
+      };
+  }
+
+
+
+  /**
+   * Parse the given command line args to run Fuzion to create or execute code.
+   * Return a runnable that runs fuzion.  System.exit() in case of error or
+   * -help.
+   *
+   * @param args the command line arguments
+   *
+   * @return a Runnable to run fuzion.
+   */
+  private Runnable parseArgsForBackend(String[] args)
   {
     var duplicates = new TreeSet<String>();
     for (var a : args)
@@ -284,6 +357,28 @@ class Fuzion extends ANY
       {
         _backend = Backend.interpreter;
       }
+    return () ->
+      {
+        var options = new FrontEndOptions(VERBOSE,
+                                          FUZION_SAFETY,
+                                          FUZION_DEBUG_LEVEL,
+                                          _readStdin,
+                                          _main);
+        if (_backend == Backend.c)
+          {
+            options.setTailRec();
+          }
+        var mir = new FrontEnd(options).createMIR();
+        var air = new MiddleEnd(options, mir).air();
+        var fuir = new Optimizer(options, air).fuir();
+        var interp = new Interpreter(fuir);
+        switch (_backend)
+          {
+          case interpreter: interp.run(); break;
+          case c          : new C(options, fuir).compile(); break;
+          default         : Errors.fatal("*** backend '" + _backend + "' not supported yet"); break;
+          }
+      };
   }
 
 }

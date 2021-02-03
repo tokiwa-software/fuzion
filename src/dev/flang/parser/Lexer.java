@@ -48,9 +48,11 @@ public class Lexer extends SourceFile
   /**
    * Tokens produced by the lexer
    */
-  static enum Token
+  public static enum Token
   {
-    t_skip,       // whitespace or comment
+    t_error,      // erroneous input
+    t_ws,         // whitespace
+    t_comment,    // comment
     t_op,         // operators +, -, *, /, ., |, etc.
     t_comma,      // ,
     t_lparen,     // (
@@ -145,7 +147,7 @@ public class Lexer extends SourceFile
     /**
      * Is this a keyword token?
      */
-    boolean isKeyword()
+    public boolean isKeyword()
     {
       return _keyword != null;
     }
@@ -369,6 +371,27 @@ public class Lexer extends SourceFile
 
 
   /**
+   * Is the given token ignored?  This is usually the case for t_erro, t_ws and
+   * t_comment, but it might be different for tools like the pretty printer that
+   * want to know about white space and comments.
+   *
+   * We should never ignore t_eof since this would lead to an endless loop in
+   * next().
+   *
+   * @param t a token
+   *
+   * @return true iff t is to be ignored
+   */
+  public boolean ignore(Token t)
+  {
+    return
+      t == Token.t_error   ||
+      t == Token.t_ws      ||
+      t == Token.t_comment;
+  }
+
+
+  /**
    * Set the minimun indentation to the position of startPos.  The token at
    * startPos is excluded from the limit, so it will be returned by current(),
    * while later tokens at the same indentation level will be replaced by
@@ -417,16 +440,16 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Advance to the next token that is not Token.t_skip.
+   * Advance to the next token that is not ignore()d.
    */
-  void next()
+  public void next()
   {
     _lastPos = _curPos;
     do
       {
         nextRaw();
       }
-    while (currentNoLimit() == Token.t_skip);
+    while (ignore(currentNoLimit()));
   }
 
 
@@ -452,7 +475,7 @@ public class Lexer extends SourceFile
    * The current token.  If indentation limit was set and the current token is
    * not indented deeper than this limit, return Token.t_indentationLimit.
    */
-  Token current()
+  public Token current()
   {
     return current(_minIndent, _sameLine);
   }
@@ -491,7 +514,7 @@ public class Lexer extends SourceFile
   /**
    * The byte position in the source file.
    */
-  int pos()
+  public int pos()
   {
     return _curPos;
   }
@@ -544,8 +567,8 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Advance to the next token. The next token might be Token.t_skip, i.e, white
-   * space or a comment.
+   * Advance to the next token. The next token might be an ignored token, i.e,
+   * white space or a comment.
    */
   void nextRaw()
   {
@@ -569,7 +592,7 @@ public class Lexer extends SourceFile
               Errors.error(sourcePos(),
                            "Unknown code point in source file",
                            "Unknown code point " + Integer.toHexString(p) + " is not permitted by Fuzion's grammar.");
-              token = Token.t_skip;
+              token = Token.t_error;
               break;
             }
           case K_SHARP   :   // '#'
@@ -604,7 +627,7 @@ public class Lexer extends SourceFile
                       _curLine++;
                     }
                 }
-              token = Token.t_skip;
+              token = Token.t_ws;
               break;
             }
           case K_SLASH   :   // '/', introducing a comment or an operator.
@@ -688,7 +711,7 @@ public class Lexer extends SourceFile
             }
           case K_ERROR   :    // an error occurred
             {
-              token = Token.t_skip;
+              token = Token.t_error;
               break;
             }
           default:
@@ -879,7 +902,7 @@ public class Lexer extends SourceFile
           }
       }
     while (!done);
-    return Token.t_skip;
+    return Token.t_comment;
   }
 
 
@@ -900,7 +923,7 @@ public class Lexer extends SourceFile
       }
     while (p != SourceFile.END_OF_FILE && !isNewLine(l, p));
     _curLine++;
-    return Token.t_skip;
+    return Token.t_comment;
   }
 
 
@@ -1202,7 +1225,7 @@ public class Lexer extends SourceFile
   /**
    * The current token as a string for debugging purposes.
    */
-  String currentAsString()
+  public String currentAsString()
   {
     var t = current();
     var result = t.toString();
