@@ -3033,12 +3033,13 @@ public class Feature extends ANY implements Stmnt, Comparable
               {
                 var f = outer.findFieldDefInScope(name, call, assign, decompose, inner);
                 fs = new TreeMap<>(fs);
-                for (var fn : fields)
+                if (f != null)
                   {
-                    if (f != null && fn != f.featureName())
+                    for (var fn : fields)
                       {
                         fs.remove(fn);
                       }
+                    fs.put(f.featureName(), f);
                   }
               }
             if (!fs.isEmpty())
