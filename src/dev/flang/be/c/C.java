@@ -37,6 +37,7 @@ import dev.flang.ir.Clazz;
 
 import dev.flang.fuir.FUIR;
 
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.FuzionConstants;
 
@@ -832,7 +833,17 @@ public class C extends Backend
                   }
                 var c = _fuir.featureCode(f);
                 var stack = new Stack<CExpr>();
-                createCode(cl, stack, c);
+                try
+                  {
+                    createCode(cl, stack, c);
+                  }
+                catch (RuntimeException | Error e)
+                  {
+                    _c.println("// *** compiler crash: " + e);
+                    Errors.error("C backend compiler crash",
+                                 "While creating code for " + _fuir.clazzAsString(cl) + "\n" +
+                                 "Java Error: " + e);
+                  }
                 var res = _fuir.clazzResultClazz(cl);
                 if (res != -1)
                   {
