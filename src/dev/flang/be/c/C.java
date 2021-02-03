@@ -669,6 +669,7 @@ public class C extends Backend
             }
           case Singleton:
             {
+              _c.println("// NYI: singleton ");
               stack.push(CExpr.ident(DUMMY)); // NYI: Singleton result
               break;
             }
