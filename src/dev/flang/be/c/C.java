@@ -410,7 +410,7 @@ public class C extends Backend
 
   /**
    * Create declarations of the C types required for the given clazz.  Write
-   * code to _cout.
+   * code to _c.
    *
    * @param cl a clazz id.
    */
@@ -440,7 +440,7 @@ public class C extends Backend
 
   /**
    * Create declarations of the C structs required for the given clazz.  Write
-   * code to _cout.
+   * code to _c.
    *
    * @param cl a clazz id.
    */
@@ -517,7 +517,7 @@ public class C extends Backend
 
   /**
    * Create C code to pass given number of arguments plus one implicit target
-   * argument from the stack to a called feature.  Write code to _cout.
+   * argument from the stack to a called feature.  Write code to _c.
    *
    * @param stack the stack containing the C code of the args.
    *
@@ -541,7 +541,7 @@ public class C extends Backend
 
   /**
    * Create C code for code block c of clazz cl with given stack contents at
-   * beginning of the block.  Write code to _cout.
+   * beginning of the block.  Write code to _c.
    *
    * @param cl clazz id
    *
@@ -811,7 +811,7 @@ public class C extends Backend
 
   /**
    * Create code for the C function implemeting the routine corresponding to the
-   * given clazz.  Write code to _cout.
+   * given clazz.  Write code to _c.
    *
    * @param cl id of clazz to compile
    *
