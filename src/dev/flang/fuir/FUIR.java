@@ -135,6 +135,31 @@ public class FUIR extends ANY
   /*------------------------  accessing classes  ------------------------*/
 
 
+  private int addClazz(Clazz cl)
+  {
+    if (PRECONDITIONS) require
+                         (cl._type != Types.t_VOID);  // NYI: would be better to not create this dummy clazz in the first place
+
+    int result = _clazzIds.add(cl);
+    _featureIds.add(cl.feature());
+    return result;
+  }
+
+
+  int addClazzIfNotVOID(Clazz cl)
+  {
+    if (cl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
+      {
+        // NYI: Check Clazzes.isUsed(thizFeature, ocl)
+        return addClazz(cl);
+      }
+    else
+      {
+        return -1;
+      }
+  }
+
+
   private void addClasses()
   {
     if (_clazzIds.size() == 0)
@@ -143,8 +168,7 @@ public class FUIR extends ANY
           {
             if (cl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
               {
-                _clazzIds.add(cl);
-                _featureIds.add(cl.feature());
+                int res = addClazz(cl);
               }
           }
       }
@@ -205,7 +229,7 @@ public class FUIR extends ANY
               }
             else
               {
-                return _clazzIds.add(fcl);
+                return addClazz(fcl);
               }
           }
       }
@@ -254,9 +278,9 @@ public class FUIR extends ANY
   {
     var cc = _clazzIds.get(cl);
     var rcl = cc.actualClazz(cc.feature().resultType());
-    if (rcl._type != Types.t_VOID && rcl.size() > 0)
+    if (rcl.size() > 0)
       {
-        return _clazzIds.add(rcl);
+        return addClazzIfNotVOID(rcl);
       }
     else
       {
@@ -297,18 +321,8 @@ public class FUIR extends ANY
     // NYI: This does not handle open generic args such as in Function.call yet.
     var c = _clazzIds.get(cl);
     var a = c.feature().arguments.get(arg);
-    int rcid;
     var rc = c.actualClazz(a.resultType());
-    if (rc._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
-      {
-        // NYI: Check Clazzes.isUsed(thizFeature, ocl)
-        rcid = _clazzIds.add(rc);
-      }
-    else
-      {
-        rcid = -1;
-      }
-    return rcid;
+    return addClazzIfNotVOID(rc);
   }
 
 
@@ -753,15 +767,7 @@ public class FUIR extends ANY
     var outerClazz = _clazzIds.get(cl);
     var a = (Assign) _codeIds.get(c).get(ix);
     var ocl = Clazzes.clazz(a.getOuter, outerClazz);
-    if (ocl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
-      {
-        // NYI: Check Clazzes.isUsed(thizFeature, ocl)
-        return _clazzIds.add(ocl);
-      }
-    else
-      {
-        return -1;
-      }
+    return addClazzIfNotVOID(ocl);
   }
 
   public int assignValueClazz(int cl, int c, int ix)
@@ -774,14 +780,7 @@ public class FUIR extends ANY
     var outerClazz = _clazzIds.get(cl);
     var a = (Assign) _codeIds.get(c).get(ix);
     var vcl = Clazzes.clazz(a.value, outerClazz);
-    if (vcl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
-      {
-        return _clazzIds.add(vcl);
-      }
-    else
-      {
-        return -1;
-      }
+    return addClazzIfNotVOID(vcl);
   }
 
   public int assignClazzForField(int outerClazz, int field)
@@ -791,7 +790,7 @@ public class FUIR extends ANY
     var fclazz = ocl.clazzForField(f);
     check
       (fclazz._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
-    return _clazzIds.add(fclazz);
+    return addClazz(fclazz);
   }
 
 
@@ -852,7 +851,7 @@ public class FUIR extends ANY
     var innerClazz = callCalledClazz(outerClazz, call);
     check
       (innerClazz._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
-    return _clazzIds.add(innerClazz);
+    return addClazz(innerClazz);
   }
 
 
@@ -892,7 +891,7 @@ public class FUIR extends ANY
     Clazz tclazz = Clazzes.clazz(call.target, outerClazz);
     check
       (tclazz._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
-    return _clazzIds.add(tclazz);
+    return addClazz(tclazz);
   }
 
 
@@ -911,14 +910,11 @@ public class FUIR extends ANY
     if (r != null || cf.impl.kind_ == Impl.Kind.Intrinsic) // NYI: Can we remove the ugly pecial handling of intrinsics here?
       {
         var rcl = outerClazz.actualClazz(call.type());
-        if (rcl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
-          {
-            return _clazzIds.add(rcl);
-          }
+        return addClazzIfNotVOID(rcl);
       }
     else if (innerClazz.isRef() || innerClazz.size() > 0)
       {
-        return _clazzIds.add(innerClazz);
+        return addClazz(innerClazz);
       }
     return -1;
   }
