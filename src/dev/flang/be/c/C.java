@@ -531,18 +531,18 @@ public class C extends Backend
    *
    * @param argCount the number of arguments.
    */
-  void passArgs(Stack<CExpr> stack, int argCount)
+  void passArgs(boolean targetIsRef, Stack<CExpr> stack, int argCount)
   {
     var a = stack.pop();
     if (argCount > 0)
       {
-        passArgs(stack, argCount-1);
+        passArgs(targetIsRef, stack, argCount-1);
         _c.print(", ");
         _c.print(a);
       }
     else
       { // ref to outer instance, passed by reference
-        _c.print(a.adrOf());
+        _c.print(targetIsRef ? a : a.adrOf());
       }
   }
 
@@ -620,6 +620,7 @@ public class C extends Backend
                   _c.println("// NYI: Dynamic binding for call to " + _fuir.callDebugString(c, i) + " not supported");
                   var cc = _fuir.callCalledClazz(cl, c, i);
                   var cf = _fuir.clazz2FeatureId(cc);
+                  var tc = _fuir.callTargetClazz(cl, c, i);
                   switch (_fuir.featureKind(cf))
                     {
                     case Abstract :  _c.println("// NYI : dynamic call to abstract: " + _fuir.callDebugString(c, i));
@@ -637,7 +638,7 @@ public class C extends Backend
                           }
                         String n = clazzMangledName(cc);
                         _c.print("" + n + "(");
-                        passArgs(stack, ac);
+                        passArgs(_fuir.clazzIsRef(tc), stack, ac);
                         _c.println(");");
                         stack.push(res);
                         if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
@@ -646,7 +647,6 @@ public class C extends Backend
                     case Field:
                       {
                         var t = stack.pop();
-                        var tc = _fuir.callTargetClazz(cl, c, i);
                         var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
                         CExpr res = ccodeAccessField(tc, t, field);
                         if (_fuir.fieldIsOuterRef(cf))  // NYI: Better have a specific Statement for this
@@ -663,6 +663,7 @@ public class C extends Backend
                 {
                   var cc = _fuir.callCalledClazz(cl, c, i);
                   var cf = _fuir.clazz2FeatureId(cc);
+                  var tc = _fuir.callTargetClazz(cl, c, i);
                   switch (_fuir.featureKind(cf))
                     {
                     case Routine  :
@@ -679,7 +680,7 @@ public class C extends Backend
                           }
                         String n = clazzMangledName(cc);
                         _c.print("" + n + "(");
-                        passArgs(stack, ac);
+                        passArgs(_fuir.clazzIsRef(tc), stack, ac);
                         _c.println(");");
                         stack.push(res);
                         if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
@@ -688,7 +689,6 @@ public class C extends Backend
                     case Field:
                       {
                         var t = stack.pop();
-                        var tc = _fuir.callTargetClazz(cl, c, i);
                         var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
                         CExpr res = ccodeAccessField(tc, t, field);
                         if (_fuir.fieldIsOuterRef(cf))  // NYI: Better have a specific Statement for this
@@ -706,7 +706,14 @@ public class C extends Backend
             }
           case Current:
             {
-              stack.push(CURRENT.deref());
+              if (_fuir.clazzIsRef(cl))
+                {
+                  stack.push(CURRENT);
+                }
+              else
+                {
+                  stack.push(CURRENT.deref());
+                }
               break;
             }
           case If:
