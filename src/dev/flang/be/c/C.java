@@ -634,7 +634,7 @@ public class C extends Backend
                           {
                             var tmp = TEMP_VAR_PREFIX + (_resultId++);
                             res = CExpr.ident(tmp);
-                            _c.print(clazzTypeName(rt) + " " + tmp + " = ");
+                            _c.print(clazzTypeNameRefOrVal(rt) + " " + tmp + " = ");
                           }
                         String n = clazzMangledName(cc);
                         _c.print("" + n + "(");
@@ -676,7 +676,7 @@ public class C extends Backend
                           {
                             var tmp = TEMP_VAR_PREFIX + (_resultId++);
                             res = CExpr.ident(tmp);
-                            _c.print(clazzTypeName(rt) + " " + tmp + " = ");
+                            _c.print(clazzTypeNameRefOrVal(rt) + " " + tmp + " = ");
                           }
                         String n = clazzMangledName(cc);
                         _c.print("" + n + "(");
