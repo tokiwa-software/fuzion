@@ -913,7 +913,7 @@ public class FUIR extends ANY
     var innerClazz = callCalledClazz(outerClazz, call);
     var cf = innerClazz.feature();
     var r = cf.resultField();
-    if (r != null || cf.impl.kind_ == Impl.Kind.Intrinsic) // NYI: Can we remove the ugly pecial handling of intrinsics here?
+    if (r != null || cf.impl.kind_ == Impl.Kind.Intrinsic) // NYI: Can we remove the ugly special handling of intrinsics here?
       {
         var rcl = outerClazz.actualClazz(call.type());
         return addClazzIfNotVOID(rcl);
