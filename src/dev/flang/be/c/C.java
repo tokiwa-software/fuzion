@@ -836,7 +836,7 @@ public class C extends Backend
     var res = _fuir.clazzResultClazz(cl);
     _c.print(res == -1
              ? "void "
-             : clazzTypeName(res) + " ");
+             : clazzTypeNameRefOrVal(res) + " ");
     _c.print(clazzMangledName(cl));
     _c.print("(");
     var oc = _fuir.clazzOuterClazz(cl);
@@ -945,7 +945,14 @@ public class C extends Backend
                       }
                     else
                       {
-                        _c.println("return " + CURRENT.deref().code() + ";");
+                        if (_fuir.clazzIsRef(cl))
+                          {
+                            _c.println("return " + CURRENT.code() + ";");
+                          }
+                        else
+                          {
+                            _c.println("return " + CURRENT.deref().code() + ";");
+                          }
                       }
                   }
                 _c.unindent();
