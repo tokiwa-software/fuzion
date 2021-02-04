@@ -283,14 +283,22 @@ public class FUIR extends ANY
   public int clazzResultClazz(int cl)
   {
     var cc = _clazzIds.get(cl);
-    var rcl = cc.actualClazz(cc.feature().resultType());
-    if (rcl.size() > 0)
+    var cf = cc.feature();
+    if (cf.returnType.isConstructorType())
       {
-        return addClazzIfNotVOID(rcl);
+        return cl;
       }
     else
       {
-        return -1;
+        var rcl = cc.actualClazz(cf.resultType());
+        if (rcl.size() > 0 || rcl.isRef())
+          {
+            return addClazzIfNotVOID(rcl);
+          }
+        else
+          {
+            return -1;
+          }
       }
   }
 
