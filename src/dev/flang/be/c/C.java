@@ -153,12 +153,12 @@ public class C extends Backend
 
 
   /**
-   * Set of clazz ids for all the clazzes whose types have been declared
-   * already.  Types are declared recursively with types of inner fields
-   * declared before outer types.  This set keeps track which types have been
+   * Set of clazz ids for all the clazzes whose structs have been declared
+   * already.  Structs are declared recursively with structs of inner fields
+   * declared before outer structs.  This set keeps track which structs have been
    * declared already to avoid duplicates.
    */
-  private final TreeSet<Integer> _declaredTypes = new TreeSet<>();
+  private final TreeSet<Integer> _declaredStructs = new TreeSet<>();
 
 
   /*---------------------------  consructors  ---------------------------*/
@@ -232,6 +232,10 @@ public class C extends Backend
         for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
           {
             typesForClazz(c);
+          }
+        for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
+          {
+            structsForClazz(c);
           }
         for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
           {
@@ -417,28 +421,60 @@ public class C extends Backend
       {
       case Routine:
         {
-          if (!_declaredTypes.contains(cl))
+          if (isI32(cl))  // special handling of stdlib clazzes known to the compiler
             {
-              _declaredTypes.add(cl);
+              _c.print("typedef int32_t " + clazzTypeName(cl) + ";\n");
+            }
+          else
+            {
+              _c.print
+                ("typedef struct " + clazzTypeName(cl) + " " + clazzTypeName(cl) + ";\n");
+            }
+          break;
+        }
+      default:
+        break;
+      }
+  }
+
+
+  /**
+   * Create declarations of the C structs required for the given clazz.  Write
+   * code to _cout.
+   *
+   * @param cl a clazz id.
+   */
+  public void structsForClazz(int cl)
+  {
+    var f = _fuir.clazz2FeatureId(cl);
+    switch (_fuir.featureKind(f))
+      {
+      case Routine:
+        {
+          if (!_declaredStructs.contains(cl))
+            {
+              _declaredStructs.add(cl);
               if (isI32(cl))  // special handling of stdlib clazzes known to the compiler
                 {
-                  _c.print("typedef int32_t");
                 }
               else
                 {
-                  // first, make sure types used for inner fields are declared:
+                  // first, make sure structs used for inner fields are declared:
                   for (int i = 0; i < _fuir.clazzSize(cl); i++)
                     {
                       var fcl = _fuir.clazzFieldSlotClazz(cl, i);
-                      if (fcl != -1 && fcl != -2)
+                      if (fcl != -1 /* no field at this slot, NYI: this should have been removed by FUIR */ &&
+                          fcl != -2 /* void field,            NYI: this should have been removed by FUIR */ &&
+                          !_fuir.clazzIsRef(fcl))
                         {
-                          typesForClazz(fcl);
+                          structsForClazz(fcl);
                         }
                     }
 
-                  // next, declare the type itself
+                  // next, declare the struct itself
                   _c.print
-                    ("typedef struct {\n" +
+                    ("// for " + _fuir.clazzAsString(cl) + "\n" +
+                     "struct " + clazzTypeName(cl) + " {\n" +
                      (_fuir.clazzIsRef(cl) ? "  uint32_t clazzId;\n" : ""));
                   for (int i = 0; i < _fuir.clazzSize(cl); i++)
                     {
@@ -468,14 +504,11 @@ public class C extends Backend
                         }
                     }
                   _c.print
-                    ("}");
-
+                    ("};\n\n");
                 }
-              _c.print
-                (" " + clazzTypeName(cl) + ";\n");
             }
-          break;
         }
+        break;
       default:
         break;
       }
