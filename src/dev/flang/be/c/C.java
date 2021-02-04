@@ -398,6 +398,11 @@ public class C extends Backend
     return res;
   }
 
+  String clazzTypeNameRefOrVal(int cl)
+  {
+    return clazzTypeName(cl) + (_fuir.clazzIsRef(cl) ? "*" : "");
+  }
+
 
   /**
    * Is the given clazz the stdlib clazz i32?
@@ -501,7 +506,7 @@ public class C extends Backend
                             {
                               check
                                 (fcl != -3); // NYI: ugly inline constant for ADDRESS type
-                              type = clazzTypeName(fcl) + (_fuir.clazzIsRef(fcl) ? "*" : "");
+                              type = clazzTypeNameRefOrVal(fcl);
                             }
                           _c.print(" " + type + " " + fieldName(i, cf) + ";\n");
                         }
@@ -840,7 +845,7 @@ public class C extends Backend
       {
         _c.print(comma);
         var at = _fuir.clazzArgClazz(cl, i);
-        var t = at == -1 ? "slot_t" : clazzTypeName(at);
+        var t = at == -1 ? "slot_t" : clazzTypeNameRefOrVal(at);
         _c.print(t + " arg" + i);
         comma = ", ";
       }
