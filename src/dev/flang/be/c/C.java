@@ -465,6 +465,7 @@ public class C extends Backend
                       var fcl = _fuir.clazzFieldSlotClazz(cl, i);
                       if (fcl != -1 /* no field at this slot, NYI: this should have been removed by FUIR */ &&
                           fcl != -2 /* void field,            NYI: this should have been removed by FUIR */ &&
+                          fcl != -3 /* outer ref,             NYI: this should have been removed by FUIR */ &&
                           !_fuir.clazzIsRef(fcl))
                         {
                           structsForClazz(fcl);
@@ -498,6 +499,8 @@ public class C extends Backend
                             }
                           else
                             {
+                              check
+                                (fcl != -3); // NYI: ugly inline constant for ADDRESS type
                               type = clazzTypeName(fcl) + (_fuir.clazzIsRef(fcl) ? "*" : "");
                             }
                           _c.print(" " + type + " " + fieldName(i, cf) + ";\n");

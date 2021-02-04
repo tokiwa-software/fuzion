@@ -166,7 +166,9 @@ public class FUIR extends ANY
       {
         for (var cl : Clazzes.all())
           {
-            if (cl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
+            if (cl._type != Types.t_VOID    &&  // NYI: would be better to not create this dummy clazz in the first place
+                cl._type != Types.t_ADDRESS     // NYI: would be better to not create this dummy clazz in the first place
+                )
               {
                 int res = addClazz(cl);
               }
@@ -208,7 +210,7 @@ public class FUIR extends ANY
    * @param i a slot index in cl
    *
    * @return the clazz id or -1 if no field at this slot or -2 if field type is
-   * VOID, so no field is needed.
+   * VOID, so no field is needed. -3 if field type is ADDRESS
    */
   public int clazzFieldSlotClazz(int cl, int i)
   {
@@ -226,6 +228,10 @@ public class FUIR extends ANY
             if (fcl._type == Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
               {
                 return -2;
+              }
+            else if (fcl._type == Types.t_ADDRESS)  // NYI: would be better to not create this dummy clazz in the first place
+              {
+                return -3;
               }
             else
               {
