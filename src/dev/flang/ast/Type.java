@@ -1121,6 +1121,43 @@ public class Type extends ANY implements Comparable
                      isGenericArgument() == (              feature == null),
        ((Type)other).isGenericArgument() == (((Type)other).feature == null));
 
+    int result = compareToIgnoreOuter(other);
+    if (result == 0 && generic == null)
+      { // NYI: outerMostInSource is ignored for interned Types, maybe we should
+        // create new types where outerMostInSource is always false?
+        if (false && outerMostInSource() != other.outerMostInSource())
+          {
+            result = outerMostInSource() ? -1 : +1;
+          }
+        else
+          {
+            var to = this .outerInterned();
+            var oo = other.outerInterned();
+            result =
+              (to == null && oo == null) ?  0 :
+              (to == null && oo != null) ? -1 :
+              (to != null && oo == null) ? +1 : to.compareTo(oo);
+          }
+      }
+    return result;
+  }
+
+
+  /**
+   * Compare this to other ignoring the outer type. This is used for created in
+   * clazzes when the outer clazz is known.
+   */
+  public int compareToIgnoreOuter(Type other)
+  {
+    if (PRECONDITIONS) require
+      (checkedForGeneric,
+       other != null,
+       other.checkedForGeneric,
+       getClass() == Type.class,
+       other.getClass() == Type.class,
+                     isGenericArgument() == (              feature == null),
+       ((Type)other).isGenericArgument() == (((Type)other).feature == null));
+
     int result = 0;
 
     if (this != other)
@@ -1178,23 +1215,6 @@ public class Type extends ANY implements Comparable
                 if (generic != null)
                   {
                     result = generic._name.compareTo(other.generic._name); // NYI: compare generic, not generic.name!
-                  }
-                else
-                  { // NYI: outerMostInSource is ignored for interned Types, maybe we should
-                    // create new types where outerMostInSource is always false?
-                    if (false && outerMostInSource() != other.outerMostInSource())
-                      {
-                        result = outerMostInSource() ? -1 : +1;
-                      }
-                    else
-                      {
-                        var to = outerInterned();
-                        var oo = other.outerInterned();
-                        result =
-                          (to == null && oo == null) ?  0 :
-                          (to == null && oo != null) ? -1 :
-                          (to != null && oo == null) ? +1 : to.compareTo(oo);
-                      }
                   }
               }
           }

@@ -706,13 +706,32 @@ Hellq is
   {
     var to = this ._outer;
     var oo = other._outer;
-    return
-      to == oo                   ? 0 :
-      to == null                 ? -1 :
-      oo == null                 ? +1 :
-      to.isRef() && oo.isRef()   ? to.compareOuter(oo) :
-      !to.isRef() && !oo.isRef() ? to.compareTo   (oo) :
-      to.isRef()                 ? +1 : -1;
+    int result = 0;
+    if (to != oo)
+      {
+        result =
+          to == null ? -1 :
+          oo == null ? +1 : 0;
+        if (result == 0)
+          {
+            if (to.isRef() && oo.isRef())
+              {
+                result = to._type.compareToIgnoreOuter(oo._type);
+                if (result == 0)
+                  {
+                    result = to.compareOuter(oo);
+                  }
+              }
+            else
+              {
+                result =
+                  !to.isRef() && !oo.isRef() ? to.compareTo(oo) :
+                  to.isRef() ? +1
+                             : -1;
+              }
+          }
+      }
+    return result;
   }
 
 
@@ -721,8 +740,6 @@ Hellq is
    */
   public int compareTo(Clazz other)
   {
-    int result;
-
     if (PRECONDITIONS) require
       (other != null,
        this .getClass() == Clazz.class,
@@ -730,13 +747,14 @@ Hellq is
        this ._type == Types.intern(this ._type),
        other._type == Types.intern(other._type));
 
-    result = compareOuter(other);
+    int result = compareOuter(other);
     if (result == 0)
       {
-        result = this._type.compareTo(other._type);
+        result = this._type.compareToIgnoreOuter(other._type);
       }
     return result;
   }
+
 
   public boolean dependsOnGenerics()  //  NYI: Only used in caching for Type.clazz, which should be removed
   {

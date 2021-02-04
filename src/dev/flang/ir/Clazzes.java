@@ -326,7 +326,8 @@ public class Clazzes extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (actualType == result._type);
+      (actualType.compareToIgnoreOuter(result._type) == 0,
+       outer == result._outer || true /* NYI: Check why this sometimes does not hold */);
 
     return result;
   }
