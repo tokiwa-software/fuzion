@@ -657,7 +657,7 @@ public class C extends Backend
                   var tc = _fuir.callTargetClazz(cl, c, i);
                   switch (_fuir.featureKind(cf))
                     {
-                    case Abstract :  _c.println("// NYI : dynamic call to abstract: " + _fuir.callDebugString(c, i)); break;
+                    case Abstract :  _c.println("// NYI : dynamic call to abstract: " + _fuir.callDebugString(c, i));
                     case Routine  :
                     case Intrinsic:
                       {
