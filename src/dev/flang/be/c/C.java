@@ -27,6 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.c;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import java.util.Stack;
 import java.util.TreeSet;
@@ -967,9 +969,11 @@ public class C extends Backend
                 catch (RuntimeException | Error e)
                   {
                     _c.println("// *** compiler crash: " + e);
+                    StringWriter sw = new StringWriter();
+                    e.printStackTrace(new PrintWriter(sw));
                     Errors.error("C backend compiler crash",
                                  "While creating code for " + _fuir.clazzAsString(cl) + "\n" +
-                                 "Java Error: " + e);
+                                 "Java Error: " + sw);
                   }
                 var res = _fuir.clazzResultClazz(cl);
                 if (res != -1)
