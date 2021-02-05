@@ -284,23 +284,16 @@ public class FUIR extends ANY
   {
     var cc = _clazzIds.get(cl);
     var cf = cc.feature();
-    if (cf.returnType.isConstructorType())
+    var rcl =
+      cf.returnType.isConstructorType() ? cc :
+      cf.isField() && cf.isOuterRef()   ? cc._outer._outer : cc.actualClazz(cf.resultType());
+    if (rcl.size() > 0 || rcl.isRef())
       {
-        return cl;
+        return addClazzIfNotVOID(rcl);
       }
     else
       {
-        var rcl = cf.isField() && cf.isOuterRef()
-          ? cc._outer._outer
-          : cc.actualClazz(cf.resultType());
-        if (rcl.size() > 0 || rcl.isRef())
-          {
-            return addClazzIfNotVOID(rcl);
-          }
-        else
-          {
-            return -1;
-          }
+        return -1;
       }
   }
 
