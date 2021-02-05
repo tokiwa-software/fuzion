@@ -816,7 +816,7 @@ public class FUIR extends ANY
 
 
   /**
-   * Get the inner clazz on for a non dynamic call
+   * Get the inner clazz for a non dynamic call
    *
    * @param outerClazz the caller
    *
@@ -837,7 +837,7 @@ public class FUIR extends ANY
 
 
   /**
-   * Get the inner clazz on for a non dynamic call
+   * Get the inner clazz for a non dynamic call
    *
    * @param cl index of clazz containing the call
    *
@@ -861,6 +861,89 @@ public class FUIR extends ANY
     check
       (innerClazz._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
     return addClazz(innerClazz);
+  }
+
+
+  /**
+   * Get the possible inner clazzes for a dynamic call
+   *
+   * @param outerClazz the caller
+   *
+   * @param call the call
+   *
+   * @return the clazz that has to be called
+   */
+  private List<Clazz> callCalledClazzes(Clazz outerClazz, Call call)
+  {
+    if (PRECONDITIONS) require
+      (call != null,
+       outerClazz != null);
+
+    var cf = call.calledFeature();
+    var tclazz = Clazzes.clazz(call.target, outerClazz);
+    System.out.println("Dynamic targets for "+call.pos().show());
+
+    var result = new List<Clazz>();
+    for (var cl : Clazzes.all())
+      {
+        if (cl._type != Types.t_VOID    &&  // NYI: would be better to not create this dummy clazz in the first place
+            cl._type != Types.t_ADDRESS     // NYI: would be better to not create this dummy clazz in the first place
+            )
+          {
+            if (cl._dynamicBinding != null)
+              {
+                var in = cl._dynamicBinding.inner(cf);
+                if (in != null && in.feature().impl.kind_ != Impl.Kind.Abstract)
+                  {
+                    System.out.println("Dynamic targets "+(result.size()+1)+": "+in);
+                    if (in.toString().startsWith("hasInterval<i32>"))  // NYI: Remove, hasInterval<i32> should not be instantiated at all so it should not appear here...
+                      {
+                        System.err.println("***** ignoring target "+in);
+                      }
+                    else
+                      {
+                        result.add(in);
+                      }
+                  }
+              }
+          }
+      }
+    return result;
+  }
+
+
+  /**
+   * Get the possible inner clazzes for a dynamic call
+   *
+   * @param cl index of clazz containing the call
+   *
+   * @param c code block containing the call
+   *
+   * @param ix index of the call
+   *
+   * @return the clazz that has to be called
+   */
+  public int[] callCalledClazzes(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Call,
+       !callIsDynamic(cl, c, ix));
+
+    var outerClazz = _clazzIds.get(cl);
+    var call = (Call) _codeIds.get(c).get(ix);
+    var innerClazzes = callCalledClazzes(outerClazz, call);
+    var innerClazzIds = new int[innerClazzes.size()];
+    for (var i = 0; i < innerClazzes.size(); i++)
+      {
+        check
+          (innerClazzes.get(i)._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
+
+        innerClazzIds[i] = addClazz(innerClazzes.get(i));
+        check(innerClazzIds[i] != -1);
+      }
+    return innerClazzIds;
   }
 
 
