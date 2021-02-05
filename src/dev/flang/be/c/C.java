@@ -672,7 +672,7 @@ public class C extends Backend
                           }
                         String n = clazzMangledName(cc);
                         _c.print("" + n + "(");
-                        passArgs(outerClazzPassedAsValue(tc), stack, ac);
+                        passArgs(outerClazzPassedAsValue(tc) || _fuir.clazzIsRef(tc), stack, ac);
                         _c.println(");");
                         stack.push(res);
                         if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
@@ -715,7 +715,7 @@ public class C extends Backend
                           }
                         String n = clazzMangledName(cc);
                         _c.print("" + n + "(");
-                        passArgs(outerClazzPassedAsValue(tc), stack, ac);
+                        passArgs(outerClazzPassedAsValue(tc) || _fuir.clazzIsRef(tc), stack, ac);
                         _c.println(");");
                         stack.push(res);
                         if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
