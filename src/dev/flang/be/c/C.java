@@ -651,10 +651,18 @@ public class C extends Backend
             {
               if (_fuir.callIsDynamic(cl, c, i))
                 {
-                  _c.println("// NYI: Dynamic binding for call to " + _fuir.callDebugString(c, i) + " not supported");
-                  for (var cc : _fuir.callCalledClazzes(cl, c, i))
+                  var ccs = _fuir.callCalledClazzes(cl, c, i);
+                  if (ccs.length == 1)
                     {
-                      call(cl, c, i, cc, stack);
+                      call(cl, c, i, ccs[0], stack);
+                    }
+                  else
+                    {
+                      _c.println("// NYI: Dynamic binding for call to " + _fuir.callDebugString(c, i) + " not supported");
+                      for (var cc : ccs)
+                        {
+                          call(cl, c, i, cc, stack);
+                        }
                     }
                 }
               else
