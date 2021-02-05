@@ -415,9 +415,9 @@ public class C extends Backend
    *
    * NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
    */
-  boolean outerClazzPassedAsValue(int cl)
+  boolean outerClazzPassedAsAdrOfValue(int cl)
   {
-    return isI32(cl);
+    return !_fuir.clazzIsRef(cl) && !isI32(cl);
   }
 
 
@@ -428,7 +428,7 @@ public class C extends Backend
    */
   String clazzTypeNameOuterField(int cl)
   {
-    return clazzTypeName(cl) + (outerClazzPassedAsValue(cl) ? "" : "*");
+    return clazzTypeNameRefOrVal(cl) + (outerClazzPassedAsAdrOfValue(cl) ? "*" : "");
   }
 
 
@@ -672,7 +672,7 @@ public class C extends Backend
                           }
                         String n = clazzMangledName(cc);
                         _c.print("" + n + "(");
-                        passArgs(outerClazzPassedAsValue(tc) || _fuir.clazzIsRef(tc), stack, ac);
+                        passArgs(!outerClazzPassedAsAdrOfValue(tc), stack, ac);
                         _c.println(");");
                         stack.push(res);
                         if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
@@ -684,7 +684,7 @@ public class C extends Backend
                         var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
                         var rt = _fuir.callResultType(cl, c, i);
                         CExpr res = ccodeAccessField(tc, t, field);
-                        if (_fuir.fieldIsOuterRef(cf) && !outerClazzPassedAsValue(rt))  // NYI: Better have a specific FUIR statement for this
+                        if (_fuir.fieldIsOuterRef(cf) && outerClazzPassedAsAdrOfValue(rt))  // NYI: Better have a specific FUIR statement for this
                           {
                             res = res.deref();
                           }
@@ -715,7 +715,7 @@ public class C extends Backend
                           }
                         String n = clazzMangledName(cc);
                         _c.print("" + n + "(");
-                        passArgs(outerClazzPassedAsValue(tc) || _fuir.clazzIsRef(tc), stack, ac);
+                        passArgs(!outerClazzPassedAsAdrOfValue(tc), stack, ac);
                         _c.println(");");
                         stack.push(res);
                         if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
@@ -727,7 +727,7 @@ public class C extends Backend
                         var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
                         var rt = _fuir.callResultType(cl, c, i);
                         CExpr res = ccodeAccessField(tc, t, field);
-                        if (_fuir.fieldIsOuterRef(cf) && !outerClazzPassedAsValue(rt))  // NYI: Better have a specific FUIR statement for this
+                        if (_fuir.fieldIsOuterRef(cf) && outerClazzPassedAsAdrOfValue(rt))  // NYI: Better have a specific FUIR statement for this
                           {
                             res = res.deref();
                           }
