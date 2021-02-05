@@ -35,8 +35,7 @@ import java.util.TreeSet;
 
 import dev.flang.ir.Backend;
 import dev.flang.ir.BackendCallable;
-import dev.flang.ir.Clazz;
-
+import dev.flang.ir.Clazz;   // NYI: remove this dependency!
 import dev.flang.ir.Clazzes; // NYI: remove this dependency!
 
 import dev.flang.fuir.FUIR;
