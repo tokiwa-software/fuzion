@@ -290,7 +290,9 @@ public class FUIR extends ANY
       }
     else
       {
-        var rcl = cc.actualClazz(cf.resultType());
+        var rcl = cf.isField() && cf.isOuterRef()
+          ? cc._outer._outer
+          : cc.actualClazz(cf.resultType());
         if (rcl.size() > 0 || rcl.isRef())
           {
             return addClazzIfNotVOID(rcl);
@@ -906,41 +908,6 @@ public class FUIR extends ANY
     check
       (tclazz._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
     return addClazz(tclazz);
-  }
-
-
-  public int callResultType(int cl, int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call);
-
-    var outerClazz = _clazzIds.get(cl);
-    var call = (Call) _codeIds.get(c).get(ix);
-    var innerClazz = callCalledClazz(outerClazz, call);
-    var cf = innerClazz.feature();
-    if (cf.isField())
-      {
-        Clazz rcl = cf.isOuterRef()
-          ? innerClazz._outer._outer
-          : innerClazz.actualClazz(cf.resultType());
-        return addClazzIfNotVOID(rcl);
-      }
-    else
-      {
-        var r = cf.resultField();
-        if (r != null || cf.impl.kind_ == Impl.Kind.Intrinsic) // NYI: Can we remove the ugly special handling of intrinsics here?
-          {
-            var rcl = outerClazz.actualClazz(call.type());
-            return addClazzIfNotVOID(rcl);
-          }
-        else if (innerClazz.isRef() || innerClazz.size() > 0)
-          {
-            return addClazz(innerClazz);
-          }
-        return -1;
-      }
   }
 
 

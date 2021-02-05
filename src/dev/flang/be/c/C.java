@@ -663,7 +663,7 @@ public class C extends Backend
                       {
                         if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
                         CExpr res = CExpr.ident(DUMMY); // NYI: no result, needed as a workaround for functions returning current instance
-                        var rt = _fuir.callResultType(cl, c, i);
+                        var rt = _fuir.clazzResultClazz(cc);
                         if (rt != -1)
                           {
                             var tmp = TEMP_VAR_PREFIX + (_resultId++);
@@ -682,7 +682,7 @@ public class C extends Backend
                       {
                         var t = stack.pop();
                         var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
-                        var rt = _fuir.callResultType(cl, c, i);
+                        var rt = _fuir.clazzResultClazz(cc);
                         CExpr res = ccodeAccessField(tc, t, field);
                         if (_fuir.fieldIsOuterRef(cf) && outerClazzPassedAsAdrOfValue(rt))  // NYI: Better have a specific FUIR statement for this
                           {
@@ -706,7 +706,7 @@ public class C extends Backend
                       {
                         if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
                         CExpr res = CExpr.ident(DUMMY); // NYI: no result, needed as a workaround for functions returning current instance
-                        var rt = _fuir.callResultType(cl, c, i);
+                        var rt = _fuir.clazzResultClazz(cc);
                         if (rt != -1)
                           {
                             var tmp = TEMP_VAR_PREFIX + (_resultId++);
@@ -725,7 +725,7 @@ public class C extends Backend
                       {
                         var t = stack.pop();
                         var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
-                        var rt = _fuir.callResultType(cl, c, i);
+                        var rt = _fuir.clazzResultClazz(cc);
                         CExpr res = ccodeAccessField(tc, t, field);
                         if (_fuir.fieldIsOuterRef(cf) && outerClazzPassedAsAdrOfValue(rt))  // NYI: Better have a specific FUIR statement for this
                           {
