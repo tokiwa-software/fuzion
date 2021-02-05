@@ -372,14 +372,16 @@ public class C extends Backend
     return cl & 0xFFFffff; // NYI: give a name to this constant
   }
 
+
   /**
-   * Create a C identifier for the type of an instance of the given clazz.
+   * Create a C identifier for the name of the struct and the struct type of an
+   * instance of the given clazz.
    *
    * @param cl a clazz id.
    *
    * @return corresponding C type name
    */
-  String clazzTypeName(int cl)
+  String clazzTypeName(int cl)  // NYI: rename as clazzStructName
   {
     StringBuilder sb = new StringBuilder(_fuir.clazzIsRef(cl) ? REF_TYPE_PREFIX : VAL_TYPE_PREFIX);
     clazzMangledName(cl, sb);
@@ -398,9 +400,35 @@ public class C extends Backend
     return res;
   }
 
-  String clazzTypeNameRefOrVal(int cl)
+
+  /**
+   * The type of a value of the given clazz.
+   */
+  String clazzTypeNameRefOrVal(int cl)  // NYI: rename as clazzTypeName
   {
     return clazzTypeName(cl) + (_fuir.clazzIsRef(cl) ? "*" : "");
+  }
+
+
+  /**
+   * Check if cl is passed as a value iff used as the type of an outer ref.
+   *
+   * NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
+   */
+  boolean outerClazzPassedAsValue(int cl)
+  {
+    return isI32(cl);
+  }
+
+
+  /**
+   * The type of an outer field of the given clazz.
+   *
+   * NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
+   */
+  String clazzTypeNameOuterField(int cl)
+  {
+    return clazzTypeName(cl) + (outerClazzPassedAsValue(cl) ? "" : "*");
   }
 
 
@@ -500,7 +528,7 @@ public class C extends Backend
                           if (_fuir.fieldIsOuterRef(cf))
                             {
                               var ocl = _fuir.clazzOuterClazz(cl);
-                              type = clazzTypeName(ocl) + "*";
+                              type = clazzTypeNameOuterField(ocl);
                             }
                           else
                             {
@@ -527,22 +555,28 @@ public class C extends Backend
    * Create C code to pass given number of arguments plus one implicit target
    * argument from the stack to a called feature.  Write code to _c.
    *
+   * @param targetAsValue true if the target is passes by value (which is true
+   * for ref types and for internal values types such as i32) or by address.
+   *
+   * NYI: special handling of outer refs should not be part of BE, should be
+   * moved to FUIR
+   *
    * @param stack the stack containing the C code of the args.
    *
    * @param argCount the number of arguments.
    */
-  void passArgs(boolean targetIsRef, Stack<CExpr> stack, int argCount)
+  void passArgs(boolean targetAsValue, Stack<CExpr> stack, int argCount)
   {
     var a = stack.pop();
     if (argCount > 0)
       {
-        passArgs(targetIsRef, stack, argCount-1);
+        passArgs(targetAsValue, stack, argCount-1);
         _c.print(", ");
         _c.print(a);
       }
     else
       { // ref to outer instance, passed by reference
-        _c.print(targetIsRef ? a : a.adrOf());
+        _c.print(targetAsValue ? a : a.adrOf());
       }
   }
 
@@ -638,7 +672,7 @@ public class C extends Backend
                           }
                         String n = clazzMangledName(cc);
                         _c.print("" + n + "(");
-                        passArgs(_fuir.clazzIsRef(tc), stack, ac);
+                        passArgs(outerClazzPassedAsValue(tc), stack, ac);
                         _c.println(");");
                         stack.push(res);
                         if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
@@ -648,8 +682,9 @@ public class C extends Backend
                       {
                         var t = stack.pop();
                         var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
+                        var rt = _fuir.callResultType(cl, c, i);
                         CExpr res = ccodeAccessField(tc, t, field);
-                        if (_fuir.fieldIsOuterRef(cf))  // NYI: Better have a specific Statement for this
+                        if (_fuir.fieldIsOuterRef(cf) && !outerClazzPassedAsValue(rt))  // NYI: Better have a specific FUIR statement for this
                           {
                             res = res.deref();
                           }
@@ -680,7 +715,7 @@ public class C extends Backend
                           }
                         String n = clazzMangledName(cc);
                         _c.print("" + n + "(");
-                        passArgs(_fuir.clazzIsRef(tc), stack, ac);
+                        passArgs(outerClazzPassedAsValue(tc), stack, ac);
                         _c.println(");");
                         stack.push(res);
                         if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
@@ -690,8 +725,9 @@ public class C extends Backend
                       {
                         var t = stack.pop();
                         var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
+                        var rt = _fuir.callResultType(cl, c, i);
                         CExpr res = ccodeAccessField(tc, t, field);
-                        if (_fuir.fieldIsOuterRef(cf))  // NYI: Better have a specific Statement for this
+                        if (_fuir.fieldIsOuterRef(cf) && !outerClazzPassedAsValue(rt))  // NYI: Better have a specific FUIR statement for this
                           {
                             res = res.deref();
                           }
@@ -843,8 +879,8 @@ public class C extends Backend
     String comma = "";
     if (oc != -1)
       {
-        _c.print(clazzTypeName(oc));
-        _c.print(" *fzouter");
+        _c.print(clazzTypeNameOuterField(oc));
+        _c.print(" fzouter");
         comma = ", ";
       }
     var ac = _fuir.clazzArgCount(cl);
@@ -968,13 +1004,13 @@ public class C extends Backend
                   {
                   case C_FUNCTION_PREFIX + "exitForCompilerTest"    : _c.print(" exit(arg0);\n"); break;
                   case C_FUNCTION_PREFIX + "fuzion__std__out__write": _c.print(" char c = (char) arg0; fwrite(&c, 1, 1, stdout);\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__prefix_wmO"        : _c.print(" return - *fzouter;\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wmO"         : _c.print(" return *fzouter -  arg0;\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wpO"         : _c.print(" return *fzouter +  arg0;\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wg"          : _c.print(" return *fzouter >  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wge"         : _c.print(" return *fzouter >= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wl"          : _c.print(" return *fzouter <  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wle"         : _c.print(" return *fzouter <= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__prefix_wmO"        : _c.print(" return - fzouter;\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wmO"         : _c.print(" return fzouter -  arg0;\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wpO"         : _c.print(" return fzouter +  arg0;\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wg"          : _c.print(" return fzouter >  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wge"         : _c.print(" return fzouter >= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wl"          : _c.print(" return fzouter <  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case C_FUNCTION_PREFIX + "i32__infix_wle"         : _c.print(" return fzouter <= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
                   default:                                            _c.print(" fprintf(stderr, \"*** error: NYI: code for intrinsic " + _fuir.clazzAsString(cl) + " missing!\\n\"); exit(1);\n"); break;
                   }
                 _c.print("}\n");

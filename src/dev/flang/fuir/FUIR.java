@@ -920,17 +920,27 @@ public class FUIR extends ANY
     var call = (Call) _codeIds.get(c).get(ix);
     var innerClazz = callCalledClazz(outerClazz, call);
     var cf = innerClazz.feature();
-    var r = cf.resultField();
-    if (r != null || cf.impl.kind_ == Impl.Kind.Intrinsic) // NYI: Can we remove the ugly special handling of intrinsics here?
+    if (cf.isField())
       {
-        var rcl = outerClazz.actualClazz(call.type());
+        Clazz rcl = cf.isOuterRef()
+          ? innerClazz._outer._outer
+          : innerClazz.actualClazz(cf.resultType());
         return addClazzIfNotVOID(rcl);
       }
-    else if (innerClazz.isRef() || innerClazz.size() > 0)
+    else
       {
-        return addClazz(innerClazz);
+        var r = cf.resultField();
+        if (r != null || cf.impl.kind_ == Impl.Kind.Intrinsic) // NYI: Can we remove the ugly special handling of intrinsics here?
+          {
+            var rcl = outerClazz.actualClazz(call.type());
+            return addClazzIfNotVOID(rcl);
+          }
+        else if (innerClazz.isRef() || innerClazz.size() > 0)
+          {
+            return addClazz(innerClazz);
+          }
+        return -1;
       }
-    return -1;
   }
 
 
