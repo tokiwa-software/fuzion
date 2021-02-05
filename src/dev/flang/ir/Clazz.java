@@ -524,6 +524,7 @@ Hellq is
                     var innerClazz = lookup(f, Call.NO_GENERICS, f.isUsedAt());
                     var callable = Clazzes._backend_.callable(innerClazz, this);
                     _dynamicBinding.addCallable(f, callable);
+                    _dynamicBinding.add(f, innerClazz, this);
                   }
               }
           }

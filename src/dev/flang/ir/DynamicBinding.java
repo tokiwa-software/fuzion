@@ -71,6 +71,22 @@ public class DynamicBinding extends ANY
   Map<Feature, BackendCallable> _callables = new TreeMap<>();
 
 
+  /**
+   * Actual inner clazzes when calling a dynamically bound feature on _clazz.
+   *
+   * NYI: like _offsets, this should use a more efficient lookup table.
+   */
+  Map<Feature, Clazz> _inner = new TreeMap<>();
+
+
+  /**
+   * Actual outer clazzes when calling a dynamically bound feature on _clazz.
+   *
+   * NYI: like _offsets, this should use a more efficient lookup table.
+   */
+  Map<Feature, Clazz> _outer = new TreeMap<>();
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -134,6 +150,29 @@ public class DynamicBinding extends ANY
 
 
   /**
+   * Record inner and outer clazz for a call corresponding the the given feature
+   * in the corresponding clazz.
+   *
+   * @param f a feature inherited or defined in _clazz.
+   *
+   * @param callable backend data needed to perform a call to the actual
+   * implementation of f in _clazz.
+   */
+  public void add(Feature f, Clazz inner, Clazz outer)
+  {
+    if (PRECONDITIONS) require
+      (f != null);
+
+    _inner.put(f, inner);
+    _outer.put(f, outer);
+
+    if (POSTCONDITIONS) ensure
+      (inner(f) == inner,
+       outer(f) == outer);
+  }
+
+
+  /**
    * Look up the offset storef for field f using addFieldOffset.
    *
    * @return the offset of f stored using addFieldOffset.
@@ -154,6 +193,32 @@ public class DynamicBinding extends ANY
   public BackendCallable callable(Feature calledFeature)
   {
     return _callables.get(calledFeature);
+  }
+
+
+  /**
+   * Look up the value stored for inner using add
+   *
+   * @param calledFeature the static feature that is called.
+   *
+   * @return the innr class stored for calledFeature using add, null if none
+   */
+  public Clazz inner(Feature calledFeature)
+  {
+    return _inner.get(calledFeature);
+  }
+
+
+  /**
+   * Look up the value stored for outner using add
+   *
+   * @param calledFeature the static feature that is called.
+   *
+   * @return the outer class stored for calledFeature using add, null if none
+   */
+  public Clazz outer(Feature calledFeature)
+  {
+    return _outer.get(calledFeature);
   }
 
 }
