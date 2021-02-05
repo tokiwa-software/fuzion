@@ -649,97 +649,18 @@ public class C extends Backend
             }
           case Call:
             {
-              var ac = _fuir.callArgCount(c, i);
               if (_fuir.callIsDynamic(cl, c, i))
                 {
                   _c.println("// NYI: Dynamic binding for call to " + _fuir.callDebugString(c, i) + " not supported");
                   for (var cc : _fuir.callCalledClazzes(cl, c, i))
                     {
-                      var cf = _fuir.clazz2FeatureId(cc);
-                      var tc = _fuir.callTargetClazz(cl, c, i);
-                      switch (_fuir.featureKind(cf))
-                        {
-                        case Abstract :  _c.println("// NYI : dynamic call to abstract: " + _fuir.callDebugString(c, i));
-                        case Routine  :
-                        case Intrinsic:
-                          {
-                            if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
-                            CExpr res = CExpr.ident(DUMMY); // NYI: no result, needed as a workaround for functions returning current instance
-                            var rt = _fuir.clazzResultClazz(cc);
-                            if (rt != -1)
-                              {
-                                var tmp = TEMP_VAR_PREFIX + (_resultId++);
-                                res = CExpr.ident(tmp);
-                                _c.print(clazzTypeNameRefOrVal(rt) + " " + tmp + " = ");
-                              }
-                            String n = clazzMangledName(cc);
-                            _c.print("" + n + "(");
-                            passArgs(!outerClazzPassedAsAdrOfValue(tc), stack, ac);
-                            _c.println(");");
-                            stack.push(res);
-                            if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
-                            break;
-                          }
-                        case Field:
-                          {
-                            var t = stack.pop();
-                            var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
-                            var rt = _fuir.clazzResultClazz(cc);
-                            CExpr res = ccodeAccessField(tc, t, field);
-                            if (_fuir.fieldIsOuterRef(cf) && outerClazzPassedAsAdrOfValue(rt))  // NYI: Better have a specific FUIR statement for this
-                              {
-                                res = res.deref();
-                              }
-                            stack.push(res);
-                            break;
-                          }
-                        default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.featureKind(cf));
-                        }
+                      call(cl, c, i, cc, stack);
                     }
                 }
               else
                 {
                   var cc = _fuir.callCalledClazz(cl, c, i);
-                  var cf = _fuir.clazz2FeatureId(cc);
-                  var tc = _fuir.callTargetClazz(cl, c, i);
-                  switch (_fuir.featureKind(cf))
-                    {
-                    case Routine  :
-                    case Intrinsic:
-                      {
-                        if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
-                        CExpr res = CExpr.ident(DUMMY); // NYI: no result, needed as a workaround for functions returning current instance
-                        var rt = _fuir.clazzResultClazz(cc);
-                        if (rt != -1)
-                          {
-                            var tmp = TEMP_VAR_PREFIX + (_resultId++);
-                            res = CExpr.ident(tmp);
-                            _c.print(clazzTypeNameRefOrVal(rt) + " " + tmp + " = ");
-                          }
-                        String n = clazzMangledName(cc);
-                        _c.print("" + n + "(");
-                        passArgs(!outerClazzPassedAsAdrOfValue(tc), stack, ac);
-                        _c.println(");");
-                        stack.push(res);
-                        if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
-                        break;
-                      }
-                    case Field:
-                      {
-                        var t = stack.pop();
-                        var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
-                        var rt = _fuir.clazzResultClazz(cc);
-                        CExpr res = ccodeAccessField(tc, t, field);
-                        if (_fuir.fieldIsOuterRef(cf) && outerClazzPassedAsAdrOfValue(rt))  // NYI: Better have a specific FUIR statement for this
-                          {
-                            res = res.deref();
-                          }
-                        stack.push(res);
-                        break;
-                      }
-                    case Abstract: throw new Error("This should not happen: Calling abstract '" + _fuir.clazzAsString(cc) + "'");
-                    default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.featureKind(cf));
-                    }
+                  call(cl, c, i, cc, stack);
                 }
               break;
             }
@@ -813,6 +734,65 @@ public class C extends Backend
             }
           }
         if (SHOW_STACK_AFTER_STMNT) System.out.println("After " + s +" in "+_fuir.clazzAsString(cl)+": "+stack);
+      }
+  }
+
+
+  /**
+   * Create C code for a statically bound call.
+   *
+   * @param cl clazz id of the currently compiled clazz
+   *
+   * @param c the code block currently compiled
+   *
+   * @param i index in c of the current call
+   *
+   * @param cc clazz that is called
+   *
+   * @param stack the stack containing the current arguments waiting to be used
+   */
+  void call(int cl, int c, int i, int cc, Stack<CExpr> stack)
+  {
+    var ac = _fuir.callArgCount(c, i);
+    var cf = _fuir.clazz2FeatureId(cc);
+    var tc = _fuir.callTargetClazz(cl, c, i);
+    switch (_fuir.featureKind(cf))
+      {
+      case Routine  :
+      case Intrinsic:
+        {
+          if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
+          CExpr res = CExpr.ident(DUMMY); // NYI: no result, needed as a workaround for functions returning current instance
+          var rt = _fuir.clazzResultClazz(cc);
+          if (rt != -1)
+            {
+              var tmp = TEMP_VAR_PREFIX + (_resultId++);
+              res = CExpr.ident(tmp);
+              _c.print(clazzTypeNameRefOrVal(rt) + " " + tmp + " = ");
+            }
+          String n = clazzMangledName(cc);
+          _c.print("" + n + "(");
+          passArgs(!outerClazzPassedAsAdrOfValue(tc), stack, ac);
+          _c.println(");");
+          stack.push(res);
+          if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
+          break;
+        }
+      case Field:
+        {
+          var t = stack.pop();
+          var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
+          var rt = _fuir.clazzResultClazz(cc);
+          CExpr res = ccodeAccessField(tc, t, field);
+          if (_fuir.fieldIsOuterRef(cf) && outerClazzPassedAsAdrOfValue(rt))  // NYI: Better have a specific FUIR statement for this
+            {
+              res = res.deref();
+            }
+          stack.push(res);
+          break;
+        }
+      case Abstract: throw new Error("This should not happen: Calling abstract '" + _fuir.clazzAsString(cc) + "'");
+      default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.featureKind(cf));
       }
   }
 
