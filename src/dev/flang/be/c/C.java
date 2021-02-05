@@ -1016,6 +1016,12 @@ public class C extends Backend
                   case C_FUNCTION_PREFIX + "i32__infix_wge"         : _c.print(" return fzouter >= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
                   case C_FUNCTION_PREFIX + "i32__infix_wl"          : _c.print(" return fzouter <  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
                   case C_FUNCTION_PREFIX + "i32__infix_wle"         : _c.print(" return fzouter <= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+
+                    // NYI: the following intrinsics are generic, they are currently hard-coded for i32 only:
+                  case C_FUNCTION_PREFIX + "Array__getData"         : _c.print(" return malloc(sizeof(fzT_i32) * arg0);\n"); break;
+                  case C_FUNCTION_PREFIX + "Array__setel"           : _c.print(" ((fzT_i32*) arg0) [arg1] = arg2;\n"); break;
+                  case C_FUNCTION_PREFIX + "Array__get"             : _c.print(" return ((fzT_i32*) arg0) [arg1];\n"); break;
+
                   default:                                            _c.print(" fprintf(stderr, \"*** error: NYI: code for intrinsic " + _fuir.clazzAsString(cl) + " missing!\\n\"); exit(1);\n"); break;
                   }
                 _c.print("}\n");
