@@ -662,6 +662,8 @@ public class C extends Backend
                       _c.println("// NYI: Dynamic binding for call to " + _fuir.callDebugString(c, i) + " not supported");
                       for (var cc : ccs)
                         {
+                          _c.println("// Call target "+ _fuir.clazzAsString(cc) + " ... ");
+                          // CExpr.int32const(clazzId2num(cl)
                           call(cl, c, i, cc, stack);
                         }
                     }
