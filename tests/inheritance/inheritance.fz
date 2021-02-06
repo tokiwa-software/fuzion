@@ -27,7 +27,7 @@ inheritance {
 
   out := stdout;
 
-  curid i32; curid = 0;
+  curid i32 = 0;
   id i32
   {
     result = curid;
@@ -35,7 +35,7 @@ inheritance {
   }
 
   A ref {
-    ident i32; ident = id;
+    ident i32 = id;
     out.println("A's body" + ident);
     x is abstract
   }
@@ -56,16 +56,16 @@ inheritance {
     redefine xb { out.println("E.xb"); }
     redefine xc { out.println("E.xc"); }
   }
-  bi B; bi = B;
-  ci inheritance.C; ci = C;
-  aa inheritance.A; aa = bi;
+  bi B = B;
+  ci inheritance.C = C;
+  aa inheritance.A = bi;
   bi.x;
   ci.x;
   aa.x;
   aa = ci;
   aa.x;
-  di inheritance.D; di = D;
-  ei inheritance.E; ei = E;
+  di inheritance.D = D;
+  ei inheritance.E = E;
   out.println("Calling non-redefed multiple");
   di.x;
   di.xb;
@@ -279,7 +279,7 @@ inheritance {
   {
     chck(b bool, msg string)
     {
-      s string;
+      s string = ?;
       if b
         {
           s = "PASSED: ";
@@ -332,7 +332,7 @@ inheritance {
   {
     chck(b bool, msg string)
     {
-      s string;
+      s string = ?;
       if b
         {
           s = "PASSED: ";
@@ -402,7 +402,7 @@ inheritance {
   {
     chck(b bool, msg string)
     {
-      s string;
+      s string = ?;
       if b
         {
           s = "PASSED: ";

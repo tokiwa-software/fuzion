@@ -50,7 +50,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
     lower T is thiz
     # lower => hasInterval.this  # NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
 
-    size T is if lower <= upper upper - lower + one else zero
+    size T is if lower <= upper then upper - lower + one else zero
 
     # apply function f to all elements in this interval
     iterate(f fun (T)) is

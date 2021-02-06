@@ -30,11 +30,11 @@
 # mutable state.
 stream<T> ref is
 
-  consume (f fun (T)) is while hasNext f(next)
-  infix | (f fun (T)) is while hasNext f(next)
+  consume (f fun (T)) is while hasNext do f(next)
+  infix | (f fun (T)) is while hasNext do f(next)
   consume2(f fun (T) bool) is while hasNext && f(next)
   filter(f fun (T) bool) ref : stream<T> is
-    cache T  # NYI: should be Option<T>
+    cache T = ?  # NYI: should be Option<T>
     cacheOk bool = false
     next2
     redef hasNext => cacheOk
@@ -67,7 +67,7 @@ stream<T> ref is
   next T is abstract
 
   print is
-    consume(fun (x T) is stdout.print(x); if (hasNext) stdout.print(", ") )
+    consume(fun (x T) is stdout.print(x); if hasNext then stdout.print(", ") )
 
   count i32 is
 # NYI: This does not work yet:
@@ -82,8 +82,8 @@ stream<T> ref is
     res string = ""
 
     # NYI: x.asString does not work yet (becuase of generic type?)
-    # consume(fun (x T) is res = res + x.asString; if hasNext res = res + ", ")
+    # consume(fun (x T) is res = res + x.asString; if hasNext then res = res + ", ")
 
     s(o ref Object) => o.asString
-    consume(fun (x T) is res = res + s(x); if hasNext res = res + ", ")
+    consume(fun (x T) is res = res + s(x); if hasNext then res = res + ", ")
     res

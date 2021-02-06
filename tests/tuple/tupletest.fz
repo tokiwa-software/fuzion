@@ -32,7 +32,7 @@ tupletest
 
   chck(b bool, msg string)
   {
-    s string;
+    s string = ?
     if b
       {
         s = "PASSED: ";
@@ -173,8 +173,8 @@ tupletest
   chck(t10a1 == 3, "t10a1");
   chck(!t10a2, "t10a2");
 
-  t10b1 i32;
-  t10b2 bool;
+  t10b1 i32 = ?;
+  t10b2 bool = ?;
   ib (i i32, b bool) { };
   (t10b1, t10b2) = ib(33,true);
   p("Tuple t10b1/2 = ib is " + t10b1 + ", " + t10b2);
@@ -243,7 +243,7 @@ tupletest
   (_,_) := (true, 23);
 
   t13a1, t13a3 i32;
-  t13a2 bool;
+  t13a2 bool = ?;
   (t13a1,_,_) = (01, 12, 23); chck(t13a1 == 01, "t13a1 must be 01");
 //  (_,t13a2,_) = (01, 12, 23); // 24. should flag an error, illegal type
   (_,_,t13a3) = (01, 12, 23); chck(t13a3 == 23, "t13a3 must be 23");
@@ -257,8 +257,8 @@ tupletest
   (_,t13d2,_) := (01, 12, 23); chck(t13d2 == 12, "t13d2 must be 12");
   (_,_,t13d3) := (01, 12, 23); chck(t13d3 == 23, "t13d3 must be 23");
 
-  t14a1, t14a3 i32;
-  t14a2 bool;
+  t14a1, t14a3 i32 = ?;
+  t14a2 bool = ?;
   (t14a1,_,_) = (01, true, 23); chck(t14a1 == 01, "t14a1 must be 01");
   (_,t14a2,_) = (01, true, 23); chck(t14a2      , "t14a2 must be true");
   (_,_,t14a3) = (01, true, 23); chck(t14a3 == 23, "t14a3 must be 23");
@@ -272,8 +272,8 @@ tupletest
   (_,t14d2,_) := (01, true, 23); chck(t14d2      , "t14d2 must be true");
   (_,_,t14d3) := (01, true, 23); chck(t14d3 == 23, "t14d3 must be 23");
 
-  t15a1, t15a3 i32;
-  t15a2 bool;
+  t15a1, t15a3 i32 = ?;
+  t15a2 bool = ?;
   (t15a1,_,_) = (01, true, 23); chck(t15a1 == 01, "t15a1 must be 01");
   (_,t15a2,_) = (01, true, 23); chck(t15a2      , "t15a2 must be true");
   (_,_,t15a3) = (01, true, 23); chck(t15a3 == 23, "t15a3 must be 23");

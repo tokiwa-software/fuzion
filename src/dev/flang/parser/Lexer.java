@@ -69,6 +69,7 @@ public class Lexer extends SourceFile
     t_check("check"),
     t_else("else"),
     t_if("if"),
+    t_then("then"),
     t_is("is"),
     t_abstract("abstract"),
     t_intrinsic("intrinsic"),

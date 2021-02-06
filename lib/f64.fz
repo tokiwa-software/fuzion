@@ -25,8 +25,7 @@
 
 # f64-- 64 bit floating point values
 #
-f64 value is
-  val f64
+f64(val f64) is
   infix + (other f64) f64 is intrinsic
   infix - (other f64) f64 is intrinsic
   infix * (other f64) f64 is intrinsic

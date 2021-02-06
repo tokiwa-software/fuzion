@@ -137,7 +137,7 @@ choice_mix {
     }
   }
 
-  v00 Mix;
+  v00 Mix = ?;
 
   show00()
   {

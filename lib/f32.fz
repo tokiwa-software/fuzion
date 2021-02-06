@@ -25,8 +25,7 @@
 
 # f32 -- 32 bit floating point values
 #
-f32 value is
-  val f32
+f32(val f32) is
   infix + (other f32) f32 is intrinsic
   infix - (other f32) f32 is intrinsic
   infix * (other f32) f32 is intrinsic

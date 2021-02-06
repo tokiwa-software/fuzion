@@ -29,7 +29,7 @@ genericstest {
 
   chck(b bool, msg string)
   {
-    s string;
+    s string = ?;
     if b
       {
         s = "PASSED: ";
@@ -87,7 +87,7 @@ genericstest {
     }
   }
 
-  li List<i32>; li = List<i32>;
+  li List<i32> = List<i32>;
   li.add(3);
   li.add(4);
   li.add(5);
@@ -132,7 +132,7 @@ genericstest {
     postfix >>>> i32 { a-1000 } // q>>>> is 1000 smaller
   }
 
-  a q;
+  a q = ?;
   a = q(    2); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
   a = q(   20); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
   a = q(  200); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));

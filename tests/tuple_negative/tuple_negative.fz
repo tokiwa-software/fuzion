@@ -31,7 +31,7 @@ tuple_negative {
 
   chck(b bool, msg string)
   {
-    s string;
+    s string = ?;
     if b
       {
         s = "PASSED: ";
@@ -96,7 +96,7 @@ tuple_negative {
   (one13 i32)     = Tuple<i32>(42); p("one13 is " + one13); // one-Tuple using decompose and explicit type
   (one14 i32)     = Tuple<i32>(42); p("one14 is " + one14); // one-Tuple using decompose and inferring generic
   (one15 i32)     =           (42); p("one15 is " + one15); // special case: Decompose i32, which works!
-  one16, one17, one18 i32;
+  one16, one17, one18 i32 = ?;
   (one16)         = Tuple<i32>(42); p("one16 is " + one16); // one-Tuple using decompose and explicit type
   (one17)         = Tuple<i32>(42); p("one17 is " + one17); // one-Tuple using decompose and inferring generic
   (one18)         =           (42); p("one18 is " + one18); // special case: Decompose i32, which works!
@@ -126,7 +126,7 @@ tuple_negative {
   (two13a, two13b i32)= Tuple<i32,i32>(4, 2); p("two13 is " + two13a + ", " + two13b); // two-Tuple using decompose and explicit types
   (two14a, two14b i32)= Tuple         (4, 2); p("two14 is " + two14a + ", " + two14b); // two-Tuple using decompose and inferring generic
   (two15a, two15b i32)=               (4, 2); p("two15 is " + two15a + ", " + two15b); // two-Tuple using decompore and tuple syntax sugar
-  two16a, two16b, two17a, two17b, two18a, two18b i32;
+  two16a, two16b, two17a, two17b, two18a, two18b i32 = ?;
   (two16a, two16b)    = Tuple<i32,i32>(4, 2); p("two16 is " + two16a + ", " + two16b); // two-Tuple using decompose and explicit types
   (two17a, two17b)    = Tuple         (4, 2); p("two17 is " + two17a + ", " + two17b); // two-Tuple using decompose and inferring generic
   (two18a, two18b)    =               (4, 2); p("two18 is " + two18a + ", " + two18b); // two-Tuple using decompore and tuple syntax sugar
@@ -172,8 +172,8 @@ tuple_negative {
   chck(t10a1 == 3, "t10a1");
   chck(!t10a2, "t10a2");
 
-  t10b1 i32;
-  t10b2 bool;
+  t10b1 i32 = ?;
+  t10b2 bool = ?;
   ib (i i32, b bool) { };
   (t10b1, t10b2) = ib(33,true);
   p("Tuple t10b1/2 = ib is " + t10b1 + ", " + t10b2);
@@ -200,7 +200,7 @@ tuple_negative {
   chck(t11a.values.1 == 25, "second must be 25");
   chck(t11a.values.2 == 125, "third must be 25");
 
-  t12a1,t12a2,t12a3 i32;
+  t12a1,t12a2,t12a3 i32 = ?;
   (t12a1,t12a2,t12a3) = t11(4);
   chck(t12a1 == 4, "first must be 4");
   chck(t12a2 == 16, "second must be 16");
@@ -221,7 +221,7 @@ tuple_negative {
   chck(t12g2 == 49, "second must be 49");
   chck(t12g3 == 343, "third must be 343");
 
-  t12h1, t12h2, t12h3 i32;
+  t12h1, t12h2, t12h3 i32 = ?;
   (_,_,t12h3) = t11(8); chck(t12h3 == 512, "t12h3 must be 512");
   (_,t12h2,_) = t11(8); chck(t12h2 ==  64, "t12h2 must be 64");
   (t12h1,_,_) = t11(8); chck(t12h1 ==   8, "t12h1 must be 8");
@@ -241,8 +241,8 @@ tuple_negative {
   (_,_) := (12, 23);
   (_,_) := (true, 23);
 
-  t13a1, t13a3 i32;
-  t13a2 bool;
+  t13a1, t13a3 i32 = ?;
+  t13a2 bool = ?;
   (t13a1,_,_) = (01, 12, 23); chck(t13a1 == 01, "t13a1 must be 01");
   (_,t13a2,_) = (01, 12, 23); // 24. should flag an error, illegal type
   (_,_,t13a3) = (01, 12, 23); chck(t13a3 == 23, "t13a3 must be 23");
@@ -256,8 +256,8 @@ tuple_negative {
   (_,t13d2,_) := (01, 12, 23); chck(t13d2 == 12, "t13d2 must be 12");
   (_,_,t13d3) := (01, 12, 23); chck(t13d3 == 23, "t13d3 must be 23");
 
-  t14a1, t14a3 i32;
-  t14a2 bool;
+  t14a1, t14a3 i32 = ?;
+  t14a2 bool = ?;
   (t14a1,_,_) = (01, true, 23); chck(t14a1 == 01, "t14a1 must be 01");
   (_,t14a2,_) = (01, true, 23); chck(t14a2      , "t14a2 must be true");
   (_,_,t14a3) = (01, true, 23); chck(t14a3 == 23, "t14a3 must be 23");
@@ -271,8 +271,8 @@ tuple_negative {
   (_,t14d2,_) := (01, true, 23); chck(t14d2      , "t14d2 must be true");
   (_,_,t14d3) := (01, true, 23); chck(t14d3 == 23, "t14d3 must be 23");
 
-  t15a1, t15a3 i32;
-  t15a2 bool;
+  t15a1, t15a3 i32 = ?;
+  t15a2 bool = ?;
   (t15a1,_,_) = (01, true, 23); chck(t15a1 == 01, "t15a1 must be 01");
   (_,t15a2,_) = (01, true, 23); chck(t15a2      , "t15a2 must be true");
   (_,_,t15a3) = (01, true, 23); chck(t15a3 == 23, "t15a3 must be 23");

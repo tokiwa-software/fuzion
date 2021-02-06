@@ -93,13 +93,13 @@ wrappingInteger<T: wrappingInteger<T>> : integer<T> is
   is thiz *° other
 
   # overflow checking operations
-  redef prefix -?          numOption<T> is if wrappedOnNeg        nil else -thiz
-  redef infix +? (other T) numOption<T> is if wrappedOnAdd(other) nil else thiz + other
-  redef infix -? (other T) numOption<T> is if wrappedOnSub(other) nil else thiz - other
-  redef infix *? (other T) numOption<T> is if wrappedOnMul(other) nil else thiz * other
+  redef prefix -?          numOption<T> is if wrappedOnNeg        then nil else -thiz
+  redef infix +? (other T) numOption<T> is if wrappedOnAdd(other) then nil else thiz + other
+  redef infix -? (other T) numOption<T> is if wrappedOnSub(other) then nil else thiz - other
+  redef infix *? (other T) numOption<T> is if wrappedOnMul(other) then nil else thiz * other
 
   # saturating  operations
-  redef prefix -^          => if wrappedOnNeg if thiz > zero min else max else - thiz
-  redef infix +^ (other T) => if overflowOnAdd(other) max else if underflowOnAdd(other) min else thiz + other
-  redef infix -^ (other T) => if overflowOnSub(other) max else if underflowOnSub(other) min else thiz - other
-  redef infix *^ (other T) => if overflowOnMul(other) max else if underflowOnMul(other) min else thiz * other
+  redef prefix -^          => if wrappedOnNeg if thiz > zero then min else max else - thiz
+  redef infix +^ (other T) => if overflowOnAdd(other) then max else if underflowOnAdd(other) then min else thiz + other
+  redef infix -^ (other T) => if overflowOnSub(other) then max else if underflowOnSub(other) then min else thiz - other
+  redef infix *^ (other T) => if overflowOnMul(other) then max else if underflowOnMul(other) then min else thiz * other

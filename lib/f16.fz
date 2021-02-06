@@ -25,8 +25,7 @@
 
 # f16 -- 16 bit floating point values
 #
-f16 value is
-  val f16
+f16(val f16) is
   infix + (other f16) f16 is intrinsic
   infix - (other f16) f16 is intrinsic
   infix * (other f16) f16 is intrinsic

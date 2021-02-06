@@ -29,7 +29,7 @@ choice_negative
   {
     A
     {
-      x A | i32 | string;  // 4. should flag an error: cyclic choice
+      x A | i32 | string = ?;  // 4. should flag an error: cyclic choice
       x = "Hello";
       s
       {
@@ -48,7 +48,7 @@ choice_negative
   {
     A
     {
-      x ref A | i32 | string;
+      x ref A | i32 | string = ?;
       x = "Hello";
       s
       {
@@ -67,7 +67,7 @@ choice_negative
   {
     A
     {
-      x i32 | A | string;  // 5. should flag an error: cyclic choice
+      x i32 | A | string = ?;  // 5. should flag an error: cyclic choice
       x = "Hello";
       s
       {
@@ -86,7 +86,7 @@ choice_negative
   {
     A
     {
-      x i32 | ref A | string;
+      x i32 | ref A | string = ?;
       x = "Hello";
       s
       {
@@ -105,7 +105,7 @@ choice_negative
   {
     A
     {
-      x i32 | string | A;  // 6. should flag an error: cyclic choice
+      x i32 | string | A = ?;  // 6. should flag an error: cyclic choice
       x = "Hello";
       s
       {
@@ -124,7 +124,7 @@ choice_negative
   {
     A
     {
-      x i32 | string | ref A;
+      x i32 | string | ref A = ?;
       x = "Hello";
       s
       {

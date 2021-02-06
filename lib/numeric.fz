@@ -72,6 +72,6 @@ numeric<T : numeric<T>> is
   infix >  (other T) bool is abstract
   infix >= (other T) bool is abstract
 
-  sign => if numeric.this == zero 0 else if numeric.this > zero 1 else -1
+  sign => if numeric.this == zero then 0 else if numeric.this > zero then 1 else -1
 
-  abs => if sign >= 0 thiz else -thiz
+  abs => if sign >= 0 then thiz else -thiz

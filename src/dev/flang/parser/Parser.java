@@ -303,11 +303,20 @@ feature     : visibility
       case actual: return false;
       default    : break;
       }
+    if (isNonFuncReturnTypePrefix())
+      {
+        return true;
+      }
+    var p = this;
+    if (isTypePrefix())
+      {
+        p = fork();
+        p.skipType();
+      }
     return
-      isReturnTypePrefix() ||
-      isInheritPrefix   () ||
-      isContractPrefix  () ||
-      isImplPrefix      ();
+      p.isInheritPrefix   () ||
+      p.isContractPrefix  () ||
+      p.isImplPrefix      ();
   }
 
 
@@ -1300,14 +1309,15 @@ typeList    : type ( COMMA typeList
   /**
    * Parse actualArgs
    *
-actualArgs  : LPAREN exprLst RPAREN
+actualArgs  :        exprLst
+            | LPAREN exprLst RPAREN
             | LPAREN RPAREN
             |
             ;
    */
   List<Expr> actualArgs()
   {
-    List<Expr> result = Call.NO_PARENTHESES;
+    List<Expr> result;
     int oldLine = sameLine(-1);
     if (skipLParen())
       {
@@ -1320,8 +1330,54 @@ actualArgs  : LPAREN exprLst RPAREN
             result = new List<>();
           }
         match(Token.t_rparen, "actualArgs");
+        sameLine(oldLine);
       }
-    sameLine(oldLine);
+    else
+      {
+        sameLine(oldLine);
+        switch (current())
+          {
+          case t_semicolon       :
+          case t_comma           :
+          case t_rparen          :
+          case t_lcrochet        :
+          case t_rcrochet        :
+          case t_lbrace          :
+          case t_rbrace          :
+          case t_op              :
+          case t_is              :
+          case t_pre             :
+          case t_post            :
+          case t_inv             :
+          case t_require         :
+          case t_ensure          :
+          case t_invariant       :
+          case t_if              :
+          case t_then            :
+          case t_else            :
+          case t_for             :
+          case t_do              :
+          case t_while           :
+          case t_until           :
+          case t_indentationLimit:
+          case t_lineLimit       :
+          case t_eof             :
+            {
+              // NYI: We could also allow the arguments to be indented in a new line such as
+              //
+              //    stdout.println
+              //      "Hallo, World!"
+              //
+              result = Call.NO_PARENTHESES;
+              break;
+            }
+          default:
+            {
+              result = exprList();
+              break;
+            }
+          }
+      }
     return result;
   }
 
@@ -2112,11 +2168,13 @@ loopProlog  : "for" indexVars "variant" exprInLine
             | "for" indexVars
             |                 "variant" exprInLine
             ;
-loopBody    : "while" exprAtMinIndent blockOpt
-            | "do"                    blockOpt
+loopBody    : "while" exprAtMinIndent <LF> blockOpt
+            | "while" exprAtMinIndent "do" blockOpt
+            |                         "do" blockOpt
             ;
-loopEpilog  : "until" exprAtMinIndent blockOpt elseBlockOpt
-            |                                  elseBlock
+loopEpilog  : "until" exprAtMinIndent  <LF>  blockOpt elseBlockOpt
+            | "until" exprAtMinIndent "then" blockOpt elseBlockOpt
+            |                                         elseBlock
             ;
    */
   Expr loop()
@@ -2125,15 +2183,15 @@ loopEpilog  : "until" exprAtMinIndent blockOpt elseBlockOpt
     int oldLine = sameLine(-1);
     List<Feature> indexVars  = new List<>();
     List<Feature> nextValues = new List<>();
-    var hasFor   =              skip(      Token.t_for    ); if (hasFor) { indexVars(indexVars, nextValues); }
-    var hasVar   =              skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()      : null;
-                                                             var i   = hasFor || v != null ? invariant(true)   : null;
-    var hasWhile =              skip(true, Token.t_while  ); var w   = hasWhile            ? exprAtMinIndent() : null;
-    var hasDo    = !hasWhile && skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? blockOpt()        : null;
-    var hasUntil =              skip(true, Token.t_until  ); var u   = hasUntil            ? exprAtMinIndent() : null;
-                                                             var ub  = hasUntil            ? blockOpt()        : null;
-                                                             var els1 =               fork().elseBlockOpt();
-                                                             var els =                       elseBlockOpt();
+    var hasFor   = skip(      Token.t_for    ); if (hasFor) { indexVars(indexVars, nextValues); }
+    var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()      : null;
+                                                var i   = hasFor || v != null ? invariant(true)   : null;
+    var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprAtMinIndent() : null;
+    var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? blockOpt()        : null;
+    var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprAtMinIndent() : null;
+                                                var ub  = hasUntil            ? blockOpt()        : null;
+                                                var els1 =               fork().elseBlockOpt();
+                                                var els =                       elseBlockOpt();
 
     if (!hasWhile && !hasDo && !hasUntil && els == null)
       {
@@ -2261,7 +2319,10 @@ cond        : exprInLine
   /**
    * Parse ifstmnt
    *
-ifstmt      : "if" exprInLine block elseBlock
+ifstmt      : "if" exprInLine thenPart
+            ;
+thenPart    : "then" block elseBlock
+            |        block elseBlock
             ;
    */
   If ifstmnt()
@@ -2270,6 +2331,7 @@ ifstmt      : "if" exprInLine block elseBlock
     int oldLine = sameLine(-1);
     match(Token.t_if, "ifstmnt");
     Expr e = exprInLine();
+    skip(Token.t_then);
     Block b = block(true);
     If result = new If(pos, e, b);
     Expr els = elseBlockOpt();
@@ -2748,7 +2810,9 @@ impl        : block
                                     skip(Token.t_intrinsic) ? Impl.INTRINSIC :
                                     new Impl(pos, block(true)      , Impl.Kind.Routine   ); }
     else if (skip("=>")) { result = new Impl(pos, block(true)      , Impl.Kind.RoutineDef); }
-    else if (skip('=') ) { result = new Impl(pos, exprAtMinIndent(), Impl.Kind.FieldInit ); }
+    else if (skip('=') ) { result = skip('?')
+                                    ? Impl.FIELD
+                                    : new Impl(pos, exprAtMinIndent(), Impl.Kind.FieldInit ); }
     else if (skip(":=")) { result = new Impl(pos, exprAtMinIndent(), Impl.Kind.FieldDef  ); }
     else                 { result = Impl.FIELD;                                             }
     return result;

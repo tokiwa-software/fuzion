@@ -30,7 +30,7 @@ typeinference
 
   chck(b bool, msg string)
   {
-    s string;
+    s string = ?;
     if b
       {
         s = "PASSED: ";

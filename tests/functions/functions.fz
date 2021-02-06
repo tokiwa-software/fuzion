@@ -32,7 +32,7 @@ functions
       out.println("here 1x0---------------");
       r1 i32 = f.call("hallo",3);
       out.println("here 2x0---------------");
-      r2 i32;
+      r2 i32 = ?;
       //r2 = f("welt",5);
       out.println("here 3x0---------------");
       out.println("" + r1 + "  " + r2);

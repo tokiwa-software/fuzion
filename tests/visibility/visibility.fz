@@ -28,7 +28,7 @@ visibility
 
   chck(b bool, msg string)
   {
-    s string;
+    s string = ?;
     if b
       {
         s = "PASSED: ";
@@ -41,7 +41,7 @@ visibility
   }
   chck(a,b i32, msg string)
   {
-    s string;
+    s string = ?;
     if a == b
       {
         s = "PASSED: ";

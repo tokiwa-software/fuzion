@@ -70,7 +70,7 @@ lists {
     }
   }
 
-  li List<i32>; li = List<i32>;
+  li List<i32> = List<i32>;
   li.add(3);
   li.add(4);
   li.add(5);
@@ -83,7 +83,7 @@ lists {
 
   Complex(r, i i32) { };
 
-  lc List<Complex>; lc = List<Complex>;
+  lc List<Complex> = List<Complex>;
   lc.add(Complex(3,4));
   lc.add(Complex(4,5));
   lc.add(Complex(5,6));
