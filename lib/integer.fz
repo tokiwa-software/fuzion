@@ -33,10 +33,17 @@
 integer<T : integer<T>> : numeric<T> is
 
   # division remainder
-  redef infix %  (other T) T
+  redef infix % (other T) T
     pre
       safety: other != zero
   is abstract
+
+  # test divisibility by other
+  infix %% (other T) bool
+    pre
+      safety: other != zero
+  is
+    thiz % other == thiz.zero
 
   # bitwise operations
   infix &  (other T) T is abstract
