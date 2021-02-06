@@ -234,6 +234,7 @@ public class C extends Backend
           {
             typesForClazz(c);
           }
+        _c.println("");
         for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
           {
             structsForClazz(c);
