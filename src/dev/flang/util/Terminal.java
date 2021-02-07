@@ -49,6 +49,14 @@ package dev.flang.util;
 public class Terminal extends ANY
 {
 
+  /**
+   * Are ANSI escapes enabled.
+   *
+   * Would be nice to check this via isattay(stdout), but this does now work in
+   * Java. Alternatives such as System.console() != null do not work, since
+   * System.console() is null if stdin is a file. System.getenv("TERM") also
+   * does not work, this remains set if stdout/stderr is piped into a file.
+   */
   public static final boolean ENABLED = !"true".equals(System.getenv("FUZION_DISABLE_ANSI_ESCAPES"));
 
   public static final String RESET                     = ENABLED ? "\033[0m" : "";
