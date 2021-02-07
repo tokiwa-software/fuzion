@@ -334,6 +334,13 @@ public class Lexer extends SourceFile
   private int _sameLine = -1;
 
 
+  /**
+   * Has the raw token before current() been skipped because ignore(t) resulted
+   * in true?
+   */
+  private boolean _ignoredTokenBefore = false;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -365,6 +372,7 @@ public class Lexer extends SourceFile
     _minIndent = original._minIndent;
     _minIndentStartPos = original._minIndentStartPos;
     _sameLine = original._sameLine;
+    _ignoredTokenBefore = original._ignoredTokenBefore;
   }
 
 
@@ -389,6 +397,34 @@ public class Lexer extends SourceFile
       t == Token.t_error   ||
       t == Token.t_ws      ||
       t == Token.t_comment;
+  }
+
+
+  /**
+   * Has there been an ingore()d token before current()?  With the default
+   * implementation of ignore(), this checks if there was whitespace or a
+   * comment before this token.
+   *
+   * @return true if the previous raw token was skipped
+   */
+  public boolean ignoredTokenBefore()
+  {
+    return _ignoredTokenBefore;
+  }
+
+
+  /**
+   * Is the next token after currnet() an ingore()d token?  With the default
+   * implementation of ignore(), this checks if there follows whitespace or
+   * a comment after this token.
+   *
+   * @return true if the next raw token would be skipped
+   */
+  public boolean ignoredTokenAfter()
+  {
+    var f = new Lexer(this);
+    f.nextRaw();
+    return ignore(f.currentNoLimit());
   }
 
 
@@ -446,11 +482,13 @@ public class Lexer extends SourceFile
   public void next()
   {
     _lastPos = _curPos;
-    do
+    _ignoredTokenBefore = false;
+    nextRaw();
+    while (ignore(currentNoLimit()))
       {
+        _ignoredTokenBefore = true;
         nextRaw();
       }
-    while (ignore(currentNoLimit()));
   }
 
 

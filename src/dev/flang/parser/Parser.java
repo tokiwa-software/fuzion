@@ -1335,7 +1335,8 @@ actualArgs  :        exprLst
     else
       {
         sameLine(oldLine);
-        switch (current())
+        var t = current();
+        switch (t)
           {
           case t_semicolon       :
           case t_comma           :
@@ -1344,7 +1345,6 @@ actualArgs  :        exprLst
           case t_rcrochet        :
           case t_lbrace          :
           case t_rbrace          :
-          case t_op              :
           case t_is              :
           case t_pre             :
           case t_post            :
@@ -1373,7 +1373,14 @@ actualArgs  :        exprLst
             }
           default:
             {
-              result = exprList();
+              if (t == Token.t_op && (!ignoredTokenBefore() || ignoredTokenAfter()))
+                { // We have an operator expression like this: 'f-xyz', 'f- xyz' or 'f - xyz'
+                  result = Call.NO_PARENTHESES;
+                }
+              else
+                { // We have an arg list, if t is operator the call looks like this: 'f -xyz'
+                  result = exprList();
+                }
               break;
             }
           }
