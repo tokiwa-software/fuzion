@@ -3547,6 +3547,25 @@ public class Feature extends ANY implements Stmnt, Comparable
    * feature's data, or we can copy the value if it is small enough and
    * immutable.
    *
+   * @return true iff outerRef is the copy of an outer value type, false iff
+   * otuerRef is the address of an outer value type or a reference to an outer
+   * reference type.
+   */
+  public boolean isOuterRefCopyOfValue()
+  {
+    if (PRECONDITIONS) require
+      (outer_ != null);
+
+    // if outher is a small and immutable value type, we can copy it:
+    return this.outer_.isBuiltInPrimitive();  // NYI: We might copy user defined small types as well
+  }
+
+
+  /**
+   * If outer is a value type, we can either store its address in the inner
+   * feature's data, or we can copy the value if it is small enough and
+   * immutable.
+   *
    * @return true iff outerRef is the address of an outer value type, false iff
    * otuerRef is the address of an outer value type or a reference to an outer
    * reference type.
@@ -3556,10 +3575,7 @@ public class Feature extends ANY implements Stmnt, Comparable
     if (PRECONDITIONS) require
       (outer_ != null);
 
-    Feature o = this.outer_;
-    // if outher is a small and immutable value type, we can copy it:
-    boolean smallImmutableValueType = o.isBuiltInPrimitive();  // NYI: We might copy user defined small types as well
-    return !o.isThisRef() && !smallImmutableValueType;
+    return !this.outer_.isThisRef() && !isOuterRefCopyOfValue();
   }
 
 

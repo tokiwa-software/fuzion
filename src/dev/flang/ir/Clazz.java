@@ -62,6 +62,10 @@ import dev.flang.util.SourcePosition;
 public class Clazz extends ANY implements Comparable
 {
 
+
+  /*-----------------------------  statics  -----------------------------*/
+
+
   //  static int counter;  {counter++; if ((counter&(counter-1))==0) System.out.println("######################"+counter+" "+this.getClass()); }
   // { if ((counter&(counter-1))==0) Thread.dumpStack(); }
 
@@ -441,6 +445,27 @@ Hellq is
 
 
   /**
+   * Determine the result clazz of a given feature f
+   *
+   * @param f a feature in the current Clazz that returns a result like a field.
+   *
+   * @return the static clazz of f's result
+   */
+  public Clazz actualResultClazz(Feature f)
+  {
+    return
+      !f.isOuterRef() ? actualClazz(f.resultType()) :
+      feature().isOuterRefAdrOfValue()  ? actualClazz(Types.t_ADDRESS) :
+      f.outer().isOuterRefCopyOfValue() ? actualClazz(f.resultType())  :
+      f.outer() == this.feature()       ? _outer
+      : // we have an inherited outer ref.
+        //
+        // NYI: test if type of inherited outer refs is set correctly
+        actualClazz(f.resultType());
+  }
+
+
+  /**
    * placeUsedFeature assigns a location within intances of this clazz to the
    * given field f.
    *
@@ -461,7 +486,7 @@ Hellq is
         f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
         )
       {
-        Clazz fieldClazz = actualClazz(f.resultType());
+        Clazz fieldClazz = actualResultClazz(f);
         clazzForField_.put(f, fieldClazz);
         offsetForField_.put(f, this._size);
         Type ft = fieldClazz._type;
@@ -615,7 +640,7 @@ Hellq is
     var result = clazzForField_.get(field);
     if (result == null)
       {
-        result = actualClazz(field.resultType());
+        result = actualResultClazz(field);
       }
     return result;
   }
@@ -821,7 +846,7 @@ Hellq is
               {
                 if (!af.resultType().isOpenGeneric()) // NYI: why?
                   {
-                    Clazz fieldClazz = actualClazz(af.resultType());
+                    Clazz fieldClazz = actualResultClazz(af);
                   }
               }
             if (isAddedToDynamicBinding(ff))

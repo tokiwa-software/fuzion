@@ -224,7 +224,7 @@ public class FUIR extends ANY
         if (e.getValue() == i)
           {
             var f = e.getKey();
-            var fcl = cc.actualClazz(f.resultType());
+            Clazz fcl = cc.actualResultClazz(f);
             if (fcl._type == Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
               {
                 return -2;
@@ -881,8 +881,6 @@ public class FUIR extends ANY
 
     var cf = call.calledFeature();
     var tclazz = Clazzes.clazz(call.target, outerClazz);
-    System.out.println("Dynamic targets for "+call.pos().show());
-
     var result = new List<Clazz>();
     for (var cl : Clazzes.all())
       {
