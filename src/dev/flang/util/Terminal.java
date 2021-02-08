@@ -57,7 +57,9 @@ public class Terminal extends ANY
    * System.console() is null if stdin is a file. System.getenv("TERM") also
    * does not work, this remains set if stdout/stderr is piped into a file.
    */
-  public static final boolean ENABLED = !"true".equals(System.getenv("FUZION_DISABLE_ANSI_ESCAPES"));
+  public static final boolean ENABLED =
+    !"true".equals(System.getProperty("FUZION_DISABLE_ANSI_ESCAPES")) &&
+    !"true".equals(System.getenv     ("FUZION_DISABLE_ANSI_ESCAPES"));
 
   public static final String RESET                     = ENABLED ? "\033[0m" : "";
   public static final String BOLD                      = ENABLED ? "\033[1m" : "";

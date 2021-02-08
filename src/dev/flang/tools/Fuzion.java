@@ -107,8 +107,8 @@ class Fuzion extends ANY
   static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
 
   static final String USAGE =
-    "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] (<main> | -)  --or--\n" +
-    "       " + CMD + " -pretty ({<file>} | -)\n";
+    "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] [-noANSI] (<main> | -)  --or--\n" +
+    "       " + CMD + " -pretty [-noANSI] ({<file>} | -)\n";
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -258,6 +258,10 @@ class Fuzion extends ANY
             System.out.println(USAGE);
             System.exit(0);
           }
+        else if (a.equals("-noANSI"))
+          {
+            System.setProperty("FUZION_DISABLE_ANSI_ESCAPES","true");
+          }
         else if (a.equals("-"))
           {
             _readStdin = true;
@@ -334,6 +338,10 @@ class Fuzion extends ANY
           {
             System.out.println(USAGE);
             System.exit(0);
+          }
+        else if (a.equals("-noANSI"))
+          {
+            System.setProperty("FUZION_DISABLE_ANSI_ESCAPES","true");
           }
         else if (a.startsWith("-"))
           {
