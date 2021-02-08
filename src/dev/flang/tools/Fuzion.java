@@ -104,6 +104,8 @@ class Fuzion extends ANY
 
   static final String CMD = System.getProperty("fuzion.command", "fz");
 
+  static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
+
   static final String USAGE =
     "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] (<main> | -)  --or--\n" +
     "       " + CMD + " -pretty ({<file>} | -)\n";
