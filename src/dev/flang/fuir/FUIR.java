@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
+import java.nio.charset.StandardCharsets;
+
 import dev.flang.ast.AdrToValue; // NYI: remove dependency
 import dev.flang.ast.Assign; // NYI: remove dependency
 import dev.flang.ast.Block; // NYI: remove dependency
@@ -1057,6 +1059,17 @@ public class FUIR extends ANY
 
     var ic = (IntConst) _codeIds.get(c).get(ix);
     return ic.l;
+  }
+
+  public byte[] strConst(int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.strConst);
+
+    var ic = (StrConst) _codeIds.get(c).get(ix);
+    return ic.str.getBytes(StandardCharsets.UTF_8);
   }
 
 }

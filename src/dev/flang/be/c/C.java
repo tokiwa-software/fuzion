@@ -728,7 +728,19 @@ public class C extends Backend
           case u64Const: { var ic = _fuir.u64Const(c, i); stack.push(CExpr.uint64const(ic)); break; }
           case strConst:
             {
-              stack.push(CExpr.dummy("NYI: String const"));
+              var bytes = _fuir.strConst(c, i);
+              StringBuilder sb = new StringBuilder();
+              for (var b : bytes)
+                {
+                  sb.append("\\"+((b >> 6) & 7)+((b >> 3) & 7)+(b & 7));
+                  sb.append("...");
+                }
+              var tmp = newTemp();
+              _c.println("fzTr_conststring *" + tmp + " = malloc(sizeof(fzTr_conststring));\n" +
+                         tmp + "->clazzId = -777777777; /* NYI: clazzId */\n" +
+                         tmp + "->fzF_1_data = (void *)\"" + sb + "\";\n" +
+                         tmp + "->fzF_3_length = " + bytes.length + ";\n");
+              stack.push(CExpr.ident(tmp));
               break;
             }
           case Match:
