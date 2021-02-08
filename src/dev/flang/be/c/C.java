@@ -150,7 +150,7 @@ public class C extends Backend
   /**
    * Counter for unique temp variables to hold function results
    */
-  private int _resultId = 0;
+  private int _tempVarId = 0;
 
 
   /**
@@ -336,6 +336,15 @@ public class C extends Backend
   String mangledFeatureBaseName(int f)
   {
     return mangle(_fuir.featureBaseName(f));
+  }
+
+
+  /**
+   * Create a name for a new local temp variable.
+   */
+  String newTemp()
+  {
+    return TEMP_VAR_PREFIX + (_tempVarId++);
   }
 
 
@@ -777,7 +786,7 @@ public class C extends Backend
           var rt = _fuir.clazzResultClazz(cc);
           if (rt != -1)
             {
-              var tmp = TEMP_VAR_PREFIX + (_resultId++);
+              var tmp = newTemp();
               res = CExpr.ident(tmp);
               _c.print(clazzTypeNameRefOrVal(rt) + " " + tmp + " = ");
             }
@@ -923,7 +932,7 @@ public class C extends Backend
         }
       case IMPLEMENTATIONS:
         {
-          _resultId = 0;  // reset counter for unique temp variables for function results
+          _tempVarId = 0;  // reset counter for unique temp variables for function results
           var f = _fuir.clazz2FeatureId(cl);
           switch (_fuir.featureKind(f))
             {
