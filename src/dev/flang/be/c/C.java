@@ -673,7 +673,8 @@ public class C extends Backend
                         {
                           _c.println("// Call target "+ _fuir.clazzAsString(cc) + " ... ");
                           // CExpr.int32const(clazzId2num(cl)
-                          call(cl, c, i, cc, stack);
+                          if (cc == ccs[ccs.length-1])
+                            call(cl, c, i, cc, stack);
                         }
                     }
                 }
