@@ -895,7 +895,6 @@ public class FUIR extends ANY
                 var in = cl._dynamicBinding.inner(cf);
                 if (in != null && in.feature().impl.kind_ != Impl.Kind.Abstract)
                   {
-                    System.out.println("Dynamic targets "+(result.size()+1)+": "+in);
                     if (in.toString().startsWith("hasInterval<i32>"))  // NYI: Remove, hasInterval<i32> should not be instantiated at all so it should not appear here...
                       {
                         System.err.println("***** ignoring target "+in);
