@@ -451,7 +451,21 @@ public class C extends Backend
    *
    * @param field the field id
    */
-  String fieldName(int offset, int field)
+  String fieldName(int offset, int fieldClazz)
+  {
+    return FIELD_PREFIX + offset + "_" + mangle(_fuir.clazzBaseName(fieldClazz));
+  }
+
+
+  /**
+   * Get the name of a field
+   *
+   * @param offset the slot offset of the field, needed to disambiguate fields
+   * with equal name.
+   *
+   * @param field the field id
+   */
+  String fieldName2(int offset, int field)
   {
     return FIELD_PREFIX + offset + "_" + mangle(_fuir.fieldName(field));
   }
@@ -466,7 +480,7 @@ public class C extends Backend
   String fieldNameInClazz(int cl, int field)
   {
     int offset = _fuir.clazzFieldOffset(cl, field);
-    return fieldName(offset, field);
+    return fieldName2(offset, field);
   }
 
 
@@ -600,19 +614,10 @@ public class C extends Backend
                       else
                         {
                           var cf = _fuir.clazzField(cl, i);
-                          String type;
-                          if (_fuir.fieldIsOuterRef(cf))
-                            {
-                              var ocl = _fuir.clazzOuterClazz(cl);
-                              type = clazzTypeNameOuterField(ocl);
-                            }
-                          else
-                            {
-                              check
-                                (fcl != -3); // NYI: ugly inline constant for ADDRESS type
-                              type = clazzTypeNameRefOrVal(fcl);
-                            }
-                          _c.print(" " + type + " " + fieldName(i, cf) + ";\n");
+                          String type = fcl == -3 // outer ref
+                            ? clazzTypeNameOuterField(_fuir.clazzOuterClazz(cl))
+                            : clazzTypeNameRefOrVal(fcl);
+                          _c.print(" " + type + " " + fieldName2(i, cf) + ";\n");
                         }
                     }
                   _c.print
@@ -664,8 +669,7 @@ public class C extends Backend
                   var fieldName = fieldNameInClazz(outercl, field);
                   var fieldAccess = ccodeAccessField(outercl, outer, fieldName);
                   if (_fuir.clazzIsChoice(fclazz) &&
-                      fclazz != valuecl &&  // NYI: interpreter checks fclazz._type != staticTypeOfValue
-                      !_fuir.fieldIsOuterRef(field) /* outerref might be an adr of a value type */
+                      fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
                       )
                     {
                       _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = "+value);
@@ -866,7 +870,6 @@ public class C extends Backend
   {
     CStmnt result = CStmnt.EMPTY;
     var ac = _fuir.callArgCount(c, i);
-    var cf = _fuir.clazz2FeatureId(cc);
     var rt = _fuir.clazzResultClazz(cc);
     switch (_fuir.clazzKind(cc))
       {
@@ -899,9 +902,9 @@ public class C extends Backend
               var t = stack.pop();
               if (rt != -1 && !_fuir.clazzIsValueLess(rt))
                 {
-                  var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
+                  var field = fieldName(_fuir.callFieldOffset(tc, c, i), cc);
                   CExpr res = ccodeAccessField(tc, t, field);
-                  if (_fuir.fieldIsOuterRef(cf) && outerClazzPassedAsAdrOfValue(rt))  // NYI: Better have a specific FUIR statement for this
+                  if (_fuir.clazzIsOuterRef(cc) && outerClazzPassedAsAdrOfValue(rt))  // NYI: Better have a specific FUIR statement for this
                     {
                       res = res.deref();
                     }

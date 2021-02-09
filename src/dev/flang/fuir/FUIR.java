@@ -310,12 +310,6 @@ public class FUIR extends ANY
       }
   }
 
-
-  public int clazz2FeatureId(int cl)
-  {
-    return _featureIds.get(_clazzIds.get(cl).feature());
-  }
-
   public String clazzBaseName(int cl)
   {
     return _clazzIds.get(cl).feature().featureName().baseName();
@@ -528,6 +522,22 @@ public class FUIR extends ANY
 
 
   /**
+   * Is the given field clazz a reference to an outer feature?
+   *
+   * @param cl a clazz id of kind Field
+   *
+   * @return true for automatically generated references to outer instance
+   */
+  public boolean clazzIsOuterRef(int cl)
+  {
+    if (PRECONDITIONS) require
+      (clazzKind(cl) == ClazzKind.Routine);
+
+    return _clazzIds.get(cl).feature().isOuterRef();
+  }
+
+
+  /**
    * Get the id of clazz consstring
    *
    * @param the id of connststring or -1 if that clazz was not created.
@@ -545,18 +555,6 @@ public class FUIR extends ANY
   public String fieldName(int f)
   {
     return _featureIds.get(f).featureName().baseName();
-  }
-
-  /**
-   * Is the given field a reference to an outer instance?
-   *
-   * @param f a field id
-   *
-   * @return true for automatically generated references to outer instances
-   */
-  public boolean fieldIsOuterRef(int f)
-  {
-    return _featureIds.get(f).isOuterRef();
   }
 
 
