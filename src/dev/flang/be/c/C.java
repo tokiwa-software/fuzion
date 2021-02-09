@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import java.util.ArrayList;
 import java.util.Stack;
 import java.util.TreeSet;
 
@@ -163,6 +164,115 @@ public class C extends Backend
   private final TreeSet<Integer> _declaredStructs = new TreeSet<>();
 
 
+  /**
+   * Mapping from clazz ids to C function names
+   */
+  private final CClazzNames _functionNames = new CClazzNames()
+    {
+      String prefix(int cl)
+      {
+        return C_FUNCTION_PREFIX;
+      }
+    };
+
+
+  /**
+   * Mapping from clazz ids to C struct names
+   */
+  private final CClazzNames _structNames = new CClazzNames()
+    {
+      String prefix(int cl)
+      {
+        return _fuir.clazzIsRef(cl) ? REF_TYPE_PREFIX : VAL_TYPE_PREFIX;
+      }
+    };
+
+
+  /**
+   * Generator and cache for C names created from clazzes.
+   */
+  abstract class CClazzNames
+  {
+
+    /**
+     * The cache mapping clazz num to C names
+     */
+    private final ArrayList<String> _cache = new ArrayList<>();
+
+
+    /**
+     * prefix to be used for given clazz
+     *
+     * @param cl a clazz id
+     *
+     * @return the prefix string to be used.
+     */
+    abstract String prefix(int cl);
+
+
+    /**
+     * Append mangled name of given feature to StringBuilder.  Prepend with outer
+     * feature's mangled name.
+     *
+     * Ex. Feature "i32.prefix -"  will result in  "i32__prefix_wm"
+     *
+     * @param f a feature id
+     *
+     * @param sb a StringBuilder
+     */
+    private void clazzMangledName(int cl, StringBuilder sb)
+    {
+      var o = _fuir.clazzOuterClazz(cl);
+      if (o != -1 &&
+          _fuir.clazzOuterClazz(o) != -1)
+        { // add o a prefix unless cl or o are universe
+          clazzMangledName(o, sb);
+          sb.append("__");
+        }
+      sb.append(mangle(_fuir.clazzBaseName(cl)));
+    }
+
+
+    /**
+     * Create unique mangled name for a clazz that can be used in C identifiers
+     * (i.e., it starts with letter or '_' and contains only ASCII letters,
+     * digits or '_'.
+     *
+     * @param cl id of a clazz
+     *
+     * @return the corresponding clazz
+     */
+    String get(int cl)
+    {
+      int num = clazzId2num(cl);
+      _cache.ensureCapacity(num + 1);
+      while (_cache.size() <= num)  // why is there no ArrayList.setSize?
+        {
+          _cache.add(null);
+        }
+      var res = _cache.get(num);
+      if (res == null)
+        {
+          var sb = new StringBuilder(prefix(cl));
+          clazzMangledName(cl, sb);
+          // NYI: there might be name conflicts due to different generic instances, so
+          // we need to add the clazz id or the actual generics if this is the case:
+          //
+          //   sb.append("_").append(clazzId2num(cl)).append("_");
+          res = sb.toString();
+
+          if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
+            {
+              Errors.warning("Max C99 identifier length exceeded for '" + res + "'");
+            }
+          _cache.set(num, res);
+        }
+
+      return res;
+    }
+  }
+
+
   /*---------------------------  consructors  ---------------------------*/
 
 
@@ -208,8 +318,7 @@ public class C extends Backend
   public void compile()
   {
     var cl = _fuir.mainClazzId();
-    var f = _fuir.clazz2FeatureId(cl);
-    var name = _fuir.featureBaseName(f);
+    var name = _fuir.clazzBaseName(cl);
     var cname = name + ".c";
     System.out.println(" + " + cname);
     try
@@ -241,7 +350,7 @@ public class C extends Backend
           {
             compileClazz(c, CompilePhase.IMPLEMENTATIONS);
           }
-        _c.println("int main(int argc, char **args) { " + clazzMangledName(cl) + "(NULL); }");
+        _c.println("int main(int argc, char **args) { " + _functionNames.get(cl) + "(NULL); }");
       }
     catch (IOException io)
       { // NYI: proper error handling
@@ -320,20 +429,6 @@ public class C extends Backend
 
 
   /**
-   * Get the base name of the given feature and mangle it.  Do not include outer
-   * feature's name.
-   *
-   * @parma f a feature id
-   *
-   * @return a mangled name such as "infix_wp" if f was "infix +".
-   */
-  String mangledFeatureBaseName(int f)
-  {
-    return mangle(_fuir.featureBaseName(f));
-  }
-
-
-  /**
    * Create a name for a new local temp variable.
    */
   String newTemp()
@@ -352,7 +447,7 @@ public class C extends Backend
    */
   String fieldName(int offset, int field)
   {
-    return FIELD_PREFIX + offset + "_" + mangledFeatureBaseName(field);
+    return FIELD_PREFIX + offset + "_" + mangle(_fuir.featureBaseName(field));
   }
 
   /**
@@ -379,39 +474,11 @@ public class C extends Backend
 
 
   /**
-   * Create a C identifier for the name of the struct and the struct type of an
-   * instance of the given clazz.
-   *
-   * @param cl a clazz id.
-   *
-   * @return corresponding C type name
-   */
-  String clazzTypeName(int cl)  // NYI: rename as clazzStructName
-  {
-    StringBuilder sb = new StringBuilder(_fuir.clazzIsRef(cl) ? REF_TYPE_PREFIX : VAL_TYPE_PREFIX);
-    clazzMangledName(cl, sb);
-    // NYI: there might be name conflicts due to different generic instances, so
-    // we need to add the clazz id or the actual generics if this is the case:
-    //
-    //   sb.append("_").append(clazzId2num(cl)).append("_");
-
-    String res = sb.toString();
-
-    if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
-      {
-        Errors.warning("Max C99 identifier length exceeded for '" + res + "'");
-      }
-
-    return res;
-  }
-
-
-  /**
    * The type of a value of the given clazz.
    */
   String clazzTypeNameRefOrVal(int cl)  // NYI: rename as clazzTypeName
   {
-    return clazzTypeName(cl) + (_fuir.clazzIsRef(cl) ? "*" : "");
+    return _structNames.get(cl) + (_fuir.clazzIsRef(cl) ? "*" : "");
   }
 
 
@@ -461,12 +528,12 @@ public class C extends Backend
         {
           if (isI32(cl))  // special handling of stdlib clazzes known to the compiler
             {
-              _c.print("typedef int32_t " + clazzTypeName(cl) + ";\n");
+              _c.print("typedef int32_t " + _structNames.get(cl) + ";\n");
             }
           else
             {
               _c.print
-                ("typedef struct " + clazzTypeName(cl) + " " + clazzTypeName(cl) + ";\n");
+                ("typedef struct " + _structNames.get(cl) + " " + _structNames.get(cl) + ";\n");
             }
           break;
         }
@@ -513,7 +580,7 @@ public class C extends Backend
                   // next, declare the struct itself
                   _c.print
                     ("// for " + _fuir.clazzAsString(cl) + "\n" +
-                     "struct " + clazzTypeName(cl) + " {\n" +
+                     "struct " + _structNames.get(cl) + " {\n" +
                      (_fuir.clazzIsRef(cl) ? "  uint32_t clazzId;\n" : ""));
                   for (int i = 0; i < _fuir.clazzSize(cl); i++)
                     {
@@ -808,7 +875,7 @@ public class C extends Backend
         {
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = CExpr.ident(DUMMY); // NYI: no result, needed as a workaround for functions returning current instance
-          var call = CExpr.call(clazzMangledName(cc), args(cl, c, i, cc, stack, ac, castTarget));
+          var call = CExpr.call(_functionNames.get(cc), args(cl, c, i, cc, stack, ac, castTarget));
           if (rt != -1 && !_fuir.clazzIsValueLess(rt))
             {
               var tmp = newTemp();
@@ -909,52 +976,6 @@ public class C extends Backend
 
 
   /**
-   * Append mangled name of given feature to StringBuilder.  Prepend with outer
-   * feature's mangled name.
-   *
-   * Ex. Feature "i32.prefix -"  will result in  "i32__prefix_wm"
-   *
-   * @param f a feature id
-   *
-   * @param sb a StringBuilder
-   */
-  public void clazzMangledName(int cl, StringBuilder sb)
-  {
-    var o = _fuir.clazzOuterClazz(cl);
-    if (o != -1 &&
-        _fuir.clazzOuterClazz(o) != -1)
-      { // add o a prefix unless cl or o are universe
-        clazzMangledName(o, sb);
-        sb.append("__");
-      }
-    var f = _fuir.clazz2FeatureId(cl);
-    sb.append(mangledFeatureBaseName(f));
-  }
-
-
-  /**
-   * Create unique a mangled name for a clazz that can be used in C identifiers
-   * (i.e., it starts with letter or '_' and contains only ASCII letters, digits
-   * or '_'.
-   *
-   * @param cl id of a clazz
-   */
-  String clazzMangledName(int cl)
-  {
-    var sb = new StringBuilder(C_FUNCTION_PREFIX);
-    clazzMangledName(cl, sb);
-    String res = sb.toString();
-
-    if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
-      {
-        Errors.warning("Max C99 identifier length exceeded for '" + res + "'");
-      }
-
-    return res;
-  }
-
-
-  /**
    * Create code for the C function implemeting the routine corresponding to the
    * given clazz.  Write code to _c.
    *
@@ -967,7 +988,7 @@ public class C extends Backend
     _c.print(res == -1 || _fuir.clazzIsValueLess(res)
              ? "void "
              : clazzTypeNameRefOrVal(res) + " ");
-    _c.print(clazzMangledName(cl));
+    _c.print(_functionNames.get(cl));
     _c.print("(");
     var oc = _fuir.clazzOuterClazz(cl);
     String comma = "";
@@ -1036,7 +1057,7 @@ public class C extends Backend
                 cFunctionDecl(cl);
                 _c.print(" {\n");
                 _c.indent();
-                _c.print("" + clazzTypeName(cl) + " *" + CURRENT.code() + " = malloc(sizeof(" + clazzTypeName(cl) + "));\n"+
+                _c.print("" + _structNames.get(cl) + " *" + CURRENT.code() + " = malloc(sizeof(" + _structNames.get(cl) + "));\n"+
                          (_fuir.clazzIsRef(cl) ? CURRENT.deref().field("clazzId").assign(CExpr.int32const(clazzId2num(cl))).code() + ";\n" : ""));
 
                 var or = _fuir.clazzOuterRef(cl);
@@ -1099,7 +1120,7 @@ public class C extends Backend
                 _c.print("\n// code for intrinsic " + _fuir.clazzAsString(cl) + ":\n");
                 cFunctionDecl(cl);
                 _c.print(" {\n");
-                switch (clazzMangledName(cl))
+                switch (_functionNames.get(cl))
                   {
                   case C_FUNCTION_PREFIX + "exitForCompilerTest"    : _c.print(" exit(arg0);\n"); break;
                   case C_FUNCTION_PREFIX + "fuzion__std__out__write": _c.print(" char c = (char) arg0; fwrite(&c, 1, 1, stdout);\n"); break;
@@ -1124,7 +1145,7 @@ public class C extends Backend
             case Field:
               break;
             default:
-              _c.println("// NYI: code for "+_fuir.featureKind(f)+" "+ clazzMangledName(cl));
+              _c.println("// NYI: code for "+_fuir.featureKind(f)+" "+ _functionNames.get(cl));
               break;
             }
           break;

@@ -298,6 +298,11 @@ public class FUIR extends ANY
     return _featureIds.get(_clazzIds.get(cl).feature());
   }
 
+  public String clazzBaseName(int cl)
+  {
+    return _clazzIds.get(cl).feature().featureName().baseName();
+  }
+
   public boolean clazzIsRef(int cl)
   {
     return _clazzIds.get(cl).isRef();
