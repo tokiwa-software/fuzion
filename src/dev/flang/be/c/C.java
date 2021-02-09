@@ -637,9 +637,10 @@ public class C extends Backend
                   var id = t.deref().field("clazzId");
                   if (ccs.length == 1)
                     {
+                      var tt = _fuir.clazzOuterClazz(ccs[0]);
                       _c.println("// Dynamic call to " + _fuir.callDebugString(c, i) + " with exactly one target");
-                      _c.print(CExpr.call("assert",new List<>(CExpr.eq(id, CExpr.int32const(clazzId2num(_fuir.clazzOuterClazz(ccs[0]))))))); // <-- perfect reason to make () optional
-                      _c.print(call(cl, c, i, ccs[0], stack));
+                      _c.print(CExpr.call("assert",new List<>(CExpr.eq(id, CExpr.int32const(clazzId2num(tt)))))); // <-- perfect reason to make () optional
+                      _c.print(call(cl, c, i, ccs[0], stack, tt));
                     }
                   else if (ccs.length == 0)
                     {
@@ -659,10 +660,11 @@ public class C extends Backend
                       for (var cc : ccs)
                         {
                           var stack2 = (Stack<CExpr>) stack.clone();
+                          var tt = _fuir.clazzOuterClazz(cc);
                           _c.println("// Call target "+ _fuir.clazzAsString(cc) + ":");
-                          _c.println("case " + CExpr.int32const(clazzId2num(_fuir.clazzOuterClazz(cc))).code() + ": {");
+                          _c.println("case " + CExpr.int32const(clazzId2num(tt)).code() + ": {");
                           _c.indent();
-                          _c.print(call(cl, c, i, cc, stack2));
+                          _c.print(call(cl, c, i, cc, stack2, tt));
                           if (res != null)
                             {
                               _c.print(res.assign(stack2.pop()));
@@ -684,7 +686,7 @@ public class C extends Backend
               else
                 {
                   var cc = _fuir.callCalledClazz(cl, c, i);
-                  _c.print(call(cl, c, i, cc, stack));
+                  _c.print(call(cl, c, i, cc, stack, -1));
                 }
               break;
             }
@@ -787,9 +789,13 @@ public class C extends Backend
    *
    * @param stack the stack containing the current arguments waiting to be used
    *
+   * @param castTarget if the type of the target instance of this call was
+   * checked against a different type, the target type should be cast to this
+   * clazz castTarget. -1 if no cast needed.
+   *
    * @return the code to perform the call
    */
-  CStmnt call(int cl, int c, int i, int cc, Stack<CExpr> stack)
+  CStmnt call(int cl, int c, int i, int cc, Stack<CExpr> stack, int castTarget)
   {
     CStmnt result = CStmnt.EMPTY;
     var ac = _fuir.callArgCount(c, i);
@@ -802,7 +808,7 @@ public class C extends Backend
         {
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = CExpr.ident(DUMMY); // NYI: no result, needed as a workaround for functions returning current instance
-          var call = CExpr.call(clazzMangledName(cc), args(cl, c, i, cc, stack, ac));
+          var call = CExpr.call(clazzMangledName(cc), args(cl, c, i, cc, stack, ac, castTarget));
           if (rt != -1 && !_fuir.clazzIsValueLess(rt))
             {
               var tmp = newTemp();
@@ -866,19 +872,19 @@ public class C extends Backend
    *
    * @return list of arguments to be passed to CExpr.call
    */
-  List<CExpr> args(int cl, int c, int i, int cc, Stack<CExpr> stack, int argCount)
+  List<CExpr> args(int cl, int c, int i, int cc, Stack<CExpr> stack, int argCount, int castTarget)
   {
     List<CExpr> result;
     if (argCount > 0)
       {
         if (_fuir.clazzIsValueLess(_fuir.clazzArgClazz(cc, argCount-1)))
           {
-            result = args(cl, c, i, cc, stack, argCount-1);
+            result = args(cl, c, i, cc, stack, argCount-1, castTarget);
           }
         else
           {
             var a = stack.pop();
-            result = args(cl, c, i, cc, stack, argCount-1);
+            result = args(cl, c, i, cc, stack, argCount-1, castTarget);
             result.add(a);
           }
       }
@@ -893,7 +899,9 @@ public class C extends Backend
           {
             var a = stack.pop();
             var targetAsValue = !outerClazzPassedAsAdrOfValue(tc);
-            result = new List<>(targetAsValue ? a : a.adrOf());
+            var a2 = targetAsValue    ? a  : a.adrOf();
+            var a3 = castTarget == -1 ? a2 : a2.castTo(clazzTypeNameRefOrVal(castTarget));
+            result = new List<>(a3);
           }
       }
     return result;

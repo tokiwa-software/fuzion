@@ -392,6 +392,24 @@ abstract class CExpr extends CStmnt
 
 
   /**
+   * Create CExpr that corresponds to C cast '(type)expr'
+   *
+   * @param value the value to be assigned to this.
+   *
+   * @return the resulting expression
+   */
+  CExpr castTo(String type)
+  {
+    CExpr inner = this;
+    return new CExpr()
+      {
+        int precedence() { return 3; }
+        void code(StringBuilder sb) { sb.append("(").append(type).append(")"); inner.code(sb, precedence()); }
+    };
+  }
+
+
+  /**
    * Create CExpr that corresponds to C assignment using '=' of value to this.
    *
    * @param value the value to be assigned to this.
