@@ -559,11 +559,13 @@ public class C extends Backend
    * Create C code to pass given number of arguments plus one implicit target
    * argument from the stack to a called feature.
    *
-   * @param targetAsValue true if the target is passes by value (which is true
-   * for ref types and for internal values types such as i32) or by address.
+   * @param cl clazz id of the currently compiled clazz
    *
-   * NYI: special handling of outer refs should not be part of BE, should be
-   * moved to FUIR
+   * @param c the code block currently compiled
+   *
+   * @param i index in c of the current call
+   *
+   * @param cc clazz that is called
    *
    * @param stack the stack containing the C code of the args.
    *
@@ -571,16 +573,23 @@ public class C extends Backend
    *
    * @return list of arguments to be passed to CExpr.call
    */
-  List<CExpr> args(int cl, int c, int i, Stack<CExpr> stack, int argCount)
+  List<CExpr> args(int cl, int c, int i, int cc, Stack<CExpr> stack, int argCount)
   {
     List<CExpr> result;
-    var a = stack.pop();
     if (argCount > 0)
       {
-        result = args(cl, c, i, stack, argCount-1);
-        result.add(a);
+        if (_fuir.clazzIsValueLess(_fuir.clazzArgClazz(cc, argCount-1)))
+          {
+            result = args(cl, c, i, cc, stack, argCount-1);
+          }
+        else
+          {
+            var a = stack.pop();
+            result = args(cl, c, i, cc, stack, argCount-1);
+            result.add(a);
+          }
       }
-    else
+    else // NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
       { // ref to outer instance, passed by reference
         var tc = _fuir.callTargetClazz(cl, c, i);
         if (tc == -1 || _fuir.clazzIsValueLess(tc))
@@ -589,6 +598,7 @@ public class C extends Backend
           }
         else
           {
+            var a = stack.pop();
             var targetAsValue = !outerClazzPassedAsAdrOfValue(tc);
             result = new List<>(targetAsValue ? a : a.adrOf());
           }
@@ -841,19 +851,19 @@ public class C extends Backend
         {
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = CExpr.ident(DUMMY); // NYI: no result, needed as a workaround for functions returning current instance
-          var call = CExpr.call(clazzMangledName(cc), args(cl, c, i, stack, ac));
+          var call = CExpr.call(clazzMangledName(cc), args(cl, c, i, cc, stack, ac));
           if (rt != -1 && !_fuir.clazzIsValueLess(rt))
             {
               var tmp = newTemp();
               res = CExpr.ident(tmp);
               result = CStmnt.seq(CStmnt.decl(clazzTypeNameRefOrVal(rt), tmp),
                                   res.assign(call));
+              stack.push(res);
             }
           else
             {
               result = call;
             }
-          stack.push(res);
           if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
           break;
         }
