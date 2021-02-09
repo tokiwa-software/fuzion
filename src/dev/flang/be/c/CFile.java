@@ -155,7 +155,7 @@ public class CFile extends ANY
    *
    * @param e the expression to print;
    */
-  public void print(CExpr e)
+  public void printExpr(CExpr e)
   {
     print(e.code());
   }

@@ -583,11 +583,11 @@ public class C extends Backend
       {
         passArgs(targetAsValue, stack, argCount-1);
         _c.print(", ");
-        _c.print(a);
+        _c.printExpr(a);
       }
     else
       { // ref to outer instance, passed by reference
-        _c.print(targetAsValue ? a : a.adrOf());
+        _c.printExpr(targetAsValue ? a : a.adrOf());
       }
   }
 
@@ -637,11 +637,11 @@ public class C extends Backend
                     }
                   else if (_fuir.clazzIsRef(fclazz))
                     {
-                      _c.print(fieldAccess.assign(value)); _c.println(";  /* ref type */");
+                      _c.printExpr(fieldAccess.assign(value)); _c.println(";  /* ref type */");
                     }
                   else
                     {
-                      _c.print(fieldAccess.assign(value)); _c.println(";  /* value type */");
+                      _c.printExpr(fieldAccess.assign(value)); _c.println(";  /* value type */");
                     }
                 }
               else
