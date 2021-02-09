@@ -601,7 +601,7 @@ public class C extends Backend
                     }
                   else if (_fuir.clazzIsRef(fclazz))
                     {
-                      _c.printExpr(fieldAccess.assign(value)); _c.println(";  /* ref type */");
+                      _c.printExpr(fieldAccess.assign(value.castTo(clazzTypeNameRefOrVal(fclazz)))); _c.println(";  /* ref type */");
                     }
                   else
                     {
