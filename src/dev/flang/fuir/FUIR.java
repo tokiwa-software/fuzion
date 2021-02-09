@@ -467,6 +467,18 @@ public class FUIR extends ANY
   }
 
 
+  /**
+   * Get the id of clazz consstring
+   *
+   * @param the id of connststring or -1 if that clazz was not created.
+   */
+  public int clazz_conststring()
+  {
+    var cc = Clazzes.conststring.getIfCreated();
+    return cc == null ? -1 : _clazzIds.get(cc);
+  }
+
+
   /*------------------------  accessing features  -----------------------*/
 
 

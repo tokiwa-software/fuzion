@@ -779,7 +779,7 @@ public class C extends Backend
                 }
               var tmp = newTemp();
               _c.println("fzTr_conststring *" + tmp + " = malloc(sizeof(fzTr_conststring));\n" +
-                         tmp + "->clazzId = -777777777; /* NYI: clazzId */\n" +
+                         tmp + "->clazzId = " + clazzId2num(_fuir.clazz_conststring()) + ";\n" +
                          tmp + "->fzF_1_data = (void *)\"" + sb + "\";\n" +
                          tmp + "->fzF_3_length = " + bytes.length + ";\n");
               stack.push(CExpr.ident(tmp));
