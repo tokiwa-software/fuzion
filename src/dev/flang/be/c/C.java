@@ -1041,6 +1041,7 @@ public class C extends Backend
                 _c.print(";\n");
                 break;
               }
+            case Abstract:
             case Field:
               break;
             default:
@@ -1144,6 +1145,7 @@ public class C extends Backend
                   }
                 _c.print("}\n");
               }
+            case Abstract:
             case Field:
               break;
             default:
