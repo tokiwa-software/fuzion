@@ -401,12 +401,13 @@ public class FUIR extends ANY
    *
    * @param cl a clazz id
    *
-   * @return clazz id of cl's outer clazz, -1 if cl is universe.
+   * @return clazz id of cl's outer clazz, -1 if cl is universe or a value-less
+   * type.
    */
   public int clazzOuterClazz(int cl)
   {
     var o = _clazzIds.get(cl)._outer;
-    return o == null ? -1 : _clazzIds.get(o);
+    return o == null || (o.size() == 0 && !o.isRef()) ? -1 : _clazzIds.get(o);
   }
 
 
