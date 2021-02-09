@@ -220,14 +220,6 @@ public class C extends Backend
            "#include <stdio.h>\n"+
            "#include <unistd.h>\n"+
            "#include <stdint.h>\n"+
-           "typedef union slot_u * slot_r;\n"+
-           "typedef union slot_u {\n"+
-           " slot_r ref;\n"+
-           " int32_t i32;\n"+
-           " uint32_t u32;\n"+
-           " int64_t i64;\n"+
-           " uint64_t u64;\n"+
-           "} slot_t;\n"+
            "\n" +
            "void * " + DUMMY + "0;\n"+
            "#define " + DUMMY + " (*" + DUMMY + "0)\n");
@@ -951,9 +943,12 @@ public class C extends Backend
       {
         _c.print(comma);
         var at = _fuir.clazzArgClazz(cl, i);
-        var t = at == -1 ? "slot_t" : clazzTypeNameRefOrVal(at);
-        _c.print(t + " arg" + i);
-        comma = ", ";
+        if (at != -1)
+          {
+            var t = clazzTypeNameRefOrVal(at);
+            _c.print(t + " arg" + i);
+            comma = ", ";
+          }
       }
     _c.print(")");
   }
