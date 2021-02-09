@@ -156,7 +156,7 @@ public class Errors extends ANY
   static String errorMessage(String s)
   {
     _count_++;
-    return Terminal.BOLD_RED + "error " + _count_ + Terminal.RESET + ": " + s;
+    return Terminal.BOLD_RED + "error " + _count_ + Terminal.RESET + Terminal.BOLD + ": " + s + Terminal.RESET;
   }
 
 
@@ -169,7 +169,7 @@ public class Errors extends ANY
    */
   static String warningMessage(String s)
   {
-    return Terminal.BOLD_YELLOW + "warning" + Terminal.RESET + ": " + s;
+    return Terminal.BOLD_YELLOW + "warning" + Terminal.RESET + Terminal.BOLD + ": " + s + Terminal.RESET;
   }
 
 
