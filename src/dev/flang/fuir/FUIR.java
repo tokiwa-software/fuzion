@@ -333,9 +333,15 @@ public class FUIR extends ANY
     var c = _clazzIds.get(cl);
     var a = c.feature().arguments.get(arg);
     var rc = c.actualClazz(a.resultType());
-    return addClazzIfNotVOID(rc);
+    if (rc.size() > 0 || rc.isRef())
+      {
+        return addClazzIfNotVOID(rc);
+      }
+    else
+      {
+        return -1;
+      }
   }
-
 
   /**
    * Get the feature id of the given argument of clazz cl
