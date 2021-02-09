@@ -556,58 +556,6 @@ public class C extends Backend
 
 
   /**
-   * Create C code to pass given number of arguments plus one implicit target
-   * argument from the stack to a called feature.
-   *
-   * @param cl clazz id of the currently compiled clazz
-   *
-   * @param c the code block currently compiled
-   *
-   * @param i index in c of the current call
-   *
-   * @param cc clazz that is called
-   *
-   * @param stack the stack containing the C code of the args.
-   *
-   * @param argCount the number of arguments.
-   *
-   * @return list of arguments to be passed to CExpr.call
-   */
-  List<CExpr> args(int cl, int c, int i, int cc, Stack<CExpr> stack, int argCount)
-  {
-    List<CExpr> result;
-    if (argCount > 0)
-      {
-        if (_fuir.clazzIsValueLess(_fuir.clazzArgClazz(cc, argCount-1)))
-          {
-            result = args(cl, c, i, cc, stack, argCount-1);
-          }
-        else
-          {
-            var a = stack.pop();
-            result = args(cl, c, i, cc, stack, argCount-1);
-            result.add(a);
-          }
-      }
-    else // NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
-      { // ref to outer instance, passed by reference
-        var tc = _fuir.callTargetClazz(cl, c, i);
-        if (tc == -1 || _fuir.clazzIsValueLess(tc))
-          {
-            result = new List<>();
-          }
-        else
-          {
-            var a = stack.pop();
-            var targetAsValue = !outerClazzPassedAsAdrOfValue(tc);
-            result = new List<>(targetAsValue ? a : a.adrOf());
-          }
-      }
-    return result;
-  }
-
-
-  /**
    * Create C code for code block c of clazz cl with given stack contents at
    * beginning of the block.  Write code to _c.
    *
@@ -895,6 +843,59 @@ public class C extends Backend
       }
     return result;
   }
+
+
+  /**
+   * Create C code to pass given number of arguments plus one implicit target
+   * argument from the stack to a called feature.
+   *
+   * @param cl clazz id of the currently compiled clazz
+   *
+   * @param c the code block currently compiled
+   *
+   * @param i index in c of the current call
+   *
+   * @param cc clazz that is called
+   *
+   * @param stack the stack containing the C code of the args.
+   *
+   * @param argCount the number of arguments.
+   *
+   * @return list of arguments to be passed to CExpr.call
+   */
+  List<CExpr> args(int cl, int c, int i, int cc, Stack<CExpr> stack, int argCount)
+  {
+    List<CExpr> result;
+    if (argCount > 0)
+      {
+        if (_fuir.clazzIsValueLess(_fuir.clazzArgClazz(cc, argCount-1)))
+          {
+            result = args(cl, c, i, cc, stack, argCount-1);
+          }
+        else
+          {
+            var a = stack.pop();
+            result = args(cl, c, i, cc, stack, argCount-1);
+            result.add(a);
+          }
+      }
+    else // NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
+      { // ref to outer instance, passed by reference
+        var tc = _fuir.callTargetClazz(cl, c, i);
+        if (tc == -1 || _fuir.clazzIsValueLess(tc))
+          {
+            result = new List<>();
+          }
+        else
+          {
+            var a = stack.pop();
+            var targetAsValue = !outerClazzPassedAsAdrOfValue(tc);
+            result = new List<>(targetAsValue ? a : a.adrOf());
+          }
+      }
+    return result;
+  }
+
 
 
   /**
