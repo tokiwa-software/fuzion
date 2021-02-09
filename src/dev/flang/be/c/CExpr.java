@@ -171,6 +171,15 @@ abstract class CExpr extends CStmnt
   }
 
 
+  /**
+   * Helper routine for eq/notEq to create eq-expr
+   *
+   * @param lhs left hand side of resulting expression
+   *
+   * @param op the operator, should be "==" or "!="
+   *
+   * @param rhs rightt hand side of resulting expression
+   */
   private static CExpr eq(CExpr lhs, String op, CExpr rhs)
   {
     return new CExpr()
@@ -186,12 +195,26 @@ abstract class CExpr extends CStmnt
   }
 
 
+  /**
+   * eq-expr comparing lhs and rhs using "=="
+   *
+   * @param lhs left hand side of resulting expression
+   *
+   * @param rhs rightt hand side of resulting expression
+   */
   static CExpr eq(CExpr lhs, CExpr rhs)
   {
     return eq(lhs, "==", rhs);
   }
 
 
+  /**
+   * eq-expr comparing lhs and rhs using "!="
+   *
+   * @param lhs left hand side of resulting expression
+   *
+   * @param rhs rightt hand side of resulting expression
+   */
   static CExpr notEq(CExpr lhs, CExpr rhs)
   {
     return eq(lhs, "!=", rhs);
