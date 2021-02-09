@@ -254,7 +254,7 @@ abstract class CExpr extends ANY
 
   /**
    * Convenience function to create the C code as a string. Try to avoid since
-   * this causes additional allocation and copying. Prefer to use
+   * this causes additional allocation and copying.  Prefer to use
    * code(StringBuilder).
    *
    * @return the C code of this CExpr
@@ -269,7 +269,7 @@ abstract class CExpr extends ANY
 
   /**
    * Create C code for this CExpr such that it can be used with an operator with
-   * given precedence. If needed, the code will be wrapped with '(' and ')'.
+   * given precedence.  If needed, the code will be wrapped with '(' and ')'.
    *
    * @param sb will be used to append the code to
    *
@@ -406,7 +406,6 @@ abstract class CExpr extends ANY
   {
     return new Unary(this, '-');
   }
-
 
 
   /**
