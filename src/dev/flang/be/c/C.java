@@ -43,6 +43,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
 
 
 /**
@@ -564,7 +565,7 @@ public class C extends Backend
 
   /**
    * Create C code to pass given number of arguments plus one implicit target
-   * argument from the stack to a called feature.  Write code to _c.
+   * argument from the stack to a called feature.
    *
    * @param targetAsValue true if the target is passes by value (which is true
    * for ref types and for internal values types such as i32) or by address.
@@ -575,20 +576,23 @@ public class C extends Backend
    * @param stack the stack containing the C code of the args.
    *
    * @param argCount the number of arguments.
+   *
+   * @return list of arguments to be passed to CExpr.call
    */
-  void passArgs(boolean targetAsValue, Stack<CExpr> stack, int argCount)
+  List<CExpr> args(boolean targetAsValue, Stack<CExpr> stack, int argCount)
   {
+    List<CExpr> result;
     var a = stack.pop();
     if (argCount > 0)
       {
-        passArgs(targetAsValue, stack, argCount-1);
-        _c.print(", ");
-        _c.printExpr(a);
+        result = args(targetAsValue, stack, argCount-1);
+        result.add(a);
       }
     else
       { // ref to outer instance, passed by reference
-        _c.printExpr(targetAsValue ? a : a.adrOf());
+        result = new List<>(targetAsValue ? a : a.adrOf());
       }
+    return result;
   }
 
 
@@ -840,10 +844,8 @@ public class C extends Backend
               res = CExpr.ident(tmp);
               _c.print(clazzTypeNameRefOrVal(rt) + " " + tmp + " = ");
             }
-          String n = clazzMangledName(cc);
-          _c.print("" + n + "(");
-          passArgs(!outerClazzPassedAsAdrOfValue(tc), stack, ac);
-          _c.println(");");
+          var call = CExpr.call(clazzMangledName(cc), args(!outerClazzPassedAsAdrOfValue(tc), stack, ac));
+          _c.print(call);
           stack.push(res);
           if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
           break;

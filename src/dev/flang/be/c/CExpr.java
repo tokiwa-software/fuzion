@@ -27,6 +27,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.c;
 
 import dev.flang.util.ANY;
+import dev.flang.util.List;
+
 
 /**
  * CExpr provides infrastructure to generate C code expressions
@@ -166,6 +168,32 @@ abstract class CExpr extends CStmnt
         int precedence() { return 1; }
         void code(StringBuilder sb) { sb.append('(').append(type).append("){").append(initializerList).append("}"); }
       };
+  }
+
+
+  /**
+   * Call such as name(arg,arg,arg,...)"
+   *
+   * @return the resulting expression
+   */
+  static CExpr call(String name, List<CExpr> args)
+  {
+    return new CExpr()
+      {
+        int precedence() { return 1; }
+        void code(StringBuilder sb)
+        {
+          sb.append(name).append("(");
+          String comma = "";
+          for (var a : args)
+            {
+              sb.append(comma);
+              a.code(sb);
+              comma = ",";
+            }
+          sb.append(")");
+        }
+    };
   }
 
 
