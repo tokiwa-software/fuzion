@@ -33,7 +33,7 @@ import dev.flang.util.ANY;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */
-abstract class CExpr extends ANY
+abstract class CExpr extends CStmnt
 {
 
 
@@ -242,29 +242,6 @@ abstract class CExpr extends ANY
    * @return the precedence used in this CExpr.
    */
   abstract int precedence();
-
-
-  /**
-   * Create the C code corresponding to this expression
-   *
-   * @param sb will be used to append the code to
-   */
-  abstract void code(StringBuilder sb);
-
-
-  /**
-   * Convenience function to create the C code as a string. Try to avoid since
-   * this causes additional allocation and copying.  Prefer to use
-   * code(StringBuilder).
-   *
-   * @return the C code of this CExpr
-   */
-  String code()
-  {
-    var sb = new StringBuilder();
-    code(sb);
-    return sb.toString();
-  }
 
 
   /**
