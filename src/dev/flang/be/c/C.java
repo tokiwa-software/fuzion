@@ -571,18 +571,27 @@ public class C extends Backend
    *
    * @return list of arguments to be passed to CExpr.call
    */
-  List<CExpr> args(boolean targetAsValue, Stack<CExpr> stack, int argCount)
+  List<CExpr> args(int cl, int c, int i, Stack<CExpr> stack, int argCount)
   {
     List<CExpr> result;
     var a = stack.pop();
     if (argCount > 0)
       {
-        result = args(targetAsValue, stack, argCount-1);
+        result = args(cl, c, i, stack, argCount-1);
         result.add(a);
       }
     else
       { // ref to outer instance, passed by reference
-        result = new List<>(targetAsValue ? a : a.adrOf());
+        var tc = _fuir.callTargetClazz(cl, c, i);
+        if (tc == -1 || _fuir.clazzIsValueLess(tc))
+          {
+            result = new List<>();
+          }
+        else
+          {
+            var targetAsValue = !outerClazzPassedAsAdrOfValue(tc);
+            result = new List<>(targetAsValue ? a : a.adrOf());
+          }
       }
     return result;
   }
@@ -671,7 +680,7 @@ public class C extends Backend
                       _c.println("// Dynamic call to " + _fuir.callDebugString(c, i));
                       CExpr res = null;
                       var rt = _fuir.clazzResultClazz(ccs[0]);
-                      if (rt != -1)
+                      if (rt != -1 && !_fuir.clazzIsValueLess(rt))
                         {
                           res = CExpr.ident(newTemp());
                           _c.println(clazzTypeNameRefOrVal(rt) + " " + res.code() + ";");
@@ -824,7 +833,7 @@ public class C extends Backend
     CStmnt result = CStmnt.EMPTY;
     var ac = _fuir.callArgCount(c, i);
     var cf = _fuir.clazz2FeatureId(cc);
-    var tc = _fuir.callTargetClazz(cl, c, i);
+    var rt = _fuir.clazzResultClazz(cc);
     switch (_fuir.featureKind(cf))
       {
       case Routine  :
@@ -832,9 +841,8 @@ public class C extends Backend
         {
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = CExpr.ident(DUMMY); // NYI: no result, needed as a workaround for functions returning current instance
-          var rt = _fuir.clazzResultClazz(cc);
-          var call = CExpr.call(clazzMangledName(cc), args(!outerClazzPassedAsAdrOfValue(tc), stack, ac));
-          if (rt != -1)
+          var call = CExpr.call(clazzMangledName(cc), args(cl, c, i, stack, ac));
+          if (rt != -1 && !_fuir.clazzIsValueLess(rt))
             {
               var tmp = newTemp();
               res = CExpr.ident(tmp);
@@ -851,15 +859,25 @@ public class C extends Backend
         }
       case Field:
         {
-          var t = stack.pop();
-          var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
-          var rt = _fuir.clazzResultClazz(cc);
-          CExpr res = ccodeAccessField(tc, t, field);
-          if (_fuir.fieldIsOuterRef(cf) && outerClazzPassedAsAdrOfValue(rt))  // NYI: Better have a specific FUIR statement for this
+          var tc = _fuir.callTargetClazz(cl, c, i);
+          if (tc != -1 && !_fuir.clazzIsValueLess(tc))
             {
-              res = res.deref();
+              var t = stack.pop();
+              if (rt != -1 && !_fuir.clazzIsValueLess(rt))
+                {
+                  var field = fieldName(_fuir.callFieldOffset(tc, c, i), cf);
+                  CExpr res = ccodeAccessField(tc, t, field);
+                  if (_fuir.fieldIsOuterRef(cf) && outerClazzPassedAsAdrOfValue(rt))  // NYI: Better have a specific FUIR statement for this
+                    {
+                      res = res.deref();
+                    }
+                  stack.push(res);
+                }
             }
-          stack.push(res);
+          else
+            {
+              check(rt == -1 || _fuir.clazzIsValueLess(rt));
+            }
           break;
         }
       case Abstract: throw new Error("This should not happen: Calling abstract '" + _fuir.clazzAsString(cc) + "'");
@@ -925,14 +943,14 @@ public class C extends Backend
   private void cFunctionDecl(int cl)
   {
     var res = _fuir.clazzResultClazz(cl);
-    _c.print(res == -1
+    _c.print(res == -1 || _fuir.clazzIsValueLess(res)
              ? "void "
              : clazzTypeNameRefOrVal(res) + " ");
     _c.print(clazzMangledName(cl));
     _c.print("(");
     var oc = _fuir.clazzOuterClazz(cl);
     String comma = "";
-    if (oc != -1)
+    if (oc != -1 && !_fuir.clazzIsValueLess(oc))
       {
         _c.print(clazzTypeNameOuterField(oc));
         _c.print(" fzouter");
@@ -943,7 +961,7 @@ public class C extends Backend
       {
         _c.print(comma);
         var at = _fuir.clazzArgClazz(cl, i);
-        if (at != -1)
+        if (at != -1 && !_fuir.clazzIsValueLess(at))
           {
             var t = clazzTypeNameRefOrVal(at);
             _c.print(t + " arg" + i);
@@ -1032,7 +1050,7 @@ public class C extends Backend
                                  "Java Error: " + sw);
                   }
                 var res = _fuir.clazzResultClazz(cl);
-                if (res != -1)
+                if (res != -1 && !_fuir.clazzIsValueLess(res))
                   {
                     var rf = _fuir.featureResultField(f);
                     if (rf != -1)

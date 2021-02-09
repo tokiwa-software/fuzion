@@ -289,14 +289,7 @@ public class FUIR extends ANY
     var rcl =
       cf.returnType.isConstructorType() ? cc :
       cf.isField() && cf.isOuterRef()   ? cc._outer._outer : cc.actualClazz(cf.resultType());
-    if (rcl.size() > 0 || rcl.isRef())
-      {
-        return addClazzIfNotVOID(rcl);
-      }
-    else
-      {
-        return -1;
-      }
+    return addClazzIfNotVOID(rcl);
   }
 
 
@@ -333,14 +326,7 @@ public class FUIR extends ANY
     var c = _clazzIds.get(cl);
     var a = c.feature().arguments.get(arg);
     var rc = c.actualClazz(a.resultType());
-    if (rc.size() > 0 || rc.isRef())
-      {
-        return addClazzIfNotVOID(rc);
-      }
-    else
-      {
-        return -1;
-      }
+    return addClazzIfNotVOID(rc);
   }
 
   /**
@@ -407,7 +393,7 @@ public class FUIR extends ANY
   public int clazzOuterClazz(int cl)
   {
     var o = _clazzIds.get(cl)._outer;
-    return o == null || (o.size() == 0 && !o.isRef()) ? -1 : _clazzIds.get(o);
+    return o == null ? -1 : _clazzIds.get(o);
   }
 
 
@@ -468,6 +454,16 @@ public class FUIR extends ANY
     return cl == -1
       ? "-- no clazz --"
       : _clazzIds.get(cl).toString();
+  }
+
+
+  /**
+   * Are values of this clazz essentially void values?
+   */
+  public boolean clazzIsValueLess(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    return cc.size() == 0 && !cc.isRef();
   }
 
 
