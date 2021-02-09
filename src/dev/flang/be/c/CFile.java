@@ -155,12 +155,15 @@ public class CFile extends ANY
    *
    * @param s the statement to print;
    */
-  public void print(CStmnt e)
+  public void print(CStmnt s)
   {
-    StringBuilder sb = new StringBuilder();
-    e.code(sb);
-    sb.append(";\n");
-    print(sb.toString());
+    if (s != CStmnt.EMPTY)
+      {
+        StringBuilder sb = new StringBuilder();
+        s.code(sb);
+        sb.append(";\n");
+        print(sb.toString());
+      }
   }
 
 
