@@ -673,19 +673,19 @@ public class C extends Backend
                   else
                     {
                       _c.println("// Dynamic call to " + _fuir.callDebugString(c, i));
-                      String res = null;
+                      CExpr res = null;
                       var rt = _fuir.clazzResultClazz(ccs[0]);
                       if (rt != -1)
                         {
-                          res = newTemp();
-                          _c.println(clazzTypeNameRefOrVal(rt) + " " + res + ";");
+                          res = CExpr.ident(newTemp());
+                          _c.println(clazzTypeNameRefOrVal(rt) + " " + res.code() + ";");
                         }
                       var ac = _fuir.callArgCount(c, i);
                       var tc = _fuir.callTargetClazz(cl, c, i);
-                      String target = newTemp();
+                      var t = CExpr.ident(newTemp());
                       var ti = stack.size() - ac - 1;
-                      _c.println(clazzTypeNameRefOrVal(tc) + " " + target + " = " + stack.get(ti).code() + ";");
-                      var t = CExpr.ident(target);
+                      _c.println(clazzTypeNameRefOrVal(tc) + " " + t.code() + ";");
+                      _c.println(t.assign(stack.get(ti)).code() + ";");
                       stack.set(ti, t);
                       var id = t.deref().field("clazzId");
                       _c.println("switch (" + id.code() + ") {");
@@ -697,9 +697,9 @@ public class C extends Backend
                           _c.println("case " + CExpr.int32const(clazzId2num(_fuir.clazzOuterClazz(cc))).code() + ": {");
                           _c.indent();
                           call(cl, c, i, cc, stack2);
-                          if (rt != -1)
+                          if (res != null)
                             {
-                              _c.println(res + " = " + stack2.pop().code() + ";");
+                              _c.println(res.assign(stack2.pop()).code() + ";");
                             }
                           _c.println("break;");
                           _c.unindent();
@@ -709,9 +709,9 @@ public class C extends Backend
                       _c.unindent();
                       _c.println("}");
                       stack.setSize(stack.size() - ac); // stack.popn(ac)
-                      if (rt != -1)
+                      if (res != null)
                         {
-                          stack.push(CExpr.ident(res));
+                          stack.push(res);
                         }
                     }
                 }
