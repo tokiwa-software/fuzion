@@ -171,6 +171,33 @@ abstract class CExpr extends CStmnt
   }
 
 
+  private static CExpr eq(CExpr lhs, String op, CExpr rhs)
+  {
+    return new CExpr()
+      {
+        int precedence() { return 8; }
+        void code(StringBuilder sb)
+        {
+          lhs.code(sb, precedence());
+          sb.append(op);
+          rhs.code(sb, precedence());
+        }
+    };
+  }
+
+
+  static CExpr eq(CExpr lhs, CExpr rhs)
+  {
+    return eq(lhs, "==", rhs);
+  }
+
+
+  static CExpr notEq(CExpr lhs, CExpr rhs)
+  {
+    return eq(lhs, "!=", rhs);
+  }
+
+
   /**
    * Call such as name(arg,arg,arg,...)"
    *

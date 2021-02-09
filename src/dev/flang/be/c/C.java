@@ -220,6 +220,7 @@ public class C extends Backend
            "#include <stdio.h>\n"+
            "#include <unistd.h>\n"+
            "#include <stdint.h>\n"+
+           "#include <assert.h>\n"+
            "\n" +
            "void * " + DUMMY + "0;\n"+
            "#define " + DUMMY + " (*" + DUMMY + "0)\n");
@@ -624,9 +625,20 @@ public class C extends Backend
             {
               if (_fuir.callIsDynamic(cl, c, i))
                 {
+                  _c.println("// Dynamic call to " + _fuir.callDebugString(c, i));
                   var ccs = _fuir.callCalledClazzes(cl, c, i);
+                  var ac = _fuir.callArgCount(c, i);
+                  var tc = _fuir.callTargetClazz(cl, c, i);
+                  var t = CExpr.ident(newTemp());
+                  var ti = stack.size() - ac - 1;
+                  _c.println(clazzTypeNameRefOrVal(tc) + " " + t.code() + ";");
+                  _c.print(t.assign(stack.get(ti)));
+                  stack.set(ti, t);
+                  var id = t.deref().field("clazzId");
                   if (ccs.length == 1)
                     {
+                      _c.println("// Dynamic call to " + _fuir.callDebugString(c, i) + " with exactly one target");
+                      _c.print(CExpr.call("assert",new List<>(CExpr.eq(id, CExpr.int32const(clazzId2num(_fuir.clazzOuterClazz(ccs[0]))))))); // <-- perfect reason to make () optional
                       _c.print(call(cl, c, i, ccs[0], stack));
                     }
                   else if (ccs.length == 0)
@@ -635,7 +647,6 @@ public class C extends Backend
                     }
                   else
                     {
-                      _c.println("// Dynamic call to " + _fuir.callDebugString(c, i));
                       CExpr res = null;
                       var rt = _fuir.clazzResultClazz(ccs[0]);
                       if (rt != -1 && !_fuir.clazzIsValueLess(rt))
@@ -643,14 +654,6 @@ public class C extends Backend
                           res = CExpr.ident(newTemp());
                           _c.println(clazzTypeNameRefOrVal(rt) + " " + res.code() + ";");
                         }
-                      var ac = _fuir.callArgCount(c, i);
-                      var tc = _fuir.callTargetClazz(cl, c, i);
-                      var t = CExpr.ident(newTemp());
-                      var ti = stack.size() - ac - 1;
-                      _c.println(clazzTypeNameRefOrVal(tc) + " " + t.code() + ";");
-                      _c.print(t.assign(stack.get(ti)));
-                      stack.set(ti, t);
-                      var id = t.deref().field("clazzId");
                       _c.println("switch (" + id.code() + ") {");
                       _c.indent();
                       for (var cc : ccs)
@@ -895,7 +898,6 @@ public class C extends Backend
       }
     return result;
   }
-
 
 
   /**
