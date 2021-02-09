@@ -40,6 +40,12 @@ abstract class CStmnt extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * break statement
+   */
+  static final CStmnt BREAK = new CStmnt() { void code(StringBuilder sb) { sb.append("break"); } };
+
+
   /*----------------------------  producers  ----------------------------*/
 
 

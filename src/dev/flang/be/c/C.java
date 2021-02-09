@@ -701,7 +701,7 @@ public class C extends Backend
                             {
                               _c.print(res.assign(stack2.pop()));
                             }
-                          _c.println("break;");
+                          _c.print(CStmnt.BREAK);
                           _c.unindent();
                           _c.println("}");
                         }
