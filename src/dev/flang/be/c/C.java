@@ -527,8 +527,7 @@ public class C extends Backend
    */
   public void typesForClazz(int cl)
   {
-    var f = _fuir.clazz2FeatureId(cl);
-    switch (_fuir.featureKind(f))
+    switch (_fuir.clazzKind(cl))
       {
       case Routine:
         {
@@ -557,8 +556,7 @@ public class C extends Backend
    */
   public void structsForClazz(int cl)
   {
-    var f = _fuir.clazz2FeatureId(cl);
-    switch (_fuir.featureKind(f))
+    switch (_fuir.clazzKind(cl))
       {
       case Routine:
         {
@@ -874,7 +872,7 @@ public class C extends Backend
     var ac = _fuir.callArgCount(c, i);
     var cf = _fuir.clazz2FeatureId(cc);
     var rt = _fuir.clazzResultClazz(cc);
-    switch (_fuir.featureKind(cf))
+    switch (_fuir.clazzKind(cc))
       {
       case Routine  :
       case Intrinsic:
@@ -921,7 +919,7 @@ public class C extends Backend
           break;
         }
       case Abstract: throw new Error("This should not happen: Calling abstract '" + _fuir.clazzAsString(cc) + "'");
-      default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.featureKind(cf));
+      default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.clazzKind(cc));
       }
     return result;
   }
@@ -1034,8 +1032,7 @@ public class C extends Backend
       {
       case FORWARDS:
         {
-          var f = _fuir.clazz2FeatureId(cl);
-          switch (_fuir.featureKind(f))
+          switch (_fuir.clazzKind(cl))
             {
             case Routine:
             case Intrinsic:
@@ -1054,8 +1051,7 @@ public class C extends Backend
       case IMPLEMENTATIONS:
         {
           _tempVarId = 0;  // reset counter for unique temp variables for function results
-          var f = _fuir.clazz2FeatureId(cl);
-          switch (_fuir.featureKind(f))
+          switch (_fuir.clazzKind(cl))
             {
             case Routine:
               {
@@ -1082,7 +1078,7 @@ public class C extends Backend
                         _c.print(CURRENT.deref().field(fieldNameInClazz(cl, af)).assign(CExpr.ident("arg" + i)));
                       }
                   }
-                var c = _fuir.featureCode(f);
+                var c = _fuir.clazzCode(cl);
                 var stack = new Stack<CExpr>();
                 try
                   {
@@ -1100,7 +1096,7 @@ public class C extends Backend
                 var res = _fuir.clazzResultClazz(cl);
                 if (res != -1 && !_fuir.clazzIsValueLess(res))
                   {
-                    var rf = _fuir.featureResultField(f);
+                    var rf = _fuir.clazzResultField(cl);
                     if (rf != -1)
                       {
                         _c.println("return " + CURRENT.deref().field(fieldNameInClazz(cl, rf)).code() + ";");
@@ -1151,7 +1147,7 @@ public class C extends Backend
             case Field:
               break;
             default:
-              _c.println("// NYI: code for "+_fuir.featureKind(f)+" "+ _functionNames.get(cl));
+              _c.println("// NYI: code for "+_fuir.clazzKind(cl)+" "+ _functionNames.get(cl));
               break;
             }
           break;

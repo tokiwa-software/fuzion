@@ -74,7 +74,7 @@ public class FUIR extends ANY
 
   private static final int CODE_BASE = 0x30000000;
 
-  public enum FeatureKind
+  public enum ClazzKind
   {
     Routine,
     Field,
@@ -293,6 +293,24 @@ public class FUIR extends ANY
   }
 
 
+  public ClazzKind clazzKind(int cl)
+  {
+    var ff = _clazzIds.get(cl).feature();
+    switch (ff.impl.kind_)
+      {
+      case Routine    :
+      case RoutineDef : return ClazzKind.Routine;
+      case Field      :
+      case FieldDef   :
+      case FieldActual:
+      case FieldInit  : return ClazzKind.Field;
+      case Intrinsic  : return ClazzKind.Intrinsic;
+      case Abstract   : return ClazzKind.Abstract;
+      default: throw new Error ("Unexpected feature impl kind: "+ff.impl.kind_);
+      }
+  }
+
+
   public int clazz2FeatureId(int cl)
   {
     return _featureIds.get(_clazzIds.get(cl).feature());
@@ -473,6 +491,43 @@ public class FUIR extends ANY
 
 
   /**
+   * Get the id of the result field of a given feature.
+   *
+   * @param cl a clazz id
+   *
+   * @return feature id of cl's result field or -1 if f has no result field or a
+   * result field that contains no data
+   */
+  public int clazzResultField(int cl)
+  {
+    var ff = _clazzIds.get(cl).feature();
+    var r = ff.resultField();
+    return r == null // NYI: should also check if result type if void or empty
+      ? -1
+      : _featureIds.add(r);
+  }
+
+
+  /**
+   * Get access to the code of a clazz of kind Routine
+   *
+   * @param cl a clazz id
+   *
+   * @return a code id referring to cl's code
+   */
+  public int clazzCode(int cl)
+  {
+    if (PRECONDITIONS) require
+      (clazzKind(cl) == ClazzKind.Routine);
+
+    var ff = _clazzIds.get(cl).feature();
+    var cod = ff.impl.code_;
+    List<Stmnt> code = toStack(cod);
+    return _codeIds.add(code);
+  }
+
+
+  /**
    * Get the id of clazz consstring
    *
    * @param the id of connststring or -1 if that clazz was not created.
@@ -510,23 +565,6 @@ public class FUIR extends ANY
     return _featureIds.get(f).isOuterRef();
   }
 
-  public FeatureKind featureKind(int f)
-  {
-    var ff = _featureIds.get(f);
-    switch (ff.impl.kind_)
-      {
-      case Routine:
-      case RoutineDef: return FeatureKind.Routine;
-      case Field:
-      case FieldDef:
-      case FieldActual:
-      case FieldInit: return FeatureKind.Field;
-      case Intrinsic: return FeatureKind.Intrinsic;
-      case Abstract: return FeatureKind.Abstract;
-      default: throw new Error ("Unexpected feature impl kind: "+ff.impl.kind_);
-      }
-  }
-
 
   /**
    * Is the given feature a reference to an outer feature?
@@ -538,24 +576,6 @@ public class FUIR extends ANY
   public boolean featureIsOuterRef(int f)
   {
     return _featureIds.get(f).isOuterRef();
-  }
-
-
-  /**
-   * Get the id of the result field of a given feature.
-   *
-   * @param f a feature id
-   *
-   * @return feature id of f's result field or -1 if f has no result field or a
-   * result field that contains no data
-   */
-  public int featureResultField(int f)
-  {
-    var ff = _featureIds.get(f);
-    var r = ff.resultField();
-    return r == null // NYI: should also check if result type if void or empty
-      ? -1
-      : _featureIds.add(r);
   }
 
 
@@ -686,17 +706,6 @@ public class FUIR extends ANY
       {
         System.err.println("Missing handling of "+s.getClass()+" in FUIR.toStack");
       }
-  }
-
-  public int featureCode(int f)
-  {
-    if (PRECONDITIONS) require
-      (featureKind(f) == FeatureKind.Routine);
-
-    var ff = _featureIds.get(f);
-    var cod = ff.impl.code_;
-    List<Stmnt> code = toStack(cod);
-    return _codeIds.add(code);
   }
 
 
