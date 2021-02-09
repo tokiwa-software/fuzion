@@ -151,6 +151,20 @@ public class CFile extends ANY
 
 
   /**
+   * Print the given CStmnt followed by a semicolon and LF.
+   *
+   * @param s the statement to print;
+   */
+  public void print(CStmnt e)
+  {
+    StringBuilder sb = new StringBuilder();
+    e.code(sb);
+    sb.append(";\n");
+    print(sb.toString());
+  }
+
+
+  /**
    * Print the given CExpr.
    *
    * @param e the expression to print;

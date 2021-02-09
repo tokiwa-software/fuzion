@@ -685,7 +685,7 @@ public class C extends Backend
                       var t = CExpr.ident(newTemp());
                       var ti = stack.size() - ac - 1;
                       _c.println(clazzTypeNameRefOrVal(tc) + " " + t.code() + ";");
-                      _c.println(t.assign(stack.get(ti)).code() + ";");
+                      _c.print(t.assign(stack.get(ti)));
                       stack.set(ti, t);
                       var id = t.deref().field("clazzId");
                       _c.println("switch (" + id.code() + ") {");
@@ -699,7 +699,7 @@ public class C extends Backend
                           call(cl, c, i, cc, stack2);
                           if (res != null)
                             {
-                              _c.println(res.assign(stack2.pop()).code() + ";");
+                              _c.print(res.assign(stack2.pop()));
                             }
                           _c.println("break;");
                           _c.unindent();
@@ -999,7 +999,7 @@ public class C extends Backend
                 if (or != -1)
                   {
                     var outer = CExpr.ident("fzouter");
-                    _c.print(CURRENT.deref().field(fieldNameInClazz(cl, or)).assign(outer).code() + ";\n");
+                    _c.print(CURRENT.deref().field(fieldNameInClazz(cl, or)).assign(outer));
                   }
 
                 var ac = _fuir.clazzArgCount(cl);
@@ -1008,7 +1008,7 @@ public class C extends Backend
                     var af = _fuir.clazzArg(cl, i);
                     if (af >= 0) // af < 0 for unused argument fields.
                       {
-                        _c.print(CURRENT.deref().field(fieldNameInClazz(cl, af)).assign(CExpr.ident("arg" + i)).code() + ";\n");
+                        _c.print(CURRENT.deref().field(fieldNameInClazz(cl, af)).assign(CExpr.ident("arg" + i)));
                       }
                   }
                 var c = _fuir.featureCode(f);
