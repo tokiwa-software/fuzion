@@ -46,7 +46,66 @@ abstract class CStmnt extends ANY
   static final CStmnt BREAK = new CStmnt() { void code(StringBuilder sb) { sb.append("break"); } };
 
 
+  /**
+   * empty statement
+   */
+  static final CStmnt EMPTY = new CStmnt() { void code(StringBuilder sb) { } };
+
+
   /*----------------------------  producers  ----------------------------*/
+
+
+  /**
+   * C declaration such as 'i32 i'
+   *
+   *
+   * @param type the type of the defined entity
+   *
+   * @param ident the name of the defined entity
+   *
+   * @return corresponding CStmnt
+   */
+  static CStmnt decl(String type, String ident)
+  {
+    return new CStmnt()
+      {
+        void code(StringBuilder sb)
+        {
+          sb.append(type).append(" ").append(ident);
+        }
+      };
+  }
+
+
+  /**
+   * C declaration such as 'i32 i'
+   *
+   *
+   * @param type the type of the defined entity
+   *
+   * @param ident the name of the defined entity
+   *
+   * @return corresponding CStmnt
+   */
+  static CStmnt seq(CStmnt... s)
+  {
+    return new CStmnt()
+      {
+        void code(StringBuilder sb)
+        {
+          var semi = "";
+          for (var cs : s)
+            {
+              if (cs != EMPTY)
+                {
+                  sb.append(semi);
+                  cs.code(sb);
+                  semi = ";\n";
+                }
+            }
+        }
+      };
+  }
 
 
   /*-------------------------  static methods  --------------------------*/

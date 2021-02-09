@@ -668,7 +668,7 @@ public class C extends Backend
                   var ccs = _fuir.callCalledClazzes(cl, c, i);
                   if (ccs.length == 1)
                     {
-                      call(cl, c, i, ccs[0], stack);
+                      _c.print(call(cl, c, i, ccs[0], stack));
                     }
                   else if (ccs.length == 0)
                     {
@@ -700,7 +700,7 @@ public class C extends Backend
                           _c.println("// Call target "+ _fuir.clazzAsString(cc) + ":");
                           _c.println("case " + CExpr.int32const(clazzId2num(_fuir.clazzOuterClazz(cc))).code() + ": {");
                           _c.indent();
-                          call(cl, c, i, cc, stack2);
+                          _c.print(call(cl, c, i, cc, stack2));
                           if (res != null)
                             {
                               _c.print(res.assign(stack2.pop()));
@@ -722,7 +722,7 @@ public class C extends Backend
               else
                 {
                   var cc = _fuir.callCalledClazz(cl, c, i);
-                  call(cl, c, i, cc, stack);
+                  _c.print(call(cl, c, i, cc, stack));
                 }
               break;
             }
@@ -824,9 +824,12 @@ public class C extends Backend
    * @param cc clazz that is called
    *
    * @param stack the stack containing the current arguments waiting to be used
+   *
+   * @return the code to perform the call
    */
-  void call(int cl, int c, int i, int cc, Stack<CExpr> stack)
+  CStmnt call(int cl, int c, int i, int cc, Stack<CExpr> stack)
   {
+    CStmnt result = CStmnt.EMPTY;
     var ac = _fuir.callArgCount(c, i);
     var cf = _fuir.clazz2FeatureId(cc);
     var tc = _fuir.callTargetClazz(cl, c, i);
@@ -838,14 +841,18 @@ public class C extends Backend
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = CExpr.ident(DUMMY); // NYI: no result, needed as a workaround for functions returning current instance
           var rt = _fuir.clazzResultClazz(cc);
+          var call = CExpr.call(clazzMangledName(cc), args(!outerClazzPassedAsAdrOfValue(tc), stack, ac));
           if (rt != -1)
             {
               var tmp = newTemp();
               res = CExpr.ident(tmp);
-              _c.print(clazzTypeNameRefOrVal(rt) + " " + tmp + " = ");
+              result = CStmnt.seq(CStmnt.decl(clazzTypeNameRefOrVal(rt), tmp),
+                                  res.assign(call));
             }
-          var call = CExpr.call(clazzMangledName(cc), args(!outerClazzPassedAsAdrOfValue(tc), stack, ac));
-          _c.print(call);
+          else
+            {
+              result = call;
+            }
           stack.push(res);
           if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
           break;
@@ -866,6 +873,7 @@ public class C extends Backend
       case Abstract: throw new Error("This should not happen: Calling abstract '" + _fuir.clazzAsString(cc) + "'");
       default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.featureKind(cf));
       }
+    return result;
   }
 
 
