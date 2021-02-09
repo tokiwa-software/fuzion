@@ -666,15 +666,52 @@ public class C extends Backend
                     {
                       call(cl, c, i, ccs[0], stack);
                     }
+                  else if (ccs.length == 0)
+                    {
+                      _c.println("fprintf(stderr,\"*** no possible call target found\\n\"); exit(1);");
+                    }
                   else
                     {
-                      _c.println("// NYI: Dynamic binding for call to " + _fuir.callDebugString(c, i) + " not supported");
+                      _c.println("// Dynamic call to " + _fuir.callDebugString(c, i));
+                      String res = null;
+                      var rt = _fuir.clazzResultClazz(ccs[0]);
+                      if (rt != -1)
+                        {
+                          res = newTemp();
+                          _c.println(clazzTypeNameRefOrVal(rt) + " " + res + ";");
+                        }
+                      var ac = _fuir.callArgCount(c, i);
+                      var tc = _fuir.callTargetClazz(cl, c, i);
+                      String target = newTemp();
+                      var ti = stack.size() - ac - 1;
+                      _c.println(clazzTypeNameRefOrVal(tc) + " " + target + " = " + stack.get(ti).code() + ";");
+                      var t = CExpr.ident(target);
+                      stack.set(ti, t);
+                      var id = t.deref().field("clazzId");
+                      _c.println("switch (" + id.code() + ") {");
+                      _c.indent();
                       for (var cc : ccs)
                         {
-                          _c.println("// Call target "+ _fuir.clazzAsString(cc) + " ... ");
-                          // CExpr.int32const(clazzId2num(cl)
-                          if (cc == ccs[ccs.length-1])
-                            call(cl, c, i, cc, stack);
+                          var stack2 = (Stack<CExpr>) stack.clone();
+                          _c.println("// Call target "+ _fuir.clazzAsString(cc) + ":");
+                          _c.println("case " + CExpr.int32const(clazzId2num(_fuir.clazzOuterClazz(cc))).code() + ": {");
+                          _c.indent();
+                          call(cl, c, i, cc, stack2);
+                          if (rt != -1)
+                            {
+                              _c.println(res + " = " + stack2.pop().code() + ";");
+                            }
+                          _c.println("break;");
+                          _c.unindent();
+                          _c.println("}");
+                        }
+                      _c.println("default: { fprintf(stderr,\"*** unhandled dynamic call target %d\\n\", " + id.code() + "); exit(1); }");
+                      _c.unindent();
+                      _c.println("}");
+                      stack.setSize(stack.size() - ac); // stack.popn(ac)
+                      if (rt != -1)
+                        {
+                          stack.push(CExpr.ident(res));
                         }
                     }
                 }
