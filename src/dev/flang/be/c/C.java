@@ -399,7 +399,7 @@ public class C extends Backend
 
     if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
       {
-        System.err.println("*** WARNING: Max C99 identifier length exceeded for '" + res + "'");
+        Errors.warning("Max C99 identifier length exceeded for '" + res + "'");
       }
 
     return res;
@@ -947,7 +947,7 @@ public class C extends Backend
 
     if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
       {
-        System.err.println("*** WARNING: Max C99 identifier length exceeded for '" + res + "'");
+        Errors.warning("Max C99 identifier length exceeded for '" + res + "'");
       }
 
     return res;
