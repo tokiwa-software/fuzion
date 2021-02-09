@@ -253,7 +253,8 @@ public class C extends Backend
       var res = _cache.get(num);
       if (res == null)
         {
-          var sb = new StringBuilder(prefix(cl));
+          var p = prefix(cl);
+          var sb = new StringBuilder(p);
           clazzMangledName(cl, sb);
           // NYI: there might be name conflicts due to different generic instances, so
           // we need to add the clazz id or the actual generics if this is the case:
@@ -263,7 +264,12 @@ public class C extends Backend
 
           if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
             {
-              Errors.warning("Max C99 identifier length exceeded for '" + res + "'");
+              var s = p + "_S" + num + "_";
+              res = s +
+                res.substring(p.length(), p.length() + 10) + "__" +
+                res.substring(res.length() - MAX_C99_IDENTIFIER_LENGTH + s.length() + 12);
+              check
+                (res.length() == MAX_C99_IDENTIFIER_LENGTH);
             }
           _cache.set(num, res);
         }
@@ -413,10 +419,10 @@ public class C extends Backend
         else if ('=' == cp) { sb.append("e"); }
         else if ('!' == cp) { sb.append("n"); }
         else if ('^' == cp) { sb.append("c"); }
-        else if ('(' == cp) { sb.append("L"); }
-        else if (')' == cp) { sb.append("R"); }
+        else if ('(' == cp) { sb.append("C"); }
+        else if (')' == cp) { sb.append("D"); }
         else if ('?' == cp) { sb.append("Q"); }
-        else if ('$' == cp) { sb.append("D"); }
+        else if ('$' == cp) { sb.append("S"); }
         else if ('%' == cp) { sb.append("P"); }
         else if ('°' == cp) { sb.append("O"); }
         else
