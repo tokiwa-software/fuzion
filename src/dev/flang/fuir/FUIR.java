@@ -539,52 +539,24 @@ public class FUIR extends ANY
   }
 
 
-  /*------------------------  accessing features  -----------------------*/
+  /*------------------------  accessing fields  -----------------------*/
 
 
-  public String featureBaseName(int f)
+  public String fieldName(int f)
   {
     return _featureIds.get(f).featureName().baseName();
   }
 
-  public boolean featureIsUniverse(int f)
-  {
-    return _featureIds.get(f).isUniverse();
-  }
-
-  public int featureOuter(int f)
-  {
-    if (PRECONDITIONS) require
-      (!featureIsUniverse(f));
-
-    return _featureIds.add(_featureIds.get(f).outer());
-  }
-
+  /**
+   * Is the given field a reference to an outer instance?
+   *
+   * @param f a field id
+   *
+   * @return true for automatically generated references to outer instances
+   */
   public boolean fieldIsOuterRef(int f)
   {
     return _featureIds.get(f).isOuterRef();
-  }
-
-
-  /**
-   * Is the given feature a reference to an outer feature?
-   *
-   * @param f a feature id
-   *
-   * @return true for automatically generated references to outer features
-   */
-  public boolean featureIsOuterRef(int f)
-  {
-    return _featureIds.get(f).isOuterRef();
-  }
-
-
-  // String representation of feature, for debugging only
-  public String featureAsString(int f)
-  {
-    return f == -1
-      ? "-- no field --"
-      : _featureIds.get(f).qualifiedName();
   }
 
 

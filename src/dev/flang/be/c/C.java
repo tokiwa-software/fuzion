@@ -453,7 +453,7 @@ public class C extends Backend
    */
   String fieldName(int offset, int field)
   {
-    return FIELD_PREFIX + offset + "_" + mangle(_fuir.featureBaseName(field));
+    return FIELD_PREFIX + offset + "_" + mangle(_fuir.fieldName(field));
   }
 
   /**
@@ -665,10 +665,10 @@ public class C extends Backend
                   var fieldAccess = ccodeAccessField(outercl, outer, fieldName);
                   if (_fuir.clazzIsChoice(fclazz) &&
                       fclazz != valuecl &&  // NYI: interpreter checks fclazz._type != staticTypeOfValue
-                      !_fuir.featureIsOuterRef(field) /* outerref might be an adr of a value type */
+                      !_fuir.fieldIsOuterRef(field) /* outerref might be an adr of a value type */
                       )
                     {
-                      _c.println("// NYI: Assign to choice field "+outer+"."+_fuir.featureAsString(field)+" = "+value);
+                      _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = "+value);
                     }
                   else if (_fuir.clazzIsRef(fclazz))
                     {
@@ -678,10 +678,6 @@ public class C extends Backend
                     {
                       _c.printExpr(fieldAccess.assign(value)); _c.println(";  /* value type */");
                     }
-                }
-              else
-                {
-                  _c.println("// NOP assignment to " + _fuir.featureAsString(field) + " of void type removed");
                 }
               break;
             }
