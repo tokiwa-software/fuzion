@@ -1061,6 +1061,11 @@ public class C extends Backend
    */
   public void compileClazz(int cl, CompilePhase phase)
   {
+    if (_fuir.clazzAsString(cl).startsWith("integer<")) // NYI: Should be _fuir.clazzIsCalled() or similar
+      {
+        System.err.println("Skipping: "+_fuir.clazzAsString(cl));
+        return;
+      }
     switch (phase)
       {
       case FORWARDS:
