@@ -152,7 +152,7 @@ public class FUIR extends ANY
   int addClazzIfNotVOID(Clazz cl)
   {
     if (PRECONDITIONS) require
-                         (cl._type != Types.t_ADDRESS)
+                         (cl._type != Types.t_ADDRESS);
 
     if (cl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
       {
