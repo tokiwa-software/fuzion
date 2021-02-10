@@ -202,7 +202,8 @@ Hellq is
        Errors.count() > 0 || actualType.isFreeFromFormalGenerics(),
        actualType.featureOfType().outer() == null || outer.feature().inheritsFrom(actualType.featureOfType().outer()),
        actualType == Types.t_ERROR ||
-       actualType == Types.t_VOID  || actualType.featureOfType().outer() != null || outer == null);
+       actualType == Types.t_VOID  || actualType.featureOfType().outer() != null || outer == null,
+       outer == null || outer._type != Types.t_ADDRESS);
 
     this._type = actualType;
     this._outer = outer;
@@ -544,7 +545,10 @@ Hellq is
                         _dynamicBinding.addFieldOffset(f, off);
                       }
                   }
-                if (f.isCalledDynamically() && Clazzes.isCalledDynamically(f))
+                if (f.isCalledDynamically() &&
+                    Clazzes.isCalledDynamically(f) &&
+                    this._type != Types.t_ADDRESS /* NYI: better something like this.isInstantiated() */
+                    )
                   {
                     var innerClazz = lookup(f, Call.NO_GENERICS, f.isUsedAt());
                     var callable = Clazzes._backend_.callable(false, innerClazz, this);
@@ -834,7 +838,9 @@ Hellq is
     new FindClassesVisitor().visitAncestors(f);
     for (Feature ff: feature().allInnerAndInheritedFeatures())
       {
-        if (Clazzes.isUsed(ff, this))
+        if (Clazzes.isUsed(ff, this) &&
+            this._type != Types.t_ADDRESS // NYI: would be better is isUSED would return false for ADDRESS
+            )
           {
             Feature af = findRedefinition(ff);
             check
