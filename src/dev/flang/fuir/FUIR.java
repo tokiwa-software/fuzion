@@ -465,6 +465,48 @@ public class FUIR extends ANY
   }
 
 
+  /**
+   * Check if a clazz is the standard lib bool.fz.
+   *
+   * @param cl a clazz id
+   *
+   * @return true iff cl is bool.fz.
+   */
+  public boolean clazzIsBool(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    return cc == Clazzes.bool.getIfCreated();
+  }
+
+
+  /**
+   * Check if a clazz is the standard lib TRUE.fz.
+   *
+   * @param cl a clazz id
+   *
+   * @return true iff cl is TRUE.fz.
+   */
+  public boolean clazzIsTRUE(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    return cc == Clazzes.c_TRUE.getIfCreated();
+  }
+
+
+  /**
+   * Check if a clazz is the standard lib FALSE.fz.
+   *
+   * @param cl a clazz id
+   *
+   * @return true iff cl is FALSE.fz.
+   */
+  public boolean clazzIsFALSE(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    return cc == Clazzes.c_FALSE.getIfCreated();
+  }
+
+
   // String representation of clazz, for debugging only
   public String clazzAsString(int cl)
   {
