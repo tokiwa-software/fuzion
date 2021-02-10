@@ -659,9 +659,12 @@ public class C extends Backend
           {
           case AdrToValue:
             { // dereference an outer reference
-              var a = stack.pop();
-              var v = a;  /* a.deref(); --  NYI: AdrToValue is NOP for now since outer refs as values not supported in C backend yet */
-              stack.push(v);
+              if (false)
+                {
+                  var a = stack.pop();
+                  var v = a;  /* a.deref(); --  NYI: AdrToValue is NOP for now since outer refs as values not supported in C backend yet */
+                  stack.push(v);
+                }
               break;
             }
           case Assign:
