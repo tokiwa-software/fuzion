@@ -141,7 +141,7 @@ public class FUIR extends ANY
   {
     if (PRECONDITIONS) require
                          (cl._type != Types.t_VOID,  // NYI: would be better to not create these dummy clazzes in the first place
-                          cl._type != Types.t_ADDRESS)
+                          cl._type != Types.t_ADDRESS);
 
     int result = _clazzIds.add(cl);
     _featureIds.add(cl.feature());
