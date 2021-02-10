@@ -965,6 +965,8 @@ public class C extends Backend
           {
             var a = stack.pop();
             result = args(cl, c, i, cc, stack, argCount-1, castTarget);
+            var ac = _fuir.clazzArgClazz(cc, argCount-1);
+            a = _fuir.clazzIsRef(ac) ? a.castTo(clazzTypeNameRefOrVal(ac)) : a;
             result.add(a);
           }
       }
