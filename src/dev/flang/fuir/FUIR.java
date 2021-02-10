@@ -530,9 +530,6 @@ public class FUIR extends ANY
    */
   public boolean clazzIsOuterRef(int cl)
   {
-    if (PRECONDITIONS) require
-      (clazzKind(cl) == ClazzKind.Routine);
-
     return _clazzIds.get(cl).feature().isOuterRef();
   }
 
@@ -789,8 +786,8 @@ public class FUIR extends ANY
 
     var outerClazz = _clazzIds.get(cl);
     var a = (Assign) _codeIds.get(c).get(ix);
-    var vcl = Clazzes.clazz(a.value, outerClazz);
-    return addClazzIfNotVOID(vcl);
+    var vcl = (Clazz) outerClazz.getRuntimeData(a.tid_ + 1);
+    return _clazzIds.get(vcl);
   }
 
   public int assignClazzForField(int outerClazz, int field)
@@ -819,27 +816,6 @@ public class FUIR extends ANY
   /**
    * Get the inner clazz for a non dynamic call
    *
-   * @param outerClazz the caller
-   *
-   * @param call the call
-   *
-   * @return the clazz that has to be called
-   */
-  private Clazz callCalledClazz(Clazz outerClazz, Call call)
-  {
-    if (PRECONDITIONS) require
-      (call != null,
-       outerClazz != null);
-
-    var cf = call.calledFeature();
-    var tclazz = Clazzes.clazz(call.target, outerClazz);
-    return tclazz.lookup(cf, outerClazz.actualGenerics(call.generics), call.pos);
-  }
-
-
-  /**
-   * Get the inner clazz for a non dynamic call
-   *
    * @param cl index of clazz containing the call
    *
    * @param c code block containing the call
@@ -858,7 +834,7 @@ public class FUIR extends ANY
 
     var outerClazz = _clazzIds.get(cl);
     var call = (Call) _codeIds.get(c).get(ix);
-    var innerClazz = callCalledClazz(outerClazz, call);
+    var innerClazz = ((dev.flang.ir.BackendCallable)outerClazz.getRuntimeData(call.sid_)).inner();
     check
       (innerClazz._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
     return addClazz(innerClazz);
@@ -881,9 +857,9 @@ public class FUIR extends ANY
        outerClazz != null);
 
     var cf = call.calledFeature();
-    var tclazz = Clazzes.clazz(call.target, outerClazz);
+    var tclazz = ((dev.flang.ir.BackendCallable)outerClazz.getRuntimeData(call.sid_)).outer();
     var result = new List<Clazz>();
-    for (var cl : Clazzes.all())
+    for (var cl : Clazzes.all())  // NYI: Overkill, better check only sub-clazzes of tclazz
       {
         if (cl._type != Types.t_VOID    &&  // NYI: would be better to not create this dummy clazz in the first place
             cl._type != Types.t_ADDRESS     // NYI: would be better to not create this dummy clazz in the first place
@@ -926,8 +902,7 @@ public class FUIR extends ANY
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call,
-       !callIsDynamic(cl, c, ix));
+       codeAt(c, ix) == ExprKind.Call);
 
     var outerClazz = _clazzIds.get(cl);
     var call = (Call) _codeIds.get(c).get(ix);
@@ -965,8 +940,8 @@ public class FUIR extends ANY
 
     var outerClazz = _clazzIds.get(cl);
     var call = (Call) _codeIds.get(c).get(ix);
-    var tclazz = Clazzes.clazz(call.target, outerClazz);
-    return call.isDynamic() && tclazz.isRef();
+    var outer = ((dev.flang.ir.BackendCallable)outerClazz.getRuntimeData(call.sid_)).outer();
+    return call.isDynamic() && outer.isRef();
   }
 
   public int callTargetClazz(int cl, int c, int ix)
@@ -978,10 +953,8 @@ public class FUIR extends ANY
 
     var call = (Call) _codeIds.get(c).get(ix);
     var outerClazz = _clazzIds.get(cl);
-    Clazz tclazz = Clazzes.clazz(call.target, outerClazz);
-    check
-      (tclazz._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
-    return addClazz(tclazz);
+    var tclazz = ((dev.flang.ir.BackendCallable)outerClazz.getRuntimeData(call.sid_)).outer();
+    return _clazzIds.get(tclazz);
   }
 
 
@@ -990,8 +963,7 @@ public class FUIR extends ANY
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call,
-       callIsDynamic(cl, c, ix));
+       codeAt(c, ix) == ExprKind.Call);
 
     var call = (Call) _codeIds.get(c).get(ix);
     var outerClazz = _clazzIds.get(cl);

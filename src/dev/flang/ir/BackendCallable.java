@@ -37,6 +37,9 @@ import dev.flang.util.ANY;
 public interface BackendCallable
 {
 
+  default Clazz inner() { return null; }
+  default Clazz outer() { return null; }
+
 }
 
 /* end of file */

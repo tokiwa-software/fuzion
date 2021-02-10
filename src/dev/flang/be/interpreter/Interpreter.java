@@ -175,7 +175,7 @@ public class Interpreter extends Backend
     argTypes.add(Clazzes.universe.get()._type);
     try
       {
-        callable(_fuir.main(), Clazzes.universe.get()).call(mainargs, argTypes);
+        callable(false, _fuir.main(), Clazzes.universe.get()).call(mainargs, argTypes);
       }
     catch (RuntimeException | Error e)
       {
@@ -578,17 +578,24 @@ public class Interpreter extends Backend
    * Obtain backend information required for dynamic binding lookup to perform a
    * call.
    *
+   * @param dynamic true if this sets the static inner / outer clazz of a
+   * dynamic call, false if this is a static call
+   *
    * @param innerClazz the frame clazz of the called feature
    *
    * @param outerClazz the static clazz of the target instance of this call
    *
    * @return an instance of Callable that performs the call
    */
-  public Callable callable(Clazz innerClazz, Clazz outerClazz)
+  public Callable callable(boolean dynamic, Clazz innerClazz, Clazz outerClazz)
   {
     Callable result;
 
-    if (innerClazz == null)
+    if (dynamic)
+      {
+        return null; // in dynamic case, interpreter does not use this, but dynamic lookup only
+      }
+    else if (innerClazz == null)
       {
         check
           (Errors.count() > 0);

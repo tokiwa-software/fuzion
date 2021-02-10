@@ -305,16 +305,24 @@ public class C extends Backend
    * Obtain backend information required for dynamic binding lookup to perform a
    * call.
    *
+   * @param dynamic true if this sets the static inner / outer clazz of a
+   * dynamic call, false if this is a static call
+   *
    * @param innerClazz the frame clazz of the called feature
    *
    * @param outerClazz the static clazz of the target instance of this call
    *
    * @return a beckend-specific object.
    */
-  public BackendCallable callable(Clazz innerClazz,
+  public BackendCallable callable(boolean dynamic,
+                                  Clazz innerClazz,
                                   Clazz outerClazz)
   {
-    return null;
+    return new BackendCallable()
+      {
+        public Clazz inner() { return innerClazz; }
+        public Clazz outer() { return outerClazz; }
+      };
   }
 
 
@@ -673,6 +681,8 @@ public class C extends Backend
                       )
                     {
                       _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = "+value);
+                      _c.println("// flcazz: "+_fuir.clazzAsString(fclazz));
+                      _c.println("// valuecl: "+_fuir.clazzAsString(valuecl));
                     }
                   else if (_fuir.clazzIsRef(fclazz))
                     {

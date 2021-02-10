@@ -603,24 +603,19 @@ public class Clazzes extends ANY
 
     if (!c.isInheritanceCall_)
       {
-        Clazz   tclazz = clazz(c.target, outerClazz);
-        Feature cf     = c.calledFeature_;
-
+        var tclazz  = clazz(c.target, outerClazz);
+        var cf      = c.calledFeature_;
+        var dynamic = c.isDynamic() && tclazz.isRef();
+        if (dynamic)
+          {
+            calledDynamically(cf);
+          }
+        var innerClazz = tclazz.lookup(cf, outerClazz.actualGenerics(c.generics), c.pos);
         if (c.sid_ < 0)
           {
             c.sid_ = outerClazz.feature().getRuntimeClazzId();
           }
-        BackendCallable ca = null;
-        if (!c.isDynamic() || !tclazz.isRef())
-          {
-            var innerClazz = tclazz.lookup(cf, outerClazz.actualGenerics(c.generics), c.pos);
-            ca = _backend_.callable(innerClazz, tclazz);
-          }
-        else
-          {
-            calledDynamically(cf);
-          }
-        outerClazz.setRuntimeData(c.sid_, ca);
+        outerClazz.setRuntimeData(c.sid_, _backend_.callable(dynamic, innerClazz, tclazz));
 
         ArrayList<Type> argTypes = c.argTypes_;
         int i = 0;

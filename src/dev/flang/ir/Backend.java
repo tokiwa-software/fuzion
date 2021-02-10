@@ -41,13 +41,17 @@ public abstract class Backend extends ANY
    * Obtain backend information required for dynamic binding lookup to perform a
    * call.
    *
+   * @param dynamic true if this sets the static inner / outer clazz of a
+   * dynamic call, false if this is a static call
+   *
    * @param innerClazz the frame clazz of the called feature
    *
    * @param outerClazz the static clazz of the target instance of this call
    *
    * @return a beckend-specific object.
    */
-  public abstract BackendCallable callable(Clazz innerClazz,
+  public abstract BackendCallable callable(boolean dynamic,
+                                           Clazz innerClazz,
                                            Clazz outerClazz);
 
 }

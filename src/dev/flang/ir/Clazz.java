@@ -547,7 +547,7 @@ Hellq is
                 if (f.isCalledDynamically() && Clazzes.isCalledDynamically(f))
                   {
                     var innerClazz = lookup(f, Call.NO_GENERICS, f.isUsedAt());
-                    var callable = Clazzes._backend_.callable(innerClazz, this);
+                    var callable = Clazzes._backend_.callable(false, innerClazz, this);
                     _dynamicBinding.addCallable(f, callable);
                     _dynamicBinding.add(f, innerClazz, this);
                   }
