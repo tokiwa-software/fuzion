@@ -227,7 +227,16 @@ public class C extends Backend
           _fuir.clazzOuterClazz(o) != -1)
         { // add o a prefix unless cl or o are universe
           clazzMangledName(o, sb);
-          sb.append("__");
+          sb.append(_fuir.clazzIsRef(cl) ? "_R" : "__");
+        }
+      else if (_fuir.clazzIsRef(cl))
+        {
+          sb.append("_R");
+        }
+      var n = _fuir.clazzArgCount(cl);
+      if (n > 0)
+        {
+          sb.append(n);  // put arg count before the name since name never starts with a digit
         }
       sb.append(mangle(_fuir.clazzBaseName(cl)));
     }
@@ -264,7 +273,7 @@ public class C extends Backend
 
           if (res.length() > MAX_C99_IDENTIFIER_LENGTH)
             {
-              var s = p + "_S" + num + "_";
+              var s = p + "_L" + num;
               res = s +
                 res.substring(p.length(), p.length() + 10) + "__" +
                 res.substring(res.length() - MAX_C99_IDENTIFIER_LENGTH + s.length() + 12);
@@ -433,6 +442,11 @@ public class C extends Backend
         else if ('$' == cp) { sb.append("S"); }
         else if ('%' == cp) { sb.append("P"); }
         else if ('°' == cp) { sb.append("O"); }
+        // escapes that are used for other purposes:
+        //
+        // "__" for '.'
+        // "_R" for ref
+        // "_L" for long identifiers
         else
           {
             sb.append("U").append(Integer.toHexString(cp)).append("_");
@@ -682,8 +696,8 @@ public class C extends Backend
                 { // bool is a basically a choice type, but we do not use the tag in the generated C code
                   check(_fuir.clazzIsTRUE (valuecl) ||
                         _fuir.clazzIsFALSE(valuecl));
-                  var value = _fuir.clazzIsTRUE(valuecl) ? CExpr.ident("TRUE") : CExpr.ident("FALSE");
-                  fieldAccess = fieldAccess.field("fzF_0__mm_choice_e_tag_mm");
+                  var value = CExpr.uint32const(_fuir.clazzIsTRUE(valuecl) ? 1 : 0);
+                  fieldAccess = fieldAccess.field(BOOL_TAG_NAME);
                   _c.printExpr(fieldAccess.assign(value)); _c.println(";  /* bool choice type */");
                 }
               else if (_fuir.clazzIsChoice(fclazz) &&
@@ -844,7 +858,7 @@ public class C extends Backend
                   sb.append("...");
                 }
               var tmp = newTemp();
-              _c.println("fzTr_conststring *" + tmp + " = malloc(sizeof(fzTr_conststring));\n" +
+              _c.println("fzTr__Rconststring *" + tmp + " = malloc(sizeof(fzTr__Rconststring));\n" +
                          tmp + "->clazzId = " + clazzId2num(_fuir.clazz_conststring()) + ";\n" +
                          tmp + "->fzF_1_data = (void *)\"" + sb + "\";\n" +
                          tmp + "->fzF_3_length = " + bytes.length + ";\n");
@@ -1114,7 +1128,10 @@ public class C extends Backend
                     var af = _fuir.clazzArg(cl, i);
                     if (af >= 0) // af < 0 for unused argument fields.
                       {
-                        _c.print(CURRENT.deref().field(fieldNameInClazz(cl, af)).assign(CExpr.ident("arg" + i)));
+                        var target = _fuir.clazzIsI32(cl)
+                          ? CURRENT.deref()
+                          : CURRENT.deref().field(fieldNameInClazz(cl, af));
+                        _c.print(target.assign(CExpr.ident("arg" + i)));
                       }
                   }
                 var c = _fuir.clazzCode(cl);
@@ -1163,23 +1180,23 @@ public class C extends Backend
                 _c.print(" {\n");
                 switch (_functionNames.get(cl))
                   {
-                  case C_FUNCTION_PREFIX + "exitForCompilerTest"    : _c.print(" exit(arg0);\n"); break;
-                  case C_FUNCTION_PREFIX + "fuzion__std__out__write": _c.print(" char c = (char) arg0; fwrite(&c, 1, 1, stdout);\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__prefix_wmO"        : _c.print(" return - fzouter;\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wmO"         : _c.print(" return fzouter -  arg0;\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wpO"         : _c.print(" return fzouter +  arg0;\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wg"          : _c.print(" return fzouter >  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wge"         : _c.print(" return fzouter >= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wl"          : _c.print(" return fzouter <  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
-                  case C_FUNCTION_PREFIX + "i32__infix_wle"         : _c.print(" return fzouter <= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case C_FUNCTION_PREFIX + "1exitForCompilerTest"    : _c.print(" exit(arg0);\n"); break;
+                  case C_FUNCTION_PREFIX + "fuzion__std__out__1write": _c.print(" char c = (char) arg0; fwrite(&c, 1, 1, stdout);\n"); break;
+                  case C_FUNCTION_PREFIX + "1i32__prefix_wmO"        : _c.print(" return - fzouter;\n"); break;
+                  case C_FUNCTION_PREFIX + "1i32__1infix_wmO"        : _c.print(" return fzouter -  arg0;\n"); break;
+                  case C_FUNCTION_PREFIX + "1i32__1infix_wpO"        : _c.print(" return fzouter +  arg0;\n"); break;
+                  case C_FUNCTION_PREFIX + "1i32__1infix_wg"         : _c.print(" return fzouter >  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case C_FUNCTION_PREFIX + "1i32__1infix_wge"        : _c.print(" return fzouter >= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case C_FUNCTION_PREFIX + "1i32__1infix_wl"         : _c.print(" return fzouter <  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case C_FUNCTION_PREFIX + "1i32__1infix_wle"        : _c.print(" return fzouter <= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
 
                     // NYI: the following intrinsics are generic, they are currently hard-coded for i32 only:
-                  case C_FUNCTION_PREFIX + "Array__getData"         : _c.print(" return malloc(sizeof(fzT_i32) * arg0);\n"); break;
-                  case C_FUNCTION_PREFIX + "Array__setel"           : _c.print(" ((fzT_i32*) arg0) [arg1] = arg2;\n"); break;
-                  case C_FUNCTION_PREFIX + "Array__get"             : /* fall through */
-                  case C_FUNCTION_PREFIX + "conststring__get"       : _c.print(" return ((fzT_i32*) arg0) [arg1];\n"); break;
+                  case C_FUNCTION_PREFIX + "_R2Array__1getData"      : _c.print(" return malloc(sizeof(fzT_1i32) * arg0);\n"); break;
+                  case C_FUNCTION_PREFIX + "_R2Array__3setel"        : _c.print(" ((fzT_1i32*) arg0) [arg1] = arg2;\n"); break;
+                  case C_FUNCTION_PREFIX + "_R2Array__2get"          : /* fall through */
+                  case C_FUNCTION_PREFIX + "_Rconststring__2get"     : _c.print(" return ((fzT_1i32*) arg0) [arg1];\n"); break;
 
-                  default:                                            _c.print(" fprintf(stderr, \"*** error: NYI: code for intrinsic " + _fuir.clazzAsString(cl) + " missing!\\n\"); exit(1);\n"); break;
+                  default:                                             _c.print(" fprintf(stderr, \"*** error: NYI: code for intrinsic " + _fuir.clazzAsString(cl) + " missing!\\n\"); exit(1);\n"); break;
                   }
                 _c.print("}\n");
               }
