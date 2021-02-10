@@ -140,7 +140,8 @@ public class FUIR extends ANY
   private int addClazz(Clazz cl)
   {
     if (PRECONDITIONS) require
-                         (cl._type != Types.t_VOID);  // NYI: would be better to not create this dummy clazz in the first place
+                         (cl._type != Types.t_VOID,  // NYI: would be better to not create these dummy clazzes in the first place
+                          cl._type != Types.t_ADDRESS)
 
     int result = _clazzIds.add(cl);
     _featureIds.add(cl.feature());
@@ -150,6 +151,9 @@ public class FUIR extends ANY
 
   int addClazzIfNotVOID(Clazz cl)
   {
+    if (PRECONDITIONS) require
+                         (cl._type != Types.t_ADDRESS)
+
     if (cl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
       {
         // NYI: Check Clazzes.isUsed(thizFeature, ocl)
