@@ -765,18 +765,27 @@ public class Interpreter extends Backend
         var v = execute(c.cond, staticClazz, cur);
         if (!v.boolValue())
           {
-            Errors.runTime("Precondition does not hold for call to '" + thiz.qualifiedName() + "' at " + c.cond.pos.show() + "\n" + callStack());
+            Errors.runTime(c.cond.pos,  // NYI: move to new class InterpreterErrors
+                           "Precondition does not hold",
+                           "For call to " + thiz.qualifiedName() + "\n" +
+                           callStack());
           }
       }
 
     Impl i = thiz.impl;
     if (i == Impl.ABSTRACT)
       {
-        Errors.fatal("abstract feature called: "+thiz.featureName().baseName()+" on "+cur+" at "+thiz.pos.show());
+        Errors.fatal(thiz.pos,  // NYI: move to new class InterpreterErrors
+                     "Abstract feature called",
+                     "Feature called: " + thiz.qualifiedName() + "\n" +
+                     "Target instance: " + cur);
       }
     if (i == Impl.INTRINSIC)
       {
-        Errors.fatal("intrinsic feature called: "+thiz.featureName().baseName()+" on "+cur+" at "+thiz.pos.show());
+        Errors.fatal(thiz.pos,  // NYI: move to new class InterpreterErrors
+                     "Missing intrinsic feature called",
+                     "Feature called: " + thiz.qualifiedName() + "\n" +
+                     "Target instance: " + cur);
       }
     execute(i.code_, staticClazz, cur);
     for (var c : thiz.contract.ens)
@@ -784,7 +793,10 @@ public class Interpreter extends Backend
         var v = execute(c.cond, staticClazz, cur);
         if (!v.boolValue())
           {
-            Errors.runTime("Postcondition does not hold after call to '" + thiz.qualifiedName() + "' at " + c.cond.pos.show() + "\n" + callStack());
+            Errors.runTime(c.cond.pos,  // NYI: move to new class InterpreterErrors
+                           "Postcondition does not hold",
+                           "After call to " + thiz.qualifiedName() + "\n" +
+                           callStack());
           }
       }
     // NYI: Also check postconditions for all features this redefines!

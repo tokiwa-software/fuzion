@@ -193,6 +193,10 @@ public class Errors extends ANY
 
   /**
    * Record the given error found during compilation.
+   *
+   * @param s the error message, should not contain any LF or any case specific details
+   *
+   * @param detail details for this error, may contain LFs and case specific details, may be null
    */
   public static void error(String s, String detail)
   {
@@ -216,19 +220,23 @@ public class Errors extends ANY
 
   /**
    * Record the given error found during compilation.
+   *
+   * @param pos source code position where this error occured, may be null
+   *
+   * @param msg the error message, should not contain any LF or any case specific details
+   *
+   * @param detail details for this error, may contain LFs and case specific details, may be null
    */
   public static void error(SourcePosition pos, String msg, String detail)
   {
     if (PRECONDITIONS) require
-      (pos != null,
-       msg != null,
-       detail != null);
+      (msg != null);
 
-    Error e = new Error(pos, msg, detail);
+    Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
     if (!_errors_.contains(e))
       {
         _errors_.add(e);
-        if (true)  // true: a blank line before errors, false: sepration line between errors
+        if (true)  // true: a blank line before errors, false: separation line between errors
           {
             System.err.println();
           }
@@ -239,7 +247,14 @@ public class Errors extends ANY
                 System.err.println("------------");
               }
           }
-        pos.show(errorMessage(msg), detail);
+        if (pos == null)
+          {
+            error(msg, detail);
+          }
+        else
+          {
+            pos.show(errorMessage(msg), detail);
+          }
         if (_count_ >= MAX_ERROR_MESSAGES)
           {
             showAndExit();
@@ -251,10 +266,44 @@ public class Errors extends ANY
   /**
    * Record the given error found during compilation and exit immediately with
    * exit code 1.
+   *
+   * @param s the error message, should not contain any LF or any case specific details
    */
   public static void fatal(String s)
   {
-    error(s);
+    fatal(s, null);
+  }
+
+
+  /**
+   * Record the given error found during compilation and exit immediately with
+   * exit code 1.
+   *
+   * @param s the error message, should not contain any LF or any case specific details
+   *
+   * @param detail details for this error, may contain LFs and case specific details, may be null
+   */
+  public static void fatal(String s, String detail)
+  {
+    error(s, detail);
+    System.err.println("*** fatal errors encountered, stopping.");
+    System.exit(1);
+  }
+
+
+  /**
+   * Record the given error found during compilation and exit immediately with
+   * exit code 1.
+   *
+   * @param pos source code position where this error occured, may be null
+   *
+   * @param s the error message, should not contain any LF or any case specific details
+   *
+   * @param detail details for this error, may contain LFs and case specific details, may be null
+   */
+  public static void fatal(SourcePosition pos, String s, String detail)
+  {
+    error(pos, s, detail);
     System.err.println("*** fatal errors encountered, stopping.");
     System.exit(1);
   }
@@ -262,10 +311,40 @@ public class Errors extends ANY
 
   /**
    * Record the given runtime error found and exit immediately with exit code 1.
+   *
+   * @param s the error message, should not contain any LF or any case specific details
    */
   public static void runTime(String s)
   {
-    error(s);
+    runTime(s, null);
+  }
+
+
+  /**
+   * Record the given runtime error found and exit immediately with exit code 1.
+   *
+   * @param s the error message, should not contain any LF or any case specific details
+   *
+   * @param detail details for this error, may contain LFs and case specific details, may be null
+   */
+  public static void runTime(String s, String detail)
+  {
+    runTime(null, s, detail);
+  }
+
+
+  /**
+   * Record the given runtime error found and exit immediately with exit code 1.
+   *
+   * @param pos source code position where this error occured, may be null
+   *
+   * @param s the error message, should not contain any LF or any case specific details
+   *
+   * @param detail details for this error, may contain LFs and case specific details, may be null
+   */
+  public static void runTime(SourcePosition pos, String s, String detail)
+  {
+    error(pos, s, detail);
     System.err.println("*** fatal errors encountered, stopping.");
     System.exit(1);
   }
@@ -339,7 +418,7 @@ public class Errors extends ANY
   public static void syntax(SourcePosition pos, String expected, String found, String detail)
   {
     error(pos,
-          "Syntax error: expected " + expected + ", found " + found + "\n",
+          "Syntax error: expected " + expected + ", found " + found,
           detail);
   }
 
