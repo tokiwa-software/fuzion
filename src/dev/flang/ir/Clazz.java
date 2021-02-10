@@ -207,6 +207,24 @@ Hellq is
 
     this._type = actualType;
     this._outer = outer;
+    /* NYI: Handling of outer in Clazz is not done properly yet. There are two
+     * basic cases:
+     *
+     * 1. outer is a value type
+     *
+     *    in this case, we specialize all inner clazzes for every single value
+     *    type outer clazz.
+     *
+     * 2. outer is a reference type
+     *
+     *    in this case, we do not specialize inner clazzes, but can normalize
+     *    the outer clazz using the outer feature of the inner clazz.  This
+     *    means, say we have a feature 'pop() T' within a ref clazz 'stack<T>'.
+     *    There exists a ref clazz 'intStack' that inherits from 'stack<i32>'.
+     *    The clazz for 'intStack.pop' then should be 'stack<i32>.pop', this
+     *    clazz can be shared with all other sub-clazzes of 'stack<i32>', but
+     *    not with sub-clazzes with different actual generics.
+     */
     var d = feature().depth();
     this._realOuter = new Clazz[d+1];
     for (int i = 0; i <= d; i++)
@@ -745,7 +763,9 @@ Hellq is
         if (result == 0)
           {
             if (to.isRef() && oo.isRef())
-              {
+              { // NYI: If outer is normalized for refs as descibed in the
+                // constructor, there should be no need for special handling of
+                // ref types here.
                 result = to._type.compareToIgnoreOuter(oo._type);
                 if (result == 0)
                   {
