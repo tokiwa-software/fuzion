@@ -28,6 +28,8 @@ package dev.flang.fuir;
 
 import java.nio.charset.StandardCharsets;
 
+import java.util.TreeSet;
+
 import dev.flang.ast.AdrToValue; // NYI: remove dependency
 import dev.flang.ast.Assign; // NYI: remove dependency
 import dev.flang.ast.Block; // NYI: remove dependency
@@ -966,6 +968,7 @@ public class FUIR extends ANY
     var cf = call.calledFeature();
     var tclazz = ((dev.flang.ir.BackendCallable)outerClazz.getRuntimeData(call.sid_)).outer();
     var result = new List<Clazz>();
+    var found = new TreeSet<Clazz>();
     for (var cl : Clazzes.all())  // NYI: Overkill, better check only sub-clazzes of tclazz
       {
         if (cl._type != Types.t_VOID    &&  // NYI: would be better to not create this dummy clazz in the first place
@@ -981,8 +984,9 @@ public class FUIR extends ANY
                       {
                         System.err.println("***** ignoring target "+in);
                       }
-                    else
+                    else if (!found.contains(in))
                       {
+                        found.add(in);
                         result.add(in);
                       }
                   }
