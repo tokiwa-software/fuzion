@@ -316,7 +316,13 @@ public class FUIR extends ANY
 
   public String clazzBaseName(int cl)
   {
-    return _clazzIds.get(cl).feature().featureName().baseName();
+    var cc = _clazzIds.get(cl);
+    var res = cc.feature().featureName().baseName();
+    if (!cc._type._generics.isEmpty())
+      {
+        res = res + cc._type._generics.toString("<",",",">");
+      }
+    return res;
   }
 
   public boolean clazzIsRef(int cl)

@@ -425,6 +425,7 @@ public class C extends Backend
             sb.append((char) cp);
           }
         else if ('.' == cp) { sb.append("o"); }
+        else if (',' == cp) { sb.append("k"); }
         else if (' ' == cp) { sb.append("w"); }
         else if ('_' == cp) { sb.append("u"); }
         else if ('+' == cp) { sb.append("p"); }
