@@ -532,7 +532,12 @@ public class C extends Backend
    */
   boolean outerClazzPassedAsAdrOfValue(int cl)
   {
-    return !_fuir.clazzIsRef(cl) && !isI32(cl);
+    return
+      !_fuir.clazzIsRef(cl) &&
+      !_fuir.clazzIsI32(cl) &&
+      !_fuir.clazzIsI64(cl) &&
+      !_fuir.clazzIsU32(cl) &&
+      !_fuir.clazzIsU64(cl);
   }
 
 
@@ -548,15 +553,6 @@ public class C extends Backend
 
 
   /**
-   * Is the given clazz the stdlib clazz i32?
-   */
-  public boolean isI32(int cl)
-  {
-    return _fuir.clazzIsI32(cl);
-  }
-
-
-  /**
    * Create declarations of the C types required for the given clazz.  Write
    * code to _c.
    *
@@ -568,15 +564,15 @@ public class C extends Backend
       {
       case Routine:
         {
-          if (isI32(cl))  // special handling of stdlib clazzes known to the compiler
-            {
-              _c.print("typedef int32_t " + _structNames.get(cl) + ";\n");
-            }
-          else
-            {
-              _c.print
-                ("typedef struct " + _structNames.get(cl) + " " + _structNames.get(cl) + ";\n");
-            }
+          var name = _structNames.get(cl);
+          // special handling of stdlib clazzes known to the compiler
+          String type =
+            _fuir.clazzIsI32(cl) ? "int32_t" :
+            _fuir.clazzIsI64(cl) ? "int64_t" :
+            _fuir.clazzIsU32(cl) ? "uint32_t" :
+            _fuir.clazzIsU64(cl) ? "uint64_t" : "struct " + name;
+          _c.print
+                ("typedef " + type + " " + name + ";\n");
           break;
         }
       default:
@@ -600,8 +596,11 @@ public class C extends Backend
           if (!_declaredStructs.contains(cl))
             {
               _declaredStructs.add(cl);
-              if (isI32(cl))  // special handling of stdlib clazzes known to the compiler
-                {
+              if (_fuir.clazzIsI32(cl) ||
+                  _fuir.clazzIsI64(cl) ||
+                  _fuir.clazzIsU32(cl) ||
+                  _fuir.clazzIsU64(cl)    )
+                { // special handling of stdlib clazzes known to the compiler
                 }
               else
                 {
@@ -1133,7 +1132,11 @@ public class C extends Backend
                     var af = _fuir.clazzArg(cl, i);
                     if (af >= 0) // af < 0 for unused argument fields.
                       {
-                        var target = _fuir.clazzIsI32(cl)
+                        var target =
+                          _fuir.clazzIsI32(cl) ||
+                          _fuir.clazzIsI64(cl)||
+                          _fuir.clazzIsU32(cl)||
+                          _fuir.clazzIsU64(cl)
                           ? CURRENT.deref()
                           : CURRENT.deref().field(fieldNameInClazz(cl, af));
                         _c.print(target.assign(CExpr.ident("arg" + i)));

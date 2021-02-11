@@ -484,6 +484,48 @@ public class FUIR extends ANY
 
 
   /**
+   * Check if a clazz is the standard lib i64.fz.
+   *
+   * @param cl a clazz id
+   *
+   * @return true iff cl is i64.fz.
+   */
+  public boolean clazzIsI64(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    return cc == Clazzes.i64.getIfCreated();
+  }
+
+
+  /**
+   * Check if a clazz is the standard lib u32.fz.
+   *
+   * @param cl a clazz id
+   *
+   * @return true iff cl is u32.fz.
+   */
+  public boolean clazzIsU32(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    return cc == Clazzes.u32.getIfCreated();
+  }
+
+
+  /**
+   * Check if a clazz is the standard lib u64.fz.
+   *
+   * @param cl a clazz id
+   *
+   * @return true iff cl is u64.fz.
+   */
+  public boolean clazzIsU64(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    return cc == Clazzes.u64.getIfCreated();
+  }
+
+
+  /**
    * Check if a clazz is the standard lib bool.fz.
    *
    * @param cl a clazz id
