@@ -953,6 +953,10 @@ public class FUIR extends ANY
   /**
    * Get the possible inner clazzes for a dynamic call
    *
+   * NYI: This should not only return the list of inner clazzes, but a mapping
+   * from outer clazzes to corresponding inner clazzes since different outer
+   * clazzes could result in calls to the same inner clazz.
+   *
    * @param outerClazz the caller
    *
    * @param call the call
