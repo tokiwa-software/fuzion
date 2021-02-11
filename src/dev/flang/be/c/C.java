@@ -738,8 +738,70 @@ public class C extends Backend
           case Box:
             {
               var v = stack.pop();
-              stack.push(CExpr.dummy("NYI: boxed"));
+              _c.println("// NYI: Box " + v.code());
+              stack.push(CExpr.ident(DUMMY));
               _c.println("// NYI: Box " + v + "!");
+
+              var vc = _fuir.boxValueClazz(cl, c, i);
+              var rc = _fuir.boxResultClazz(cl, c, i);
+              var ec = _fuir.boxExpectedClazz(cl, c, i);
+              if (_fuir.clazzIsRef(vc) || !_fuir.clazzIsRef(ec))
+                { // vc's type is a generic argument whose actual type does not need
+                  // boxing
+                }
+              else
+                {
+                  var t = CExpr.ident(newTemp());
+                  _c.println(clazzTypeNameRefOrVal(rc) + " " + t.code() + " = malloc(sizeof("+_structNames.get(cl)+"));");
+                  if (!_fuir.clazzIsValueLess(vc))
+                    {
+                      var val = stack.pop();
+                      _c.println("// NYI: copy fields from "+val.code()+" over to "+t.code());
+                    }
+                  stack.push(t);
+                }
+              if (_fuir.clazzIsChoice(vc))
+                {
+                  _c.println("// NYI: choice boxing");
+                  /* NYI choice boxing:
+
+                check
+                  (rc.isChoice());
+                if (vc.isChoiceOfOnlyRefs())
+                  {
+                    throw new Error("NYI: Boxing choiceOfOnlyRefs, does this happen at all?");
+                  }
+                else
+                  {
+                    check
+                      (!rc.isChoiceOfOnlyRefs());
+
+                    var voff = vc.choiceValsOffset_;
+                    var roff = rc.choiceValsOffset_;
+                    var vsz = vc.choiceValsSize_;
+                    check
+                      (rc.choiceValsSize_ == vsz);
+                    if (val instanceof LValue)
+                      {
+                        voff += ((LValue) val).offset;
+                        val   = ((LValue) val).container;
+                      }
+                    if (val instanceof boolValue)
+                      {
+                        val.storeNonRef(new LValue(Clazzes.bool.get(), ri, roff), Clazzes.bool.get().size());
+                      }
+                    else
+                      {
+                        var vi = (Instance) val;
+                        for (int i = 0; i<vsz; i++)
+                          {
+                            ri.refs   [roff+i] = vi.refs   [voff+i];
+                            ri.nonrefs[roff+i] = vi.nonrefs[voff+i];
+                          }
+                      }
+                  }
+                  */
+                }
               break;
             }
           case Call:
