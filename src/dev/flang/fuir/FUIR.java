@@ -369,12 +369,20 @@ public class FUIR extends ANY
   public int clazzArg(int cl, int arg)
   {
     // NYI: This does not handle open generic args such as in Function.call yet.
-    var c = _clazzIds.get(cl);
-    var a = c.feature().arguments.get(arg);
-    int f = _featureIds.get(a);
-    if (f < FEATURE_BASE)
+    var ocl = _clazzIds.get(cl);
+    var a = ocl.feature().arguments.get(arg);
+    int f;
+    if (Clazzes.isUsed(a, ocl))
       {
-        f = -1;  // NYI: Would be nicer to either include unused feature as well or to remove the argument altogether
+        f = _featureIds.get(a);
+        if (f < FEATURE_BASE)
+          {
+            f = -1;  // NYI: Would be nicer to either include unused feature as well or to remove the argument altogether
+          }
+      }
+    else
+      {
+        f = -1;
       }
     return f;
   }
@@ -805,15 +813,20 @@ public class FUIR extends ANY
     return result;
   }
 
-  public int assignedField(int c, int ix)
+  public int assignedField(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Assign);
 
+    var outerClazz = _clazzIds.get(cl);
     var a = (Assign) _codeIds.get(c).get(ix);
-    return _featureIds.add(a.assignedField);
+    var f = a.assignedField;
+    var ocl = (Clazz) outerClazz.getRuntimeData(a.tid_);
+    return Clazzes.isUsed(f, ocl)
+      ? _featureIds.add(a.assignedField)
+      : -1;
   }
 
   public int assignOuterClazz(int cl, int c, int ix)

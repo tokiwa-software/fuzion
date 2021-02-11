@@ -684,51 +684,55 @@ public class C extends Backend
             }
           case Assign:
             {
-              var field = _fuir.assignedField(c, i);  // field we are assigning to
-              var outer = stack.pop();                // instance containing assigned field
-              var outercl = _fuir.assignOuterClazz(cl, c, i);  // static clazz of outer
-              var valuecl = _fuir.assignValueClazz(cl, c, i);  // static clazz of value
-              var fclazz = _fuir.assignClazzForField(outercl, field);  // static clazz of assigned field
-              var fieldName = fieldNameInClazz(outercl, field);
-              var fieldAccess = ccodeAccessField(outercl, outer, fieldName);
-              if (_fuir.clazzIsBool(fclazz) &&
-                  fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
-                  )
-                { // bool is a basically a choice type, but we do not use the tag in the generated C code
-                  check(_fuir.clazzIsTRUE (valuecl) ||
-                        _fuir.clazzIsFALSE(valuecl));
-                  var value = CExpr.uint32const(_fuir.clazzIsTRUE(valuecl) ? 1 : 0);
-                  fieldAccess = fieldAccess.field(BOOL_TAG_NAME);
-                  _c.printExpr(fieldAccess.assign(value)); _c.println(";  /* bool choice type */");
-                }
-              else if (_fuir.clazzIsChoice(fclazz) &&
-                       fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
-                       )
+              var field = _fuir.assignedField(cl, c, i);  // field we are assigning to
+              if (field != -1)
                 {
-                  if (!_fuir.clazzIsValueLess(valuecl))
+                  var outer = stack.pop();                // instance containing assigned field
+                  var outercl = _fuir.assignOuterClazz(cl, c, i);  // static clazz of outer
+                  var valuecl = _fuir.assignValueClazz(cl, c, i);  // static clazz of value
+                  var fclazz = _fuir.assignClazzForField(outercl, field);  // static clazz of assigned field
+                  var fieldName = fieldNameInClazz(outercl, field);
+                  var fieldAccess = ccodeAccessField(outercl, outer, fieldName);
+                  if (_fuir.clazzIsBool(fclazz) &&
+                      fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
+                      )
+                    { // bool is a basically a choice type, but we do not use the tag in the generated C code
+                      check(_fuir.clazzIsTRUE (valuecl) ||
+                            _fuir.clazzIsFALSE(valuecl));
+                      var value = CExpr.uint32const(_fuir.clazzIsTRUE(valuecl) ? 1 : 0);
+                      fieldAccess = fieldAccess.field(BOOL_TAG_NAME);
+                      _c.printExpr(fieldAccess.assign(value)); _c.println(";  /* bool choice type */");
+                    }
+                  else if (_fuir.clazzIsChoice(fclazz) &&
+                           fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
+                           )
                     {
-                      var value = stack.pop();                // value assigned to field
-                      _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = "+value);
+                      if (!_fuir.clazzIsValueLess(valuecl))
+                        {
+                          var value = stack.pop();                // value assigned to field
+                          _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = "+value);
+                        }
+                      else
+                        {
+                          _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = (void)");
+                        }
+                      _c.println("// flcazz: "+_fuir.clazzAsString(fclazz));
+                      _c.println("// valuecl: "+_fuir.clazzAsString(valuecl));
+                    }
+                  else if (_fuir.clazzIsValueLess(fclazz))
+                    {
+                      _c.println("// valueluess assignment to " + fieldAccess.code());
                     }
                   else
                     {
-                      _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = (void)");
+                      var value = stack.pop();                // value assigned to field
+                      if (_fuir.clazzIsRef(fclazz))
+                        {
+                          value = value.castTo(clazzTypeNameRefOrVal(fclazz));
+                        }
+                      // _c.print("// Assign to "+_fuir.clazzAsString(fclazz)+" outercl "+_fuir.clazzAsString(outercl)+" valuecl "+_fuir.clazzAsString(valuecl));
+                      _c.print(fieldAccess.assign(value));
                     }
-                  _c.println("// flcazz: "+_fuir.clazzAsString(fclazz));
-                  _c.println("// valuecl: "+_fuir.clazzAsString(valuecl));
-                }
-              else if (_fuir.clazzIsValueLess(fclazz))
-                {
-                  _c.println("// valueluess assignment to " + fieldAccess.code());
-                }
-              else
-                {
-                  var value = stack.pop();                // value assigned to field
-                  if (_fuir.clazzIsRef(fclazz))
-                    {
-                      value = value.castTo(clazzTypeNameRefOrVal(fclazz));
-                    }
-                  _c.print(fieldAccess.assign(value));
                 }
               break;
             }
