@@ -973,6 +973,11 @@ public class C extends Backend
               stack.push(CExpr.ident(DUMMY)); // NYI: Singleton result
               break;
             }
+          case WipeStack:
+            {
+              // stack.clear();   NYI: this currently causes a compiler crash, but it seems to work fine if we do nothing.
+              break;
+            }
           case NOP:
           case Unknown: // NYI: remove
             {
