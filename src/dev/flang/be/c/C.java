@@ -770,8 +770,6 @@ public class C extends Backend
             {
               var v = stack.pop();
               _c.println("// NYI: Box " + v.code());
-              stack.push(CExpr.ident(DUMMY));
-              _c.println("// NYI: Box " + v + "!");
 
               var vc = _fuir.boxValueClazz(cl, c, i);
               var rc = _fuir.boxResultClazz(cl, c, i);
@@ -1054,7 +1052,7 @@ public class C extends Backend
       case Intrinsic:
         {
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
-          CExpr res = CExpr.ident(DUMMY); // NYI: no result, needed as a workaround for functions returning current instance
+          CExpr res = null;
           var call = CExpr.call(_functionNames.get(cc), args(cl, c, i, cc, stack, ac, castTarget));
           if (rt != -1 && !_fuir.clazzIsValueLess(rt))
             {
