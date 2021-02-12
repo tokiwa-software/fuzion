@@ -673,7 +673,7 @@ public class C extends Backend
           {
           case AdrToValue:
             { // dereference an outer reference
-              if (false)
+              if (false) // NYI: Check what AdrToValue is applied to empty stack and why it can be a NOP for the C backend
                 {
                   var a = stack.pop();
                   var v = a;  /* a.deref(); --  NYI: AdrToValue is NOP for now since outer refs as values not supported in C backend yet */
