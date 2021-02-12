@@ -74,7 +74,7 @@ public class LValue extends Value
   {
     if (PRECONDITIONS) require
       (cont != null,
-       off >= 0);
+       off >= 0 || c.size() == 0);
 
     this.clazz = c;
     this.container = cont;
