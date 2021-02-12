@@ -1757,6 +1757,10 @@ function    : formArgs
           {
             syntaxError(pos(), "Expected 'is', '{' or '=>' in inline function declaration", "function");
           }
+        if (r == NoType.INSTANCE)
+          {
+            r = new FunctionReturnType(new Type("void"));
+          }
         result = new Function(pos, r, a, i, c, block(false));
       }
     return result;
@@ -2973,7 +2977,7 @@ funTypeArgs : LPAREN a=typeLst RPAREN
           }
         result = isTypePrefix()
           ? Type.funType(pos, type(), a)
-          : Type.funType(pos,         a);
+          : Type.funType(pos, new Type("void"), a);
       }
     else if (skip(Token.t_ref))
       {
