@@ -1256,6 +1256,7 @@ public class C extends Backend
                   {
                   case C_FUNCTION_PREFIX + "1exitForCompilerTest"    : _c.print(" exit(arg0);\n"); break;
                   case C_FUNCTION_PREFIX + "fuzion__std__out__1write": _c.print(" char c = (char) arg0; fwrite(&c, 1, 1, stdout);\n"); break;
+                  case C_FUNCTION_PREFIX + "fuzion__std__out__flush" : _c.print(" fflush(stdout);\n"); break;
                   case C_FUNCTION_PREFIX + "1i32__prefix_wmO"        : _c.print(" return - fzouter;\n"); break;
                   case C_FUNCTION_PREFIX + "1i32__1infix_wmO"        : _c.print(" return fzouter -  arg0;\n"); break;
                   case C_FUNCTION_PREFIX + "1i32__1infix_wpO"        : _c.print(" return fzouter +  arg0;\n"); break;
