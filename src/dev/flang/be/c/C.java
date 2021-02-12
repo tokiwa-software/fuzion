@@ -376,9 +376,8 @@ public class C extends Backend
         _c.println("int main(int argc, char **args) { " + _functionNames.get(cl) + "(NULL); }");
       }
     catch (IOException io)
-      { // NYI: proper error handling
-        io.printStackTrace();
-        return;
+      { Errors.error("C backend I/O error",
+                     "While creating code to '" + cname + "', received I/O erroro '" + io + "'");
       }
     finally
       {
@@ -388,6 +387,7 @@ public class C extends Backend
             _c = null;
           }
       }
+    Errors.showAndExit();
   }
 
 
