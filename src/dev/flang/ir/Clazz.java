@@ -507,7 +507,6 @@ Hellq is
       {
         Clazz fieldClazz = actualResultClazz(f);
         clazzForField_.put(f, fieldClazz);
-        offsetForField_.put(f, this._size);
         Type ft = fieldClazz._type;
         int fsz = 0;
         if        (ft.isRef() || f.isSingleton()) { fsz = 1;
@@ -526,6 +525,10 @@ Hellq is
               fsz = fieldClazz.size();
             }
         }
+        offsetForField_.put(f,
+                            fsz == 0
+                            ? Integer.MIN_VALUE // use an illegal index such that all real fields have unique indices
+                            : this._size);
         this._size = this._size + fsz;
       }
     return result;
