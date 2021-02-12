@@ -399,8 +399,9 @@ public class C extends Backend
        "#include <stdint.h>\n"+
        "#include <assert.h>\n"+
        "\n" +
-       "void * " + DUMMY + "0;\n"+
-       "#define " + DUMMY + " (*" + DUMMY + "0)\n");
+       (true ? "" :
+        "void * " + DUMMY + "0;\n"+  // NYI: eventually remove this dummy
+        "#define " + DUMMY + " (*" + DUMMY + "0)\n"));
     for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
       {
         typesForClazz(c);
@@ -418,7 +419,7 @@ public class C extends Backend
       {
         compileClazz(c, CompilePhase.IMPLEMENTATIONS);
       }
-    _c.println("int main(int argc, char **args) { " + _functionNames.get(_fuir.mainClazzId()) + "(NULL); }");
+    _c.println("int main(int argc, char **args) { " + _functionNames.get(_fuir.mainClazzId()) + "(); }");
   }
 
 
