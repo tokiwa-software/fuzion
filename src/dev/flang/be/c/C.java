@@ -366,10 +366,9 @@ public class C extends Backend
 
     var command = new List<String>("clang", "-O3", "-o", name, cname);
     System.out.println(" * " + command.toString("", " ", ""));
-    var pb = new ProcessBuilder(command);
     try
       {
-        var p = pb.start();
+        var p = new ProcessBuilder().inheritIO().command(command).start();
         p.waitFor();
         if (p.exitValue() != 0)
           {
