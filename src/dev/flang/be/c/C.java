@@ -870,6 +870,10 @@ public class C extends Backend
                                   // are the same, the second one should be replaced by the first.
                                   rv = rv.castTo(clazzTypeNameOuterField(rt));  // NYI remove, see above.
                                 }
+                              if (_fuir.clazzIsRef(rt))
+                                {
+                                  rv = rv.castTo(clazzTypeNameRefOrVal(rt));
+                                }
                               _c.print(res.assign(rv));
                             }
                           _c.print(CStmnt.BREAK);
