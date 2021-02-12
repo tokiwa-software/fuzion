@@ -129,6 +129,21 @@ public class List<T>
   }
 
 
+  /**
+   * Constructor that adds eleemnts of given array
+   *
+   * @param i
+   */
+  public List(T... i)
+  {
+    super();
+    for (T x : i)
+      {
+        add(x);
+      }
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 

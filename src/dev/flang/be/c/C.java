@@ -347,37 +347,12 @@ public class C extends Backend
     try
       {
         _c = new CFile(cname);
-        _c.println
-          ("#include <stdlib.h>\n"+
-           "#include <stdio.h>\n"+
-           "#include <unistd.h>\n"+
-           "#include <stdint.h>\n"+
-           "#include <assert.h>\n"+
-           "\n" +
-           "void * " + DUMMY + "0;\n"+
-           "#define " + DUMMY + " (*" + DUMMY + "0)\n");
-        for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
-          {
-            typesForClazz(c);
-          }
-        _c.println("");
-        for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
-          {
-            structsForClazz(c);
-          }
-        for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
-          {
-            compileClazz(c, CompilePhase.FORWARDS);
-          }
-        for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
-          {
-            compileClazz(c, CompilePhase.IMPLEMENTATIONS);
-          }
-        _c.println("int main(int argc, char **args) { " + _functionNames.get(cl) + "(NULL); }");
+        createCode();
       }
     catch (IOException io)
-      { Errors.error("C backend I/O error",
-                     "While creating code to '" + cname + "', received I/O erroro '" + io + "'");
+      {
+        Errors.error("C backend I/O error",
+                     "While creating code to '" + cname + "', received I/O error '" + io + "'");
       }
     finally
       {
@@ -388,6 +363,62 @@ public class C extends Backend
           }
       }
     Errors.showAndExit();
+
+    var command = new List<String>("clang", "-O3", "-o", name, cname);
+    System.out.println(" * " + command.toString("", " ", ""));
+    var pb = new ProcessBuilder(command);
+    try
+      {
+        var p = pb.start();
+        p.waitFor();
+        if (p.exitValue() != 0)
+          {
+            Errors.error("C backend: C compiler failed",
+                         "C compiler call '" + command.toString("", " ", "") + "' failed with exit code '" + p.exitValue() + "'");
+          }
+      }
+    catch (IOException | InterruptedException io)
+      {
+        Errors.error("C backend I/O error when running C Compiler",
+                     "C compiler call '" + command.toString("", " ", "") + "'  received '" + io + "'");
+      }
+    Errors.showAndExit();
+  }
+
+
+  /**
+   * After the CFile has been opened and stored in _c, this methods generates
+   * the code into this file.
+   */
+  private void createCode()
+  {
+    _c.println
+      ("#include <stdlib.h>\n"+
+       "#include <stdio.h>\n"+
+       "#include <unistd.h>\n"+
+       "#include <stdint.h>\n"+
+       "#include <assert.h>\n"+
+       "\n" +
+       "void * " + DUMMY + "0;\n"+
+       "#define " + DUMMY + " (*" + DUMMY + "0)\n");
+    for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
+      {
+        typesForClazz(c);
+      }
+    _c.println("");
+    for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
+      {
+        structsForClazz(c);
+      }
+    for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
+      {
+        compileClazz(c, CompilePhase.FORWARDS);
+      }
+    for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
+      {
+        compileClazz(c, CompilePhase.IMPLEMENTATIONS);
+      }
+    _c.println("int main(int argc, char **args) { " + _functionNames.get(_fuir.mainClazzId()) + "(NULL); }");
   }
 
 
