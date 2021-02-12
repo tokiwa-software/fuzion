@@ -56,6 +56,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
 import dev.flang.util.MapComparable2Int;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -101,8 +102,18 @@ public class FUIR extends ANY
     strConst,
     Match,
     Singleton,
+    WipeStack,
     Unknown,
   }
+
+
+  /**
+   * Dummy Expr for WipeStack.  This is needed only temporily as long as we use
+   * the AST instances instead of proper bytecodes.
+   *
+   * NYI: remove once bytecode instructions are here.
+   */
+  static final Expr WIPE_STACK = new IntConst(42);
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -668,7 +679,8 @@ public class FUIR extends ANY
     toStack(result, s);
     return result;
   }
-  void toStack(List<Stmnt> l, Stmnt s)
+  void toStack(List<Stmnt> l, Stmnt s) { toStack(l, s, false); }
+  void toStack(List<Stmnt> l, Stmnt s, boolean dumpResult)
   {
     if (PRECONDITIONS) require
       (l != null,
@@ -696,13 +708,11 @@ public class FUIR extends ANY
     else if (s instanceof Block)
       {
         Block b = (Block) s;
-        for (var st : b.statements_)
+        // for (var st : b.statements_)
+        for (int i=0; i<b.statements_.size(); i++)
           {
-            toStack(l, st);
-            if (st instanceof Expr)
-              {
-                // NYI: insert pop!
-              }
+            var st = b.statements_.get(i);
+            toStack(l, st, true);
           }
       }
     else if (s instanceof BoolConst)
@@ -750,6 +760,10 @@ public class FUIR extends ANY
             toStack(l, a);
           }
         l.add(c);
+        if (dumpResult)
+          {
+            l.add(WIPE_STACK);
+          }
       }
     else if (s instanceof Match)
       {
@@ -799,7 +813,11 @@ public class FUIR extends ANY
 
     ExprKind result = ExprKind.Unknown;
     var e = _codeIds.get(c).get(ix);
-    if (e instanceof AdrToValue)
+    if (e == WIPE_STACK) // Take care: must be first since WIPE_STACK is IntConst (for now)
+      {
+        result = ExprKind.WipeStack;
+      }
+    else if (e instanceof AdrToValue)
       {
         result = ExprKind.AdrToValue;
       }

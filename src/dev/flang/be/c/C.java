@@ -834,7 +834,8 @@ public class C extends Backend
                       boolean outerAdrOfValue = false;
                       CExpr res = null;
                       var rt = _fuir.clazzResultClazz(ccs[0]); // NYI: HACK: just use the first clazz ccs[0] as static clazz for now.
-                      if (rt != -1 && !_fuir.clazzIsValueLess(rt))
+                      if (rt != -1 && !_fuir.clazzIsValueLess(rt) &&
+                          (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
                         {
                           res = CExpr.ident(newTemp());
                           var isOuterRef = _fuir.clazzIsOuterRef(ccs[0]); // NYI: HACK: just use the first clazz ccs[0] as static clazz for now.
