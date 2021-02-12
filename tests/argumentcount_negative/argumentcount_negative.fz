@@ -51,34 +51,34 @@ generics_negative {
     redefine call(x bool, y bool) i32 { 42 }; // 4. should flag an error, wrong number of arguments
   }
 
-  opengenerics17 ref : Routine<>
+  opengenerics17 ref : Function<void>
   {
     redefine call() { };
   }
-  opengenerics18 ref : Routine<>
+  opengenerics18 ref : Function<void>
   {
     redefine call(x i32) { }; // 5. should flag an error, wrong number of arguments
   }
-  opengenerics19 ref : Routine<>
+  opengenerics19 ref : Function<void>
   {
     redefine call(x, y i32) { }; // 6. should flag an error, wrong number of arguments
   }
 
-  opengenerics20 ref : Routine<bool>
+  opengenerics20 ref : Function<void,bool>
   {
     redefine call() { }; // 7. should flag an error, wrong number of arguments
   }
-  opengenerics21 ref : Routine<bool>
+  opengenerics21 ref : Function<void,bool>
   {
     redefine call(x bool) { };
   }
-  opengenerics22 ref : Routine<i32>
+  opengenerics22 ref : Function<void,i32>
   {
     redefine call(x, y bool) { }; // 8. should flag an error, wrong number of arguments
   }
 
-  r3 Routine<>         = opengenerics21;  // 9. should flag an error: incompatible number of generic arguments
-  r4 Routine<i32,bool> = opengenerics21;  // 10. should flag an error: incompatible number of generic arguments
+  r3 Function<void>          = opengenerics21;  // 9. should flag an error: incompatible number of generic arguments
+  r4 Function<void,i32,bool> = opengenerics21;  // 10. should flag an error: incompatible number of generic arguments
 
   f3 Function<i32,i32>   = opengenerics15;   // 11. should flag an error: incompatible types due to incompatible generics
   f4 Function<bool,bool> = opengenerics15;   // 12. should flag an error: incompatible types due to incompatible generics

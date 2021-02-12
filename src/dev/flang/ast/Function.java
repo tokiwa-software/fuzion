@@ -277,7 +277,8 @@ public class Function extends Expr
     f.modifiers |= Consts.MODIFIER_REDEFINE;
 
     List<Type> generics = new List<Type>();
-    for (int j = f.hasResult() ? -1 : 0; j < a.size(); j++)
+    generics.add(f.hasResult() ? Types.t_UNDEFINED : new Type("void"));
+    for (int j = 0; j < a.size(); j++)
       {
         generics.add(Types.t_UNDEFINED);
       }
@@ -385,8 +386,7 @@ public class Function extends Expr
 
     if (f != null)
       {
-        f = f.hasResult() ? Types.resolved.f_function
-                          : Types.resolved.f_routine;
+        f = Types.resolved.f_function;
       }
     return f;
   }
@@ -406,10 +406,9 @@ public class Function extends Expr
 
     if (f != null)
       {
-        if (f.hasResult())
-          {
-            generics.add(f.resultTypeForTypeInference(pos, res, Type.NONE));
-          }
+        generics.add(f.hasResult()
+                     ? f.resultTypeForTypeInference(pos, res, Type.NONE)
+                     : new Type("void"));
         for (Feature a : f.arguments)
           {
             a.resolveTypes(res);

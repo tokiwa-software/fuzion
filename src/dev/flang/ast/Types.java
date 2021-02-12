@@ -53,10 +53,9 @@ public class Types extends ANY
   private static final Map<Type, Type> types = new TreeMap<>();
 
   /**
-   * Names of abstract features for function types with and without result:
+   * Name of abstract features for function types:
    */
   public static final String FUNCTION_NAME = "Function";
-  public static final String ROUTINE_NAME  = "Routine";
 
   public static Resolved resolved = null;
 
@@ -170,9 +169,7 @@ public class Types extends ANY
     public final Feature f_debug;
     public final Feature f_debugLevel;
     public final Feature f_function;
-    public final Feature f_routine;
     public final Feature f_function_call;
-    public final Feature f_routine_call;
     public final Feature f_safety;
     public final Feature f_Array;
     public final Feature f_Array_length;
@@ -204,9 +201,7 @@ public class Types extends ANY
       f_debug         = universe.get("debug", 0);
       f_debugLevel    = universe.get("debugLevel");
       f_function      = universe.get(FUNCTION_NAME);
-      f_routine       = universe.get(ROUTINE_NAME);
       f_function_call = f_function.get("call");
-      f_routine_call  = f_routine .get("call");
       f_safety        = universe.get("safety");
       f_Array         = universe.get("Array");
       f_Array_data    = f_Array.get("data");

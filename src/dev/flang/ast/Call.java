@@ -853,32 +853,12 @@ public class Call extends Expr
     if (!forFun && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
         _type.isFunType() &&
         calledFeature_ != Types.resolved.f_function && // exclude inherits call in function type
-        calledFeature_ != Types.resolved.f_routine  && // exclude inherits call in routine  type
         calledFeature_.arguments.size() == 0 &&
         hasParentheses())
       {
-        Type funResultType;
-        int numFormalArgs;
-        if (_type.feature == Types.resolved.f_function)
-          {
-            // a Function: the result is the first generic argument
-            funResultType = _type._generics.isEmpty() ? Types.t_ERROR : _type._generics.getFirst();
-            numFormalArgs = _type._generics.size() - 1;
-          }
-        else
-          {
-            check
-              (_type.feature == Types.resolved.f_routine);
-            // a Routine: the result is the call's self type
-            funResultType = new Type(pos,
-                                  _type.name,
-                                  _type._generics,
-                                  null,
-                                  Types.resolved.f_routine,
-                                  false);
-            numFormalArgs = _type._generics.size();
-          }
-
+        // a Function: the result is the first generic argument
+        var funResultType = _type._generics.isEmpty() ? Types.t_ERROR : _type._generics.getFirst();
+        var numFormalArgs = _type._generics.size() - 1;
         result = new Call(pos,
                           "call",
                           NO_GENERICS,

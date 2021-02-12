@@ -376,26 +376,6 @@ public class Type extends ANY implements Comparable
 
 
   /**
-   * call Constructor for a function type that defines a routine that returns nothing
-   *
-   * @param arguments the arguments list
-   *
-   * @return a Type instance that represents this function
-   */
-  public static Type funType(SourcePosition pos, List<Type> arguments)
-  {
-    if (PRECONDITIONS) require
-      (arguments != null);
-
-    // This is called during parsing, so Types.resolved.f_routine is not set yet.
-    return new Type(pos,
-                    Types.ROUTINE_NAME,
-                    arguments,
-                    null);
-  }
-
-
-  /**
    * setRef is called by the parser when parsing a type of the form "ref
    * <simpletype>".
    */
@@ -1093,8 +1073,7 @@ public class Type extends ANY implements Comparable
   public boolean isFunType()
   {
     return
-      feature == Types.resolved.f_function ||
-      feature == Types.resolved.f_routine;
+      feature == Types.resolved.f_function;
   }
 
 
