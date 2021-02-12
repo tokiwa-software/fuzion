@@ -831,12 +831,17 @@ public class C extends Backend
                     }
                   else
                     {
+                      boolean outerAdrOfValue = false;
                       CExpr res = null;
-                      var rt = _fuir.clazzResultClazz(ccs[0]);
+                      var rt = _fuir.clazzResultClazz(ccs[0]); // NYI: HACK: just use the first clazz ccs[0] as static clazz for now.
                       if (rt != -1 && !_fuir.clazzIsValueLess(rt))
                         {
                           res = CExpr.ident(newTemp());
-                          _c.println(clazzTypeNameRefOrVal(rt) + " " + res.code() + ";");
+                          var isOuterRef = _fuir.clazzIsOuterRef(ccs[0]); // NYI: HACK: just use the first clazz ccs[0] as static clazz for now.
+                          _c.println((isOuterRef
+                                      ? clazzTypeNameOuterField(rt)
+                                      : clazzTypeNameRefOrVal  (rt)) + " " + res.code() + ";");
+                          outerAdrOfValue = isOuterRef && outerClazzPassedAsAdrOfValue(rt);
                         }
                       _c.println("switch (" + id.code() + ") {");
                       _c.indent();
@@ -850,7 +855,22 @@ public class C extends Backend
                           _c.print(call(cl, c, i, cc, stack2, tt));
                           if (res != null)
                             {
-                              _c.print(res.assign(stack2.pop()));
+                              var rv = stack2.pop();
+                              if (outerAdrOfValue)
+                                {
+                                  rv = rv.adrOf();
+
+                                  // NYI: This cast should not be needed when
+                                  // outer clazz handling is fixed, in
+                                  // particular, when clazzes
+                                  //
+                                  //   ref stream<i32>.asString
+                                  //   ref conststring.ref asStream.asString
+                                  //
+                                  // are the same, the second one should be replaced by the first.
+                                  rv = rv.castTo(clazzTypeNameOuterField(rt));  // NYI remove, see above.
+                                }
+                              _c.print(res.assign(rv));
                             }
                           _c.print(CStmnt.BREAK);
                           _c.unindent();
@@ -862,6 +882,10 @@ public class C extends Backend
                       stack.setSize(stack.size() - ac); // stack.popn(ac)
                       if (res != null)
                         {
+                          if (outerAdrOfValue)
+                            {
+                              res = res.deref();
+                            }
                           stack.push(res);
                         }
                     }
