@@ -592,7 +592,7 @@ public class FUIR extends ANY
   /**
    * Are values of this clazz essentially void values?
    */
-  public boolean clazzIsValueLess(int cl)
+  public boolean clazzIsUnitType(int cl)
   {
     var cc = _clazzIds.get(cl);
     return cc.size() == 0 && !cc.isRef();

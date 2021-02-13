@@ -737,7 +737,7 @@ public class C extends Backend
                            fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
                            )
                     {
-                      if (!_fuir.clazzIsValueLess(valuecl))
+                      if (!_fuir.clazzIsUnitType(valuecl))
                         {
                           var value = stack.pop();                // value assigned to field
                           _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = "+value);
@@ -749,7 +749,7 @@ public class C extends Backend
                       _c.println("// flcazz: "+_fuir.clazzAsString(fclazz));
                       _c.println("// valuecl: "+_fuir.clazzAsString(valuecl));
                     }
-                  else if (_fuir.clazzIsValueLess(fclazz))
+                  else if (_fuir.clazzIsUnitType(fclazz))
                     {
                       _c.println("// valueluess assignment to " + fieldAccess.code());
                     }
@@ -782,7 +782,7 @@ public class C extends Backend
                 {
                   var t = CExpr.ident(newTemp());
                   _c.println(clazzTypeNameRefOrVal(rc) + " " + t.code() + " = malloc(sizeof("+_structNames.get(cl)+"));");
-                  if (!_fuir.clazzIsValueLess(vc))
+                  if (!_fuir.clazzIsUnitType(vc))
                     {
                       var val = stack.pop();
                       _c.println("// NYI: copy fields from "+val.code()+" over to "+t.code());
@@ -863,7 +863,7 @@ public class C extends Backend
                       boolean outerAdrOfValue = false;
                       CExpr res = null;
                       var rt = _fuir.clazzResultClazz(ccs[0]); // NYI: HACK: just use the first clazz ccs[0] as static clazz for now.
-                      if (rt != -1 && !_fuir.clazzIsValueLess(rt) &&
+                      if (rt != -1 && !_fuir.clazzIsUnitType(rt) &&
                           (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
                         {
                           res = CExpr.ident(newTemp());
@@ -1054,7 +1054,7 @@ public class C extends Backend
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = null;
           var call = CExpr.call(_functionNames.get(cc), args(cl, c, i, cc, stack, ac, castTarget));
-          if (rt != -1 && !_fuir.clazzIsValueLess(rt))
+          if (rt != -1 && !_fuir.clazzIsUnitType(rt))
             {
               var tmp = newTemp();
               res = CExpr.ident(tmp);
@@ -1072,10 +1072,10 @@ public class C extends Backend
       case Field:
         {
           var tc = _fuir.callTargetClazz(cl, c, i);
-          if (tc != -1 && !_fuir.clazzIsValueLess(tc))
+          if (tc != -1 && !_fuir.clazzIsUnitType(tc))
             {
               var t = stack.pop();
-              if (rt != -1 && !_fuir.clazzIsValueLess(rt))
+              if (rt != -1 && !_fuir.clazzIsUnitType(rt))
                 {
                   var field = fieldName(_fuir.callFieldOffset(tc, c, i), cc);
                   CExpr res = ccodeAccessField(tc, t, field);
@@ -1088,7 +1088,7 @@ public class C extends Backend
             }
           else
             {
-              check(rt == -1 || _fuir.clazzIsValueLess(rt));
+              check(rt == -1 || _fuir.clazzIsUnitType(rt));
             }
           break;
         }
@@ -1122,7 +1122,7 @@ public class C extends Backend
     List<CExpr> result;
     if (argCount > 0)
       {
-        if (_fuir.clazzIsValueLess(_fuir.clazzArgClazz(cc, argCount-1)))
+        if (_fuir.clazzIsUnitType(_fuir.clazzArgClazz(cc, argCount-1)))
           {
             result = args(cl, c, i, cc, stack, argCount-1, castTarget);
           }
@@ -1138,7 +1138,7 @@ public class C extends Backend
     else // NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
       { // ref to outer instance, passed by reference
         var tc = _fuir.callTargetClazz(cl, c, i);
-        if (tc == -1 || _fuir.clazzIsValueLess(tc))
+        if (tc == -1 || _fuir.clazzIsUnitType(tc))
           {
             result = new List<>();
           }
@@ -1165,14 +1165,14 @@ public class C extends Backend
   private void cFunctionDecl(int cl)
   {
     var res = _fuir.clazzResultClazz(cl);
-    _c.print(res == -1 || _fuir.clazzIsValueLess(res)
+    _c.print(res == -1 || _fuir.clazzIsUnitType(res)
              ? "void "
              : clazzTypeNameRefOrVal(res) + " ");
     _c.print(_functionNames.get(cl));
     _c.print("(");
     var oc = _fuir.clazzOuterClazz(cl);
     String comma = "";
-    if (oc != -1 && !_fuir.clazzIsValueLess(oc))
+    if (oc != -1 && !_fuir.clazzIsUnitType(oc))
       {
         _c.print(clazzTypeNameOuterField(oc));
         _c.print(" fzouter");
@@ -1183,7 +1183,7 @@ public class C extends Backend
       {
         _c.print(comma);
         var at = _fuir.clazzArgClazz(cl, i);
-        if (at != -1 && !_fuir.clazzIsValueLess(at))
+        if (at != -1 && !_fuir.clazzIsUnitType(at))
           {
             var t = clazzTypeNameRefOrVal(at);
             _c.print(t + " arg" + i);
@@ -1248,7 +1248,7 @@ public class C extends Backend
                 if (or != -1)
                   {
                     var oc = _fuir.clazzOuterClazz(cl);
-                    if (oc != -1 && !_fuir.clazzIsValueLess(oc))
+                    if (oc != -1 && !_fuir.clazzIsUnitType(oc))
                       {
                         var outer = CExpr.ident("fzouter");
                         _c.print(CURRENT.deref().field(fieldNameInClazz(cl, or)).assign(outer));
@@ -1287,7 +1287,7 @@ public class C extends Backend
                                  "Java Error: " + sw);
                   }
                 var res = _fuir.clazzResultClazz(cl);
-                if (res != -1 && !_fuir.clazzIsValueLess(res))
+                if (res != -1 && !_fuir.clazzIsUnitType(res))
                   {
                     var rf = _fuir.clazzResultField(cl);
                     if (rf != -1)
