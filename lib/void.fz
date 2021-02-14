@@ -25,7 +25,7 @@
 
 # void -- value to be used as result of features that do not return a result
 #
-# This is a dataless value that is intendend to be used to return no data.
+# This is a unit type value that is intendend to be used to return no data.
 #
 # NYI: move to universe.fz
 void is

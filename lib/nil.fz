@@ -25,7 +25,7 @@
 
 # nil -- value for Options that are not present
 #
-# This is a dataless value that is preferred to represent instances that are
+# This is a unit type that is preferred to represent instances that are
 # not present, e.g, in an Option.
 #
 # NYI: move to universe.fz
