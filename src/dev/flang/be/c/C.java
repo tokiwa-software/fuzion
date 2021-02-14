@@ -660,10 +660,6 @@ public class C extends Backend
                         {
                           _c.print(" /* slot " + i + " not used */\n");
                         }
-                      else if (fcl == -2) // NYI: ugly inline constant
-                        {
-                          _c.print(" /* slot " + i + " is VOID */\n");
-                        }
                       else
                         {
                           var cf = _fuir.clazzField(cl, i);

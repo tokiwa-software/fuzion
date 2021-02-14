@@ -340,7 +340,7 @@ public class Impl extends ANY
         if ((resultField != null) && !outer.hasAssignmentsToResult())
           {
             var t = outer.resultType();
-            if (t != Types.t_VOID && t != Types.resolved.t_void)
+            if (t != Types.resolved.t_void)
               {
                 code_ = code_.propagateExpectedType(res, outer, t);
               }
@@ -376,8 +376,7 @@ public class Impl extends ANY
         Feature resultField = outer.resultField();
         if ((resultField != null) &&
             !outer.hasAssignmentsToResult() &&
-            resultField.resultType() != Types.t_VOID &&  // This may happen for loops that may or may not produce a result
-            resultField.resultType() != Types.resolved.t_void
+            resultField.resultType() != Types.resolved.t_void  // This may happen for loops or generics that may or may not produce a result
             )
           {
             var endPos = (this.code_ instanceof Block) ? ((Block) this.code_).closingBracePos_ : this.code_.pos;

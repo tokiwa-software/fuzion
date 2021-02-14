@@ -336,8 +336,8 @@ public class Generic extends ANY
             // the values of a Tuple for all the actual clazzes of Tuple with
             // fewer actual generic arguments than the max size of a Tuple. In
             // this case, the types of all the unused select fields will be
-            // t_VOID.
-            Types.t_VOID;
+            // t_void.
+            Types.resolved.t_void;
       }
     else
       {
@@ -403,7 +403,7 @@ public class Generic extends ANY
    *
    * @param i the index of the actual generic argument, must be >= 0.
    *
-   * @return a Type that represents the given actual generic argument or t_VOID
+   * @return a Type that represents the given actual generic argument or t_void
    * if the index is >= the number of actual generic arguments.
    */
   public Type select(int i)

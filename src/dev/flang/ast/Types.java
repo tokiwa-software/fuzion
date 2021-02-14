@@ -73,13 +73,6 @@ public class Types extends ANY
 
 
   /**
-   * Dummy name used for void type t_VOID which is used for expressions that do
-   * not produce a result.
-   */
-  static final String VOID_NAME = "--VOID--";
-
-
-  /**
    * Dummy name used for undefined type t_UNDEFINED which is used for undefined
    * types that are expected to be replaced by the correct type during type
    * inference. Examples are the result of union of distincs types on different
@@ -108,7 +101,6 @@ public class Types extends ANY
   static Set<String> INTERNAL_NAMES = Collections.<String>unmodifiableSet
     (new TreeSet<>(Arrays.asList(ADDRESS_NAME,
                                  INFER_NAME,
-                                 VOID_NAME,
                                  UNDEFINED_NAME,
                                  ANY_NAME,
                                  ERROR_NAME)));
@@ -118,9 +110,6 @@ public class Types extends ANY
 
   /* artificial type for type that must be inferred from actual argument */
   public static Type t_INFER = new Type(INFER_NAME);
-
-  /* artificial type for Expr that does not return a value */
-  public static Type t_VOID = new Type(VOID_NAME); // NYI: Use t_void instead
 
   /* artificial type for Expr that does not have a well defined type such as the
    * union of two distinct types */
@@ -209,7 +198,6 @@ public class Types extends ANY
       resolved = this;
       t_ADDRESS  .resolveArtificialType(universe.get("Object"));
       t_INFER    .resolveArtificialType(universe);
-      t_VOID     .resolveArtificialType(universe);
       t_UNDEFINED.resolveArtificialType(universe);
       t_ANY      .resolveArtificialType(universe);
       t_ERROR    .resolveArtificialType(f_ERROR);

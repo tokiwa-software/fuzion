@@ -241,7 +241,7 @@ public class Interpreter extends Backend
         Value thiz = execute(a.getOuter, staticClazz, cur);
         Clazz sClazz = staticClazz.getRuntimeClazz(a.tid_ + 0);
         Clazz vClazz = staticClazz.getRuntimeClazz(a.tid_ + 1);
-        if (vClazz != Clazzes.VOID.getIfCreated())
+        if (vClazz != Clazzes.c_void.getIfCreated())
           {
             setField(a.assignedField, sClazz, thiz, v, vClazz._type);
           }
@@ -396,10 +396,10 @@ public class Interpreter extends Backend
             result = ri;
             for (Feature f : vc.clazzForField_.keySet())
               {
-                // Fields select()ed from fields of open generic type have type t_VOID
+                // Fields select()ed from fields of open generic type have type t_void
                 // if the actual clazz does not have the number of actual open generic
                 // parameters.
-                if (vc.actualType(f.resultType()) != Types.t_VOID)
+                if (vc.actualType(f.resultType()) != Types.resolved.t_void)
                   {
                     Value v = getField(f, vc, val);
                     // NYI: Check that this works well for internal fields such as choice tags.

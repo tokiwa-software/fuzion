@@ -175,7 +175,7 @@ public class If extends Expr
   /**
    * true if this If or any nested else-if-branches end with a missing
    * else-branch. If so, there is an execution path that does not take any of
-   * the branches, so the result type is VOID.
+   * the branches, so the result type is void.
    */
   private boolean hasUntakenElseBranch()
   {
@@ -194,7 +194,7 @@ public class If extends Expr
     Type result = null;
     if (hasUntakenElseBranch())
       {
-        result = Types.t_VOID;
+        result = Types.resolved.t_void;
       }
     else
       {

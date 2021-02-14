@@ -201,8 +201,7 @@ Hellq is
        Errors.count() > 0 || !actualType.isGenericArgument(),
        Errors.count() > 0 || actualType.isFreeFromFormalGenerics(),
        actualType.featureOfType().outer() == null || outer.feature().inheritsFrom(actualType.featureOfType().outer()),
-       actualType == Types.t_ERROR ||
-       actualType == Types.t_VOID  || actualType.featureOfType().outer() != null || outer == null,
+       actualType == Types.t_ERROR || actualType.featureOfType().outer() != null || outer == null,
        outer == null || outer._type != Types.t_ADDRESS);
 
     this._type = actualType;
@@ -678,11 +677,7 @@ Hellq is
    */
   public String toString()
   {
-    if (this._type == Types.t_VOID)
-      {
-        return "--VOID--";
-      }
-    else if (this._type == Types.t_UNDEFINED)
+    if (this._type == Types.t_UNDEFINED)
       {
         return "--UNDEFINED--";
       }

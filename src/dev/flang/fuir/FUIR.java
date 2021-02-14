@@ -153,29 +153,11 @@ public class FUIR extends ANY
   private int addClazz(Clazz cl)
   {
     if (PRECONDITIONS) require
-                         (cl._type != Types.t_VOID,  // NYI: would be better to not create these dummy clazzes in the first place
-                          cl._type != Types.t_ADDRESS);
+                         (cl._type != Types.t_ADDRESS);// NYI: would be better to not create these dummy clazzes in the first place
 
     int result = _clazzIds.add(cl);
     _featureIds.add(cl.feature());
     return result;
-  }
-
-
-  int addClazzIfNotVOID(Clazz cl)
-  {
-    if (PRECONDITIONS) require
-                         (cl._type != Types.t_ADDRESS);
-
-    if (cl._type != Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
-      {
-        // NYI: Check Clazzes.isUsed(thizFeature, ocl)
-        return addClazz(cl);
-      }
-    else
-      {
-        return -1;
-      }
   }
 
 
@@ -185,8 +167,7 @@ public class FUIR extends ANY
       {
         for (var cl : Clazzes.all())
           {
-            if (cl._type != Types.t_VOID    &&  // NYI: would be better to not create this dummy clazz in the first place
-                cl._type != Types.t_ADDRESS     // NYI: would be better to not create this dummy clazz in the first place
+            if (cl._type != Types.t_ADDRESS     // NYI: would be better to not create this dummy clazz in the first place
                 )
               {
                 int res = addClazz(cl);
@@ -228,8 +209,7 @@ public class FUIR extends ANY
    *
    * @param i a slot index in cl
    *
-   * @return the clazz id or -1 if no field at this slot or -2 if field type is
-   * VOID, so no field is needed. -3 if field type is ADDRESS
+   * @return the clazz id or -1 if no field at this slot or -3 if field type is ADDRESS
    */
   public int clazzFieldSlotClazz(int cl, int i)
   {
@@ -244,11 +224,7 @@ public class FUIR extends ANY
           {
             var f = e.getKey();
             Clazz fcl = cc.actualResultClazz(f);
-            if (fcl._type == Types.t_VOID)  // NYI: would be better to not create this dummy clazz in the first place
-              {
-                return -2;
-              }
-            else if (fcl._type == Types.t_ADDRESS)  // NYI: would be better to not create this dummy clazz in the first place
+            if (fcl._type == Types.t_ADDRESS)  // NYI: would be better to not create this dummy clazz in the first place
               {
                 return -3;
               }
@@ -306,7 +282,7 @@ public class FUIR extends ANY
     var rcl =
       cf.returnType.isConstructorType() ? cc :
       cf.isField() && cf.isOuterRef()   ? cc._outer._outer : cc.actualClazz(cf.resultType());
-    return addClazzIfNotVOID(rcl);
+    return addClazz(rcl);
   }
 
 
@@ -366,7 +342,7 @@ public class FUIR extends ANY
     var c = _clazzIds.get(cl);
     var a = c.feature().arguments.get(arg);
     var rc = c.actualClazz(a.resultType());
-    return addClazzIfNotVOID(rc);
+    return addClazz(rc);
   }
 
   /**
@@ -922,8 +898,6 @@ public class FUIR extends ANY
     var ocl = _clazzIds.get(outerClazz);
     var f = _featureIds.get(field);
     var fclazz = ocl.clazzForField(f);
-    check
-      (fclazz._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
     return addClazz(fclazz);
   }
 
@@ -999,8 +973,6 @@ public class FUIR extends ANY
     var outerClazz = _clazzIds.get(cl);
     var call = (Call) _codeIds.get(c).get(ix);
     var innerClazz = ((dev.flang.ir.BackendCallable)outerClazz.getRuntimeData(call.sid_)).inner();
-    check
-      (innerClazz._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
     return addClazz(innerClazz);
   }
 
@@ -1030,8 +1002,7 @@ public class FUIR extends ANY
     var found = new TreeSet<Clazz>();
     for (var cl : Clazzes.all())  // NYI: Overkill, better check only sub-clazzes of tclazz
       {
-        if (cl._type != Types.t_VOID    &&  // NYI: would be better to not create this dummy clazz in the first place
-            cl._type != Types.t_ADDRESS     // NYI: would be better to not create this dummy clazz in the first place
+        if (cl._type != Types.t_ADDRESS     // NYI: would be better to not create this dummy clazz in the first place
             )
           {
             if (cl._dynamicBinding != null)
@@ -1081,9 +1052,6 @@ public class FUIR extends ANY
     var innerClazzIds = new int[innerClazzes.size()];
     for (var i = 0; i < innerClazzes.size(); i++)
       {
-        check
-          (innerClazzes.get(i)._type != Types.t_VOID);  // VOID would result in two universes. NYI: Better do not create this clazz in the first place
-
         innerClazzIds[i] = addClazz(innerClazzes.get(i));
         check(innerClazzIds[i] != -1);
       }

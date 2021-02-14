@@ -813,7 +813,7 @@ public class Type extends ANY implements Comparable
 
 
   /**
-   * resolve artificial types t_VOID, t_ERROR, etc.
+   * resolve artificial types t_ERROR, etc.
    */
   public void resolveArtificialType(Feature feat)
   {
@@ -1322,11 +1322,9 @@ public class Type extends ANY implements Comparable
       {
         assignableTo.add(actual);
       }
-    if (this == actual
-        || ((this   == Types.t_VOID || this   == Types.resolved.t_void) &&
-            (actual == Types.t_VOID || actual == Types.resolved.t_void)    )
-        || this   == Types.t_ERROR
-        || actual == Types.t_ERROR)
+    if (this   == actual        ||
+        this   == Types.t_ERROR ||
+        actual == Types.t_ERROR    )
       {
         result = true;
       }
@@ -1411,7 +1409,7 @@ public class Type extends ANY implements Comparable
 
   /**
    * Find a type that is assignable from values of two types, this and t. If no
-   * such type exists, return Types.resovled.t_VOID.
+   * such type exists, return Types.resovled.t_void.
    *
    * @param that another type or null
    *

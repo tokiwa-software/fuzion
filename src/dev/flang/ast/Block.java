@@ -220,7 +220,7 @@ public class Block extends Expr
    */
   public Type typeOrNull()
   {
-    Type result = Types.t_VOID;
+    Type result = Types.resolved.t_void;
     Expr resExpr = resultExpression();
     if (resExpr != null)
       {
