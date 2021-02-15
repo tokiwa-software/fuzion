@@ -202,7 +202,18 @@ Hellq is
        Errors.count() > 0 || actualType.isFreeFromFormalGenerics(),
        actualType.featureOfType().outer() == null || outer.feature().inheritsFrom(actualType.featureOfType().outer()),
        actualType == Types.t_ERROR || actualType.featureOfType().outer() != null || outer == null,
+       Errors.count() > 0 || (actualType != Types.t_ERROR     &&
+                              actualType != Types.t_UNDEFINED &&
+                              actualType != Types.t_INFER     &&
+                              actualType != Types.t_ANY         ),
        outer == null || outer._type != Types.t_ADDRESS);
+
+    if (actualType == Types.t_UNDEFINED ||
+        actualType == Types.t_INFER     ||
+        actualType == Types.t_ANY         )
+      {
+        actualType = Types.t_ERROR;
+      }
 
     this._type = actualType;
     this._outer = outer;
@@ -677,36 +688,22 @@ Hellq is
    */
   public String toString()
   {
-    if (this._type == Types.t_UNDEFINED)
-      {
-        return "--UNDEFINED--";
-      }
-    else if (this._type == Types.t_ADDRESS)
-      {
-        return "--ADDRESS--";
-      }
-    else if (this._type == Types.t_ERROR)
-      {
-        return "--ERROR--";
-      }
-    else if (this._outer == null)
-      {
-        return this._type.toString();
-      }
-    else
-      {
-        return ""
-          + ((this._outer == Clazzes.universe.get())
-             ? ""
-             : this._outer.toString() + ".")
-          + (this._type.isRef()
-             ? "ref "
-             : ""
-             )
-          + feature().featureName().baseName() + (this._type._generics.isEmpty()
-                              ? ""
-                              : "<" + this._type._generics + ">");
-      }
+    return
+      (this._type == Types.t_ERROR   ||
+       this._type == Types.t_ADDRESS ||
+       this._outer == null              )
+      ? this._type.toString() // error, address or universe
+      : (""
+         + ((this._outer == Clazzes.universe.get())
+            ? ""
+            : this._outer.toString() + ".")
+         + (this._type.isRef()
+            ? "ref "
+            : ""
+            )
+         + feature().featureName().baseName() + (this._type._generics.isEmpty()
+                                                 ? ""
+                                                 : "<" + this._type._generics + ">"));
   }
 
 
