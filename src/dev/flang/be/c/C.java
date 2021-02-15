@@ -474,6 +474,7 @@ public class C extends Backend
         else if ('$' == cp) { sb.append("S"); }
         else if ('%' == cp) { sb.append("P"); }
         else if ('°' == cp) { sb.append("O"); }
+        else if ('#' == cp) { sb.append("H"); alphaMode = true; }
         // escapes that are used for other purposes:
         //
         // "__" for '.'

@@ -58,7 +58,7 @@ public class Feature extends ANY implements Stmnt, Comparable
   /*----------------------------  constants  ----------------------------*/
 
 
-  static final String UNIVERSE_NAME = "--universe--";
+  static final String UNIVERSE_NAME = "#universe";
   static final String OBJECT_NAME = "Object";
 
 
@@ -410,7 +410,7 @@ public class Feature extends ANY implements Stmnt, Comparable
          Consts.VISIBILITY_INVISIBLE,
          0,
          r,
-         new List<String>("--anonymous"+uniqueAnonymousFeatureId+"--"),
+         new List<String>("#anonymous"+uniqueAnonymousFeatureId),
          FormalGenerics.NONE,
          new List<Feature>(),
          i,
@@ -640,7 +640,7 @@ public class Feature extends ANY implements Stmnt, Comparable
       {
         // NYI: Check that this feature is allowed to have this name, i.e., it
         // is declared in a Decompose statement.
-        n = "--underscore<"+ underscoreId++ +">--";
+        n = "#_"+ underscoreId++;
       }
     this.qname      = qname;
     this.generics   = g;
@@ -812,8 +812,7 @@ public class Feature extends ANY implements Stmnt, Comparable
   private boolean isAnonymousInnerFeature()
   {
     // NYI: better have a flag for this
-    return _featureName.baseName().startsWith("--") &&
-           _featureName.baseName().endsWith  ("--");
+    return _featureName.baseName().startsWith("#");
   }
 
 
@@ -852,7 +851,7 @@ public class Feature extends ANY implements Stmnt, Comparable
         resultField_ = new Feature(pos,
                                    Consts.VISIBILITY_PRIVATE,
                                    t,
-                                   resultInternal() ? "--result--"
+                                   resultInternal() ? "#result"
                                                     : "result",
                                    this);
       }
@@ -2855,7 +2854,7 @@ public class Feature extends ANY implements Stmnt, Comparable
               // NYI: Special handling for anonymous inner features that currently do not appear as statements
               if (c.calledFeatureKnown() &&
                   c.calledFeature().isAnonymousInnerFeature() &&
-                  c.calledFeature().featureName().baseName().startsWith("--anonymous") &&
+                  c.calledFeature().featureName().baseName().startsWith("#anonymous") &&
                   c.calledFeature() == inner)
                 {
                   found();
@@ -3529,7 +3528,7 @@ public class Feature extends ANY implements Stmnt, Comparable
       (outer_ != null,
        !isSingleton());
 
-    return "--^(" + qualifiedName() + ")--";
+    return "#^" + qualifiedName();
   }
 
 
@@ -3840,7 +3839,7 @@ public class Feature extends ANY implements Stmnt, Comparable
     int s = _selectOpen.size();
     while (s <= i)
       {
-        Feature f = new Feature(pos, visibility, modifiers, resultType().generic.select(s), "--" + _featureName.baseName() + "." + s + "--", contract);
+        Feature f = new Feature(pos, visibility, modifiers, resultType().generic.select(s), "#" + _featureName.baseName() + "." + s, contract);
         f.findDeclarations(outer());
         f.scheduleForResolution(res);
         _selectOpen.add(f);

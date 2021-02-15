@@ -257,7 +257,7 @@ public abstract class Expr extends ANY implements Stmnt
     Feature r = new Feature(pos,
                             Consts.VISIBILITY_INVISIBLE,
                             t,
-                            "--stmnt-result" + (_id_++) + "--",
+                            "#stmtResult" + (_id_++),
                             outer);
     r.scheduleForResolution(res);
     res.resolveTypes();

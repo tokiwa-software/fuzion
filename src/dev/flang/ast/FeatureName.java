@@ -37,7 +37,7 @@ import dev.flang.util.Errors;
 
 /**
  * FeatureName is a tuple consisting of the base name of a feature, which is a
- * string like "sort", "i32", "prefix -", "--result--", etc., and the number of
+ * string like "sort", "i32", "prefix -", "#result", etc., and the number of
  * formal arguments to that feature.
  *
  * The FeatureName may change when a feature is inherited by a heir class: If

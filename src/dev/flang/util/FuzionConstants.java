@@ -44,7 +44,7 @@ public class FuzionConstants extends ANY
    * Artificial field added to instances of choice.fz if needed to
    * disambiguate different (value) types.
    */
-  public static final String CHOICE_TAG_NAME = "--choice=tag--";
+  public static final String CHOICE_TAG_NAME = "#tag";
 
 }
 

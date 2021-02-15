@@ -600,7 +600,7 @@ public class Call extends Expr
       {
         var b = ((Call)target)._actuals.get(0);
         b.visit(new Feature.ResolveTypes(res), thiz);
-        String tmpName = "--chainedBoolTemp" + (_chainedBoolTempId_++) + "--";
+        String tmpName = "#chainedBoolTemp" + (_chainedBoolTempId_++);
         var tmp = new Feature(pos(),
                               Consts.VISIBILITY_INVISIBLE,
                               b.type(),

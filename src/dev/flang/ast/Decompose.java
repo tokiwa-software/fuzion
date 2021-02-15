@@ -299,7 +299,7 @@ public class Decompose extends ANY implements Stmnt
         Feature tmp = new Feature(_pos,
                                   Consts.VISIBILITY_PRIVATE,
                                   t,
-                                  "--decompose<"+ id++ +">--",
+                                  "#decompose" + id++,
                                   outer);
         tmp.scheduleForResolution(res);
         stmnts.add(tmp.resolveTypes(res, outer));

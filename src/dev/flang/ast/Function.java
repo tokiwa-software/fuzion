@@ -288,7 +288,7 @@ public class Function extends Expr
                              generics,
                              Expr.NO_EXPRS);
     List<Stmnt> statements = new List<Stmnt>(f);
-    String wrapperName = "--fun<"+ id++ +">--";
+    String wrapperName = "#fun"+ id++;
     _wrapper = new Feature(pos,
                            Consts.VISIBILITY_INVISIBLE,
                            Consts.MODIFIER_FINAL,
@@ -533,7 +533,7 @@ public class Function extends Expr
 
             List<Stmnt> statements = new List<Stmnt>(fcall);
 
-            String wrapperName = "--fun<"+ id++ +">--";
+            String wrapperName = "#fun"+ id++;
             Feature function = new Feature(pos,
                                            Consts.VISIBILITY_INVISIBLE,
                                            Consts.MODIFIER_FINAL,
