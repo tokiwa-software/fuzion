@@ -65,8 +65,9 @@ public class Types extends ANY
    */
   static final String ADDRESS_NAME = "--ADDRESS--";
 
+
   /**
-   * Dummy name used for Types.t_ADDRESS which is used for argument types that
+   * Dummy name used for Types.t_INFER which is used for argument types that
    * need to be inferred from the actual arguments.
    */
   static final String INFER_NAME = "--INFER--";
