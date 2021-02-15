@@ -174,7 +174,7 @@ public class Clazzes extends ANY
   public static final OnDemandClazz object      = new OnDemandClazz(() -> Types.resolved.t_object           );
   public static final OnDemandClazz string      = new OnDemandClazz(() -> Types.resolved.t_string           );
   public static final OnDemandClazz conststring = new OnDemandClazz(() -> Types.resolved.t_conststring      , true /* needed? */);
-  public static final OnDemandClazz c_void      = new OnDemandClazz(() -> Types.resolved.t_void             );
+  public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
   public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     );
 
 
@@ -326,7 +326,7 @@ public class Clazzes extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (actualType.compareToIgnoreOuter(result._type) == 0,
+      (Errors.count() > 0 || actualType.compareToIgnoreOuter(result._type) == 0,
        outer == result._outer || true /* NYI: Check why this sometimes does not hold */);
 
     return result;
@@ -710,7 +710,7 @@ public class Clazzes extends ANY
         var b = (Block) e;
         Expr resExpr = b.resultExpression();
         result = resExpr != null ? clazz(resExpr, outerClazz)
-                                 : c_void.get();
+                                 : c_unit.get();
       }
     else if (e instanceof Box)
       {

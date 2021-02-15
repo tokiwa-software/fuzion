@@ -147,7 +147,7 @@ public class Types extends ANY
     public final Type t_object;
     public final Type t_string;
     public final Type t_conststring;
-    public final Type t_void;
+    public final Type t_unit;
     public final Feature f_choice;
     public final Feature f_TRUE;
     public final Feature f_FALSE;
@@ -179,7 +179,7 @@ public class Types extends ANY
       t_string        = Type.type(      "string"      , universe);
       t_conststring   = Type.type(      "conststring" , universe);
       t_object        = Type.type(      "Object"      , universe);
-      t_void          = Type.type(      "void"        , universe);
+      t_unit          = Type.type(      "unit"        , universe);
       f_choice        = universe.get("choice");
       f_TRUE          = universe.get("TRUE");
       f_FALSE         = universe.get("FALSE");

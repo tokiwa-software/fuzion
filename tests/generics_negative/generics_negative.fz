@@ -75,11 +75,11 @@ generics_negative {
   {
     redefine call(x bool) i32 { 42 };
   }
-  opengenerics17 ref : Function<void>
+  opengenerics17 ref : Function<unit>
   {
     redefine call() { };
   }
-  opengenerics21 ref : Function<void,i32>
+  opengenerics21 ref : Function<unit,i32>
   {
     redefine call(x bool) { };
   }
@@ -98,13 +98,13 @@ generics_negative {
   f2r2a := f2(true);
   f2r3a := f2(true,false);       // 14. should flag an error, wrong number of arguments
 
-  r1 Function<void> = opengenerics17;
+  r1 Function<unit> = opengenerics17;
   r1r1 := r1.call();
   r1r2 := r1.call(7);            // 15. should flag an error, wrong number of arguments
   r1r1a := r1();
   r1r2a := r1(7);                // 16. should flag an error, wrong number of arguments
 
-  r2 Function<void,i32,bool> = fun (i i32, b bool) { };
+  r2 Function<unit,i32,bool> = fun (i i32, b bool) { };
   r2r1 := r2.call();             // 17. should flag an error, wrong number of arguments
   r2r2 := r2.call(3);            // 18. should flag an error, wrong number of arguments
   r2r3 := r2.call(3,false);
@@ -130,7 +130,7 @@ generics_negative {
     i2b i32  = x2(true);
     j2b i32  = x2(3);            // 28. should flag an error: wrong argument type
     b2b bool = x2(true);         // 29. should flag an error: wrong type in assignment
-    x3 Function<void,i32,bool>;
+    x3 Function<unit,i32,bool>;
     x3.call(3, true);
     x3.call(false, false);       // 30. should flag an error: wrong argument type
     x3.call(3, 3);               // 31. should flag an error: wrong argument type

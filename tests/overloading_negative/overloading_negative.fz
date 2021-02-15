@@ -62,7 +62,7 @@ overloading_negative
 
   test2
   {
-    a() void { }
+    a() unit { }
     a(i i32) i32 { 13 }
     a(i, j i32) string { "foo" }
 

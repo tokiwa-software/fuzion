@@ -1409,7 +1409,7 @@ public class Type extends ANY implements Comparable
 
   /**
    * Find a type that is assignable from values of two types, this and t. If no
-   * such type exists, return Types.resovled.t_void.
+   * such type exists, return Types.resovled.t_unit.
    *
    * @param that another type or null
    *

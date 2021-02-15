@@ -3119,7 +3119,7 @@ public class Feature extends ANY implements Stmnt, Comparable
       }
     else if (returnType == NoType.INSTANCE)
       {
-        result = Types.resolved.t_void; // may be the result of intrinsic or abstract feature
+        result = Types.resolved.t_unit; // may be the result of intrinsic or abstract feature
       }
     else
       {
@@ -3166,7 +3166,7 @@ public class Feature extends ANY implements Stmnt, Comparable
    *
    * @param generics the generics argument to be passed to resultTypeRaw
    *
-   * @return the result type, Types.resulved.t_void if none and null in case the
+   * @return the result type, Types.resulved.t_unit if none and null in case the
    * type must be inferenced and is not available yet.
    */
   Type resultTypeIfPresent(Resolution res, List<Type> generics)
@@ -3224,7 +3224,7 @@ public class Feature extends ANY implements Stmnt, Comparable
    *
    * @param generics the actual generic arguments to be applied to the type
    *
-   * @return the result type, Types.resulved.t_void if none and
+   * @return the result type, Types.resulved.t_unit if none and
    * Types.t_ERROR in case the type could not be inferenced and error
    * was reported.
    */

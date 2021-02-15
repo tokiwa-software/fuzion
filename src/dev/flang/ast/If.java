@@ -194,7 +194,7 @@ public class If extends Expr
     Type result = null;
     if (hasUntakenElseBranch())
       {
-        result = Types.resolved.t_void;
+        result = Types.resolved.t_unit;
       }
     else
       {

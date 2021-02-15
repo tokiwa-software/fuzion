@@ -25,19 +25,19 @@
 
 public fuzion.std.out single is
 
-  public print(s ref Object) void is
+  public print(s ref Object) =>
     for c in s.asString.asBytes do
       write(c)
     flush
 
-  public println(s ref Object) void is
+  public println(s ref Object) =>
     for c in s.asString.asBytes do
       write(c)
     println
 
-  public println void is
+  public println =>
     write(10)
     flush
 
-  public write(b i32) is intrinsic
-  public flush is intrinsic
+  public write(b i32) unit is intrinsic
+  public flush unit is intrinsic

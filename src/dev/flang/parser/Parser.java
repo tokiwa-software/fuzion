@@ -1759,7 +1759,7 @@ function    : formArgs
           }
         if (r == NoType.INSTANCE)
           {
-            r = new FunctionReturnType(new Type("void"));
+            r = new FunctionReturnType(new Type("unit"));
           }
         result = new Function(pos, r, a, i, c, block(false));
       }
@@ -2977,7 +2977,7 @@ funTypeArgs : LPAREN a=typeLst RPAREN
           }
         result = isTypePrefix()
           ? Type.funType(pos, type(), a)
-          : Type.funType(pos, new Type("void"), a);
+          : Type.funType(pos, new Type("unit"), a);
       }
     else if (skip(Token.t_ref))
       {

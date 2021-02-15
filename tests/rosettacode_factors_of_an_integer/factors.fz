@@ -25,7 +25,7 @@
 
 factors
 {
-  print(x i32) void
+  print(x i32) unit
   {
     stdout.print(" " + x);
   }

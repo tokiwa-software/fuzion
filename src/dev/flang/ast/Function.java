@@ -277,7 +277,7 @@ public class Function extends Expr
     f.modifiers |= Consts.MODIFIER_REDEFINE;
 
     List<Type> generics = new List<Type>();
-    generics.add(f.hasResult() ? Types.t_UNDEFINED : new Type("void"));
+    generics.add(f.hasResult() ? Types.t_UNDEFINED : new Type("unit"));
     for (int j = 0; j < a.size(); j++)
       {
         generics.add(Types.t_UNDEFINED);
@@ -408,7 +408,7 @@ public class Function extends Expr
       {
         generics.add(f.hasResult()
                      ? f.resultTypeForTypeInference(pos, res, Type.NONE)
-                     : new Type("void"));
+                     : new Type("unit"));
         for (Feature a : f.arguments)
           {
             a.resolveTypes(res);

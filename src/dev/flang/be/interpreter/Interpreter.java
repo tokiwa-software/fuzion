@@ -241,7 +241,7 @@ public class Interpreter extends Backend
         Value thiz = execute(a.getOuter, staticClazz, cur);
         Clazz sClazz = staticClazz.getRuntimeClazz(a.tid_ + 0);
         Clazz vClazz = staticClazz.getRuntimeClazz(a.tid_ + 1);
-        if (vClazz != Clazzes.c_void.getIfCreated())
+        if (vClazz != Clazzes.c_unit.getIfCreated())
           {
             setField(a.assignedField, sClazz, thiz, v, vClazz._type);
           }
@@ -396,10 +396,10 @@ public class Interpreter extends Backend
             result = ri;
             for (Feature f : vc.clazzForField_.keySet())
               {
-                // Fields select()ed from fields of open generic type have type t_void
+                // Fields select()ed from fields of open generic type have type t_unit
                 // if the actual clazz does not have the number of actual open generic
                 // parameters.
-                if (vc.actualType(f.resultType()) != Types.resolved.t_void)
+                if (vc.actualType(f.resultType()) != Types.resolved.t_unit)
                   {
                     Value v = getField(f, vc, val);
                     // NYI: Check that this works well for internal fields such as choice tags.
@@ -1127,13 +1127,13 @@ public class Interpreter extends Backend
     if (PRECONDITIONS) require
       (fclazz != null,
        slot != null,
-       v != null || thiz.isChoice() || fclazz._type == Types.resolved.t_void);
+       v != null || thiz.isChoice() || fclazz._type == Types.resolved.t_unit);
 
     if (fclazz.isRef())
       {
         setRefField   (thiz,        slot, v);
       }
-    else if (fclazz._type != Types.resolved.t_void)  // NYI: remove these assignments in earlier phase
+    else if (fclazz._type != Types.resolved.t_unit)  // NYI: remove these assignments in earlier phase
       {
         setNonRefField(thiz, fclazz, slot, v);
       }
