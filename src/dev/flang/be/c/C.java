@@ -839,8 +839,9 @@ public class C extends Backend
                   var tc = _fuir.callTargetClazz(cl, c, i);
                   var t = CExpr.ident(newTemp());
                   var ti = stack.size() - ac - 1;
-                  _c.println(clazzTypeNameRefOrVal(tc) + " " + t.code() + ";");
-                  _c.print(t.assign(stack.get(ti)));
+                  var tt0 = clazzTypeNameRefOrVal(tc);
+                  _c.println(tt0 + " " + t.code() + ";");
+                  _c.print(t.assign(stack.get(ti).castTo(tt0)));
                   stack.set(ti, t);
                   var id = t.deref().field("clazzId");
                   if (ccs.length == 1)
