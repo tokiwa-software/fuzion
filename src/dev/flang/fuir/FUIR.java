@@ -150,17 +150,6 @@ public class FUIR extends ANY
   /*------------------------  accessing classes  ------------------------*/
 
 
-  private int addClazz(Clazz cl)
-  {
-    if (PRECONDITIONS) require
-                         (cl._type != Types.t_ADDRESS);// NYI: would be better to not create these dummy clazzes in the first place
-
-    int result = _clazzIds.add(cl);
-    _featureIds.add(cl.feature());
-    return result;
-  }
-
-
   private void addClasses()
   {
     if (_clazzIds.size() == 0)
@@ -170,7 +159,8 @@ public class FUIR extends ANY
             if (cl._type != Types.t_ADDRESS     // NYI: would be better to not create this dummy clazz in the first place
                 )
               {
-                int res = addClazz(cl);
+                int res = _clazzIds.add(cl);
+                _featureIds.add(cl.feature());
               }
           }
       }
@@ -230,7 +220,7 @@ public class FUIR extends ANY
               }
             else
               {
-                return addClazz(fcl);
+                return _clazzIds.get(fcl);
               }
           }
       }
@@ -282,7 +272,7 @@ public class FUIR extends ANY
     var rcl =
       cf.returnType.isConstructorType() ? cc :
       cf.isField() && cf.isOuterRef()   ? cc._outer._outer : cc.actualClazz(cf.resultType());
-    return addClazz(rcl);
+    return _clazzIds.get(rcl);
   }
 
 
@@ -342,7 +332,7 @@ public class FUIR extends ANY
     var c = _clazzIds.get(cl);
     var a = c.feature().arguments.get(arg);
     var rc = c.actualClazz(a.resultType());
-    return addClazz(rc);
+    return _clazzIds.get(rc);
   }
 
   /**
@@ -898,7 +888,7 @@ public class FUIR extends ANY
     var ocl = _clazzIds.get(outerClazz);
     var f = _featureIds.get(field);
     var fclazz = ocl.clazzForField(f);
-    return addClazz(fclazz);
+    return _clazzIds.get(fclazz);
   }
 
   public int boxValueClazz(int cl, int c, int ix)
@@ -973,7 +963,7 @@ public class FUIR extends ANY
     var outerClazz = _clazzIds.get(cl);
     var call = (Call) _codeIds.get(c).get(ix);
     var innerClazz = ((dev.flang.ir.BackendCallable)outerClazz.getRuntimeData(call.sid_)).inner();
-    return addClazz(innerClazz);
+    return _clazzIds.get(innerClazz);
   }
 
 
@@ -1052,7 +1042,7 @@ public class FUIR extends ANY
     var innerClazzIds = new int[innerClazzes.size()];
     for (var i = 0; i < innerClazzes.size(); i++)
       {
-        innerClazzIds[i] = addClazz(innerClazzes.get(i));
+        innerClazzIds[i] = _clazzIds.get(innerClazzes.get(i));
         check(innerClazzIds[i] != -1);
       }
     return innerClazzIds;
