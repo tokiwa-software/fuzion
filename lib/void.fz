@@ -23,9 +23,13 @@
 #
 # -----------------------------------------------------------------------
 
-# void -- value to be used as result of features that do not return a result
-#
-# This is a unit type value that is intendend to be used to return no data.
+# void -- value to be used as arguments for features tha cannot be called
+# or as result of features that never return
 #
 # NYI: move to universe.fz
-void is
+void
+  pre
+    safety: false  # preconditions will always fail
+is
+  # endless loop just in case safety checks are disabled
+  do
