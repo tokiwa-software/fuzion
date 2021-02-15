@@ -550,7 +550,7 @@ public class C extends Backend
   /**
    * The type of a value of the given clazz.
    */
-  String clazzTypeNameRefOrVal(int cl)  // NYI: rename as clazzTypeName
+  String clazzTypeName(int cl)
   {
     return _structNames.get(cl) + (_fuir.clazzIsRef(cl) ? "*" : "");
   }
@@ -579,7 +579,7 @@ public class C extends Backend
    */
   String clazzTypeNameOuterField(int cl)
   {
-    return clazzTypeNameRefOrVal(cl) + (outerClazzPassedAsAdrOfValue(cl) ? "*" : "");
+    return clazzTypeName(cl) + (outerClazzPassedAsAdrOfValue(cl) ? "*" : "");
   }
 
 
@@ -665,7 +665,7 @@ public class C extends Backend
                           var cf = _fuir.clazzField(cl, i);
                           String type = fcl == -3 // outer ref
                             ? clazzTypeNameOuterField(_fuir.clazzOuterClazz(cl))
-                            : clazzTypeNameRefOrVal(fcl);
+                            : clazzTypeName(fcl);
                           _c.print(" " + type + " " + fieldName2(i, cf) + ";\n");
                         }
                     }
@@ -754,7 +754,7 @@ public class C extends Backend
                       var value = stack.pop();                // value assigned to field
                       if (_fuir.clazzIsRef(fclazz))
                         {
-                          value = value.castTo(clazzTypeNameRefOrVal(fclazz));
+                          value = value.castTo(clazzTypeName(fclazz));
                         }
                       // _c.print("// Assign to "+_fuir.clazzAsString(fclazz)+" outercl "+_fuir.clazzAsString(outercl)+" valuecl "+_fuir.clazzAsString(valuecl));
                       _c.print(fieldAccess.assign(value));
@@ -777,7 +777,7 @@ public class C extends Backend
               else
                 {
                   var t = CExpr.ident(newTemp());
-                  _c.println(clazzTypeNameRefOrVal(rc) + " " + t.code() + " = malloc(sizeof("+_structNames.get(cl)+"));");
+                  _c.println(clazzTypeName(rc) + " " + t.code() + " = malloc(sizeof("+_structNames.get(cl)+"));");
                   if (!_fuir.clazzIsUnitType(vc))
                     {
                       var val = stack.pop();
@@ -839,7 +839,7 @@ public class C extends Backend
                   var tc = _fuir.callTargetClazz(cl, c, i);
                   var t = CExpr.ident(newTemp());
                   var ti = stack.size() - ac - 1;
-                  var tt0 = clazzTypeNameRefOrVal(tc);
+                  var tt0 = clazzTypeName(tc);
                   _c.println(tt0 + " " + t.code() + ";");
                   _c.print(t.assign(stack.get(ti).castTo(tt0)));
                   stack.set(ti, t);
@@ -867,7 +867,7 @@ public class C extends Backend
                           var isOuterRef = _fuir.clazzIsOuterRef(ccs[0]); // NYI: HACK: just use the first clazz ccs[0] as static clazz for now.
                           _c.println((isOuterRef
                                       ? clazzTypeNameOuterField(rt)
-                                      : clazzTypeNameRefOrVal  (rt)) + " " + res.code() + ";");
+                                      : clazzTypeName  (rt)) + " " + res.code() + ";");
                           outerAdrOfValue = isOuterRef && outerClazzPassedAsAdrOfValue(rt);
                         }
                       _c.println("switch (" + id.code() + ") {");
@@ -899,7 +899,7 @@ public class C extends Backend
                                 }
                               if (_fuir.clazzIsRef(rt))
                                 {
-                                  rv = rv.castTo(clazzTypeNameRefOrVal(rt));
+                                  rv = rv.castTo(clazzTypeName(rt));
                                 }
                               _c.print(res.assign(rv));
                             }
@@ -1055,7 +1055,7 @@ public class C extends Backend
             {
               var tmp = newTemp();
               res = CExpr.ident(tmp);
-              result = CStmnt.seq(CStmnt.decl(clazzTypeNameRefOrVal(rt), tmp),
+              result = CStmnt.seq(CStmnt.decl(clazzTypeName(rt), tmp),
                                   res.assign(call));
               stack.push(res);
             }
@@ -1128,7 +1128,7 @@ public class C extends Backend
             var a = stack.pop();
             result = args(cl, c, i, cc, stack, argCount-1, castTarget);
             var ac = _fuir.clazzArgClazz(cc, argCount-1);
-            a = _fuir.clazzIsRef(ac) ? a.castTo(clazzTypeNameRefOrVal(ac)) : a;
+            a = _fuir.clazzIsRef(ac) ? a.castTo(clazzTypeName(ac)) : a;
             result.add(a);
           }
       }
@@ -1144,7 +1144,7 @@ public class C extends Backend
             var a = stack.pop();
             var targetAsValue = !outerClazzPassedAsAdrOfValue(tc);
             var a2 = targetAsValue    ? a  : a.adrOf();
-            var a3 = castTarget == -1 ? a2 : a2.castTo(clazzTypeNameRefOrVal(castTarget));
+            var a3 = castTarget == -1 ? a2 : a2.castTo(clazzTypeName(castTarget));
             result = new List<>(a3);
           }
       }
@@ -1164,7 +1164,7 @@ public class C extends Backend
     var res = _fuir.clazzResultClazz(cl);
     _c.print(res == -1 || _fuir.clazzIsUnitType(res)
              ? "void "
-             : clazzTypeNameRefOrVal(res) + " ");
+             : clazzTypeName(res) + " ");
     _c.print(_functionNames.get(cl));
     _c.print("(");
     var oc = _fuir.clazzOuterClazz(cl);
@@ -1182,7 +1182,7 @@ public class C extends Backend
         var at = _fuir.clazzArgClazz(cl, i);
         if (at != -1 && !_fuir.clazzIsUnitType(at))
           {
-            var t = clazzTypeNameRefOrVal(at);
+            var t = clazzTypeName(at);
             _c.print(t + " arg" + i);
             comma = ", ";
           }
