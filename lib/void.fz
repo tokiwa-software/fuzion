@@ -23,8 +23,45 @@
 #
 # -----------------------------------------------------------------------
 
-# void -- value to be used as arguments for features tha cannot be called
-# or as result of features that never return
+# void -- type with no values
+#
+# NOTE: For a counterpart to void in C, Java, etc., see unit.fz
+#
+# It is impossible to create any values of this type, consequently, it is impossible
+# to assign anything to a field of void type.
+#
+# If used as the type of an argument field for a feature, the feature can never be
+# called since no value assignable to that argument could ever be produced.  This
+# produces an absurd feature.
+#
+# If used as the result type of a routine, the routine can never return.
+#
+# void is the result type of the endless loop
+#
+#   do { <loop body> }
+#
+# If used as the result type of a field, the field can never be assigned a value,
+# since no such value can be produced, and the field can never be read since it
+# remains not initialized forever.
+#
+# Type void may be used as an actual generic argument for a generic feature.  If this
+# is done, it will turn all features that have arguments of that type into absurd
+# features.  Also, this will ensure that any feature that produce a result of that
+# type to never return a result (typically to not be callable in the first place as
+# well).  An example could be a stack of capacity zero: stack<void>(0) with an
+# absurd
+#
+#   stack.push(void)
+#
+# and a pop function with a precondition that is always false
+#
+#   pop void
+#     pre size > 0
+#
+# The memory required to store a value of void type is not defined since these
+# values do not exist.  The Fuzion code generators typically will not generate
+# any code for features receiving arguments of void type or for code following
+# a feature call that returns void.
 #
 # NYI: move to universe.fz
 void

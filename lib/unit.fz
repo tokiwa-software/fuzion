@@ -25,7 +25,45 @@
 
 # unit -- value to be used as result of features that do not return a result
 #
-# This is a unit type that is intendend to be used to return no data.
+# NOTE: unit corresponds to type void in C, Java, etc.
+#
+# unit is the preferred result type for features that return without producing
+# a result value.  These are features that typically have an outside effect
+# such as
+#
+#   println(String s) unit is ...
+#
+# or features that change the state of an instances such as
+#
+#   increment(delta i64) unit is
+#     set counter := counter + delta
+#
+# The Fuzion language implementation automatically inserts code that returns the
+# unit value as a result of these features, there is no need for an explicit unit
+# result as in
+#
+#   increment(delta i64) unit is
+#     set counter := counter + delta
+#     unit
+#
+# but it is allowed to return unit explicitly if desired.
+#
+# Another application of the unit type are generic features when certain generic
+# values are not needed and can be ignored.  An example could be a generic map
+# implementation map<K,V> that maps values of type K to values of type V.  Using
+# unit as the actual generic argument for V, e.g., map<string,unit> creates a
+# map that stores no data for each key, which is essentially set.
+#
+# The Fuzion library knows several different unit types.  Another example is nil,
+# which is used as the alternative type in an Option.  This enables the use of
+# Option<void>, which can store two values, void and nil.
+#
+# Other unit types in Fuzion are TRUE and FALSE.
+#
+# The memory required to store a value of unit type is 0 bits, so you can use
+# plenty without worrying about space constraints.  The Fuzion code generators
+# typically will not generate any code for returning or assiging a value of unit
+# type, so these are very efficient as well.
 #
 # NYI: move to universe.fz
 unit is
