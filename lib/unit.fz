@@ -33,7 +33,7 @@
 #
 #   println(String s) unit is ...
 #
-# or features that change the state of an instances such as
+# or features that change the state of an instance such as
 #
 #   increment(delta i64) unit is
 #     set counter := counter + delta
@@ -52,11 +52,12 @@
 # values are not needed and can be ignored.  An example could be a generic map
 # implementation map<K,V> that maps values of type K to values of type V.  Using
 # unit as the actual generic argument for V, e.g., map<string,unit> creates a
-# map that stores no data for each key, which is essentially set.
+# map that stores no data for each key, which essentially turns the map into a
+# set of the map's keys.
 #
 # The Fuzion library knows several different unit types.  Another example is nil,
 # which is used as the alternative type in an Option.  This enables the use of
-# Option<void>, which can store two values, void and nil.
+# Option<void>, which can store two distinct values, void and nil.
 #
 # Other unit types in Fuzion are TRUE and FALSE.
 #
