@@ -309,6 +309,14 @@ Hellq is
     if (PRECONDITIONS) require
       (Errors.count() > 0 || !t.isOpenGeneric());
 
+    if (t == Types.t_ANY)
+      { // This is the result of an endless tail recursive call, i.e., typically
+        // an endless loop.  We should safely be able to replace this by void
+        // since it should never return.
+        //
+        // NYI: The front end should clean this up a little earlier.
+        t = Types.resolved.t_void;
+      }
     return Clazzes.clazz(actualType(t));
   }
 
@@ -1148,6 +1156,22 @@ Hellq is
       {
         FeErrors.abstractFeatureNotImplemented(feature(), abstractCalled_, instantiationPos_);
       }
+  }
+
+
+  /**
+   * Determine the clazz of the result of calling this clazz.
+   *
+   * @return the result clazz.
+   */
+  public Clazz resultClazz()
+  {
+    var cf = feature();
+    return
+      cf.isUniverse()                   ? this :
+      cf.returnType.isConstructorType() ? this :
+      cf.isField() && cf.isOuterRef()   ? _outer._outer
+                                        : actualClazz(cf.resultType());
   }
 
 }

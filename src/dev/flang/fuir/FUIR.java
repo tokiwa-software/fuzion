@@ -269,10 +269,7 @@ public class FUIR extends ANY
   {
     var cc = _clazzIds.get(cl);
     var cf = cc.feature();
-    var rcl =
-      cf.returnType.isConstructorType() ? cc :
-      cf.isField() && cf.isOuterRef()   ? cc._outer._outer : cc.actualClazz(cf.resultType());
-    return _clazzIds.get(rcl);
+    return _clazzIds.get(cc.resultClazz());
   }
 
 
@@ -331,7 +328,10 @@ public class FUIR extends ANY
     // NYI: This does not handle open generic args such as in Function.call yet.
     var c = _clazzIds.get(cl);
     var a = c.feature().arguments.get(arg);
-    var rc = c.actualClazz(a.resultType());
+    var rc = c.actualClazz(a.resultType()); // NYI: remove, arg clazz should
+                                            // have been determined during
+                                            // Clazzes.findAllClazzes and stored
+                                            // with c
     return _clazzIds.get(rc);
   }
 
