@@ -28,3 +28,15 @@
 Function<R,A...> ref is
 
   call(a A) R is abstract
+
+# NYI: function composition: This needs a solution for either restricing A...
+# to a single argument or for converting a Tuple result into A...
+#
+#  # compose f: B -> A with this: A -> R into this ∘ f: B -> R
+#  compose<B>(f fun (B) A) => fun(B b) R => call f b
+#
+#  # compose f: B -> A with this: A -> R into this ∘ f: B -> R
+#  compose<B>(f fun (B) Tuple<A>) => fun(B b) R => call f b /* decompose result automatically? */
+#
+#  # short-hand infix operation for composition
+#  infix ∘ (f fun (B) A) => compose f
