@@ -25,10 +25,10 @@
 
 # numOption -- optional numeric values
 #
-#
 # This is a pseudo-numeric type that handles one additional
 # value: nil.  Any operation on nil will result in nil for a
 # numeric result or false for a boolean result.
+#
 numOption<T: numeric<T>> : choice<T, nil> is
 
   # monadic operator
@@ -37,10 +37,17 @@ numOption<T: numeric<T>> : choice<T, nil> is
       v T   => f(v)
       _ nil => nil
 
-  # basic operations
-  prefix +? numOption<T> is numOption.this >>= fun(v T) numOption<T> { +v }
-  prefix -? numOption<T> is numOption.this >>= fun(v T) numOption<T> { -?v }
+  # monadic operator for bool result, false for nil
+  infix >>? (f fun (T) bool) =>
+    match numOption.this
+      v T   => f(v)
+      _ nil => false
 
+  # basic prefix operations
+  prefix +? numOption<T> is numOption.this >>= fun(v T) numOption<T> is +v
+  prefix -? numOption<T> is numOption.this >>= fun(v T) numOption<T> is -?v
+
+  # basic infix operations
   infix +? (other numOption<T>) numOption<T> is numOption.this >>= fun(v T) => other >>= fun(w T) => v +? w
   infix -? (other numOption<T>) numOption<T> is numOption.this >>= fun(v T) => other >>= fun(w T) => v -? w
   infix *? (other numOption<T>) numOption<T> is numOption.this >>= fun(v T) => other >>= fun(w T) => v *? w
@@ -55,12 +62,6 @@ numOption<T: numeric<T>> : choice<T, nil> is
       safety: !other.isZero
   is
     numOption.this >>= fun(v T) numOption<T> is other >>= fun(w T) numOption<T> is v % w
-
-  # monadic operator for bool result, false for nil
-  infix >>? (f fun (T) bool) =>
-    match numOption.this
-      v T   => f(v)
-      _ nil => false
 
   # comparison
   infix ==? (other numOption<T>) bool is numOption.this >>? fun(v T) => other >>? fun(w T) => v == w
