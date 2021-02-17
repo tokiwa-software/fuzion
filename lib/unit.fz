@@ -61,6 +61,20 @@
 #
 # Other unit types in Fuzion are TRUE and FALSE.
 #
+# The simplest syntax to create a value of unit type is an empty block '{}'. Note
+# that an empty Tuple 'Tuple<>' is a different unit value of a different type and
+# the syntax '()' is (at least for now) not supported.
+#
+# Please note the fundamental difference between
+#
+#   red is {}
+#   red => {}
+#
+# The first declares a feature red that defines a new unit type red, the second
+# declares a feature red with result type unit, i.e., a synonyme for unit as in
+#
+#   red unit is {}
+#
 # The memory required to store a value of unit type is 0 bits, so you can use
 # plenty without worrying about space constraints.  The Fuzion code generators
 # typically will not generate any code for returning or assiging a value of unit
