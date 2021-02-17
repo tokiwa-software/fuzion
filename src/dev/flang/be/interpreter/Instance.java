@@ -29,6 +29,8 @@ package dev.flang.be.interpreter;
 import dev.flang.ir.Clazz;
 import dev.flang.ir.Clazzes;
 
+import dev.flang.util.Errors;
+
 
 /**
  * Instance <description>
@@ -142,9 +144,7 @@ public class Instance extends Value
     Clazz result = clazz;
     if ((result != null) && !result.isRef() && !result.feature().isSingleton()) // NYI: ugly special handling of singleton
       {
-        System.out.println("result.type is "+result._type+" "+result._type.isRef());
-        System.out.println("result.feature is "+result.feature().qualifiedName()+(result.feature().isSingleton() ? " single" : " not single"));
-        throw new Error("No clazz in a value instance: type "+result._type+" value "+this);
+        Errors.fatal("No clazz in a value instance: type " + result._type + " value " + this + "\n" + Interpreter.callStack());
       }
     return result;
   }
