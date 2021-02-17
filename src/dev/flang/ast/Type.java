@@ -1330,7 +1330,12 @@ public class Type extends ANY implements Comparable
       }
     else if (actual.isGenericArgument())
       {
-        result = isAssignableFrom(actual.generic.constraint(), assignableTo);
+        Type constraint = actual.generic.constraint();
+        if (actual.ref && !constraint.isRef())
+          {
+            constraint = Types.intern(new Type(constraint, true));
+          }
+        result = isAssignableFrom(constraint, assignableTo);
       }
     else if (isGenericArgument())
       {

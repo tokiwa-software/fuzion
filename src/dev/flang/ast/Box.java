@@ -87,7 +87,7 @@ public class Box extends Expr
 
     this._value = value;
     Type t = _value.type();
-    if (!t.isGenericArgument() && t != Types.t_ERROR)
+    if (t != Types.t_ERROR)
       {
         t = Types.intern(new Type(t, true));
       }
