@@ -47,6 +47,9 @@ is
 
   # identity element
   #
+  # NYI: This is a bit awkward since we need one element to create
+  # the identity element.
+  #
   e T is abstract
 
   # equality operation
