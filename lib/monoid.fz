@@ -1,0 +1,54 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature monoid
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# monoid -- parent feature for monoids
+#
+# A monoid is an abstraction for a type with an associative operation and
+# an identity element. Examples are (integers/infix +/0), (float/infix *,1),
+# (string/concat/""), etc.
+#
+# NYI: This is currently not used anywhere, a purely experimental feature.
+#
+# NYI: move to universe.fz
+monoid<T: monoid<T>>
+  inv
+    analysis: quantors.forAll3<T,T,T>(
+                fun(x, y, z T) => (x + y) + z == x + (y + z)),   # associativity
+    analysis: quantors.forAll<T>(
+                fun(x T) => x + e == e + x == x)   # identity element
+
+is
+
+  # associative operation
+  #
+  infix + (other T) T is abstract
+
+  # identity element
+  #
+  e T is abstract
+
+  # equality operation
+  #
+  infix == (other T) bool is abstract
