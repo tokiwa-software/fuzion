@@ -1,0 +1,81 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature quantors
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# quantors provides forAll and exists-quantors for use in contracts qualified
+# for analysis.
+#
+# NYI: move to universe.fz
+quantors is
+
+  # forAll quantors for use in analysis parts of contracts
+  #
+  # These quantors can be used to check that predicates hold for all values
+  # of one or several specific types.
+  #
+  # NYI: If open generics could be passed as actual generic arguments, we no
+  # longer need this code duplication here:
+  #   forAll<A...>(f Function<bool, A>) bool is intrinsic
+  #
+  forAll2 <A,A                >(f Function<bool, A, A                        >) bool is intrinsic
+  forAll3 <A,A,A              >(f Function<bool, A, A, A                     >) bool is intrinsic
+  forAll4 <A,A,A,A            >(f Function<bool, A, A, A, A                  >) bool is intrinsic
+  forAll5 <A,A,A,A,A          >(f Function<bool, A, A, A, A, A               >) bool is intrinsic
+  forAll6 <A,A,A,A,A,A        >(f Function<bool, A, A, A, A, A, A            >) bool is intrinsic
+  forAll7 <A,A,A,A,A,A,A      >(f Function<bool, A, A, A, A, A, A, A         >) bool is intrinsic
+  forAll8 <A,A,A,A,A,A,A,A    >(f Function<bool, A, A, A, A, A, A, A, A      >) bool is intrinsic
+  forAll9 <A,A,A,A,A,A,A,A,A  >(f Function<bool, A, A, A, A, A, A, A, A, A   >) bool is intrinsic
+  forAll10<A,A,A,A,A,A,A,A,A,A>(f Function<bool, A, A, A, A, A, A, A, A, A, A>) bool is intrinsic
+
+  # short-hand forAll using '∀' symbol
+  prefix ∀ <A>(f Function<bool, A>) => forAll<A>(f)
+
+  # exists quantors for use in analysis parts of contracts
+  #
+  # These quantors can be used to check that predicates hold for at least one
+  # value of one or several specific types.
+  #
+  # NYI: If open generics could be passed as actual generic arguments, we no
+  # longer need this code duplication here:
+  #   exists<A...>(f Function<bool, A>) bool is intrinsic
+  #
+  exists  <A                  >(f Function<bool, A                           >) bool is intrinsic
+  exists2 <A,A                >(f Function<bool, A, A                        >) bool is intrinsic
+  exists3 <A,A,A              >(f Function<bool, A, A, A                     >) bool is intrinsic
+  exists4 <A,A,A,A            >(f Function<bool, A, A, A, A                  >) bool is intrinsic
+  exists5 <A,A,A,A,A          >(f Function<bool, A, A, A, A, A               >) bool is intrinsic
+  exists6 <A,A,A,A,A,A        >(f Function<bool, A, A, A, A, A, A            >) bool is intrinsic
+  exists7 <A,A,A,A,A,A,A      >(f Function<bool, A, A, A, A, A, A, A         >) bool is intrinsic
+  exists8 <A,A,A,A,A,A,A,A    >(f Function<bool, A, A, A, A, A, A, A, A      >) bool is intrinsic
+  exists9 <A,A,A,A,A,A,A,A,A  >(f Function<bool, A, A, A, A, A, A, A, A, A   >) bool is intrinsic
+  exists10<A,A,A,A,A,A,A,A,A,A>(f Function<bool, A, A, A, A, A, A, A, A, A, A>) bool is intrinsic
+
+  # short-hand exists using '∃' symbol
+  prefix ∃ <A>(f Function<bool, A>) => exists<A>(f)
+
+  /*
+    NYI: eventually, the following declaration should become possible:
+
+    prefix ∃ <A>(f Function<bool, A>) => !∀ fun bool.prefix ! ∘ f
+  */
