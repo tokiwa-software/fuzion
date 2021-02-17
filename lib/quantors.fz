@@ -38,6 +38,7 @@ quantors is
   # longer need this code duplication here:
   #   forAll<A...>(f Function<bool, A>) bool is intrinsic
   #
+  forAll  <A                  >(f Function<bool, A                           >) bool is intrinsic
   forAll2 <A,A                >(f Function<bool, A, A                        >) bool is intrinsic
   forAll3 <A,A,A              >(f Function<bool, A, A, A                     >) bool is intrinsic
   forAll4 <A,A,A,A            >(f Function<bool, A, A, A, A                  >) bool is intrinsic
