@@ -241,10 +241,7 @@ public class Interpreter extends Backend
         Value thiz = execute(a.getOuter, staticClazz, cur);
         Clazz sClazz = staticClazz.getRuntimeClazz(a.tid_ + 0);
         Clazz vClazz = staticClazz.getRuntimeClazz(a.tid_ + 1);
-        if (vClazz != Clazzes.c_unit.getIfCreated())
-          {
-            setField(a.assignedField, sClazz, thiz, v, vClazz._type);
-          }
+        setField(a.assignedField, sClazz, thiz, v, vClazz._type);
         result = Value.NO_VALUE;
       }
 
