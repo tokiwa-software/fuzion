@@ -31,100 +31,44 @@
 # numeric result or false for a boolean result.
 numOption<T: numeric<T>> : choice<T, nil> is
 
+  # monadic operator
+  infix >>= (f fun (T) numOption<T>) numOption<T> is
+    match numOption.this
+      v T   => f(v)
+      _ nil => nil
+
   # basic operations
-  prefix +? numOption<T> is
-    match numOption.this
-      v T   => +v
-      _ nil => nil
+  prefix +? numOption<T> is numOption.this >>= fun(v T) numOption<T> { +v }
+  prefix -? numOption<T> is numOption.this >>= fun(v T) numOption<T> { -?v }
 
-  prefix -? numOption<T> is
-    match numOption.this
-      v T   => -v
-      _ nil => nil
-
-  infix +? (other numOption<T>) numOption<T> is
-    match numOption.this
-      v T   => match other
-                 w T   => v +? w
-                 _ nil => nil
-      _ nil => nil
-
-  infix -? (other numOption<T>) numOption<T> is
-    match numOption.this
-      v T   => match other
-                 w T   => v -? w
-                 _ nil => nil
-      _ nil => nil
-
-  infix *? (other numOption<T>) numOption<T> is
-    match numOption.this
-      v T   => match other
-                 w T   => v *? w
-                 _ nil => nil
-      _ nil => nil
-
+  infix +? (other numOption<T>) numOption<T> is numOption.this >>= fun(v T) => other >>= fun(w T) => v +? w
+  infix -? (other numOption<T>) numOption<T> is numOption.this >>= fun(v T) => other >>= fun(w T) => v -? w
+  infix *? (other numOption<T>) numOption<T> is numOption.this >>= fun(v T) => other >>= fun(w T) => v *? w
   infix /? (other numOption<T>) numOption<T>
     pre
       safety: !other.isZero
   is
-    match numOption.this
-      v T   => match other
-                 w T   => v / w
-                 _ nil => nil
-      _ nil => nil
+    numOption.this >>= fun(v T) numOption<T> is other >>= fun(w T) numOption<T> is v / w
 
   infix %? (other numOption<T>) numOption<T>
     pre
       safety: !other.isZero
   is
+    numOption.this >>= fun(v T) numOption<T> is other >>= fun(w T) numOption<T> is v % w
+
+  # monadic operator for bool result, false for nil
+  infix >>? (f fun (T) bool) =>
     match numOption.this
-      v T   => match other
-                 w T   => v % w
-                 _ nil => nil
-      _ nil => nil
+      v T   => f(v)
+      _ nil => false
 
   # comparison
-  infix ==? (other numOption<T>) bool is
-    match numOption.this
-      v T   => match other
-                 w T   => v == w
-                 _ nil => false
-      _ nil => false
-
-  infix !=? (other numOption<T>) bool is
-    match numOption.this
-      v T   => match other
-                 w T   => v != w
-                 _ nil => false
-      _ nil => false
-
-  infix <?  (other numOption<T>) bool is
-    match numOption.this
-      v T   => match other
-                 w T   => v < w
-                 _ nil => false
-      _ nil => false
-
-  infix <=? (other numOption<T>) bool is
-    match numOption.this
-      v T   => match other
-                 w T   => v <= w
-                 _ nil => false
-      _ nil => false
-
-  infix >?  (other numOption<T>) bool is
-    match numOption.this
-      v T   => match other
-                 w T   => v > w
-                 _ nil => false
-      _ nil => false
-
-  infix >=? (other numOption<T>) bool is
-    match numOption.this
-      v T   => match other
-                 w T   => v >= w
-                 _ nil => false
-      _ nil => false
+  infix ==? (other numOption<T>) bool is numOption.this >>? fun(v T) => other >>? fun(w T) => v == w
+  infix !=? (other numOption<T>) bool is numOption.this >>? fun(v T) => other >>? fun(w T) => v != w
+  infix <?  (other numOption<T>) bool is numOption.this >>? fun(v T) => other >>? fun(w T) => v <  w
+  infix <=? (other numOption<T>) bool is numOption.this >>? fun(v T) => other >>? fun(w T) => v <= w
+  infix >?  (other numOption<T>) bool is numOption.this >>? fun(v T) => other >>? fun(w T) => v >  w
+  infix >=? (other numOption<T>) bool is numOption.this >>? fun(v T) => other >>? fun(w T) => v >= w
 
   isZero => sign ==? 0
 
@@ -134,9 +78,8 @@ numOption<T: numeric<T>> : choice<T, nil> is
       _ nil => nil
 
   abs numOption<T> is
-    match numOption.this
-      v T   => if v.sign >= 0 v else -v
-      _ nil => nil
+    numOption.this >>= fun (v T) numOption<T> { if v.sign >= 0 v else -?v }
+//    numOption.this >>= fun (v T) => if v.sign >= 0 v else -?v     // NYI: check: causes crash! (precondition failure)
 
   redef asString string is
     match numOption.this
