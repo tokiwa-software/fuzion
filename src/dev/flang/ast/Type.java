@@ -1344,7 +1344,7 @@ public class Type extends ANY implements Comparable
     else
       {
         result = false;
-        if (isRef() /* && actual.isRef() -- NYI: allow autoboxing! */)
+        if (isRef() && actual.isRef())
           {
             check
               (actual.feature != null || Errors.count() > 0);
