@@ -123,6 +123,8 @@ public class Types extends ANY
    *
    * as the result type for the call to f. The union of this type with any other
    * type is the other type.
+   *
+   * NYI: t_ANY and t_void seeem to be redundant, try to remove t_ANY and use t_void instead!
    */
   public static Type t_ANY = new Type(ANY_NAME);
 
