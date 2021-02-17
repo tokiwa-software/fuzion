@@ -430,7 +430,7 @@ public class Type extends ANY implements Comparable
       }
     else if (generic != null)
       {
-        result = generic.feature().qualifiedName() + "." + name;
+        result = generic.feature().qualifiedName() + "." + name + (this.ref ? " (boxed)" : "");
       }
     else if (outer_ != null)
       {
