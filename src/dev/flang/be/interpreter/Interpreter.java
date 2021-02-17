@@ -845,6 +845,7 @@ public class Interpreter extends Backend
           { // the value is a stateless value type, so we store the tag as a reference.
             v = ChoiceIdAsRef.get(choiceClazz, tag);
             vclazz = Clazzes.object.get();
+            staticTypeOfValue = vclazz._type;
             valSlot = choice.at(vclazz, choiceClazz.choiceRefValOffset());
           }
       }
