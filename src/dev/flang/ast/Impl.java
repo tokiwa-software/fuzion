@@ -383,7 +383,7 @@ public class Impl extends ANY
             Assign ass = new Assign(res,
                                     endPos,
                                     resultField,
-                                    this.code_,
+                                    this.code_.box(resultField.resultType()),
                                     outer);
             this.code_ = new Block (this.code_.pos,
                                     endPos,
