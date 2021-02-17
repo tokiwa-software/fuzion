@@ -315,7 +315,7 @@ public class Instance extends Value
    */
   public String toString()
   {
-    return "instance["+(clazz == null ? null : clazz._type)+"]"+this.hashCode();
+    return "instance[" + clazz + "]" + this.hashCode();
   }
 
 
