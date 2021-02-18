@@ -1088,7 +1088,7 @@ public class Call extends Expr
         if (!open)
           {
             t = tt.actualType(t);
-            if (calledFeature_.returnType.isConstructorType() && t != Types.t_ANY)
+            if (calledFeature_.returnType.isConstructorType() && t != Types.resolved.t_void)
               {  /* specialize t for the target type here */
                 t = new Type(t, t._generics, tt);
               }
@@ -1286,7 +1286,8 @@ public class Call extends Expr
                                                                   "call",
                                                                   "Called feature: "+calledFeature_.qualifiedName()+"\n"))
           {
-            Type t = _isTailRecursive ? Types.t_ANY : calledFeature_.resultTypeIfPresent(res, generics);
+            Type t = _isTailRecursive ? Types.resolved.t_void // a tail recursive call will not return and execute further
+                                      : calledFeature_.resultTypeIfPresent(res, generics);
             if (t == null)
               {
                 calledFeature_.whenResolvedTypes

@@ -204,13 +204,11 @@ Hellq is
        actualType == Types.t_ERROR || actualType.featureOfType().outer() != null || outer == null,
        Errors.count() > 0 || (actualType != Types.t_ERROR     &&
                               actualType != Types.t_UNDEFINED &&
-                              actualType != Types.t_INFER     &&
-                              actualType != Types.t_ANY         ),
+                              actualType != Types.t_INFER       ),
        outer == null || outer._type != Types.t_ADDRESS);
 
     if (actualType == Types.t_UNDEFINED ||
-        actualType == Types.t_INFER     ||
-        actualType == Types.t_ANY         )
+        actualType == Types.t_INFER       )
       {
         actualType = Types.t_ERROR;
       }
@@ -309,14 +307,6 @@ Hellq is
     if (PRECONDITIONS) require
       (Errors.count() > 0 || !t.isOpenGeneric());
 
-    if (t == Types.t_ANY)
-      { // This is the result of an endless tail recursive call, i.e., typically
-        // an endless loop.  We should safely be able to replace this by void
-        // since it should never return.
-        //
-        // NYI: The front end should clean this up a little earlier.
-        t = Types.resolved.t_void;
-      }
     return Clazzes.clazz(actualType(t));
   }
 

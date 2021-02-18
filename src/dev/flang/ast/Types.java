@@ -84,12 +84,6 @@ public class Types extends ANY
 
 
   /**
-   * Dummy name used for type t_ANY.
-   */
-  static final String ANY_NAME = "--ANY--";
-
-
-  /**
    * Dummy name used for error type t_ERROR which is used in case of compilation
    * time errors.
    */
@@ -103,7 +97,6 @@ public class Types extends ANY
     (new TreeSet<>(Arrays.asList(ADDRESS_NAME,
                                  INFER_NAME,
                                  UNDEFINED_NAME,
-                                 ANY_NAME,
                                  ERROR_NAME)));
 
   /* artificial type for the address of a value type, used for outer refs to value instances */
@@ -115,18 +108,6 @@ public class Types extends ANY
   /* artificial type for Expr that does not have a well defined type such as the
    * union of two distinct types */
   public static Type t_UNDEFINED = new Type(UNDEFINED_NAME);
-
-  /* artificial type for Expr that can have any type. This is used as the result of type tail recursive
-   * calls of the form
-   *
-   *    f => if c f else x
-   *
-   * as the result type for the call to f. The union of this type with any other
-   * type is the other type.
-   *
-   * NYI: t_ANY and t_void seeem to be redundant, try to remove t_ANY and use t_void instead!
-   */
-  public static Type t_ANY = new Type(ANY_NAME);
 
   /* artificial type for Expr with unknown type due to compilation error */
   public static Type t_ERROR = new Type(ERROR_NAME);
@@ -150,6 +131,14 @@ public class Types extends ANY
     public final Type t_string;
     public final Type t_conststring;
     public final Type t_unit;
+
+    /* void will be used as the initial result type of tail recursive calls of
+     * the form
+     *
+     *    f => if c f else x
+     *
+     * since the union of void  with any other type is the other type.
+     */
     public final Type t_void;
     public final Feature f_choice;
     public final Feature f_TRUE;
@@ -204,7 +193,6 @@ public class Types extends ANY
       t_ADDRESS  .resolveArtificialType(universe.get("Object"));
       t_INFER    .resolveArtificialType(universe);
       t_UNDEFINED.resolveArtificialType(universe);
-      t_ANY      .resolveArtificialType(universe);
       t_ERROR    .resolveArtificialType(f_ERROR);
     }
   }

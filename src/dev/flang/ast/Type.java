@@ -1424,20 +1424,20 @@ public class Type extends ANY implements Comparable
   Type union(Type that)
   {
     Type result =
-      this == Types.t_ERROR       ? Types.t_ERROR     :
-      that == Types.t_ERROR       ? Types.t_ERROR     :
-      this == Types.t_UNDEFINED   ? Types.t_UNDEFINED :
-      that == Types.t_UNDEFINED   ? Types.t_UNDEFINED :
-      this == Types.t_ANY         ? that              :
-      that == Types.t_ANY         ? this              :
-      this.isAssignableFrom(that) ? this :
-      that.isAssignableFrom(this) ? that : Types.t_UNDEFINED;
+      this == Types.t_ERROR         ? Types.t_ERROR     :
+      that == Types.t_ERROR         ? Types.t_ERROR     :
+      this == Types.t_UNDEFINED     ? Types.t_UNDEFINED :
+      that == Types.t_UNDEFINED     ? Types.t_UNDEFINED :
+      this == Types.resolved.t_void ? that              :
+      that == Types.resolved.t_void ? this              :
+      this.isAssignableFrom(that)   ? this :
+      that.isAssignableFrom(this)   ? that : Types.t_UNDEFINED;
 
     if (POSTCONDITIONS) ensure
       (result == Types.t_UNDEFINED ||
        result == Types.t_ERROR     ||
-       this == Types.t_ANY && result == that ||
-       that == Types.t_ANY && result == this ||
+       this == Types.resolved.t_void && result == that ||
+       that == Types.resolved.t_void && result == this ||
        result.isAssignableFrom(this) && result.isAssignableFrom(that));
 
     return result;
