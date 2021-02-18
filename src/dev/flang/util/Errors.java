@@ -61,6 +61,13 @@ public class Errors extends ANY
 
 
   /**
+   * Ser of warnings that have been shown so far. This is used to avoid presenting
+   * error repeatedly.
+   */
+  private static final TreeSet<String> _warnings_ = new TreeSet<>();
+
+
+  /**
    * If two errors at the same posisition with the same message only differ in
    * the detail message, chances are high that the detail message differs only
    * due to AST conversions done meanwhile, so we produce only one error in this
@@ -381,7 +388,11 @@ public class Errors extends ANY
    */
   public static void warning(String msg)
   {
-    System.err.println(warningMessage(msg));
+    if (!_warnings_.contains(msg))
+      {
+        _warnings_.add(msg);
+        System.err.println(warningMessage(msg));
+      }
   }
 
 
