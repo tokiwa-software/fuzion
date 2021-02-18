@@ -53,6 +53,7 @@ import dev.flang.ir.Clazz;
 import dev.flang.ir.Clazzes;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
 import dev.flang.util.MapComparable2Int;
@@ -1003,7 +1004,7 @@ public class FUIR extends ANY
                     if (in.toString().startsWith("hasInterval<i32>") ||
                         in.toString().startsWith("integer<")) // NYI: Remove, hasInterval<i32> should not be instantiated at all so it should not appear here...
                       {
-                        System.err.println("***** ignoring target "+in);
+                        Errors.warning("ignoring target "+in);
                       }
                     else if (!found.contains(in))
                       {
