@@ -77,12 +77,6 @@ public class Errors extends ANY
 
 
   /**
-   * Total number of errors encountered so far
-   */
-  private static int _count_ = 0;
-
-
-  /**
    * Maximum number of error messages that are displayed. If this limit is
    * reached, we terminate with return code 1.
    */
@@ -148,7 +142,16 @@ public class Errors extends ANY
    */
   public static int count()
   {
-    return _count_;
+    return _errors_.size();
+  }
+
+
+  /**
+   * Total number of warnings encountered so far
+   */
+  public static int warningCount()
+  {
+    return _warnings_.size();
   }
 
 
@@ -162,8 +165,7 @@ public class Errors extends ANY
    */
   static String errorMessage(String s)
   {
-    _count_++;
-    return Terminal.BOLD_RED + "error " + _count_ + Terminal.RESET + Terminal.BOLD + ": " + s + Terminal.RESET;
+    return Terminal.BOLD_RED + "error " + count() + Terminal.RESET + Terminal.BOLD + ": " + s + Terminal.RESET;
   }
 
 
@@ -176,7 +178,7 @@ public class Errors extends ANY
    */
   static String warningMessage(String s)
   {
-    return Terminal.BOLD_YELLOW + "warning" + Terminal.RESET + Terminal.BOLD + ": " + s + Terminal.RESET;
+    return Terminal.BOLD_YELLOW + "warning " + warningCount() + Terminal.RESET + Terminal.BOLD + ": " + s + Terminal.RESET;
   }
 
 
@@ -242,18 +244,18 @@ public class Errors extends ANY
     Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
     if (!_errors_.contains(e))
       {
-        _errors_.add(e);
         if (true)  // true: a blank line before errors, false: separation line between errors
           {
             System.err.println();
           }
         else
           {
-            if (_count_ > 0)
+            if (count() > 0)
               {
                 System.err.println("------------");
               }
           }
+        _errors_.add(e);
         if (pos == null)
           {
             error(msg, detail);
@@ -262,7 +264,7 @@ public class Errors extends ANY
           {
             pos.show(errorMessage(msg), detail);
           }
-        if (_count_ >= MAX_ERROR_MESSAGES)
+        if (count() >= MAX_ERROR_MESSAGES)
           {
             showAndExit();
           }
@@ -360,14 +362,36 @@ public class Errors extends ANY
   /**
    * Check if any errors found.  If so, show the number of errors and
    * System.exit(1).
+   *
+   * Otherwise, if warningStatistics is true, report the number of warnings
+   * encountered.  Return normally in this case.
+   *
+   * @param warningStatistics true iff warning count should be printed.
+   */
+  public static void showAndExit(boolean warningStatistics)
+  {
+    if (count() > 0)
+      {
+        println(singularOrPlural(count(), "error") +
+                (warningCount() > 0 ? " and " + singularOrPlural(warningCount(), "warning")
+                                    : "") +
+                ".");
+        System.exit(1);
+      }
+    else if (warningStatistics && warningCount() > 0)
+      {
+        println(singularOrPlural(warningCount(), "warning") + ".");
+      }
+  }
+
+
+  /**
+   * Check if any errors found.  If so, show the number of errors and
+   * System.exit(1).
    */
   public static void showAndExit()
   {
-    if (_count_ > 0)
-      {
-        println(singularOrPlural(_count_, "error"));
-        System.exit(1);
-      }
+    showAndExit(false);
   }
 
   public static String argumentsString(int count)

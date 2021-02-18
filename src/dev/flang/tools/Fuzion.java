@@ -195,7 +195,7 @@ class Fuzion extends ANY
     try
       {
         parseArgs(args).run();
-        Errors.showAndExit();
+        Errors.showAndExit(true);
       }
     catch(Throwable e)
       {
