@@ -2956,7 +2956,7 @@ onetype     : "ref" simpletype
                                 )
             | t=simpletype
             ;
-funTypeArgs : LPAREN a=typeLst RPAREN
+funTypeArgs : LPAREN a=typeList RPAREN
             |
             ;
    */
