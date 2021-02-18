@@ -28,3 +28,20 @@
 # NYI: move to universe.fz
 
 Option<T> : choice<T, nil> is
+
+  # monadic operator
+  #
+  # This is handy to implement functions on optional values. As an example,
+  # take an Option<string> and you would like to add a filename suffix to
+  # this string if it is present. Then you can do this as follows:
+  #
+  #   addTxt(o Option<string>) => o >>= fun (s string) Option<string> is s + ".txt"
+  #
+  # NYI: With better type inference and syntactic sugar, this should be
+  #
+  #   addTxt(o Option<string>) => o >>= s -> s + ".txt"
+  #
+  infix >>= (f fun (T) Option<T>) Option<T> is
+    match Option.this
+      v T   => f(v)
+      _ nil => nil
