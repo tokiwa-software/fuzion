@@ -245,7 +245,7 @@ class Fuzion extends ANY
       {
         if (duplicates.contains(a))
           {
-            Errors.fatal("*** duplicate argument: '" + a + "'\n" + USAGE);
+            Errors.fatal("duplicate argument: '" + a + "'", USAGE);
           }
         duplicates.add(a);
         if (a.equals("-pretty"))
@@ -268,7 +268,7 @@ class Fuzion extends ANY
           }
         else if (a.startsWith("-"))
           {
-            Errors.fatal("*** unknown argument: '" + a + "'\n" + USAGE);
+            Errors.fatal("unknown argument: '" + a + "'", USAGE);
           }
         else
           {
@@ -277,11 +277,11 @@ class Fuzion extends ANY
       }
     if (sourceFiles.isEmpty() && !_readStdin)
       {
-        Errors.fatal("*** no source files given\n" + USAGE);
+        Errors.fatal("no source files given", USAGE);
       }
     else if (!sourceFiles.isEmpty() && _readStdin)
       {
-        Errors.fatal("*** cannot process both, stdin input '-' and a list of source files\n" + USAGE);
+        Errors.fatal("cannot process both, stdin input '-' and a list of source files", USAGE);
       }
     return () ->
       {
@@ -317,7 +317,7 @@ class Fuzion extends ANY
       {
         if (duplicates.contains(a))
           {
-            Errors.fatal("*** duplicate argument: '" + a + "'\n" + USAGE);
+            Errors.fatal("duplicate argument: '" + a + "'", USAGE);
           }
         duplicates.add(a);
         if (a.equals("-"))
@@ -328,7 +328,7 @@ class Fuzion extends ANY
         {
           if (_backend != Backend.undefined)
             {
-              Errors.fatal("*** arguments must specify at most one backend, found '" + _backend._arg + "' and '" + a + "'\n" + USAGE);
+              Errors.fatal("arguments must specify at most one backend, found '" + _backend._arg + "' and '" + a + "'", USAGE);
             }
           _backend = _allBackends_.get(a);
         }
@@ -345,11 +345,11 @@ class Fuzion extends ANY
           }
         else if (a.startsWith("-"))
           {
-            Errors.fatal("*** unknown argument: '" + a + "'\n" + USAGE);
+            Errors.fatal("unknown argument: '" + a + "'", USAGE);
           }
         else if (_main != null)
           {
-            Errors.fatal("*** several main feature names provided: '" + _main + "', '" + a + "'\n" + USAGE);
+            Errors.fatal("several main feature names provided: '" + _main + "', '" + a + "'", USAGE);
           }
         else
           {
@@ -358,11 +358,11 @@ class Fuzion extends ANY
       }
     if (_main == null && !_readStdin)
       {
-        Errors.fatal("*** missing main feature name in command line args\n" + USAGE);
+        Errors.fatal("missing main feature name in command line args", USAGE);
       }
     if (_main != null && _readStdin)
       {
-        Errors.fatal("*** cannot process main feature name together with stdin input\n" + USAGE);
+        Errors.fatal("cannot process main feature name together with stdin input", USAGE);
       }
     if (_backend == Backend.undefined)
       {
@@ -386,7 +386,7 @@ class Fuzion extends ANY
           {
           case interpreter: new Interpreter(fuir).run(); break;
           case c          : new C(options, fuir).compile(); break;
-          default         : Errors.fatal("*** backend '" + _backend + "' not supported yet"); break;
+          default         : Errors.fatal("backend '" + _backend + "' not supported yet"); break;
           }
       };
   }
