@@ -41,7 +41,13 @@ Option<T> : choice<T, nil> is
   #
   #   addTxt(o Option<string>) => o >>= s -> s + ".txt"
   #
+  # NYI: Should maybe have generic parameter <U> and result in Option<U>
+  #
   infix >>= (f fun (T) Option<T>) Option<T> is
     match Option.this
       v T   => f(v)
       _ nil => nil
+
+
+  # synonyme for infix >>=
+  andThen (f fun (T) Option<T>) => Option.this >>= f
