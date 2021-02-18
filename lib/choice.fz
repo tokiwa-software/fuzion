@@ -25,6 +25,49 @@
 
 # choice -- feature used for choice types
 #
+# choice types provide algebraic sum types of all the generic arguments
+# provided to choice.
+#
+# Syntactic sugar of the Fuzion language permits a alternative notation
+# for choice types with actual generics as follows
+#
+#   A | B | C | ...
+#
+# is equivalent to
+#
+#   choice<A, B, C, ...>
+#
+# The parser will directly convert the first notation into a choice type
+# with actual generics.
+#
+# Note that all types provided must be distinct, it is not possible to
+# repeat the same type as in choice<i32,i32> or float | float.  If a sum
+# type of two or more equal types is desired, these types must first be
+# wrapped into a new type as illustrated in the following example:
+#
+# Say we want to store a temperature that is given as a 32 bit integer
+# in degrees centigrade or Fahrenheit. So we define two wrapper features
+#
+#   centigrade(degrees i32) is {}
+#   fahrenheit(degrees i32) is {}
+#
+# now we define the choice type using the wrapped i32 types, which are
+# distinct:
+#
+#   temp centigrade | fahrenheit := ...
+#
+# When assigning values to temp, we need to wrap the values accordingly:
+#
+#   set temp := centigrade 37
+#   set temp := fahrenheit 99
+#
+# When matching the choice type, we use the wrapper types and access the
+# argument field 'degrees' to access the i32 stored inside
+#
+#   match temp
+#     c centigrade => say "it's " + c.degrees + "°C"
+#     f fahrenheit => say "it's " + f.degrees + "°F"
+#
 choice<A...> is
 
 #  a<X> X
