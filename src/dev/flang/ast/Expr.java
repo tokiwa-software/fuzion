@@ -254,15 +254,20 @@ public abstract class Expr extends ANY implements Stmnt
 
   protected Expr addFieldForResult(Resolution res, Feature outer, Type t)
   {
-    Feature r = new Feature(pos,
-                            Consts.VISIBILITY_INVISIBLE,
-                            t,
-                            "#stmtResult" + (_id_++),
-                            outer);
-    r.scheduleForResolution(res);
-    res.resolveTypes();
-    return new Block(pos, pos, new List<>(assignToField(res, outer, r),
-                                          new Call(pos, new Current(pos, outer.thisType()), r).resolveTypes(res, outer)));
+    var result = this;
+    if (t != Types.resolved.t_void)
+      {
+        Feature r = new Feature(pos,
+                                Consts.VISIBILITY_INVISIBLE,
+                                t,
+                                "#stmtResult" + (_id_++),
+                                outer);
+        r.scheduleForResolution(res);
+        res.resolveTypes();
+        result = new Block(pos, pos, new List<>(assignToField(res, outer, r),
+                                              new Call(pos, new Current(pos, outer.thisType()), r).resolveTypes(res, outer)));
+      }
+    return result;
   }
 
 
@@ -288,7 +293,7 @@ public abstract class Expr extends ANY implements Stmnt
   {
     Expr result = this;
 
-    if (!type().isRef() && frmlT.isRef())
+    if (!type().isRef() && frmlT.isRef() && type() != Types.resolved.t_void)
       {
         result = new Box(frmlT, this);
       }
