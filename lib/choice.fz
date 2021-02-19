@@ -40,18 +40,40 @@
 # The parser will directly convert the first notation into a choice type
 # with actual generics.
 #
+# A field of choice type can be assigned a value of the same choice type
+# or of any of the generic type arguments of its choice type.
+#
+# Two choice types choice<A,B> and choice<B,A> that only differ in the order
+# of their actual generic arguments are treated as different types.
+#
+# Named choice types can be constructed through inheritance, i.e.,
+#
+#   C : choice<A,B> is {}
+#
+# creates a choice type of A and B with the name C.  Two named choice types
+# D and E that inherit from choice with the same actual generic arguments in
+# the same order are nevertheless different types and their values are not
+# assignable to one another.
+#
+# Named choice types may declare or inherit additional inner features as long
+# as these features are not fields.  Also, declared inner features must not
+# build a closure that accesses outer features.  Additional parents must be
+# unit types, i.e., they must not declare fields nor access features of any
+# of their outer features.
+#
 # Note that all types provided must be distinct, it is not possible to
 # repeat the same type as in choice<i32,i32> or float | float.  If a sum
 # type of two or more equal types is desired, these types must first be
 # wrapped into a new type as illustrated in the following example:
 #
 # Say we want to store a temperature that is given as a 32 bit integer
-# in degrees centigrade or Fahrenheit. So we define two wrapper features
+# in degrees centigrade or degrees Fahrenheit.  So we define two wrapper
+# features
 #
 #   centigrade(degrees i32) is {}
 #   fahrenheit(degrees i32) is {}
 #
-# now we define the choice type using the wrapped i32 types, which are
+# Now we define the choice type using the wrapped i32 types, which are
 # distinct:
 #
 #   temp centigrade | fahrenheit := ...
