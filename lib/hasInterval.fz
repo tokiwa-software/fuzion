@@ -106,8 +106,8 @@ hasInterval<T: hasInterval<T>> : integer<T> is
     # create a list from this interval
     #
     asList list<T> is
-      cons (redef head T) ref : Cons<T, list<T>> is
-        redef tail list<T> is
+      cons (head T) ref : Cons<T, list<T>> is
+        tail list<T> is
           if (head >= upper) nil else cons head + one
       if (lower > upper) nil else cons lower
 
