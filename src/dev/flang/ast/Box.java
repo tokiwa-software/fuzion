@@ -55,7 +55,9 @@ public class Box extends Expr
 
 
   /**
-   * The type this is assigned to, set during creation.
+   * The type this is assigned to (in case of an assignment to a choice type,
+   * this is the static type of the assigned value, not the choice type), set
+   * during creation.
    */
   public Type _expectedType;
 

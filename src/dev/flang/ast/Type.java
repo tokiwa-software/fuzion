@@ -1254,6 +1254,16 @@ public class Type extends ANY implements Comparable
     return result;
   }
 
+
+  /**
+   * Check if this is a choice type.
+   */
+  boolean isChoice()
+  {
+    return feature != null && feature.choiceGenerics() != null;
+  }
+
+
   /**
    * Helper for isAssignableFrom: check if this is a choice type and actual is
    * assignable to one of the generic arguments to this choice.
