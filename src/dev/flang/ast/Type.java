@@ -1322,9 +1322,10 @@ public class Type extends ANY implements Comparable
       {
         assignableTo.add(actual);
       }
-    if (this   == actual        ||
-        this   == Types.t_ERROR ||
-        actual == Types.t_ERROR    )
+    if (this   == actual                ||
+        actual == Types.resolved.t_void ||
+        this   == Types.t_ERROR         ||
+        actual == Types.t_ERROR           )
       {
         result = true;
       }
