@@ -522,6 +522,7 @@ Hellq is
         } else if (ft == Types.resolved.t_u32   ) { fsz = 1;
         } else if (ft == Types.resolved.t_i64   ) { fsz = 2;
         } else if (ft == Types.resolved.t_u64   ) { fsz = 2;
+        } else if (ft == Types.resolved.t_void  ) { fsz = 0;
         } else {
           result = fieldClazz.layout();
           if (result != null)
