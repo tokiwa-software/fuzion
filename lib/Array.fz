@@ -85,7 +85,7 @@ Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
   # create a cons cell for a list of this array starting at the given
   # index
   #
-  arrayCons (i i32) ref /* NYI: ref only needed because boxing does not work for choice types */ : Cons<T, list<T>>
+  arrayCons (i i32) : Cons<T, list<T>>
     pre
       debug: 0 <= i < length
   is
