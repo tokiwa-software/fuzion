@@ -89,5 +89,5 @@ Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
     pre
       debug: 0 <= i < length
   is
-    redef head => Array.this[i]
-    redef tail => asList i+1
+    head => Array.this[i]
+    tail => asList i+1
