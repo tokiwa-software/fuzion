@@ -2696,7 +2696,7 @@ public class Feature extends ANY implements Stmnt, Comparable
           {
             FeErrors.cannotRedefineGeneric(f.pos, this, existing);
           }
-        else if ((f.modifiers & Consts.MODIFIER_REDEFINE) == 0)
+        else if ((f.modifiers & Consts.MODIFIER_REDEFINE) == 0 && existing.impl != Impl.ABSTRACT)
           {
             FeErrors.redefineModifierMissing(f.pos, this, existing);
           }
