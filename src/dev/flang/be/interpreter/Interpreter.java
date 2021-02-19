@@ -349,6 +349,27 @@ public class Interpreter extends Backend
           }
         while (!matches && it.hasNext());
 
+        if (!matches)
+          {
+            var permitted = new List<Clazz>();
+            for (var c : m.cases)
+              {
+                if (c.field != null)
+                  {
+                    permitted.add(staticClazz.getRuntimeClazz(c.runtimeClazzId_));
+                  }
+                else
+                  {
+                    for (int i = 0; i < c.types.size(); i++)
+                      {
+                        permitted.add(staticClazz.getRuntimeClazz(c.runtimeClazzId_ + i));
+                      }
+                  }
+              }
+            Errors.fatal(m.pos(), "no match found",
+                         "For value of clazz: " + subjectClazz + "\n" +
+                         "Permitted clazzes: " + permitted.toString("",",",""));
+          }
         check
           (matches);
 
