@@ -102,6 +102,17 @@ hasInterval<T: hasInterval<T>> : integer<T> is
       forAll  (f fun (T)) is asStream.consume(f)
       infix | (f fun (T)) is asStream.consume(f)
 
+
+    # create a list from this interval
+    #
+    asList list<T> is
+      cons (start T) ref : Cons<T, list<T>> is
+        redef head => start
+        redef tail list<T> is
+          if (start >= upper) nil else cons start + one
+      if (lower > upper) nil else cons lower
+
+
   # the open interval this to the maximum T value
   postfix .. () infix .. is
     # hasInterval.this..max   # NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
