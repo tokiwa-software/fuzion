@@ -299,7 +299,7 @@ public abstract class Expr extends ANY implements Stmnt
       }
     else if (!type().isRef() && frmlT.isChoice() && !frmlT.isAssignableFrom(type()))
       {
-        var rt = new Type(type(), true);
+        var rt = Types.intern(new Type(type(), true));
         if (frmlT.isAssignableFrom(rt))
           {
             result = new Box(rt, this);
