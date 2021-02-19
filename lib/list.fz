@@ -1,0 +1,97 @@
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature list
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# list -- feature used to define lists
+#
+# list provides an abstract type for a sequence of elements of the same type.
+#
+# A list sequence may be empty and contain no element, or it may have a fixed
+# or even infitie number of elements.
+#
+# The core of the implementation of an actual list lies in the implementation
+# of the actual Cons cell a non-empty list consists of.
+#
+# Lists can typically be treversed using only immutable data. This makes them
+# more flexible than streams that require to store and update their state.
+#
+#
+#
+list<A> : choice<nil, Cons<A, list<A>>> is
+
+  # is this list empty?
+  #
+  isEmpty =>
+    match list.this
+      _ nil              => true
+      c Cons<A, list<A>> => false
+
+
+  # call f in order on all elements of this list
+  #
+  iterate(f fun (A)) is
+    match list.this
+      _ nil              =>
+      c Cons<A, list<A>> => f c.head; c.tail.iterate f
+
+
+  # call f in order on all elements of this list
+  #
+  # NYI: Remove, this is just for experiments
+  #
+  iterateUsingLoop(f fun (A)) is
+    for
+      l := list.this, l.forceTail
+    while !l.isEmpty
+      f l.forceHead
+
+
+  # get the head of this list, panic if list is empty
+  #
+  # NYI: Remove, this is just for experiments
+  #
+  forceHead A
+    pre
+      !isEmpty
+  is
+    match list.this
+      _ nil              => panic
+      c Cons<A, list<A>> => c.head
+
+
+  # get the tail of this list, panic if list is empty
+  #
+  # NYI: Remove, this is just for experiments
+  #
+  forceTail list<A>
+    pre
+      !isEmpty
+  is
+    match list.this
+      _ nil              => panic
+      c Cons<A, list<A>> => c.tail
+
+
+  # terminate with "*** panic"
+  #
+  # NYI: Remove, this is just for experiments
+  #
+  panic void is
+    say "*** panic"
+    exitForCompilerTest(1)

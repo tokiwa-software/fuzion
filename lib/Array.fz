@@ -63,3 +63,31 @@ Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
     x := 0
     redef hasNext => x < length
     redef next => x = x + 1; get(data, x - 1)
+
+
+  # create a list from this array
+  #
+  asList => asList 0
+
+
+  # create a list from this array starting at the given index
+  #
+  asList(i i32) list<T>
+    pre
+      debug: i >= 0
+  is
+    if length <= i
+      nil
+    else
+      arrayCons i
+
+
+  # create a cons cell for a list of this array starting at the given
+  # index
+  #
+  arrayCons (i i32) ref /* NYI: ref only needed because boxing does not work for choice types */ : Cons<T, list<T>>
+    pre
+      debug: 0 <= i < length
+  is
+    redef head => Array.this[i]
+    redef tail => asList i+1
