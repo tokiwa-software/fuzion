@@ -396,8 +396,7 @@ public class Interpreter extends Backend
         Value val = execute(b._value, staticClazz, cur);
         Clazz vc = (Clazz) staticClazz.getRuntimeData(b._valAndRefClazzId);
         Clazz rc = (Clazz) staticClazz.getRuntimeData(b._valAndRefClazzId + 1);
-        Clazz ec = (Clazz) staticClazz.getRuntimeData(b._valAndRefClazzId + 2);
-        if (vc.isRef() || !ec.isRef())
+        if (vc.isRef())
           { // vc's type is a generic argument whose actual type does not need
             // boxing
             check

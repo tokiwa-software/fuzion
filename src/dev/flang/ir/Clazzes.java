@@ -552,14 +552,12 @@ public class Clazzes extends ANY
   {
     Clazz vc = clazz(b._value, outerClazz);
     Clazz rc = vc.asRef();
-    Clazz ec = outerClazz.actualClazz(b._expectedType);
     if (b._valAndRefClazzId < 0)
       {
-        b._valAndRefClazzId = outerClazz.feature().getRuntimeClazzIds(3);
+        b._valAndRefClazzId = outerClazz.feature().getRuntimeClazzIds(2);
       }
     outerClazz.setRuntimeClazz(b._valAndRefClazzId    , vc);
     outerClazz.setRuntimeClazz(b._valAndRefClazzId + 1, rc);
-    outerClazz.setRuntimeClazz(b._valAndRefClazzId + 2, ec);
   }
 
 

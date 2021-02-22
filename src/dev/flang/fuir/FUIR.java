@@ -916,18 +916,6 @@ public class FUIR extends ANY
     Clazz rc = (Clazz) outerClazz.getRuntimeData(b._valAndRefClazzId+1);
     return _clazzIds.get(rc);
   }
-  public int boxExpectedClazz(int cl, int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Box);
-
-    var outerClazz = _clazzIds.get(cl);
-    var b = (Box) _codeIds.get(c).get(ix);
-    Clazz ec = (Clazz) outerClazz.getRuntimeData(b._valAndRefClazzId+2);
-    return _clazzIds.get(ec);
-  }
 
 
   public String callDebugString(int c, int ix)

@@ -770,8 +770,7 @@ public class C extends Backend
 
               var vc = _fuir.boxValueClazz(cl, c, i);
               var rc = _fuir.boxResultClazz(cl, c, i);
-              var ec = _fuir.boxExpectedClazz(cl, c, i);
-              if (_fuir.clazzIsRef(vc) || !_fuir.clazzIsRef(ec))
+              if (_fuir.clazzIsRef(vc))
                 { // vc's type is a generic argument whose actual type does not need
                   // boxing
                 }

@@ -55,14 +55,6 @@ public class Box extends Expr
 
 
   /**
-   * The type this is assigned to (in case of an assignment to a choice type,
-   * this is the static type of the assigned value, not the choice type), set
-   * during creation.
-   */
-  public Type _expectedType;
-
-
-  /**
    * Clazz index for value clazz that is being boxed and, at
    * _valAndRefClazzId+1, reference clazz that is the result clazz of the
    * boxing.
@@ -78,7 +70,7 @@ public class Box extends Expr
    *
    * @param value the value instance
    */
-  public Box(Type frmlT, Expr value)
+  public Box(Expr value)
   {
     super(value.pos);
 
@@ -88,13 +80,7 @@ public class Box extends Expr
        !value.type().isRef());
 
     this._value = value;
-    Type t = _value.type();
-    if (t != Types.t_ERROR)
-      {
-        t = Types.intern(new Type(t, true));
-      }
-    this._type = t;
-    this._expectedType = frmlT;
+    this._type = _value.type().asRef();
   }
 
 
