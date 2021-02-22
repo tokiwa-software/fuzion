@@ -46,6 +46,25 @@ list<A> : choice<nil, Cons<A, list<A>>> is
       c Cons<A, list<A>> => false
 
 
+  # get the head of this list if it exists
+  #
+  head Option<A>
+  is
+    match list.this
+      _ nil              => nil
+      c Cons<A, list<A>> => c.head
+
+
+  # get the tail of this list if it exists, nil if it does
+  # not exist or it is the empty list
+  #
+  tail list<A>
+  is
+    match list.this
+      _ nil              => nil
+      c Cons<A, list<A>> => c.tail
+
+
   # call f in order on all elements of this list
   #
   iterate(f fun (A)) is
