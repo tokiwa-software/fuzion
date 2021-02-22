@@ -209,12 +209,7 @@ public class Errors extends ANY
    */
   public static void error(String s, String detail)
   {
-    println(errorMessage(s));
-    if (detail != null && !detail.equals(""))
-      {
-        println(detail);
-      }
-    println("");
+    error(null, s, detail);
   }
 
 
@@ -258,7 +253,12 @@ public class Errors extends ANY
         _errors_.add(e);
         if (pos == null)
           {
-            error(msg, detail);
+            println(errorMessage(msg));
+            if (detail != null && !detail.equals(""))
+              {
+                println(detail);
+              }
+            println("");
           }
         else
           {
