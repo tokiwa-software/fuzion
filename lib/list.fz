@@ -118,3 +118,18 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   panic void is
     say "*** panic"
     exitForCompilerTest(1)
+
+
+  # map the list to a new list applying function f to all elements
+  #
+  # This performs a lazy mapping, f is called only when the eleents
+  # are taken from the list.
+  #
+  map<B>(f fun(A) B) list<B> is
+    match list.this
+      _ nil              => nil
+      c Cons<A, list<A>> =>
+        ref : Cons<B, list<B>>
+        // Cons<B, list<B>> with    # NYI: better syntax for anonymous feature
+          head => f c.head
+          tail => c.tail.map<B> f
