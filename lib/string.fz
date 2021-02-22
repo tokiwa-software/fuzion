@@ -40,7 +40,7 @@ string ref is
   byteLength => asBytes.asStream.count
 
   # concatenate string with string represenation of another object
-  infix + (other Object) ref : string is  # NYI: code is very brittle: removing "ref" causes recursive value type error
+  infix + (other Object) ref : string is
 
     redef asBytes streamable<i32> is
       byteStreamable  # NYI: this should be an anonymous inner feature
@@ -58,7 +58,7 @@ string ref is
         redef next i32 is if head.hasNext then head.next else tail.next
 
   # repeat string given number of times
-  infix * (n i32) ref : string  # NYI: code is very brittle: removing "ref" causes recursive value type error
+  infix * (n i32) ref : string
   pre
     n >= 0
   is
