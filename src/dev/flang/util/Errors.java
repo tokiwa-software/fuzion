@@ -95,8 +95,7 @@ public class Errors extends ANY
     {
       if (PRECONDITIONS) require
         (pos != null,
-         msg != null,
-         detail != null);
+         msg != null);
 
       this.pos    = pos;
       this.msg    = msg == null ? "*** unknown error ***" : msg;  // just in case, should not be needed
