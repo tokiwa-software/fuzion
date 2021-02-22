@@ -721,6 +721,7 @@ public class C extends Backend
                   var fieldName = fieldNameInClazz(outercl, field);
                   var fieldAccess = ccodeAccessField(outercl, outer, fieldName);
                   if (_fuir.clazzIsBool(fclazz) &&
+                      valuecl != -1 &&
                       fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
                       )
                     { // bool is a basically a choice type, but we do not use the tag in the generated C code

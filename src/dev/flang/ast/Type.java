@@ -1276,7 +1276,7 @@ public class Type extends ANY implements Comparable
   /**
    * Check if this is a choice type.
    */
-  boolean isChoice()
+  public boolean isChoice()
   {
     return feature != null && feature.choiceGenerics() != null;
   }

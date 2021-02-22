@@ -537,10 +537,11 @@ public class Clazzes extends ANY
 
         Clazz sClazz = clazz(a.getOuter, outerClazz);
         outerClazz.setRuntimeClazz(a.tid_, sClazz);
-        Clazz vc = clazz(a.value, outerClazz);
-
-        // NYI: The following is needed only if assigneField.type.featureOfType.isChoice & !outerClazz.isChoiceOfOnlyRefs.
-        outerClazz.setRuntimeClazz(a.tid_ + 1, vc);
+        if (outerClazz.actualType(a.assignedField.resultType()).isChoice())
+          { // NYI: Instead of creating vc, add the assignment to the tag explicitly here!
+            Clazz vc = clazz(a.value, outerClazz);
+            outerClazz.setRuntimeClazz(a.tid_ + 1, vc);
+          }
       }
   }
 

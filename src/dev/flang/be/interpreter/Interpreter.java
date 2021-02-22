@@ -241,7 +241,7 @@ public class Interpreter extends Backend
         Value thiz = execute(a.getOuter, staticClazz, cur);
         Clazz sClazz = staticClazz.getRuntimeClazz(a.tid_ + 0);
         Clazz vClazz = staticClazz.getRuntimeClazz(a.tid_ + 1);
-        setField(a.assignedField, sClazz, thiz, v, vClazz._type);
+        setField(a.assignedField, sClazz, thiz, v, vClazz != null ? vClazz._type : null);
         result = Value.NO_VALUE;
       }
 
@@ -1178,8 +1178,7 @@ public class Interpreter extends Backend
       (thiz.isField() || thiz.returnType == SingleType.INSTANCE,
        (curValue instanceof Instance) || (curValue instanceof LValue),
        staticClazz != null,
-       staticTypeOfValue != null,
-       Types.intern(staticTypeOfValue) == staticTypeOfValue);
+       staticTypeOfValue == null || Types.intern(staticTypeOfValue) == staticTypeOfValue);
 
     if (Clazzes.isUsed(thiz, staticClazz))
       {
