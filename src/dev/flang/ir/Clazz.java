@@ -1151,6 +1151,17 @@ Hellq is
 
 
   /**
+   * In case this is a Clazz of value type, create the corresponding reference clazz.
+   */
+  public Clazz asRef()
+  {
+    return isRef()
+      ? this
+      : Clazzes.create(_type.asRef(), _outer);
+  }
+
+
+  /**
    * Determine the clazz of the result of calling this clazz.
    *
    * @return the result clazz.

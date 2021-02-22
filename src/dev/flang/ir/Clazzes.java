@@ -551,16 +551,7 @@ public class Clazzes extends ANY
   public static void findClazzes(Box b, Clazz outerClazz)
   {
     Clazz vc = clazz(b._value, outerClazz);
-    Type t = b._type;
-    if (t.isGenericArgument())
-      {
-        t = outerClazz.actualType(t);
-        if (!t.isRef())
-          {
-            t = Types.intern(new Type(t, true));
-          }
-      }
-    Clazz rc = outerClazz.actualClazz(t);
+    Clazz rc = vc.asRef();
     Clazz ec = outerClazz.actualClazz(b._expectedType);
     if (b._valAndRefClazzId < 0)
       {

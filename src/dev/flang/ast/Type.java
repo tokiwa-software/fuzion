@@ -353,6 +353,24 @@ public class Type extends ANY implements Comparable
 
 
   /**
+   * Create a Types.intern()ed reference variant of this type.  Return this
+   * in case it is a reference already.
+   */
+  public Type asRef()
+  {
+    if (PRECONDITIONS) require
+      (this == Types.intern(this));
+
+    var result = this;
+    if (!isRef() && this != Types.t_ERROR)
+      {
+        result = Types.intern(new Type(this, true));
+      }
+    return result;
+  }
+
+
+  /**
    * Call Constructor for a function type that returns a result
    *
    * @param returnType the result type.
