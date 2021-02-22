@@ -34,6 +34,9 @@
 #
 #
 list<A> : choice<nil, Cons<A, list<A>>> is
+# list<A> : nil | Cons<A, list<A>> is   -- NYI: sum type syntax
+# list<A> : nil | Cons A, list A is     -- NYI: sum type syntax, optional '<', '>'
+# list A : nil | Cons A, list A is      -- NYI: sum type syntax, optional '<', '>' (2x)
 
   # is this list empty?
   #
