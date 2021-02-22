@@ -79,9 +79,10 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   #
   iterateUsingLoop(f fun (A)) is
     for
-      l := list.this, l.forceTail
-    while !l.isEmpty
-      f l.forceHead
+      l := list.this, l.tail
+    while match l.head
+      _ nil => false
+      a A   => f a; true
 
 
   # get the head of this list, panic if list is empty
