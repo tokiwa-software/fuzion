@@ -1,0 +1,76 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature monad
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# monad -- generic monad
+#
+# A monoid in the category of endofunctors is a monad. --Bartosz Milewski
+#
+# Don't be scared, in Java terms: A monad is a means to apply a method to the
+# data stored in an instance of a generic class.  Say you have an
+# ArrayList<Integer> and you want to call Integer.toString() on all the elments
+# to obtain an ArrayList<String>, then a monad is your friend. (NYI: This is
+# an example for map, not really a monad).
+#
+# NYI: move to universe.fz
+monad<A, MA: monad<A, MA>> is
+
+
+  # monadic operator within the same monad
+  #
+  # Apply f to elements of type A and re-wrap them in this monad.
+  #
+  infix >>= (f fun (A) MA) MA is abstract
+
+
+  # monadic operator to another monad
+  #
+  # Apply f to elements of type A and wrap them in MB.
+  #
+  # NYI: This is currently useless since a redefinition is not
+  # allowed for features with generic arguments. Is there a way
+  # we could allow this anyway?
+  #
+  infix >>=~ <B, MB> (f fun (A) MB) MB is abstract
+
+
+  # join operator
+  #
+  # NYI: useless since redefinition currently not supported for
+  # feature with generics.
+  #
+  join <MMA : monad<MA, monad<A, MA>>> (a MMA) MA is abstract
+
+
+  # return function
+  #
+  # NYI: This should be A -> MA, not MA x A -> MA as it is right now
+  # since it needs an instance to be called on.
+  #
+  return (a A) MA is abstract
+
+
+  # NYI: fmap:
+  #
+  # fmap<B> (f fun (A) B) is monad.this >>= fun (x A) B is return f x

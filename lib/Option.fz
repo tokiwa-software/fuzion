@@ -27,7 +27,10 @@
 #
 # NYI: move to universe.fz
 
-Option<T> : choice<T, nil> is
+Option<T> :
+  choice<T, nil>,
+  monad<T, Option<T>>
+is
 
   # monadic operator
   #
@@ -41,9 +44,16 @@ Option<T> : choice<T, nil> is
   #
   #   addTxt(o Option<string>) => o >>= s -> s + ".txt"
   #
-  # NYI: Should maybe have generic parameter <U> and result in Option<U>
+  # NYI: Should maybe have generic parameter <B> and result in Option<B>
   #
-  infix >>= (f fun (T) Option<T>) Option<T> is
+  redef infix >>= (f fun (T) Option<T>) => Option.this.bind<T>(f)
+
+
+  # monadic operator
+  #
+  # Same as non-generic >>=, but also maps to a different type B.
+  #
+  bind <B> (f fun (T) Option<B>) Option<B> is
     match Option.this
       v T   => f(v)
       _ nil => nil

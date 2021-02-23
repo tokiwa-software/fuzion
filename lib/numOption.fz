@@ -29,13 +29,24 @@
 # value: nil.  Any operation on nil will result in nil for a
 # numeric result or false for a boolean result.
 #
-numOption<T: numeric<T>> : choice<T, nil> is
+numOption<T: numeric<T>> :
+  choice<T, nil>,
+  monad<T, numOption<T>>
+is
 
   # monadic operator
-  infix >>= (f fun (T) numOption<T>) numOption<T> is
+  redef infix >>= (f fun (T) numOption<T>) => numOption.this.bind<T>(f)
+
+
+  # monadic operator
+  #
+  # Same as non-generic >>=, but also maps to a different type B.
+  #
+  bind <B> (f fun (T) numOption<B>) numOption<B> is
     match numOption.this
       v T   => f(v)
       _ nil => nil
+
 
   # monadic operator for bool result, false for nil
   infix >>? (f fun (T) bool) =>
