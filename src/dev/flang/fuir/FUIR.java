@@ -214,7 +214,7 @@ public class FUIR extends ANY
         if (e.getValue() == i)
           {
             var f = e.getKey();
-            Clazz fcl = cc.actualResultClazz(f);
+            Clazz fcl = cc.clazzForField(f);
             if (fcl._type == Types.t_ADDRESS)  // NYI: would be better to not create this dummy clazz in the first place
               {
                 return -3;
