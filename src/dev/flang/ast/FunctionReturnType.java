@@ -64,13 +64,20 @@ public class FunctionReturnType extends ReturnType
   {
     type = t;
     var ot = t;
-    var d = 0;
-    while (ot != null)
+    if (t == Types.t_UNDEFINED)
       {
-        ot = ot.outer_;
-        d++;
+        depthInSource = -1;
       }
-    depthInSource = d;
+    else
+      {
+        var d = 0;
+        while (ot != null)
+          {
+            ot = ot.outer_;
+            d++;
+          }
+        depthInSource = d;
+      }
   }
 
 

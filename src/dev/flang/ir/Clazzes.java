@@ -739,7 +739,8 @@ public class Clazzes extends ANY
             else
               {
                 var t = cf.resultType();
-                if (cf.returnType instanceof FunctionReturnType && !t.isGenericArgument())
+                if (cf.returnType instanceof FunctionReturnType && !t.isGenericArgument() &&
+                    ((FunctionReturnType) cf.returnType).depthInSource >= 0)
                   {
                     /* NYI: This attempt to rebase to the outer type of the
                      * frame is not correct. Instead, we might have to look at
