@@ -711,7 +711,7 @@ public class Clazz extends ANY implements Comparable
 
   /**
    * find redefinition of a given feature in this clazz. NYI: This will have to
-   * take the hole inheritance chain into account and the parent view that is
+   * take the whole inheritance chain into account and the parent view that is
    * being filled with live into account:
    */
   private Feature findRedefinition(Feature f)
