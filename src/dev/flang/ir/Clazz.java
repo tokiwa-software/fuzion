@@ -148,37 +148,6 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
-   * NYI: under developemnt: An attempt to track the 'real' outer clazz, i.e.,
-   * the outer clazz as seen through the inheritance chain.  Does not work well
-   * yet, see Hellq.fz:
-
-Hellq is
-  a is
-    b is
-      c is
-        p is stdout.println("a.b.c.p!")
-        d is
-          e is
-            stdout.println("e");
-            p
-
-  stdout.println("Hellq");
-
-  q : a.b.c.d is
-    stdout.println("q");
-
-  stdout.println("q.e:");
-  q.e
-  stdout.println("q.e!");
-
-   * NYI: Remove, this is a hack, it is not clear what a "real" outer reference
-   * should be.  Instead, there are many outer refs, one for every inheritance
-   * call, and additional ones that have been inherited.
-   */
-  final Clazz[] _realOuter;
-
-
-  /**
    * The dynamic binding implementation used for this clazz. null if !isRef().
    */
   public DynamicBinding _dynamicBinding;
@@ -239,29 +208,12 @@ Hellq is
      *    clazz can be shared with all other sub-clazzes of 'stack<i32>', but
      *    not with sub-clazzes with different actual generics.
      */
-    var d = feature().depth();
-    this._realOuter = new Clazz[d+1];
-    for (int i = 0; i <= d; i++)
-      {
-        this._realOuter[i] = outer != null && i < this._outer._realOuter.length ? this._outer._realOuter[i] : this;
-      }
 
     if (isChoice())
       {
         choiceGenerics_ = choiceGenerics();
       }
     this._dynamicBinding = null;
-  }
-
-
-  /**
-   * NYI: Remove, this is a hack, it is not clear what a "real" outer reference
-   * should be.  Instead, there are many outer refs, one for every inheritance
-   * call, and additional ones that have been inherited.
-   */
-  int realDepth()
-  {
-    return _realOuter.length;
   }
 
 
