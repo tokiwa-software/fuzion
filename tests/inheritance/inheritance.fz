@@ -318,6 +318,7 @@ inheritance {
         chck(i == 1, "call to y in arguments must be performed on heir instance");
       }
 
+      # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
       B ref : x, y, C, D(y) { }
     }
 
@@ -371,6 +372,7 @@ inheritance {
         chck(i == 1, "call to y in arguments must be performed on heir instance");
       }
 
+      # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
       B ref : x, y, C, D(x) { }
     }
 
@@ -441,6 +443,7 @@ inheritance {
         chck(i == 1, "call to y in arguments must be performed on heir instance");
       }
 
+      # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
       B ref : x, y, C, D(x) { }
     }
 
