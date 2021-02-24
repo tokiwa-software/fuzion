@@ -597,7 +597,7 @@ public class Clazz extends ANY implements Comparable
               }
             else
               {
-                // NYI: This branch should never be taken one rebasing above is implemented correctly.
+                // NYI: This branch should never be taken when rebasing above is implemented correctly.
                 result = inner.actualClazz(t);
               }
           }
