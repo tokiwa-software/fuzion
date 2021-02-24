@@ -530,83 +530,7 @@ public class Clazz extends ANY implements Comparable
    */
   Clazz actualResultClazz(Feature f, List<Type> generics)
   {
-    Clazz result;
-
-    var inner = lookup(f, generics, f.isUsedAt());
-    if (f.returnType.isConstructorType())
-      {
-        result = inner;
-      }
-    else
-      {
-        var t = actualType(f.resultType());
-        if (t.isFreeFromFormalGenerics() && !t.isGenericArgument())
-          {
-            /* We have this situation:
-
-               a is
-                 b is
-                   c is
-                     f t.u.v.w.x.y.z
-                 t is
-                   u is
-                     v is
-                       w is
-                         x is
-                           y is
-                             z is
-
-                p is
-                  q is
-                    r : a is
-
-                p.q.r.b.c.f
-
-               so f.depth is 4 (a.b.c.f),
-               t.featureOfType().depth() is 8 (a.t.u.v.w.x.y.z),
-               inner.depth is 6 (p.q.r.b.c.f) and
-               depthInSource is 7 (t.u.v.w.x.y.z). We have to
-               go back 3 (6-4+1) levels in inner, i.e,. p.q.r.b.c.f -> p.q.r.*,
-               and 7 levels in t (a.t.u.v.w.x.y.z -> *.t.u.v.w.x.y.z) to rebase t
-               to become p.q.r.t.u.v.w.x.y.z.
-
-               f:                       a.b.c.f
-               t:                       a.t,u.v.w.x.y.z
-               inner:                   p.q.r.b.c.f
-               depthInSource              t.u.v.w.x.y.z
-               back 3:                  p.q.r.*
-               depthInSource part of t: *.t.u.v.w.x.y.z
-               plugged together:        p.q.r.t.u.v.w.x.y.z
-
-             */
-            /* NYI: This implementation currently ignores depthInSource that could be determined via
-               ((dev.flang.ast.FunctionReturnType) f.returnType).depthInSource (more complicated when
-               type inference is used). We need proper tests for this and implement it for
-               depthInSource > 1.
-             */
-            int goBack = f.depth()-t.featureOfType().depth() + 1;
-            var innerBase = inner;
-            while (goBack > 0)
-              {
-                innerBase = innerBase._outer;
-                goBack--;
-              }
-            if (t.featureOfType().outer() == null || innerBase.feature().inheritsFrom(t.featureOfType().outer()))
-              {
-                result = Clazzes.create(t, innerBase);
-              }
-            else
-              {
-                // NYI: This branch should never be taken when rebasing above is implemented correctly.
-                result = inner.actualClazz(t);
-              }
-          }
-        else
-          {
-            result = inner.actualClazz(t);
-          }
-      }
-    return result;
+    return lookup(f, generics, f.isUsedAt()).resultClazz();
   }
 
 
@@ -1271,7 +1195,7 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
-   * Determine the clazz of the result of calling this clazz.
+   * Determine the clazz of the result of calling this clazz, cache the result.
    *
    * @return the result clazz.
    */
@@ -1279,14 +1203,92 @@ public class Clazz extends ANY implements Comparable
   {
     if (_resultClazz == null)
       {
-        var cf = feature();
-        _resultClazz =
-          cf.isUniverse()                   ? this :
-          // NYI: Cleanup: move this code to actualResultClazz()
-          cf.returnType.isConstructorType() ? this :
-          _outer.actualResultClazz(feature(), _type._generics);
+        _resultClazz = determineResultClazz();
       }
     return _resultClazz;
+  }
+
+  /**
+   * Determine the clazz of the result of calling this clazz.
+   *
+   * @return the result clazz.
+   */
+  private Clazz determineResultClazz()
+  {
+    var f = feature();
+    if (f.isUniverse() || f.returnType.isConstructorType())
+      {
+        return this;
+      }
+    else
+      {
+        var t = actualType(f.resultType());
+        if (t.isFreeFromFormalGenerics() && !t.isGenericArgument())
+          {
+            /* We have this situation:
+
+               a is
+                 b is
+                   c is
+                     f t.u.v.w.x.y.z
+                 t is
+                   u is
+                     v is
+                       w is
+                         x is
+                           y is
+                             z is
+
+                p is
+                  q is
+                    r : a is
+
+                p.q.r.b.c.f
+
+               so f.depth is 4 (a.b.c.f),
+               t.featureOfType().depth() is 8 (a.t.u.v.w.x.y.z),
+               inner.depth is 6 (p.q.r.b.c.f) and
+               depthInSource is 7 (t.u.v.w.x.y.z). We have to
+               go back 3 (6-4+1) levels in inner, i.e,. p.q.r.b.c.f -> p.q.r.*,
+               and 7 levels in t (a.t.u.v.w.x.y.z -> *.t.u.v.w.x.y.z) to rebase t
+               to become p.q.r.t.u.v.w.x.y.z.
+
+               f:                       a.b.c.f
+               t:                       a.t,u.v.w.x.y.z
+               inner:                   p.q.r.b.c.f
+               depthInSource              t.u.v.w.x.y.z
+               back 3:                  p.q.r.*
+               depthInSource part of t: *.t.u.v.w.x.y.z
+               plugged together:        p.q.r.t.u.v.w.x.y.z
+
+             */
+            /* NYI: This implementation currently ignores depthInSource that could be determined via
+               ((dev.flang.ast.FunctionReturnType) f.returnType).depthInSource (more complicated when
+               type inference is used). We need proper tests for this and implement it for
+               depthInSource > 1.
+             */
+            int goBack = f.depth()-t.featureOfType().depth() + 1;
+            var innerBase = this;
+            while (goBack > 0)
+              {
+                innerBase = innerBase._outer;
+                goBack--;
+              }
+            if (t.featureOfType().outer() == null || innerBase.feature().inheritsFrom(t.featureOfType().outer()))
+              {
+                return Clazzes.create(t, innerBase);
+              }
+            else
+              {
+                // NYI: This branch should never be taken when rebasing above is implemented correctly.
+                return actualClazz(t);
+              }
+          }
+        else
+          {
+            return actualClazz(t);
+          }
+      }
   }
 
 }

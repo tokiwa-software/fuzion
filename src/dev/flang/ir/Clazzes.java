@@ -769,6 +769,7 @@ public class Clazzes extends ANY
         var c = (Call) e;
         Feature cf = c.calledFeature();
         var tclazz = clazz(c.target, outerClazz);
+        // NYI: Move to Clazz.actualResultClazz
         if (cf == Types.f_ERROR)
           {
             result = error.get();
