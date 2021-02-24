@@ -189,7 +189,6 @@ public class Clazz extends ANY implements Comparable
       }
 
     this._type = actualType;
-    this._outer = outer;
     /* NYI: Handling of outer in Clazz is not done properly yet. There are two
      * basic cases:
      *
@@ -208,6 +207,11 @@ public class Clazz extends ANY implements Comparable
      *    clazz can be shared with all other sub-clazzes of 'stack<i32>', but
      *    not with sub-clazzes with different actual generics.
      */
+    if (outer != null && outer.isRef())
+      {
+        outer = outer.normalize(actualType.featureOfType().outer());
+      }
+    this._outer = outer;
 
     if (isChoice())
       {
@@ -218,6 +222,79 @@ public class Clazz extends ANY implements Comparable
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Normalize a reference clazz to the given feature.  For a reference clazz
+   * that inherits from f, this will return the corresponding clazz derived
+   * from f. The idea is that, e.g., we do not need to distinguish consstring.length
+   * from array<u8>.length.
+   *
+   * @param f the feature we want to normalize to (array in the example above).
+   *
+   * @return the normalized clazz.
+   */
+  private Clazz normalize(Feature f)
+  {
+    if (f == Clazzes.object.get().feature())
+      {
+        return Clazzes.object.get();
+      }
+    else if (true) // NYI: Under development: normalization for clazzes different than Object
+      {
+        return this;
+      }
+    else
+      {
+        System.out.println(""+this+".normalize("+f.qualifiedName()+"):");
+        if (feature() == f)
+          {
+            System.out.println(""+this+".normalize("+f.qualifiedName()+") is this");
+            return this;
+          }
+        else
+          {
+            for (Call p : feature().inherits)
+              {
+                var pf = p.calledFeature();
+                check
+                  (Errors.count() > 0 || pf != null);
+
+                if (pf != null)
+                  {
+                    var tclazz  = Clazzes.clazz(p.target, this);
+                    if (pf == f)
+                      {
+                        System.out.println("Found parent feature "+f.qualifiedName()+" lookup in "+tclazz+" for "+pf.qualifiedName()+" "+p.generics);
+                        if (false && tclazz._outer == null)
+                          {
+                            return Clazzes.object.get();
+                          }
+                        var pc = tclazz.lookup(pf, actualGenerics(p.generics), p.pos()).normalize(f);
+                        System.out.println(""+this+".normalize("+f.qualifiedName()+") is parent "+pc+" at "+p.pos().show());
+                        return pc;
+                      }
+                    if (false)
+                      {
+                        System.out.println("lookup in tclazz: "+tclazz+" for "+pf.qualifiedName()+" "+p.generics);
+                        var pc = tclazz.lookup(pf, p.generics, p.pos()).normalize(f);
+                        if (pc != null)
+                          {
+                            System.out.println(""+this+".normalize("+f.qualifiedName()+"): parent taget "+tclazz);
+                            var result = pc.normalize(f);
+                            if (result != null)
+                              {
+                                return result;
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+    return null;
+  }
+
 
 
   /**
