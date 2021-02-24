@@ -1258,7 +1258,8 @@ public class C extends Backend
                 for (int i = 0; i < ac; i++)
                   {
                     var af = _fuir.clazzArg(cl, i);
-                    if (af >= 0) // af < 0 for unused argument fields.
+                    var at = _fuir.clazzArgClazz(cl, i);
+                    if (at != -1 && !_fuir.clazzIsUnitType(at))
                       {
                         var target =
                           _fuir.clazzIsI32(cl) ||
