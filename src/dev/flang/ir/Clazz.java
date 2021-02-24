@@ -184,6 +184,12 @@ Hellq is
   public DynamicBinding _dynamicBinding;
 
 
+  /**
+   * Cached result of resultClazz()
+   */
+  Clazz _resultClazz = null;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -472,23 +478,106 @@ Hellq is
 
 
   /**
-   * Determine the result clazz of a given feature f
+   * Determine the result clazz of a given feature f without actual generics.
    *
    * @param f a feature in the current Clazz that returns a result like a field.
    *
    * @return the static clazz of f's result
    */
-  public Clazz actualResultClazz(Feature f)
+  Clazz actualResultClazz(Feature f)
   {
-    return
-      !f.isOuterRef() ? actualClazz(f.resultType()) :
-      feature().isOuterRefAdrOfValue()  ? actualClazz(Types.t_ADDRESS) :
-      f.outer().isOuterRefCopyOfValue() ? actualClazz(f.resultType())  :
-      f.outer() == this.feature()       ? _outer
-      : // we have an inherited outer ref.
-        //
-        // NYI: test if type of inherited outer refs is set correctly
-        actualClazz(f.resultType());
+    return actualResultClazz(f, Call.NO_GENERICS);
+  }
+
+
+  /**
+   * Determine the result clazz of a given feature f with given actual generics
+   *
+   * @param f a feature in the current Clazz that returns a result like a field.
+   *
+   * @param generics the actual generics.
+   *
+   * @return the static clazz of f's result
+   */
+  Clazz actualResultClazz(Feature f, List<Type> generics)
+  {
+    Clazz result;
+
+    var inner = lookup(f, generics, f.isUsedAt());
+    if (f.returnType.isConstructorType())
+      {
+        result = inner;
+      }
+    else
+      {
+        var t = actualType(f.resultType());
+        if (t.isFreeFromFormalGenerics() && !t.isGenericArgument())
+          {
+            /* We have this situation:
+
+               a is
+                 b is
+                   c is
+                     f t.u.v.w.x.y.z
+                 t is
+                   u is
+                     v is
+                       w is
+                         x is
+                           y is
+                             z is
+
+                p is
+                  q is
+                    r : a is
+
+                p.q.r.b.c.f
+
+               so f.depth is 4 (a.b.c.f),
+               t.featureOfType().depth() is 8 (a.t.u.v.w.x.y.z),
+               inner.depth is 6 (p.q.r.b.c.f) and
+               depthInSource is 7 (t.u.v.w.x.y.z). We have to
+               go back 3 (6-4+1) levels in inner, i.e,. p.q.r.b.c.f -> p.q.r.*,
+               and 7 levels in t (a.t.u.v.w.x.y.z -> *.t.u.v.w.x.y.z) to rebase t
+               to become p.q.r.t.u.v.w.x.y.z.
+
+               f:                       a.b.c.f
+               t:                       a.t,u.v.w.x.y.z
+               inner:                   p.q.r.b.c.f
+               depthInSource              t.u.v.w.x.y.z
+               back 3:                  p.q.r.*
+               depthInSource part of t: *.t.u.v.w.x.y.z
+               plugged together:        p.q.r.t.u.v.w.x.y.z
+
+             */
+            /* NYI: This implementation currently ignores depthInSource that could be determined via
+               ((dev.flang.ast.FunctionReturnType) f.returnType).depthInSource (more complicated when
+               type inference is used). We need proper tests for this and implement it for
+               depthInSource > 1.
+             */
+            int goBack = f.depth()-t.featureOfType().depth() + 1;
+            var innerBase = inner;
+            while (goBack > 0)
+              {
+                innerBase = innerBase._outer;
+                goBack--;
+              }
+            if (t.featureOfType().outer() == null || innerBase.feature().inheritsFrom(t.featureOfType().outer()))
+              {
+                result = Clazzes.create(t, innerBase);
+              }
+            else
+              {
+                // NYI: This branch should never be taken one rebasing above is implemented correctly.
+                result = inner.actualClazz(t);
+              }
+          }
+        else
+          {
+            result = inner.actualClazz(t);
+          }
+      }
+    return result;
   }
 
 
@@ -513,7 +602,7 @@ Hellq is
         f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
         )
       {
-        Clazz fieldClazz = actualResultClazz(f);
+        Clazz fieldClazz =  clazzForField(f);
         clazzForField_.put(f, fieldClazz);
         Type ft = fieldClazz._type;
         int fsz = 0;
@@ -674,7 +763,18 @@ Hellq is
     var result = clazzForField_.get(field);
     if (result == null)
       {
-        result = actualResultClazz(field);
+        // NYI: Cleanup: Move all this code to actualResultClazz(Feature), such that there is
+        // one central place to determine the result clazz of a feature call.
+        result =
+          (field == field.outer().resultField()) ? actualResultClazz(field) :
+          !field.isOuterRef() ? actualClazz(field.resultType()) :
+          feature().isOuterRefAdrOfValue()  ? actualClazz(Types.t_ADDRESS) :
+          field.outer().isOuterRefCopyOfValue() ? actualClazz(field.resultType())  :
+          field.outer() == this.feature()       ? _outer
+          : // we have an inherited outer ref.
+          //
+          // NYI: test if type of inherited outer refs is set correctly
+          actualClazz(field.resultType());
       }
     return result;
   }
@@ -850,30 +950,14 @@ Hellq is
   {
     var f = feature();
     new FindClassesVisitor().visitAncestors(f);
-    for (Feature ff: feature().allInnerAndInheritedFeatures())
+    for (Feature ff: f.allInnerAndInheritedFeatures())
       {
         if (Clazzes.isUsed(ff, this) &&
             this._type != Types.t_ADDRESS // NYI: would be better is isUSED would return false for ADDRESS
-            )
+            && isAddedToDynamicBinding(ff))
           {
-            Feature af = findRedefinition(ff);
-            check
-              (Errors.count() > 0 || af != null);
-            if (af != null &&
-                (af.isField() ||
-                 af.isSingleton() /* NYI: ugly, try to avoid special handling for SingleType here */)
-                )
-              {
-                if (!af.resultType().isOpenGeneric()) // NYI: why?
-                  {
-                    Clazz fieldClazz = actualResultClazz(af);
-                  }
-              }
-            if (isAddedToDynamicBinding(ff))
-              {
-                Clazzes.whenCalledDynamically(ff,
-                                              () -> { var innerClazz = lookup(ff, Call.NO_GENERICS, ff.isUsedAt()); });
-              }
+            Clazzes.whenCalledDynamically(ff,
+                                          () -> { var innerClazz = lookup(ff, Call.NO_GENERICS, ff.isUsedAt()); });
           }
       }
   }
@@ -1168,12 +1252,17 @@ Hellq is
    */
   public Clazz resultClazz()
   {
-    var cf = feature();
-    return
-      cf.isUniverse()                   ? this :
-      cf.returnType.isConstructorType() ? this :
-      cf.isField() && cf.isOuterRef()   ? _outer._outer
-                                        : actualClazz(cf.resultType());
+    if (_resultClazz == null)
+      {
+        var cf = feature();
+        _resultClazz =
+          cf.isUniverse()                   ? this :
+          // NYI: Cleanup: move this code to actualResultClazz()
+          cf.returnType.isConstructorType() ? this :
+          cf.isField() && cf.isOuterRef()   ? _outer._outer
+          : _outer.actualResultClazz(feature(), _type._generics);
+      }
+    return _resultClazz;
   }
 
 }

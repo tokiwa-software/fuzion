@@ -532,30 +532,6 @@ public class Type extends ANY implements Comparable
 
 
   /**
-   * Create a new type with the outer type at level d (counted from the
-   * innermost type) replaced by target.
-   */
-  public Type rebase(Type target, int d)
-  {
-    var result = this;
-    if (d == 0)
-      {
-        result = target;
-      }
-    else
-      {
-        var o = outer();
-        var r = o.rebase(target, d-1);
-        if (r != o)
-          {
-            result = Types.intern(new Type(this, _generics, r));
-          }
-      }
-    return result;
-  }
-
-
-  /**
    * Replace generic types used in given type t by the actual generic arguments
    * given in this.
    *

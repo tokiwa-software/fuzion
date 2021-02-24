@@ -345,6 +345,17 @@ public class Clazzes extends ANY
     _backend_ = be;
     var toLayout = new List<Clazz>();
     int clazzCount = 0;
+
+    // make sure internally referenced clazzes do exist:
+    i32.get();
+    c_TRUE.get();
+    c_FALSE.get();
+    conststring.get();
+    object.get();
+    bool.get();
+    c_unit.get();
+    create(Types.t_ADDRESS, universe.get());
+
     while (!clazzesToBeVisited.isEmpty())
       {
         clazzCount++;
@@ -355,6 +366,14 @@ public class Clazzes extends ANY
         if (!cl.feature().isField())
           {
             toLayout.add(cl);
+          }
+        // Add result clazz and result field's result clazz as well.
+        cl.resultClazz();
+        var res = cl.feature().resultField();
+        if (res != null)
+          {
+            // NYI: Check why this is needed, when is this different to cl.resultClazz()?
+            cl.actualResultClazz(res);
           }
       }
     check
@@ -731,33 +750,7 @@ public class Clazzes extends ANY
           }
         else
           {
-            var frame = tclazz.lookup(cf, outerClazz.actualGenerics(c.generics), c.pos);
-            if (cf.returnType.isConstructorType())
-              {
-                result = frame;
-              }
-            else
-              {
-                var t = cf.resultType();
-                if (cf.returnType instanceof FunctionReturnType && !t.isGenericArgument() &&
-                    ((FunctionReturnType) cf.returnType).depthInSource >= 0)
-                  {
-                    /* NYI: This attempt to rebase to the outer type of the
-                     * frame is not correct. Instead, we might have to look at
-                     * the actual clazz of the outer reference the result type
-                     * is based on and rebase against that clazz.
-                     */
-                    int td = t.featureOfType().depth() + 1;
-                    int sd = ((FunctionReturnType) cf.returnType).depthInSource;
-                    int baseLen = td - sd; // the length from universe to the innermost outer class in t that we rebase
-                    if (baseLen > 0)
-                      { // NYI: do not rebase, but directly create a class with a different outer clazz!
-                        var base = frame._realOuter[baseLen-1];
-                        t = t.rebase(base._type, sd);
-                      }
-                  }
-                result = frame.actualClazz(t);
-              }
+            result = tclazz.actualResultClazz(cf, outerClazz.actualGenerics(c.generics));
           }
       }
     else if (e instanceof Current)
