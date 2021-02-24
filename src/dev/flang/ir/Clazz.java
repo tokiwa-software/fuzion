@@ -1288,8 +1288,7 @@ public class Clazz extends ANY implements Comparable
           cf.isUniverse()                   ? this :
           // NYI: Cleanup: move this code to actualResultClazz()
           cf.returnType.isConstructorType() ? this :
-          cf.isField() && cf.isOuterRef()   ? _outer._outer
-          : _outer.actualResultClazz(feature(), _type._generics);
+          _outer.actualResultClazz(feature(), _type._generics);
       }
     return _resultClazz;
   }
