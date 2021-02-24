@@ -369,11 +369,23 @@ public class Clazzes extends ANY
           }
         // Add result clazz and result field's result clazz as well.
         cl.resultClazz();
+
+        // make sure clazzes for result field and argument fields are created.
+        // this is necessary since there might be no explicit uses of these fields,
+        // argument fields will implicitly be assigned an argument but may never be
+        // touched, and the result field will implicitly be returned.
         var res = cl.feature().resultField();
         if (res != null)
           {
             // NYI: Check why this is needed, when is this different to cl.resultClazz()?
             cl.actualResultClazz(res);
+          }
+        for (var a : cl.feature().arguments)
+          {
+            if (!a.resultType().isOpenGeneric())
+              {
+                cl.lookup(a, Call.NO_GENERICS, a.pos());
+              }
           }
       }
     check
