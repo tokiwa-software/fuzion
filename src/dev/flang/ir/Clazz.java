@@ -795,15 +795,11 @@ public class Clazz extends ANY implements Comparable
         // NYI: Cleanup: Move all this code to actualResultClazz(Feature), such that there is
         // one central place to determine the result clazz of a feature call.
         result =
-          (field == field.outer().resultField()) ? actualResultClazz(field) :
-          !field.isOuterRef() ? actualClazz(field.resultType()) :
-          feature().isOuterRefAdrOfValue()  ? actualClazz(Types.t_ADDRESS) :
-          field.outer().isOuterRefCopyOfValue() ? actualClazz(field.resultType())  :
-          field.outer() == this.feature()       ? _outer
-          : // we have an inherited outer ref.
-          //
-          // NYI: test if type of inherited outer refs is set correctly
-          actualClazz(field.resultType());
+          field == field.outer().resultField()                   ? actualResultClazz(field) :
+          field.isOuterRef() && feature().isOuterRefAdrOfValue() ? actualClazz(Types.t_ADDRESS) :
+          field.isOuterRef() && !field.outer().isOuterRefCopyOfValue()
+                             && field.outer() == this.feature()  ? _outer
+          : actualClazz(field.resultType());
       }
     return result;
   }
