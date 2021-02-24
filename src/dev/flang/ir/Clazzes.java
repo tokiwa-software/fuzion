@@ -334,6 +334,36 @@ public class Clazzes extends ANY
 
 
   /**
+   * Make sure the inner clazzes for a clazz' result field(s) are created. result
+   * fields include the results of inherited features
+   */
+  static void resultFields(Clazz cl, Feature f)
+  {
+    var res = f.resultField();
+    if (res != null)
+      {
+        cl.lookup(res, Call.NO_GENERICS, res.isUsedAt());
+      }
+
+    // NYI: This step is only needed since Fuzion allows to inherit from a function, which
+    // is at least a little strange.  This becomes fully bizarre if the called features
+    // would be redefined, we cannot allow dynamic binding in inheritance calls.
+    for (Call c: f.inherits)
+      {
+        Feature cf = c.calledFeature();
+
+        check
+          (Errors.count() > 0 || cf != null);
+
+        if (cf != null)
+          {
+            resultFields(cl, cf);
+          }
+      }
+  }
+
+
+  /**
    * As long as there are clazzes that were created via create(), call
    * findAllClasses on that clazz and layout the class.
    *
@@ -374,12 +404,7 @@ public class Clazzes extends ANY
         // this is necessary since there might be no explicit uses of these fields,
         // argument fields will implicitly be assigned an argument but may never be
         // touched, and the result field will implicitly be returned.
-        var res = cl.feature().resultField();
-        if (res != null)
-          {
-            // NYI: Check why this is needed, when is this different to cl.resultClazz()?
-            cl.actualResultClazz(res);
-          }
+        resultFields(cl, cl.feature());
         for (var a : cl.feature().arguments)
           {
             if (!a.resultType().isOpenGeneric())
