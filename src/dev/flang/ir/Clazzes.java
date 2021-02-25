@@ -736,7 +736,7 @@ public class Clazzes extends ANY
 
 
   /**
-   * Determine the outer clazz of an Expr.
+   * Determine the result clazz of an Expr.
    *
    * NYI: Temporary solution, will be replaced by dynamic calls.
    *
@@ -768,8 +768,10 @@ public class Clazzes extends ANY
       {
         var c = (Call) e;
         var tclazz = clazz(c.target, outerClazz);
-        result = tclazz.actualResultClazz(c.calledFeature(),
-                                          outerClazz.actualGenerics(c.generics));
+        var inner = tclazz.lookup(c.calledFeature(),
+                                  outerClazz.actualGenerics(c.generics),
+                                  c.pos());
+        result = inner.resultClazz();
       }
     else if (e instanceof Current)
       {

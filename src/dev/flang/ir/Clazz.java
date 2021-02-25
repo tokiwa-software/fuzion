@@ -507,21 +507,6 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
-   * Determine the result clazz of a given feature f with given actual generics
-   *
-   * @param f a feature in the current Clazz that returns a result like a field.
-   *
-   * @param generics the actual generics.
-   *
-   * @return the static clazz of f's result
-   */
-  Clazz actualResultClazz(Feature f, List<Type> generics)
-  {
-    return lookup(f, generics, f.isUsedAt()).resultClazz();
-  }
-
-
-  /**
    * placeUsedFeature assigns a location within intances of this clazz to the
    * given field f.
    *
@@ -709,13 +694,11 @@ public class Clazz extends ANY implements Comparable
     var result = clazzForField_.get(field);
     if (result == null)
       {
-        // NYI: Cleanup: Move all this code to actualResultClazz(Feature), such that there is
-        // one central place to determine the result clazz of a feature call.
         result =
           field.isOuterRef() && field.outer().isOuterRefAdrOfValue() ? actualClazz(Types.t_ADDRESS) :
           field.isOuterRef() && !field.outer().isOuterRefCopyOfValue()
                              && field.outer() == this.feature()  ||
-          field == field.outer().resultField()                       ? actualResultClazz(field, Call.NO_GENERICS)
+          field == field.outer().resultField()                       ? lookup(field, Call.NO_GENERICS, field.isUsedAt()).resultClazz()
           : actualClazz(field.resultType());
       }
     return result;
