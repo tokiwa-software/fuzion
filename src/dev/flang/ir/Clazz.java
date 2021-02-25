@@ -532,6 +532,8 @@ public class Clazz extends ANY implements Comparable
   {
     return
       f == Types.f_ERROR ? Clazzes.error.get() :
+      f.isOuterRef() && !f.outer().isOuterRefCopyOfValue()
+                     && f.outer() == this.feature()  ? _outer :
       f.isOuterRef()     ? inheritedOuterRefClazz(_outer, null, f, feature(), null)
                          : lookup(f, generics, f.isUsedAt()).resultClazz();
   }
@@ -722,10 +724,10 @@ public class Clazz extends ANY implements Comparable
         // NYI: Cleanup: Move all this code to actualResultClazz(Feature), such that there is
         // one central place to determine the result clazz of a feature call.
         result =
-          field == field.outer().resultField()                   ? actualResultClazz(field) :
-          field.isOuterRef() && feature().isOuterRefAdrOfValue() ? actualClazz(Types.t_ADDRESS) :
+          field.isOuterRef() && field.outer().isOuterRefAdrOfValue() ? actualClazz(Types.t_ADDRESS) :
           field.isOuterRef() && !field.outer().isOuterRefCopyOfValue()
-                             && field.outer() == this.feature()  ? _outer
+                             && field.outer() == this.feature()  ||
+          field == field.outer().resultField()                       ? actualResultClazz(field)
           : actualClazz(field.resultType());
       }
     return result;
