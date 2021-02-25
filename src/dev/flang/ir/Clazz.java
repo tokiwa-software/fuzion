@@ -530,9 +530,10 @@ public class Clazz extends ANY implements Comparable
    */
   Clazz actualResultClazz(Feature f, List<Type> generics)
   {
-    return f == Types.f_ERROR
-      ? Clazzes.error.get()
-      : lookup(f, generics, f.isUsedAt()).resultClazz();
+    return
+      f == Types.f_ERROR ? Clazzes.error.get() :
+      f.isOuterRef()     ? inheritedOuterRefClazz(_outer, null, f, feature(), null)
+                         : lookup(f, generics, f.isUsedAt()).resultClazz();
   }
 
 
@@ -1239,27 +1240,6 @@ public class Clazz extends ANY implements Comparable
     return result;
   }
 
-
-  /**
-   * NYI: Move code to actualResultclazz(cf, generics)
-   */
-  public Clazz resultClazz(Feature cf, List<Type> generics)
-  {
-    Clazz result;
-    if (cf.isOuterRef())
-      {
-        result = inheritedOuterRefClazz(_outer, null, cf, feature(), null);
-      }
-    else
-      {
-        result = actualResultClazz(cf, generics);
-      }
-
-    check
-      (result != null);
-
-    return result;
-  }
 
   /**
    * Determine the clazz of the result of calling this clazz, cache the result.

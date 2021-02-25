@@ -768,8 +768,8 @@ public class Clazzes extends ANY
       {
         var c = (Call) e;
         var tclazz = clazz(c.target, outerClazz);
-        result = tclazz.resultClazz(c.calledFeature(),
-                                    outerClazz.actualGenerics(c.generics));
+        result = tclazz.actualResultClazz(c.calledFeature(),
+                                          outerClazz.actualGenerics(c.generics));
       }
     else if (e instanceof Current)
       {
