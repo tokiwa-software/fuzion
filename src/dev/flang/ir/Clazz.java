@@ -661,29 +661,35 @@ public class Clazz extends ANY implements Comparable
   public Clazz lookup(Feature f, List<Type> actualGenerics, SourcePosition p)
   {
     Feature af = findRedefinition(f);
-
-    check
-      (Errors.count() > 0 || af != null);
-
     Clazz innerClazz = null;
-    if (af != null)
+    if (f == Types.f_ERROR)
       {
-        if (af.impl == Impl.ABSTRACT)
-          {
-            if (abstractCalled_ == null)
-              {
-                abstractCalled_ = new TreeSet<>();
-              }
-            abstractCalled_.add(af);
-          }
-
-        Type t = af.thisType().actualType(af, actualGenerics);
-        t = actualType(t);
-        innerClazz = Clazzes.clazzWithSpecificOuter(t, this);
-        innerClazz.isInstantiated_ = true;
-        innerClazz.instantiationPos_ = p;
+        innerClazz = Clazzes.error.get();
+      }
+    else
+      {
         check
-          (innerClazz._type.featureOfType() == af);
+          (Errors.count() > 0 || af != null);
+
+        if (af != null)
+          {
+            if (af.impl == Impl.ABSTRACT)
+              {
+                if (abstractCalled_ == null)
+                  {
+                    abstractCalled_ = new TreeSet<>();
+                  }
+                abstractCalled_.add(af);
+              }
+
+            Type t = af.thisType().actualType(af, actualGenerics);
+            t = actualType(t);
+            innerClazz = Clazzes.clazzWithSpecificOuter(t, this);
+            innerClazz.isInstantiated_ = true;
+            innerClazz.instantiationPos_ = p;
+            check
+              (innerClazz._type.featureOfType() == af);
+          }
       }
 
     if (POSTCONDITIONS) ensure
