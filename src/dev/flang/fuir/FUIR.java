@@ -329,10 +329,18 @@ public class FUIR extends ANY
     // NYI: This does not handle open generic args such as in Function.call yet.
     var c = _clazzIds.get(cl);
     var a = c.feature().arguments.get(arg);
-    var rc = c.actualClazz(a.resultType()); // NYI: remove, arg clazz should
+    Clazz rc;
+    if (true) // NYI: replace by lookup shown below, avoid actualClazz that may create new clazzes
+      {
+        rc = c.actualClazz(a.resultType()); // NYI: remove, arg clazz should
                                             // have been determined during
                                             // Clazzes.findAllClazzes and stored
                                             // with c
+      }
+    else
+      {
+        rc = c.lookup(a, Call.NO_GENERICS, a.isUsedAt()).resultClazz();
+      }
     return _clazzIds.get(rc);
   }
 
