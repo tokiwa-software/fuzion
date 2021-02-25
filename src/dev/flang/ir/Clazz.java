@@ -1265,9 +1265,14 @@ public class Clazz extends ANY implements Comparable
   private Clazz determineResultClazz()
   {
     var f = feature();
+
     if (f.isUniverse() || f.returnType.isConstructorType())
       {
         return this;
+      }
+    else if (f.isOuterRef())
+      {
+        return _outer._outer;
       }
     else
       {
