@@ -517,12 +517,7 @@ public class Clazz extends ANY implements Comparable
    */
   Clazz actualResultClazz(Feature f, List<Type> generics)
   {
-    var inner = lookup(f, generics, f.isUsedAt());
-    return
-      f == Types.f_ERROR ? Clazzes.error.get() :
-      f.isOuterRef() && !f.outer().isOuterRefCopyOfValue()
-                     && f.outer() == this.feature()  ? _outer
-                         : inner.resultClazz();
+    return lookup(f, generics, f.isUsedAt()).resultClazz();
   }
 
 
