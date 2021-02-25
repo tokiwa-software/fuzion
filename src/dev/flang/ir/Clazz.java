@@ -530,7 +530,9 @@ public class Clazz extends ANY implements Comparable
    */
   Clazz actualResultClazz(Feature f, List<Type> generics)
   {
-    return lookup(f, generics, f.isUsedAt()).resultClazz();
+    return f == Types.f_ERROR
+      ? Clazzes.error.get()
+      : lookup(f, generics, f.isUsedAt()).resultClazz();
   }
 
 
@@ -1209,19 +1211,30 @@ public class Clazz extends ANY implements Comparable
    *
    * @return the static clazz of this call to an outer ref cf.
    */
-  private Clazz inheritedOuterRefClazz(Feature cf, Feature f, Clazz result)
+  private Clazz inheritedOuterRefClazz(Clazz outer, Expr target, Feature cf, Feature f, Clazz result)
   {
-    for (Call p : f.inherits)
-      {
-        if (p.calledFeature().outerRefOrNull() == cf)
-          { // an inherited outer ref referring to the target of the inherits call
-            Clazz found = Clazzes.clazz(p.target, this);
-            check
-              (result == null || result == found);
+    if (PRECONDITIONS) require
+      ((outer != null) != (target != null));
 
-            result = found;
+    if (f.outerRefOrNull() == cf)
+      { // a "normal" outer ref for the outer clazz surrounding this instance or
+        // (if in recursion) an inherited outer ref referring to the target of
+        // the inherits call
+        if (outer == null)
+          {
+            outer = Clazzes.clazz(target, this);
           }
-        result = inheritedOuterRefClazz(cf, p.calledFeature(), result);
+        check
+          (result == null || result == outer);
+
+        result = outer;
+      }
+    else
+      {
+        for (Call p : f.inherits)
+          {
+            result = inheritedOuterRefClazz(null, p.target, cf, p.calledFeature(), result);
+          }
       }
     return result;
   }
@@ -1233,21 +1246,9 @@ public class Clazz extends ANY implements Comparable
   public Clazz resultClazz(Feature cf, List<Type> generics)
   {
     Clazz result;
-    if (cf == Types.f_ERROR)
+    if (cf.isOuterRef())
       {
-        result = Clazzes.error.get();
-      }
-    else if (cf.isOuterRef())
-      {
-        Feature f = feature();
-        if (f.outerRefOrNull() == cf)
-          { // a "normal" outer ref for the outer clazz surrounding this instance
-            result = _outer;
-          }
-        else
-          {
-            result = inheritedOuterRefClazz(cf, f, null);
-          }
+        result = inheritedOuterRefClazz(_outer, null, cf, feature(), null);
       }
     else
       {
