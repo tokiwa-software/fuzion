@@ -517,12 +517,12 @@ public class Clazz extends ANY implements Comparable
    */
   Clazz actualResultClazz(Feature f, List<Type> generics)
   {
+    var inner = lookup(f, generics, f.isUsedAt());
     return
       f == Types.f_ERROR ? Clazzes.error.get() :
       f.isOuterRef() && !f.outer().isOuterRefCopyOfValue()
-                     && f.outer() == this.feature()  ? _outer :
-      f.isOuterRef()     ? inheritedOuterRefClazz(_outer, null, f, feature(), null)
-                         : lookup(f, generics, f.isUsedAt()).resultClazz();
+                     && f.outer() == this.feature()  ? _outer
+                         : inner.resultClazz();
   }
 
 
@@ -1259,7 +1259,7 @@ public class Clazz extends ANY implements Comparable
       }
     else if (f.isOuterRef())
       {
-        return _outer._outer;
+        return _outer.inheritedOuterRefClazz(_outer._outer, null, f, _outer.feature(), null);
       }
     else
       {
