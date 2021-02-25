@@ -767,29 +767,9 @@ public class Clazzes extends ANY
     else if (e instanceof Call)
       {
         var c = (Call) e;
-        Feature cf = c.calledFeature();
         var tclazz = clazz(c.target, outerClazz);
-        // NYI: Move to Clazz.actualResultClazz
-        if (cf == Types.f_ERROR)
-          {
-            result = error.get();
-          }
-        else if (cf.isOuterRef())
-          {
-            Feature f = tclazz.feature();
-            if (f.outerRefOrNull() == cf)
-              { // a "normal" outer ref for the outer clazz surrounding this instance
-                result = tclazz._outer;
-              }
-            else
-              {
-                result = inheritedOuterRefClazz(c, f, tclazz, null);
-              }
-          }
-        else
-          {
-            result = tclazz.actualResultClazz(cf, outerClazz.actualGenerics(c.generics));
-          }
+        result = tclazz.resultClazz(c.calledFeature(),
+                                    outerClazz.actualGenerics(c.generics));
       }
     else if (e instanceof Current)
       {
@@ -853,39 +833,6 @@ public class Clazzes extends ANY
     if (POSTCONDITIONS) ensure
       (result != null);
 
-    return result;
-  }
-
-
-  /**
-   * Recursive helper function for clazz to find the clazz for an outer ref from
-   * an inherited feature.
-   *
-   * @param f the feature of the target of the inheritance call
-   *
-   * @param tclazz the target clazz of the inheritance call
-   *
-   * @param result must be null on the first call. This is used during recursive
-   * traversal to check that all results are equal in case several results are
-   * found.
-   *
-   * @return the static clazz of this call to an outer ref.
-   */
-  private static Clazz inheritedOuterRefClazz(Call thiz, Feature f, Clazz tclazz, Clazz result)
-  {
-    Feature cf = thiz.calledFeature();
-    for (Call p : f.inherits)
-      {
-        if (p.calledFeature().outerRefOrNull() == cf)
-          { // an inherited outer ref referring to the target of the inherits call
-            Clazz found = clazz(p.target, tclazz);
-            check
-              (result == null || result == found);
-
-            result = found;
-          }
-        result = inheritedOuterRefClazz(thiz, p.calledFeature(), tclazz, result);
-      }
     return result;
   }
 

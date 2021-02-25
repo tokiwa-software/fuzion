@@ -1194,6 +1194,72 @@ public class Clazz extends ANY implements Comparable
   }
 
 
+
+  /**
+   * Recursive helper function for to find the clazz for an outer ref from
+   * an inherited feature.
+   *
+   * @param cf the feature corresponding to the outer reference
+   *
+   * @param f the feature of the target of the inheritance call
+   *
+   * @param result must be null on the first call. This is used during recursive
+   * traversal to check that all results are equal in case several results are
+   * found.
+   *
+   * @return the static clazz of this call to an outer ref cf.
+   */
+  private Clazz inheritedOuterRefClazz(Feature cf, Feature f, Clazz result)
+  {
+    for (Call p : f.inherits)
+      {
+        if (p.calledFeature().outerRefOrNull() == cf)
+          { // an inherited outer ref referring to the target of the inherits call
+            Clazz found = Clazzes.clazz(p.target, this);
+            check
+              (result == null || result == found);
+
+            result = found;
+          }
+        result = inheritedOuterRefClazz(cf, p.calledFeature(), result);
+      }
+    return result;
+  }
+
+
+  /**
+   * NYI: Move code to actualResultclazz(cf, generics)
+   */
+  public Clazz resultClazz(Feature cf, List<Type> generics)
+  {
+    Clazz result;
+    if (cf == Types.f_ERROR)
+      {
+        result = Clazzes.error.get();
+      }
+    else if (cf.isOuterRef())
+      {
+        Feature f = feature();
+        if (f.outerRefOrNull() == cf)
+          { // a "normal" outer ref for the outer clazz surrounding this instance
+            result = _outer;
+          }
+        else
+          {
+            result = inheritedOuterRefClazz(cf, f, null);
+          }
+      }
+    else
+      {
+        result = actualResultClazz(cf, generics);
+      }
+
+    check
+      (result != null);
+
+    return result;
+  }
+
   /**
    * Determine the clazz of the result of calling this clazz, cache the result.
    *
