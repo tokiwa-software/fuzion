@@ -695,11 +695,10 @@ public class Clazz extends ANY implements Comparable
     if (result == null)
       {
         result =
-          field.isOuterRef() && field.outer().isOuterRefAdrOfValue() ? actualClazz(Types.t_ADDRESS) :
-          field.isOuterRef() && !field.outer().isOuterRefCopyOfValue()
-                             && field.outer() == this.feature()  ||
-          field == field.outer().resultField()                       ? lookup(field, Call.NO_GENERICS, field.isUsedAt()).resultClazz()
-          : actualClazz(field.resultType());
+          field.isOuterRef() && field.outer().isOuterRefAdrOfValue()     ? actualClazz(Types.t_ADDRESS) :
+          field.isOuterRef() && field.outer().isOuterRefCopyOfValue() ||
+          !field.isOuterRef() && field != field.outer().resultField()    ? actualClazz(field.resultType())
+                                                                         : lookup(field, Call.NO_GENERICS, field.isUsedAt()).resultClazz();
       }
     return result;
   }
