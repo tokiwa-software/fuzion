@@ -507,19 +507,6 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
-   * Determine the result clazz of a given feature f without actual generics.
-   *
-   * @param f a feature in the current Clazz that returns a result like a field.
-   *
-   * @return the static clazz of f's result
-   */
-  Clazz actualResultClazz(Feature f)
-  {
-    return actualResultClazz(f, Call.NO_GENERICS);
-  }
-
-
-  /**
    * Determine the result clazz of a given feature f with given actual generics
    *
    * @param f a feature in the current Clazz that returns a result like a field.
@@ -727,7 +714,7 @@ public class Clazz extends ANY implements Comparable
           field.isOuterRef() && field.outer().isOuterRefAdrOfValue() ? actualClazz(Types.t_ADDRESS) :
           field.isOuterRef() && !field.outer().isOuterRefCopyOfValue()
                              && field.outer() == this.feature()  ||
-          field == field.outer().resultField()                       ? actualResultClazz(field)
+          field == field.outer().resultField()                       ? actualResultClazz(field, Call.NO_GENERICS)
           : actualClazz(field.resultType());
       }
     return result;
