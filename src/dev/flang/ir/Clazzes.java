@@ -340,12 +340,6 @@ public class Clazzes extends ANY
    */
   static void resultFields(Clazz cl, Feature f)
   {
-    var res = f.resultField();
-    if (res != null)
-      {
-        cl.lookup(res, Call.NO_GENERICS, res.isUsedAt());
-      }
-
     // NYI: This step is only needed since Fuzion allows to inherit from a function, which
     // is at least a little strange.  This becomes fully bizarre if the called features
     // would be redefined, we cannot allow dynamic binding in inheritance calls.
@@ -398,21 +392,11 @@ public class Clazzes extends ANY
           {
             toLayout.add(cl);
           }
-        // Add result clazz and result field's result clazz as well.
-        cl.resultClazz();
-
         // make sure clazzes for result field and argument fields are created.
         // this is necessary since there might be no explicit uses of these fields,
         // argument fields will implicitly be assigned an argument but may never be
         // touched, and the result field will implicitly be returned.
         resultFields(cl, cl.feature());
-        for (var a : cl.feature().arguments)
-          {
-            if (!a.resultType().isOpenGeneric())
-              {
-                cl.lookup(a, Call.NO_GENERICS, a.pos());
-              }
-          }
       }
     check
       (clazzesToBeVisited.size() == 0);
