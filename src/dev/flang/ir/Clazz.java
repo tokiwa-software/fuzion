@@ -170,6 +170,14 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
+   * The argument fields of this routine.
+   *
+   * This is initialized after Clazz creation by dependencies().
+   */
+  Clazz[] _argumentFields;
+
+
+  /**
    * If this clazz contains a direct outer ref field, this is the direct outer
    * ref. null otherwise.
    *
@@ -251,6 +259,7 @@ public class Clazz extends ANY implements Comparable
   {
     _resultClazz = determineResultClazz();
     _resultField = determineResultField();
+    _argumentFields = determineArgumentFields();
     _outerRef = determineOuterRef();
   }
 
@@ -1367,6 +1376,48 @@ public class Clazz extends ANY implements Comparable
     return r == null
       ? null
       : lookup(r, Call.NO_GENERICS, r.isUsedAt());
+  }
+
+
+  /**
+   * Get the argument fields of this routine
+   *
+   * @return the argument fields.
+   */
+  public Clazz[] argumentFields()
+  {
+    return _argumentFields;
+  }
+
+
+  /**
+   * Determine the argument fields of this routine.
+   *
+   * @return the argument fields array or null if this is not a routine.
+   */
+  public Clazz[] determineArgumentFields()
+  {
+    Clazz[] result = null;
+    var f = feature();
+    switch (f.impl.kind_)
+      {
+      case Routine    :
+      case RoutineDef :
+        {
+          var n = f.arguments.size();
+          result = new Clazz[n];
+          for (var i = 0; i < n; i++)
+            {
+              var a = f.arguments.get(i);
+              if (Clazzes.isUsed(a, this) && !a.resultType().isOpenGeneric())
+                {
+                  result[i] = lookup(a, Call.NO_GENERICS, a.isUsedAt());
+                }
+            }
+          break;
+        }
+      }
+    return result;
   }
 
 

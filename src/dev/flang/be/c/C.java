@@ -1261,7 +1261,7 @@ public class C extends Backend
                           _fuir.clazzIsU32(cl)||
                           _fuir.clazzIsU64(cl)
                           ? CURRENT.deref()
-                          : CURRENT.deref().field(fieldNameInClazz(cl, af));
+                          : CURRENT.deref().field(fieldNameInClazz(cl, _fuir.clazzToField(af)));
                         _c.print(target.assign(CExpr.ident("arg" + i)));
                       }
                   }
