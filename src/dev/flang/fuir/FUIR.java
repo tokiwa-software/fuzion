@@ -571,20 +571,18 @@ public class FUIR extends ANY
 
 
   /**
-   * Get the id of the result field of a given feature.
+   * Get the id of the result field of a given clazz.
    *
    * @param cl a clazz id
    *
-   * @return feature id of cl's result field or -1 if f has no result field or a
-   * result field that contains no data
+   * @return id of cl's result field or -1 if f has no result field (NYI: or a
+   * result field that contains no data)
    */
   public int clazzResultField(int cl)
   {
-    var ff = _clazzIds.get(cl).feature();
-    var r = ff.resultField();
-    return r == null // NYI: should also check if result type if void or empty
-      ? -1
-      : _featureIds.add(r);
+    var cc = _clazzIds.get(cl);
+    var rf = cc.resultField();
+    return rf == null ? -1 : _clazzIds.get(rf);
   }
 
 

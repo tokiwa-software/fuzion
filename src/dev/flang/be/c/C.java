@@ -1286,7 +1286,7 @@ public class C extends Backend
                     var rf = _fuir.clazzResultField(cl);
                     if (rf != -1)
                       {
-                        _c.println("return " + CURRENT.deref().field(fieldNameInClazz(cl, rf)).code() + ";");
+                        _c.println("return " + CURRENT.deref().field(fieldNameInClazz(cl, _fuir.clazzToField(rf))).code() + ";");
                       }
                     else
                       {

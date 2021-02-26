@@ -158,7 +158,15 @@ public class Clazz extends ANY implements Comparable
    *
    * This is initialized after Clazz creation by dependencies().
    */
-  Clazz _resultClazz = null;
+  Clazz _resultClazz;
+
+
+  /**
+   * The result field of this routine if it exists.
+   *
+   * This is initialized after Clazz creation by dependencies().
+   */
+  Clazz _resultField;
 
 
   /**
@@ -242,6 +250,7 @@ public class Clazz extends ANY implements Comparable
   void dependencies()
   {
     _resultClazz = determineResultClazz();
+    _resultField = determineResultField();
     _outerRef = determineOuterRef();
   }
 
@@ -1332,6 +1341,32 @@ public class Clazz extends ANY implements Comparable
             return actualClazz(t);
           }
       }
+  }
+
+
+  /**
+   * Get the result field of this routine if it exists.
+   *
+   * @return the result field or null.
+   */
+  public Clazz resultField()
+  {
+    return _resultField;
+  }
+
+
+  /**
+   * Determine the result field of this routine if it exists.
+   *
+   * @return the result field or null.
+   */
+  public Clazz determineResultField()
+  {
+    var f = feature();
+    var r = f.resultField();
+    return r == null
+      ? null
+      : lookup(r, Call.NO_GENERICS, r.isUsedAt());
   }
 
 
