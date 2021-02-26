@@ -866,11 +866,8 @@ public class FUIR extends ANY
 
     var outerClazz = _clazzIds.get(cl);
     var a = (Assign) _codeIds.get(c).get(ix);
-    var f = a.assignedField;
-    var ocl = (Clazz) outerClazz.getRuntimeData(a.tid_);
-    return Clazzes.isUsed(f, ocl)
-      ? _featureIds.add(a.assignedField)
-      : -1;
+    var fc = (Clazz) outerClazz.getRuntimeData(a.tid_ + 2);
+    return _clazzIds.get(fc);
   }
 
   public int assignOuterClazz(int cl, int c, int ix)

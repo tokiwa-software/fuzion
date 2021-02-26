@@ -588,7 +588,7 @@ public class Clazzes extends ANY
       {
         if (a.tid_ < 0)
           {
-            a.tid_ = outerClazz.feature().getRuntimeClazzIds(2);
+            a.tid_ = outerClazz.feature().getRuntimeClazzIds(3);
           }
 
         Clazz sClazz = clazz(a.getOuter, outerClazz);
@@ -598,6 +598,8 @@ public class Clazzes extends ANY
             Clazz vc = clazz(a.value, outerClazz);
             outerClazz.setRuntimeClazz(a.tid_ + 1, vc);
           }
+        var fc = sClazz.lookup(a.assignedField, Call.NO_GENERICS, a.pos());
+        outerClazz.setRuntimeClazz(a.tid_ + 2, fc);
       }
   }
 
