@@ -539,7 +539,7 @@ public class Clazz extends ANY implements Comparable
                 placeUsedField(choiceTag().feature());
               }
           }
-        else
+        else if (feature().impl.kind_ != Impl.Kind.Intrinsic)
           {
             for (var f: feature().allInnerAndInheritedFeatures())
               {
