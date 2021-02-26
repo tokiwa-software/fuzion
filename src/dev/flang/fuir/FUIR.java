@@ -238,7 +238,7 @@ public class FUIR extends ANY
 
     var cc = _clazzIds.get(cl);
     var fc = cc.fields()[i];
-    return _featureIds.get(fc.feature());
+    return _clazzIds.get(fc);
   }
 
 

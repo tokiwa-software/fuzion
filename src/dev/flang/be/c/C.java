@@ -660,7 +660,7 @@ public class C extends Backend
                       String type = fcl == -3 // outer ref
                         ? clazzTypeNameOuterField(_fuir.clazzOuterClazz(cl))
                         : clazzTypeName(fcl);
-                      _c.print(" " + type + " " + fieldName2(i, cf) + ";\n");
+                      _c.print(" " + type + " " + fieldName2(i, _fuir.clazzToField(cf)) + ";\n");
                     }
                   _c.print
                     ("};\n\n");
