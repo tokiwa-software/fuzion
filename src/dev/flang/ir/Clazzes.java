@@ -368,12 +368,21 @@ public class Clazzes extends ANY
           {
             toLayout.add(cl);
           }
-      }
-    check
-      (clazzesToBeVisited.size() == 0);
-    for (var cl : toLayout)
-      {
-        cl.layoutAndHandleCycle();
+
+        while (clazzesToBeVisited.isEmpty() && !toLayout.isEmpty())
+          {
+            toLayout.removeFirst().layoutAndHandleCycle();
+            /* NYI: There are very few fields for which layout() causes the
+             * creation of new clazzes. Examples are some inherited outer refs
+             * and i32.val in case there is a user defined feature inheriting
+             * from i32.  We might want to make sure that these are also
+             * found before the layout phase.
+             */
+            if (!clazzesToBeVisited.isEmpty() && _options_.verbose(1))
+              {
+                Errors.warning("New clazz created during layout phase: "+clazzesToBeVisited.get(0));
+              }
+          }
       }
     check
       (clazzesToBeVisited.size() == 0);
