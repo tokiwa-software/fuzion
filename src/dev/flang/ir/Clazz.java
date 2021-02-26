@@ -186,6 +186,15 @@ public class Clazz extends ANY implements Comparable
   Clazz _outerRef;
 
 
+  /**
+   * If this clazz is a choice clazz that requires a tag, this is the tag.  null
+   * otherwise.
+   *
+   * This is initialized after Clazz creation by dependencies().
+   */
+  Clazz _choiceTag;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -261,6 +270,7 @@ public class Clazz extends ANY implements Comparable
     _resultField = determineResultField();
     _argumentFields = determineArgumentFields();
     _outerRef = determineOuterRef();
+    _choiceTag = determineChoiceTag();
   }
 
 
@@ -524,9 +534,9 @@ public class Clazz extends ANY implements Comparable
             choiceValsOffset_ = this._size;
             choiceValsSize_ = maxSz;
             this._size += maxSz;
-            if (!isChoiceOfOnlyRefs())
+            if (choiceTag() != null)
               {
-                placeUsedField(feature().choiceTag_);
+                placeUsedField(choiceTag().feature());
               }
           }
         else
@@ -1462,6 +1472,34 @@ public class Clazz extends ANY implements Comparable
     return result;
   }
 
+
+  /**
+   * If this clazz is a choice clazz that requires a tag, this will return the
+   * tag.  null otherwise.
+   */
+  public Clazz choiceTag()
+  {
+    return _choiceTag;
+  }
+
+
+  /**
+   * If this is a choice clazz that requires a tag, determine the clazz of this
+   * tag field.
+   *
+   * @return the tag field, or null if this is not a choice or this is a choice
+   * that does not need a tag.
+   */
+  private Clazz determineChoiceTag()
+  {
+    Clazz result = null;
+    if (isChoice() && !isChoiceOfOnlyRefs())
+      {
+        var f = feature();
+        result = lookup(f.choiceTag_, Call.NO_GENERICS, f.pos());
+      }
+    return result;
+  }
 
 }
 
