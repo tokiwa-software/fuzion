@@ -322,7 +322,7 @@ public class Clazzes extends ANY
                     Thread.dumpStack();
                   }
               }
-            result.resultClazz();
+            result.dependencies();
           }
       }
 

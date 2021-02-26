@@ -154,7 +154,9 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
-   * Cached result of resultClazz()
+   * The type of the result of calling thiz clazz.
+   *
+   * This is initialized after Clazz creation by dependencies().
    */
   Clazz _resultClazz = null;
 
@@ -222,6 +224,16 @@ public class Clazz extends ANY implements Comparable
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Create all the clazzes that this clazz depends on such as result type,
+   * inner fields, etc.
+   */
+  void dependencies()
+  {
+    _resultClazz = determineResultClazz();
+  }
 
 
   /**
@@ -1170,7 +1182,6 @@ public class Clazz extends ANY implements Comparable
   }
 
 
-
   /**
    * Recursive helper function for to find the clazz for an outer ref from
    * an inherited feature.
@@ -1221,12 +1232,9 @@ public class Clazz extends ANY implements Comparable
    */
   public Clazz resultClazz()
   {
-    if (_resultClazz == null)
-      {
-        _resultClazz = determineResultClazz();
-      }
     return _resultClazz;
   }
+
 
   /**
    * Determine the clazz of the result of calling this clazz.
