@@ -583,8 +583,10 @@ public class Clazz extends ANY implements Comparable
         f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
         )
       {
-        Clazz fieldClazz =  clazzForField(f);
-        clazzForField_.put(f, fieldClazz);
+        var fc = lookup(f, Call.NO_GENERICS, f.isUsedAt());
+        var fieldClazz = clazzForField(f);
+        check
+          (fc.fieldClazz() == fieldClazz);
         Type ft = fieldClazz._type;
         int fsz = 0;
         if        (ft.isRef() || f.isSingleton()) { fsz = 1;
@@ -738,6 +740,8 @@ public class Clazz extends ANY implements Comparable
   /**
    * Get the runtime clazz of a field in this clazz.
    *
+   * NYI: try to remove
+   *
    * @param field a field
    */
   public Clazz clazzForField(Feature field)
@@ -756,8 +760,30 @@ public class Clazz extends ANY implements Comparable
           !field.isOuterRef() && field != field.outer().resultField() // NYI: use lookup/resultClazz for all fields
                                                                          ? actualClazz(field.resultType())
                                                                          : lookup(field, Call.NO_GENERICS, field.isUsedAt()).resultClazz();
+        clazzForField_.put(field, result);
       }
     return result;
+  }
+
+
+  /**
+   * Special handling for field results clazzes that differ for some outer ref
+   * fields.
+   *
+   * NYI: Try to remove this special handling.
+   */
+  public Clazz fieldClazz()
+  {
+    if (PRECONDITIONS) require
+      (feature().isField());
+
+    var field = feature();
+
+    return
+      field.isOuterRef() && field.outer().isOuterRefAdrOfValue()  ? actualClazz(Types.t_ADDRESS) :
+      field.isOuterRef() && field.outer().isOuterRefCopyOfValue() ||
+      !field.isOuterRef() && field != field.outer().resultField() ? actualClazz(field.resultType())
+                                                                  : resultClazz();
   }
 
 
