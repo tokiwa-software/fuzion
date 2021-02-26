@@ -534,7 +534,7 @@ public class C extends Backend
    */
   String fieldNameInClazz(int cl, int field)
   {
-    int offset = _fuir.clazzFieldOffset(cl, field);
+    int offset = _fuir.clazzFieldIndex(cl, field);
     return fieldName2(offset, field);
   }
 
@@ -637,11 +637,10 @@ public class C extends Backend
               else
                 {
                   // first, make sure structs used for inner fields are declared:
-                  for (int i = 0; i < _fuir.clazzSize(cl); i++)
+                  for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
                     {
-                      var fcl = _fuir.clazzFieldSlotClazz(cl, i);
-                      if (fcl != -1 /* no field at this slot, NYI: this should have been removed by FUIR */ &&
-                          fcl != -2 /* void field,            NYI: this should have been removed by FUIR */ &&
+                      var fcl = _fuir.clazzFieldClazz(cl, i);
+                      if (fcl != -2 /* void field,            NYI: this should have been removed by FUIR */ &&
                           fcl != -3 /* outer ref,             NYI: this should have been removed by FUIR */ &&
                           !_fuir.clazzIsRef(fcl))
                         {
@@ -654,21 +653,14 @@ public class C extends Backend
                     ("// for " + _fuir.clazzAsString(cl) + "\n" +
                      "struct " + _structNames.get(cl) + " {\n" +
                      (_fuir.clazzIsRef(cl) ? "  uint32_t clazzId;\n" : ""));
-                  for (int i = 0; i < _fuir.clazzSize(cl); i++)
+                  for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
                     {
-                      var fcl = _fuir.clazzFieldSlotClazz(cl, i);  // NYI: Slots are an interpreter artifact, should just iterate the fields instead
-                      if (fcl == -1)
-                        {
-                          _c.print(" /* slot " + i + " not used */\n");
-                        }
-                      else
-                        {
-                          var cf = _fuir.clazzField(cl, i);
-                          String type = fcl == -3 // outer ref
-                            ? clazzTypeNameOuterField(_fuir.clazzOuterClazz(cl))
-                            : clazzTypeName(fcl);
-                          _c.print(" " + type + " " + fieldName2(i, cf) + ";\n");
-                        }
+                      var fcl = _fuir.clazzFieldClazz(cl, i);  // NYI: Slots are an interpreter artifact, should just iterate the fields instead
+                      var cf = _fuir.clazzField(cl, i);
+                      String type = fcl == -3 // outer ref
+                        ? clazzTypeNameOuterField(_fuir.clazzOuterClazz(cl))
+                        : clazzTypeName(fcl);
+                      _c.print(" " + type + " " + fieldName2(i, cf) + ";\n");
                     }
                   _c.print
                     ("};\n\n");

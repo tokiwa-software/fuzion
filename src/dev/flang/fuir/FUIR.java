@@ -185,77 +185,60 @@ public class FUIR extends ANY
     return _clazzIds.get(_main);
   }
 
-  public int clazzSize(int cl)
+  public int clazzNumFields(int cl)
   {
-    return _clazzIds.get(cl).size();
+    var f = _clazzIds.get(cl).fields();
+    return f == null ? -1 : f.length;
   }
 
 
   /**
    * Return the clazz of the field at given slot
    *
-   * NYI: slots are an artifact from the interpreter, should not appear in the IR
-   *
    * @param cl a clazz id
    *
-   * @param i a slot index in cl
+   * @param i the field number
    *
-   * @return the clazz id or -1 if no field at this slot or -3 if field type is ADDRESS
+   * @return the clazz id of field #i, -3 if field type is ADDRESS
    */
-  public int clazzFieldSlotClazz(int cl, int i)
+  public int clazzFieldClazz(int cl, int i)
   {
     if (PRECONDITIONS)
       require
-        (i >= 0 && i < clazzSize(cl));
+        (i >= 0 && i < clazzNumFields(cl));
 
     var cc = _clazzIds.get(cl);
-    for (var e : cc.offsetForField_.entrySet())
+    var fc = cc.fields()[i];
+    Clazz fcl = fc.fieldClazz();
+    if (fcl._type == Types.t_ADDRESS)  // NYI: would be better to not create this dummy clazz in the first place
       {
-        if (e.getValue() == i)
-          {
-            var f = e.getKey();
-            Clazz fcl = cc.clazzForField(f);
-            if (fcl._type == Types.t_ADDRESS)  // NYI: would be better to not create this dummy clazz in the first place
-              {
-                return -3;
-              }
-            else
-              {
-                return _clazzIds.get(fcl);
-              }
-          }
+        return -3;
       }
-    return -1;
+    else
+      {
+        return _clazzIds.get(fcl);
+      }
   }
 
 
   /**
-   * Return the field at slot i in the given clazz
-   *
-   * NYI: slots are an artifact from the interpreter, should not appear in the IR
+   * Return the field #i in the given clazz
    *
    * @param cl a clazz id
    *
-   * @param i a slot index in cl
+   * @param i the field number
    *
-   * @return the feature id or -1 if no field at this slot
+   * @return the feature id
    */
   public int clazzField(int cl, int i)
   {
     if (PRECONDITIONS)
       require
-        (i >= 0 && i < clazzSize(cl));
+        (i >= 0 && i < clazzNumFields(cl));
 
     var cc = _clazzIds.get(cl);
-    for (var e : cc.offsetForField_.entrySet())
-      {
-        if (e.getValue() == i)
-          {
-            var f = e.getKey();
-            return _featureIds.add(f);
-          }
-      }
-    return -1;
+    var fc = cc.fields()[i];
+    return _featureIds.get(fc.feature());
   }
 
 
@@ -363,20 +346,24 @@ public class FUIR extends ANY
 
 
   /**
-   * Get the offset of a field in an instance of given clazz.
+   * Get the index of a field in an instance of given clazz.
    *
    * @param cl a clazz id
    *
    * @param f a feature id of a field in cl
    *
-   * @return the offset of f in an instance of cl
+   * @return the index of f in an instance of cl
    */
-  public int clazzFieldOffset(int cl, int f)
+  public int clazzFieldIndex(int cl, int f)
   {
     var c = _clazzIds.get(cl);
     var ff = _featureIds.get(f);
-    var off = c.offsetForField_.get(ff);
-    return off;  // implicit unboxing, NullPointer in case field not found!
+    var fs = c.fields();
+    int i;
+    for (i = 0; fs[i].feature() != ff; i++)
+      {
+      }
+    return i;
   }
 
 
@@ -1071,13 +1058,12 @@ public class FUIR extends ANY
     var call = (Call) _codeIds.get(c).get(ix);
     var outerClazz = _clazzIds.get(cl);
     var f = call.calledFeature();
-    var off = outerClazz.offsetForField_.get(f);
-    if (off == null)
+    var fs = outerClazz.fields();
+    int i;
+    for (i = 0; fs[i].feature() != f; i++)
       {
-        System.err.println("for call "+call+" at "+call.pos.show());
-        System.err.println("*** could not find offset of field "+f.qualifiedName()+" within "+outerClazz);
       }
-    return off;
+    return i;
   }
 
   public boolean boolConst(int c, int ix)
