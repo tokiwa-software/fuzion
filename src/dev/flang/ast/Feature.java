@@ -3863,9 +3863,26 @@ public class Feature extends ANY implements Stmnt, Comparable
   {
     if (PRECONDITIONS) require
       (isOpenGenericField(),
-       state_.atLeast(State.RESOLVED));
+       state_.atLeast(State.RESOLVED),
+       i < selectSize());
 
     return _selectOpen.get(i);
+  }
+
+
+  /**
+   * For fields of open generic type, this returns the number of actual fields
+   * for the actual generic argument.
+   *
+   * @return the number of fields.
+   */
+  public int selectSize()
+  {
+    if (PRECONDITIONS) require
+      (isOpenGenericField(),
+       state_.atLeast(State.RESOLVED));
+
+    return _selectOpen == null ? 0 : _selectOpen.size();
   }
 
 

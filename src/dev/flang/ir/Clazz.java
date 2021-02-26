@@ -1420,16 +1420,33 @@ public class Clazz extends ANY implements Comparable
       case Routine    :
       case RoutineDef :
         {
-          var n = f.arguments.size();
-          result = new Clazz[n];
-          for (var i = 0; i < n; i++)
+          var args = new ArrayList<Clazz>();
+          for (var a :f.arguments)
             {
-              var a = f.arguments.get(i);
-              if (Clazzes.isUsed(a, this) && !a.resultType().isOpenGeneric())
+              if (Clazzes.isUsed(a, this))
                 {
-                  result[i] = lookup(a, Call.NO_GENERICS, a.isUsedAt());
+                  if (a.isOpenGenericField())
+                    {
+                      for (var i = 0; i < a.selectSize(); i++)
+                        {
+                          var s = a.select(i);
+                          if (Clazzes.isUsed(s, this))
+                            {
+                              var sa = lookup(s, Call.NO_GENERICS, s.isUsedAt());
+                              if (sa.feature().resultType() != Types.resolved.t_void)
+                                {
+                                  args.add(sa);
+                                }
+                            }
+                        }
+                    }
+                  else
+                    {
+                      args.add(lookup(a, Call.NO_GENERICS, a.isUsedAt()));
+                    }
                 }
             }
+          result = args.size() == 0 ? null : args.toArray(new Clazz[args.size()]);
           break;
         }
       }
