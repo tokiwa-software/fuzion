@@ -524,15 +524,21 @@ public class Clazz extends ANY implements Comparable
             choiceValsOffset_ = this._size;
             choiceValsSize_ = maxSz;
             this._size += maxSz;
-          }
-
-        for (var f: feature().allInnerAndInheritedFeatures())
-          {
-            if (result == null &&
-                (f.isField() || f.isSingleton()) &&
-                Clazzes.isUsed(f, this))
+            if (!isChoiceOfOnlyRefs())
               {
-                result = placeUsedField(f);
+                placeUsedField(feature().choiceTag_);
+              }
+          }
+        else
+          {
+            for (var f: feature().allInnerAndInheritedFeatures())
+              {
+                if (result == null &&
+                    (f.isField() || f.isSingleton()) &&
+                    Clazzes.isUsed(f, this))
+                  {
+                    result = placeUsedField(f);
+                  }
               }
           }
 
@@ -1125,7 +1131,7 @@ public class Clazz extends ANY implements Comparable
   }
 
   /**
-   * For a choice clazz, get the clazz that that corresponds to the generic
+   * For a choice clazz, get the clazz that corresponds to the generic
    * argument to choice at index id (0..n-1).
    *
    * @param id the index of the paramenter
