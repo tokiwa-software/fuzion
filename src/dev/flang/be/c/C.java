@@ -522,7 +522,7 @@ public class C extends Backend
    */
   String fieldName2(int offset, int field)
   {
-    return FIELD_PREFIX + offset + "_" + mangle(_fuir.fieldName(field));
+    return FIELD_PREFIX + offset + "_" + mangle(_fuir.clazzBaseName(field));
   }
 
   /**
@@ -660,7 +660,7 @@ public class C extends Backend
                       String type = fcl == -3 // outer ref
                         ? clazzTypeNameOuterField(_fuir.clazzOuterClazz(cl))
                         : clazzTypeName(fcl);
-                      _c.print(" " + type + " " + fieldName2(i, _fuir.clazzToField(cf)) + ";\n");
+                      _c.print(" " + type + " " + fieldName2(i, cf) + ";\n");
                     }
                   _c.print
                     ("};\n\n");
@@ -710,7 +710,7 @@ public class C extends Backend
                   var outercl = _fuir.assignOuterClazz(cl, c, i);  // static clazz of outer
                   var valuecl = _fuir.assignValueClazz(cl, c, i);  // static clazz of value
                   var fclazz = _fuir.clazzResultClazz(field);  // static clazz of assigned field
-                  var fieldName = fieldNameInClazz(outercl, _fuir.clazzToField(field));
+                  var fieldName = fieldNameInClazz(outercl, field);
                   var fieldAccess = ccodeAccessField(outercl, outer, fieldName);
                   if (_fuir.clazzIsBool(fclazz) &&
                       valuecl != -1 &&
@@ -1236,7 +1236,7 @@ public class C extends Backend
                     if (oc != -1 && !_fuir.clazzIsUnitType(oc))
                       {
                         var outer = CExpr.ident("fzouter");
-                        _c.print(CURRENT.deref().field(fieldNameInClazz(cl, _fuir.clazzToField(or))).assign(outer));
+                        _c.print(CURRENT.deref().field(fieldNameInClazz(cl, or)).assign(outer));
                       }
                   }
 
@@ -1253,7 +1253,7 @@ public class C extends Backend
                           _fuir.clazzIsU32(cl)||
                           _fuir.clazzIsU64(cl)
                           ? CURRENT.deref()
-                          : CURRENT.deref().field(fieldNameInClazz(cl, _fuir.clazzToField(af)));
+                          : CURRENT.deref().field(fieldNameInClazz(cl, af));
                         _c.print(target.assign(CExpr.ident("arg" + i)));
                       }
                   }
@@ -1278,7 +1278,7 @@ public class C extends Backend
                     var rf = _fuir.clazzResultField(cl);
                     if (rf != -1)
                       {
-                        _c.println("return " + CURRENT.deref().field(fieldNameInClazz(cl, _fuir.clazzToField(rf))).code() + ";");
+                        _c.println("return " + CURRENT.deref().field(fieldNameInClazz(cl, rf)).code() + ";");
                       }
                     else
                       {

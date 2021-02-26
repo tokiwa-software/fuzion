@@ -74,8 +74,6 @@ public class FUIR extends ANY
 
   private static final int CLAZZ_BASE   = 0x10000000;
 
-  private static final int FEATURE_BASE = 0x20000000;
-
   private static final int CODE_BASE = 0x30000000;
 
   public enum ClazzKind
@@ -120,13 +118,12 @@ public class FUIR extends ANY
 
 
   /**
-   * The main feature
+   * The main clazz.
    */
   final Clazz _main;
 
 
   final Map2Int<Clazz> _clazzIds = new MapComparable2Int(CLAZZ_BASE);
-  final Map2Int<Feature> _featureIds = new MapComparable2Int(FEATURE_BASE);
   final Map2Int<List<Stmnt>> _codeIds = new Map2Int(CODE_BASE);
 
 
@@ -160,8 +157,7 @@ public class FUIR extends ANY
             if (cl._type != Types.t_ADDRESS     // NYI: would be better to not create this dummy clazz in the first place
                 )
               {
-                int res = _clazzIds.add(cl);
-                _featureIds.add(cl.feature());
+                _clazzIds.add(cl);
               }
           }
       }
@@ -228,7 +224,7 @@ public class FUIR extends ANY
    *
    * @param i the field number
    *
-   * @return the feature id
+   * @return the clazz id of the field
    */
   public int clazzField(int cl, int i)
   {
@@ -252,7 +248,6 @@ public class FUIR extends ANY
   public int clazzResultClazz(int cl)
   {
     var cc = _clazzIds.get(cl);
-    var cf = cc.feature();
     return _clazzIds.get(cc.resultClazz());
   }
 
@@ -304,7 +299,7 @@ public class FUIR extends ANY
    *
    * @parem arg argument number 0, 1, .. clazzArgCount(cl)-1
    *
-   * @return feature id of the argument or -1 if no such feature exists (the
+   * @return clazz id of the argument or -1 if no such feature exists (the
    * argument is unused).
    */
   public int clazzArgClazz(int cl, int arg)
@@ -350,17 +345,17 @@ public class FUIR extends ANY
    *
    * @param cl a clazz id
    *
-   * @param f a feature id of a field in cl
+   * @param f a clazz id of a field in cl
    *
    * @return the index of f in an instance of cl
    */
   public int clazzFieldIndex(int cl, int f)
   {
     var c = _clazzIds.get(cl);
-    var ff = _featureIds.get(f);
+    var fc = _clazzIds.get(f);
     var fs = c.fields();
     int i;
-    for (i = 0; fs[i].feature() != ff; i++)
+    for (i = 0; fs[i] != fc; i++)
       {
       }
     return i;
@@ -421,8 +416,7 @@ public class FUIR extends ANY
       (clazzOuterRef(cl) != -1);
 
     var cc = _clazzIds.get(cl);
-    var ff = cc.feature();
-    return ff.isOuterRefAdrOfValue();
+    return cc.feature().isOuterRefAdrOfValue();
   }
 
 
@@ -592,19 +586,6 @@ public class FUIR extends ANY
 
 
   /**
-   * Temporary solution while in transition from using field ids to using only
-   * clazz ids: convert clazz id to field id.
-   *
-   * NYI: Remove
-   */
-  public int clazzToField(int cl)
-  {
-    var f = _clazzIds.get(cl).feature();
-    return _featureIds.get(f);
-  }
-
-
-  /**
    * Get the id of clazz consstring
    *
    * @param the id of connststring or -1 if that clazz was not created.
@@ -613,15 +594,6 @@ public class FUIR extends ANY
   {
     var cc = Clazzes.conststring.getIfCreated();
     return cc == null ? -1 : _clazzIds.get(cc);
-  }
-
-
-  /*------------------------  accessing fields  -----------------------*/
-
-
-  public String fieldName(int f)
-  {
-    return _featureIds.get(f).featureName().baseName();
   }
 
 
