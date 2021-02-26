@@ -598,8 +598,11 @@ public class Clazzes extends ANY
             Clazz vc = clazz(a.value, outerClazz);
             outerClazz.setRuntimeClazz(a.tid_ + 1, vc);
           }
-        var fc = sClazz.lookup(a.assignedField, Call.NO_GENERICS, a.pos());
-        outerClazz.setRuntimeClazz(a.tid_ + 2, fc);
+        if (isUsed(a.assignedField, sClazz))
+          {
+            var fc = sClazz.lookup(a.assignedField, Call.NO_GENERICS, a.pos());
+            outerClazz.setRuntimeClazz(a.tid_ + 2, fc);
+          }
       }
   }
 
