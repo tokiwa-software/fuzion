@@ -161,6 +161,15 @@ public class Clazz extends ANY implements Comparable
   Clazz _resultClazz = null;
 
 
+  /**
+   * If this clazz contains a direct outer ref field, this is the direct outer
+   * ref. null otherwise.
+   *
+   * This is initialized after Clazz creation by dependencies().
+   */
+  Clazz _outerRef;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -233,6 +242,7 @@ public class Clazz extends ANY implements Comparable
   void dependencies()
   {
     _resultClazz = determineResultClazz();
+    _outerRef = determineOuterRef();
   }
 
 
@@ -1323,6 +1333,43 @@ public class Clazz extends ANY implements Comparable
           }
       }
   }
+
+
+  /**
+   * If this clazz contains a direct outer ref field, this is the direct outer
+   * ref. null otherwise.
+   */
+  public Clazz outerRef()
+  {
+    return _outerRef;
+  }
+
+
+  /**
+   * Determine the clazz of this clazz' direct outer ref field if it exists.
+   *
+   * @return the direct outer ref field, null if none.
+   */
+  private Clazz determineOuterRef()
+  {
+    Clazz result = null;
+    var f = feature();
+    switch (f.impl.kind_)
+      {
+      case Routine    :
+      case RoutineDef :
+        {
+          var or = f.outerRefOrNull();
+          if (or != null && or.isUsed())
+            {
+              result = lookup(or, Call.NO_GENERICS, or.isUsedAt());
+            }
+          break;
+        }
+      }
+    return result;
+  }
+
 
 }
 

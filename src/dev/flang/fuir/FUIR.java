@@ -429,12 +429,8 @@ public class FUIR extends ANY
    */
   public int clazzOuterRef(int cl)
   {
-    var cc = _clazzIds.get(cl);
-    var ff = cc.feature();
-    var or = ff.outerRefOrNull();
-    return
-      or == null                         ? -1 :
-      cc.offsetForField_.get(or) == null ? -1 : _featureIds.add(or);
+    var oc = _clazzIds.get(cl).outerRef();
+    return oc == null ? -1 : _featureIds.add(oc.feature());
   }
 
 
