@@ -1375,7 +1375,7 @@ public class Clazz extends ANY implements Comparable
    *
    * @return the result field or null.
    */
-  public Clazz determineResultField()
+  private Clazz determineResultField()
   {
     var f = feature();
     var r = f.resultField();
@@ -1401,7 +1401,7 @@ public class Clazz extends ANY implements Comparable
    *
    * @return the argument fields array or null if this is not a routine.
    */
-  public Clazz[] determineArgumentFields()
+  private Clazz[] determineArgumentFields()
   {
     Clazz[] result = null;
     var f = feature();
