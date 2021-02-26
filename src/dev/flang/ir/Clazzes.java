@@ -335,30 +335,6 @@ public class Clazzes extends ANY
 
 
   /**
-   * Make sure the inner clazzes for a clazz' result field(s) are created. result
-   * fields include the results of inherited features
-   */
-  static void resultFields(Clazz cl, Feature f)
-  {
-    // NYI: This step is only needed since Fuzion allows to inherit from a function, which
-    // is at least a little strange.  This becomes fully bizarre if the called features
-    // would be redefined, we cannot allow dynamic binding in inheritance calls.
-    for (Call c: f.inherits)
-      {
-        Feature cf = c.calledFeature();
-
-        check
-          (Errors.count() > 0 || cf != null);
-
-        if (cf != null)
-          {
-            resultFields(cl, cf);
-          }
-      }
-  }
-
-
-  /**
    * As long as there are clazzes that were created via create(), call
    * findAllClasses on that clazz and layout the class.
    *
@@ -392,11 +368,6 @@ public class Clazzes extends ANY
           {
             toLayout.add(cl);
           }
-        // make sure clazzes for result field and argument fields are created.
-        // this is necessary since there might be no explicit uses of these fields,
-        // argument fields will implicitly be assigned an argument but may never be
-        // touched, and the result field will implicitly be returned.
-        resultFields(cl, cl.feature());
       }
     check
       (clazzesToBeVisited.size() == 0);
