@@ -425,12 +425,12 @@ public class FUIR extends ANY
    *
    * @param cl a clazz id
    *
-   * @return feature id of cl's outer ref field or -1 if no such field exists.
+   * @return clazz id of cl's outer ref field or -1 if no such field exists.
    */
   public int clazzOuterRef(int cl)
   {
     var oc = _clazzIds.get(cl).outerRef();
-    return oc == null ? -1 : _featureIds.add(oc.feature());
+    return oc == null ? -1 : _clazzIds.get(oc);
   }
 
 
@@ -617,6 +617,19 @@ public class FUIR extends ANY
   public boolean clazzIsOuterRef(int cl)
   {
     return _clazzIds.get(cl).feature().isOuterRef();
+  }
+
+
+  /**
+   * Temporary solution while in transition from using field ids to using only
+   * clazz ids: convert clazz id to field id.
+   *
+   * NYI: Remove
+   */
+  public int clazzToField(int cl)
+  {
+    var f = _clazzIds.get(cl).feature();
+    return _featureIds.get(f);
   }
 
 

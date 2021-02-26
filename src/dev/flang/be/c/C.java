@@ -1244,7 +1244,7 @@ public class C extends Backend
                     if (oc != -1 && !_fuir.clazzIsUnitType(oc))
                       {
                         var outer = CExpr.ident("fzouter");
-                        _c.print(CURRENT.deref().field(fieldNameInClazz(cl, or)).assign(outer));
+                        _c.print(CURRENT.deref().field(fieldNameInClazz(cl, _fuir.clazzToField(or))).assign(outer));
                       }
                   }
 
