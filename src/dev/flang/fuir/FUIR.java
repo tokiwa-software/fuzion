@@ -896,14 +896,6 @@ public class FUIR extends ANY
     return vcl == null ? -1 : _clazzIds.get(vcl);
   }
 
-  public int assignClazzForField(int outerClazz, int field)
-  {
-    var ocl = _clazzIds.get(outerClazz);
-    var f = _featureIds.get(field);
-    var fclazz = ocl.clazzForField(f);
-    return _clazzIds.get(fclazz);
-  }
-
   public int boxValueClazz(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require

@@ -717,7 +717,7 @@ public class C extends Backend
                   var outer = stack.pop();                // instance containing assigned field
                   var outercl = _fuir.assignOuterClazz(cl, c, i);  // static clazz of outer
                   var valuecl = _fuir.assignValueClazz(cl, c, i);  // static clazz of value
-                  var fclazz = _fuir.assignClazzForField(outercl, _fuir.clazzToField(field));  // static clazz of assigned field
+                  var fclazz = _fuir.clazzResultClazz(field);  // static clazz of assigned field
                   var fieldName = fieldNameInClazz(outercl, _fuir.clazzToField(field));
                   var fieldAccess = ccodeAccessField(outercl, outer, fieldName);
                   if (_fuir.clazzIsBool(fclazz) &&
