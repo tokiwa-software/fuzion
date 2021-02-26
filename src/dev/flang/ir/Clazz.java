@@ -195,6 +195,12 @@ public class Clazz extends ANY implements Comparable
   Clazz _choiceTag;
 
 
+  /**
+   * Fields in instances of this clazz. Set during layout phase.
+   */
+  Clazz[] _fields;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -513,6 +519,7 @@ public class Clazz extends ANY implements Comparable
         this._size = 0;
         if (isChoice())
           {
+            var fields = new ArrayList<Clazz>();
             int maxSz = 0;
             for (Clazz c : choiceGenerics())
               {
@@ -536,20 +543,28 @@ public class Clazz extends ANY implements Comparable
             this._size += maxSz;
             if (choiceTag() != null)
               {
+                fields.add(choiceTag());
                 placeUsedField(choiceTag().feature());
               }
+            _fields = fields.toArray(new Clazz[fields.size()]);
           }
         else if (feature().impl.kind_ != Impl.Kind.Intrinsic)
           {
+            var fields = new ArrayList<Clazz>();
             for (var f: feature().allInnerAndInheritedFeatures())
               {
                 if (result == null &&
                     (f.isField() || f.isSingleton()) &&
-                    Clazzes.isUsed(f, this))
+                    Clazzes.isUsed(f, this) &&
+                    !f.resultType().isOpenGeneric() &&
+                    f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
+                    )
                   {
+                    fields.add(lookup(f, Call.NO_GENERICS, f.isUsedAt()));
                     result = placeUsedField(f);
                   }
               }
+            _fields = fields.toArray(new Clazz[fields.size()]);
           }
 
         layouting_ = false;
@@ -575,43 +590,41 @@ public class Clazz extends ANY implements Comparable
     if (PRECONDITIONS) require
       (f != null,
        f.isField() || f.isSingleton(),
+       Clazzes.isUsed(f, this),
+       !f.resultType().isOpenGeneric(),
+       f == findRedefinition(f),
        layouting_);
 
     List<SourcePosition> result = null;
 
-    if (!f.resultType().isOpenGeneric() &&
-        f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
-        )
-      {
-        var fc = lookup(f, Call.NO_GENERICS, f.isUsedAt());
-        var fieldClazz = clazzForField(f);
-        check
-          (fc.fieldClazz() == fieldClazz);
-        Type ft = fieldClazz._type;
-        int fsz = 0;
-        if        (ft.isRef() || f.isSingleton()) { fsz = 1;
-        } else if (ft == Types.resolved.t_i32   ) { fsz = 1;
-        } else if (ft == Types.resolved.t_u32   ) { fsz = 1;
-        } else if (ft == Types.resolved.t_i64   ) { fsz = 2;
-        } else if (ft == Types.resolved.t_u64   ) { fsz = 2;
-        } else if (ft == Types.resolved.t_void  ) { fsz = 0;
-        } else {
-          result = fieldClazz.layout();
-          if (result != null)
-            {
-              result.add(f.pos);
-            }
-          else
-            {
-              fsz = fieldClazz.size();
-            }
+    var fc = lookup(f, Call.NO_GENERICS, f.isUsedAt());
+    var fieldClazz = clazzForField(f);
+    check
+      (fc.fieldClazz() == fieldClazz);
+    Type ft = fieldClazz._type;
+    int fsz = 0;
+    if        (ft.isRef() || f.isSingleton()) { fsz = 1;
+    } else if (ft == Types.resolved.t_i32   ) { fsz = 1;
+    } else if (ft == Types.resolved.t_u32   ) { fsz = 1;
+    } else if (ft == Types.resolved.t_i64   ) { fsz = 2;
+    } else if (ft == Types.resolved.t_u64   ) { fsz = 2;
+    } else if (ft == Types.resolved.t_void  ) { fsz = 0;
+    } else {
+      result = fieldClazz.layout();
+      if (result != null)
+        {
+          result.add(f.pos);
         }
-        offsetForField_.put(f,
-                            fsz == 0
-                            ? Integer.MIN_VALUE // use an illegal index such that all real fields have unique indices
-                            : this._size);
-        this._size = this._size + fsz;
-      }
+      else
+        {
+          fsz = fieldClazz.size();
+        }
+    }
+    offsetForField_.put(f,
+                        fsz == 0
+                        ? Integer.MIN_VALUE // use an illegal index such that all real fields have unique indices
+                        : this._size);
+    this._size = this._size + fsz;
     return result;
   }
 
@@ -1542,6 +1555,19 @@ public class Clazz extends ANY implements Comparable
         result = lookup(f.choiceTag_, Call.NO_GENERICS, f.pos());
       }
     return result;
+  }
+
+
+  /**
+   * Set of fields in this clazz, including inherited and artificially added fields.
+   *
+   * @return the set of fields, empty array if none. null before this clazz was
+   * layouted or for a clazz that cannot be instantiated (instrinsic, abstract,
+   * field, etc.).
+   */
+  public Clazz[] fields()
+  {
+    return _fields;
   }
 
 }
