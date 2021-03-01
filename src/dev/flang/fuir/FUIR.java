@@ -189,35 +189,6 @@ public class FUIR extends ANY
 
 
   /**
-   * Return the clazz of the field at given slot
-   *
-   * @param cl a clazz id
-   *
-   * @param i the field number
-   *
-   * @return the clazz id of field #i, -3 if field type is ADDRESS
-   */
-  public int clazzFieldClazz(int cl, int i)
-  {
-    if (PRECONDITIONS)
-      require
-        (i >= 0 && i < clazzNumFields(cl));
-
-    var cc = _clazzIds.get(cl);
-    var fc = cc.fields()[i];
-    Clazz fcl = fc.fieldClazz();
-    if (fcl._type == Types.t_ADDRESS)  // NYI: would be better to not create this dummy clazz in the first place
-      {
-        return -3;
-      }
-    else
-      {
-        return _clazzIds.get(fcl);
-      }
-  }
-
-
-  /**
    * Return the field #i in the given clazz
    *
    * @param cl a clazz id
@@ -235,6 +206,23 @@ public class FUIR extends ANY
     var cc = _clazzIds.get(cl);
     var fc = cc.fields()[i];
     return _clazzIds.get(fc);
+  }
+
+
+  /**
+   * Check if is field does not store the value directly, but a pointer to the value.
+   *
+   * @param fcl a clazz id of the field
+   *
+   * @return true iff the field is an outer ref field that holds an address of
+   * an outer value, false for normal fields our outer ref fields that store the
+   * outer ref or value directly.
+   */
+  public boolean clazzFieldIsAdrOfValue(int fcl)
+  {
+    var fc = _clazzIds.get(fcl);
+    var f = fc.feature();
+    return f.isOuterRef() && f.outer().isOuterRefAdrOfValue();
   }
 
 

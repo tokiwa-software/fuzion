@@ -639,12 +639,11 @@ public class C extends Backend
                   // first, make sure structs used for inner fields are declared:
                   for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
                     {
-                      var fcl = _fuir.clazzFieldClazz(cl, i);
-                      if (fcl != -2 /* void field,            NYI: this should have been removed by FUIR */ &&
-                          fcl != -3 /* outer ref,             NYI: this should have been removed by FUIR */ &&
-                          !_fuir.clazzIsRef(fcl))
+                      var cf = _fuir.clazzField(cl, i);
+                      var rcl = _fuir.clazzResultClazz(cf);
+                      if (!_fuir.clazzIsRef(rcl))
                         {
-                          structsForClazz(fcl);
+                          structsForClazz(rcl);
                         }
                     }
 
@@ -655,11 +654,10 @@ public class C extends Backend
                      (_fuir.clazzIsRef(cl) ? "  uint32_t clazzId;\n" : ""));
                   for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
                     {
-                      var fcl = _fuir.clazzFieldClazz(cl, i);  // NYI: Slots are an interpreter artifact, should just iterate the fields instead
                       var cf = _fuir.clazzField(cl, i);
-                      String type = fcl == -3 // outer ref
+                      String type = _fuir.clazzFieldIsAdrOfValue(cf)
                         ? clazzTypeNameOuterField(_fuir.clazzOuterClazz(cl))
-                        : clazzTypeName(fcl);
+                        : clazzTypeName(_fuir.clazzResultClazz(cf));
                       _c.print(" " + type + " " + fieldName2(i, cf) + ";\n");
                     }
                   _c.print
@@ -1150,7 +1148,6 @@ public class C extends Backend
    * given clazz.  Write code to _c.
    *
    * @param cl id of clazz to compile
-   *
    */
   private void cFunctionDecl(int cl)
   {
@@ -1164,7 +1161,12 @@ public class C extends Backend
     String comma = "";
     if (oc != -1 && !_fuir.clazzIsUnitType(oc))
       {
-        _c.print(clazzTypeNameOuterField(oc));
+        var or = _fuir.clazzOuterRef(cl);
+        String type =
+          or == -1                         ? clazzTypeNameOuterField(oc) :
+          _fuir.clazzFieldIsAdrOfValue(or) ? clazzTypeNameOuterField(_fuir.clazzOuterClazz(cl))
+                                           : clazzTypeName(_fuir.clazzResultClazz(or));
+        _c.print(type);
         _c.print(" fzouter");
         comma = ", ";
       }
