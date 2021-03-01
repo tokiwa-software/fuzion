@@ -1303,18 +1303,44 @@ public class C extends Backend
                 _c.print("\n// code for intrinsic " + _fuir.clazzAsString(cl) + ":\n");
                 cFunctionDecl(cl);
                 _c.print(" {\n");
+                var or = _fuir.clazzOuterRef(cl);
+                var outer =
+                  or == -1                                     ? "--no outer--" :
+                  _fuir.clazzFieldIsAdrOfValue(or)             ? "*fzouter"     :
+                  _fuir.clazzIsRef(_fuir.clazzResultClazz(or)) ? "fzouter->fzF_0_val"
+                                                               : "fzouter";
+
                 switch (_fuir.clazzIntrinsicName(cl))
                   {
                   case "exitForCompilerTest" : _c.print(" exit(arg0);\n"); break;
                   case "fuzion.std.out.write": _c.print(" char c = (char) arg0; fwrite(&c, 1, 1, stdout);\n"); break;
                   case "fuzion.std.out.flush": _c.print(" fflush(stdout);\n"); break;
-                  case "i32.prefix -°"       : _c.print(" return - fzouter;\n"); break;
-                  case "i32.infix -°"        : _c.print(" return fzouter -  arg0;\n"); break;
-                  case "i32.infix +°"        : _c.print(" return fzouter +  arg0;\n"); break;
-                  case "i32.infix >"         : _c.print(" return fzouter >  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
-                  case "i32.infix >="        : _c.print(" return fzouter >= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
-                  case "i32.infix <"         : _c.print(" return fzouter <  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
-                  case "i32.infix <="        : _c.print(" return fzouter <= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i32.prefix -°"       : _c.print(" return - " + outer + ";\n"); break;
+                  case "i32.infix -°"        : _c.print(" return " + outer + " -  arg0;\n"); break;
+                  case "i32.infix +°"        : _c.print(" return " + outer + " +  arg0;\n"); break;
+                  case "i32.infix *°"        : _c.print(" return " + outer + " *  arg0;\n"); break;
+                  case "i32.div"             : _c.print(" return " + outer + " /  arg0;\n"); break;
+                  case "i32.mod"             : _c.print(" return " + outer + " %  arg0;\n"); break;
+                  case "i32.infix =="        : _c.print(" return " + outer + " == arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i32.infix !="        : _c.print(" return " + outer + " != arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i32.infix >"         : _c.print(" return " + outer + " >  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i32.infix >="        : _c.print(" return " + outer + " >= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i32.infix <"         : _c.print(" return " + outer + " <  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i32.infix <="        : _c.print(" return " + outer + " <= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                    /*
+                  case "i32.as_i64"          : _c.print(" return ;\n"); break;
+                  case "i32.castTo_u32"      : _c.print(" return ;\n"); break;
+                  case "i64.infix *°"        : _c.print(" return ;\n"); break;
+                  case "i64.infix <"         : _c.print(" return ;\n"); break;
+                  case "i64.infix >"         : _c.print(" return ;\n"); break;
+                  case "u32.castTo_i32"      : _c.print(" return ;\n"); break;
+                  case "u32.infix +°"        : _c.print(" return ;\n"); break;
+                  case "u32.infix -°"        : _c.print(" return ;\n"); break;
+                  case "u32.infix <"         : _c.print(" return ;\n"); break;
+                  case "u32.infix <="        : _c.print(" return ;\n"); break;
+                  case "u32.infix =="        : _c.print(" return ;\n"); break;
+                  case "Object.asString"     : _c.print(" return ;\n"); break;
+                    */
 
                     // NYI: the following intrinsics are generic, they are currently hard-coded for i32 only:
                   case "Array.getData": _c.print(" return malloc(sizeof(fzT_1i32) * arg0);\n"); break;
