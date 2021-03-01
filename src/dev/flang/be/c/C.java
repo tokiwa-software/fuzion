@@ -767,8 +767,7 @@ public class C extends Backend
             }
           case Box:
             {
-              var v = stack.pop();
-              _c.println("// NYI: Box " + v.code());
+              _c.println("// NYI: Box " /* + v.code() */);
 
               var vc = _fuir.boxValueClazz(cl, c, i);
               var rc = _fuir.boxResultClazz(cl, c, i);
@@ -786,10 +785,9 @@ public class C extends Backend
                       _c.println("// NYI: copy fields from "+val.code()+" over to "+t.code());
                     }
                   stack.push(t);
-                }
-              if (_fuir.clazzIsChoice(vc))
-                {
-                  _c.println("// NYI: choice boxing");
+                  if (_fuir.clazzIsChoice(vc))
+                    {
+                      _c.println("// NYI: choice boxing");
                   /* NYI choice boxing:
 
                 check
@@ -828,6 +826,7 @@ public class C extends Backend
                       }
                   }
                   */
+                    }
                 }
               break;
             }
