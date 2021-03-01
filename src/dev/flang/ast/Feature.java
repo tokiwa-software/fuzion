@@ -2401,9 +2401,12 @@ public class Feature extends ANY implements Stmnt, Comparable
                   }
               }
           }
-        if (outer_ != null)
+        if (outerRefOrNull() != null)
           {
-            //  outer_.markUsed();
+            if (impl == Impl.INTRINSIC)
+              {
+                outerRefOrNull().markUsed(res, false, usedAt);
+              }
           }
         for (Feature f : redefinitions_)
           {
