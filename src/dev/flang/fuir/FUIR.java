@@ -535,12 +535,23 @@ public class FUIR extends ANY
 
 
   /**
-   * Are values of this clazz essentially void values?
+   * Are values of this clazz all the same, so they are essentially C/Java void
+   * values?
    */
   public boolean clazzIsUnitType(int cl)
   {
     var cc = _clazzIds.get(cl);
     return cc.size() == 0 && !cc.isRef();
+  }
+
+
+  /**
+   * Is this a void type, i.e., values of this clazz do not exist.
+   */
+  public boolean clazzIsVoidType(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    return cc._type == Types.resolved.t_void;
   }
 
 

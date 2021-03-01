@@ -408,15 +408,24 @@ public class C extends Backend
     _c.println("");
     for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
       {
-        structsForClazz(c);
+        if (!_fuir.clazzIsVoidType(c))
+          {
+            structsForClazz(c);
+          }
       }
     for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
       {
-        compileClazz(c, CompilePhase.FORWARDS);
+        if (!_fuir.clazzIsVoidType(c))
+          {
+            compileClazz(c, CompilePhase.FORWARDS);
+          }
       }
     for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
       {
-        compileClazz(c, CompilePhase.IMPLEMENTATIONS);
+        if (!_fuir.clazzIsVoidType(c))
+          {
+            compileClazz(c, CompilePhase.IMPLEMENTATIONS);
+          }
       }
     _c.println("int main(int argc, char **args) { " + _functionNames.get(_fuir.mainClazzId()) + "(); }");
   }
