@@ -1303,30 +1303,26 @@ public class C extends Backend
                 _c.print("\n// code for intrinsic " + _fuir.clazzAsString(cl) + ":\n");
                 cFunctionDecl(cl);
                 _c.print(" {\n");
-                switch (_functionNames.get(cl))
+                switch (_fuir.clazzIntrinsicName(cl))
                   {
-                  case C_FUNCTION_PREFIX + "1exitForCompilerTest"    : _c.print(" exit(arg0);\n"); break;
-                  case C_FUNCTION_PREFIX + "fuzion__std__out__1write": _c.print(" char c = (char) arg0; fwrite(&c, 1, 1, stdout);\n"); break;
-                  case C_FUNCTION_PREFIX + "fuzion__std__out__flush" : _c.print(" fflush(stdout);\n"); break;
-                  case C_FUNCTION_PREFIX + "1i32__prefix_wmO"        : _c.print(" return - fzouter;\n"); break;
-                  case C_FUNCTION_PREFIX + "1i32__1infix_wmO"        : _c.print(" return fzouter -  arg0;\n"); break;
-                  case C_FUNCTION_PREFIX + "1i32__1infix_wpO"        : _c.print(" return fzouter +  arg0;\n"); break;
-                  case C_FUNCTION_PREFIX + "1i32__1infix_wg"         : _c.print(" return fzouter >  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
-                  case C_FUNCTION_PREFIX + "1i32__1infix_wge"        : _c.print(" return fzouter >= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
-                  case C_FUNCTION_PREFIX + "1i32__1infix_wl"         : _c.print(" return fzouter <  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
-                  case C_FUNCTION_PREFIX + "1i32__1infix_wle"        : _c.print(" return fzouter <= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "exitForCompilerTest" : _c.print(" exit(arg0);\n"); break;
+                  case "fuzion.std.out.write": _c.print(" char c = (char) arg0; fwrite(&c, 1, 1, stdout);\n"); break;
+                  case "fuzion.std.out.flush": _c.print(" fflush(stdout);\n"); break;
+                  case "i32.prefix -°"       : _c.print(" return - fzouter;\n"); break;
+                  case "i32.infix -°"        : _c.print(" return fzouter -  arg0;\n"); break;
+                  case "i32.infix +°"        : _c.print(" return fzouter +  arg0;\n"); break;
+                  case "i32.infix >"         : _c.print(" return fzouter >  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i32.infix >="        : _c.print(" return fzouter >= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i32.infix <"         : _c.print(" return fzouter <  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i32.infix <="        : _c.print(" return fzouter <= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
 
                     // NYI: the following intrinsics are generic, they are currently hard-coded for i32 only:
-                  case C_FUNCTION_PREFIX + "_R2Array_" +    "_1getData": /* fall through */
-                  case C_FUNCTION_PREFIX + "_R2Array_l_i32_g__1getData": _c.print(" return malloc(sizeof(fzT_1i32) * arg0);\n"); break;
-                  case C_FUNCTION_PREFIX + "_R2Array_" +    "_3setel"  : /* fall through */
-                  case C_FUNCTION_PREFIX + "_R2Array_l_i32_g__3setel"  : _c.print(" ((fzT_1i32*) arg0) [arg1] = arg2;\n"); break;
-                  case C_FUNCTION_PREFIX + "_R2Array_" +    "_2get"    : /* fall through */
-                  case C_FUNCTION_PREFIX + "_R2Array_l_i32_g__2get"    : /* fall through */
-                  case C_FUNCTION_PREFIX + "_Rconststring_"+"_2get"    : _c.print(" return ((fzT_1i32*) arg0) [arg1];\n"); break;
+                  case "Array.getData": _c.print(" return malloc(sizeof(fzT_1i32) * arg0);\n"); break;
+                  case "Array.setel"  : _c.print(" ((fzT_1i32*) arg0) [arg1] = arg2;\n"); break;
+                  case "Array.get"    : _c.print(" return ((fzT_1i32*) arg0) [arg1];\n"); break;
 
                   default:
-                    var msg = "code for intrinsic " + _fuir.clazzAsString(cl) + " is missing";
+                    var msg = "code for intrinsic " + _fuir.clazzIntrinsicName(cl) + " is missing";
                     Errors.warning(msg);
                     _c.print(" fprintf(stderr, \"*** error: NYI: "+ msg + "\\n\"); exit(1);\n");
                     break;

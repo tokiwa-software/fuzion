@@ -268,6 +268,25 @@ public class FUIR extends ANY
     return res;
   }
 
+
+  /**
+   * The intrinsic names is the original qualified name of the intrinsic feature
+   * ignoring any inheritance into new clazzes.
+   *
+   * @param cl an intrinsic
+   *
+   * @return its intrinsic name, e.g. 'Array.getel' instead of
+   * 'conststring.getel'
+   */
+  public String clazzIntrinsicName(int cl)
+  {
+    if (PRECONDITIONS) require
+      (clazzKind(cl) == ClazzKind.Intrinsic);
+
+    var cc = _clazzIds.get(cl);
+    return cc.feature().qualifiedName();
+  }
+
   public boolean clazzIsRef(int cl)
   {
     return _clazzIds.get(cl).isRef();
