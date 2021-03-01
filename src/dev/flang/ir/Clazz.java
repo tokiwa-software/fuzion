@@ -1514,6 +1514,7 @@ public class Clazz extends ANY implements Comparable
     var f = feature();
     switch (f.impl.kind_)
       {
+      case Intrinsic  :
       case Routine    :
       case RoutineDef :
         {
