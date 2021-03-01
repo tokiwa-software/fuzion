@@ -501,28 +501,28 @@ public class C extends Backend
   /**
    * Get the name of a field
    *
-   * @param offset the slot offset of the field, needed to disambiguate fields
+   * @param index the index of the field, needed to disambiguate fields
    * with equal name.
    *
    * @param field the field id
    */
-  String fieldName(int offset, int fieldClazz)
+  String fieldName(int index, int fieldClazz)
   {
-    return FIELD_PREFIX + offset + "_" + mangle(_fuir.clazzBaseName(fieldClazz));
+    return FIELD_PREFIX + index + "_" + mangle(_fuir.clazzBaseName(fieldClazz));
   }
 
 
   /**
    * Get the name of a field
    *
-   * @param offset the slot offset of the field, needed to disambiguate fields
+   * @param index the index of the field, needed to disambiguate fields
    * with equal name.
    *
    * @param field the field id
    */
-  String fieldName2(int offset, int field)
+  String fieldName2(int index, int field)
   {
-    return FIELD_PREFIX + offset + "_" + mangle(_fuir.clazzBaseName(field));
+    return FIELD_PREFIX + index + "_" + mangle(_fuir.clazzBaseName(field));
   }
 
   /**
@@ -534,8 +534,8 @@ public class C extends Backend
    */
   String fieldNameInClazz(int cl, int field)
   {
-    int offset = _fuir.clazzFieldIndex(cl, field);
-    return fieldName2(offset, field);
+    int index = _fuir.clazzFieldIndex(cl, field);
+    return fieldName2(index, field);
   }
 
 
