@@ -415,6 +415,18 @@ abstract class CExpr extends CStmnt
 
 
   /**
+   * Create CExpr that corresponds to C unary operator '+' with precedence 2
+   * applied to this.
+   *
+   * @return the resulting expression
+   */
+  CExpr plus()
+  {
+    return this; // to my knowledge, this is always the identity
+  }
+
+
+  /**
    * Create CExpr that corresponds to C cast '(type)expr'
    *
    * @param value the value to be assigned to this.
@@ -429,6 +441,93 @@ abstract class CExpr extends CStmnt
         int precedence() { return 3; }
         void code(StringBuilder sb) { sb.append("(").append(type).append(")"); inner.code(sb, precedence()); }
     };
+  }
+
+
+  /**
+   * Helper clazz for binary-expr
+   */
+  private class Binary extends CExpr
+  {
+    CExpr _left, _right;
+    String _op;
+    int _prec;
+
+    Binary(CExpr left, String op, CExpr right, int prec)
+    {
+      _left = left;
+      _right = right;
+      _op = op;
+      _prec = prec;
+    }
+
+    int precedence()
+    {
+      return _prec;
+    }
+
+    void code(StringBuilder sb)
+    {
+      _left.code(sb, precedence());
+      sb.append(_op);
+      _right.code(sb, precedence());
+    }
+  }
+
+
+  /**
+   * Create CExpr that corresponds to C binary operators '*', '/', '%', '+',
+   * '-', '<<', '>>', '<', '<=', '>', '>=', '==', '!=', '&', '^', '|', '&&',
+   * '||' with precedence 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 applied to this and
+   * right.
+   *
+   * @return the resulting expression
+   */
+  CExpr mul(CExpr right) { return new Binary(this, "*" , right,  4); }
+  CExpr div(CExpr right) { return new Binary(this, "/" , right,  4); }
+  CExpr mod(CExpr right) { return new Binary(this, "%" , right,  4); }
+  CExpr add(CExpr right) { return new Binary(this, "+" , right,  5); }
+  CExpr sub(CExpr right) { return new Binary(this, "-" , right,  5); }
+  CExpr shl(CExpr right) { return new Binary(this, "<<", right,  6); }
+  CExpr shr(CExpr right) { return new Binary(this, ">>", right,  6); }
+  CExpr lt (CExpr right) { return new Binary(this, "<" , right,  7); }
+  CExpr le (CExpr right) { return new Binary(this, "<=", right,  7); }
+  CExpr gt (CExpr right) { return new Binary(this, ">" , right,  7); }
+  CExpr ge (CExpr right) { return new Binary(this, ">=", right,  7); }
+  CExpr eq (CExpr right) { return new Binary(this, "==", right,  8); }
+  CExpr ne (CExpr right) { return new Binary(this, "!=", right,  8); }
+  CExpr and(CExpr right) { return new Binary(this, "&" , right,  9); }
+  CExpr xor(CExpr right) { return new Binary(this, "^" , right, 10); }
+  CExpr or (CExpr right) { return new Binary(this, "|" , right, 11); }
+  CExpr AND(CExpr right) { return new Binary(this, "&&", right, 12); }
+  CExpr OR (CExpr right) { return new Binary(this, "||", right, 13); }
+
+  /**
+   * Create CExpr for ternary operator ? : with precedence 14.
+   *
+   * @param t result in case this is true
+   *
+   * @param f result in case this is false
+   */
+  CExpr cond(CExpr t, CExpr f)
+  {
+    CExpr cc = this;
+    return new CExpr()
+      {
+        int precedence()
+        {
+          return 14;
+        }
+
+        void code(StringBuilder sb)
+        {
+          cc.code(sb, precedence());
+          sb.append('?');
+          t.code(sb, precedence());
+          sb.append(':');
+          f.code(sb, precedence());
+        }
+     };
   }
 
 
@@ -471,13 +570,31 @@ abstract class CExpr extends CStmnt
   /**
    * Create CExpr that corresponds to C unary operator '-' with precedence 2
    *
-   * @param name the name of a field
-   *
-   * @return the resulting expression to read this.name
+   * @return the resulting expression to negate this
    */
   CExpr neg()
   {
-    return new Unary(this, '-');
+    return new Unary(this, '-')
+      {
+        // redefine neg since inner.neg().neg() == inner
+        CExpr  neg() { return _inner; }
+    };
+  }
+
+
+  /**
+   * Create CStmnt to return this expression.
+   */
+  CStmnt ret()
+  {
+    return new CStmnt()
+      {
+        void code(StringBuilder sb)
+        {
+          sb.append("return ");
+          CExpr.this.code(sb);
+        }
+      };
   }
 
 

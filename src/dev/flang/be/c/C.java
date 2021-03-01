@@ -1325,11 +1325,12 @@ public class C extends Backend
                 cFunctionDecl(cl);
                 _c.print(" {\n");
                 var or = _fuir.clazzOuterRef(cl);
+                var fzo = CExpr.ident("fzouter");
                 var outer =
-                  or == -1                                     ? "--no outer--" :
-                  _fuir.clazzFieldIsAdrOfValue(or)             ? "*fzouter"     :
-                  _fuir.clazzIsRef(_fuir.clazzResultClazz(or)) ? "fzouter->fzF_0_val"
-                                                               : "fzouter";
+                  or == -1                                     ? CExpr.dummy("--no outer--") :
+                  _fuir.clazzFieldIsAdrOfValue(or)             ? fzo.deref() :
+                  _fuir.clazzIsRef(_fuir.clazzResultClazz(or)) ? fzo.deref().field("fzF_0_val")
+                                                               : fzo;
 
                 switch (_fuir.clazzIntrinsicName(cl))
                   {
@@ -1341,65 +1342,65 @@ public class C extends Backend
                      * to check if this is the case for the C compilers used for Fuzion.
                      */
                   case "i32.prefix -°"       :
-                  case "i64.prefix -°"       : _c.print(" return - " + outer + ";\n"); break;
+                  case "i64.prefix -°"       : _c.print(outer.neg().ret()); break;
                   case "i32.infix -°"        :
-                  case "i64.infix -°"        : _c.print(" return " + outer + " -  arg0;\n"); break;
+                  case "i64.infix -°"        : _c.print(outer.sub(CExpr.ident("arg0")).ret()); break;
                   case "i32.infix +°"        :
-                  case "i64.infix +°"        : _c.print(" return " + outer + " +  arg0;\n"); break;
+                  case "i64.infix +°"        : _c.print(outer.add(CExpr.ident("arg0")).ret()); break;
                   case "i32.infix *°"        :
-                  case "i64.infix *°"        : _c.print(" return " + outer + " *  arg0;\n"); break;
+                  case "i64.infix *°"        : _c.print(outer.mul(CExpr.ident("arg0")).ret()); break;
                   case "i32.div"             :
-                  case "i64.div"             : _c.print(" return " + outer + " /  arg0;\n"); break;
+                  case "i64.div"             : _c.print(outer.div(CExpr.ident("arg0")).ret()); break;
                   case "i32.mod"             :
-                  case "i64.mod"             : _c.print(" return " + outer + " %  arg0;\n"); break;
+                  case "i64.mod"             : _c.print(outer.mod(CExpr.ident("arg0")).ret()); break;
 
                   case "i32.infix =="        :
-                  case "i64.infix =="        : _c.print(" return " + outer + " == arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i64.infix =="        : _c.print(outer.eq(CExpr.ident("arg0")).cond(FZ_TRUE, FZ_FALSE).ret()); break;
                   case "i32.infix !="        :
-                  case "i64.infix !="        : _c.print(" return " + outer + " != arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i64.infix !="        : _c.print(outer.ne(CExpr.ident("arg0")).cond(FZ_TRUE, FZ_FALSE).ret()); break;
                   case "i32.infix >"         :
-                  case "i64.infix >"         : _c.print(" return " + outer + " >  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i64.infix >"         : _c.print(outer.gt(CExpr.ident("arg0")).cond(FZ_TRUE, FZ_FALSE).ret()); break;
                   case "i32.infix >="        :
-                  case "i64.infix >="        : _c.print(" return " + outer + " >= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i64.infix >="        : _c.print(outer.ge(CExpr.ident("arg0")).cond(FZ_TRUE, FZ_FALSE).ret()); break;
                   case "i32.infix <"         :
-                  case "i64.infix <"         : _c.print(" return " + outer + " <  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i64.infix <"         : _c.print(outer.lt(CExpr.ident("arg0")).cond(FZ_TRUE, FZ_FALSE).ret()); break;
                   case "i32.infix <="        :
-                  case "i64.infix <="        : _c.print(" return " + outer + " <= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "i64.infix <="        : _c.print(outer.le(CExpr.ident("arg0")).cond(FZ_TRUE, FZ_FALSE).ret()); break;
 
                   case "u32.prefix -°"       :
-                  case "u64.prefix -°"       : _c.print(" return - " + outer + ";\n"); break;
+                  case "u64.prefix -°"       : _c.print(outer.neg().ret()); break;
                   case "u32.infix -°"        :
-                  case "u64.infix -°"        : _c.print(" return " + outer + " -  arg0;\n"); break;
+                  case "u64.infix -°"        : _c.print(outer.sub(CExpr.ident("arg0")).ret()); break;
                   case "u32.infix +°"        :
-                  case "u64.infix +°"        : _c.print(" return " + outer + " +  arg0;\n"); break;
+                  case "u64.infix +°"        : _c.print(outer.add(CExpr.ident("arg0")).ret()); break;
                   case "u32.infix *°"        :
-                  case "u64.infix *°"        : _c.print(" return " + outer + " *  arg0;\n"); break;
+                  case "u64.infix *°"        : _c.print(outer.mul(CExpr.ident("arg0")).ret()); break;
                   case "u32.div"             :
-                  case "u64.div"             : _c.print(" return " + outer + " /  arg0;\n"); break;
+                  case "u64.div"             : _c.print(outer.div(CExpr.ident("arg0")).ret()); break;
                   case "u32.mod"             :
-                  case "u64.mod"             : _c.print(" return " + outer + " %  arg0;\n"); break;
+                  case "u64.mod"             : _c.print(outer.mod(CExpr.ident("arg0")).ret()); break;
 
                   case "u32.infix =="        :
-                  case "u64.infix =="        : _c.print(" return " + outer + " == arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "u64.infix =="        : _c.print(outer.eq(CExpr.ident("arg0")).cond(FZ_TRUE, FZ_FALSE).ret()); break;
                   case "u32.infix !="        :
-                  case "u64.infix !="        : _c.print(" return " + outer + " != arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "u64.infix !="        : _c.print(outer.ne(CExpr.ident("arg0")).cond(FZ_TRUE, FZ_FALSE).ret()); break;
                   case "u32.infix >"         :
-                  case "u64.infix >"         : _c.print(" return " + outer + " >  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "u64.infix >"         : _c.print(outer.gt(CExpr.ident("arg0")).cond(FZ_TRUE, FZ_FALSE).ret()); break;
                   case "u32.infix >="        :
-                  case "u64.infix >="        : _c.print(" return " + outer + " >= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "u64.infix >="        : _c.print(outer.ge(CExpr.ident("arg0")).cond(FZ_TRUE, FZ_FALSE).ret()); break;
                   case "u32.infix <"         :
-                  case "u64.infix <"         : _c.print(" return " + outer + " <  arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "u64.infix <"         : _c.print(outer.lt(CExpr.ident("arg0")).cond(FZ_TRUE, FZ_FALSE).ret()); break;
                   case "u32.infix <="        :
-                  case "u64.infix <="        : _c.print(" return " + outer + " <= arg0 ? " + FZ_TRUE.code() + " : " + FZ_FALSE.code() + ";\n"); break;
+                  case "u64.infix <="        : _c.print(outer.le(CExpr.ident("arg0")).cond(FZ_TRUE, FZ_FALSE).ret()); break;
 
-                  case "i32.as_i64"          : _c.print(" return (fzT_1i64) " + outer + ";\n"); break;
-                  case "u32.as_i64"          : _c.print(" return (fzT_1i64) " + outer + ";\n"); break;
-                  case "i32.castTo_u32"      : _c.print(" return (fzT_1u32) " + outer + ";\n"); break;
-                  case "u32.castTo_i32"      : _c.print(" return (fzT_1i32) " + outer + ";\n"); break;
-                  case "i64.castTo_u64"      : _c.print(" return (fzT_1u64) " + outer + ";\n"); break;
-                  case "i64.low32bits"       : _c.print(" return (fzT_1u32)(" + outer + " & 0xffffFFFFLL);\n"); break;
-                  case "u64.castTo_i64"      : _c.print(" return (fzT_1i64) " + outer + ";\n"); break;
-                  case "u64.low32bits"       : _c.print(" return (fzT_1u32)(" + outer + " & 0xffffFFFFLL);\n"); break;
+                  case "i32.as_i64"          : _c.print(outer.castTo("fzT_1i64").ret()); break;
+                  case "u32.as_i64"          : _c.print(outer.castTo("fzT_1i64").ret()); break;
+                  case "i32.castTo_u32"      : _c.print(outer.castTo("fzT_1u32").ret()); break;
+                  case "u32.castTo_i32"      : _c.print(outer.castTo("fzT_1i32").ret()); break;
+                  case "i64.castTo_u64"      : _c.print(outer.castTo("fzT_1u64").ret()); break;
+                  case "i64.low32bits"       : _c.print(outer.and(CExpr. int64const(0xffffFFFFL)).castTo("fzT_1u32").ret()); break;
+                  case "u64.castTo_i64"      : _c.print(outer.castTo("fzT_1i64").ret()); break;
+                  case "u64.low32bits"       : _c.print(outer.and(CExpr.uint64const(0xffffFFFFL)).castTo("fzT_1u32").ret()); break;
 
                   case "Object.asString"     :
                     {
