@@ -657,7 +657,7 @@ public class FUIR extends ANY
         for (int i=0; i<b.statements_.size(); i++)
           {
             var st = b.statements_.get(i);
-            toStack(l, st, true);
+            toStack(l, st, dumpResult || i < b.statements_.size()-1);
           }
       }
     else if (s instanceof BoolConst)
@@ -898,7 +898,8 @@ public class FUIR extends ANY
 
 
   /**
-   * Get the inner clazz for a non dynamic call
+   * Get the inner clazz for a non dynamic call or the static clazz of a dynamic
+   * call.
    *
    * @param cl index of clazz containing the call
    *
@@ -913,8 +914,7 @@ public class FUIR extends ANY
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call,
-       !callIsDynamic(cl, c, ix));
+       codeAt(c, ix) == ExprKind.Call);
 
     var outerClazz = _clazzIds.get(cl);
     var call = (Call) _codeIds.get(c).get(ix);

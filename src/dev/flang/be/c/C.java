@@ -835,13 +835,14 @@ public class C extends Backend
               if (_fuir.callIsDynamic(cl, c, i))
                 {
                   _c.println("// Dynamic call to " + _fuir.callDebugString(c, i));
+                  var cc0 = _fuir.callCalledClazz  (cl, c, i);
                   var ccs = _fuir.callCalledClazzes(cl, c, i);
                   var ac = _fuir.callArgCount(c, i);
                   var tc = _fuir.callTargetClazz(cl, c, i);
                   var t = CExpr.ident(newTemp());
                   var ti = stack.size() - ac - 1;
                   var tt0 = clazzTypeName(tc);
-                  _c.println(tt0 + " " + t.code() + ";");
+                  _c.println(tt0 + " " + t.code()+ ";");
                   _c.print(t.assign(stack.get(ti).castTo(tt0)));
                   stack.set(ti, t);
                   var id = t.deref().field("clazzId");
@@ -860,12 +861,12 @@ public class C extends Backend
                     {
                       boolean outerAdrOfValue = false;
                       CExpr res = null;
-                      var rt = _fuir.clazzResultClazz(ccs[0]); // NYI: HACK: just use the first clazz ccs[0] as static clazz for now.
+                      var rt = _fuir.clazzResultClazz(cc0);
                       if (rt != -1 && !_fuir.clazzIsUnitType(rt) &&
                           (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
                         {
                           res = CExpr.ident(newTemp());
-                          var isOuterRef = _fuir.clazzIsOuterRef(ccs[0]); // NYI: HACK: just use the first clazz ccs[0] as static clazz for now.
+                          var isOuterRef = _fuir.clazzIsOuterRef(cc0);
                           _c.println((isOuterRef
                                       ? clazzTypeNameOuterField(rt)
                                       : clazzTypeName  (rt)) + " " + res.code() + ";");
@@ -873,36 +874,41 @@ public class C extends Backend
                         }
                       _c.println("switch (" + id.code() + ") {");
                       _c.indent();
+                      var stack2 = stack;
                       for (var cc : ccs)
                         {
-                          var stack2 = (Stack<CExpr>) stack.clone();
+                          stack =  (Stack<CExpr>) stack2.clone();
                           var tt = _fuir.clazzOuterClazz(cc);
                           _c.println("// Call target "+ _fuir.clazzAsString(cc) + ":");
                           _c.println("case " + CExpr.int32const(clazzId2num(tt)).code() + ": {");
                           _c.indent();
-                          _c.print(call(cl, c, i, cc, stack2, tt));
-                          if (res != null)
+                          _c.print(call(cl, c, i, cc, stack, tt));
+                          var rt2 = _fuir.clazzResultClazz(cc); // NYI: Check why rt2 and rt can be different
+                          if (rt2 != -1 && !_fuir.clazzIsUnitType(rt2))
                             {
-                              var rv = stack2.pop();
-                              if (outerAdrOfValue)
+                              var rv = stack.pop();
+                              if (res != null)
                                 {
-                                  rv = rv.adrOf();
+                                  if (outerAdrOfValue)
+                                    {
+                                      rv = rv.adrOf();
 
-                                  // NYI: This cast should not be needed when
-                                  // outer clazz handling is fixed, in
-                                  // particular, when clazzes
-                                  //
-                                  //   ref stream<i32>.asString
-                                  //   ref conststring.ref asStream.asString
-                                  //
-                                  // are the same, the second one should be replaced by the first.
-                                  rv = rv.castTo(clazzTypeNameOuterField(rt));  // NYI remove, see above.
+                                      // NYI: This cast should not be needed when
+                                      // outer clazz handling is fixed, in
+                                      // particular, when clazzes
+                                      //
+                                      //   ref stream<i32>.asString
+                                      //   ref conststring.ref asStream.asString
+                                      //
+                                      // are the same, the second one should be replaced by the first.
+                                      rv = rv.castTo(clazzTypeNameOuterField(rt));  // NYI remove, see above.
+                                    }
+                                  if (_fuir.clazzIsRef(rt))
+                                    {
+                                      rv = rv.castTo(clazzTypeName(rt));
+                                    }
+                                  _c.print(res.assign(rv));
                                 }
-                              if (_fuir.clazzIsRef(rt))
-                                {
-                                  rv = rv.castTo(clazzTypeName(rt));
-                                }
-                              _c.print(res.assign(rv));
                             }
                           _c.print(CStmnt.BREAK);
                           _c.unindent();
@@ -911,7 +917,6 @@ public class C extends Backend
                       _c.println("default: { fprintf(stderr,\"*** unhandled dynamic call target %d\\n\", " + id.code() + "); exit(1); }");
                       _c.unindent();
                       _c.println("}");
-                      stack.setSize(stack.size() - ac); // stack.popn(ac)
                       if (res != null)
                         {
                           if (outerAdrOfValue)
