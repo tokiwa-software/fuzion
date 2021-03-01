@@ -118,8 +118,8 @@ integer<T : integer<T>> : numeric<T> is
         else
           p := -? integer.this
           match p
-            v i32 => ("-" + v).asBytes.asStream
-            _ nil => ("-" + -(integer.this / ten) + -(integer.this % ten)).asBytes.asStream
+            v i32 => ("-" + v .asString).asBytes.asStream
+            _ nil => ("-" + (-(integer.this / ten)).asString + (-(integer.this % ten)).asString).asBytes.asStream
 
       posDecimalBytesStream ref : stream<i32> is  # NYI: check why "ref" is needed here, make this an anonymous inner feature
         p := integer.this.highest10
