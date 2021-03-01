@@ -81,9 +81,5 @@ stream<T> ref is
   redef asString ref string is
     res string = ""
 
-    # NYI: x.asString does not work yet (becuase of generic type?)
-    # consume(fun (x T) is res = res + x.asString; if hasNext then res = res + ", ")
-
-    s(o ref Object) => o.asString
-    consume(fun (x T) is res = res + s(x); if hasNext then res = res + ", ")
+    consume(fun (x T) is res = res + x.asString; if hasNext then res = res + ", ")
     res
