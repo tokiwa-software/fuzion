@@ -137,6 +137,12 @@ public class C extends Backend
 
 
   /**
+   * C identifier of argument variable that refers to a clazz' outer instance.
+   */
+  private static final CExpr _outer_ = CExpr.ident("fzouter");
+
+
+  /**
    * The name of the tag field in instances of bool.fz.
    */
   private static final String BOOL_TAG_NAME = "fzF_0_" + mangle(FuzionConstants.CHOICE_TAG_NAME);
@@ -1207,8 +1213,7 @@ public class C extends Backend
           var or = _fuir.clazzOuterRef(cl);
           if (or != -1)
             {
-              var outer = CExpr.ident("fzouter");
-              _c.print(CURRENT.deref().field(fieldNameInClazz(cl, or)).assign(outer));
+              _c.print(CURRENT.deref().field(fieldNameInClazz(cl, or)).assign(_outer_));
             }
 
           var ac = _fuir.clazzArgCount(cl);
@@ -1273,12 +1278,11 @@ public class C extends Backend
           cFunctionDecl(cl);
           _c.print(" {\n");
           var or = _fuir.clazzOuterRef(cl);
-          var fzo = CExpr.ident("fzouter");
           var outer =
-            or == -1                                     ? CExpr.dummy("--no outer--") :
-            _fuir.clazzFieldIsAdrOfValue(or)             ? fzo.deref() :
-            _fuir.clazzIsRef(_fuir.clazzResultClazz(or)) ? fzo.deref().field("fzF_0_val")
-            : fzo;
+            or == -1                                     ? null :
+            _fuir.clazzFieldIsAdrOfValue(or)             ? _outer_.deref() :
+            _fuir.clazzIsRef(_fuir.clazzResultClazz(or)) ? _outer_.deref().field("fzF_0_val")
+                                                         : _outer_;
 
           _c.print(codeForIntrinsic(cl, outer));
           _c.print("}\n");
