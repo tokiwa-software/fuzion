@@ -585,17 +585,6 @@ public class C extends Backend
 
 
   /**
-   * The type of an outer field of the given clazz.
-   *
-   * NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
-   */
-  String clazzTypeNameOuterField(int cl)
-  {
-    return clazzTypeName(cl) + (outerClazzPassedAsAdrOfValue(cl) ? "*" : "");
-  }
-
-
-  /**
    * Create declarations of the C types required for the given clazz.  Write
    * code to _c.
    *
@@ -1162,7 +1151,7 @@ public class C extends Backend
     String comma = "";
     if (oc != -1 && !_fuir.clazzIsUnitType(oc))
       {
-        _c.print(clazzTypeNameOuterField(oc));
+        _c.print(clazzTypeName(oc) + (outerClazzPassedAsAdrOfValue(oc) ? "*" : ""));
         _c.print(" fzouter");
         comma = ", ";
       }
