@@ -938,7 +938,9 @@ public class C extends Backend
           case strConst:
             {
               var bytes = _fuir.strConst(c, i);
-              stack.push(constString(bytes));
+              var tmp = newTemp();
+              _c.print(constString(bytes, tmp));
+              stack.push(CExpr.ident(tmp));
               break;
             }
           case Match:
@@ -978,7 +980,7 @@ public class C extends Backend
    * Create code to create a constant string and assign it to a new temp
    * variable. Return an CExpr that reads this variable.
    */
-  CExpr constString(byte[] bytes)
+  CStmnt constString(byte[] bytes, String tmp)
   {
     StringBuilder sb = new StringBuilder();
     for (var b : bytes)
@@ -986,12 +988,12 @@ public class C extends Backend
         sb.append("\\"+((b >> 6) & 7)+((b >> 3) & 7)+(b & 7));
         sb.append("...");
       }
-    var tmp = newTemp();
-    _c.println("fzTr__Rconststring *" + tmp + " = malloc(sizeof(fzTr__Rconststring));\n" +
-               tmp + "->clazzId = " + clazzId2num(_fuir.clazz_conststring()) + ";\n" +
-               tmp + "->fzF_1_data = (void *)\"" + sb + "\";\n" +
-               tmp + "->fzF_3_length = " + bytes.length + ";\n");
-    return CExpr.ident(tmp);
+    var t = CExpr.ident(tmp);
+    return CStmnt.seq(CStmnt.decl("fzTr__Rconststring *", tmp),
+                      CExpr.ident(tmp).assign(CExpr.call("malloc", new List<>(CExpr.ident("fzTr__Rconststring").sizeOfType()))),
+                      t.deref().field("clazzId").assign(CExpr.int32const(clazzId2num(_fuir.clazz_conststring()))),
+                      t.deref().field("fzF_1_data").assign(CExpr.string(sb.toString()).castTo("void *")),
+                      t.deref().field("fzF_3_length").assign(CExpr.int32const(bytes.length)));
   }
 
 
@@ -1280,9 +1282,16 @@ public class C extends Backend
 
           switch (_fuir.clazzIntrinsicName(cl))
             {
-            case "exitForCompilerTest" : _c.print(" exit(arg0);\n"); break;
-            case "fuzion.std.out.write": _c.print(" char c = (char) arg0; fwrite(&c, 1, 1, stdout);\n"); break;
-            case "fuzion.std.out.flush": _c.print(" fflush(stdout);\n"); break;
+            case "exitForCompilerTest" : _c.print(CExpr.call("exit", new List<>(CExpr.ident("arg0")))); break;
+            case "fuzion.std.out.write": _c.print(CStmnt.seq(CStmnt.decl("char","c"),
+                                                             CExpr.ident("c").assign(CExpr.ident("arg0").castTo("char")),
+                                                             CExpr.call("fwrite",
+                                                                        new List<>(CExpr.ident("c").adrOf(),
+                                                                                   CExpr.int32const(1),
+                                                                                   CExpr.int32const(1),
+                                                                                   CExpr.ident("stdout")))));
+              break;
+            case "fuzion.std.out.flush": _c.print(CExpr.call("fflush", new List<>(CExpr.ident("stdout")))); break;
 
               /* NYI: The C standard does not guarentee wrap-around semantics for signed types, need
                * to check if this is the case for the C compilers used for Fuzion.
@@ -1350,20 +1359,25 @@ public class C extends Backend
 
             case "Object.asString"     :
               {
-                var str = constString("NYI: Object.asString".getBytes(StandardCharsets.UTF_8));
-                _c.print(" return " + str.castTo("fzTr__Rstring*").code() + ";\n");
+                var tmp = newTemp();
+                _c.print(CStmnt.seq(constString("NYI: Object.asString".getBytes(StandardCharsets.UTF_8), tmp),
+                                    CExpr.ident(tmp).castTo("fzTr__Rstring*").ret()));
                 break;
               }
 
               // NYI: the following intrinsics are generic, they are currently hard-coded for i32 only:
-            case "Array.getData": _c.print(" return malloc(sizeof(fzT_1i32) * arg0);\n"); break;
-            case "Array.setel"  : _c.print(" ((fzT_1i32*) arg0) [arg1] = arg2;\n"); break;
-            case "Array.get"    : _c.print(" return ((fzT_1i32*) arg0) [arg1];\n"); break;
+            case "Array.getData": _c.print(CExpr.call("malloc",
+                                                      new List<>(CExpr.ident("fzT_1i32").sizeOfType().mul(CExpr.ident("arg0")))).ret()); break;
+            case "Array.setel"  : _c.print(CExpr.ident("arg0").castTo("fzT_1i32*").index(CExpr.ident("arg1")).assign(CExpr.ident("arg2"))); break;
+            case "Array.get"    : _c.print(CExpr.ident("arg0").castTo("fzT_1i32*").index(CExpr.ident("arg1")).ret()); break;
 
             default:
               var msg = "code for intrinsic " + _fuir.clazzIntrinsicName(cl) + " is missing";
               Errors.warning(msg);
-              _c.print(" fprintf(stderr, \"*** error: NYI: "+ msg + "\\n\"); exit(1);\n");
+              _c.print(CStmnt.seq(CExpr.call("fprintf",
+                                             new List<>(CExpr.ident("stderr"),
+                                                        CExpr.string("*** error: NYI: "+ msg + "\\n"))),
+                                  CExpr.call("exit", new List<>(CExpr.int32const(1)))));
               break;
             }
           _c.print("}\n");
