@@ -28,7 +28,7 @@
 # choice types provide algebraic sum types of all the generic arguments
 # provided to choice.
 #
-# Syntactic sugar of the Fuzion language permits a alternative notation
+# Syntactic sugar of the Fuzion language permits an alternative notation
 # for choice types with actual generics as follows
 #
 #   A | B | C | ...
