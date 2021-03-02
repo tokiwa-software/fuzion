@@ -1133,7 +1133,7 @@ public class C extends Backend
         result = new List<>();
         var tc = _fuir.callTargetClazz(cl, c, i);
         var or = _fuir.clazzOuterRef(cc);
-        if (tc != -1 && !_fuir.clazzIsUnitType(tc))
+        if (!_fuir.clazzIsUnitType(tc))
           {
             var a = stack.pop();
             if (or != -1)
