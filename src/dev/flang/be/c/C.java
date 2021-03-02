@@ -932,18 +932,19 @@ public class C extends Backend
               var cond = stack.pop();
               var block     = _fuir.i32Const(c, i + 1);
               var elseBlock = _fuir.i32Const(c, i + 2);
+              var stack2 = stack;
               i = i + 2;
               _c.println("if (" + cond.field(BOOL_TAG_NAME).code() + " != 0) {");
               _c.indent();
+              stack = (Stack<CExpr>) stack2.clone();
               createCode(cl, stack, block);
               _c.unindent();
               _c.println("} else {");
-              // NYI: clone stack
               _c.indent();
+              stack = stack2;
               createCode(cl, stack, elseBlock);
               _c.unindent();
               _c.println("}");
-              // NYI: join stacks
               break;
             }
           case boolConst:
