@@ -598,11 +598,8 @@ public class C extends Backend
         {
           var name = _structNames.get(cl);
           // special handling of stdlib clazzes known to the compiler
-          String type =
-            _fuir.clazzIsI32(cl) ? "int32_t" :
-            _fuir.clazzIsI64(cl) ? "int64_t" :
-            _fuir.clazzIsU32(cl) ? "uint32_t" :
-            _fuir.clazzIsU64(cl) ? "uint64_t" : "struct " + name;
+          var stype = scalarType(cl);
+          var type = stype != null ? stype : "struct " + name;
           _c.print
                 ("typedef " + type + " " + name + ";\n");
           break;
@@ -610,6 +607,32 @@ public class C extends Backend
       default:
         break;
       }
+  }
+
+
+  /**
+   * Does the given clazz specify a scalar type in the C code, i.e, standard
+   * numeric types i32, u64, etc.
+   */
+  boolean isScalarType(int cl)
+  {
+    return scalarType(cl) != null;
+  }
+
+
+  /**
+   * Check if the given clazz specifies a scalar type in the C code, i.e,
+   * standard numeric types i32, u64, etc. If so, return that C type.
+   *
+   * @return the C scalar type corresponding to cl, null if cl is not scaler.
+   */
+  String scalarType(int cl)
+  {
+    return
+      _fuir.clazzIsI32(cl) ? "int32_t" :
+      _fuir.clazzIsI64(cl) ? "int64_t" :
+      _fuir.clazzIsU32(cl) ? "uint32_t" :
+      _fuir.clazzIsU64(cl) ? "uint64_t" : null;
   }
 
 
@@ -628,13 +651,7 @@ public class C extends Backend
           if (!_declaredStructs.contains(cl))
             {
               _declaredStructs.add(cl);
-              if (_fuir.clazzIsI32(cl) ||
-                  _fuir.clazzIsI64(cl) ||
-                  _fuir.clazzIsU32(cl) ||
-                  _fuir.clazzIsU64(cl)    )
-                { // special handling of stdlib clazzes known to the compiler
-                }
-              else
+              if (!isScalarType(cl)) // special handling of stdlib clazzes known to the compiler
                 {
                   // first, make sure structs used for inner fields are declared:
                   for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
@@ -1248,13 +1265,9 @@ public class C extends Backend
       {
         var af = _fuir.clazzArg(cl, i);
         var at = _fuir.clazzArgClazz(cl, i);
-        if (at != -1 && !_fuir.clazzIsUnitType(at))
+        if (!_fuir.clazzIsUnitType(at))
           {
-            var target =
-              _fuir.clazzIsI32(cl) ||
-              _fuir.clazzIsI64(cl)||
-              _fuir.clazzIsU32(cl)||
-              _fuir.clazzIsU64(cl)
+            var target = isScalarType(cl)
               ? CURRENT.deref()
               : CURRENT.deref().field(fieldNameInClazz(cl, af));
             _c.print(target.assign(CExpr.ident("arg" + i)));
