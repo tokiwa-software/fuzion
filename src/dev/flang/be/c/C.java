@@ -569,6 +569,19 @@ public class C extends Backend
 
 
   /**
+   * The type of a field.  This is the usually the same as clazzTypeName() of
+   * the field's result clazz, except for outer refs for which
+   * clazzFieldIsAdrOfValue, where it is a pointer to that type.
+   */
+  String clazzFieldType(int cf)
+  {
+    return clazzTypeName(_fuir.clazzResultClazz(cf)) +
+      (_fuir.clazzFieldIsAdrOfValue(cf) ? "*" : "");
+  }
+
+
+
+  /**
    * Create declarations of the C types required for the given clazz.  Write
    * code to _c.
    *
@@ -639,8 +652,7 @@ public class C extends Backend
                   for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
                     {
                       var cf = _fuir.clazzField(cl, i);
-                      String type = clazzTypeName(_fuir.clazzResultClazz(cf)) +
-                        (_fuir.clazzFieldIsAdrOfValue(cf) ? "*" : "");
+                      String type = clazzFieldType(cf);
                       _c.print(" " + type + " " + fieldName2(i, cf) + ";\n");
                     }
                   _c.print
@@ -1132,12 +1144,11 @@ public class C extends Backend
              : clazzTypeName(res) + " ");
     _c.print(_functionNames.get(cl));
     _c.print("(");
-    var oc = _fuir.clazzOuterClazz(cl);
     String comma = "";
     var or = _fuir.clazzOuterRef(cl);
     if (or != -1)
       {
-        _c.print(clazzTypeName(oc) + (_fuir.clazzFieldIsAdrOfValue(or) ? "*" : ""));
+        _c.print(clazzFieldType(or));
         _c.print(" fzouter");
         comma = ", ";
       }
