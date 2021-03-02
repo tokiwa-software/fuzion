@@ -102,7 +102,6 @@ public class FUIR extends ANY
     Match,
     Singleton,
     WipeStack,
-    Unknown,
   }
 
 
@@ -745,7 +744,7 @@ public class FUIR extends ANY
     if (PRECONDITIONS) require
       (ix >= 0, withinCode(c, ix));
 
-    ExprKind result = ExprKind.Unknown;
+    ExprKind result;
     var e = _codeIds.get(c).get(ix);
     if (e == WIPE_STACK) // Take care: must be first since WIPE_STACK is IntConst (for now)
       {
@@ -804,7 +803,8 @@ public class FUIR extends ANY
       }
     else
       {
-        System.err.println("Stmnt not supported in FUIR.codeAt: "+e.getClass());
+        Errors.fatal(e.pos(), "Stmnt not supported in FUIR.codeAt", "Statement class: " + e.getClass());
+        result = ExprKind.NOP; // keep javac from complaining.
       }
     return result;
   }

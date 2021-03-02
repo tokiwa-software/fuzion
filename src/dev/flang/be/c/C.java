@@ -983,7 +983,6 @@ public class C extends Backend
               break;
             }
           case NOP:
-          case Unknown: // NYI: remove
             {
               break;
             }
