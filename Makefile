@@ -143,6 +143,7 @@ JAVA_FILES_BE_C = \
           $(SRC)/dev/flang/be/c/CExpr.java \
           $(SRC)/dev/flang/be/c/CFile.java \
           $(SRC)/dev/flang/be/c/CStmnt.java \
+          $(SRC)/dev/flang/be/c/Intrinsics.java \
 
 JAVA_FILES_TOOLS = \
           $(SRC)/dev/flang/tools/Fuzion.java \
