@@ -30,6 +30,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.be.c.C;
+import dev.flang.be.c.COptions;
 
 import dev.flang.be.interpreter.Intrinsics;
 import dev.flang.be.interpreter.Interpreter;
@@ -56,6 +57,8 @@ class Fuzion extends ANY
 
   /*----------------------------  constants  ----------------------------*/
 
+  static String _binaryName_ = null;
+
 
   /**
    * Fuzion Backends:
@@ -63,7 +66,24 @@ class Fuzion extends ANY
   static enum Backend
   {
     interpreter("-interpreter"),
-    c          ("-c"),
+    c          ("-c")
+    {
+      String usage()
+      {
+        return "[-o=<file>] ";
+      }
+      boolean handleOption(String o)
+      {
+        boolean result = false;
+        if (o.startsWith("-o="))
+          {
+            _binaryName_ = o.substring(3);
+            result = true;
+          }
+        return result;
+      }
+    }
+    ,
     java       ("-java"),
     classes    ("-classes"),
     llvm       ("-llvm"),
@@ -93,21 +113,48 @@ class Fuzion extends ANY
         (arg != null && arg.startsWith("-"));
 
       _arg = arg;
-      _allBackendArgs_.append(_allBackendArgs_.length() == 0 ? "" : "|").append(arg);
+      if (usage() == "")
+        {
+          _allBackendArgs_.append(_allBackendArgs_.length() == 0 ? "" : "|").append(arg);
+        }
+      else
+        {
+          _allBackendExtraUsage_.append("       " + CMD + " " + _arg + " " + usage() + STANDRD_OPTIONS + " --or--\n");
+        }
       _allBackends_.put(arg, this);
+    }
+
+
+    /**
+     * Does this backend handle a specific option? If so, must return true.
+     */
+    boolean handleOption(String o)
+    {
+      return false;
+    }
+
+    /**
+     * Usage string for the specific options handled by this backend. "" if
+     * none.  Must end with " " otherwise.
+     */
+    String usage()
+    {
+      return "";
     }
   }
 
   static StringBuilder _allBackendArgs_ = new StringBuilder();
+  static StringBuilder _allBackendExtraUsage_ = new StringBuilder();
   static TreeMap<String, Backend> _allBackends_ = new TreeMap<>();
-
 
   static final String CMD = System.getProperty("fuzion.command", "fz");
 
   static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
 
+  static final String STANDRD_OPTIONS = "[-noANSI] (<main> | -) ";
   static final String USAGE =
-    "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] [-noANSI] (<main> | -)  --or--\n" +
+    "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] " + STANDRD_OPTIONS + " --or--\n" +
+    _allBackendExtraUsage_ +
     "       " + CMD + " -pretty [-noANSI] ({<file>} | -)\n";
 
 
@@ -343,6 +390,9 @@ class Fuzion extends ANY
           {
             System.setProperty("FUZION_DISABLE_ANSI_ESCAPES","true");
           }
+        else if (_backend.handleOption(a))
+          {
+          }
         else if (a.startsWith("-"))
           {
             Errors.fatal("unknown argument: '" + a + "'", USAGE);
@@ -385,7 +435,7 @@ class Fuzion extends ANY
         switch (_backend)
           {
           case interpreter: new Interpreter(fuir).run(); break;
-          case c          : new C(options, fuir).compile(); break;
+          case c          : new C(new COptions(options, _binaryName_), fuir).compile(); break;
           default         : Errors.fatal("backend '" + _backend + "' not supported yet"); break;
           }
       };

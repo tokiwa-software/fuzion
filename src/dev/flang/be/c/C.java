@@ -44,7 +44,6 @@ import dev.flang.ir.Clazzes; // NYI: remove this dependency!
 import dev.flang.fuir.FUIR;
 
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionOptions;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
@@ -157,9 +156,15 @@ public class C extends Backend
 
 
   /**
-   * The intermidiate code we are compiling.
+   * The intermediate code we are compiling.
    */
   final FUIR _fuir;
+
+
+  /**
+   * The options set for the compilation.
+   */
+  final COptions _options;
 
 
   /**
@@ -313,13 +318,14 @@ public class C extends Backend
   /**
    * Create C code backend for given intermidiate code.
    *
-   * @param fuir the intermeidate code.
-   *
    * @param opt options to control compilation.
+   *
+   * @param fuir the intermeidate code.
    */
-  public C(FuzionOptions opt,
+  public C(COptions opt,
            FUIR fuir)
   {
+    _options = opt;
     _fuir = fuir;
     Clazzes.findAllClasses(this, _fuir.main()); /* NYI: remove this, should be done within FUIR */
     Errors.showAndExit();
@@ -360,7 +366,7 @@ public class C extends Backend
   public void compile()
   {
     var cl = _fuir.mainClazzId();
-    var name = _fuir.clazzBaseName(cl);
+    var name = _options._binaryName != null ? _options._binaryName : _fuir.clazzBaseName(cl);
     var cname = name + ".c";
     System.out.println(" + " + cname);
     try

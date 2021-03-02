@@ -95,6 +95,14 @@ public class FuzionOptions extends ANY
   }
 
 
+  /**
+   * Level of verbosity of output, 0 for no output
+   */
+  public int verbose()
+  {
+    return _verbose;
+  }
+
   public boolean fuzionSafety()
   {
     return _fuzionSafety;
