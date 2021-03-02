@@ -979,7 +979,7 @@ public class C extends Backend
             }
           case WipeStack:
             {
-              // stack.clear();   NYI: this currently causes a compiler crash, but it seems to work fine if we do nothing.
+              stack.clear();
               break;
             }
           case NOP:
