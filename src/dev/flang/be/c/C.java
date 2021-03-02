@@ -666,9 +666,8 @@ public class C extends Backend
                   for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
                     {
                       var cf = _fuir.clazzField(cl, i);
-                      String type = _fuir.clazzFieldIsAdrOfValue(cf)
-                        ? clazzTypeNameOuterField(_fuir.clazzOuterClazz(cl))
-                        : clazzTypeName(_fuir.clazzResultClazz(cf));
+                      String type = clazzTypeName(_fuir.clazzResultClazz(cf)) +
+                        (_fuir.clazzFieldIsAdrOfValue(cf) ? "*" : "");
                       _c.print(" " + type + " " + fieldName2(i, cf) + ";\n");
                     }
                   _c.print
