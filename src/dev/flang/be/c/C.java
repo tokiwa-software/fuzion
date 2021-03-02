@@ -569,22 +569,6 @@ public class C extends Backend
 
 
   /**
-   * Check if cl is passed as a value iff used as the type of an outer ref.
-   *
-   * NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
-   */
-  boolean outerClazzPassedAsAdrOfValue(int cl)
-  {
-    return
-      !_fuir.clazzIsRef(cl) &&
-      !_fuir.clazzIsI32(cl) &&
-      !_fuir.clazzIsI64(cl) &&
-      !_fuir.clazzIsU32(cl) &&
-      !_fuir.clazzIsU64(cl);
-  }
-
-
-  /**
    * Create declarations of the C types required for the given clazz.  Write
    * code to _c.
    *
@@ -1115,18 +1099,19 @@ public class C extends Backend
       }
     else // NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
       { // ref to outer instance, passed by reference
+        result = new List<>();
         var tc = _fuir.callTargetClazz(cl, c, i);
-        if (tc == -1 || _fuir.clazzIsUnitType(tc))
-          {
-            result = new List<>();
-          }
-        else
+        var or = _fuir.clazzOuterRef(cc);
+        if (tc != -1 && !_fuir.clazzIsUnitType(tc))
           {
             var a = stack.pop();
-            var targetAsValue = !outerClazzPassedAsAdrOfValue(tc);
-            var a2 = targetAsValue    ? a  : a.adrOf();
-            var a3 = castTarget == -1 ? a2 : a2.castTo(clazzTypeName(castTarget));
-            result = new List<>(a3);
+            if (or != -1)
+              {
+                var targetAsValue = !_fuir.clazzFieldIsAdrOfValue(or);
+                var a2 = targetAsValue    ? a  : a.adrOf();
+                var a3 = castTarget == -1 ? a2 : a2.castTo(clazzTypeName(castTarget));
+                result.add(a3);
+              }
           }
       }
     return result;
@@ -1149,9 +1134,10 @@ public class C extends Backend
     _c.print("(");
     var oc = _fuir.clazzOuterClazz(cl);
     String comma = "";
-    if (oc != -1 && !_fuir.clazzIsUnitType(oc))
+    var or = _fuir.clazzOuterRef(cl);
+    if (or != -1)
       {
-        _c.print(clazzTypeName(oc) + (outerClazzPassedAsAdrOfValue(oc) ? "*" : ""));
+        _c.print(clazzTypeName(oc) + (_fuir.clazzFieldIsAdrOfValue(or) ? "*" : ""));
         _c.print(" fzouter");
         comma = ", ";
       }
