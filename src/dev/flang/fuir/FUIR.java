@@ -222,7 +222,9 @@ public class FUIR extends ANY
   {
     var fc = _clazzIds.get(fcl);
     var f = fc.feature();
-    return f.isOuterRef() && f.outer().isOuterRefAdrOfValue();
+    return f.isOuterRef() &&
+      !fc._outer._outer.isRef() &&
+      !fc._outer._outer.feature().isBuiltInPrimitive();
   }
 
 

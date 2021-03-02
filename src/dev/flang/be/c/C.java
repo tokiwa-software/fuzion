@@ -870,7 +870,7 @@ public class C extends Backend
                           _c.println((isOuterRef
                                       ? clazzTypeNameOuterField(rt)
                                       : clazzTypeName  (rt)) + " " + res.code() + ";");
-                          outerAdrOfValue = isOuterRef && outerClazzPassedAsAdrOfValue(rt);
+                          outerAdrOfValue = isOuterRef && _fuir.clazzFieldIsAdrOfValue(cc0);
                         }
                       _c.println("switch (" + id.code() + ") {");
                       _c.indent();
@@ -1092,7 +1092,7 @@ public class C extends Backend
                 {
                   var field = fieldName(_fuir.callFieldOffset(tc, c, i), cc);
                   CExpr res = ccodeAccessField(tc, t, field);
-                  if (_fuir.clazzIsOuterRef(cc) && outerClazzPassedAsAdrOfValue(rt))  // NYI: Better have a specific FUIR statement for this
+                  if (_fuir.clazzIsOuterRef(cc) && _fuir.clazzFieldIsAdrOfValue(cc))
                     {
                       res = res.deref();
                     }

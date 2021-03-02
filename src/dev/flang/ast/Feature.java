@@ -3252,7 +3252,7 @@ public class Feature extends ANY implements Stmnt, Comparable
    * reference for inner features is not a reference, but a copy of the value
    * itself since there are no inner features to modify the value.
    */
-  private boolean isBuiltInPrimitive()
+  public boolean isBuiltInPrimitive()
   {
     return
       (  outer_ != null)
