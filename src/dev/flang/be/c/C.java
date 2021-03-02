@@ -1053,10 +1053,7 @@ public class C extends Backend
                 {
                   var field = fieldName(_fuir.callFieldOffset(tc, c, i), cc);
                   CExpr res = ccodeAccessField(tc, t, field);
-                  if (_fuir.clazzIsOuterRef(cc) && _fuir.clazzFieldIsAdrOfValue(cc))
-                    {
-                      res = res.deref();
-                    }
+                  res = _fuir.clazzFieldIsAdrOfValue(cc) ? res.deref() : res;
                   stack.push(res);
                 }
             }
@@ -1119,8 +1116,7 @@ public class C extends Backend
             var a = stack.pop();
             if (or != -1)
               {
-                var targetAsValue = !_fuir.clazzFieldIsAdrOfValue(or);
-                var a2 = targetAsValue    ? a  : a.adrOf();
+                var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
                 var a3 = castTarget == -1 ? a2 : a2.castTo(clazzTypeName(castTarget));
                 result.add(a3);
               }
