@@ -157,6 +157,27 @@ abstract class CExpr extends CStmnt
 
 
   /**
+   * Create a C expression for a C string
+   *
+   * @param s the C string, must not contain any characters not allowed in a C
+   * string, can use C escapes.
+   *
+   * @return the resulting expression
+   */
+  static CExpr string(String s)
+  {
+    return new CExpr()
+      {
+        void code(StringBuilder sb)
+        {
+          sb.append("\"").append(s).append("\"");
+        }
+        int precedence() { return 0; }
+      };
+  }
+
+
+  /**
    * Compound initializer such as (myStruct){ .fieldA = 3 }
    *
    * @return the resulting expression
@@ -282,9 +303,11 @@ abstract class CExpr extends CStmnt
    *
    *  0 for prim-expr: identifier, constant, string-literal, '(' expresion ')' and generic-selection
    *
-   *  1 for postfix-expr: prim-expr | postfix-expr ('[' ']'| '(' arglist ')'| '.'| '->'| '++'| '--'| '(' type-name ')' '{' initializer-list [','] '}'
+   *  1 for postfix-expr: prim-expr | postfix-expr ('[' expr ']'| '(' arglist ')'| '.'| '->'| '++'| '--'
+   *           | '(' type-name ')' '{' initializer-list [','] '}'
    *
-   *  2 for unary-expr: postfix-expr | ({'++'|'--'|'&'|'*'|'+'|'-'|'~'|'!'} unary-expr) | 'sizeof'  | '_Alignof'
+   *  2 for unary-expr: postfix-expr | ({'++'|'--'|'&'|'*'|'+'|'-'|'~'|'!'} unary-expr)
+   *           | 'sizeof' unary-expression | 'sizeof' '(' type-name ')' | '_Alignof' '(' type-name ')'
    *
    *  3 for cast-expr: {'(' type-name ')'} unary-expr
    *
@@ -347,14 +370,50 @@ abstract class CExpr extends CStmnt
 
 
   /**
+   * Create CExpr that corresponds to reading named field from struct given in this
+   *
+   * @param name the name of a field
+   *
+   * @return the resulting expression to read this.name
+   */
+  CExpr field(String name)
+  {
+    CExpr inner = this;
+    return new CExpr()
+      {
+        int precedence() { return 1; }
+        void code(StringBuilder sb) { inner.code(sb, precedence()); sb.append(".").append(name); }
+    };
+  }
+
+
+  /**
+   * Create CExpr that corresponds to indexing an array given in this
+   *
+   * @param ix the index
+   *
+   * @return the resulting expression to read this[ix]
+   */
+  CExpr index(CExpr ix)
+  {
+    CExpr inner = this;
+    return new CExpr()
+      {
+        int precedence() { return 1; }
+        void code(StringBuilder sb) { inner.code(sb, precedence()); sb.append("["); ix.code(sb); sb.append("]"); }
+    };
+  }
+
+
+  /**
    * Helper clazz for unary-expr with precedence 2
    */
   private class Unary extends CExpr
   {
     CExpr _inner;
-    char _op;
+    String _op;
 
-    Unary(CExpr inner, char op)
+    Unary(CExpr inner, String op)
       {
         _inner = inner;
         _op = op;
@@ -380,7 +439,7 @@ abstract class CExpr extends CStmnt
    */
   CExpr adrOf()
   {
-    return new Unary(this, '&')
+    return new Unary(this, "&")
       {
         // redefine deref since inner.adrOf().deref() == inner
         CExpr deref() { return _inner; }
@@ -396,7 +455,7 @@ abstract class CExpr extends CStmnt
    */
   CExpr deref()
   {
-    return new Unary(this, '*')
+    return new Unary(this, "*")
       {
         // redefine adrOf since inner.deref().adrOf() == inner
         CExpr adrOf() { return _inner; }
@@ -409,6 +468,53 @@ abstract class CExpr extends CStmnt
               int precedence() { return 1; }
               void code(StringBuilder sb) { _inner.code(sb, precedence()); sb.append("->").append(name); }
           };
+        }
+    };
+  }
+
+
+  /**
+   * Create CExpr that corresponds to C unary operator '-' with precedence 2
+   *
+   * @return the resulting expression to negate this
+   */
+  CExpr neg()
+  {
+    return new Unary(this, "-")
+      {
+        // redefine neg since inner.neg().neg() == inner
+        CExpr  neg() { return _inner; }
+    };
+  }
+
+
+  /**
+   * Create CExpr that corresponds to C unary operator 'sizeof' with precedence 2
+   * applied to this expression.
+   *
+   * @return the resulting expression
+   */
+  CExpr sizeOfExpr()
+  {
+    return new Unary(this, "sizeof");
+  }
+
+
+  /**
+   * Create CExpr that corresponds to C unary operator 'sizeof' with precedence 2
+   * applied to this type.
+   *
+   * @return the resulting expression
+   */
+  CExpr sizeOfType()
+  {
+    return new Unary(this, "sizeof")
+      {
+        void code(StringBuilder sb)
+        {
+          sb.append(_op).append("(");
+          _inner.code(sb, precedence());
+          sb.append(")");
         }
     };
   }
@@ -545,39 +651,6 @@ abstract class CExpr extends CStmnt
       {
         int precedence() { return 15; }
         void code(StringBuilder sb) { inner.code(sb, precedence()); sb.append(" = "); value.code(sb, precedence()); }
-    };
-  }
-
-
-  /**
-   * Create CExpr that corresponds to reading named field from struct given in this
-   *
-   * @param name the name of a field
-   *
-   * @return the resulting expression to read this.name
-   */
-  CExpr field(String name)
-  {
-    CExpr inner = this;
-    return new CExpr()
-      {
-        int precedence() { return 1; }
-        void code(StringBuilder sb) { inner.code(sb, precedence()); sb.append(".").append(name); }
-    };
-  }
-
-
-  /**
-   * Create CExpr that corresponds to C unary operator '-' with precedence 2
-   *
-   * @return the resulting expression to negate this
-   */
-  CExpr neg()
-  {
-    return new Unary(this, '-')
-      {
-        // redefine neg since inner.neg().neg() == inner
-        CExpr  neg() { return _inner; }
     };
   }
 
