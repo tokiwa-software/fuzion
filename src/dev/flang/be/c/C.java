@@ -859,18 +859,13 @@ public class C extends Backend
                     }
                   else
                     {
-                      boolean outerAdrOfValue = false;
                       CExpr res = null;
                       var rt = _fuir.clazzResultClazz(cc0);
                       if (rt != -1 && !_fuir.clazzIsUnitType(rt) &&
                           (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
                         {
                           res = CExpr.ident(newTemp());
-                          var isOuterRef = _fuir.clazzIsOuterRef(cc0);
-                          _c.println((isOuterRef
-                                      ? clazzTypeNameOuterField(rt)
-                                      : clazzTypeName  (rt)) + " " + res.code() + ";");
-                          outerAdrOfValue = isOuterRef && _fuir.clazzFieldIsAdrOfValue(cc0);
+                          _c.println(clazzTypeName(rt) + " " + res.code() + ";");
                         }
                       _c.println("switch (" + id.code() + ") {");
                       _c.indent();
@@ -889,10 +884,6 @@ public class C extends Backend
                               var rv = stack.pop();
                               if (res != null)
                                 {
-                                  if (outerAdrOfValue)
-                                    {
-                                      rv = rv.adrOf();
-                                    }
                                   if (_fuir.clazzIsRef(rt))
                                     {
                                       rv = rv.castTo(clazzTypeName(rt));
@@ -909,10 +900,6 @@ public class C extends Backend
                       _c.println("}");
                       if (res != null)
                         {
-                          if (outerAdrOfValue)
-                            {
-                              res = res.deref();
-                            }
                           stack.push(res);
                         }
                     }
