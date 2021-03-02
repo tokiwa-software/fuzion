@@ -1205,67 +1205,7 @@ public class C extends Backend
           cFunctionDecl(cl);
           _c.print(" {\n");
           _c.indent();
-          _c.print("" + _structNames.get(cl) + " *" + CURRENT.code() + " = malloc(sizeof(" + _structNames.get(cl) + "));\n"+
-                   (_fuir.clazzIsRef(cl) ? CURRENT.deref().field("clazzId").assign(CExpr.int32const(clazzId2num(cl))).code() + ";\n" : ""));
-
-          var or = _fuir.clazzOuterRef(cl);
-          if (or != -1)
-            {
-              _c.print(CURRENT.deref().field(fieldNameInClazz(cl, or)).assign(_outer_));
-            }
-
-          var ac = _fuir.clazzArgCount(cl);
-          for (int i = 0; i < ac; i++)
-            {
-              var af = _fuir.clazzArg(cl, i);
-              var at = _fuir.clazzArgClazz(cl, i);
-              if (at != -1 && !_fuir.clazzIsUnitType(at))
-                {
-                  var target =
-                    _fuir.clazzIsI32(cl) ||
-                    _fuir.clazzIsI64(cl)||
-                    _fuir.clazzIsU32(cl)||
-                    _fuir.clazzIsU64(cl)
-                    ? CURRENT.deref()
-                    : CURRENT.deref().field(fieldNameInClazz(cl, af));
-                  _c.print(target.assign(CExpr.ident("arg" + i)));
-                }
-            }
-          var c = _fuir.clazzCode(cl);
-          var stack = new Stack<CExpr>();
-          try
-            {
-              createCode(cl, stack, c);
-            }
-          catch (RuntimeException | Error e)
-            {
-              _c.println("// *** compiler crash: " + e);
-              StringWriter sw = new StringWriter();
-              e.printStackTrace(new PrintWriter(sw));
-              Errors.error("C backend compiler crash",
-                           "While creating code for " + _fuir.clazzAsString(cl) + "\n" +
-                           "Java Error: " + sw);
-            }
-          var res = _fuir.clazzResultClazz(cl);
-          if (res != -1 && !_fuir.clazzIsUnitType(res))
-            {
-              var rf = _fuir.clazzResultField(cl);
-              if (rf != -1)
-                {
-                  _c.println("return " + CURRENT.deref().field(fieldNameInClazz(cl, rf)).code() + ";");
-                }
-              else
-                {
-                  if (_fuir.clazzIsRef(cl))
-                    {
-                      _c.println("return " + CURRENT.code() + ";");
-                    }
-                  else
-                    {
-                      _c.println("return " + CURRENT.deref().code() + ";");
-                    }
-                }
-            }
+          codeForRoutin(cl);
           _c.unindent();
           _c.println("}");
           break;
@@ -1280,6 +1220,80 @@ public class C extends Backend
           _c.unindent();
           _c.print("}\n");
         }
+      }
+  }
+
+
+  /**
+   * Create code for given clazz cl of type Routine.
+   *
+   * @param cl id of clazz to generate code for
+   */
+  void codeForRoutin(int cl)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(cl) == FUIR.ClazzKind.Routine);
+
+    _c.print("" + _structNames.get(cl) + " *" + CURRENT.code() + " = malloc(sizeof(" + _structNames.get(cl) + "));\n"+
+             (_fuir.clazzIsRef(cl) ? CURRENT.deref().field("clazzId").assign(CExpr.int32const(clazzId2num(cl))).code() + ";\n" : ""));
+
+    var or = _fuir.clazzOuterRef(cl);
+    if (or != -1)
+      {
+        _c.print(CURRENT.deref().field(fieldNameInClazz(cl, or)).assign(_outer_));
+      }
+
+    var ac = _fuir.clazzArgCount(cl);
+    for (int i = 0; i < ac; i++)
+      {
+        var af = _fuir.clazzArg(cl, i);
+        var at = _fuir.clazzArgClazz(cl, i);
+        if (at != -1 && !_fuir.clazzIsUnitType(at))
+          {
+            var target =
+              _fuir.clazzIsI32(cl) ||
+              _fuir.clazzIsI64(cl)||
+              _fuir.clazzIsU32(cl)||
+              _fuir.clazzIsU64(cl)
+              ? CURRENT.deref()
+              : CURRENT.deref().field(fieldNameInClazz(cl, af));
+            _c.print(target.assign(CExpr.ident("arg" + i)));
+          }
+      }
+    var c = _fuir.clazzCode(cl);
+    var stack = new Stack<CExpr>();
+    try
+      {
+        createCode(cl, stack, c);
+      }
+    catch (RuntimeException | Error e)
+      {
+        _c.println("// *** compiler crash: " + e);
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw));
+        Errors.error("C backend compiler crash",
+                     "While creating code for " + _fuir.clazzAsString(cl) + "\n" +
+                     "Java Error: " + sw);
+      }
+    var res = _fuir.clazzResultClazz(cl);
+    if (res != -1 && !_fuir.clazzIsUnitType(res))
+      {
+        var rf = _fuir.clazzResultField(cl);
+        if (rf != -1)
+          {
+            _c.println("return " + CURRENT.deref().field(fieldNameInClazz(cl, rf)).code() + ";");
+          }
+        else
+          {
+            if (_fuir.clazzIsRef(cl))
+              {
+                _c.println("return " + CURRENT.code() + ";");
+              }
+            else
+              {
+                _c.println("return " + CURRENT.deref().code() + ";");
+              }
+          }
       }
   }
 
