@@ -1163,12 +1163,7 @@ public class C extends Backend
     String comma = "";
     if (oc != -1 && !_fuir.clazzIsUnitType(oc))
       {
-        var or = _fuir.clazzOuterRef(cl);
-        String type =
-          or == -1                         ? clazzTypeNameOuterField(oc) :
-          _fuir.clazzFieldIsAdrOfValue(or) ? clazzTypeNameOuterField(_fuir.clazzOuterClazz(cl))
-                                           : clazzTypeName(_fuir.clazzResultClazz(or));
-        _c.print(type);
+        _c.print(clazzTypeNameOuterField(oc));
         _c.print(" fzouter");
         comma = ", ";
       }
