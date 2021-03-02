@@ -414,26 +414,6 @@ public class FUIR extends ANY
   }
 
 
-
-
-  /**
-   * Check if the outer ref within instance of cl is really a ref (true) or a
-   * copy of the outer (immutable) value instance
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl's outer ref is an address
-   */
-  public boolean clazzIsOuterRefAdrOfValue(int cl)
-  {
-    if (PRECONDITIONS) require
-      (clazzOuterRef(cl) != -1);
-
-    var cc = _clazzIds.get(cl);
-    return cc.feature().isOuterRefAdrOfValue();
-  }
-
-
   /**
    * Check if a clazz is the standard lib i32.fz.
    *
