@@ -1259,12 +1259,8 @@ public class C extends Backend
                 var or = _fuir.clazzOuterRef(cl);
                 if (or != -1)
                   {
-                    var oc = _fuir.clazzOuterClazz(cl);
-                    if (oc != -1 && !_fuir.clazzIsUnitType(oc))
-                      {
-                        var outer = CExpr.ident("fzouter");
-                        _c.print(CURRENT.deref().field(fieldNameInClazz(cl, or)).assign(outer));
-                      }
+                    var outer = CExpr.ident("fzouter");
+                    _c.print(CURRENT.deref().field(fieldNameInClazz(cl, or)).assign(outer));
                   }
 
                 var ac = _fuir.clazzArgCount(cl);
