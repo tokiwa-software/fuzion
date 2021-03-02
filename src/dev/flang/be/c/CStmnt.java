@@ -78,14 +78,11 @@ abstract class CStmnt extends ANY
 
 
   /**
-   * C declaration such as 'i32 i'
+   * A sequence of C statements, separated by semicolons.
    *
+   * @param s the statements.
    *
-   * @param type the type of the defined entity
-   *
-   * @param ident the name of the defined entity
-   *
-   * @return corresponding CStmnt
+   * @return corresponding statements sequence
    */
   static CStmnt seq(CStmnt... s)
   {
