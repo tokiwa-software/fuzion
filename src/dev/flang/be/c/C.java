@@ -1275,7 +1275,9 @@ public class C extends Backend
           _c.print("\n// code for intrinsic " + _fuir.clazzAsString(cl) + ":\n");
           cFunctionDecl(cl);
           _c.print(" {\n");
+          _c.indent();
           _c.print(new Intrinsics().code(this, cl));
+          _c.unindent();
           _c.print("}\n");
         }
       }
