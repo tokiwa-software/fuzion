@@ -892,16 +892,6 @@ public class C extends Backend
                                   if (outerAdrOfValue)
                                     {
                                       rv = rv.adrOf();
-
-                                      // NYI: This cast should not be needed when
-                                      // outer clazz handling is fixed, in
-                                      // particular, when clazzes
-                                      //
-                                      //   ref stream<i32>.asString
-                                      //   ref conststring.ref asStream.asString
-                                      //
-                                      // are the same, the second one should be replaced by the first.
-                                      rv = rv.castTo(clazzTypeNameOuterField(rt));  // NYI remove, see above.
                                     }
                                   if (_fuir.clazzIsRef(rt))
                                     {
