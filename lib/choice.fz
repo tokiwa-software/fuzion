@@ -90,6 +90,14 @@
 #     c centigrade => say "it's " + c.degrees + "°C"
 #     f fahrenheit => say "it's " + f.degrees + "°F"
 #
+# NYI: Once Fuzion's match statements supports decomposition as well, we should
+# be able to extract the degrees directly as in
+#
+#   match temp
+#     centigrade d => say "it's " + d + "°C"
+#     fahrenheit d => say "it's " + d + "°F"
+#
+
 choice<A...> is
 
 #  a<X> X
