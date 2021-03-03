@@ -809,6 +809,18 @@ public class FUIR extends ANY
     return result;
   }
 
+  /**
+   * Get the clazz field that is assigned to with the given assignment
+   *
+   * @parm cl a clazz id
+   *
+   * @param c code id
+   *
+   * @param ix index of assignment in code referred to by c
+   *
+   * @return the clazz id of the field that is assigned or -1 if that field
+   * is unused, so the assignment is not needed.
+   */
   public int assignedField(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
@@ -819,7 +831,7 @@ public class FUIR extends ANY
     var outerClazz = _clazzIds.get(cl);
     var a = (Assign) _codeIds.get(c).get(ix);
     var fc = (Clazz) outerClazz.getRuntimeData(a.tid_ + 2);
-    return _clazzIds.get(fc);
+    return fc == null ? -1 : _clazzIds.get(fc);
   }
 
   public int assignOuterClazz(int cl, int c, int ix)
