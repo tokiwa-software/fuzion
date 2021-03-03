@@ -410,8 +410,8 @@ public class FUIR extends ANY
     var cco = cc._outer;
     return
       or == null ||
-      (cco.size() == 0 && !cco.isRef()) ? -1
-                                        : _clazzIds.get(or);
+      (cco.isUnitType()) ? -1
+                         : _clazzIds.get(or);
   }
 
 
@@ -529,7 +529,7 @@ public class FUIR extends ANY
   public boolean clazzIsUnitType(int cl)
   {
     var cc = _clazzIds.get(cl);
-    return cc.size() == 0 && !cc.isRef();
+    return cc.isUnitType();
   }
 
 

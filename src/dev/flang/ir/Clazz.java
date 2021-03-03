@@ -441,6 +441,27 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
+   * isUnitType checks if there exists only one single value in instances of
+   * this clazz, so this value does not need to be stored.
+   */
+  public boolean isUnitType()
+  {
+    if (isRef() || feature().isBuiltInPrimitive())
+      {
+        return false;
+      }
+    for (var f : fields())
+      {
+        if (!f.resultClazz().isUnitType())
+          {
+            return false;
+          }
+      }
+    return true;
+  }
+
+
+  /**
    * Does this clazz have a state, i.e., does it have any runtime fields that
    * could hold values that distinguish two instances of this clazz?
    *
