@@ -191,6 +191,18 @@ public class Interpreter extends Backend
   }
 
 
+  /*--------------------  methods for object layout  --------------------*/
+
+
+  /**
+   * Determine the offset of a given field in an instance of the given clazz.
+   */
+  static int fieldOffset(Clazz c, Feature f)
+  {
+    return c.offsetForField_.get(f);
+  }
+
+
   /*----------------  methods to find execute statments  ----------------*/
 
 
@@ -668,7 +680,7 @@ public class Interpreter extends Backend
                         {
                           if (off < 0)
                             {
-                              off = outerClazz.offsetForField_.get(f);
+                              off = fieldOffset(outerClazz, f);
                             }
                           var slot = args.get(0).at(fclazz, off);
                           return loadField(f, fclazz, slot);
@@ -677,7 +689,7 @@ public class Interpreter extends Backend
                   }
                 else
                   {
-                    var off = outerClazz.offsetForField_.get(f);
+                    var off = fieldOffset(outerClazz, f);
                     result = (args, argTypes) ->
                       {
                         var slot = args.get(0).at(fclazz, off);
@@ -1027,17 +1039,15 @@ public class Interpreter extends Backend
   private static LValue fieldSlot(Feature thiz, Clazz staticClazz, Clazz fclazz, Value curValue)
   {
     int off;
+    var clazz = staticClazz;
     if (staticClazz.isRef())
       {
         curValue = (curValue instanceof LValue) ? loadRefField(thiz, (LValue) curValue)
                                                 : curValue;
-        Clazz clazz = ((Instance) curValue).clazz();
-        off = clazz._dynamicBinding.fieldOffset(thiz);
+        clazz = ((Instance) curValue).clazz();
       }
-    else
-      {
-        off = staticClazz.offsetForField_.get(thiz).intValue();
-      }
+    off = fieldOffset(clazz, thiz);
+
     // NYI: check if this is a can be enabled or removed:
     //
     //  check

@@ -649,17 +649,6 @@ public class Clazz extends ANY implements Comparable
             // if (isInstantiated_) -- NYI: if not instantiated, we do not need to add f to dynamic binding, but we seem to need its side-effects
             if (isAddedToDynamicBinding(f))
               {
-                if ((f.isField() ||
-                     f.isSingleton() /* NYI: ugly, try to avoid special handling for SingleType here */) &&
-                    !f.resultType().isOpenGeneric()
-                    )
-                  {
-                    var off = offsetForField_.get(f);
-                    if (off != null) // NYI: Check this, why can the field offset be null?
-                      {
-                        _dynamicBinding.addFieldOffset(f, off);
-                      }
-                  }
                 if (f.isCalledDynamically() &&
                     Clazzes.isCalledDynamically(f) &&
                     this._type != Types.t_ADDRESS /* NYI: better something like this.isInstantiated() */

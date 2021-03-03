@@ -54,16 +54,6 @@ public class DynamicBinding extends ANY
 
 
   /**
-   * Offsets of fields in instances of _clazz.
-   *
-   * NYI: For now, this uses a simple TreeMap. For efficiency, this should use
-   * an efficient table, e.g. coloring as described in
-   * https://onlinelibrary.wiley.com/doi/abs/10.1002/spe.1022
-   */
-  Map<Feature, Integer> _offsets = new TreeMap<>();
-
-
-  /**
    * Actual callables when calling a dynamically bound feature on _clazz.
    *
    * NYI: like _offsets, this should use a more efficient lookup table.
@@ -110,25 +100,6 @@ public class DynamicBinding extends ANY
 
 
   /**
-   * Record the offset of the given field in the corresponding clazz.
-   *
-   * @param f a inherited or defined field in _clazz.
-   *
-   * @param offset the offset of this field in an instance of _clazz.
-   */
-  public void addFieldOffset(Feature f, int offset)
-  {
-    if (PRECONDITIONS) require
-      (f != null);
-
-    _offsets.put(f, offset);
-
-    if (POSTCONDITIONS) ensure
-      (fieldOffset(f) == offset);
-  }
-
-
-  /**
    * Record a callable corresponding the the given feature in the corresponding
    * clazz.
    *
@@ -169,17 +140,6 @@ public class DynamicBinding extends ANY
     if (POSTCONDITIONS) ensure
       (inner(f) == inner,
        outer(f) == outer);
-  }
-
-
-  /**
-   * Look up the offset storef for field f using addFieldOffset.
-   *
-   * @return the offset of f stored using addFieldOffset.
-   */
-  public int fieldOffset(Feature f)
-  {
-    return _offsets.get(f);
   }
 
 
