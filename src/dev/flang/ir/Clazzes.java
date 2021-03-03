@@ -95,13 +95,11 @@ public class Clazzes extends ANY
   public static class OnDemandClazz
   {
     final TypF _t;
-    final int _size;
     Clazz _clazz = null;
     Clazz _dummy = null;
     boolean _called = false;
-    OnDemandClazz(TypF t, int size) { _t = t; _size = size; }
-    OnDemandClazz(TypF t) { this(t, -1); }
-    OnDemandClazz(TypF t, boolean called) { this(t, -1); _called = called; }
+    OnDemandClazz(TypF t) { _t = t; }
+    OnDemandClazz(TypF t, boolean called) { this(t); _called = called; }
     OnDemandClazz() { this(null); }
 
     /**
@@ -142,14 +140,6 @@ public class Clazzes extends ANY
           if (_called)
             {
               // called(_clazz);
-            }
-          if (_size > 0)
-            {
-              if (_clazz._size == 0)
-                {
-                  _clazz._size = _size;
-                }
-              check(_clazz._size == _size);
             }
         }
       return _clazz;

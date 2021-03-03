@@ -70,6 +70,27 @@ public class Clazz extends ANY implements Comparable
   // { if ((counter&(counter-1))==0) Thread.dumpStack(); }
 
 
+  /**
+   * Empty array as a result for fields() if there are no fields.
+   */
+  static final Clazz[] NO_CLAZZES = new Clazz[0];
+
+
+  /*-----------------------------  classes  -----------------------------*/
+
+
+  /**
+   * Enum to record that we have checked the layout of this clazz and to detect
+   * recursive value fields during layout.
+   */
+  enum LayoutStatus
+  {
+    Before,
+    During,
+    After,
+  }
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -85,15 +106,7 @@ public class Clazz extends ANY implements Comparable
   public final Clazz _outer;
 
 
-  /**
-   *
-   */
-  int _size = Integer.MIN_VALUE;
-
-
   public final Map<Feature, Clazz> clazzForField_ = new TreeMap<>();
-
-  public final Map<Feature, Integer> offsetForField_ = new TreeMap<>();
 
 
   /**
@@ -113,18 +126,11 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
-   * Offset ańd size of choice values stored in this.
-   */
-  public int choiceValsOffset_ = -1;
-  public int choiceValsSize_ = -1;
-
-
-  /**
    * Flag that is set while the layout of objects of this clazz is determined.
    * This is used to detect recursive clazzes that contain value type fields of
    * the same type as the clazz itself.
    */
-  boolean layouting_ = false;
+  LayoutStatus layouting_ = LayoutStatus.Before;
 
 
   /**
@@ -199,6 +205,12 @@ public class Clazz extends ANY implements Comparable
    * Fields in instances of this clazz. Set during layout phase.
    */
   Clazz[] _fields;
+
+
+  /**
+   * Any data the backend might wish to store with an instance of Clazz.
+   */
+  public Object _backendData;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -349,24 +361,6 @@ public class Clazz extends ANY implements Comparable
           }
       }
     return null;
-  }
-
-
-
-  /**
-   * size
-   *
-   * @param u
-   *
-   * @return
-   */
-  public int size()
-  {
-    if (PRECONDITIONS) require
-      (this._size >= 0,
-       !layouting_);
-
-    return this._size;
   }
 
 
@@ -530,122 +524,55 @@ public class Clazz extends ANY implements Comparable
   private List<SourcePosition> layout()
   {
     List<SourcePosition> result = null;
-    if (layouting_)
+    switch (layouting_)
       {
-        result = new List<>(this._type.pos);
-      }
-    else if (this._size == Integer.MIN_VALUE)
-      {
-        layouting_ = true;
-        this._size = 0;
-        if (isChoice())
-          {
-            var fields = new ArrayList<Clazz>();
-            int maxSz = 0;
-            for (Clazz c : choiceGenerics())
-              {
-                if (result == null)
-                  {
-                    int sz;
-                    if (c.isRef())
-                      {
-                        sz = 1;
-                      }
-                    else
-                      {
-                        result = c.layout();
-                        sz = result == null ? c._size : 0;
-                      }
-                    maxSz = sz > maxSz ? sz : maxSz;
-                  }
-              }
-            choiceValsOffset_ = this._size;
-            choiceValsSize_ = maxSz;
-            this._size += maxSz;
-            if (choiceTag() != null)
-              {
-                fields.add(choiceTag());
-                placeUsedField(choiceTag().feature());
-              }
-            _fields = fields.toArray(new Clazz[fields.size()]);
-          }
-        else if (feature().impl.kind_ != Impl.Kind.Intrinsic)
-          {
-            var fields = new ArrayList<Clazz>();
-            for (var f: feature().allInnerAndInheritedFeatures())
-              {
-                if (result == null &&
-                    (f.isField() || f.isSingleton()) &&
-                    Clazzes.isUsed(f, this) &&
-                    !f.resultType().isOpenGeneric() &&
-                    f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
-                    )
-                  {
-                    fields.add(lookup(f, Call.NO_GENERICS, f.isUsedAt()));
-                    result = placeUsedField(f);
-                  }
-              }
-            _fields = fields.toArray(new Clazz[fields.size()]);
-          }
-
-        layouting_ = false;
-      }
-    if (result != null)
-      {
-        result.add(this._type.pos);
-      }
-    return result;
-  }
-
-
-  /**
-   * placeUsedFeature assigns a location within intances of this clazz to the
-   * given field f.
-   *
-   * @param f a field
-   *
-   * @return a list of source positions in case of cyclic value fields
-   */
-  private List<SourcePosition> placeUsedField(Feature f)
-  {
-    if (PRECONDITIONS) require
-      (f != null,
-       f.isField() || f.isSingleton(),
-       Clazzes.isUsed(f, this),
-       !f.resultType().isOpenGeneric(),
-       f == findRedefinition(f),
-       layouting_);
-
-    List<SourcePosition> result = null;
-
-    var fc = lookup(f, Call.NO_GENERICS, f.isUsedAt());
-    var fieldClazz = clazzForField(f);
-    check
-      (fc.fieldClazz() == fieldClazz);
-    Type ft = fieldClazz._type;
-    int fsz = 0;
-    if        (ft.isRef() || f.isSingleton()) { fsz = 1;
-    } else if (ft == Types.resolved.t_i32   ) { fsz = 1;
-    } else if (ft == Types.resolved.t_u32   ) { fsz = 1;
-    } else if (ft == Types.resolved.t_i64   ) { fsz = 2;
-    } else if (ft == Types.resolved.t_u64   ) { fsz = 2;
-    } else if (ft == Types.resolved.t_void  ) { fsz = 0;
-    } else {
-      result = fieldClazz.layout();
-      if (result != null)
+      case During: result = new List<>(this._type.pos); break;
+      case Before:
         {
-          result.add(f.pos);
+          layouting_ = LayoutStatus.During;
+          if (isChoice())
+            {
+              for (Clazz c : choiceGenerics())
+                {
+                  if (result == null && !c.isRef())
+                    {
+                      result = c.layout();
+                    }
+                }
+            }
+          else if (feature().impl.kind_ != Impl.Kind.Intrinsic)
+            {
+              var fields = new ArrayList<Clazz>();
+              for (var f: feature().allInnerAndInheritedFeatures())
+                {
+                  if (result == null &&
+                      (f.isField() || f.isSingleton()) &&
+                      Clazzes.isUsed(f, this) &&
+                      !f.resultType().isOpenGeneric() &&
+                      f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
+                      )
+                    {
+                      fields.add(lookup(f, Call.NO_GENERICS, f.isUsedAt()));
+                      var fieldClazz = clazzForField(f);
+                      if (!fieldClazz.isRef() &&
+                          !f.isSingleton() &&
+                          !fieldClazz.feature().isBuiltInPrimitive())
+                        {
+                          result = fieldClazz.layout();
+                          if (result != null)
+                            {
+                              result.add(f.pos);
+                              result.add(this._type.pos);
+                            }
+                        }
+                    }
+                }
+              _fields = fields.toArray(new Clazz[fields.size()]);
+            }
+          layouting_ = LayoutStatus.After;
         }
-      else
-        {
-          fsz = fieldClazz._size;
-        }
-    }
-    offsetForField_.put(f,
-                        fsz == 0
-                        ? Integer.MIN_VALUE // use an illegal index such that all real fields have unique indices
-                        : this._size);
-    this._size = this._size + fsz;
+      case After: break;
+      }
     return result;
   }
 
@@ -1096,6 +1023,20 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
+   * Is this a choice-type, i.e., does it directly inherit from choice?
+   */
+  public boolean isRoutine()
+  {
+    switch (feature().impl.kind_)
+      {
+      case Routine    :
+      case RoutineDef : return true;
+      default         : return false;
+      }
+  }
+
+
+  /**
    * Is this a choice-type whose actual generics inlude ref?  If so, a field for
    * all the refs will be needed.
    */
@@ -1145,7 +1086,7 @@ public class Clazz extends ANY implements Comparable
    * @return the actual clazzes of this choice clazz, in the order they appear
    * as actual generics.
    */
-  private ArrayList<Clazz> choiceGenerics()
+  public ArrayList<Clazz> choiceGenerics()
   {
     if (PRECONDITIONS) require
       (isChoice());
@@ -1203,50 +1144,6 @@ public class Clazz extends ANY implements Comparable
        id <  choiceGenerics_.size());
 
     return choiceGenerics_.get(id);
-  }
-
-
-  /**
-   * For choice clazz, this gives the offset of the memory reserved for choice
-   * value with given id.
-   *
-   * Choice values might have different offsets depending on alignment
-   * constraints or to avoid GC trouble by not mixing references with
-   * non-references.
-   *
-   * @param id the slot id.
-   */
-  public int choiceValOffset(int id)
-  {
-    if (PRECONDITIONS) require
-      (isChoice(),
-       id >= 0,
-       id < choiceGenerics_.size());
-
-    check
-      (choiceValsOffset_ >= 0);
-
-    // id is ignored, all vals are currently stored at the same offset:
-    return choiceValsOffset_;
-  }
-
-
-  /**
-   * For choice clazz, this gives the offset of the memory reserved for choice
-   * vlues of reference type.  Unlike non-references, that might be layouted
-   * differently according to alignment constraints or not mixing reference with
-   * non-references to avoid GC trouble, values of reference type are always
-   * using one single shared slot.
-   */
-  public int choiceRefValOffset()
-  {
-    if (PRECONDITIONS) require
-      (isChoice());
-
-    check
-      (choiceValsOffset_ >= 0);
-
-    return choiceValsOffset_;
   }
 
 
@@ -1578,7 +1475,7 @@ public class Clazz extends ANY implements Comparable
    */
   public Clazz[] fields()
   {
-    return _fields;
+    return _fields == null ? NO_CLAZZES : _fields;
   }
 
 }

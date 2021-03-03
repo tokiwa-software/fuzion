@@ -171,7 +171,7 @@ public class LValue extends Value
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS)
-      require(size == Interpreter.clazzSize(clazz));
+      require(size == Layout.get(clazz).size());
 
     container.storeNonRef(slot, size, offset);
   }

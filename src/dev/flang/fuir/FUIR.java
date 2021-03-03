@@ -382,6 +382,22 @@ public class FUIR extends ANY
 
 
   /**
+   * Get the choice tag of a choice clazz
+   *
+   * @param cl a clazz id
+   *
+   * @return clazz id of cl's choice tag or -1 if cl is not a choice or does not
+   * need a choice tag.
+   */
+  public int clazzChoiceTag(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    var ct = cc.choiceTag();
+    return ct == null ? -1 : _clazzIds.get(ct);
+  }
+
+
+  /**
    * Get the outer clazz of the given clazz.
    *
    * @param cl a clazz id

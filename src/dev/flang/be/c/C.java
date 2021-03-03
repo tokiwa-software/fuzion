@@ -142,7 +142,7 @@ public class C extends Backend
   /**
    * The name of the tag field in instances of bool.fz.
    */
-  private static final String BOOL_TAG_NAME = "fzF_0_" + mangle(FuzionConstants.CHOICE_TAG_NAME);
+  private static final String TAG_NAME = "fzTag";
 
 
   /**
@@ -675,11 +675,23 @@ public class C extends Backend
                     ("// for " + _fuir.clazzAsString(cl) + "\n" +
                      "struct " + _structNames.get(cl) + " {\n" +
                      (_fuir.clazzIsRef(cl) ? "  uint32_t clazzId;\n" : ""));
-                  for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
+                  if (_fuir.clazzIsChoice(cl))
                     {
-                      var cf = _fuir.clazzField(cl, i);
-                      String type = clazzFieldType(cf);
-                      _c.print(" " + type + " " + fieldName2(i, cf) + ";\n");
+                      var ct = _fuir.clazzChoiceTag(cl);
+                      if (ct != -1)
+                        {
+                          String type = clazzFieldType(ct);
+                          _c.print(" " + type + " " + TAG_NAME + ";\n");
+                        }
+                    }
+                  else
+                    {
+                      for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
+                        {
+                          var cf = _fuir.clazzField(cl, i);
+                          String type = clazzFieldType(cf);
+                          _c.print(" " + type + " " + fieldName2(i, cf) + ";\n");
+                        }
                     }
                   _c.print
                     ("};\n\n");
@@ -739,7 +751,7 @@ public class C extends Backend
                       check(_fuir.clazzIsTRUE (valuecl) ||
                             _fuir.clazzIsFALSE(valuecl));
                       var value = CExpr.uint32const(_fuir.clazzIsTRUE(valuecl) ? 1 : 0);
-                      fieldAccess = fieldAccess.field(BOOL_TAG_NAME);
+                      fieldAccess = fieldAccess.field(TAG_NAME);
                       _c.printExpr(fieldAccess.assign(value)); _c.println(";  /* bool choice type */");
                     }
                   else if (_fuir.clazzIsChoice(fclazz) &&
@@ -940,7 +952,7 @@ public class C extends Backend
               var elseBlock = _fuir.i32Const(c, i + 2);
               var stack2 = stack;
               i = i + 2;
-              _c.println("if (" + cond.field(BOOL_TAG_NAME).code() + " != 0) {");
+              _c.println("if (" + cond.field(TAG_NAME).code() + " != 0) {");
               _c.indent();
               stack = (Stack<CExpr>) stack2.clone();
               createCode(cl, stack, block);

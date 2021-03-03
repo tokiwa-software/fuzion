@@ -191,26 +191,6 @@ public class Interpreter extends Backend
   }
 
 
-  /*--------------------  methods for object layout  --------------------*/
-
-
-  /**
-   * Determine the offset of a given field in an instance of the given clazz.
-   */
-  static int fieldOffset(Clazz c, Feature f)
-  {
-    return c.offsetForField_.get(f);
-  }
-
-  /**
-   * Determine the size of an instance of the given clazz.
-   */
-  static int clazzSize(Clazz c)
-  {
-    return c.size();
-  }
-
-
   /*----------------  methods to find execute statments  ----------------*/
 
 
@@ -457,11 +437,13 @@ public class Interpreter extends Backend
                     check
                       (!rc.isChoiceOfOnlyRefs());
 
-                    var voff = vc.choiceValsOffset_;
-                    var roff = rc.choiceValsOffset_;
-                    var vsz = vc.choiceValsSize_;
+                    var vl = Layout.get(vc);
+                    var rl = Layout.get(rc);
+                    var voff = 0;
+                    var roff = 0;
+                    var vsz  = vl.size();
                     check
-                      (rc.choiceValsSize_ == vsz);
+                      (rl.size() == vsz);
                     if (val instanceof LValue)
                       {
                         voff += ((LValue) val).offset;
@@ -469,7 +451,7 @@ public class Interpreter extends Backend
                       }
                     if (val instanceof boolValue)
                       {
-                        val.storeNonRef(new LValue(Clazzes.bool.get(), ri, roff), clazzSize(Clazzes.bool.get()));
+                        val.storeNonRef(new LValue(Clazzes.bool.get(), ri, roff), Layout.get(Clazzes.bool.get()).size());
                       }
                     else
                       {
@@ -688,7 +670,7 @@ public class Interpreter extends Backend
                         {
                           if (off < 0)
                             {
-                              off = fieldOffset(outerClazz, f);
+                              off = Layout.get(outerClazz).offset(f);
                             }
                           var slot = args.get(0).at(fclazz, off);
                           return loadField(f, fclazz, slot);
@@ -697,7 +679,7 @@ public class Interpreter extends Backend
                   }
                 else
                   {
-                    var off = fieldOffset(outerClazz, f);
+                    var off = Layout.get(outerClazz).offset(f);
                     result = (args, argTypes) ->
                       {
                         var slot = args.get(0).at(fclazz, off);
@@ -875,7 +857,7 @@ public class Interpreter extends Backend
 
     int tag = choiceClazz.getChoiceTag(staticTypeOfValue);
     Clazz  vclazz  = choiceClazz.getChoiceClazz(tag);
-    LValue valSlot = choice.at(vclazz, choiceClazz.choiceValOffset(tag));
+    LValue valSlot = choice.at(vclazz, Layout.get(choiceClazz).choiceValOffset(tag));
     if (choiceClazz.isChoiceOfOnlyRefs())
       { // store reference only
         if (!staticTypeOfValue.isRef())
@@ -883,7 +865,7 @@ public class Interpreter extends Backend
             v = ChoiceIdAsRef.get(choiceClazz, tag);
             vclazz = Clazzes.object.get();
             staticTypeOfValue = vclazz._type;
-            valSlot = choice.at(vclazz, choiceClazz.choiceRefValOffset());
+            valSlot = choice.at(vclazz, Layout.get(choiceClazz).choiceRefValOffset());
           }
       }
     else
@@ -911,7 +893,7 @@ public class Interpreter extends Backend
        choiceClazz.isChoiceWithRefs(),
        choice != null);
 
-    int offset  = choiceClazz.choiceRefValOffset();
+    int offset  = Layout.get(choiceClazz).choiceRefValOffset();
     LValue slot = choice.at(Clazzes.object.get(), offset);
     return loadRefField(thiz, slot);
   }
@@ -935,7 +917,7 @@ public class Interpreter extends Backend
        tag >= 0);
 
     Clazz  vclazz = choiceClazz.getChoiceClazz(tag);
-    LValue slot   = choice.at(vclazz, choiceClazz.choiceValOffset(tag));
+    LValue slot   = choice.at(vclazz, Layout.get(choiceClazz).choiceValOffset(tag));
     return loadField(thiz, vclazz, slot);
   }
 
@@ -1027,7 +1009,7 @@ public class Interpreter extends Backend
        v instanceof i64Value  ||
        v instanceof boolValue    );
 
-    v.storeNonRef(slot, clazzSize(fclazz));
+    v.storeNonRef(slot, Layout.get(fclazz).size());
   }
 
 
@@ -1054,7 +1036,7 @@ public class Interpreter extends Backend
                                                 : curValue;
         clazz = ((Instance) curValue).clazz();
       }
-    off = fieldOffset(clazz, thiz);
+    off = Layout.get(clazz).offset(thiz);
 
     // NYI: check if this is a can be enabled or removed:
     //
