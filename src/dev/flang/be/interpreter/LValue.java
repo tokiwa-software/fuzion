@@ -74,7 +74,7 @@ public class LValue extends Value
   {
     if (PRECONDITIONS) require
       (cont != null,
-       off >= 0 || c.size() == 0);
+       off >= 0 || c.isUnitType());
 
     this.clazz = c;
     this.container = cont;
@@ -171,7 +171,7 @@ public class LValue extends Value
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS)
-      require(size == clazz.size());
+      require(size == Interpreter.clazzSize(clazz));
 
     container.storeNonRef(slot, size, offset);
   }

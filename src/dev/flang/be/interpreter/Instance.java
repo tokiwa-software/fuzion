@@ -104,7 +104,7 @@ public class Instance extends Value
       (clazz != null);
 
     this.clazz = clazz;
-    int sz = clazz.size();
+    int sz = Interpreter.clazzSize(clazz);
     this.refs = new Value[sz];
     this.nonrefs = new int[sz];
     for (int i = 0; i<sz; i++)
@@ -280,7 +280,7 @@ public class Instance extends Value
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS)
-      require(size == clazz.size());
+      require(size == Interpreter.clazzSize(clazz));
 
     storeNonRef(slot, size, 0);
   }

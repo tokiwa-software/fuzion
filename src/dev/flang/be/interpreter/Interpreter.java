@@ -202,6 +202,14 @@ public class Interpreter extends Backend
     return c.offsetForField_.get(f);
   }
 
+  /**
+   * Determine the size of an instance of the given clazz.
+   */
+  static int clazzSize(Clazz c)
+  {
+    return c.size();
+  }
+
 
   /*----------------  methods to find execute statments  ----------------*/
 
@@ -461,7 +469,7 @@ public class Interpreter extends Backend
                       }
                     if (val instanceof boolValue)
                       {
-                        val.storeNonRef(new LValue(Clazzes.bool.get(), ri, roff), Clazzes.bool.get().size());
+                        val.storeNonRef(new LValue(Clazzes.bool.get(), ri, roff), clazzSize(Clazzes.bool.get()));
                       }
                     else
                       {
@@ -1019,7 +1027,7 @@ public class Interpreter extends Backend
        v instanceof i64Value  ||
        v instanceof boolValue    );
 
-    v.storeNonRef(slot, fclazz.size());
+    v.storeNonRef(slot, clazzSize(fclazz));
   }
 
 

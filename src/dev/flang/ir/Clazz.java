@@ -554,7 +554,7 @@ public class Clazz extends ANY implements Comparable
                     else
                       {
                         result = c.layout();
-                        sz = result == null ? c.size() : 0;
+                        sz = result == null ? c._size : 0;
                       }
                     maxSz = sz > maxSz ? sz : maxSz;
                   }
@@ -638,7 +638,7 @@ public class Clazz extends ANY implements Comparable
         }
       else
         {
-          fsz = fieldClazz.size();
+          fsz = fieldClazz._size;
         }
     }
     offsetForField_.put(f,
