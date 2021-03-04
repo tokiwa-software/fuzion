@@ -737,6 +737,7 @@ public class C extends Backend
     for (int i = 0; _fuir.withinCode(c, i); i++)
       {
         var s = _fuir.codeAt(c, i);
+        _c.println("// Code for statement " + s);
         switch (s)
           {
           case AdrToValue:
