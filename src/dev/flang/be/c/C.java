@@ -1089,7 +1089,7 @@ public class C extends Backend
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = null;
           var call = CExpr.call(_functionNames.get(cc), args(cl, c, i, cc, stack, ac, castTarget));
-          if (rt != -1 && !_fuir.clazzIsUnitType(rt))
+          if (rt != -1 && !_fuir.clazzIsUnitType(rt) && !_fuir.clazzIsVoidType(rt))
             {
               var tmp = newTemp();
               res = CExpr.ident(tmp);
@@ -1197,7 +1197,7 @@ public class C extends Backend
   private void cFunctionDecl(int cl)
   {
     var res = _fuir.clazzResultClazz(cl);
-    _c.print(res == -1 || _fuir.clazzIsUnitType(res)
+    _c.print(res == -1 || _fuir.clazzIsUnitType(res) || _fuir.clazzIsVoidType(res)
              ? "void "
              : clazzTypeName(res) + " ");
     _c.print(_functionNames.get(cl));
