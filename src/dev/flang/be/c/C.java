@@ -1264,7 +1264,7 @@ public class C extends Backend
           cFunctionDecl(cl);
           _c.print(" {\n");
           _c.indent();
-          codeForRoutin(cl);
+          codeForRoutine(cl);
           _c.unindent();
           _c.println("}");
           break;
@@ -1288,7 +1288,7 @@ public class C extends Backend
    *
    * @param cl id of clazz to generate code for
    */
-  void codeForRoutin(int cl)
+  void codeForRoutine(int cl)
   {
     if (PRECONDITIONS) require
       (_fuir.clazzKind(cl) == FUIR.ClazzKind.Routine);
