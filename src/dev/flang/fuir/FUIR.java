@@ -312,9 +312,6 @@ public class FUIR extends ANY
    */
   public int clazzAsValue(int cl)
   {
-    if (PRECONDITIONS) require
-      (clazzIsRef(cl));
-
     var cc = _clazzIds.get(cl);
     return _clazzIds.get(cc.asValue());
   }

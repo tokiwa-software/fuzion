@@ -758,7 +758,8 @@ public class C extends Backend
                   var outercl = _fuir.assignOuterClazz(cl, c, i);  // static clazz of outer
                   var valuecl = _fuir.assignValueClazz(cl, c, i);  // static clazz of value
                   var fclazz = _fuir.clazzResultClazz(field);  // static clazz of assigned field
-                  var fieldName = fieldNameInClazz(outercl, field);
+                  var voutercl = _fuir.clazzAsValue(outercl);
+                  var fieldName = fieldNameInClazz(voutercl, field);
                   var fieldAccess = ccodeAccessField(outercl, outer, fieldName);
                   if (_fuir.clazzIsBool(fclazz) &&
                       valuecl != -1 &&
@@ -1111,7 +1112,8 @@ public class C extends Backend
               var t = stack.pop();
               if (rt != -1 && !_fuir.clazzIsUnitType(rt))
                 {
-                  var field = fieldName(_fuir.callFieldOffset(tc, c, i), cc);
+                  var vtc = _fuir.clazzAsValue(tc);
+                  var field = fieldName(_fuir.callFieldOffset(vtc, c, i), cc);
                   CExpr res = ccodeAccessField(tc, t, field);
                   res = _fuir.clazzFieldIsAdrOfValue(cc) ? res.deref() : res;
                   stack.push(res);
@@ -1294,22 +1296,23 @@ public class C extends Backend
 
     var cur = _fuir.clazzIsRef(cl) ? CURRENT.deref().field(FIELDS_IN_REF_CLAZZ)
                                    : CURRENT.deref();
-    var or = _fuir.clazzOuterRef(cl);
+    var vcl = _fuir.clazzAsValue(cl);
+    var or = _fuir.clazzOuterRef(vcl);
     if (or != -1)
       {
-        _c.print(cur.field(fieldNameInClazz(cl, or)).assign(_outer_));
+        _c.print(cur.field(fieldNameInClazz(vcl, or)).assign(_outer_));
       }
 
-    var ac = _fuir.clazzArgCount(cl);
+    var ac = _fuir.clazzArgCount(vcl);
     for (int i = 0; i < ac; i++)
       {
-        var af = _fuir.clazzArg(cl, i);
-        var at = _fuir.clazzArgClazz(cl, i);
+        var af = _fuir.clazzArg(vcl, i);
+        var at = _fuir.clazzArgClazz(vcl, i);
         if (!_fuir.clazzIsUnitType(at))
           {
             var target = isScalarType(cl)
               ? cur
-              : cur.field(fieldNameInClazz(cl, af));
+              : cur.field(fieldNameInClazz(vcl, af));
             _c.print(target.assign(CExpr.ident("arg" + i)));
           }
       }

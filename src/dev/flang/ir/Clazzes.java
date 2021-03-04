@@ -554,7 +554,8 @@ public class Clazzes extends ANY
           }
         if (isUsed(a.assignedField, sClazz))
           {
-            var fc = sClazz.lookup(a.assignedField, Call.NO_GENERICS, a.pos());
+            var vc = sClazz.asValue();
+            var fc = vc.lookup(a.assignedField, Call.NO_GENERICS, a.pos());
             outerClazz.setRuntimeClazz(a.tid_ + 2, fc);
           }
       }

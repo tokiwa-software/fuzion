@@ -57,7 +57,15 @@ class Layout extends ANY
     var l = (Layout) c._backendData; // _layouts_.get(c);
     if (l == null)
       {
-        l = new Layout(c);
+        if (c.isRef())
+          {
+            l = get(c.asValue());
+            c._backendData = l;
+          }
+        else
+          {
+            l = new Layout(c);
+          }
       }
     return l;
   }

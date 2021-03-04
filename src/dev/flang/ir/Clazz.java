@@ -1483,7 +1483,7 @@ public class Clazz extends ANY implements Comparable
    */
   public Clazz[] fields()
   {
-    return _fields == null ? NO_CLAZZES : _fields;
+    return isRef() || _fields == null ? NO_CLAZZES : _fields;
   }
 
 
