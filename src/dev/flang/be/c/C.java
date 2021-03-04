@@ -1051,8 +1051,9 @@ public class C extends Backend
   CStmnt constString(byte[] bytes, String tmp)
   {
     StringBuilder sb = new StringBuilder();
-    for (var b : bytes)
+    for (var bb : bytes)
       {
+        var b = bb & 0xff;
         sb.append("\\"+((b >> 6) & 7)+((b >> 3) & 7)+(b & 7));
         sb.append("...");
       }
