@@ -93,6 +93,7 @@ public class C extends Backend
    * yet implemented.
    */
   private static final String DUMMY = "NYI_DUMMY_VALUE";
+  private static final CExpr CDUMMY = CExpr.ident(DUMMY);
 
 
   /**
@@ -1022,7 +1023,7 @@ public class C extends Backend
           case Singleton:
             {
               _c.println("// NYI: singleton ");
-              stack.push(CExpr.ident(DUMMY)); // NYI: Singleton result
+              stack.push(CDUMMY); // NYI: Singleton result
               break;
             }
           case WipeStack:
