@@ -1312,7 +1312,7 @@ public class C extends Backend
         var at = _fuir.clazzArgClazz(vcl, i);
         if (!_fuir.clazzIsUnitType(at))
           {
-            var target = isScalarType(cl)
+            var target = isScalarType(vcl)
               ? cur
               : cur.field(fieldNameInClazz(vcl, af));
             _c.print(target.assign(CExpr.ident("arg" + i)));
