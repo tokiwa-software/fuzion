@@ -1383,12 +1383,13 @@ public class Clazz extends ANY implements Comparable
    */
   private Clazz[] determineArgumentFields()
   {
-    Clazz[] result = null;
+    Clazz[] result = NO_CLAZZES;
     var f = feature();
     switch (f.impl.kind_)
       {
-      case Routine    :
-      case RoutineDef :
+      case Intrinsic :
+      case Routine   :
+      case RoutineDef:
         {
           var args = new ArrayList<Clazz>();
           for (var a :f.arguments)
@@ -1416,7 +1417,7 @@ public class Clazz extends ANY implements Comparable
                     }
                 }
             }
-          result = args.size() == 0 ? null : args.toArray(new Clazz[args.size()]);
+          result = args.size() == 0 ? NO_CLAZZES : args.toArray(new Clazz[args.size()]);
           break;
         }
       }
