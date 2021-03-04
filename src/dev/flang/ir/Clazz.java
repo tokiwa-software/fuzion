@@ -448,7 +448,7 @@ public class Clazz extends ANY implements Comparable
    */
   public boolean isUnitType()
   {
-    if (isRef() || feature().isBuiltInPrimitive())
+    if (isRef() || feature().isBuiltInPrimitive() || isVoidType())
       {
         return false;
       }
@@ -460,6 +460,21 @@ public class Clazz extends ANY implements Comparable
           }
       }
     return true;
+  }
+
+
+  /**
+   * isVoidType checks if this is void.  This is not true for user defined void
+   * types, i.e., any product type, e.g.,
+   *
+   *    absurd (i i32, v void) is {}
+   *
+   * that has a field of type void is effectively a void type. This call will,
+   * however, return false for ushc user defined void types.
+   */
+  public boolean isVoidType()
+  {
+    return _type == Types.resolved.t_void;
   }
 
 
@@ -564,7 +579,8 @@ public class Clazz extends ANY implements Comparable
                       var fieldClazz = clazzForField(f);
                       if (!fieldClazz.isRef() &&
                           !f.isSingleton() &&
-                          !fieldClazz.feature().isBuiltInPrimitive())
+                          !fieldClazz.feature().isBuiltInPrimitive() &&
+                          !fieldClazz.isVoidType())
                         {
                           result = fieldClazz.layout();
                           if (result != null)
