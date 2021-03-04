@@ -317,10 +317,18 @@ public class FUIR extends ANY
   }
 
 
+  /**
+   * Get the number of arguments required for a call to this clazz.
+   *
+   * @param cl clazz id
+   *
+   * @return number of arguments expected by cl, 0 if none or if clazz cl can
+   * not be called (is a choice type)
+   */
   public int clazzArgCount(int cl)
   {
-    // NYI: This does not handle open generic args such as in Function.call yet.
-    return _clazzIds.get(cl).feature().arguments.size();
+    var cc = _clazzIds.get(cl);
+    return cc.argumentFields().length;
   }
 
 
@@ -336,23 +344,15 @@ public class FUIR extends ANY
    */
   public int clazzArgClazz(int cl, int arg)
   {
-    // NYI: This does not handle open generic args such as in Function.call yet.
+    if (PRECONDITIONS) require
+      (arg >= 0,
+       arg < clazzArgCount(cl));
+
     var c = _clazzIds.get(cl);
-    var a = c.feature().arguments.get(arg);
-    Clazz rc;
-    if (true) // NYI: replace by lookup shown below, avoid actualClazz that may create new clazzes
-      {
-        rc = c.actualClazz(a.resultType()); // NYI: remove, arg clazz should
-                                            // have been determined during
-                                            // Clazzes.findAllClazzes and stored
-                                            // with c
-      }
-    else
-      {
-        rc = c.lookup(a, Call.NO_GENERICS, a.isUsedAt()).resultClazz();
-      }
+    var rc = c.argumentFields()[arg].resultClazz(); // or .fieldClazz()?
     return _clazzIds.get(rc);
   }
+
 
   /**
    * Get the clazz id of the given argument of clazz cl
