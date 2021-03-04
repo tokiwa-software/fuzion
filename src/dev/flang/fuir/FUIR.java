@@ -579,7 +579,7 @@ public class FUIR extends ANY
   public boolean clazzIsVoidType(int cl)
   {
     var cc = _clazzIds.get(cl);
-    return cc._type == Types.resolved.t_void;
+    return cc.isVoidType();
   }
 
 
