@@ -109,6 +109,12 @@ public class C extends Backend
 
 
   /**
+   * For a reference clazz' struct, this is the name of a struct element that
+   * contains the fields using the corresponding value clazz' struct.
+   */
+  private static final String FIELDS_IN_REF_CLAZZ = "fields";
+
+  /**
    * Prefix for C functions created for Fuzion routines or intrinsics
    */
   private static final String C_FUNCTION_PREFIX = "fzC_";
@@ -671,12 +677,15 @@ public class C extends Backend
                           structs(rcl);
                         }
                     }
+                  if (_fuir.clazzIsRef(cl))
+                    {
+                      structs(_fuir.clazzAsValue(cl));
+                    }
 
                   // next, declare the struct itself
                   _c.print
                     ("// for " + _fuir.clazzAsString(cl) + "\n" +
-                     "struct " + _structNames.get(cl) + " {\n" +
-                     (_fuir.clazzIsRef(cl) ? "  uint32_t clazzId;\n" : ""));
+                     "struct " + _structNames.get(cl) + " {\n");
                   if (_fuir.clazzIsChoice(cl))
                     {
                       var ct = _fuir.clazzChoiceTag(cl);
@@ -685,6 +694,12 @@ public class C extends Backend
                           String type = clazzFieldType(ct);
                           _c.print(" " + type + " " + TAG_NAME + ";\n");
                         }
+                    }
+                  else if (_fuir.clazzIsRef(cl))
+                    {
+                      var vcl = _fuir.clazzAsValue(cl);
+                      _c.print("  uint32_t clazzId;\n" +
+                               "  " + clazzTypeName(vcl) + " " + FIELDS_IN_REF_CLAZZ + ";\n");
                     }
                   else
                     {
@@ -1036,8 +1051,8 @@ public class C extends Backend
     return CStmnt.seq(CStmnt.decl("fzTr__Rconststring *", tmp),
                       CExpr.ident(tmp).assign(CExpr.call("malloc", new List<>(CExpr.ident("fzTr__Rconststring").sizeOfType()))),
                       t.deref().field("clazzId").assign(CExpr.int32const(clazzId2num(_fuir.clazz_conststring()))),
-                      t.deref().field("fzF_1_data").assign(CExpr.string(sb.toString()).castTo("void *")),
-                      t.deref().field("fzF_3_length").assign(CExpr.int32const(bytes.length)));
+                      t.deref().field(FIELDS_IN_REF_CLAZZ).field("fzF_1_data").assign(CExpr.string(sb.toString()).castTo("void *")),
+                      t.deref().field(FIELDS_IN_REF_CLAZZ).field("fzF_3_length").assign(CExpr.int32const(bytes.length)));
   }
 
 
@@ -1277,10 +1292,12 @@ public class C extends Backend
     _c.print("" + _structNames.get(cl) + " *" + CURRENT.code() + " = malloc(sizeof(" + _structNames.get(cl) + "));\n"+
              (_fuir.clazzIsRef(cl) ? CURRENT.deref().field("clazzId").assign(CExpr.int32const(clazzId2num(cl))).code() + ";\n" : ""));
 
+    var cur = _fuir.clazzIsRef(cl) ? CURRENT.deref().field(FIELDS_IN_REF_CLAZZ)
+                                   : CURRENT.deref();
     var or = _fuir.clazzOuterRef(cl);
     if (or != -1)
       {
-        _c.print(CURRENT.deref().field(fieldNameInClazz(cl, or)).assign(_outer_));
+        _c.print(cur.field(fieldNameInClazz(cl, or)).assign(_outer_));
       }
 
     var ac = _fuir.clazzArgCount(cl);
@@ -1291,8 +1308,8 @@ public class C extends Backend
         if (!_fuir.clazzIsUnitType(at))
           {
             var target = isScalarType(cl)
-              ? CURRENT.deref()
-              : CURRENT.deref().field(fieldNameInClazz(cl, af));
+              ? cur
+              : cur.field(fieldNameInClazz(cl, af));
             _c.print(target.assign(CExpr.ident("arg" + i)));
           }
       }
@@ -1347,7 +1364,7 @@ public class C extends Backend
   {
     if (_fuir.clazzIsRef(outercl))
       {
-        outer = outer.deref();
+        outer = outer.deref().field(FIELDS_IN_REF_CLAZZ);
       }
     return outer.field(fieldName);
   }
