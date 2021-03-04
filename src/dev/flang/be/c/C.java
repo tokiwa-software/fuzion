@@ -374,7 +374,10 @@ public class C extends Backend
     var cl = _fuir.mainClazzId();
     var name = _options._binaryName != null ? _options._binaryName : _fuir.clazzBaseName(cl);
     var cname = name + ".c";
-    System.out.println(" + " + cname);
+    if (_options.verbose(1))
+      {
+        System.out.println(" + " + cname);
+      }
     try
       {
         _c = new CFile(cname);
@@ -396,7 +399,10 @@ public class C extends Backend
     Errors.showAndExit();
 
     var command = new List<String>("clang", "-O3", "-o", name, cname);
-    System.out.println(" * " + command.toString("", " ", ""));
+    if (_options.verbose(1))
+      {
+        System.out.println(" * " + command.toString("", " ", ""));
+      }
     try
       {
         var p = new ProcessBuilder().inheritIO().command(command).start();
