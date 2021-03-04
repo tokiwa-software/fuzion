@@ -461,7 +461,9 @@ public class FeErrors extends ANY
           "Type that was not found: " + t + "\n" +
           "within feature: " + outerfeat.qualifiedName() + "\n" +
           (n == 0 ? "" :
-           "However, " + singularOrPlural(n, "feature") + " " + (n == 1 ? "has been found that matches" : "have been found that match") + " the type name but that do not define a type:\n" +
+           "However, " + singularOrPlural(n, "feature") + " " +
+           (n == 1 ? "has been found that matches the type name but that does not define a type:\n"
+                   : "have been found that match the type name but that do not define a type:\n") +
            featureList(nontypes_found) + "\n") +
           "To solve this, " + (!hasAbstract && !hasReturnType
                                ? "check the spelling of the type you have used"
