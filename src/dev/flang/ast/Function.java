@@ -433,7 +433,7 @@ public class Function extends Expr
         Feature fr = functionOrRoutine();
         List<Type> generics = generics(res);
         FormalGenerics.resolve(generics, outer);
-        type_ = fr != null ? new Type(pos, fr._featureName.baseName(), generics, null, fr, false).resolve(outer)
+        type_ = fr != null ? new Type(pos, fr._featureName.baseName(), generics, null, fr, Type.RefOrVal.LikeUnderlyingFeature).resolve(outer)
                            : Types.t_ERROR;
       }
     else

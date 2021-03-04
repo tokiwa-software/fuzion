@@ -3288,7 +3288,7 @@ public class Feature extends ANY implements Stmnt, Comparable
       {
         result = this == Types.f_ERROR
           ? Types.t_ERROR
-          : new Type(pos, _featureName.baseName(), generics.asActuals(), null, this, false);
+          : new Type(pos, _featureName.baseName(), generics.asActuals(), null, this, Type.RefOrVal.LikeUnderlyingFeature);
         thisType_ = result;
       }
     if (state_.atLeast(State.RESOLVED_TYPES))

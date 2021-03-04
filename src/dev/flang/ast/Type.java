@@ -62,6 +62,17 @@ public class Type extends ANY implements Comparable
    */
   static final Type[] NO_TYPES = new Type[0];
 
+  /**
+   * Is this type explicitly a reference or a value type, or whatever the
+   * underlying feature is?
+   */
+  enum RefOrVal
+  {
+    Ref,
+    Value,
+    LikeUnderlyingFeature,
+  }
+
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -73,9 +84,12 @@ public class Type extends ANY implements Comparable
 
 
   /**
-   *
+   * Is this an explicit reference or value type?  Ref/Value to make this a
+   * reference/value type independent of the type of the underlying feature
+   * defining a ref type or not, false to keep the underlying feature's
+   * ref/value status.
    */
-  boolean ref;
+  RefOrVal _refOrVal;
 
 
   /**
@@ -174,7 +188,7 @@ public class Type extends ANY implements Comparable
    */
   public Type(SourcePosition pos, String n, List<Type> g, Type o)
   {
-    this(pos, n,g,o,null, false);
+    this(pos, n,g,o,null, RefOrVal.LikeUnderlyingFeature);
   }
 
 
@@ -190,7 +204,7 @@ public class Type extends ANY implements Comparable
    */
   public Type(Type t, List<Type> g, Type o)
   {
-    this(t.pos, t.name, g, o, t.feature, t.ref);
+    this(t.pos, t.name, g, o, t.feature, t._refOrVal);
 
     if (PRECONDITIONS) require
       ( (t._generics instanceof FormalGenerics.AsActuals) || t._generics.size() == g.size(),
@@ -217,7 +231,7 @@ public class Type extends ANY implements Comparable
    * @param ref true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
-  public Type(SourcePosition pos, String n, List<Type> g, Type o, Feature f, boolean ref)
+  public Type(SourcePosition pos, String n, List<Type> g, Type o, Feature f, RefOrVal refOrVal)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -229,7 +243,7 @@ public class Type extends ANY implements Comparable
     this.outer_ = o;
     this.feature = f;
     this.generic = null;
-    this.ref = ref;
+    this._refOrVal = refOrVal;
     this.checkedForGeneric = f != null;
   }
 
@@ -258,7 +272,7 @@ public class Type extends ANY implements Comparable
     this.outer_ = null;
     this.feature = null;
     this.generic = g;
-    this.ref = false;
+    this._refOrVal = RefOrVal.LikeUnderlyingFeature;
     this.checkedForGeneric = true;
   }
 
@@ -288,10 +302,11 @@ public class Type extends ANY implements Comparable
 
     this.pos               = SourcePosition.builtIn;
     this.name              = n;
-    this._generics          = NONE;
+    this._generics         = NONE;
     this.outer_            = null;
     this.feature           = null;
-    this.ref               = ref;
+    this._refOrVal         = ref ? RefOrVal.Ref
+                                 : RefOrVal.LikeUnderlyingFeature;
     this.checkedForGeneric = true;
   }
 
@@ -325,20 +340,21 @@ public class Type extends ANY implements Comparable
 
 
   /**
-   * Create a ref type from a given value type.
+   * Create a ref or value type from a given value / ref type.
    *
    * @param original the original value type
    *
-   * @param isRef must be true.
+   * @param refOrVal must be RefOrVal.Ref or RefOrVal.Val
    */
-  public Type(Type original, boolean isRef)
+  public Type(Type original, RefOrVal refOrVal)
   {
     if (PRECONDITIONS) require
-      (!original.isRef(),
-       isRef);
+      (refOrVal == RefOrVal.Ref ||
+       refOrVal == RefOrVal.Value,
+       (refOrVal == RefOrVal.Ref) != original.isRef());
 
     this.pos                = original.pos;
-    this.ref                = isRef;
+    this._refOrVal          = refOrVal;
     this.name               = original.name;
     this._generics           = original._generics;
     this.outer_             = original.outer_;
@@ -364,7 +380,25 @@ public class Type extends ANY implements Comparable
     var result = this;
     if (!isRef() && this != Types.t_ERROR)
       {
-        result = Types.intern(new Type(this, true));
+        result = Types.intern(new Type(this, RefOrVal.Ref));
+      }
+    return result;
+  }
+
+
+  /**
+   * Create a Types.intern()ed value variant of this type.  Return this
+   * in case it is a value already.
+   */
+  public Type asValue()
+  {
+    if (PRECONDITIONS) require
+      (this == Types.intern(this));
+
+    var result = this;
+    if (isRef() && this != Types.t_ERROR)
+      {
+        result = Types.intern(new Type(this, RefOrVal.Value));
       }
     return result;
   }
@@ -400,9 +434,9 @@ public class Type extends ANY implements Comparable
   public void setRef()
   {
     if (PRECONDITIONS) require
-      (!this.ref);
+      (this._refOrVal == RefOrVal.LikeUnderlyingFeature);
 
-    this.ref = true;
+    this._refOrVal = RefOrVal.Ref;
   }
 
 
@@ -411,8 +445,15 @@ public class Type extends ANY implements Comparable
    */
   public boolean isRef()
   {
-    return this.ref || ((feature != null) && feature.isThisRef());
+    switch (this._refOrVal)
+      {
+      case Ref                  : return true;
+      case Value                : return false;
+      case LikeUnderlyingFeature: return ((feature != null) && feature.isThisRef());
+      default: throw new Error("Unhandled switch case for RefOrVal");
+      }
   }
+
 
   /**
    * setOuter
@@ -448,7 +489,7 @@ public class Type extends ANY implements Comparable
       }
     else if (generic != null)
       {
-        result = generic.feature().qualifiedName() + "." + name + (this.ref ? " (boxed)" : "");
+        result = generic.feature().qualifiedName() + "." + name + (this.isRef() ? " (boxed)" : "");
       }
     else if (outer_ != null)
       {
@@ -457,8 +498,9 @@ public class Type extends ANY implements Comparable
           + (outer == "" ||
              outer == Feature.UNIVERSE_NAME ? ""
                                             : outer + ".")
-          + (isRef() && (feature == null || !feature.isThisRef()) ? "ref "
-                                                                  : "" )
+          + ( isRef() && (feature == null || !feature.isThisRef()) ? "ref " :
+             !isRef() &&  feature != null &&  feature.isThisRef()  ? "value "
+                                                                   : "" )
           + (feature == null ? name
                              : feature._featureName.baseName());
       }
@@ -1336,7 +1378,7 @@ public class Type extends ANY implements Comparable
     else if (actual.isGenericArgument())
       {
         Type constraint = actual.generic.constraint();
-        if (actual.ref)
+        if (actual.isRef())
           {
             constraint = constraint.asRef();
           }
