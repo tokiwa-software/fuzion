@@ -112,7 +112,7 @@ public class C extends Backend
    * For a reference clazz' struct, this is the name of a struct element that
    * contains the fields using the corresponding value clazz' struct.
    */
-  private static final String FIELDS_IN_REF_CLAZZ = "fields";
+  static final String FIELDS_IN_REF_CLAZZ = "fields";
 
   /**
    * Prefix for C functions created for Fuzion routines or intrinsics

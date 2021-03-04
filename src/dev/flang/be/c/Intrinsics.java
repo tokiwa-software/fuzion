@@ -79,7 +79,7 @@ class Intrinsics extends ANY
     var outer =
       or == -1                                         ? null :
       c._fuir.clazzFieldIsAdrOfValue(or)               ? c._outer_.deref() :
-      c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or)) ? c._outer_.deref().field("fzF_0_val")
+      c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or)) ? c._outer_.deref().field(C.FIELDS_IN_REF_CLAZZ) //.field("fzF_0_val")
                                                        : c._outer_;
 
     switch (c._fuir.clazzIntrinsicName(cl))
