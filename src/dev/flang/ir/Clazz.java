@@ -208,6 +208,13 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
+   * For a clazz with isRef()==true, this will be set to a value version of this
+   * clazz.
+   */
+  Clazz _asValue;
+
+
+  /**
    * Any data the backend might wish to store with an instance of Clazz.
    */
   public Object _backendData;
@@ -289,6 +296,7 @@ public class Clazz extends ANY implements Comparable
     _argumentFields = determineArgumentFields();
     _outerRef = determineOuterRef();
     _choiceTag = determineChoiceTag();
+    _asValue = determineAsValue();
   }
 
 
@@ -753,7 +761,7 @@ public class Clazz extends ANY implements Comparable
          + ((this._outer == Clazzes.universe.get())
             ? ""
             : this._outer.toString() + ".")
-         + (this._type.isRef()
+         + (this.isRef()
             ? "ref "
             : ""
             )
@@ -1476,6 +1484,28 @@ public class Clazz extends ANY implements Comparable
   public Clazz[] fields()
   {
     return _fields == null ? NO_CLAZZES : _fields;
+  }
+
+
+  /**
+   * For a clazz with isRef()==true, determine a value version of this clazz.
+   * Returns this if it is already a value or ADDRESS.
+   */
+  private Clazz determineAsValue()
+  {
+    return isRef() && _type != Types.t_ADDRESS
+      ? Clazzes.create(_type.asValue(), _outer)
+      : this;
+  }
+
+
+  /**
+   * For a clazz with isRef()==true, return a value version of this clazz.
+   * Returns this if it is already a value or ADDRESS.
+   */
+  public Clazz asValue()
+  {
+    return _asValue;
   }
 
 }

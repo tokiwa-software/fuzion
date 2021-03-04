@@ -302,6 +302,24 @@ public class FUIR extends ANY
     return _clazzIds.get(cl).isRef();
   }
 
+
+  /**
+   * For a reference clazz, obtain the corresponding value clazz.
+   *
+   * @param cl a clazz id
+   *
+   * @return clazz id  of corresponding value clazz.
+   */
+  public int clazzAsValue(int cl)
+  {
+    if (PRECONDITIONS) require
+      (clazzIsRef(cl));
+
+    var cc = _clazzIds.get(cl);
+    return _clazzIds.get(cc.asValue());
+  }
+
+
   public int clazzArgCount(int cl)
   {
     // NYI: This does not handle open generic args such as in Function.call yet.
