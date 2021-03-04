@@ -600,6 +600,7 @@ public class C extends Backend
   {
     switch (_fuir.clazzKind(cl))
       {
+      case Choice:
       case Routine:
         {
           var name = _structNames.get(cl);
@@ -652,6 +653,7 @@ public class C extends Backend
   {
     switch (_fuir.clazzKind(cl))
       {
+      case Choice:
       case Routine:
         {
           if (!_declaredStructs.contains(cl))
@@ -848,6 +850,9 @@ public class C extends Backend
                       }
                   }
                   */
+                    }
+                  else
+                    {
                     }
                 }
               break;

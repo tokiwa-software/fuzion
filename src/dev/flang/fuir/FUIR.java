@@ -82,6 +82,7 @@ public class FUIR extends ANY
     Field,
     Intrinsic,
     Abstract,
+    Choice
   }
 
   public enum ExprKind
@@ -243,18 +244,26 @@ public class FUIR extends ANY
 
   public ClazzKind clazzKind(int cl)
   {
-    var ff = _clazzIds.get(cl).feature();
-    switch (ff.impl.kind_)
+    var cc = _clazzIds.get(cl);
+    if (cc.isChoice())
       {
-      case Routine    :
-      case RoutineDef : return ClazzKind.Routine;
-      case Field      :
-      case FieldDef   :
-      case FieldActual:
-      case FieldInit  : return ClazzKind.Field;
-      case Intrinsic  : return ClazzKind.Intrinsic;
-      case Abstract   : return ClazzKind.Abstract;
-      default: throw new Error ("Unexpected feature impl kind: "+ff.impl.kind_);
+        return ClazzKind.Choice;
+      }
+    else
+      {
+        var ff = _clazzIds.get(cl).feature();
+        switch (ff.impl.kind_)
+          {
+          case Routine    :
+          case RoutineDef : return ClazzKind.Routine;
+          case Field      :
+          case FieldDef   :
+          case FieldActual:
+          case FieldInit  : return ClazzKind.Field;
+          case Intrinsic  : return ClazzKind.Intrinsic;
+          case Abstract   : return ClazzKind.Abstract;
+          default: throw new Error ("Unexpected feature impl kind: "+ff.impl.kind_);
+          }
       }
   }
 
