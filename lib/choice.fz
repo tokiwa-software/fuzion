@@ -26,14 +26,16 @@
 # choice -- feature used for choice types
 #
 # choice types provide algebraic sum types of all the generic arguments
-# provided to choice.
+# provided to choice.  A instance of a choice type is a tagged union of
+# the types provided as actual generic type parameters.  This concept is
+# also called variant, sum type or coproduct in other contexts.
 #
 # Syntactic sugar of the Fuzion language permits an alternative notation
 # for choice types with actual generics as follows
 #
 #   A | B | C | ...
 #
-# is equivalent to
+# which is equivalent to
 #
 #   choice<A, B, C, ...>
 #
@@ -41,9 +43,10 @@
 # with actual generics.
 #
 # A field of choice type can be assigned a value of the same choice type
-# or of any of the generic type arguments of its choice type.
+# or of any of the actual generic type arguments provided to the choice
+# feature.
 #
-# Two choice types choice<A,B> and choice<B,A> that only differ in the order
+# Two choice types choice<A,B> and choice<B,A> that differ only in the order
 # of their actual generic arguments are treated as different types.
 #
 # Named choice types can be constructed through inheritance, i.e.,
