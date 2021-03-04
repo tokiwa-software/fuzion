@@ -262,7 +262,17 @@ public class Clazzes extends ANY
         if (o._type == actualType && actualType != Types.t_ERROR)
           { // a recursive outer-relation
             result = o;  // is ok for a ref type, we can just return the original outer clazz
-            if (!o.isRef() && o._type.featureOfType().impl != Impl.INTRINSIC)
+            if (// This is a littly ugly: we do not want outer to be a value
+                // type in the source code (see tests/inheritance_negative for
+                // reasons why), but we are fine if outer is an 'artificial'
+                // value type that is created by Clazz.asValue(), since these
+                // will never be instantiated at runtime but are here only for
+                // the convenience of the backend.
+                //
+                // So instead of testing !o.isRef() we use
+                // !o._type.featureOfType().isThisRef().
+                !o._type.featureOfType().isThisRef() &&
+                o._type.featureOfType().impl != Impl.INTRINSIC)
               {  // but a recursive chain of value types is not permitted
 
                 // NYI: recursive chain of value types should be detected during
