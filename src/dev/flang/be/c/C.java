@@ -808,24 +808,19 @@ public class C extends Backend
             }
           case Box:
             {
-              _c.println("// NYI: Box " /* + v.code() */);
-
               var vc = _fuir.boxValueClazz(cl, c, i);
               var rc = _fuir.boxResultClazz(cl, c, i);
               if (_fuir.clazzIsRef(vc))
                 { // vc's type is a generic argument whose actual type does not need
                   // boxing
+                  _c.println("// Box " + _fuir.clazzAsString(vc) + " is NOP, clazz is already a ref");
                 }
               else
                 {
+                  _c.println("// Box " + _fuir.clazzAsString(vc));
                   var t = CExpr.ident(newTemp());
-                  _c.println(clazzTypeName(rc) + " " + t.code() + " = malloc(sizeof("+_structNames.get(cl)+"));");
-                  if (!_fuir.clazzIsUnitType(vc))
-                    {
-                      var val = stack.pop();
-                      _c.println("// NYI: copy fields from "+val.code()+" over to "+t.code());
-                    }
-                  stack.push(t);
+                  _c.println(clazzTypeName(rc) + " " + t.code() + " = malloc(sizeof(" + _structNames.get(rc) + "));");
+                  _c.print(t.deref().field("clazzId").assign(CExpr.int32const(clazzId2num(rc))));
                   if (_fuir.clazzIsChoice(vc))
                     {
                       _c.println("// NYI: choice boxing");
@@ -870,7 +865,13 @@ public class C extends Backend
                     }
                   else
                     {
+                      if (!_fuir.clazzIsUnitType(vc))
+                        {
+                          var val = stack.pop();
+                          _c.print(t.deref().field(FIELDS_IN_REF_CLAZZ).assign(val));
+                        }
                     }
+                  stack.push(t);
                 }
               break;
             }
