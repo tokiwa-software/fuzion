@@ -435,10 +435,7 @@ public class C extends Backend
        "#include <unistd.h>\n"+
        "#include <stdint.h>\n"+
        "#include <assert.h>\n"+
-       "\n" +
-       (true ? "" :
-        "void * " + DUMMY + "0;\n"+  // NYI: eventually remove this dummy
-        "#define " + DUMMY + " (*" + DUMMY + "0)\n"));
+       "\n");
 
     Stream.of(CompilePhase.values()).forEachOrdered
       ((p) ->
