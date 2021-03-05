@@ -2409,6 +2409,17 @@ public class Feature extends ANY implements Stmnt, Comparable
           {
             f.markUsed(res, usedAt);
           }
+        for (var a : arguments)
+          {
+            a.markUsed(res, usedAt);
+          }
+        if (isOpenGenericField())
+          {
+            for (var s :_selectOpen)
+              {
+                s.markUsed(res,  usedAt);
+              }
+          }
       }
   }
 
@@ -3832,7 +3843,8 @@ public class Feature extends ANY implements Stmnt, Comparable
     if (PRECONDITIONS) require
       (isOpenGenericField(),
        i >= 0,
-       state_.atLeast(State.RESOLVED_TYPES));
+       state_.atLeast(State.RESOLVED_TYPES),
+       !state_.atLeast(State.FINDING_USED_FEATURES));
 
     if (_selectOpen == null)
       {
