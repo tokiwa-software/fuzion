@@ -105,8 +105,7 @@ public class C extends Backend
   /**
    * Prefix for types declared for clazz instances
    */
-  private static final String REF_TYPE_PREFIX = "fzT_";
-  private static final String VAL_TYPE_PREFIX = "fzT_";
+  private static final String TYPE_PREFIX = "fzT_";
 
 
   /**
@@ -136,8 +135,8 @@ public class C extends Backend
   /**
    * C constants corresponding to Fuzion's true and false values.
    */
-  static final CExpr FZ_FALSE =  CExpr.compoundLiteral(VAL_TYPE_PREFIX + "bool", "0");
-  static final CExpr FZ_TRUE  =  CExpr.compoundLiteral(VAL_TYPE_PREFIX + "bool", "1");
+  static final CExpr FZ_FALSE =  CExpr.compoundLiteral(TYPE_PREFIX + "bool", "0");
+  static final CExpr FZ_TRUE  =  CExpr.compoundLiteral(TYPE_PREFIX + "bool", "1");
 
 
   /**
@@ -214,7 +213,7 @@ public class C extends Backend
     {
       String prefix(int cl)
       {
-        return _fuir.clazzIsRef(cl) ? REF_TYPE_PREFIX : VAL_TYPE_PREFIX;
+        return TYPE_PREFIX;
       }
     };
 
