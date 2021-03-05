@@ -535,27 +535,14 @@ public class C extends Backend
    *
    * @param field the field id
    */
-  String fieldName(int index, int fieldClazz)
-  {
-    return FIELD_PREFIX + index + "_" + mangle(_fuir.clazzBaseName(fieldClazz));
-  }
-
-
-  /**
-   * Get the name of a field
-   *
-   * @param index the index of the field, needed to disambiguate fields
-   * with equal name.
-   *
-   * @param field the field id
-   */
-  String fieldName2(int index, int field)
+  String fieldName(int index, int field)
   {
     return FIELD_PREFIX + index + "_" + mangle(_fuir.clazzBaseName(field));
   }
 
+
   /**
-   * Get the name of a field from an instances of a given clazz
+   * Get the name of a field from an instance of a given clazz
    *
    * @param cl clazz id of the clazz that contains the field.
    *
@@ -564,7 +551,7 @@ public class C extends Backend
   String fieldNameInClazz(int cl, int field)
   {
     int index = _fuir.clazzFieldIndex(cl, field);
-    return fieldName2(index, field);
+    return fieldName(index, field);
   }
 
 
@@ -710,7 +697,7 @@ public class C extends Backend
                         {
                           var cf = _fuir.clazzField(cl, i);
                           String type = clazzFieldType(cf);
-                          _c.print(" " + type + " " + fieldName2(i, cf) + ";\n");
+                          _c.print(" " + type + " " + fieldName(i, cf) + ";\n");
                         }
                     }
                   _c.print
