@@ -1263,10 +1263,10 @@ public class C extends Backend
     var ac = _fuir.clazzArgCount(cl);
     for (int i = 0; i < ac; i++)
       {
-        _c.print(comma);
         var at = _fuir.clazzArgClazz(cl, i);
         if (hasData(at))
           {
+            _c.print(comma);
             var t = clazzTypeName(at);
             _c.print(t + " arg" + i);
             comma = ", ";
