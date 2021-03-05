@@ -730,6 +730,43 @@ public class C extends Backend
 
 
   /**
+   * Test is a given clazz is not -1 and stores data.
+   *
+   * @param cl the clazz of val, may be -1
+   *
+   * @return true if cl != -1 and not unit or void type.
+   */
+  boolean hasData(int cl)
+  {
+    return cl != -1 &&
+      !_fuir.clazzIsUnitType(cl) &&
+      !_fuir.clazzIsVoidType(cl);
+  }
+
+
+  /**
+   * Push the given value to the stack unless it is of unit or void type or the
+   * clazz is -1
+   *
+   * @param stack the stack to push val to
+   *
+   * @param cl the clazz of val, may be -1
+   *
+   * @param the value to push
+   */
+  void push(Stack<CExpr> stack, int cl, CExpr val)
+  {
+    if (PRECONDITIONS) require
+      (hasData(cl) || val != null);
+
+    if (hasData(cl))
+      {
+        stack.push(val);
+      }
+  }
+
+
+  /**
    * Create C code for code block c of clazz cl with given stack contents at
    * beginning of the block.  Write code to _c.
    *
@@ -784,7 +821,7 @@ public class C extends Backend
                            fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
                            )
                     {
-                      if (!_fuir.clazzIsUnitType(valuecl))
+                      if (hasData(valuecl))
                         {
                           var value = stack.pop();                // value assigned to field
                           _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = "+value);
@@ -796,7 +833,7 @@ public class C extends Backend
                       _c.println("// flcazz: "+_fuir.clazzAsString(fclazz));
                       _c.println("// valuecl: "+_fuir.clazzAsString(valuecl));
                     }
-                  else if (_fuir.clazzIsUnitType(fclazz))
+                  else if (!hasData(fclazz))
                     {
                       _c.println("// valueluess assignment to " + fieldAccess.code());
                     }
@@ -872,13 +909,13 @@ public class C extends Backend
                     }
                   else
                     {
-                      if (!_fuir.clazzIsUnitType(vc))
+                      if (hasData(vc))
                         {
                           var val = stack.pop();
                           _c.print(t.deref().field(FIELDS_IN_REF_CLAZZ).assign(val));
                         }
                     }
-                  stack.push(t);
+                  push(stack, rc, t);
                 }
               break;
             }
@@ -913,7 +950,7 @@ public class C extends Backend
                     {
                       CExpr res = null;
                       var rt = _fuir.clazzResultClazz(cc0);
-                      if (rt != -1 && !_fuir.clazzIsUnitType(rt) &&
+                      if (hasData(rt) &&
                           (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
                         {
                           res = CExpr.ident(newTemp());
@@ -931,7 +968,7 @@ public class C extends Backend
                           _c.indent();
                           _c.print(call(cl, c, i, cc, stack, tt));
                           var rt2 = _fuir.clazzResultClazz(cc); // NYI: Check why rt2 and rt can be different
-                          if (rt2 != -1 && !_fuir.clazzIsUnitType(rt2))
+                          if (hasData(rt2))
                             {
                               var rv = stack.pop();
                               if ((rt == rt2 || _fuir.clazzIsRef(rt) && _fuir.clazzIsRef(rt2)) && // NYI: Remove this conditions when ccs set no longer contains false entries
@@ -956,7 +993,7 @@ public class C extends Backend
                       _c.println("}");
                       if (res != null)
                         {
-                          stack.push(res);
+                          push(stack, rt, res);
                         }
                     }
                 }
@@ -971,11 +1008,11 @@ public class C extends Backend
             {
               if (_fuir.clazzIsRef(cl))
                 {
-                  stack.push(CURRENT);
+                  push(stack, cl, CURRENT);
                 }
               else
                 {
-                  stack.push(CURRENT.deref());
+                  push(stack, cl, CURRENT.deref());
                 }
               break;
             }
@@ -1098,10 +1135,7 @@ public class C extends Backend
     if (ac != _fuir.clazzArgCount(cc)) // NYI: Remove this conditions when ccs set no longer contains false entries
       {
         _c.println("// Arg count does not match, expected "+ac+", called clazz "+_fuir.clazzAsString(cc)+" has "+_fuir.clazzArgCount(cc));
-        if (rt != -1 && !_fuir.clazzIsUnitType(rt) && !_fuir.clazzIsVoidType(rt))
-          {
-            stack.push(CDUMMY);
-          }
+        push(stack, rt, CDUMMY);
       }
     else
     switch (_fuir.clazzKind(cc))
@@ -1112,13 +1146,13 @@ public class C extends Backend
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = null;
           var call = CExpr.call(_functionNames.get(cc), args(cl, c, i, cc, stack, ac, castTarget));
-          if (rt != -1 && !_fuir.clazzIsUnitType(rt) && !_fuir.clazzIsVoidType(rt))
+          if (hasData(rt))
             {
               var tmp = newTemp();
               res = CExpr.ident(tmp);
               result = CStmnt.seq(CStmnt.decl(clazzTypeName(rt), tmp),
                                   res.assign(call));
-              stack.push(res);
+              push(stack, rt, res);
             }
           else
             {
@@ -1130,21 +1164,21 @@ public class C extends Backend
       case Field:
         {
           var tc = _fuir.callTargetClazz(cl, c, i);
-          if (tc != -1 && !_fuir.clazzIsUnitType(tc))
+          if (hasData(tc))
             {
               var t = stack.pop();
-              if (rt != -1 && !_fuir.clazzIsUnitType(rt))
+              if (hasData(rt))
                 {
                   var vtc = _fuir.clazzAsValue(tc);
                   var field = fieldName(_fuir.callFieldOffset(vtc, c, i), cc);
                   CExpr res = ccodeAccessField(tc, t, field);
                   res = _fuir.clazzFieldIsAdrOfValue(cc) ? res.deref() : res;
-                  stack.push(res);
+                  push(stack, rt, res);
                 }
             }
           else
             {
-              check(rt == -1 || _fuir.clazzIsUnitType(rt));
+              check(!hasData(rt));
             }
           break;
         }
@@ -1178,7 +1212,7 @@ public class C extends Backend
     List<CExpr> result;
     if (argCount > 0)
       {
-        if (_fuir.clazzIsUnitType(_fuir.clazzArgClazz(cc, argCount-1)))
+        if (!hasData(_fuir.clazzArgClazz(cc, argCount-1)))
           {
             result = args(cl, c, i, cc, stack, argCount-1, castTarget);
           }
@@ -1196,7 +1230,7 @@ public class C extends Backend
         result = new List<>();
         var tc = _fuir.callTargetClazz(cl, c, i);
         var or = _fuir.clazzOuterRef(cc);
-        if (!_fuir.clazzIsUnitType(tc))
+        if (hasData(tc))
           {
             var a = stack.pop();
             if (or != -1)
@@ -1220,7 +1254,7 @@ public class C extends Backend
   private void cFunctionDecl(int cl)
   {
     var res = _fuir.clazzResultClazz(cl);
-    _c.print(res == -1 || _fuir.clazzIsUnitType(res) || _fuir.clazzIsVoidType(res)
+    _c.print(!hasData(res)
              ? "void "
              : clazzTypeName(res) + " ");
     _c.print(_functionNames.get(cl));
@@ -1238,7 +1272,7 @@ public class C extends Backend
       {
         _c.print(comma);
         var at = _fuir.clazzArgClazz(cl, i);
-        if (at != -1 && !_fuir.clazzIsUnitType(at))
+        if (hasData(at))
           {
             var t = clazzTypeName(at);
             _c.print(t + " arg" + i);
@@ -1331,7 +1365,7 @@ public class C extends Backend
       {
         var af = _fuir.clazzArg(vcl, i);
         var at = _fuir.clazzArgClazz(vcl, i);
-        if (!_fuir.clazzIsUnitType(at))
+        if (hasData(at))
           {
             var target = isScalarType(vcl)
               ? cur
@@ -1355,7 +1389,7 @@ public class C extends Backend
                      "Java Error: " + sw);
       }
     var res = _fuir.clazzResultClazz(cl);
-    if (res != -1 && !_fuir.clazzIsUnitType(res))
+    if (hasData(res))
       {
         var rf = _fuir.clazzResultField(cl);
         if (rf != -1)
