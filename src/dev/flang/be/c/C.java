@@ -822,19 +822,9 @@ public class C extends Backend
                   var fclazz = _fuir.clazzResultClazz(field);  // static clazz of assigned field
                   var voutercl = _fuir.clazzAsValue(outercl);
                   var fieldName = fieldNameInClazz(voutercl, field);
-                  if (_fuir.clazzIsBool(fclazz) &&
-                      valuecl != -1 &&
+                  if (_fuir.clazzIsChoice(fclazz) &&
                       fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
                       )
-                    { // bool is a basically a choice type, but we do not use the tag in the generated C code
-                      check(_fuir.clazzIsTRUE (valuecl) ||
-                            _fuir.clazzIsFALSE(valuecl));
-                      var value = CExpr.uint32const(_fuir.clazzIsTRUE(valuecl) ? 1 : 0);
-                      _c.print(ccodeAccessField(outercl, outer, fieldName).field(TAG_NAME).assign(value));
-                    }
-                  else if (_fuir.clazzIsChoice(fclazz) &&
-                           fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
-                           )
                     {
                       var value = pop(stack, valuecl);                // value assigned to field
                       _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = "+ (value == null ? "(void)" : value));
