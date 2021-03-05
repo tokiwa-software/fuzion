@@ -767,6 +767,23 @@ public class C extends Backend
 
 
   /**
+   * Pop value from the stack unless it is of unit or void type or the
+   * clazz is -1
+   *
+   * @param stack the stack to pop value from
+   *
+   * @param cl the clazz of value, may be -1
+   *
+   * @return the popped value or null if cl is -1 or unit type
+   */
+  CExpr pop(Stack<CExpr> stack, int cl)
+  {
+    return hasData(cl) ? stack.pop()
+                       : null;
+  }
+
+
+  /**
    * Create C code for code block c of clazz cl with given stack contents at
    * beginning of the block.  Write code to _c.
    *
@@ -799,13 +816,12 @@ public class C extends Backend
               var field = _fuir.assignedField(cl, c, i);  // field we are assigning to
               if (field != -1)
                 {
-                  var outer = stack.pop();                // instance containing assigned field
                   var outercl = _fuir.assignOuterClazz(cl, c, i);  // static clazz of outer
+                  var outer = pop(stack, outercl);                 // instance containing assigned field
                   var valuecl = _fuir.assignValueClazz(cl, c, i);  // static clazz of value
                   var fclazz = _fuir.clazzResultClazz(field);  // static clazz of assigned field
                   var voutercl = _fuir.clazzAsValue(outercl);
                   var fieldName = fieldNameInClazz(voutercl, field);
-                  var fieldAccess = ccodeAccessField(outercl, outer, fieldName);
                   if (_fuir.clazzIsBool(fclazz) &&
                       valuecl != -1 &&
                       fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
@@ -814,38 +830,33 @@ public class C extends Backend
                       check(_fuir.clazzIsTRUE (valuecl) ||
                             _fuir.clazzIsFALSE(valuecl));
                       var value = CExpr.uint32const(_fuir.clazzIsTRUE(valuecl) ? 1 : 0);
-                      fieldAccess = fieldAccess.field(TAG_NAME);
-                      _c.printExpr(fieldAccess.assign(value)); _c.println(";  /* bool choice type */");
+                      _c.print(ccodeAccessField(outercl, outer, fieldName).field(TAG_NAME).assign(value));
                     }
                   else if (_fuir.clazzIsChoice(fclazz) &&
                            fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
                            )
                     {
-                      if (hasData(valuecl))
-                        {
-                          var value = stack.pop();                // value assigned to field
-                          _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = "+value);
-                        }
-                      else
-                        {
-                          _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = (void)");
-                        }
+                      var value = pop(stack, valuecl);                // value assigned to field
+                      _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = "+ (value == null ? "(void)" : value));
                       _c.println("// flcazz: "+_fuir.clazzAsString(fclazz));
                       _c.println("// valuecl: "+_fuir.clazzAsString(valuecl));
                     }
-                  else if (!hasData(fclazz))
-                    {
-                      _c.println("// valueluess assignment to " + fieldAccess.code());
-                    }
                   else
                     {
-                      var value = stack.pop();                // value assigned to field
-                      if (_fuir.clazzIsRef(fclazz))
+                      var value = pop(stack, fclazz);                // value assigned to field
+                      if (value == null)
                         {
-                          value = value.castTo(clazzTypeName(fclazz));
+                          _c.println("// valueluess assignment to " + outer);
                         }
-                      // _c.print("// Assign to "+_fuir.clazzAsString(fclazz)+" outercl "+_fuir.clazzAsString(outercl)+" valuecl "+_fuir.clazzAsString(valuecl));
-                      _c.print(fieldAccess.assign(value));
+                      else
+                        {
+                          if (_fuir.clazzIsRef(fclazz))
+                            {
+                              value = value.castTo(clazzTypeName(fclazz));
+                            }
+                          // _c.print("// Assign to "+_fuir.clazzAsString(fclazz)+" outercl "+_fuir.clazzAsString(outercl)+" valuecl "+_fuir.clazzAsString(valuecl));
+                          _c.print(ccodeAccessField(outercl, outer, fieldName).assign(value));
+                        }
                     }
                 }
               break;
@@ -909,9 +920,9 @@ public class C extends Backend
                     }
                   else
                     {
-                      if (hasData(vc))
+                      var val = pop(stack, vc);
+                      if (val != null)
                         {
-                          var val = stack.pop();
                           _c.print(t.deref().field(FIELDS_IN_REF_CLAZZ).assign(val));
                         }
                     }
@@ -970,7 +981,7 @@ public class C extends Backend
                           var rt2 = _fuir.clazzResultClazz(cc); // NYI: Check why rt2 and rt can be different
                           if (hasData(rt2))
                             {
-                              var rv = stack.pop();
+                              var rv = pop(stack, rt2);
                               if ((rt == rt2 || _fuir.clazzIsRef(rt) && _fuir.clazzIsRef(rt2)) && // NYI: Remove this conditions when ccs set no longer contains false entries
                                   rv != CDUMMY)
                                 {
@@ -1064,7 +1075,6 @@ public class C extends Backend
           case Singleton:
             {
               _c.println("// NYI: singleton ");
-              stack.push(CDUMMY); // NYI: Singleton result
               break;
             }
           case WipeStack:
@@ -1164,21 +1174,16 @@ public class C extends Backend
       case Field:
         {
           var tc = _fuir.callTargetClazz(cl, c, i);
-          if (hasData(tc))
+          var t = pop(stack, tc);
+          check
+            (t != null || !hasData(rt));
+          if (hasData(rt))
             {
-              var t = stack.pop();
-              if (hasData(rt))
-                {
-                  var vtc = _fuir.clazzAsValue(tc);
-                  var field = fieldName(_fuir.callFieldOffset(vtc, c, i), cc);
-                  CExpr res = ccodeAccessField(tc, t, field);
-                  res = _fuir.clazzFieldIsAdrOfValue(cc) ? res.deref() : res;
-                  push(stack, rt, res);
-                }
-            }
-          else
-            {
-              check(!hasData(rt));
+              var vtc = _fuir.clazzAsValue(tc);
+              var field = fieldName(_fuir.callFieldOffset(vtc, c, i), cc);
+              CExpr res = ccodeAccessField(tc, t, field);
+              res = _fuir.clazzFieldIsAdrOfValue(cc) ? res.deref() : res;
+              push(stack, rt, res);
             }
           break;
         }
@@ -1212,15 +1217,11 @@ public class C extends Backend
     List<CExpr> result;
     if (argCount > 0)
       {
-        if (!hasData(_fuir.clazzArgClazz(cc, argCount-1)))
+        var ac = _fuir.clazzArgClazz(cc, argCount-1);
+        var a = pop(stack, ac);
+        result = args(cl, c, i, cc, stack, argCount-1, castTarget);
+        if (hasData(ac))
           {
-            result = args(cl, c, i, cc, stack, argCount-1, castTarget);
-          }
-        else
-          {
-            var a = stack.pop();
-            result = args(cl, c, i, cc, stack, argCount-1, castTarget);
-            var ac = _fuir.clazzArgClazz(cc, argCount-1);
             a = _fuir.clazzIsRef(ac) ? a.castTo(clazzTypeName(ac)) : a;
             result.add(a);
           }
@@ -1230,9 +1231,9 @@ public class C extends Backend
         result = new List<>();
         var tc = _fuir.callTargetClazz(cl, c, i);
         var or = _fuir.clazzOuterRef(cc);
-        if (hasData(tc))
+        var a = pop(stack, tc);
+        if (hasData(tc)) // NYI: needed?
           {
-            var a = stack.pop();
             if (or != -1)
               {
                 var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
