@@ -162,7 +162,7 @@ class Intrinsics extends ANY
       case "Object.asString"     :
         {
           return CStmnt.seq(c.constString("NYI: Object.asString".getBytes(StandardCharsets.UTF_8), "res"),
-                            CExpr.ident("res").castTo("fzTr__Rstring*").ret());
+                            CExpr.ident("res").castTo("fzT__Rstring*").ret());
 
         }
 

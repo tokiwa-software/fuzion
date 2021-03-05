@@ -105,7 +105,7 @@ public class C extends Backend
   /**
    * Prefix for types declared for clazz instances
    */
-  private static final String REF_TYPE_PREFIX = "fzTr_";
+  private static final String REF_TYPE_PREFIX = "fzT_";
   private static final String VAL_TYPE_PREFIX = "fzT_";
 
 
@@ -1105,8 +1105,8 @@ public class C extends Backend
         sb.append("...");
       }
     var t = CExpr.ident(tmp);
-    return CStmnt.seq(CStmnt.decl("fzTr__Rconststring *", tmp),
-                      CExpr.ident(tmp).assign(CExpr.call("malloc", new List<>(CExpr.ident("fzTr__Rconststring").sizeOfType()))),
+    return CStmnt.seq(CStmnt.decl("fzT__Rconststring *", tmp),
+                      CExpr.ident(tmp).assign(CExpr.call("malloc", new List<>(CExpr.ident("fzT__Rconststring").sizeOfType()))),
                       t.deref().field("clazzId").assign(CExpr.int32const(clazzId2num(_fuir.clazz_conststring()))),
                       t.deref().field(FIELDS_IN_REF_CLAZZ).field("fzF_1_data").assign(CExpr.string(sb.toString()).castTo("void *")),
                       t.deref().field(FIELDS_IN_REF_CLAZZ).field("fzF_3_length").assign(CExpr.int32const(bytes.length)));
