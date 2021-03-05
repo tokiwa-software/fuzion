@@ -782,6 +782,7 @@ public class C extends Backend
       {
         var s = _fuir.codeAt(c, i);
         _c.println("// Code for statement " + s);
+        CStmnt o = CStmnt.EMPTY;
         switch (s)
           {
           case AdrToValue:
@@ -816,32 +817,28 @@ public class C extends Backend
                                 _fuir.clazzIsFALSE(valuecl),
                                 value == null);
                           var bvalue = _fuir.clazzIsTRUE(valuecl) ? FZ_TRUE : FZ_FALSE;
-                          _c.print(ccodeAccessField(outercl, outer, fieldName).assign(bvalue));
+                          o = ccodeAccessField(outercl, outer, fieldName).assign(bvalue);
                         }
                       else
                         {
-                          _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = "+ (value == null ? "(void)" : value));
-                          _c.println("// flcazz: "+_fuir.clazzAsString(fclazz));
-                          _c.println("// valuecl: "+_fuir.clazzAsString(valuecl));
-                          _c.println("assert(0); // choice field assignemnt");
+                          o = CStmnt.seq
+                            (CStmnt.comment("NYI: Assign to choice field "+outer+"." + fieldName + " = "+ (value == null ? "(void)" : value)),
+                             CStmnt.comment("flcazz: "+_fuir.clazzAsString(fclazz)),
+                             CStmnt.comment("valuecl: "+_fuir.clazzAsString(valuecl)),
+                             CExpr.call("assert", new List<>(CExpr.int32const(0))).comment("choice field assignemnt"));
                         }
                     }
                   else
                     {
                       var value = pop(stack, fclazz);                // value assigned to field
-                      if (value == null)
+                      if (_fuir.clazzIsRef(fclazz))
                         {
-                          _c.println("// valueluess assignment to " + outer);
+                          value = value.castTo(clazzTypeName(fclazz));
                         }
-                      else
-                        {
-                          if (_fuir.clazzIsRef(fclazz))
-                            {
-                              value = value.castTo(clazzTypeName(fclazz));
-                            }
-                          // _c.print("// Assign to "+_fuir.clazzAsString(fclazz)+" outercl "+_fuir.clazzAsString(outercl)+" valuecl "+_fuir.clazzAsString(valuecl));
-                          _c.print(ccodeAccessField(outercl, outer, fieldName).assign(value));
-                        }
+                      // _c.print("// Assign to "+_fuir.clazzAsString(fclazz)+" outercl "+_fuir.clazzAsString(outercl)+" valuecl "+_fuir.clazzAsString(valuecl));
+                      o = value == null
+                        ? CStmnt.comment("valueluess assignment to " + outer)
+                        : ccodeAccessField(outercl, outer, fieldName).assign(value);
                     }
                 }
               break;
@@ -853,7 +850,7 @@ public class C extends Backend
               if (_fuir.clazzIsRef(vc))
                 { // vc's type is a generic argument whose actual type does not need
                   // boxing
-                  _c.println("// Box " + _fuir.clazzAsString(vc) + " is NOP, clazz is already a ref");
+                  o = CStmnt.comment("Box " + _fuir.clazzAsString(vc) + " is NOP, clazz is already a ref");
                 }
               else
                 {
@@ -864,7 +861,7 @@ public class C extends Backend
                   if (_fuir.clazzIsChoice(vc))
                     {
                       _c.println("// NYI: choice boxing");
-                      _c.println("assert(0); // choice boxing");
+                      _c.print(CExpr.call("assert", new List<>(CExpr.int32const(0))).commnt("/* choice boxing */"));
                   /* NYI choice boxing:
 
                 check
@@ -1042,7 +1039,7 @@ public class C extends Backend
             {
               var bytes = _fuir.strConst(c, i);
               var tmp = newTemp();
-              _c.print(constString(bytes, tmp));
+              o = constString(bytes, tmp);
               stack.push(CExpr.ident(tmp));
               break;
             }
@@ -1055,7 +1052,7 @@ public class C extends Backend
             }
           case Singleton:
             {
-              _c.println("// NYI: singleton ");
+              o = CStmnt.comment("NYI: singleton");
               break;
             }
           case WipeStack:
@@ -1072,6 +1069,7 @@ public class C extends Backend
               System.err.println("*** error: C backend does not handle statments of type " + s);
             }
           }
+        _c.print(o);
         if (SHOW_STACK_AFTER_STMNT) System.out.println("After " + s +" in "+_fuir.clazzAsString(cl)+": "+stack);
       }
   }

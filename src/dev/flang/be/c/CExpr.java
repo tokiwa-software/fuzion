@@ -672,6 +672,23 @@ abstract class CExpr extends CStmnt
 
 
   /**
+   * Add a comment surrounded by '/'+'*' and '*'+'/' after this expression.
+   */
+  CExpr commnt(String s)
+  {
+    CExpr inner = this;
+    return new CExpr()
+      {
+        int precedence() { return inner.precedence(); }
+        void code(StringBuilder sb)
+        {
+          inner.code(sb);
+          sb.append("/* ").append(s).append(" */");
+        }
+      };
+  }
+
+  /**
    * Create String for debugging-output.
    */
   public String toString()

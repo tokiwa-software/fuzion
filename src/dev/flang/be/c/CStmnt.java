@@ -49,7 +49,10 @@ abstract class CStmnt extends ANY
   /**
    * empty statement
    */
-  static final CStmnt EMPTY = new CStmnt() { void code(StringBuilder sb) { } };
+  static final CStmnt EMPTY = new CStmnt() {
+      boolean isEmpty() { return true; }
+      void code(StringBuilder sb) { }
+    };
 
 
   /*----------------------------  producers  ----------------------------*/
@@ -76,6 +79,24 @@ abstract class CStmnt extends ANY
       };
   }
 
+  /**
+   * not really a statement, but a comment
+   */
+  static CStmnt comment(String s)
+  {
+    return new CStmnt()
+      {
+        boolean isEmpty()
+        {
+          return true;
+        }
+        void code(StringBuilder sb)
+        {
+          sb.append("// ").append(s).append("\n");
+        }
+      };
+  }
+
 
   /**
    * A sequence of C statements, separated by semicolons.
@@ -93,7 +114,11 @@ abstract class CStmnt extends ANY
           var semi = "";
           for (var cs : s)
             {
-              if (cs != EMPTY)
+              if (cs.isEmpty())
+                {
+                  cs.code(sb);
+                }
+              else
                 {
                   sb.append(semi);
                   cs.code(sb);
@@ -117,6 +142,16 @@ abstract class CStmnt extends ANY
    * @param sb will be used to append the code to
    */
   abstract void code(StringBuilder sb);
+
+
+  /**
+   * Is this statement empty, i.e., it produces nothing for the C parser. This
+   * is the case for comments or for a NOP that produces nothing.
+   */
+  boolean isEmpty()
+  {
+    return false;
+  }
 
 
   /**
