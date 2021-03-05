@@ -837,6 +837,7 @@ public class C extends Backend
                           _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = "+ (value == null ? "(void)" : value));
                           _c.println("// flcazz: "+_fuir.clazzAsString(fclazz));
                           _c.println("// valuecl: "+_fuir.clazzAsString(valuecl));
+                          _c.println("assert(0); // choice field assignemnt");
                         }
                     }
                   else
