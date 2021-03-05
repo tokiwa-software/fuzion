@@ -84,16 +84,16 @@ class Intrinsics extends ANY
 
     switch (c._fuir.clazzIntrinsicName(cl))
       {
-      case "exitForCompilerTest" : return CExpr.call("exit", new List<>(CExpr.ident("arg0")));
+      case "exitForCompilerTest" : return CExpr.call("exit", new List<>(new CIdent("arg0")));
       case "fuzion.std.out.write": return CStmnt.seq(CStmnt.decl("char","c"),
-                                                       CExpr.ident("c").assign(CExpr.ident("arg0").castTo("char")),
+                                                       new CIdent("c").assign(new CIdent("arg0").castTo("char")),
                                                        CExpr.call("fwrite",
-                                                                  new List<>(CExpr.ident("c").adrOf(),
+                                                                  new List<>(new CIdent("c").adrOf(),
                                                                              CExpr.int32const(1),
                                                                              CExpr.int32const(1),
-                                                                             CExpr.ident("stdout"))));
+                                                                             new CIdent("stdout"))));
 
-      case "fuzion.std.out.flush": return CExpr.call("fflush", new List<>(CExpr.ident("stdout")));
+      case "fuzion.std.out.flush": return CExpr.call("fflush", new List<>(new CIdent("stdout")));
 
         /* NYI: The C standard does not guarentee wrap-around semantics for signed types, need
          * to check if this is the case for the C compilers used for Fuzion.
@@ -101,54 +101,54 @@ class Intrinsics extends ANY
       case "i32.prefix -°"       :
       case "i64.prefix -°"       : return outer.neg().ret();
       case "i32.infix -°"        :
-      case "i64.infix -°"        : return outer.sub(CExpr.ident("arg0")).ret();
+      case "i64.infix -°"        : return outer.sub(new CIdent("arg0")).ret();
       case "i32.infix +°"        :
-      case "i64.infix +°"        : return outer.add(CExpr.ident("arg0")).ret();
+      case "i64.infix +°"        : return outer.add(new CIdent("arg0")).ret();
       case "i32.infix *°"        :
-      case "i64.infix *°"        : return outer.mul(CExpr.ident("arg0")).ret();
+      case "i64.infix *°"        : return outer.mul(new CIdent("arg0")).ret();
       case "i32.div"             :
-      case "i64.div"             : return outer.div(CExpr.ident("arg0")).ret();
+      case "i64.div"             : return outer.div(new CIdent("arg0")).ret();
       case "i32.mod"             :
-      case "i64.mod"             : return outer.mod(CExpr.ident("arg0")).ret();
+      case "i64.mod"             : return outer.mod(new CIdent("arg0")).ret();
 
       case "i32.infix =="        :
-      case "i64.infix =="        : return outer.eq(CExpr.ident("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
+      case "i64.infix =="        : return outer.eq(new CIdent("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
       case "i32.infix !="        :
-      case "i64.infix !="        : return outer.ne(CExpr.ident("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
+      case "i64.infix !="        : return outer.ne(new CIdent("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
       case "i32.infix >"         :
-      case "i64.infix >"         : return outer.gt(CExpr.ident("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
+      case "i64.infix >"         : return outer.gt(new CIdent("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
       case "i32.infix >="        :
-      case "i64.infix >="        : return outer.ge(CExpr.ident("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
+      case "i64.infix >="        : return outer.ge(new CIdent("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
       case "i32.infix <"         :
-      case "i64.infix <"         : return outer.lt(CExpr.ident("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
+      case "i64.infix <"         : return outer.lt(new CIdent("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
       case "i32.infix <="        :
-      case "i64.infix <="        : return outer.le(CExpr.ident("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
+      case "i64.infix <="        : return outer.le(new CIdent("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
 
       case "u32.prefix -°"       :
       case "u64.prefix -°"       : return outer.neg().ret();
       case "u32.infix -°"        :
-      case "u64.infix -°"        : return outer.sub(CExpr.ident("arg0")).ret();
+      case "u64.infix -°"        : return outer.sub(new CIdent("arg0")).ret();
       case "u32.infix +°"        :
-      case "u64.infix +°"        : return outer.add(CExpr.ident("arg0")).ret();
+      case "u64.infix +°"        : return outer.add(new CIdent("arg0")).ret();
       case "u32.infix *°"        :
-      case "u64.infix *°"        : return outer.mul(CExpr.ident("arg0")).ret();
+      case "u64.infix *°"        : return outer.mul(new CIdent("arg0")).ret();
       case "u32.div"             :
-      case "u64.div"             : return outer.div(CExpr.ident("arg0")).ret();
+      case "u64.div"             : return outer.div(new CIdent("arg0")).ret();
       case "u32.mod"             :
-      case "u64.mod"             : return outer.mod(CExpr.ident("arg0")).ret();
+      case "u64.mod"             : return outer.mod(new CIdent("arg0")).ret();
 
       case "u32.infix =="        :
-      case "u64.infix =="        : return outer.eq(CExpr.ident("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
+      case "u64.infix =="        : return outer.eq(new CIdent("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
       case "u32.infix !="        :
-      case "u64.infix !="        : return outer.ne(CExpr.ident("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
+      case "u64.infix !="        : return outer.ne(new CIdent("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
       case "u32.infix >"         :
-      case "u64.infix >"         : return outer.gt(CExpr.ident("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
+      case "u64.infix >"         : return outer.gt(new CIdent("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
       case "u32.infix >="        :
-      case "u64.infix >="        : return outer.ge(CExpr.ident("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
+      case "u64.infix >="        : return outer.ge(new CIdent("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
       case "u32.infix <"         :
-      case "u64.infix <"         : return outer.lt(CExpr.ident("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
+      case "u64.infix <"         : return outer.lt(new CIdent("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
       case "u32.infix <="        :
-      case "u64.infix <="        : return outer.le(CExpr.ident("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
+      case "u64.infix <="        : return outer.le(new CIdent("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
 
       case "i32.as_i64"          : return outer.castTo("fzT_1i64").ret();
       case "u32.as_i64"          : return outer.castTo("fzT_1i64").ret();
@@ -162,21 +162,21 @@ class Intrinsics extends ANY
       case "Object.asString"     :
         {
           return CStmnt.seq(c.constString("NYI: Object.asString".getBytes(StandardCharsets.UTF_8), "res"),
-                            CExpr.ident("res").castTo("fzT__Rstring*").ret());
+                            new CIdent("res").castTo("fzT__Rstring*").ret());
 
         }
 
         // NYI: the following intrinsics are generic, they are currently hard-coded for i32 only:
       case "Array.getData": return CExpr.call("malloc",
-                                                new List<>(CExpr.ident("fzT_1i32").sizeOfType().mul(CExpr.ident("arg0")))).ret();
-      case "Array.setel"  : return CExpr.ident("arg0").castTo("fzT_1i32*").index(CExpr.ident("arg1")).assign(CExpr.ident("arg2"));
-      case "Array.get"    : return CExpr.ident("arg0").castTo("fzT_1i32*").index(CExpr.ident("arg1")).ret();
+                                                new List<>(new CIdent("fzT_1i32").sizeOfType().mul(new CIdent("arg0")))).ret();
+      case "Array.setel"  : return new CIdent("arg0").castTo("fzT_1i32*").index(new CIdent("arg1")).assign(new CIdent("arg2"));
+      case "Array.get"    : return new CIdent("arg0").castTo("fzT_1i32*").index(new CIdent("arg1")).ret();
 
       default:
         var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
         Errors.warning(msg);
         return CStmnt.seq(CExpr.call("fprintf",
-                                       new List<>(CExpr.ident("stderr"),
+                                       new List<>(new CIdent("stderr"),
                                                   CExpr.string("*** error: NYI: "+ msg + "\\n"))),
                             CExpr.call("exit", new List<>(CExpr.int32const(1))));
 

@@ -93,13 +93,13 @@ public class C extends Backend
    * yet implemented.
    */
   private static final String DUMMY = "NYI_DUMMY_VALUE";
-  private static final CExpr CDUMMY = CExpr.ident(DUMMY);
+  private static final CExpr CDUMMY = new CIdent(DUMMY);
 
 
   /**
    * Name of local variable containing current instance
    */
-  private static final CExpr CURRENT = CExpr.ident("fzCur");
+  private static final CExpr CURRENT = new CIdent("fzCur");
 
 
   /**
@@ -142,7 +142,7 @@ public class C extends Backend
   /**
    * C identifier of argument variable that refers to a clazz' outer instance.
    */
-  static final CExpr _outer_ = CExpr.ident("fzouter");
+  static final CExpr _outer_ = new CIdent("fzouter");
 
 
   /**
@@ -922,7 +922,7 @@ public class C extends Backend
                   var ccs = _fuir.callCalledClazzes(cl, c, i);
                   var ac = _fuir.callArgCount(c, i);
                   var tc = _fuir.callTargetClazz(cl, c, i);
-                  var t = CExpr.ident(newTemp());
+                  var t = new CIdent(newTemp());
                   var ti = stack.size() - ac - 1;
                   var tt0 = clazzTypeName(tc);
                   _c.println(tt0 + " " + t.code()+ ";");
@@ -947,7 +947,7 @@ public class C extends Backend
                       if (hasData(rt) &&
                           (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
                         {
-                          res = CExpr.ident(newTemp());
+                          res = new CIdent(newTemp());
                           _c.println(clazzTypeName(rt) + " " + res.code() + ";");
                         }
                       _c.println("switch (" + id.code() + ") {");
@@ -1040,7 +1040,7 @@ public class C extends Backend
               var bytes = _fuir.strConst(c, i);
               var tmp = newTemp();
               o = constString(bytes, tmp);
-              stack.push(CExpr.ident(tmp));
+              stack.push(new CIdent(tmp));
               break;
             }
           case Match:
@@ -1088,9 +1088,9 @@ public class C extends Backend
         sb.append("\\"+((b >> 6) & 7)+((b >> 3) & 7)+(b & 7));
         sb.append("...");
       }
-    var t = CExpr.ident(tmp);
-    return CStmnt.seq(CStmnt.decl("fzT__Rconststring *", tmp),
-                      CExpr.ident(tmp).assign(CExpr.call("malloc", new List<>(CExpr.ident("fzT__Rconststring").sizeOfType()))),
+    var t = new CIdent(tmp);
+    return CStmnt.seq(CStmnt.decl("fzT__Rconststring *", t),
+                      new CIdent(tmp).assign(CExpr.call("malloc", new List<>(new CIdent("fzT__Rconststring").sizeOfType()))),
                       t.deref().field("clazzId").assign(CExpr.int32const(clazzId2num(_fuir.clazz_conststring()))),
                       t.deref().field(FIELDS_IN_REF_CLAZZ).field("fzF_1_data").assign(CExpr.string(sb.toString()).castTo("void *")),
                       t.deref().field(FIELDS_IN_REF_CLAZZ).field("fzF_3_length").assign(CExpr.int32const(bytes.length)));
@@ -1137,8 +1137,8 @@ public class C extends Backend
           var call = CExpr.call(_functionNames.get(cc), args(cl, c, i, cc, stack, ac, castTarget));
           if (hasData(rt))
             {
-              var tmp = newTemp();
-              res = CExpr.ident(tmp);
+              var tmp = new CIdent(newTemp());
+              res = tmp;
               result = CStmnt.seq(CStmnt.decl(clazzTypeName(rt), tmp),
                                   res.assign(call));
               push(stack, rt, res);
@@ -1347,7 +1347,7 @@ public class C extends Backend
             var target = isScalarType(vcl)
               ? cur
               : cur.field(fieldNameInClazz(vcl, af));
-            _c.print(target.assign(CExpr.ident("arg" + i)));
+            _c.print(target.assign(new CIdent("arg" + i)));
           }
       }
     var c = _fuir.clazzCode(cl);
