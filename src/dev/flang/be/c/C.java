@@ -1018,14 +1018,7 @@ public class C extends Backend
             }
           case Current:
             {
-              if (_fuir.clazzIsRef(cl))
-                {
-                  push(stack, cl, CURRENT);
-                }
-              else
-                {
-                  push(stack, cl, CURRENT.deref());
-                }
+              push(stack, cl, current(cl));
               break;
             }
           case If:
@@ -1391,22 +1384,24 @@ public class C extends Backend
     if (hasData(res))
       {
         var rf = _fuir.clazzResultField(cl);
-        if (rf != -1)
-          {
-            _c.println("return " + CURRENT.deref().field(fieldNameInClazz(cl, rf)).code() + ";");
-          }
-        else
-          {
-            if (_fuir.clazzIsRef(cl))
-              {
-                _c.println("return " + CURRENT.code() + ";");
-              }
-            else
-              {
-                _c.println("return " + CURRENT.deref().code() + ";");
-              }
-          }
+        _c.print(rf != -1
+                 ? current(cl).field(fieldNameInClazz(cl, rf)).ret()  // a routine, return result field
+                 : current(cl).ret()                                  // a constructor, return current instance
+                 );
       }
+  }
+
+
+  /**
+   * Return the current instance of the currently compiled clazz cl. This is a C
+   * pointer in case _fuir.clazzIsRef(cl), or the C struct corresponding to cl
+   * otherwise.
+   */
+  CExpr current(int cl)
+  {
+    return _fuir.clazzIsRef(cl)
+      ? CURRENT
+      : CURRENT.deref();
   }
 
 
