@@ -72,22 +72,6 @@ abstract class CStmnt extends ANY
    *
    * @return corresponding CStmnt
    */
-  static CStmnt decl(String type, String ident)
-  {
-    return decl(type, new CIdent(ident));
-  }
-
-
-  /**
-   * C declaration such as 'i32 i'
-   *
-   *
-   * @param type the type of the defined entity
-   *
-   * @param ident the name of the defined entity
-   *
-   * @return corresponding CStmnt
-   */
   static CStmnt decl(String type, CIdent ident)
   {
     return new CStmnt()
