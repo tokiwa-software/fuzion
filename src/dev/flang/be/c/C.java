@@ -816,12 +816,12 @@ public class C extends Backend
               var field = _fuir.assignedField(cl, c, i);  // field we are assigning to
               if (field != -1)
                 {
-                  var outercl = _fuir.assignOuterClazz(cl, c, i);  // static clazz of outer
-                  var outer = pop(stack, outercl);                 // instance containing assigned field
-                  var valuecl = _fuir.assignValueClazz(cl, c, i);  // static clazz of value
-                  var fclazz = _fuir.clazzResultClazz(field);  // static clazz of assigned field
-                  var voutercl = _fuir.clazzAsValue(outercl);
+                  var outercl   = _fuir.assignOuterClazz(cl, c, i);  // static clazz of outer
+                  var valuecl   = _fuir.assignValueClazz(cl, c, i);  // static clazz of value
+                  var fclazz    = _fuir.clazzResultClazz(field);     // static clazz of assigned field
+                  var voutercl  = _fuir.clazzAsValue(outercl);
                   var fieldName = fieldNameInClazz(voutercl, field);
+                  var outer     = pop(stack, outercl);                 // instance containing assigned field
                   if (_fuir.clazzIsChoice(fclazz) &&
                       fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
                       )
