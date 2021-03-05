@@ -1001,6 +1001,8 @@ public class C extends Backend
                       _c.println("default: { fprintf(stderr,\"*** unhandled dynamic call target %d\\n\", " + id.code() + "); exit(1); }");
                       _c.unindent();
                       _c.println("}");
+                      stack = stack2;
+                      args(cl, c, i, cc0, stack, _fuir.clazzArgCount(cc0), _fuir.clazzOuterClazz(cc0));
                       if (res != null)
                         {
                           push(stack, rt, res);
