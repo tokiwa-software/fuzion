@@ -1551,6 +1551,18 @@ public class Call extends Expr
                 f.markUsed(res, t.pos);  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
               }
           }
+
+        for (var a : cf.arguments)
+          {
+            a.markUsed(res, pos());
+            if (a.isOpenGenericField())
+              {
+                for (var i = 0; i<a.selectSize(); i++)
+                  {
+                    a.select(i).markUsed(res,  pos());
+                  }
+              }
+          }
       }
   }
 
