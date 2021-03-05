@@ -933,8 +933,8 @@ public class C extends Backend
             {
               if (_fuir.callIsDynamic(cl, c, i))
                 {
-                  _c.println("// Dynamic call to " + _fuir.callDebugString(c, i));
                   var cc0 = _fuir.callCalledClazz  (cl, c, i);
+                  _c.println("// Dynamic call to " + _fuir.clazzAsString(cc0));
                   var ccs = _fuir.callCalledClazzes(cl, c, i);
                   var ac = _fuir.callArgCount(c, i);
                   var tc = _fuir.callTargetClazz(cl, c, i);
@@ -948,7 +948,7 @@ public class C extends Backend
                   if (ccs.length == 1)
                     {
                       var tt = _fuir.clazzOuterClazz(ccs[0]);
-                      _c.println("// Dynamic call to " + _fuir.callDebugString(c, i) + " with exactly one target");
+                      _c.println("// Dynamic call to " + _fuir.clazzAsString(cc0) + " with exactly one target");
                       _c.print(CExpr.call("assert",new List<>(CExpr.eq(id, CExpr.int32const(clazzId2num(tt)))))); // <-- perfect reason to make () optional
                       _c.print(call(cl, c, i, ccs[0], stack, tt));
                     }

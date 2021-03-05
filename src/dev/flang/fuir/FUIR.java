@@ -926,18 +926,6 @@ public class FUIR extends ANY
   }
 
 
-  public String callDebugString(int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call);
-
-    var call = (Call) _codeIds.get(c).get(ix);
-    return call.calledFeature().qualifiedName();
-  }
-
-
   /**
    * Get the inner clazz for a non dynamic call or the static clazz of a dynamic
    * call.
