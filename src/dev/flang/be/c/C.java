@@ -824,9 +824,20 @@ public class C extends Backend
                       )
                     {
                       var value = pop(stack, valuecl);                // value assigned to field
-                      _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = "+ (value == null ? "(void)" : value));
-                      _c.println("// flcazz: "+_fuir.clazzAsString(fclazz));
-                      _c.println("// valuecl: "+_fuir.clazzAsString(valuecl));
+                      if (_fuir.clazzIsBool(fclazz))
+                        { // bool is basically a choice type, but we do not use the tag in the generated C code
+                          check(_fuir.clazzIsTRUE (valuecl) ||
+                                _fuir.clazzIsFALSE(valuecl),
+                                value == null);
+                          var bvalue = _fuir.clazzIsTRUE(valuecl) ? FZ_TRUE : FZ_FALSE;
+                          _c.print(ccodeAccessField(outercl, outer, fieldName).assign(bvalue));
+                        }
+                      else
+                        {
+                          _c.println("// NYI: Assign to choice field "+outer+"." + fieldName + " = "+ (value == null ? "(void)" : value));
+                          _c.println("// flcazz: "+_fuir.clazzAsString(fclazz));
+                          _c.println("// valuecl: "+_fuir.clazzAsString(valuecl));
+                        }
                     }
                   else
                     {
