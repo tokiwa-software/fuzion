@@ -878,6 +878,7 @@ public class C extends Backend
                   if (_fuir.clazzIsChoice(vc))
                     {
                       _c.println("// NYI: choice boxing");
+                      _c.println("assert(0); // choice boxing");
                   /* NYI choice boxing:
 
                 check
