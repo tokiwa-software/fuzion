@@ -1232,14 +1232,11 @@ public class C extends Backend
         var tc = _fuir.callTargetClazz(cl, c, i);
         var or = _fuir.clazzOuterRef(cc);
         var a = pop(stack, tc);
-        if (hasData(tc)) // NYI: needed?
+        if (or != -1)
           {
-            if (or != -1)
-              {
-                var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
-                var a3 = castTarget == -1 ? a2 : a2.castTo(clazzTypeName(castTarget));
-                result.add(a3);
-              }
+            var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
+            var a3 = castTarget == -1 ? a2 : a2.castTo(clazzTypeName(castTarget));
+            result.add(a3);
           }
       }
     return result;
