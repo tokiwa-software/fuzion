@@ -781,7 +781,7 @@ public class C extends Backend
     for (int i = 0; _fuir.withinCode(c, i); i++)
       {
         var s = _fuir.codeAt(c, i);
-        _c.println("// Code for statement " + s);
+        _c.print(CStmnt.comment("Code for statement " + s));
         CStmnt o = CStmnt.EMPTY;
         switch (s)
           {
@@ -854,10 +854,6 @@ public class C extends Backend
                 }
               else
                 {
-                  _c.println("// Box " + _fuir.clazzAsString(vc));
-                  var t = CExpr.ident(newTemp());
-                  _c.println(clazzTypeName(rc) + " " + t.code() + " = malloc(sizeof(" + _structNames.get(rc) + "));");
-                  _c.print(t.deref().field("clazzId").assign(CExpr.int32const(clazzId2num(rc))));
                   if (_fuir.clazzIsChoice(vc))
                     {
                       _c.println("// NYI: choice boxing");
@@ -900,16 +896,20 @@ public class C extends Backend
                       }
                   }
                   */
+                      push(stack, rc, CDUMMY);
                     }
                   else
                     {
                       var val = pop(stack, vc);
-                      if (val != null)
-                        {
-                          _c.print(t.deref().field(FIELDS_IN_REF_CLAZZ).assign(val));
-                        }
+                      var t = new CIdent(newTemp());
+                      o = CStmnt.seq(CStmnt.comment("Box " + _fuir.clazzAsString(vc)),
+                                     CStmnt.decl(clazzTypeName(rc), t),
+                                     t.assign(CExpr.call("malloc", new List<>(new CIdent(_structNames.get(rc)).sizeOfType()))),
+                                     t.deref().field("clazzId").assign(CExpr.int32const(clazzId2num(rc))),
+                                     val == null ? CStmnt.EMPTY
+                                     : t.deref().field(FIELDS_IN_REF_CLAZZ).assign(val));
+                      push(stack, rc, t);
                     }
-                  push(stack, rc, t);
                 }
               break;
             }

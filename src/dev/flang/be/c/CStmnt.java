@@ -31,6 +31,10 @@ import dev.flang.util.ANY;
 /**
  * CSmnt provides infrastructure to generate C statements
  *
+ * The idea here is to have a compiler that works backwards: Instead of parsing
+ * source code into an AST, we create an AST for C and then create source code
+ * from this.
+ *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */
 abstract class CStmnt extends ANY
@@ -70,14 +74,32 @@ abstract class CStmnt extends ANY
    */
   static CStmnt decl(String type, String ident)
   {
+    return decl(type, new CIdent(ident));
+  }
+
+
+  /**
+   * C declaration such as 'i32 i'
+   *
+   *
+   * @param type the type of the defined entity
+   *
+   * @param ident the name of the defined entity
+   *
+   * @return corresponding CStmnt
+   */
+  static CStmnt decl(String type, CIdent ident)
+  {
     return new CStmnt()
       {
         void code(StringBuilder sb)
         {
-          sb.append(type).append(" ").append(ident);
+          sb.append(type).append(" ");
+          ident.code(sb);
         }
       };
   }
+
 
   /**
    * not really a statement, but a comment

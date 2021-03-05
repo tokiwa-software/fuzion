@@ -33,6 +33,15 @@ import dev.flang.util.List;
 /**
  * CExpr provides infrastructure to generate C code expressions
  *
+ * The idea here is to have a compiler that works backwards: Instead of parsing
+ * source code into an AST, we create an AST for C and then create source code
+ * from this.
+ *
+ * For C expressions, this greatly simplifies the handling of operator
+ * precedence: Creating expressions as strings directly typically means you have
+ * to put parentheses around every sub-expression. Using an AST, we can instead
+ * create the minimum number of parentheses, resulting in cleaner C code.
+ *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */
 abstract class CExpr extends CStmnt
@@ -72,11 +81,7 @@ abstract class CExpr extends CStmnt
     if (PRECONDITIONS) require
       (isAlphanumeric(name));
 
-    return new CExpr()
-      {
-        void code(StringBuilder sb) { sb.append(name); }
-        int precedence() { return 0; }
-      };
+    return new CIdent(name);
   }
 
 
