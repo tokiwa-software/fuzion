@@ -438,6 +438,37 @@ public class ANY
   }
 
 
+
+  /**
+   * check is a static method for checks as in Eiffel
+   *
+   * @param cond1 the condition that must hold
+   *
+   * @param cond2 the condition that must hold
+   *
+   * @param cond3 the condition that must hold
+   *
+   * @param cond4 the condition that must hold
+   *
+   * @param cond5 the condition that must hold
+   *
+   * @throws Error in case any argument is false
+   */
+  public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5)
+  {
+    if (!cond1)
+      throw new Error("check-condition1 failed!");
+    if (!cond2)
+      throw new Error("check-condition2 failed!");
+    if (!cond3)
+      throw new Error("check-condition3 failed!");
+    if (!cond4)
+      throw new Error("check-condition4 failed!");
+    if (!cond5)
+      throw new Error("check-condition5 failed!");
+  }
+
+
   /* ----------------------------------------------------------------------------- */
 
 
