@@ -27,7 +27,7 @@
 #
 i32(val i32) : wrappingInteger<i32>, hasInterval<i32> is
 
-  redef thiz => i32.this
+  redef thiz => i32.this.val
 
   redef zero i32 is 0
   redef one  i32 is 1

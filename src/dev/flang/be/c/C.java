@@ -1158,7 +1158,8 @@ public class C extends Backend
             (t != null || !hasData(rt));
           var vtc = _fuir.clazzAsValue(tc);
           var field = fieldName(_fuir.callFieldOffset(vtc, c, i), cc);
-          CExpr res = ccodeAccessField(tc, t, field);
+          CExpr res = isScalarType(vtc) ? _fuir.clazzIsRef(tc) ? t.deref().field("fields") : t
+                                        : ccodeAccessField(tc, t, field);
           res = _fuir.clazzFieldIsAdrOfValue(cc) ? res.deref() : res;
           push(stack, rt, res);
           break;

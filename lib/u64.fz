@@ -27,7 +27,7 @@
 #
 u64(val u64) : wrappingInteger<u64>, hasInterval<u64> is
 
-  redef thiz => u64.this
+  redef thiz => u64.this.val
 
   redef zero u64 is 0
   redef one  u64 is 1
