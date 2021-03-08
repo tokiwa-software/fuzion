@@ -440,7 +440,7 @@ public class FeErrors extends ANY
           "Type that is ambiguous: " +  t + "\n" +
           "Possible features that match this type: \n" +
           featureList(possibilities) + "\n" +
-          "To solve this, rename these features such that each has a unique name.");
+          "To solve this, rename these features such that each one has a unique name.");
   }
 
   static void typeNotFound(Type t,
