@@ -111,6 +111,14 @@ class Intrinsics extends ANY
       case "i64.div"             : return outer.div(new CIdent("arg0")).ret();
       case "i32.mod"             :
       case "i64.mod"             : return outer.mod(new CIdent("arg0")).ret();
+      case "i32.infix <<"        :
+      case "i64.infix <<"        : return outer.shl(new CIdent("arg0")).ret();
+      case "i32.infix >>"        :
+      case "i64.infix >>"        : return outer.shr(new CIdent("arg0")).ret();
+      case "i32.infix &"         :
+      case "i64.infix &"         : return outer.and(new CIdent("arg0")).ret();
+      case "i32.infix |"         :
+      case "i64.infix |"         : return outer.or (new CIdent("arg0")).ret();
 
       case "i32.infix =="        :
       case "i64.infix =="        : return outer.eq(new CIdent("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
@@ -137,6 +145,14 @@ class Intrinsics extends ANY
       case "u64.div"             : return outer.div(new CIdent("arg0")).ret();
       case "u32.mod"             :
       case "u64.mod"             : return outer.mod(new CIdent("arg0")).ret();
+      case "u32.infix <<"        :
+      case "u64.infix <<"        : return outer.shl(new CIdent("arg0")).ret();
+      case "u32.infix >>"        :
+      case "u64.infix >>"        : return outer.shr(new CIdent("arg0")).ret();
+      case "u32.infix &"         :
+      case "u64.infix &"         : return outer.and(new CIdent("arg0")).ret();
+      case "u32.infix |"         :
+      case "u64.infix |"         : return outer.or (new CIdent("arg0")).ret();
 
       case "u32.infix =="        :
       case "u64.infix =="        : return outer.eq(new CIdent("arg0")).cond(C.FZ_TRUE, C.FZ_FALSE).ret();
