@@ -157,7 +157,7 @@ public class CFile extends ANY
    */
   public void print(CStmnt s)
   {
-    if (s != CStmnt.EMPTY)
+    if (!s.isEmpty())
       {
         StringBuilder sb = new StringBuilder();
         s.code(sb);
