@@ -857,7 +857,7 @@ public class C extends Backend
                   if (_fuir.clazzIsChoice(vc))
                     {
                       _c.println("// NYI: choice boxing");
-                      _c.print(CExpr.call("assert", new List<>(CExpr.int32const(0))).commnt("/* choice boxing */"));
+                      _c.print(CExpr.call("assert", new List<>(CExpr.int32const(0))).commnt("choice boxing"));
                   /* NYI choice boxing:
 
                 check
