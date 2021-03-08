@@ -54,6 +54,7 @@ lists {
       }
     }
     size i32 {
+      result = 0;
       // for   -- NYI: must update i in the loop prolog
       i := h;
       while (i ? Node => { true }; Nil => false) {   // NYI: This screams for recursion
