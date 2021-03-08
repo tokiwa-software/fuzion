@@ -1405,7 +1405,7 @@ public class Clazz extends ANY implements Comparable
                           if (Clazzes.isUsed(s, this))
                             {
                               var sa = lookup(s, Call.NO_GENERICS, s.isUsedAt());
-                              if (sa.feature().resultType() != Types.resolved.t_void)
+                              if (sa.resultClazz()._type != Types.resolved.t_unit)  // NYI: Use a different, artificial type to mark unused open generic args!
                                 {
                                   args.add(sa);
                                 }
