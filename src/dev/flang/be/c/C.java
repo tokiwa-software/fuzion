@@ -441,10 +441,7 @@ public class C extends Backend
        {
          for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
            {
-             if (!_fuir.clazzIsVoidType(c))
-               {
-                 p.compile(this, c);
-               }
+             p.compile(this, c);
            }
        });
     _c.println("int main(int argc, char **args) { " + _functionNames.get(_fuir.mainClazzId()) + "(); }");
@@ -580,8 +577,10 @@ public class C extends Backend
    */
   String clazzFieldType(int cf)
   {
-    return clazzTypeName(_fuir.clazzResultClazz(cf)) +
-      (_fuir.clazzFieldIsAdrOfValue(cf) ? "*" : "");
+    var rc = _fuir.clazzResultClazz(cf);
+    return (_fuir.clazzIsVoidType(rc)
+            ? "struct { }"
+            : clazzTypeName(rc)) + (_fuir.clazzFieldIsAdrOfValue(cf) ? "*" : "");
   }
 
 
@@ -1158,8 +1157,8 @@ public class C extends Backend
             (t != null || !hasData(rt));
           var vtc = _fuir.clazzAsValue(tc);
           var field = fieldName(_fuir.callFieldOffset(vtc, c, i), cc);
-          CExpr res = isScalarType(vtc) ? _fuir.clazzIsRef(tc) ? t.deref().field("fields") : t
-                                        : ccodeAccessField(tc, t, field);
+          CExpr res = isScalarType(vtc) ? _fuir.clazzIsRef(tc) ? t.deref().field("fields") : t :
+                      t != null         ? ccodeAccessField(tc, t, field) : null;
           res = _fuir.clazzFieldIsAdrOfValue(cc) ? res.deref() : res;
           push(stack, rt, res);
           break;
