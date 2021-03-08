@@ -632,22 +632,19 @@ public class Interpreter extends Backend
             // result = (args, argTypes) -> getField(f, outerClazz, args.get(0));
             //
             // specialize for i32.val and bool.tag
-            if (outerClazz == Clazzes.i32.getIfCreated())
+            var ocv = outerClazz.asValue();
+            if (ocv == Clazzes.i32 .getIfCreated() ||
+                ocv == Clazzes.i64 .getIfCreated() ||
+                ocv == Clazzes.u32 .getIfCreated() ||
+                ocv == Clazzes.u64 .getIfCreated() ||
+                ocv == Clazzes.bool.getIfCreated()    )
               {
                 check
-                  (f.qualifiedName().equals("i32.val"));
-                result = (args, argTypes) -> args.get(0);
-              }
-            else if (outerClazz == Clazzes.i64.getIfCreated())
-              {
-                check
-                  (f.qualifiedName().equals("i64.val"));
-                result = (args, argTypes) -> args.get(0);
-              }
-            else if (outerClazz == Clazzes.bool.getIfCreated())
-              {
-                check
-                  (f.qualifiedName().equals("bool." + FuzionConstants.CHOICE_TAG_NAME));
+                  (ocv != Clazzes.i32 .getIfCreated() || f.qualifiedName().equals("i32.val"),
+                   ocv != Clazzes.i64 .getIfCreated() || f.qualifiedName().equals("i64.val"),
+                   ocv != Clazzes.u32 .getIfCreated() || f.qualifiedName().equals("u32.val"),
+                   ocv != Clazzes.u64 .getIfCreated() || f.qualifiedName().equals("u64.val"),
+                   ocv != Clazzes.bool.getIfCreated() || f.qualifiedName().equals("bool." + FuzionConstants.CHOICE_TAG_NAME));
                 result = (args, argTypes) -> args.get(0);
               }
             else
