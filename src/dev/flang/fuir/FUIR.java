@@ -210,6 +210,42 @@ public class FUIR extends ANY
 
 
   /**
+   * For a choice type, the number of entries to choose from.
+   *
+   * @param cl a clazz id
+   *
+   * @return -1 if cl is not a choice clazz, the number of choice entries
+   * otherwise.  May be 0 for the void choice.
+   */
+  public int clazzNumChoices(int cl)
+  {
+    var cgs = _clazzIds.get(cl).choiceGenerics();
+    return cgs == null ? -1 : cgs.size();
+  }
+
+
+  /**
+   * Return the choice #i in the given choice clazz
+   *
+   * @param cl a clazz id
+   *
+   * @param i the choice number
+   *
+   * @return the clazz id of the choice type
+   */
+  public int clazzChoice(int cl, int i)
+  {
+    if (PRECONDITIONS)
+      require
+        (i >= 0 && i < clazzNumChoices(cl));
+
+    var cc = _clazzIds.get(cl);
+    var cg = cc.choiceGenerics().get(i);
+    return _clazzIds.get(cg);
+  }
+
+
+  /**
    * Check if is field does not store the value directly, but a pointer to the value.
    *
    * @param fcl a clazz id of the field

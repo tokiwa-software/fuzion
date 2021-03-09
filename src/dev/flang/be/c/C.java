@@ -146,9 +146,20 @@ public class C extends Backend
 
 
   /**
-   * The name of the tag field in instances of bool.fz.
+   * The name of the tag field in choice clazzes such as bool.fz.
    */
   private static final String TAG_NAME = "fzTag";
+
+  /**
+   * The name of the choice union's field name in choice clazzes
+   */
+  private static final String CHOICE_UNION_NAME = "fzChoice";
+
+  /**
+   * The prefix of the name of the choice union's entries, will be concatenated
+   * with the index i in _fuir.clazzChoice(cl, i).
+   */
+  private static final String CHOICE_ENTRY_NAME = "v";
 
 
   /**
@@ -683,6 +694,14 @@ public class C extends Backend
                           String type = clazzFieldType(ct);
                           _c.print(" " + type + " " + TAG_NAME + ";\n");
                         }
+                      _c.print(" union {\n");
+                      for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
+                        {
+                          var cc = _fuir.clazzChoice(cl, i);
+                          String type = clazzTypeName(cc);
+                          _c.print("  " + type + " " + CHOICE_ENTRY_NAME + i + ";\n");
+                        }
+                      _c.print(" } " + CHOICE_UNION_NAME + ";\n");
                     }
                   else if (_fuir.clazzIsRef(cl))
                     {
