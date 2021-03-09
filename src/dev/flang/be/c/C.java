@@ -264,16 +264,14 @@ public class C extends Backend
     private void clazzMangledName(int cl, StringBuilder sb)
     {
       var o = _fuir.clazzOuterClazz(cl);
+      String sep = "";
       if (o != -1 &&
           _fuir.clazzOuterClazz(o) != -1)
         { // add o a prefix unless cl or o are universe
           clazzMangledName(o, sb);
-          sb.append(_fuir.clazzIsRef(cl) ? "_R" : "__");
+          sep = "__";
         }
-      else if (_fuir.clazzIsRef(cl))
-        {
-          sb.append("_R");
-        }
+      sb.append(_fuir.clazzIsRef(cl) ? "_R" : sep);
       var n = _fuir.clazzArgCount(cl);
       if (n > 0)
         {
