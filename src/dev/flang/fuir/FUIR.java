@@ -824,6 +824,7 @@ public class FUIR extends ANY
       {
         var m = (Match) s;
         toStack(l, m.subject);
+        l.add(m);
         for (var c : m.cases)
           {
             var caseCode = toStack(c.code);
