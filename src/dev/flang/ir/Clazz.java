@@ -479,28 +479,6 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
-   * Does this clazz have a state, i.e., does it have any runtime fields that
-   * could hold values that distinguish two instances of this clazz?
-   *
-   * @return true iff instances of this clazz have state.
-   */
-  private boolean hasState()
-  {
-    boolean result = false;
-
-    for (Feature f: feature().allInnerAndInheritedFeatures())
-      {
-        if (f.isField() && Clazzes.isUsed(f, this))
-          {
-            result = true;
-          }
-      }
-
-    return result;
-  }
-
-
-  /**
    * Do we need f (or its redefinition) to be present in this clazz' dynamic binding data?
    */
   boolean isAddedToDynamicBinding(Feature f)
@@ -1096,7 +1074,7 @@ public class Clazz extends ANY implements Comparable
       {
         for (Clazz c : choiceGenerics_)
           {
-            hasNonRefsWithState = hasNonRefsWithState || (!c.isRef() && c.hasState());
+            hasNonRefsWithState = hasNonRefsWithState || (!c.isRef() && !c.isUnitType() && !c.isVoidType());
           }
       }
 
