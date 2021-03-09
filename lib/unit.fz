@@ -82,3 +82,10 @@
 #
 # NYI: move to universe.fz
 unit is
+
+# NYI: possible alternative definitions base on tuple types
+#
+# unit : Tuple <> is
+#
+# unit (contents Tuple<>) is
+#

@@ -65,3 +65,10 @@
 #
 # NYI: move to universe.fz
 void(absurd void) is absurd
+
+# NYI: possible alternative definitions base on choice types
+#
+# void : choice <> is
+#
+# void (absurd choice<>) is absurd
+#
