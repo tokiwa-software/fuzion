@@ -824,7 +824,7 @@ public class C extends Backend
                             (CStmnt.comment("NYI: Assign to choice field "+outer+"." + fieldName + " = "+ (value == null ? "(void)" : value)),
                              CStmnt.comment("flcazz: "+_fuir.clazzAsString(fclazz)),
                              CStmnt.comment("valuecl: "+_fuir.clazzAsString(valuecl)),
-                             CExpr.call("assert", new List<>(CExpr.int32const(0))).comment("choice field assignemnt"));
+                             CExpr.call("assert", new List<>(CExpr.int32const(0))).commnt("choice field assignemnt"));
                         }
                     }
                   else
