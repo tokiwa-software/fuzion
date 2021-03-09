@@ -838,6 +838,9 @@ public class C extends Backend
                       fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
                       )
                     {
+                      check
+                        (!_fuir.clazzIsOuterRef(field)); /* the interprer checks for this separately, just ot be sure we do it as well */
+
                       var value = pop(stack, valuecl);                // value assigned to field
                       if (_fuir.clazzIsBool(fclazz))
                         { // bool is basically a choice type, but we do not use the tag in the generated C code
