@@ -161,7 +161,10 @@ public class CFile extends ANY
       {
         StringBuilder sb = new StringBuilder();
         s.code(sb);
-        sb.append(";\n");
+        if (s.needsSemi())
+          {
+            sb.append(";\n");
+          }
         print(sb.toString());
       }
   }

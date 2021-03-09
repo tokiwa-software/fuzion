@@ -117,20 +117,15 @@ abstract class CStmnt extends ANY
       {
         void code(StringBuilder sb)
         {
-          var semi = "";
           for (var cs : s)
             {
-              if (cs.isEmpty())
-                {
-                  cs.code(sb);
-                }
-              else
-                {
-                  sb.append(semi);
-                  cs.code(sb);
-                  semi = ";\n";
-                }
+              cs.code(sb);
+              sb.append(cs.needsSemi() ? ";\n" : "");
             }
+        }
+        boolean needsSemi()
+        {
+          return false;
         }
       };
   }
@@ -157,6 +152,12 @@ abstract class CStmnt extends ANY
   boolean isEmpty()
   {
     return false;
+  }
+
+
+  boolean needsSemi()
+  {
+    return !isEmpty();
   }
 
 
