@@ -1289,7 +1289,7 @@ public class C extends Backend
       {
       case Routine:
         {
-          _c.print("\n// code for clazz "+_fuir.clazzAsString(cl)+":\n");
+          _c.print("\n// code for clazz#"+clazzId2num(cl)+" "+_fuir.clazzAsString(cl)+":\n");
           cFunctionDecl(cl);
           _c.print(" {\n");
           _c.indent();
