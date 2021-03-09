@@ -953,15 +953,18 @@ public class Lexer extends SourceFile
   private Token skipUntilEOL()
   {
     int p = curCodePoint();
-    int l;
-    do
+    if (p != SourceFile.END_OF_FILE)
       {
-        nextCodePoint();
-        l = p;
-        p = curCodePoint();
+        int l;
+        do
+          {
+            nextCodePoint();
+            l = p;
+            p = curCodePoint();
+          }
+        while (p != SourceFile.END_OF_FILE && !isNewLine(l, p));
+        _curLine++;
       }
-    while (p != SourceFile.END_OF_FILE && !isNewLine(l, p));
-    _curLine++;
     return Token.t_comment;
   }
 
