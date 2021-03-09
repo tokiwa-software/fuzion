@@ -133,13 +133,6 @@ public class C extends Backend
 
 
   /**
-   * C constants corresponding to Fuzion's true and false values.
-   */
-  static final CExpr FZ_FALSE =  CExpr.compoundLiteral(TYPE_PREFIX + "bool", "0");
-  static final CExpr FZ_TRUE  =  CExpr.compoundLiteral(TYPE_PREFIX + "bool", "1");
-
-
-  /**
    * C identifier of argument variable that refers to a clazz' outer instance.
    */
   static final CExpr _outer_ = new CIdent("fzouter");
@@ -215,7 +208,7 @@ public class C extends Backend
    */
   private final CClazzNames _functionNames = new CClazzNames()
     {
-      String prefix(int cl)
+      String prefix()
       {
         return C_FUNCTION_PREFIX;
       }
@@ -227,7 +220,7 @@ public class C extends Backend
    */
   private final CClazzNames _structNames = new CClazzNames()
     {
-      String prefix(int cl)
+      String prefix()
       {
         return TYPE_PREFIX;
       }
@@ -253,7 +246,7 @@ public class C extends Backend
      *
      * @return the prefix string to be used.
      */
-    abstract String prefix(int cl);
+    abstract String prefix();
 
 
     /**
@@ -306,7 +299,7 @@ public class C extends Backend
       var res = _cache.get(num);
       if (res == null)
         {
-          var p = prefix(cl);
+          var p = prefix();
           var sb = new StringBuilder(p);
           clazzMangledName(cl, sb);
           // NYI: there might be name conflicts due to different generic instances, so
@@ -330,6 +323,13 @@ public class C extends Backend
       return res;
     }
   }
+
+
+  /**
+   * C constants corresponding to Fuzion's true and false values.
+   */
+  final CExpr FZ_FALSE =  CExpr.compoundLiteral(_structNames.prefix() + "bool", "0");
+  final CExpr FZ_TRUE  =  CExpr.compoundLiteral(_structNames.prefix() + "bool", "1");
 
 
   /*---------------------------  consructors  ---------------------------*/
@@ -709,7 +709,7 @@ public class C extends Backend
                         }
                       if (_fuir.clazzIsChoiceWithRefs(cl))
                         {
-                          _c.print("  " + TYPE_PREFIX + "__RObject" + " " + CHOICE_REF_ENTRY_NAME + ";\n");
+                          _c.print("  " + _structNames.get(_fuir.clazzObject()) + " " + CHOICE_REF_ENTRY_NAME + ";\n");
                         }
                       _c.print(" } " + CHOICE_UNION_NAME + ";\n");
                     }
@@ -852,7 +852,7 @@ public class C extends Backend
                         { // replace unit-type values by 0 or an odd value cast to ref Object
                           check
                             (value == null); // value must be a unit type
-                          value = CExpr.int32const(tagNum == 0 ? 0 : tagNum*2 - 1).castTo(TYPE_PREFIX + "__RObject*");
+                          value = CExpr.int32const(tagNum == 0 ? 0 : tagNum*2 - 1).castTo(_structNames.get(_fuir.clazzObject()) + "*");
                         }
                       o = CStmnt.seq(CStmnt.lineComment("Assign to choice field type " + _fuir.clazzAsString(fclazz) + " static value type " + _fuir.clazzAsString(valuecl)),
                                      _fuir.clazzIsChoiceOfOnlyRefs(fclazz) ? CStmnt.EMPTY : tag.assign(CExpr.int32const(tagNum)),

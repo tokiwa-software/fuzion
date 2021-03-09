@@ -538,6 +538,17 @@ public class FUIR extends ANY
 
 
   /**
+   * Get the id of clazz Object.
+   *
+   * @return clazz id of clazz Object
+   */
+  public int clazzObject()
+  {
+    return _clazzIds.get(Clazzes.object.get());
+  }
+
+
+  /**
    * Check if a clazz is the standard lib i32.fz.
    *
    * @param cl a clazz id
