@@ -981,7 +981,7 @@ public class C extends Backend
                           _c.unindent();
                           _c.println("}");
                         }
-                      _c.println("default: { fprintf(stderr,\"*** unhandled dynamic call target %d\\n\", " + id.code() + "); exit(1); }");
+                      _c.println("default: { fprintf(stderr,\"*** %s:%d unhandled dynamic call target %d in call to "+_fuir.clazzAsString(cc0)+" within "+_fuir.clazzAsString(cl)+"\\n\", __FILE__, __LINE__, " + id.code() + "); exit(1); }");
                       _c.unindent();
                       _c.println("}");
                       stack = stack2;
