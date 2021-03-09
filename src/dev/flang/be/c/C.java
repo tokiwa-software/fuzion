@@ -809,7 +809,7 @@ public class C extends Backend
     for (int i = 0; _fuir.withinCode(c, i); i++)
       {
         var s = _fuir.codeAt(c, i);
-        _c.print(CStmnt.comment("Code for statement " + s));
+        _c.print(CStmnt.lineComment("Code for statement " + s));
         CStmnt o = CStmnt.EMPTY;
         switch (s)
           {
@@ -850,9 +850,9 @@ public class C extends Backend
                       else
                         {
                           o = CStmnt.seq
-                            (CStmnt.comment("NYI: Assign to choice field "+outer+"." + fieldName + " = "+ (value == null ? "(void)" : value)),
-                             CStmnt.comment("flcazz: "+_fuir.clazzAsString(fclazz)),
-                             CStmnt.comment("valuecl: "+_fuir.clazzAsString(valuecl)),
+                            (CStmnt.lineComment("NYI: Assign to choice field "+outer+"." + fieldName + " = "+ (value == null ? "(void)" : value)),
+                             CStmnt.lineComment("flcazz: "+_fuir.clazzAsString(fclazz)),
+                             CStmnt.lineComment("valuecl: "+_fuir.clazzAsString(valuecl)),
                              CExpr.call("assert", new List<>(CExpr.int32const(0))).commnt("choice field assignemnt"));
                         }
                     }
@@ -865,7 +865,7 @@ public class C extends Backend
                         }
                       // _c.print("// Assign to "+_fuir.clazzAsString(fclazz)+" outercl "+_fuir.clazzAsString(outercl)+" valuecl "+_fuir.clazzAsString(valuecl));
                       o = value == null
-                        ? CStmnt.comment("valueluess assignment to " + outer)
+                        ? CStmnt.lineComment("valueluess assignment to " + outer)
                         : ccodeAccessField(outercl, outer, fieldName).assign(value);
                     }
                 }
@@ -878,7 +878,7 @@ public class C extends Backend
               if (_fuir.clazzIsRef(vc))
                 { // vc's type is a generic argument whose actual type does not need
                   // boxing
-                  o = CStmnt.comment("Box " + _fuir.clazzAsString(vc) + " is NOP, clazz is already a ref");
+                  o = CStmnt.lineComment("Box " + _fuir.clazzAsString(vc) + " is NOP, clazz is already a ref");
                 }
               else
                 {
@@ -930,7 +930,7 @@ public class C extends Backend
                     {
                       var val = pop(stack, vc);
                       var t = new CIdent(newTemp());
-                      o = CStmnt.seq(CStmnt.comment("Box " + _fuir.clazzAsString(vc)),
+                      o = CStmnt.seq(CStmnt.lineComment("Box " + _fuir.clazzAsString(vc)),
                                      CStmnt.decl(clazzTypeName(rc), t),
                                      t.assign(CExpr.call("malloc", new List<>(new CIdent(_structNames.get(rc)).sizeOfType()))),
                                      t.deref().field("clazzId").assign(CExpr.int32const(clazzId2num(rc))),
@@ -1082,7 +1082,7 @@ public class C extends Backend
             }
           case Singleton:
             {
-              o = CStmnt.comment("NYI: singleton");
+              o = CStmnt.lineComment("NYI: singleton");
               break;
             }
           case WipeStack:

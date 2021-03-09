@@ -88,7 +88,7 @@ abstract class CStmnt extends ANY
   /**
    * not really a statement, but a comment
    */
-  static CStmnt comment(String s)
+  static CStmnt lineComment(String s)
   {
     return new CStmnt()
       {
