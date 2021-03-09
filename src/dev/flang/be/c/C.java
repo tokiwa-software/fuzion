@@ -842,28 +842,23 @@ public class C extends Backend
                         (!_fuir.clazzIsOuterRef(field)); /* the interprer checks for this separately, just ot be sure we do it as well */
 
                       var value = pop(stack, valuecl);                // value assigned to field
-                      if (_fuir.clazzIsBool(fclazz))
-                        { // bool is basically a choice type, but we do not use the tag in the generated C code
-                          check(_fuir.clazzIsTRUE (valuecl) ||
-                                _fuir.clazzIsFALSE(valuecl),
-                                value == null);
-                          var bvalue = _fuir.clazzIsTRUE(valuecl) ? FZ_TRUE : FZ_FALSE;
-                          o = ccodeAccessField(outercl, outer, fieldName).assign(bvalue);
+                      int tagNum = _fuir.clazzChoiceTag(fclazz, valuecl);
+                      var f = ccodeAccessField(outercl, outer, fieldName);
+                      var tag = f.field(TAG_NAME);
+                      var uniyon = f.field(CHOICE_UNION_NAME);
+                      var entry = uniyon.field(_fuir.clazzIsRef(valuecl) ? CHOICE_REF_ENTRY_NAME
+                                                                         : CHOICE_ENTRY_NAME + tagNum);
+                      if (_fuir.clazzIsChoiceOfOnlyRefs(fclazz) && !_fuir.clazzIsRef(valuecl))
+                        { // replace unit-type values by 0 or an odd value cast to ref Object
+                          check
+                            (value == null); // value must be a unit type
+                          value = CExpr.int32const(tagNum == 0 ? 0 : tagNum*2 - 1).castTo(TYPE_PREFIX + "__RObject*");
                         }
-                      else
-                        {
-                          int tagNum = _fuir.clazzChoiceTag(fclazz, valuecl);
-                          var f = ccodeAccessField(outercl, outer, fieldName);
-                          var tag = f.field(TAG_NAME);
-                          var uniyon = f.field(CHOICE_UNION_NAME);
-                          var entry = uniyon.field(_fuir.clazzIsRef(valuecl) ? CHOICE_REF_ENTRY_NAME
-                                                                             : CHOICE_ENTRY_NAME + tagNum);
-                          o = CStmnt.seq(CStmnt.lineComment("Assign to choice field type " + _fuir.clazzAsString(fclazz) + " static value type " + _fuir.clazzAsString(valuecl)),
-                                         _fuir.clazzIsChoiceOfOnlyRefs(fclazz) ? CStmnt.EMPTY : tag.assign(CExpr.int32const(tagNum)),
-                                         value == null
-                                         ? CStmnt.lineComment("valueluess assignment to " + entry.code())
-                                         : entry.assign(value));
-                        }
+                      o = CStmnt.seq(CStmnt.lineComment("Assign to choice field type " + _fuir.clazzAsString(fclazz) + " static value type " + _fuir.clazzAsString(valuecl)),
+                                     _fuir.clazzIsChoiceOfOnlyRefs(fclazz) ? CStmnt.EMPTY : tag.assign(CExpr.int32const(tagNum)),
+                                     value == null
+                                     ? CStmnt.lineComment("valueluess assignment to " + entry.code())
+                                     : entry.assign(value));
                     }
                   else
                     {
