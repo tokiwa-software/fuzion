@@ -246,6 +246,34 @@ public class FUIR extends ANY
 
 
   /**
+   * Is this a choice type with some elements of ref type?
+   *
+   * @param cl a clazz id
+   *
+   * @return true iff cl is a choice with at least one ref element
+   */
+  public boolean clazzIsChoiceWithRefs(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    return cc.isChoiceWithRefs();
+  }
+
+
+  /**
+   * Is this a choice type with all elements of ref type?
+   *
+   * @param cl a clazz id
+   *
+   * @return true iff cl is a choice with only ref or unit/void elements
+   */
+  public boolean clazzIsChoiceOfOnlyRefs(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    return cc.isChoiceOfOnlyRefs();
+  }
+
+
+  /**
    * Check if is field does not store the value directly, but a pointer to the value.
    *
    * @param fcl a clazz id of the field

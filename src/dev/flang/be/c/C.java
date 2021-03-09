@@ -161,6 +161,11 @@ public class C extends Backend
    */
   private static final String CHOICE_ENTRY_NAME = "v";
 
+  /**
+   * The prefix of the name of the choice union's reference entries.
+   */
+  private static final String CHOICE_REF_ENTRY_NAME = "vref";
+
 
   /**
    * Debugging output
@@ -696,8 +701,15 @@ public class C extends Backend
                       for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
                         {
                           var cc = _fuir.clazzChoice(cl, i);
-                          String type = clazzTypeName(cc);
-                          _c.print("  " + type + " " + CHOICE_ENTRY_NAME + i + ";\n");
+                          if (!_fuir.clazzIsRef(cc))
+                            {
+                              String type = clazzTypeName(cc);
+                              _c.print("  " + type + " " + CHOICE_ENTRY_NAME + i + ";\n");
+                            }
+                        }
+                      if (_fuir.clazzIsChoiceWithRefs(cl))
+                        {
+                          _c.print("  " + TYPE_PREFIX + "__RObject" + " " + CHOICE_REF_ENTRY_NAME + ";\n");
                         }
                       _c.print(" } " + CHOICE_UNION_NAME + ";\n");
                     }
