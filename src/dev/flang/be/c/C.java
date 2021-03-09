@@ -853,7 +853,7 @@ public class C extends Backend
                             (CStmnt.lineComment("NYI: Assign to choice field "+outer+"." + fieldName + " = "+ (value == null ? "(void)" : value)),
                              CStmnt.lineComment("flcazz: "+_fuir.clazzAsString(fclazz)),
                              CStmnt.lineComment("valuecl: "+_fuir.clazzAsString(valuecl)),
-                             CExpr.call("assert", new List<>(CExpr.int32const(0))).commnt("choice field assignemnt"));
+                             CExpr.call("assert", new List<>(CExpr.int32const(0))).comment("choice field assignemnt"));
                         }
                     }
                   else
@@ -885,7 +885,7 @@ public class C extends Backend
                   if (_fuir.clazzIsChoice(vc))
                     {
                       _c.println("// NYI: choice boxing");
-                      _c.print(CExpr.call("assert", new List<>(CExpr.int32const(0))).commnt("choice boxing"));
+                      _c.print(CExpr.call("assert", new List<>(CExpr.int32const(0))).comment("choice boxing"));
                   /* NYI choice boxing:
 
                 check

@@ -679,7 +679,7 @@ abstract class CExpr extends CStmnt
   /**
    * Add a comment surrounded by '/'+'*' and '*'+'/' after this expression.
    */
-  CExpr commnt(String s)
+  CExpr comment(String s)
   {
     CExpr inner = this;
     return new CExpr()
