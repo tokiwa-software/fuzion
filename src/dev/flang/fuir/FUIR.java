@@ -963,7 +963,9 @@ public class FUIR extends ANY
    *
    * @param call the call
    *
-   * @return the clazz that has to be called
+   * @return a list with an even number of element pairs with call target
+   * clazzes at even indices followed by the corresponding inner clazz to be
+   * called for this target.
    */
   private List<Clazz> callCalledClazzes(Clazz outerClazz, Call call)
   {
@@ -974,7 +976,6 @@ public class FUIR extends ANY
     var cf = call.calledFeature();
     var tclazz = ((dev.flang.ir.BackendCallable)outerClazz.getRuntimeData(call.sid_)).outer();
     var result = new List<Clazz>();
-    var found = new TreeSet<Clazz>();
     for (var cl : Clazzes.all())  // NYI: Overkill, better check only sub-clazzes of tclazz
       {
         if (cl._type != Types.t_ADDRESS     // NYI: would be better to not create this dummy clazz in the first place
@@ -985,11 +986,8 @@ public class FUIR extends ANY
                 var in = cl._dynamicBinding.inner(cf);
                 if (in != null && in.feature().impl.kind_ != Impl.Kind.Abstract)
                   {
-                    if (!found.contains(in))
-                      {
-                        found.add(in);
-                        result.add(in);
-                      }
+                    result.add(cl);
+                    result.add(in);
                   }
               }
           }
@@ -1007,7 +1005,9 @@ public class FUIR extends ANY
    *
    * @param ix index of the call
    *
-   * @return the clazz that has to be called
+   * @return an array with an even number of element pairs with call target
+   * clazzes at even indices followed by the corresponding inner clazz to be
+   * called for this target.
    */
   public int[] callCalledClazzes(int cl, int c, int ix)
   {

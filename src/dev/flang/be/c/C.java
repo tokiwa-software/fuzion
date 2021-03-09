@@ -928,12 +928,13 @@ public class C extends Backend
                   _c.print(t.assign(stack.get(ti).castTo(tt0)));
                   stack.set(ti, t);
                   var id = t.deref().field("clazzId");
-                  if (ccs.length == 1)
+                  if (ccs.length == 2)
                     {
-                      var tt = _fuir.clazzOuterClazz(ccs[0]);
+                      var tt = ccs[0];
+                      var cc = ccs[1];
                       _c.println("// Dynamic call to " + _fuir.clazzAsString(cc0) + " with exactly one target");
                       _c.print(CExpr.call("assert",new List<>(CExpr.eq(id, CExpr.int32const(clazzId2num(tt)))))); // <-- perfect reason to make () optional
-                      _c.print(call(cl, c, i, ccs[0], stack, tt));
+                      _c.print(call(cl, c, i, cc, stack, _fuir.clazzOuterClazz(cc)));
                     }
                   else if (ccs.length == 0)
                     {
@@ -952,14 +953,15 @@ public class C extends Backend
                       _c.println("switch (" + id.code() + ") {");
                       _c.indent();
                       var stack2 = stack;
-                      for (var cc : ccs)
+                      for (var cci = 0; cci < ccs.length; cci += 2)
                         {
+                          var tt = ccs[cci  ];
+                          var cc = ccs[cci+1];
                           stack =  (Stack<CExpr>) stack2.clone();
-                          var tt = _fuir.clazzOuterClazz(cc);
-                          _c.println("// Call target "+ _fuir.clazzAsString(cc) + ":");
+                          _c.println("// Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":");
                           _c.println("case " + CExpr.int32const(clazzId2num(tt)).code() + ": {");
                           _c.indent();
-                          _c.print(call(cl, c, i, cc, stack, tt));
+                          _c.print(call(cl, c, i, cc, stack, _fuir.clazzOuterClazz(cc)));
                           var rt2 = _fuir.clazzResultClazz(cc); // NYI: Check why rt2 and rt can be different
                           if (hasData(rt2))
                             {
