@@ -1079,7 +1079,8 @@ public class C extends Backend
           case Match:
             {
               var v = stack.pop();
-              _c.println("// NYI: match " + v + "!");
+              o = CStmnt.seq(CStmnt.lineComment("NYI: match " + v + "!"),
+                             CExpr.call("assert", new List<>(CExpr.int32const(0))).comment("match " + v + "!"));
               stack.push(CExpr.dummy("NYI: match result"));
               break;
             }
