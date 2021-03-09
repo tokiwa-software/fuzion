@@ -850,13 +850,53 @@ public class C extends Backend
                           var bvalue = _fuir.clazzIsTRUE(valuecl) ? FZ_TRUE : FZ_FALSE;
                           o = ccodeAccessField(outercl, outer, fieldName).assign(bvalue);
                         }
-                      else
+                      else if (_fuir.clazzIsChoiceOfOnlyRefs(fclazz))
                         {
                           o = CStmnt.seq
-                            (CStmnt.lineComment("NYI: Assign to choice field "+outer+"." + fieldName + " = "+ (value == null ? "(void)" : value)),
+                            (CStmnt.lineComment("NYI: Assign to only refs choice field "+outer+"." + fieldName + " = "+ (value == null ? "(void)" : value)),
                              CStmnt.lineComment("flcazz: "+_fuir.clazzAsString(fclazz)),
                              CStmnt.lineComment("valuecl: "+_fuir.clazzAsString(valuecl)),
                              CExpr.call("assert", new List<>(CExpr.int32const(0))).comment("choice field assignemnt"));
+                          /*
+
+
+    Clazz  vclazz  = choiceClazz.getChoiceClazz(tag);
+    LValue valSlot = choice.at(vclazz, Layout.get(choiceClazz).choiceValOffset(tag));
+    if (choiceClazz.isChoiceOfOnlyRefs())
+      { // store reference only
+        if (!staticTypeOfValue.isRef())
+          { // the value is a stateless value type, so we store the tag as a reference.
+            v = ChoiceIdAsRef.get(choiceClazz, tag);
+            vclazz = Clazzes.object.get();
+            staticTypeOfValue = vclazz._type;
+            valSlot = choice.at(vclazz, Layout.get(choiceClazz).choiceRefValOffset());
+          }
+      }
+    else
+      { // store tag and value separately
+        setField(thiz.choiceTag_, choiceClazz, choice, new i32Value(tag), Types.resolved.t_i32);
+      }
+    check
+      (vclazz._type.isAssignableFrom(staticTypeOfValue));
+    setFieldNoChoice(thiz, vclazz, valSlot, v);
+
+                          */
+
+
+                        }
+                      else
+                        {
+                          int tagNum = _fuir.clazzChoiceTag(fclazz, valuecl);
+                          var f = ccodeAccessField(outercl, outer, fieldName);
+                          var tag = f.field(TAG_NAME);
+                          var uniyon = f.field(CHOICE_UNION_NAME);
+                          var entry = uniyon.field(_fuir.clazzIsRef(valuecl) ? CHOICE_REF_ENTRY_NAME
+                                                                             : CHOICE_ENTRY_NAME + tagNum);
+                          o = CStmnt.seq(CStmnt.lineComment("Assign to choice field type " + _fuir.clazzAsString(fclazz) + " static value type " + _fuir.clazzAsString(valuecl)),
+                                         tag.assign(CExpr.int32const(tagNum)),
+                                         value == null
+                                         ? CStmnt.lineComment("valueluess assignment to " + entry.code())
+                                         : entry.assign(value));
                         }
                     }
                   else

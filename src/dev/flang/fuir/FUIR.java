@@ -470,7 +470,7 @@ public class FUIR extends ANY
 
 
   /**
-   * Get the choice tag of a choice clazz
+   * Get the choice tag field of a choice clazz
    *
    * @param cl a clazz id
    *
@@ -482,6 +482,24 @@ public class FUIR extends ANY
     var cc = _clazzIds.get(cl);
     var ct = cc.choiceTag();
     return ct == null ? -1 : _clazzIds.get(ct);
+  }
+
+
+  /**
+   * Get the choice tag id for a given value clazz in a choice clazz
+   *
+   * @param cl a clazz id of a choice clazz
+   *
+   * @param valuecl a clazz id of a static clazz of a value that is stored in an
+   * instance of cl.
+   *
+   * @return id of the valuecl, correspods to the value to be stored in the tag.
+   */
+  public int clazzChoiceTag(int cl, int valuecl)
+  {
+    var cc = _clazzIds.get(cl);
+    var vc = _clazzIds.get(valuecl);
+    return cc.getChoiceTag(vc._type);
   }
 
 
