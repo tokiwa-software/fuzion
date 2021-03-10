@@ -664,6 +664,11 @@ public class C extends Backend
           CExpr res = _types.isScalar(vtc) ? _fuir.clazzIsRef(tc) ? t.deref().field("fields") : t :
                       t != null            ? ccodeAccessField(tc, t, field) : null;
           res = _fuir.clazzFieldIsAdrOfValue(cc) ? res.deref() : res;
+          if (_fuir.clazzIsRef(rt) && _fuir.clazzKind(_fuir.clazzAsValue(rt)) == FUIR.ClazzKind.Choice)
+            { // NYI: This special handling should better be part of match, but staticSubjectClazz is never ref
+              res = res.deref().field(_names.FIELDS_IN_REF_CLAZZ);
+              rt = _fuir.clazzAsValue(rt);
+            }
           push(stack, rt, res);
           break;
         }
