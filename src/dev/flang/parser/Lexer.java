@@ -414,7 +414,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Is the next token after currnet() an ingore()d token?  With the default
+   * Is the next token after current() an ingore()d token?  With the default
    * implementation of ignore(), this checks if there follows whitespace or
    * a comment after this token.
    *
