@@ -635,18 +635,9 @@ public class C extends Backend
                 }
               break;
             }
-          case Singleton:
-            {
-              o = CStmnt.lineComment("NYI: singleton");
-              break;
-            }
           case WipeStack:
             {
               stack.clear();
-              break;
-            }
-          case NOP:
-            {
               break;
             }
           default:

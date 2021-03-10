@@ -87,7 +87,6 @@ public class FUIR extends ANY
 
   public enum ExprKind
   {
-    NOP,
     AdrToValue,
     Assign,
     Box,
@@ -101,7 +100,6 @@ public class FUIR extends ANY
     u64Const,
     strConst,
     Match,
-    Singleton,
     WipeStack,
   }
 
@@ -845,10 +843,10 @@ public class FUIR extends ANY
     else if (s instanceof Nop)
       {
       }
-    else if (s instanceof Singleton)
+    else if (s instanceof Singleton) // NYI: remove eventually
       {
         var si = (Singleton) s;
-        l.add(si);
+        // l.add(si);
       }
     else if (s instanceof StrConst)
       {
@@ -930,15 +928,10 @@ public class FUIR extends ANY
       {
         result = ExprKind.Match;
       }
-    else if (e instanceof Singleton)
-      {
-        var s = (Singleton) e;
-        result = ExprKind.Singleton;
-      }
     else
       {
         Errors.fatal(e.pos(), "Stmnt not supported in FUIR.codeAt", "Statement class: " + e.getClass());
-        result = ExprKind.NOP; // keep javac from complaining.
+        result = ExprKind.Current; // keep javac from complaining.
       }
     return result;
   }
