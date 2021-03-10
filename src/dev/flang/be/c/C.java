@@ -63,10 +63,10 @@ public class C extends Backend
    */
   private enum CompilePhase
   {
-    TYPES           { void compile(C c, int cl) { c._types.types(cl);   } }, // declare types
-    STRUCTS         { void compile(C c, int cl) { c._types.structs(cl); } }, // generate struct declarations
-    FORWARDS        { void compile(C c, int cl) { c.forwards(cl);       } }, // generate forward declarations only
-    IMPLEMENTATIONS { void compile(C c, int cl) { c.code(cl);           } }; // generate C functions
+    TYPES           { void compile(C c, int cl) { c._c.print(c._types.types(cl)); } }, // declare types
+    STRUCTS         { void compile(C c, int cl) { c._types.structs(cl, c._c);     } }, // generate struct declarations
+    FORWARDS        { void compile(C c, int cl) { c.forwards(cl);                 } }, // generate forward declarations only
+    IMPLEMENTATIONS { void compile(C c, int cl) { c.code(cl);                     } }; // generate C functions
 
     /**
      * Perform this compilation phase on given clazz using given backend.
@@ -135,7 +135,7 @@ public class C extends Backend
     _options = opt;
     _fuir = fuir;
     _names = new CNames(fuir);
-    _types = new CTypes(_fuir, this);
+    _types = new CTypes(_fuir, _names);
     Clazzes.findAllClasses(this, _fuir.main()); /* NYI: remove this, should be done within FUIR */
     Errors.showAndExit();
   }

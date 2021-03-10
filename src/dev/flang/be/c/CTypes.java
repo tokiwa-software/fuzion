@@ -57,7 +57,7 @@ public class CTypes extends ANY
   /**
    * The C backend
    */
-  private C _c;
+  private CNames _names;
 
 
   /**
@@ -75,10 +75,10 @@ public class CTypes extends ANY
   /**
    * Create instance of CTypes
    */
-  public CTypes(FUIR fuir, C c)
+  public CTypes(FUIR fuir, CNames names)
   {
     this._fuir = fuir;
-    this._c = c;
+    this._names = names;
   }
 
 
@@ -91,7 +91,7 @@ public class CTypes extends ANY
    */
   String clazz(int cl)
   {
-    return _c._names.struct(cl) + (_fuir.clazzIsRef(cl) ? "*" : "");
+    return _names.struct(cl) + (_fuir.clazzIsRef(cl) ? "*" : "");
   }
 
 
@@ -126,28 +126,25 @@ public class CTypes extends ANY
 
 
   /**
-   * Create declarations of the C types required for the given clazz.  Write
-   * code to _c._c.
+   * Create declarations of the C types required for the given clazz.
    *
    * @param cl a clazz id.
+   *
+   * @return the C declaration or "" if none.
    */
-  void types(int cl)
+  String types(int cl)
   {
     switch (_fuir.clazzKind(cl))
       {
       case Choice:
       case Routine:
-        {
-          var name = _c._names.struct(cl);
-          // special handling of stdlib clazzes known to the compiler
-          var stype = scalar(cl);
-          var type = stype != null ? stype : "struct " + name;
-          _c._c.print
-                ("typedef " + type + " " + name + ";\n");
-          break;
-        }
+        var name = _names.struct(cl);
+        // special handling of stdlib clazzes known to the compiler
+        var stype = scalar(cl);
+        var type = stype != null ? stype : "struct " + name;
+        return "typedef " + type + " " + name + ";\n";
       default:
-        break;
+        return "";
       }
   }
 
@@ -180,11 +177,11 @@ public class CTypes extends ANY
 
   /**
    * Create declarations of the C structs required for the given clazz.  Write
-   * code to _c._c.
+   * code to cf.
    *
    * @param cl a clazz id.
    */
-  void structs(int cl)
+  void structs(int cl, CFile cf)
   {
     switch (_fuir.clazzKind(cl))
       {
@@ -199,62 +196,62 @@ public class CTypes extends ANY
                   // first, make sure structs used for inner fields are declared:
                   for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
                     {
-                      var cf = _fuir.clazzField(cl, i);
-                      var rcl = _fuir.clazzResultClazz(cf);
+                      var f = _fuir.clazzField(cl, i);
+                      var rcl = _fuir.clazzResultClazz(f);
                       if (!_fuir.clazzIsRef(rcl))
                         {
-                          structs(rcl);
+                          structs(rcl, cf);
                         }
                     }
                   if (_fuir.clazzIsRef(cl))
                     {
-                      structs(_fuir.clazzAsValue(cl));
+                      structs(_fuir.clazzAsValue(cl), cf);
                     }
 
                   // next, declare the struct itself
-                  _c._c.print
+                  cf.print
                     ("// for " + _fuir.clazzAsString(cl) + "\n" +
-                     "struct " + _c._names.struct(cl) + " {\n");
+                     "struct " + _names.struct(cl) + " {\n");
                   if (_fuir.clazzIsChoice(cl))
                     {
                       var ct = _fuir.clazzChoiceTag(cl);
                       if (ct != -1)
                         {
                           String type = clazzField(ct);
-                          _c._c.print(" " + type + " " + _c._names.TAG_NAME + ";\n");
+                          cf.print(" " + type + " " + _names.TAG_NAME + ";\n");
                         }
-                      _c._c.print(" union {\n");
+                      cf.print(" union {\n");
                       for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
                         {
                           var cc = _fuir.clazzChoice(cl, i);
                           if (!_fuir.clazzIsRef(cc))
                             {
                               String type = clazz(cc);
-                              _c._c.print("  " + type + " " + _c._names.CHOICE_ENTRY_NAME + i + ";\n");
+                              cf.print("  " + type + " " + _names.CHOICE_ENTRY_NAME + i + ";\n");
                             }
                         }
                       if (_fuir.clazzIsChoiceWithRefs(cl))
                         {
-                          _c._c.print("  " + _c._names.struct(_fuir.clazzObject()) + " " + _c._names.CHOICE_REF_ENTRY_NAME + ";\n");
+                          cf.print("  " + _names.struct(_fuir.clazzObject()) + " " + _names.CHOICE_REF_ENTRY_NAME + ";\n");
                         }
-                      _c._c.print(" } " + _c._names.CHOICE_UNION_NAME + ";\n");
+                      cf.print(" } " + _names.CHOICE_UNION_NAME + ";\n");
                     }
                   else if (_fuir.clazzIsRef(cl))
                     {
                       var vcl = _fuir.clazzAsValue(cl);
-                      _c._c.print("  uint32_t clazzId;\n" +
-                                  "  " + clazz(vcl) + " " + _c._names.FIELDS_IN_REF_CLAZZ + ";\n");
+                      cf.print("  uint32_t clazzId;\n" +
+                                  "  " + clazz(vcl) + " " + _names.FIELDS_IN_REF_CLAZZ + ";\n");
                     }
                   else
                     {
                       for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
                         {
-                          var cf = _fuir.clazzField(cl, i);
-                          String type = clazzField(cf);
-                          _c._c.print(" " + type + " " + _c._names.fieldName(i, cf) + ";\n");
+                          var f = _fuir.clazzField(cl, i);
+                          String type = clazzField(f);
+                          cf.print(" " + type + " " + _names.fieldName(i, f) + ";\n");
                         }
                     }
-                  _c._c.print
+                  cf.print
                     ("};\n\n");
                 }
             }
