@@ -138,7 +138,16 @@ public class OpExpr extends ANY
                   {
                     max = i;
                   }
-                if (!isExpr(i-1) &&  isExpr(i+1)) // a prefix operator
+                if (isExpr(i-1) && isExpr(i+1))  // an infix operator
+                    {
+                      if (precedence(i, Kind.infix) >  pmax && isLeftToRight(i) ||   // a left-to-right infix operator
+                          precedence(i, Kind.infix) >= pmax && isRightToLeft(i)    ) // a right-to-left infix operator
+                        {
+                          max = i;
+                          pmax = precedence(i, Kind.infix);
+                        }
+                    }
+                else if (isExpr(i+1)) // a prefix operator
                   {
                     if (// 'a + + b' => '(a+) + b' and
                         // 'a + +b' => 'a + (+b)'
@@ -157,14 +166,7 @@ public class OpExpr extends ANY
                         pmax = precedence(i, Kind.prefix);
                       }
                   }
-                else if (isExpr(i-1) &&  isExpr(i+1) && precedence(i, Kind.infix) >  pmax && isLeftToRight(i) ||  // a left-to-right infix operator
-                         isExpr(i-1) &&  isExpr(i+1) && precedence(i, Kind.infix) >= pmax && isRightToLeft(i)     // a right-to-left infix operator
-                         )
-                  {
-                    max = i;
-                    pmax = precedence(i, Kind.infix);
-                  }
-                else if (isExpr(i-1) && !isExpr(i+1))  // a postfix operator
+                else if (isExpr(i-1))  // a postfix operator
                   {
                     if (// 'a+ + b' => '(a+) + b' and
                         // 'a + +b' => 'a + (+b)'
