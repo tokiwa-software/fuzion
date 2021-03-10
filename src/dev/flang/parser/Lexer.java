@@ -948,7 +948,7 @@ public class Lexer extends SourceFile
   /**
    * Advance to the next line.
    *
-   * @return Token.t_op
+   * @return Token.t_comment
    */
   private Token skipUntilEOL()
   {
