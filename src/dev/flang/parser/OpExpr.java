@@ -133,14 +133,29 @@ public class OpExpr extends ANY
           {
             if (isOp(i))                           // i is an operator
               {
+                var op = (Operator) els.get(i);
                 if (max < 0)
                   {
                     max = i;
                   }
-                if (!isExpr(i-1) &&  isExpr(i+1) && precedence(i, Kind.prefix)  >= pmax)
-                  { // a prefix operator
-                    max = i;
-                    pmax = precedence(i, Kind.prefix);
+                if (!isExpr(i-1) &&  isExpr(i+1) && valid(i, Kind.prefix) ) // a prefix operator
+                  {
+                    if (// 'a + + b' => '(a+) + b' and
+                        // 'a + +b' => 'a + (+b)'
+                        // 'a+ +b'  => 'a + (+b)' due to white space
+                        isOp(i-1) && !op._whiteSpaceAfter && op._whiteSpaceBefore && op(i-1)._whiteSpaceBefore)
+                      {
+                        max = i;
+                        pmax = Integer.MAX_VALUE;
+                      }
+                    else if (// 'a + * b' => 'a + (* b)' and
+                             // 'a + + b' => 'a + (+ b)' and
+                             // 'a * + b' => '(a *) + b' due to precedence
+                             precedence(i, Kind.prefix)  >= pmax)
+                      { // a prefix operator
+                        max = i;
+                        pmax = precedence(i, Kind.prefix);
+                      }
                   }
                 else if (isExpr(i-1) &&  isExpr(i+1) && precedence(i, Kind.infix) >  pmax && isLeftToRight(i) ||  // a left-to-right infix operator
                          isExpr(i-1) &&  isExpr(i+1) && precedence(i, Kind.infix) >= pmax && isRightToLeft(i)     // a right-to-left infix operator
@@ -149,10 +164,25 @@ public class OpExpr extends ANY
                     max = i;
                     pmax = precedence(i, Kind.infix);
                   }
-                else if (isExpr(i-1) && !isExpr(i+1) && precedence(i, Kind.postfix) >= pmax)
-                  { // a postfix operator
-                    max = i;
-                    pmax = precedence(i, Kind.postfix);
+                else if (isExpr(i-1) && !isExpr(i+1) && valid(i, Kind.postfix))  // a postfix operator
+                  {
+                    if (// 'a+ + b' => '(a+) + b' and
+                        // 'a + +b' => 'a + (+b)'
+                        // 'a+ +b'  => 'a + (+b)' due to white space
+                        isOp(i+1) && !op._whiteSpaceBefore && op._whiteSpaceAfter && op(i+1)._whiteSpaceAfter)
+                      {
+                        // in case white space suggests higher precedence for
+                        // postfix op, then treat it as a postfix op.
+                        max = i;
+                        pmax = Integer.MAX_VALUE;
+                      }
+                    else if (// 'a + * b' => 'a + (* b)' and
+                             // 'a * + b' => '(a *) + b' due to precedence
+                             precedence(i, Kind.postfix) >= pmax)
+                      {
+                        max = i;
+                        pmax = precedence(i, Kind.postfix);
+                      }
                   }
               }
           }
@@ -215,6 +245,21 @@ public class OpExpr extends ANY
 
 
   /**
+   * Get the operator at the given index.
+   *
+   * @param i valid index of an Operator in els
+   *
+   * @return the operator.
+   */
+  Operator op(int i)
+  {
+    if (PRECONDITIONS) require
+                         (isOp(i));
+    return (Operator) els.get(i);
+  }
+
+
+  /**
    * get the precedence of operator at index i
    *
    * @param i an integer value
@@ -227,6 +272,20 @@ public class OpExpr extends ANY
       isOp(i)
       ? precedence((Operator)els.get(i), kind)
       : -1;
+  }
+
+
+  /**
+   * is operator at index i a valid operator of the given kind?
+   *
+   * @param i an integer value
+   *
+   * @return -1 iff !isOp(i), else the precedence of the operator at index i.
+   */
+  boolean valid(int i, Kind kind)
+  {
+    return
+      isOp(i) && precedence((Operator)els.get(i), kind) != Integer.MIN_VALUE;
   }
 
 
@@ -313,7 +372,7 @@ public class OpExpr extends ANY
                                             new Precedence( 2,        "∀"  ),
                                             new Precedence( 1,        "∃"  ),
                                             // all other operators: 0
-                                            new Precedence( -1,        ":" ),
+                                            new Precedence( -1, Integer.MIN_VALUE, Integer.MIN_VALUE, ":" ),
   };
 
 
