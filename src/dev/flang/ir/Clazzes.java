@@ -678,7 +678,10 @@ public class Clazzes extends ANY
     int i = c.runtimeClazzId_;
     if (c.field != null)
       {
-        outerClazz.setRuntimeClazz(i, outerClazz.actualClazz(c.field.resultType()));
+        var fOrFc = isUsed(c.field, outerClazz)
+          ? outerClazz.lookup(c.field, Call.NO_GENERICS, c.field.isUsedAt())
+          : outerClazz.actualClazz(c.field.resultType());
+        outerClazz.setRuntimeClazz(i, fOrFc);
       }
     else
       {

@@ -323,9 +323,9 @@ public class Interpreter extends Backend
           {
             Case c = it.next();
 
-            if (c.field != null)
+            if (c.field != null && Clazzes.isUsed(c.field, staticClazz))
               {
-                Clazz fieldClazz = staticClazz.getRuntimeClazz(c.runtimeClazzId_);
+                Clazz fieldClazz = staticClazz.getRuntimeClazz(c.runtimeClazzId_).resultClazz();
                 if (fieldClazz.isAssignableFrom(subjectClazz))
                   {
                     Value v = tag < 0 ? refVal
@@ -336,7 +336,8 @@ public class Interpreter extends Backend
               }
             else
               {
-                for (int i = 0; !matches && i < c.types.size(); i++)
+                var nt = c.field != null ? 1 : c.types.size();
+                for (int i = 0; !matches && i < nt; i++)
                   {
                     Clazz caseClazz = staticClazz.getRuntimeClazz(c.runtimeClazzId_ + i);
                     matches = caseClazz.isAssignableFrom(subjectClazz);
