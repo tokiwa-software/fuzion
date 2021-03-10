@@ -677,12 +677,6 @@ public class C extends Backend
     CStmnt result = CStmnt.EMPTY;
     var ac = _fuir.callArgCount(c, i);
     var rt = _fuir.clazzResultClazz(cc);
-    if (ac != _fuir.clazzArgCount(cc)) // NYI: Remove this conditions when ccs set no longer contains false entries
-      {
-        _c.println("// Arg count does not match, expected "+ac+", called clazz "+_fuir.clazzAsString(cc)+" has "+_fuir.clazzArgCount(cc));
-        push(stack, rt, _names.CDUMMY);
-      }
-    else
     switch (_fuir.clazzKind(cc))
       {
       case Routine  :

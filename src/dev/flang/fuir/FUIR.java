@@ -1057,7 +1057,9 @@ public class FUIR extends ANY
        outerClazz != null);
 
     var cf = call.calledFeature();
-    var tclazz = ((dev.flang.ir.BackendCallable)outerClazz.getRuntimeData(call.sid_)).outer();
+    var bc         = (dev.flang.ir.BackendCallable) outerClazz.getRuntimeData(call.sid_);
+    var tclazz     = bc.outer();
+    var innerClazz = bc.inner();
     var result = new List<Clazz>();
     for (var cl : Clazzes.all())  // NYI: Overkill, better check only sub-clazzes of tclazz
       {
@@ -1067,7 +1069,13 @@ public class FUIR extends ANY
             if (cl._dynamicBinding != null)
               {
                 var in = cl._dynamicBinding.inner(cf);
-                if (in != null && in.feature().impl.kind_ != Impl.Kind.Abstract)
+                if (in != null &&
+                    in.feature().impl.kind_ != Impl.Kind.Abstract &&
+
+                    // NYI: instead of just comparing the argument lenths, we
+                    // should ensure to only return features from heir clazzes
+                    // with equal generic parameters:
+                    in.argumentFields().length == innerClazz.argumentFields().length)
                   {
                     result.add(cl);
                     result.add(in);
