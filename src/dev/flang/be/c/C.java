@@ -1079,14 +1079,63 @@ public class C extends Backend
             }
           case Match:
             {
-              _c.print(CStmnt.seq(CStmnt.lineComment("NYI: match !"),
-                                  CExpr.call("assert", new List<>(CExpr.int32const(0))).comment("match !")));
-              /*
-              var v = stack.pop();
-              o = CStmnt.seq(CStmnt.lineComment("NYI: match " + v + "!"),
-                             CExpr.call("assert", new List<>(CExpr.int32const(0))).comment("match " + v + "!"));
-              stack.push(CExpr.dummy("NYI: match result"));
+              var staticSubjectClazz = _fuir.matchStaticSubject(cl, c, i);
+              var sub = pop(stack, staticSubjectClazz);
+              if (_fuir.clazzIsChoiceOfOnlyRefs(staticSubjectClazz))
+                {
+                  o = CStmnt.seq(CStmnt.lineComment("NYI: match of only refs!"),
+                                 CExpr.call("assert", new List<>(CExpr.int32const(0))).comment("match of only refs!"));
+              /* from Interpreter:
+
+                refVal = getChoiceRefVal(sf, staticSubjectClazz, sub);
+                tag = ChoiceIdAsRef.get(staticSubjectClazz, refVal);
               */
+                }
+              else
+                {
+                  var tag = sub.field(TAG_NAME);
+                  _c.println("switch ("+tag.code()+") {");
+                  _c.indent();
+                  var stack2 = stack;
+                  var mcc = _fuir.matchCaseCount(c, i);
+                  for (var mc = 0; mc < mcc; mc++)
+                    {
+                      var block = _fuir.i32Const(c, i + 1 + mc);
+                      var field = _fuir.matchCaseField(cl, c, i, mc);
+                      var tags  = _fuir.matchCaseTags(cl, c, i, mc);
+                      if (tags.length > 0)
+                        {
+                          for (var tagNum : tags)
+                            {
+                              _c.print("case " + tagNum + ": ");
+                            }
+                          if (field != -1)
+                            {
+                              check
+                                (tags.length == 1);
+                              var fclazz    = _fuir.clazzResultClazz(field);     // static clazz of assigned field
+                              var vcl       = _fuir.clazzAsValue(cl);
+                              var fieldName = fieldNameInClazz(vcl, field);
+                              var f         = ccodeAccessField(cl, current(cl), fieldName);
+                              var uniyon    = sub.field(CHOICE_UNION_NAME);
+                              var entry     = _fuir.clazzIsRef(fclazz) ? uniyon.field(CHOICE_REF_ENTRY_NAME).castTo(clazzTypeName(fclazz))
+                                                                       : uniyon.field(CHOICE_ENTRY_NAME + tags[0]);
+                              _c.print(!hasData(fclazz) ? CStmnt.lineComment("valueluess assignment to " + f.code())
+                                                        : f.assign(entry));
+                            }
+                          _c.println("{");
+                          _c.indent();
+                          stack = (Stack<CExpr>) stack2.clone();
+                          createCode(cl, stack, block);
+                          _c.println("break;");
+                          _c.unindent();
+                          _c.println("}");
+                        }
+                    }
+                  _c.unindent();
+                  _c.println("}");
+                  i = i + mcc;
+                }
               break;
             }
           case Singleton:

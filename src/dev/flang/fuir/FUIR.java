@@ -1245,6 +1245,135 @@ public class FUIR extends ANY
     return ic.str.getBytes(StandardCharsets.UTF_8);
   }
 
+
+  /**
+   * For a match statement, get the static clazz of the subject.
+   *
+   * @param cl index of clazz containing the match
+   *
+   * @param c code block containing the match
+   *
+   * @param ix index of the match
+   *
+   * @return clazz id of type of the subject
+   */
+  public int matchStaticSubject(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Match);
+
+    var cc = _clazzIds.get(cl);
+    var match = (Match) _codeIds.get(c).get(ix);
+    var ss = cc.getRuntimeClazz(match.runtimeClazzId_);
+    return _clazzIds.get(ss);
+  }
+
+
+  /**
+   * For a match statement, get the number of cases
+   *
+   * @param c code block containing the match
+   *
+   * @param ix index of the match
+   *
+   * @return the number of cases
+   */
+  public int matchCaseCount(int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Match);
+
+    var match = (Match) _codeIds.get(c).get(ix);
+    return match.cases.size();
+  }
+
+
+  /**
+   * For a match statement, get the field of a given case
+   *
+   * @param cl index of clazz containing the match
+   *
+   * @param c code block containing the match
+   *
+   * @param ix index of the match
+   *
+   * @paramc cix index of the case in the match
+   *
+   * @return clazz id of field the value in this case is assigned to, -1 if this
+   * case does not have a field or the field is unused.
+   */
+  public int matchCaseField(int cl, int c, int ix, int cix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Match,
+       0 <= cix && cix <= matchCaseCount(c, ix));
+
+    var cc = _clazzIds.get(cl);
+    var match = (Match) _codeIds.get(c).get(ix);
+    var mc = match.cases.get(cix);
+    var f = mc.field;
+    var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc.runtimeClazzId_) : null;
+    return fc != null ? _clazzIds.get(fc) : -1;
+  }
+
+
+
+  /**
+   * For a match statement, get the tags matched by a given case
+   *
+   * @param cl index of clazz containing the match
+   *
+   * @param c code block containing the match
+   *
+   * @param ix index of the match
+   *
+   * @paramc cix index of the case in the match
+   *
+   * @return array of tag numbers this case matches
+   */
+  public int[] matchCaseTags(int cl, int c, int ix, int cix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Match,
+       0 <= cix && cix <= matchCaseCount(c, ix));
+
+    var cc = _clazzIds.get(cl);
+    var match = (Match) _codeIds.get(c).get(ix);
+    var ss = cc.getRuntimeClazz(match.runtimeClazzId_);
+    var mc = match.cases.get(cix);
+    var f = mc.field;
+    var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc.runtimeClazzId_) : null;
+    int nt = f != null ? 1 : mc.types.size();
+    var resultL = new List<Integer>();
+    int tag = 0;
+    for (var cg : ss.choiceGenerics())
+      {
+        for (int tix = 0; tix < nt; tix++)
+          {
+            var rc = fc != null ? fc.resultClazz() : cc.getRuntimeClazz(mc.runtimeClazzId_ + tix);
+            if (rc.isAssignableFrom(cg))
+              {
+                resultL.add(tag);
+              }
+          }
+        tag++;
+      }
+    var result = new int[resultL.size()];
+    for (int i = 0; i < result.length; i++)
+      {
+        result[i] = resultL.get(i);
+      }
+    return result;
+  }
+
 }
 
 /* end of file */
