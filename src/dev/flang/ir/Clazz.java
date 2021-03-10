@@ -452,11 +452,28 @@ public class Clazz extends ANY implements Comparable
       {
         return false;
       }
-    for (var f : fields())
+    if (isChoice())
       {
-        if (!f.fieldClazz().isUnitType())
+        if (choiceTag() != null)
           {
             return false;
+          }
+        for (var cg : choiceGenerics())
+          {
+            if (!cg.isUnitType())
+              {
+                return false;
+              }
+          }
+      }
+    else
+      {
+        for (var f : fields())
+          {
+            if (!f.fieldClazz().isUnitType())
+              {
+                return false;
+              }
           }
       }
     return true;
