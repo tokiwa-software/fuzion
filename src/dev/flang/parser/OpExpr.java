@@ -133,12 +133,12 @@ public class OpExpr extends ANY
           {
             if (isOp(i))                           // i is an operator
               {
-                var op = (Operator) els.get(i);
+                var op = op(i);
                 if (max < 0)
                   {
                     max = i;
                   }
-                if (!isExpr(i-1) &&  isExpr(i+1) && valid(i, Kind.prefix) ) // a prefix operator
+                if (!isExpr(i-1) &&  isExpr(i+1)) // a prefix operator
                   {
                     if (// 'a + + b' => '(a+) + b' and
                         // 'a + +b' => 'a + (+b)'
@@ -164,7 +164,7 @@ public class OpExpr extends ANY
                     max = i;
                     pmax = precedence(i, Kind.infix);
                   }
-                else if (isExpr(i-1) && !isExpr(i+1) && valid(i, Kind.postfix))  // a postfix operator
+                else if (isExpr(i-1) && !isExpr(i+1))  // a postfix operator
                   {
                     if (// 'a+ + b' => '(a+) + b' and
                         // 'a + +b' => 'a + (+b)'
@@ -186,11 +186,11 @@ public class OpExpr extends ANY
                   }
               }
           }
-        Operator op = (Operator) els.get(max);
+        Operator op = op(max);
         if (isExpr(max-1) && isExpr(max+1))
           {             // infix op:
-            Expr e1 = (Expr) els.get(max-1);
-            Expr e2 = (Expr) els.get(max+1);
+            Expr e1 = expr(max-1);
+            Expr e2 = expr(max+1);
             Expr e = new Call(op.pos, e1, "infix "+op.text, null, new List<Expr>(e2));
             els.remove(max+1);
             els.remove(max);
@@ -198,21 +198,21 @@ public class OpExpr extends ANY
           }
         else if (isExpr(max+1))
           {                       // prefix op:
-            Expr e2 = (Expr) els.get(max+1);
+            Expr e2 = expr(max+1);
             Expr e = new Call(op.pos, e2, "prefix "+op.text, null, Expr.NO_EXPRS);
             els.remove(max+1);
             els.set(max, e);
           }
         else
           {                                          // postfix op:
-            Expr e1 = (Expr) els.get(max-1);
+            Expr e1 = expr(max-1);
             Expr e = new Call(op.pos, e1, "postfix "+op.text, null, Expr.NO_EXPRS);
             els.remove(max);
             els.set(max-1, e);
           }
       }
     //    show();
-    return (Expr) els.get(0);
+    return expr(0);
   }
 
 
@@ -227,6 +227,21 @@ public class OpExpr extends ANY
   boolean isExpr(int i)
   {
     return (i>=0) && (i<els.size()) && (els.get(i) instanceof Expr);
+  }
+
+
+  /**
+   * Get the express at the given index.
+   *
+   * @param i valid index of an Operator in els
+   *
+   * @return the operator.
+   */
+  Expr expr(int i)
+  {
+    if (PRECONDITIONS) require
+                         (isExpr(i));
+    return (Expr) els.get(i);
   }
 
 
@@ -270,22 +285,8 @@ public class OpExpr extends ANY
   {
     return
       isOp(i)
-      ? precedence((Operator)els.get(i), kind)
+      ? precedence(op(i), kind)
       : -1;
-  }
-
-
-  /**
-   * is operator at index i a valid operator of the given kind?
-   *
-   * @param i an integer value
-   *
-   * @return -1 iff !isOp(i), else the precedence of the operator at index i.
-   */
-  boolean valid(int i, Kind kind)
-  {
-    return
-      isOp(i) && precedence((Operator)els.get(i), kind) != Integer.MIN_VALUE;
   }
 
 
@@ -298,7 +299,7 @@ public class OpExpr extends ANY
    */
   boolean isLeftToRight(int i)
   {
-    return isOp(i) && isLeftToRight((Operator)els.get(i));
+    return isOp(i) && isLeftToRight(op(i));
   }
 
 
@@ -311,7 +312,7 @@ public class OpExpr extends ANY
    */
   boolean isRightToLeft(int i)
   {
-    return isOp(i) && isRightToLeft((Operator)els.get(i));
+    return isOp(i) && isRightToLeft(op(i));
   }
 
 
@@ -372,7 +373,7 @@ public class OpExpr extends ANY
                                             new Precedence( 2,        "∀"  ),
                                             new Precedence( 1,        "∃"  ),
                                             // all other operators: 0
-                                            new Precedence( -1, Integer.MIN_VALUE, Integer.MIN_VALUE, ":" ),
+                                            new Precedence( -1,       ":" ),
   };
 
 
