@@ -78,9 +78,9 @@ class Intrinsics extends ANY
     var or = c._fuir.clazzOuterRef(cl);
     var outer =
       or == -1                                         ? null :
-      c._fuir.clazzFieldIsAdrOfValue(or)               ? c._outer_.deref() :
-      c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or)) ? c._outer_.deref().field(C.FIELDS_IN_REF_CLAZZ) //.field("fzF_0_val")
-                                                       : c._outer_;
+      c._fuir.clazzFieldIsAdrOfValue(or)               ? CNames.OUTER.deref() :
+      c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or)) ? CNames.OUTER.deref().field(CNames.FIELDS_IN_REF_CLAZZ) //.field("fzF_0_val")
+                                                       : CNames.OUTER;
 
     switch (c._fuir.clazzIntrinsicName(cl))
       {
@@ -121,17 +121,17 @@ class Intrinsics extends ANY
       case "i64.infix |"         : return outer.or (new CIdent("arg0")).ret();
 
       case "i32.infix =="        :
-      case "i64.infix =="        : return outer.eq(new CIdent("arg0")).cond(c.FZ_TRUE, c.FZ_FALSE).ret();
+      case "i64.infix =="        : return outer.eq(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "i32.infix !="        :
-      case "i64.infix !="        : return outer.ne(new CIdent("arg0")).cond(c.FZ_TRUE, c.FZ_FALSE).ret();
+      case "i64.infix !="        : return outer.ne(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "i32.infix >"         :
-      case "i64.infix >"         : return outer.gt(new CIdent("arg0")).cond(c.FZ_TRUE, c.FZ_FALSE).ret();
+      case "i64.infix >"         : return outer.gt(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "i32.infix >="        :
-      case "i64.infix >="        : return outer.ge(new CIdent("arg0")).cond(c.FZ_TRUE, c.FZ_FALSE).ret();
+      case "i64.infix >="        : return outer.ge(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "i32.infix <"         :
-      case "i64.infix <"         : return outer.lt(new CIdent("arg0")).cond(c.FZ_TRUE, c.FZ_FALSE).ret();
+      case "i64.infix <"         : return outer.lt(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "i32.infix <="        :
-      case "i64.infix <="        : return outer.le(new CIdent("arg0")).cond(c.FZ_TRUE, c.FZ_FALSE).ret();
+      case "i64.infix <="        : return outer.le(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
 
       case "u32.prefix -°"       :
       case "u64.prefix -°"       : return outer.neg().ret();
@@ -155,17 +155,17 @@ class Intrinsics extends ANY
       case "u64.infix |"         : return outer.or (new CIdent("arg0")).ret();
 
       case "u32.infix =="        :
-      case "u64.infix =="        : return outer.eq(new CIdent("arg0")).cond(c.FZ_TRUE, c.FZ_FALSE).ret();
+      case "u64.infix =="        : return outer.eq(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "u32.infix !="        :
-      case "u64.infix !="        : return outer.ne(new CIdent("arg0")).cond(c.FZ_TRUE, c.FZ_FALSE).ret();
+      case "u64.infix !="        : return outer.ne(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "u32.infix >"         :
-      case "u64.infix >"         : return outer.gt(new CIdent("arg0")).cond(c.FZ_TRUE, c.FZ_FALSE).ret();
+      case "u64.infix >"         : return outer.gt(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "u32.infix >="        :
-      case "u64.infix >="        : return outer.ge(new CIdent("arg0")).cond(c.FZ_TRUE, c.FZ_FALSE).ret();
+      case "u64.infix >="        : return outer.ge(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "u32.infix <"         :
-      case "u64.infix <"         : return outer.lt(new CIdent("arg0")).cond(c.FZ_TRUE, c.FZ_FALSE).ret();
+      case "u64.infix <"         : return outer.lt(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "u32.infix <="        :
-      case "u64.infix <="        : return outer.le(new CIdent("arg0")).cond(c.FZ_TRUE, c.FZ_FALSE).ret();
+      case "u64.infix <="        : return outer.le(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
 
       case "i32.as_i64"          : return outer.castTo("fzT_1i64").ret();
       case "u32.as_i64"          : return outer.castTo("fzT_1i64").ret();
