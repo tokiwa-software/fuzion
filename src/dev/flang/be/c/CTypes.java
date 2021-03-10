@@ -212,7 +212,13 @@ public class CTypes extends ANY
                   cf.print
                     ("// for " + _fuir.clazzAsString(cl) + "\n" +
                      "struct " + _names.struct(cl) + " {\n");
-                  if (_fuir.clazzIsChoice(cl))
+                  if (_fuir.clazzIsRef(cl))
+                    {
+                      var vcl = _fuir.clazzAsValue(cl);
+                      cf.print("  uint32_t clazzId;\n" +
+                                  "  " + clazz(vcl) + " " + _names.FIELDS_IN_REF_CLAZZ + ";\n");
+                    }
+                  else if (_fuir.clazzIsChoice(cl))
                     {
                       var ct = _fuir.clazzChoiceTag(cl);
                       if (ct != -1)
@@ -235,12 +241,6 @@ public class CTypes extends ANY
                           cf.print("  " + _names.struct(_fuir.clazzObject()) + " " + _names.CHOICE_REF_ENTRY_NAME + ";\n");
                         }
                       cf.print(" } " + _names.CHOICE_UNION_NAME + ";\n");
-                    }
-                  else if (_fuir.clazzIsRef(cl))
-                    {
-                      var vcl = _fuir.clazzAsValue(cl);
-                      cf.print("  uint32_t clazzId;\n" +
-                                  "  " + clazz(vcl) + " " + _names.FIELDS_IN_REF_CLAZZ + ";\n");
                     }
                   else
                     {

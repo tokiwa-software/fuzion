@@ -382,62 +382,15 @@ public class C extends Backend
                 }
               else
                 {
-                  if (_fuir.clazzIsChoice(vc))
-                    {
-                      _c.println("// NYI: choice boxing");
-                      _c.print(CExpr.call("assert", new List<>(CExpr.int32const(0))).comment("choice boxing"));
-                  /* NYI choice boxing:
-
-                check
-                  (rc.isChoice());
-                if (vc.isChoiceOfOnlyRefs())
-                  {
-                    throw new Error("NYI: Boxing choiceOfOnlyRefs, does this happen at all?");
-                  }
-                else
-                  {
-                    check
-                      (!rc.isChoiceOfOnlyRefs());
-
-                    var voff = vc.choiceValsOffset_;
-                    var roff = rc.choiceValsOffset_;
-                    var vsz = vc.choiceValsSize_;
-                    check
-                      (rc.choiceValsSize_ == vsz);
-                    if (val instanceof LValue)
-                      {
-                        voff += ((LValue) val).offset;
-                        val   = ((LValue) val).container;
-                      }
-                    if (val instanceof boolValue)
-                      {
-                        val.storeNonRef(new LValue(Clazzes.bool.get(), ri, roff), Clazzes.bool.get().size());
-                      }
-                    else
-                      {
-                        var vi = (Instance) val;
-                        for (int i = 0; i<vsz; i++)
-                          {
-                            ri.refs   [roff+i] = vi.refs   [voff+i];
-                            ri.nonrefs[roff+i] = vi.nonrefs[voff+i];
-                          }
-                      }
-                  }
-                  */
-                      push(stack, rc, _names.CDUMMY);
-                    }
-                  else
-                    {
-                      var val = pop(stack, vc);
-                      var t = new CIdent(_names.newTemp());
-                      o = CStmnt.seq(CStmnt.lineComment("Box " + _fuir.clazzAsString(vc)),
-                                     CStmnt.decl(_types.clazz(rc), t),
-                                     t.assign(CExpr.call("malloc", new List<>(new CIdent(_names.struct(rc)).sizeOfType()))),
-                                     t.deref().field("clazzId").assign(_names.clazzId(rc)),
-                                     val == null ? CStmnt.EMPTY
-                                     : t.deref().field(_names.FIELDS_IN_REF_CLAZZ).assign(val));
-                      push(stack, rc, t);
-                    }
+                  var val = pop(stack, vc);
+                  var t = new CIdent(_names.newTemp());
+                  o = CStmnt.seq(CStmnt.lineComment("Box " + _fuir.clazzAsString(vc)),
+                                 CStmnt.decl(_types.clazz(rc), t),
+                                 t.assign(CExpr.call("malloc", new List<>(new CIdent(_names.struct(rc)).sizeOfType()))),
+                                 t.deref().field("clazzId").assign(_names.clazzId(rc)),
+                                 val == null ? CStmnt.EMPTY
+                                 : t.deref().field(_names.FIELDS_IN_REF_CLAZZ).assign(val));
+                  push(stack, rc, t);
                 }
               break;
             }
