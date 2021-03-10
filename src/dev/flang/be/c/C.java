@@ -31,7 +31,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import java.util.Stack;
-import java.util.TreeSet;
 
 import java.util.stream.Stream;
 
@@ -64,10 +63,10 @@ public class C extends Backend
    */
   private enum CompilePhase
   {
-    TYPES           { void compile(C c, int cl) { c.types(cl);    } }, // declare types
-    STRUCTS         { void compile(C c, int cl) { c.structs(cl);  } }, // generate struct declarations
-    FORWARDS        { void compile(C c, int cl) { c.forwards(cl); } }, // generate forward declarations only
-    IMPLEMENTATIONS { void compile(C c, int cl) { c.code(cl);     } }; // generate C functions
+    TYPES           { void compile(C c, int cl) { c._types.types(cl);   } }, // declare types
+    STRUCTS         { void compile(C c, int cl) { c._types.structs(cl); } }, // generate struct declarations
+    FORWARDS        { void compile(C c, int cl) { c.forwards(cl);       } }, // generate forward declarations only
+    IMPLEMENTATIONS { void compile(C c, int cl) { c.code(cl);           } }; // generate C functions
 
     /**
      * Perform this compilation phase on given clazz using given backend.
@@ -105,22 +104,19 @@ public class C extends Backend
   /**
    * Writer to create the C code to.
    */
-  private CFile _c;
-
-
-  /**
-   * Set of clazz ids for all the clazzes whose structs have been declared
-   * already.  Structs are declared recursively with structs of inner fields
-   * declared before outer structs.  This set keeps track which structs have been
-   * declared already to avoid duplicates.
-   */
-  private final TreeSet<Integer> _declaredStructs = new TreeSet<>();
+  CFile _c;
 
 
   /**
    * C identifier handling goes through _names:
    */
   final CNames _names;
+
+
+  /**
+   * C types handling goes through _types:
+   */
+  final CTypes _types;
 
 
   /*---------------------------  consructors  ---------------------------*/
@@ -139,6 +135,7 @@ public class C extends Backend
     _options = opt;
     _fuir = fuir;
     _names = new CNames(fuir);
+    _types = new CTypes(_fuir, this);
     Clazzes.findAllClasses(this, _fuir.main()); /* NYI: remove this, should be done within FUIR */
     Errors.showAndExit();
   }
@@ -255,186 +252,6 @@ public class C extends Backend
 
 
   /**
-   * The type of a value of the given clazz.
-   */
-  String clazzTypeName(int cl)
-  {
-    return _names.struct(cl) + (_fuir.clazzIsRef(cl) ? "*" : "");
-  }
-
-
-  /**
-   * The type of a field.  This is the usually the same as clazzTypeName() of
-   * the field's result clazz, except for outer refs for which
-   * clazzFieldIsAdrOfValue, where it is a pointer to that type.
-   */
-  String clazzFieldType(int cf)
-  {
-    var rc = _fuir.clazzResultClazz(cf);
-    return (_fuir.clazzIsVoidType(rc)
-            ? "struct { }"
-            : clazzTypeName(rc)) + (_fuir.clazzFieldIsAdrOfValue(cf) ? "*" : "");
-  }
-
-
-
-  /**
-   * Create declarations of the C types required for the given clazz.  Write
-   * code to _c.
-   *
-   * @param cl a clazz id.
-   */
-  public void types(int cl)
-  {
-    switch (_fuir.clazzKind(cl))
-      {
-      case Choice:
-      case Routine:
-        {
-          var name = _names.struct(cl);
-          // special handling of stdlib clazzes known to the compiler
-          var stype = scalarType(cl);
-          var type = stype != null ? stype : "struct " + name;
-          _c.print
-                ("typedef " + type + " " + name + ";\n");
-          break;
-        }
-      default:
-        break;
-      }
-  }
-
-
-  /**
-   * Does the given clazz specify a scalar type in the C code, i.e, standard
-   * numeric types i32, u64, etc.
-   */
-  boolean isScalarType(int cl)
-  {
-    return scalarType(cl) != null;
-  }
-
-
-  /**
-   * Check if the given clazz specifies a scalar type in the C code, i.e,
-   * standard numeric types i32, u64, etc. If so, return that C type.
-   *
-   * @return the C scalar type corresponding to cl, null if cl is not scaler.
-   */
-  String scalarType(int cl)
-  {
-    return
-      _fuir.clazzIsI32(cl) ? "int32_t" :
-      _fuir.clazzIsI64(cl) ? "int64_t" :
-      _fuir.clazzIsU32(cl) ? "uint32_t" :
-      _fuir.clazzIsU64(cl) ? "uint64_t" : null;
-  }
-
-
-  /**
-   * Create declarations of the C structs required for the given clazz.  Write
-   * code to _c.
-   *
-   * @param cl a clazz id.
-   */
-  public void structs(int cl)
-  {
-    switch (_fuir.clazzKind(cl))
-      {
-      case Choice:
-      case Routine:
-        {
-          if (!_declaredStructs.contains(cl))
-            {
-              _declaredStructs.add(cl);
-              if (!isScalarType(cl)) // special handling of stdlib clazzes known to the compiler
-                {
-                  // first, make sure structs used for inner fields are declared:
-                  for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
-                    {
-                      var cf = _fuir.clazzField(cl, i);
-                      var rcl = _fuir.clazzResultClazz(cf);
-                      if (!_fuir.clazzIsRef(rcl))
-                        {
-                          structs(rcl);
-                        }
-                    }
-                  if (_fuir.clazzIsRef(cl))
-                    {
-                      structs(_fuir.clazzAsValue(cl));
-                    }
-
-                  // next, declare the struct itself
-                  _c.print
-                    ("// for " + _fuir.clazzAsString(cl) + "\n" +
-                     "struct " + _names.struct(cl) + " {\n");
-                  if (_fuir.clazzIsChoice(cl))
-                    {
-                      var ct = _fuir.clazzChoiceTag(cl);
-                      if (ct != -1)
-                        {
-                          String type = clazzFieldType(ct);
-                          _c.print(" " + type + " " + _names.TAG_NAME + ";\n");
-                        }
-                      _c.print(" union {\n");
-                      for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
-                        {
-                          var cc = _fuir.clazzChoice(cl, i);
-                          if (!_fuir.clazzIsRef(cc))
-                            {
-                              String type = clazzTypeName(cc);
-                              _c.print("  " + type + " " + _names.CHOICE_ENTRY_NAME + i + ";\n");
-                            }
-                        }
-                      if (_fuir.clazzIsChoiceWithRefs(cl))
-                        {
-                          _c.print("  " + _names.struct(_fuir.clazzObject()) + " " + _names.CHOICE_REF_ENTRY_NAME + ";\n");
-                        }
-                      _c.print(" } " + _names.CHOICE_UNION_NAME + ";\n");
-                    }
-                  else if (_fuir.clazzIsRef(cl))
-                    {
-                      var vcl = _fuir.clazzAsValue(cl);
-                      _c.print("  uint32_t clazzId;\n" +
-                               "  " + clazzTypeName(vcl) + " " + _names.FIELDS_IN_REF_CLAZZ + ";\n");
-                    }
-                  else
-                    {
-                      for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
-                        {
-                          var cf = _fuir.clazzField(cl, i);
-                          String type = clazzFieldType(cf);
-                          _c.print(" " + type + " " + _names.fieldName(i, cf) + ";\n");
-                        }
-                    }
-                  _c.print
-                    ("};\n\n");
-                }
-            }
-        }
-        break;
-      default:
-        break;
-      }
-  }
-
-
-  /**
-   * Test is a given clazz is not -1 and stores data.
-   *
-   * @param cl the clazz of val, may be -1
-   *
-   * @return true if cl != -1 and not unit or void type.
-   */
-  boolean hasData(int cl)
-  {
-    return cl != -1 &&
-      !_fuir.clazzIsUnitType(cl) &&
-      !_fuir.clazzIsVoidType(cl);
-  }
-
-
-  /**
    * Push the given value to the stack unless it is of unit or void type or the
    * clazz is -1
    *
@@ -447,9 +264,9 @@ public class C extends Backend
   void push(Stack<CExpr> stack, int cl, CExpr val)
   {
     if (PRECONDITIONS) require
-      (hasData(cl) || val != null);
+      (_types.hasData(cl) || val != null);
 
-    if (hasData(cl))
+    if (_types.hasData(cl))
       {
         stack.push(val);
       }
@@ -468,8 +285,8 @@ public class C extends Backend
    */
   CExpr pop(Stack<CExpr> stack, int cl)
   {
-    return hasData(cl) ? stack.pop()
-                       : null;
+    return _types.hasData(cl) ? stack.pop()
+                              : null;
   }
 
 
@@ -544,7 +361,7 @@ public class C extends Backend
                       var value = pop(stack, fclazz);                // value assigned to field
                       if (_fuir.clazzIsRef(fclazz))
                         {
-                          value = value.castTo(clazzTypeName(fclazz));
+                          value = value.castTo(_types.clazz(fclazz));
                         }
                       // _c.print("// Assign to "+_fuir.clazzAsString(fclazz)+" outercl "+_fuir.clazzAsString(outercl)+" valuecl "+_fuir.clazzAsString(valuecl));
                       o = value == null
@@ -614,7 +431,7 @@ public class C extends Backend
                       var val = pop(stack, vc);
                       var t = new CIdent(_names.newTemp());
                       o = CStmnt.seq(CStmnt.lineComment("Box " + _fuir.clazzAsString(vc)),
-                                     CStmnt.decl(clazzTypeName(rc), t),
+                                     CStmnt.decl(_types.clazz(rc), t),
                                      t.assign(CExpr.call("malloc", new List<>(new CIdent(_names.struct(rc)).sizeOfType()))),
                                      t.deref().field("clazzId").assign(_names.clazzId(rc)),
                                      val == null ? CStmnt.EMPTY
@@ -635,7 +452,7 @@ public class C extends Backend
                   var tc = _fuir.callTargetClazz(cl, c, i);
                   var t = new CIdent(_names.newTemp());
                   var ti = stack.size() - ac - 1;
-                  var tt0 = clazzTypeName(tc);
+                  var tt0 = _types.clazz(tc);
                   _c.println(tt0 + " " + t.code()+ ";");
                   _c.print(t.assign(stack.get(ti).castTo(tt0)));
                   stack.set(ti, t);
@@ -656,11 +473,11 @@ public class C extends Backend
                     {
                       CExpr res = null;
                       var rt = _fuir.clazzResultClazz(cc0);
-                      if (hasData(rt) &&
+                      if (_types.hasData(rt) &&
                           (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
                         {
                           res = new CIdent(_names.newTemp());
-                          _c.println(clazzTypeName(rt) + " " + res.code() + ";");
+                          _c.println(_types.clazz(rt) + " " + res.code() + ";");
                         }
                       _c.println("switch (" + id.code() + ") {");
                       _c.indent();
@@ -675,7 +492,7 @@ public class C extends Backend
                           _c.indent();
                           _c.print(call(cl, c, i, cc, stack, _fuir.clazzOuterClazz(cc)));
                           var rt2 = _fuir.clazzResultClazz(cc); // NYI: Check why rt2 and rt can be different
-                          if (hasData(rt2))
+                          if (_types.hasData(rt2))
                             {
                               var rv = pop(stack, rt2);
                               if ((rt == rt2 || _fuir.clazzIsRef(rt) && _fuir.clazzIsRef(rt2)) && // NYI: Remove this conditions when ccs set no longer contains false entries
@@ -685,7 +502,7 @@ public class C extends Backend
                                     {
                                       if (_fuir.clazzIsRef(rt))
                                         {
-                                          rv = rv.castTo(clazzTypeName(rt));
+                                          rv = rv.castTo(_types.clazz(rt));
                                         }
                                       _c.print(res.assign(rv));
                                     }
@@ -798,10 +615,10 @@ public class C extends Backend
                               var fieldName = _names.fieldNameInClazz(vcl, field);
                               var f         = ccodeAccessField(cl, current(cl), fieldName);
                               var uniyon    = sub.field(_names.CHOICE_UNION_NAME);
-                              var entry     = _fuir.clazzIsRef(fclazz) ? uniyon.field(_names.CHOICE_REF_ENTRY_NAME).castTo(clazzTypeName(fclazz))
+                              var entry     = _fuir.clazzIsRef(fclazz) ? uniyon.field(_names.CHOICE_REF_ENTRY_NAME).castTo(_types.clazz(fclazz))
                                                                        : uniyon.field(_names.CHOICE_ENTRY_NAME + tags[0]);
-                              _c.print(!hasData(fclazz) ? CStmnt.lineComment("valueluess assignment to " + f.code())
-                                                        : f.assign(entry));
+                              _c.print(!_types.hasData(fclazz) ? CStmnt.lineComment("valueluess assignment to " + f.code())
+                                                               : f.assign(entry));
                             }
                           _c.println("{");
                           _c.indent();
@@ -903,11 +720,11 @@ public class C extends Backend
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = null;
           var call = CExpr.call(_names.function(cc), args(cl, c, i, cc, stack, ac, castTarget));
-          if (hasData(rt))
+          if (_types.hasData(rt))
             {
               var tmp = new CIdent(_names.newTemp());
               res = tmp;
-              result = CStmnt.seq(CStmnt.decl(clazzTypeName(rt), tmp),
+              result = CStmnt.seq(CStmnt.decl(_types.clazz(rt), tmp),
                                   res.assign(call));
               push(stack, rt, res);
             }
@@ -923,11 +740,11 @@ public class C extends Backend
           var tc = _fuir.callTargetClazz(cl, c, i);
           var t = pop(stack, tc);
           check
-            (t != null || !hasData(rt));
+            (t != null || !_types.hasData(rt));
           var vtc = _fuir.clazzAsValue(tc);
           var field = _names.fieldName(_fuir.callFieldOffset(vtc, c, i), cc);
-          CExpr res = isScalarType(vtc) ? _fuir.clazzIsRef(tc) ? t.deref().field("fields") : t :
-                      t != null         ? ccodeAccessField(tc, t, field) : null;
+          CExpr res = _types.isScalar(vtc) ? _fuir.clazzIsRef(tc) ? t.deref().field("fields") : t :
+                      t != null            ? ccodeAccessField(tc, t, field) : null;
           res = _fuir.clazzFieldIsAdrOfValue(cc) ? res.deref() : res;
           push(stack, rt, res);
           break;
@@ -965,9 +782,9 @@ public class C extends Backend
         var ac = _fuir.clazzArgClazz(cc, argCount-1);
         var a = pop(stack, ac);
         result = args(cl, c, i, cc, stack, argCount-1, castTarget);
-        if (hasData(ac))
+        if (_types.hasData(ac))
           {
-            a = _fuir.clazzIsRef(ac) ? a.castTo(clazzTypeName(ac)) : a;
+            a = _fuir.clazzIsRef(ac) ? a.castTo(_types.clazz(ac)) : a;
             result.add(a);
           }
       }
@@ -980,7 +797,7 @@ public class C extends Backend
         if (or != -1)
           {
             var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
-            var a3 = castTarget == -1 ? a2 : a2.castTo(clazzTypeName(castTarget));
+            var a3 = castTarget == -1 ? a2 : a2.castTo(_types.clazz(castTarget));
             result.add(a3);
           }
       }
@@ -997,16 +814,16 @@ public class C extends Backend
   private void cFunctionDecl(int cl)
   {
     var res = _fuir.clazzResultClazz(cl);
-    _c.print(!hasData(res)
+    _c.print(!_types.hasData(res)
              ? "void "
-             : clazzTypeName(res) + " ");
+             : _types.clazz(res) + " ");
     _c.print(_names.function(cl));
     _c.print("(");
     String comma = "";
     var or = _fuir.clazzOuterRef(cl);
     if (or != -1)
       {
-        _c.print(clazzFieldType(or));
+        _c.print(_types.clazzField(or));
         _c.print(" fzouter");
         comma = ", ";
       }
@@ -1014,10 +831,10 @@ public class C extends Backend
     for (int i = 0; i < ac; i++)
       {
         var at = _fuir.clazzArgClazz(cl, i);
-        if (hasData(at))
+        if (_types.hasData(at))
           {
             _c.print(comma);
-            var t = clazzTypeName(at);
+            var t = _types.clazz(at);
             _c.print(t + " arg" + i);
             comma = ", ";
           }
@@ -1108,9 +925,9 @@ public class C extends Backend
       {
         var af = _fuir.clazzArg(vcl, i);
         var at = _fuir.clazzArgClazz(vcl, i);
-        if (hasData(at))
+        if (_types.hasData(at))
           {
-            var target = isScalarType(vcl)
+            var target = _types.isScalar(vcl)
               ? cur
               : cur.field(_names.fieldNameInClazz(vcl, af));
             _c.print(target.assign(new CIdent("arg" + i)));
@@ -1132,7 +949,7 @@ public class C extends Backend
                      "Java Error: " + sw);
       }
     var res = _fuir.clazzResultClazz(cl);
-    if (hasData(res))
+    if (_types.hasData(res))
       {
         var rf = _fuir.clazzResultField(cl);
         _c.print(rf != -1

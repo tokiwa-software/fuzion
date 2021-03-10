@@ -147,6 +147,7 @@ JAVA_FILES_BE_C = \
           $(SRC)/dev/flang/be/c/CIdent.java \
           $(SRC)/dev/flang/be/c/CNames.java \
           $(SRC)/dev/flang/be/c/CStmnt.java \
+          $(SRC)/dev/flang/be/c/CTypes.java \
           $(SRC)/dev/flang/be/c/Intrinsics.java \
 
 JAVA_FILES_TOOLS = \
