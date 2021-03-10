@@ -1679,7 +1679,7 @@ op          : OPERATOR
     if (PRECONDITIONS) require
       (isOpPrefix());
 
-    Operator result = new Operator(posObject(), operator());
+    Operator result = new Operator(posObject(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
     match(Token.t_op, "op");
     return result;
   }

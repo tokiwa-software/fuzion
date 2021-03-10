@@ -46,11 +46,29 @@ public class Operator extends ANY
 
   public final String text;
 
+  public final boolean _whiteSpaceBefore, _whiteSpaceAfter;
+
 
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public Operator(SourcePosition pos, String text)
+  /**
+   * Constructor for operator
+   *
+   * @param pos where was this operatator found
+   *
+   * @param text the operator itself, e.g., ">>="
+   *
+   * @param whiteSpaceBefore is there any white space, comments, etc. between
+   * this operator and the previous symbol?
+   *
+   * @param whiteSpaceAfter is there any white space, comments, etc. between
+   * this operator and the next symbol?
+   */
+  public Operator(SourcePosition pos,
+                  String text,
+                  boolean whiteSpaceBefore,
+                  boolean whiteSpaceAfter)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -58,6 +76,8 @@ public class Operator extends ANY
 
     this.pos = pos;
     this.text = text;
+    this._whiteSpaceBefore = whiteSpaceBefore;
+    this._whiteSpaceAfter = whiteSpaceAfter;
   }
 
 
