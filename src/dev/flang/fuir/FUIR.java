@@ -92,7 +92,6 @@ public class FUIR extends ANY
     Box,
     Call,
     Current,
-    If,
     boolConst,
     i32Const,
     u32Const,
@@ -902,9 +901,10 @@ public class FUIR extends ANY
       {
         result = ExprKind.Current;
       }
-    else if (e instanceof If)
+    else if (e instanceof If    ||
+             e instanceof Match    )
       {
-        result = ExprKind.If;
+        result = ExprKind.Match;
       }
     else if (e instanceof BoolConst)
       {
@@ -923,10 +923,6 @@ public class FUIR extends ANY
     else if (e instanceof StrConst)
       {
         result = ExprKind.strConst;
-      }
-    else if (e instanceof Match)
-      {
-        result = ExprKind.Match;
       }
     else
       {
@@ -1258,8 +1254,10 @@ public class FUIR extends ANY
        codeAt(c, ix) == ExprKind.Match);
 
     var cc = _clazzIds.get(cl);
-    var match = (Match) _codeIds.get(c).get(ix);
-    var ss = cc.getRuntimeClazz(match.runtimeClazzId_);
+    var s = _codeIds.get(c).get(ix);
+    Clazz ss = s instanceof If
+      ? Clazzes.bool.get()
+      : cc.getRuntimeClazz(((Match) s).runtimeClazzId_);
     return _clazzIds.get(ss);
   }
 
@@ -1280,8 +1278,14 @@ public class FUIR extends ANY
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Match);
 
-    var match = (Match) _codeIds.get(c).get(ix);
-    return match.cases.size();
+    var s = _codeIds.get(c).get(ix);
+    int result = 2; // two cases for If
+    if (s instanceof Match)
+      {
+        var match = (Match) s;
+        result = match.cases.size();
+      }
+    return result;
   }
 
 
@@ -1308,11 +1312,17 @@ public class FUIR extends ANY
        0 <= cix && cix <= matchCaseCount(c, ix));
 
     var cc = _clazzIds.get(cl);
-    var match = (Match) _codeIds.get(c).get(ix);
-    var mc = match.cases.get(cix);
-    var f = mc.field;
-    var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc.runtimeClazzId_) : null;
-    return fc != null ? _clazzIds.get(fc) : -1;
+    var s = _codeIds.get(c).get(ix);
+    int result = -1; // no field for If
+    if (s instanceof Match)
+      {
+        var match = (Match) s;
+        var mc = match.cases.get(cix);
+        var f = mc.field;
+        var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc.runtimeClazzId_) : null;
+        result = fc != null ? _clazzIds.get(fc) : -1;
+      }
+    return result;
   }
 
 
@@ -1339,30 +1349,39 @@ public class FUIR extends ANY
        0 <= cix && cix <= matchCaseCount(c, ix));
 
     var cc = _clazzIds.get(cl);
-    var match = (Match) _codeIds.get(c).get(ix);
-    var ss = cc.getRuntimeClazz(match.runtimeClazzId_);
-    var mc = match.cases.get(cix);
-    var f = mc.field;
-    var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc.runtimeClazzId_) : null;
-    int nt = f != null ? 1 : mc.types.size();
-    var resultL = new List<Integer>();
-    int tag = 0;
-    for (var cg : ss.choiceGenerics())
+    var s = _codeIds.get(c).get(ix);
+    int[] result;
+    if (s instanceof If)
       {
-        for (int tix = 0; tix < nt; tix++)
-          {
-            var rc = fc != null ? fc.resultClazz() : cc.getRuntimeClazz(mc.runtimeClazzId_ + tix);
-            if (rc.isAssignableFrom(cg))
-              {
-                resultL.add(tag);
-              }
-          }
-        tag++;
+        result = new int[] { cix == 0 ? 1 : 0 };
       }
-    var result = new int[resultL.size()];
-    for (int i = 0; i < result.length; i++)
+    else
       {
-        result[i] = resultL.get(i);
+        var match = (Match) s;
+        var ss = cc.getRuntimeClazz(match.runtimeClazzId_);
+        var mc = match.cases.get(cix);
+        var f = mc.field;
+        var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc.runtimeClazzId_) : null;
+        int nt = f != null ? 1 : mc.types.size();
+        var resultL = new List<Integer>();
+        int tag = 0;
+        for (var cg : ss.choiceGenerics())
+          {
+            for (int tix = 0; tix < nt; tix++)
+              {
+                var rc = fc != null ? fc.resultClazz() : cc.getRuntimeClazz(mc.runtimeClazzId_ + tix);
+                if (rc.isAssignableFrom(cg))
+                  {
+                    resultL.add(tag);
+                  }
+              }
+            tag++;
+          }
+        result = new int[resultL.size()];
+        for (int i = 0; i < result.length; i++)
+          {
+            result[i] = resultL.get(i);
+          }
       }
     return result;
   }

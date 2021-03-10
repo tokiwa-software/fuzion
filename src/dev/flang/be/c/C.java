@@ -535,26 +535,6 @@ public class C extends Backend
               push(stack, cl, current(cl));
               break;
             }
-          case If:
-            {
-              var cond = stack.pop();
-              var block     = _fuir.i32Const(c, i + 1);
-              var elseBlock = _fuir.i32Const(c, i + 2);
-              var stack2 = stack;
-              i = i + 2;
-              _c.println("if (" + cond.field(_names.TAG_NAME).code() + " != 0) {");
-              _c.indent();
-              stack = (Stack<CExpr>) stack2.clone();
-              createCode(cl, stack, block);
-              _c.unindent();
-              _c.println("} else {");
-              _c.indent();
-              stack = stack2;
-              createCode(cl, stack, elseBlock);
-              _c.unindent();
-              _c.println("}");
-              break;
-            }
           case boolConst:
             {
               var bc = _fuir.boolConst(c, i);
