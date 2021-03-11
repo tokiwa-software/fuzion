@@ -431,9 +431,6 @@ public class C extends ANY
                       var tt = ccs[cci  ];
                       var cc = ccs[cci+1];
                       stack =  (Stack<CExpr>) stack2.clone();
-                      _c.println("// Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":");
-                      _c.println("case " + _names.clazzId(tt).code() + ": {");
-                      _c.indent();
                       var co = call(cl, c, i, cc, stack, _fuir.clazzOuterClazz(cc));
                       var cr = CStmnt.EMPTY;
                       var rt2 = _fuir.clazzResultClazz(cc); // NYI: Check why rt2 and rt can be different
@@ -453,12 +450,18 @@ public class C extends ANY
                                 }
                             }
                         }
-                      var bo = CStmnt.seq(co,
-                                          cr,
-                                          CStmnt.BREAK);
-                      _c.print(bo);
-                      _c.unindent();
-                      _c.println("}");
+                      if (co != CStmnt.EMPTY || cr != CStmnt.EMPTY)
+                        {
+                          _c.println("// Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":");
+                          _c.println("case " + _names.clazzId(tt).code() + ": {");
+                          _c.indent();
+                          var bo = CStmnt.seq(co,
+                                              cr,
+                                              CStmnt.BREAK);
+                          _c.print(bo);
+                          _c.unindent();
+                          _c.println("}");
+                        }
                     }
                   _c.println("default: { fprintf(stderr,\"*** %s:%d unhandled dynamic call target %d in call to "+_fuir.clazzAsString(cc0)+" within "+_fuir.clazzAsString(cl)+"\\n\", __FILE__, __LINE__, " + id.code() + "); exit(1); }");
                   _c.unindent();
