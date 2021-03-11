@@ -271,283 +271,302 @@ public class C extends ANY
    */
   void createCode(int cl, Stack<CExpr> stack, int c)
   {
-    for (int i = 0; _fuir.withinCode(c, i); i++)
+    for (int i = 0; _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
       {
         var s = _fuir.codeAt(c, i);
         _c.print(CStmnt.lineComment("Code for statement " + s));
-        CStmnt o = CStmnt.EMPTY;
-        switch (s)
-          {
-          case AdrToValue:
-            { // dereference an outer reference
-              if (false) // NYI: Check what AdrToValue is applied to empty stack and why it can be a NOP for the C backend
-                {
-                  var a = stack.pop();
-                  var v = a;  /* a.deref(); --  NYI: AdrToValue is NOP for now since outer refs as values not supported in C backend yet */
-                  stack.push(v);
-                }
-              break;
-            }
-          case Assign:
-            {
-              var field = _fuir.assignedField(cl, c, i);  // field we are assigning to
-              if (field != -1)
-                {
-                  var outercl = _fuir.assignOuterClazz(cl, c, i);  // static clazz of outer
-                  var valuecl = _fuir.assignValueClazz(cl, c, i);  // static clazz of value
-                  var fclazz  = _fuir.clazzResultClazz(field);     // static clazz of assigned field
-                  var outer   = pop(stack, outercl);                 // instance containing assigned field
-                  if (_fuir.clazzIsChoice(fclazz) &&
-                      fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
-                      )
-                    {
-                      check
-                        (!_fuir.clazzIsOuterRef(field)); /* the interprer checks for this separately, just ot be sure we do it as well */
-
-                      var value = pop(stack, valuecl);                // value assigned to field
-                      int tagNum = _fuir.clazzChoiceTag(fclazz, valuecl);
-                      var f = accessField(outercl, outer, field);
-                      var tag = f.field(_names.TAG_NAME);
-                      var uniyon = f.field(_names.CHOICE_UNION_NAME);
-                      var entry = uniyon.field(_fuir.clazzIsRef(valuecl) ? _names.CHOICE_REF_ENTRY_NAME
-                                                                         : _names.CHOICE_ENTRY_NAME + tagNum);
-                      if (_fuir.clazzIsChoiceOfOnlyRefs(fclazz) && !_fuir.clazzIsRef(valuecl))
-                        { // replace unit-type values by 0 or an odd value cast to ref Object
-                          check
-                            (value == null); // value must be a unit type
-                          value = CExpr.int32const(tagNum == 0 ? 0 : tagNum*2 - 1).castTo(_names.struct(_fuir.clazzObject()) + "*");
-                        }
-                      o = CStmnt.seq(CStmnt.lineComment("Assign to choice field type " + _fuir.clazzAsString(fclazz) + " static value type " + _fuir.clazzAsString(valuecl)),
-                                     _fuir.clazzIsChoiceOfOnlyRefs(fclazz) ? CStmnt.EMPTY : tag.assign(CExpr.int32const(tagNum)),
-                                     value == null
-                                     ? CStmnt.lineComment("valueluess assignment to " + entry.code())
-                                     : entry.assign(value));
-                    }
-                  else
-                    {
-                      var value = pop(stack, fclazz);                // value assigned to field
-                      if (_fuir.clazzIsRef(fclazz))
-                        {
-                          value = value.castTo(_types.clazz(fclazz));
-                        }
-                      // _c.print("// Assign to "+_fuir.clazzAsString(fclazz)+" outercl "+_fuir.clazzAsString(outercl)+" valuecl "+_fuir.clazzAsString(valuecl));
-                      o = value == null
-                        ? CStmnt.lineComment("valueluess assignment to " + outer)
-                        : accessField(outercl, outer, field).assign(value);
-                    }
-                }
-              break;
-            }
-          case Box:
-            {
-              var vc = _fuir.boxValueClazz(cl, c, i);
-              var rc = _fuir.boxResultClazz(cl, c, i);
-              if (_fuir.clazzIsRef(vc))
-                { // vc's type is a generic argument whose actual type does not need
-                  // boxing
-                  o = CStmnt.lineComment("Box " + _fuir.clazzAsString(vc) + " is NOP, clazz is already a ref");
-                }
-              else
-                {
-                  var val = pop(stack, vc);
-                  var t = new CIdent(_names.newTemp());
-                  o = CStmnt.seq(CStmnt.lineComment("Box " + _fuir.clazzAsString(vc)),
-                                 CStmnt.decl(_types.clazz(rc), t),
-                                 t.assign(CExpr.call("malloc", new List<>(new CIdent(_names.struct(rc)).sizeOfType()))),
-                                 t.deref().field("clazzId").assign(_names.clazzId(rc)),
-                                 val == null ? CStmnt.EMPTY
-                                 : t.deref().field(_names.FIELDS_IN_REF_CLAZZ).assign(val));
-                  push(stack, rc, t);
-                }
-              break;
-            }
-          case Call:
-            {
-              if (_fuir.callIsDynamic(cl, c, i))
-                {
-                  var cc0 = _fuir.callCalledClazz  (cl, c, i);
-                  _c.println("// Dynamic call to " + _fuir.clazzAsString(cc0));
-                  var ccs = _fuir.callCalledClazzes(cl, c, i);
-                  var ac = _fuir.callArgCount(c, i);
-                  var tc = _fuir.callTargetClazz(cl, c, i);
-                  var t = new CIdent(_names.newTemp());
-                  var ti = stack.size() - ac - 1;
-                  var tt0 = _types.clazz(tc);
-                  _c.println(tt0 + " " + t.code()+ ";");
-                  _c.print(t.assign(stack.get(ti).castTo(tt0)));
-                  stack.set(ti, t);
-                  var id = t.deref().field("clazzId");
-                  if (ccs.length == 2)
-                    {
-                      var tt = ccs[0];
-                      var cc = ccs[1];
-                      _c.println("// Dynamic call to " + _fuir.clazzAsString(cc0) + " with exactly one target");
-                      _c.print(CExpr.call("assert",new List<>(CExpr.eq(id, _names.clazzId(tt))))); // <-- perfect reason to make () optional
-                      _c.print(call(cl, c, i, cc, stack, _fuir.clazzOuterClazz(cc)));
-                    }
-                  else if (ccs.length == 0)
-                    {
-                      Errors.error("No call target found.",
-                                   "While creating code for " + _fuir.clazzAsString(cl) + "\n" +
-                                   "Attempting call to " + _fuir.clazzAsString(cc0));
-                    }
-                  else
-                    {
-                      CExpr res = null;
-                      var rt = _fuir.clazzResultClazz(cc0);
-                      if (_types.hasData(rt) &&
-                          (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
-                        {
-                          res = new CIdent(_names.newTemp());
-                          _c.println(_types.clazz(rt) + " " + res.code() + ";");
-                        }
-                      _c.println("switch (" + id.code() + ") {");
-                      _c.indent();
-                      var stack2 = stack;
-                      for (var cci = 0; cci < ccs.length; cci += 2)
-                        {
-                          var tt = ccs[cci  ];
-                          var cc = ccs[cci+1];
-                          stack =  (Stack<CExpr>) stack2.clone();
-                          _c.println("// Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":");
-                          _c.println("case " + _names.clazzId(tt).code() + ": {");
-                          _c.indent();
-                          _c.print(call(cl, c, i, cc, stack, _fuir.clazzOuterClazz(cc)));
-                          var rt2 = _fuir.clazzResultClazz(cc); // NYI: Check why rt2 and rt can be different
-                          if (_types.hasData(rt2))
-                            {
-                              var rv = pop(stack, rt2);
-                              if ((rt == rt2 || _fuir.clazzIsRef(rt) && _fuir.clazzIsRef(rt2)) && // NYI: Remove this conditions when ccs set no longer contains false entries
-                                  rv != _names.CDUMMY)
-                                {
-                                  if (res != null)
-                                    {
-                                      if (_fuir.clazzIsRef(rt))
-                                        {
-                                          rv = rv.castTo(_types.clazz(rt));
-                                        }
-                                      _c.print(res.assign(rv));
-                                    }
-                                }
-                            }
-                          _c.print(CStmnt.BREAK);
-                          _c.unindent();
-                          _c.println("}");
-                        }
-                      _c.println("default: { fprintf(stderr,\"*** %s:%d unhandled dynamic call target %d in call to "+_fuir.clazzAsString(cc0)+" within "+_fuir.clazzAsString(cl)+"\\n\", __FILE__, __LINE__, " + id.code() + "); exit(1); }");
-                      _c.unindent();
-                      _c.println("}");
-                      stack = stack2;
-                      args(cl, c, i, cc0, stack, _fuir.clazzArgCount(cc0), _fuir.clazzOuterClazz(cc0));
-                      if (res != null)
-                        {
-                          push(stack, rt, res);
-                        }
-                    }
-                }
-              else
-                {
-                  var cc = _fuir.callCalledClazz(cl, c, i);
-                  _c.print(call(cl, c, i, cc, stack, -1));
-                }
-              break;
-            }
-          case Current:
-            {
-              push(stack, cl, current(cl));
-              break;
-            }
-          case boolConst:
-            {
-              var bc = _fuir.boolConst(c, i);
-              stack.push(bc ? _names.FZ_TRUE
-                            : _names.FZ_FALSE);
-              break;
-            }
-          case i32Const: { var ic = _fuir.i32Const(c, i); stack.push(CExpr. int32const(ic)); break; }
-          case u32Const: { var ic = _fuir.u32Const(c, i); stack.push(CExpr.uint32const(ic)); break; }
-          case i64Const: { var ic = _fuir.i64Const(c, i); stack.push(CExpr. int64const(ic)); break; }
-          case u64Const: { var ic = _fuir.u64Const(c, i); stack.push(CExpr.uint64const(ic)); break; }
-          case strConst:
-            {
-              var bytes = _fuir.strConst(c, i);
-              var tmp = _names.newTemp();
-              o = constString(bytes, tmp);
-              stack.push(new CIdent(tmp));
-              break;
-            }
-          case Match:
-            {
-              var staticSubjectClazz = _fuir.matchStaticSubject(cl, c, i);
-              var sub = pop(stack, staticSubjectClazz);
-              if (_fuir.clazzIsChoiceOfOnlyRefs(staticSubjectClazz))
-                {
-                  o = CStmnt.seq(CStmnt.lineComment("NYI: match of only refs!"),
-                                 CExpr.call("assert", new List<>(CExpr.int32const(0))).comment("match of only refs!"));
-              /* from Interpreter:
-
-                refVal = getChoiceRefVal(sf, staticSubjectClazz, sub);
-                tag = ChoiceIdAsRef.get(staticSubjectClazz, refVal);
-              */
-                }
-              else
-                {
-                  var tag = sub.field(_names.TAG_NAME);
-                  _c.println("switch ("+tag.code()+") {");
-                  _c.indent();
-                  var stack2 = stack;
-                  var mcc = _fuir.matchCaseCount(c, i);
-                  for (var mc = 0; mc < mcc; mc++)
-                    {
-                      var block = _fuir.i32Const(c, i + 1 + mc);
-                      var field = _fuir.matchCaseField(cl, c, i, mc);
-                      var tags  = _fuir.matchCaseTags(cl, c, i, mc);
-                      if (tags.length > 0)
-                        {
-                          for (var tagNum : tags)
-                            {
-                              _c.print("case " + tagNum + ": ");
-                            }
-                          if (field != -1)
-                            {
-                              check
-                                (tags.length == 1);
-                              var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
-                              var f      = accessField(cl, current(cl), field);
-                              var uniyon = sub.field(_names.CHOICE_UNION_NAME);
-                              var entry  = _fuir.clazzIsRef(fclazz) ? uniyon.field(_names.CHOICE_REF_ENTRY_NAME).castTo(_types.clazz(fclazz))
-                                                                    : uniyon.field(_names.CHOICE_ENTRY_NAME + tags[0]);
-                              _c.print(!_types.hasData(fclazz) ? CStmnt.lineComment("valueluess assignment to " + f.code())
-                                                               : f.assign(entry));
-                            }
-                          _c.println("{");
-                          _c.indent();
-                          stack = (Stack<CExpr>) stack2.clone();
-                          createCode(cl, stack, block);
-                          _c.println("break;");
-                          _c.unindent();
-                          _c.println("}");
-                        }
-                    }
-                  _c.unindent();
-                  _c.println("}");
-                  i = i + mcc;
-                }
-              break;
-            }
-          case WipeStack:
-            {
-              stack.clear();
-              break;
-            }
-          default:
-            {
-              System.err.println("*** error: C backend does not handle statments of type " + s);
-            }
-          }
-        _c.print(o);
+        _c.print(createCode(cl, stack, c, i, s));
         if (SHOW_STACK_AFTER_STMNT) System.out.println("After " + s +" in "+_fuir.clazzAsString(cl)+": "+stack);
       }
+  }
+
+
+  /**
+   * Create C code for one statement in a code block c of clazz cl with given
+   * stack contents.  Write code to _c.
+   *
+   * @param cl clazz id
+   *
+   * @param stack the stack containing the current arguments waiting to be used
+   *
+   * @param c the code block to compile
+   *
+   * @param i the index within c
+   *
+   * @param s the FUIR.ExprKind to compile
+   */
+  CStmnt createCode(int cl, Stack<CExpr> stack, int c, int i, FUIR.ExprKind s)
+  {
+    CStmnt o = CStmnt.EMPTY;
+    switch (s)
+      {
+      case AdrToValue:
+        { // dereference an outer reference
+          if (false) // NYI: Check what AdrToValue is applied to empty stack and why it can be a NOP for the C backend
+            {
+              var a = stack.pop();
+              var v = a;  /* a.deref(); --  NYI: AdrToValue is NOP for now since outer refs as values not supported in C backend yet */
+              stack.push(v);
+            }
+          break;
+        }
+      case Assign:
+        {
+          var field = _fuir.assignedField(cl, c, i);  // field we are assigning to
+          if (field != -1)
+            {
+              var outercl = _fuir.assignOuterClazz(cl, c, i);  // static clazz of outer
+              var valuecl = _fuir.assignValueClazz(cl, c, i);  // static clazz of value
+              var fclazz  = _fuir.clazzResultClazz(field);     // static clazz of assigned field
+              var outer   = pop(stack, outercl);                 // instance containing assigned field
+              if (_fuir.clazzIsChoice(fclazz) &&
+                  fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
+                  )
+                {
+                  check
+                    (!_fuir.clazzIsOuterRef(field)); /* the interprer checks for this separately, just ot be sure we do it as well */
+
+                  var value = pop(stack, valuecl);                // value assigned to field
+                  int tagNum = _fuir.clazzChoiceTag(fclazz, valuecl);
+                  var f = accessField(outercl, outer, field);
+                  var tag = f.field(_names.TAG_NAME);
+                  var uniyon = f.field(_names.CHOICE_UNION_NAME);
+                  var entry = uniyon.field(_fuir.clazzIsRef(valuecl) ? _names.CHOICE_REF_ENTRY_NAME
+                                           : _names.CHOICE_ENTRY_NAME + tagNum);
+                  if (_fuir.clazzIsChoiceOfOnlyRefs(fclazz) && !_fuir.clazzIsRef(valuecl))
+                    { // replace unit-type values by 0 or an odd value cast to ref Object
+                      check
+                        (value == null); // value must be a unit type
+                      value = CExpr.int32const(tagNum == 0 ? 0 : tagNum*2 - 1).castTo(_names.struct(_fuir.clazzObject()) + "*");
+                    }
+                  o = CStmnt.seq(CStmnt.lineComment("Assign to choice field type " + _fuir.clazzAsString(fclazz) + " static value type " + _fuir.clazzAsString(valuecl)),
+                                 _fuir.clazzIsChoiceOfOnlyRefs(fclazz) ? CStmnt.EMPTY : tag.assign(CExpr.int32const(tagNum)),
+                                 value == null
+                                 ? CStmnt.lineComment("valueluess assignment to " + entry.code())
+                                 : entry.assign(value));
+                }
+              else
+                {
+                  var value = pop(stack, fclazz);                // value assigned to field
+                  if (_fuir.clazzIsRef(fclazz))
+                    {
+                      value = value.castTo(_types.clazz(fclazz));
+                    }
+                  // _c.print("// Assign to "+_fuir.clazzAsString(fclazz)+" outercl "+_fuir.clazzAsString(outercl)+" valuecl "+_fuir.clazzAsString(valuecl));
+                  o = value == null
+                    ? CStmnt.lineComment("valueluess assignment to " + outer)
+                    : accessField(outercl, outer, field).assign(value);
+                }
+            }
+          break;
+        }
+      case Box:
+        {
+          var vc = _fuir.boxValueClazz(cl, c, i);
+          var rc = _fuir.boxResultClazz(cl, c, i);
+          if (_fuir.clazzIsRef(vc))
+            { // vc's type is a generic argument whose actual type does not need
+              // boxing
+              o = CStmnt.lineComment("Box " + _fuir.clazzAsString(vc) + " is NOP, clazz is already a ref");
+            }
+          else
+            {
+              var val = pop(stack, vc);
+              var t = new CIdent(_names.newTemp());
+              o = CStmnt.seq(CStmnt.lineComment("Box " + _fuir.clazzAsString(vc)),
+                             CStmnt.decl(_types.clazz(rc), t),
+                             t.assign(CExpr.call("malloc", new List<>(new CIdent(_names.struct(rc)).sizeOfType()))),
+                             t.deref().field("clazzId").assign(_names.clazzId(rc)),
+                             val == null ? CStmnt.EMPTY
+                             : t.deref().field(_names.FIELDS_IN_REF_CLAZZ).assign(val));
+              push(stack, rc, t);
+            }
+          break;
+        }
+      case Call:
+        {
+          if (_fuir.callIsDynamic(cl, c, i))
+            {
+              var cc0 = _fuir.callCalledClazz  (cl, c, i);
+              _c.println("// Dynamic call to " + _fuir.clazzAsString(cc0));
+              var ccs = _fuir.callCalledClazzes(cl, c, i);
+              var ac = _fuir.callArgCount(c, i);
+              var tc = _fuir.callTargetClazz(cl, c, i);
+              var t = new CIdent(_names.newTemp());
+              var ti = stack.size() - ac - 1;
+              var tt0 = _types.clazz(tc);
+              _c.println(tt0 + " " + t.code()+ ";");
+              _c.print(t.assign(stack.get(ti).castTo(tt0)));
+              stack.set(ti, t);
+              var id = t.deref().field("clazzId");
+              if (ccs.length == 2)
+                {
+                  var tt = ccs[0];
+                  var cc = ccs[1];
+                  _c.println("// Dynamic call to " + _fuir.clazzAsString(cc0) + " with exactly one target");
+                  _c.print(CExpr.call("assert",new List<>(CExpr.eq(id, _names.clazzId(tt))))); // <-- perfect reason to make () optional
+                  _c.print(call(cl, c, i, cc, stack, _fuir.clazzOuterClazz(cc)));
+                }
+              else if (ccs.length == 0)
+                {
+                  Errors.error("No call target found.",
+                               "While creating code for " + _fuir.clazzAsString(cl) + "\n" +
+                               "Attempting call to " + _fuir.clazzAsString(cc0));
+                }
+              else
+                {
+                  CExpr res = null;
+                  var rt = _fuir.clazzResultClazz(cc0);
+                  if (_types.hasData(rt) &&
+                      (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
+                    {
+                      res = new CIdent(_names.newTemp());
+                      _c.println(_types.clazz(rt) + " " + res.code() + ";");
+                    }
+                  _c.println("switch (" + id.code() + ") {");
+                  _c.indent();
+                  var stack2 = stack;
+                  for (var cci = 0; cci < ccs.length; cci += 2)
+                    {
+                      var tt = ccs[cci  ];
+                      var cc = ccs[cci+1];
+                      stack =  (Stack<CExpr>) stack2.clone();
+                      _c.println("// Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":");
+                      _c.println("case " + _names.clazzId(tt).code() + ": {");
+                      _c.indent();
+                      _c.print(call(cl, c, i, cc, stack, _fuir.clazzOuterClazz(cc)));
+                      var rt2 = _fuir.clazzResultClazz(cc); // NYI: Check why rt2 and rt can be different
+                      if (_types.hasData(rt2))
+                        {
+                          var rv = pop(stack, rt2);
+                          if ((rt == rt2 || _fuir.clazzIsRef(rt) && _fuir.clazzIsRef(rt2)) && // NYI: Remove this conditions when ccs set no longer contains false entries
+                              rv != _names.CDUMMY)
+                            {
+                              if (res != null)
+                                {
+                                  if (_fuir.clazzIsRef(rt))
+                                    {
+                                      rv = rv.castTo(_types.clazz(rt));
+                                    }
+                                  _c.print(res.assign(rv));
+                                }
+                            }
+                        }
+                      _c.print(CStmnt.BREAK);
+                      _c.unindent();
+                      _c.println("}");
+                    }
+                  _c.println("default: { fprintf(stderr,\"*** %s:%d unhandled dynamic call target %d in call to "+_fuir.clazzAsString(cc0)+" within "+_fuir.clazzAsString(cl)+"\\n\", __FILE__, __LINE__, " + id.code() + "); exit(1); }");
+                  _c.unindent();
+                  _c.println("}");
+                  stack = stack2;
+                  args(cl, c, i, cc0, stack, _fuir.clazzArgCount(cc0), _fuir.clazzOuterClazz(cc0));
+                  if (res != null)
+                    {
+                      push(stack, rt, res);
+                    }
+                }
+            }
+          else
+            {
+              var cc = _fuir.callCalledClazz(cl, c, i);
+              _c.print(call(cl, c, i, cc, stack, -1));
+            }
+          break;
+        }
+      case Current:
+        {
+          push(stack, cl, current(cl));
+          break;
+        }
+      case boolConst:
+        {
+          var bc = _fuir.boolConst(c, i);
+          stack.push(bc ? _names.FZ_TRUE
+                     : _names.FZ_FALSE);
+          break;
+        }
+      case i32Const: { var ic = _fuir.i32Const(c, i); stack.push(CExpr. int32const(ic)); break; }
+      case u32Const: { var ic = _fuir.u32Const(c, i); stack.push(CExpr.uint32const(ic)); break; }
+      case i64Const: { var ic = _fuir.i64Const(c, i); stack.push(CExpr. int64const(ic)); break; }
+      case u64Const: { var ic = _fuir.u64Const(c, i); stack.push(CExpr.uint64const(ic)); break; }
+      case strConst:
+        {
+          var bytes = _fuir.strConst(c, i);
+          var tmp = _names.newTemp();
+          o = constString(bytes, tmp);
+          stack.push(new CIdent(tmp));
+          break;
+        }
+      case Match:
+        {
+          var staticSubjectClazz = _fuir.matchStaticSubject(cl, c, i);
+          var sub = pop(stack, staticSubjectClazz);
+          if (_fuir.clazzIsChoiceOfOnlyRefs(staticSubjectClazz))
+            {
+              o = CStmnt.seq(CStmnt.lineComment("NYI: match of only refs!"),
+                             CExpr.call("assert", new List<>(CExpr.int32const(0))).comment("match of only refs!"));
+              /* from Interpreter:
+
+                 refVal = getChoiceRefVal(sf, staticSubjectClazz, sub);
+                 tag = ChoiceIdAsRef.get(staticSubjectClazz, refVal);
+              */
+            }
+          else
+            {
+              var tag = sub.field(_names.TAG_NAME);
+              _c.println("switch ("+tag.code()+") {");
+              _c.indent();
+              var stack2 = stack;
+              var mcc = _fuir.matchCaseCount(c, i);
+              for (var mc = 0; mc < mcc; mc++)
+                {
+                  var block = _fuir.i32Const(c, i + 1 + mc);
+                  var field = _fuir.matchCaseField(cl, c, i, mc);
+                  var tags  = _fuir.matchCaseTags(cl, c, i, mc);
+                  if (tags.length > 0)
+                    {
+                      for (var tagNum : tags)
+                        {
+                          _c.print("case " + tagNum + ": ");
+                        }
+                      if (field != -1)
+                        {
+                          check
+                            (tags.length == 1);
+                          var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
+                          var f      = accessField(cl, current(cl), field);
+                          var uniyon = sub.field(_names.CHOICE_UNION_NAME);
+                          var entry  = _fuir.clazzIsRef(fclazz) ? uniyon.field(_names.CHOICE_REF_ENTRY_NAME).castTo(_types.clazz(fclazz))
+                            : uniyon.field(_names.CHOICE_ENTRY_NAME + tags[0]);
+                          _c.print(!_types.hasData(fclazz) ? CStmnt.lineComment("valueluess assignment to " + f.code())
+                                   : f.assign(entry));
+                        }
+                      _c.println("{");
+                      _c.indent();
+                      stack = (Stack<CExpr>) stack2.clone();
+                      createCode(cl, stack, block);
+                      _c.println("break;");
+                      _c.unindent();
+                      _c.println("}");
+                    }
+                }
+              _c.unindent();
+              _c.println("}");
+            }
+          break;
+        }
+      case WipeStack:
+        {
+          stack.clear();
+          break;
+        }
+      default:
+        {
+          System.err.println("*** error: C backend does not handle statments of type " + s);
+        }
+      }
+    return o;
   }
 
 

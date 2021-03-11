@@ -926,6 +926,19 @@ public class FUIR extends ANY
     return result;
   }
 
+
+  public int codeSizeAt(int c, int ix)
+  {
+    int result = 1;
+    var s = codeAt(c, ix);
+    if (s == FUIR.ExprKind.Match)
+      {
+        result = result + matchCaseCount(c, ix);
+      }
+    return result;
+  }
+
+
   /**
    * Get the clazz field that is assigned to with the given assignment
    *
