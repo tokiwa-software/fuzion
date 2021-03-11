@@ -132,14 +132,6 @@ public class FUIR extends ANY
   public FUIR(Clazz main)
   {
     _main = main;
-  }
-
-
-  /*-----------------------------  methods  -----------------------------*/
-
-
-  public void findAllClasses()
-  {
     Clazzes.findAllClasses(new Backend()
       {
         public BackendCallable callable(boolean dynamic,
@@ -155,6 +147,9 @@ public class FUIR extends ANY
       }
       , main());
   }
+
+
+  /*-----------------------------  methods  -----------------------------*/
 
 
   public Clazz main()

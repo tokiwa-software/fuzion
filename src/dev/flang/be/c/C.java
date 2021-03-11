@@ -131,7 +131,6 @@ public class C extends ANY
     _fuir = fuir;
     _names = new CNames(fuir);
     _types = new CTypes(_fuir, _names);
-    fuir.findAllClasses();
     Errors.showAndExit();
   }
 
