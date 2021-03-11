@@ -1158,22 +1158,9 @@ public class FUIR extends ANY
   }
 
 
-  public int callFieldOffset(int cl, int c, int ix)
+  public int fieldIndex(int field)
   {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call);
-
-    var call = (Call) _codeIds.get(c).get(ix);
-    var outerClazz = _clazzIds.get(cl);
-    var f = call.calledFeature();
-    var fs = outerClazz.fields();
-    int i;
-    for (i = 0; fs[i].feature() != f; i++)
-      {
-      }
-    return i;
+    return _clazzIds.get(field).fieldIndex();
   }
 
   public boolean boolConst(int c, int ix)

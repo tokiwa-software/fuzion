@@ -666,7 +666,7 @@ public class C extends Backend
           check
             (t != null || !_types.hasData(rt));
           var vtc = _fuir.clazzAsValue(tc);
-          var field = _names.fieldName(_fuir.callFieldOffset(vtc, c, i), cc);
+          var field = _names.fieldName(_fuir.fieldIndex(cc), cc);
           CExpr res = _types.isScalar(vtc) ? _fuir.clazzIsRef(tc) ? t.deref().field("fields") : t :
                       t != null            ? ccodeAccessField(tc, t, field) : null;
           res = _fuir.clazzFieldIsAdrOfValue(cc) ? res.deref() : res;
