@@ -400,78 +400,61 @@ public class C extends ANY
               _c.print(t.assign(stack.get(ti).castTo(tt0)));
               stack.set(ti, t);
               var id = t.deref().field("clazzId");
-              if (ccs.length == 2)
-                {
-                  var tt = ccs[0];
-                  var cc = ccs[1];
-                  o = CStmnt.seq(CStmnt.lineComment("Dynamic call to " + _fuir.clazzAsString(cc0) + " with exactly one target"),
-                                 CExpr.call("assert",new List<>(CExpr.eq(id, _names.clazzId(tt)))),
-                                 call(cl, c, i, cc, stack, _fuir.clazzOuterClazz(cc)));
-                }
-              else if (ccs.length == 0)
+              if (ccs.length == 0)
                 {
                   Errors.error("No call target found.",
                                "While creating code for " + _fuir.clazzAsString(cl) + "\n" +
                                "Attempting call to " + _fuir.clazzAsString(cc0));
                 }
-              else
+              CExpr res = null;
+              if (_types.hasData(rt) &&
+                  (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
                 {
-                  CExpr res = null;
-                  if (_types.hasData(rt) &&
-                      (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
-                    {
-                      res = new CIdent(_names.newTemp());
-                      _c.println(_types.clazzField(cc0) + " " + res.code() + ";");
-                    }
+                  res = new CIdent(_names.newTemp());
+                  _c.println(_types.clazzField(cc0) + " " + res.code() + ";");
+                }
+              if (ccs.length > 2)
+                {
                   _c.println("switch (" + id.code() + ") {");
                   _c.indent();
-                  var stack2 = stack;
-                  for (var cci = 0; cci < ccs.length; cci += 2)
+                }
+              for (var cci = 0; cci < ccs.length; cci += 2)
+                {
+                  var tt = ccs[cci  ];
+                  var cc = ccs[cci+1];
+                  var stk = (Stack<CExpr>) stack.clone();
+                  var co = call(cl, c, i, cc, stk, _fuir.clazzOuterClazz(cc));
+                  var rv = pop(stk, rt);
+                  if (rt != _fuir.clazzResultClazz(cc) && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
                     {
-                      var tt = ccs[cci  ];
-                      var cc = ccs[cci+1];
-                      stack =  (Stack<CExpr>) stack2.clone();
-                      var co = call(cl, c, i, cc, stack, _fuir.clazzOuterClazz(cc));
-                      var cr = CStmnt.EMPTY;
-                      var rt2 = _fuir.clazzResultClazz(cc); // NYI: Check why rt2 and rt can be different
-                      if (_types.hasData(rt2))
-                        {
-                          var rv = pop(stack, rt2);
-                          if ((rt == rt2 || _fuir.clazzIsRef(rt) && _fuir.clazzIsRef(rt2)) && // NYI: Remove this conditions when ccs set no longer contains false entries
-                              rv != _names.CDUMMY)
-                            {
-                              if (res != null)
-                                {
-                                  if (_fuir.clazzIsRef(rt))
-                                    {
-                                      rv = rv.castTo(_types.clazz(rt));
-                                    }
-                                  cr = res.assign(rv);
-                                }
-                            }
-                        }
-                      if (co != CStmnt.EMPTY || cr != CStmnt.EMPTY)
-                        {
-                          _c.println("// Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":");
-                          _c.println("case " + _names.clazzId(tt).code() + ": {");
-                          _c.indent();
-                          var bo = CStmnt.seq(co,
-                                              cr,
-                                              CStmnt.BREAK);
-                          _c.print(bo);
-                          _c.unindent();
-                          _c.println("}");
-                        }
+                      rv = rv.castTo(_types.clazz(rt));
                     }
+                  var cr = res != null ? res.assign(rv) : CStmnt.EMPTY;
+                  var bo = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
+                                      co, cr);
+                  if (ccs.length > 2)
+                    {
+                      _c.println("case " + _names.clazzId(tt).code() + ": {");
+                      _c.indent();
+                      _c.print(CStmnt.seq(bo, CStmnt.BREAK));
+                      _c.unindent();
+                      _c.println("}");
+                    }
+                  else
+                    {
+                      _c.print(bo);
+                    }
+                }
+              if (ccs.length > 2)
+                {
                   _c.println("default: { fprintf(stderr,\"*** %s:%d unhandled dynamic call target %d in call to "+_fuir.clazzAsString(cc0)+" within "+_fuir.clazzAsString(cl)+"\\n\", __FILE__, __LINE__, " + id.code() + "); exit(1); }");
                   _c.unindent();
                   _c.println("}");
-                  stack = stack2;
-                  args(cl, c, i, cc0, stack, _fuir.clazzArgCount(cc0), _fuir.clazzOuterClazz(cc0));
-                  if (res != null)
-                    {
-                      push(stack, rt, res);
-                    }
+                }
+              args(cl, c, i, cc0, stack, _fuir.clazzArgCount(cc0), _fuir.clazzOuterClazz(cc0));
+              if (res != null)
+                {
+                  push(stack, rt, res);
                 }
             }
           else

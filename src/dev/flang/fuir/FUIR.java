@@ -113,6 +113,7 @@ public class FUIR extends ANY
    */
   static final Expr WIPE_STACK = new IntConst(42);
 
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -1079,16 +1080,29 @@ public class FUIR extends ANY
             if (cl._dynamicBinding != null)
               {
                 var in = cl._dynamicBinding.inner(cf);
-                if (in != null &&
-                    in.feature().impl.kind_ != Impl.Kind.Abstract &&
-
-                    // NYI: instead of just comparing the argument lenths, we
-                    // should ensure to only return features from heir clazzes
-                    // with equal generic parameters:
-                    in.argumentFields().length == innerClazz.argumentFields().length)
+                if (in != null)
                   {
-                    result.add(cl);
-                    result.add(in);
+                    var ina = in.argumentFields();
+                    var inCa = innerClazz.argumentFields();
+                    if (in.feature().impl.kind_ != Impl.Kind.Abstract &&
+
+                        // NYI: instead of just comparing the arguments and
+                        // result, we should ensure to only return features from
+                        // heir clazzes with equal generic parameters:
+                        ina.length == inCa.length &&
+                        (in.feature().isOuterRef() || innerClazz.resultClazz().isAssignableFrom(in.resultClazz())))
+                      {
+                        boolean ok = true;
+                        for (int i = 0; i < ina.length; i++)
+                          {
+                            ok = ok && ina[i].resultClazz().isAssignableFrom(inCa[i].resultClazz());
+                          }
+                        if (ok)
+                          {
+                            result.add(cl);
+                            result.add(in);
+                          }
+                      }
                   }
               }
           }
