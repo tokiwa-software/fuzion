@@ -332,7 +332,7 @@ public class C extends ANY
                   var tag = f.field(_names.TAG_NAME);
                   var uniyon = f.field(_names.CHOICE_UNION_NAME);
                   var entry = uniyon.field(_fuir.clazzIsRef(valuecl) ? _names.CHOICE_REF_ENTRY_NAME
-                                           : _names.CHOICE_ENTRY_NAME + tagNum);
+                                                                     : _names.CHOICE_ENTRY_NAME + tagNum);
                   if (_fuir.clazzIsChoiceOfOnlyRefs(fclazz) && !_fuir.clazzIsRef(valuecl))
                     { // replace unit-type values by 0 or an odd value cast to ref Object
                       check
@@ -548,7 +548,7 @@ public class C extends ANY
                           var f      = accessField(cl, current(cl), field);
                           var uniyon = sub.field(_names.CHOICE_UNION_NAME);
                           var entry  = _fuir.clazzIsRef(fclazz) ? uniyon.field(_names.CHOICE_REF_ENTRY_NAME).castTo(_types.clazz(fclazz))
-                            : uniyon.field(_names.CHOICE_ENTRY_NAME + tags[0]);
+                                                                : uniyon.field(_names.CHOICE_ENTRY_NAME + tags[0]);
                           _c.print(!_types.hasData(fclazz) ? CStmnt.lineComment("valueluess assignment to " + f.code())
                                    : f.assign(entry));
                         }
