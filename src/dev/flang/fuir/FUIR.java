@@ -49,6 +49,8 @@ import dev.flang.ast.Stmnt; // NYI: remove dependency
 import dev.flang.ast.StrConst; // NYI: remove dependency
 import dev.flang.ast.Types; // NYI: remove dependency
 
+import dev.flang.ir.Backend;
+import dev.flang.ir.BackendCallable;
 import dev.flang.ir.Clazz;
 import dev.flang.ir.Clazzes;
 
@@ -134,6 +136,25 @@ public class FUIR extends ANY
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  public void findAllClasses()
+  {
+    Clazzes.findAllClasses(new Backend()
+      {
+        public BackendCallable callable(boolean dynamic,
+                                        Clazz innerClazz,
+                                        Clazz outerClazz)
+        {
+          return new BackendCallable()
+            {
+              public Clazz inner() { return innerClazz; }
+              public Clazz outer() { return outerClazz; }
+          };
+        }
+      }
+      , main());
+  }
 
 
   public Clazz main()

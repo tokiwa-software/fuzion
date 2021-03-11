@@ -34,15 +34,10 @@ import java.util.Stack;
 
 import java.util.stream.Stream;
 
-import dev.flang.ir.Backend;
-import dev.flang.ir.BackendCallable;
-import dev.flang.ir.Clazz;   // NYI: remove this dependency!
-import dev.flang.ir.Clazzes; // NYI: remove this dependency!
-
 import dev.flang.fuir.FUIR;
 
+import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 
 
@@ -51,7 +46,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */
-public class C extends Backend
+public class C extends ANY
 {
 
 
@@ -136,37 +131,12 @@ public class C extends Backend
     _fuir = fuir;
     _names = new CNames(fuir);
     _types = new CTypes(_fuir, _names);
-    Clazzes.findAllClasses(this, _fuir.main()); /* NYI: remove this, should be done within FUIR */
+    fuir.findAllClasses();
     Errors.showAndExit();
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Obtain backend information required for dynamic binding lookup to perform a
-   * call.
-   *
-   * @param dynamic true if this sets the static inner / outer clazz of a
-   * dynamic call, false if this is a static call
-   *
-   * @param innerClazz the frame clazz of the called feature
-   *
-   * @param outerClazz the static clazz of the target instance of this call
-   *
-   * @return a beckend-specific object.
-   */
-  public BackendCallable callable(boolean dynamic,
-                                  Clazz innerClazz,
-                                  Clazz outerClazz)
-  {
-    return new BackendCallable()
-      {
-        public Clazz inner() { return innerClazz; }
-        public Clazz outer() { return outerClazz; }
-      };
-  }
 
 
   /**
