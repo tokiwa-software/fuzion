@@ -385,9 +385,9 @@ public class C extends ANY
         }
       case Call:
         {
+          var cc0 = _fuir.callCalledClazz  (cl, c, i);
           if (_fuir.callIsDynamic(cl, c, i))
             {
-              var cc0 = _fuir.callCalledClazz  (cl, c, i);
               _c.println("// Dynamic call to " + _fuir.clazzAsString(cc0));
               var ccs = _fuir.callCalledClazzes(cl, c, i);
               var ac = _fuir.callArgCount(c, i);
@@ -403,9 +403,9 @@ public class C extends ANY
                 {
                   var tt = ccs[0];
                   var cc = ccs[1];
-                  _c.println("// Dynamic call to " + _fuir.clazzAsString(cc0) + " with exactly one target");
-                  _c.print(CExpr.call("assert",new List<>(CExpr.eq(id, _names.clazzId(tt))))); // <-- perfect reason to make () optional
-                  _c.print(call(cl, c, i, cc, stack, _fuir.clazzOuterClazz(cc)));
+                  o = CStmnt.seq(CStmnt.lineComment("Dynamic call to " + _fuir.clazzAsString(cc0) + " with exactly one target"),
+                                 CExpr.call("assert",new List<>(CExpr.eq(id, _names.clazzId(tt)))),
+                                 call(cl, c, i, cc, stack, _fuir.clazzOuterClazz(cc)));
                 }
               else if (ccs.length == 0)
                 {
@@ -434,7 +434,8 @@ public class C extends ANY
                       _c.println("// Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":");
                       _c.println("case " + _names.clazzId(tt).code() + ": {");
                       _c.indent();
-                      _c.print(call(cl, c, i, cc, stack, _fuir.clazzOuterClazz(cc)));
+                      var co = call(cl, c, i, cc, stack, _fuir.clazzOuterClazz(cc));
+                      var cr = CStmnt.EMPTY;
                       var rt2 = _fuir.clazzResultClazz(cc); // NYI: Check why rt2 and rt can be different
                       if (_types.hasData(rt2))
                         {
@@ -448,11 +449,14 @@ public class C extends ANY
                                     {
                                       rv = rv.castTo(_types.clazz(rt));
                                     }
-                                  _c.print(res.assign(rv));
+                                  cr = res.assign(rv);
                                 }
                             }
                         }
-                      _c.print(CStmnt.BREAK);
+                      var bo = CStmnt.seq(co,
+                                          cr,
+                                          CStmnt.BREAK);
+                      _c.print(bo);
                       _c.unindent();
                       _c.println("}");
                     }
@@ -469,8 +473,7 @@ public class C extends ANY
             }
           else
             {
-              var cc = _fuir.callCalledClazz(cl, c, i);
-              _c.print(call(cl, c, i, cc, stack, -1));
+              o = call(cl, c, i, cc0, stack, -1);
             }
           break;
         }
