@@ -434,28 +434,6 @@ public class FUIR extends ANY
 
 
   /**
-   * Get the index of a field in an instance of given clazz.
-   *
-   * @param cl a clazz id
-   *
-   * @param f a clazz id of a field in cl
-   *
-   * @return the index of f in an instance of cl
-   */
-  public int clazzFieldIndex(int cl, int f)
-  {
-    var c = _clazzIds.get(cl);
-    var fc = _clazzIds.get(f);
-    var fs = c.fields();
-    int i;
-    for (i = 0; fs[i] != fc; i++)
-      {
-      }
-    return i;
-  }
-
-
-  /**
    * is the given clazz a choice clazz
    *
    * @param cl a clazz id

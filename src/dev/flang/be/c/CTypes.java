@@ -248,7 +248,7 @@ public class CTypes extends ANY
                         {
                           var f = _fuir.clazzField(cl, i);
                           String type = clazzField(f);
-                          cf.print(" " + type + " " + _names.fieldName(i, f) + ";\n");
+                          cf.print(" " + type + " " + _names.fieldName(f) + ";\n");
                         }
                     }
                   cf.print
