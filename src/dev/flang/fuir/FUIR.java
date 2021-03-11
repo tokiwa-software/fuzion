@@ -290,7 +290,7 @@ public class FUIR extends ANY
 
 
   /**
-   * Check if is field does not store the value directly, but a pointer to the value.
+   * Check if field does not store the value directly, but a pointer to the value.
    *
    * @param fcl a clazz id of the field
    *
