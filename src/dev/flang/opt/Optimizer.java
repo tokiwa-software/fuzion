@@ -68,9 +68,9 @@ public class Optimizer extends ANY
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public FUIR fuir()
+  public FUIR fuir(boolean findClazzes)
   {
-    return new FUIR(_air.main());
+    return new FUIR(_air.main(), findClazzes);
   }
 
 

@@ -129,23 +129,26 @@ public class FUIR extends ANY
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public FUIR(Clazz main)
+  public FUIR(Clazz main, boolean findClazzes)
   {
     _main = main;
-    Clazzes.findAllClasses(new Backend()
+    if (findClazzes)
       {
-        public BackendCallable callable(boolean dynamic,
-                                        Clazz innerClazz,
-                                        Clazz outerClazz)
-        {
-          return new BackendCallable()
+        Clazzes.findAllClasses(new Backend()
+          {
+            public BackendCallable callable(boolean dynamic,
+                                            Clazz innerClazz,
+                                            Clazz outerClazz)
             {
-              public Clazz inner() { return innerClazz; }
-              public Clazz outer() { return outerClazz; }
-          };
-        }
+              return new BackendCallable()
+                {
+                  public Clazz inner() { return innerClazz; }
+                  public Clazz outer() { return outerClazz; }
+              };
+            }
+          }
+          , main());
       }
-      , main());
   }
 
 

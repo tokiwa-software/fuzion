@@ -431,7 +431,7 @@ class Fuzion extends ANY
           }
         var mir = new FrontEnd(options).createMIR();
         var air = new MiddleEnd(options, mir).air();
-        var fuir = new Optimizer(options, air).fuir();
+        var fuir = new Optimizer(options, air).fuir(_backend != Backend.interpreter);
         switch (_backend)
           {
           case interpreter: new Interpreter(fuir).run(); break;
