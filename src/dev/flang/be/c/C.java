@@ -665,11 +665,18 @@ public class C extends Backend
           var t = pop(stack, tc);
           check
             (t != null || !_types.hasData(rt));
-          var vtc = _fuir.clazzAsValue(tc);
+          var occ   = _fuir.clazzOuterClazz(cc);
+          var vocc  = _fuir.clazzAsValue(occ);
           var field = _names.fieldName(_fuir.fieldIndex(cc), cc);
-          CExpr res = _types.isScalar(vtc) ? _fuir.clazzIsRef(tc) ? t.deref().field("fields") : t :
-                      t != null            ? ccodeAccessField(tc, t, field) : null;
-          res = _fuir.clazzFieldIsAdrOfValue(cc) ? res.deref() : res;
+          if (occ != tc &&
+              !_fuir.clazzIsOuterRef(cc) /* NYI: tc for outer ref is wrong, avoid redundant casts */ )
+            {
+              t = t.castTo(_types.clazz(occ));  // t is a ref with different static type, so cast it to the actual type
+            }
+          CExpr res = (_types.isScalar(vocc) && _fuir.clazzIsRef(tc) ? t.deref().field("fields")              :
+                       _types.isScalar(vocc)                         ? t                                      :
+                       _fuir.clazzFieldIsAdrOfValue(cc)              ? ccodeAccessField(tc, t, field).deref() : /* NYI: Can this case of an outer ref be part of the FUIR? */
+                       t != null                                     ? ccodeAccessField(tc, t, field)         : null);
           if (_fuir.clazzIsRef(rt) && _fuir.clazzKind(_fuir.clazzAsValue(rt)) == FUIR.ClazzKind.Choice)
             { // NYI: This special handling should better be part of match, but staticSubjectClazz is never ref
               res = res.deref().field(_names.FIELDS_IN_REF_CLAZZ);
