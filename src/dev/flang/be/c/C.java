@@ -386,6 +386,7 @@ public class C extends ANY
       case Call:
         {
           var cc0 = _fuir.callCalledClazz  (cl, c, i);
+          var rt = _fuir.clazzResultClazz(cc0);
           if (_fuir.callIsDynamic(cl, c, i))
             {
               _c.println("// Dynamic call to " + _fuir.clazzAsString(cc0));
@@ -416,12 +417,11 @@ public class C extends ANY
               else
                 {
                   CExpr res = null;
-                  var rt = _fuir.clazzResultClazz(cc0);
                   if (_types.hasData(rt) &&
                       (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
                     {
                       res = new CIdent(_names.newTemp());
-                      _c.println(_types.clazz(rt) + " " + res.code() + ";");
+                      _c.println(_types.clazzField(cc0) + " " + res.code() + ";");
                     }
                   _c.println("switch (" + id.code() + ") {");
                   _c.indent();
@@ -474,6 +474,10 @@ public class C extends ANY
           else
             {
               o = call(cl, c, i, cc0, stack, -1);
+            }
+          if (_fuir.clazzFieldIsAdrOfValue(cc0) && _types.hasData(rt))  // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
+            {
+              push(stack, rt, pop(stack, rt).deref());
             }
           break;
         }
@@ -661,7 +665,6 @@ public class C extends ANY
             }
           CExpr res = (_types.isScalar(vocc) && _fuir.clazzIsRef(tc) ? t.deref().field("fields")      :
                        _types.isScalar(vocc)                         ? t                              :
-                       _fuir.clazzFieldIsAdrOfValue(cc)              ? accessField(tc, t, cc).deref() : /* NYI: Can this case of an outer ref be part of the FUIR? */
                        t != null                                     ? accessField(tc, t, cc)         : null);
           if (_fuir.clazzIsRef(rt) && _fuir.clazzKind(_fuir.clazzAsValue(rt)) == FUIR.ClazzKind.Choice)
             { // NYI: This special handling should better be part of match, but staticSubjectClazz is never ref
