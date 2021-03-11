@@ -420,7 +420,9 @@ public class C extends Backend
                     }
                   else if (ccs.length == 0)
                     {
-                      _c.println("fprintf(stderr,\"*** no possible call target found\\n\"); exit(1);");
+                      Errors.error("No call target found.",
+                                   "While creating code for " + _fuir.clazzAsString(cl) + "\n" +
+                                   "Attempting call to " + _fuir.clazzAsString(cc0));
                     }
                   else
                     {
@@ -632,6 +634,10 @@ public class C extends Backend
     var rt = _fuir.clazzResultClazz(cc);
     switch (_fuir.clazzKind(cc))
       {
+      case Abstract :
+        Errors.error("Call to abstract feature encountered.",
+                     "While creating code for " + _fuir.clazzAsString(cl) + "\n" +
+                     "Found call to  " + _fuir.clazzAsString(cc));
       case Routine  :
       case Intrinsic:
         {
@@ -672,7 +678,6 @@ public class C extends Backend
           push(stack, rt, res);
           break;
         }
-      case Abstract: throw new Error("This should not happen: Calling abstract '" + _fuir.clazzAsString(cc) + "'");
       default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.clazzKind(cc));
       }
     return result;
