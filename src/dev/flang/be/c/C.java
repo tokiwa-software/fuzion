@@ -337,7 +337,7 @@ public class C extends Backend
 
                       var value = pop(stack, valuecl);                // value assigned to field
                       int tagNum = _fuir.clazzChoiceTag(fclazz, valuecl);
-                      var f = ccodeAccessField(outercl, outer, field);
+                      var f = accessField(outercl, outer, field);
                       var tag = f.field(_names.TAG_NAME);
                       var uniyon = f.field(_names.CHOICE_UNION_NAME);
                       var entry = uniyon.field(_fuir.clazzIsRef(valuecl) ? _names.CHOICE_REF_ENTRY_NAME
@@ -364,7 +364,7 @@ public class C extends Backend
                       // _c.print("// Assign to "+_fuir.clazzAsString(fclazz)+" outercl "+_fuir.clazzAsString(outercl)+" valuecl "+_fuir.clazzAsString(valuecl));
                       o = value == null
                         ? CStmnt.lineComment("valueluess assignment to " + outer)
-                        : ccodeAccessField(outercl, outer, field).assign(value);
+                        : accessField(outercl, outer, field).assign(value);
                     }
                 }
               break;
@@ -544,7 +544,7 @@ public class C extends Backend
                               check
                                 (tags.length == 1);
                               var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
-                              var f      = ccodeAccessField(cl, current(cl), field);
+                              var f      = accessField(cl, current(cl), field);
                               var uniyon = sub.field(_names.CHOICE_UNION_NAME);
                               var entry  = _fuir.clazzIsRef(fclazz) ? uniyon.field(_names.CHOICE_REF_ENTRY_NAME).castTo(_types.clazz(fclazz))
                                                                     : uniyon.field(_names.CHOICE_ENTRY_NAME + tags[0]);
@@ -668,10 +668,10 @@ public class C extends Backend
             {
               t = t.castTo(_types.clazz(occ));  // t is a ref with different static type, so cast it to the actual type
             }
-          CExpr res = (_types.isScalar(vocc) && _fuir.clazzIsRef(tc) ? t.deref().field("fields")           :
-                       _types.isScalar(vocc)                         ? t                                   :
-                       _fuir.clazzFieldIsAdrOfValue(cc)              ? ccodeAccessField(tc, t, cc).deref() : /* NYI: Can this case of an outer ref be part of the FUIR? */
-                       t != null                                     ? ccodeAccessField(tc, t, cc)         : null);
+          CExpr res = (_types.isScalar(vocc) && _fuir.clazzIsRef(tc) ? t.deref().field("fields")      :
+                       _types.isScalar(vocc)                         ? t                              :
+                       _fuir.clazzFieldIsAdrOfValue(cc)              ? accessField(tc, t, cc).deref() : /* NYI: Can this case of an outer ref be part of the FUIR? */
+                       t != null                                     ? accessField(tc, t, cc)         : null);
           if (_fuir.clazzIsRef(rt) && _fuir.clazzKind(_fuir.clazzAsValue(rt)) == FUIR.ClazzKind.Choice)
             { // NYI: This special handling should better be part of match, but staticSubjectClazz is never ref
               res = res.deref().field(_names.FIELDS_IN_REF_CLAZZ);
@@ -912,7 +912,7 @@ public class C extends Backend
    *
    * @param field the field id of the accessed field
    */
-  CExpr ccodeAccessField(int outercl, CExpr outer, int field)
+  CExpr accessField(int outercl, CExpr outer, int field)
   {
     if (_fuir.clazzIsRef(outercl))
       {
