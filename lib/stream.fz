@@ -30,9 +30,9 @@
 # mutable state.
 stream<T> ref is
 
-  consume (f fun (T)) is while hasNext do f(next)
-  infix | (f fun (T)) is while hasNext do f(next)
-  consume2(f fun (T) bool) is while hasNext && f(next)
+  consume (f fun (T)) unit is while hasNext do f(next)
+  infix | (f fun (T)) unit is while hasNext do f(next)
+  consume2(f fun (T) bool) unit is while hasNext && f(next)
   filter(f fun (T) bool) ref : stream<T> is
     cache T = ?  # NYI: should be Option<T>
     cacheOk bool = false
@@ -66,7 +66,7 @@ stream<T> ref is
   hasNext bool is abstract
   next T is abstract
 
-  print is
+  print unit is
     consume(fun (x T) is stdout.print(x); if hasNext then stdout.print(", ") )
 
   count i32 is
