@@ -106,7 +106,8 @@ public class CTypes extends ANY
   {
     return cl != -1 &&
       !_fuir.clazzIsUnitType(cl) &&
-      !_fuir.clazzIsVoidType(cl);
+      !_fuir.clazzIsVoidType(cl) &&
+      cl != _fuir.clazzUniverse();
   }
 
 
@@ -253,6 +254,11 @@ public class CTypes extends ANY
                     }
                   cf.print
                     ("};\n\n");
+                  if (cl == _fuir.clazzUniverse())
+                    {
+                      cf.print
+                        (CStmnt.decl("static", _names.struct(cl), _names.UNIVERSE));
+                    }
                 }
             }
         }

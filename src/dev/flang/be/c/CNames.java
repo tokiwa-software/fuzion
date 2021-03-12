@@ -57,6 +57,11 @@ public class CNames extends ANY
   private static final String TYPE_PREFIX = "fzT_";
 
 
+  /**
+   * C identifier of static singleton instance of the universe.
+   */
+  static final CIdent UNIVERSE = new CIdent("fzI_universe");
+
 
   /**
    * Maximum length of (external) function names in C.  Since name mangling

@@ -65,7 +65,6 @@ abstract class CStmnt extends ANY
   /**
    * C declaration such as 'i32 i'
    *
-   *
    * @param type the type of the defined entity
    *
    * @param ident the name of the defined entity
@@ -74,11 +73,31 @@ abstract class CStmnt extends ANY
    */
   static CStmnt decl(String type, CIdent ident)
   {
+    return decl(null, type, ident);
+  }
+
+
+  /**
+   * C declaration such as 'i32 i'
+   *
+   * @param modifier a modifier, e.g., "static", null for none.
+   *
+   * @param type the type of the defined entity
+   *
+   * @param ident the name of the defined entity
+   *
+   * @return corresponding CStmnt
+   */
+  static CStmnt decl(String modifier, String type, CIdent ident)
+  {
     return new CStmnt()
       {
         void code(StringBuilder sb)
         {
-          sb.append(type).append(" ");
+          sb.append(modifier == null ? "" : modifier)
+            .append(modifier == null ? "" : " ")
+            .append(type)
+            .append(" ");
           ident.code(sb);
         }
       };

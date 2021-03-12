@@ -641,7 +641,7 @@ public class C extends ANY
           var tc = _fuir.callTargetClazz(cl, c, i);
           var t = pop(stack, tc);
           check
-            (t != null || !_types.hasData(rt));
+            (t != null || !_types.hasData(rt) || tc == _fuir.clazzUniverse());
           var occ   = _fuir.clazzOuterClazz(cc);
           var vocc  = _fuir.clazzAsValue(occ);
           if (occ != tc &&
@@ -651,7 +651,7 @@ public class C extends ANY
             }
           CExpr res = (_types.isScalar(vocc) && _fuir.clazzIsRef(tc) ? t.deref().field("fields")      :
                        _types.isScalar(vocc)                         ? t                              :
-                       t != null                                     ? accessField(tc, t, cc)         : null);
+                       _types.hasData(rt)                            ? accessField(tc, t, cc)         : null);
           if (_fuir.clazzIsRef(rt) && _fuir.clazzKind(_fuir.clazzAsValue(rt)) == FUIR.ClazzKind.Choice)
             { // NYI: This special handling should better be part of match, but staticSubjectClazz is never ref
               res = res.deref().field(_names.FIELDS_IN_REF_CLAZZ);
@@ -894,6 +894,10 @@ public class C extends ANY
    */
   CExpr accessField(int outercl, CExpr outer, int field)
   {
+    if (outercl == _fuir.clazzUniverse())
+      {
+        outer = _names.UNIVERSE;
+      }
     if (_fuir.clazzIsRef(outercl))
       {
         outer = outer.deref().field(_names.FIELDS_IN_REF_CLAZZ);
