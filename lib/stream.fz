@@ -42,7 +42,7 @@ stream<T> ref is
       result = cache
       cacheOk = false
       next2
-    next2 is
+    next2 unit is
       while !cacheOk && stream.this.hasNext
         cache = stream.this.next
         cacheOk = f(cache)
