@@ -233,7 +233,7 @@ public class C extends ANY
   void push(Stack<CExpr> stack, int cl, CExpr val)
   {
     if (PRECONDITIONS) require
-      (_types.hasData(cl) || val != null);
+      (!_types.hasData(cl) || val != null);
 
     if (_types.hasData(cl))
       {
