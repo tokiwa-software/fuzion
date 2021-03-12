@@ -802,7 +802,7 @@ public class Clazz extends ANY implements Comparable
    */
   public boolean isAssignableFrom(Clazz other)
   {
-    return (this==other) || this._type.isAssignableFrom(other._type);
+    return (this==other) || isRef() && this._type.isAssignableFrom(other._type);
   }
 
 
