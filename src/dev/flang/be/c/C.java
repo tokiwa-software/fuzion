@@ -556,7 +556,7 @@ public class C extends ANY
         }
       default:
         {
-          System.err.println("*** error: C backend does not handle statments of type " + s);
+          Errors.fatal("C backend does not handle statments of type " + s);
         }
       }
     return o;
