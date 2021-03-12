@@ -183,11 +183,22 @@ class Intrinsics extends ANY
 
         }
 
-        // NYI: the following intrinsics are generic, they are currently hard-coded for i32 only:
-      case "Array.getData": return CExpr.call("malloc",
-                                                new List<>(new CIdent("fzT_1i32").sizeOfType().mul(new CIdent("arg0")))).ret();
-      case "Array.setel"  : return new CIdent("arg0").castTo("fzT_1i32*").index(new CIdent("arg1")).assign(new CIdent("arg2"));
-      case "Array.get"    : return new CIdent("arg0").castTo("fzT_1i32*").index(new CIdent("arg1")).ret();
+      case "Array.getData":
+        {
+          var gc = c._fuir.clazzActualGeneric(cl, 0);
+          return CExpr.call("malloc",
+                            new List<>(new CIdent(c._types.clazz(gc)).sizeOfType().mul(new CIdent("arg0")))).ret();
+        }
+      case "Array.setel"  :
+        {
+          var gc = c._fuir.clazzActualGeneric(cl, 0);
+          return new CIdent("arg0").castTo(c._types.clazz(gc) + "*").index(new CIdent("arg1")).assign(new CIdent("arg2"));
+        }
+      case "Array.get"    :
+        {
+          var gc = c._fuir.clazzActualGeneric(cl, 0);
+          return new CIdent("arg0").castTo(c._types.clazz(gc) + "*").index(new CIdent("arg1")).ret();
+        }
 
       default:
         var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";

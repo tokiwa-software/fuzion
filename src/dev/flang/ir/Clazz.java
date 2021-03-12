@@ -184,6 +184,14 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
+   * The actual generics of this clazz.
+   *
+   * This is initialized after Clazz creation by dependencies().
+   */
+  Clazz[] _actualGenerics;
+
+
+  /**
    * If this clazz contains a direct outer ref field, this is the direct outer
    * ref. null otherwise.
    *
@@ -294,6 +302,7 @@ public class Clazz extends ANY implements Comparable
     _resultClazz = determineResultClazz();
     _resultField = determineResultField();
     _argumentFields = determineArgumentFields();
+    _actualGenerics = determineActualGenerics();
     _outerRef = determineOuterRef();
     _choiceTag = determineChoiceTag();
     _asValue = determineAsValue();
@@ -1416,6 +1425,38 @@ public class Clazz extends ANY implements Comparable
           result = args.size() == 0 ? NO_CLAZZES : args.toArray(new Clazz[args.size()]);
           break;
         }
+      }
+    return result;
+  }
+
+
+  /**
+   * Get the actual generic arguments of this clazz
+   *
+   * @return the actual generics
+   */
+  public Clazz[] actualGenerics()
+  {
+    return _actualGenerics;
+  }
+
+
+  /**
+   * Determine the actual generic arguments of this clazz
+   *
+   * @return the actual generic argument
+   */
+  private Clazz[] determineActualGenerics()
+  {
+    var result = NO_CLAZZES;
+    var gs = _type._generics;
+    if (!gs.isEmpty())
+      {
+        result = new Clazz[gs.size()];
+        for (int i = 0; i < gs.size(); i++)
+          {
+            result[i] = actualClazz(gs.get(i));
+          }
       }
     return result;
   }

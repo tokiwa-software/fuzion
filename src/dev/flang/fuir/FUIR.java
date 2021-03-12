@@ -699,6 +699,22 @@ public class FUIR extends ANY
 
 
   /**
+   * Get the id of an actual generic parameter of a given clazz.
+   *
+   * @param cl a clazz id
+   *
+   * @param gix indec of the generic paramter
+   *
+   * @return id of cl's actual generic parameter #gix
+   */
+  public int clazzActualGeneric(int cl, int gix)
+  {
+    var cc = _clazzIds.get(cl);
+    return _clazzIds.get(cc.actualGenerics()[gix]);
+  }
+
+
+  /**
    * Get access to the code of a clazz of kind Routine
    *
    * @param cl a clazz id

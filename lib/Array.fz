@@ -29,14 +29,14 @@ Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
 
 # private:
 
-  data Object = getData(length)
+  data Object = getData<T>(length)
 
   for x in indices do
     setel(data, x, init(x))
 
-  getData(l i32) Object is intrinsic
-  get(d Object, i i32) T is intrinsic
-  setel (d Object, i i32, o T) is intrinsic
+  getData<X>(l i32) Object is intrinsic
+  get    <X>(d Object, i i32) X is intrinsic
+  setel  <X>(d Object, i i32, o X) is intrinsic
 
 # public:
 
@@ -46,7 +46,7 @@ Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
     pre
       safety: 0 <= i < length
   is
-    result = get(data,i)
+    result = get<T>(data,i)
 
   set [ ] (i i32, o T)
     pre
@@ -54,7 +54,7 @@ Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
   # post   NYI
     #Array.this[i] == o
   is
-    setel(data,i,o)
+    setel<T>(data,i,o)
 
   iterate(f fun (T)) is
     asStream.consume(f)
@@ -62,7 +62,7 @@ Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
   redef asStream ref : stream<T> is
     x := 0
     redef hasNext => x < length
-    redef next => x = x + 1; get(data, x - 1)
+    redef next => x = x + 1; get<T>(data, x - 1)
 
 
   # create a list from this array
