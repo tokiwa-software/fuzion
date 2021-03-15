@@ -1,3 +1,37 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion test inherticance_for_value_types
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# This test defines a feature a with an inner feature a.x that is redefined by
+# two heir features b and c.  x is then called via other inner features in a: y
+# (which calls x directly), z (which uses type inference for x's result), and
+# q.xx, which calls z from an inner feature.
+#
+# These inner features are then applied to value instances of a, b, c and to ref
+# instances of a, b, and c. It is checked that the correct redefined version of
+# x is called in each case.
+#
 inheritance_for_value_types is
 
   exitCode := 0
@@ -9,11 +43,10 @@ inheritance_for_value_types is
       say "FAILED: " + msg
       exitCode = 1
 
-
   a is
     x (msg string, expected i32) unit is chck msg, expected == 1
     y (msg string, expected i32) unit is x msg, expected
-    z (msg string, expected i32) => x msg, expected
+    z (msg string, expected i32) =>      x msg, expected
     q (msg string, expected i32) is
       xx is z msg, expected
 
