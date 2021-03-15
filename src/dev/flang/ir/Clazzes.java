@@ -357,6 +357,9 @@ public class Clazzes extends ANY
     c_unit.get();
     create(Types.t_ADDRESS, universe.get());
 
+    universe.get().instantiated(SourcePosition.builtIn);
+    main.instantiated(SourcePosition.builtIn);
+
     while (!clazzesToBeVisited.isEmpty())
       {
         clazzCount++;

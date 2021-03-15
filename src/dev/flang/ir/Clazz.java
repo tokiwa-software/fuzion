@@ -673,6 +673,11 @@ public class Clazz extends ANY implements Comparable
    *
    * This is not intended for use at runtime, but during analysis of static
    * types or to fill the virtual call table.
+   *
+   * @param p if this lookup would result in the returned feature to be called,
+   * p gives the position in the source code that causes this call.  p must be
+   * null if the lookup does not causes a call, but it just done to determine
+   * the type.
    */
   public Clazz lookup(Feature f, List<Type> actualGenerics, SourcePosition p)
   {
@@ -701,8 +706,7 @@ public class Clazz extends ANY implements Comparable
             Type t = af.thisType().actualType(af, actualGenerics);
             t = actualType(t);
             innerClazz = Clazzes.clazzWithSpecificOuter(t, this);
-            innerClazz.isInstantiated_ = true;
-            innerClazz.instantiationPos_ = p;
+            innerClazz.instantiated(p);
             check
               (innerClazz._type.featureOfType() == af);
           }
@@ -1176,13 +1180,39 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
+   * Mark this as instantiated at given source code position.
+   *
+   * @param at gives the position in the source code that causes this instantiation.  p can be
+   * null, which means that this should not be marked as instantiated.
+   */
+  void instantiated(SourcePosition at)
+  {
+    if (at != null && !isInstantiated_)
+      {
+        isInstantiated_ = true;
+        instantiationPos_ = at;
+      }
+  }
+
+
+  /**
+   * Is this clazz instantiated?  This tests this.isInstantiated_ and,
+   * recursively, _outer.isInstantiated().
+   */
+  boolean isInstantiated()
+  {
+    return (_outer == null || _outer.isInstantiated()) && isInstantiated_;
+  }
+
+
+  /**
    * Perform checks on classes such as that an instantiated clazz is not the
    * target of any calls to abstract methods that are not implemented by this
    * clazz.
    */
   public void check()
   {
-    if (isInstantiated_ && abstractCalled_ != null)
+    if (isInstantiated() && abstractCalled_ != null)
       {
         FeErrors.abstractFeatureNotImplemented(feature(), abstractCalled_, instantiationPos_);
       }
@@ -1327,7 +1357,13 @@ public class Clazz extends ANY implements Comparable
               }
             if (t.featureOfType().outer() == null || innerBase.feature().inheritsFrom(t.featureOfType().outer()))
               {
-                return Clazzes.create(t, innerBase);
+                var res = innerBase == null ? Clazzes.create(t, null)
+                  : innerBase.lookup(t.featureOfType(), t._generics, null);
+                if (t.isRef())
+                  {
+                    res = res.asRef();
+                  }
+                return res;
               }
             else
               {
