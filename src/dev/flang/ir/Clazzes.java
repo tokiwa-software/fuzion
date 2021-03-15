@@ -357,8 +357,10 @@ public class Clazzes extends ANY
     c_unit.get();
     create(Types.t_ADDRESS, universe.get());
 
-    universe.get().instantiated(SourcePosition.builtIn);
-    main.instantiated(SourcePosition.builtIn);
+    // mark internally referenced clazzes as called or instantiated:
+    universe.get().called(SourcePosition.builtIn);
+    main          .called(SourcePosition.builtIn);
+    conststring.get().instantiated(SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
       {
@@ -588,6 +590,7 @@ public class Clazzes extends ANY
       }
     outerClazz.setRuntimeClazz(b._valAndRefClazzId    , vc);
     outerClazz.setRuntimeClazz(b._valAndRefClazzId + 1, rc);
+    rc.instantiated(b.pos());
   }
 
 

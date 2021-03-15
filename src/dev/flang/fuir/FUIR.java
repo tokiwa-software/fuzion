@@ -734,6 +734,29 @@ public class FUIR extends ANY
 
 
   /**
+   * Are there any calls to this clazz (Routine, Constructor, or Field)?
+   */
+  public boolean clazzIsCalled(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    return cc.isCalled() || (clazzKind(cl) == ClazzKind.Intrinsic);
+  }
+
+
+  /**
+   * Is this clazz instantiated?  This might return true even for clazzes for
+   * which clazzIsCalld() returns false if cl refers to an instance that is the
+   * value result of an intrinsic, or it is internally created such as
+   * conststring, #universe, or the main feature.
+   */
+  public boolean clazzIsInstantiated(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    return cc.isInstantiated() || (clazzKind(cl) == ClazzKind.Intrinsic);
+  }
+
+
+  /**
    * Is the given field clazz a reference to an outer feature?
    *
    * @param cl a clazz id of kind Field
@@ -1112,6 +1135,7 @@ public class FUIR extends ANY
                     var ina = in.argumentFields();
                     var inCa = innerClazz.argumentFields();
                     if (in.feature().impl.kind_ != Impl.Kind.Abstract &&
+                        in.isCalled() &&
 
                         // NYI: instead of just comparing the arguments and
                         // result, we should ensure to only return features from

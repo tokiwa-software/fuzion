@@ -58,10 +58,10 @@ public class C extends ANY
    */
   private enum CompilePhase
   {
-    TYPES           { void compile(C c, int cl) { c._c.print(c._types.types(cl)); } }, // declare types
-    STRUCTS         { void compile(C c, int cl) { c._types.structs(cl, c._c);     } }, // generate struct declarations
-    FORWARDS        { void compile(C c, int cl) { c.forwards(cl);                 } }, // generate forward declarations only
-    IMPLEMENTATIONS { void compile(C c, int cl) { c.code(cl);                     } }; // generate C functions
+    TYPES           { void compile(C c, int cl) { c._c.print(c._types.types(cl));                    } }, // declare types
+    STRUCTS         { void compile(C c, int cl) { c._types.structs(cl, c._c);                        } }, // generate struct declarations
+    FORWARDS        { void compile(C c, int cl) { if (c._fuir.clazzIsCalled(cl)) { c.forwards(cl); } } }, // generate forward declarations only
+    IMPLEMENTATIONS { void compile(C c, int cl) { if (c._fuir.clazzIsCalled(cl)) { c.code(cl);     } } }; // generate C functions
 
     /**
      * Perform this compilation phase on given clazz using given backend.
@@ -460,6 +460,10 @@ public class C extends ANY
           else
             {
               o = call(cl, c, i, cc0, stack, -1);
+              if (!_fuir.clazzIsCalled(cc0))
+                {
+                  o = CStmnt.lineComment("Feature not called: "+_fuir.clazzAsString(cc0));
+                }
             }
           if (_fuir.clazzFieldIsAdrOfValue(cc0) && _types.hasData(rt))  // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
             {

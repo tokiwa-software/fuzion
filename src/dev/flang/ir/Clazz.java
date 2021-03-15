@@ -140,6 +140,14 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
+   * Is this clazz ever called?  Usually, this is the same as isInstantiated_,
+   * except for instances created by intrinsics: These are created even for
+   * clazzes that are not called.
+   */
+  public boolean isCalled_ = false;
+
+
+  /**
    * If instances of this class are created, this gives a source code position
    * that does create such an instance.  To be used in error messages.
    */
@@ -706,7 +714,7 @@ public class Clazz extends ANY implements Comparable
             Type t = af.thisType().actualType(af, actualGenerics);
             t = actualType(t);
             innerClazz = Clazzes.clazzWithSpecificOuter(t, this);
-            innerClazz.instantiated(p);
+            innerClazz.called(p);
             check
               (innerClazz._type.featureOfType() == af);
           }
@@ -1180,14 +1188,43 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
-   * Mark this as instantiated at given source code position.
+   * Mark this as called at given source code position.
    *
    * @param at gives the position in the source code that causes this instantiation.  p can be
-   * null, which means that this should not be marked as instantiated.
+   * null, which means that this should not be marked as called.
+   */
+  void called(SourcePosition at)
+  {
+    if (at != null && !isCalled_)
+      {
+        isCalled_ = true;
+        instantiated(at);
+        if (feature().impl.kind_ == Impl.Kind.Intrinsic)
+          { // value instances returned from intrinsics are recored to be
+            // instantiated.  (ref instances are excluded since returning, e.g.,
+            // a 'ref string' does not mean that we really have an instance of
+            // string, but more likely an instance of a heir of string).
+            var rc = resultClazz();
+            if (!rc.isRef())
+              {
+                rc.instantiated(at);
+              }
+          }
+      }
+  }
+
+
+  /**
+   * Mark this as instantiated at given source code position.
+   *
+   * @param at gives the position in the source code that causes this instantiation.
    */
   void instantiated(SourcePosition at)
   {
-    if (at != null && !isInstantiated_)
+    if (PRECONDITIONS) require
+      (at != null);
+
+    if (!isInstantiated_)
       {
         isInstantiated_ = true;
         instantiationPos_ = at;
@@ -1196,10 +1233,19 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
+   * Is this clazz called?  This tests this.isCalled_ and isInstantiated().
+   */
+  public boolean isCalled()
+  {
+    return isInstantiated() && isCalled_;
+  }
+
+
+  /**
    * Is this clazz instantiated?  This tests this.isInstantiated_ and,
    * recursively, _outer.isInstantiated().
    */
-  boolean isInstantiated()
+  public boolean isInstantiated()
   {
     return (_outer == null || _outer.isInstantiated()) && isInstantiated_;
   }
@@ -1212,7 +1258,7 @@ public class Clazz extends ANY implements Comparable
    */
   public void check()
   {
-    if (isInstantiated() && abstractCalled_ != null)
+    if (isCalled() && abstractCalled_ != null)
       {
         FeErrors.abstractFeatureNotImplemented(feature(), abstractCalled_, instantiationPos_);
       }
