@@ -25,6 +25,8 @@
 
 redef_args is
 
+  exitCode := 0
+
   o := stdout
 
   chck(b bool, msg string) is
@@ -33,6 +35,7 @@ redef_args is
       s = "PASSED: "
     else
       s = "FAILED: "
+      exitCode = 1
     o.println(s + msg)
 
   Complex<T>(r, i T) is
@@ -62,3 +65,5 @@ redef_args is
   c3 Complex3 = Complex4(3,4)
   check(c3               .r == 3, "double redefined generic field r accessed through super feature set correctly")
   check(c3               .i == 4, "double redefined generic field i accessed through super feature set correctly")
+
+  exit exitCode

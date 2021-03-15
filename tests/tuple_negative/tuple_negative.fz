@@ -25,6 +25,8 @@
 
 tuple_negative {
 
+  exitCode := 0
+
   out := stdout;
   o := out;
   p(s Object) { o.println(s); }
@@ -39,6 +41,7 @@ tuple_negative {
     else
       {
         s = "FAILED: ";
+        exitCode = 1
       }
     out.println(s + msg);
   }
@@ -286,4 +289,5 @@ tuple_negative {
   (_,t15a2,_) := (01, true, 23); // 38. should flag an error, duplicate declaration
   (_,_,t15a3) := (01, true, 23); // 39. should flag an error, duplicate declaration
 
+  exit exitCode
 }

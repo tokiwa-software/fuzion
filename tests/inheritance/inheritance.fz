@@ -25,6 +25,8 @@
 
 inheritance {
 
+  exitCode := 0
+
   out := stdout;
 
   curid i32 = 0;
@@ -287,6 +289,7 @@ inheritance {
       else
         {
           s = "FAILED: ";
+          exitCode = 1
         }
       out.println(s + msg);
     }
@@ -341,6 +344,7 @@ inheritance {
       else
         {
           s = "FAILED: ";
+          exitCode = 1
         }
       out.println(s + msg);
     }
@@ -388,7 +392,7 @@ inheritance {
     A
     {
       a { x }
-      x { out.println("A.x: FAILED."); }
+      x { out.println("A.x: FAILED."); exitCode = 1 }
     }
     B ref : A
     {
@@ -412,6 +416,7 @@ inheritance {
       else
         {
           s = "FAILED: ";
+          exitCode = 1
         }
       out.println(s + msg);
     }
@@ -531,9 +536,11 @@ inheritance {
       else
         {
           out.println(msg + ": " + v + " != " + expected + " *** FAILED.");
+          exitCode = 1
         }
     }
   }
   inheritOuter;
 
+  exit exitCode
 }

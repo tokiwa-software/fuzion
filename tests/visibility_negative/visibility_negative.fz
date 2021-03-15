@@ -25,6 +25,8 @@
 
 visibility_negative
 {
+  exitCode := 0
+
 
   chck(b bool, msg string)
   {
@@ -36,6 +38,7 @@ visibility_negative
     else
       {
         s = "FAILED: ";
+        exitCode = 1
       }
     stdout.println(s + msg);
   }
@@ -701,4 +704,5 @@ visibility_negative
   }
   visiA;
 
+  exit exitCode
 }

@@ -26,6 +26,8 @@
 looptest
 {
 
+  exitCode := 0
+
   out := stdout;
 
   chck(b bool, msg string)
@@ -38,6 +40,7 @@ looptest
     else
       {
         s = "FAILED: ";
+        exitCode = 1
       }
     out.println(s + msg);
   }
@@ -362,4 +365,5 @@ looptest
   chck(testWriteToDeclaredVar2.values.0 == 100  , "testWriteToDeclaredVar returns (100, 10000)");
   chck(testWriteToDeclaredVar2.values.1 == 10000, "testWriteToDeclaredVar returns (100, 10000)");
 
+  exit exitCode
 }

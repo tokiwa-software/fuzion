@@ -25,6 +25,8 @@
 
 genericstest {
 
+  exitCode := 0
+
   o := stdout;
 
   chck(b bool, msg string)
@@ -37,6 +39,7 @@ genericstest {
     else
       {
         s = "FAILED: ";
+        exitCode = 1
       }
     o.println(s + msg);
   }
@@ -226,4 +229,5 @@ genericstest {
   }
   opengenerics12;
 
+  exit exitCode
 }

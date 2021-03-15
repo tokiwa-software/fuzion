@@ -25,6 +25,8 @@
 
 iftest_negative
 {
+  exitCode := 0
+
   out := stdout;
 
   chck(b bool, msg string)
@@ -37,6 +39,7 @@ iftest_negative
     else
       {
         s = "FAILED: ";
+        exitCode = 1
       }
     out.println(s + msg);
   }
@@ -71,4 +74,5 @@ iftest_negative
   testIfBoolean5 { if !false { } else if !false { } } testIfBoolean5; // ok
   testIfBoolean6 { if !true  { } else if !true  { } } testIfBoolean6; // ok
 
+  exit exitCode
 }

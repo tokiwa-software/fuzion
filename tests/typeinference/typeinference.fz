@@ -25,6 +25,7 @@
 
 typeinference
 {
+  exitCode := 0
 
   out := stdout;
 
@@ -38,6 +39,7 @@ typeinference
     else
       {
         s = "FAILED: ";
+        exitCode = 1
       }
     out.println(s + msg);
   }
@@ -124,4 +126,5 @@ typeinference
   }
   // NYI: TBD
 
+  exit exitCode
 }

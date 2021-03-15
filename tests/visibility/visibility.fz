@@ -25,6 +25,7 @@
 
 visibility
 {
+  exitCode := 0
 
   chck(b bool, msg string)
   {
@@ -36,6 +37,7 @@ visibility
     else
       {
         s = "FAILED: ";
+        exitCode = 1
       }
     stdout.println(s + msg);
   }
@@ -49,6 +51,7 @@ visibility
     else
       {
         s = "FAILED: expected "+ b + "got "+a;;
+        exitCode = 1
       }
     stdout.println(s + msg);
   }
@@ -422,4 +425,5 @@ visibility
   }
   visiB;
 
+  exit exitCode
 }

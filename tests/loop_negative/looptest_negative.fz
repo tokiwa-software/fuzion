@@ -25,6 +25,8 @@
 
 looptest_negative
 {
+  exitCode := 0
+
   out := stdout;
 
   chck(b bool, msg string)
@@ -37,6 +39,7 @@ looptest_negative
     else
       {
         s = "FAILED: ";
+        exitCode = 1
       }
     out.println(s + msg);
   }
@@ -191,4 +194,5 @@ looptest_negative
   testBooleanUntil7 { do { } until !false }; testBooleanUntil7;  // ok
   testBooleanUntil8 { do { } until !true  }; testBooleanUntil8;  // ok
 
+  exit exitCode
 }

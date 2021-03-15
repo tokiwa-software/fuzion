@@ -26,6 +26,8 @@
 tupletest
 {
 
+  exitCode := 0
+
   out := stdout;
   o := out;
   p(s Object) { o.println(s); }
@@ -40,6 +42,7 @@ tupletest
     else
       {
         s = "FAILED: ";
+        exitCode = 1
       }
     out.println(s + msg);
   }
@@ -287,4 +290,5 @@ tupletest
 //  (_,t15a2,_) := (01, true, 23); // 28. should flag an error, duplicate declaration
 //  (_,_,t15a3) := (01, true, 23); // 28. should flag an error, duplicate declaration
 
+  exit exitCode
 }
