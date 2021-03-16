@@ -211,6 +211,10 @@ public class CTypes extends ANY
                         {
                           structs(cc, cf);
                         }
+                      else
+                        {
+                          structs(_fuir.clazzObject(), cf);
+                        }
                     }
                   if (_fuir.clazzIsRef(cl))
                     {
@@ -247,7 +251,7 @@ public class CTypes extends ANY
                         }
                       if (_fuir.clazzIsChoiceWithRefs(cl))
                         {
-                          cf.print("  " + _names.struct(_fuir.clazzObject()) + " " + _names.CHOICE_REF_ENTRY_NAME + ";\n");
+                          cf.print("  " + clazz(_fuir.clazzObject()) + " " + _names.CHOICE_REF_ENTRY_NAME + ";\n");
                         }
                       cf.print(" } " + _names.CHOICE_UNION_NAME + ";\n");
                     }
