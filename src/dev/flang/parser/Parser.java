@@ -227,7 +227,10 @@ semi        : SEMI semi
   /**
    * Parse a feature:
    *
-feature     : visibility
+feature     : routine
+            | field
+            ;
+routine     : visibility
               modifiers
               featNames
               formGens
@@ -235,7 +238,14 @@ feature     : visibility
               returnType
               inherits
               contract
-              impl
+              implRout
+            ;
+field       : visibility
+              modifiers
+              featNames
+              returnType
+              contract
+              implFldOrRout
             ;
    */
   FList feature()
@@ -249,7 +259,11 @@ feature     : visibility
     ReturnType r = returnType();
     List<Call> i = inherits();
     Contract c = contract(true);
-    Impl p = impl();
+    Impl p =
+      g == FormalGenerics.NONE &&
+      a.isEmpty()              &&
+      i.isEmpty()                 ? implFldOrRout()
+                                  : implRout();
     return new FList(pos, v,m,r,n,g,a,i,c,p);
   }
 
@@ -2800,19 +2814,16 @@ condList    : cond ( COMMA condList
 
 
   /**
-   * Parse impl
+   * Parse implRout
    *
-impl        : block
+implRout    : block
             | "is" "abstract"
             | "is" "intrinsic"
             | "is" block
             | ARROW e=block
-            | implFldInit
-            | implFldDef
-            |
             ;
    */
-  Impl impl()
+  Impl implRout()
   {
     SourcePosition pos = posObject();
     Impl result;
@@ -2821,9 +2832,37 @@ impl        : block
                                     skip(Token.t_intrinsic) ? Impl.INTRINSIC :
                                     new Impl(pos, block(true)      , Impl.Kind.Routine   ); }
     else if (skip("=>")) { result = new Impl(pos, block(true)      , Impl.Kind.RoutineDef); }
+    else
+      {
+        syntaxError(pos(), "Expected 'is', '{' or '=>' in routine declaration", "implRout");
+        result = Impl.ERROR;
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse implFldOrRout
+   *
+impl        : implRout
+            | implFldInit
+            | implFldDef
+            |
+            ;
+   */
+  Impl implFldOrRout()
+  {
+    SourcePosition pos = posObject();
+    Impl result;
+    if (currentAtMinIndent() == Token.t_lbrace ||
+        currentAtMinIndent() == Token.t_is     ||
+        isOperator("=>")                          )
+      {
+        return implRout();
+      }
     else if (skip('=') ) { result = skip('?')
-                                    ? Impl.FIELD
-                                    : new Impl(pos, exprAtMinIndent(), Impl.Kind.FieldInit ); }
+                                  ? Impl.FIELD
+                                  : new Impl(pos, exprAtMinIndent(), Impl.Kind.FieldInit ); }
     else if (skip(":=")) { result = new Impl(pos, exprAtMinIndent(), Impl.Kind.FieldDef  ); }
     else                 { result = Impl.FIELD;                                             }
     return result;
@@ -2839,7 +2878,7 @@ implFldInit : EQ exprAtMinIndent
   Impl implFldInit()
   {
     fork().matchOperator("=", "implInit");
-    return impl();
+    return implFldOrRout();
   }
 
 
@@ -2852,7 +2891,7 @@ implFldDef  : DEF exprAtMinIndent
   Impl implFldDef()
   {
     fork().matchOperator(":=", "implDef");
-    return impl();
+    return implFldOrRout();
   }
 
 

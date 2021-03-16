@@ -50,6 +50,11 @@ public class Impl extends ANY
 
   public static final Impl INTRINSIC = new Impl(Kind.Intrinsic);
 
+  /**
+   * A dummy Impl instance used in case of parsing error.
+   */
+  public static final Impl ERROR = new Impl(Kind.Intrinsic);
+
 
   /*----------------------------  variables  ----------------------------*/
 
