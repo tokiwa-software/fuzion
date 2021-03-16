@@ -2329,6 +2329,10 @@ public class Feature extends ANY implements Stmnt, Comparable
             p.calledFeature().markUsed(res, p.pos);
           }
         resultType().markFeaturesUsed(res, pos);
+        if (choiceTag_ != null)
+          {
+            choiceTag_.markUsed(res, pos);
+          }
 
         visit(new FeatureVisitor() {
             public Call  action(Call    c, Feature outer) { c.findUsedFeatures(res); return c; }
