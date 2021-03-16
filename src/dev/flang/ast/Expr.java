@@ -292,14 +292,19 @@ public abstract class Expr extends ANY implements Stmnt
   Expr box(Type frmlT)
   {
     Expr result = this;
+    var t = type();
 
-    if (!type().isRef() && type() != Types.resolved.t_void &&
+    if (!t.isRef() && t != Types.resolved.t_void &&
         (frmlT.isRef() ||
          (frmlT.isChoice() &&
-          !frmlT.isAssignableFrom(type()) &&
-          frmlT.isAssignableFrom(type().asRef()))))
+          !frmlT.isAssignableFrom(t) &&
+          frmlT.isAssignableFrom(t.asRef()))))
       {
         result = new Box(this);
+      }
+    if (frmlT.isChoice() && t != frmlT && frmlT.isAssignableFrom(t))
+      {
+        result = new Tag(this, frmlT);
       }
     return result;
   }

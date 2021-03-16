@@ -83,6 +83,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/SingleType.java \
           $(SRC)/dev/flang/ast/Stmnt.java \
           $(SRC)/dev/flang/ast/StrConst.java \
+          $(SRC)/dev/flang/ast/Tag.java \
           $(SRC)/dev/flang/ast/This.java \
           $(SRC)/dev/flang/ast/Type.java \
           $(SRC)/dev/flang/ast/Types.java \

@@ -45,6 +45,7 @@ import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.Match; // NYI: remove dependency!
 import dev.flang.ast.SingleType; // NYI: remove dependency!
+import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 
@@ -913,6 +914,7 @@ public class Clazz extends ANY implements Comparable
     public void actionAfter(Case   c, Feature outer) { Clazzes.findClazzes(c, Clazz.this); }
     public Call action     (Call   c, Feature outer) { Clazzes.findClazzes(c, Clazz.this); return c; }
     public void action     (Match  m, Feature outer) { Clazzes.findClazzes(m, Clazz.this); }
+    public void action     (Tag    t, Feature outer) { Clazzes.findClazzes(t, Clazz.this); }
     void visitAncestors(Feature f)
     {
       f.visit(this);

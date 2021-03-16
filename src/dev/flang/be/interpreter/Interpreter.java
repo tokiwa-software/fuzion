@@ -66,6 +66,7 @@ import dev.flang.ast.Singleton; // NYI: remove dependency! Use dev.flang.fuir in
 import dev.flang.ast.SingleType; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Stmnt; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.StrConst; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.Tag; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Type; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
 
@@ -240,8 +241,7 @@ public class Interpreter extends Backend
         Value v    = execute(a.value   , staticClazz, cur);
         Value thiz = execute(a.getOuter, staticClazz, cur);
         Clazz sClazz = staticClazz.getRuntimeClazz(a.tid_ + 0);
-        Clazz vClazz = staticClazz.getRuntimeClazz(a.tid_ + 1);
-        setField(a.assignedField, sClazz, thiz, v, vClazz != null ? vClazz._type : null);
+        setField(a.assignedField, sClazz, thiz, v);
         result = Value.NO_VALUE;
       }
 
@@ -330,7 +330,7 @@ public class Interpreter extends Backend
                   {
                     Value v = tag < 0 ? refVal
                                       : getChoiceVal(sf, staticSubjectClazz, sub, tag);
-                    setField(c.field, staticClazz, cur, v, c.field.resultType());
+                    setField(c.field, staticClazz, cur, v);
                     matches = true;
                   }
               }
@@ -422,7 +422,7 @@ public class Interpreter extends Backend
                     Value v = getField(f, vc, val);
                     // NYI: Check that this works well for internal fields such as choice tags.
                     // System.out.println("Box "+vc+" => "+rc+" copying "+f.qualifiedName()+" "+v);
-                    setField(f, rc, result, v, rc.clazzForField(f)._type);
+                    setField(f, rc, result, v);
                   }
               }
             if (vc.isChoice())
@@ -478,6 +478,21 @@ public class Interpreter extends Backend
             result = value(t.str);
             _cachedStrings_.put(str, result);
           }
+      }
+
+    else if (s instanceof Tag)
+      {
+        var t = (Tag) s;
+        Value v       = execute(t._value, staticClazz, cur);
+        Clazz vClazz  = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 0);
+        Clazz tClazz  = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 1);
+        result        = new Instance(tClazz);
+        LValue slot   = result.at(tClazz, 0); // NYI: needed? just result?
+        setChoiceField(tClazz.feature(),
+                       tClazz,
+                       slot,
+                       vClazz._type,
+                       v);
       }
 
     else if (s instanceof Check)
@@ -544,13 +559,13 @@ public class Interpreter extends Backend
     Instance result = new Instance(cl);
     result.string = str; // NYI: remove eventually, only for convenience in intrinsic features
     byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-    setField(Types.resolved.f_Array_length, cl, result, new i32Value(bytes.length), Types.resolved.t_i32);
+    setField(Types.resolved.f_Array_length, cl, result, new i32Value(bytes.length));
     Instance arrayData = new Instance(bytes.length);
     for (int i = 0; i<bytes.length; i++)
       {
         arrayData.nonrefs[i] = bytes[i];
       }
-    setField(Types.resolved.f_Array_data, cl, result, arrayData, Types.resolved.t_object);
+    setField(Types.resolved.f_Array_data, cl, result, arrayData);
 
     return result;
   }
@@ -583,7 +598,7 @@ public class Interpreter extends Backend
             ArrayList<Type> argTypes = new ArrayList<>();
             argTypes.add(outerF.resultType());
             callOnInstance(thiz, sc, res, args, argTypes);
-            setField(thiz, sc._outer, outer, res, thiz.resultType()); // singletonClazz_._type);
+            setField(thiz, sc._outer, outer, res); // singletonClazz_._type);
             result = res;
           }
       }
@@ -744,8 +759,7 @@ public class Interpreter extends Backend
                 setField(a.select(si),
                          staticClazz,
                          cur,
-                         args    .get(aix),
-                         argTypes.get(aix));
+                         args    .get(aix));
                 aix++;
                 si++;
               }
@@ -755,8 +769,7 @@ public class Interpreter extends Backend
             setField(a,
                      staticClazz,
                      cur,
-                     args    .get(aix),
-                     argTypes.get(aix));
+                     args    .get(aix));
             aix++;
           }
       }
@@ -868,11 +881,11 @@ public class Interpreter extends Backend
       }
     else
       { // store tag and value separately
-        setField(thiz.choiceTag_, choiceClazz, choice, new i32Value(tag), Types.resolved.t_i32);
+        setField(thiz.choiceTag_, choiceClazz, choice, new i32Value(tag));
       }
     check
       (vclazz._type.isAssignableFrom(staticTypeOfValue));
-    setFieldNoChoice(thiz, vclazz, valSlot, v);
+    setFieldSlot(thiz, vclazz, valSlot, v);
   }
 
 
@@ -1129,8 +1142,7 @@ public class Interpreter extends Backend
 
 
   /**
-   * setFieldNoChoice stores a value into a field. It does not take into account
-   * the bookkeeping when assigning a value to a choice type.
+   * setFieldSlot stores a value into a field.
    *
    * @param fclazz is the static type of the field to be written to
    *
@@ -1138,7 +1150,7 @@ public class Interpreter extends Backend
    *
    * @param v the value to be stored in slot
    */
-  private static void setFieldNoChoice(Feature thiz, Clazz fclazz, LValue slot, Value v)
+  private static void setFieldSlot(Feature thiz, Clazz fclazz, LValue slot, Value v)
   {
     if (PRECONDITIONS) require
       (fclazz != null,
@@ -1165,39 +1177,19 @@ public class Interpreter extends Backend
    * @param curValue the Instance or LValue of that contains the written field
    *
    * @param v the value to be stored in the field
-   *
-   * @param staticTypeOfValue the static type of the value stored in the
-   * field. This is needed to set the tag when storing into a field of choice
-   * type.
    */
-  public static void setField(Feature thiz, Clazz staticClazz, Value curValue, Value v, Type staticTypeOfValue)
+  public static void setField(Feature thiz, Clazz staticClazz, Value curValue, Value v)
   {
     if (PRECONDITIONS) require
       (thiz.isField() || thiz.returnType == SingleType.INSTANCE,
        (curValue instanceof Instance) || (curValue instanceof LValue),
-       staticClazz != null,
-       staticTypeOfValue == null || Types.intern(staticTypeOfValue) == staticTypeOfValue);
+       staticClazz != null);
 
     if (Clazzes.isUsed(thiz, staticClazz))
       {
         Clazz  fclazz = staticClazz.clazzForField(thiz);
         LValue slot   = fieldSlot(thiz, staticClazz, fclazz, curValue);
-
-        if (fclazz.isChoice() &&
-            fclazz._type != staticTypeOfValue &&
-            !thiz.isOuterRef() /* outerref might be an adr of a value type */
-            )
-          {
-            setChoiceField(fclazz.feature(),
-                           fclazz,
-                           slot,
-                           staticTypeOfValue,
-                           v);
-          }
-        else
-          {
-            setFieldNoChoice(thiz, fclazz, slot, v);
-          }
+        setFieldSlot(thiz, fclazz, slot, v);
       }
   }
 
@@ -1215,7 +1207,7 @@ public class Interpreter extends Backend
     var or = thiz.outerRef_;
     if (or != null && or.isUsed())
       {
-        setField(or, staticClazz, cur, outer, staticClazz._outer._type);
+        setField(or, staticClazz, cur, outer);
       }
   }
 

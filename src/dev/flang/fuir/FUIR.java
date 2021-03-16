@@ -47,6 +47,7 @@ import dev.flang.ast.Nop; // NYI: remove dependency
 import dev.flang.ast.Singleton; // NYI: remove dependency
 import dev.flang.ast.Stmnt; // NYI: remove dependency
 import dev.flang.ast.StrConst; // NYI: remove dependency
+import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Types; // NYI: remove dependency
 
 import dev.flang.ir.Backend;
@@ -113,15 +114,6 @@ public class FUIR extends ANY
    * NYI: remove once bytecode instructions are here.
    */
   static final Expr WIPE_STACK = new IntConst(42);
-
-
-  static abstract class Tag extends IntConst
-  {
-    Tag() { super(4711); }
-    abstract Clazz valuecl(Clazz outerClazz);
-    abstract Clazz newcl  (Clazz outerClazz);
-  }
-
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -811,16 +803,6 @@ public class FUIR extends ANY
       {
         var a = (Assign) s;
         toStack(l, a.value);
-        var field = a.assignedField;
-        if (field.resultType().isChoice() &&
-            field.resultType() != a.value.type())
-          {
-            l.add(new Tag()
-              {
-                Clazz valuecl(Clazz outerClazz) { return  (Clazz) outerClazz.getRuntimeData(a.tid_ + 1); }
-                Clazz newcl  (Clazz outerClazz) { return ((Clazz) outerClazz.getRuntimeData(a.tid_ + 2)).resultClazz(); }
-              });
-          }
         toStack(l, a.getOuter);
         l.add(a);
       }
@@ -906,6 +888,12 @@ public class FUIR extends ANY
             var caseCode = toStack(c.code);
             l.add(new IntConst(_codeIds.add(caseCode)));
           }
+      }
+    else if (s instanceof Tag)
+      {
+        Tag t = (Tag) s;
+        toStack(l, t._value);
+        l.add(t);
       }
     else if (s instanceof Nop)
       {
@@ -1064,7 +1052,7 @@ public class FUIR extends ANY
 
     var outerClazz = _clazzIds.get(cl);
     var t = (Tag) _codeIds.get(c).get(ix);
-    var vcl = t.valuecl(outerClazz);
+    var vcl = (Clazz) outerClazz.getRuntimeData(t._valAndTaggedClazzId + 0);
     return vcl == null ? -1 : _clazzIds.get(vcl);
   }
 
@@ -1077,7 +1065,7 @@ public class FUIR extends ANY
 
     var outerClazz = _clazzIds.get(cl);
     var t = (Tag) _codeIds.get(c).get(ix);
-    var ncl = t.newcl(outerClazz);
+    var ncl = (Clazz) outerClazz.getRuntimeData(t._valAndTaggedClazzId + 1);
     return ncl == null ? -1 : _clazzIds.get(ncl);
   }
 
