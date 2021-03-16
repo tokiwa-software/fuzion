@@ -2328,7 +2328,7 @@ public class Feature extends ANY implements Stmnt, Comparable
           {
             p.calledFeature().markUsed(res, p.pos);
           }
-        resultType().markFeaturesUsed(res, pos);
+        resultType().findUsedFeatures(res, pos);
         if (choiceTag_ != null)
           {
             choiceTag_.markUsed(res, pos);
@@ -2336,11 +2336,11 @@ public class Feature extends ANY implements Stmnt, Comparable
 
         visit(new FeatureVisitor() {
             // it does not seem to be necessary to mark all features in types as used:
-            // public Type  action(Type    t, Feature outer) { t.markFeaturesUsed(res, pos); return t; }
+            // public Type  action(Type    t, Feature outer) { t.findUsedFeatures(res, pos); return t; }
             public Call  action(Call    c, Feature outer) { c.findUsedFeatures(res); return c; }
             public Stmnt action(Feature f, Feature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
             public void  action(Match   m, Feature outer) { m.findUsedFeatures(res);           }
-            public void  action(Tag     t, Feature outer) { t._taggedType.markFeaturesUsed(res, t.pos()); }
+            public void  action(Tag     t, Feature outer) { t._taggedType.findUsedFeatures(res, t.pos()); }
           });
 
         state_ = State.FOUND_USED_FEATURES;

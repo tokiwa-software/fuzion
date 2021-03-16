@@ -1494,14 +1494,14 @@ public class Type extends ANY implements Comparable
   /**
    * Mark all features used within this type as used.
    */
-  void markFeaturesUsed(Resolution res, SourcePosition pos)
+  void findUsedFeatures(Resolution res, SourcePosition pos)
   {
     if (!isGenericArgument())
       {
         featureOfType().markUsed(res, pos);
         for (var t : _generics)
           {
-            t.markFeaturesUsed(res, pos);
+            t.findUsedFeatures(res, pos);
           }
       }
   }
