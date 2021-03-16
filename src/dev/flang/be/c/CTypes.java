@@ -204,6 +204,14 @@ public class CTypes extends ANY
                           structs(rcl, cf);
                         }
                     }
+                  for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
+                    {
+                      var cc = _fuir.clazzChoice(cl, i);
+                      if (!_fuir.clazzIsRef(cc))
+                        {
+                          structs(cc, cf);
+                        }
+                    }
                   if (_fuir.clazzIsRef(cl))
                     {
                       structs(_fuir.clazzAsValue(cl), cf);
