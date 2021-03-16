@@ -1253,6 +1253,7 @@ public class Clazz extends ANY implements Comparable
             // to be considered instantiated if there is any clazz D that
             // normalize() would replace by C if it occurs as an outer clazz.
             _outer == Clazzes.object.get() ||
+            _outer == Clazzes.string.get() ||
 
             _outer.isInstantiated()) && isInstantiated_;
   }
