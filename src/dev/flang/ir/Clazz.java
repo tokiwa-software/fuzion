@@ -1247,7 +1247,14 @@ public class Clazz extends ANY implements Comparable
    */
   public boolean isInstantiated()
   {
-    return (_outer == null || _outer == Clazzes.object.get() || _outer.isInstantiated()) && isInstantiated_;
+    return (_outer == null ||
+
+            // NYI: Once Clazz.normalize() is implemented better, a clazz C has
+            // to be considered instantiated if there is any clazz D that
+            // normalize() would replace by C if it occurs as an outer clazz.
+            _outer == Clazzes.object.get() ||
+
+            _outer.isInstantiated()) && isInstantiated_;
   }
 
 
