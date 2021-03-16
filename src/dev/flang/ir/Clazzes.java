@@ -640,31 +640,6 @@ public class Clazzes extends ANY
             c.sid_ = outerClazz.feature().getRuntimeClazzId();
           }
         outerClazz.setRuntimeData(c.sid_, _backend_.callable(dynamic, innerClazz, tclazz));
-
-        ArrayList<Type> argTypes = c.argTypes_;
-        int i = 0;
-        for (Type t : argTypes)
-          {
-            Type at = outerClazz.actualType(t);
-            if (t != at)
-              {
-                if (argTypes == c.argTypes_)
-                  {
-                    argTypes = new ArrayList<>();
-                    for (Type nt : c.argTypes_)
-                      {
-                        argTypes.add(nt);
-                      }
-                  }
-                argTypes.set(i, at);
-              }
-            i++;
-          }
-        if (c.atid_ < 0)
-          {
-            c.atid_ = outerClazz.feature().getRuntimeClazzId();
-          }
-        outerClazz.setRuntimeData(c.atid_, argTypes);
       }
   }
 

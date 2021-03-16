@@ -172,11 +172,9 @@ public class Interpreter extends Backend
     ArrayList<Value> mainargs = new ArrayList<>();
     mainargs.add(Instance.universe); // outer instance
     // mainargs.add(null); // NYI: args
-    ArrayList<Type> argTypes = new ArrayList<>();
-    argTypes.add(Clazzes.universe.get()._type);
     try
       {
-        callable(false, _fuir.main(), Clazzes.universe.get()).call(mainargs, argTypes);
+        callable(false, _fuir.main(), Clazzes.universe.get()).call(mainargs);
       }
     catch (RuntimeException | Error e)
       {
@@ -225,8 +223,7 @@ public class Interpreter extends Backend
             var cl = ((Instance) args.get(0)).clazz();
             ca = (Callable) cl._dynamicBinding.callable(c.calledFeature());
           }
-        ArrayList<Type> argTypes = (ArrayList) staticClazz.getRuntimeData(c.atid_);
-        result = ca.call(args, argTypes);
+        result = ca.call(args);
         _callStack.pop();
       }
 
@@ -595,9 +592,7 @@ public class Interpreter extends Backend
             Instance res = new Instance(sc);
             ArrayList<Value> args = new ArrayList<>();
             args.add(outer);
-            ArrayList<Type> argTypes = new ArrayList<>();
-            argTypes.add(outerF.resultType());
-            callOnInstance(thiz, sc, res, args, argTypes);
+            callOnInstance(thiz, sc, res, args);
             setField(thiz, sc._outer, outer, res); // singletonClazz_._type);
             result = res;
           }
@@ -634,18 +629,18 @@ public class Interpreter extends Backend
       {
         check
           (Errors.count() > 0);
-        result = (args, argTypes) -> { Errors.fatal("null feature called"); return Value.NO_VALUE; };
+        result = (args) -> { Errors.fatal("null feature called"); return Value.NO_VALUE; };
       }
     else
       {
         var f = innerClazz.feature();
         if (f.impl == Impl.ABSTRACT)
           {
-            result = (args, argTypes) -> { Errors.fatal("abstract feature " + f.qualifiedName() + " called on " + args.get(0) + " of clazz "+outerClazz + "\n" + callStack()); return Value.NO_VALUE; };
+            result = (args) -> { Errors.fatal("abstract feature " + f.qualifiedName() + " called on " + args.get(0) + " of clazz "+outerClazz + "\n" + callStack()); return Value.NO_VALUE; };
           }
         else if (f.isField())
           {
-            // result = (args, argTypes) -> getField(f, outerClazz, args.get(0));
+            // result = (args) -> getField(f, outerClazz, args.get(0));
             //
             // specialize for i32.val and bool.tag
             var ocv = outerClazz.asValue();
@@ -661,14 +656,14 @@ public class Interpreter extends Backend
                    ocv != Clazzes.u32 .getIfCreated() || f.qualifiedName().equals("u32.val"),
                    ocv != Clazzes.u64 .getIfCreated() || f.qualifiedName().equals("u64.val"),
                    ocv != Clazzes.bool.getIfCreated() || f.qualifiedName().equals("bool." + FuzionConstants.CHOICE_TAG_NAME));
-                result = (args, argTypes) -> args.get(0);
+                result = (args) -> args.get(0);
               }
             else
               {
                 Clazz fclazz = outerClazz.clazzForField(f);
                 if (outerClazz.isRef())
                   {
-                    result = (args, argTypes) ->
+                    result = (args) ->
                       {
                         LValue slot = fieldSlot(f, outerClazz, fclazz, args.get(0));
                         return loadField(f, fclazz, slot);
@@ -679,7 +674,7 @@ public class Interpreter extends Backend
                     result = new Callable()
                       {
                         int off = -1;
-                        public Value call(ArrayList<Value> args, ArrayList<Type> argTypes)
+                        public Value call(ArrayList<Value> args)
                         {
                           if (off < 0)
                             {
@@ -693,7 +688,7 @@ public class Interpreter extends Backend
                 else
                   {
                     var off = Layout.get(outerClazz).offset(f);
-                    result = (args, argTypes) ->
+                    result = (args) ->
                       {
                         var slot = args.get(0).at(fclazz, off);
                         return loadField(f, fclazz, slot);
@@ -703,7 +698,7 @@ public class Interpreter extends Backend
           }
         else if (f.isSingleton() && !f.isUniverse())
           {
-            result = (args, argTypes) -> getSingletonInstance(f);
+            result = (args) -> getSingletonInstance(f);
           }
         else if (f.impl == Impl.INTRINSIC)
           {
@@ -711,11 +706,11 @@ public class Interpreter extends Backend
           }
         else if (innerClazz == Clazzes.universe.get())
           {
-            result = (args, argTypes) -> callOnInstance(f, innerClazz, Instance.universe, args, argTypes);
+            result = (args) -> callOnInstance(f, innerClazz, Instance.universe, args);
           }
         else
           {
-            result = (args, argTypes) -> callOnInstance(f, innerClazz, new Instance(innerClazz), args, argTypes);
+            result = (args) -> callOnInstance(f, innerClazz, new Instance(innerClazz), args);
           }
       }
     return result;
@@ -732,12 +727,11 @@ public class Interpreter extends Backend
    *
    * @return
    */
-  public static Value callOnInstance(Feature thiz, Clazz staticClazz, Instance cur, ArrayList<Value> args, ArrayList<Type> argTypes)
+  public static Value callOnInstance(Feature thiz, Clazz staticClazz, Instance cur, ArrayList<Value> args)
   {
     if (PRECONDITIONS) require
       (!thiz.isField(),
        thiz.impl != Impl.INTRINSIC,
-       args.size() == argTypes.size(),
        args.size() == thiz.arguments.size() + 1 || thiz.hasOpenGenericsArgList() /* e.g. in call Tuple<i32>(42) */
        );
 
@@ -782,8 +776,7 @@ public class Interpreter extends Backend
         callOnInstance(p.calledFeature(),
                        staticClazz,
                        cur,
-                       pargs,
-                       p.argTypes_);
+                       pargs);
       }
 
     // NYI: Precondition should be checked by the caller _before_ dynamic

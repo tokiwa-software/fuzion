@@ -46,11 +46,9 @@ public interface Callable extends BackendCallable
    *
    * @param args the arguments to be passed to the call
    *
-   * @param argTypes static types of the arguments to this call.
-   *
    * @return the result returned by the call.
    */
-  Value call(ArrayList<Value> args, ArrayList<Type> argTypes);
+  Value call(ArrayList<Value> args);
 
 }
 

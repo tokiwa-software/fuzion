@@ -150,14 +150,6 @@ public class Call extends Expr
 
 
   /**
-   * Resoled actual argument types. This is initialized during checkTypes.  This
-   * information is needed for storing a value in a field of choice type: The
-   * static argument type decides the value of the type tag.
-   */
-  public ArrayList<Type> argTypes_;
-
-
-  /**
    * Will be set to true for a call to a direct parent feature in an inheritance
    * call.
    */
@@ -165,7 +157,7 @@ public class Call extends Expr
 
 
   // NYI: Move sid_ to target?
-  public int sid_ = -1 , atid_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+  public int sid_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
 
   /**
@@ -1392,10 +1384,6 @@ public class Call extends Expr
    */
   public void checkTypes(Feature outer)
   {
-    argTypes_ = new ArrayList<Type>(); // allocate argTypes_ early such that we
-                                       // do not need null checks even in case
-                                       // we found errors
-
     if (forFun)
       { // this is a call to "b" within an expression of the form "fun a.b". In
         // this case, there must be no generics nor actual arguments to "b", the
@@ -1423,12 +1411,10 @@ public class Call extends Expr
           }
         else
           {
-            argTypes_.add(target.type());
             int count = 0;
             for (Expr actl : _actuals)
               {
                 Type actlT = actl.type();
-                argTypes_.add(actlT);
 
                 check
                   (actlT == Types.intern(actlT));
