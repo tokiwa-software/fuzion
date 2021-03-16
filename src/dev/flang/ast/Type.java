@@ -1490,6 +1490,22 @@ public class Type extends ANY implements Comparable
     return result;
   }
 
+
+  /**
+   * Mark all features used within this type as used.
+   */
+  void markFeaturesUsed(Resolution res, SourcePosition pos)
+  {
+    if (!isGenericArgument())
+      {
+        featureOfType().markUsed(res, pos);
+        for (var t : _generics)
+          {
+            t.markFeaturesUsed(res, pos);
+          }
+      }
+  }
+
 }
 
 /* end of file */

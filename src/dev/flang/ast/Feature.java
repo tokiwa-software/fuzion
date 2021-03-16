@@ -2328,16 +2328,13 @@ public class Feature extends ANY implements Stmnt, Comparable
           {
             p.calledFeature().markUsed(res, p.pos);
           }
-        var t = resultType();
-        if (!t.isGenericArgument())
-          {
-            t.featureOfType().markUsed(res, pos);
-          }
+        resultType().markFeaturesUsed(res, pos);
 
         visit(new FeatureVisitor() {
             public Call  action(Call    c, Feature outer) { c.findUsedFeatures(res); return c; }
             public Stmnt action(Feature f, Feature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
             public void  action(Match   m, Feature outer) { m.findUsedFeatures(res);           }
+            public void  action(Tag     t, Feature outer) { t._taggedType.markFeaturesUsed(res, t.pos()); }
           });
 
         state_ = State.FOUND_USED_FEATURES;
