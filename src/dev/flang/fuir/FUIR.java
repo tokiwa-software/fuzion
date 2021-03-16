@@ -236,8 +236,8 @@ public class FUIR extends ANY
    */
   public int clazzNumChoices(int cl)
   {
-    var cgs = _clazzIds.get(cl).choiceGenerics();
-    return cgs == null ? -1 : cgs.size();
+    var cc = _clazzIds.get(cl);
+    return cc.isChoice() ? cc.choiceGenerics().size() : -1;
   }
 
 
