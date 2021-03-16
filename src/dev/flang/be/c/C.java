@@ -400,12 +400,6 @@ public class C extends ANY
               _c.print(t.assign(stack.get(ti).castTo(tt0)));
               stack.set(ti, t);
               var id = t.deref().field("clazzId");
-              if (ccs.length == 0)
-                {
-                  Errors.error("No call target found.",
-                               "While creating code for " + _fuir.clazzAsString(cl) + "\n" +
-                               "Attempting call to " + _fuir.clazzAsString(cc0));
-                }
               CExpr res = null;
               if (_types.hasData(rt) &&
                   (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
@@ -413,7 +407,12 @@ public class C extends ANY
                   res = new CIdent(_names.newTemp());
                   _c.println(_types.clazzField(cc0) + " " + res.code() + ";");
                 }
-              if (ccs.length > 2)
+              if (ccs.length == 0)
+                {
+                  _c.println("fprintf(stderr,\"*** %s:%d no targets for dynamic call to " + _fuir.clazzAsString(cc0) +
+                             " within "+_fuir.clazzAsString(cl)+"\\n\", __FILE__, __LINE__); exit(1);");
+                }
+              else if (ccs.length > 2)
                 {
                   _c.println("switch (" + id.code() + ") {");
                   _c.indent();
@@ -447,7 +446,8 @@ public class C extends ANY
                 }
               if (ccs.length > 2)
                 {
-                  _c.println("default: { fprintf(stderr,\"*** %s:%d unhandled dynamic call target %d in call to "+_fuir.clazzAsString(cc0)+" within "+_fuir.clazzAsString(cl)+"\\n\", __FILE__, __LINE__, " + id.code() + "); exit(1); }");
+                  _c.println("default: { fprintf(stderr,\"*** %s:%d unhandled dynamic call target %d in call to " + _fuir.clazzAsString(cc0) +
+                             " within "+_fuir.clazzAsString(cl)+"\\n\", __FILE__, __LINE__, " + id.code() + "); exit(1); }");
                   _c.unindent();
                   _c.println("}");
                 }
