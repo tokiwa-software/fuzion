@@ -372,7 +372,7 @@ public class C extends ANY
           else
             {
               var val = pop(stack, vc);
-              var t = new CIdent(_names.newTemp());
+              var t = _names.newTemp();
               o = CStmnt.seq(CStmnt.lineComment("Box " + _fuir.clazzAsString(vc)),
                              CStmnt.decl(_types.clazz(rc), t),
                              t.assign(CExpr.call("malloc", new List<>(new CIdent(_names.struct(rc)).sizeOfType()))),
@@ -393,7 +393,7 @@ public class C extends ANY
               var ccs = _fuir.callCalledClazzes(cl, c, i);
               var ac = _fuir.callArgCount(c, i);
               var tc = _fuir.callTargetClazz(cl, c, i);
-              var t = new CIdent(_names.newTemp());
+              var t = _names.newTemp();
               var ti = stack.size() - ac - 1;
               var tt0 = _types.clazz(tc);
               _c.println(tt0 + " " + t.code()+ ";");
@@ -404,7 +404,7 @@ public class C extends ANY
               if (_types.hasData(rt) &&
                   (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
                 {
-                  res = new CIdent(_names.newTemp());
+                  res = _names.newTemp();
                   _c.println(_types.clazzField(cc0) + " " + res.code() + ";");
                 }
               if (ccs.length == 0)
@@ -492,7 +492,7 @@ public class C extends ANY
           var bytes = _fuir.strConst(c, i);
           var tmp = _names.newTemp();
           o = constString(bytes, tmp);
-          stack.push(new CIdent(tmp));
+          stack.push(tmp);
           break;
         }
       case Match:
@@ -571,7 +571,7 @@ public class C extends ANY
    * Create code to create a constant string and assign it to a new temp
    * variable. Return an CExpr that reads this variable.
    */
-  CStmnt constString(byte[] bytes, String tmp)
+  CStmnt constString(byte[] bytes, CIdent tmp)
   {
     StringBuilder sb = new StringBuilder();
     for (var bb : bytes)
@@ -580,12 +580,11 @@ public class C extends ANY
         sb.append("\\"+((b >> 6) & 7)+((b >> 3) & 7)+(b & 7));
         sb.append("...");
       }
-    var t = new CIdent(tmp);
-    return CStmnt.seq(CStmnt.decl("fzT__Rconststring *", t),
-                      new CIdent(tmp).assign(CExpr.call("malloc", new List<>(new CIdent("fzT__Rconststring").sizeOfType()))),
-                      t.deref().field("clazzId").assign(_names.clazzId(_fuir.clazz_conststring())),
-                      t.deref().field(_names.FIELDS_IN_REF_CLAZZ).field("fzF_1_data").assign(CExpr.string(sb.toString()).castTo("void *")),
-                      t.deref().field(_names.FIELDS_IN_REF_CLAZZ).field("fzF_3_length").assign(CExpr.int32const(bytes.length)));
+    return CStmnt.seq(CStmnt.decl("fzT__Rconststring *", tmp),
+                      tmp.assign(CExpr.call("malloc", new List<>(new CIdent("fzT__Rconststring").sizeOfType()))),
+                      tmp.deref().field("clazzId").assign(_names.clazzId(_fuir.clazz_conststring())),
+                      tmp.deref().field(_names.FIELDS_IN_REF_CLAZZ).field("fzF_1_data").assign(CExpr.string(sb.toString()).castTo("void *")),
+                      tmp.deref().field(_names.FIELDS_IN_REF_CLAZZ).field("fzF_3_length").assign(CExpr.int32const(bytes.length)));
   }
 
 
@@ -627,7 +626,7 @@ public class C extends ANY
           var call = CExpr.call(_names.function(cc), args(cl, c, i, cc, stack, ac, castTarget));
           if (_types.hasData(rt))
             {
-              var tmp = new CIdent(_names.newTemp());
+              var tmp = _names.newTemp();
               res = tmp;
               result = CStmnt.seq(CStmnt.decl(_types.clazz(rt), tmp),
                                   res.assign(call));

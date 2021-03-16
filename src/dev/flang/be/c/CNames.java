@@ -398,9 +398,9 @@ public class CNames extends ANY
   /**
    * Create a name for a new local temp variable.
    */
-  String newTemp()
+  CIdent newTemp()
   {
-    return TEMP_VAR_PREFIX + (_tempVarId++);
+    return new CIdent(TEMP_VAR_PREFIX + (_tempVarId++));
   }
 
 
