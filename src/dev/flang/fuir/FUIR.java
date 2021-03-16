@@ -1051,7 +1051,7 @@ public class FUIR extends ANY
 
     var outerClazz = _clazzIds.get(cl);
     var a = (Assign) _codeIds.get(c).get(ix);
-    var ocl = (Clazz) outerClazz.getRuntimeData(a.tid_);
+    var ocl = (Clazz) outerClazz.getRuntimeData(a.tid_);  // NYI: This should be the same as assigneField._outer
     return _clazzIds.get(ocl);
   }
 
@@ -1093,6 +1093,7 @@ public class FUIR extends ANY
     Clazz vc = (Clazz) outerClazz.getRuntimeData(b._valAndRefClazzId);
     return _clazzIds.get(vc);
   }
+
   public int boxResultClazz(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
