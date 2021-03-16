@@ -2335,6 +2335,8 @@ public class Feature extends ANY implements Stmnt, Comparable
           }
 
         visit(new FeatureVisitor() {
+            // it does not seem to be necessary to mark all features in types as used:
+            // public Type  action(Type    t, Feature outer) { t.markFeaturesUsed(res, pos); return t; }
             public Call  action(Call    c, Feature outer) { c.findUsedFeatures(res); return c; }
             public Stmnt action(Feature f, Feature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
             public void  action(Match   m, Feature outer) { m.findUsedFeatures(res);           }
