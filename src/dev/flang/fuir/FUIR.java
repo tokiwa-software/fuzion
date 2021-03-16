@@ -101,6 +101,7 @@ public class FUIR extends ANY
     u64Const,
     strConst,
     Match,
+    Tag,
     WipeStack,
   }
 
@@ -112,6 +113,15 @@ public class FUIR extends ANY
    * NYI: remove once bytecode instructions are here.
    */
   static final Expr WIPE_STACK = new IntConst(42);
+
+
+  static abstract class Tag extends IntConst
+  {
+    Tag() { super(4711); }
+    abstract Clazz valuecl(Clazz outerClazz);
+    abstract Clazz newcl  (Clazz outerClazz);
+  }
+
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -801,6 +811,16 @@ public class FUIR extends ANY
       {
         var a = (Assign) s;
         toStack(l, a.value);
+        var field = a.assignedField;
+        if (field.resultType().isChoice() &&
+            field.resultType() != a.value.type())
+          {
+            l.add(new Tag()
+              {
+                Clazz valuecl(Clazz outerClazz) { return  (Clazz) outerClazz.getRuntimeData(a.tid_ + 1); }
+                Clazz newcl  (Clazz outerClazz) { return ((Clazz) outerClazz.getRuntimeData(a.tid_ + 2)).resultClazz(); }
+              });
+          }
         toStack(l, a.getOuter);
         l.add(a);
       }
@@ -954,6 +974,10 @@ public class FUIR extends ANY
       {
         result = ExprKind.Match;
       }
+    else if (e instanceof Tag)
+      {
+        result = ExprKind.Tag;
+      }
     else if (e instanceof BoolConst)
       {
         result = ExprKind.boolConst;
@@ -1031,17 +1055,30 @@ public class FUIR extends ANY
     return _clazzIds.get(ocl);
   }
 
-  public int assignValueClazz(int cl, int c, int ix)
+  public int tagValueClazz(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Assign);
+       codeAt(c, ix) == ExprKind.Tag);
 
     var outerClazz = _clazzIds.get(cl);
-    var a = (Assign) _codeIds.get(c).get(ix);
-    var vcl = (Clazz) outerClazz.getRuntimeData(a.tid_ + 1);
+    var t = (Tag) _codeIds.get(c).get(ix);
+    var vcl = t.valuecl(outerClazz);
     return vcl == null ? -1 : _clazzIds.get(vcl);
+  }
+
+  public int tagNewClazz(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Tag);
+
+    var outerClazz = _clazzIds.get(cl);
+    var t = (Tag) _codeIds.get(c).get(ix);
+    var ncl = t.newcl(outerClazz);
+    return ncl == null ? -1 : _clazzIds.get(ncl);
   }
 
   public int boxValueClazz(int cl, int c, int ix)

@@ -310,53 +310,49 @@ public class C extends ANY
             }
           break;
         }
+      case Tag:
+        {
+          var valuecl = _fuir.tagValueClazz(cl, c, i);  // static clazz of value
+          var value   = pop(stack, valuecl);            // value assigned to field
+          var newcl   = _fuir.tagNewClazz  (cl, c, i);  // static clazz of assigned field
+          int tagNum  = _fuir.clazzChoiceTag(newcl, valuecl);
+          var res     = _names.newTemp();
+          var tag     = res.field(_names.TAG_NAME);
+          var uniyon  = res.field(_names.CHOICE_UNION_NAME);
+          var entry   = uniyon.field(_fuir.clazzIsRef(valuecl) ? _names.CHOICE_REF_ENTRY_NAME
+                                                               : _names.CHOICE_ENTRY_NAME + tagNum);
+          if (_fuir.clazzIsChoiceOfOnlyRefs(newcl) && !_fuir.clazzIsRef(valuecl))
+            { // replace unit-type values by 0 or an odd value cast to ref Object
+              check
+                (value == null); // value must be a unit type
+              value = CExpr.int32const(tagNum == 0 ? 0 : tagNum*2 - 1).castTo(_names.struct(_fuir.clazzObject()) + "*");
+            }
+          o = CStmnt.seq(CStmnt.lineComment("Tag a value to be of choice type " + _fuir.clazzAsString(newcl) + " static value type " + _fuir.clazzAsString(valuecl)),
+                         CStmnt.decl(_types.clazz(newcl), res),
+                         _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? CStmnt.EMPTY : tag.assign(CExpr.int32const(tagNum)),
+                         value == null
+                         ? CStmnt.lineComment("valueluess assignment to " + entry.code())
+                         : entry.assign(value));
+          push(stack, newcl, res);
+          break;
+        }
       case Assign:
         {
           var field = _fuir.assignedField(cl, c, i);  // field we are assigning to
           if (field != -1)
             {
               var outercl = _fuir.assignOuterClazz(cl, c, i);  // static clazz of outer
-              var valuecl = _fuir.assignValueClazz(cl, c, i);  // static clazz of value
               var fclazz  = _fuir.clazzResultClazz(field);     // static clazz of assigned field
-              var outer   = pop(stack, outercl);                 // instance containing assigned field
-              if (_fuir.clazzIsChoice(fclazz) &&
-                  fclazz != valuecl  // NYI: interpreter checks fclazz._type != staticTypeOfValue
-                  )
+              var outer   = pop(stack, outercl);               // instance containing assigned field
+              var value   = pop(stack, fclazz);                // value assigned to field
+              if (_fuir.clazzIsRef(fclazz))
                 {
-                  check
-                    (!_fuir.clazzIsOuterRef(field)); /* the interprer checks for this separately, just ot be sure we do it as well */
-
-                  var value = pop(stack, valuecl);                // value assigned to field
-                  int tagNum = _fuir.clazzChoiceTag(fclazz, valuecl);
-                  var f = accessField(outercl, outer, field);
-                  var tag = f.field(_names.TAG_NAME);
-                  var uniyon = f.field(_names.CHOICE_UNION_NAME);
-                  var entry = uniyon.field(_fuir.clazzIsRef(valuecl) ? _names.CHOICE_REF_ENTRY_NAME
-                                                                     : _names.CHOICE_ENTRY_NAME + tagNum);
-                  if (_fuir.clazzIsChoiceOfOnlyRefs(fclazz) && !_fuir.clazzIsRef(valuecl))
-                    { // replace unit-type values by 0 or an odd value cast to ref Object
-                      check
-                        (value == null); // value must be a unit type
-                      value = CExpr.int32const(tagNum == 0 ? 0 : tagNum*2 - 1).castTo(_names.struct(_fuir.clazzObject()) + "*");
-                    }
-                  o = CStmnt.seq(CStmnt.lineComment("Assign to choice field type " + _fuir.clazzAsString(fclazz) + " static value type " + _fuir.clazzAsString(valuecl)),
-                                 _fuir.clazzIsChoiceOfOnlyRefs(fclazz) ? CStmnt.EMPTY : tag.assign(CExpr.int32const(tagNum)),
-                                 value == null
-                                 ? CStmnt.lineComment("valueluess assignment to " + entry.code())
-                                 : entry.assign(value));
+                  value = value.castTo(_types.clazz(fclazz));
                 }
-              else
-                {
-                  var value = pop(stack, fclazz);                // value assigned to field
-                  if (_fuir.clazzIsRef(fclazz))
-                    {
-                      value = value.castTo(_types.clazz(fclazz));
-                    }
-                  // _c.print("// Assign to "+_fuir.clazzAsString(fclazz)+" outercl "+_fuir.clazzAsString(outercl)+" valuecl "+_fuir.clazzAsString(valuecl));
-                  o = value == null
-                    ? CStmnt.lineComment("valueluess assignment to " + outer)
-                    : accessField(outercl, outer, field).assign(value);
-                }
+              // _c.print("// Assign to "+_fuir.clazzAsString(fclazz)+" outercl "+_fuir.clazzAsString(outercl));
+              o = value == null
+                ? CStmnt.lineComment("valueluess assignment to " + outer)
+                : accessField(outercl, outer, field).assign(value);
             }
           break;
         }
