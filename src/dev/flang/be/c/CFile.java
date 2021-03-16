@@ -157,16 +157,13 @@ public class CFile extends ANY
    */
   public void print(CStmnt s)
   {
-    if (!s.isEmpty())
+    StringBuilder sb = new StringBuilder();
+    s.code(sb);
+    if (s.needsSemi())
       {
-        StringBuilder sb = new StringBuilder();
-        s.code(sb);
-        if (s.needsSemi())
-          {
-            sb.append(";\n");
-          }
-        print(sb.toString());
+        sb.append(";\n");
       }
+    print(sb.toString());
   }
 
 
