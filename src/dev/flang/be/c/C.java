@@ -319,8 +319,9 @@ public class C extends ANY
           var res     = _names.newTemp();
           var tag     = res.field(_names.TAG_NAME);
           var uniyon  = res.field(_names.CHOICE_UNION_NAME);
-          var entry   = uniyon.field(_fuir.clazzIsRef(valuecl) ? _names.CHOICE_REF_ENTRY_NAME
-                                                               : _names.CHOICE_ENTRY_NAME + tagNum);
+          var entry   = uniyon.field(_fuir.clazzIsRef(valuecl) ||
+                                     _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? _names.CHOICE_REF_ENTRY_NAME
+                                                                          : _names.CHOICE_ENTRY_NAME + tagNum);
           if (_fuir.clazzIsChoiceOfOnlyRefs(newcl) && !_fuir.clazzIsRef(valuecl))
             { // replace unit-type values by 0 or an odd value cast to ref Object
               check
