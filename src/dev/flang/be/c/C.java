@@ -216,7 +216,7 @@ public class C extends ANY
              p.compile(this, c);
            }
        });
-    _c.println("int main(int argc, char **args) { " + _names.function(_fuir.mainClazzId()) + "(); }");
+    _c.println("int main(int argc, char **args) { " + _names.function(_fuir.mainClazzId(), false) + "(); }");
   }
 
 
@@ -648,7 +648,7 @@ public class C extends ANY
         {
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = null;
-          var call = CExpr.call(_names.function(cc), args(cl, c, i, cc, stack, ac, castTarget));
+          var call = CExpr.call(_names.function(cc, false), args(cl, c, i, cc, stack, ac, castTarget));
           if (_types.hasData(rt))
             {
               var tmp = _names.newTemp();
@@ -749,13 +749,13 @@ public class C extends ANY
    *
    * @param cl id of clazz to compile
    */
-  private void cFunctionDecl(int cl)
+  private void cFunctionDecl(int cl, boolean pre)
   {
     var res = _fuir.clazzResultClazz(cl);
-    _c.print(!_types.hasData(res)
+    _c.print(pre || !_types.hasData(res)
              ? "void "
              : _types.clazz(res) + " ");
-    _c.print(_names.function(cl));
+    _c.print(_names.function(cl, pre));
     _c.print("(");
     String comma = "";
     var or = _fuir.clazzOuterRef(cl);
@@ -793,8 +793,17 @@ public class C extends ANY
       case Routine:
       case Intrinsic:
         {
-          cFunctionDecl(cl);
+          cFunctionDecl(cl, false);
           _c.print(";\n");
+        } /* fall through */
+      case Field:
+      case Abstract:
+        {
+          if (_fuir.clazzPre(cl, 0) != -1)
+            {
+              cFunctionDecl(cl, true);
+              _c.print(";\n");
+            }
           break;
         }
       }
@@ -814,7 +823,7 @@ public class C extends ANY
       case Routine:
         {
           _c.print("\n// code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":\n");
-          cFunctionDecl(cl);
+          cFunctionDecl(cl, false);
           _c.print(" {\n");
           _c.indent();
           codeForRoutine(cl);
@@ -825,12 +834,13 @@ public class C extends ANY
       case Intrinsic:
         {
           _c.print("\n// code for intrinsic " + _fuir.clazzAsString(cl) + ":\n");
-          cFunctionDecl(cl);
+          cFunctionDecl(cl, false);
           _c.print(" {\n");
           _c.indent();
           _c.print(new Intrinsics().code(this, cl));
           _c.unindent();
           _c.print("}\n");
+          break;
         }
       }
   }

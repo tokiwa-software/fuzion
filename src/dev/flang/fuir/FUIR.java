@@ -736,6 +736,33 @@ public class FUIR extends ANY
 
 
   /**
+   * Get access to the code of the precondition of a clazz of kind Routine
+   *
+   * @param cl a clazz id
+   *
+   * @param ix the index of the precondition, 0 for the first condition
+   *
+   * @return a code id referring to cl's precondition, -1 if cl does not have a
+   * precondition with the given index
+   */
+  public int clazzPre(int cl, int ix)
+  {
+    if (PRECONDITIONS) require
+      (clazzKind(cl) == ClazzKind.Routine   ||
+       clazzKind(cl) == ClazzKind.Field     ||
+       clazzKind(cl) == ClazzKind.Intrinsic ||
+       clazzKind(cl) == ClazzKind.Abstract     ,
+       ix >= 0);
+
+    var ff = _clazzIds.get(cl).feature();
+    var cc = ff.contract;
+    var pre = cc != null ? cc.req : null;
+    List<Stmnt> code = pre != null && ix < pre.size() ? toStack(pre.get(ix).cond) : null;
+    return code != null ? _codeIds.add(code) : -1;
+  }
+
+
+  /**
    * Are there any calls to this clazz (Routine, Constructor, or Field)?
    */
   public boolean clazzIsCalled(int cl)
