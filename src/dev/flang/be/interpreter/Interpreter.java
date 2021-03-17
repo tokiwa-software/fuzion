@@ -781,8 +781,8 @@ public class Interpreter extends Backend
 
     // NYI: Precondition should be checked by the caller _before_ dynamic
     // binding, not here after dynamic binding.  Also, preconditions should be
-    // the taken from the static feature called ORed with the preconditions of
-    // all features that feature redefineds.
+    // taken from the static feature called ORed with the preconditions of all
+    // features that feature redefines.
     for (var c : thiz.contract.req)
       {
         var v = execute(c.cond, staticClazz, cur);
