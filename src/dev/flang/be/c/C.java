@@ -75,6 +75,13 @@ public class C extends ANY
 
 
   /**
+   * The code generator assumes that the first page is reserved by the system,
+   * no legal memory address could end up in this first page.
+   */
+  private static final long PAGE_SIZE = 4096;
+
+
+  /**
    * Debugging output
    */
   private static final boolean SHOW_STACK_AFTER_STMNT = false;
@@ -323,9 +330,15 @@ public class C extends ANY
                                      _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? _names.CHOICE_REF_ENTRY_NAME
                                                                           : _names.CHOICE_ENTRY_NAME + tagNum);
           if (_fuir.clazzIsChoiceOfOnlyRefs(newcl) && !_fuir.clazzIsRef(valuecl))
-            { // replace unit-type values by 0 or an odd value cast to ref Object
+            { // replace unit-type values by 0, 1, 2, 3,... cast to ref Object
               check
                 (value == null); // value must be a unit type
+              if (tagNum >= PAGE_SIZE)
+                {
+                  Errors.error("Number of tags for choice type exceeds page size.",
+                               "While creating code for '" + _fuir.clazzAsString(cl) + "'\n" +
+                               "Found in choice type '" + _fuir.clazzAsString(newcl)+ "'\n");
+                }
               value = CExpr.int32const(tagNum).castTo(_names.struct(_fuir.clazzObject()) + "*");
             }
           o = CStmnt.seq(CStmnt.lineComment("Tag a value to be of choice type " + _fuir.clazzAsString(newcl) + " static value type " + _fuir.clazzAsString(valuecl)),
