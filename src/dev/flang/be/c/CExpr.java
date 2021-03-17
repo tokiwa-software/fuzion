@@ -510,6 +510,21 @@ abstract class CExpr extends CStmnt
 
 
   /**
+   * Create CExpr that corresponds to C unary operator '!' with precedence 2
+   *
+   * @return the resulting expression to negate this
+   */
+  CExpr not()
+  {
+    return new Unary(this, "!")
+      {
+        // redefine not since inner.not().not() == inner, at least for 0/1
+        CExpr not() { return _inner; }
+    };
+  }
+
+
+  /**
    * Create CExpr that corresponds to C unary operator 'sizeof' with precedence 2
    * applied to this expression.
    *
