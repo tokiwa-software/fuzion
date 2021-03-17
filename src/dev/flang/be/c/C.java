@@ -837,11 +837,25 @@ public class C extends ANY
           _c.indent();
           switch (_fuir.clazzKind(cl))
             {
-            case Routine  : codeForRoutine(cl); break;
+            case Routine  : codeForRoutine(cl, false); break;
             case Intrinsic: _c.print(new Intrinsics().code(this, cl)); break;
             }
           _c.unindent();
           _c.println("}");
+        } /* fall through */
+      case Field:
+      case Abstract:
+        {
+          if (_fuir.clazzPre(cl, 0) != -1)
+            {
+              _c.print("\n// code for clazz#"+_names.clazzId(cl).code()+" precondition of "+_fuir.clazzAsString(cl)+":\n");
+              cFunctionDecl(cl, true);
+              _c.print(" {\n");
+              _c.indent();
+              codeForRoutine(cl, true);
+              _c.unindent();
+              _c.println("}");
+            }
           break;
         }
       }
@@ -853,7 +867,7 @@ public class C extends ANY
    *
    * @param cl id of clazz to generate code for
    */
-  void codeForRoutine(int cl)
+  void codeForRoutine(int cl, boolean pre)
   {
     if (PRECONDITIONS) require
       (_fuir.clazzKind(cl) == FUIR.ClazzKind.Routine);
@@ -887,7 +901,23 @@ public class C extends ANY
     var stack = new Stack<CExpr>();
     try
       {
-        createCode(cl, stack, c);
+        if (pre)
+          {
+            for (var i = 0; _fuir.clazzPre(cl, i) != -1; i++)
+              {
+                var p = _fuir.clazzPre(cl, i);
+                createCode(cl, stack, p);
+                var cc = stack.pop();
+                _c.println("if ("+cc.field(_names.TAG_NAME).not().code()+") { "+
+                           " fprintf(stderr,"+CExpr.string("*** failed precondition on call to '%s'\n").code() + "," +
+                           CExpr.string(_fuir.clazzAsString(cl)).code() +
+                           "); exit(1); }");
+              }
+          }
+        else
+          {
+            createCode(cl, stack, c);
+          }
       }
     catch (RuntimeException | Error e)
       {
@@ -899,7 +929,7 @@ public class C extends ANY
                      "Java Error: " + sw);
       }
     var res = _fuir.clazzResultClazz(cl);
-    if (_types.hasData(res))
+    if (!pre && _types.hasData(res))
       {
         var rf = _fuir.clazzResultField(cl);
         _c.print(rf != -1
