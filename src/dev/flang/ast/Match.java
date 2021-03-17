@@ -75,7 +75,7 @@ public class Match extends Expr
    * Id to store the match's subject's clazz in the static outer clazz at
    * runtime.
    */
-  public static int runtimeClazzId_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+  public int runtimeClazzId_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
 
   /*--------------------------  constructors  ---------------------------*/
