@@ -821,25 +821,19 @@ public class C extends ANY
     switch (_fuir.clazzKind(cl))
       {
       case Routine:
+      case Intrinsic:
         {
           _c.print("\n// code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":\n");
           cFunctionDecl(cl, false);
           _c.print(" {\n");
           _c.indent();
-          codeForRoutine(cl);
+          switch (_fuir.clazzKind(cl))
+            {
+            case Routine  : codeForRoutine(cl); break;
+            case Intrinsic: _c.print(new Intrinsics().code(this, cl)); break;
+            }
           _c.unindent();
           _c.println("}");
-          break;
-        }
-      case Intrinsic:
-        {
-          _c.print("\n// code for intrinsic " + _fuir.clazzAsString(cl) + ":\n");
-          cFunctionDecl(cl, false);
-          _c.print(" {\n");
-          _c.indent();
-          _c.print(new Intrinsics().code(this, cl));
-          _c.unindent();
-          _c.print("}\n");
           break;
         }
       }
