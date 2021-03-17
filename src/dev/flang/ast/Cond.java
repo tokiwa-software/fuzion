@@ -75,6 +75,22 @@ public class Cond
   public void visit(FeatureVisitor v, Feature outer)
   {
     cond = cond.visit(v, outer);
+    v.action(this, outer);
+  }
+
+
+  /**
+   * During type inference: Inform the condition that it is used in an
+   * environment that expects a bool type.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   */
+  public void propagateExpectedType(Resolution res, Feature outer)
+  {
+    cond = cond.propagateExpectedType(res, outer, Types.resolved.t_bool);
   }
 
 

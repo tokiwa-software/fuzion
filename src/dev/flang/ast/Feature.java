@@ -1677,6 +1677,7 @@ public class Feature extends ANY implements Stmnt, Comparable
         visit(new FeatureVisitor() {
             public void  action(Assign   a, Feature outer) { a.propagateExpectedType(res, outer); }
             public Call  action(Call     c, Feature outer) { c.propagateExpectedType(res, outer); return c; }
+            public void  action(Cond     c, Feature outer) { c.propagateExpectedType(res, outer); }
             public void  action(Impl     i, Feature outer) { i.propagateExpectedType(res, outer); }
             public void  action(If       i, Feature outer) { i.propagateExpectedType(res, outer); }
           });
