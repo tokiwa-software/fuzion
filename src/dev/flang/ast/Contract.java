@@ -106,8 +106,8 @@ public class Contract
    */
   public void visit(FeatureVisitor v, Feature outer)
   {
-    if (req   != null) { for (Cond c: req  ) { c.visit(v, outer); } }
-    if (ens    != null) { for (Cond c: ens   ) { c.visit(v, outer); } }
+    if (req != null) { for (Cond c: req) { c.visit(v, outer); } }
+    if (ens != null) { for (Cond c: ens) { c.visit(v, outer); } }
     if (inv != null) { for (Cond c: inv) { c.visit(v, outer); } }
   }
 
