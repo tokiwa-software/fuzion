@@ -406,8 +406,12 @@ public class C extends ANY
                 }
               if (ccs.length == 0)
                 {
-                  _c.println("fprintf(stderr,\"*** %s:%d no targets for dynamic call to " + _fuir.clazzAsString(cc0) +
-                             " within "+_fuir.clazzAsString(cl)+"\\n\", __FILE__, __LINE__); exit(1);");
+                  _c.println("fprintf(stderr," +
+                             CExpr.string("*** %s:%d no targets for dynamic call to %s within %s\n").code() +
+                             ", __FILE__, __LINE__," +
+                             CExpr.string(_fuir.clazzAsString(cc0)).code() + "," +
+                             CExpr.string(_fuir.clazzAsString(cl )).code() + "); " +
+                             "exit(1);");
                 }
               else if (ccs.length > 2)
                 {
@@ -443,8 +447,13 @@ public class C extends ANY
                 }
               if (ccs.length > 2)
                 {
-                  _c.println("default: { fprintf(stderr,\"*** %s:%d unhandled dynamic call target %d in call to " + _fuir.clazzAsString(cc0) +
-                             " within "+_fuir.clazzAsString(cl)+"\\n\", __FILE__, __LINE__, " + id.code() + "); exit(1); }");
+                  _c.println("default: { fprintf(stderr," +
+                             CExpr.string("*** %s:%d unhandled dynamic call target %d in call to %s within %s\n").code() + "," +
+                             "__FILE__, __LINE__," +
+                             id.code() + "," +
+                             CExpr.string(_fuir.clazzAsString(cc0)).code() + "," +
+                             CExpr.string(_fuir.clazzAsString(cl )).code() + "); " +
+                             "exit(1); }");
                   _c.unindent();
                   _c.println("}");
                 }
@@ -599,10 +608,9 @@ public class C extends ANY
   CStmnt constString(byte[] bytes, CIdent tmp)
   {
     StringBuilder sb = new StringBuilder();
-    for (var bb : bytes)
+    for (var b : bytes)
       {
-        var b = bb & 0xff;
-        sb.append("\\"+((b >> 6) & 7)+((b >> 3) & 7)+(b & 7));
+        sb.append((char) (b & 0xFF));
         sb.append("...");
       }
     return CStmnt.seq(CStmnt.decl("fzT__Rconststring *", tmp),

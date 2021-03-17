@@ -206,8 +206,9 @@ class Intrinsics extends ANY
         Errors.warning(msg);
         return CStmnt.seq(CExpr.call("fprintf",
                                        new List<>(new CIdent("stderr"),
-                                                  CExpr.string("*** error: NYI: "+ msg + "\\n"))),
-                            CExpr.call("exit", new List<>(CExpr.int32const(1))));
+                                                  CExpr.string("*** error: NYI: %s\n"),
+                                                  CExpr.string(msg))),
+                          CExpr.call("exit", new List<>(CExpr.int32const(1))));
 
       }
   }

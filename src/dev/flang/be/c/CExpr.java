@@ -164,8 +164,7 @@ abstract class CExpr extends CStmnt
   /**
    * Create a C expression for a C string
    *
-   * @param s the C string, must not contain any characters not allowed in a C
-   * string, can use C escapes.
+   * @param s the C string, containing one byte per char.
    *
    * @return the resulting expression
    */
@@ -175,7 +174,24 @@ abstract class CExpr extends CStmnt
       {
         void code(StringBuilder sb)
         {
-          sb.append("\"").append(s).append("\"");
+          sb.append("\"");
+          for (int i = 0; i < s.length(); i++)
+            {
+              var c = s.charAt(i);
+              if (c <  ' '  ||
+                  c == '"'  ||
+                  c == '\'' ||
+                  c >  '~'     )
+                {
+                  var b = (int) c;
+                  sb.append("\\"+((b >> 6) & 7)+((b >> 3) & 7)+(b & 7));
+                }
+              else
+                {
+                  sb.append(c);
+                }
+            }
+          sb.append("\"");
         }
         int precedence() { return 0; }
       };
