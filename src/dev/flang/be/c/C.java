@@ -384,6 +384,10 @@ public class C extends ANY
         {
           var cc0 = _fuir.callCalledClazz  (cl, c, i);
           var rt = _fuir.clazzResultClazz(cc0);
+          if (_fuir.clazzPre(cc0, 0) != -1)
+            {
+              _c.print(call(cl, c, i, cc0, (Stack<CExpr>) stack.clone(), -1, true));
+            }
           if (_fuir.callIsDynamic(cl, c, i))
             {
               _c.println("// Dynamic call to " + _fuir.clazzAsString(cc0));
@@ -423,7 +427,7 @@ public class C extends ANY
                   var tt = ccs[cci  ];
                   var cc = ccs[cci+1];
                   var stk = (Stack<CExpr>) stack.clone();
-                  var co = call(cl, c, i, cc, stk, _fuir.clazzOuterClazz(cc));
+                  var co = call(cl, c, i, cc, stk, _fuir.clazzOuterClazz(cc), false);
                   var rv = pop(stk, rt);
                   if (rt != _fuir.clazzResultClazz(cc) && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
                     {
@@ -465,7 +469,7 @@ public class C extends ANY
             }
           else
             {
-              o = call(cl, c, i, cc0, stack, -1);
+              o = call(cl, c, i, cc0, stack, -1, false);
               if (!_fuir.clazzIsCalled(cc0))
                 {
                   o = CStmnt.lineComment("Feature not called: "+_fuir.clazzAsString(cc0));
@@ -638,14 +642,16 @@ public class C extends ANY
    * checked against a different type, the target type should be cast to this
    * clazz castTarget. -1 if no cast needed.
    *
+   * @param pre true to call the precondition of cl instead of cl.
+   *
    * @return the code to perform the call
    */
-  CStmnt call(int cl, int c, int i, int cc, Stack<CExpr> stack, int castTarget)
+  CStmnt call(int cl, int c, int i, int cc, Stack<CExpr> stack, int castTarget, boolean pre)
   {
     CStmnt result = CStmnt.EMPTY;
     var ac = _fuir.callArgCount(c, i);
     var rt = _fuir.clazzResultClazz(cc);
-    switch (_fuir.clazzKind(cc))
+    switch (pre ? FUIR.ClazzKind.Routine : _fuir.clazzKind(cc))
       {
       case Abstract :
         Errors.error("Call to abstract feature encountered.",
@@ -656,8 +662,8 @@ public class C extends ANY
         {
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = null;
-          var call = CExpr.call(_names.function(cc, false), args(cl, c, i, cc, stack, ac, castTarget));
-          if (_types.hasData(rt))
+          var call = CExpr.call(_names.function(cc, pre), args(cl, c, i, cc, stack, ac, castTarget));
+          if (!pre && _types.hasData(rt))
             {
               var tmp = _names.newTemp();
               res = tmp;
