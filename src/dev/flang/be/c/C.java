@@ -326,7 +326,7 @@ public class C extends ANY
             { // replace unit-type values by 0 or an odd value cast to ref Object
               check
                 (value == null); // value must be a unit type
-              value = CExpr.int32const(tagNum == 0 ? 0 : tagNum*2 - 1).castTo(_names.struct(_fuir.clazzObject()) + "*");
+              value = CExpr.int32const(tagNum).castTo(_names.struct(_fuir.clazzObject()) + "*");
             }
           o = CStmnt.seq(CStmnt.lineComment("Tag a value to be of choice type " + _fuir.clazzAsString(newcl) + " static value type " + _fuir.clazzAsString(valuecl)),
                          CStmnt.decl(_types.clazz(newcl), res),
@@ -494,60 +494,88 @@ public class C extends ANY
         }
       case Match:
         {
-          var staticSubjectClazz = _fuir.matchStaticSubject(cl, c, i);
-          var sub = pop(stack, staticSubjectClazz);
-          if (_fuir.clazzIsChoiceOfOnlyRefs(staticSubjectClazz))
+          var subjClazz = _fuir.matchStaticSubject(cl, c, i);
+          var sub = pop(stack, subjClazz);
+          var uniyon = sub.field(_names.CHOICE_UNION_NAME);
+          var stack2 = stack;
+          var hasTag = !_fuir.clazzIsChoiceOfOnlyRefs(subjClazz);
+          CIdent ref = _names.newTemp();
+          if (!hasTag)
             {
-              o = CStmnt.seq(CStmnt.lineComment("NYI: match of only refs!"),
-                             CExpr.call("assert", new List<>(CExpr.int32const(0))).comment("match of only refs!"));
-              /* from Interpreter:
-
-                 refVal = getChoiceRefVal(sf, staticSubjectClazz, sub);
-                 tag = ChoiceIdAsRef.get(staticSubjectClazz, refVal);
-              */
+              var entry = uniyon.field(_names.CHOICE_REF_ENTRY_NAME).castTo(_types.clazz(_fuir.clazzObject()));
+              _c.print(CStmnt.seq(CStmnt.decl(_types.clazz(_fuir.clazzObject()), ref),
+                                  ref.assign(entry)));
             }
-          else
-            {
-              var tag = sub.field(_names.TAG_NAME);
-              _c.println("switch ("+tag.code()+") {");
-              _c.indent();
-              var stack2 = stack;
-              var mcc = _fuir.matchCaseCount(c, i);
+          var tag = hasTag ? sub.field(_names.TAG_NAME)
+                           : ref.castTo("int64_t");
+          _c.println("switch ("+tag.code()+") {");
+          _c.indent();
+          var mcc = _fuir.matchCaseCount(c, i);
+          for (var pass = 0; pass < (hasTag ? 1 : 2); pass++)
+            { // pass 0: handle tags or unit type values like 'nil', pass 1: handle references
+              int refCnt = 0;
               for (var mc = 0; mc < mcc; mc++)
                 {
-                  var block = _fuir.i32Const(c, i + 1 + mc);
-                  var field = _fuir.matchCaseField(cl, c, i, mc);
-                  var tags  = _fuir.matchCaseTags(cl, c, i, mc);
-                  if (tags.length > 0)
+                  String caze = "";
+                  var tags = _fuir.matchCaseTags(cl, c, i, mc);
+                  for (var tagNum : tags)
                     {
-                      for (var tagNum : tags)
+                      var tc = _fuir.clazzChoice(subjClazz, tagNum);
+                      if (!hasTag && !_fuir.clazzIsRef(tc) && pass == 0)
                         {
-                          _c.print("case " + tagNum + ": ");
-                        }
-                      if (field != -1)
-                        {
+                          caze = caze + "case " + tagNum + ":\n";
                           check
-                            (tags.length == 1);
-                          var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
-                          var f      = accessField(cl, current(cl), field);
-                          var uniyon = sub.field(_names.CHOICE_UNION_NAME);
-                          var entry  = _fuir.clazzIsRef(fclazz) ? uniyon.field(_names.CHOICE_REF_ENTRY_NAME).castTo(_types.clazz(fclazz))
-                                                                : uniyon.field(_names.CHOICE_ENTRY_NAME + tags[0]);
-                          _c.print(!_types.hasData(fclazz) ? CStmnt.lineComment("valueluess assignment to " + f.code())
-                                   : f.assign(entry));
+                            (!_types.hasData(tc));
                         }
+                      else if (!hasTag && _fuir.clazzIsRef(tc) && pass == 1)
+                        {
+                          refCnt++;
+                          if (refCnt == 1)
+                            {
+                              caze = "default:\n";
+                            }
+                          else
+                            {
+                              _c.print(CExpr.call("assert", new List<>(CExpr.int32const(0))).comment("match of different refs not supported yet!"));
+                            }
+                        }
+                      else if (hasTag)
+                        {
+                          caze = caze + "case " + tagNum + ":\n";
+                        }
+                    }
+                  if (caze != "")
+                    {
+                      _c.print(caze);
                       _c.println("{");
                       _c.indent();
+                      var field = _fuir.matchCaseField(cl, c, i, mc);
+                      if (field != -1)
+                        {
+                          var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
+                          var f      = accessField(cl, current(cl), field);
+                          if (!hasTag && pass == 1)
+                            {
+                              _c.print(f.assign(ref.castTo(_types.clazz(fclazz))));
+                            }
+                          else if (hasTag)
+                            {
+                              var entry  = _fuir.clazzIsRef(fclazz) ? uniyon.field(_names.CHOICE_REF_ENTRY_NAME).castTo(_types.clazz(fclazz))
+                                                                    : uniyon.field(_names.CHOICE_ENTRY_NAME + tags[0]);
+                              _c.print(!_types.hasData(fclazz) ? CStmnt.lineComment("valueluess assignment to " + f.code())
+                                                               : f.assign(entry));
+                            }
+                        }
                       stack = (Stack<CExpr>) stack2.clone();
-                      createCode(cl, stack, block);
+                      createCode(cl, stack, _fuir.i32Const(c, i + 1 + mc));
                       _c.println("break;");
                       _c.unindent();
                       _c.println("}");
                     }
                 }
-              _c.unindent();
-              _c.println("}");
             }
+          _c.unindent();
+          _c.println("}");
           break;
         }
       case WipeStack:
