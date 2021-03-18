@@ -345,17 +345,17 @@ public class C extends ANY
         {
           var cc0 = _fuir.callCalledClazz  (cl, c, i);
           var rt = _fuir.clazzResultClazz(cc0);
+          var tc = _fuir.callTargetClazz(cl, c, i);
           var ol = new List<CStmnt>();
           if (_fuir.clazzPre(cc0, 0) != -1)
             {
-              ol.add(call(cl, c, i, cc0, (Stack<CExpr>) stack.clone(), true));
+              ol.add(call(tc, cc0, (Stack<CExpr>) stack.clone(), true));
             }
           if (_fuir.callIsDynamic(cl, c, i))
             {
               ol.add(CStmnt.lineComment("Dynamic call to " + _fuir.clazzAsString(cc0)));
               var ccs = _fuir.callCalledClazzes(cl, c, i);
               var ac = _fuir.callArgCount(c, i);
-              var tc = _fuir.callTargetClazz(cl, c, i);
               var t = _names.newTemp();
               var ti = stack.size() - ac - 1; // NYI: ti is wrong is args contain unit type arguments
               var tt0 = _types.clazz(tc);
@@ -385,7 +385,7 @@ public class C extends ANY
                   var tt = ccs[cci  ];
                   var cc = ccs[cci+1];
                   var stk = (Stack<CExpr>) stack.clone();
-                  var co = call(cl, c, i, cc, stk, false);
+                  var co = call(tc, cc, stk, false);
                   var rv = pop(stk, rt);
                   if (rt != _fuir.clazzResultClazz(cc) && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
                     {
@@ -409,7 +409,7 @@ public class C extends ANY
                                                  CExpr.exit(1)));
                 }
               ol.add(cll);
-              args(cl, c, i, cc0, stack, _fuir.clazzArgCount(cc0));
+              args(tc, cc0, stack, _fuir.clazzArgCount(cc0));
               if (res != null)
                 {
                   push(stack, rt, res);
@@ -417,7 +417,7 @@ public class C extends ANY
             }
           else
             {
-              ol.add(call(cl, c, i, cc0, stack, false));
+              ol.add(call(tc, cc0, stack, false));
             }
           o = CStmnt.seq(ol);
           if (_fuir.clazzFieldIsAdrOfValue(cc0) && _types.hasData(rt))  // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
@@ -581,11 +581,7 @@ public class C extends ANY
   /**
    * Create C code for a statically bound call.
    *
-   * @param cl clazz id of the currently compiled clazz
-   *
-   * @param c the code block currently compiled
-   *
-   * @param i index in c of the current call
+   * @param tc clazz id of the outer clazz of the called clazz
    *
    * @param cc clazz that is called
    *
@@ -595,23 +591,22 @@ public class C extends ANY
    *
    * @return the code to perform the call
    */
-  CStmnt call(int cl, int c, int i, int cc, Stack<CExpr> stack, boolean pre)
+  CStmnt call(int tc, int cc, Stack<CExpr> stack, boolean pre)
   {
     CStmnt result = CStmnt.EMPTY;
-    var ac = _fuir.callArgCount(c, i);
+    var ac = _fuir.clazzArgCount(cc);
     var rt = _fuir.clazzResultClazz(cc);
     switch (pre ? FUIR.ClazzKind.Routine : _fuir.clazzKind(cc))
       {
       case Abstract :
         Errors.error("Call to abstract feature encountered.",
-                     "While creating code for " + _fuir.clazzAsString(cl) + "\n" +
                      "Found call to  " + _fuir.clazzAsString(cc));
       case Routine  :
       case Intrinsic:
         {
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = null;
-          var call = CExpr.call(_names.function(cc, pre), args(cl, c, i, cc, stack, ac));
+          var call = CExpr.call(_names.function(cc, pre), args(tc, cc, stack, ac));
           if (!pre && _types.hasData(rt))
             {
               var tmp = _names.newTemp();
@@ -629,7 +624,6 @@ public class C extends ANY
         }
       case Field:
         {
-          var tc = _fuir.callTargetClazz(cl, c, i);
           var t = pop(stack, tc);
           check
             (t != null || !_types.hasData(rt) || tc == _fuir.clazzUniverse());
@@ -661,11 +655,7 @@ public class C extends ANY
    * Create C code to pass given number of arguments plus one implicit target
    * argument from the stack to a called feature.
    *
-   * @param cl clazz id of the currently compiled clazz
-   *
-   * @param c the code block currently compiled
-   *
-   * @param i index in c of the current call
+   * @param tc clazz id of the outer clazz of the called clazz
    *
    * @param cc clazz that is called
    *
@@ -675,14 +665,14 @@ public class C extends ANY
    *
    * @return list of arguments to be passed to CExpr.call
    */
-  List<CExpr> args(int cl, int c, int i, int cc, Stack<CExpr> stack, int argCount)
+  List<CExpr> args(int tc, int cc, Stack<CExpr> stack, int argCount)
   {
     List<CExpr> result;
     if (argCount > 0)
       {
         var ac = _fuir.clazzArgClazz(cc, argCount-1);
         var a = pop(stack, ac);
-        result = args(cl, c, i, cc, stack, argCount-1);
+        result = args(tc, cc, stack, argCount-1);
         if (_types.hasData(ac))
           {
             a = _fuir.clazzIsRef(ac) ? a.castTo(_types.clazz(ac)) : a;
@@ -692,7 +682,7 @@ public class C extends ANY
     else // NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
       { // ref to outer instance, passed by reference
         result = new List<>();
-        var tc = _fuir.callTargetClazz(cl, c, i);
+        //        var tc = _fuir.callTargetClazz(cl, c, i);
         var or = _fuir.clazzOuterRef(cc);
         var a = pop(stack, tc);
         if (or != -1)
