@@ -927,10 +927,7 @@ public class C extends ANY
             var c = _fuir.clazzCode(cl);
             createCode(cl, new Stack<CExpr>(), c);
           }
-        if (pre) // NYI: remove condition to enable post condition code
-          {
-            preOrPostCondition(cl, pre);
-          }
+        preOrPostCondition(cl, pre);
       }
     catch (RuntimeException | Error e)
       {
