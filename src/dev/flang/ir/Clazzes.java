@@ -360,7 +360,12 @@ public class Clazzes extends ANY
 
     // mark internally referenced clazzes as called or instantiated:
     universe.get().called(SourcePosition.builtIn);
-    main          .called(SourcePosition.builtIn);
+    check
+      (Errors.count() > 0 || main != null);
+    if (main != null)
+      {
+        main.called(SourcePosition.builtIn);
+      }
     conststring.get().instantiated(SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
