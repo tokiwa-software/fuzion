@@ -736,7 +736,8 @@ public class FUIR extends ANY
 
 
   /**
-   * Get access to the code of the precondition of a clazz of kind Routine
+   * Get access to the code of the precondition of a clazz of kind Routine,
+   * Intrinsic, Abstract or Field.
    *
    * @param cl a clazz id
    *
@@ -758,6 +759,34 @@ public class FUIR extends ANY
     var cc = ff.contract;
     var pre = cc != null ? cc.req : null;
     List<Stmnt> code = pre != null && ix < pre.size() ? toStack(pre.get(ix).cond) : null;
+    return code != null ? _codeIds.add(code) : -1;
+  }
+
+
+  /**
+   * Get access to the code of the postcondition of a clazz of kind Routine,
+   * Intrinsic, Abstract or Field.
+   *
+   * @param cl a clazz id
+   *
+   * @param ix the index of the precondition, 0 for the first condition
+   *
+   * @return a code id referring to cl's precondition, -1 if cl does not have a
+   * precondition with the given index
+   */
+  public int clazzPost(int cl, int ix)
+  {
+    if (PRECONDITIONS) require
+      (clazzKind(cl) == ClazzKind.Routine   ||
+       clazzKind(cl) == ClazzKind.Field     ||
+       clazzKind(cl) == ClazzKind.Intrinsic ||
+       clazzKind(cl) == ClazzKind.Abstract     ,
+       ix >= 0);
+
+    var ff = _clazzIds.get(cl).feature();
+    var cc = ff.contract;
+    var post = cc != null ? cc.ens : null;
+    List<Stmnt> code = post != null && ix < post.size() ? toStack(post.get(ix).cond) : null;
     return code != null ? _codeIds.add(code) : -1;
   }
 

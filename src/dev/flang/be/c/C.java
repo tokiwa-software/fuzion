@@ -883,14 +883,17 @@ public class C extends ANY
 
 
   /**
-   * Create code for given clazz cl of type Routine.
+   * Create code for given clazz cl.
    *
    * @param cl id of clazz to generate code for
+   *
+   * @param pre true to create code for cl's precondition, false to create code
+   * for cl itself.
    */
   void codeForRoutine(int cl, boolean pre)
   {
     if (PRECONDITIONS) require
-      (_fuir.clazzKind(cl) == FUIR.ClazzKind.Routine);
+      (_fuir.clazzKind(cl) == FUIR.ClazzKind.Routine || pre);
 
     _c.print("" + _names.struct(cl) + " *" + _names.CURRENT.code() + " = malloc(sizeof(" + _names.struct(cl) + "));\n"+
              (_fuir.clazzIsRef(cl) ? _names.CURRENT.deref().field("clazzId").assign(_names.clazzId(cl)).code() + ";\n" : ""));
@@ -917,26 +920,16 @@ public class C extends ANY
             _c.print(target.assign(new CIdent("arg" + i)));
           }
       }
-    var c = _fuir.clazzCode(cl);
-    var stack = new Stack<CExpr>();
     try
       {
-        if (pre)
+        if (!pre)
           {
-            for (var i = 0; _fuir.clazzPre(cl, i) != -1; i++)
-              {
-                var p = _fuir.clazzPre(cl, i);
-                createCode(cl, stack, p);
-                var cc = stack.pop();
-                _c.println("if ("+cc.field(_names.TAG_NAME).not().code()+") { "+
-                           " fprintf(stderr,"+CExpr.string("*** failed precondition on call to '%s'\n").code() + "," +
-                           CExpr.string(_fuir.clazzAsString(cl)).code() +
-                           "); exit(1); }");
-              }
+            var c = _fuir.clazzCode(cl);
+            createCode(cl, new Stack<CExpr>(), c);
           }
-        else
+        if (pre) // NYI: remove condition to enable post condition code
           {
-            createCode(cl, stack, c);
+            preOrPostCondition(cl, pre);
           }
       }
     catch (RuntimeException | Error e)
@@ -956,6 +949,37 @@ public class C extends ANY
                  ? current(cl).field(_names.fieldName(rf)).ret()  // a routine, return result field
                  : current(cl).ret()                              // a constructor, return current instance
                  );
+      }
+  }
+
+
+  /**
+   * Create C statements to execute the pre- or postcondition of the given
+   * clazz. Will write code to _c.
+   *
+   * @param cl clazz id
+   *
+   * @param pre true for pre-condition, false for post-condition.
+   */
+  void preOrPostCondition(int cl, boolean pre)
+  {
+    var stack = new Stack<CExpr>();
+
+    var p = 0;
+    for (int i = 0; p != -1; i++)
+      {
+        p = pre ? _fuir.clazzPre (cl, i)
+                : _fuir.clazzPost(cl, i);
+        if (p != -1)
+          {
+            createCode(cl, stack, p);
+            var cc = stack.pop();
+            _c.println("if ("+cc.field(_names.TAG_NAME).not().code()+") { "+
+                       " fprintf(stderr,"+CExpr.string(pre ? "*** failed precondition on call to '%s'\n"
+                                                           : "*** failed postcondition after '%s'\n").code() + "," +
+                       CExpr.string(_fuir.clazzAsString(cl)).code() +
+                       "); exit(1); }");
+          }
       }
   }
 
