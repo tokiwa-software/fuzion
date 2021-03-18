@@ -188,7 +188,7 @@ class Intrinsics extends ANY
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return CExpr.call("malloc",
-                            new List<>(new CIdent(c._types.clazz(gc)).sizeOfType().mul(new CIdent("arg0")))).ret();
+                            new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(new CIdent("arg0")))).ret();
         }
       case "Array.setel"  :
         {

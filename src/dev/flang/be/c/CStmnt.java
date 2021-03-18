@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.c;
 
 import dev.flang.util.ANY;
+import dev.flang.util.List;
 
 /**
  * CSmnt provides infrastructure to generate C statements
@@ -77,6 +78,7 @@ abstract class CStmnt extends ANY
   }
 
 
+
   /**
    * C declaration such as 'i32 i'
    *
@@ -90,6 +92,42 @@ abstract class CStmnt extends ANY
    */
   static CStmnt decl(String modifier, String type, CIdent ident)
   {
+    return decl(modifier, type, ident, null);
+  }
+
+
+  /**
+   * C declaration such as 'i32 i'
+   *
+   * @param type the type of the defined entity
+   *
+   * @param ident the name of the defined entity
+   *
+   * @param init initial value or null if none.
+   *
+   * @return corresponding CStmnt
+   */
+  static CStmnt decl(String type, CIdent ident, CExpr init)
+  {
+    return decl(null, type, ident, init);
+  }
+
+
+  /**
+   * C declaration such as 'i32 i'
+   *
+   * @param modifier a modifier, e.g., "static", null for none.
+   *
+   * @param type the type of the defined entity
+   *
+   * @param ident the name of the defined entity
+   *
+   * @param init initial value or null if none.
+   *
+   * @return corresponding CStmnt
+   */
+  static CStmnt decl(String modifier, String type, CIdent ident, CExpr init)
+  {
     return new CStmnt()
       {
         void code(StringBuilder sb)
@@ -99,6 +137,11 @@ abstract class CStmnt extends ANY
             .append(type)
             .append(" ");
           ident.code(sb);
+          if (init != null)
+            {
+              sb.append(" = ");
+              init.code(sb);
+            }
         }
       };
   }
@@ -147,6 +190,106 @@ abstract class CStmnt extends ANY
           return false;
         }
       };
+  }
+
+
+  /**
+   * A sequence of C statements, separated by semicolons.
+   *
+   * @param s the statements.
+   *
+   * @return corresponding statements sequence
+   */
+  static CStmnt seq(List<CStmnt> s)
+  {
+    return new CStmnt()
+      {
+        void code(StringBuilder sb)
+        {
+          for (var cs : s)
+            {
+              cs.code(sb);
+              sb.append(cs.needsSemi() ? ";\n" : "");
+            }
+        }
+        boolean needsSemi()
+        {
+          return false;
+        }
+      };
+  }
+
+
+  /**
+   * Zero, one or several case labels followed by a statement
+   *
+   * @param vals the values checked in the case labels. might be an empty list,
+   * which turns the result into a NOP.
+   *
+   * @param cmds the commands to be executed in case the values match.
+   */
+  static CStmnt caze(List<CExpr> vals, CStmnt cmds)
+  {
+    return vals.isEmpty() ? EMPTY :
+      new CStmnt()
+      {
+        void code(StringBuilder sb)
+        {
+          for (var v : vals)
+            {
+              sb.append("case ");
+              v.code(sb);
+              sb.append(":\n");
+            }
+          sb.append("{\n");
+          // NYI: _c.indent()
+          cmds.code(sb);
+          sb.append("}\n");
+        }
+        boolean needsSemi()
+        {
+          return false;
+        }
+    };
+  }
+
+  /**
+   * A switch statement
+   *
+   * @param val the value to switch over
+   *
+   * @param cazes the case labels to be checked
+   *
+   * @param def the default case or null if none.
+   */
+  static CStmnt suitch(CExpr val, List<CStmnt> cazes, CStmnt def)
+  {
+    return new CStmnt()
+      {
+        void code(StringBuilder sb)
+        {
+          sb.append("switch (");
+          val.code(sb);
+          sb.append(") {\n");
+          // NYI: _c.indent();
+          for (var cz : cazes)
+            {
+              cz.code(sb);
+            }
+          if (def != null)
+            {
+              sb.append("default: {\n");
+              // NYI: _c.indent();
+              def.code(sb);
+              sb.append("}\n");
+            }
+          sb.append("}\n");
+        }
+        boolean needsSemi()
+        {
+          return false;
+        }
+    };
   }
 
 

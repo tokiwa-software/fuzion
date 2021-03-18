@@ -454,7 +454,7 @@ abstract class CExpr extends CStmnt
   /**
    * Helper clazz for unary-expr with precedence 2
    */
-  private class Unary extends CExpr
+  private static class Unary extends CExpr
   {
     CExpr _inner;
     String _op;
@@ -563,19 +563,19 @@ abstract class CExpr extends CStmnt
 
   /**
    * Create CExpr that corresponds to C unary operator 'sizeof' with precedence 2
-   * applied to this type.
+   * applied to ctype.
+   *
+   * @param ctype the c type
    *
    * @return the resulting expression
    */
-  CExpr sizeOfType()
+  static CExpr sizeOfType(String ctype)
   {
-    return new Unary(this, "sizeof")
+    return new Unary(null /* ignored */, "sizeof")
       {
         void code(StringBuilder sb)
         {
-          sb.append(_op).append("(");
-          _inner.code(sb, precedence());
-          sb.append(")");
+          sb.append(_op).append("(").append(ctype).append(")");
         }
     };
   }
