@@ -207,7 +207,7 @@ public class C extends ANY
    */
   private void createCode()
   {
-    _c.println
+    _c.print
       ("#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+
        "#include <unistd.h>\n"+
@@ -221,6 +221,7 @@ public class C extends ANY
          for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
            {
              p.compile(this, c);
+             _c.println("");
            }
        });
     _c.println("int main(int argc, char **args) { " + _names.function(_fuir.mainClazzId(), false) + "(); }");
