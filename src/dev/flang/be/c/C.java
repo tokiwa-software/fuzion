@@ -481,7 +481,7 @@ public class C extends ANY
                 }
               var sl = new List<CStmnt>();
               var field = _fuir.matchCaseField(cl, c, i, mc);
-              if (field != -1 && tags.length > 0 /* NYI: How could tags be empty? */)
+              if (field != -1)
                 {
                   var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
                   var f      = accessField(cl, current(cl), field);
