@@ -123,7 +123,7 @@ integer<T : integer<T>> : numeric<T> is
         else
           p := -? thiz
           match p
-            v i32 => ("-" + v .asString).asBytes.asStream
+            v T   => ("-" + v .asString).asBytes.asStream
             _ nil => ("-" + (-(thiz / ten)).asString + (-(thiz % ten)).asString).asBytes.asStream
 
       posDecimalBytesStream ref : stream<i32> is  # NYI: check why "ref" is needed here, make this an anonymous inner feature
