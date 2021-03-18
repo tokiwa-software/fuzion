@@ -221,8 +221,8 @@ public class C extends ANY
          for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
            {
              p.compile(this, c);
-             _c.println("");
            }
+         _c.println("");
        });
     _c.println("int main(int argc, char **args) { " + _names.function(_fuir.mainClazzId(), false) + "(); }");
   }
