@@ -920,24 +920,12 @@ public class C extends ANY
             _c.print(target.assign(new CIdent("arg" + i)));
           }
       }
-    try
+    if (!pre)
       {
-        if (!pre)
-          {
-            var c = _fuir.clazzCode(cl);
-            createCode(cl, new Stack<CExpr>(), c);
-          }
-        preOrPostCondition(cl, pre);
+        var c = _fuir.clazzCode(cl);
+        createCode(cl, new Stack<CExpr>(), c);
       }
-    catch (RuntimeException | Error e)
-      {
-        _c.println("// *** compiler crash: " + e);
-        StringWriter sw = new StringWriter();
-        e.printStackTrace(new PrintWriter(sw));
-        Errors.error("C backend compiler crash",
-                     "While creating code for " + _fuir.clazzAsString(cl) + "\n" +
-                     "Java Error: " + sw);
-      }
+    preOrPostCondition(cl, pre);
     var res = _fuir.clazzResultClazz(cl);
     if (!pre && _types.hasData(res))
       {
