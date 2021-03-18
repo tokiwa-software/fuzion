@@ -75,13 +75,6 @@ public class C extends ANY
 
 
   /**
-   * The code generator assumes that the first page is reserved by the system,
-   * no legal memory address could end up in this first page.
-   */
-  private static final long PAGE_SIZE = 4096;
-
-
-  /**
    * Debugging output
    */
   private static final boolean SHOW_STACK_AFTER_STMNT = false;
