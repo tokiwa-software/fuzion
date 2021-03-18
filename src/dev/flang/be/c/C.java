@@ -355,7 +355,7 @@ public class C extends ANY
             {
               ol.add(CStmnt.lineComment("Dynamic call to " + _fuir.clazzAsString(cc0)));
               var ccs = _fuir.callCalledClazzes(cl, c, i);
-              var ac = _fuir.callArgCount(c, i);
+              var ac = _fuir.clazzArgCount(cc0);
               var t = _names.newTemp();
               var ti = stack.size() - ac - 1; // NYI: ti is wrong is args contain unit type arguments
               var tt0 = _types.clazz(tc);

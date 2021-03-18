@@ -1271,18 +1271,6 @@ public class FUIR extends ANY
     return innerClazzIds;
   }
 
-
-  public int callArgCount(int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call);
-
-    var call = (Call) _codeIds.get(c).get(ix);
-    return call._actuals.size();
-  }
-
   public boolean callIsDynamic(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
