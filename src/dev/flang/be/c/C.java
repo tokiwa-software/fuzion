@@ -334,7 +334,7 @@ public class C extends ANY
             { // replace unit-type values by 0, 1, 2, 3,... cast to ref Object
               check
                 (value == null); // value must be a unit type
-              if (tagNum >= PAGE_SIZE)
+              if (tagNum >= CConstants.PAGE_SIZE)
                 {
                   Errors.error("Number of tags for choice type exceeds page size.",
                                "While creating code for '" + _fuir.clazzAsString(cl) + "'\n" +

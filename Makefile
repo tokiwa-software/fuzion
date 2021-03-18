@@ -142,11 +142,12 @@ JAVA_FILES_BE_INTERPRETER = \
 
 JAVA_FILES_BE_C = \
           $(SRC)/dev/flang/be/c/C.java \
-          $(SRC)/dev/flang/be/c/COptions.java \
+          $(SRC)/dev/flang/be/c/CConstants.java \
           $(SRC)/dev/flang/be/c/CExpr.java \
           $(SRC)/dev/flang/be/c/CFile.java \
           $(SRC)/dev/flang/be/c/CIdent.java \
           $(SRC)/dev/flang/be/c/CNames.java \
+          $(SRC)/dev/flang/be/c/COptions.java \
           $(SRC)/dev/flang/be/c/CStmnt.java \
           $(SRC)/dev/flang/be/c/CTypes.java \
           $(SRC)/dev/flang/be/c/Intrinsics.java \
