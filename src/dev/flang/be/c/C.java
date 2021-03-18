@@ -404,7 +404,7 @@ public class C extends ANY
           var rt = _fuir.clazzResultClazz(cc0);
           if (_fuir.clazzPre(cc0, 0) != -1)
             {
-              _c.print(call(cl, c, i, cc0, (Stack<CExpr>) stack.clone(), -1, true));
+              _c.print(call(cl, c, i, cc0, (Stack<CExpr>) stack.clone(), true));
             }
           if (_fuir.callIsDynamic(cl, c, i))
             {
@@ -445,7 +445,7 @@ public class C extends ANY
                   var tt = ccs[cci  ];
                   var cc = ccs[cci+1];
                   var stk = (Stack<CExpr>) stack.clone();
-                  var co = call(cl, c, i, cc, stk, _fuir.clazzOuterClazz(cc), false);
+                  var co = call(cl, c, i, cc, stk, false);
                   var rv = pop(stk, rt);
                   if (rt != _fuir.clazzResultClazz(cc) && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
                     {
@@ -479,7 +479,7 @@ public class C extends ANY
                   _c.unindent();
                   _c.println("}");
                 }
-              args(cl, c, i, cc0, stack, _fuir.clazzArgCount(cc0), _fuir.clazzOuterClazz(cc0));
+              args(cl, c, i, cc0, stack, _fuir.clazzArgCount(cc0));
               if (res != null)
                 {
                   push(stack, rt, res);
@@ -487,7 +487,7 @@ public class C extends ANY
             }
           else
             {
-              o = call(cl, c, i, cc0, stack, -1, false);
+              o = call(cl, c, i, cc0, stack, false);
               if (!_fuir.clazzIsCalled(cc0))
                 {
                   o = CStmnt.lineComment("Feature not called: "+_fuir.clazzAsString(cc0));
@@ -656,15 +656,11 @@ public class C extends ANY
    *
    * @param stack the stack containing the current arguments waiting to be used
    *
-   * @param castTarget if the type of the target instance of this call was
-   * checked against a different type, the target type should be cast to this
-   * clazz castTarget. -1 if no cast needed.
-   *
    * @param pre true to call the precondition of cl instead of cl.
    *
    * @return the code to perform the call
    */
-  CStmnt call(int cl, int c, int i, int cc, Stack<CExpr> stack, int castTarget, boolean pre)
+  CStmnt call(int cl, int c, int i, int cc, Stack<CExpr> stack, boolean pre)
   {
     CStmnt result = CStmnt.EMPTY;
     var ac = _fuir.callArgCount(c, i);
@@ -680,7 +676,7 @@ public class C extends ANY
         {
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = null;
-          var call = CExpr.call(_names.function(cc, pre), args(cl, c, i, cc, stack, ac, castTarget));
+          var call = CExpr.call(_names.function(cc, pre), args(cl, c, i, cc, stack, ac));
           if (!pre && _types.hasData(rt))
             {
               var tmp = _names.newTemp();
@@ -744,14 +740,14 @@ public class C extends ANY
    *
    * @return list of arguments to be passed to CExpr.call
    */
-  List<CExpr> args(int cl, int c, int i, int cc, Stack<CExpr> stack, int argCount, int castTarget)
+  List<CExpr> args(int cl, int c, int i, int cc, Stack<CExpr> stack, int argCount)
   {
     List<CExpr> result;
     if (argCount > 0)
       {
         var ac = _fuir.clazzArgClazz(cc, argCount-1);
         var a = pop(stack, ac);
-        result = args(cl, c, i, cc, stack, argCount-1, castTarget);
+        result = args(cl, c, i, cc, stack, argCount-1);
         if (_types.hasData(ac))
           {
             a = _fuir.clazzIsRef(ac) ? a.castTo(_types.clazz(ac)) : a;
@@ -767,7 +763,8 @@ public class C extends ANY
         if (or != -1)
           {
             var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
-            var a3 = castTarget == -1 ? a2 : a2.castTo(_types.clazz(castTarget));
+            var oc = _fuir.clazzOuterClazz(cc);
+            var a3 = tc != oc ? a2.castTo(_types.clazz(oc)) : a2;
             result.add(a3);
           }
       }
