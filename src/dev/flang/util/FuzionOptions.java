@@ -103,6 +103,31 @@ public class FuzionOptions extends ANY
     return _verbose;
   }
 
+
+  /**
+   * Print given string if running at given verbosity level.
+   */
+  public void verbosePrintln(int level, String s)
+  {
+    if (PRECONDITIONS) require
+      (level > 0);
+
+    if (verbose(level))
+      {
+        System.out.println(s);
+      }
+  }
+
+
+  /**
+   * Print given string if running at verbosity level 1 or higher.
+   */
+  public void verbosePrintln(String s)
+  {
+    verbosePrintln(1, s);
+  }
+
+
   public boolean fuzionSafety()
   {
     return _fuzionSafety;

@@ -240,10 +240,7 @@ public class FrontEnd extends ANY
    */
   Feature parseFile(Path fname)
   {
-    if (_options.verbose(2))
-      {
-        System.out.println(" - "+fname);
-      }
+    _options.verbosePrintln(2, " - " + fname);
     return new Parser(fname).unit();
   }
 

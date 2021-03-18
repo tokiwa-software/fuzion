@@ -315,13 +315,10 @@ public class Clazzes extends ANY
               {
                 clazzesToBeVisited.add(result);
               }
-            if (_options_.verbose(3))
+            _options_.verbosePrintln(3, "GLOBAL CLAZZ: " + result);
+            if (_options_.verbose(10))
               {
-                System.out.println("GLOBAL CLAZZ: " + result);
-                if (_options_.verbose(10))
-                  {
-                    Thread.dumpStack();
-                  }
+                Thread.dumpStack();
               }
             result.dependencies();
           }

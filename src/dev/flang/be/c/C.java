@@ -146,10 +146,7 @@ public class C extends ANY
     var cl = _fuir.mainClazzId();
     var name = _options._binaryName != null ? _options._binaryName : _fuir.clazzBaseName(cl);
     var cname = name + ".c";
-    if (_options.verbose(1))
-      {
-        System.out.println(" + " + cname);
-      }
+    _options.verbosePrintln(" + " + cname);
     try
       {
         _c = new CFile(cname);
@@ -171,10 +168,7 @@ public class C extends ANY
     Errors.showAndExit();
 
     var command = new List<String>("clang", "-O3", "-o", name, cname);
-    if (_options.verbose(1))
-      {
-        System.out.println(" * " + command.toString("", " ", ""));
-      }
+    _options.verbosePrintln(" * " + command.toString("", " ", ""));;
     try
       {
         var p = new ProcessBuilder().inheritIO().command(command).start();
