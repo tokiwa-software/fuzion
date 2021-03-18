@@ -36,6 +36,17 @@ class CIdent extends CExpr
 {
 
 
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Predefined frequently used identifiers:
+   */
+  final static CIdent STDERR = new CIdent("stderr");
+  final static CIdent FILE = new CIdent("__FILE__");
+  final static CIdent LINE = new CIdent("__LINE__");
+
+
   /*----------------------------  variables  ----------------------------*/
 
 

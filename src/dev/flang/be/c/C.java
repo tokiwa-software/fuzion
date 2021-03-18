@@ -368,12 +368,12 @@ public class C extends ANY
                 }
               if (ccs.length == 0)
                 {
-                  _c.println("fprintf(stderr," +
-                             CExpr.string("*** %s:%d no targets for dynamic call to %s within %s\n").code() +
-                             ", __FILE__, __LINE__," +
-                             CExpr.string(_fuir.clazzAsString(cc0)).code() + "," +
-                             CExpr.string(_fuir.clazzAsString(cl )).code() + "); " +
-                             "exit(1);");
+                  _c.print(CStmnt.seq(CExpr.fprintfstderr("*** %s:%d no targets for dynamic call to %s within %s\n",
+                                                          CIdent.FILE,
+                                                          CIdent.LINE,
+                                                          CExpr.string(_fuir.clazzAsString(cc0)),
+                                                          CExpr.string(_fuir.clazzAsString(cl ))),
+                                      CExpr.exit(1)));
                 }
               else if (ccs.length > 2)
                 {
@@ -409,13 +409,15 @@ public class C extends ANY
                 }
               if (ccs.length > 2)
                 {
-                  _c.println("default: { fprintf(stderr," +
-                             CExpr.string("*** %s:%d unhandled dynamic call target %d in call to %s within %s\n").code() + "," +
-                             "__FILE__, __LINE__," +
-                             id.code() + "," +
-                             CExpr.string(_fuir.clazzAsString(cc0)).code() + "," +
-                             CExpr.string(_fuir.clazzAsString(cl )).code() + "); " +
-                             "exit(1); }");
+                  _c.println("default: { ");
+                  _c.print(CStmnt.seq(CExpr.fprintfstderr("*** %s:%d unhandled dynamic call target %d in call to %s within %s\n",
+                                                          CIdent.FILE,
+                                                          CIdent.LINE,
+                                                          id,
+                                                          CExpr.string(_fuir.clazzAsString(cc0)),
+                                                          CExpr.string(_fuir.clazzAsString(cl ))),
+                                      CExpr.exit(1)));
+                  _c.println("}");
                   _c.unindent();
                   _c.println("}");
                 }
@@ -937,11 +939,12 @@ public class C extends ANY
           {
             createCode(cl, stack, p);
             var cc = stack.pop();
-            _c.println("if ("+cc.field(_names.TAG_NAME).not().code()+") { "+
-                       " fprintf(stderr,"+CExpr.string(pre ? "*** failed precondition on call to '%s'\n"
-                                                           : "*** failed postcondition after '%s'\n").code() + "," +
-                       CExpr.string(_fuir.clazzAsString(cl)).code() +
-                       "); exit(1); }");
+            _c.println("if ("+cc.field(_names.TAG_NAME).not().code()+") { ");
+            _c.print(CStmnt.seq(CExpr.fprintfstderr(pre ? "*** failed precondition on call to '%s'\n"
+                                                        : "*** failed postcondition after '%s'\n",
+                                                    CExpr.string(_fuir.clazzAsString(cl))),
+                                CExpr.exit(1)));
+            _c.println("}");
           }
       }
   }

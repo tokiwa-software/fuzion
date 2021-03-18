@@ -288,6 +288,31 @@ abstract class CExpr extends CStmnt
     };
   }
 
+  /**
+   * Create C code 'fprintf(stderr,msg, args'
+   */
+  static CExpr fprintfstderr(String msg,
+                             CExpr... args)
+  {
+    var l = new List<CExpr>(CIdent.STDERR,
+                            string(msg));
+    for (var a : args)
+      {
+        l.add(a);
+      }
+
+    return call("fprintf", l);
+  }
+
+
+  /**
+   * Create C code 'exit(rc)'
+   */
+  static CExpr exit(int rc)
+  {
+    return call("exit", new List<>(int32const(rc)));
+  }
+
 
   /*-------------------------  static methods  --------------------------*/
 
