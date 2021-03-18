@@ -295,43 +295,6 @@ public class C extends ANY
     CStmnt o = CStmnt.EMPTY;
     switch (s)
       {
-      case Tag:
-        {
-          var valuecl = _fuir.tagValueClazz(cl, c, i);  // static clazz of value
-          var value   = pop(stack, valuecl);            // value assigned to field
-          var newcl   = _fuir.tagNewClazz  (cl, c, i);  // static clazz of assigned field
-          int tagNum  = _fuir.clazzChoiceTag(newcl, valuecl);
-          var res     = _names.newTemp();
-          var tag     = res.field(_names.TAG_NAME);
-          var uniyon  = res.field(_names.CHOICE_UNION_NAME);
-          var entry   = uniyon.field(_fuir.clazzIsRef(valuecl) ||
-                                     _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? _names.CHOICE_REF_ENTRY_NAME
-                                                                          : _names.CHOICE_ENTRY_NAME + tagNum);
-          if (_fuir.clazzIsChoiceOfOnlyRefs(newcl))
-            {
-              if (!_fuir.clazzIsRef(valuecl))
-                { // replace unit-type values by 0, 1, 2, 3,... cast to ref Object
-                  check
-                    (value == null); // value must be a unit type
-                  if (tagNum >= CConstants.PAGE_SIZE)
-                    {
-                      Errors.error("Number of tags for choice type exceeds page size.",
-                                   "While creating code for '" + _fuir.clazzAsString(cl) + "'\n" +
-                                   "Found in choice type '" + _fuir.clazzAsString(newcl)+ "'\n");
-                    }
-                  value = CExpr.int32const(tagNum);
-                }
-              value = value.castTo(_types.clazz(_fuir.clazzObject()));
-            }
-          o = CStmnt.seq(CStmnt.lineComment("Tag a value to be of choice type " + _fuir.clazzAsString(newcl) + " static value type " + _fuir.clazzAsString(valuecl)),
-                         CStmnt.decl(_types.clazz(newcl), res),
-                         _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? CStmnt.EMPTY : tag.assign(CExpr.int32const(tagNum)),
-                         value == null
-                         ? CStmnt.lineComment("valueluess assignment to " + entry.code())
-                         : entry.assign(value));
-          push(stack, newcl, res);
-          break;
-        }
       case Assign:
         {
           var field = _fuir.assignedField(cl, c, i);  // field we are assigning to
@@ -584,6 +547,43 @@ public class C extends ANY
             }
           _c.unindent();
           _c.println("}");
+          break;
+        }
+      case Tag:
+        {
+          var valuecl = _fuir.tagValueClazz(cl, c, i);  // static clazz of value
+          var value   = pop(stack, valuecl);            // value assigned to field
+          var newcl   = _fuir.tagNewClazz  (cl, c, i);  // static clazz of assigned field
+          int tagNum  = _fuir.clazzChoiceTag(newcl, valuecl);
+          var res     = _names.newTemp();
+          var tag     = res.field(_names.TAG_NAME);
+          var uniyon  = res.field(_names.CHOICE_UNION_NAME);
+          var entry   = uniyon.field(_fuir.clazzIsRef(valuecl) ||
+                                     _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? _names.CHOICE_REF_ENTRY_NAME
+                                                                          : _names.CHOICE_ENTRY_NAME + tagNum);
+          if (_fuir.clazzIsChoiceOfOnlyRefs(newcl))
+            {
+              if (!_fuir.clazzIsRef(valuecl))
+                { // replace unit-type values by 0, 1, 2, 3,... cast to ref Object
+                  check
+                    (value == null); // value must be a unit type
+                  if (tagNum >= CConstants.PAGE_SIZE)
+                    {
+                      Errors.error("Number of tags for choice type exceeds page size.",
+                                   "While creating code for '" + _fuir.clazzAsString(cl) + "'\n" +
+                                   "Found in choice type '" + _fuir.clazzAsString(newcl)+ "'\n");
+                    }
+                  value = CExpr.int32const(tagNum);
+                }
+              value = value.castTo(_types.clazz(_fuir.clazzObject()));
+            }
+          o = CStmnt.seq(CStmnt.lineComment("Tag a value to be of choice type " + _fuir.clazzAsString(newcl) + " static value type " + _fuir.clazzAsString(valuecl)),
+                         CStmnt.decl(_types.clazz(newcl), res),
+                         _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? CStmnt.EMPTY : tag.assign(CExpr.int32const(tagNum)),
+                         value == null
+                         ? CStmnt.lineComment("valueluess assignment to " + entry.code())
+                         : entry.assign(value));
+          push(stack, newcl, res);
           break;
         }
       case WipeStack:
