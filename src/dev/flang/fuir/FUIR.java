@@ -90,7 +90,6 @@ public class FUIR extends ANY
 
   public enum ExprKind
   {
-    AdrToValue,
     Assign,
     Box,
     Call,
@@ -866,7 +865,7 @@ public class FUIR extends ANY
       {
         var a = (AdrToValue) s;
         toStack(l, a.adr_);
-        l.add(a);
+        // l.add(a);  -- NYI: ignored by backend, maybe remove AdrToValue completely
       }
     else if (s instanceof Box)
       {
@@ -992,10 +991,6 @@ public class FUIR extends ANY
     if (e == WIPE_STACK) // Take care: must be first since WIPE_STACK is IntConst (for now)
       {
         result = ExprKind.WipeStack;
-      }
-    else if (e instanceof AdrToValue)
-      {
-        result = ExprKind.AdrToValue;
       }
     else if (e instanceof Assign)
       {
