@@ -86,7 +86,7 @@ public class CNames extends ANY
   /**
    * Name of local variable containing current instance
    */
-  static final CExpr CURRENT = new CIdent("fzCur");
+  static final CIdent CURRENT = new CIdent("fzCur");
 
 
   /**

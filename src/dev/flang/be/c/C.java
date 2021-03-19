@@ -783,7 +783,7 @@ public class C extends ANY
           _c.indent();
           switch (_fuir.clazzKind(cl))
             {
-            case Routine  : codeForRoutine(cl, false); break;
+            case Routine  : _c.print(codeForRoutine(cl, false)); break;
             case Intrinsic: _c.print(new Intrinsics().code(this, cl)); break;
             }
           _c.unindent();
@@ -798,7 +798,7 @@ public class C extends ANY
               cFunctionDecl(cl, true);
               _c.print(" {\n");
               _c.indent();
-              codeForRoutine(cl, true);
+              _c.print(codeForRoutine(cl, true));
               _c.unindent();
               _c.println("}");
             }
@@ -816,13 +816,16 @@ public class C extends ANY
    * @param pre true to create code for cl's precondition, false to create code
    * for cl itself.
    */
-  void codeForRoutine(int cl, boolean pre)
+  CStmnt codeForRoutine(int cl, boolean pre)
   {
     if (PRECONDITIONS) require
       (_fuir.clazzKind(cl) == FUIR.ClazzKind.Routine || pre);
 
-    _c.print("" + _names.struct(cl) + " *" + _names.CURRENT.code() + " = malloc(sizeof(" + _names.struct(cl) + "));\n"+
-             (_fuir.clazzIsRef(cl) ? _names.CURRENT.deref().field("clazzId").assign(_names.clazzId(cl)).code() + ";\n" : ""));
+    var l = new List<CStmnt>();
+    l.add(CStmnt.lineComment("**START**"));
+    var t = _names.struct(cl);
+    l.add(CStmnt.decl(t + "*", _names.CURRENT, CExpr.call("malloc", new List<>(CExpr.sizeOfType(t)))));
+    l.add(_fuir.clazzIsRef(cl) ? _names.CURRENT.deref().field("clazzId").assign(_names.clazzId(cl)) : CStmnt.EMPTY);
 
     var cur = _fuir.clazzIsRef(cl) ? _names.CURRENT.deref().field(_names.FIELDS_IN_REF_CLAZZ)
                                    : _names.CURRENT.deref();
@@ -830,7 +833,7 @@ public class C extends ANY
     var or = _fuir.clazzOuterRef(vcl);
     if (or != -1)
       {
-        _c.print(cur.field(_names.fieldName(or)).assign(_names.OUTER));
+        l.add(cur.field(_names.fieldName(or)).assign(_names.OUTER));
       }
 
     var ac = _fuir.clazzArgCount(vcl);
@@ -843,24 +846,24 @@ public class C extends ANY
             var target = _types.isScalar(vcl)
               ? cur
               : cur.field(_names.fieldName(af));
-            _c.print(target.assign(new CIdent("arg" + i)));
+            l.add(target.assign(new CIdent("arg" + i)));
           }
       }
     if (!pre)
       {
-        var c = _fuir.clazzCode(cl);
-        _c.print(createCode(cl, new Stack<CExpr>(), c));
+        l.add(createCode(cl, new Stack<CExpr>(), _fuir.clazzCode(cl)));
       }
-    _c.print(preOrPostCondition(cl, pre));
+    l.add(preOrPostCondition(cl, pre));
     var res = _fuir.clazzResultClazz(cl);
     if (!pre && _types.hasData(res))
       {
         var rf = _fuir.clazzResultField(cl);
-        _c.print(rf != -1
-                 ? current(cl).field(_names.fieldName(rf)).ret()  // a routine, return result field
-                 : current(cl).ret()                              // a constructor, return current instance
-                 );
+        l.add(rf != -1 ? current(cl).field(_names.fieldName(rf)).ret()  // a routine, return result field
+                       : current(cl).ret()                              // a constructor, return current instance
+              );
       }
+    l.add(CStmnt.lineComment("**DONE**"));
+    return CStmnt.seq(l);
   }
 
 
@@ -881,7 +884,7 @@ public class C extends ANY
                   : _fuir.clazzPost(cl, i)) != -1;
          i++)
       {
-        _c.print(createCode(cl, stack, p));
+        l.add(createCode(cl, stack, p));
         var cc = stack.pop();
         l.add(CStmnt.iff(cc.field(_names.TAG_NAME).not(),
                          CStmnt.seq(CExpr.fprintfstderr(pre ? "*** failed precondition on call to '%s'\n"
