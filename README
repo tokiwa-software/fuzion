@@ -16,4 +16,9 @@ To run an example:
   > cd tests/rosettacode_factors_of_an_integer
   > fz factors
 
+To compile the same example (requires clang C compiler):
+
+  > fz -c factors
+  > ./factors
+
 Have fun!
