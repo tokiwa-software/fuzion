@@ -263,12 +263,28 @@ $(BUILD_DIR)/tests: $(FZ_SRC)/tests
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
-run_tests: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
+run_tests: run_tests_int run_tests_c
+
+# phony target to run Fuzion tests using interpreter and report number of failures
+.PHONY .SILENT: run_tests_int
+run_tests_int: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
 	rm -rf $(BUILD_DIR)/run_tests.results
+	echo -n "testing interpreted: "; \
 	for test in $(shell echo $(BUILD_DIR)/tests/*); do \
 	  FUZION="$(FUZIONX)" make -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
 	done
-	echo `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`ls $(BUILD_DIR)/tests | wc -l` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed; \
+	echo " `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`ls $(BUILD_DIR)/tests | wc -l` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed"; \
+	cat $(BUILD_DIR)/run_tests.results | grep failed$$
+
+# phony target to run Fuzion tests using c backend and report number of failures
+.PHONY .SILENT: run_tests_c
+run_tests_c: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
+	rm -rf $(BUILD_DIR)/run_tests.results
+	echo -n "testing C backend: "; \
+	for test in $(shell echo $(BUILD_DIR)/tests/*); do \
+	  FUZION="$(FUZIONX)" make c -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
+	done
+	echo " `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`ls $(BUILD_DIR)/tests | wc -l` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed"; \
 	cat $(BUILD_DIR)/run_tests.results | grep failed$$
 
 .PHONY: clean

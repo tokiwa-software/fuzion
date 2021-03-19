@@ -23,5 +23,10 @@
 #
 # -----------------------------------------------------------------------
 
+NAME = visibility
+
 all:
-	$(FUZION) visibility 2>err.txt
+	$(FUZION) $(NAME) 2>err.txt
+
+c:
+	$(FUZION) $(NAME) -c -o=testbin && ./testbin 2>err.txt

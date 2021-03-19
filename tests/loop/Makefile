@@ -23,8 +23,13 @@
 #
 # -----------------------------------------------------------------------
 
-JAVA_STACK_SIZE = 4m # reqquired since tail recursion is not optimized yet
+JAVA_STACK_SIZE = 4m # required since tail recursion is not optimized yet
 JAVA_OPTS = -Xss$(JAVA_STACK_SIZE)
 
+NAME = looptest
+
 all:
-	$(FUZION) looptest 2>err.txt
+	$(FUZION) $(NAME) 2>err.txt
+
+c:
+	$(FUZION) $(NAME) -c -o=testbin && ./testbin 2>err.txt

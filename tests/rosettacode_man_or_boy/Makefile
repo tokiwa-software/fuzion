@@ -26,5 +26,10 @@
 JAVA_STACK_SIZE = 16m # required for manorboy(10)
 JAVA_OPTS = -Xss$(JAVA_STACK_SIZE)
 
+NAME = man_or_boy
+
 all:
-	$(FUZION) man_or_boy 2>err.txt
+	$(FUZION) $(NAME) 2>err.txt
+
+c:
+	$(FUZION) $(NAME) -c -o=testbin && ./testbin 2>err.txt

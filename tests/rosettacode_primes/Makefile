@@ -26,5 +26,10 @@
 JAVA_STACK_SIZE = 16m # NYI: reqquired until tail rec function is optimized
 JAVA_OPTS = -Xss$(JAVA_STACK_SIZE)
 
+NAME = primes
+
 all:
-	$(FUZION) primes 2>err.txt
+	$(FUZION) $(NAME) 2>err.txt
+
+c:
+	$(FUZION) $(NAME) -c -o=testbin && ./testbin 2>err.txt
