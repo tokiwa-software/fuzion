@@ -195,10 +195,11 @@ public class C extends ANY
        "#include <assert.h>\n"+
        "\n");
 
+    var ordered = _types.inOrder();
     Stream.of(CompilePhase.values()).forEachOrdered
       ((p) ->
        {
-         for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
+         for (var c : ordered)
            {
              cf.print(p.compile(this, c));
            }

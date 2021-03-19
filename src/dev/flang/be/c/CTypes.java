@@ -43,9 +43,6 @@ public class CTypes extends ANY
 {
 
 
-  /*----------------------------  constants  ----------------------------*/
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -58,16 +55,7 @@ public class CTypes extends ANY
   /**
    * The C backend
    */
-  private CNames _names;
-
-
-  /**
-   * Set of clazz ids for all the clazzes whose structs have been declared
-   * already.  Structs are declared recursively with structs of inner fields
-   * declared before outer structs.  This set keeps track which structs have been
-   * declared already to avoid duplicates.
-   */
-  private final TreeSet<Integer> _declaredStructs = new TreeSet<>();
+  private final CNames _names;
 
 
   /*---------------------------  consructors  ---------------------------*/
@@ -178,6 +166,68 @@ public class CTypes extends ANY
 
 
   /**
+   * Find the order in which the clazzes have to be declared to avoid C compiler
+   * from complaining, i.e., all struct and union elements before the
+   * surrounding structures.
+   *
+   * @return A list of all clazzes in the order they should be declared.
+   */
+  List<Integer> inOrder()
+  {
+    var result = new List<Integer>();
+    var visited = new TreeSet<Integer>();
+    for (var cl = _fuir.firstClazz(); cl <= _fuir.lastClazz(); cl++)
+      {
+        findDeclarationOrder(cl, result, visited);
+      }
+    return result;
+  }
+
+
+  /**
+   * Helper routine for inOrder to check a given clazz.
+   *
+   * @param cl the clazz to check, will call itself recursively for all clazzes
+   * cl depends on.
+   *
+   * @param result cl will be added to result after all the recursive calls for
+   * clazzes cl depends on.
+   *
+   * @param visited tracks the clazzes this was called with already. If
+   * visited.contains(cl), this will be a NOP.
+   */
+  private void findDeclarationOrder(int cl, List<Integer> result, TreeSet<Integer> visited)
+  {
+    if (!visited.contains(cl))
+      {
+        visited.add(cl);
+        if (!isScalar(cl)) // special handling of stdlib clazzes known to the compiler
+          {
+            // first, make sure structs used for inner fields are declared:
+            for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
+              {
+                var rcl = _fuir.clazzResultClazz(_fuir.clazzField(cl, i));
+                if (!_fuir.clazzIsRef(rcl))
+                  {
+                    findDeclarationOrder(rcl, result, visited);
+                  }
+              }
+            for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
+              {
+                var cc = _fuir.clazzChoice(cl, i);
+                findDeclarationOrder(_fuir.clazzIsRef(cc) ? _fuir.clazzObject() : cc, result, visited);
+              }
+            if (_fuir.clazzIsRef(cl))
+              {
+                findDeclarationOrder(_fuir.clazzAsValue(cl), result, visited);
+              }
+          }
+        result.add(cl);
+      }
+  }
+
+
+  /**
    * Create declarations of the C structs required for the given clazz.  Write
    * code to cf.
    *
@@ -185,104 +235,61 @@ public class CTypes extends ANY
    */
   CStmnt structs(int cl)
   {
-    var l = new List<CStmnt>();
     switch (_fuir.clazzKind(cl))
       {
       case Choice:
       case Routine:
         {
-          if (!_declaredStructs.contains(cl))
+          var l = new List<CStmnt>(CStmnt.lineComment("for " + _fuir.clazzAsString(cl)));
+          var els = new List<CStmnt>();
+          if (_fuir.clazzIsRef(cl))
             {
-              _declaredStructs.add(cl);
-              if (!isScalar(cl)) // special handling of stdlib clazzes known to the compiler
+              var vcl = _fuir.clazzAsValue(cl);
+              els.add(CStmnt.decl("uint32_t", _names.CLAZZ_ID));
+              els.add(CStmnt.decl(clazz(vcl), _names.FIELDS_IN_REF_CLAZZ));
+            }
+          else if (_fuir.clazzIsChoice(cl))
+            {
+              var ct = _fuir.clazzChoiceTag(cl);
+              if (ct != -1)
                 {
-                  // first, make sure structs used for inner fields are declared:
-                  for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
+                  els.add(CStmnt.decl(clazzField(ct), _names.TAG_NAME));
+                }
+              var uls = new List<CStmnt>();
+              for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
+                {
+                  var cc = _fuir.clazzChoice(cl, i);
+                  if (!_fuir.clazzIsRef(cc))
                     {
-                      var f = _fuir.clazzField(cl, i);
-                      var rcl = _fuir.clazzResultClazz(f);
-                      if (!_fuir.clazzIsRef(rcl))
-                        {
-                          var s = structs(rcl);
-                          if (s != CStmnt.EMPTY)
-                            {
-                              l.add(s);
-                            }
-                        }
-                    }
-                  for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
-                    {
-                      var cc = _fuir.clazzChoice(cl, i);
-                      var s =  structs(_fuir.clazzIsRef(cc) ? _fuir.clazzObject() : cc);
-                      if (s != CStmnt.EMPTY)
-                        {
-                          l.add(s);
-                        }
-                    }
-                  if (_fuir.clazzIsRef(cl))
-                    {
-                      var s = structs(_fuir.clazzAsValue(cl));
-                      if (s != CStmnt.EMPTY)
-                        {
-                          l.add(s);
-                        }
-                    }
-
-                  // next, declare the struct itself
-                  l.add(CStmnt.lineComment("for " + _fuir.clazzAsString(cl)));
-                  var els = new List<CStmnt>();
-                  if (_fuir.clazzIsRef(cl))
-                    {
-                      var vcl = _fuir.clazzAsValue(cl);
-                      els.add(CStmnt.decl("uint32_t", _names.CLAZZ_ID));
-                      els.add(CStmnt.decl(clazz(vcl), _names.FIELDS_IN_REF_CLAZZ));
-                    }
-                  else if (_fuir.clazzIsChoice(cl))
-                    {
-                      var ct = _fuir.clazzChoiceTag(cl);
-                      if (ct != -1)
-                        {
-                          els.add(CStmnt.decl(clazzField(ct), _names.TAG_NAME));
-                        }
-                      var uls = new List<CStmnt>();
-                      for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
-                        {
-                          var cc = _fuir.clazzChoice(cl, i);
-                          if (!_fuir.clazzIsRef(cc))
-                            {
-                              uls.add(CStmnt.decl(clazz(cc), new CIdent(_names.CHOICE_ENTRY_NAME + i)));
-                            }
-                        }
-                      if (_fuir.clazzIsChoiceWithRefs(cl))
-                        {
-                          uls.add(CStmnt.decl(clazz(_fuir.clazzObject()), _names.CHOICE_REF_ENTRY_NAME));
-                        }
-                      els.add(CStmnt.unyon(uls, _names.CHOICE_UNION_NAME));
-                    }
-                  else
-                    {
-                      for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
-                        {
-                          var f = _fuir.clazzField(cl, i);
-                          els.add(CStmnt.decl(clazzField(f), _names.fieldName(f)));
-                        }
-                    }
-                  l.add(CStmnt.struct(_names.struct(cl), els));
-                  if (cl == _fuir.clazzUniverse())
-                    {
-                      l.add(CStmnt.decl("static", _names.struct(cl), _names.UNIVERSE));
+                      uls.add(CStmnt.decl(clazz(cc), new CIdent(_names.CHOICE_ENTRY_NAME + i)));
                     }
                 }
+              if (_fuir.clazzIsChoiceWithRefs(cl))
+                {
+                  uls.add(CStmnt.decl(clazz(_fuir.clazzObject()), _names.CHOICE_REF_ENTRY_NAME));
+                }
+              els.add(CStmnt.unyon(uls, _names.CHOICE_UNION_NAME));
             }
+          else
+            {
+              for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
+                {
+                  var f = _fuir.clazzField(cl, i);
+                  els.add(CStmnt.decl(clazzField(f), _names.fieldName(f)));
+                }
+            }
+          l.add(CStmnt.struct(_names.struct(cl), els));
+          if (cl == _fuir.clazzUniverse())
+            {
+              l.add(CStmnt.decl("static", _names.struct(cl), _names.UNIVERSE));
+            }
+          return CStmnt.seq(l);
         }
-        break;
       default:
         break;
       }
-    return l.isEmpty() ? CStmnt.EMPTY : CStmnt.seq(l);
+    return CStmnt.EMPTY;
   }
-
-
 
 }
 
