@@ -875,23 +875,19 @@ public class C extends ANY
   void preOrPostCondition(int cl, boolean pre)
   {
     var stack = new Stack<CExpr>();
-
-    var p = 0;
-    for (int i = 0; p != -1; i++)
+    for (int p, i = 0;
+         (p = pre ? _fuir.clazzPre (cl, i)
+                  : _fuir.clazzPost(cl, i)) != -1;
+         i++)
       {
-        p = pre ? _fuir.clazzPre (cl, i)
-                : _fuir.clazzPost(cl, i);
-        if (p != -1)
-          {
-            _c.print(createCode(cl, stack, p));
-            var cc = stack.pop();
-            _c.println("if ("+cc.field(_names.TAG_NAME).not().code()+") { ");
-            _c.print(CStmnt.seq(CExpr.fprintfstderr(pre ? "*** failed precondition on call to '%s'\n"
-                                                        : "*** failed postcondition after '%s'\n",
-                                                    CExpr.string(_fuir.clazzAsString(cl))),
-                                CExpr.exit(1)));
-            _c.println("}");
-          }
+        _c.print(createCode(cl, stack, p));
+        var cc = stack.pop();
+        _c.println("if ("+cc.field(_names.TAG_NAME).not().code()+") { ");
+        _c.print(CStmnt.seq(CExpr.fprintfstderr(pre ? "*** failed precondition on call to '%s'\n"
+                                                    : "*** failed postcondition after '%s'\n",
+                                                CExpr.string(_fuir.clazzAsString(cl))),
+                            CExpr.exit(1)));
+        _c.println("}");
       }
   }
 
