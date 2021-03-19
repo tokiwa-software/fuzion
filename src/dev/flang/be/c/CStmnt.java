@@ -92,6 +92,63 @@ abstract class CStmnt extends ANY
 
 
   /**
+   * C struct such as 'struct s { x int; c char; }'
+   *
+   * @param name the name of the struct
+   *
+   * @param els the declaration in the struct
+   *
+   * @return corresponding CStmnt
+   */
+  static CStmnt struct(String name, List<CStmnt> els)
+  {
+    return new CStmnt()
+      {
+        void code(StringBuilder sb)
+        {
+          sb.append("struct ")
+            .append(name)
+            .append(" {\n");
+          for (var d : els)
+            {
+              d.code(sb);
+              sb.append(";\n");
+            }
+          sb.append("}");
+        }
+    };
+  }
+
+
+  /**
+   * C union such as 'union { x int; c char; } name'
+   *
+   * @param name the name of the struct
+   *
+   * @param els the declaration in the struct
+   *
+   * @return corresponding CStmnt
+   */
+  static CStmnt unyon(List<CStmnt> els, CIdent name)
+  {
+    return new CStmnt()
+      {
+        void code(StringBuilder sb)
+        {
+          sb.append("union {\n");
+          for (var d : els)
+            {
+              d.code(sb);
+              sb.append(";\n");
+            }
+          sb.append("}");
+          name.code(sb);
+        }
+    };
+  }
+
+
+  /**
    * C declaration such as 'i32 i'
    *
    * @param type the type of the defined entity

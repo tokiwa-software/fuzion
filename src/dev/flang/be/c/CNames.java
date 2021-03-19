@@ -93,7 +93,7 @@ public class CNames extends ANY
    * For a reference clazz' struct, this is the name of a struct element that
    * contains the fields using the corresponding value clazz' struct.
    */
-  static final String FIELDS_IN_REF_CLAZZ = "fields";
+  static final CIdent FIELDS_IN_REF_CLAZZ = new CIdent("fields");
 
 
   /**
@@ -115,15 +115,21 @@ public class CNames extends ANY
 
 
   /**
+   * The name of the clazzId field in ref instances
+   */
+  static final CIdent CLAZZ_ID = new CIdent("clazzId");
+
+
+  /**
    * The name of the tag field in choice clazzes such as bool.fz.
    */
-  static final String TAG_NAME = "fzTag";
+  static final CIdent TAG_NAME = new CIdent("fzTag");
 
 
   /**
    * The name of the choice union's field name in choice clazzes
    */
-  static final String CHOICE_UNION_NAME = "fzChoice";
+  static final CIdent CHOICE_UNION_NAME = new CIdent("fzChoice");
 
 
   /**
@@ -136,7 +142,7 @@ public class CNames extends ANY
   /**
    * The prefix of the name of the choice union's reference entries.
    */
-  static final String CHOICE_REF_ENTRY_NAME = "vref";
+  static final CIdent CHOICE_REF_ENTRY_NAME = new CIdent("vref");
 
 
 
@@ -426,10 +432,10 @@ public class CNames extends ANY
    *
    * @param field the field id
    */
-  String fieldName(int field)
+  CIdent fieldName(int field)
   {
     var index = _fuir.fieldIndex(field);
-    return FIELD_PREFIX + index + "_" + mangle(_fuir.clazzBaseName(field));
+    return new CIdent(FIELD_PREFIX + index + "_" + mangle(_fuir.clazzBaseName(field)));
   }
 
 }

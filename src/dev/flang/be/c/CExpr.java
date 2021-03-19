@@ -422,13 +422,13 @@ abstract class CExpr extends CStmnt
    *
    * @return the resulting expression to read this.name
    */
-  CExpr field(String name)
+  CExpr field(CIdent name)
   {
     CExpr inner = this;
     return new CExpr()
       {
         int precedence() { return 1; }
-        void code(StringBuilder sb) { inner.code(sb, precedence()); sb.append(".").append(name); }
+        void code(StringBuilder sb) { inner.code(sb, precedence()); sb.append("."); name.code(sb); }
     };
   }
 

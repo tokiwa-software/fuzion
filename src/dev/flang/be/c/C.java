@@ -58,10 +58,10 @@ public class C extends ANY
    */
   private enum CompilePhase
   {
-    TYPES           { CStmnt compile(C c, int cl) { return c._types.types(cl); } }, // declare types
-    STRUCTS         { CStmnt compile(C c, int cl) { c._types.structs(cl, c._c); return CStmnt.EMPTY; } }, // generate struct declarations
-    FORWARDS        { CStmnt compile(C c, int cl) { return c.forwards(cl);     } }, // generate forward declarations only
-    IMPLEMENTATIONS { CStmnt compile(C c, int cl) { return c.code(cl);         } }; // generate C functions
+    TYPES           { CStmnt compile(C c, int cl) { return c._types.types(cl);   } }, // declare types
+    STRUCTS         { CStmnt compile(C c, int cl) { return c._types.structs(cl); } }, // generate struct declarations
+    FORWARDS        { CStmnt compile(C c, int cl) { return c.forwards(cl);       } }, // generate forward declarations only
+    IMPLEMENTATIONS { CStmnt compile(C c, int cl) { return c.code(cl);           } }; // generate C functions
 
     /**
      * Perform this compilation phase on given clazz using given backend.
@@ -94,12 +94,6 @@ public class C extends ANY
    * The options set for the compilation.
    */
   final COptions _options;
-
-
-  /**
-   * Writer to create the C code to.
-   */
-  CFile _c;
 
 
   /**
@@ -149,21 +143,20 @@ public class C extends ANY
     _options.verbosePrintln(" + " + cname);
     try
       {
-        _c = new CFile(cname);
-        createCode();
+        var cf = new CFile(cname);
+        try
+          {
+            createCode(cf);
+          }
+        finally
+          {
+            cf.close();
+          }
       }
     catch (IOException io)
       {
         Errors.error("C backend I/O error",
                      "While creating code to '" + cname + "', received I/O error '" + io + "'");
-      }
-    finally
-      {
-        if (_c != null)
-          {
-            _c.close();
-            _c = null;
-          }
       }
     Errors.showAndExit();
 
@@ -192,9 +185,9 @@ public class C extends ANY
    * After the CFile has been opened and stored in _c, this methods generates
    * the code into this file.
    */
-  private void createCode()
+  private void createCode(CFile cf)
   {
-    _c.print
+    cf.print
       ("#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+
        "#include <unistd.h>\n"+
@@ -207,11 +200,11 @@ public class C extends ANY
        {
          for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
            {
-             _c.print(p.compile(this, c));
+             cf.print(p.compile(this, c));
            }
-         _c.println("");
+         cf.println("");
        });
-    _c.println("int main(int argc, char **args) { " + _names.function(_fuir.mainClazzId(), false) + "(); }");
+    cf.println("int main(int argc, char **args) { " + _names.function(_fuir.mainClazzId(), false) + "(); }");
   }
 
 
@@ -336,7 +329,7 @@ public class C extends ANY
               o = CStmnt.seq(CStmnt.lineComment("Box " + _fuir.clazzAsString(vc)),
                              CStmnt.decl(_types.clazz(rc), t),
                              t.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType(_names.struct(rc))))),
-                             t.deref().field("clazzId").assign(_names.clazzId(rc)),
+                             t.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(rc)),
                              val == null ? CStmnt.EMPTY
                              : t.deref().field(_names.FIELDS_IN_REF_CLAZZ).assign(val));
               push(stack, rc, t);
@@ -363,7 +356,7 @@ public class C extends ANY
               var tt0 = _types.clazz(tc);
               ol.add(CStmnt.decl(tt0, t, stack.get(ti).castTo(tt0)));
               stack.set(ti, t);
-              var id = t.deref().field("clazzId");
+              var id = t.deref().field(_names.CLAZZ_ID);
               CIdent res = null;
               if (_types.hasData(rt) &&
                   (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
@@ -488,7 +481,7 @@ public class C extends ANY
                   var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
                   var f      = accessField(cl, current(cl), field);
                   var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz))
-                                                        : uniyon.field(_names.CHOICE_ENTRY_NAME + tags[0]);
+                                                        : uniyon.field(new CIdent(_names.CHOICE_ENTRY_NAME + tags[0]));
                   sl.add(!_types.hasData(fclazz) ? CStmnt.lineComment("valueluess assignment to " + f.code())
                                                  : f.assign(entry));
                 }
@@ -520,7 +513,7 @@ public class C extends ANY
           var uniyon  = res.field(_names.CHOICE_UNION_NAME);
           var entry   = uniyon.field(_fuir.clazzIsRef(valuecl) ||
                                      _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? _names.CHOICE_REF_ENTRY_NAME
-                                                                          : _names.CHOICE_ENTRY_NAME + tagNum);
+                                                                          : new CIdent(_names.CHOICE_ENTRY_NAME + tagNum));
           if (_fuir.clazzIsChoiceOfOnlyRefs(newcl))
             {
               if (!_fuir.clazzIsRef(valuecl))
@@ -574,9 +567,9 @@ public class C extends ANY
       }
     return CStmnt.seq(CStmnt.decl("fzT__Rconststring *", tmp),
                       tmp.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("fzT__Rconststring")))),
-                      tmp.deref().field("clazzId").assign(_names.clazzId(_fuir.clazz_conststring())),
-                      tmp.deref().field(_names.FIELDS_IN_REF_CLAZZ).field("fzF_1_data").assign(CExpr.string(sb.toString()).castTo("void *")),
-                      tmp.deref().field(_names.FIELDS_IN_REF_CLAZZ).field("fzF_3_length").assign(CExpr.int32const(bytes.length)));
+                      tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(_fuir.clazz_conststring())),
+                      tmp.deref().field(_names.FIELDS_IN_REF_CLAZZ).field(new CIdent("fzF_1_data")).assign(CExpr.string(sb.toString()).castTo("void *")),
+                      tmp.deref().field(_names.FIELDS_IN_REF_CLAZZ).field(new CIdent("fzF_3_length")).assign(CExpr.int32const(bytes.length)));
   }
 
 
@@ -636,9 +629,9 @@ public class C extends ANY
             {
               t = t.castTo(_types.clazz(occ));  // t is a ref with different static type, so cast it to the actual type
             }
-          CExpr res = (_types.isScalar(vocc) && _fuir.clazzIsRef(tc) ? t.deref().field("fields")      :
-                       _types.isScalar(vocc)                         ? t                              :
-                       _types.hasData(rt)                            ? accessField(tc, t, cc)         : null);
+          CExpr res = (_types.isScalar(vocc) && _fuir.clazzIsRef(tc) ? t.deref().field(_names.FIELDS_IN_REF_CLAZZ) :
+                       _types.isScalar(vocc)                         ? t                                           :
+                       _types.hasData(rt)                            ? accessField(tc, t, cc)                      : null);
           if (_fuir.clazzIsRef(rt) && _fuir.clazzKind(_fuir.clazzAsValue(rt)) == FUIR.ClazzKind.Choice)
             { // NYI: This special handling should better be part of match, but staticSubjectClazz is never ref
               res = res.deref().field(_names.FIELDS_IN_REF_CLAZZ);
@@ -815,7 +808,7 @@ public class C extends ANY
     var l = new List<CStmnt>();
     var t = _names.struct(cl);
     l.add(CStmnt.decl(t + "*", _names.CURRENT, CExpr.call("malloc", new List<>(CExpr.sizeOfType(t)))));
-    l.add(_fuir.clazzIsRef(cl) ? _names.CURRENT.deref().field("clazzId").assign(_names.clazzId(cl)) : CStmnt.EMPTY);
+    l.add(_fuir.clazzIsRef(cl) ? _names.CURRENT.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(cl)) : CStmnt.EMPTY);
 
     var cur = _fuir.clazzIsRef(cl) ? _names.CURRENT.deref().field(_names.FIELDS_IN_REF_CLAZZ)
                                    : _names.CURRENT.deref();

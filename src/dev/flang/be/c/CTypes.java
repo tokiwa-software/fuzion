@@ -31,6 +31,7 @@ import java.util.TreeSet;
 import dev.flang.fuir.FUIR;
 
 import dev.flang.util.ANY;
+import dev.flang.util.List;
 
 
 /**
@@ -182,8 +183,9 @@ public class CTypes extends ANY
    *
    * @param cl a clazz id.
    */
-  void structs(int cl, CFile cf)
+  CStmnt structs(int cl)
   {
+    var l = new List<CStmnt>();
     switch (_fuir.clazzKind(cl))
       {
       case Choice:
@@ -201,75 +203,74 @@ public class CTypes extends ANY
                       var rcl = _fuir.clazzResultClazz(f);
                       if (!_fuir.clazzIsRef(rcl))
                         {
-                          structs(rcl, cf);
+                          var s = structs(rcl);
+                          if (s != CStmnt.EMPTY)
+                            {
+                              l.add(s);
+                            }
                         }
                     }
                   for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
                     {
                       var cc = _fuir.clazzChoice(cl, i);
-                      if (!_fuir.clazzIsRef(cc))
+                      var s =  structs(_fuir.clazzIsRef(cc) ? _fuir.clazzObject() : cc);
+                      if (s != CStmnt.EMPTY)
                         {
-                          structs(cc, cf);
-                        }
-                      else
-                        {
-                          structs(_fuir.clazzObject(), cf);
+                          l.add(s);
                         }
                     }
                   if (_fuir.clazzIsRef(cl))
                     {
-                      structs(_fuir.clazzAsValue(cl), cf);
+                      var s = structs(_fuir.clazzAsValue(cl));
+                      if (s != CStmnt.EMPTY)
+                        {
+                          l.add(s);
+                        }
                     }
 
                   // next, declare the struct itself
-                  cf.print
-                    ("// for " + _fuir.clazzAsString(cl) + "\n" +
-                     "struct " + _names.struct(cl) + " {\n");
+                  l.add(CStmnt.lineComment("for " + _fuir.clazzAsString(cl)));
+                  var els = new List<CStmnt>();
                   if (_fuir.clazzIsRef(cl))
                     {
                       var vcl = _fuir.clazzAsValue(cl);
-                      cf.print("  uint32_t clazzId;\n" +
-                               "  " + clazz(vcl) + " " + _names.FIELDS_IN_REF_CLAZZ + ";\n");
+                      els.add(CStmnt.decl("uint32_t", _names.CLAZZ_ID));
+                      els.add(CStmnt.decl(clazz(vcl), _names.FIELDS_IN_REF_CLAZZ));
                     }
                   else if (_fuir.clazzIsChoice(cl))
                     {
                       var ct = _fuir.clazzChoiceTag(cl);
                       if (ct != -1)
                         {
-                          String type = clazzField(ct);
-                          cf.print(" " + type + " " + _names.TAG_NAME + ";\n");
+                          els.add(CStmnt.decl(clazzField(ct), _names.TAG_NAME));
                         }
-                      cf.print(" union {\n");
+                      var uls = new List<CStmnt>();
                       for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
                         {
                           var cc = _fuir.clazzChoice(cl, i);
                           if (!_fuir.clazzIsRef(cc))
                             {
-                              String type = clazz(cc);
-                              cf.print("  " + type + " " + _names.CHOICE_ENTRY_NAME + i + ";\n");
+                              uls.add(CStmnt.decl(clazz(cc), new CIdent(_names.CHOICE_ENTRY_NAME + i)));
                             }
                         }
                       if (_fuir.clazzIsChoiceWithRefs(cl))
                         {
-                          cf.print("  " + clazz(_fuir.clazzObject()) + " " + _names.CHOICE_REF_ENTRY_NAME + ";\n");
+                          uls.add(CStmnt.decl(clazz(_fuir.clazzObject()), _names.CHOICE_REF_ENTRY_NAME));
                         }
-                      cf.print(" } " + _names.CHOICE_UNION_NAME + ";\n");
+                      els.add(CStmnt.unyon(uls, _names.CHOICE_UNION_NAME));
                     }
                   else
                     {
                       for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
                         {
                           var f = _fuir.clazzField(cl, i);
-                          String type = clazzField(f);
-                          cf.print(" " + type + " " + _names.fieldName(f) + ";\n");
+                          els.add(CStmnt.decl(clazzField(f), _names.fieldName(f)));
                         }
                     }
-                  cf.print
-                    ("};\n\n");
+                  l.add(CStmnt.struct(_names.struct(cl), els));
                   if (cl == _fuir.clazzUniverse())
                     {
-                      cf.print
-                        (CStmnt.decl("static", _names.struct(cl), _names.UNIVERSE));
+                      l.add(CStmnt.decl("static", _names.struct(cl), _names.UNIVERSE));
                     }
                 }
             }
@@ -278,6 +279,7 @@ public class CTypes extends ANY
       default:
         break;
       }
+    return l.isEmpty() ? CStmnt.EMPTY : CStmnt.seq(l);
   }
 
 
