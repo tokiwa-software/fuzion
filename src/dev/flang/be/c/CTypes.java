@@ -131,9 +131,9 @@ public class CTypes extends ANY
    *
    * @param cl a clazz id.
    *
-   * @return the C declaration or "" if none.
+   * @return the C declaration or CStmnt.EMPTY if none.
    */
-  String types(int cl)
+  CStmnt types(int cl)
   {
     switch (_fuir.clazzKind(cl))
       {
@@ -143,9 +143,9 @@ public class CTypes extends ANY
         // special handling of stdlib clazzes known to the compiler
         var stype = scalar(cl);
         var type = stype != null ? stype : "struct " + name;
-        return "typedef " + type + " " + name + ";\n";
+        return CStmnt.typedef(type, name);
       default:
-        return "";
+        return CStmnt.EMPTY;
       }
   }
 
@@ -229,7 +229,7 @@ public class CTypes extends ANY
                     {
                       var vcl = _fuir.clazzAsValue(cl);
                       cf.print("  uint32_t clazzId;\n" +
-                                  "  " + clazz(vcl) + " " + _names.FIELDS_IN_REF_CLAZZ + ";\n");
+                               "  " + clazz(vcl) + " " + _names.FIELDS_IN_REF_CLAZZ + ";\n");
                     }
                   else if (_fuir.clazzIsChoice(cl))
                     {

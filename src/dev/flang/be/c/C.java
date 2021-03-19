@@ -58,10 +58,10 @@ public class C extends ANY
    */
   private enum CompilePhase
   {
-    TYPES           { void compile(C c, int cl) { c._c.print(c._types.types(cl)); } }, // declare types
-    STRUCTS         { void compile(C c, int cl) { c._types.structs(cl, c._c);     } }, // generate struct declarations
-    FORWARDS        { void compile(C c, int cl) { c._c.print(c.forwards(cl));     } }, // generate forward declarations only
-    IMPLEMENTATIONS { void compile(C c, int cl) { c._c.print(c.code(cl));         } }; // generate C functions
+    TYPES           { CStmnt compile(C c, int cl) { return c._types.types(cl); } }, // declare types
+    STRUCTS         { CStmnt compile(C c, int cl) { c._types.structs(cl, c._c); return CStmnt.EMPTY; } }, // generate struct declarations
+    FORWARDS        { CStmnt compile(C c, int cl) { return c.forwards(cl);     } }, // generate forward declarations only
+    IMPLEMENTATIONS { CStmnt compile(C c, int cl) { return c.code(cl);         } }; // generate C functions
 
     /**
      * Perform this compilation phase on given clazz using given backend.
@@ -70,7 +70,7 @@ public class C extends ANY
      *
      * @param cl the clazz.
      */
-    abstract void compile(C c, int cl);
+    abstract CStmnt compile(C c, int cl);
   }
 
 
@@ -207,7 +207,7 @@ public class C extends ANY
        {
          for (var c = _fuir.firstClazz(); c <= _fuir.lastClazz(); c++)
            {
-             p.compile(this, c);
+             _c.print(p.compile(this, c));
            }
          _c.println("");
        });
@@ -282,7 +282,7 @@ public class C extends ANY
 
   /**
    * Create C code for one statement in a code block c of clazz cl with given
-   * stack contents.  Write code to _c.
+   * stack contents.
    *
    * @param cl clazz id
    *
@@ -293,6 +293,8 @@ public class C extends ANY
    * @param i the index within c
    *
    * @param s the FUIR.ExprKind to compile
+   *
+   * @return the C code
    */
   CStmnt createCode(int cl, Stack<CExpr> stack, int c, int i, FUIR.ExprKind s)
   {
@@ -699,13 +701,15 @@ public class C extends ANY
 
   /**
    * Create code for the C function implemeting the routine corresponding to the
-   * given clazz.  Write code to _c.
+   * given clazz.
    *
    * @param cl id of clazz to compile
    *
    * @param pre true to create the precondition function, not the function itself.
    *
    * @param body the code of the function, or null for a forward declaration.
+   *
+   * @return the C code
    */
   private CStmnt cFunctionDecl(int cl, boolean pre, CStmnt body)
   {
@@ -854,11 +858,13 @@ public class C extends ANY
 
   /**
    * Create C statements to execute the pre- or postcondition of the given
-   * clazz. Will write code to _c.
+   * clazz.
    *
    * @param cl clazz id
    *
    * @param pre true for pre-condition, false for post-condition.
+   *
+   * @return the C code
    */
   CStmnt preOrPostCondition(int cl, boolean pre)
   {

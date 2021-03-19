@@ -64,6 +64,34 @@ abstract class CStmnt extends ANY
 
 
   /**
+   * C typedef such as 'typedef struct s t'
+   *
+   * @param modifier a modifier, e.g., "static", null for none.
+   *
+   * @param type the type of the defined entity
+   *
+   * @param ident the name of the defined entity
+   *
+   * @param init initial value or null if none.
+   *
+   * @return corresponding CStmnt
+   */
+  static CStmnt typedef(String type, String name)
+  {
+    return new CStmnt()
+      {
+        void code(StringBuilder sb)
+        {
+          sb.append("typedef ")
+            .append(type)
+            .append(" ")
+            .append(name);
+        }
+    };
+  }
+
+
+  /**
    * C declaration such as 'i32 i'
    *
    * @param type the type of the defined entity
