@@ -146,9 +146,25 @@ abstract class CStmnt extends ANY
       };
   }
 
+
+
+  /**
+   * C declaration such as 'void print(char *src)'
+   *
+   * @param resultType the type of the result
+   *
+   * @param ident the name of the function
+   *
+   * @param argsWithTypes the arguments, pairs of type and name.
+   *
+   * @param body the body of the function or null for forward declaration.
+   *
+   * @return corresponding CStmnt
+   */
   static CStmnt functionDecl(String resultType,
-                             String name,
-                             List<String> argsWithTypes)
+                             CIdent ident,
+                             List<String> argsWithTypes,
+                             CStmnt body)
   {
     if (PRECONDITIONS) require
       (argsWithTypes.size() % 2 == 0);
@@ -157,7 +173,9 @@ abstract class CStmnt extends ANY
       {
         void code(StringBuilder sb)
         {
-          sb.append(resultType).append(" ").append(name).append("(");
+          sb.append(resultType).append(" ");
+          ident.code(sb);
+          sb.append("(");
           for (int i = 0; i < argsWithTypes.size(); i += 2)
             {
               sb.append(i > 0 ? ", " : "")
@@ -166,6 +184,17 @@ abstract class CStmnt extends ANY
                 .append(argsWithTypes.get(i+1));
             }
           sb.append(")");
+          if (body != null)
+            {
+              sb.append(" {\n");
+              // NYI: _c.indent()
+              seq(new List<>(body)).code(sb);
+              sb.append("}");
+            }
+        }
+        boolean needsSemi()
+        {
+          return body == null;
         }
     };
   }

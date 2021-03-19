@@ -702,8 +702,12 @@ public class C extends ANY
    * given clazz.  Write code to _c.
    *
    * @param cl id of clazz to compile
+   *
+   * @param pre true to create the precondition function, not the function itself.
+   *
+   * @param body the code of the function, or null for a forward declaration.
    */
-  private CStmnt cFunctionDecl(int cl, boolean pre)
+  private CStmnt cFunctionDecl(int cl, boolean pre, CStmnt body)
   {
     var res = _fuir.clazzResultClazz(cl);
     var resultType = pre || !_types.hasData(res)
@@ -726,7 +730,7 @@ public class C extends ANY
             args.add("arg" + i);
           }
       }
-    return CStmnt.functionDecl(resultType, _names.function(cl, pre), args);
+    return CStmnt.functionDecl(resultType, new CIdent(_names.function(cl, pre)), args, body);
   }
 
 
@@ -739,20 +743,12 @@ public class C extends ANY
   {
     switch (_fuir.clazzKind(cl))
       {
-      case Routine:
-      case Intrinsic:
-        {
-          _c.print(cFunctionDecl(cl, false));
-        } /* fall through */
-      case Field:
-      case Abstract:
-        {
-          if (_fuir.clazzPre(cl, 0) != -1)
-            {
-              _c.print(cFunctionDecl(cl, true));
-            }
-          break;
-        }
+      case Routine  :
+      case Intrinsic:_c.print(cFunctionDecl(cl, false, null));
+      }
+    if (_fuir.clazzPre(cl, 0) != -1)
+      {
+        _c.print(cFunctionDecl(cl, true, null));
       }
   }
 
@@ -765,38 +761,22 @@ public class C extends ANY
   public void code(int cl)
   {
     _names._tempVarId = 0;  // reset counter for unique temp variables for function results
-    switch (_fuir.clazzKind(cl))
+    var ck = _fuir.clazzKind(cl);
+    switch (ck)
       {
       case Routine:
       case Intrinsic:
         {
           _c.print("\n// code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":\n");
-          _c.print(cFunctionDecl(cl, false).code());
-          _c.print(" {\n");
-          _c.indent();
-          switch (_fuir.clazzKind(cl))
-            {
-            case Routine  : _c.print(codeForRoutine(cl, false)); break;
-            case Intrinsic: _c.print(new Intrinsics().code(this, cl)); break;
-            }
-          _c.unindent();
-          _c.println("}");
-        } /* fall through */
-      case Field:
-      case Abstract:
-        {
-          if (_fuir.clazzPre(cl, 0) != -1)
-            {
-              _c.print("\n// code for clazz#"+_names.clazzId(cl).code()+" precondition of "+_fuir.clazzAsString(cl)+":\n");
-              _c.print(cFunctionDecl(cl, true).code());
-              _c.print(" {\n");
-              _c.indent();
-              _c.print(codeForRoutine(cl, true));
-              _c.unindent();
-              _c.println("}");
-            }
-          break;
+          var o = ck == FUIR.ClazzKind.Routine ? codeForRoutine(cl, false)
+                                               : new Intrinsics().code(this, cl);
+          _c.print(cFunctionDecl(cl, false, o));
         }
+      }
+    if (_fuir.clazzPre(cl, 0) != -1)
+      {
+        _c.print("\n// code for clazz#"+_names.clazzId(cl).code()+" precondition of "+_fuir.clazzAsString(cl)+":\n");
+        _c.print(cFunctionDecl(cl, true, codeForRoutine(cl, true)));
       }
   }
 
@@ -815,7 +795,6 @@ public class C extends ANY
       (_fuir.clazzKind(cl) == FUIR.ClazzKind.Routine || pre);
 
     var l = new List<CStmnt>();
-    l.add(CStmnt.lineComment("**START**"));
     var t = _names.struct(cl);
     l.add(CStmnt.decl(t + "*", _names.CURRENT, CExpr.call("malloc", new List<>(CExpr.sizeOfType(t)))));
     l.add(_fuir.clazzIsRef(cl) ? _names.CURRENT.deref().field("clazzId").assign(_names.clazzId(cl)) : CStmnt.EMPTY);
@@ -855,7 +834,6 @@ public class C extends ANY
                        : current(cl).ret()                              // a constructor, return current instance
               );
       }
-    l.add(CStmnt.lineComment("**DONE**"));
     return CStmnt.seq(l);
   }
 
