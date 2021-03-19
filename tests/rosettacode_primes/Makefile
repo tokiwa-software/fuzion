@@ -23,13 +23,6 @@
 #
 # -----------------------------------------------------------------------
 
-JAVA_STACK_SIZE = 16m # NYI: reqquired until tail rec function is optimized
-JAVA_OPTS = -Xss$(JAVA_STACK_SIZE)
-
+export FUZION_JAVA_STACK_SIZE = 16m # required since tail recursion is not optimized yet
 NAME = primes
-
-all:
-	$(FUZION) $(NAME) 2>err.txt
-
-c:
-	$(FUZION) $(NAME) -c -o=testbin && ./testbin 2>err.txt
+include ../positive.mk

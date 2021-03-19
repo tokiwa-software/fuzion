@@ -29,7 +29,7 @@ FZ_SRC = $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = $(CURDIR)/build
 CLASSES_DIR = $(BUILD_DIR)/classes
-FUZIONX = $(JAVA) \$$(JAVA_OPTS) -cp $(CLASSES_DIR) dev.flang.tools.Fuzion
+TESTS=$(shell echo $(BUILD_DIR)/tests/*/)
 
 JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/ANY.java \
@@ -269,11 +269,11 @@ run_tests: run_tests_int run_tests_c
 .PHONY .SILENT: run_tests_int
 run_tests_int: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
 	rm -rf $(BUILD_DIR)/run_tests.results
-	echo -n "testing interpreted: "; \
-	for test in $(shell echo $(BUILD_DIR)/tests/*); do \
-	  FUZION="$(FUZIONX)" make -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
+	echo -n "testing interpreter: "; \
+	for test in $(TESTS); do \
+	  make -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
 	done
-	echo " `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`ls $(BUILD_DIR)/tests | wc -l` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed"; \
+	echo " `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`echo $(TESTS) | wc -w` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed"; \
 	cat $(BUILD_DIR)/run_tests.results | grep failed$$
 
 # phony target to run Fuzion tests using c backend and report number of failures
@@ -281,10 +281,10 @@ run_tests_int: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
 run_tests_c: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
 	rm -rf $(BUILD_DIR)/run_tests.results
 	echo -n "testing C backend: "; \
-	for test in $(shell echo $(BUILD_DIR)/tests/*); do \
-	  FUZION="$(FUZIONX)" make c -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
+	for test in $(TESTS); do \
+	  make c -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
 	done
-	echo " `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`ls $(BUILD_DIR)/tests | wc -l` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed"; \
+	echo " `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`echo $(TESTS) | wc -w` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed"; \
 	cat $(BUILD_DIR)/run_tests.results | grep failed$$
 
 .PHONY: clean

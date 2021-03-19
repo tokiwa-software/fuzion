@@ -23,13 +23,6 @@
 #
 # -----------------------------------------------------------------------
 
-JAVA_STACK_SIZE = 4m # required since tail recursion is not optimized yet
-JAVA_OPTS = -Xss$(JAVA_STACK_SIZE)
-
+export FUZION_JAVA_STACK_SIZE = 4m # required since tail recursion is not optimized yet
 NAME = looptest
-
-all:
-	$(FUZION) $(NAME) 2>err.txt
-
-c:
-	$(FUZION) $(NAME) -c -o=testbin && ./testbin 2>err.txt
+include ../positive.mk

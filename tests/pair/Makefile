@@ -17,16 +17,11 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion test Makefile+#
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
 NAME = pair
-
-all:
-	$(FUZION) $(NAME) 2>err.txt
-
-c:
-	$(FUZION) $(NAME) -c -o=testbin && ./testbin 2>err.txt
+include ../positive.mk

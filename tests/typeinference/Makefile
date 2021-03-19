@@ -24,9 +24,4 @@
 # -----------------------------------------------------------------------
 
 NAME = typeinference
-
-all:
-	$(FUZION) $(NAME) 2>err.txt
-
-c:
-	$(FUZION) $(NAME) -c -o=testbin && ./testbin 2>err.txt
+include ../positive.mk
