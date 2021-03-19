@@ -703,21 +703,18 @@ public class C extends ANY
    *
    * @param cl id of clazz to compile
    */
-  private void cFunctionDecl(int cl, boolean pre)
+  private CStmnt cFunctionDecl(int cl, boolean pre)
   {
     var res = _fuir.clazzResultClazz(cl);
-    _c.print(pre || !_types.hasData(res)
-             ? "void "
-             : _types.clazz(res) + " ");
-    _c.print(_names.function(cl, pre));
-    _c.print("(");
-    String comma = "";
+    var resultType = pre || !_types.hasData(res)
+      ? "void"
+      : _types.clazz(res);
+    var args = new List<String>();
     var or = _fuir.clazzOuterRef(cl);
     if (or != -1)
       {
-        _c.print(_types.clazzField(or));
-        _c.print(" fzouter");
-        comma = ", ";
+        args.add(_types.clazzField(or));
+        args.add("fzouter");
       }
     var ac = _fuir.clazzArgCount(cl);
     for (int i = 0; i < ac; i++)
@@ -725,13 +722,11 @@ public class C extends ANY
         var at = _fuir.clazzArgClazz(cl, i);
         if (_types.hasData(at))
           {
-            _c.print(comma);
-            var t = _types.clazz(at);
-            _c.print(t + " arg" + i);
-            comma = ", ";
+            args.add(_types.clazz(at));
+            args.add("arg" + i);
           }
       }
-    _c.print(")");
+    return CStmnt.functionDecl(resultType, _names.function(cl, pre), args);
   }
 
 
@@ -747,16 +742,14 @@ public class C extends ANY
       case Routine:
       case Intrinsic:
         {
-          cFunctionDecl(cl, false);
-          _c.print(";\n");
+          _c.print(cFunctionDecl(cl, false));
         } /* fall through */
       case Field:
       case Abstract:
         {
           if (_fuir.clazzPre(cl, 0) != -1)
             {
-              cFunctionDecl(cl, true);
-              _c.print(";\n");
+              _c.print(cFunctionDecl(cl, true));
             }
           break;
         }
@@ -778,7 +771,7 @@ public class C extends ANY
       case Intrinsic:
         {
           _c.print("\n// code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":\n");
-          cFunctionDecl(cl, false);
+          _c.print(cFunctionDecl(cl, false).code());
           _c.print(" {\n");
           _c.indent();
           switch (_fuir.clazzKind(cl))
@@ -795,7 +788,7 @@ public class C extends ANY
           if (_fuir.clazzPre(cl, 0) != -1)
             {
               _c.print("\n// code for clazz#"+_names.clazzId(cl).code()+" precondition of "+_fuir.clazzAsString(cl)+":\n");
-              cFunctionDecl(cl, true);
+              _c.print(cFunctionDecl(cl, true).code());
               _c.print(" {\n");
               _c.indent();
               _c.print(codeForRoutine(cl, true));

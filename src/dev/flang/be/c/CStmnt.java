@@ -146,6 +146,30 @@ abstract class CStmnt extends ANY
       };
   }
 
+  static CStmnt functionDecl(String resultType,
+                             String name,
+                             List<String> argsWithTypes)
+  {
+    if (PRECONDITIONS) require
+      (argsWithTypes.size() % 2 == 0);
+
+    return new CStmnt()
+      {
+        void code(StringBuilder sb)
+        {
+          sb.append(resultType).append(" ").append(name).append("(");
+          for (int i = 0; i < argsWithTypes.size(); i += 2)
+            {
+              sb.append(i > 0 ? ", " : "")
+                .append(argsWithTypes.get(i))
+                .append(" ")
+                .append(argsWithTypes.get(i+1));
+            }
+          sb.append(")");
+        }
+    };
+  }
+
 
   /**
    * not really a statement, but a comment
