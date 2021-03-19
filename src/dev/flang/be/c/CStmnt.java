@@ -189,7 +189,7 @@ abstract class CStmnt extends ANY
               sb.append(" {\n");
               // NYI: _c.indent()
               seq(new List<>(body)).code(sb);
-              sb.append("}");
+              sb.append("}\n");
             }
         }
         boolean needsSemi()

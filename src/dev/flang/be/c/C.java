@@ -58,10 +58,10 @@ public class C extends ANY
    */
   private enum CompilePhase
   {
-    TYPES           { void compile(C c, int cl) { c._c.print(c._types.types(cl));                    } }, // declare types
-    STRUCTS         { void compile(C c, int cl) { c._types.structs(cl, c._c);                        } }, // generate struct declarations
-    FORWARDS        { void compile(C c, int cl) { if (c._fuir.clazzIsCalled(cl)) { c.forwards(cl); } } }, // generate forward declarations only
-    IMPLEMENTATIONS { void compile(C c, int cl) { if (c._fuir.clazzIsCalled(cl)) { c.code(cl);     } } }; // generate C functions
+    TYPES           { void compile(C c, int cl) { c._c.print(c._types.types(cl)); } }, // declare types
+    STRUCTS         { void compile(C c, int cl) { c._types.structs(cl, c._c);     } }, // generate struct declarations
+    FORWARDS        { void compile(C c, int cl) { c._c.print(c.forwards(cl));     } }, // generate forward declarations only
+    IMPLEMENTATIONS { void compile(C c, int cl) { c._c.print(c.code(cl));         } }; // generate C functions
 
     /**
      * Perform this compilation phase on given clazz using given backend.
@@ -738,18 +738,25 @@ public class C extends ANY
    * Create forward declarations for given clazz cl.
    *
    * @param cl id of clazz to compile
+   *
+   * @return C statements with the forward declarations required for cl.
    */
-  public void forwards(int cl)
+  public CStmnt forwards(int cl)
   {
-    switch (_fuir.clazzKind(cl))
+    var l = new List<CStmnt>();
+    if (_fuir.clazzIsCalled(cl))
       {
-      case Routine  :
-      case Intrinsic:_c.print(cFunctionDecl(cl, false, null));
+        switch (_fuir.clazzKind(cl))
+          {
+          case Routine  :
+          case Intrinsic: l.add(cFunctionDecl(cl, false, null));
+          }
+        if (_fuir.clazzPre(cl, 0) != -1)
+          {
+            l.add(cFunctionDecl(cl, true, null));
+          }
       }
-    if (_fuir.clazzPre(cl, 0) != -1)
-      {
-        _c.print(cFunctionDecl(cl, true, null));
-      }
+    return CStmnt.seq(l);
   }
 
 
@@ -757,27 +764,33 @@ public class C extends ANY
    * Create code for given clazz cl.
    *
    * @param cl id of clazz to compile
+   *
+   * @return C statements with the forward declarations required for cl.
    */
-  public void code(int cl)
+  public CStmnt code(int cl)
   {
-    _names._tempVarId = 0;  // reset counter for unique temp variables for function results
-    var ck = _fuir.clazzKind(cl);
-    switch (ck)
+    var l = new List<CStmnt>();
+    if (_fuir.clazzIsCalled(cl))
       {
-      case Routine:
-      case Intrinsic:
-        {
-          _c.print("\n// code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":\n");
-          var o = ck == FUIR.ClazzKind.Routine ? codeForRoutine(cl, false)
-                                               : new Intrinsics().code(this, cl);
-          _c.print(cFunctionDecl(cl, false, o));
-        }
+        var ck = _fuir.clazzKind(cl);
+        switch (ck)
+          {
+          case Routine:
+          case Intrinsic:
+            {
+              l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"));
+              var o = ck == FUIR.ClazzKind.Routine ? codeForRoutine(cl, false)
+                                                   : new Intrinsics().code(this, cl);
+              l.add(cFunctionDecl(cl, false, o));
+            }
+          }
+        if (_fuir.clazzPre(cl, 0) != -1)
+          {
+            l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" precondition of "+_fuir.clazzAsString(cl)+":"));
+            l.add(cFunctionDecl(cl, true, codeForRoutine(cl, true)));
+          }
       }
-    if (_fuir.clazzPre(cl, 0) != -1)
-      {
-        _c.print("\n// code for clazz#"+_names.clazzId(cl).code()+" precondition of "+_fuir.clazzAsString(cl)+":\n");
-        _c.print(cFunctionDecl(cl, true, codeForRoutine(cl, true)));
-      }
+    return CStmnt.seq(l);
   }
 
 
@@ -794,6 +807,7 @@ public class C extends ANY
     if (PRECONDITIONS) require
       (_fuir.clazzKind(cl) == FUIR.ClazzKind.Routine || pre);
 
+    _names._tempVarId = 0;  // reset counter for unique temp variables for function results
     var l = new List<CStmnt>();
     var t = _names.struct(cl);
     l.add(CStmnt.decl(t + "*", _names.CURRENT, CExpr.call("malloc", new List<>(CExpr.sizeOfType(t)))));
