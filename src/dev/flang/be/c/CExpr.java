@@ -507,12 +507,12 @@ abstract class CExpr extends CStmnt
         CExpr adrOf() { return _inner; }
 
         // Redefine field to generate inner->field and not (*inner).field.
-        CExpr field(String name)
+        CExpr field(CIdent name)
         {
           return new CExpr()
             {
               int precedence() { return 1; }
-              void code(StringBuilder sb) { _inner.code(sb, precedence()); sb.append("->").append(name); }
+              void code(StringBuilder sb) { _inner.code(sb, precedence()); sb.append("->"); name.code(sb); }
           };
         }
     };
