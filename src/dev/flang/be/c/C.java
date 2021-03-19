@@ -851,7 +851,7 @@ public class C extends ANY
         var c = _fuir.clazzCode(cl);
         _c.print(createCode(cl, new Stack<CExpr>(), c));
       }
-    preOrPostCondition(cl, pre);
+    _c.print(preOrPostCondition(cl, pre));
     var res = _fuir.clazzResultClazz(cl);
     if (!pre && _types.hasData(res))
       {
@@ -872,8 +872,9 @@ public class C extends ANY
    *
    * @param pre true for pre-condition, false for post-condition.
    */
-  void preOrPostCondition(int cl, boolean pre)
+  CStmnt preOrPostCondition(int cl, boolean pre)
   {
+    var l = new List<CStmnt>();
     var stack = new Stack<CExpr>();
     for (int p, i = 0;
          (p = pre ? _fuir.clazzPre (cl, i)
@@ -882,13 +883,13 @@ public class C extends ANY
       {
         _c.print(createCode(cl, stack, p));
         var cc = stack.pop();
-        _c.println("if ("+cc.field(_names.TAG_NAME).not().code()+") { ");
-        _c.print(CStmnt.seq(CExpr.fprintfstderr(pre ? "*** failed precondition on call to '%s'\n"
-                                                    : "*** failed postcondition after '%s'\n",
-                                                CExpr.string(_fuir.clazzAsString(cl))),
-                            CExpr.exit(1)));
-        _c.println("}");
+        l.add(CStmnt.iff(cc.field(_names.TAG_NAME).not(),
+                         CStmnt.seq(CExpr.fprintfstderr(pre ? "*** failed precondition on call to '%s'\n"
+                                                            : "*** failed postcondition after '%s'\n",
+                                                        CExpr.string(_fuir.clazzAsString(cl))),
+                                    CExpr.exit(1))));
       }
+    return CStmnt.seq(l);
   }
 
 

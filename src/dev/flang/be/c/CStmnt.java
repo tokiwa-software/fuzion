@@ -253,6 +253,7 @@ abstract class CStmnt extends ANY
     };
   }
 
+
   /**
    * A switch statement
    *
@@ -293,7 +294,35 @@ abstract class CStmnt extends ANY
   }
 
 
-  /*-------------------------  static methods  --------------------------*/
+
+  /**
+   * An if statement
+   *
+   * @param cc the condition value
+   *
+   * @param s the code to execute if cc is TRUE
+   *
+   * @return the if statment
+   */
+  static CStmnt iff(CExpr cc, CStmnt s)
+  {
+    return new CStmnt()
+      {
+        void code(StringBuilder sb)
+        {
+          sb.append("if (");
+          cc.code(sb);
+          sb.append(") {\n");
+          // NYI: _c.indent();
+          s.code(sb);
+          sb.append("}\n");
+        }
+        boolean needsSemi()
+        {
+          return false;
+        }
+    };
+  }
 
 
   /*-----------------------------  methods  -----------------------------*/
