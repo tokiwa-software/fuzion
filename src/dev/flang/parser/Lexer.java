@@ -740,11 +740,13 @@ public class Lexer extends SourceFile
           case K_DQUOTE  :    // '"'
             {
               boolean end = false;
-              while (!end && kind(curCodePoint()) != K_EOF)
+              var s = new EscapeState(-1);
+              while (!end && kind(s.raw()) != K_EOF)
                 {
-                  end = kind(curCodePoint()) == K_DQUOTE;
-                  nextCodePoint();
+                  end = !s._escaped && kind(s.raw()) == K_DQUOTE;
+                  s.processed();
                 }
+              s.finish();
               token = Token.t_string;
               break;
             }
@@ -1007,7 +1009,7 @@ public class Lexer extends SourceFile
       }
     else if (current() == Token.t_lineLimit)
       {
-        Errors.lineBreakNotAllowedHere(posObject(lineEndPos(_sameLine)), detail);
+        Errors.lineBreakNotAllowedHere(sourcePos(lineEndPos(_sameLine)), detail);
       }
     else
       {
@@ -1240,6 +1242,93 @@ public class Lexer extends SourceFile
 
 
   /**
+   * Small state-machine parser for escaped chars in constant strings.
+   */
+  private class EscapeState
+  {
+    int _pos;
+    boolean _escaped = false;
+    int _escapeStart = -1;
+
+    char[][] escapeChars = new char[][] {
+        { 't', '\t' },  // TAB
+        { 'b', '\b' },  // BS
+        { 'n', '\n' },  // LF
+        { 'r', '\r' },  // CR
+        { 'f', '\f' },  // FF
+        { '\'', '\'' }, // '
+        { '\"', '\"' }, // "
+        { '\\', '\\' }  // backslash
+      };
+
+
+    EscapeState(int pos)
+    {
+      _pos = pos;
+    }
+
+    /**
+     * Return the current raw code point, not processing any escapes.
+     */
+    private int raw()
+    {
+      return _pos < 0 ? curCodePoint() : codePoint(_pos);
+    }
+
+    /**
+     * Return the current code pointer after processing escapes.
+     */
+    private int processed()
+    {
+      var p = raw();
+      var result = -1;
+      if (_escaped)
+        {
+          for (var i = 0; i < escapeChars.length && result < 0; i++)
+            {
+              if (p == (int) escapeChars[i][0])
+                {
+                  result = (int) escapeChars[i][1];
+                }
+            }
+          if (result < 0)
+            {
+              Errors.unknownEscapedChar(_pos < 0 ? sourcePos() : sourcePos(_pos), p, escapeChars);
+            }
+          _escaped = false;
+        }
+      else if (p == '\\')
+        {
+          _escaped = true;
+          _escapeStart = _pos < 0 ? bytePos() : _pos;
+        }
+      else
+        {
+          result = p;
+        }
+      if (_pos < 0)
+        {
+          nextCodePoint();
+        }
+      else
+        {
+          _pos = _pos + codePointSize(_pos);
+        }
+      return result;
+    }
+
+    void finish()
+    {
+      if (_escaped)
+        {
+          Errors.unfinishedEscapeSequence(sourcePos(_escapeStart), escapeChars);
+        }
+    }
+
+  }
+
+
+  /**
    * Return the actual string constant of the current t_string token as a
    * string.
    */
@@ -1248,7 +1337,19 @@ public class Lexer extends SourceFile
     if (PRECONDITIONS) require
       (current() == Token.t_string);
 
-    return getAsString(pos() + 1, endPos() - 1);
+    var s = new EscapeState(pos() + 1);
+
+    var sb = new StringBuilder();
+    var end = endPos() - 1;
+    while (s._pos < end)
+      {
+        var c = s.processed();
+        if (c >= 0)
+          {
+            sb.appendCodePoint(c);
+          }
+      }
+    return sb.toString();
   }
 
 
@@ -1260,7 +1361,7 @@ public class Lexer extends SourceFile
     if (PRECONDITIONS) require
       (current() != Token.t_eof);
 
-    return getAsString(pos(), endPos());
+    return asString(pos(), endPos());
   }
 
 

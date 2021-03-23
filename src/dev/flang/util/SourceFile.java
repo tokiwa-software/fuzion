@@ -655,6 +655,42 @@ public class SourceFile extends ANY
 
 
   /**
+   * Return the code point at the given position in the file.
+   *
+   * @param pos position of the code point
+   *
+   * @return the code point at that position.
+   */
+  public int codePoint(int pos)
+  {
+    if (PRECONDITIONS) require
+      (pos >= 0,
+       pos < _bytes.length);
+
+    int cpAndSz = decodeCodePointAndSize(pos);
+    return codePointFromCpAndSize(cpAndSz);
+  }
+
+
+  /**
+   * Return the byte size of the code point at the given position in the file.
+   *
+   * @param pos position of the code point
+   *
+   * @return the byte size of the code point at that position.
+   */
+  public int codePointSize(int pos)
+  {
+    if (PRECONDITIONS) require
+      (pos >= 0,
+       pos < _bytes.length);
+
+    int cpAndSz = decodeCodePointAndSize(pos);
+    return sizeFromCpAndSize     (cpAndSz);
+  }
+
+
+  /**
    * Return a part of the file as a String.
    *
    * @param start the byte position of the first code point of the desired
@@ -665,7 +701,7 @@ public class SourceFile extends ANY
    *
    * @return the desired portion as a Java String.
    */
-  public String getAsString(int start, int end)
+  public String asString(int start, int end)
   {
     if (PRECONDITIONS) require
       (start >= 0,

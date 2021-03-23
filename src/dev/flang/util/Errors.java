@@ -456,6 +456,34 @@ public class Errors extends ANY
           detail);
   }
 
+  private static String legalEscapes(char[][] escapes)
+  {
+    var legal = new StringBuilder();
+    var comma = "";
+    for (var c : escapes)
+      {
+        legal.append(comma).append("'\\" + c[0] + "'");
+        comma = ", ";
+      }
+    return legal.toString();
+  }
+
+  public static void unknownEscapedChar(SourcePosition pos, int found, char[][] escapes)
+  {
+    error(pos,
+          "Unknown escaped character found in constant string.",
+          "Escaped character found: '" + new StringBuilder().appendCodePoint(found) +
+          "', legal escaped characters are " + legalEscapes(escapes) + ".");
+  }
+
+  public static void unfinishedEscapeSequence(SourcePosition pos, char[][] escapes)
+  {
+    error(pos,
+          "Unfinished escape sequence found in constant string.",
+          "Expected one of the characters " + legalEscapes(escapes) + " after '\\'.");
+  }
+
+
   public static void lineBreakNotAllowedHere(SourcePosition pos, String detail)
   {
     error(pos,
