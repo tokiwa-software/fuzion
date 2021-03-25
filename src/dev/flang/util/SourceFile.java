@@ -523,21 +523,9 @@ public class SourceFile extends ANY
    */
   public int codePointAt(int pos)
   {
-    int result;
-    if (pos < 0)
-      {
-        result = BEGINNING_OF_FILE;
-      }
-    else if (pos > _bytes.length)
-      {
-        result = END_OF_FILE;
-      }
-    else
-      {
-        int cpAndSz = decodeCodePointAndSize(pos);
-        result = codePointFromCpAndSize(cpAndSz);
-      }
-    return result;
+    return
+      pos <  0             ? BEGINNING_OF_FILE :
+      pos >= _bytes.length ? END_OF_FILE       : codePoint(pos);
   }
 
 
