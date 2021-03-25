@@ -483,6 +483,26 @@ public class Errors extends ANY
           "Expected one of the characters " + legalEscapes(escapes) + " after '\\'.");
   }
 
+  public static void unterminatedString(SourcePosition pos, SourcePosition start)
+  {
+    error(pos,
+          "Unterminated constant string.",
+          "Expected double quotes '\"' to mark end of constant string starting at " + start.show());
+  }
+
+  public static void unexpectedControlCodeInString(SourcePosition pos, String controlSeq, int codePoint, SourcePosition start)
+  {
+    error(pos,
+          "Unexpected control sequence in constant string.",
+          "Found unexpected control sequence '" + controlSeq + "' (0x" + Integer.toHexString(codePoint) + ") in constant string starting at " + start.show());
+  }
+
+  public static void unexpectedEndOfLineInString(SourcePosition pos, SourcePosition start)
+  {
+    error(pos,
+          "Unexpected end-of-line in constant string.",
+          "Found unexpected end-of-line in constant string starting at " + start.show());
+  }
 
   public static void lineBreakNotAllowedHere(SourcePosition pos, String detail)
   {

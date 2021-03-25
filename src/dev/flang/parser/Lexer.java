@@ -283,6 +283,30 @@ public class Lexer extends SourceFile
   };
 
 
+  /**
+   * ASCII control sequence names or null if normal ASCII char.
+   */
+  private static String[] _asciiControlName = new String[]
+  {
+    // 0…
+    "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL", "BS ", "HT ", "LF ", "VT ", "FF ", "CR ", "SO ", "SI ",
+    // 1…
+    "DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB", "CAN", "EM ", "SUB", "ESC", "FS" , "GS" , "RS" , "US ",
+    // 2…
+    null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+    // 3…
+    null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+    // 4…
+    null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+    // 5…
+    null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+    // 6…
+    null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+    // 7…
+    null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "DEL"
+  };
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -1246,6 +1270,7 @@ public class Lexer extends SourceFile
    */
   private class EscapeState
   {
+    int _stringStart;
     int _pos;
     boolean _escaped = false;
     int _escapeStart = -1;
@@ -1267,6 +1292,7 @@ public class Lexer extends SourceFile
 
     EscapeState(int pos)
     {
+      _stringStart = pos;
       _pos = pos;
     }
 
@@ -1285,37 +1311,54 @@ public class Lexer extends SourceFile
     {
       var p = raw();
       var result = -1;
-      if (_escaped)
+      if (p == END_OF_FILE)
         {
-          for (var i = 0; i < escapeChars.length && result < 0; i++)
+          Errors.unterminatedString(sourcePos(pos()), Lexer.this.sourcePos(_stringStart));
+        }
+      else if (p < _asciiControlName.length && _asciiControlName[p] != null)
+        {
+          Errors.unexpectedControlCodeInString(sourcePos(pos()), _asciiControlName[p], p, sourcePos(_stringStart));
+        }
+      else
+        {
+          if (_escaped)
             {
-              if (p == (int) escapeChars[i][0])
+              for (var i = 0; i < escapeChars.length && result < 0; i++)
                 {
-                  result = (int) escapeChars[i][1];
+                  if (p == (int) escapeChars[i][0])
+                    {
+                      result = (int) escapeChars[i][1];
+                    }
                 }
+              if (result < 0)
+                {
+                  Errors.unknownEscapedChar(_pos < 0 ? sourcePos() : sourcePos(_pos), p, escapeChars);
+                }
+              _escaped = false;
             }
-          if (result < 0)
+          else if (p == '\\')
             {
-              Errors.unknownEscapedChar(_pos < 0 ? sourcePos() : sourcePos(_pos), p, escapeChars);
+              _escaped = true;
+              _escapeStart = _pos < 0 ? bytePos() : _pos;
             }
-          _escaped = false;
-        }
-      else if (p == '\\')
-        {
-          _escaped = true;
-          _escapeStart = _pos < 0 ? bytePos() : _pos;
-        }
-      else
-        {
-          result = p;
-        }
-      if (_pos < 0)
-        {
-          nextCodePoint();
-        }
-      else
-        {
-          _pos = _pos + codePointSize(_pos);
+          else
+            {
+              result = p;
+            }
+          var l = p;
+          if (_pos < 0)
+            {
+              nextCodePoint();
+            }
+          else
+            {
+              _pos = _pos + codePointSize(_pos);
+            }
+          p = raw();
+          if (isNewLine(l, p))
+            {
+              Errors.unexpectedEndOfLineInString(sourcePos(pos()-1), sourcePos(_stringStart));
+            }
         }
       return result;
     }
