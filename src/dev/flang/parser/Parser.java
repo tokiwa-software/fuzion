@@ -1391,7 +1391,12 @@ actualArgs  :        exprLst
                 { // We have an operator expression like this: 'f-xyz', 'f- xyz' or 'f - xyz'
                   result = Call.NO_PARENTHESES;
                 }
+              else if (isContinuedString(t))
+                { // We have a string continuation as in "value $x is ok" for the string after '$x'.
+                  result = Call.NO_PARENTHESES;
+                }
               else
+
                 { // We have an arg list, if t is operator the call looks like this: 'f -xyz'
                   result = exprList();
                 }
@@ -1609,7 +1614,7 @@ term        : simpleterm ( indexCall
             ;
 simpleterm  : klammer
             | fun
-            | STRING
+            | string
             | INTEGER
             | "old" term
             | match
@@ -1625,23 +1630,30 @@ simpleterm  : klammer
     int p1 = pos();
     switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
-      case t_lparen :         result = klammer();                                break;
-      case t_fun    :         result = fun();                                    break;
-      case t_string :         result = new StrConst(posObject(), "\""+string()+"\"" /* NYI: remove "\"" */); next(); break;
-      case t_integer:         result = new IntConst(posObject(), skipInteger()); break;
-      case t_old    : next(); result = new Old(term()                         ); break;
-      case t_match  :         result = match();                                  break;
-      case t_for    :
-      case t_variant:
-      case t_while  :
-      case t_do     :         result = loop();                                   break;
-      case t_if     :         result = ifstmnt();                                break;
-      case t_lbrace :         result = block(true);                              break;
-      default       :         result = callOrFeatOrThis();
-        if (result == null)
+      case t_lparen  :         result = klammer();                                break;
+      case t_fun     :         result = fun();                                    break;
+      case t_integer :         result = new IntConst(posObject(), skipInteger()); break;
+      case t_old     : next(); result = new Old(term()                         ); break;
+      case t_match   :         result = match();                                  break;
+      case t_for     :
+      case t_variant :
+      case t_while   :
+      case t_do      :         result = loop();                                   break;
+      case t_if      :         result = ifstmnt();                                break;
+      case t_lbrace  :         result = block(true);                              break;
+      default        :
+        if (isStartedString(current()))
           {
-            syntaxError(p1, "term (lparen, fun, string, integer, old, match, lbrace, or name)", "term");
-            result = new Call(posObject(), null, Errors.ERROR_STRING, Call.NO_GENERICS, Call.NO_PARENTHESES);
+            result = stringTerm(null);
+          }
+        else
+          {
+            result = callOrFeatOrThis();
+            if (result == null)
+              {
+                syntaxError(p1, "term (lparen, fun, string, integer, old, match, lbrace, or name)", "term");
+                result = new Call(posObject(), null, Errors.ERROR_STRING, Call.NO_GENERICS, Call.NO_PARENTHESES);
+              }
           }
         break;
       }
@@ -1658,6 +1670,49 @@ simpleterm  : klammer
 
 
   /**
+   * Parse stringTerm
+   *
+stringTerm  : STRING
+            | STRING$ ident stringTerm
+            | STRING{ expr  stringTerm
+            ;
+  */
+  Expr stringTerm(Expr leftString)
+  {
+    Expr result = leftString;
+    if (isString(current()))
+      {
+        var str = new StrConst(posObject(), "\""+string()+"\"" /* NYI: remove "\"" */);
+        result = concatString(posObject(), leftString, str);
+        var t = current();
+        next();
+        if (isPartialString(t))
+          {
+            result = stringTerm(concatString(posObject(), result, expr()));
+          }
+      }
+    return result;
+  }
+
+
+  /**
+   * Concatenate two strings using a call to 'infix +' on the first string given
+   * the second as an argument.
+   *
+   * @param string1 an expression or null in cas string2 should be the result
+   *
+   * @param string2 an expression that is not null.
+   *
+   * @return a call to 'infix +' on string1 with string2 as an argument, or, if
+   * string1 is null, just string2.
+   */
+  Expr concatString(SourcePosition pos, Expr string1, Expr string2)
+  {
+    return string1 == null ? string2 : new Call(pos, string1, "infix +", Call.NO_GENERICS, new List<>(string2));
+  }
+
+
+  /**
    * Check if the current position starts a term.  Does not change the position
    * of the parser.
    *
@@ -1669,13 +1724,14 @@ simpleterm  : klammer
       {
       case t_lparen :
       case t_fun    :
-      case t_string :
       case t_integer:
       case t_old    :
       case t_match  :
       case t_lbrace : return true;
       default       :
-        return isNamePrefix()    // Matches call and qualThis
+        return
+          isStartedString(current())
+          || isNamePrefix()    // Matches call and qualThis
           || isAnonymousPrefix() // matches anonymous inner feature declaration
           ;
       }
@@ -1993,7 +2049,8 @@ block       : BRACEL stmnts BRACER
       currentNoLimit() == Token.t_rcrochet ||
       currentNoLimit() == Token.t_until    ||
       currentNoLimit() == Token.t_else     ||
-      currentNoLimit() == Token.t_eof;
+      currentNoLimit() == Token.t_eof      ||
+      isContinuedString(currentNoLimit());
   }
 
 

@@ -476,13 +476,6 @@ public class Errors extends ANY
           "', legal escaped characters are " + legalEscapes(escapes) + ".");
   }
 
-  public static void unfinishedEscapeSequence(SourcePosition pos, char[][] escapes)
-  {
-    error(pos,
-          "Unfinished escape sequence found in constant string.",
-          "Expected one of the characters " + legalEscapes(escapes) + " after '\\'.");
-  }
-
   public static void unterminatedString(SourcePosition pos, SourcePosition start)
   {
     error(pos,
@@ -503,6 +496,14 @@ public class Errors extends ANY
           "Unexpected end-of-line in constant string.",
           "Found unexpected end-of-line in constant string starting at " + start.show());
   }
+
+  public static void identifierInStringExpected(SourcePosition pos, SourcePosition start)
+  {
+    error(pos,
+          "Expected identifier immediately following '$' in constant string",
+          "For string starting at " + start.show());
+  }
+
 
   public static void lineBreakNotAllowedHere(SourcePosition pos, String detail)
   {

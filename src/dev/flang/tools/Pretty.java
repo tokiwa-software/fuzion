@@ -168,9 +168,13 @@ public class Pretty extends ANY
           case t_comment: result = Terminal.RED; break;
           case t_ident  : result = Terminal.BLUE; break;
           case t_integer:
-          case t_string : result = Terminal.YELLOW; break;
           case t_op     : result = Terminal.INTENSE_BLACK; break;
-          default       : break;
+          default       :
+            if (Lexer.isString(t))
+              {
+                result = Terminal.YELLOW; break;
+              }
+            break;
           }
       }
     return result;

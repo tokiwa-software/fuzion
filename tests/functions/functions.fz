@@ -88,7 +88,7 @@ functions
     x0(f());
     out.println("here x0(f)---------------");
     x0(f);
-    out.println("here x0(fun i32 (Object o, i32 i) { result = o.hashCode + i;})---------------");
+    out.println("here x0(fun i32 (Object o, i32 i) \{ result = o.hashCode + i;})---------------");
     x0(fun (o Object, i i32) i32 { result = o.hashCode + i;});
     out.println("here x(f())---------------");
     x(f());

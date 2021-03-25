@@ -45,26 +45,35 @@ public class Lexer extends SourceFile
 
   /*----------------------------  constants  ----------------------------*/
 
+
   /**
    * Tokens produced by the lexer
    */
   public static enum Token
   {
-    t_error,      // erroneous input
-    t_ws,         // whitespace
-    t_comment,    // comment
-    t_op,         // operators +, -, *, /, ., |, etc.
-    t_comma,      // ,
-    t_lparen,     // (
-    t_rparen,     // )
-    t_lbrace,     // {
-    t_rbrace,     // }
-    t_lcrochet,   // [
-    t_rcrochet,   // ]
-    t_semicolon,  // ;
-    t_integer,    // 123
-    t_ident,      // abc
-    t_string,     // "abc"
+    t_error,       // erroneous input
+    t_ws,          // whitespace
+    t_comment,     // comment
+    t_op,          // operators +, -, *, /, ., |, etc.
+    t_comma,       // ,
+    t_lparen,      // (
+    t_rparen,      // )
+    t_lbrace,      // {
+    t_rbrace,      // }
+    t_lcrochet,    // [
+    t_rcrochet,    // ]
+    t_semicolon,   // ;
+    t_integer,     // 123
+    t_ident,       // abc
+    t_stringQQ,    // "abc"
+    t_stringQD,    // '"x is $'   in "x is $x.".
+    t_stringQB,    // '"a+b is {' in "a+b is {a+b}."
+    t_StringDQ,    // '+-*"'      in "abc$x+-*"
+    t_StringDD,    // '+-*$'      in "abc$x+-*$x.".
+    t_StringDB,    // '+-*{'      in "abc$x+-*{a+b}."
+    t_stringBQ,    // '}+-*"'     in "abc{x}+-*"
+    t_stringBD,    // '}+-*$'     in "abc{x}+-*$x.".
+    t_stringBB,    // '}+-*{'     in "abc{x}+-*{a+b}."
     t_this("this"),
     t_check("check"),
     t_else("else"),
@@ -187,20 +196,28 @@ public class Lexer extends SourceFile
         {
           switch (this)
             {
-            case t_op       : result = "operator"             ; break;
-            case t_comma    : result = "comma ','"            ; break;
-            case t_lparen   : result = "left parenthesis '('" ; break;
-            case t_rparen   : result = "right parenthesis ')'"; break;
-            case t_lbrace   : result = "left curly brace '{'" ; break;
-            case t_rbrace   : result = "right curly brace '}'"; break;
-            case t_lcrochet : result = "left crochet '['"     ; break;
-            case t_rcrochet : result = "right crochet ']'"    ; break;
-            case t_semicolon: result = "semicolon ';'"        ; break;
-            case t_integer  : result = "integer constant"     ; break;
-            case t_ident    : result = "identifier"           ; break;
-            case t_string   : result = "string constant"      ; break;
-            case t_eof      : result = "end-of-file"          ; break;
-            default         : result = super.toString()       ; break;
+            case t_op                : result = "operator"                                   ; break;
+            case t_comma             : result = "comma ','"                                  ; break;
+            case t_lparen            : result = "left parenthesis '('"                       ; break;
+            case t_rparen            : result = "right parenthesis ')'"                      ; break;
+            case t_lbrace            : result = "left curly brace '{'"                       ; break;
+            case t_rbrace            : result = "right curly brace '}'"                      ; break;
+            case t_lcrochet          : result = "left crochet '['"                           ; break;
+            case t_rcrochet          : result = "right crochet ']'"                          ; break;
+            case t_semicolon         : result = "semicolon ';'"                              ; break;
+            case t_integer           : result = "integer constant"                           ; break;
+            case t_ident             : result = "identifier"                                 ; break;
+            case t_stringQQ          : result = "string constant"                            ; break;
+            case t_stringQD          : result = "string constant ending in $"                ; break;
+            case t_stringQB          : result = "string constant ending in {"                ; break;
+            case t_StringDQ          : result = "string constant after $<id>"                ; break;
+            case t_StringDD          : result = "string constant after $<id> ending in $"    ; break;
+            case t_StringDB          : result = "string constant after $<id> ending in {"    ; break;
+            case t_stringBQ          : result = "string constant after {<expr>}"             ; break;
+            case t_stringBD          : result = "string constant after {<expr>} ending in $" ; break;
+            case t_stringBB          : result = "string constant after {<expr>} ending in {" ; break;
+            case t_eof               : result = "end-of-file"                                ; break;
+            default                  : result = super.toString()                             ; break;
             }
         }
       return result;
@@ -311,6 +328,13 @@ public class Lexer extends SourceFile
 
 
   /**
+   * Stack of String lexers for escape sequences, identifiers and expressions
+   * embedded in strings.
+   */
+  private StringLexer _stringLexer = null;
+
+
+  /**
    * The current token
    */
   private Token _curToken = Token.t_undefined;
@@ -397,6 +421,7 @@ public class Lexer extends SourceFile
     _minIndentStartPos = original._minIndentStartPos;
     _sameLine = original._sameLine;
     _ignoredTokenBefore = original._ignoredTokenBefore;
+    _stringLexer = original._stringLexer == null ? null : new StringLexer(original._stringLexer);
   }
 
 
@@ -637,12 +662,16 @@ public class Lexer extends SourceFile
   {
     _curPos = bytePos();
     int p = curCodePoint();
-    Token token;
+    var token = Token.t_undefined;
     if (p == SourceFile.END_OF_FILE)
       {
         token = Token.t_eof;
       }
-    else
+    else if (_stringLexer != null)
+      {
+        token = _stringLexer.nextRaw();
+      }
+    if (token == Token.t_undefined)
       {
         nextCodePoint();
         switch (kind(p))
@@ -763,15 +792,7 @@ public class Lexer extends SourceFile
             }
           case K_DQUOTE  :    // '"'
             {
-              boolean end = false;
-              var s = new EscapeState(-1);
-              while (!end && kind(s.raw()) != K_EOF)
-                {
-                  end = !s._escaped && kind(s.raw()) == K_DQUOTE;
-                  s.processed();
-                }
-              s.finish();
-              token = Token.t_string;
+              token = new StringLexer().finish();
               break;
             }
           case K_ERROR   :    // an error occurred
@@ -1266,14 +1287,133 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Small state-machine parser for escaped chars in constant strings.
+   * Parse state to decide between normal parsing and $<id> and {<expr>} within
+   * strings.
    */
-  private class EscapeState
+  private enum StringState
   {
-    int _stringStart;
-    int _pos;
-    boolean _escaped = false;
-    int _escapeStart = -1;
+    IDENT_EXPECTED,   // parsing an identifier in a string as in "xyz is $xyz."
+    EXPR_EXPECTED,    // parsing an expression in a string as in "expr is {q.f(fun f(x i32) -> { x * 5 })}."
+    CONTINUED,        // parsing the string following an identifier in a string as in "abc+$x-def" when parsing -def"
+  }
+
+
+  /**
+   * For a partial string, the class of the beginning or the end of the string.
+   */
+  public enum StringEnd
+  {
+    QUOTE,   // A normal string starting with '"' as in "normal string...
+    DOLLAR,  // Following '$<id>' as " dollar string..." in "previous $ident dollar string...
+    BRACE;   // Following '{<expr>}' as " rbrace string..." in "previous {a+b} rbrace string...
+
+    /**
+     * Get the partial string token for a string starting with this and ending with end.
+     */
+    Token token(StringEnd end)
+    {
+      if      (this == StringEnd.QUOTE  && end == StringEnd.QUOTE ) { return Token.t_stringQQ; }
+      else if (this == StringEnd.QUOTE  && end == StringEnd.DOLLAR) { return Token.t_stringQD; }
+      else if (this == StringEnd.QUOTE  && end == StringEnd.BRACE ) { return Token.t_stringQB; }
+      else if (this == StringEnd.DOLLAR && end == StringEnd.QUOTE ) { return Token.t_StringDQ; }
+      else if (this == StringEnd.DOLLAR && end == StringEnd.DOLLAR) { return Token.t_StringDD; }
+      else if (this == StringEnd.DOLLAR && end == StringEnd.BRACE ) { return Token.t_StringDB; }
+      else if (this == StringEnd.BRACE  && end == StringEnd.QUOTE ) { return Token.t_stringBQ; }
+      else if (this == StringEnd.BRACE  && end == StringEnd.DOLLAR) { return Token.t_stringBD; }
+      else if (this == StringEnd.BRACE  && end == StringEnd.BRACE ) { return Token.t_stringBB; }
+      throw new Error("impossible StringEnd.token combination "+this+" and "+end);
+    }
+  }
+
+
+  /**
+   * For a given string token, return if that string starts with '"' or follows
+   * an embedded '$<id>' or '{<expr>}'.
+   */
+  StringEnd beginning(Token t)
+  {
+    if (PRECONDITIONS) require
+      (isString(t));
+
+    switch (t)
+      {
+      case t_stringQQ:
+      case t_stringQD:
+      case t_stringQB: return StringEnd.QUOTE;
+      case t_StringDQ:
+      case t_StringDD:
+      case t_StringDB: return StringEnd.DOLLAR;
+      case t_stringBQ:
+      case t_stringBD:
+      case t_stringBB: return StringEnd.BRACE;
+      default        : throw new Error();
+
+      }
+  }
+
+
+  /**
+   * For a given string token, return if that string ends with '"' or with an
+   * embedded '$<id>' or '{<expr>}'.
+   */
+  StringEnd end(Token t)
+  {
+    if (PRECONDITIONS) require
+      (isString(t));
+
+    switch (t)
+      {
+      case t_stringQQ:
+      case t_StringDQ:
+      case t_stringBQ: return StringEnd.QUOTE;
+      case t_stringQD:
+      case t_StringDD:
+      case t_stringBD: return StringEnd.DOLLAR;
+      case t_stringQB:
+      case t_StringDB:
+      case t_stringBB: return StringEnd.BRACE;
+      default        : throw new Error();
+
+      }
+  }
+
+
+  /**
+   * Small state-machine parser for constant strings.
+   */
+  private class StringLexer
+  {
+    /**
+     * The original string that started with '"', i.e., disregarding any partial
+     * strings following '$<id>' or '{<expr>}'.  Used for proper error messages.
+     */
+    final int _stringStart;
+
+
+    /**
+     * -1 if this string is being read from the underlying SourceFile directly.
+     * Otherwise, the character start position in the underlying source file.
+     */
+    final int _pos;
+
+    int _braceCount;
+
+    /**
+     * In case of nested string lexers, this is the outer lexer.
+     */
+    StringLexer _outer;
+
+    /**
+     * One of t_stringQQ. t_stringQD or t_stringQB to identify the
+     * beginning of this partial string.
+     */
+    StringEnd _beginning;
+
+    /**
+     * Parsing state for identifiers and expressions embedded in strings.
+     */
+    private StringState _state;
+
 
     char[][] escapeChars = new char[][] {
         { 'b', '\b'  },  // BS 0x08
@@ -1290,111 +1430,318 @@ public class Lexer extends SourceFile
       };
 
 
-    EscapeState(int pos)
+    /**
+     * Create a string lexer at the start of lexing a string.  The first token
+     * will be returned through this.finish().  Lexer.this._stringLexer will be
+     * set to the new StringLexer instance if more tokens related to this string
+     * will come.
+     */
+    StringLexer()
     {
-      _stringStart = pos;
-      _pos = pos;
+      _stringStart = Lexer.this.pos();
+      _pos = -1;
+      _beginning = StringEnd.QUOTE;
     }
+
+
+    /**
+     * Create a StringLexer at the position of the current string token.  This
+     * is used by string() to retrieve the actual string contents after the
+     * lexing step has finished.
+     *
+     * @param sb a StringBuilder to receive the code points of this string.
+     */
+    StringLexer(StringBuilder sb)
+    {
+      if (PRECONDITIONS) require
+        (isString(current()));
+
+      _stringStart = Lexer.this.pos();
+      _pos =  Lexer.this.pos() + (beginning(current()) == StringEnd.DOLLAR ? 0 : 1);
+      _beginning = StringEnd.QUOTE;
+      iterateCodePoints(sb);
+    }
+
+
+    /**
+     * Create a clone of this StringLexer, used for cloning the surrounding Lexer.
+     */
+    StringLexer(StringLexer original)
+    {
+      if (PRECONDITIONS) require
+        (original._pos == -1  /* should happen only during lexing, not when retrieving via string() */);
+
+      this._stringStart = original._stringStart;
+      this._pos = original._pos;
+      this._braceCount = original._braceCount;
+      this._beginning = original._beginning;
+      this._state = original._state;
+      this._outer = original._outer == null ? null : new StringLexer(original._outer);
+    }
+
 
     /**
      * Return the current raw code point, not processing any escapes.
      */
-    private int raw()
+    private int raw(int pos)
     {
-      return _pos < 0 ? curCodePoint() : codePoint(_pos);
+      return pos < 0 ? curCodePoint() : codePointAt(pos);
     }
+
 
     /**
-     * Return the current code pointer after processing escapes.
+     * Iterate over code points and append them to sb
      */
-    private int processed()
+    private Token iterateCodePoints(StringBuilder sb)
     {
-      var p = raw();
-      var result = -1;
-      if (p == END_OF_FILE)
+      var t = Token.t_undefined;
+      var pos = _pos;
+
+      var escaped = false;
+      while (t == Token.t_undefined)
         {
-          Errors.unterminatedString(sourcePos(pos()), Lexer.this.sourcePos(_stringStart));
-        }
-      else if (p < _asciiControlName.length && _asciiControlName[p] != null)
-        {
-          Errors.unexpectedControlCodeInString(sourcePos(pos()), _asciiControlName[p], p, sourcePos(_stringStart));
-        }
-      else
-        {
-          if (_escaped)
+          var p = raw(pos);
+          var c = -1;
+          if (p == END_OF_FILE)
             {
-              for (var i = 0; i < escapeChars.length && result < 0; i++)
+              Errors.unterminatedString(sourcePos(), Lexer.this.sourcePos(_stringStart));
+              t = Token.t_error;
+            }
+          else if (p < _asciiControlName.length && _asciiControlName[p] != null)
+            {
+              Errors.unexpectedControlCodeInString(sourcePos(), _asciiControlName[p], p, sourcePos(_stringStart));
+              t = Token.t_error;
+            }
+          else
+            {
+              if (escaped)
                 {
-                  if (p == (int) escapeChars[i][0])
+                  for (var i = 0; i < escapeChars.length && c < 0; i++)
                     {
-                      result = (int) escapeChars[i][1];
+                      if (p == (int) escapeChars[i][0])
+                        {
+                          c = (int) escapeChars[i][1];
+                        }
                     }
+                  if (c < 0)
+                    {
+                      Errors.unknownEscapedChar(sourcePos(), p, escapeChars);
+                    }
+                  escaped = false;
                 }
-              if (result < 0)
+              else if (p == '\\')
                 {
-                  Errors.unknownEscapedChar(_pos < 0 ? sourcePos() : sourcePos(_pos), p, escapeChars);
+                  escaped = true;
                 }
-              _escaped = false;
+              else if (p == '"') { t = _beginning.token(StringEnd.QUOTE);  }
+              else if (p == '$') { t = _beginning.token(StringEnd.DOLLAR); }
+              else if (p == '{') { t = _beginning.token(StringEnd.BRACE);  }
+              else
+                {
+                  c = p;
+                }
+              var l = p;
+              if (pos < 0)
+                {
+                  nextCodePoint();
+                }
+              else
+                {
+                  pos = pos + codePointSize(pos);
+                }
+              p = raw(pos);
+              if (isNewLine(l, p))
+                {
+                  Errors.unexpectedEndOfLineInString(sourcePos(bytePos()-1), sourcePos(_stringStart));
+                  t = Token.t_error;
+                }
             }
-          else if (p == '\\')
+          if (c >= 0 && sb != null)
             {
-              _escaped = true;
-              _escapeStart = _pos < 0 ? bytePos() : _pos;
-            }
-          else
-            {
-              result = p;
-            }
-          var l = p;
-          if (_pos < 0)
-            {
-              nextCodePoint();
-            }
-          else
-            {
-              _pos = _pos + codePointSize(_pos);
-            }
-          p = raw();
-          if (isNewLine(l, p))
-            {
-              Errors.unexpectedEndOfLineInString(sourcePos(pos()-1), sourcePos(_stringStart));
+              sb.appendCodePoint(c);
             }
         }
-      return result;
+      return t;
     }
 
-    void finish()
+
+    /**
+     * This StringLexer's implementation of Lexer.nextRaw() to get the next raw token.
+     *
+     * @return the next raw token or Token.t_undefined to delegate scanning the
+     * next token to Lexer.nextRaw().
+     */
+    Token nextRaw()
     {
-      if (_escaped)
+      check
+        (_stringLexer == this,
+         _pos == -1);
+
+      int p = curCodePoint();
+      var finishBy = StringEnd.QUOTE;
+      switch (_state)
         {
-          Errors.unfinishedEscapeSequence(sourcePos(_escapeStart), escapeChars);
+        case EXPR_EXPECTED:
+          switch (kind(p))
+            {
+            case K_LBRACE:
+              _braceCount++;
+              return Token.t_lbrace;
+            case K_RBRACE:
+              _braceCount--;
+              if (_stringLexer._braceCount > 0)
+                {
+                  return Token.t_rbrace;
+                }
+              _beginning = StringEnd.BRACE;
+              break;
+            default:
+              return Token.t_undefined;
+            }
+          break;
+        case IDENT_EXPECTED:
+          {
+            if (kind(p) != K_LETTER && kind(p) != K_DIGIT)
+              {
+                Errors.identifierInStringExpected(sourcePos(), sourcePos(_stringLexer._stringStart));
+              }
+            _state = StringState.CONTINUED;
+            return Token.t_undefined;
+          }
+        case CONTINUED:
+          {
+            _beginning = StringEnd.DOLLAR;
+          }
         }
+      // pop this from the stack of string lexers:
+      _stringLexer = _outer;
+      return finish();
+    }
+
+
+    /**
+     * iterate over the chars of this (partial) string and determine its token
+     * type.  In case the string is not finished, update this string lexer's
+     * state and push it to the stack of string lexers.
+     *
+     * @return the string token of the parsed (partial) string.
+     */
+    Token finish()
+    {
+      var t = iterateCodePoints(null);
+      if (isPartialString(t))
+        {
+          // push this onto the stack of string lexers:
+          _outer = _stringLexer;
+          _stringLexer = this;
+          switch (end(t))
+            {
+            case DOLLAR: _state = StringState.IDENT_EXPECTED; break;
+            case BRACE : _state = StringState.EXPR_EXPECTED; break;
+            default    : throw new Error("default:");
+            }
+        }
+      return t;
     }
 
   }
 
 
   /**
-   * Return the actual string constant of the current t_string token as a
+   * Is the given token a constant string, i.e., any of the t_string* variants
+   * of constant strings.
+   *
+   * @param t a token
+   *
+   * @return true iff t is a string
+   */
+  public static boolean isString(Token t)
+  {
+    switch (t)
+      {
+      case t_stringQQ:
+      case t_stringQD:
+      case t_stringQB:
+      case t_StringDQ:
+      case t_StringDD:
+      case t_StringDB:
+      case t_stringBQ:
+      case t_stringBD:
+      case t_stringBB: return true;
+      default        : return false;
+      }
+  }
+
+
+  /**
+   * Is the given token a constant string that is started, i.e., it is not
+   * preceded by an embedded identifier '$id' or expression '{expr}.
+   *
+   * @param t a token
+   *
+   * @return true iff t is a started string
+   */
+  boolean isStartedString(Token t)
+  {
+    return isString(t) && beginning(t) == StringEnd.QUOTE;
+  }
+
+
+  /**
+   * Is the given token a constant string that is completed, i.e., it is not
+   * followed by an embedded identifier '$id' or expression '{expr}.
+   *
+   * @param t a token
+   *
+   * @return true iff t is a completed string
+   */
+  boolean isCompletedString(Token t)
+  {
+    return isString(t) && end(t) == StringEnd.QUOTE;
+  }
+
+
+  /**
+   * Is the given token a constant string that is followed by an embedded
+   * identifier or expression, i.e., any of the t_string*D or
+   * t_string*B variants of constant strings.
+   *
+   * @param t a token
+   *
+   * @return true iff t is a partial string
+   */
+  boolean isPartialString(Token t)
+  {
+    return isString(t) && !isCompletedString(t);
+  }
+
+
+  /**
+   * Is the given token a constant string that is following an embedded
+   * identifier or expression, i.e., any of the t_stringD* or t_stringB*
+   * variants of constant strings.
+   *
+   * @param t a token
+   *
+   * @return true iff t is continuing a partial string
+   */
+  boolean isContinuedString(Token t)
+  {
+    return isString(t) && beginning(t) != StringEnd.QUOTE;
+  }
+
+
+  /**
+   * Return the actual string constant of the current t_string* token as a
    * string.
    */
   String string()
   {
     if (PRECONDITIONS) require
-      (current() == Token.t_string);
-
-    var s = new EscapeState(pos() + 1);
+      (isString(current()));
 
     var sb = new StringBuilder();
-    var end = endPos() - 1;
-    while (s._pos < end)
-      {
-        var c = s.processed();
-        if (c >= 0)
-          {
-            sb.appendCodePoint(c);
-          }
-      }
+    var s = new StringLexer(sb);
     return sb.toString();
   }
 
@@ -1420,12 +1767,15 @@ public class Lexer extends SourceFile
     var result = t.toString();
     switch (t)
       {
-      case t_op       :
-      case t_integer  :
-      case t_ident    :
-      case t_string   : result = result + " '" + tokenAsString() + "'"; break;
-      default         :
-        if (t.isKeyword())
+      case t_op      :
+      case t_integer :
+      case t_ident   : result = result + " '" + tokenAsString() + "'"; break;
+      default        :
+        if (isString(t))
+          {
+            result = result + " '" + tokenAsString() + "'";
+          }
+        else if (t.isKeyword())
           {
             result = "'" + result + "'";
           }
