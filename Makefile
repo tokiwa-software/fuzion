@@ -25,9 +25,9 @@
 
 # must be at least java 11
 JAVA = java
-FZ_SRC = $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
-BUILD_DIR = $(CURDIR)/build
+BUILD_DIR = ./build
 CLASSES_DIR = $(BUILD_DIR)/classes
 TESTS=$(shell echo $(BUILD_DIR)/tests/*/)
 
