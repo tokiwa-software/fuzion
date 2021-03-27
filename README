@@ -5,11 +5,22 @@ This is work under development, documentation is mostly not existing.
 
 Please check https://flang.dev for language and implementation design.
 
+To clone the repository:
+
+  > git clone https://github.com/fridis/fuzion
+
+Note that the current directly must not contain any spaces.
+
 To build:
 
+  > cd fuzion
   > make
 
-To run an example:
+Alternatively, you can build in another directory and use
+
+  > make -f <fuzion-dir>/fuzion/Makefile
+
+To run an example after a successful build:
 
   > cd build
   > export PATH=$PWD/bin:$PATH
