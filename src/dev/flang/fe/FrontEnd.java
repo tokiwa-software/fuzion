@@ -30,6 +30,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -252,12 +255,25 @@ public class FrontEnd extends ANY
   private static final Path[] SOURCE_PATHS;
   private static final Dir[] SOURCE_DIRS;
   static {
+
     CURRENT_DIRECTORY = Path.of(".");
-    Class<Feature> cl = Feature.class;
+
+    // find fuzion home via classes directory:
+    Class<FrontEnd> cl = FrontEnd.class;
     String clname = cl.getName().replace(".",File.separator)+ ".class";
-    String p = Feature.class.getClassLoader().getResource(clname).getPath();
+    var url = FrontEnd.class.getClassLoader().getResource(clname);
+    String p;
+    try
+      { // convert to URI to remove URL encoded chars ('%20' -> ' ')
+        p = new URI(url.toString()).getPath();
+      }
+    catch (URISyntaxException e)  // when could this happen?
+      {
+        p = url.getPath();  // as long as there are no URLEncoded chars, this should do as a fallback
+      }
     p = p.substring(0, p.length() - clname.length());
     FUZION_HOME = Path.of(p).getParent();
+
     SOURCE_PATHS = new Path[] { FUZION_HOME.resolve("lib"), CURRENT_DIRECTORY };
     SOURCE_DIRS = new Dir[SOURCE_PATHS.length];
     for (int i = 0; i < SOURCE_PATHS.length; i++)
