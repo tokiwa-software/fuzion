@@ -91,7 +91,7 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   #
   forceHead A
     pre
-      !isEmpty
+      debug: !isEmpty
   is
     match list.this
       _ nil              => panic
@@ -104,7 +104,7 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   #
   forceTail list<A>
     pre
-      !isEmpty
+      debug: !isEmpty
   is
     match list.this
       _ nil              => panic
