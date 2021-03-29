@@ -300,11 +300,12 @@ public abstract class Expr extends ANY implements Stmnt
           !frmlT.isAssignableFrom(t) &&
           frmlT.isAssignableFrom(t.asRef()))))
       {
-        result = new Box(this);
+        result = new Box(result);
+        t = result.type();
       }
     if (frmlT.isChoice() && t != frmlT && frmlT.isAssignableFrom(t))
       {
-        result = new Tag(this, frmlT);
+        result = new Tag(result, frmlT);
       }
     return result;
   }
