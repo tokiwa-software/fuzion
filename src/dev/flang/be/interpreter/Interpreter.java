@@ -366,7 +366,8 @@ public class Interpreter extends Backend
               }
             Errors.fatal(m.pos(), "no match found",
                          "For value of clazz: " + subjectClazz + "\n" +
-                         "Permitted clazzes: " + permitted.toString("",",",""));
+                         "Permitted clazzes: " + permitted.toString("",", ","") + "\n" +
+                         callStack());
           }
         check
           (matches);
