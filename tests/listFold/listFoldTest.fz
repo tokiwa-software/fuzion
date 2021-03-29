@@ -30,7 +30,7 @@ listFoldTest is
   exitCode := 0
 
   chck(b bool, msg string) is
-    s string = if b
+    s := if b
         "PASSED: "
       else
         exitCode = 1
@@ -98,10 +98,9 @@ listFoldTest is
   say "string list 10 is " + slA.fold "".concat; chck((slA.fold "".concat) == "The quick brown fox jumps over the lazy dog.", "concat slA")
 
   // product mod 11
-  m := ref : monoid<i32> {
-      infix ∙ (a, b i32) => a * b % 11
-      e => 1
-    }
+  m : monoid<i32> is
+    infix ∙ (a, b i32) => a * b % 11
+    e => 1
 
   say "product mod 11 is " + l1.fold m; chck((l1.fold m) == 1, "l1.fold produc mod 11")
   say "product mod 11 is " + l2.fold m; chck((l2.fold m) == 9, "l2.fold produc mod 11")
