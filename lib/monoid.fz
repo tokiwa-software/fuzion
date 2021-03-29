@@ -32,26 +32,36 @@
 # NYI: This is currently not used anywhere, a purely experimental feature.
 #
 # NYI: move to universe.fz
-monoid<T: monoid<T>>
+monoid<T>
+
+/* NYI: quantor intrinsics not supported yet:
+
   inv
     analysis: quantors.forAll3<T,T,T>(
-                fun(x, y, z T) => (x + y) + z == x + (y + z)),   # associativity
+# NYI: infix notation for 2-argument feature
+#               fun(x, y, z T) => (x ∙ y) ∙ z == x ∙ (y ∙ z)),   # associativity
+                fun(x, y, z T) => eq((op(op(x, y), z)), (op(x, op(y, z))))),   # associativity
     analysis: quantors.forAll<T>(
-                fun(x T) => x + e == e + x == x)   # identity element
+# NYI: infix notation for 2-argument feature
+#                fun(x T) => (x ∙ e) == (e ∙ x) == x)   # identity element
+                 fun(x T) => (eq(op(x, e), op(e, x)) &
+                              eq(op(e, x), x)))   # identity element
+*/
 
 is
 
   # associative operation
   #
-  infix + (other T) T is abstract
+  infix ∙ (a, b T) T is abstract
 
   # identity element
-  #
-  # NYI: This is a bit awkward since we need one element to create
-  # the identity element.
   #
   e T is abstract
 
   # equality operation
   #
-  infix == (other T) bool is abstract
+  infix == (a, b T) bool is abstract
+
+  # alternative names for infix operators
+  op(a, b T) => infix ∙ a, b
+  eq(a, b T) => infix == a, b

@@ -75,3 +75,39 @@ numeric<T : numeric<T>> is
   sign => if numeric.this == zero then 0 else if numeric.this > zero then 1 else -1
 
   abs => if sign >= 0 then thiz else -thiz
+
+/*
+has     -- NYI: 'has' keyword not supported yet, so the following require an instance of numeric to be called on
+*/
+
+  # monoid of numeric with infix + operation.  Will create sum of all elements it
+  # is applied to.
+  #
+  sum : monoid<T> is
+    redef infix ∙ (a, b T) T is a + b
+    redef infix == (a, b T) bool is a == b
+    redef e T is zero
+
+  # monoid of numeric with infix * operation.  Will create product of all elements
+  # it is applied to.
+  #
+  product : monoid<T> is
+    redef infix ∙ (a, b T) T is a * b
+    redef infix == (a, b T) bool is a == b
+    redef e T is one
+
+  # monoid of numeric with infix +^ operation.  Will create sum of all elements it
+  # is applied to, stopping at max/min value in case of overflow.
+  #
+  sumSaturating : monoid<T> is
+    redef infix ∙ (a, b T) T is a +^ b
+    redef infix == (a, b T) bool is a == b
+    redef e T is zero
+
+  # monoid of numeric with infix *^ operation.  Will create product of all elements
+  # it is applied to, stopping at max/min value in case of overflow.
+  #
+  productSaturating : monoid<T> is
+    redef infix ∙ (a, b T) T is a *^ b
+    redef infix == (a, b T) bool is a == b
+    redef e T is one

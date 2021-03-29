@@ -100,3 +100,14 @@ string ref is
     until !s1.hasNext
 
     */
+
+/*
+has     -- NYI: 'has' keyword not supported yet, so the following require an instance of numeric to be called on
+*/
+
+  # monoid of strings with infix + operation.
+  #
+  concat : monoid<string> is
+    redef infix ∙ (a, b string) => a + b
+    redef infix == (a, b string) => a == b
+    redef e => ""
