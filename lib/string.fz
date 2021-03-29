@@ -107,7 +107,7 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 
   # monoid of strings with infix + operation.
   #
-  concat : monoid<string> is
+  concat : Monoid<string> is
     redef infix ∙ (a, b string) => a + b
     redef infix == (a, b string) => a == b
     redef e => ""

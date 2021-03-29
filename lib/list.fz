@@ -145,14 +145,14 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   #
   # e.g., to sum the elements of a list of i32, use l.fold i32.sum
   #
-  fold (m ref monoid<A>) => fold m.e, m
+  fold (m Monoid<A>) => fold m.e, m
 
 
   # fold the elements of this list using the given monoid and initial value
   #
   # Used to fold a list tail-recursively
   #
-  fold (s A, m ref monoid<A>) A is
+  fold (s A, m Monoid<A>) A is
     match list.this
       _ nil => s
       c Cons<A, list<A>> => c.tail.fold m.op(s, c.head), m

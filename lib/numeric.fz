@@ -83,7 +83,7 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   # monoid of numeric with infix + operation.  Will create sum of all elements it
   # is applied to.
   #
-  sum : monoid<T> is
+  sum : Monoid<T> is
     redef infix ∙ (a, b T) T is a + b
     redef infix == (a, b T) bool is a == b
     redef e T is zero
@@ -91,7 +91,7 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   # monoid of numeric with infix * operation.  Will create product of all elements
   # it is applied to.
   #
-  product : monoid<T> is
+  product : Monoid<T> is
     redef infix ∙ (a, b T) T is a * b
     redef infix == (a, b T) bool is a == b
     redef e T is one
@@ -99,7 +99,7 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   # monoid of numeric with infix +^ operation.  Will create sum of all elements it
   # is applied to, stopping at max/min value in case of overflow.
   #
-  sumSaturating : monoid<T> is
+  sumSaturating : Monoid<T> is
     redef infix ∙ (a, b T) T is a +^ b
     redef infix == (a, b T) bool is a == b
     redef e T is zero
@@ -107,7 +107,7 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   # monoid of numeric with infix *^ operation.  Will create product of all elements
   # it is applied to, stopping at max/min value in case of overflow.
   #
-  productSaturating : monoid<T> is
+  productSaturating : Monoid<T> is
     redef infix ∙ (a, b T) T is a *^ b
     redef infix == (a, b T) bool is a == b
     redef e T is one
