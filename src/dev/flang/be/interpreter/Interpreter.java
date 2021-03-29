@@ -354,7 +354,7 @@ public class Interpreter extends Backend
               {
                 if (c.field != null)
                   {
-                    permitted.add(staticClazz.getRuntimeClazz(c.runtimeClazzId_));
+                    permitted.add(staticClazz.getRuntimeClazz(c.runtimeClazzId_).resultClazz());
                   }
                 else
                   {
