@@ -29,8 +29,6 @@
 # an identity element. Examples are (integers/infix +/0), (float/infix *,1),
 # (string/concat/""), etc.
 #
-# NYI: This is currently not used anywhere, a purely experimental feature.
-#
 # NYI: move to universe.fz
 monoid<T>
 
