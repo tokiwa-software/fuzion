@@ -139,3 +139,42 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   # NYI: This should be declared outside of list<A>, it should not require an
   # instance to be called on.
   fmap<B> (f fun(A) B) => fun (l list<A>) => l.map<B> f
+
+
+  # fold the elements of this list using the given monoid.
+  #
+  # e.g., to sum the elements of a list of i32, use l.fold i32.sum
+  #
+  fold (m ref monoid<A>) => fold m.e, m
+
+
+  # fold the elements of this list using the given monoid and initial value
+  #
+  # Used to fold a list tail-recursively
+  #
+  fold (s A, m ref monoid<A>) A is
+    match list.this
+      _ nil => s
+      c Cons<A, list<A>> => c.tail.fold m.op(s, c.head), m
+
+
+  # Take the first n elements of a list, or the whole list if it is shorter than n
+  #
+  take (n i32) list<A>
+    pre
+      debug: n >= 0
+  is
+    if n <= 0
+      nil
+    else
+      match list.this
+        _ nil              => nil
+        # c Cons<A, list<A>> => cons c.head, c.tail.take n-1      # NYI: does not work yet, need to check why
+        c Cons<A, list<A>> =>
+          {                                         # NYI: indentation syntax for match not supported
+            ref : Cons<A, list<A>>
+              {                                     # NYI: indentation syntax for anonymous not supported
+                redef head => c.head
+                redef tail => c.tail.take n-1
+              }
+          }
