@@ -123,28 +123,22 @@ public class Pretty extends ANY
   private void print(SourceFile f,
                      Intervals<Lexer.Token> i)
   {
-    var style = Terminal.RESET;
+    Styler s = new TerminalStyler();
+    var style = s.plain();
     for (int j = 0; j < f.byteLength(); j++)
       {
         var t = i.get(j);
-        var newStyle = style(t);
+        var newStyle = style(s, t);
         if (newStyle != style)
           {
-            if (style != Terminal.RESET)
-              {
-                System.out.print(Terminal.RESET);
-              }
+            System.out.print(style.end());
             style = newStyle;
-            System.out.print(style);
+            System.out.print(style.start());
           }
         System.out.write(f.byteAt(j));
       }
-    if (style != Terminal.RESET)
-      {
-        System.out.print(Terminal.RESET);
-      }
+    System.out.print(style.end());
   }
-
 
 
   /**
@@ -154,30 +148,116 @@ public class Pretty extends ANY
    *
    * @return the control sequence setting the style.
    */
-  private String style(Lexer.Token t)
+  private Style style(Styler s, Lexer.Token t)
   {
-    var result = Terminal.RESET;
+    var result = s.plain();
     if (t.isKeyword())
       {
-        result = Terminal.BOLD_PURPLE;
+        result = s.keyword();
       }
     else
       {
         switch (t)
           {
-          case t_comment: result = Terminal.RED; break;
-          case t_ident  : result = Terminal.BLUE; break;
-          case t_integer:
-          case t_op     : result = Terminal.INTENSE_BLACK; break;
+          case t_comment: result = s.comment(); break;
+          case t_ident  : result = s.ident();  break;
+          case t_integer: result = s.integer();  break;
+          case t_op     : result = s.op();  break;
           default       :
             if (Lexer.isString(t))
               {
-                result = Terminal.YELLOW; break;
+                result = s.string(); break;
               }
             break;
           }
       }
     return result;
+  }
+
+  /**
+   * Abstract class to generate different styles.
+   */
+  abstract class Styler
+  {
+    abstract Style plain();
+    abstract Style keyword();
+    abstract Style comment();
+    abstract Style ident();
+    abstract Style integer();
+    abstract Style op();
+    abstract Style string();
+  }
+
+  /**
+   * Abstract class to generate start / end sequence for a style
+   */
+  abstract class Style
+  {
+    abstract String start();
+    abstract String end();
+  }
+
+  /**
+   * Styler using ANSI control sequences.
+   */
+  class TerminalStyler extends Styler
+  {
+    Style plain()
+    {
+      return new Style()
+        {
+          String start() { return ""; }
+          String end() { return ""; }
+        };
+    }
+    Style keyword()
+    {
+      return new Style()
+        {
+          String start() { return Terminal.BOLD_PURPLE; }
+          String end() { return Terminal.RESET; }
+        };
+    }
+    Style comment()
+    {
+      return new Style()
+        {
+          String start() { return Terminal.RED; }
+          String end() { return Terminal.RESET; }
+        };
+    }
+    Style ident()
+    {
+      return new Style()
+        {
+          String start() { return Terminal.BLUE; }
+          String end() { return Terminal.RESET; }
+        };
+    }
+    Style integer()
+    {
+      return new Style()
+        {
+          String start() { return Terminal.INTENSE_BLACK; }
+          String end() { return Terminal.RESET; }
+        };
+    }
+    Style op()
+    {
+      return new Style()
+        {
+          String start() { return Terminal.INTENSE_BLACK; }
+          String end() { return Terminal.RESET; }
+        };
+    }
+    Style string()
+    {
+      return new Style()
+        {
+          String start() { return Terminal.YELLOW; }
+          String end() { return Terminal.RESET; }
+        };
+    }
   }
 
 
