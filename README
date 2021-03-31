@@ -11,12 +11,19 @@ To clone the repository:
 
 Note that the current directly must not contain any spaces.
 
+Requirements:
+
+ - OpenJDK 16, e.g., https://adoptopenjdk.net/releases.html?variant=openjdk16&jvmVariant=hotspot
+ - clang-10 LLVM C compiler (on ubuntu: sudo apt-get install clang-10)
+
 To build:
+
+Make sure java/javac commands from OpenJDK 16 and clang 10 binary are in $PATH.  Then do:
 
   > cd fuzion
   > make
 
-Alternatively, you can build in another directory and use
+alternatively, you can build in another directory and use
 
   > make -f <fuzion-dir>/fuzion/Makefile
 
