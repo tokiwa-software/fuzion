@@ -155,7 +155,8 @@ class Fuzion extends ANY
   static final String USAGE =
     "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] " + STANDRD_OPTIONS + " --or--\n" +
     _allBackendExtraUsage_ +
-    "       " + CMD + " -pretty [-noANSI] ({<file>} | -)\n";
+    "       " + CMD + " -pretty [-noANSI] ({<file>} | -)\n" +
+    "       " + CMD + " -latex\n";
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -269,6 +270,10 @@ class Fuzion extends ANY
       {
         return parseArgsPretty(args);
       }
+    else if (args.length >= 1 && args[0].equals("-latex"))
+      {
+        return parseArgsLatex(args);
+      }
     else
       {
         return parseArgsForBackend(args);
@@ -343,6 +348,51 @@ class Fuzion extends ANY
                 new Pretty(s);
               }
           }
+      };
+  }
+
+
+  /**
+   * Parse the given command line args for the pretty printer and create a
+   * runnable that executes it.  System.exit() in case of error or -help.
+   *
+   * @param args the command line arguments
+   *
+   * @return a Runnable to run the pretty printer.
+   */
+  private Runnable parseArgsLatex(String[] args)
+  {
+    var duplicates = new TreeSet<String>();
+    var sourceFiles = new List<String>();
+    for (var a : args)
+      {
+        if (duplicates.contains(a))
+          {
+            Errors.fatal("duplicate argument: '" + a + "'", USAGE);
+          }
+        duplicates.add(a);
+        if (a.equals("-latex"))
+          { // ignore, we know this already
+          }
+        else if (a.equals("-h"    ) ||
+                 a.equals("-help" ) ||
+                 a.equals("--help")    )
+          {
+            System.out.println(USAGE);
+            System.exit(0);
+          }
+        else if (a.startsWith("-"))
+          {
+            Errors.fatal("unknown argument: '" + a + "'", USAGE);
+          }
+        else
+          {
+            Errors.fatal("unknown argument: '" + a + "'", USAGE);
+          }
+      }
+    return () ->
+      {
+        new Latex();
       };
   }
 

@@ -25,7 +25,7 @@
 
 # must be at least java 11
 JAVA = java
-JAVAC = javac -source 11
+JAVAC = javac -source 16
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
@@ -155,6 +155,7 @@ JAVA_FILES_BE_C = \
 
 JAVA_FILES_TOOLS = \
           $(SRC)/dev/flang/tools/Fuzion.java \
+          $(SRC)/dev/flang/tools/Latex.java \
           $(SRC)/dev/flang/tools/Pretty.java \
 
 CLASS_FILES_UTIL           = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__

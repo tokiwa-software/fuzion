@@ -176,7 +176,7 @@ public class Lexer extends SourceFile
     /**
      * Sorted array of all the keyword tokens
      */
-    static Token[] _keywords = Stream.of(Token.class.getEnumConstants())
+    public static Token[] _keywords = Stream.of(Token.class.getEnumConstants())
       .filter((t) -> t.isKeyword())
       .sorted((t1, t2) -> t1.keyword().compareTo(t2.keyword()))
       .toArray(Token[]::new);
