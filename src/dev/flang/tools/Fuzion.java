@@ -151,7 +151,7 @@ class Fuzion extends ANY
 
   static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
 
-  static final String STANDRD_OPTIONS = "[-noANSI] (<main> | -) ";
+  static final String STANDRD_OPTIONS = "[-noANSI] (<main> | <srcfile>.fz | -) ";
   static final String USAGE =
     "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] " + STANDRD_OPTIONS + " --or--\n" +
     _allBackendExtraUsage_ +

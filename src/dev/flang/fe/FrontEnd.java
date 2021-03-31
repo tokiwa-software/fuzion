@@ -92,9 +92,15 @@ public class FrontEnd extends ANY
 
 
 
-  String readStdin()
+  /**
+   * Run the given parser to parse statements. This is used for processing stdin
+   * or an explicit input file.
+   *
+   * @return the main feature found or null if none
+   */
+  String parse(Parser p)
   {
-    var stmnts = new Parser(SourceFile.STDIN).stmntsEof();
+    var stmnts = p.stmntsEof();
     ((Block) _universe.impl.code_).statements_.addAll(stmnts);
     var main = (stmnts.size() == 1 && stmnts.getFirst() instanceof Feature)
       ? ((Feature) stmnts.getFirst()).featureName().baseName()
@@ -111,7 +117,11 @@ public class FrontEnd extends ANY
     var main = _options._main;
     if (_options._readStdin)
       {
-        main = readStdin();
+        main = parse(new Parser(SourceFile.STDIN));
+      }
+    else if (_options._inputFile != null)
+      {
+        main = parse(new Parser(_options._inputFile));
       }
     _universe.findDeclarations(null);
     var res = new Resolution(_options, _universe, (r, f) -> loadInnerFeatures(r, f));
@@ -196,6 +206,26 @@ public class FrontEnd extends ANY
 
 
   /**
+   * Check if p denotes a file that should be read implicitly as source code,
+   * i.e., its name ends with ".fz", it is a readable file and it is not the
+   * same as _options._inputFile (which will be read explicitly).
+   */
+  boolean isValidSourceFile(Path p)
+  {
+    try
+      {
+        return p.getFileName().toString().endsWith(".fz") &&
+          Files.isReadable(p) &&
+          (_options._inputFile == null || !Files.isSameFile(_options._inputFile, p));
+      }
+    catch (IOException e)
+      {
+        throw new UncheckedIOException(e);
+      }
+  }
+
+
+  /**
    * During resolution, load all inner classes of this that are
    * defined in separate files.
    */
@@ -211,7 +241,7 @@ public class FrontEnd extends ANY
                 Files.list(d._dir)
                   .forEach(p ->
                            {
-                             if (p.getFileName().toString().endsWith(".fz") && Files.isReadable(p))
+                             if (isValidSourceFile(p))
                                {
                                  Feature inner = parseFile(p);
                                  check

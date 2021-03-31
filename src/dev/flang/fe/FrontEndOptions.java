@@ -26,6 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
@@ -47,6 +50,12 @@ public class FrontEndOptions extends FuzionOptions
    * Read code from stdin?
    */
   final boolean _readStdin;
+
+
+  /**
+   * Read code from file?
+   */
+  final Path _inputFile;
 
 
   /**
@@ -73,7 +82,17 @@ public class FrontEndOptions extends FuzionOptions
                           !readStdin || main == null);
 
     _readStdin = readStdin;
-    _main = main;
+    var p = main != null ? Path.of(main).toAbsolutePath() : null;
+    if (p != null && main.toUpperCase().endsWith(".FZ") && Files.exists(p))
+      {
+        _inputFile = p;
+        _main = null;
+      }
+    else
+      {
+        _inputFile = null;
+        _main = main;
+      }
   }
 
 
