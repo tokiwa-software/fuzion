@@ -151,7 +151,7 @@ class Fuzion extends ANY
 
   static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
 
-  static final String STANDRD_OPTIONS = "[-noANSI] (<main> | <srcfile>.fz | -) ";
+  static final String STANDRD_OPTIONS = "[-noANSI] [-verbose[=<n>]] (<main> | <srcfile>.fz | -) ";
   static final String USAGE =
     "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] " + STANDRD_OPTIONS + " --or--\n" +
     _allBackendExtraUsage_ +
@@ -165,7 +165,7 @@ class Fuzion extends ANY
   /**
    * Level of verbosity of output
    */
-  final int VERBOSE = Integer.getInteger("fuzion.verbose", 0);
+  int _verbose = Integer.getInteger("fuzion.verbose", 0);
 
 
   /**
@@ -440,6 +440,22 @@ class Fuzion extends ANY
           {
             System.setProperty("FUZION_DISABLE_ANSI_ESCAPES","true");
           }
+        else if (a.equals("-verbose"))
+          {
+            _verbose = 1;
+          }
+        else if (a.matches("-verbose=\\d+"))
+          {
+            try
+              {
+                _verbose = Integer.parseInt(a.split("=")[1]);
+              }
+            catch (NumberFormatException e)
+              {
+                Errors.fatal("failed to parse number",
+                             "While analysing command line argument '" + a + "', encountered: '" + e + "'");
+              }
+          }
         else if (_backend.handleOption(a))
           {
           }
@@ -470,7 +486,7 @@ class Fuzion extends ANY
       }
     return () ->
       {
-        var options = new FrontEndOptions(VERBOSE,
+        var options = new FrontEndOptions(_verbose,
                                           FUZION_SAFETY,
                                           FUZION_DEBUG_LEVEL,
                                           _readStdin,
