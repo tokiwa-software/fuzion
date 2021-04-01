@@ -184,7 +184,7 @@ class Fuzion extends ANY
   /**
    * Default result of safety:
    */
-  boolean _safety = Boolean.getBoolean("fuzion.safety");
+  boolean _safety = Boolean.valueOf(System.getProperty("fuzion.safety", "true"));
 
 
   /**
