@@ -190,7 +190,7 @@ class Fuzion extends ANY
   /**
    * Default result of safety:
    */
-  final boolean FUZION_SAFETY = new Boolean(System.getProperty("fuzion.safety", "true"));
+  final boolean FUZION_SAFETY = Boolean.getBoolean("fuzion.safety");
   {
     Intrinsics.FUZION_SAFETY = FUZION_SAFETY;  // NYI: Add to Fuzion IR or BE Config
   }
