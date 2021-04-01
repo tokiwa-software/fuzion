@@ -425,5 +425,5 @@ visibility
   }
   visiB;
 
-  exit exitCode
+  fuzion.std.exit exitCode
 }

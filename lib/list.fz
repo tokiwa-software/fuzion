@@ -117,7 +117,7 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   #
   panic void is
     say "*** panic"
-    exitForCompilerTest(1)
+    fuzion.std.exit 1
 
 
   # map the list to a new list applying function f to all elements

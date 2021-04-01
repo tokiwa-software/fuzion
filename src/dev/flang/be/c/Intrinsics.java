@@ -84,7 +84,7 @@ class Intrinsics extends ANY
 
     switch (c._fuir.clazzIntrinsicName(cl))
       {
-      case "exitForCompilerTest" : return CExpr.call("exit", new List<>(new CIdent("arg0")));
+      case "fuzion.std.exit"     : return CExpr.call("exit", new List<>(new CIdent("arg0")));
       case "fuzion.std.out.write": var cid = new CIdent("c");
                                    return CStmnt.seq(CStmnt.decl("char",cid),
                                                        cid.assign(new CIdent("arg0").castTo("char")),

@@ -66,4 +66,4 @@ redef_args is
   check(c3               .r == 3, "double redefined generic field r accessed through super feature set correctly")
   check(c3               .i == 4, "double redefined generic field i accessed through super feature set correctly")
 
-  exit exitCode
+  fuzion.std.exit exitCode

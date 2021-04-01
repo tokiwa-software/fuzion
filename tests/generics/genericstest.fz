@@ -229,5 +229,5 @@ genericstest {
   }
   opengenerics12;
 
-  exit exitCode
+  fuzion.std.exit exitCode
 }

@@ -107,8 +107,7 @@ public class Intrinsics extends ANY
             return Value.EMPTY_VALUE;
           };
       }
-    else if (n.equals("exitForCompilerTest") ||  // NYI: Remove global exit, just for minimal compiled programs!
-             n.equals("fuzion.std.exit"))
+    else if (n.equals("fuzion.std.exit"))
       {
         result = (args) ->
           {

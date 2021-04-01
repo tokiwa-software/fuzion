@@ -25,4 +25,6 @@
 
 fuzion.std is
 
-  exit(code i32) is intrinsic
+  # exit -- exit immediately with the given return code
+  #
+  exit(code i32) void is intrinsic

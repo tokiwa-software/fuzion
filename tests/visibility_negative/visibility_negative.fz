@@ -704,5 +704,5 @@ visibility_negative
   }
   visiA;
 
-  exit exitCode
+  fuzion.std.exit exitCode
 }

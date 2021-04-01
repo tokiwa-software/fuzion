@@ -542,5 +542,5 @@ inheritance {
   }
   inheritOuter;
 
-  exit exitCode
+  fuzion.std.exit exitCode
 }

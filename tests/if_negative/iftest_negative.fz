@@ -74,5 +74,5 @@ iftest_negative
   testIfBoolean5 { if !false { } else if !false { } } testIfBoolean5; // ok
   testIfBoolean6 { if !true  { } else if !true  { } } testIfBoolean6; // ok
 
-  exit exitCode
+  fuzion.std.exit exitCode
 }

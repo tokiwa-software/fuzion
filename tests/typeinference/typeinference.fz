@@ -126,5 +126,5 @@ typeinference
   }
   // NYI: TBD
 
-  exit exitCode
+  fuzion.std.exit exitCode
 }

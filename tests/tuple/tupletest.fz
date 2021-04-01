@@ -290,5 +290,5 @@ tupletest
 //  (_,t15a2,_) := (01, true, 23); // 28. should flag an error, duplicate declaration
 //  (_,_,t15a3) := (01, true, 23); // 28. should flag an error, duplicate declaration
 
-  exit exitCode
+  fuzion.std.exit exitCode
 }

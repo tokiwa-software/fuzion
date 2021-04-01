@@ -194,5 +194,5 @@ looptest_negative
   testBooleanUntil7 { do { } until !false }; testBooleanUntil7;  // ok
   testBooleanUntil8 { do { } until !true  }; testBooleanUntil8;  // ok
 
-  exit exitCode
+  fuzion.std.exit exitCode
 }
