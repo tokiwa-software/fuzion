@@ -151,7 +151,7 @@ class Fuzion extends ANY
 
   static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
 
-  static final String STANDRD_OPTIONS = "[-noANSI] [-verbose[=<n>]] (<main> | <srcfile>.fz | -) ";
+  static final String STANDRD_OPTIONS = "[-noANSI] [-debug[=<n>]] [-safety=(on|off)] [-enableUnsafeIntrinsics=(on|off)] [-verbose[=<n>]] (<main> | <srcfile>.fz | -) ";
   static final String USAGE =
     "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] " + STANDRD_OPTIONS + " --or--\n" +
     _allBackendExtraUsage_ +
@@ -172,28 +172,19 @@ class Fuzion extends ANY
    * Flag to enable intrinsic functions such as fuzion.java.callVirtual. These are
    * not allowed if run in a web playground.
    */
-  final boolean ENABLE_UNSAFE_INTRINSICS = Boolean.getBoolean("fuzion.enableUnsafeIntrinsics");
-  {
-    Intrinsics.ENABLE_UNSAFE_INTRINSICS = ENABLE_UNSAFE_INTRINSICS;  // NYI: Add to Fuzion IR or BE Config
-  }
+  boolean _enableUnsafeIntrinsics = Boolean.getBoolean("fuzion.enableUnsafeIntrinsics");
 
 
   /**
    * Default result of debugLevel:
    */
-  final int FUZION_DEBUG_LEVEL = Integer.getInteger("fuzion.debugLevel", 1);
-  {
-    Intrinsics.FUZION_DEBUG_LEVEL = FUZION_DEBUG_LEVEL;  // NYI: Add to Fuzion IR or BE Config
-  }
+  int _debugLevel = Integer.getInteger("fuzion.debugLevel", 1);
 
 
   /**
    * Default result of safety:
    */
-  final boolean FUZION_SAFETY = Boolean.getBoolean("fuzion.safety");
-  {
-    Intrinsics.FUZION_SAFETY = FUZION_SAFETY;  // NYI: Add to Fuzion IR or BE Config
-  }
+  boolean _safety = Boolean.getBoolean("fuzion.safety");
 
 
   /**
@@ -397,6 +388,66 @@ class Fuzion extends ANY
   }
 
 
+  /**
+   * Parse argument of the form "-xyz" or "-xyz=123".
+   *
+   * @param a the argument
+   *
+   * @param defawlt value to be returned in case a does not specify an explicit
+   * value.
+   *
+   * @return defawlt or the values specifed in a after '='.
+   */
+  int parsePositiveIntArg(String a, int defawlt)
+  {
+    if (PRECONDITIONS) require
+      (a.split("=").length == 2);
+
+    int result = defawlt;
+    var s = a.split("=");
+    if (s.length > 1)
+      {
+        try
+          {
+            result = Integer.parseInt(s[1]);
+          }
+        catch (NumberFormatException e)
+          {
+            Errors.fatal("failed to parse number",
+                         "While analysing command line argument '" + a + "', encountered: '" + e + "'");
+          }
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse argument of the form "-xyz=on" or "-xyz=off".
+   *
+   * @param a the argument
+   *
+   * @return true iff a is set to 'on' or an error was reported.
+   */
+  boolean parseOnOffArg(String a)
+  {
+    if (PRECONDITIONS) require
+      (a.indexOf("=") >= 0);
+
+    var s = a.split("=");
+    return
+      switch (s.length == 2 ? s[1] : "**fail**")
+        {
+        case "on" -> true;
+        case "off" -> false;
+        default ->
+        {
+          Errors.fatal("Unsupported parameter to command line option '" + s[0] + "'",
+                       "While analysing command line argument '" + a + "'.  Paramter must be 'on' or 'off'");
+          yield true;
+        }
+        };
+  }
+
 
   /**
    * Parse the given command line args to run Fuzion to create or execute code.
@@ -440,22 +491,10 @@ class Fuzion extends ANY
           {
             System.setProperty("FUZION_DISABLE_ANSI_ESCAPES","true");
           }
-        else if (a.equals("-verbose"))
-          {
-            _verbose = 1;
-          }
-        else if (a.matches("-verbose=\\d+"))
-          {
-            try
-              {
-                _verbose = Integer.parseInt(a.split("=")[1]);
-              }
-            catch (NumberFormatException e)
-              {
-                Errors.fatal("failed to parse number",
-                             "While analysing command line argument '" + a + "', encountered: '" + e + "'");
-              }
-          }
+        else if (a.matches("-verbose(=\\d+|)"     )) { _verbose                = parsePositiveIntArg(a, 1); }
+        else if (a.matches("-debug(=\\d+|)"       )) { _debugLevel             = parsePositiveIntArg(a, 1); }
+        else if (a.startsWith("-safety="          )) { _safety                 = parseOnOffArg(a);          }
+        else if (a.startsWith("-unsafeIntrinsics=")) { _enableUnsafeIntrinsics = parseOnOffArg(a);          }
         else if (_backend.handleOption(a))
           {
           }
@@ -487,8 +526,8 @@ class Fuzion extends ANY
     return () ->
       {
         var options = new FrontEndOptions(_verbose,
-                                          FUZION_SAFETY,
-                                          FUZION_DEBUG_LEVEL,
+                                          _safety,
+                                          _debugLevel,
                                           _readStdin,
                                           _main);
         if (_backend == Backend.c)
@@ -500,7 +539,13 @@ class Fuzion extends ANY
         var fuir = new Optimizer(options, air).fuir(_backend != Backend.interpreter);
         switch (_backend)
           {
-          case interpreter: new Interpreter(fuir).run(); break;
+          case interpreter:
+            {
+              Intrinsics.ENABLE_UNSAFE_INTRINSICS = _enableUnsafeIntrinsics;  // NYI: Add to Fuzion IR or BE Config
+              Intrinsics.FUZION_DEBUG_LEVEL       = _debugLevel;              // NYI: Add to Fuzion IR or BE Config
+              Intrinsics.FUZION_SAFETY            = _safety;                  // NYI: Add to Fuzion IR or BE Config
+              new Interpreter(fuir).run(); break;
+            }
           case c          : new C(new COptions(options, _binaryName_), fuir).compile(); break;
           default         : Errors.fatal("backend '" + _backend + "' not supported yet"); break;
           }
