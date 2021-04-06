@@ -43,6 +43,10 @@ JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/SourceFile.java \
           $(SRC)/dev/flang/util/SourcePosition.java \
           $(SRC)/dev/flang/util/Terminal.java \
+          $(SRC)/dev/flang/util/UnicodeData.java \
+
+JAVA_FILES_UTIL_UNICODE = \
+          $(SRC)/dev/flang/util/unicode/ParseUnicodeData.java \
 
 JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/AdrToValue.java \
@@ -158,6 +162,7 @@ JAVA_FILES_TOOLS = \
           $(SRC)/dev/flang/tools/Pretty.java \
 
 CLASS_FILES_UTIL           = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
+CLASS_FILES_UTIL_UNICODE   = $(CLASSES_DIR)/dev/flang/util/unicode/__marker_for_make__
 CLASS_FILES_AST            = $(CLASSES_DIR)/dev/flang/ast/__marker_for_make__
 CLASS_FILES_PARSER         = $(CLASSES_DIR)/dev/flang/parser/__marker_for_make__
 CLASS_FILES_IR             = $(CLASSES_DIR)/dev/flang/ir/__marker_for_make__
@@ -187,6 +192,11 @@ $(FUZION_EBNF): $(SRC)/dev/flang/parser/Parser.java
 $(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -d $(CLASSES_DIR) $(JAVA_FILES_UTIL)
+	touch $@
+
+$(CLASS_FILES_UTIL_UNICODE): $(JAVA_FILES_UTIL_UNICODE) $(CLASS_FILES_UTIL)
+	mkdir -p $(CLASSES_DIR)
+	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_UTIL_UNICODE)
 	touch $@
 
 $(CLASS_FILES_AST): $(JAVA_FILES_AST) $(CLASS_FILES_UTIL)
@@ -261,6 +271,22 @@ $(BUILD_DIR)/bin/fz: $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib
 $(BUILD_DIR)/tests: $(FZ_SRC)/tests
 	mkdir -p $(@D)
 	cp -rf $^ $@
+
+$(BUILD_DIR)/UnicodeData.txt:
+	cd $(BUILD_DIR) && wget https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
+
+$(BUILD_DIR)/UnicodeData.java.generated: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR)/UnicodeData.txt
+	cat $(BUILD_DIR)/UnicodeData.txt | $(JAVA) -cp $(CLASSES_DIR) dev.flang.util.unicode.ParseUnicodeData $(BUILD_DIR)/UnicodeData.txt >$@
+
+$(BUILD_DIR)/UnicodeData.java: $(BUILD_DIR)/UnicodeData.java.generated $(SRC)/dev/flang/util/UnicodeData.java.in
+	sed -e '/@@@ generated code start @@@/r build/UnicodeData.java.generated' $(SRC)/dev/flang/util/UnicodeData.java.in >$@
+
+# phony target to regenerate UnicodeData.java using the latest UnicodeData.txt.
+# This must be phony since $(SRC)/dev/flang/util/UnicodeData.java would
+# be a circular dependency
+.phony: unicode
+unicode: $(BUILD_DIR)/UnicodeData.java
+	cp $^ $(SRC)/dev/flang/util/UnicodeData.java
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
