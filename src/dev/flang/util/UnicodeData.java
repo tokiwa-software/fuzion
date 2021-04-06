@@ -699,7 +699,7 @@ public class UnicodeData extends ANY
   {
     int l = 0;
     int r = _START_.length-1;
-    while (l < r)
+    while (l <= r)
       {
         int m = (l + r) / 2;
         if      (_START_[m] > codePoint) { r = m - 1; }
