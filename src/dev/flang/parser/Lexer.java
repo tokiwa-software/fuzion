@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 import dev.flang.util.Errors;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.UnicodeData;
 
 
 /**
@@ -920,7 +921,41 @@ public class Lexer extends SourceFile
           }
         else
           {
-            kind = K_UNKNOWN;
+            kind = switch (UnicodeData.category(p))
+              {
+              case "Cc" -> K_UNKNOWN;  // 	Other, Control
+              case "Cf" -> K_UNKNOWN;  // 	Other, Format
+              case "Cn" -> K_UNKNOWN;  // 	Other, Not Assigned (no characters in the file have this property)
+              case "Co" -> K_UNKNOWN;  // 	Other, Private Use
+              case "Cs" -> K_UNKNOWN;  // 	Other, Surrogate
+              case "LC" -> K_LETTER;   // 	Letter, Cased
+              case "Ll" -> K_LETTER;   // 	Letter, Lowercase
+              case "Lm" -> K_LETTER;   // 	Letter, Modifier
+              case "Lo" -> K_LETTER;   // 	Letter, Other
+              case "Lt" -> K_LETTER;   // 	Letter, Titlecase
+              case "Lu" -> K_LETTER;   // 	Letter, Uppercase
+              case "Mc" -> K_UNKNOWN;  // 	Mark, Spacing Combining
+              case "Me" -> K_UNKNOWN;  // 	Mark, Enclosing
+              case "Mn" -> K_UNKNOWN;  // 	Mark, Nonspacing
+              case "Nd" -> K_NUMERIC;  // 	Number, Decimal Digit
+              case "Nl" -> K_NUMERIC;  // 	Number, Letter
+              case "No" -> K_NUMERIC;  // 	Number, Other
+              case "Pc" -> K_UNKNOWN;  // 	Punctuation, Connector
+              case "Pd" -> K_UNKNOWN;  // 	Punctuation, Dash
+              case "Pe" -> K_UNKNOWN;  // 	Punctuation, Close
+              case "Pf" -> K_UNKNOWN;  // 	Punctuation, Final quote (may behave like Ps or Pe depending on usage)
+              case "Pi" -> K_UNKNOWN;  // 	Punctuation, Initial quote (may behave like Ps or Pe depending on usage)
+              case "Po" -> K_UNKNOWN;  // 	Punctuation, Other
+              case "Ps" -> K_UNKNOWN;  // 	Punctuation, Open
+              case "Sc" -> K_UNKNOWN;  // 	Symbol, Currency
+              case "Sk" -> K_UNKNOWN;  // 	Symbol, Modifier
+              case "Sm" -> K_UNKNOWN;  // 	Symbol, Math
+              case "So" -> K_UNKNOWN;  // 	Symbol, Other
+              case "Zl" -> K_UNKNOWN;  // 	Separator, Line
+              case "Zp" -> K_UNKNOWN;  // 	Separator, Paragraph
+              case "Zs" -> K_UNKNOWN;  // 	Separator, Space
+              default   -> K_UNKNOWN;
+              };
           }
       }
     return kind;
