@@ -23,7 +23,6 @@
 #
 # -----------------------------------------------------------------------
 
-# must be at least java 11
 JAVA = java
 JAVAC = javac -source 16
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
