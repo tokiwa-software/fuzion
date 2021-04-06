@@ -865,98 +865,41 @@ public class Lexer extends SourceFile
       }
     else
       {
-        if (p == '°' ||
-            p >= 0x02190 && p <= 0x021ff ||  // Arrows https://www.unicode.org/charts/PDF/U2190.pdf
-            p >= 0x02200 && p <= 0x022ff ||  // Mathematical Operators, see https://www.unicode.org/charts/PDF/U2200.pdf
-            p >= 0x027f0 && p <= 0x027ff ||  // Supplemental Arrows-A https://www.unicode.org/charts/PDF/U27F0.pdf
-            p >= 0x02900 && p <= 0x0297f ||  // Supplemental Arrows-B https://www.unicode.org/charts/PDF/U2900.pdf
-            p >= 0x02b00 && p <= 0x02bff &&  // Miscellaneous Symbols and Arrows https://www.unicode.org/charts/PDF/U2B00.pdf
-            p != 0x02b74 &&                     // Miscellaneous Symbols and Arrows, reserved
-            p != 0x02b75 &&                     // Miscellaneous Symbols and Arrows, reserved
-            p != 0x02b96 ||                     // Miscellaneous Symbols and Arrows, undefined
-            // 0x1f800 .. 0x1f8ff, many holes   // Supplemental Arrows-C https://www.unicode.org/charts/PDF/U1F800.pdf
-            false
-            )
-          { // Maybe symbol kinds Sm and So would be good, see https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
-            kind = K_OP;
-          }
-        else if (p >= 0x1d400 && p <= 0x1d7ff && // Mathematical Alphanumeric Symbols https://www.unicode.org/charts/PDF/U1D400.pdf
-                 p != 0x1d455 &&
-                 p != 0x1d49d &&
-                 p != 0x1d4a0 &&
-                 p != 0x1d4a1 &&
-                 p != 0x1d4a3 &&
-                 p != 0x1d4a4 &&
-                 p != 0x1d4a7 &&
-                 p != 0x1d4a8 &&
-                 p != 0x1d4ad &&
-                 p != 0x1d4ba &&
-                 p != 0x1d4bc &&
-                 p != 0x1d4c4 &&
-                 p != 0x1d506 &&
-                 p != 0x1d50b &&
-                 p != 0x1d50c &&
-                 p != 0x1d515 &&
-                 p != 0x1d51d &&
-                 p != 0x1d53a &&
-                 p != 0x1d53f &&
-                 p != 0x1d545 &&
-                 p != 0x1d547 &&
-                 p != 0x1d548 &&
-                 p != 0x1d549 &&
-                 p != 0x1d551 &&
-                 p != 0x1d6a6 &&
-                 p != 0x1d6a7 &&
-                 p != 0x1d7cc &&
-                 p != 0x1d7cd ||
-                 false)
+        kind = switch (UnicodeData.category(p))
           {
-            kind = p < 0x1d7ce ? K_LETTER    // mathematical letters
-                               : K_NUMERIC;  // special digits
-          }
-        else if (p >= 0x02100 && p <= 0x0214f || // Mathematical Letterlike Symbols https://www.unicode.org/charts/PDF/U2100.pdf
-                 false)
-          { // Maybe symbol kinds Lu, Ll, Lt and Lo would be good, see https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
-            kind = K_LETTER;
-          }
-        else
-          {
-            kind = switch (UnicodeData.category(p))
-              {
-              case "Cc" -> K_UNKNOWN;  // 	Other, Control
-              case "Cf" -> K_UNKNOWN;  // 	Other, Format
-              case "Cn" -> K_UNKNOWN;  // 	Other, Not Assigned (no characters in the file have this property)
-              case "Co" -> K_UNKNOWN;  // 	Other, Private Use
-              case "Cs" -> K_UNKNOWN;  // 	Other, Surrogate
-              case "LC" -> K_LETTER;   // 	Letter, Cased
-              case "Ll" -> K_LETTER;   // 	Letter, Lowercase
-              case "Lm" -> K_LETTER;   // 	Letter, Modifier
-              case "Lo" -> K_LETTER;   // 	Letter, Other
-              case "Lt" -> K_LETTER;   // 	Letter, Titlecase
-              case "Lu" -> K_LETTER;   // 	Letter, Uppercase
-              case "Mc" -> K_UNKNOWN;  // 	Mark, Spacing Combining
-              case "Me" -> K_UNKNOWN;  // 	Mark, Enclosing
-              case "Mn" -> K_UNKNOWN;  // 	Mark, Nonspacing
-              case "Nd" -> K_NUMERIC;  // 	Number, Decimal Digit
-              case "Nl" -> K_NUMERIC;  // 	Number, Letter
-              case "No" -> K_NUMERIC;  // 	Number, Other
-              case "Pc" -> K_UNKNOWN;  // 	Punctuation, Connector
-              case "Pd" -> K_UNKNOWN;  // 	Punctuation, Dash
-              case "Pe" -> K_UNKNOWN;  // 	Punctuation, Close
-              case "Pf" -> K_UNKNOWN;  // 	Punctuation, Final quote (may behave like Ps or Pe depending on usage)
-              case "Pi" -> K_UNKNOWN;  // 	Punctuation, Initial quote (may behave like Ps or Pe depending on usage)
-              case "Po" -> K_UNKNOWN;  // 	Punctuation, Other
-              case "Ps" -> K_UNKNOWN;  // 	Punctuation, Open
-              case "Sc" -> K_UNKNOWN;  // 	Symbol, Currency
-              case "Sk" -> K_UNKNOWN;  // 	Symbol, Modifier
-              case "Sm" -> K_UNKNOWN;  // 	Symbol, Math
-              case "So" -> K_UNKNOWN;  // 	Symbol, Other
-              case "Zl" -> K_UNKNOWN;  // 	Separator, Line
-              case "Zp" -> K_UNKNOWN;  // 	Separator, Paragraph
-              case "Zs" -> K_UNKNOWN;  // 	Separator, Space
-              default   -> K_UNKNOWN;
-              };
-          }
+          case "Cc" -> K_UNKNOWN;  // 	Other, Control
+          case "Cf" -> K_UNKNOWN;  // 	Other, Format
+          case "Cn" -> K_UNKNOWN;  // 	Other, Not Assigned (no characters in the file have this property)
+          case "Co" -> K_UNKNOWN;  // 	Other, Private Use
+          case "Cs" -> K_UNKNOWN;  // 	Other, Surrogate
+          case "LC" -> K_LETTER;   // 	Letter, Cased
+          case "Ll" -> K_LETTER;   // 	Letter, Lowercase
+          case "Lm" -> K_LETTER;   // 	Letter, Modifier
+          case "Lo" -> K_LETTER;   // 	Letter, Other
+          case "Lt" -> K_LETTER;   // 	Letter, Titlecase
+          case "Lu" -> K_LETTER;   // 	Letter, Uppercase
+          case "Mc" -> K_UNKNOWN;  // 	Mark, Spacing Combining
+          case "Me" -> K_UNKNOWN;  // 	Mark, Enclosing
+          case "Mn" -> K_UNKNOWN;  // 	Mark, Nonspacing
+          case "Nd" -> K_NUMERIC;  // 	Number, Decimal Digit
+          case "Nl" -> K_NUMERIC;  // 	Number, Letter
+          case "No" -> K_NUMERIC;  // 	Number, Other
+          case "Pc" -> K_UNKNOWN;  // 	Punctuation, Connector
+          case "Pd" -> K_UNKNOWN;  // 	Punctuation, Dash
+          case "Pe" -> K_UNKNOWN;  // 	Punctuation, Close
+          case "Pf" -> K_UNKNOWN;  // 	Punctuation, Final quote (may behave like Ps or Pe depending on usage)
+          case "Pi" -> K_UNKNOWN;  // 	Punctuation, Initial quote (may behave like Ps or Pe depending on usage)
+          case "Po" -> K_UNKNOWN;  // 	Punctuation, Other
+          case "Ps" -> K_UNKNOWN;  // 	Punctuation, Open
+          case "Sc" -> K_OP;       // 	Symbol, Currency
+          case "Sk" -> K_OP;       // 	Symbol, Modifier
+          case "Sm" -> K_OP;       // 	Symbol, Math
+          case "So" -> K_OP;       // 	Symbol, Other
+          case "Zl" -> K_UNKNOWN;  // 	Separator, Line
+          case "Zp" -> K_UNKNOWN;  // 	Separator, Paragraph
+          case "Zs" -> K_UNKNOWN;  // 	Separator, Space
+          default   -> K_UNKNOWN;
+          };
       }
     return kind;
   }
