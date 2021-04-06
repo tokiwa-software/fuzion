@@ -243,13 +243,13 @@ public class ParseUnicodeData extends ANY
       }
 
     System.out.println("  static final int[] _START_ = start0();\n" +
-                       "  private static int[] start0() { return new int[] { "          + table(_blocks, x -> "0x" + Integer.toHexString(x._first._code)) + "};\n  }");
+                       "  private static int[] start0() { return new int[] {"          + table(_blocks, x -> "0x" + Integer.toHexString(x._first._code)) + "};\n  }");
     System.out.println("  static final int[] _END_ = end0();\n" +
-                       "  private static int[] end0() { return new int[] { "            + table(_blocks, x -> "0x" + Integer.toHexString(x._last ._code)) + "};\n  }");
-    System.out.println("  static final String[] _CATEGORY_ = category0(); \n"+
-                       "  private static String[] category0() { return new String[] { " + table(_blocks, x -> "\"" + x._first._category + "\"") + "};\n  }");
+                       "  private static int[] end0() { return new int[] {"            + table(_blocks, x -> "0x" + Integer.toHexString(x._last ._code)) + "};\n  }");
+    System.out.println("  static final String[] _CATEGORY_ = category0();\n"+
+                       "  private static String[] category0() { return new String[] {" + table(_blocks, x -> "\"" + x._first._category + "\"") + "};\n  }");
     var c = Arrays.asList(_cats.keySet().toArray(new String[_cats.size()]));
-    System.out.println("  static final String[] _CATEGORIES_ = new String[] { " + table(c, x -> "\"" + x + "\"") + "\n  };");
+    System.out.println("  static final String[] _CATEGORIES_ = new String[] {" + table(c, x -> "\"" + x + "\"") + "\n  };");
 
   }
 
@@ -263,16 +263,26 @@ public class ParseUnicodeData extends ANY
   {
     StringBuilder sb = new StringBuilder();
     int line = 200;
+    String comma1 = "";
+    String comma2 = "";
     for (var e : l)
       {
-        var s = b2s.call(e) + ", ";
-        if (line + s.length() > 118)
+        var s = b2s.call(e);
+        if (line + comma2.length() + s.length() > 118)
           {
-            sb.append("\n    ");
+            sb.append(comma1)
+              .append("\n    ");
             line = 4;
+          }
+        else
+          {
+            sb.append(comma2);
+            line += comma2.length();
           }
         sb.append(s);
         line += s.length();
+        comma1 = ",";
+        comma2 = ", ";
       }
     return sb.toString();
   }
