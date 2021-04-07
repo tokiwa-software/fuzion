@@ -31,7 +31,7 @@ choice_mix {
   MyObj ref { }
   MyRef(x,y,z i32) ref : MyObj
   {
-    a,b,c i32;
+    a,b,c i32 := ?;
     set a := x+x;
     set b := y+y;
     set c := z+z;
@@ -239,7 +239,7 @@ choice_mix {
                          magenta,
                          black,
                          white,
-                         transparent>;
+                         transparent> := ?;
 
     print(c choice<red,
                    green,
@@ -298,7 +298,7 @@ choice_mix {
                 | magenta
                 | black
                 | white
-                | transparent;
+                | transparent := ?;
 
     print(c red
           | green

@@ -91,7 +91,7 @@ tupletest
   (one13 i32)     = Tuple<i32>(42); p("one13 is " + one13); // one-Tuple using decompose and explicit type
   (one14 i32)     = Tuple<i32>(42); p("one14 is " + one14); // one-Tuple using decompose and inferring generic
 //  (one15 i32)     =           (42); p("one15 is " + one15); // one-Tuple using decompose and tuple syntax sugar
-  one16, one17, one18 i32;
+  one16, one17, one18 i32 := ?;
   (one16)         = Tuple<i32>(42); p("one16 is " + one16); // one-Tuple using decompose and explicit type
   (one17)         = Tuple<i32>(42); p("one17 is " + one17); // one-Tuple using decompose and inferring generic
 //  (one18)         =           (42); p("one18 is " + one18); // one-Tuple using decompose and tuple syntax sugar
@@ -121,7 +121,7 @@ tupletest
   (two13a, two13b i32)= Tuple<i32,i32>(4, 2); p("two13 is " + two13a + ", " + two13b); // two-Tuple using decompose and explicit types
   (two14a, two14b i32)= Tuple         (4, 2); p("two14 is " + two14a + ", " + two14b); // two-Tuple using decompose and inferring generic
   (two15a, two15b i32)=               (4, 2); p("two15 is " + two15a + ", " + two15b); // two-Tuple using decompore and tuple syntax sugar
-  two16a, two16b, two17a, two17b, two18a, two18b i32;
+  two16a, two16b, two17a, two17b, two18a, two18b i32 := ?;
   (two16a, two16b)    = Tuple<i32,i32>(4, 2); p("two16 is " + two16a + ", " + two16b); // two-Tuple using decompose and explicit types
   (two17a, two17b)    = Tuple         (4, 2); p("two17 is " + two17a + ", " + two17b); // two-Tuple using decompose and inferring generic
   (two18a, two18b)    =               (4, 2); p("two18 is " + two18a + ", " + two18b); // two-Tuple using decompore and tuple syntax sugar
@@ -195,7 +195,7 @@ tupletest
   chck(t11a.values.1 == 25, "second must be 25");
   chck(t11a.values.2 == 125, "third must be 25");
 
-  t12a1,t12a2,t12a3 i32;
+  t12a1,t12a2,t12a3 i32 := ?;
   (t12a1,t12a2,t12a3) = t11(4);
   chck(t12a1 == 4, "first must be 4");
   chck(t12a2 == 16, "second must be 16");
@@ -216,7 +216,7 @@ tupletest
   chck(t12g2 == 49, "second must be 49");
   chck(t12g3 == 343, "third must be 343");
 
-  t12h1, t12h2, t12h3 i32;
+  t12h1, t12h2, t12h3 i32 := ?;
   (_,_,t12h3) = t11(8); chck(t12h3 == 512, "t12h3 must be 512");
   (_,t12h2,_) = t11(8); chck(t12h2 ==  64, "t12h2 must be 64");
   (t12h1,_,_) = t11(8); chck(t12h1 ==   8, "t12h1 must be 8");
@@ -236,7 +236,7 @@ tupletest
   (_,_) := (12, 23);
   (_,_) := (true, 23);
 
-  t13a1, t13a3 i32;
+  t13a1, t13a3 i32 := ?;
   t13a2 bool := ?;
   (t13a1,_,_) = (01, 12, 23); chck(t13a1 == 01, "t13a1 must be 01");
 //  (_,t13a2,_) = (01, 12, 23); // 24. should flag an error, illegal type

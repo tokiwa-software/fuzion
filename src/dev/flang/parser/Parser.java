@@ -2347,8 +2347,8 @@ nextValue   : COMMA exprAtMinIndent
       }
     else
       {
-        p1 =        implFldInit(hasType);
-        p2 = forked.implFldInit(hasType);
+        p1 =        implFldInitOrUndef(hasType, false);
+        p2 = forked.implFldInitOrUndef(hasType, false);
         // up to here, this and forked parse the same, i.e, v1, m1, .. p1 is the
         // same as v2, m2, .. p2.  Now, we check if there is a comma, which
         // means there is a different value for the second and following
@@ -2920,43 +2920,56 @@ implRout    : block
    *
 impl        : implRout
             | implFldInit
+            | implFldUndef
             |
             ;
    */
   Impl implFldOrRout(boolean hasType)
   {
-    SourcePosition pos = posObject();
-    Impl result;
     if (currentAtMinIndent() == Token.t_lbrace ||
         currentAtMinIndent() == Token.t_is     ||
         isOperator("=>")                          )
       {
         return implRout();
       }
-    else if (skip(":=")) { result = skip('?')
-                                  ? Impl.FIELD
-                                  : new Impl(pos, exprAtMinIndent(),
-                                             hasType ? Impl.Kind.FieldInit
-                                                     : Impl.Kind.FieldDef); }
-    else                 { result = Impl.FIELD;                                             }
-    return result;
+    else if (isOperator(":="))
+      {
+        return implFldInitOrUndef(hasType, true);
+      }
+    else
+      {
+        syntaxError(pos(), "'is', ':=' or '{'", "impl");
+        return Impl.FIELD;
+      }
   }
 
 
   /**
-   * Parse implFldInit
+   * Parse implFldInitOrUndef
    *
 implFldInit : ":=" exprAtMinIndent
             ;
+implFldUndef: ":=" "?"
+            ;
    */
-  Impl implFldInit(boolean hasType)
+  Impl implFldInitOrUndef(boolean hasType, boolean maybeUndefined)
   {
-    if (!isOperator(":="))
+    SourcePosition pos = posObject();
+    if (!skip(":="))
       {
         syntaxError(pos(), "':='", "implFldInit");
       }
-
-    return implFldOrRout(hasType);
+    if (maybeUndefined && skip('?'))
+      {
+        return Impl.FIELD;
+      }
+    else
+      {
+        return new Impl(pos,
+                        exprAtMinIndent(),
+                        hasType ? Impl.Kind.FieldInit
+                                : Impl.Kind.FieldDef);
+      }
   }
 
 
