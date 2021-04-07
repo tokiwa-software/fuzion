@@ -2984,7 +2984,6 @@ implFldUndef: ":=" "?"
     return
       currentAtMinIndent() == Token.t_lbrace ||
       currentAtMinIndent() == Token.t_is ||
-      isOperator('=' ) ||
       isOperator(":=") ||
       isOperator("=>");
   }
