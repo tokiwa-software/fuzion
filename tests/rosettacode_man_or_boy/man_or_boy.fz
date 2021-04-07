@@ -71,7 +71,7 @@ man_or_boy
   // K(n i32) => fun => n;
   K(n i32) => fun n;
 
-  (0..10) | fun (n i32)
+  (0..8) | fun (n i32)
     {
       stdout.println("manorboy a(" + n + ") = " + a(n, K( 1), K(-1), K(-1), K( 1), K( 0)));
     }
