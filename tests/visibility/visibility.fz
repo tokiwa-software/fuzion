@@ -320,7 +320,7 @@ visibility
   visi6
   {
     x := 2;        stdout.println("x is "+x+"")
-    x := x as f64; stdout.println("x is "+x+"")
+    // NYI:    x := x as f64; stdout.println("x is "+x+"")
     x := x * 3 / 100 /* NYI: 3.14   */; stdout.println("x is "+x+"")
     x := x.asString  /* NYI: as i32 */; stdout.println("x is "+x+"")
   }
