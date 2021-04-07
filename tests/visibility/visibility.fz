@@ -379,7 +379,7 @@ visibility
       }
     else
       {
-        s := a + ix1 + ix2
+      // s := a + ix1 + ix2   // NYI: field declaration in else clause does not work yet
       }
     t := a
   }
