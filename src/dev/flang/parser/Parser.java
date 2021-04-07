@@ -1162,7 +1162,8 @@ call        : name ( actualGens actualArgs callTail
    * Parse indexcall
    *
 indexCall   : ( LBRACKET exprList RBRACKET
-                ( EQ exprInLine
+                ( ":=" exprInLine
+                | "=" exprInLine   // NYI: Remove this once assignment without "set" is removed
                 |
                 )
               )+
@@ -1179,7 +1180,8 @@ indexCall   : ( LBRACKET exprList RBRACKET
         List<Expr> l = exprList();
         match(Token.t_rcrochet, "indexCall");
         sameLine(oldLine);
-        if (skip('='))
+        if (skip('=') || // NYI: Remove this once assignment without "set" is removed
+            skip(":="))
           {
             l.add(exprInLine());
             result = new Call(pos, target, "index [ ] =", null, l);
@@ -2511,14 +2513,23 @@ checkstmt   : "check" cond
   /**
    * Parse assign
    *
-assign      : name EQ exprInLine
+assign      : "set" name ":=" exprInLine
+            | name "=" exprInLine  // NYI: Remove this case once assignment without "set" is removed
             ;
    */
   Stmnt assign()
   {
+    var hasSet = skip(Token.t_set);
     String n = name();
     SourcePosition pos = posObject();
-    matchOperator("=", "assign");
+    if (hasSet)
+      {
+        matchOperator(":=", "assign");
+      }
+    else
+      {
+        matchOperator("=", "assign");
+      }
     Expr e = exprInLine();
     return new Assign(pos, n, e);
   }
@@ -2532,7 +2543,8 @@ assign      : name EQ exprInLine
    */
   boolean isAssignPrefix()
   {
-    return isNamePrefix() && fork().skipAssignPrefix();
+    return (current() == Token.t_set) && fork().skipAssignPrefix() ||
+      isNamePrefix() && fork().skipAssignPrefixOld(); // NYI: Remove this case once assignment without "set" is removed
   }
 
 
@@ -2544,6 +2556,18 @@ assign      : name EQ exprInLine
    */
   boolean skipAssignPrefix()
   {
+    return skip(Token.t_set) && skipName() && isOperator(":=");
+  }
+
+
+  /**
+   * Check if the current position starts an assign and skip an unspecified part
+   * of it.
+   *
+   * @return true iff the next token(s) start an assign.
+   */
+  boolean skipAssignPrefixOld() // NYI: Remove this once assignment without "set" is removed
+  {
     return skipName() && isOperator('=');
   }
 
@@ -2553,9 +2577,15 @@ assign      : name EQ exprInLine
    *
 decompose   : decomp
             | decompDecl
+            | decompSet
+            | decompOld
+            | decompDclOld
             ;
-decomp      : "(" argNames ")" ("=" | ":=" ) exprInLine
-decompDecl  : formArgs          "="          exprInLine
+decomp      : "(" argNames ")"       ":=" exprInLine
+decompOld   : "(" argNames ")"       "="  exprInLine  // NYI: Remove this once assignment without "set" is removed
+decompDecl  : formArgs               ":=" exprInLine
+decompDclOld: formArgs               "="  exprInLine  // NYI: Remove this once assignment without "set" is removed
+decompSet   : "set" "(" argNames ")" ":=" exprInLine
             ;
    */
   Stmnt decompose()
@@ -2565,21 +2595,25 @@ decompDecl  : formArgs          "="          exprInLine
       {
         List<Feature> a = formArgs();
         SourcePosition pos = posObject();
-        matchOperator("=", "decompose");
+        if (!skip("="))  // NYI: Remove this once assignment without "set" is removed
+          {
+            matchOperator(":=", "decompose");
+          }
         result = Decompose.create(pos, a, null, false, exprInLine());
       }
     else
       {
+        var hasSet = skip(Token.t_set);
         match(Token.t_lparen, "decompose");
         List<String> names = argNames();
         match(Token.t_rparen, "decompose");
         SourcePosition pos = posObject();
-        boolean def = skip(":=");
-        if (!def)
+        boolean def = !skip("=");  // NYI: Remove this once assignment without "set" is removed
+        if (def)
           {
-            matchOperator("=", "decompose");
+            matchOperator(":=", "decompose");
           }
-        result = Decompose.create(pos, null, names, def, exprInLine());
+        result = Decompose.create(pos, null, names, !hasSet && def, exprInLine());
       }
     return result;
   }
@@ -2606,7 +2640,9 @@ decompDecl  : formArgs          "="          exprInLine
    */
   boolean skipDecompDeclPrefix()
   {
-    return skipFormArgs() && isOperator('=');
+    return skipFormArgs() &&
+      (isOperator('=') || // NYI: Remove this once assignment without "set" is removed
+       isOperator(":="));
   }
 
 
@@ -2619,6 +2655,7 @@ decompDecl  : formArgs          "="          exprInLine
   boolean skipDecompPrefix()
   {
     boolean result = false;
+    skip(Token.t_set);
     if (skip(Token.t_lparen))
       {
         do
@@ -2628,7 +2665,8 @@ decompDecl  : formArgs          "="          exprInLine
         while (result && skipComma());
         result = result
           && skip(Token.t_rparen)
-          && (isOperator('=') || isOperator(":="));
+          && (isOperator('=') ||  // NYI: Remove this once assignment without "set" is removed
+              isOperator(":="));
       }
     return result;
   }
@@ -2917,10 +2955,12 @@ impl        : implRout
       {
         return implRout();
       }
-    else if (skip('=') ) { result = skip('?')
+    else if (skip('=') ) { result = skip('?')   // NYI: Remove this once field init with '=' is removed
                                   ? Impl.FIELD
                                   : new Impl(pos, exprAtMinIndent(), Impl.Kind.FieldInit ); }
-    else if (skip(":=")) { result = new Impl(pos, exprAtMinIndent(), Impl.Kind.FieldDef  ); }
+    else if (skip(":=")) { result = skip('?')
+                                  ? Impl.FIELD
+                                  : new Impl(pos, exprAtMinIndent(), Impl.Kind.FieldDef  ); }
     else                 { result = Impl.FIELD;                                             }
     return result;
   }
@@ -2929,10 +2969,10 @@ impl        : implRout
   /**
    * Parse implFldInit
    *
-implFldInit : EQ exprAtMinIndent
+implFldInit : ":=" exprAtMinIndent
             ;
    */
-  Impl implFldInit()
+  Impl implFldInit() // NYI: Remove this once field init with '=' is removed
   {
     fork().matchOperator("=", "implInit");
     return implFldOrRout();
