@@ -25,21 +25,16 @@
 
 overloading_negative
 {
-  out := stdout;
+  exitCode := 0
 
-  chck(b bool, msg string)
-  {
-    s string;
+  chck (msg string, b bool) unit is
     if b
-      {
-        s = "PASSED: ";
-      }
+      say "PASSED: " + msg
     else
-      {
-        s = "FAILED: ";
-      }
-    out.println(s + msg);
-  }
+      say "FAILED: " + msg
+      set exitCode := 1
+
+  out := stdout;
 
   test1
   {
@@ -54,9 +49,9 @@ overloading_negative
     a1 a;       // 1. should flag an error: ambiguous types
     a2 a;       // 2. should flag an error: ambiguous types
     a3 a;       // 3. should flag an error: ambiguous types
-    a1 = a();
-    a2 = a(42);
-    a3 = a(47,11);
+    set a1 := a();
+    set a2 := a(42);
+    set a3 := a(47,11);
   }
   test1;
 
@@ -73,9 +68,9 @@ overloading_negative
     a1 a;       // 4. should flag an error: type not found
     a2 a;       // 5. should flag an error: type not found
     a3 a;       // 6. should flag an error: type not found
-    a1 = a();
-    a2 = a(42);
-    a3 = a(47,11);
+    set a1 := a();
+    set a2 := a(42);
+    set a3 := a(47,11);
   }
   test2;
 

@@ -27,34 +27,19 @@ visibility_negative
 {
   exitCode := 0
 
-
-  chck(b bool, msg string)
-  {
-    s string = ?;
+  chck (b bool, msg string) unit is
     if b
-      {
-        s = "PASSED: ";
-      }
+      say "PASSED: " + msg
     else
-      {
-        s = "FAILED: ";
-        exitCode = 1
-      }
-    stdout.println(s + msg);
-  }
-  chck(a,b i32, msg string)
-  {
-    s string = ?;
+      say "FAILED: " + msg
+      set exitCode := 1
+
+  chck (a,b i32, msg string) is
     if a == b
-      {
-        s = "PASSED: ";
-      }
+      say "PASSED: " + msg
     else
-      {
-        s = "FAILED: expected "+ b + "got "+a;;
-      }
-    stdout.println(s + msg);
-  }
+      say "FAILED: expected $b got $a"
+      set exitCode := 1
 
   visi1
   {
@@ -153,7 +138,7 @@ visibility_negative
   visi2
   {
     count := 0
-    expr => { count = count + 11; count }
+    expr => { set count := count + 11; count }
     use(i i32) { }
 
     a1
@@ -345,186 +330,186 @@ visibility_negative
   visi3
   {
     count := 0
-    expr => { count = count + 11; count }
+    expr => { set count := count + 11; count }
 
     a1
     {
       f1 := expr;
-      f1 = 111; chck(f1 == 111, "can assign f1")
-      f2 = 222; // 147. should flag an error: feature not visible for assignment
-      f3 = 333; // 148. should flag an error: feature not visible for assignment
-      f4 = 444; // 149. should flag an error: feature not visible for assignment
-      f5 = 555; // 150. should flag an error: feature not visible for assignment
-      f6 = 666; // 151. should flag an error: feature not visible for assignment
-      f7 = 777; // 152. should flag an error: feature not visible for assignment
-      f8 = 888; // 153. should flag an error: feature not visible for assignment
-      f9 = 999; // 154. should flag an error: feature not visible for assignment
+      set f1 := 111; chck(f1 == 111, "can assign f1")
+      set f2 := 222; // 147. should flag an error: feature not visible for assignment
+      set f3 := 333; // 148. should flag an error: feature not visible for assignment
+      set f4 := 444; // 149. should flag an error: feature not visible for assignment
+      set f5 := 555; // 150. should flag an error: feature not visible for assignment
+      set f6 := 666; // 151. should flag an error: feature not visible for assignment
+      set f7 := 777; // 152. should flag an error: feature not visible for assignment
+      set f8 := 888; // 153. should flag an error: feature not visible for assignment
+      set f9 := 999; // 154. should flag an error: feature not visible for assignment
       b1
       {
-        f1 = 111; chck(f1 == 111, "can assign f1")
-        f2 = 222; // 155. should flag an error: feature not visible for assignment
-        f3 = 333; // 156. should flag an error: feature not visible for assignment
-        f4 = 444; // 157. should flag an error: feature not visible for assignment
-        f5 = 555; // 158. should flag an error: feature not visible for assignment
-        f6 = 666; // 159. should flag an error: feature not visible for assignment
-        f7 = 777; // 160. should flag an error: feature not visible for assignment
-        f8 = 888; // 161. should flag an error: feature not visible for assignment
-        f9 = 999; // 162. should flag an error: feature not visible for assignment
+        set f1 := 111; chck(f1 == 111, "can assign f1")
+        set f2 := 222; // 155. should flag an error: feature not visible for assignment
+        set f3 := 333; // 156. should flag an error: feature not visible for assignment
+        set f4 := 444; // 157. should flag an error: feature not visible for assignment
+        set f5 := 555; // 158. should flag an error: feature not visible for assignment
+        set f6 := 666; // 159. should flag an error: feature not visible for assignment
+        set f7 := 777; // 160. should flag an error: feature not visible for assignment
+        set f8 := 888; // 161. should flag an error: feature not visible for assignment
+        set f9 := 999; // 162. should flag an error: feature not visible for assignment
         f2 := expr;
-        f1 = 111; chck(f1 == 111, "can assign f1")
-        f2 = 222; chck(f2 == 222, "can assign f2")
-        f3 = 333; // 163. should flag an error: feature not visible for assignment
-        f4 = 444; // 164. should flag an error: feature not visible for assignment
-        f5 = 555; // 165. should flag an error: feature not visible for assignment
-        f6 = 666; // 166. should flag an error: feature not visible for assignment
-        f7 = 777; // 167. should flag an error: feature not visible for assignment
-        f8 = 888; // 168. should flag an error: feature not visible for assignment
-        f9 = 999; // 169. should flag an error: feature not visible for assignment
+        set f1 := 111; chck(f1 == 111, "can assign f1")
+        set f2 := 222; chck(f2 == 222, "can assign f2")
+        set f3 := 333; // 163. should flag an error: feature not visible for assignment
+        set f4 := 444; // 164. should flag an error: feature not visible for assignment
+        set f5 := 555; // 165. should flag an error: feature not visible for assignment
+        set f6 := 666; // 166. should flag an error: feature not visible for assignment
+        set f7 := 777; // 167. should flag an error: feature not visible for assignment
+        set f8 := 888; // 168. should flag an error: feature not visible for assignment
+        set f9 := 999; // 169. should flag an error: feature not visible for assignment
         c1
         {
-          f1 = 111; chck(f1 == 111, "can assign f1")
-          f2 = 222; chck(f2 == 222, "can assign f2")
-          f3 = 333; // 170. should flag an error: feature not visible for assignment
-          f4 = 444; // 171. should flag an error: feature not visible for assignment
-          f5 = 555; // 172. should flag an error: feature not visible for assignment
-          f6 = 666; // 173. should flag an error: feature not visible for assignment
-          f7 = 777; // 174. should flag an error: feature not visible for assignment
-          f8 = 888; // 175. should flag an error: feature not visible for assignment
-          f9 = 999; // 176. should flag an error: feature not visible for assignment
+          set f1 := 111; chck(f1 == 111, "can assign f1")
+          set f2 := 222; chck(f2 == 222, "can assign f2")
+          set f3 := 333; // 170. should flag an error: feature not visible for assignment
+          set f4 := 444; // 171. should flag an error: feature not visible for assignment
+          set f5 := 555; // 172. should flag an error: feature not visible for assignment
+          set f6 := 666; // 173. should flag an error: feature not visible for assignment
+          set f7 := 777; // 174. should flag an error: feature not visible for assignment
+          set f8 := 888; // 175. should flag an error: feature not visible for assignment
+          set f9 := 999; // 176. should flag an error: feature not visible for assignment
           f3 := expr;
-          f1 = 111; chck(f1 == 111, "can assign f1")
-          f2 = 222; chck(f2 == 222, "can assign f2")
-          f3 = 333; chck(f3 == 333, "can assign f3")
-          f4 = 444; // 177. should flag an error: feature not visible for assignment
-          f5 = 555; // 178. should flag an error: feature not visible for assignment
-          f6 = 666; // 179. should flag an error: feature not visible for assignment
-          f7 = 777; // 180. should flag an error: feature not visible for assignment
-          f8 = 888; // 181. should flag an error: feature not visible for assignment
-          f9 = 999; // 182. should flag an error: feature not visible for assignment
+          set f1 := 111; chck(f1 == 111, "can assign f1")
+          set f2 := 222; chck(f2 == 222, "can assign f2")
+          set f3 := 333; chck(f3 == 333, "can assign f3")
+          set f4 := 444; // 177. should flag an error: feature not visible for assignment
+          set f5 := 555; // 178. should flag an error: feature not visible for assignment
+          set f6 := 666; // 179. should flag an error: feature not visible for assignment
+          set f7 := 777; // 180. should flag an error: feature not visible for assignment
+          set f8 := 888; // 181. should flag an error: feature not visible for assignment
+          set f9 := 999; // 182. should flag an error: feature not visible for assignment
           f4 := expr;
-          f1 = 111; chck(f1 == 111, "can assign f1")
-          f2 = 222; chck(f2 == 222, "can assign f2")
-          f3 = 333; chck(f3 == 333, "can assign f3")
-          f4 = 444; chck(f4 == 444, "can assign f4")
-          f5 = 555; // 183. should flag an error: feature not visible for assignment
-          f6 = 666; // 184. should flag an error: feature not visible for assignment
-          f7 = 777; // 185. should flag an error: feature not visible for assignment
-          f8 = 888; // 186. should flag an error: feature not visible for assignment
-          f9 = 999; // 187. should flag an error: feature not visible for assignment
+          set f1 := 111; chck(f1 == 111, "can assign f1")
+          set f2 := 222; chck(f2 == 222, "can assign f2")
+          set f3 := 333; chck(f3 == 333, "can assign f3")
+          set f4 := 444; chck(f4 == 444, "can assign f4")
+          set f5 := 555; // 183. should flag an error: feature not visible for assignment
+          set f6 := 666; // 184. should flag an error: feature not visible for assignment
+          set f7 := 777; // 185. should flag an error: feature not visible for assignment
+          set f8 := 888; // 186. should flag an error: feature not visible for assignment
+          set f9 := 999; // 187. should flag an error: feature not visible for assignment
         }
-        f1 = 111; chck(f1 == 111, "can assign f1")
-        f2 = 222; chck(f2 == 222, "can assign f2")
-        f3 = 333; // 188. should flag an error: feature not visible for assignment
-        f4 = 444; // 189. should flag an error: feature not visible for assignment
-        f5 = 555; // 190. should flag an error: feature not visible for assignment
-        f6 = 666; // 191. should flag an error: feature not visible for assignment
-        f7 = 777; // 192. should flag an error: feature not visible for assignment
-        f8 = 888; // 193. should flag an error: feature not visible for assignment
-        f9 = 999; // 194. should flag an error: feature not visible for assignment
+        set f1 := 111; chck(f1 == 111, "can assign f1")
+        set f2 := 222; chck(f2 == 222, "can assign f2")
+        set f3 := 333; // 188. should flag an error: feature not visible for assignment
+        set f4 := 444; // 189. should flag an error: feature not visible for assignment
+        set f5 := 555; // 190. should flag an error: feature not visible for assignment
+        set f6 := 666; // 191. should flag an error: feature not visible for assignment
+        set f7 := 777; // 192. should flag an error: feature not visible for assignment
+        set f8 := 888; // 193. should flag an error: feature not visible for assignment
+        set f9 := 999; // 194. should flag an error: feature not visible for assignment
 
         c2
         {
-          f1 = 111; chck(f1 == 111, "can assign f1")
-          f2 = 222; chck(f2 == 222, "can assign f2")
-          f3 = 333; // 195. should flag an error: feature not visible for assignment
-          f4 = 444; // 196. should flag an error: feature not visible for assignment
-          f5 = 555; // 197. should flag an error: feature not visible for assignment
-          f6 = 666; // 198. should flag an error: feature not visible for assignment
-          f7 = 777; // 199. should flag an error: feature not visible for assignment
-          f8 = 888; // 200. should flag an error: feature not visible for assignment
-          f9 = 999; // 201. should flag an error: feature not visible for assignment
+          set f1 := 111; chck(f1 == 111, "can assign f1")
+          set f2 := 222; chck(f2 == 222, "can assign f2")
+          set f3 := 333; // 195. should flag an error: feature not visible for assignment
+          set f4 := 444; // 196. should flag an error: feature not visible for assignment
+          set f5 := 555; // 197. should flag an error: feature not visible for assignment
+          set f6 := 666; // 198. should flag an error: feature not visible for assignment
+          set f7 := 777; // 199. should flag an error: feature not visible for assignment
+          set f8 := 888; // 200. should flag an error: feature not visible for assignment
+          set f9 := 999; // 201. should flag an error: feature not visible for assignment
           f5 := expr;
-          f1 = 111; chck(f1 == 111, "can assign f1")
-          f2 = 222; chck(f2 == 222, "can assign f2")
-          f3 = 333; // 202. should flag an error: feature not visible for assignment
-          f4 = 444; // 203. should flag an error: feature not visible for assignment
-          f5 = 555; chck(f5 == 555, "can assign f5")
-          f6 = 666; // 204. should flag an error: feature not visible for assignment
-          f7 = 777; // 205. should flag an error: feature not visible for assignment
-          f8 = 888; // 206. should flag an error: feature not visible for assignment
-          f9 = 999; // 207. should flag an error: feature not visible for assignment
+          set f1 := 111; chck(f1 == 111, "can assign f1")
+          set f2 := 222; chck(f2 == 222, "can assign f2")
+          set f3 := 333; // 202. should flag an error: feature not visible for assignment
+          set f4 := 444; // 203. should flag an error: feature not visible for assignment
+          set f5 := 555; chck(f5 == 555, "can assign f5")
+          set f6 := 666; // 204. should flag an error: feature not visible for assignment
+          set f7 := 777; // 205. should flag an error: feature not visible for assignment
+          set f8 := 888; // 206. should flag an error: feature not visible for assignment
+          set f9 := 999; // 207. should flag an error: feature not visible for assignment
           f6 := expr;
-          f1 = 111; chck(f1 == 111, "can assign f1")
-          f2 = 222; chck(f2 == 222, "can assign f2")
-          f3 = 333; // 208. should flag an error: feature not visible for assignment
-          f4 = 444; // 209. should flag an error: feature not visible for assignment
-          f5 = 555; chck(f5 == 555, "can assign f5")
-          f6 = 666; chck(f6 == 666, "can assign f6")
-          f7 = 777; // 210. should flag an error: feature not visible for assignment
-          f8 = 888; // 211. should flag an error: feature not visible for assignment
-          f9 = 999; // 212. should flag an error: feature not visible for assignment
+          set f1 := 111; chck(f1 == 111, "can assign f1")
+          set f2 := 222; chck(f2 == 222, "can assign f2")
+          set f3 := 333; // 208. should flag an error: feature not visible for assignment
+          set f4 := 444; // 209. should flag an error: feature not visible for assignment
+          set f5 := 555; chck(f5 == 555, "can assign f5")
+          set f6 := 666; chck(f6 == 666, "can assign f6")
+          set f7 := 777; // 210. should flag an error: feature not visible for assignment
+          set f8 := 888; // 211. should flag an error: feature not visible for assignment
+          set f9 := 999; // 212. should flag an error: feature not visible for assignment
         }
-        f1 = 111; chck(f1 == 111, "can assign f1")
-        f2 = 222; chck(f2 == 222, "can assign f2")
-        f3 = 333; // 213. should flag an error: feature not visible for assignment
-        f4 = 444; // 214. should flag an error: feature not visible for assignment
-        f5 = 555; // 215. should flag an error: feature not visible for assignment
-        f6 = 666; // 216. should flag an error: feature not visible for assignment
-        f7 = 777; // 217. should flag an error: feature not visible for assignment
-        f8 = 888; // 218. should flag an error: feature not visible for assignment
-        f9 = 999; // 219. should flag an error: feature not visible for assignment
+        set f1 := 111; chck(f1 == 111, "can assign f1")
+        set f2 := 222; chck(f2 == 222, "can assign f2")
+        set f3 := 333; // 213. should flag an error: feature not visible for assignment
+        set f4 := 444; // 214. should flag an error: feature not visible for assignment
+        set f5 := 555; // 215. should flag an error: feature not visible for assignment
+        set f6 := 666; // 216. should flag an error: feature not visible for assignment
+        set f7 := 777; // 217. should flag an error: feature not visible for assignment
+        set f8 := 888; // 218. should flag an error: feature not visible for assignment
+        set f9 := 999; // 219. should flag an error: feature not visible for assignment
         f7 := expr;
-        f1 = 111; chck(f1 == 111, "can assign f1")
-        f2 = 222; chck(f2 == 222, "can assign f2")
-        f3 = 333; // 220. should flag an error: feature not visible for assignment
-        f4 = 444; // 221. should flag an error: feature not visible for assignment
-        f5 = 555; // 222. should flag an error: feature not visible for assignment
-        f6 = 666; // 223. should flag an error: feature not visible for assignment
-        f7 = 777; chck(f7 == 777, "can assign f7")
-        f8 = 888; // 224. should flag an error: feature not visible for assignment
-        f9 = 999; // 225. should flag an error: feature not visible for assignment
+        set f1 := 111; chck(f1 == 111, "can assign f1")
+        set f2 := 222; chck(f2 == 222, "can assign f2")
+        set f3 := 333; // 220. should flag an error: feature not visible for assignment
+        set f4 := 444; // 221. should flag an error: feature not visible for assignment
+        set f5 := 555; // 222. should flag an error: feature not visible for assignment
+        set f6 := 666; // 223. should flag an error: feature not visible for assignment
+        set f7 := 777; chck(f7 == 777, "can assign f7")
+        set f8 := 888; // 224. should flag an error: feature not visible for assignment
+        set f9 := 999; // 225. should flag an error: feature not visible for assignment
       }
-      f1 = 111; chck(f1 == 111, "can assign f1")
-      f2 = 222; // 226. should flag an error: feature not visible for assignment
-      f3 = 333; // 227. should flag an error: feature not visible for assignment
-      f4 = 444; // 228. should flag an error: feature not visible for assignment
-      f5 = 555; // 229. should flag an error: feature not visible for assignment
-      f6 = 666; // 230. should flag an error: feature not visible for assignment
-      f7 = 777; // 231. should flag an error: feature not visible for assignment
-      f8 = 888; // 232. should flag an error: feature not visible for assignment
-      f9 = 999; // 233. should flag an error: feature not visible for assignment
+      set f1 := 111; chck(f1 == 111, "can assign f1")
+      set f2 := 222; // 226. should flag an error: feature not visible for assignment
+      set f3 := 333; // 227. should flag an error: feature not visible for assignment
+      set f4 := 444; // 228. should flag an error: feature not visible for assignment
+      set f5 := 555; // 229. should flag an error: feature not visible for assignment
+      set f6 := 666; // 230. should flag an error: feature not visible for assignment
+      set f7 := 777; // 231. should flag an error: feature not visible for assignment
+      set f8 := 888; // 232. should flag an error: feature not visible for assignment
+      set f9 := 999; // 233. should flag an error: feature not visible for assignment
       f8 := expr;
-      f1 = 111; chck(f1 == 111, "can assign f1")
-      f2 = 222; // 234. should flag an error: feature not visible for assignment
-      f3 = 333; // 235. should flag an error: feature not visible for assignment
-      f4 = 444; // 236. should flag an error: feature not visible for assignment
-      f5 = 555; // 237. should flag an error: feature not visible for assignment
-      f6 = 666; // 238. should flag an error: feature not visible for assignment
-      f7 = 777; // 239. should flag an error: feature not visible for assignment
-      f8 = 888; chck(f8 == 888, "can assign f8")
-      f9 = 999; // 240. should flag an error: feature not visible for assignment
+      set f1 := 111; chck(f1 == 111, "can assign f1")
+      set f2 := 222; // 234. should flag an error: feature not visible for assignment
+      set f3 := 333; // 235. should flag an error: feature not visible for assignment
+      set f4 := 444; // 236. should flag an error: feature not visible for assignment
+      set f5 := 555; // 237. should flag an error: feature not visible for assignment
+      set f6 := 666; // 238. should flag an error: feature not visible for assignment
+      set f7 := 777; // 239. should flag an error: feature not visible for assignment
+      set f8 := 888; chck(f8 == 888, "can assign f8")
+      set f9 := 999; // 240. should flag an error: feature not visible for assignment
 
       b2
       {
-        f1 = 111; chck(f1 == 111, "can assign f1")
-        f2 = 222; // 241. should flag an error: feature not visible for assignment
-        f3 = 333; // 242. should flag an error: feature not visible for assignment
-        f4 = 444; // 243. should flag an error: feature not visible for assignment
-        f5 = 555; // 244. should flag an error: feature not visible for assignment
-        f6 = 666; // 245. should flag an error: feature not visible for assignment
-        f7 = 777; // 246. should flag an error: feature not visible for assignment
-        f8 = 888; chck(f8 == 888, "can assign f8")
-        f9 = 999; // 247. should flag an error: feature not visible for assignment
+        set f1 := 111; chck(f1 == 111, "can assign f1")
+        set f2 := 222; // 241. should flag an error: feature not visible for assignment
+        set f3 := 333; // 242. should flag an error: feature not visible for assignment
+        set f4 := 444; // 243. should flag an error: feature not visible for assignment
+        set f5 := 555; // 244. should flag an error: feature not visible for assignment
+        set f6 := 666; // 245. should flag an error: feature not visible for assignment
+        set f7 := 777; // 246. should flag an error: feature not visible for assignment
+        set f8 := 888; chck(f8 == 888, "can assign f8")
+        set f9 := 999; // 247. should flag an error: feature not visible for assignment
         f9 := expr;
-        f1 = 111; chck(f1 == 111, "can assign f1")
-        f2 = 222; // 248. should flag an error: feature not visible for assignment
-        f3 = 333; // 249. should flag an error: feature not visible for assignment
-        f4 = 444; // 250. should flag an error: feature not visible for assignment
-        f5 = 555; // 251. should flag an error: feature not visible for assignment
-        f6 = 666; // 252. should flag an error: feature not visible for assignment
-        f7 = 777; // 253. should flag an error: feature not visible for assignment
-        f8 = 888; chck(f8 == 888, "can assign f8")
-        f9 = 999; chck(f9 == 999, "can assign f9")
+        set f1 := 111; chck(f1 == 111, "can assign f1")
+        set f2 := 222; // 248. should flag an error: feature not visible for assignment
+        set f3 := 333; // 249. should flag an error: feature not visible for assignment
+        set f4 := 444; // 250. should flag an error: feature not visible for assignment
+        set f5 := 555; // 251. should flag an error: feature not visible for assignment
+        set f6 := 666; // 252. should flag an error: feature not visible for assignment
+        set f7 := 777; // 253. should flag an error: feature not visible for assignment
+        set f8 := 888; chck(f8 == 888, "can assign f8")
+        set f9 := 999; chck(f9 == 999, "can assign f9")
       }
-      f1 = 111; chck(f1 == 111, "can assign f1")
-      f2 = 222; // 254. should flag an error: feature not visible for assignment
-      f3 = 333; // 255. should flag an error: feature not visible for assignment
-      f4 = 444; // 256. should flag an error: feature not visible for assignment
-      f5 = 555; // 257. should flag an error: feature not visible for assignment
-      f6 = 666; // 258. should flag an error: feature not visible for assignment
-      f7 = 777; // 259. should flag an error: feature not visible for assignment
-      f8 = 888; chck(f8 == 888, "can assign f8")
-      f9 = 999; // 260. should flag an error: feature not visible for assignment
+      set f1 := 111; chck(f1 == 111, "can assign f1")
+      set f2 := 222; // 254. should flag an error: feature not visible for assignment
+      set f3 := 333; // 255. should flag an error: feature not visible for assignment
+      set f4 := 444; // 256. should flag an error: feature not visible for assignment
+      set f5 := 555; // 257. should flag an error: feature not visible for assignment
+      set f6 := 666; // 258. should flag an error: feature not visible for assignment
+      set f7 := 777; // 259. should flag an error: feature not visible for assignment
+      set f8 := 888; chck(f8 == 888, "can assign f8")
+      set f9 := 999; // 260. should flag an error: feature not visible for assignment
     }
     a1.b1.c1
     a1.b1.c2

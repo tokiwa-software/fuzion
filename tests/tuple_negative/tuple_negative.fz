@@ -27,25 +27,16 @@ tuple_negative {
 
   exitCode := 0
 
+  chck (b bool, msg string) unit is
+    if b
+      say "PASSED: " + msg
+    else
+      say "FAILED: " + msg
+      set exitCode := 1
+
   out := stdout;
   o := out;
   p(s Object) { o.println(s); }
-
-  chck(b bool, msg string)
-  {
-    s string = ?;
-    if b
-      {
-        s = "PASSED: ";
-      }
-    else
-      {
-        s = "FAILED: ";
-        exitCode = 1
-      }
-    out.println(s + msg);
-  }
-
 
   // start with some generic type inference tests, which are a pre-requisite for tuples to work
   g1<A>(a A) { }

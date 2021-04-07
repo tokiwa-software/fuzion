@@ -32,9 +32,9 @@ choice_mix {
   MyRef(x,y,z i32) ref : MyObj
   {
     a,b,c i32;
-    a = x+x;
-    b = y+y;
-    c = z+z;
+    set a := x+x;
+    set b := y+y;
+    set c := z+z;
   }
 
   Mix : choice<i32,
@@ -184,11 +184,11 @@ choice_mix {
   out.print("d: "); show_d();
   out.print("e: "); show_e();
 
-  out.print("a: "); v00 = a; show00();
-  out.print("b: "); v00 = b; show00();
-  out.print("c: "); v00 = c; show00();
-  out.print("d: "); v00 = d; show00();
-  out.print("e: "); v00 = e; show00();
+  out.print("a: "); set v00 := a; show00();
+  out.print("b: "); set v00 := b; show00();
+  out.print("c: "); set v00 := c; show00();
+  out.print("d: "); set v00 := d; show00();
+  out.print("e: "); set v00 := e; show00();
 
   out.print("a: "); show0(a);
   out.print("b: "); show0(b);
@@ -209,11 +209,11 @@ choice_mix {
       out.print("show(c): "); show(c);
       out.print("show(d): "); show(d);
       x Mix = a;
-      a = b;
-      b = c;
-      c = d;
-      d = e;
-      e = x;
+      set a := b;
+      set b := c;
+      set c := d;
+      set d := e;
+      set e := x;
     }
 
   colors1  // using choice over features inheriting from abstract feature
@@ -262,11 +262,11 @@ choice_mix {
         t transparent => { out.println("trp" + t.rgb); }
       }
     }
-    p = red;
-    q = green;
-    r = black;
-    s = transparent(200);
-    t = transparent(100);
+    set p := red;
+    set q := green;
+    set r := black;
+    set s := transparent(200);
+    set t := transparent(100);
     print(p);
     print(q);
     print(r);
@@ -321,11 +321,11 @@ choice_mix {
         t transparent => { out.println("trp"+ t.rgb); }
       }
     }
-    p = red;
-    q = green;
-    r = black;
-    s = transparent(200);
-    t = transparent(100);
+    set p := red;
+    set q := green;
+    set r := black;
+    set s := transparent(200);
+    set t := transparent(100);
     print(p);
     print(q);
     print(r);

@@ -27,34 +27,19 @@ visibility
 {
   exitCode := 0
 
-  chck(b bool, msg string)
-  {
-    s string = ?;
+  chck (b bool, msg string) unit is
     if b
-      {
-        s = "PASSED: ";
-      }
+      say "PASSED: " + msg
     else
-      {
-        s = "FAILED: ";
-        exitCode = 1
-      }
-    stdout.println(s + msg);
-  }
-  chck(a,b i32, msg string)
-  {
-    s string = ?;
+      say "FAILED: " + msg
+      set exitCode := 1
+
+  chck (a,b i32, msg string) is
     if a == b
-      {
-        s = "PASSED: ";
-      }
+      say "PASSED: " + msg
     else
-      {
-        s = "FAILED: expected "+ b + "got "+a;;
-        exitCode = 1
-      }
-    stdout.println(s + msg);
-  }
+      say "FAILED: expected $b got $a"
+      set exitCode := 1
 
   visi1
   {
@@ -121,7 +106,7 @@ visibility
   visi2
   {
     count := 0
-    expr => { count = count + 11; count }
+    expr => { set count := count + 11; count }
 
     a1
     {
@@ -198,72 +183,72 @@ visibility
   visi3
   {
     count := 0
-    expr => { count = count + 11; count }
+    expr => { set count := count + 11; count }
 
     a1
     {
       f1 := expr;
-      f1 = 111; chck(f1 == 111, "can assign f1")
+      set f1 := 111; chck(f1 == 111, "can assign f1")
       b1
       {
-        f1 = 111; chck(f1 == 111, "can assign f1")
+        set f1 := 111; chck(f1 == 111, "can assign f1")
         f2 := expr;
-        f1 = 111; chck(f1 == 111, "can assign f1")
-        f2 = 222; chck(f2 == 222, "can assign f2")
+        set f1 := 111; chck(f1 == 111, "can assign f1")
+        set f2 := 222; chck(f2 == 222, "can assign f2")
         c1
         {
-          f1 = 111; chck(f1 == 111, "can assign f1")
-          f2 = 222; chck(f2 == 222, "can assign f2")
+          set f1 := 111; chck(f1 == 111, "can assign f1")
+          set f2 := 222; chck(f2 == 222, "can assign f2")
           f3 := expr;
-          f1 = 111; chck(f1 == 111, "can assign f1")
-          f2 = 222; chck(f2 == 222, "can assign f2")
-          f3 = 333; chck(f3 == 333, "can assign f3")
+          set f1 := 111; chck(f1 == 111, "can assign f1")
+          set f2 := 222; chck(f2 == 222, "can assign f2")
+          set f3 := 333; chck(f3 == 333, "can assign f3")
           f4 := expr;
-          f1 = 111; chck(f1 == 111, "can assign f1")
-          f2 = 222; chck(f2 == 222, "can assign f2")
-          f3 = 333; chck(f3 == 333, "can assign f3")
-          f4 = 444; chck(f4 == 444, "can assign f4")
+          set f1 := 111; chck(f1 == 111, "can assign f1")
+          set f2 := 222; chck(f2 == 222, "can assign f2")
+          set f3 := 333; chck(f3 == 333, "can assign f3")
+          set f4 := 444; chck(f4 == 444, "can assign f4")
         }
-        f1 = 111; chck(f1 == 111, "can assign f1")
-        f2 = 222; chck(f2 == 222, "can assign f2")
+        set f1 := 111; chck(f1 == 111, "can assign f1")
+        set f2 := 222; chck(f2 == 222, "can assign f2")
 
         c2
         {
-          f1 = 111; chck(f1 == 111, "can assign f1")
-          f2 = 222; chck(f2 == 222, "can assign f2")
+          set f1 := 111; chck(f1 == 111, "can assign f1")
+          set f2 := 222; chck(f2 == 222, "can assign f2")
           f5 := expr;
-          f1 = 111; chck(f1 == 111, "can assign f1")
-          f2 = 222; chck(f2 == 222, "can assign f2")
-          f5 = 555; chck(f5 == 555, "can assign f5")
+          set f1 := 111; chck(f1 == 111, "can assign f1")
+          set f2 := 222; chck(f2 == 222, "can assign f2")
+          set f5 := 555; chck(f5 == 555, "can assign f5")
           f6 := expr;
-          f1 = 111; chck(f1 == 111, "can assign f1")
-          f2 = 222; chck(f2 == 222, "can assign f2")
-          f5 = 555; chck(f5 == 555, "can assign f5")
-          f6 = 666; chck(f6 == 666, "can assign f6")
+          set f1 := 111; chck(f1 == 111, "can assign f1")
+          set f2 := 222; chck(f2 == 222, "can assign f2")
+          set f5 := 555; chck(f5 == 555, "can assign f5")
+          set f6 := 666; chck(f6 == 666, "can assign f6")
         }
-        f1 = 111; chck(f1 == 111, "can assign f1")
-        f2 = 222; chck(f2 == 222, "can assign f2")
+        set f1 := 111; chck(f1 == 111, "can assign f1")
+        set f2 := 222; chck(f2 == 222, "can assign f2")
         f7 := expr;
-        f1 = 111; chck(f1 == 111, "can assign f1")
-        f2 = 222; chck(f2 == 222, "can assign f2")
-        f7 = 777; chck(f7 == 777, "can assign f7")
+        set f1 := 111; chck(f1 == 111, "can assign f1")
+        set f2 := 222; chck(f2 == 222, "can assign f2")
+        set f7 := 777; chck(f7 == 777, "can assign f7")
       }
-      f1 = 111; chck(f1 == 111, "can assign f1")
+      set f1 := 111; chck(f1 == 111, "can assign f1")
       f8 := expr;
-      f1 = 111; chck(f1 == 111, "can assign f1")
-      f8 = 888; chck(f8 == 888, "can assign f8")
+      set f1 := 111; chck(f1 == 111, "can assign f1")
+      set f8 := 888; chck(f8 == 888, "can assign f8")
 
       b2
       {
-        f1 = 111; chck(f1 == 111, "can assign f1")
-        f8 = 888; chck(f8 == 888, "can assign f8")
+        set f1 := 111; chck(f1 == 111, "can assign f1")
+        set f8 := 888; chck(f8 == 888, "can assign f8")
         f9 := expr;
-        f1 = 111; chck(f1 == 111, "can assign f1")
-        f8 = 888; chck(f8 == 888, "can assign f8")
-        f9 = 999; chck(f9 == 999, "can assign f9")
+        set f1 := 111; chck(f1 == 111, "can assign f1")
+        set f8 := 888; chck(f8 == 888, "can assign f8")
+        set f9 := 999; chck(f9 == 999, "can assign f9")
       }
-      f1 = 111; chck(f1 == 111, "can assign f1")
-      f8 = 888; chck(f8 == 888, "can assign f8")
+      set f1 := 111; chck(f1 == 111, "can assign f1")
+      set f8 := 888; chck(f8 == 888, "can assign f8")
     }
     a1.b1.c1
     a1.b1.c2

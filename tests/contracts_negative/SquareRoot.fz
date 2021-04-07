@@ -31,10 +31,10 @@ SquareRoot is
     post
       (result * result <= a) && ((result+1) * (result+1) > a)
   is
-    result = 1
+    set result := 1
     for it in 0..99 do
       n := a / result
-      result = (result + n) / 2
+      set result := (result + n) / 2
     until (( result    * result     <= a) &&
            ((result+1) * (result+1) >  a)    )
     else

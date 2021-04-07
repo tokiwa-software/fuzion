@@ -30,12 +30,11 @@ redef_args is
   o := stdout
 
   chck(b bool, msg string) is
-    s string
-    if b
-      s = "PASSED: "
+    s := if (b)
+      "PASSED: "
     else
-      s = "FAILED: "
-      exitCode = 1
+      set exitCode = 1
+      "FAILED: "
     o.println(s + msg)
 
   Complex<T>(r, i T) is

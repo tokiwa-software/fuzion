@@ -30,10 +30,10 @@ stringstest is
   exitCode := 0
 
   chck(b bool, msg string) is
-    s string = if b
+    s := if b
         "PASSED: "
       else
-        exitCode = 1
+        set exitCode := 1
         "FAILED: "
     say s + msg
 

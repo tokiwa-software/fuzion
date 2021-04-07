@@ -159,10 +159,10 @@ generics_negative {
     asdfg2 qwerty<i32>.uiop.asdfg = qwerty<i32>.uiop.asdfg;
     uiop qwerty<i32>.uiop = qwerty<i32>.uiop;
     qwert qwerty<i32> = qwerty<i32>;
-    hjkl = qwert.uiop.asdfg.hjkl;                           // 44. should flag an error: missing actual argument to hjkl
-    asdfg1 = uiop.asdfg;
-    asdfg2 = uiop.asdfg;
-    uiop = qwert.uiop;
+    set hjkl := qwert.uiop.asdfg.hjkl;                      // 44. should flag an error: missing actual argument to hjkl
+    set asdfg1 := uiop.asdfg;
+    set asdfg2 := uiop.asdfg;
+    set uiop := qwert.uiop;
   }
   features_from_separate_source_file;
 

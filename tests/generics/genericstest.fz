@@ -29,21 +29,13 @@ genericstest {
 
   o := stdout;
 
-  chck(b bool, msg string)
-  {
-    s string = ?;
-    if b
-      {
-        s = "PASSED: ";
-      }
+  chck(b bool, msg string) is
+    s := if b
+      "PASSED: "
     else
-      {
-        s = "FAILED: ";
-        exitCode = 1
-      }
-    o.println(s + msg);
-  }
-
+      set exitCode := 1
+      "FAILED: "
+    o.println s + msg
 
   List<T> {
     public Node (
@@ -56,7 +48,7 @@ genericstest {
 
     h OptNode = Nil;
     add(e T) {
-      h = Node(e,h,Nil);
+      set h := Node(e,h,Nil);
     }
     print {
       // for   -- NYI: must update i in the loop prolog
@@ -67,7 +59,7 @@ genericstest {
           n Node =>
             {
               stdout.println("print el in loop: " + n.el);
-              i = n.n;
+              set i := n.n;
             }
           Nil => { }
         }
@@ -81,8 +73,8 @@ genericstest {
         {
           n Node =>
             {
-              result = result + 1;
-              i = n.n;
+              set result := result + 1;
+              set i := n.n;
             }
           Nil => { }
         }
@@ -136,23 +128,23 @@ genericstest {
   }
 
   a q = ?;
-  a = q(    2); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
-  a = q(   20); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
-  a = q(  200); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
-  a = q( 2000); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
-  a = q(20000); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
+  set a := q(    2); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
+  set a := q(   20); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
+  set a := q(  200); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
+  set a := q( 2000); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
+  set a := q(20000); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
 
-  a = q(    2); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
-  a = q(   20); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
-  a = q(  200); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
-  a = q( 2000); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
-  a = q(20000); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
+  set a := q(    2); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
+  set a := q(   20); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
+  set a := q(  200); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
+  set a := q( 2000); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
+  set a := q(20000); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
 
-  a = q(    2); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
-  a = q(   20); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
-  a = q(  200); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
-  a = q( 2000); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
-  a = q(20000); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
+  set a := q(    2); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
+  set a := q(   20); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
+  set a := q(  200); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
+  set a := q( 2000); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
+  set a := q(20000); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
 
   lc1 := List<Complex2>;
   lc1.add(Complex2(3,4));

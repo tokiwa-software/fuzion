@@ -33,15 +33,15 @@ illegal_assignment {
     E ref { x { stdout.println("*** should never be here ***"); } xb {}; xc {}; }
   }
 
-  curid i32; curid = 0;
+  curid i32 = 0;
   id i32
   {
-    result = curid;
-    curid = result + 1;
+    set result := curid;
+    set curid := result + 1;
   }
 
   A ref {
-    ident i32; ident = id;
+    ident := id;
     stdout.println("A's body" + ident);
     x is abstract
   }
@@ -61,16 +61,16 @@ illegal_assignment {
     redefine xb { stdout.println("E.xb"); }
     redefine xc { stdout.println("E.xc"); }
   }
-  bi B; bi = B;
-  ci Q.C; ci = C;  // 1. should flag an error: illegal assignment
-  aa Q.A; aa = bi; // 2. should flag an error: illegal assignment
+  bi := B;
+  ci Q.C; set ci := C;  // 1. should flag an error: illegal assignment
+  aa Q.A; set aa := bi; // 2. should flag an error: illegal assignment
   bi.x;
   ci.x;
   aa.x;
-  aa = ci; // 3. should flag an error: illegal assignment
+  set aa := ci; // 3. should flag an error: illegal assignment
   aa.x;
-  di Q.D; di = D; // 4. should flag an error: illegal assignment
-  ei Q.E; ei = E; // 5. should flag an error: illegal assignment
+  di Q.D; set di := D; // 4. should flag an error: illegal assignment
+  ei Q.E; set ei := E; // 5. should flag an error: illegal assignment
   stdout.println("Calling non-redefed multiple");
   di.x;
   di.xb;
@@ -80,17 +80,17 @@ illegal_assignment {
   ei.xb;
   ei.xc;
   stdout.println("Calling redefed multiple from non-redefed static ");
-  di = ei;  // 6. should flag an error: illegal assignment
+  set di := ei;  // 6. should flag an error: illegal assignment
   di.x;
   di.xb;
   di.xc;
-  bi = di;  // 7. should flag an error: illegal assignment
-  ci = di;  // 8. should flag an error: illegal assignment
+  set bi := di;  // 7. should flag an error: illegal assignment
+  set ci := di;  // 8. should flag an error: illegal assignment
   bi.x;
   bi.xb;
   ci.x;
   ci.xc;
-  aa = ei;  // 9. should flag an error: illegal assignment
+  set aa := ei;  // 9. should flag an error: illegal assignment
   aa.x;
 
 }

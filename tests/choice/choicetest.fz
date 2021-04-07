@@ -59,7 +59,7 @@ choicetest {
   }
 
   value_in_cents(c Coin) i32 {
-    result = match c {
+    match c {
       Penny   => 1
       Nickel  => 5
       Dime    => 10
@@ -88,13 +88,13 @@ choicetest {
   out.println(sum);
 
   out.print("summing array using iterator: ");
-  sum = 0;
-  a.iterate(fun (c Coin) { sum = sum + value_in_cents(c); })
+  set sum := 0;
+  a.iterate(fun (c Coin) { set sum := sum + value_in_cents(c); })
   out.println(sum);
 
   out.println("summing array using iterator and inner feature: ");
-  sum = 0;
-  a.iterate(fun (c Coin) { sum = sum + c.value_in_cents(); })
+  set sum := 0;
+  a.iterate(fun (c Coin) { set sum := sum + c.value_in_cents(); })
   out.print(sum); out.println;
 
 }

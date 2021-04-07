@@ -54,7 +54,7 @@ functions
     x(fun (o Object, i i32) i32
       {
         out.println("in function 1: " + o);
-        result =i*i;
+        i*i;
       });
 
     out.println("here 1b---------------");
@@ -62,8 +62,8 @@ functions
 //    x((o, i) -> o.hashCode + i);
 //    x(fun (o, i) -> o.hashCode + i);
 //    x(fun (o, i) { result = o.hashCode + i;});
-    x(fun (o Object, i i32) i32 { result = o.hashCode + i; });
-    x(fun (o Object, i i32) i32 { o.hashCode + i; });  // implicit assignment to result if only one statement
+    x(fun (o Object, i i32) i32 { set result := o.hashCode + i });
+    x(fun (o Object, i i32) i32 { o.hashCode + i });  // implicit assignment to result if only one statement
 
     out.println("here 1c---------------");
     x(ref : Function<i32,Object,i32>
@@ -71,7 +71,7 @@ functions
         redefine call(o Object, i i32) i32
         {
           out.println("in anonymous function: " + o);
-          result = o.hashCode + i;
+          o.hashCode + i
         };
       });
 
@@ -80,7 +80,7 @@ functions
         redefine call(o Object, i i32) i32
         {
           out.println("here f.call---------------");
-          result = o.hashCode + i;
+          set result := o.hashCode + i;
           out.println("here f.call done---------------");
         };
       }
@@ -88,8 +88,8 @@ functions
     x0(f());
     out.println("here x0(f)---------------");
     x0(f);
-    out.println("here x0(fun i32 (Object o, i32 i) \{ result = o.hashCode + i;})---------------");
-    x0(fun (o Object, i i32) i32 { result = o.hashCode + i;});
+    out.println("here x0(fun i32 (Object o, i32 i) \{ set result := o.hashCode + i;})---------------");
+    x0(fun (o Object, i i32) i32 { set result := o.hashCode + i;});
     out.println("here x(f())---------------");
     x(f());
     out.println("here x(f)---------------");
@@ -97,7 +97,7 @@ functions
 
     f1(o Object, i i32) i32 {
         out.println("here f1(o,i) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-        result = o.hashCode + i;
+        o.hashCode + i
     };
     out.println("here x0(fun f1)---------------");
     x0(fun f1);

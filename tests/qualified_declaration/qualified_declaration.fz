@@ -36,8 +36,8 @@ qualified_declaration
     }
   }
 
-  public x.y.z.f2(i i32) i32 { result = i*i }
-  x.y.z.f3(i i32) i32 { result = i*i }
+  public x.y.z.f2(i i32) i32 { set result := i*i }
+  x.y.z.f3(i i32) i32 { set result := i*i }
   x.y.z.f4(i i32) i32 { i*i }
   x.y.z.f5(i i32) => i*i
 

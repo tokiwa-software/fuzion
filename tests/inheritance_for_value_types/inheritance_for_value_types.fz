@@ -41,7 +41,7 @@ inheritance_for_value_types is
       say "PASSED: " + msg
     else
       say "FAILED: " + msg
-      exitCode = 1
+      set exitCode := 1
 
   a is
     x (msg string, expected i32) unit is chck msg, expected == 1

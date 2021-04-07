@@ -32,8 +32,8 @@ inheritance {
   curid i32 = 0;
   id i32
   {
-    result = curid;
-    curid = result + 1;
+    set result := curid;
+    set curid := result + 1;
   }
 
   A ref {
@@ -64,7 +64,7 @@ inheritance {
   bi.x;
   ci.x;
   aa.x;
-  aa = ci;
+  set aa := ci;
   aa.x;
   di inheritance.D = D;
   ei inheritance.E = E;
@@ -77,17 +77,17 @@ inheritance {
   ei.xb;
   ei.xc;
   out.println("Calling redefed multiple from non-redefed static ");
-  di = ei;
+  set di := ei;
   di.x;
   di.xb;
   di.xc;
-  bi = di;
-  ci = di;
+  set bi := di;
+  set ci := di;
   bi.x;
   bi.xb;
   ci.x;
   ci.xc;
-  aa = ei;
+  set aa := ei;
   aa.x;
 
 
@@ -109,7 +109,7 @@ inheritance {
     b.p; // all type info is static in this call
 
     c := 1000;
-    count => { c = c + 1; c }
+    count => { set c := c + 1; c }
 
     // nested features with a ref (P, Q, R, S) and a value (Pv, Qv, Rv, Sv)
     // variant and calls to features of the corresponding outer features.
@@ -247,7 +247,7 @@ inheritance {
     B ref : Z { }
     if (cnt < 10)
       {
-        cnt = cnt + 1;
+        set cnt := cnt + 1;
         B;
       }
   }
@@ -269,7 +269,7 @@ inheritance {
         }
         if (cnt < 10)
           {
-            cnt = cnt + 1;
+            set cnt := cnt + 1;
             B.q;
           }
      }
@@ -279,20 +279,12 @@ inheritance {
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from value feature A */
   call_inherited_from_parent_args
   {
-    chck(b bool, msg string)
-    {
-      s string = ?;
+    chck (b bool, msg string) unit is
       if b
-        {
-          s = "PASSED: ";
-        }
+        say "PASSED: " + msg
       else
-        {
-          s = "FAILED: ";
-          exitCode = 1
-        }
-      out.println(s + msg);
-    }
+        say "FAILED: " + msg
+        set exitCode := 1
 
     cnt_A_y := 0;
     cnt_C_y := 0;
@@ -301,7 +293,7 @@ inheritance {
       x => y
       y i32
       {
-        cnt_A_y = cnt_A_y + 1;
+        set cnt_A_y := cnt_A_y + 1;
         out.println("inherit.A.y");
         0
       }
@@ -310,7 +302,7 @@ inheritance {
       {
         redefine y i32
         {
-          cnt_C_y = cnt_C_y + 1;
+          set cnt_C_y := cnt_C_y + 1;
           out.println("inherit.C.y");
           1
         }
@@ -334,20 +326,12 @@ inheritance {
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from ref feature A */
   call_inherited_from_parent_args2
   {
-    chck(b bool, msg string)
-    {
-      s string = ?;
+    chck (b bool, msg string) unit is
       if b
-        {
-          s = "PASSED: ";
-        }
+        say "PASSED: " + msg
       else
-        {
-          s = "FAILED: ";
-          exitCode = 1
-        }
-      out.println(s + msg);
-    }
+        say "FAILED: " + msg
+        set exitCode := 1
 
     cnt_A_y := 0;
     cnt_C_y := 0;
@@ -356,7 +340,7 @@ inheritance {
       x => y
       y i32
       {
-        cnt_A_y = cnt_A_y + 1;
+        set cnt_A_y := cnt_A_y + 1;
         out.println("inherit.A.y");
         0
       }
@@ -365,7 +349,7 @@ inheritance {
       {
         redefine y i32
         {
-          cnt_C_y = cnt_C_y + 1;
+          set cnt_C_y := cnt_C_y + 1;
           out.println("inherit.C.y");
           1
         }
@@ -392,7 +376,7 @@ inheritance {
     A
     {
       a { x }
-      x { out.println("A.x: FAILED."); exitCode = 1 }
+      x { out.println("A.x: FAILED."); set exitCode := 1 }
     }
     B ref : A
     {
@@ -406,20 +390,12 @@ inheritance {
   /* calling inherited feature x from arguments to parent class D(x), feature x is inherited from value feature A and calls A.y which is redefined in C */
   call_inherited_from_parent_args3
   {
-    chck(b bool, msg string)
-    {
-      s string = ?;
+    chck (b bool, msg string) unit is
       if b
-        {
-          s = "PASSED: ";
-        }
+        say "PASSED: " + msg
       else
-        {
-          s = "FAILED: ";
-          exitCode = 1
-        }
-      out.println(s + msg);
-    }
+        say "FAILED: " + msg
+        set exitCode := 1
 
     cnt_A_y := 0;
     cnt_C_y := 0;
@@ -428,7 +404,7 @@ inheritance {
       x => y
       y i32
       {
-        cnt_A_y = cnt_A_y + 1;
+        set cnt_A_y := cnt_A_y + 1;
         out.println("inherit.A.y");
         0
       }
@@ -437,7 +413,7 @@ inheritance {
       {
         redefine y i32
         {
-          cnt_C_y = cnt_C_y + 1;
+          set cnt_C_y := cnt_C_y + 1;
           out.println("inherit.C.y");
           1
         }
@@ -469,22 +445,22 @@ inheritance {
 
     A ref
     {
-      Acnt = Acnt + 1;
+      set Acnt := Acnt + 1;
       B ref
       {
-        Bcnt = Bcnt + 1;
+        set Bcnt := Bcnt + 1;
         C ref
         {
-          Ccnt = Ccnt + 1;
+          set Ccnt := Ccnt + 1;
           D ref
           {
-            Dcnt = Dcnt + 1;
+            set Dcnt := Dcnt + 1;
             E ref
             {
-              Ecnt = Ecnt + 1;
+              set Ecnt := Ecnt + 1;
               F ref
               {
-                Fcnt = Fcnt + 1;
+                set Fcnt := Fcnt + 1;
                 F3 ref : F { }
               }
               E3 ref : E { }
@@ -536,7 +512,7 @@ inheritance {
       else
         {
           out.println(msg + ": " + v + " != " + expected + " *** FAILED.");
-          exitCode = 1
+          set exitCode := 1
         }
     }
   }

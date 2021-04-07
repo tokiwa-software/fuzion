@@ -29,21 +29,13 @@ iftest_negative
 
   out := stdout;
 
-  chck(b bool, msg string)
-  {
-    s string;
-    if b
-      {
-        s = "PASSED: ";
-      }
+  chck(b bool, msg string) is
+    s := if b
+      "PASSED: "
     else
-      {
-        s = "FAILED: ";
-        exitCode = 1
-      }
-    out.println(s + msg);
-  }
-
+      set exitCode := 1
+      "FAILED: "
+    out.println s + msg
 
   testIfNonBoolean1
   {

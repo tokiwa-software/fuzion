@@ -30,20 +30,13 @@ looptest
 
   out := stdout;
 
-  chck(b bool, msg string)
-  {
-    s string = ?;
-    if b
-      {
-        s = "PASSED: ";
-      }
+  chck(b bool, msg string) is
+    s := if b
+      "PASSED: "
     else
-      {
-        s = "FAILED: ";
-        exitCode = 1
-      }
-    out.println(s + msg);
-  }
+      set exitCode := 1
+      "FAILED: "
+    out.println s + msg
 
   a := Array<i32>(100, fun (i i32) => { if (i % 23 == 0) { -2*i } else { i*i } });
 
@@ -58,9 +51,9 @@ looptest
       if isWhatWeWant(element)
       {
         out.println("We found it at " + ix + ": " + element);
-        found = true;
+        set found := true;
       }
-      ix = ix + 1;
+      set ix := ix + 1;
     }
     if !found
     {
@@ -83,7 +76,7 @@ looptest
     while ix < data.length
     {
       element := data[ix];
-      ix = ix + 1;
+      set ix := ix + 1;
     }
     until isWhatWeWant(element)
     {

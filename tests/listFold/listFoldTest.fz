@@ -29,13 +29,12 @@ listFoldTest is
 
   exitCode := 0
 
-  chck(b bool, msg string) is
-    s := if b
-        "PASSED: "
-      else
-        exitCode = 1
-        "FAILED: "
-    say s + msg
+  chck (b bool, msg string) unit is
+    if b
+      say "PASSED: " + msg
+    else
+      say "FAILED: " + msg
+      set exitCode := 1
 
   l1 list<i32> = nil
   l2 list<i32> = cons         9, l1
