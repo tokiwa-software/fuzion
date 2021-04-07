@@ -465,12 +465,12 @@ name        : IDENT
                 {
                   if (!skipColon())
                     {
-                      syntaxError(pos, ": after 'ternary ?'", "name");
+                      syntaxError(pos, "':' after 'ternary ?'", "name");
                     }
                 }
               else
                 {
-                  syntaxError(pos, "? : after 'ternary'", "name");
+                  syntaxError(pos, "'? :' after 'ternary'", "name");
                 }
               result = "ternary ? :";
               break;
@@ -507,7 +507,7 @@ name        : IDENT
                 }
               else
                 {
-                  syntaxError(pos, "[ ] or identifier after 'set'", "name");
+                  syntaxError(pos, "'[ ]' or identifier after 'set'", "name");
                   result = Errors.ERROR_STRING;
                 }
               break;
@@ -517,7 +517,7 @@ name        : IDENT
       }
     else
       {
-        syntaxError(pos, "identifier name, infix/prefix/postfix operator, ternary ? :, index or set name", "name");
+        syntaxError(pos, "identifier name, infix/prefix/postfix operator, 'ternary ? :', 'index' or 'set' name", "name");
       }
     return result;
   }
@@ -1828,7 +1828,7 @@ function    : formArgs
       {
         if (!skip(Token.t_is) && current() != Token.t_lbrace)
           {
-            syntaxError(pos(), "Expected 'is', '{' or '=>' in inline function declaration", "function");
+            syntaxError(pos(), "'is', '{' or '=>' in inline function declaration", "function");
           }
         if (r == NoType.INSTANCE)
           {
@@ -2280,7 +2280,7 @@ loopEpilog  : "until" exprAtMinIndent  <LF>  blockOpt elseBlockOpt
 
     if (!hasWhile && !hasDo && !hasUntil && els == null)
       {
-        syntaxError(pos(), "Expected loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
+        syntaxError(pos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
       }
     sameLine(oldLine);
     return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1).tailRecursiveLoop();
@@ -2725,7 +2725,7 @@ qualThis    : name ( dot name )* dot "this"
         q.add(name());
         if (!skipDot())
           {
-            syntaxError("operator '.'", "qualThis");
+            syntaxError("'.'", "qualThis");
           }
         pos = posObject();
       }
@@ -2908,7 +2908,7 @@ implRout    : block
     else if (skip("=>")) { result = new Impl(pos, block(true)      , Impl.Kind.RoutineDef); }
     else
       {
-        syntaxError(pos(), "Expected 'is', '{' or '=>' in routine declaration", "implRout");
+        syntaxError(pos(), "'is', '{' or '=>' in routine declaration", "implRout");
         result = Impl.ERROR;
       }
     return result;
@@ -2953,7 +2953,7 @@ implFldInit : ":=" exprAtMinIndent
   {
     if (!isOperator(":="))
       {
-        syntaxError(pos(), "Expected ':='", "implFldInit");
+        syntaxError(pos(), "':='", "implFldInit");
       }
 
     return implFldOrRout(hasType);
