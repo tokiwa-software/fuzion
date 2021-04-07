@@ -63,7 +63,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
     redef asStream ref : stream<T> is
       x := lower
       redef hasNext bool is x <= upper
-      redef next T is result = x; x = x + one
+      redef next T is res := x; set x := x + one; res
 
     forAll(f fun (T)) is asStream.consume(f)
 
@@ -97,7 +97,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
       redef asStream ref : stream<T> is
         x := lower
         redef hasNext bool is step > zero && x <= upper || step < zero && x >= upper
-        redef next T is result = x; x = x + step
+        redef next T is res := x; set x := x + step; res
 
       forAll  (f fun (T)) is asStream.consume(f)
       infix | (f fun (T)) is asStream.consume(f)

@@ -75,11 +75,12 @@ string ref is
 
         redef hasNext => bytes.hasNext
         redef next i32 is
-          result = bytes.next
+          res := bytes.next
           if !bytes.hasNext
-            i = i + 1
+            set i := i + 1
             if i < n
-              bytes = string.this.asBytes.asStream
+              set bytes := string.this.asBytes.asStream
+          res
 
 
   # compare string byte-by-byte with other string

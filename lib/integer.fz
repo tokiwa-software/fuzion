@@ -131,5 +131,5 @@ integer<T : integer<T>> : numeric<T> is
         redef hasNext => p.sign > 0
         redef next =>
           r := 48 + (thiz / p % ten).to_u32.as_i32
-          p = p / ten
+          set p := p / ten
           r

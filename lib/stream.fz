@@ -34,18 +34,19 @@ stream<T> ref is
   infix | (f fun (T)) unit is while hasNext do f(next)
   consume2(f fun (T) bool) unit is while hasNext && f(next)
   filter(f fun (T) bool) ref : stream<T> is
-    cache T = ?  # NYI: should be Option<T>
-    cacheOk bool = false
+    cache T := ?  # NYI: should be Option<T>
+    cacheOk := false
     next2
     redef hasNext => cacheOk
     redef next T is
-      result = cache
-      cacheOk = false
+      res := cache
+      set cacheOk := false
       next2
+      res
     next2 unit is
       while !cacheOk && stream.this.hasNext
-        cache = stream.this.next
-        cacheOk = f(cache)
+        set cache := stream.this.next
+        set cacheOk := f(cache)
   infix |& (f fun (T) bool) stream<T> is filter(f)
 
   infix ∀ (f fun (T) bool) bool is
@@ -60,8 +61,9 @@ stream<T> ref is
     nextCache := stream.this.next  # NYI should be Option<T> and set to None if !stream.this.hasNext
     redef hasNext => !f(nextCache)
     redef next T is
-      result = nextCache
-      nextCache = stream.this.next
+      res := nextCache
+      set nextCache := stream.this.next
+      res
 
   hasNext bool is abstract
   next T is abstract
@@ -74,12 +76,11 @@ stream<T> ref is
 #    result = 0
 #    consume(fun (x T) is result = result + 1 )
     res := 0
-    consume(fun (x T) is res = res + 1)
+    consume(fun (x T) is set res := res + 1)
     res
   take (n i32) => Array<T>(n, fun (_ i32) => next)
 
   redef asString ref string is
-    res string = ""
-
-    consume(fun (x T) is res = res + x.asString; if hasNext then res = res + ", ")
+    res := ""
+    consume(fun (x T) is set res := res + x.asString; if hasNext then set res := res + ", ")
     res

@@ -29,7 +29,7 @@ Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
 
 # private:
 
-  data Object = getData<T>(length)
+  data := getData<T>(length)
 
   for x in indices do
     setel(data, x, init(x))
@@ -46,7 +46,7 @@ Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
     pre
       safety: 0 <= i < length
   is
-    result = get<T>(data,i)
+    get<T>(data,i)
 
   set [ ] (i i32, o T)
     pre
@@ -62,7 +62,7 @@ Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
   redef asStream ref : stream<T> is
     x := 0
     redef hasNext => x < length
-    redef next => x = x + 1; get<T>(data, x - 1)
+    redef next => set x := x + 1; get<T>(data, x - 1)
 
 
   # create a list from this array

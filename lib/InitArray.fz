@@ -32,7 +32,7 @@ InitArray<T> is
   node (head T, tail list) ref is
 
     setTail(t list) is
-      tail = t
+      set tail := t
 
   list : choice<Nil, node> is
 
@@ -46,12 +46,12 @@ InitArray<T> is
   is
     nju := node(v, Nil)
     match (last)
-      Nil    => first = nju;    last = nju
-      n node => n.setTail(nju); last = nju
-    len = len + 1
+      Nil    => set first := nju; set last := nju
+      n node => n.setTail(nju);   set last := nju
+    set len := len + 1
     InitArray.this
 
   postfix & Array<T> is
-    result = Array<T>(len, fun (i i32) => { match first { n node => { first = n.tail; n.head }; Nil => { dummy } } })
+    Array<T>(len, fun (i i32) => { match first { n node => { set first := n.tail; n.head }; Nil => { dummy } } })
 
   dummy T is (InitArray.this &) [0]
