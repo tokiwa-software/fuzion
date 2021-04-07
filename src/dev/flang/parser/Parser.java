@@ -2561,40 +2561,29 @@ decompose   : decomp
             | decompDclOld
             ;
 decomp      : "(" argNames ")"       ":=" exprInLine
-decompOld   : "(" argNames ")"       "="  exprInLine  // NYI: Remove this once assignment without "set" is removed
 decompDecl  : formArgs               ":=" exprInLine
-decompDclOld: formArgs               "="  exprInLine  // NYI: Remove this once assignment without "set" is removed
 decompSet   : "set" "(" argNames ")" ":=" exprInLine
             ;
    */
   Stmnt decompose()
   {
-    Stmnt result;
     if (fork().skipFormArgs())
       {
-        List<Feature> a = formArgs();
-        SourcePosition pos = posObject();
-        if (!skip("="))  // NYI: Remove this once assignment without "set" is removed
-          {
-            matchOperator(":=", "decompose");
-          }
-        result = Decompose.create(pos, a, null, false, exprInLine());
+        var a = formArgs();
+        var pos = posObject();
+        matchOperator(":=", "decompose");
+        return Decompose.create(pos, a, null, false, exprInLine());
       }
     else
       {
         var hasSet = skip(Token.t_set);
         match(Token.t_lparen, "decompose");
-        List<String> names = argNames();
+        var names = argNames();
         match(Token.t_rparen, "decompose");
-        SourcePosition pos = posObject();
-        boolean def = !skip("=");  // NYI: Remove this once assignment without "set" is removed
-        if (def)
-          {
-            matchOperator(":=", "decompose");
-          }
-        result = Decompose.create(pos, null, names, !hasSet && def, exprInLine());
+        var pos = posObject();
+        matchOperator(":=", "decompose");
+        return Decompose.create(pos, null, names, !hasSet, exprInLine());
       }
-    return result;
   }
 
 
@@ -2607,7 +2596,8 @@ decompSet   : "set" "(" argNames ")" ":=" exprInLine
   boolean isDecomposePrefix()
   {
     return (current() == Token.t_lparen) && (fork().skipDecompDeclPrefix() ||
-                                             fork().skipDecompPrefix()        );
+                                             fork().skipDecompPrefix()        ) ||
+      (current() == Token.t_set) && (fork().skipDecompPrefix());
   }
 
 
@@ -2619,9 +2609,7 @@ decompSet   : "set" "(" argNames ")" ":=" exprInLine
    */
   boolean skipDecompDeclPrefix()
   {
-    return skipFormArgs() &&
-      (isOperator('=') || // NYI: Remove this once assignment without "set" is removed
-       isOperator(":="));
+    return skipFormArgs() && isOperator(":=");
   }
 
 
@@ -2644,8 +2632,7 @@ decompSet   : "set" "(" argNames ")" ":=" exprInLine
         while (result && skipComma());
         result = result
           && skip(Token.t_rparen)
-          && (isOperator('=') ||  // NYI: Remove this once assignment without "set" is removed
-              isOperator(":="));
+          && isOperator(":=");
       }
     return result;
   }
