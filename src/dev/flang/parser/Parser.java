@@ -1164,7 +1164,6 @@ call        : name ( actualGens actualArgs callTail
    *
 indexCall   : ( LBRACKET exprList RBRACKET
                 ( ":=" exprInLine
-                | "=" exprInLine   // NYI: Remove this once assignment without "set" is removed
                 |
                 )
               )+
@@ -1181,8 +1180,7 @@ indexCall   : ( LBRACKET exprList RBRACKET
         List<Expr> l = exprList();
         match(Token.t_rcrochet, "indexCall");
         sameLine(oldLine);
-        if (skip('=') || // NYI: Remove this once assignment without "set" is removed
-            skip(":="))
+        if (skip(":="))
           {
             l.add(exprInLine());
             result = new Call(pos, target, "index [ ] =", null, l);

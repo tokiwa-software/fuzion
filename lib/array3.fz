@@ -58,4 +58,4 @@ is
 #    post
 #      array.this[i1,i2] == o    -- NYI: There is no generic '==' operator (yet?)
   is
-    array.this[(i1 * length2 + i2) * length3 + i3] = o
+    array.this[(i1 * length2 + i2) * length3 + i3] := o

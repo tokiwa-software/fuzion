@@ -41,7 +41,7 @@ primes
           j := i, j + i;
         while j <= n
         {
-          a[j] = true;
+          a[j] := true;
         }
       }
     }
@@ -56,7 +56,7 @@ primes
         if (!a[i])
         {
           out.print(i); out.print(" ");
-          (1..n).forWhile(fun (j i32) bool { a[i*j] = true; (i*j+i) <= n });
+          (1..n).forWhile(fun (j i32) bool { a[i*j] := true; (i*j+i) <= n });
         }
       });
   }
@@ -68,10 +68,10 @@ primes
     (2..n).filter(fun (i i32) bool { !a[i] }).consume(fun (i i32)
       {
           out.print(i); out.print(" ");
-          (1..n/i).forAll(fun (j i32) { a[i*j] = true; } );
+          (1..n/i).forAll(fun (j i32) { a[i*j] := true; } );
          /* with more syntactic sugar, this could become:
 
-          (1..n/i).forAll(j => a[i*j] = true);
+          (1..n/i).forAll(j => a[i*j] := true);
           */
       });
   }
@@ -84,13 +84,13 @@ primes
     (2..n) |& (fun (i i32) => !a[i]) | fun (i i32)
       {
           out.print(i); out.print(" ");
-          (1..n/i) | fun (j i32) { a[i*j] = true; };
+          (1..n/i) | fun (j i32) { a[i*j] := true; };
       };
 /*
     (2..n) |& (i => !a[i]) | i =>
       {
           out.print(i); out.print(" ");
-          (1..n/i) | j => { a[i*j] = true; };
+          (1..n/i) | j => { a[i*j] := true; };
       };
       */
   }
