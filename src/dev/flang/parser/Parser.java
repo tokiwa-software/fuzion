@@ -257,12 +257,13 @@ field       : visibility
     FormalGenerics g = formGens();
     List<Feature> a = formArgs();
     ReturnType r = returnType();
+    var hasType = r != NoType.INSTANCE;
     List<Call> i = inherits();
     Contract c = contract(true);
     Impl p =
       g == FormalGenerics.NONE &&
       a.isEmpty()              &&
-      i.isEmpty()                 ? implFldOrRout()
+      i.isEmpty()                 ? implFldOrRout(hasType)
                                   : implRout();
     return new FList(pos, v,m,r,n,g,a,i,c,p);
   }
@@ -2310,7 +2311,7 @@ indexVar    : visibility
               modifiers
               name
               ( type contract implFldInit nextValue
-              |      contract implFldDef  nextValue
+              |      contract implFldInit nextValue
               | type contract implFldIter
               |      contract implFldIter
               )
@@ -2346,11 +2347,11 @@ nextValue   : COMMA exprAtMinIndent
       }
     else
       {
-        p1 = hasType ?        implFldInit() :        implFldDef();
-        p2 = hasType ? forked.implFldInit() : forked.implFldDef();
+        p1 =        implFldInit(hasType);
+        p2 = forked.implFldInit(hasType);
         // up to here, this and forked parse the same, i.e, v1, m1, .. p1 is the
         // same as v2, m2, .. p2.  Now, we check if there is a comma, which
-        // means there is a differen value for the second and following
+        // means there is a different value for the second and following
         // iterations:
         if (skipComma())
           {
@@ -2514,24 +2515,15 @@ checkstmt   : "check" cond
    * Parse assign
    *
 assign      : "set" name ":=" exprInLine
-            | name "=" exprInLine  // NYI: Remove this case once assignment without "set" is removed
             ;
    */
   Stmnt assign()
   {
-    var hasSet = skip(Token.t_set);
+    match(Token.t_set, "assign");
     String n = name();
     SourcePosition pos = posObject();
-    if (hasSet)
-      {
-        matchOperator(":=", "assign");
-      }
-    else
-      {
-        matchOperator("=", "assign");
-      }
-    Expr e = exprInLine();
-    return new Assign(pos, n, e);
+    matchOperator(":=", "assign");
+    return new Assign(pos, n, exprInLine());
   }
 
 
@@ -2543,8 +2535,7 @@ assign      : "set" name ":=" exprInLine
    */
   boolean isAssignPrefix()
   {
-    return (current() == Token.t_set) && fork().skipAssignPrefix() ||
-      isNamePrefix() && fork().skipAssignPrefixOld(); // NYI: Remove this case once assignment without "set" is removed
+    return (current() == Token.t_set) && fork().skipAssignPrefix();
   }
 
 
@@ -2557,18 +2548,6 @@ assign      : "set" name ":=" exprInLine
   boolean skipAssignPrefix()
   {
     return skip(Token.t_set) && skipName() && isOperator(":=");
-  }
-
-
-  /**
-   * Check if the current position starts an assign and skip an unspecified part
-   * of it.
-   *
-   * @return true iff the next token(s) start an assign.
-   */
-  boolean skipAssignPrefixOld() // NYI: Remove this once assignment without "set" is removed
-  {
-    return skipName() && isOperator('=');
   }
 
 
@@ -2941,11 +2920,10 @@ implRout    : block
    *
 impl        : implRout
             | implFldInit
-            | implFldDef
             |
             ;
    */
-  Impl implFldOrRout()
+  Impl implFldOrRout(boolean hasType)
   {
     SourcePosition pos = posObject();
     Impl result;
@@ -2955,12 +2933,11 @@ impl        : implRout
       {
         return implRout();
       }
-    else if (skip('=') ) { result = skip('?')   // NYI: Remove this once field init with '=' is removed
-                                  ? Impl.FIELD
-                                  : new Impl(pos, exprAtMinIndent(), Impl.Kind.FieldInit ); }
     else if (skip(":=")) { result = skip('?')
                                   ? Impl.FIELD
-                                  : new Impl(pos, exprAtMinIndent(), Impl.Kind.FieldDef  ); }
+                                  : new Impl(pos, exprAtMinIndent(),
+                                             hasType ? Impl.Kind.FieldInit
+                                                     : Impl.Kind.FieldDef); }
     else                 { result = Impl.FIELD;                                             }
     return result;
   }
@@ -2972,23 +2949,14 @@ impl        : implRout
 implFldInit : ":=" exprAtMinIndent
             ;
    */
-  Impl implFldInit() // NYI: Remove this once field init with '=' is removed
+  Impl implFldInit(boolean hasType)
   {
-    fork().matchOperator("=", "implInit");
-    return implFldOrRout();
-  }
+    if (!isOperator(":="))
+      {
+        syntaxError(pos(), "Expected ':='", "implFldInit");
+      }
 
-
-  /**
-   * Parse implFldDef
-   *
-implFldDef  : DEF exprAtMinIndent
-            ;
-   */
-  Impl implFldDef()
-  {
-    fork().matchOperator(":=", "implDef");
-    return implFldOrRout();
+    return implFldOrRout(hasType);
   }
 
 

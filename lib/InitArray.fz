@@ -36,9 +36,9 @@ InitArray<T> is
 
   list : choice<Nil, node> is
 
-  first list = Nil
-  last list = Nil
-  len i32 = 0
+  first list := Nil
+  last list := Nil
+  len i32 := 0
 
   infix + (v T) InitArray<T>
   post

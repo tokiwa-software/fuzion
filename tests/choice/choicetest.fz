@@ -33,8 +33,8 @@ choicetest {
   Yellow ref : Light {}
   Green  ref : Light {}
 
-  l1 Light = Red;
-  l2 Light = Green;
+  l1 Light := Red;
+  l2 Light := Green;
 
   out.println("l1 is Red, l2 is Green");
 

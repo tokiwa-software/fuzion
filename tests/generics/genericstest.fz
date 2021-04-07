@@ -46,7 +46,7 @@ genericstest {
     public Nil { }
     OptNode : choice<Node,Nil> { }
 
-    h OptNode = Nil;
+    h OptNode := Nil;
     add(e T) {
       set h := Node(e,h,Nil);
     }
@@ -82,7 +82,7 @@ genericstest {
     }
   }
 
-  li List<i32> = List<i32>;
+  li List<i32> := List<i32>;
   li.add(3);
   li.add(4);
   li.add(5);
@@ -127,7 +127,7 @@ genericstest {
     postfix >>>> i32 { a-1000 } // q>>>> is 1000 smaller
   }
 
-  a q = ?;
+  a q := ?;
   set a := q(    2); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
   set a := q(   20); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
   set a := q(  200); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
@@ -190,8 +190,8 @@ genericstest {
         }
       }
     }
-    x0 A<i32,bool  > = A<i32,bool>;
-    x1 A<i32,bool  >.B<string,bool> = A<i32,bool>.B<string,bool>(true);
+    x0 A<i32,bool  > := A<i32,bool>;
+    x1 A<i32,bool  >.B<string,bool> := A<i32,bool>.B<string,bool>(true);
     x1.p;
   }
   outerGenerics;  // should print "y is true".
@@ -212,9 +212,9 @@ genericstest {
       }
     }
 
-    x G = G();
+    x G := G();
     x.f(3,true,3);
-    y F<i32,bool,i32> = x;
+    y F<i32,bool,i32> := x;
     y.f(5,true,5);
     z := G;
     z.f(7,true,7);

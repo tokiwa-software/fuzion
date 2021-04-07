@@ -26,9 +26,9 @@
 pair {
   Pair<A,B>(public a A, public b B) { }
 
-  pi i32 = 3;
-  pl i64 = 5;
-  p1 Pair<i32,i64> = Pair<i32,i64   >(pi,pl);
+  pi i32 := 3;
+  pl i64 := 5;
+  p1 Pair<i32,i64> := Pair<i32,i64   >(pi,pl);
 
   stdout.println("p1.a = " + p1.a);
   stdout.println("p1.b = " + p1.b);

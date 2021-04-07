@@ -29,7 +29,7 @@ inheritance {
 
   out := stdout;
 
-  curid i32 = 0;
+  curid i32 := 0;
   id i32
   {
     set result := curid;
@@ -37,7 +37,7 @@ inheritance {
   }
 
   A ref {
-    ident i32 = id;
+    ident i32 := id;
     out.println("A's body" + ident);
     x is abstract
   }
@@ -58,16 +58,16 @@ inheritance {
     redefine xb { out.println("E.xb"); }
     redefine xc { out.println("E.xc"); }
   }
-  bi B = B;
-  ci inheritance.C = C;
-  aa inheritance.A = bi;
+  bi B := B;
+  ci inheritance.C := C;
+  aa inheritance.A := bi;
   bi.x;
   ci.x;
   aa.x;
   set aa := ci;
   aa.x;
-  di inheritance.D = D;
-  ei inheritance.E = E;
+  di inheritance.D := D;
+  ei inheritance.E := E;
   out.println("Calling non-redefed multiple");
   di.x;
   di.xb;

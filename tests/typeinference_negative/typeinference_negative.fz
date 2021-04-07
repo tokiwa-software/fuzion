@@ -267,7 +267,7 @@ typeinference_negative {
   {
     if       b     { 3 }         // 46. should flag an error: result type cannot be inferred
     else if !b     { "string" }
-    else if b && b { x i32 = 3; }
+    else if b && b { x i32 := 3; }
     else if b || b { }
     else           { false }
   }
@@ -278,7 +278,7 @@ typeinference_negative {
     {
       if       b     { 3 }         // 47. should flag an error: result type cannot be inferred
       else if !b     { "string" }
-      else if b && b { x i32 = 3; }
+      else if b && b { x i32 := 3; }
       else if b || b { }
       else           { false }
     }
@@ -286,7 +286,7 @@ typeinference_negative {
 
   typeInferencingFromIf3(b bool)
   {
-    f choice<i32,string,bool> =
+    f choice<i32,string,bool> :=
     {
       if       b { 3 }
       else if !b { "string" }
@@ -357,9 +357,9 @@ typeinference_negative {
     D { }
     E { }
     abcde : choice<A,B,C,D,E> { }
-    x abcde = A;
+    x abcde := A;
 
-    f choice<i32,string,bool,E> =
+    f choice<i32,string,bool,E> :=
     {
       match x
       {
@@ -379,7 +379,7 @@ typeinference_negative {
     D { }
     E { }
     abcde : choice<A,B,C,D,E> { }
-    x abcde = A;
+    x abcde := A;
 
     f(y choice<i32,string,bool,E>);
     f({

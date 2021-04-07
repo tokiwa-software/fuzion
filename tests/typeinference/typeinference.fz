@@ -39,7 +39,7 @@ typeinference
 
   typeInferencingFromIf1(b bool)
   {
-    f choice<i32,string,bool> =
+    f choice<i32,string,bool> :=
     {
       if       b { 3 }
       else if !b { false }

@@ -99,7 +99,7 @@ choice_negative
   {
     A : choice<i32, string, bool>
     {
-      x i32 = ?; // 13. should flag an error: choice type must not have any fields
+      x i32 := ?; // 13. should flag an error: choice type must not have any fields
     }
   }
 
@@ -112,7 +112,7 @@ choice_negative
 
   nofields3
   {
-    A { x i32 = ? }
+    A { x i32 := ? }
     B : A, choice<i32, string, bool>  // 15. should flag an error: choice type must not have any fields
     {
     }
@@ -120,7 +120,7 @@ choice_negative
 
   nofields4
   {
-    A { x i32 = ? }
+    A { x i32 := ? }
     B : choice<i32, string, bool>, A  // 16. should flag an error: choice type must not have any fields
     {
     }
@@ -159,12 +159,12 @@ choice_negative
 
   args2
   {
-    x choice<i32, i32> = ? // 21. should flag an error: generic args to choice must be different
+    x choice<i32, i32> := ? // 21. should flag an error: generic args to choice must be different
   }
 
   args3
   {
-    x i32 | i32 = ?;  // 22. should flag an error: generic args to choice must be different
+    x i32 | i32 := ?;  // 22. should flag an error: generic args to choice must be different
   }
 
   args4
@@ -180,14 +180,14 @@ choice_negative
   {
     S ref { }
     R ref : S { }
-    x choice<R, S> = ?;  // 24. should flag an error: generic args to choice must be different
+    x choice<R, S> := ?;  // 24. should flag an error: generic args to choice must be different
   }
 
   args6
   {
     S ref { }
     R ref : S { }
-    x R | S = ?;  // 25. should flag an error: generic args to choice must be different
+    x R | S := ?;  // 25. should flag an error: generic args to choice must be different
   }
 
   outer1(x i32)
@@ -217,7 +217,7 @@ choice_negative
 
   impl1
   {
-    x bool : choice<i64,bool> = true;  // 28. should flag an error, choice feature must not be field
+    x bool : choice<i64,bool> := true;  // 28. should flag an error, choice feature must not be field
   }
   impl2
   {
@@ -249,7 +249,7 @@ choice_negative
   }
   impl9
   {
-    x choice<i64,bool> = false;  // ok
+    x choice<i64,bool> := false;  // ok
   }
 
 }

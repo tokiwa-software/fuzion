@@ -58,12 +58,12 @@ tupletest
   chck(g1bv1.a && g1bv1.b && !g1bv1.c, "g1b<AAAA> infer AAAA==bool");
 //  chck((g1bv2.a.length + g1bv2.b.length + g1bv2.c.length) == 11, "g1b<AAAA> infer AAAA==string");   // NYI: string.length
 
-  nothing1 Tuple<> = Tuple<>(); p("nothing1 is " + nothing1); // empty Tuple using explicit types
-  nothing2 Tuple<> = Tuple  (); p("nothing2 is " + nothing2); // empty Tuple using explicit type and inferring generic
-  nothing3 Tuple<> =        (); p("nothing3 is " + nothing3); // empty Tuple using explicit type and tuple syntax sugar
-  nothing4 Tuple   = Tuple<>(); p("nothing4 is " + nothing4); // empty Tuple inferring generics and explicit type
-  nothing5 Tuple   = Tuple  (); p("nothing5 is " + nothing5); // empty Tuple inferring generics and inferring generic
-  nothing6 Tuple   =        (); p("nothing6 is " + nothing6); // empty Tuple inferring generics and tuple syntax sugar
+  nothing1 Tuple<> := Tuple<>(); p("nothing1 is " + nothing1); // empty Tuple using explicit types
+  nothing2 Tuple<> := Tuple  (); p("nothing2 is " + nothing2); // empty Tuple using explicit type and inferring generic
+  nothing3 Tuple<> :=        (); p("nothing3 is " + nothing3); // empty Tuple using explicit type and tuple syntax sugar
+  nothing4 Tuple   := Tuple<>(); p("nothing4 is " + nothing4); // empty Tuple inferring generics and explicit type
+  nothing5 Tuple   := Tuple  (); p("nothing5 is " + nothing5); // empty Tuple inferring generics and inferring generic
+  nothing6 Tuple   :=        (); p("nothing6 is " + nothing6); // empty Tuple inferring generics and tuple syntax sugar
   nothing7        := Tuple<>(); p("nothing7 is " + nothing7); // empty Tuple inferring type and explicit type
   nothing8        := Tuple  (); p("nothing8 is " + nothing8); // empty Tuple inferring type and inferring generic
   nothing9        :=        (); p("nothing9 is " + nothing9); // empty Tuple inferring type and tuple syntax sugar
@@ -75,12 +75,12 @@ tupletest
 //  ()              :=        (); p("nothing12 is ()");                   // should cause syntax error
   // cant do any chck()s on empty tuples, let's hope everything is fine
 
-  one1 Tuple<i32> = Tuple<i32>(42); p("one1 is " + one1.values.0); // one-Tuple using explicit types
-  one2 Tuple<i32> = Tuple     (42); p("one2 is " + one2.values.0); // one-Tuple using explicit type and inferring generic
-//  one3 Tuple<i32> =           (42); p("one3 is " + one3.values.0); // one-Tuple using explicit type and tuple syntax sugar
-//  one4 Tuple      = Tuple<i32>(42); p("one4 is " + one4.values.0); // one-Tuple inferring generics and explicit type
-//  one5 Tuple      = Tuple     (42); p("one5 is " + one5.values.0); // one-Tuple inferring generics and inferring generic
-//  one6 Tuple      =           (42); p("one6 is " + one6.values.0); // one-Tuple inferring generics and tuple syntax sugar
+  one1 Tuple<i32> := Tuple<i32>(42); p("one1 is " + one1.values.0); // one-Tuple using explicit types
+  one2 Tuple<i32> := Tuple     (42); p("one2 is " + one2.values.0); // one-Tuple using explicit type and inferring generic
+//  one3 Tuple<i32> :=           (42); p("one3 is " + one3.values.0); // one-Tuple using explicit type and tuple syntax sugar
+//  one4 Tuple      := Tuple<i32>(42); p("one4 is " + one4.values.0); // one-Tuple inferring generics and explicit type
+//  one5 Tuple      := Tuple     (42); p("one5 is " + one5.values.0); // one-Tuple inferring generics and inferring generic
+//  one6 Tuple      :=           (42); p("one6 is " + one6.values.0); // one-Tuple inferring generics and tuple syntax sugar
   one7           := Tuple<i32>(42); p("one7 is " + one7.values.0); // one-Tuple inferring type and explicit type
   one8           := Tuple<i32>(42); p("one8 is " + one8.values.0); // one-Tuple inferring type and inferring generic
 //  one9           :=           (42); p("one9 is " + one9.values.0); // one-Tuple inferring type and tuple syntax sugar
@@ -106,12 +106,12 @@ tupletest
   chck(one16 == 42, "one10");
   chck(one17 == 42, "one10");
 
-  two1 Tuple<i32,i32> = Tuple<i32,i32>(4, 2); p("two1 is " + two1.values.0 + ", " + two1.values.1); // one-Tuple using explicit types
-  two2 Tuple<i32,i32> = Tuple         (4, 2); p("two2 is " + two2.values.0 + ", " + two2.values.1); // one-Tuple using explicit type and inferring generic
-  two3 Tuple<i32,i32> =               (4, 2); p("two3 is " + two3.values.0 + ", " + two3.values.1); // one-Tuple using explicit type and tuple syntax sugar
-//  two4 Tuple          = Tuple<i32,i32>(4, 2); p("two4 is " + two4.values.0 + ", " + two4.values.1); // one-Tuple inferring generics and explicit type
-//  two5 Tuple          = Tuple         (4, 2); p("two5 is " + two5.values.0 + ", " + two5.values.1); // one-Tuple inferring generics and inferring generic
-//  two6 Tuple          =               (4, 2); p("two6 is " + two6.values.0 + ", " + two6.values.1); // one-Tuple inferring generics and tuple syntax sugar
+  two1 Tuple<i32,i32> := Tuple<i32,i32>(4, 2); p("two1 is " + two1.values.0 + ", " + two1.values.1); // one-Tuple using explicit types
+  two2 Tuple<i32,i32> := Tuple         (4, 2); p("two2 is " + two2.values.0 + ", " + two2.values.1); // one-Tuple using explicit type and inferring generic
+  two3 Tuple<i32,i32> :=               (4, 2); p("two3 is " + two3.values.0 + ", " + two3.values.1); // one-Tuple using explicit type and tuple syntax sugar
+//  two4 Tuple          := Tuple<i32,i32>(4, 2); p("two4 is " + two4.values.0 + ", " + two4.values.1); // one-Tuple inferring generics and explicit type
+//  two5 Tuple          := Tuple         (4, 2); p("two5 is " + two5.values.0 + ", " + two5.values.1); // one-Tuple inferring generics and inferring generic
+//  two6 Tuple          :=               (4, 2); p("two6 is " + two6.values.0 + ", " + two6.values.1); // one-Tuple inferring generics and tuple syntax sugar
   two7               := Tuple<i32,i32>(4, 2); p("two7 is " + two7.values.0 + ", " + two7.values.1); // one-Tuple inferring type and explicit type
   two8               := Tuple<i32,i32>(4, 2); p("two8 is " + two8.values.0 + ", " + two8.values.1); // one-Tuple inferring type and inferring generic
   two9               :=               (4, 2); p("two9 is " + two9.values.0 + ", " + two9.values.1); // one-Tuple inferring type and tuple syntax sugar
@@ -167,8 +167,8 @@ tupletest
   chck(t10a1 == 3, "t10a1");
   chck(!t10a2, "t10a2");
 
-  t10b1 i32 = ?;
-  t10b2 bool = ?;
+  t10b1 i32 := ?;
+  t10b2 bool := ?;
   ib (i i32, b bool) { };
   (t10b1, t10b2) = ib(33,true);
   p("Tuple t10b1/2 = ib is " + t10b1 + ", " + t10b2);
@@ -237,7 +237,7 @@ tupletest
   (_,_) := (true, 23);
 
   t13a1, t13a3 i32;
-  t13a2 bool = ?;
+  t13a2 bool := ?;
   (t13a1,_,_) = (01, 12, 23); chck(t13a1 == 01, "t13a1 must be 01");
 //  (_,t13a2,_) = (01, 12, 23); // 24. should flag an error, illegal type
   (_,_,t13a3) = (01, 12, 23); chck(t13a3 == 23, "t13a3 must be 23");
@@ -251,8 +251,8 @@ tupletest
   (_,t13d2,_) := (01, 12, 23); chck(t13d2 == 12, "t13d2 must be 12");
   (_,_,t13d3) := (01, 12, 23); chck(t13d3 == 23, "t13d3 must be 23");
 
-  t14a1, t14a3 i32 = ?;
-  t14a2 bool = ?;
+  t14a1, t14a3 i32 := ?;
+  t14a2 bool := ?;
   (t14a1,_,_) = (01, true, 23); chck(t14a1 == 01, "t14a1 must be 01");
   (_,t14a2,_) = (01, true, 23); chck(t14a2      , "t14a2 must be true");
   (_,_,t14a3) = (01, true, 23); chck(t14a3 == 23, "t14a3 must be 23");
@@ -266,8 +266,8 @@ tupletest
   (_,t14d2,_) := (01, true, 23); chck(t14d2      , "t14d2 must be true");
   (_,_,t14d3) := (01, true, 23); chck(t14d3 == 23, "t14d3 must be 23");
 
-  t15a1, t15a3 i32 = ?;
-  t15a2 bool = ?;
+  t15a1, t15a3 i32 := ?;
+  t15a2 bool := ?;
   (t15a1,_,_) = (01, true, 23); chck(t15a1 == 01, "t15a1 must be 01");
   (_,t15a2,_) = (01, true, 23); chck(t15a2      , "t15a2 must be true");
   (_,_,t15a3) = (01, true, 23); chck(t15a3 == 23, "t15a3 must be 23");

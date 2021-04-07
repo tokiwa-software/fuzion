@@ -337,7 +337,7 @@ looptest
   testWriteToDeclaredVar =>
   {
     for
-      i i32 = 0, i+2;
+      i i32 := 0, i+2;
       j := 100, i*i;
     until i >= 100
       {
@@ -350,7 +350,7 @@ looptest
   testWriteToDeclaredVar2 =>
   {
     for
-      i i32 = 0, i+2;
+      i i32 := 0, i+2;
       j := 100, i*i;
     until i >= 100
       (i, j)

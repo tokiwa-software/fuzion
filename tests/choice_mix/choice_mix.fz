@@ -43,11 +43,11 @@ choice_mix {
                Nil,
                MyRef> { };
 
-  a Mix = 3;
-  b Mix = true;
-  c Mix = "string";
-  d Mix = Nil;
-  e Mix = MyRef(3,4,5);
+  a Mix := 3;
+  b Mix := true;
+  c Mix := "string";
+  d Mix := Nil;
+  e Mix := MyRef(3,4,5);
 
   show_a()
   {
@@ -137,7 +137,7 @@ choice_mix {
     }
   }
 
-  v00 Mix = ?;
+  v00 Mix := ?;
 
   show00()
   {
@@ -208,7 +208,7 @@ choice_mix {
       out.print("show(b): "); show(b);
       out.print("show(c): "); show(c);
       out.print("show(d): "); show(d);
-      x Mix = a;
+      x Mix := a;
       set a := b;
       set b := c;
       set c := d;

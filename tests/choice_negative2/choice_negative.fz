@@ -29,7 +29,7 @@ choice_negative
   {
     A
     {
-      x A | i32 | string = "Hello";  // 4. should flag an error: cyclic choice
+      x A | i32 | string := "Hello";  // 4. should flag an error: cyclic choice
       s
       {
         match x
@@ -47,7 +47,7 @@ choice_negative
   {
     A
     {
-      x ref A | i32 | string = "Hello";
+      x ref A | i32 | string := "Hello";
       s
       {
         match x
@@ -65,7 +65,7 @@ choice_negative
   {
     A
     {
-      x i32 | A | string = "Hello";  // 5. should flag an error: cyclic choice
+      x i32 | A | string := "Hello";  // 5. should flag an error: cyclic choice
       s
       {
         match x
@@ -83,7 +83,7 @@ choice_negative
   {
     A
     {
-      x i32 | ref A | string = "Hello";
+      x i32 | ref A | string := "Hello";
       s
       {
         match x
@@ -101,7 +101,7 @@ choice_negative
   {
     A
     {
-      x i32 | string | A = "Hello";  // 6. should flag an error: cyclic choice
+      x i32 | string | A := "Hello";  // 6. should flag an error: cyclic choice
       s
       {
         match x
@@ -119,7 +119,7 @@ choice_negative
   {
     A
     {
-      x i32 | string | ref A = "Hello";
+      x i32 | string | ref A := "Hello";
       s
       {
         match x

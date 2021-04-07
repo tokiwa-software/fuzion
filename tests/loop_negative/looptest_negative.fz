@@ -82,8 +82,8 @@ looptest_negative
       "3333"
     }
   }
-  neg3i i32    = testLoop_neg3(a, fun(i i32) => i > 10); //  3.a should flag an error: incompatible result types VOID vs. i32
-  neg3i string = testLoop_neg3(a, fun(i i32) => i > 10); //  3.b should flag an error: incompatible result types VOID vs. string
+  neg3i i32    := testLoop_neg3(a, fun(i i32) => i > 10); //  3.a should flag an error: incompatible result types VOID vs. i32
+  neg3i string := testLoop_neg3(a, fun(i i32) => i > 10); //  3.b should flag an error: incompatible result types VOID vs. string
 
   out.println("testLoop_neg4: loop return 4444 on else branch, no success possible");
   testLoop_neg4(data Array<i32>, isWhatWeWant fun (i32) bool) =>
@@ -111,7 +111,7 @@ looptest_negative
   testWriteToIndexVar
   {
     for
-      i i32 = 0, i+1;
+      i i32 := 0, i+1;
       j := 100, j-1;
       k in 0..10;
       l in 0..20 : 2;
@@ -128,7 +128,7 @@ looptest_negative
   testWriteToDeclaredVar
   {
     for
-      i i32 = 0;
+      i i32 := 0;
       j := 100;
     do
       {

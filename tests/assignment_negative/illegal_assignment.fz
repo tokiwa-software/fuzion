@@ -33,7 +33,7 @@ illegal_assignment {
     E ref { x { stdout.println("*** should never be here ***"); } xb {}; xc {}; }
   }
 
-  curid i32 = 0;
+  curid i32 := 0;
   id i32
   {
     set result := curid;
