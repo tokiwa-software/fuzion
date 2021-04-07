@@ -64,7 +64,7 @@ public class Errors extends ANY
    * Ser of warnings that have been shown so far. This is used to avoid presenting
    * error repeatedly.
    */
-  private static final TreeSet<String> _warnings_ = new TreeSet<>();
+  private static final TreeSet<Error> _warnings_ = new TreeSet<>();
 
 
   /**
@@ -238,35 +238,48 @@ public class Errors extends ANY
     Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
     if (!_errors_.contains(e))
       {
-        if (true)  // true: a blank line before errors, false: separation line between errors
-          {
-            System.err.println();
-          }
-        else
-          {
-            if (count() > 0)
-              {
-                System.err.println("------------");
-              }
-          }
         _errors_.add(e);
-        if (pos == null)
-          {
-            println(errorMessage(msg));
-            if (detail != null && !detail.equals(""))
-              {
-                println(detail);
-              }
-            println("");
-          }
-        else
-          {
-            pos.show(errorMessage(msg), detail);
-          }
+        print(pos, errorMessage(msg), detail);
         if (count() >= MAX_ERROR_MESSAGES)
           {
             showAndExit();
           }
+      }
+  }
+
+
+  /**
+   * print the given error or warning found during compilation.
+   *
+   * @param pos source code position where this error occured, may be null
+   *
+   * @param msg the error or warning message created by errorMessage() or
+   * warningMessage().
+   *
+   * @param detail details for this error, may contain LFs and case specific details, may be null
+   */
+  private static void print(SourcePosition pos, String msg, String detail)
+  {
+    if (true)  // true: a blank line before errors, false: separation line between errors
+      {
+        System.err.println();
+      }
+    else
+      {
+        System.err.println("------------");
+      }
+    if (pos == null)
+      {
+        println(msg);
+        if (detail != null && !detail.equals(""))
+          {
+            println(detail);
+          }
+        println("");
+      }
+    else
+      {
+        pos.show(msg, detail);
       }
   }
 
@@ -411,10 +424,29 @@ public class Errors extends ANY
    */
   public static void warning(String msg)
   {
-    if (!_warnings_.contains(msg))
+    warning(null, msg, null);
+  }
+
+
+  /**
+   * Record the given warning found during compilation.
+   *
+   * @param pos source code position where this warning occured, may be null
+   *
+   * @param msg the warning message, should not contain any LF or any case specific details
+   *
+   * @param detail details for this warning, may contain LFs and case specific details, may be null
+   */
+  public static void warning(SourcePosition pos, String msg, String detail)
+  {
+    if (PRECONDITIONS) require
+      (msg != null);
+
+    Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
+    if (!_warnings_.contains(e))
       {
-        _warnings_.add(msg);
-        System.err.println(warningMessage(msg));
+        _warnings_.add(e);
+        print(pos, warningMessage(msg), detail);
       }
   }
 
