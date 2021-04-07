@@ -254,7 +254,7 @@ public class Clazz extends ANY implements Comparable
        Errors.count() > 0 || !actualType.isGenericArgument(),
        Errors.count() > 0 || actualType.isFreeFromFormalGenerics(),
        actualType.featureOfType().outer() == null || outer.feature().inheritsFrom(actualType.featureOfType().outer()),
-       actualType == Types.t_ERROR || actualType.featureOfType().outer() != null || outer == null,
+       Errors.count() > 0 || actualType.featureOfType().outer() != null || outer == null,
        Errors.count() > 0 || (actualType != Types.t_ERROR     &&
                               actualType != Types.t_UNDEFINED &&
                               actualType != Types.t_INFER       ),
@@ -690,6 +690,9 @@ public class Clazz extends ANY implements Comparable
    */
   public Clazz lookup(Feature f, List<Type> actualGenerics, SourcePosition p)
   {
+    if (PRECONDITIONS) require
+                         (f != null);
+
     Feature af = findRedefinition(f);
     Clazz innerClazz = null;
     if (f == Types.f_ERROR)

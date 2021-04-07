@@ -897,14 +897,19 @@ public class Feature extends ANY implements Stmnt, Comparable
     if (PRECONDITIONS) require
       (state_.atLeast(State.RESOLVING_TYPES));
 
-    List<Type> result = null;
+    List<Type> result;
 
-    if (this == Types.resolved.f_choice)
+    if (this == Types.f_ERROR)
+      {
+        result = null;
+      }
+    else if (this == Types.resolved.f_choice)
       {
         result = generics.asActuals();
       }
     else
       {
+        result = null;
         Call lastP = null;
         for (Call p: inherits)
           {
@@ -2238,7 +2243,7 @@ public class Feature extends ANY implements Stmnt, Comparable
    *
    * @param argcount the number of arguments, -1 if not specified.
    *
-   * @return the found feature or null in case of an error.
+   * @return the found feature or Types.f_ERROR in case of an error.
    */
   Feature get(Resolution res, String qname, boolean markUsed, int argcount)
   {
@@ -2279,7 +2284,7 @@ public class Feature extends ANY implements Stmnt, Comparable
               }
           }
       }
-    return err ? null : f;
+    return err ? Types.f_ERROR : f;
   }
 
 

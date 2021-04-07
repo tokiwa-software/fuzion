@@ -209,7 +209,7 @@ public class Types extends ANY
   public static Type intern(Type t)
   {
     require
-      (t.isGenericArgument() || t.feature != null);
+      (t.isGenericArgument() || t.feature != null || Errors.count() > 0);
 
     if (!t.isGenericArgument())
       {
