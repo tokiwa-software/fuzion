@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-sys single is
+sys is
   out single is
     print  (s Object) => stdout.print  (s)
     println(s Object) => stdout.println(s)
