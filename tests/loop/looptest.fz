@@ -38,10 +38,10 @@ looptest
       "FAILED: "
     out.println s + msg
 
-  a := Array<i32>(100, fun (i i32) => { if (i % 23 == 0) { -2*i } else { i*i } });
+  a := array<i32>(100, fun (i i32) => { if (i % 23 == 0) { -2*i } else { i*i } });
 
   out.println("testLoop0: plain while loop");
-  testLoop0(data Array<i32>, isWhatWeWant fun (i32) bool)
+  testLoop0(data array<i32>, isWhatWeWant fun (i32) bool)
   {
     found := false;
     ix := 0;
@@ -70,7 +70,7 @@ looptest
   out.print("searching first larger 100000: "); testLoop0(a, fun (i i32) => i > 100000);
 
   out.println("testLoop1: plain while-until loop");
-  testLoop1(data Array<i32>, isWhatWeWant fun (i32) bool)
+  testLoop1(data array<i32>, isWhatWeWant fun (i32) bool)
   {
     ix := 0;
     while ix < data.length
@@ -97,7 +97,7 @@ looptest
   out.print("searching first larger 100000: "); testLoop1(a, fun (i i32) => i > 100000);
 
   out.println("testLoop2: loop with index variables");
-  testLoop2(data Array<i32>, isWhatWeWant fun (i32) bool)
+  testLoop2(data array<i32>, isWhatWeWant fun (i32) bool)
   {
     for ix := 0, ix + 1
     while ix < data.length
@@ -123,7 +123,7 @@ looptest
   out.print("searching first larger 100000: "); testLoop2(a, fun (i i32) => i > 100000);
 
   out.println("testLoop3: loop with index variables, variant and invariant");
-  testLoop3(data Array<i32>, isWhatWeWant fun (i32) bool)
+  testLoop3(data array<i32>, isWhatWeWant fun (i32) bool)
   {
     for ix := 0, ix + 1
     variant data.length - ix
@@ -151,7 +151,7 @@ looptest
   out.print("searching first larger 100000: "); testLoop3(a, fun (i i32) => i > 100000);
 
   out.println("testLoop4: loop with index variables, empty body");
-  testLoop4(data Array<i32>, isWhatWeWant fun (i32) bool)
+  testLoop4(data array<i32>, isWhatWeWant fun (i32) bool)
   {
     for ix := 0, ix + 1
     variant data.length - ix
@@ -176,7 +176,7 @@ looptest
   out.print("searching first larger 100000: "); testLoop4(a, fun (i i32) => i > 100000);
 
   out.println("testLoop5: loop with index variables, no while and empty body");
-  testLoop5(data Array<i32>, isWhatWeWant fun (i32) bool)
+  testLoop5(data array<i32>, isWhatWeWant fun (i32) bool)
   {
     for ix := 0, ix + 1
     variant data.length - ix
@@ -203,7 +203,7 @@ looptest
   out.print("searching first larger 100000: "); testLoop5(a, fun (i i32) => i > 100000);
 
   out.println("testLoop6: loop which returns a string");
-  testLoop6(data Array<i32>, isWhatWeWant fun (i32) bool) =>
+  testLoop6(data array<i32>, isWhatWeWant fun (i32) bool) =>
   {
     for ix := 0, ix + 1
     variant data.length - ix
@@ -231,7 +231,7 @@ looptest
   out.print("searching first larger 100000: "); out.print(testLoop6(a, fun (i i32) => i > 100000)); out.println;
 
   out.println("testLoop7: loop return 3333 on success and 4444 in else branch");
-  testLoop7(data Array<i32>, isWhatWeWant fun (i32) bool) i32
+  testLoop7(data array<i32>, isWhatWeWant fun (i32) bool) i32
   {
     for ix := 0, ix + 1;
     while ix < data.length
@@ -251,7 +251,7 @@ looptest
   chck(testLoop7(a, fun (i i32) => i >  10000) == 4444, "testLoop7 returns 4444 in else branch");
 
   out.print("testLoop8: loop return success index as default and 4444 in else branch");
-  testLoop8(data Array<i32>, isWhatWeWant fun (i32) bool) i32
+  testLoop8(data array<i32>, isWhatWeWant fun (i32) bool) i32
   {
     for ix := 0, ix + 1;
     while ix < data.length
@@ -269,7 +269,7 @@ looptest
   chck(testLoop8(a, fun (i i32) => i >  10000) == 4444, "testLoop8 returns 4444 in else branch");
 
   out.println("testLoop9: loop return 3333 on success, index as default");
-  testLoop9(data Array<i32>, isWhatWeWant fun (i32) bool) i32
+  testLoop9(data array<i32>, isWhatWeWant fun (i32) bool) i32
   {
     for ix := 0, ix + 1;
     while ix < data.length
@@ -289,7 +289,7 @@ looptest
   chck(testLoop9(a, fun (i i32) => i >  10000) ==  100, "testLoop9 returns  100 in index branch");
 
   out.println("testLoop10: loop return 4444 on else branch, no success possible");
-  testLoop10(data Array<i32>, isWhatWeWant fun (i32) bool) i32
+  testLoop10(data array<i32>, isWhatWeWant fun (i32) bool) i32
   {
     for ix := 0, ix + 1;
     while ix < data.length
@@ -305,7 +305,7 @@ looptest
   chck(testLoop10(a, fun (i i32) => i >  10000) == 4444, "testLoop10 returns 4444 in else branch")
 
   out.println("testLoop11: loop returns last index");
-  testLoop11(data Array<i32>, isWhatWeWant fun (i32) bool) i32
+  testLoop11(data array<i32>, isWhatWeWant fun (i32) bool) i32
   {
     for ix := 0, ix + 1;
     while ix < data.length;
@@ -314,7 +314,7 @@ looptest
   chck(testLoop11(a, fun (i i32) => i >  10000) ==  100, "testLoop11 returns 100 in index branch");
 
   out.println("testLoop12: loop returns found or not");
-  testLoop12(data Array<i32>, isWhatWeWant fun (i32) bool) bool
+  testLoop12(data array<i32>, isWhatWeWant fun (i32) bool) bool
   {
     for
       ix := 0, ix + 1;
@@ -325,7 +325,7 @@ looptest
   chck(testLoop12(a, fun (i i32) => i >  10000) <=> false, "testLoop12 returns false in index branch");
 
   out.println("testLoop13: sum up the elements");
-  testLoop13(data Array<i32>) i32
+  testLoop13(data array<i32>) i32
   {
     for
       ix  := 0, ix + 1;

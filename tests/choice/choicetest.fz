@@ -68,7 +68,7 @@ choicetest {
   }
 
   out.println("creating array:");
-  a := Array<Coin>(10, fun (i i32) Coin { Penny });
+  a := array<Coin>(10, fun (i i32) Coin { Penny });
   a[0] := Penny;
   a[1] := Penny;
   a[2] := Penny;

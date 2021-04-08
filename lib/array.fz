@@ -17,15 +17,15 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature Array
+#  Source code of Fuzion standard library feature array
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# Array -- one-dimensional array
+# array -- one-dimensional array
 #
-Array<T>(length i32, init fun (i32) T) : streamable<T> is
+array<T>(length i32, init fun (i32) T) : streamable<T> is
 
 # private:
 
@@ -52,7 +52,7 @@ Array<T>(length i32, init fun (i32) T) : streamable<T> is
     pre
       safety: 0 <= i < length
   # post   NYI
-    #Array.this[i] == o
+    #array.this[i] == o
   is
     setel<T>(data,i,o)
 
@@ -89,5 +89,5 @@ Array<T>(length i32, init fun (i32) T) : streamable<T> is
     pre
       debug: 0 <= i < length
   is
-    head => Array.this[i]
+    head => array.this[i]
     tail => asList i+1

@@ -186,7 +186,7 @@ public class Types extends ANY
       f_function      = universe.get(FUNCTION_NAME);
       f_function_call = f_function.get("call");
       f_safety        = universe.get("safety");
-      f_Array         = universe.get("Array");
+      f_Array         = universe.get("array", 2);
       f_Array_data    = f_Array.get("data");
       f_Array_length  = f_Array.get("length");
       resolved = this;

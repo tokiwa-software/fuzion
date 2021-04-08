@@ -51,7 +51,7 @@ InitArray<T> is
     set len := len + 1
     InitArray.this
 
-  postfix & Array<T> is
-    Array<T>(len, fun (i i32) => { match first { n node => { set first := n.tail; n.head }; Nil => { dummy } } })
+  postfix & array<T> is
+    array<T>(len, fun (i i32) => { match first { n node => { set first := n.tail; n.head }; Nil => { dummy } } })
 
   dummy T is (InitArray.this &) [0]

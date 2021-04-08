@@ -30,7 +30,7 @@ primes
   primes(n i32)  // sieve using loops
   {
     for
-      a := Array<bool>(n+1, fun (i i32) => false);
+      a := array<bool>(n+1, fun (i i32) => false);
       i := 2, i + 1;
     while i <= n
     {
@@ -50,7 +50,7 @@ primes
 
   primes2(n i32)   // sieve using streams
   {
-    a := Array<bool>(n+1, fun (i i32) => false);
+    a := array<bool>(n+1, fun (i i32) => false);
     (2..n).forAll(fun (i i32)
       {
         if (!a[i])
@@ -64,7 +64,7 @@ primes
 
   primes3(n i32)   // sieve using streams and filters
   {
-    a := Array<bool>(n+1, fun (i i32) => false);
+    a := array<bool>(n+1, fun (i i32) => false);
     (2..n).filter(fun (i i32) bool { !a[i] }).consume(fun (i i32)
       {
           out.print(i); out.print(" ");
@@ -79,7 +79,7 @@ primes
 
   primes4(n i32)   // sieve using pipes
   {
-    a := Array<bool>(n+1, fun (i i32) => false);
+    a := array<bool>(n+1, fun (i i32) => false);
 
     (2..n) |& (fun (i i32) => !a[i]) | fun (i i32)
       {

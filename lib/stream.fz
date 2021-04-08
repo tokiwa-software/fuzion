@@ -78,7 +78,7 @@ stream<T> ref is
     res := 0
     consume(fun (x T) is set res := res + 1)
     res
-  take (n i32) => Array<T>(n, fun (_ i32) => next)
+  take (n i32) => array<T>(n, fun (_ i32) => next)
 
   redef asString ref string is
     res := ""

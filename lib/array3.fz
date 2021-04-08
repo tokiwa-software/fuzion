@@ -29,9 +29,9 @@
 # array provides three-dimensional arrays. These are actually
 # one-dimensional arrays with additional access functions with
 # three index parameters.
-array<T>(length1, length2, length3 i32,
-         init3 fun (i32, i32, i32) T)
- : Array<T>(length1 * length2 * length3,
+array3<T>(length1, length2, length3 i32,
+          init3 fun (i32, i32, i32) T)
+ : array<T>(length1 * length2 * length3,
             fun(i i32) => init3(i / (length2 * length3),
                                 i / length3 % length2,
                                 i % length3))
@@ -48,7 +48,7 @@ is
       safety: 0 <= i2 < length2,
       safety: 0 <= i3 < length3
   is
-    array.this[(i1 * length2 + i2) * length3 + i3]
+    array3.this[(i1 * length2 + i2) * length3 + i3]
 
   set [ ] (i1, i2, i3 i32, o T)
     pre
@@ -56,6 +56,6 @@ is
       safety: 0 <= i2 < length2,
       safety: 0 <= i3 < length3
 #    post
-#      array.this[i1,i2] == o    -- NYI: There is no generic '==' operator (yet?)
+#      array3.this[i1,i2] == o    -- NYI: There is no generic '==' operator (yet?)
   is
-    array.this[(i1 * length2 + i2) * length3 + i3] := o
+    array3.this[(i1 * length2 + i2) * length3 + i3] := o

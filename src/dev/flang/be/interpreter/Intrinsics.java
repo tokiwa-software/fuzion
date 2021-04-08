@@ -194,14 +194,14 @@ public class Intrinsics extends ANY
             return Value.EMPTY_VALUE;
           };
       }
-    else if (n.equals("Array.getData"))
+    else if (n.equals("array.getData"))
       {
         result = (args) ->
           {
             return new Instance(args.get(1).i32Value());
           };
       }
-    else if (n.equals("Array.get"))
+    else if (n.equals("array.get"))
       {
         result = (args) ->
           {
@@ -232,7 +232,7 @@ public class Intrinsics extends ANY
             return res;
           };
       }
-    else if (n.equals("Array.setel"))
+    else if (n.equals("array.setel"))
       {
         result = (args) ->
           {

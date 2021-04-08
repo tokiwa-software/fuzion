@@ -184,18 +184,18 @@ class Intrinsics extends ANY
 
         }
 
-      case "Array.getData":
+      case "array.getData":
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return CExpr.call("malloc",
                             new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(new CIdent("arg0")))).ret();
         }
-      case "Array.setel"  :
+      case "array.setel"  :
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return new CIdent("arg0").castTo(c._types.clazz(gc) + "*").index(new CIdent("arg1")).assign(new CIdent("arg2"));
         }
-      case "Array.get"    :
+      case "array.get"    :
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return new CIdent("arg0").castTo(c._types.clazz(gc) + "*").index(new CIdent("arg1")).ret();
