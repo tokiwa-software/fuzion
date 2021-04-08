@@ -23,20 +23,21 @@
 #
 # -----------------------------------------------------------------------
 
-# array -- one-dimensional array
+# array -- one-dimensional immutable array
 #
 array<T>(length i32, init fun (i32) T) : streamable<T> is
 
 # private:
 
-  data := getData<T>(length)
+// NYI: use data := sys.array<T> length once conststring can handle this.
+  data := alloc<T> length
 
   for x in indices do
-    setel(data, x, init(x))
+    setel data, x, init x
 
-  getData<X>(l i32) Object is intrinsic
-  get    <X>(d Object, i i32) X is intrinsic
-  setel  <X>(d Object, i i32, o X) is intrinsic
+  alloc<X>(l i32) Object is intrinsic
+  get  <X>(d Object, i i32) X is intrinsic
+  setel<X>(d Object, i i32, o X) unit is intrinsic
 
 # public:
 
@@ -48,15 +49,7 @@ array<T>(length i32, init fun (i32) T) : streamable<T> is
   is
     get<T>(data,i)
 
-  set [ ] (i i32, o T)
-    pre
-      safety: 0 <= i < length
-  # post   NYI
-    #array.this[i] == o
-  is
-    setel<T>(data,i,o)
-
-  iterate(f fun (T)) is
+  iterate(f fun (T)) unit is
     asStream.consume(f)
 
   redef asStream ref : stream<T> is

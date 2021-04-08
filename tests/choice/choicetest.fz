@@ -68,7 +68,7 @@ choicetest {
   }
 
   out.println("creating array:");
-  a := array<Coin>(10, fun (i i32) Coin { Penny });
+  a := marray<Coin> 10, Penny
   a[0] := Penny;
   a[1] := Penny;
   a[2] := Penny;

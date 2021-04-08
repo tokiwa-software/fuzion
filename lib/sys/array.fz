@@ -17,32 +17,38 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature array(l1,l2)
+#  Source code of Fuzion standard library feature sys.array
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# array(length1, length2)
+# sys.array -- one-dimensional low-level array
 #
-# array provides two-dimensional immutable arrays. These are actually
-# one-dimensional immutable arrays with an additional access function with
-# two index parameters.
-#
-array2<T>(length1, length2 i32,
-          init2 fun (i32, i32) T)
- : array<T>(length1 * length2,
-            fun(i i32) => init2(i / length2,
-                                i % length2))
-  pre
-    safety: length1 >= 0,
-    safety: length2 >= 0,
-    safety: length1 *? length2 >=? 0
-is
+sys.array<T>(length i32) is
 
-  index [ ] (i1, i2 i32) T
+# private:
+
+  data := alloc<T> length
+
+  alloc<X>(l i32) Object is intrinsic
+  get  <X>(d Object, i i32) X is intrinsic
+  setel<X>(d Object, i i32, o X) unit is intrinsic
+
+# public:
+
+  indices => 0..length-1
+
+  index [ ] (i i32) T
     pre
-      safety: 0 <= i1 < length1,
-      safety: 0 <= i2 < length2
+      safety: 0 <= i < length
   is
-    array2.this[i1 * length2 + i2]
+    get<T> data, i
+
+  set [ ] (i i32, o T) unit
+    pre
+      safety: 0 <= i < length
+  # post   NYI
+    #array.this[i] == o
+  is
+    setel<T> data, i, o
