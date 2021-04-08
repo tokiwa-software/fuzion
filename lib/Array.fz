@@ -25,7 +25,7 @@
 
 # Array -- one-dimensional array
 #
-Array<T>(length i32, init fun (i32) T) ref : streamable<T> is
+Array<T>(length i32, init fun (i32) T) : streamable<T> is
 
 # private:
 

@@ -206,7 +206,8 @@ public class Intrinsics extends ANY
         result = (args) ->
           {
             Value res;
-            Instance a = ((Instance)args.get(0));
+            var cl = innerClazz._outer;
+            var a = args.get(0);
             Instance ai = ((Instance)args.get(1));
             int   x = args.get(2).i32Value();
             if (x < 0 || x >= ai.refs.length)
@@ -215,12 +216,12 @@ public class Intrinsics extends ANY
                 res = Value.NO_VALUE; // just to keep javac from complaining
               }
                 // NYI: Properly determine generic argument type of array
-            else if (a.clazz()._type == Types.resolved.t_conststring /* NYI: Hack */ ||
-                     a.clazz()._type._generics.getFirst().name.equals("i32"))
+            else if (cl._type == Types.resolved.t_conststring /* NYI: Hack */ ||
+                     cl._type._generics.getFirst().name.equals("i32"))
               {
                 res = new i32Value(ai.nonrefs[x]);
               }
-            else if (a.clazz()._type._generics.getFirst().name.equals("bool"))
+            else if (cl._type._generics.getFirst().name.equals("bool"))
               {
                 res = new boolValue(ai.nonrefs[x] != 0);
               }
@@ -235,7 +236,9 @@ public class Intrinsics extends ANY
       {
         result = (args) ->
           {
-            Instance a = ((Instance)args.get(0));
+            // NYI: Properly determine generic argument type of array
+            var elementType = innerClazz._outer._type._generics.getFirst();
+            var a = args.get(0);
             Instance ai = ((Instance)args.get(1));
             int   x = args.get(2).i32Value();
             if (x >= ai.refs.length)
@@ -245,12 +248,11 @@ public class Intrinsics extends ANY
             else
               {
                 Value v = args.get(3);
-                // NYI: Properly determine generic argument type of array
-                if (a.clazz()._type._generics.getFirst().name.equals("i32"))
+                if (elementType.name.equals("i32"))
                   {
                     ai.nonrefs[x] = v.i32Value();
                   }
-                else if (a.clazz()._type._generics.getFirst().name.equals("bool"))
+                else if (elementType.name.equals("bool"))
                   {
                     ai.nonrefs[x] = v.boolValue() ? 1 : 0;
                   }
