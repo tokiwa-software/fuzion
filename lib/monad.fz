@@ -25,13 +25,13 @@
 
 # monad -- generic monad
 #
-# A monoid in the category of endofunctors is a monad. --Bartosz Milewski
+# A monad in X is just a monoid in the category of endofunctors of X, with
+# product × replaced by composition of endofunctors and unit set by the
+# identity endofunctor.
+#       -- Saunder Mac Lane, Categories for the Working Mathematician, 1971
 #
-# Don't be scared, in Java terms: A monad is a means to apply a method to the
-# data stored in an instance of a generic class.  Say you have an
-# ArrayList<Integer> and you want to call Integer.toString() on all the elments
-# to obtain an ArrayList<String>, then a monad is your friend. (NYI: This is
-# an example for map, not really a monad).
+# Don't be scared, in Java terms: A monad is a means to compose functions
+# applied to generic types.
 #
 # NYI: move to universe.fz
 monad<A, MA: monad<A, MA>> is
