@@ -49,6 +49,33 @@ array<T>(length i32, init fun (i32) T) : streamable<T> is
   is
     get<T>(data,i)
 
+  # create a new array with element i set to v. Grow the array in case i == length.
+  #
+  # Complexity: O(array.this.length)
+  #
+  put (i i32, v T) array<T>
+    pre
+      safety: 0 <= i <= length
+  is
+    # NYI: This is very inefficent since it copies the whole array.  Should
+    # better use a persistent array implementation such as persistent hash array
+    # mapped trie.
+    array<T> length.max(i+1), fun (ix i32) => if (ix == i) v else array.this[ix]
+
+  # create a new array with element i set to v. Grow the array in case i >= length.
+  # New array elements at indices array.this.length..i-1 will be set to z.
+  #
+  # Complexity: O(max(i, array.this.length))
+  #
+  put (i i32, v T, z T) array<T>
+    pre
+      safety: 0 <= i
+  is
+    # NYI: This is very inefficent since it copies the whole array.  Should
+    # better use a persistent array implementation such as persistent hash array
+    # mapped trie.
+    array<T> length.max(i+1), fun (ix i32) => if (ix == i) v else if (ix >= length) z else array.this[ix]
+
   iterate(f fun (T)) unit is
     asStream.consume(f)
 
