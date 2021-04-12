@@ -122,7 +122,7 @@ list<A> : choice<nil, Cons<A, list<A>>> is
 
   # map the list to a new list applying function f to all elements
   #
-  # This performs a lazy mapping, f is called only when the eleents
+  # This performs a lazy mapping, f is called only when the elements
   # are taken from the list.
   #
   map<B>(f fun(A) B) list<B> is
