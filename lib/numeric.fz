@@ -111,3 +111,11 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
     redef infix ∙ (a, b T) T is a *^ b
     redef infix == (a, b T) bool is a == b
     redef e T is one
+
+  # minimum of numeric.this and other
+  #
+  min(other T) T is if (numeric.this <= other) numeric.this else other
+
+  # maximum of numeric.this and other
+  #
+  max(other T) T is if (numeric.this >= other) numeric.this else other
