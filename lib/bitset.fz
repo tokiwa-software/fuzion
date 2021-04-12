@@ -1,0 +1,116 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature bitset
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# bitset -- persistent set of unsigned integers
+#
+bitset : choice <nil,         # empty bitset
+                 u64,         # unit bitset
+                 array<bool>> # general
+is
+
+  # test if the given bit is part of this bitset
+  #
+  has (bit u64) bool is
+    match bitset.this
+      _ nil => false
+      x u64 => bit == x
+      a array<bool> => a.length.as_u64 > bit && a[bit.as_i32]
+
+  # alternative for has using []
+  #
+  index[] (bit u64) => has bit
+
+  # set the given bit
+  put (bit u64) bitset is
+    if has bit
+      bitset.this
+    else
+      match bitset.this
+        _ nil         => bit
+        x u64         => array<bool> bit.max(x).as_i32+1, fun (i i32) => i.as_u64 == bit || i.as_u64 == x
+        a array<bool> => a.put bit.as_i32, true, false
+
+  # union of two bitsets
+  #
+  infix ⋃ (other bitset) bitset is
+    match bitset.this
+      _ nil         => other
+      x u64         => other.put x
+      a array<bool> =>
+        match other
+          _ nil         => bitset.this
+          x u64         => bitset.this.put x
+          b array<bool> =>
+            array<bool> a.length.max(b.length), fun (i i32) => (has i.as_u64) || (other.has i.as_u64)
+
+  # get the highest bit in this bitset
+  #
+  highest Option<u64> is
+    match bitset.this
+      _ nil         => nil
+      x u64         => x
+      a array<bool> => a.length.as_u64-1
+
+  # compare two bitsets
+  #
+  infix == (other bitset) bool is
+     h := highest >>= fun (i u64) => other.highest >>= fun (j u64) Option<u64> is i.max j
+     match h
+       _ nil => true
+       m u64 =>
+         for
+           r := true, r && ((has i) <=> other.has i)
+           i in 0.as_u64 .. m
+         else
+           r
+
+  # createa  string representation of a bitset of the form "{2, 4}
+  #
+  redef asString string is
+    match highest
+      _ nil => "\{}"
+      h u64 =>
+        for
+          first := true, first && !(has i)
+          s := "", s + (if (has i) comma + $i else "")
+          comma := if (first) "" else ", "
+          i in 0.as_u64..h
+        else
+          "\{" + s + "}"
+
+/*
+has     -- NYI: 'has' keyword not supported yet, so the following require an instance of numeric to be called on
+*/
+
+  # an empty bitset
+  #
+  empty bitset is nil
+
+  # monoid of bitset with infix ⋃ operation.
+  #
+  union : Monoid<bitset> is
+    redef infix ∙ (a, b bitset) => a ⋃ b
+    redef infix == (a, b bitset) => a == b
+    redef e bitset is empty
