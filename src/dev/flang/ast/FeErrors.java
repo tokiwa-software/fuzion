@@ -230,6 +230,35 @@ public class FeErrors extends ANY
       }
   }
 
+  /**
+   * Report that the given actualGenerics does not match the number of formal generics.
+   *
+   * @param fg the formal generics
+   *
+   * @param actualGenerics the actual generics
+   *
+   * @param pos the source code position at which the error should be reported
+   *
+   * @param detail1 part of the detail message to indicate where this happened,
+   * i.e., "call" or "type".
+   *
+   * @param detail2 optional extra lines of detail message giving further
+   * information, like "Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n".
+   */
+  static void wrongNumberOfGenericArguments(FormalGenerics fg,
+                                            List<Type> actualGenerics,
+                                            SourcePosition pos,
+                                            String detail1,
+                                            String detail2)
+  {
+    error(pos,
+          "Wrong number of generic arguments",
+          "Wrong number of actual generic arguments in " + detail1 + ":\n" +
+          detail2 +
+          "expected " + fg.sizeText() + (fg == FormalGenerics.NONE ? "" : " for " + fg.feature().qualifiedName() + fg) + "\n" +
+          "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + actualGenerics + "" ) + ".\n");
+  }
+
   static void argumentTypeMismatchInRedefinition(Feature originalFeature, Feature originalArg,
                                                  Feature redefinedFeature, Feature redefinedArg)
   {

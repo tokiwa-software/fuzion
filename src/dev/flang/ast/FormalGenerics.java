@@ -210,12 +210,11 @@ public class FormalGenerics extends ANY
     if (!sizeMatches(actualGenerics))
       {
         result = false;
-        Errors.error(pos,
-                     "Wrong number of generic arguments",
-                     "Wrong number of actual generic arguments in " + detail1 + ":\n" +
-                     detail2 +
-                     "expected " + sizeText() + (this == NONE ? "" : " for " + _feature.qualifiedName()) + this + "\n" +
-                     "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + actualGenerics + "" ) + ".\n");
+        FeErrors.wrongNumberOfGenericArguments(this,
+                                               actualGenerics,
+                                               pos,
+                                               detail1,
+                                               detail2);
       }
     // NYI: check that generics match the generic constraints
     return result;
