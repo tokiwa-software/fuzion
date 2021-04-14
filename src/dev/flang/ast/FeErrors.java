@@ -353,6 +353,16 @@ public class FeErrors extends ANY
       }
   }
 
+  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, Type t, List<Type> choiceGenerics)
+  {
+    error(pos,
+          "'case' clause matches type that had been matched already",
+          "Matched type: '" + t + "'\n" +
+          "Originally matched at " + earlierPos.show() + "\n" +
+          subjectTypes(choiceGenerics));
+  }
+
+
   static void matchCaseDoesNotMatchAny(SourcePosition pos, Type t, List<Type> choiceGenerics)
   {
     error(pos,

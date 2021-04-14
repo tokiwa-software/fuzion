@@ -154,18 +154,19 @@ public class Match extends Expr
           {
             i.set(i.next().resolve(outer));
           }
+        SourcePosition[] matched = new SourcePosition[cgs.size()];
         for (Case c: cases)
           {
             if (c.field != null)
               {
                 var t = c.field.returnType.functionReturnType();
-                resolveType(c, t, cgs, outer);
+                resolveType(c, t, cgs, outer, matched);
               }
             if (c.types != null)
               {
                 for (var t : c.types)
                   {
-                    resolveType(c, t, cgs, outer);
+                    resolveType(c, t, cgs, outer, matched);
                   }
               }
           }
@@ -186,16 +187,23 @@ public class Match extends Expr
    *
    * @param outer the outer feature that contains this match statement
    */
-  private void resolveType(Case c, Type t, List<Type> cgs, Feature outer)
+  private void resolveType(Case c, Type t, List<Type> cgs, Feature outer, SourcePosition[] matched)
   {
     t = t.resolve(outer);
     List<Type> matches = new List<Type>();
+    int i = 0;
     for (var cg : cgs)
       {
         if (t == cg)
           {
             matches.add(t);
+            if (matched[i] != null)
+              {
+                FeErrors.repeatedMatch(c.pos, matched[i], t, cgs);
+              }
+            matched[i] = c.pos;
           }
+        i++;
       }
     if (matches.size() != 1)
       {
