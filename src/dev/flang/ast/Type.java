@@ -946,52 +946,69 @@ public class Type extends ANY implements Comparable
 
 
   /**
+   * For a resolved type, check if it is a choice type and if so, return the
+   * list of choices. Otherwise, return null.
+   */
+  List<Type> choiceGenerics()
+  {
+    if (PRECONDITIONS) require
+      (isGenericArgument() || feature != null);  // type must be resolved
+
+    if (!isGenericArgument())
+      {
+        List<Type> g = feature.choiceGenerics();
+        if (g != null)
+          {
+            return replaceGenerics(g);
+          }
+      }
+    return null;
+  }
+
+
+  /**
    * Check that in case this is a choice type, it is valid, i.e., it is a value
    * type and the generic arguments to the choice are different.  Create compile
    * time errore in case this is not the case.
    */
   void checkChoice(SourcePosition pos)
   {
-    if (feature != null)
+    var g = choiceGenerics();
+    if (g != null)
       {
-        List<Type> g = feature.choiceGenerics();
-        if (g != null)
+        if (isRef())
           {
-            g = replaceGenerics(g);
-            if (isRef())
-              {
-                Errors.error(pos,
-                             "ref to choice type is not allowed",
-                             "a choice is always a value type");
-              }
+            Errors.error(pos,
+                         "ref to choice type is not allowed",
+                         "a choice is always a value type");
+          }
 
-            int i1 = 0;
-            for (Type t1 : g)
+        int i1 = 0;
+        for (Type t1 : g)
+          {
+            t1 = Types.intern(t1);
+            int i2 = 0;
+            for (Type t2 : g)
               {
-                t1 = Types.intern(t1);
-                int i2 = 0;
-                for (Type t2 : g)
+                t2 = Types.intern(t2);
+                if (i1 < i2)
                   {
-                    t2 = Types.intern(t2);
-                    if (i1 < i2)
+                    if (t1 == t2 ||
+                        !t1.isGenericArgument() &&
+                        !t2.isGenericArgument() &&
+                        (t1.isAssignableFrom(t2) ||
+                         t2.isAssignableFrom(t1)    ))
                       {
-                        if (t1 == t2 ||
-                            !t1.isGenericArgument() &&
-                            !t2.isGenericArgument() &&
-                            (t1.isAssignableFrom(t2) ||
-                             t2.isAssignableFrom(t1)    ))
-                          {
-                            Errors.error(pos,
-                                         "Generics arguments to choice type must be disjoint types",
-                                         "The following types have overlapping values:\n" +
-                                         t1 + /* " at " + t1.pos.show() + */ "\n" +  // NYI: use pos before Types were interned!
-                                         t2 + /* " at " + t2.pos.show() + */ "\n");
-                          }
+                        Errors.error(pos,
+                                     "Generics arguments to choice type must be disjoint types",
+                                     "The following types have overlapping values:\n" +
+                                     t1 + /* " at " + t1.pos.show() + */ "\n" +  // NYI: use pos before Types were interned!
+                                     t2 + /* " at " + t2.pos.show() + */ "\n");
                       }
-                    i2++;
                   }
-                i1++;
+                i2++;
               }
+            i1++;
           }
       }
   }
