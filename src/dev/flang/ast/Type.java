@@ -504,7 +504,7 @@ public class Type extends ANY implements Comparable
           + (feature == null ? name
                              : feature._featureName.baseName());
       }
-    else if (feature == null)
+    else if (feature == null  || feature == Types.f_ERROR)
       {
         result = name;
       }
