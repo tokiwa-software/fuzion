@@ -1274,6 +1274,7 @@ public class Feature extends ANY implements Stmnt, Comparable
     public Stmnt    action(Feature    f, Feature outer) { return f.resolveTypes(res, outer); }
     public Function action(Function   f, Feature outer) {        f.resolveTypes(res, outer); return f; }
     public void     action(Generic    g, Feature outer) {        g.resolveTypes(res, outer); }
+    public void     action(Match      m, Feature outer) {        m.resolveTypes(res, outer); }
     public Expr     action(This       t, Feature outer) { return t.resolveTypes(res, outer); }
     public Type     action(Type       t, Feature outer) { return t.resolve(outer); }
 

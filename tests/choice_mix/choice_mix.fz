@@ -58,7 +58,7 @@ choice_mix {
       bool   => { out.println("bool:   "); }
       string => { out.println("string: "); }
       Nil    => { out.println("Nil:    "); }
-      MyObj  => { out.println("MyObj:  "); }
+      MyRef  => { out.println("MyRef:  "); }
     }
   }
 
@@ -71,7 +71,7 @@ choice_mix {
       b bool   => { out.println("bool:   " + b); }
       s string => { out.println("string: " + s); }
       n Nil    => { out.println("Nil:    " + n); }
-      m MyObj  => { out.println("MyObj:  " + m); }
+      m MyRef  => { out.println("MyRef:  " + m); }
     }
   }
 
@@ -81,7 +81,7 @@ choice_mix {
     match a
     {
       i32, string, Nil => { out.println("has 'i'"); }
-      bool, MyObj      => { out.println("has no 'i'"); }
+      bool, MyRef      => { out.println("has no 'i'"); }
     }
   }
 
@@ -94,7 +94,7 @@ choice_mix {
       bool   => { out.println("bool:   "); }
       string => { out.println("string: "); }
       Nil    => { out.println("Nil:    "); }
-      MyObj  => { out.println("MyObj:  "); }
+      MyRef  => { out.println("MyRef:  "); }
     }
   }
 
@@ -107,7 +107,7 @@ choice_mix {
       bool   => { out.println("bool:   "); }
       string => { out.println("string: "); }
       Nil    => { out.println("Nil:    "); }
-      MyObj  => { out.println("MyObj:  "); }
+      MyRef  => { out.println("MyRef:  "); }
     }
   }
 
@@ -120,7 +120,7 @@ choice_mix {
       bool   => { out.println("bool:   "); }
       string => { out.println("string: "); }
       Nil    => { out.println("Nil:    "); }
-      MyObj  => { out.println("MyObj:  "); }
+      MyRef  => { out.println("MyRef:  "); }
     }
   }
 
@@ -133,7 +133,7 @@ choice_mix {
       bool   => { out.println("bool:   "); }
       string => { out.println("string: "); }
       Nil    => { out.println("Nil:    "); }
-      MyObj  => { out.println("MyObj:  "); }
+      MyRef  => { out.println("MyRef:  "); }
     }
   }
 
@@ -148,7 +148,7 @@ choice_mix {
       bool   => { out.println("bool:   "); }
       string => { out.println("string: "); }
       Nil    => { out.println("Nil:    "); }
-      MyObj  => { out.println("MyObj:  "); }
+      MyRef  => { out.println("MyRef:  "); }
     }
   }
 
@@ -161,7 +161,7 @@ choice_mix {
       bool   => { out.println("bool:   "); }
       string => { out.println("string: "); }
       Nil    => { out.println("Nil:    "); }
-      MyObj  => { out.println("MyObj:  "); }
+      MyRef  => { out.println("MyRef:  "); }
     }
   }
 
@@ -174,7 +174,7 @@ choice_mix {
       b bool   => { out.println("bool:   " + b); }
       s string => { out.println("string: " + s); }
       n Nil    => { out.println("Nil:    " + n); }
-      m MyObj  => { out.println("MyObj:  " + m); }
+      m MyRef  => { out.println("MyRef:  " + m); }
     }
   }
 

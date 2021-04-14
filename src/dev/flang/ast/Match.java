@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -123,12 +124,90 @@ public class Match extends Expr
   public Match visit(FeatureVisitor v, Feature outer)
   {
     subject = subject.visit(v, outer);
+    v.action(this, outer);
     for (Case c: cases)
       {
         c.visit(v, outer);
       }
-    v.action(this, outer);
     return this;
+  }
+
+
+  /**
+   * determine the static type of all expressions and declared features in this feature
+   *
+   * @param res the resolution instance.
+   *
+   * @param outer the root feature that contains this statement.
+   */
+  public void resolveTypes(Resolution res, Feature outer)
+  {
+    var st = subject.type();
+    st.featureOfType().resolveTypes(res);
+    var cgs = st.choiceGenerics();
+    check
+      (cgs != null || Errors.count() > 0);
+    if (cgs != null)
+      {
+        ListIterator<Type> i = cgs.listIterator();
+        while (i.hasNext())
+          {
+            i.set(i.next().resolve(outer));
+          }
+        for (Case c: cases)
+          {
+            if (c.field != null)
+              {
+                var t = c.field.returnType.functionReturnType();
+                resolveType(c, t, cgs, outer);
+              }
+            if (c.types != null)
+              {
+                for (var t : c.types)
+                  {
+                    resolveType(c, t, cgs, outer);
+                  }
+              }
+          }
+      }
+  }
+
+
+  /**
+   * Resolve one type found in a case. Produce an error in case it does not
+   * match any of the subject's types or if it matches several of the subject's
+   * types.
+   *
+   * @param c the case we are resolving
+   *
+   * @param t the type within c we are resolving
+   *
+   * @param cgs the choiceGenerics of the match's subject's type
+   *
+   * @param outer the outer feature that contains this match statement
+   */
+  private void resolveType(Case c, Type t, List<Type> cgs, Feature outer)
+  {
+    t = t.resolve(outer);
+    List<Type> matches = new List<Type>();
+    for (var cg : cgs)
+      {
+        if (t == cg)
+          {
+            matches.add(t);
+          }
+      }
+    if (matches.size() != 1)
+      {
+        if (matches.isEmpty())
+          {
+            FeErrors.matchCaseDoesNotMatchAny(c.pos, t, cgs);
+          }
+        else
+          {
+            FeErrors.matchCaseMatchesSeveral(c.pos, t, cgs, matches);
+          }
+      }
   }
 
 

@@ -353,6 +353,62 @@ public class FeErrors extends ANY
       }
   }
 
+  static void matchCaseDoesNotMatchAny(SourcePosition pos, Type t, List<Type> choiceGenerics)
+  {
+    error(pos,
+          "'case' clause in 'match' statement does not match any type of the subject",
+          "Case matches type '" + t + "'\n" +
+          subjectTypes(choiceGenerics));
+  }
+
+  static void matchCaseMatchesSeveral(SourcePosition pos, Type t, List<Type> choiceGenerics, List<Type> matches)
+  {
+    error(pos,
+          "'case' clause in 'match' statement matches several types of the subject",
+          "Case matches type '" + t + "'\n" +
+          subjectTypes(choiceGenerics) +
+          "matches are " + typeListConjunction(matches));
+  }
+
+  /**
+   * Create list of the form "'i32', 'string' or 'bool'"
+   */
+  private static String typeListAlternatives(List<Type> tl)  { return typeList(tl, "or" ); }
+
+  /**
+   * Create list of the form "'i32', 'string' and 'bool'"
+   */
+  private static String typeListConjunction (List<Type> tl)  { return typeList(tl, "and"); }
+
+  /**
+   * Create list of the form "'i32', 'string' " + conj + " 'bool'"
+   */
+  private static String typeList(List<Type> tl, String conj)
+  {
+    StringBuilder mt = new StringBuilder();
+    String comma = "", lastComma = "", last = "";
+    for (var t : tl)
+      {
+        if (last != "")
+          {
+            mt.append(comma).append(last);
+            comma = ", ";
+            lastComma = " " + conj + " ";
+          }
+        last = "'" + t + "'";
+      }
+    mt.append(lastComma)
+      .append(last);
+    return mt.toString();
+  }
+
+  private static String subjectTypes(List<Type> choiceGenerics)
+  {
+    return choiceGenerics.isEmpty()
+      ? "Subject type is an empty choice type that cannot match any case\n"
+      : "Subject type is one of " + typeListAlternatives(choiceGenerics) + "\n";
+  }
+
   static void internallyReferencedFeatureNotUnique(SourcePosition pos, String qname, Collection<Feature> set)
   {
     var sb = new StringBuilder();
