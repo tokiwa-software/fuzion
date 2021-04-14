@@ -404,18 +404,20 @@ public class FeErrors extends ANY
   private static String typeList(List<Type> tl, String conj)
   {
     StringBuilder mt = new StringBuilder();
-    String comma = "", lastComma = "", last = "";
+    String comma = "", last = "";
     for (var t : tl)
       {
         if (last != "")
           {
             mt.append(comma).append(last);
             comma = ", ";
-            lastComma = " " + conj + " ";
           }
         last = "'" + t + "'";
       }
-    mt.append(lastComma)
+    mt.append(switch (tl.size()) {
+      case 0, 1 -> "";
+      case 2    -> " " + conj + " ";
+      default   -> ", " + conj + " ";})
       .append(last);
     return mt.toString();
   }

@@ -203,6 +203,7 @@ public class Match extends Expr
    */
   private Type resolveType(Case c, Type t, List<Type> cgs, Feature outer, SourcePosition[] matched)
   {
+    var original_t = t;
     List<Type> matches = new List<Type>();
     int i = 0;
     t.resolveFeature(outer);
@@ -230,12 +231,12 @@ public class Match extends Expr
       {
         if (matches.isEmpty())
           {
-            FeErrors.matchCaseDoesNotMatchAny(c.pos, t, cgs);
+            FeErrors.matchCaseDoesNotMatchAny(c.pos, original_t, cgs);
             t = Types.t_ERROR;
           }
         else
           {
-            FeErrors.matchCaseMatchesSeveral(c.pos, t, cgs, matches);
+            FeErrors.matchCaseMatchesSeveral(c.pos, original_t, cgs, matches);
           }
       }
     return t;
