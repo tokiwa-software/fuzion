@@ -66,3 +66,30 @@ is
 
   iterate(f fun (T)) => as_array.iterate f
   asStream => as_array.asStream
+
+
+  # map the array to a new array applying function f to all elements
+  #
+  map<B>(f fun(T) B) array<B> is
+    array<B> marray.this.length, fun (i i32) => f marray.this[i]
+
+
+  # fold the elements of this array using the given monoid.
+  #
+  # e.g., to sum the elements of an array of i32, use a.fold i32.sum
+  #
+  fold (m Monoid<T>) => fold 0, m.e, m
+
+
+  # fold the elements of this array using the given monoid and initial value
+  #
+  # Used to fold an array tail-recursively
+  #
+  fold (i i32, s T, m Monoid<T>) T
+    pre
+      debug: 0 <= i <= length
+  is
+    if i == length
+      s
+    else
+      fold i+1, m.op(s, marray.this[i]), m

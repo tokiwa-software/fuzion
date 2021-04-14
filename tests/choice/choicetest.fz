@@ -23,9 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-choicetest {
-
-  out := stdout;
+choicetest is
 
   // object-oriented style using subclasses
   Light ref { }
@@ -36,7 +34,7 @@ choicetest {
   l1 Light := Red;
   l2 Light := Green;
 
-  out.println("l1 is Red, l2 is Green");
+  say "l1 is Red, l2 is Green"
 
   // using choice-type
   Penny   {}
@@ -49,52 +47,48 @@ choicetest {
      Nickel,
      Dime,
      Quarter>
-  {
-    value_in_cents() i32 {
+  is
+    value_in_cents() =>
       (Coin.this ? Penny   => 1
                    Nickel  => 5
                    Dime    => 10
                    Quarter => 25)
-    }
-  }
 
-  value_in_cents(c Coin) i32 {
-    match c {
+  value_in_cents(c Coin) =>
+    match c
       Penny   => 1
       Nickel  => 5
       Dime    => 10
       Quarter => 25
-    }
-  }
 
-  out.println("creating array:");
+  say "creating array:"
   a := marray<Coin> 10, Penny
-  a[0] := Penny;
-  a[1] := Penny;
-  a[2] := Penny;
-  a[3] := Penny;
-  a[4] := Nickel;
-  a[5] := Dime;
-  a[6] := Dime;
-  a[7] := Quarter;
-  a[8] := Quarter;
-  a[9] := Quarter;
+  a[0] := Penny
+  a[1] := Penny
+  a[2] := Penny
+  a[3] := Penny
+  a[4] := Nickel
+  a[5] := Dime
+  a[6] := Dime
+  a[7] := Quarter
+  a[8] := Quarter
+  a[9] := Quarter
 
-  out.print("summing array using loop: ");
-  sum := { for i := 0, i + 1;
-               s := 0, s + value_in_cents(a[i]);
+  yak "summing array using loop: "
+  sum := { for i := 0, i + 1
+               s := 0, s + value_in_cents a[i]
            until i >= 9
-         };
-  out.println(sum);
+         }
+  say sum
 
-  out.print("summing array using iterator: ");
-  set sum := 0;
-  a.iterate(fun (c Coin) { set sum := sum + value_in_cents(c); })
-  out.println(sum);
+  yak "summing array using iterator: "
+  sum := 0;
+  a.iterate fun (c Coin) => set sum := sum + value_in_cents c
+  say sum
 
-  out.println("summing array using iterator and inner feature: ");
-  set sum := 0;
-  a.iterate(fun (c Coin) { set sum := sum + c.value_in_cents(); })
-  out.print(sum); out.println;
+  yak "summing array using iterator and inner feature: "
+  sum := 0;
+  a.iterate fun (c Coin) => set sum := sum + c.value_in_cents
+  say sum
 
-}
+  say "summing array using monoid: " + a.map<i32>(fun (c Coin) => c.value_in_cents).fold i32(0).sum   # NYI: Should become 'a.map(c => c.value_in_cents).fold i32.sum'
