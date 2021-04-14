@@ -23,59 +23,53 @@
 #
 # -----------------------------------------------------------------------
 
-factors
-{
-  print(x i32) unit
-  {
-    stdout.print(" " + x);
-  }
+factors is
 
-  n := 42;
+  print(x i32) =>
+    yak " " + x
 
-  stdout.print("factors using a loop:");
+  n := 42
+
+  yak "factors using a loop:"
   for
     x in 1..n
   do
-  {
-    if (n % x) == 0 { print(x); }
-  }
-  stdout.println;
+    if n %% x
+      print x
+  say
 
-  stdout.print("factors iterating over an interval:");
-  (1..n).iterate(fun (x i32) { if (n % x) == 0 { print(x); } });
-  stdout.println;
+  yak "factors iterating over an interval:"
+  (1..n).iterate fun (x i32) is if (n %% x) print x
+  say
 
-  stdout.print("factors consuming a stream:");
-  (1..n).asStream.consume(fun (x i32) { if (n % x) == 0 { print(x); } })
-  stdout.println;
+  yak "factors consuming a stream:"
+  (1..n).asStream.consume fun (x i32) is if (n %% x) print x
+  say
 
-  stdout.print("factors filtering and consuming a stream:");
-  (1..n).filter(fun (x i32) => (n % x) == 0).consume(fun print);
-  stdout.println;
+  yak "factors filtering and consuming a stream:"
+  (1..n).filter(fun (x i32) => n %% x).consume fun print
+  say
 
-  stdout.print("factors filtering and printing a stream: ");
-  (1..n).filter(fun (x i32) => (n % x) == 0).print;
-  stdout.println;
+  yak "factors filtering and printing a stream: "
+  (1..n).filter(fun (x i32) => n %% x).print
+  say
 
-  stdout.print("factors using pipes to filter and print a stream: ");
-  (1..n) & (fun (x i32) => (n % x) == 0) | fun print;
-  stdout.println;
+  yak "factors using pipes to filter and print a stream: "
+  (1..n) & (fun (x i32) => n %% x) | fun print
+  say
 
-  (1..n) | fun (m i32)
-    {
-      stdout.print("factors of " + m + ": ");
-      (1..m) & (fun (x i32) => (m % x) == 0) | fun print;
-      stdout.println;
-    }
+  say "factors embedded in string: {(1..n) & (fun (x i32) => n %% x)}"
+
+  (1..n) | fun (m i32) is
+    say("factors of $m: " +
+        ((1..m) & (fun (x i32) => m %% x)))
 
   // better
   //
-  // factors(n i32) => (1..n).filter((x) => (x % 0) == 0);
-  // stdout.print(factors(42));
+  // factors(n i32) => (1..n).filter((x) => x %% 0)
+  // say factors(42)
 
   // also cool would be
   //
-  // i32 { factors => (1..outer).filter((x) => (x % 0) == 0); }
-  // stdout.print(42.factors);
-
-}
+  // i32 { factors => (1..outer).filter((x) => x %% 0) }
+  // say 42.factors
