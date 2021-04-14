@@ -23,4 +23,4 @@
 #
 # -----------------------------------------------------------------------
 
-doubledeclaration_negative.cyclic1.a := 4;  // 1. should flag an error, feauture already declared in doubledeclaration_negative.fz
+doubledeclaration_negative.cyclic1.a := 4  // 1. should flag an error, feauture already declared in doubledeclaration_negative.fz

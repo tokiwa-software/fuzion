@@ -23,11 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-doubledeclaration_negative {
+doubledeclaration_negative is
 
-  cyclic1
-   {
-     a := 3;
-   }
-
-}
+  cyclic1 is
+   a := 3
