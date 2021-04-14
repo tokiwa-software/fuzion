@@ -885,6 +885,42 @@ public class Type extends ANY implements Comparable
       }
     if (!isGenericArgument())
       {
+        resolveFeature(outerfeat);
+        if (feature == Types.f_ERROR)
+          {
+            return Types.t_ERROR;
+          }
+        FormalGenerics.resolve(_generics, outerfeat);
+        if (!feature.generics.errorIfSizeOrTypeDoesNotMatch(_generics,
+                                                            pos,
+                                                            "type",
+                                                            "Type: " + toString() + "\n"))
+          {
+            return Types.t_ERROR;
+          }
+      }
+    return Types.intern(this);
+  }
+
+
+  /**
+   * For a Type that is not a generic argument, resolve the feature of that
+   * type.  Unlike Type.resolve(), this does not check the generic arguments, so
+   * this can be used for type inferencing for the actual generics as in a match
+   * case.
+   *
+   * @param feat the outer feature that this type is declared in, used
+   * for resolution of generic parameters etc.
+   */
+  void resolveFeature(Feature outerfeat)
+  {
+    if (PRECONDITIONS) require
+      (outerfeat != null,
+       outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
+       checkedForGeneric);
+
+    if (!isGenericArgument())
+      {
         Feature o = outerfeat;
         if (outer_ != null)
           {
@@ -893,7 +929,7 @@ public class Type extends ANY implements Comparable
               { // an error message was generated already during findGenerics()
                 check
                   (Errors.count() > 0);
-                return Types.t_ERROR;
+                feature = Types.f_ERROR;
               }
             o = outer_.featureOfType();
           }
@@ -919,7 +955,7 @@ public class Type extends ANY implements Comparable
                 if (type_fs.size() > 1)
                   {
                     FeErrors.ambiguousType(this, type_fs);
-                    return Types.t_ERROR;
+                    feature = Types.f_ERROR;
                   }
                 o = o.outer();
               }
@@ -929,19 +965,11 @@ public class Type extends ANY implements Comparable
               {
                 feature = Types.f_ERROR;
                 FeErrors.typeNotFound(this, outerfeat, nontype_fs);
-                return Types.t_ERROR;
               }
           }
-        FormalGenerics.resolve(_generics, outerfeat);
-        if (!feature.generics.errorIfSizeOrTypeDoesNotMatch(_generics,
-                                                            pos,
-                                                            "type",
-                                                            "Type: " + toString() + "\n"))
-          {
-            return Types.t_ERROR;
-          }
       }
-    return Types.intern(this);
+    if (POSTCONDITIONS) ensure
+      (isGenericArgument() || feature != null);
   }
 
 
