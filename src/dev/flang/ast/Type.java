@@ -927,6 +927,7 @@ public class Type extends ANY implements Comparable
 
             if (feature == null)
               {
+                feature = Types.f_ERROR;
                 FeErrors.typeNotFound(this, outerfeat, nontype_fs);
                 return Types.t_ERROR;
               }
