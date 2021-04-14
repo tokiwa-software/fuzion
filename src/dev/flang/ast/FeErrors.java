@@ -380,6 +380,14 @@ public class FeErrors extends ANY
           "matches are " + typeListConjunction(matches));
   }
 
+  static void missingMatches(SourcePosition pos, List<Type> choiceGenerics, List<Type> missingMatches)
+  {
+    error(pos,
+          "'match' statement does not cover all of the subject's types",
+          "Missing cases for types: " + typeListConjunction(missingMatches) + "\n" +
+          subjectTypes(choiceGenerics));
+  }
+
   /**
    * Create list of the form "'i32', 'string' or 'bool'"
    */

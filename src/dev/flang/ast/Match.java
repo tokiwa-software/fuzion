@@ -170,6 +170,18 @@ public class Match extends Expr
                   }
               }
           }
+        var missingMatches = new List<Type>();
+        for (var ix = 0; ix < cgs.size(); ix++)
+          {
+            if (matched[ix] == null)
+              {
+                missingMatches.add(cgs.get(ix));
+              }
+          }
+        if (!missingMatches.isEmpty())
+          {
+            FeErrors.missingMatches(pos, cgs, missingMatches);
+          }
       }
   }
 
