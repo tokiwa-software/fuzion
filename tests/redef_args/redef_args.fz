@@ -27,15 +27,13 @@ redef_args is
 
   exitCode := 0
 
-  o := stdout
-
   chck(b bool, msg string) is
     s := if (b)
       "PASSED: "
     else
       set exitCode := 1
       "FAILED: "
-    o.println(s + msg)
+    say s + msg
 
   Complex<T>(r, i T) is
   Complex1(r, i i32) is
