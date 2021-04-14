@@ -919,7 +919,7 @@ public class Type extends ANY implements Comparable
        outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
        checkedForGeneric);
 
-    if (!isGenericArgument() && feature == null)
+    if (!isGenericArgument())
       {
         Feature o = outerfeat;
         if (outer_ != null)

@@ -42,8 +42,8 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   #
   isEmpty =>
     match list.this
-      _ nil              => true
-      c Cons<A, list<A>> => false
+      _ nil  => true
+      c Cons => false
 
 
   # get the head of this list if it exists
@@ -51,8 +51,8 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   head Option<A>
   is
     match list.this
-      _ nil              => nil
-      c Cons<A, list<A>> => c.head
+      _ nil  => nil
+      c Cons => c.head
 
 
   # get the tail of this list if it exists, nil if it does
@@ -61,16 +61,16 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   tail list<A>
   is
     match list.this
-      _ nil              => nil
-      c Cons<A, list<A>> => c.tail
+      _ nil  => nil
+      c Cons => c.tail
 
 
   # call f in order on all elements of this list
   #
   iterate(f fun (A)) is
     match list.this
-      _ nil              =>
-      c Cons<A, list<A>> => f c.head; c.tail.iterate f
+      _ nil  =>
+      c Cons => f c.head; c.tail.iterate f
 
 
   # call f in order on all elements of this list
@@ -94,8 +94,8 @@ list<A> : choice<nil, Cons<A, list<A>>> is
       debug: !isEmpty
   is
     match list.this
-      _ nil              => panic
-      c Cons<A, list<A>> => c.head
+      _ nil  => panic
+      c Cons => c.head
 
 
   # get the tail of this list, panic if list is empty
@@ -107,8 +107,8 @@ list<A> : choice<nil, Cons<A, list<A>>> is
       debug: !isEmpty
   is
     match list.this
-      _ nil              => panic
-      c Cons<A, list<A>> => c.tail
+      _ nil  => panic
+      c Cons => c.tail
 
 
   # terminate with "*** panic"
@@ -127,8 +127,8 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   #
   map<B>(f fun(A) B) list<B> is
     match list.this
-      _ nil              => nil
-      c Cons<A, list<A>> =>
+      _ nil  => nil
+      c Cons =>
         ref : Cons<B, list<B>>
         // Cons<B, list<B>> with    # NYI: better syntax for anonymous feature
           head => f c.head
@@ -154,8 +154,8 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   #
   fold (s A, m Monoid<A>) A is
     match list.this
-      _ nil => s
-      c Cons<A, list<A>> => c.tail.fold m.op(s, c.head), m
+      _ nil  => s
+      c Cons => c.tail.fold m.op(s, c.head), m
 
 
   # Take the first n elements of a list, or the whole list if it is shorter than n
@@ -168,9 +168,9 @@ list<A> : choice<nil, Cons<A, list<A>>> is
       nil
     else
       match list.this
-        _ nil              => nil
-        # c Cons<A, list<A>> => cons c.head, c.tail.take n-1      # NYI: does not work yet, need to check why
-        c Cons<A, list<A>> =>
+        _ nil  => nil
+        # c Cons => cons c.head, c.tail.take n-1      # NYI: does not work yet, need to check why
+        c Cons =>
           {                                         # NYI: indentation syntax for match not supported
             ref : Cons<A, list<A>>
               {                                     # NYI: indentation syntax for anonymous not supported

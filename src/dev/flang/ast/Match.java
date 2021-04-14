@@ -160,13 +160,15 @@ public class Match extends Expr
             if (c.field != null)
               {
                 var t = c.field.returnType.functionReturnType();
-                resolveType(c, t, cgs, outer, matched);
+                c.field.returnType = new FunctionReturnType(resolveType(c, t, cgs, outer, matched));
               }
             if (c.types != null)
               {
-                for (var t : c.types)
+                ListIterator<Type> ti = c.types.listIterator();
+                while (ti.hasNext())
                   {
-                    resolveType(c, t, cgs, outer, matched);
+                    var t = ti.next();
+                    ti.set(resolveType(c, t, cgs, outer, matched));
                   }
               }
           }
@@ -199,16 +201,24 @@ public class Match extends Expr
    *
    * @param outer the outer feature that contains this match statement
    */
-  private void resolveType(Case c, Type t, List<Type> cgs, Feature outer, SourcePosition[] matched)
+  private Type resolveType(Case c, Type t, List<Type> cgs, Feature outer, SourcePosition[] matched)
   {
-    t = t.resolve(outer);
+    var original_t = t;
     List<Type> matches = new List<Type>();
     int i = 0;
+    t.resolveFeature(outer);
+    var inferGenerics = !t.isGenericArgument() && t._generics.isEmpty() && t.featureOfType().generics != FormalGenerics.NONE;
+    if (!inferGenerics)
+      {
+        t = t.resolve(outer);
+      }
     for (var cg : cgs)
       {
-        if (t == cg)
+        if (inferGenerics  && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
+            !inferGenerics && t == cg                                 /* match exactly */ )
           {
-            matches.add(t);
+            t = cg;
+            matches.add(cg);
             if (matched[i] != null)
               {
                 FeErrors.repeatedMatch(c.pos, matched[i], t, cgs);
@@ -221,13 +231,15 @@ public class Match extends Expr
       {
         if (matches.isEmpty())
           {
-            FeErrors.matchCaseDoesNotMatchAny(c.pos, t, cgs);
+            FeErrors.matchCaseDoesNotMatchAny(c.pos, original_t, cgs);
+            t = Types.t_ERROR;
           }
         else
           {
-            FeErrors.matchCaseMatchesSeveral(c.pos, t, cgs, matches);
+            FeErrors.matchCaseMatchesSeveral(c.pos, original_t, cgs, matches);
           }
       }
+    return t;
   }
 
 
