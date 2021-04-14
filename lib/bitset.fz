@@ -34,9 +34,9 @@ is
   #
   has (bit u64) bool is
     match bitset.this
-      _ nil => false
-      x u64 => bit == x
-      a array<bool> => a.length.as_u64 > bit && a[bit.as_i32]
+      _ nil   => false
+      x u64   => bit == x
+      a array => a.length.as_u64 > bit && a[bit.as_i32]
 
   # alternative for has using []
   #
@@ -48,30 +48,30 @@ is
       bitset.this
     else
       match bitset.this
-        _ nil         => bit
-        x u64         => array<bool> bit.max(x).as_i32+1, fun (i i32) => i.as_u64 == bit || i.as_u64 == x
-        a array<bool> => a.put bit.as_i32, true, false
+        _ nil   => bit
+        x u64   => array<bool> bit.max(x).as_i32+1, fun (i i32) => i.as_u64 == bit || i.as_u64 == x
+        a array => a.put bit.as_i32, true, false
 
   # union of two bitsets
   #
   infix ⋃ (other bitset) bitset is
     match bitset.this
-      _ nil         => other
-      x u64         => other.put x
-      a array<bool> =>
+      _ nil   => other
+      x u64   => other.put x
+      a array =>
         match other
-          _ nil         => bitset.this
-          x u64         => bitset.this.put x
-          b array<bool> =>
+          _ nil   => bitset.this
+          x u64   => bitset.this.put x
+          b array =>
             array<bool> a.length.max(b.length), fun (i i32) => (has i.as_u64) || (other.has i.as_u64)
 
   # get the highest bit in this bitset
   #
   highest Option<u64> is
     match bitset.this
-      _ nil         => nil
-      x u64         => x
-      a array<bool> => a.length.as_u64-1
+      _ nil   => nil
+      x u64   => x
+      a array => a.length.as_u64-1
 
   # compare two bitsets
   #
