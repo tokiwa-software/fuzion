@@ -30,6 +30,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 import java.util.Stack;
 
 import java.util.stream.Stream;
@@ -427,23 +430,28 @@ public class C extends ANY
           push(stack, cl, current(cl));
           break;
         }
-      case boolConst:
+      case Const:
         {
-          var bc = _fuir.boolConst(c, i);
-          stack.push(bc ? _names.FZ_TRUE
-                     : _names.FZ_FALSE);
-          break;
-        }
-      case i32Const: { var ic = _fuir.i32Const(c, i); stack.push(CExpr. int32const(ic)); break; }
-      case u32Const: { var ic = _fuir.u32Const(c, i); stack.push(CExpr.uint32const(ic)); break; }
-      case i64Const: { var ic = _fuir.i64Const(c, i); stack.push(CExpr. int64const(ic)); break; }
-      case u64Const: { var ic = _fuir.u64Const(c, i); stack.push(CExpr.uint64const(ic)); break; }
-      case strConst:
-        {
-          var bytes = _fuir.strConst(c, i);
-          var tmp = _names.newTemp();
-          o = constString(bytes, tmp);
-          stack.push(tmp);
+          var constCl = _fuir.constClazz(c, i);
+          var d = _fuir.constData(c, i);
+          CExpr r = null;
+          if      (_fuir.clazzIsBool(constCl)) { r = d[0] == 1 ? _names.FZ_TRUE : _names.FZ_FALSE; }
+          else if (_fuir.clazzIsI32 (constCl)) { r = CExpr. int32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt ()); }
+          else if (_fuir.clazzIsU32 (constCl)) { r = CExpr.uint32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt ()); }
+          else if (_fuir.clazzIsI64 (constCl)) { r = CExpr. int64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong()); }
+          else if (_fuir.clazzIsU64 (constCl)) { r = CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong()); }
+          else if (constCl == _fuir.clazz_conststring())
+            {
+              var tmp = _names.newTemp();
+              o = constString(d, tmp);
+              r = tmp;
+            }
+          else
+            {
+              Errors.error("Unsupported constant in C backend.",
+                           "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+            }
+          stack.push(r);
           break;
         }
       case Match:
@@ -486,7 +494,7 @@ public class C extends ANY
                   sl.add(!_types.hasData(fclazz) ? CStmnt.lineComment("valueluess assignment to " + f.code())
                                                  : f.assign(entry));
                 }
-              sl.add(createCode(cl, (Stack<CExpr>) stack.clone(), _fuir.i32Const(c, i + 1 + mc)));
+              sl.add(createCode(cl, (Stack<CExpr>) stack.clone(), _fuir.matchCaseCode(c, i, mc)));
               sl.add(CStmnt.BREAK);
               var cazecode = CStmnt.seq(sl);
               ccases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty

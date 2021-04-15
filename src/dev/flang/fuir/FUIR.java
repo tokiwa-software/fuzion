@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
 import java.util.TreeSet;
@@ -94,12 +96,7 @@ public class FUIR extends ANY
     Box,
     Call,
     Current,
-    boolConst,
-    i32Const,
-    u32Const,
-    i64Const,
-    u64Const,
-    strConst,
+    Const,
     Match,
     Tag,
     WipeStack,
@@ -1017,23 +1014,11 @@ public class FUIR extends ANY
       {
         result = ExprKind.Tag;
       }
-    else if (e instanceof BoolConst)
+    else if (e instanceof BoolConst ||
+             e instanceof IntConst  ||
+             e instanceof StrConst     )
       {
-        result = ExprKind.boolConst;
-      }
-    else if (e instanceof IntConst)
-      {
-        var i = (IntConst) e;
-        var t = i.type();
-        if      (t == Types.resolved.t_i32) { result = ExprKind.i32Const; }
-        else if (t == Types.resolved.t_u32) { result = ExprKind.u32Const; }
-        else if (t == Types.resolved.t_i64) { result = ExprKind.i64Const; }
-        else if (t == Types.resolved.t_u64) { result = ExprKind.u64Const; }
-        else { throw new Error("Unexpected type for IntConst: " + t); }
-      }
-    else if (e instanceof StrConst)
-      {
-        result = ExprKind.strConst;
+        result = ExprKind.Const;
       }
     else
       {
@@ -1303,70 +1288,53 @@ public class FUIR extends ANY
     return _clazzIds.get(field).fieldIndex();
   }
 
-  public boolean boolConst(int c, int ix)
+  /**
+   * For an intermediate command of type ExprKind.Const, return its clazz.
+   *
+   * Currently, the clazz is one of bool, i32, u32, i64, u64 of conststring.
+   * This will be extended by other basic types (f64, etc.), value instances
+   * without refs, choice instances with tag, arrays, etc.
+   */
+  public int constClazz(int c, int ix)
   {
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.boolConst);
+       codeAt(c, ix) == ExprKind.Const);
 
-    var ic = (BoolConst) _codeIds.get(c).get(ix);
-    return ic.b;
+    Clazz clazz;
+    var t = ((Expr) _codeIds.get(c).get(ix)).type();
+    if      (t == Types.resolved.t_bool  ) { clazz = Clazzes.bool       .get(); }
+    else if (t == Types.resolved.t_i32   ) { clazz = Clazzes.i32        .get(); }
+    else if (t == Types.resolved.t_u32   ) { clazz = Clazzes.u32        .get(); }
+    else if (t == Types.resolved.t_i64   ) { clazz = Clazzes.i64        .get(); }
+    else if (t == Types.resolved.t_u64   ) { clazz = Clazzes.u64        .get(); }
+    else if (t == Types.resolved.t_string) { clazz = Clazzes.conststring.get(); } // NYI: a slight inconsistency here, need to change AST
+    else { throw new Error("Unexpected type for ExprKind.Const: " + t); }
+    return _clazzIds.get(clazz);
   }
 
-  public int i32Const(int c, int ix)
+
+  /**
+   * For an intermediate command of type ExprKind.Const, return the constant
+   * data using little endian encoding, i.e, 0x12345678 -> { 0x78, 0x56, 0x34, 0x12 }.
+   */
+  public byte[] constData(int c, int ix)
   {
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.i32Const);
+       codeAt(c, ix) == ExprKind.Const);
 
-    var ic = (IntConst) _codeIds.get(c).get(ix);
-    return (int) ic.l;
-  }
-
-  public int u32Const(int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.u32Const);
-
-    var ic = (IntConst) _codeIds.get(c).get(ix);
-    return (int) ic.l;
-  }
-
-  public long i64Const(int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.i64Const);
-
-    var ic = (IntConst) _codeIds.get(c).get(ix);
-    return ic.l;
-  }
-
-  public long u64Const(int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.u64Const);
-
-    var ic = (IntConst) _codeIds.get(c).get(ix);
-    return ic.l;
-  }
-
-  public byte[] strConst(int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.strConst);
-
-    var ic = (StrConst) _codeIds.get(c).get(ix);
-    return ic.str.getBytes(StandardCharsets.UTF_8);
+    var ic = _codeIds.get(c).get(ix);
+    var t = ((Expr) _codeIds.get(c).get(ix)).type();
+    if      (t == Types.resolved.t_bool  ) { return new byte[] { ((BoolConst) ic).b ? (byte) 1 : (byte) 0 }; }
+    else if (t == Types.resolved.t_i32 ||
+             t == Types.resolved.t_u32   ) { return ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt((int) ((IntConst) ic).l).array(); }
+    else if (t == Types.resolved.t_i64 ||
+             t == Types.resolved.t_u64   ) { return ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(     ((IntConst) ic).l).array(); }
+    else if (t == Types.resolved.t_string) { return ((StrConst) ic).str.getBytes(StandardCharsets.UTF_8); }
+    throw new Error("Unexpected constant type " + t + ", expected boo, i32, u32, i64, u64, or string");
   }
 
 
@@ -1461,7 +1429,6 @@ public class FUIR extends ANY
   }
 
 
-
   /**
    * For a match statement, get the tags matched by a given case
    *
@@ -1519,6 +1486,30 @@ public class FUIR extends ANY
           }
       }
     return result;
+  }
+
+
+  /**
+   * For a match statement, get the code associated with a given case
+   *
+   * @param c code block containing the match
+   *
+   * @param ix index of the match
+   *
+   * @paramc cix index of the case in the match
+   *
+   * @return code block for the case
+   */
+  public int matchCaseCode(int c, int ix, int cix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Match,
+       0 <= cix && cix <= matchCaseCount(c, ix));
+
+    var s = _codeIds.get(c).get(ix+1+cix);
+    return (int) ((IntConst)s).l;
   }
 
 }
