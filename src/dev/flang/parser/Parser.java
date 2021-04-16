@@ -1429,10 +1429,34 @@ exprList    : expr ( COMMA exprList
 
 
   /**
+   * A bracketTerm
+   *
+bracketTerm : block
+            | klammer
+            ;
+   */
+  Expr bracketTerm(boolean mayBeAtMinIndent)
+  {
+    if (PRECONDITIONS) require
+      (current() == Token.t_lbrace   ||
+       current() == Token.t_lparen     );
+
+    var c = current();
+    switch (c)
+      {
+      case t_lbrace  : return block(mayBeAtMinIndent);
+      case t_lparen  : return klammer();
+      default: throw new Error("Unexpected case: "+c);
+      }
+  }
+
+
+  /**
    * An expr that does not exceed a single line unless it is enclosed by { } or
    * ( ).
    *
-exprInLine  : expr
+exprInLine  : expr             # within one line
+            | bracketTerm      # stretching over one or several lines
             ;
    */
   Expr exprInLine()
@@ -1440,22 +1464,44 @@ exprInLine  : expr
     Expr result;
     int line = line();
     int oldLine = sameLine(-1);
-    if (current() == Token.t_lbrace)
+    var c = current();
+    switch (c)
       {
-        var f = fork();
-        f.block(false);
-        result = f.line() == line || f.isOperator('.') ? expr() : block(false /* should be indented */);
-      }
-    else if (current() == Token.t_lparen)
-      {
-        var f = fork();
-        f.klammer();
-        result = f.line() == line || f.isOperator('.') ? expr() : klammer();
-      }
-    else
-      {
+      case t_lbrace:
+      case t_lparen:
+        { // allow
+          //
+          //   { a; b } + c
+          //
+          //   { a; b }
+          //   + c
+          //
+          //   { a; b
+          //   }
+          //   .f
+          //
+          // but not
+          //
+          //   { a; b
+          //   }
+          //   + c
+          //
+          // NYI: check: This seems to allow
+          //
+          //   { a; b }
+          //   .f
+          //   + c
+          //
+          // is this desired?
+          var f = fork();
+          f.bracketTerm(false);
+          result = (f.line() == line || f.isOperator('.')) ? expr() : bracketTerm(false);
+          break;
+        }
+      default:
         sameLine(line);
         result = expr();
+        break;
       }
     sameLine(oldLine);
     return result;
@@ -1578,7 +1624,7 @@ tuple       : LPAREN RPAREN
   {
     Expr result;
     SourcePosition pos = posObject();
-    match(Token.t_lparen, "term");
+    match(Token.t_lparen, "klammer");
     int oldLine = sameLine(-1);
     if (skip(Token.t_rparen)) // an empty tuple
       {
@@ -1613,7 +1659,7 @@ term        : simpleterm ( indexCall
                                      |
                                      )
             ;
-simpleterm  : klammer
+simpleterm  : bracketTerm
             | fun
             | string
             | INTEGER
@@ -1621,7 +1667,6 @@ simpleterm  : klammer
             | match
             | loop
             | ifstmnt
-            | block
             | callOrFeatOrThis
             ;
    */
@@ -1631,7 +1676,8 @@ simpleterm  : klammer
     int p1 = pos();
     switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
-      case t_lparen  :         result = klammer();                                break;
+      case t_lbrace  :
+      case t_lparen  :         result = bracketTerm(true);                        break;
       case t_fun     :         result = fun();                                    break;
       case t_integer :         result = new IntConst(posObject(), skipInteger()); break;
       case t_old     : next(); result = new Old(term()                         ); break;
@@ -1641,7 +1687,6 @@ simpleterm  : klammer
       case t_while   :
       case t_do      :         result = loop();                                   break;
       case t_if      :         result = ifstmnt();                                break;
-      case t_lbrace  :         result = block(true);                              break;
       default        :
         if (isStartedString(current()))
           {
@@ -1652,7 +1697,7 @@ simpleterm  : klammer
             result = callOrFeatOrThis();
             if (result == null)
               {
-                syntaxError(p1, "term (lparen, fun, string, integer, old, match, lbrace, or name)", "term");
+                syntaxError(p1, "term (lbrace, lparen, fun, string, integer, old, match, or name)", "term");
                 result = new Call(posObject(), null, Errors.ERROR_STRING, Call.NO_GENERICS, Call.NO_PARENTHESES);
               }
           }
