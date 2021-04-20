@@ -46,6 +46,7 @@ import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.FunctionReturnType; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
+import dev.flang.ast.InitArray; // NYI: remove dependency!
 import dev.flang.ast.IntConst; // NYI: remove dependency!
 import dev.flang.ast.Match; // NYI: remove dependency!
 import dev.flang.ast.Old; // NYI: remove dependency!
@@ -711,6 +712,21 @@ public class Clazzes extends ANY
 
 
   /**
+   * Find all static clazzes for this Tag and store them in outerClazz.
+   */
+  public static void findClazzes(InitArray i, Clazz outerClazz)
+  {
+    Clazz ac = clazz(i, outerClazz);
+    if (i._arrayClazzId < 0)
+      {
+        i._arrayClazzId = outerClazz.feature().getRuntimeClazzId();
+      }
+    outerClazz.setRuntimeClazz(i._arrayClazzId    , ac);
+    ac.instantiated(i.pos());
+  }
+
+
+  /**
    * Determine the result clazz of an Expr.
    *
    * NYI: Temporary solution, will be replaced by dynamic calls.
@@ -802,6 +818,12 @@ public class Clazzes extends ANY
       {
         var t = (Tag) e;
         result = outerClazz.actualClazz(t._taggedType);
+      }
+
+    else if (e instanceof InitArray)
+      {
+        var ia = (InitArray) e;
+        result = outerClazz.actualClazz(ia.type());
       }
 
     else

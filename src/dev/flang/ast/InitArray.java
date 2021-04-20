@@ -56,6 +56,12 @@ public class InitArray extends Expr
   private Type type_;
 
 
+  /**
+   * Clazz index for array clazz
+   */
+  public int _arrayClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
