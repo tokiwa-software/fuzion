@@ -168,6 +168,7 @@ public class Clazzes extends ANY
   public static final OnDemandClazz conststring = new OnDemandClazz(() -> Types.resolved.t_conststring      , true /* needed? */);
   public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
   public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     );
+  public static Clazz constStringBytesArray;  // result clazz of conststring.internalArray
 
 
   /**
@@ -365,6 +366,8 @@ public class Clazzes extends ANY
         main.called(SourcePosition.builtIn);
       }
     conststring.get().instantiated(SourcePosition.builtIn);
+    constStringBytesArray = conststring.get().lookup(Types.resolved.f_array_internalArray, Call.NO_GENERICS, SourcePosition.builtIn).resultClazz();
+    constStringBytesArray.instantiated(SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
       {

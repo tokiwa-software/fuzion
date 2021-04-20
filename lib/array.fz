@@ -25,21 +25,11 @@
 
 # array -- one-dimensional immutable array
 #
-array<T>(length i32, init fun (i32) T) : streamable<T> is
-
-# private:
-
-// NYI: use data := sys.array<T> length once conststring can handle this.
-  data := alloc<T> length
-
-  for x in indices do
-    setel data, x, init x
-
-  alloc<X>(l i32) Object is intrinsic
-  get  <X>(d Object, i i32) X is intrinsic
-  setel<X>(d Object, i i32, o X) unit is intrinsic
+array<T>(internalArray sys.array<T>) : streamable<T> is
 
 # public:
+
+  length => internalArray.length
 
   indices => 0..length-1
 
@@ -47,7 +37,7 @@ array<T>(length i32, init fun (i32) T) : streamable<T> is
     pre
       safety: 0 <= i < length
   is
-    get<T>(data,i)
+    internalArray[i]
 
   # create a new array with element i set to v. Grow the array in case i == length.
   #
@@ -82,7 +72,7 @@ array<T>(length i32, init fun (i32) T) : streamable<T> is
   redef asStream ref : stream<T> is
     x := 0
     redef hasNext => x < length
-    redef next => set x := x + 1; get<T>(data, x - 1)
+    redef next => set x := x + 1; array.this[x-1]
 
 
   # create a list from this array

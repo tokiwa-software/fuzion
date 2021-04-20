@@ -556,14 +556,17 @@ public class Interpreter extends Backend
     Clazz cl = Clazzes.conststring.get();
     Instance result = new Instance(cl);
     result.string = str; // NYI: remove eventually, only for convenience in intrinsic features
+    var saCl = Clazzes.constStringBytesArray;
+    Instance sa = new Instance(saCl);
     byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-    setField(Types.resolved.f_Array_length, cl, result, new i32Value(bytes.length));
+    setField(Types.resolved.f_sys_array_length, saCl, sa, new i32Value(bytes.length));
     Instance arrayData = new Instance(bytes.length);
     for (int i = 0; i<bytes.length; i++)
       {
         arrayData.nonrefs[i] = bytes[i];
       }
-    setField(Types.resolved.f_Array_data, cl, result, arrayData);
+    setField(Types.resolved.f_sys_array_data, saCl, sa, arrayData);
+    setField(Types.resolved.f_array_internalArray, cl, result, sa);
 
     return result;
   }

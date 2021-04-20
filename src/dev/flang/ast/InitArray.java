@@ -101,7 +101,7 @@ public class InitArray extends Expr
                                       "array",
                                       new List<>(t),
                                       null,
-                                      Types.resolved.f_Array,
+                                      Types.resolved.f_array,
                                       Type.RefOrVal.LikeUnderlyingFeature));
       }
     return type_;
@@ -155,7 +155,7 @@ public class InitArray extends Expr
     if (PRECONDITIONS) require
       (t != null);
 
-    if (t.featureOfType() == Types.resolved.f_Array &&
+    if (t.featureOfType() == Types.resolved.f_array &&
         t._generics.size() == 1)
       {
         return t._generics.get(0);

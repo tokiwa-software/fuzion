@@ -25,6 +25,9 @@
 
 # conststring -- feature used for string constants in Fuzion source code
 #
-conststring ref : string, array<i32>(0, fun (i i32) => 0) is
+# conststring cannot be called directly, instances are created implicitly by the
+# backend.
+#
+conststring (cannotBeCalled void) ref : string, array<i32> sys.array<i32> -1 is
 
   redef asBytes ref streamable<i32> is conststring.this

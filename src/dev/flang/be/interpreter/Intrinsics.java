@@ -194,14 +194,14 @@ public class Intrinsics extends ANY
             return Value.EMPTY_VALUE;
           };
       }
-    else if (n.equals("array.alloc") || n.equals("sys.array.alloc"))
+    else if (n.equals("sys.array.alloc"))
       {
         result = (args) ->
           {
             return new Instance(args.get(1).i32Value());
           };
       }
-    else if (n.equals("array.get") || n.equals("sys.array.get"))
+    else if (n.equals("sys.array.get"))
       {
         result = (args) ->
           {
@@ -232,7 +232,7 @@ public class Intrinsics extends ANY
             return res;
           };
       }
-    else if (n.equals("array.setel") || n.equals("sys.array.setel"))
+    else if (n.equals("sys.array.setel"))
       {
         result = (args) ->
           {

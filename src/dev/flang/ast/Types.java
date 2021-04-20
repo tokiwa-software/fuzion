@@ -128,6 +128,7 @@ public class Types extends ANY
     public final Type t_ref_u64 ;
     public final Type t_bool;
     public final Type t_object;
+    public final Type t_sys;
     public final Type t_string;
     public final Type t_conststring;
     public final Type t_unit;
@@ -153,9 +154,11 @@ public class Types extends ANY
     public final Feature f_function;
     public final Feature f_function_call;
     public final Feature f_safety;
-    public final Feature f_Array;
-    public final Feature f_Array_length;
-    public final Feature f_Array_data;
+    public final Feature f_array;
+    public final Feature f_array_internalArray;
+    public final Feature f_sys_array;
+    public final Feature f_sys_array_length;
+    public final Feature f_sys_array_data;
     Resolved(Feature universe)
     {
       this.universe = universe;
@@ -168,6 +171,7 @@ public class Types extends ANY
       t_ref_i64       = Type.type(true, "i64"         , universe);
       t_ref_u64       = Type.type(true, "u64"         , universe);
       t_bool          = Type.type(      "bool"        , universe);
+      t_sys           = Type.type(      "sys"         , universe);
       t_string        = Type.type(      "string"      , universe);
       t_conststring   = Type.type(      "conststring" , universe);
       t_object        = Type.type(      "Object"      , universe);
@@ -186,9 +190,11 @@ public class Types extends ANY
       f_function      = universe.get(FUNCTION_NAME);
       f_function_call = f_function.get("call");
       f_safety        = universe.get("safety");
-      f_Array         = universe.get("array", 2);
-      f_Array_data    = f_Array.get("data");
-      f_Array_length  = f_Array.get("length");
+      f_array         = universe.get("array", 1);
+      f_array_internalArray = f_array.get("internalArray");
+      f_sys_array     = universe.get("sys").get("array");
+      f_sys_array_data   = f_sys_array.get("data");
+      f_sys_array_length = f_sys_array.get("length");
       resolved = this;
       t_ADDRESS  .resolveArtificialType(universe.get("Object"));
       t_INFER    .resolveArtificialType(universe);
