@@ -76,7 +76,7 @@ public class Types extends ANY
   /**
    * Dummy name used for undefined type t_UNDEFINED which is used for undefined
    * types that are expected to be replaced by the correct type during type
-   * inference. Examples are the result of union of distincs types on different
+   * inference.  Examples are the result of union of distinct types on different
    * branches of an if or match, or the type of the result var befure type
    * inference has determined the result type.
    */
