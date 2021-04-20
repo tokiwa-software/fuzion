@@ -72,6 +72,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/FunctionReturnType.java \
           $(SRC)/dev/flang/ast/Generic.java \
           $(SRC)/dev/flang/ast/If.java \
+          $(SRC)/dev/flang/ast/InitArray.java \
           $(SRC)/dev/flang/ast/IntConst.java \
           $(SRC)/dev/flang/ast/Impl.java \
           $(SRC)/dev/flang/ast/IncompatibleResultsOnBranches.java \

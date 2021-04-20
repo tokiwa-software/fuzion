@@ -176,6 +176,43 @@ public class FeErrors extends ANY
                      value);
   }
 
+
+  /**
+   * Create an error message for incompatible types when assigning an element e
+   * during array initilization of the form '[a, b, ..., e, ... ]'.
+   *
+   * @param pos the source code position of the assignment.
+   *
+   * @param arrayTpye the type of the array that is initialized
+   *
+   * @param frmlT the expected formal type
+   *
+   * @param actlT the actual type
+   *
+   * @param value the value assigned to assignedField.
+   */
+  static void incompatibleTypeInArrayInitialization(SourcePosition pos,
+                                                    Type arrayType,
+                                                    Type frmlT,
+                                                    Type actlT,
+                                                    Expr value)
+  {
+    incompatibleType(pos,
+                     "in array initialization",
+                     "array type          : " + arrayType + "\n",
+                     frmlT,
+                     actlT,
+                     value);
+  }
+
+  public static void arrayInitCommaAndSemiMixed(SourcePosition pos, SourcePosition p1, SourcePosition p2)
+  {
+    error(pos,
+          "Separator used in array initialization alters between ',' and ';'",
+          "First separator defined at " + p1.show() + "\n" +
+          "different separator used at " + p2.show());
+  }
+
   static void assignmentTargetNotFound(Assign ass, Feature outer)
   {
     error(ass.pos,

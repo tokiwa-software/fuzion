@@ -1433,19 +1433,22 @@ exprList    : expr ( COMMA exprList
    *
 bracketTerm : block
             | klammer
+            | initArray
             ;
    */
   Expr bracketTerm(boolean mayBeAtMinIndent)
   {
     if (PRECONDITIONS) require
       (current() == Token.t_lbrace   ||
-       current() == Token.t_lparen     );
+       current() == Token.t_lparen   ||
+       current() == Token.t_lcrochet   );
 
     var c = current();
     switch (c)
       {
       case t_lbrace  : return block(mayBeAtMinIndent);
       case t_lparen  : return klammer();
+      case t_lcrochet: return initArray();
       default: throw new Error("Unexpected case: "+c);
       }
   }
@@ -1469,6 +1472,7 @@ exprInLine  : expr             # within one line
       {
       case t_lbrace:
       case t_lparen:
+      case t_lcrochet:
         { // allow
           //
           //   { a; b } + c
@@ -1651,6 +1655,44 @@ tuple       : LPAREN RPAREN
 
 
   /**
+   * Parse initArray
+   *
+initArray   : LBRACKET expr (COMMA expr)+ RBRACKET
+            | LBRACKET expr (SEMI  expr)+ RBRACKET
+            ;
+   */
+  Expr initArray()
+  {
+    Expr result;
+    SourcePosition pos = posObject();
+    match(Token.t_lcrochet, "initArray");
+    int oldLine = sameLine(-1);
+    List<Expr> elements = new List<>();
+    if (!skip(Token.t_rcrochet)) // not empty array
+      {
+        elements.add(expr());
+        var sep = current();
+        var s = sep;
+        var p1 = pos();
+        boolean reportedMixed = false;
+        while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
+          {
+            elements.add(expr());
+            s = current();
+            if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
+              {
+                FeErrors.arrayInitCommaAndSemiMixed(pos, posObject(p1), posObject());
+                reportedMixed = true;
+              }
+          }
+        match(Token.t_rcrochet, "initArray");
+      }
+    sameLine(oldLine);
+    return new InitArray(pos, elements);
+  }
+
+
+  /**
    * Parse term
    *
 term        : simpleterm ( indexCall
@@ -1677,7 +1719,8 @@ simpleterm  : bracketTerm
     switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
       case t_lbrace  :
-      case t_lparen  :         result = bracketTerm(true);                        break;
+      case t_lparen  :
+      case t_lcrochet:         result = bracketTerm(true);                        break;
       case t_fun     :         result = fun();                                    break;
       case t_integer :         result = new IntConst(posObject(), skipInteger()); break;
       case t_old     : next(); result = new Old(term()                         ); break;
@@ -1697,7 +1740,7 @@ simpleterm  : bracketTerm
             result = callOrFeatOrThis();
             if (result == null)
               {
-                syntaxError(p1, "term (lbrace, lparen, fun, string, integer, old, match, or name)", "term");
+                syntaxError(p1, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
                 result = new Call(posObject(), null, Errors.ERROR_STRING, Call.NO_GENERICS, Call.NO_PARENTHESES);
               }
           }

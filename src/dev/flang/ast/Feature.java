@@ -1714,8 +1714,9 @@ public class Feature extends ANY implements Stmnt, Comparable
         state_ = State.BOXING;
 
         visit(new FeatureVisitor() {
-            public void  action(Assign  a, Feature outer) { a.box(outer);           }
-            public Call  action(Call    c, Feature outer) { c.box(outer); return c; }
+            public void  action(Assign    a, Feature outer) { a.box(outer);           }
+            public Call  action(Call      c, Feature outer) { c.box(outer); return c; }
+            public void  action(InitArray i, Feature outer) { i.box(outer); }
           });
 
         state_ = State.BOXED;
@@ -2069,9 +2070,10 @@ public class Feature extends ANY implements Stmnt, Comparable
         (state_ == State.CHECKING_TYPES2)    )
       {
         visit(new FeatureVisitor() {
-            public void  action(Assign  a, Feature outer) { a.checkTypes();                }
-            public Call  action(Call    c, Feature outer) { c.checkTypes(outer); return c; }
-            public void  action(If      i, Feature outer) { i.checkTypes();                }
+            public void  action(Assign    a, Feature outer) { a.checkTypes();                }
+            public Call  action(Call      c, Feature outer) { c.checkTypes(outer); return c; }
+            public void  action(If        i, Feature outer) { i.checkTypes();                }
+            public void  action(InitArray i, Feature outer) { i.checkTypes();                }
           });
         checkTypes();
 
