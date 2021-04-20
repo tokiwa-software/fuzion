@@ -191,19 +191,18 @@ public class If extends Expr
    */
   private Type typeFromIfOrElse()
   {
-    Type result = null;
+    Type result;
     if (hasUntakenElseBranch())
       {
         result = Types.resolved.t_unit;
       }
     else
       {
+        result = Types.resolved.t_void;
         Iterator<Expr> it = branches();
         while (it.hasNext())
           {
-            Type t = it.next().type();
-            result = result == null ? t
-                                    : result.union(t);
+            result = result.union(it.next().type());
           }
       }
     return result;
