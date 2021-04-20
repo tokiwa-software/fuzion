@@ -1370,7 +1370,8 @@ public class Feature extends ANY implements Stmnt, Comparable
 
   /**
    * Syntactic sugar resolution of a feature f after type resolution. Currently
-   * unused.
+   * used for lazy boolean operations like &&, || and for compile-time constants
+   * safety, debugLevel, debug.
    *
    * @param res the resolution instance.
    */
