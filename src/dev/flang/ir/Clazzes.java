@@ -722,9 +722,12 @@ public class Clazzes extends ANY
     Clazz ac = clazz(i, outerClazz);
     if (i._arrayClazzId < 0)
       {
-        i._arrayClazzId = outerClazz.feature().getRuntimeClazzId();
+        i._arrayClazzId = outerClazz.feature().getRuntimeClazzIds(2);
       }
+    Clazz sa = ac.lookup(Types.resolved.f_array_internalArray, Call.NO_GENERICS, i.pos()).resultClazz();
+    sa.instantiated(i.pos());
     outerClazz.setRuntimeClazz(i._arrayClazzId    , ac);
+    outerClazz.setRuntimeClazz(i._arrayClazzId + 1, sa);
     ac.instantiated(i.pos());
   }
 

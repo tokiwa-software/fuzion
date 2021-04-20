@@ -47,7 +47,7 @@ public class InitArray extends Expr
   /**
    * The elements to be stored in the array
    */
-  List<Expr> _elements;
+  public final List<Expr> _elements;
 
 
   /**

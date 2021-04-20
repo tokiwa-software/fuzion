@@ -58,6 +58,7 @@ import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead
 import dev.flang.ast.Feature; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.InitArray; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.IntConst; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Match; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -510,6 +511,25 @@ public class Interpreter extends Backend
     else if (s instanceof Old)
       {
         throw new Error("NYI: Expr.execute() for " + s.getClass() + " " +s);
+      }
+
+    else if (s instanceof InitArray)
+      {
+        var i = (InitArray) s;
+        Clazz ac  = staticClazz.getRuntimeClazz(i._arrayClazzId + 0);
+        Clazz sac = staticClazz.getRuntimeClazz(i._arrayClazzId + 1);
+        var sa = new Instance(sac);
+        int l = i._elements.size();
+        var arrayData = new Instance(l);
+        setField(Types.resolved.f_sys_array_data  , sac, sa, arrayData);
+        setField(Types.resolved.f_sys_array_length, sac, sa, new i32Value(l));
+        for (int x = 0; x < l; x++)
+          {
+            var v = execute(i._elements.get(x), staticClazz, cur);
+            Intrinsics.sysArraySetEl(arrayData, x, v, sac);
+          }
+        result = new Instance(ac);
+        setField(Types.resolved.f_array_internalArray, ac, result, sa);
       }
 
     else

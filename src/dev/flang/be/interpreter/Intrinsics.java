@@ -205,62 +205,19 @@ public class Intrinsics extends ANY
       {
         result = (args) ->
           {
-            Value res;
-            var cl = innerClazz._outer;
-            var a = args.get(0);
-            Instance ai = ((Instance)args.get(1));
-            int   x = args.get(2).i32Value();
-            if (x < 0 || x >= ai.refs.length)
-              {
-                Errors.fatal("array index out of bounds: " + x + " not in 0.."+(ai.refs.length-1)+"\n"+Interpreter.callStack());
-                res = Value.NO_VALUE; // just to keep javac from complaining
-              }
-                // NYI: Properly determine generic argument type of array
-            else if (cl._type == Types.resolved.t_conststring /* NYI: Hack */ ||
-                     cl._type._generics.getFirst().name.equals("i32"))
-              {
-                res = new i32Value(ai.nonrefs[x]);
-              }
-            else if (cl._type._generics.getFirst().name.equals("bool"))
-              {
-                res = new boolValue(ai.nonrefs[x] != 0);
-              }
-            else
-              {
-                res = ai.refs[x];
-              }
-            return res;
+            return sysArrayGet(/* data  */ ((Instance)args.get(1)),
+                               /* index */ args.get(2).i32Value(),
+                               /* type  */ innerClazz._outer);
           };
       }
     else if (n.equals("sys.array.setel"))
       {
         result = (args) ->
           {
-            // NYI: Properly determine generic argument type of array
-            var elementType = innerClazz._outer._type._generics.getFirst();
-            var a = args.get(0);
-            Instance ai = ((Instance)args.get(1));
-            int   x = args.get(2).i32Value();
-            if (x >= ai.refs.length)
-              {
-                System.err.println("ArrayIndexOutOfBounds: "+x+" >= "+ai.refs.length);
-              }
-            else
-              {
-                Value v = args.get(3);
-                if (elementType.name.equals("i32"))
-                  {
-                    ai.nonrefs[x] = v.i32Value();
-                  }
-                else if (elementType.name.equals("bool"))
-                  {
-                    ai.nonrefs[x] = v.boolValue() ? 1 : 0;
-                  }
-                else
-                  {
-                    ai.refs[x] = v;
-                  }
-              }
+            sysArraySetEl(/* data  */ ((Instance)args.get(1)),
+                          /* index */ args.get(2).i32Value(),
+                          /* value */ args.get(3),
+                          /* type  */ innerClazz._outer);
             return Value.EMPTY_VALUE;
           };
       }
@@ -366,6 +323,75 @@ public class Intrinsics extends ANY
         result = (args) -> Value.NO_VALUE;
       }
     return result;
+  }
+
+
+  static Type elementType(Clazz arrayClazz)
+  {
+    // NYI: Properly determine generic argument type of array
+    var arrayType = arrayClazz._type;
+    if (arrayType == Types.resolved.t_conststring /* NYI: Hack */)
+      {
+        return Types.resolved.t_i32;
+      }
+    else
+      {
+        return arrayType._generics.getFirst();
+      }
+  }
+
+
+  static void sysArraySetEl(Instance ai,
+                            int x,
+                            Value v,
+                            Clazz arrayClazz)
+  {
+    // NYI: Properly determine generic argument type of array
+    var elementType = elementType(arrayClazz);
+    if (x < 0 || x >= ai.refs.length)
+      {
+        Errors.fatal("array index out of bounds: " + x + " not in 0.."+(ai.refs.length-1)+"\n"+Interpreter.callStack());
+      }
+    else
+      {
+        if (elementType == Types.resolved.t_i32)
+          {
+            ai.nonrefs[x] = v.i32Value();
+          }
+        else if (elementType == Types.resolved.t_bool)
+          {
+            ai.nonrefs[x] = v.boolValue() ? 1 : 0;
+          }
+        else
+          {
+            ai.refs[x] = v;
+          }
+      }
+  }
+
+
+  static Value sysArrayGet(Instance ai,
+                           int x,
+                           Clazz arrayClazz)
+  {
+    var elementType = elementType(arrayClazz);
+    if (x < 0 || x >= ai.refs.length)
+      {
+        Errors.fatal("array index out of bounds: " + x + " not in 0.."+(ai.refs.length-1)+"\n"+Interpreter.callStack());
+        return Value.NO_VALUE; // just to keep javac from complaining
+      }
+    else if (elementType == Types.resolved.t_i32)
+      {
+        return new i32Value(ai.nonrefs[x]);
+      }
+    else if (elementType == Types.resolved.t_bool)
+      {
+        return new boolValue(ai.nonrefs[x] != 0);
+      }
+    else
+      {
+        return ai.refs[x];
+      }
   }
 
 }
