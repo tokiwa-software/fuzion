@@ -349,7 +349,7 @@ public class Assign extends ANY implements Stmnt
           }
 
         check
-          (Errors.count() > 0 || this.getOuter.type().featureOfType() == assignedField.outer());
+          (this.getOuter.type().featureOfType() == assignedField.outer() || Errors.count() > 0);
       }
   }
 
