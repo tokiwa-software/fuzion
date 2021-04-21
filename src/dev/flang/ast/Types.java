@@ -156,6 +156,7 @@ public class Types extends ANY
     public final Feature f_safety;
     public final Feature f_array;
     public final Feature f_array_internalArray;
+    public final Feature f_sys;
     public final Feature f_sys_array;
     public final Feature f_sys_array_length;
     public final Feature f_sys_array_data;
@@ -192,9 +193,10 @@ public class Types extends ANY
       f_safety        = universe.get("safety");
       f_array         = universe.get("array", 1);
       f_array_internalArray = f_array.get("internalArray");
-      f_sys_array     = universe.get("sys").get("array");
-      f_sys_array_data   = f_sys_array.get("data");
-      f_sys_array_length = f_sys_array.get("length");
+      f_sys                 = universe.get("sys");
+      f_sys_array           = f_sys.get("array");
+      f_sys_array_data      = f_sys_array.get("data");
+      f_sys_array_length    = f_sys_array.get("length");
       resolved = this;
       t_ADDRESS  .resolveArtificialType(universe.get("Object"));
       t_INFER    .resolveArtificialType(universe);
