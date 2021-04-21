@@ -262,6 +262,24 @@ public class Call extends Expr
    * @param t
    *
    * @param n
+   *
+   * @param a
+   */
+  public Call(SourcePosition pos,
+              Expr t, String n, List<Expr> a)
+  {
+    this(pos, t, n, null, a);
+  }
+
+
+  /**
+   * Constructor
+   *
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param t
+   *
+   * @param n
    */
   public Call(SourcePosition pos, Expr t, String n)
   {
@@ -600,7 +618,7 @@ public class Call extends Expr
                               thiz);
         Call t1 = new Call(pos(), new Current(pos, thiz.thisType()), tmp, -1);
         Call t2 = new Call(pos(), new Current(pos, thiz.thisType()), tmp, -1);
-        var newCall = new Call(pos(), t2, name, NO_GENERICS, _actuals);
+        var newCall = new Call(pos(), t2, name, _actuals);
         if (targetFeature(res, thiz) == Types.resolved.f_bool)
           {
             _actuals = new List<Expr>(newCall);

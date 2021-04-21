@@ -1141,7 +1141,7 @@ call        : name ( actualGens actualArgs callTail
           }
         else
           {
-            result = new Call(pos, target, n, Call.NO_GENERICS, Call.NO_PARENTHESES);
+            result = new Call(pos, target, n);
             result = call(result);
           }
       }
@@ -1632,7 +1632,7 @@ tuple       : LPAREN RPAREN
     int oldLine = sameLine(-1);
     if (skip(Token.t_rparen)) // an empty tuple
       {
-        result = new Call(pos, null, "Tuple", Call.NO_GENERICS, Call.NO_PARENTHESES);
+        result = new Call(pos, null, "Tuple");
       }
     else
       {
@@ -1645,7 +1645,7 @@ tuple       : LPAREN RPAREN
                 elements.add(expr());
               }
             while (skipComma());
-            result = new Call(pos, null, "Tuple", Call.NO_GENERICS, elements);
+            result = new Call(pos, null, "Tuple", elements);
           }
         match(Token.t_rparen, "term");
       }
@@ -1741,7 +1741,7 @@ simpleterm  : bracketTerm
             if (result == null)
               {
                 syntaxError(p1, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
-                result = new Call(posObject(), null, Errors.ERROR_STRING, Call.NO_GENERICS, Call.NO_PARENTHESES);
+                result = new Call(posObject(), null, Errors.ERROR_STRING);
               }
           }
         break;
@@ -1797,7 +1797,7 @@ stringTerm  : STRING
    */
   Expr concatString(SourcePosition pos, Expr string1, Expr string2)
   {
-    return string1 == null ? string2 : new Call(pos, string1, "infix +", Call.NO_GENERICS, new List<>(string2));
+    return string1 == null ? string2 : new Call(pos, string1, "infix +", new List<>(string2));
   }
 
 

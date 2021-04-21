@@ -512,11 +512,11 @@ public class Function extends Expr
             for (Feature f : calledFeature.arguments)
               {
                 String name = "a"+argnum;
-                actual_args.add(new Call(pos, null, name, Call.NO_GENERICS, Expr.NO_EXPRS));
+                actual_args.add(new Call(pos, null, name));
                 formal_args.add(new Feature(pos, Consts.VISIBILITY_LOCAL, 0, f.resultType(), name, new Contract(null,null,null)));
                 argnum++;
               }
-            Call callWithArgs = new Call(pos, null, call.name, Call.NO_GENERICS, actual_args);
+            Call callWithArgs = new Call(pos, null, call.name, actual_args);
             Feature fcall = new Feature(pos, Consts.VISIBILITY_PUBLIC,
                                         Consts.MODIFIER_REDEFINE,
                                         NoType.INSTANCE, // calledFeature.returnType,
