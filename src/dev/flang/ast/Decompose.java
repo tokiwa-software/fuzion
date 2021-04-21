@@ -224,7 +224,7 @@ public class Decompose extends ANY implements Stmnt
 
 
   /**
-   * Helper routtine for resolveTypes.
+   * Helper routine for resolveTypes.
    *
    + NYI: Document
    */
