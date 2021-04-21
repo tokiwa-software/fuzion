@@ -188,7 +188,7 @@ public class InitArray extends Expr
    *
    * @return this.
    */
-  public InitArray visit(FeatureVisitor v, Feature outer)
+  public Expr visit(FeatureVisitor v, Feature outer)
   {
     var li = _elements.listIterator();
     while (li.hasNext())
@@ -196,8 +196,7 @@ public class InitArray extends Expr
         var e = li.next();
         li.set(e.visit(v, outer));
       }
-    v.action(this, outer);
-    return this;
+    return v.action(this, outer);
   }
 
 

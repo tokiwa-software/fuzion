@@ -913,13 +913,13 @@ public class Clazz extends ANY implements Comparable
    */
   private class FindClassesVisitor extends FeatureVisitor
   {
-    public void action     (Assign    a, Feature outer) { Clazzes.findClazzes(a, Clazz.this); }
-    public void action     (Box       b, Feature outer) { Clazzes.findClazzes(b, Clazz.this); }
-    public void actionAfter(Case      c, Feature outer) { Clazzes.findClazzes(c, Clazz.this); }
-    public Call action     (Call      c, Feature outer) { Clazzes.findClazzes(c, Clazz.this); return c; }
-    public void action     (InitArray i, Feature outer) { Clazzes.findClazzes(i, Clazz.this); }
-    public void action     (Match     m, Feature outer) { Clazzes.findClazzes(m, Clazz.this); }
-    public void action     (Tag       t, Feature outer) { Clazzes.findClazzes(t, Clazz.this); }
+    public void      action     (Assign    a, Feature outer) { Clazzes.findClazzes(a, Clazz.this); }
+    public void      action     (Box       b, Feature outer) { Clazzes.findClazzes(b, Clazz.this); }
+    public void      actionAfter(Case      c, Feature outer) { Clazzes.findClazzes(c, Clazz.this); }
+    public Call      action     (Call      c, Feature outer) { Clazzes.findClazzes(c, Clazz.this); return c; }
+    public InitArray action     (InitArray i, Feature outer) { Clazzes.findClazzes(i, Clazz.this); return i; }
+    public void      action     (Match     m, Feature outer) { Clazzes.findClazzes(m, Clazz.this); }
+    public void      action     (Tag       t, Feature outer) { Clazzes.findClazzes(t, Clazz.this); }
     void visitAncestors(Feature f)
     {
       f.visit(this);
