@@ -41,6 +41,16 @@ public class InitArray extends Expr
 {
 
 
+  /*-------------------------  static variables -------------------------*/
+
+
+  /**
+   * quick-and-dirty way to make unique names for temporary variables needed for
+   * array initializtion.
+   */
+  static private long _id_ = 0;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -246,6 +256,51 @@ public class InitArray extends Expr
             FeErrors.incompatibleTypeInArrayInitialization(e.pos(), type_, elementType, actlT, e);
           }
       }
+  }
+
+
+  /**
+   * Resolve syntactic sugar, e.g., by replacing anonymous inner functions by
+   * declaration of corresponding inner features. Add (f,<>) to the list of
+   * features to be searched for runtime types to be layouted.
+   *
+   * @param res the resolution instance.
+   *
+   * @param outer the root feature that contains this statement.
+   */
+  public Expr resolveSyntacticSugar2(Resolution res, Feature outer)
+  {
+    Expr result = this;
+    if (true)
+      {
+        var eT           = new List<Type>(elementType());
+        var lengthArgs   = new List<Expr>(new IntConst(_elements.size()));
+        var sys          = new Call(pos(), null, "sys"                  ).resolveTypes(res, outer);
+        var sysArrayCall = new Call(pos(), sys , "array", eT, lengthArgs).resolveTypes(res, outer);
+        var sysT         = new Type(pos(), "sys", Type.NONE, null);
+        var sysArrayT    = new Type(pos(), "array", eT, sysT);
+        var sysArrayName = "#initArraySys" + (_id_++);
+        var sysArrayVar  = new Feature(pos, Consts.VISIBILITY_LOCAL, sysArrayT, sysArrayName, null, outer);
+        sysArrayVar.findDeclarations(outer);
+        res.resolveDeclarations(sysArrayVar);
+        res.resolveTypes();
+        var sysArrayAssign = new Assign(res, pos(), sysArrayVar, sysArrayCall, outer);
+        var stmnts = new List<Stmnt>(sysArrayAssign);
+        for (var i = 0; i < _elements.size(); i++)
+          {
+            var e = _elements.get(i);
+            var setArgs         = new List<Expr>(new IntConst(i), e);
+            var readSysArrayVar = new Call(e.pos(), null           , sysArrayName          ).resolveTypes(res, outer);
+            var setElement      = new Call(e.pos(), readSysArrayVar, "index [ ] =", setArgs).resolveTypes(res, outer);
+            stmnts.add(setElement);
+          }
+        var readSysArrayVar = new Call(pos(), null, sysArrayName                ).resolveTypes(res, outer);
+        var sysArrArgs      = new List<Expr>(readSysArrayVar);
+        var arrayCall       = new Call(pos(), null, "array"     , eT, sysArrArgs).resolveTypes(res, outer);
+        stmnts.add(arrayCall);
+        result = new Block(pos(), stmnts);
+      }
+    return result;
   }
 
 

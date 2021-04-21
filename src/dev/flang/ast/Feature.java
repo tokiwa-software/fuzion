@@ -2155,9 +2155,10 @@ public class Feature extends ANY implements Stmnt, Comparable
         state_ = State.RESOLVING_SUGAR2;
 
         visit(new FeatureVisitor() {
-            public Stmnt action(Feature  f, Feature outer) { return new Nop(pos);                         }
-            public Expr  action(Function f, Feature outer) { return f.resolveSyntacticSugar2(res, outer); }
-            public void  action(Impl     i, Feature outer) {        i.resolveSyntacticSugar2(res, outer); }
+            public Stmnt action(Feature   f, Feature outer) { return new Nop(pos);                         }
+            public Expr  action(Function  f, Feature outer) { return f.resolveSyntacticSugar2(res, outer); }
+            public Expr  action(InitArray i, Feature outer) { return i.resolveSyntacticSugar2(res, outer); }
+            public void  action(Impl      i, Feature outer) {        i.resolveSyntacticSugar2(res, outer); }
           });
 
         state_ = State.RESOLVED_SUGAR2;
