@@ -271,7 +271,7 @@ public class InitArray extends Expr
   public Expr resolveSyntacticSugar2(Resolution res, Feature outer)
   {
     Expr result = this;
-    if (true)
+    if (true)  // NYI: This syntactic sugar should not be resolved if this array is a compile-time constant
       {
         var eT           = new List<Type>(elementType());
         var lengthArgs   = new List<Expr>(new IntConst(_elements.size()));
