@@ -58,7 +58,7 @@ listFoldTest is
   sl9 list<string> := cons "quick ", sl8
   slA list<string> := cons "The ", sl9
 
-  sl := (InitArray<string> + "The " + "quick " + "brown " + "fox " + "jumps " + "over " + "the " + "lazy " + "dog." &) . asList;
+  sl := ["The ", "quick ", "brown ", "fox ", "jumps ", "over ", "the ", "lazy ", "dog."].asList;
   say "Fold string list: {sl.fold "".concat}"
 
   chck (((sl.fold "".concat) == "The quick brown fox jumps over the lazy dog.") , "check string concat")
