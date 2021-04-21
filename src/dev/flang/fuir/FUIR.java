@@ -43,6 +43,7 @@ import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.Feature; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.Impl; // NYI: remove dependency
+import dev.flang.ast.InitArray; // NYI: remove dependency
 import dev.flang.ast.IntConst; // NYI: remove dependency
 import dev.flang.ast.Match; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
@@ -959,6 +960,10 @@ public class FUIR extends ANY
       {
         l.add(s);
       }
+    else if (s instanceof InitArray)
+      {
+        l.add(s);
+      }
     else
       {
         System.err.println("Missing handling of "+s.getClass()+" in FUIR.toStack");
@@ -1016,7 +1021,8 @@ public class FUIR extends ANY
       }
     else if (e instanceof BoolConst ||
              e instanceof IntConst  ||
-             e instanceof StrConst     )
+             e instanceof StrConst  ||
+             e instanceof InitArray   )
       {
         result = ExprKind.Const;
       }
@@ -1303,13 +1309,18 @@ public class FUIR extends ANY
        codeAt(c, ix) == ExprKind.Const);
 
     Clazz clazz;
-    var t = ((Expr) _codeIds.get(c).get(ix)).type();
+    var ic = _codeIds.get(c).get(ix);
+    var t = ((Expr) ic).type();
     if      (t == Types.resolved.t_bool  ) { clazz = Clazzes.bool       .get(); }
     else if (t == Types.resolved.t_i32   ) { clazz = Clazzes.i32        .get(); }
     else if (t == Types.resolved.t_u32   ) { clazz = Clazzes.u32        .get(); }
     else if (t == Types.resolved.t_i64   ) { clazz = Clazzes.i64        .get(); }
     else if (t == Types.resolved.t_u64   ) { clazz = Clazzes.u64        .get(); }
     else if (t == Types.resolved.t_string) { clazz = Clazzes.conststring.get(); } // NYI: a slight inconsistency here, need to change AST
+    else if (ic instanceof InitArray)
+      {
+        throw new Error("NYI: FUIR support for InitArray still missing");
+      }
     else { throw new Error("Unexpected type for ExprKind.Const: " + t); }
     return _clazzIds.get(clazz);
   }
@@ -1327,14 +1338,18 @@ public class FUIR extends ANY
        codeAt(c, ix) == ExprKind.Const);
 
     var ic = _codeIds.get(c).get(ix);
-    var t = ((Expr) _codeIds.get(c).get(ix)).type();
+    var t = ((Expr) ic).type();
     if      (t == Types.resolved.t_bool  ) { return new byte[] { ((BoolConst) ic).b ? (byte) 1 : (byte) 0 }; }
     else if (t == Types.resolved.t_i32 ||
              t == Types.resolved.t_u32   ) { return ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt((int) ((IntConst) ic).l).array(); }
     else if (t == Types.resolved.t_i64 ||
              t == Types.resolved.t_u64   ) { return ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(     ((IntConst) ic).l).array(); }
     else if (t == Types.resolved.t_string) { return ((StrConst) ic).str.getBytes(StandardCharsets.UTF_8); }
-    throw new Error("Unexpected constant type " + t + ", expected boo, i32, u32, i64, u64, or string");
+    else if (ic instanceof InitArray)
+      {
+        throw new Error("NYI: FUIR support for InitArray still missing");
+      }
+    throw new Error("Unexpected constant type " + t + ", expected bool, i32, u32, i64, u64, or string");
   }
 
 
