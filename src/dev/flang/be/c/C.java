@@ -572,7 +572,7 @@ public class C extends ANY
     for (var b : bytes)
       {
         sb.append((char) (b & 0xFF));
-        sb.append("...");
+        sb.append("\0\0\0");
       }
     var sysArray = tmp.deref().field(_names.FIELDS_IN_REF_CLAZZ).field(new CIdent("fzF_0_internalArray"));
     return CStmnt.seq(CStmnt.decl("fzT__R1conststring *", tmp),
