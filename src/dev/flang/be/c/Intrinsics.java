@@ -176,6 +176,13 @@ class Intrinsics extends ANY
       case "u64.castTo_i64"      : return outer.castTo("fzT_1i64").ret();
       case "u64.low32bits"       : return outer.and(CExpr.uint64const(0xffffFFFFL)).castTo("fzT_1u32").ret();
 
+      case "Object.hashCode"     :
+        {
+          var hc = c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or))
+            ? CNames.OUTER.castTo("char *").sub(new CIdent("NULL").castTo("char *")).castTo("int32_t") // NYI: This implementation of hashCode relies on non-compacting GC
+            : CExpr.int32const(42);  // NYI: This implementation of hashCode is stupid
+          return hc.ret();
+        }
       case "Object.asString"     :
         {
           var res = new CIdent("res");
