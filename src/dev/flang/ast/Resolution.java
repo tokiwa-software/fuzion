@@ -454,6 +454,7 @@ public class Resolution extends ANY
       }
     else if (!forFindingUsedFeatures.isEmpty())
       {
+        Types.resolved.markInternallyUsed(this);
         Feature f = forFindingUsedFeatures.removeFirst();
         f.findUsedFeatures(this);
       }

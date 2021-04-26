@@ -98,22 +98,6 @@ public class Feature extends ANY implements Stmnt, Comparable
   };
 
 
-  static final String[] INTERNALLY_USED_FEATURES = new String[]
-    { "i32.val",
-      "i64.val",
-      "u32.val",
-      "u64.val",
-      "bool." + FuzionConstants.CHOICE_TAG_NAME,
-      "fuzion.java.JavaObject.javaRef",
-      "java.io.PrintStream.javaRef2",
-      "conststring",
-      "sys.array.data",
-      "sys.array.length",
-      "void",
-      "unit"
-    };
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -2312,14 +2296,7 @@ public class Feature extends ANY implements Stmnt, Comparable
       {
         state_ = State.FINDING_USED_FEATURES;
 
-        if (outer_ == null)
-          {
-            for (var n : INTERNALLY_USED_FEATURES)
-              {
-                markUsedAndGet(res, n);
-              }
-          }
-        else
+        if (outer_ != null)
           {
             outer_.markUsed(res, pos);
           }

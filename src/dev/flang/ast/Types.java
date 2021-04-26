@@ -35,6 +35,8 @@ import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
+import dev.flang.util.SourcePosition;
 
 /*---------------------------------------------------------------------*/
 
@@ -203,6 +205,35 @@ public class Types extends ANY
       t_UNDEFINED.resolveArtificialType(universe);
       t_ERROR    .resolveArtificialType(f_ERROR);
     }
+
+
+    /**
+     * Flag used to detect repeated calls to markInternallyUsed.
+     */
+    private boolean _doneInternallyUsed = false;
+
+    /**
+     * Mark internally used features as used.
+     */
+    void markInternallyUsed(Resolution res) {
+      if (!_doneInternallyUsed)
+        {
+          _doneInternallyUsed = true;
+          var tag = FuzionConstants.CHOICE_TAG_NAME;
+          universe.get("i32").get("val").markUsed(res, SourcePosition.builtIn);
+          universe.get("u32").get("val").markUsed(res, SourcePosition.builtIn);
+          universe.get("i64").get("val").markUsed(res, SourcePosition.builtIn);
+          universe.get("u64").get("val").markUsed(res, SourcePosition.builtIn);
+          universe.get("bool").get(tag) .markUsed(res, SourcePosition.builtIn);
+          universe.get("conststring")   .markUsed(res, SourcePosition.builtIn);
+          f_sys_array_data              .markUsed(res, SourcePosition.builtIn);
+          f_sys_array_length            .markUsed(res, SourcePosition.builtIn);
+          universe.get("unit")          .markUsed(res, SourcePosition.builtIn);
+          universe.get("void")          .markUsed(res, SourcePosition.builtIn);
+        }
+    }
+
+
   }
 
   /*----------------------------  variables  ----------------------------*/
