@@ -123,7 +123,7 @@ public class FUIR extends ANY
 
 
   final Map2Int<Clazz> _clazzIds = new MapComparable2Int(CLAZZ_BASE);
-  final Map2Int<List<Stmnt>> _codeIds = new Map2Int(CODE_BASE);
+  final Map2Int<List<Object>> _codeIds = new Map2Int(CODE_BASE);
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -721,12 +721,23 @@ public class FUIR extends ANY
    *
    * @param ff a routine or constructor feature.
    */
-  private void addCode(List<Stmnt> code, Feature ff)
+  private void addCode(Clazz cc, List<Object> code, Feature ff)
   {
     for (Call p: ff.inherits)
       {
-        // NYI: ArrayList<Value> pargs = executeArgs(p, staticClazz, cur);
-        addCode(code, p.calledFeature());
+        toStack(code, p.target);
+        check
+          (p._actuals.size() == p.calledFeature().arguments.size());
+        for (var i = 0; i < p._actuals.size(); i++)
+          {
+            var a = p._actuals.get(i);
+            var f = p.calledFeature().arguments.get(i);
+            toStack(code, a);
+            code.add(new Current(cc.feature().pos(), cc._type));
+            // Field clazz means assign value to that field
+            code.add(cc.lookup(f, Call.NO_GENERICS, f.isUsedAt()));
+          }
+        addCode(cc, code, p.calledFeature());
       }
     toStack(code, ff.impl.code_);
   }
@@ -744,9 +755,10 @@ public class FUIR extends ANY
     if (PRECONDITIONS) require
       (clazzKind(cl) == ClazzKind.Routine);
 
-    var ff = _clazzIds.get(cl).feature();
-    List<Stmnt> code = new List<>();
-    addCode(code, ff);
+    var cc = _clazzIds.get(cl);
+    var ff = cc.feature();
+    List<Object> code = new List<>();
+    addCode(cc, code, ff);
     return _codeIds.add(code);
   }
 
@@ -774,7 +786,7 @@ public class FUIR extends ANY
     var ff = _clazzIds.get(cl).feature();
     var cc = ff.contract;
     var pre = cc != null ? cc.req : null;
-    List<Stmnt> code = pre != null && ix < pre.size() ? toStack(pre.get(ix).cond) : null;
+    List<Object> code = pre != null && ix < pre.size() ? toStack(pre.get(ix).cond) : null;
     return code != null ? _codeIds.add(code) : -1;
   }
 
@@ -802,7 +814,7 @@ public class FUIR extends ANY
     var ff = _clazzIds.get(cl).feature();
     var cc = ff.contract;
     var post = cc != null ? cc.ens : null;
-    List<Stmnt> code = post != null && ix < post.size() ? toStack(post.get(ix).cond) : null;
+    List<Object> code = post != null && ix < post.size() ? toStack(post.get(ix).cond) : null;
     return code != null ? _codeIds.add(code) : -1;
   }
 
@@ -858,14 +870,14 @@ public class FUIR extends ANY
   /*--------------------------  stack handling  -------------------------*/
 
 
-  List<Stmnt> toStack(Stmnt s)
+  List<Object> toStack(Stmnt s)
   {
-    List<Stmnt> result = new List<>();
+    List<Object> result = new List<>();
     toStack(result, s);
     return result;
   }
-  void toStack(List<Stmnt> l, Stmnt s) { toStack(l, s, false); }
-  void toStack(List<Stmnt> l, Stmnt s, boolean dumpResult)
+  void toStack(List<Object> l, Stmnt s) { toStack(l, s, false); }
+  void toStack(List<Object> l, Stmnt s, boolean dumpResult)
   {
     if (PRECONDITIONS) require
       (l != null,
@@ -914,7 +926,7 @@ public class FUIR extends ANY
         var i = (If) s;
         toStack(l, i.cond);
         l.add(i);
-        List<Stmnt> block = toStack(i.block);
+        List<Object> block = toStack(i.block);
         l.add(new IntConst(_codeIds.add(block)));
         Stmnt elseBlock;
         if (i.elseBlock != null)
@@ -929,7 +941,7 @@ public class FUIR extends ANY
           {
             elseBlock = new Block(i.pos(), new List<>());
           }
-        List<Stmnt> elseBlockCode = toStack(elseBlock);
+        List<Object> elseBlockCode = toStack(elseBlock);
         l.add(new IntConst(_codeIds.add(elseBlockCode)));
       }
     else if (s instanceof IntConst)
@@ -1013,7 +1025,8 @@ public class FUIR extends ANY
       {
         result = ExprKind.WipeStack;
       }
-    else if (e instanceof Assign)
+    else if (e instanceof Assign ||
+             e instanceof Clazz    )  /* Clazz represents the field we assign a value to */
       {
         result = ExprKind.Assign;
       }
@@ -1047,7 +1060,9 @@ public class FUIR extends ANY
       }
     else
       {
-        Errors.fatal(e.pos(), "Stmnt not supported in FUIR.codeAt", "Statement class: " + e.getClass());
+        Errors.fatal((e instanceof Stmnt s) ? s.pos() :
+                     (e instanceof Clazz z) ? z._type.pos : null,
+                     "Stmnt not supported in FUIR.codeAt", "Statement class: " + e.getClass());
         result = ExprKind.Current; // keep javac from complaining.
       }
     return result;
@@ -1086,8 +1101,10 @@ public class FUIR extends ANY
        codeAt(c, ix) == ExprKind.Assign);
 
     var outerClazz = _clazzIds.get(cl);
-    var a = (Assign) _codeIds.get(c).get(ix);
-    var fc = (Clazz) outerClazz.getRuntimeData(a.tid_ + 2);
+    var s = _codeIds.get(c).get(ix);
+    var fc = (s instanceof Assign a)
+      ? (Clazz) outerClazz.getRuntimeData(a.tid_ + 2)
+      : (Clazz) s;
     return fc == null ? -1 : _clazzIds.get(fc);
   }
 
@@ -1099,8 +1116,11 @@ public class FUIR extends ANY
        codeAt(c, ix) == ExprKind.Assign);
 
     var outerClazz = _clazzIds.get(cl);
-    var a = (Assign) _codeIds.get(c).get(ix);
-    var ocl = (Clazz) outerClazz.getRuntimeData(a.tid_);  // NYI: This should be the same as assigneField._outer
+    var s = _codeIds.get(c).get(ix);
+    var ocl = (s instanceof Assign a)
+      ? (Clazz) outerClazz.getRuntimeData(a.tid_)  // NYI: This should be the same as assignedField._outer
+      : ((Clazz) s)._outer;
+
     return _clazzIds.get(ocl);
   }
 
