@@ -107,6 +107,8 @@ public class Feature extends ANY implements Stmnt, Comparable
       "fuzion.java.JavaObject.javaRef",
       "java.io.PrintStream.javaRef2",
       "conststring",
+      "sys.array.data",
+      "sys.array.length",
       "void",
       "unit"
     };

@@ -368,6 +368,8 @@ public class Clazzes extends ANY
     conststring.get().instantiated(SourcePosition.builtIn);
     constStringBytesArray = conststring.get().lookup(Types.resolved.f_array_internalArray, Call.NO_GENERICS, SourcePosition.builtIn).resultClazz();
     constStringBytesArray.instantiated(SourcePosition.builtIn);
+    constStringBytesArray.lookup(Types.resolved.f_sys_array_data  , Call.NO_GENERICS, SourcePosition.builtIn);
+    constStringBytesArray.lookup(Types.resolved.f_sys_array_length, Call.NO_GENERICS, SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
       {
