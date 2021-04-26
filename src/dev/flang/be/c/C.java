@@ -693,8 +693,8 @@ public class C extends ANY
         if (or != -1)
           {
             var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
-            var oc = _fuir.clazzOuterClazz(cc);
-            var a3 = tc != oc ? a2.castTo(_types.clazz(oc)) : a2;
+            var rc = _fuir.clazzResultClazz(or);
+            var a3 = tc != rc ? a2.castTo(_types.clazzField(or)) : a2;
             result.add(a3);
           }
       }
