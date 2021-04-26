@@ -714,6 +714,25 @@ public class FUIR extends ANY
 
 
   /**
+   * add the code of feature ff to code.  In case ff has inherits calls, also
+   * include the code of the inhreted features.
+   *
+   * @param code a list that code should be added to.
+   *
+   * @param ff a routine or constructor feature.
+   */
+  private void addCode(List<Stmnt> code, Feature ff)
+  {
+    for (Call p: ff.inherits)
+      {
+        // NYI: ArrayList<Value> pargs = executeArgs(p, staticClazz, cur);
+        addCode(code, p.calledFeature());
+      }
+    toStack(code, ff.impl.code_);
+  }
+
+
+  /**
    * Get access to the code of a clazz of kind Routine
    *
    * @param cl a clazz id
@@ -726,8 +745,8 @@ public class FUIR extends ANY
       (clazzKind(cl) == ClazzKind.Routine);
 
     var ff = _clazzIds.get(cl).feature();
-    var cod = ff.impl.code_;
-    List<Stmnt> code = toStack(cod);
+    List<Stmnt> code = new List<>();
+    addCode(code, ff);
     return _codeIds.add(code);
   }
 
