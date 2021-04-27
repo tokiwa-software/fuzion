@@ -725,6 +725,29 @@ public class FUIR extends ANY
   {
     for (Call p: ff.inherits)
       {
+        /*
+NYI: Any side-effects in p.target or p._actuals will be executed twice, once for
+     the precondition and once for the inlinded call! See this example:
+
+hw25 is
+  A (a i32)
+    pre
+      a < 100
+  is
+    say "in A: $a"
+
+  B : A x is
+
+  count := 0
+
+  x =>
+    set count := count + 1
+    count
+
+  B; B; B
+  if (count == 3) say "PASS" else say "FAIL"
+        */
+
         toStack(code, p, true);
         toStack(code, p.target);
         check
