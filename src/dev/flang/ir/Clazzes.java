@@ -601,7 +601,10 @@ public class Clazzes extends ANY
       }
     outerClazz.setRuntimeClazz(b._valAndRefClazzId    , vc);
     outerClazz.setRuntimeClazz(b._valAndRefClazzId + 1, rc);
-    rc.instantiated(b.pos());
+    if (vc != rc)
+      {
+        rc.instantiated(b.pos());
+      }
   }
 
 
