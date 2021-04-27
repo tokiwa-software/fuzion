@@ -348,24 +348,26 @@ public class Clazzes extends ANY
     int clazzCount = 0;
 
     // make sure internally referenced clazzes do exist:
-    i32.get();
-    c_TRUE.get();
-    c_FALSE.get();
-    conststring.get();
     object.get();
-    bool.get();
-    c_unit.get();
     create(Types.t_ADDRESS, universe.get());
 
     // mark internally referenced clazzes as called or instantiated:
-    universe.get().called(SourcePosition.builtIn);
     check
       (Errors.count() > 0 || main != null);
     if (main != null)
       {
         main.called(SourcePosition.builtIn);
+        main.instantiated(SourcePosition.builtIn);
       }
-    conststring.get().instantiated(SourcePosition.builtIn);
+    for (var c : new OnDemandClazz[] { universe, i32, u32, i64, u64 })
+      {
+        c.get().called(SourcePosition.builtIn);
+        c.get().instantiated(SourcePosition.builtIn);
+      }
+    for (var c : new OnDemandClazz[] { conststring, bool, c_TRUE, c_FALSE, c_unit })
+      {
+        c.get().instantiated(SourcePosition.builtIn);
+      }
     constStringBytesArray = conststring.get().lookup(Types.resolved.f_array_internalArray, Call.NO_GENERICS, SourcePosition.builtIn).resultClazz();
     constStringBytesArray.instantiated(SourcePosition.builtIn);
     constStringBytesArray.lookup(Types.resolved.f_sys_array_data  , Call.NO_GENERICS, SourcePosition.builtIn);
@@ -633,16 +635,16 @@ public class Clazzes extends ANY
         return;  // previous errors, give up
       }
 
-    if (!c.isInheritanceCall_)
+    var tclazz  = clazz(c.target, outerClazz);
+    var cf      = c.calledFeature_;
+    var dynamic = c.isDynamic() && tclazz.isRef();
+    if (dynamic)
       {
-        var tclazz  = clazz(c.target, outerClazz);
-        var cf      = c.calledFeature_;
-        var dynamic = c.isDynamic() && tclazz.isRef();
-        if (dynamic)
-          {
-            calledDynamically(cf);
-          }
-        var innerClazz = tclazz.lookup(cf, outerClazz.actualGenerics(c.generics), c.pos);
+        calledDynamically(cf);
+      }
+    if (!cf.isChoice())
+      {
+        var innerClazz = tclazz.lookup(cf, outerClazz.actualGenerics(c.generics), c.pos, c.isInheritanceCall_);
         if (c.sid_ < 0)
           {
             c.sid_ = outerClazz.feature().getRuntimeClazzId();

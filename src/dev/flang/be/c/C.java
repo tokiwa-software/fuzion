@@ -414,7 +414,7 @@ public class C extends ANY
                   push(stack, rt, res);
                 }
             }
-          else
+          else  if (!_fuir.callPreconditionOnly(cl, c, i))
             {
               ol.add(call(tc, cc0, stack, false));
             }

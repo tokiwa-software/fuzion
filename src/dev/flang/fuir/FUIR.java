@@ -725,6 +725,7 @@ public class FUIR extends ANY
   {
     for (Call p: ff.inherits)
       {
+        toStack(code, p, true);
         toStack(code, p.target);
         check
           (p._actuals.size() == p.calledFeature().arguments.size());
@@ -1312,6 +1313,37 @@ public class FUIR extends ANY
     var call = (Call) _codeIds.get(c).get(ix);
     var outer = ((dev.flang.ir.BackendCallable)outerClazz.getRuntimeData(call.sid_)).outer();
     return call.isDynamic() && outer.isRef();
+  }
+
+
+  /**
+   * Is this call only to check preconditions.
+   *
+   * This is a bit of a hack for calls to parent features in inherits clauses:
+   * These calls are inlined, so the backend does not need to take care.  Only
+   * the precondition must be executed explicitly, so there remains a call to
+   * the parent feature with callPreconditionOnly() returning true.
+   *
+   * The result of a the call in this case is unit.
+   *
+   * @param cl index of clazz containing the call
+   *
+   * @param c code block containing the call
+   *
+   * @param ix index of the call
+   *
+   * @return true if only the precondition should be executed.
+   */
+  public boolean callPreconditionOnly(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Call);
+
+    var outerClazz = _clazzIds.get(cl);
+    var call = (Call) _codeIds.get(c).get(ix);
+    return call.isInheritanceCall_;
   }
 
   public int callTargetClazz(int cl, int c, int ix)

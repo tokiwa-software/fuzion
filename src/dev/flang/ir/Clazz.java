@@ -684,15 +684,59 @@ public class Clazz extends ANY implements Comparable
    * This is not intended for use at runtime, but during analysis of static
    * types or to fill the virtual call table.
    *
+   * @param f the feature that is called
+   *
+   * @param actualGenerics the actual generics provided in the call,
+   * Call.NO_GENERICS if none.
+   *
    * @param p if this lookup would result in the returned feature to be called,
    * p gives the position in the source code that causes this call.  p must be
    * null if the lookup does not causes a call, but it just done to determine
    * the type.
+   *
+   * @return the inner clazz of the target in the call.
    */
-  public Clazz lookup(Feature f, List<Type> actualGenerics, SourcePosition p)
+  public /* NYI: make package private */ Clazz lookup(Feature f,
+                      List<Type> actualGenerics,
+                      SourcePosition p)
   {
     if (PRECONDITIONS) require
-                         (f != null);
+      (f != null);
+
+    return lookup(f, actualGenerics, p, false);
+  }
+
+
+  /**
+   * Lookup the code to call the feature f from this clazz using dynamic binding
+   * if needed.
+   *
+   * This is not intended for use at runtime, but during analysis of static
+   * types or to fill the virtual call table.
+   *
+   * @param f the feature that is called
+   *
+   * @param actualGenerics the actual generics provided in the call,
+   * Call.NO_GENERICS if none.
+   *
+   * @param p if this lookup would result in the returned feature to be called,
+   * p gives the position in the source code that causes this call.  p must be
+   * null if the lookup does not causes a call, but it just done to determine
+   * the type.
+   *
+   * @param isInstantiated true iff this is a call in an inheritance clause.  In
+   * this case, the result clazz will not be marked as instantiated since the
+   * call will work on the instance of the inheriting clazz.
+   *
+   * @return the inner clazz of the target in the call.
+   */
+  Clazz lookup(Feature f,
+               List<Type> actualGenerics,
+               SourcePosition p,
+               boolean isInheritanceCall)
+  {
+    if (PRECONDITIONS) require
+      (f != null);
 
     Feature af = findRedefinition(f);
     Clazz innerClazz = null;
@@ -719,7 +763,14 @@ public class Clazz extends ANY implements Comparable
             Type t = af.thisType().actualType(af, actualGenerics);
             t = actualType(t);
             innerClazz = Clazzes.clazzWithSpecificOuter(t, this);
-            innerClazz.called(p);
+            if (p != null)
+              {
+                innerClazz.called(p);
+                if (!isInheritanceCall)
+                  {
+                    innerClazz.instantiated(p);
+                  }
+              }
             check
               (innerClazz._type.featureOfType() == af);
           }
@@ -1202,10 +1253,12 @@ public class Clazz extends ANY implements Comparable
    */
   void called(SourcePosition at)
   {
+    if (PRECONDITIONS) require
+      (!isChoice());
+
     if (at != null && !isCalled_)
       {
         isCalled_ = true;
-        instantiated(at);
         if (feature().impl.kind_ == Impl.Kind.Intrinsic)
           { // value instances returned from intrinsics are recored to be
             // instantiated.  (ref instances are excluded since returning, e.g.,
@@ -1244,7 +1297,24 @@ public class Clazz extends ANY implements Comparable
    */
   public boolean isCalled()
   {
-    return isInstantiated() && isCalled_;
+    return isCalled_ && isOuterInstantiated();
+  }
+
+
+  /**
+   * Check of _outer is instantiated.
+   */
+  private boolean isOuterInstantiated()
+  {
+    return _outer == null ||
+
+      // NYI: Once Clazz.normalize() is implemented better, a clazz C has
+      // to be considered instantiated if there is any clazz D that
+      // normalize() would replace by C if it occurs as an outer clazz.
+      _outer == Clazzes.object.getIfCreated() ||
+      _outer == Clazzes.string.getIfCreated() ||
+
+      _outer.isInstantiated();
   }
 
 
@@ -1254,15 +1324,7 @@ public class Clazz extends ANY implements Comparable
    */
   public boolean isInstantiated()
   {
-    return (_outer == null ||
-
-            // NYI: Once Clazz.normalize() is implemented better, a clazz C has
-            // to be considered instantiated if there is any clazz D that
-            // normalize() would replace by C if it occurs as an outer clazz.
-            _outer == Clazzes.object.getIfCreated() ||
-            _outer == Clazzes.string.getIfCreated() ||
-
-            _outer.isInstantiated()) && isInstantiated_;
+    return (isOuterInstantiated() || isChoice()) && isInstantiated_;
   }
 
 
@@ -1273,7 +1335,7 @@ public class Clazz extends ANY implements Comparable
    */
   public void check()
   {
-    if (isCalled() && abstractCalled_ != null)
+    if (isInstantiated() && abstractCalled_ != null)
       {
         FeErrors.abstractFeatureNotImplemented(feature(), abstractCalled_, instantiationPos_);
       }
