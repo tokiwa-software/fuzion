@@ -523,11 +523,7 @@ public class C extends ANY
           var entry   = uniyon.field(_fuir.clazzIsRef(valuecl) ||
                                      _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? _names.CHOICE_REF_ENTRY_NAME
                                                                           : new CIdent(_names.CHOICE_ENTRY_NAME + tagNum));
-          if (_fuir.clazzIsRef(valuecl))
-            {
-              value = value.castTo(_types.clazz(_fuir.clazzObject()));
-            }
-          else if (_fuir.clazzIsChoiceOfOnlyRefs(newcl))
+          if (_fuir.clazzIsUnitType(valuecl) && _fuir.clazzIsChoiceOfOnlyRefs(newcl))
             {// replace unit-type values by 0, 1, 2, 3,... cast to ref Object
               check
                 (value == null); // value must be a unit type
@@ -538,6 +534,11 @@ public class C extends ANY
                                "Found in choice type '" + _fuir.clazzAsString(newcl)+ "'\n");
                 }
               value = CExpr.int32const(tagNum);
+              valuecl = _fuir.clazzObject();
+            }
+          if (_fuir.clazzIsRef(valuecl))
+            {
+              value = value.castTo(_types.clazz(_fuir.clazzObject()));
             }
           o = CStmnt.seq(CStmnt.lineComment("Tag a value to be of choice type " + _fuir.clazzAsString(newcl) + " static value type " + _fuir.clazzAsString(valuecl)),
                          CStmnt.decl(_types.clazz(newcl), res),
