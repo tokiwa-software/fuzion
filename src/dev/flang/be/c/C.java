@@ -225,12 +225,21 @@ public class C extends ANY
   void push(Stack<CExpr> stack, int cl, CExpr val)
   {
     if (PRECONDITIONS) require
-      (!_types.hasData(cl) || val != null);
+      (!_types.hasData(cl) || val != null,
+       !containsVoid(stack));
 
     if (_types.hasData(cl))
       {
         stack.push(val);
       }
+    else if (_fuir.clazzIsVoidType(cl))
+      {
+        stack.push(null);
+      }
+
+    if (POSTCONDITIONS) ensure
+      (!_types.hasData(cl)        || stack.get(stack.size()-1) == val,
+       !_fuir.clazzIsVoidType(cl) || containsVoid(stack));
   }
 
 
@@ -252,6 +261,16 @@ public class C extends ANY
 
 
   /**
+   * Check if the given stack contains a void value.  If so, code generation has
+   * to stop immediately.
+   */
+  boolean containsVoid(Stack<CExpr> stack)
+  {
+    return stack.size() > 0 && stack.get(stack.size()-1) == null;
+  }
+
+
+  /**
    * Create C code for code block c of clazz cl with given stack contents at
    * beginning of the block.  Write code to _c.
    *
@@ -266,7 +285,7 @@ public class C extends ANY
   CStmnt createCode(int cl, Stack<CExpr> stack, int c)
   {
     var l = new List<CStmnt>();
-    for (int i = 0; _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
+    for (int i = 0; !containsVoid(stack) && _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
       {
         var s = _fuir.codeAt(c, i);
         l.add(CStmnt.lineComment("Code for statement " + s));
