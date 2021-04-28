@@ -369,7 +369,7 @@ public class C extends ANY
             {
               ol.add(call(tc, cc0, (Stack<CExpr>) stack.clone(), true));
             }
-          var ignoreResult = _fuir.withinCode(c, i+1) && _fuir.codeAt(c, i+1) == FUIR.ExprKind.Pop;
+          var ignoreResult = !_types.hasData(rt) || _fuir.withinCode(c, i+1) && _fuir.codeAt(c, i+1) == FUIR.ExprKind.Pop;
           CExpr res = null;
           if (_fuir.callIsDynamic(cl, c, i))
             {
@@ -387,7 +387,7 @@ public class C extends ANY
               ol.add(CStmnt.decl(tt0, t, stack.get(ti).castTo(tt0)));
               stack.set(ti, t);
               var id = t.deref().field(_names.CLAZZ_ID);
-              if (_types.hasData(rt) && !ignoreResult)
+              if (!ignoreResult)
                 {
                   var resvar = _names.newTemp();
                   res = resvar;
@@ -441,7 +441,7 @@ public class C extends ANY
               res = pop(stack, rt);
             }
           o = CStmnt.seq(ol);
-          if (res != null && !ignoreResult)
+          if (!_fuir.callPreconditionOnly(cl, c, i) && (!ignoreResult || _fuir.clazzIsVoidType(rt)))
             {
               var rres = _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
               push(stack, rt, rres);
