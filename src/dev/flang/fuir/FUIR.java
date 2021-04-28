@@ -100,12 +100,12 @@ public class FUIR extends ANY
     Const,
     Match,
     Tag,
-    WipeStack,
+    Pop,
   }
 
 
   /**
-   * Dummy Expr for WipeStack.  This is needed only temporily as long as we use
+   * Dummy Expr for Pop.  This is needed only temporily as long as we use
    * the AST instances instead of proper bytecodes.
    *
    * NYI: remove once bytecode instructions are here.
@@ -1047,7 +1047,7 @@ hw25 is
     var e = _codeIds.get(c).get(ix);
     if (e == WIPE_STACK) // Take care: must be first since WIPE_STACK is IntConst (for now)
       {
-        result = ExprKind.WipeStack;
+        result = ExprKind.Pop;
       }
     else if (e instanceof Assign ||
              e instanceof Clazz    )  /* Clazz represents the field we assign a value to */

@@ -387,7 +387,7 @@ public class C extends ANY
               var id = t.deref().field(_names.CLAZZ_ID);
               CIdent res = null;
               if (_types.hasData(rt) &&
-                  (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.WipeStack))
+                  (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.Pop))
                 {
                   res = _names.newTemp();
                   ol.add(CStmnt.decl(_types.clazzField(cc0), res));
@@ -573,7 +573,7 @@ public class C extends ANY
           push(stack, newcl, res);
           break;
         }
-      case WipeStack:
+      case Pop:
         {
           stack.clear();
           break;
