@@ -354,9 +354,14 @@ public class C extends ANY
             {
               ol.add(CStmnt.lineComment("Dynamic call to " + _fuir.clazzAsString(cc0)));
               var ccs = _fuir.callCalledClazzes(cl, c, i);
-              var ac = _fuir.clazzArgCount(cc0);
+              check
+                (_types.hasData(tc)); // target in dynamic call cannot be unit type
+              var ti = stack.size() - 1; // find index of target
+              for (var ai = 0; ai < _fuir.clazzArgCount(cc0); ai++)
+                {
+                  ti = ti - (_types.hasData(_fuir.clazzArgClazz(cc0, ai)) ? 1 : 0);
+                }
               var t = _names.newTemp();
-              var ti = stack.size() - ac - 1; // NYI: ti is wrong is args contain unit type arguments
               var tt0 = _types.clazz(tc);
               ol.add(CStmnt.decl(tt0, t, stack.get(ti).castTo(tt0)));
               stack.set(ti, t);
