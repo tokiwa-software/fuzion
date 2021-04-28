@@ -30,7 +30,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.List;
 
 /**
- * CSmnt provides infrastructure to generate C statements
+ * CStmnt provides infrastructure to generate C statements
  *
  * The idea here is to have a compiler that works backwards: Instead of parsing
  * source code into an AST, we create an AST for C and then create source code
@@ -48,7 +48,7 @@ abstract class CStmnt extends ANY
   /**
    * break statement
    */
-  static final CStmnt BREAK = new CStmnt() { void code(StringBuilder sb) { sb.append("break"); } };
+  static final CStmnt BREAK = new CStmnt() { void code(CString sb) { sb.append("break"); } };
 
 
   /**
@@ -56,7 +56,7 @@ abstract class CStmnt extends ANY
    */
   static final CStmnt EMPTY = new CStmnt() {
       boolean isEmpty() { return true; }
-      void code(StringBuilder sb) { }
+      void code(CString sb) { }
     };
 
 
@@ -80,7 +80,7 @@ abstract class CStmnt extends ANY
   {
     return new CStmnt()
       {
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           sb.append("typedef ")
             .append(type)
@@ -104,7 +104,7 @@ abstract class CStmnt extends ANY
   {
     return new CStmnt()
       {
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           sb.append("struct ")
             .append(name)
@@ -133,7 +133,7 @@ abstract class CStmnt extends ANY
   {
     return new CStmnt()
       {
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           sb.append("union {\n");
           for (var d : els)
@@ -215,7 +215,7 @@ abstract class CStmnt extends ANY
   {
     return new CStmnt()
       {
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           sb.append(modifier == null ? "" : modifier)
             .append(modifier == null ? "" : " ")
@@ -256,7 +256,7 @@ abstract class CStmnt extends ANY
 
     return new CStmnt()
       {
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           sb.append(resultType).append(" ");
           ident.code(sb);
@@ -296,7 +296,7 @@ abstract class CStmnt extends ANY
         {
           return true;
         }
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           sb.append("// ").append(s).append("\n");
         }
@@ -315,7 +315,7 @@ abstract class CStmnt extends ANY
   {
     return new CStmnt()
       {
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           for (var cs : s)
             {
@@ -342,7 +342,7 @@ abstract class CStmnt extends ANY
   {
     return new CStmnt()
       {
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           for (var cs : s)
             {
@@ -371,7 +371,7 @@ abstract class CStmnt extends ANY
     return vals.isEmpty() ? EMPTY :
       new CStmnt()
       {
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           for (var v : vals)
             {
@@ -405,7 +405,7 @@ abstract class CStmnt extends ANY
   {
     return new CStmnt()
       {
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           sb.append("switch (");
           val.code(sb);
@@ -446,7 +446,7 @@ abstract class CStmnt extends ANY
   {
     return new CStmnt()
       {
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           sb.append("if (");
           cc.code(sb);
@@ -471,7 +471,7 @@ abstract class CStmnt extends ANY
    *
    * @param sb will be used to append the code to
    */
-  abstract void code(StringBuilder sb);
+  abstract void code(CString sb);
 
 
   /**
@@ -493,13 +493,13 @@ abstract class CStmnt extends ANY
   /**
    * Convenience function to create the C code as a string. Try to avoid since
    * this causes additional allocation and copying.  Prefer to use
-   * code(StringBuilder).
+   * code(CString).
    *
    * @return the C code of this CExpr
    */
   String code()
   {
-    var sb = new StringBuilder();
+    var sb = new CString();
     code(sb);
     return sb.toString();
   }

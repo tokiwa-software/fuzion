@@ -78,7 +78,7 @@ class CIdent extends CExpr
    *
    * @param sb will be used to append the code to
    */
-  void code(StringBuilder sb) { sb.append(_name); }
+  void code(CString sb) { sb.append(_name); }
 
 
   /**

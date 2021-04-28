@@ -157,7 +157,7 @@ public class CFile extends ANY
    */
   public void print(CStmnt s)
   {
-    StringBuilder sb = new StringBuilder();
+    var sb = new CString();
     s.code(sb);
     if (s.needsSemi())
       {

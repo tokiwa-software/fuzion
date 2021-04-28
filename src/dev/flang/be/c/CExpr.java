@@ -65,7 +65,7 @@ abstract class CExpr extends CStmnt
   {
     return new CExpr()
       {
-        void code(StringBuilder sb) { sb.append("/* ").append(text).append(" */"); }
+        void code(CString sb) { sb.append("/* ").append(text).append(" */"); }
         int precedence() { return 0; }
       };
   }
@@ -95,7 +95,7 @@ abstract class CExpr extends CStmnt
     return value >= 0
       ? new CExpr()
         {
-          void code(StringBuilder sb) { sb.append(value); }
+          void code(CString sb) { sb.append(value); }
           int precedence() { return 0; }
         }
       : int32const(-value).neg();
@@ -111,7 +111,7 @@ abstract class CExpr extends CStmnt
   {
     return new CExpr()
       {
-        void code(StringBuilder sb) { sb.append(value & 0xFFFFffff).append('U'); }
+        void code(CString sb) { sb.append(value & 0xFFFFffff).append('U'); }
         int precedence() { return 0; }
       };
   }
@@ -127,7 +127,7 @@ abstract class CExpr extends CStmnt
     return value >= 0
       ? new CExpr()
         {
-          void code(StringBuilder sb) { sb.append(value).append("LL"); }
+          void code(CString sb) { sb.append(value).append("LL"); }
           int precedence() { return 0; }
         }
       : int64const(-value).neg();
@@ -143,7 +143,7 @@ abstract class CExpr extends CStmnt
   {
     return new CExpr()
       {
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           if (value >= 0)
             {
@@ -172,7 +172,7 @@ abstract class CExpr extends CStmnt
   {
     return new CExpr()
       {
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           sb.append("\"");
           for (int i = 0; i < s.length(); i++)
@@ -208,7 +208,7 @@ abstract class CExpr extends CStmnt
     return new CExpr()
       {
         int precedence() { return 1; }
-        void code(StringBuilder sb) { sb.append('(').append(type).append("){").append(initializerList).append("}"); }
+        void code(CString sb) { sb.append('(').append(type).append("){").append(initializerList).append("}"); }
       };
   }
 
@@ -227,7 +227,7 @@ abstract class CExpr extends CStmnt
     return new CExpr()
       {
         int precedence() { return 8; }
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           lhs.code(sb, precedence());
           sb.append(op);
@@ -273,7 +273,7 @@ abstract class CExpr extends CStmnt
     return new CExpr()
       {
         int precedence() { return 1; }
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           sb.append(name).append("(");
           String comma = "";
@@ -400,7 +400,7 @@ abstract class CExpr extends CStmnt
    * @param precedence the precedence of an operator that will be applied to the
    * result.
    */
-  private void code(StringBuilder sb, int precedence)
+  private void code(CString sb, int precedence)
   {
     if (precedence < precedence())
       {
@@ -428,7 +428,7 @@ abstract class CExpr extends CStmnt
     return new CExpr()
       {
         int precedence() { return 1; }
-        void code(StringBuilder sb) { inner.code(sb, precedence()); sb.append("."); name.code(sb); }
+        void code(CString sb) { inner.code(sb, precedence()); sb.append("."); name.code(sb); }
     };
   }
 
@@ -446,7 +446,7 @@ abstract class CExpr extends CStmnt
     return new CExpr()
       {
         int precedence() { return 1; }
-        void code(StringBuilder sb) { inner.code(sb, precedence()); sb.append("["); ix.code(sb); sb.append("]"); }
+        void code(CString sb) { inner.code(sb, precedence()); sb.append("["); ix.code(sb); sb.append("]"); }
     };
   }
 
@@ -470,7 +470,7 @@ abstract class CExpr extends CStmnt
       return 2;
     }
 
-    void code(StringBuilder sb)
+    void code(CString sb)
     {
       sb.append(_op);
       _inner.code(sb, precedence());
@@ -512,7 +512,7 @@ abstract class CExpr extends CStmnt
           return new CExpr()
             {
               int precedence() { return 1; }
-              void code(StringBuilder sb) { _inner.code(sb, precedence()); sb.append("->"); name.code(sb); }
+              void code(CString sb) { _inner.code(sb, precedence()); sb.append("->"); name.code(sb); }
           };
         }
     };
@@ -573,7 +573,7 @@ abstract class CExpr extends CStmnt
   {
     return new Unary(null /* ignored */, "sizeof")
       {
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           sb.append(_op).append("(").append(ctype).append(")");
         }
@@ -606,7 +606,7 @@ abstract class CExpr extends CStmnt
     return new CExpr()
       {
         int precedence() { return 3; }
-        void code(StringBuilder sb) { sb.append("(").append(type).append(")"); inner.code(sb, precedence()); }
+        void code(CString sb) { sb.append("(").append(type).append(")"); inner.code(sb, precedence()); }
     };
   }
 
@@ -633,7 +633,7 @@ abstract class CExpr extends CStmnt
       return _prec;
     }
 
-    void code(StringBuilder sb)
+    void code(CString sb)
     {
       _left.code(sb, precedence());
       sb.append(_op);
@@ -686,7 +686,7 @@ abstract class CExpr extends CStmnt
           return 14;
         }
 
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           cc.code(sb, precedence());
           sb.append('?');
@@ -711,7 +711,7 @@ abstract class CExpr extends CStmnt
     return new CExpr()
       {
         int precedence() { return 15; }
-        void code(StringBuilder sb) { inner.code(sb, precedence()); sb.append(" = "); value.code(sb, precedence()); }
+        void code(CString sb) { inner.code(sb, precedence()); sb.append(" = "); value.code(sb, precedence()); }
     };
   }
 
@@ -723,7 +723,7 @@ abstract class CExpr extends CStmnt
   {
     return new CStmnt()
       {
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           sb.append("return ");
           CExpr.this.code(sb);
@@ -741,7 +741,7 @@ abstract class CExpr extends CStmnt
     return new CExpr()
       {
         int precedence() { return inner.precedence(); }
-        void code(StringBuilder sb)
+        void code(CString sb)
         {
           inner.code(sb);
           sb.append("/* ").append(s).append(" */");
