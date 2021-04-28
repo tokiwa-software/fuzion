@@ -451,7 +451,7 @@ public class C extends ANY
               Errors.error("Unsupported constant in C backend.",
                            "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
             }
-          stack.push(r);
+          push(stack, constCl, r);
           break;
         }
       case Match:
