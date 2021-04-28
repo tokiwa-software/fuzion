@@ -205,7 +205,9 @@ class Intrinsics extends ANY
       case "sys.array.get"       :
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
-          return new CIdent("arg0").castTo(c._types.clazz(gc) + "*").index(new CIdent("arg1")).ret();
+          return c._types.hasData(gc)
+            ? new CIdent("arg0").castTo(c._types.clazz(gc) + "*").index(new CIdent("arg1")).ret()
+            : CStmnt.EMPTY;
         }
 
       default:
