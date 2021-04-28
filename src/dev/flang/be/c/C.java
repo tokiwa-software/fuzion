@@ -379,16 +379,13 @@ public class C extends ANY
                   var ccs = _fuir.callCalledClazzes(cl, c, i);
                   check
                     (_types.hasData(tc)); // target in dynamic call cannot be unit type
-                  var ti = stack.size() - 1; // find index of target
-                  for (var ai = 0; ai < _fuir.clazzArgCount(cc0); ai++)
-                    {
-                      ti = ti - (_types.hasData(_fuir.clazzArgClazz(cc0, ai)) ? 1 : 0);
-                    }
-                  var t = _names.newTemp();
+                  var stackWithArgs = (Stack<CExpr>) stack.clone();
+                  args(-1, cc0, stack, _fuir.clazzArgCount(cc0));  // pop all args except target
+                  var target = pop(stack, tc);
+                  var tvar = _names.newTemp();
                   var tt0 = _types.clazz(tc);
-                  ol.add(CStmnt.decl(tt0, t, stack.get(ti).castTo(tt0)));
-                  stack.set(ti, t);
-                  var id = t.deref().field(_names.CLAZZ_ID);
+                  ol.add(CStmnt.decl(tt0, tvar, target.castTo(tt0)));
+                  stackWithArgs.set(stack.size(), tvar);
                   if (!ignoreResult)
                     {
                       var resvar = _names.newTemp();
@@ -410,7 +407,7 @@ public class C extends ANY
                     {
                       var tt = ccs[cci  ];
                       var cc = ccs[cci+1];
-                      var stk = (Stack<CExpr>) stack.clone();
+                      var stk = (Stack<CExpr>) stackWithArgs.clone();
                       var co = call(tc, cc, stk, false);
                       var rv = pop(stk, rt);
                       if (rt != _fuir.clazzResultClazz(cc) && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
@@ -425,17 +422,16 @@ public class C extends ANY
                     }
                   if (ccs.length > 2)
                     {
+                      var id = tvar.deref().field(_names.CLAZZ_ID);
                       cll = CStmnt.suitch(id, cazes,
                                           CStmnt.seq(CExpr.fprintfstderr("*** %s:%d unhandled dynamic call target %d in call to %s within %s\n",
-                                                                         CIdent.FILE,
-                                                                         CIdent.LINE,
+                                                                         CIdent.FILE, CIdent.LINE,
                                                                          id,
                                                                          CExpr.string(_fuir.clazzAsString(cc0)),
                                                                          CExpr.string(_fuir.clazzAsString(cl ))),
                                                      CExpr.exit(1)));
                     }
                   ol.add(cll);
-                  args(tc, cc0, stack, _fuir.clazzArgCount(cc0));
                 }
               else
                 {
@@ -686,7 +682,8 @@ public class C extends ANY
    * Create C code to pass given number of arguments plus one implicit target
    * argument from the stack to a called feature.
    *
-   * @param tc clazz id of the outer clazz of the called clazz
+   * @param tc clazz id of the outer clazz of the called clazz, -1 to skip the
+   * target argument
    *
    * @param cc clazz that is called
    *
@@ -698,33 +695,31 @@ public class C extends ANY
    */
   List<CExpr> args(int tc, int cc, Stack<CExpr> stack, int argCount)
   {
-    List<CExpr> result;
     if (argCount > 0)
       {
         var ac = _fuir.clazzArgClazz(cc, argCount-1);
         var a = pop(stack, ac);
-        result = args(tc, cc, stack, argCount-1);
+        var result = args(tc, cc, stack, argCount-1);
         if (_types.hasData(ac))
           {
             a = _fuir.clazzIsRef(ac) ? a.castTo(_types.clazz(ac)) : a;
             result.add(a);
           }
+        return result;
       }
-    else // NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
+    else if (tc != -1)
       { // ref to outer instance, passed by reference
-        result = new List<>();
-        //        var tc = _fuir.callTargetClazz(cl, c, i);
-        var or = _fuir.clazzOuterRef(cc);
+        var or = _fuir.clazzOuterRef(cc);   // NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
         var a = pop(stack, tc);
         if (or != -1)
           {
             var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
             var rc = _fuir.clazzResultClazz(or);
             var a3 = tc != rc ? a2.castTo(_types.clazzField(or)) : a2;
-            result.add(a3);
+            return new List<>(a3);
           }
       }
-    return result;
+    return new List<>();
   }
 
 
