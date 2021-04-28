@@ -849,7 +849,7 @@ hw25 is
   public boolean clazzIsCalled(int cl)
   {
     var cc = _clazzIds.get(cl);
-    return cc.isCalled() || (clazzKind(cl) == ClazzKind.Intrinsic);
+    return cc.isCalled();
   }
 
 
