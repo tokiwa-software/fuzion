@@ -414,9 +414,9 @@ public class C extends ANY
                     {
                       rv = rv.castTo(_types.clazz(rt));
                     }
-                  var cr = res != null ? res.assign(rv) : CStmnt.EMPTY;
                   cll = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
-                                   co, cr);
+                                   co,
+                                   res != null ? res.assign(rv) : CStmnt.EMPTY);
                   cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
                                         CStmnt.seq(cll, CStmnt.BREAK)));
                 }
