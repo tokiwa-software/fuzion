@@ -108,11 +108,12 @@ abstract class CStmnt extends ANY
         {
           sb.append("struct ")
             .append(name)
-            .append(" {\n");
+            .append("\n")
+            .append("{\n");
           for (var d : els)
             {
-              d.code(sb);
-              sb.append(";\n");
+              d.code(sb.indent());
+              sb.indent().append(";\n");
             }
           sb.append("}");
         }
@@ -135,11 +136,12 @@ abstract class CStmnt extends ANY
       {
         void code(CString sb)
         {
-          sb.append("union {\n");
+          sb.append("union\n")
+            .append("{\n");
           for (var d : els)
             {
-              d.code(sb);
-              sb.append(";\n");
+              d.code(sb.indent());
+              sb.indent().append(";\n");
             }
           sb.append("}");
           name.code(sb);
@@ -271,9 +273,9 @@ abstract class CStmnt extends ANY
           sb.append(")");
           if (body != null)
             {
-              sb.append(" {\n");
-              // NYI: _c.indent()
-              seq(new List<>(body)).code(sb);
+              sb.append("\n")
+                .append("{\n");
+              seq(new List<>(body)).code(sb.indent());
               sb.append("}\n");
             }
         }
@@ -380,8 +382,7 @@ abstract class CStmnt extends ANY
               sb.append(":\n");
             }
           sb.append("{\n");
-          // NYI: _c.indent()
-          cmds.code(sb);
+          cmds.code(sb.indent());
           sb.append("}\n");
         }
         boolean needsSemi()
@@ -409,18 +410,19 @@ abstract class CStmnt extends ANY
         {
           sb.append("switch (");
           val.code(sb);
-          sb.append(") {\n");
-          // NYI: _c.indent();
+          sb.append(")\n")
+            .append("{\n");
+          var sbi = sb.indent();
           for (var cz : cazes)
             {
-              cz.code(sb);
+              cz.code(sbi);
             }
           if (def != null)
             {
-              sb.append("default: {\n");
-              // NYI: _c.indent();
-              def.code(sb);
-              sb.append("}\n");
+              sbi.append("default:\n")
+                .append("{\n");
+              def.code(sbi.indent());
+              sbi.append("}\n");
             }
           sb.append("}\n");
         }
@@ -450,9 +452,9 @@ abstract class CStmnt extends ANY
         {
           sb.append("if (");
           cc.code(sb);
-          sb.append(") {\n");
-          // NYI: _c.indent();
-          s.code(sb);
+          sb.append(")\n")
+            .append("{\n");
+          s.code(sb.indent());
           sb.append("}\n");
         }
         boolean needsSemi()

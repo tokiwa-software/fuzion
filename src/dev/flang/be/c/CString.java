@@ -38,12 +38,34 @@ import dev.flang.util.List;
 class CString extends ANY
 {
 
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * String representing one level of indentation.
+   */
+  private final String INDENTATION = "  ";
+
 
   /*----------------------------  variables  ----------------------------*/
 
 
-  private final StringBuilder _sb = new StringBuilder();
+  /**
+   * Underlying StringBuilder.
+   */
+  private final StringBuilder _sb;
 
+
+  /**
+   * Indentation level, 0 means no indentation.
+   */
+  private final int _level;
+
+
+  /**
+   * CString for next indentation level
+   */
+  private CString _indent;
 
 
   /*---------------------------  consructors  ---------------------------*/
@@ -54,11 +76,53 @@ class CString extends ANY
    */
   public CString()
   {
+    this(new StringBuilder(), 0);
   }
 
 
+  /**
+   * Create new empty CString for existing underlying StringBuilder and given
+   * indentation level.
+   */
+  private CString(StringBuilder sb,
+                  int level)
+  {
+    _sb = sb;
+    _level = level;
+  }
+
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Get the CString for the next indentation level.
+   */
+  CString indent()
+  {
+    if (_indent == null)
+      {
+        _indent = new CString(_sb, _level + 1);
+      }
+    return _indent;
+  }
+
+
+  /**
+   * Check if indentation is needed when appending a non-LF character and append
+   * the indentation to underlying StringBuilder if this is the case.
+   */
+  private void doIndent()
+  {
+    var l = _sb.length();
+    if (l > 0 && _sb.charAt(l-1) == '\n')
+      {
+        for (int i = 0; i < _level; i++)
+          {
+            _sb.append(INDENTATION);
+          }
+      }
+  }
 
 
   /**
@@ -66,7 +130,10 @@ class CString extends ANY
    */
   CString append(String s)
   {
-    _sb.append(s);
+    for (int i = 0; i < s.length(); i++)
+      {
+        append(s.charAt(i));
+      }
     return this;
   }
 
@@ -76,6 +143,10 @@ class CString extends ANY
    */
   CString append(char c)
   {
+    if (c != '\n')
+      {
+        doIndent();
+      }
     _sb.append(c);
     return this;
   }
@@ -86,6 +157,7 @@ class CString extends ANY
    */
   CString append(int i)
   {
+    doIndent();
     _sb.append(i);
     return this;
   }
@@ -96,6 +168,7 @@ class CString extends ANY
    */
   CString append(long l)
   {
+    doIndent();
     _sb.append(l);
     return this;
   }
