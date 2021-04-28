@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ir;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -1256,7 +1257,10 @@ public class Clazz extends ANY implements Comparable
     if (PRECONDITIONS) require
       (!isChoice());
 
-    if (at != null && !isCalled_)
+    if (at != null &&
+        (_outer == null || !_outer.isVoidType()) &&
+        (Arrays.stream(argumentFields()).filter(a -> a.resultClazz().isVoidType()).findAny().isEmpty()) &&
+        !isCalled_)
       {
         isCalled_ = true;
         if (feature().impl.kind_ == Impl.Kind.Intrinsic)
