@@ -369,83 +369,86 @@ public class C extends ANY
             {
               ol.add(call(tc, cc0, (Stack<CExpr>) stack.clone(), true));
             }
-          var ignoreResult = !_types.hasData(rt) || _fuir.withinCode(c, i+1) && _fuir.codeAt(c, i+1) == FUIR.ExprKind.Pop;
-          CExpr res = null;
-          if (_fuir.callIsDynamic(cl, c, i))
+          if (!_fuir.callPreconditionOnly(cl, c, i))
             {
-              ol.add(CStmnt.lineComment("Dynamic call to " + _fuir.clazzAsString(cc0)));
-              var ccs = _fuir.callCalledClazzes(cl, c, i);
-              check
-                (_types.hasData(tc)); // target in dynamic call cannot be unit type
-              var ti = stack.size() - 1; // find index of target
-              for (var ai = 0; ai < _fuir.clazzArgCount(cc0); ai++)
+              var ignoreResult = !_types.hasData(rt) || _fuir.withinCode(c, i+1) && _fuir.codeAt(c, i+1) == FUIR.ExprKind.Pop;
+              CExpr res = null;
+              if (_fuir.callIsDynamic(cl, c, i))
                 {
-                  ti = ti - (_types.hasData(_fuir.clazzArgClazz(cc0, ai)) ? 1 : 0);
-                }
-              var t = _names.newTemp();
-              var tt0 = _types.clazz(tc);
-              ol.add(CStmnt.decl(tt0, t, stack.get(ti).castTo(tt0)));
-              stack.set(ti, t);
-              var id = t.deref().field(_names.CLAZZ_ID);
-              if (!ignoreResult)
-                {
-                  var resvar = _names.newTemp();
-                  res = resvar;
-                  ol.add(CStmnt.decl(_types.clazzField(cc0), resvar));
-                }
-              if (ccs.length == 0)
-                {
-                  ol.add(CStmnt.seq(CExpr.fprintfstderr("*** %s:%d no targets for dynamic call to %s within %s\n",
-                                                        CIdent.FILE,
-                                                        CIdent.LINE,
-                                                        CExpr.string(_fuir.clazzAsString(cc0)),
-                                                        CExpr.string(_fuir.clazzAsString(cl ))),
-                                    CExpr.exit(1)));
-                }
-              var cazes = new List<CStmnt>();
-              CStmnt cll = CStmnt.EMPTY;
-              for (var cci = 0; cci < ccs.length; cci += 2)
-                {
-                  var tt = ccs[cci  ];
-                  var cc = ccs[cci+1];
-                  var stk = (Stack<CExpr>) stack.clone();
-                  var co = call(tc, cc, stk, false);
-                  var rv = pop(stk, rt);
-                  if (rt != _fuir.clazzResultClazz(cc) && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
+                  ol.add(CStmnt.lineComment("Dynamic call to " + _fuir.clazzAsString(cc0)));
+                  var ccs = _fuir.callCalledClazzes(cl, c, i);
+                  check
+                    (_types.hasData(tc)); // target in dynamic call cannot be unit type
+                  var ti = stack.size() - 1; // find index of target
+                  for (var ai = 0; ai < _fuir.clazzArgCount(cc0); ai++)
                     {
-                      rv = rv.castTo(_types.clazz(rt));
+                      ti = ti - (_types.hasData(_fuir.clazzArgClazz(cc0, ai)) ? 1 : 0);
                     }
-                  cll = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
-                                   co,
-                                   res != null ? res.assign(rv) : CStmnt.EMPTY);
-                  cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
-                                        CStmnt.seq(cll, CStmnt.BREAK)));
+                  var t = _names.newTemp();
+                  var tt0 = _types.clazz(tc);
+                  ol.add(CStmnt.decl(tt0, t, stack.get(ti).castTo(tt0)));
+                  stack.set(ti, t);
+                  var id = t.deref().field(_names.CLAZZ_ID);
+                  if (!ignoreResult)
+                    {
+                      var resvar = _names.newTemp();
+                      res = resvar;
+                      ol.add(CStmnt.decl(_types.clazzField(cc0), resvar));
+                    }
+                  if (ccs.length == 0)
+                    {
+                      ol.add(CStmnt.seq(CExpr.fprintfstderr("*** %s:%d no targets for dynamic call to %s within %s\n",
+                                                            CIdent.FILE,
+                                                            CIdent.LINE,
+                                                            CExpr.string(_fuir.clazzAsString(cc0)),
+                                                            CExpr.string(_fuir.clazzAsString(cl ))),
+                                        CExpr.exit(1)));
+                    }
+                  var cazes = new List<CStmnt>();
+                  CStmnt cll = CStmnt.EMPTY;
+                  for (var cci = 0; cci < ccs.length; cci += 2)
+                    {
+                      var tt = ccs[cci  ];
+                      var cc = ccs[cci+1];
+                      var stk = (Stack<CExpr>) stack.clone();
+                      var co = call(tc, cc, stk, false);
+                      var rv = pop(stk, rt);
+                      if (rt != _fuir.clazzResultClazz(cc) && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
+                        {
+                          rv = rv.castTo(_types.clazz(rt));
+                        }
+                      cll = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
+                                       co,
+                                       res != null ? res.assign(rv) : CStmnt.EMPTY);
+                      cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
+                                            CStmnt.seq(cll, CStmnt.BREAK)));
+                    }
+                  if (ccs.length > 2)
+                    {
+                      cll = CStmnt.suitch(id, cazes,
+                                          CStmnt.seq(CExpr.fprintfstderr("*** %s:%d unhandled dynamic call target %d in call to %s within %s\n",
+                                                                         CIdent.FILE,
+                                                                         CIdent.LINE,
+                                                                         id,
+                                                                         CExpr.string(_fuir.clazzAsString(cc0)),
+                                                                         CExpr.string(_fuir.clazzAsString(cl ))),
+                                                     CExpr.exit(1)));
+                    }
+                  ol.add(cll);
+                  args(tc, cc0, stack, _fuir.clazzArgCount(cc0));
                 }
-              if (ccs.length > 2)
+              else
                 {
-                  cll = CStmnt.suitch(id, cazes,
-                                      CStmnt.seq(CExpr.fprintfstderr("*** %s:%d unhandled dynamic call target %d in call to %s within %s\n",
-                                                                     CIdent.FILE,
-                                                                     CIdent.LINE,
-                                                                     id,
-                                                                     CExpr.string(_fuir.clazzAsString(cc0)),
-                                                                     CExpr.string(_fuir.clazzAsString(cl ))),
-                                                 CExpr.exit(1)));
+                  ol.add(call(tc, cc0, stack, false));
+                  res = pop(stack, rt);
                 }
-              ol.add(cll);
-              args(tc, cc0, stack, _fuir.clazzArgCount(cc0));
-            }
-          else if (!_fuir.callPreconditionOnly(cl, c, i))
-            {
-              ol.add(call(tc, cc0, stack, false));
-              res = pop(stack, rt);
+              if (!ignoreResult || _fuir.clazzIsVoidType(rt))
+                {
+                  var rres = _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
+                  push(stack, rt, rres);
+                }
             }
           o = CStmnt.seq(ol);
-          if (!_fuir.callPreconditionOnly(cl, c, i) && (!ignoreResult || _fuir.clazzIsVoidType(rt)))
-            {
-              var rres = _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
-              push(stack, rt, rres);
-            }
           break;
         }
       case Current:
