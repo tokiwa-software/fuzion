@@ -748,7 +748,7 @@ hw25 is
   if (count == 3) say "PASS" else say "FAIL"
         */
 
-        toStack(code, p, true);
+        toStack(code, p);
         toStack(code, p.target);
         check
           (p._actuals.size() == p.calledFeature().arguments.size());

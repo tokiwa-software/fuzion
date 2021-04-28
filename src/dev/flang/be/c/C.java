@@ -369,6 +369,8 @@ public class C extends ANY
             {
               ol.add(call(tc, cc0, (Stack<CExpr>) stack.clone(), true));
             }
+          var ignoreResult = _fuir.withinCode(c, i+1) && _fuir.codeAt(c, i+1) == FUIR.ExprKind.Pop;
+          CExpr res = null;
           if (_fuir.callIsDynamic(cl, c, i))
             {
               ol.add(CStmnt.lineComment("Dynamic call to " + _fuir.clazzAsString(cc0)));
@@ -385,12 +387,11 @@ public class C extends ANY
               ol.add(CStmnt.decl(tt0, t, stack.get(ti).castTo(tt0)));
               stack.set(ti, t);
               var id = t.deref().field(_names.CLAZZ_ID);
-              CIdent res = null;
-              if (_types.hasData(rt) &&
-                  (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.Pop))
+              if (_types.hasData(rt) && !ignoreResult)
                 {
-                  res = _names.newTemp();
-                  ol.add(CStmnt.decl(_types.clazzField(cc0), res));
+                  var resvar = _names.newTemp();
+                  res = resvar;
+                  ol.add(CStmnt.decl(_types.clazzField(cc0), resvar));
                 }
               if (ccs.length == 0)
                 {
@@ -433,19 +434,17 @@ public class C extends ANY
                 }
               ol.add(cll);
               args(tc, cc0, stack, _fuir.clazzArgCount(cc0));
-              if (res != null)
-                {
-                  push(stack, rt, res);
-                }
             }
-          else  if (!_fuir.callPreconditionOnly(cl, c, i))
+          else if (!_fuir.callPreconditionOnly(cl, c, i))
             {
               ol.add(call(tc, cc0, stack, false));
+              res = pop(stack, rt);
             }
           o = CStmnt.seq(ol);
-          if (_fuir.clazzFieldIsAdrOfValue(cc0) && _types.hasData(rt))  // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
+          if (res != null && !ignoreResult)
             {
-              push(stack, rt, pop(stack, rt).deref());
+              var rres = _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
+              push(stack, rt, rres);
             }
           break;
         }
@@ -574,8 +573,7 @@ public class C extends ANY
           break;
         }
       case Pop:
-        {
-          stack.clear();
+        { // Handled within Call
           break;
         }
       default:
