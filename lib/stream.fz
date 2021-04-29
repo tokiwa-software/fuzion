@@ -90,7 +90,17 @@ stream<T> ref is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the stream.
   #
-  map<B>(f fun(T) B) : stream<B> is
+  map<B>(f fun(T) B) stream<B> is
+    ref : stream<B>
+      {
+        hasNext => stream.this.hasNext
+        next B is f stream.this.next
+      }
+
+  # NYI: This currently does not work with the C backend since generics resolution
+  # for stream.this.next confuses the type from the outer feature (T) with the type
+  # from the inherited feature (B).
+  map_broken <B>(f fun(T) B) : stream<B> is
     hasNext => stream.this.hasNext
     next B is f stream.this.next
 
