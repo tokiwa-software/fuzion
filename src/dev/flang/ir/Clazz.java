@@ -1255,7 +1255,7 @@ public class Clazz extends ANY implements Comparable
   void called(SourcePosition at)
   {
     if (PRECONDITIONS) require
-      (!isChoice());
+      (Errors.count() > 0 || !isChoice());
 
     if (at != null &&
         (_outer == null || !_outer.isVoidType()) &&
