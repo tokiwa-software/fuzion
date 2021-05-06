@@ -45,7 +45,7 @@ public class AdrToValue extends Expr
 
 
   /**
-   * The address to the value type
+   * The address of the value type
    */
   public Expr adr_;
 
