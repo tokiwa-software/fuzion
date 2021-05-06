@@ -119,6 +119,8 @@ class Intrinsics extends ANY
       case "i64.infix &"         : return outer.and(new CIdent("arg0")).ret();
       case "i32.infix |"         :
       case "i64.infix |"         : return outer.or (new CIdent("arg0")).ret();
+      case "i32.infix ^"         :
+      case "i64.infix ^"         : return outer.xor(new CIdent("arg0")).ret();
 
       case "i32.infix =="        :
       case "i64.infix =="        : return outer.eq(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
@@ -153,6 +155,8 @@ class Intrinsics extends ANY
       case "u64.infix &"         : return outer.and(new CIdent("arg0")).ret();
       case "u32.infix |"         :
       case "u64.infix |"         : return outer.or (new CIdent("arg0")).ret();
+      case "u32.infix ^"         :
+      case "u64.infix ^"         : return outer.xor(new CIdent("arg0")).ret();
 
       case "u32.infix =="        :
       case "u64.infix =="        : return outer.eq(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();

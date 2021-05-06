@@ -69,9 +69,10 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64> is
   private div (other i64) i64 is intrinsic
   private mod (other i64) i64 is intrinsic
 
-  # bitwise and and or operations
+  # bitwise and, or and xor operations
   redef infix &  (other i64) i64 is intrinsic
   redef infix |  (other i64) i64 is intrinsic
+  redef infix ^  (other i64) i64 is intrinsic
 
   # shift operations (signed)
   redef infix >> (other i64) i64 is intrinsic

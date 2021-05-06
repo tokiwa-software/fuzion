@@ -69,9 +69,10 @@ i32(val i32) : wrappingInteger<i32>, hasInterval<i32> is
   private div (other i32) i32 is intrinsic
   private mod (other i32) i32 is intrinsic
 
-  # bitwise and and or operations
+  # bitwise and, or and xor operations
   redef infix &  (other i32) i32 is intrinsic
   redef infix |  (other i32) i32 is intrinsic
+  redef infix ^  (other i32) i32 is intrinsic
 
   # shift operations (signed)
   redef infix >> (other i32) i32 is intrinsic

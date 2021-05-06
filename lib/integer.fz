@@ -48,6 +48,7 @@ integer<T : integer<T>> : numeric<T> is
   # bitwise operations
   infix &  (other T) T is abstract
   infix |  (other T) T is abstract
+  infix ^  (other T) T is abstract
 
   # shift operations
   infix >> (other T) T

@@ -246,6 +246,7 @@ public class Intrinsics extends ANY
     else if (n.equals("i32.mod"         )) { result = (args) -> new i32Value (args.get(0).i32Value() %   args.get(1).i32Value()); }
     else if (n.equals("i32.infix &"     )) { result = (args) -> new i32Value (args.get(0).i32Value() &   args.get(1).i32Value()); }
     else if (n.equals("i32.infix |"     )) { result = (args) -> new i32Value (args.get(0).i32Value() |   args.get(1).i32Value()); }
+    else if (n.equals("i32.infix ^"     )) { result = (args) -> new i32Value (args.get(0).i32Value() ^   args.get(1).i32Value()); }
     else if (n.equals("i32.infix >>"    )) { result = (args) -> new i32Value (args.get(0).i32Value() >>  args.get(1).i32Value()); }
     else if (n.equals("i32.infix <<"    )) { result = (args) -> new i32Value (args.get(0).i32Value() <<  args.get(1).i32Value()); }
     else if (n.equals("i32.infix =="    )) { result = (args) -> new boolValue(args.get(0).i32Value() ==  args.get(1).i32Value()); }
@@ -265,6 +266,7 @@ public class Intrinsics extends ANY
     else if (n.equals("i64.mod"         )) { result = (args) -> new i64Value (args.get(0).i64Value() %   args.get(1).i64Value()); }
     else if (n.equals("i64.infix &"     )) { result = (args) -> new i64Value (args.get(0).i64Value() &   args.get(1).i64Value()); }
     else if (n.equals("i64.infix |"     )) { result = (args) -> new i64Value (args.get(0).i64Value() |   args.get(1).i64Value()); }
+    else if (n.equals("i64.infix ^"     )) { result = (args) -> new i64Value (args.get(0).i64Value() ^   args.get(1).i64Value()); }
     else if (n.equals("i64.infix >>"    )) { result = (args) -> new i64Value (args.get(0).i64Value() >>  args.get(1).i64Value()); }
     else if (n.equals("i64.infix <<"    )) { result = (args) -> new i64Value (args.get(0).i64Value() <<  args.get(1).i64Value()); }
     else if (n.equals("i64.infix =="    )) { result = (args) -> new boolValue(args.get(0).i64Value() ==  args.get(1).i64Value()); }
@@ -283,6 +285,7 @@ public class Intrinsics extends ANY
     else if (n.equals("u32.mod"         )) { result = (args) -> new u32Value (Integer.remainderUnsigned(args.get(0).u32Value(), args.get(1).u32Value())); }
     else if (n.equals("u32.infix &"     )) { result = (args) -> new u32Value (args.get(0).u32Value() &   args.get(1).u32Value()); }
     else if (n.equals("u32.infix |"     )) { result = (args) -> new u32Value (args.get(0).u32Value() |   args.get(1).u32Value()); }
+    else if (n.equals("u32.infix ^"     )) { result = (args) -> new u32Value (args.get(0).u32Value() ^   args.get(1).u32Value()); }
     else if (n.equals("u32.infix >>"    )) { result = (args) -> new u32Value (args.get(0).u32Value() >>> args.get(1).u32Value()); }
     else if (n.equals("u32.infix <<"    )) { result = (args) -> new u32Value (args.get(0).u32Value() <<  args.get(1).u32Value()); }
     else if (n.equals("u32.infix =="    )) { result = (args) -> new boolValue(args.get(0).u32Value() ==  args.get(1).u32Value()); }
@@ -301,6 +304,7 @@ public class Intrinsics extends ANY
     else if (n.equals("u64.mod"         )) { result = (args) -> new u64Value (Long.remainderUnsigned(args.get(0).u64Value(), args.get(1).u64Value())); }
     else if (n.equals("u64.infix &"     )) { result = (args) -> new u64Value (args.get(0).u64Value() &   args.get(1).u64Value()); }
     else if (n.equals("u64.infix |"     )) { result = (args) -> new u64Value (args.get(0).u64Value() |   args.get(1).u64Value()); }
+    else if (n.equals("u64.infix ^"     )) { result = (args) -> new u64Value (args.get(0).u64Value() ^   args.get(1).u64Value()); }
     else if (n.equals("u64.infix >>"    )) { result = (args) -> new u64Value (args.get(0).u64Value() >>> args.get(1).u64Value()); }
     else if (n.equals("u64.infix <<"    )) { result = (args) -> new u64Value (args.get(0).u64Value() <<  args.get(1).u64Value()); }
     else if (n.equals("u64.infix =="    )) { result = (args) -> new boolValue(args.get(0).u64Value() ==  args.get(1).u64Value()); }
