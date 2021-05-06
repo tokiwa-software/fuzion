@@ -102,6 +102,18 @@ string ref is
 
     */
 
+  # create hash code from a string
+  hash u64 is
+    shL := 13.as_u64
+    shR := 51.as_u64
+    for
+      h u64 := 0, ((h << shL) | (h >> shR)) ^ b.as_u64;
+      b in asBytes
+    while true
+    else
+      h
+
+
 /*
 has     -- NYI: 'has' keyword not supported yet, so the following require an instance of numeric to be called on
 */

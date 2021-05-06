@@ -113,3 +113,7 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64> is
 
   redef min => -° max -° 1
   redef max => 9223372036854775807
+
+  # create hash code from this number
+  hash u64 is
+    as_u64.hash

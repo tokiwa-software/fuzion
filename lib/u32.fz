@@ -100,3 +100,7 @@ u32(val u32) : wrappingInteger<u32>, hasInterval<u32> is
 
   redef min u32 is 0
   redef max u32 is 4294967295
+
+  # create hash code from this number
+  hash u64 is
+    as_u64.hash

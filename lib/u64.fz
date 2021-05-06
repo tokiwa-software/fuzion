@@ -111,3 +111,7 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64> is
 
   redef min u64 is 0
   redef max u64 is (1.as_u64 << 63) -° 1 +° (1.as_u64 << 63)  # NYI: 18446744073709551615, need to improve parser/lexer to handle this
+
+  # create hash code from this number
+  hash u64 is
+    u64.this
