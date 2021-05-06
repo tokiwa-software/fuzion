@@ -591,9 +591,9 @@ public class Type extends ANY implements Comparable
        featureOfType().generics.sizeMatches(_generics));
 
     Type result = t;
-    if (t.dependsOnGenerics())
+    if (result.dependsOnGenerics())
       {
-        result = t.actualType(featureOfType(), _generics);
+        result = result.actualType(featureOfType(), _generics);
         if (outer() != null)
           {
             result = outer().actualType(result);
