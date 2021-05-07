@@ -25,7 +25,7 @@
 
 # numeric -- parent of all numeric features
 #
-numeric<T : numeric<T>> is
+numeric<T : numeric<T>> : hasHash<T> is
 
   # get numeric.this value of type T.  This is used for a generic implemention
   # of some features (e.g. prefix -, abs
@@ -65,7 +65,8 @@ numeric<T : numeric<T>> is
   infix *^ (other T) T is thiz * other
 
   # comparison
-  infix == (other T) bool is abstract
+  infix == (other T) bool is abstract   // NYI: remove, replace by 'infix ='
+  infix = (other T) bool is thiz == other
   infix != (other T) bool is abstract
   infix <  (other T) bool is abstract
   infix <= (other T) bool is abstract

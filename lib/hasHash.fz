@@ -17,25 +17,27 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature Object
+#  Source code of Fuzion standard library feature hasHash
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# Object -- parent feature of all features that do not have an explicit parent
+# hasHash -- feature for immutable values that have a hash function
 #
-Object ref is
+# NYI: the compiler should check that features inheriting from this are
+# actually immutable.
+#
+hasHash<T: hasEquals<T>> : hasEquals<T>
 
-  # NYI: For now, === and !== are used for ref equality checks, == and != for value equality
-  infix === (o Object) bool is intrinsic
-  infix !== (o Object) bool is intrinsic
+/* NYI: quantor intrinsics not supported yet:
 
-  hashCode i32 is intrinsic
-  asString string is intrinsic
-  prefix $ => Object.this.asString
+  inv
+    analysis: quantors.forAll2<T,T> fun(a, b T) => (a = b) : (a.hash = b.hash),
+    analysis: quantors.forAll2<T,T> fun(a, b T) => (a.hash ≠ b.hash) : (a ≠ b) /* implied by previous condition */
+*/
 
-  # NYI: Currently, only intrinsic features are permitted in Object. The reason is
-  # that any feature in Object would also inherit from object, so the frame
-  # object of that feature would inherit its outer feature, which would cause
-  # problems in case of recursion, see tests/inheritance_negative2.fz
+is
+
+  # create hash code for this instance
+  hash u64 is abstract

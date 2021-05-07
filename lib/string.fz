@@ -25,7 +25,7 @@
 
 # string -- immutable sequences of utf8 encoded unicode characters
 #
-string ref is
+string ref : hasHash<string> is
 
   # converting a string to a string is just returning string.this
   redef asString => string.this
@@ -84,7 +84,7 @@ string ref is
 
 
   # compare string byte-by-byte with other string
-  infix == (other string) =>
+  infix = (other string) =>
     s1 :=       asBytes.asStream
     s2 := other.asBytes.asStream
     while s1.hasNext && s2.hasNext
@@ -101,6 +101,8 @@ string ref is
     until !s1.hasNext
 
     */
+
+  infix == (other string) => string.this = other    # NYI: replace by 'infix ='
 
   # create hash code from a string
   hash u64 is
