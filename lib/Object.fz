@@ -27,7 +27,7 @@
 #
 Object ref is
 
-  # NYI: For now, === and !== are used for ref equality checks, == and != for value equality
+  # NYI: For now, === and !== are used for ref equality checks, = and /= for value equality
   infix === (o Object) bool is intrinsic
   infix !== (o Object) bool is intrinsic
 
