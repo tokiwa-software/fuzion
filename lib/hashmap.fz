@@ -1,0 +1,97 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature hashmap
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# hashmap -- an immutable hash map from keys K to values V
+#
+hashmap<K : hasHash<K>, V>(keys array<K>,
+                           values array<V>)
+  pre
+    keys.length == values.length
+
+is
+  # number of entries in this map
+  size => keys.length
+
+  # size of allocated contents array, allows for some empty slots
+  /* NYI: local */
+  allocatedSize => size * 2
+
+  # the contents
+  /* NYI: local */
+  contents :=
+    for
+      mcontents := marray<Option<Tuple<K,V>>>(allocatedSize, nil), mcontents
+      k in keys
+      v in values
+      h := k.hash
+    do
+      store ((h.low32bits.castTo_i32 & 0.max) % allocatedSize)
+
+      # store k,v for index at,
+      store (at i32) unit is
+
+        match mcontents[at]
+          nil     =>     # slot is free, so use it:
+            mcontents[at] := (k, v)
+
+          t Tuple =>     # we have a conflict
+            (ek, _) := t
+            if ek = k    # no conflict, but remapping of k
+              mcontents[at] := (k, v)
+            else         # conflict
+              store collision at
+
+/* NYI: With better pattern matching, this could be:
+        match mcontents[at]
+          nil,
+          (k, _) =>  mcontent[at] := (k, v)
+          (_, _) =>  store at * 5 % allocatedSize    # conflict
+*/
+
+    else
+      mcontents.as_array
+
+  # get the value k is mapped to
+  index [] (k K) Option<V> is
+
+    retrieve (at i32) Option<V> is
+      match contents[at]
+        nil     => nil
+        t Tuple<K,V> =>
+          (ek, v) := t
+          if ek = k
+            v
+          else
+            retrieve collision at
+
+    h := k.hash
+
+    retrieve ((h.low32bits.castTo_i32 & 0.max) % allocatedSize)
+
+  # in case of a collision at given position,
+  # return the next alternative position to check
+  #
+  collision (at i32) =>
+    (at + 1) % allocatedSize  # NYI: dumb collision function
