@@ -31,23 +31,41 @@ hashmap<K : hasHash<K>, V>(keys array<K>,
     keys.length == values.length
 
 is
+
+
   # number of entries in this map
+  #
   size => keys.length
 
+
   # size of allocated contents array, allows for some empty slots
+  #
   /* NYI: local */
   allocatedSize => size * 2
 
+
+  # calculate the index of k within contents array in case of no conflict
+  #
+  at (k K) => (k.hash.low32bits.castTo_i32 & 0.max) % allocatedSize
+
+
+  # in case of a collision at given position,
+  # return the next alternative position to check
+  #
+  collision (at i32) =>
+    (at + 1) % allocatedSize  # NYI: dumb collision function, check literature and improve!
+
+
   # the contents
+  #
   /* NYI: local */
   contents :=
     for
-      mcontents := marray<Option<Tuple<K,V>>>(allocatedSize, nil), mcontents
+      mcontents := (marray <Option<Tuple<K,V>>> allocatedSize, nil), mcontents
       k in keys
       v in values
-      h := k.hash
     do
-      store ((h.low32bits.castTo_i32 & 0.max) % allocatedSize)
+      store at k
 
       # store k,v for index at,
       store (at i32) unit is
@@ -73,7 +91,9 @@ is
     else
       mcontents.as_array
 
+
   # get the value k is mapped to
+  #
   index [] (k K) Option<V> is
 
     retrieve (at i32) Option<V> is
@@ -86,12 +106,4 @@ is
           else
             retrieve collision at
 
-    h := k.hash
-
-    retrieve ((h.low32bits.castTo_i32 & 0.max) % allocatedSize)
-
-  # in case of a collision at given position,
-  # return the next alternative position to check
-  #
-  collision (at i32) =>
-    (at + 1) % allocatedSize  # NYI: dumb collision function
+    retrieve at k
