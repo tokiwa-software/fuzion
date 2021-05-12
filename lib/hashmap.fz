@@ -84,8 +84,8 @@ is
 /* NYI: With better pattern matching, this could be:
         match mcontents[at]
           nil,
-          (k, _) =>  mcontent[at] := (k, v)
-          (_, _) =>  store at * 5 % allocatedSize    # conflict
+          (k, _) =>  mcontent[at] := (k, v)  # no conflict
+          (_, _) =>  store collision at      # conflict
 */
 
     else
