@@ -25,7 +25,13 @@
 
 # sortedarray -- sorted one-dimensional immutable array
 #
-# this take an unsorted array as an argument and returns a sorted one
+# This takes an unsorted array as an argument and returns a sorted one.
+#
+# Non-mutating heap sort is used internally. This gives guaranteed peformance in
+# O(n log n) for an array of size n.  This is a little wasteful on allocated
+# memory, which is also O(n log n) since partially sorted arrays are thrown away.
+# This might be improved to use an in-place heap sort to bring allocated memory down
+# to O(n).
 #
 sortedArray<T: ordered<T>>(from array<T>) : array<T> sort(from, 1).internalArray is
 
@@ -46,6 +52,7 @@ sortedArray<T: ordered<T>>(from array<T>) : array<T> sort(from, 1).internalArray
       debug: (heapSize & (heapSize-1)) = 0
       # NYI: analysis: for all i=0..a.length/heapSize: a[heapSize*i .. heapSize*(i+1)-1] is sorted
   is
+    # check if the array is fully sorted
     if heapSize >= a.length
       a
     else
