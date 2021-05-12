@@ -68,10 +68,6 @@ numeric<T : numeric<T>> : hasHash<T>, ordered<T> is
   infix == (other T) bool is abstract   // NYI: remove, replace by 'infix ='
   infix = (other T) bool is thiz == other
   infix != (other T) bool is abstract
-  infix <  (other T) bool is abstract
-  infix <= (other T) bool is abstract
-  infix >  (other T) bool is abstract
-  infix >= (other T) bool is abstract
 
   sign => if numeric.this == zero then 0 else if numeric.this > zero then 1 else -1
 
