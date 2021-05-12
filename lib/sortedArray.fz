@@ -34,7 +34,15 @@
 # partially sorted arrays are thrown away.  This might be improved to use an
 # in-place heap sort to bring allocated memory down to O(n).
 #
-sortedArray<T: ordered<T>>(from array<T>) : array<T> sort(from, 1).internalArray is
+sortedArray<T: ordered<T>>
+  (
+  # orginal, unsorted array
+  from array<T>
+  )
+
+  : array<T> sort(from, 1).internalArray
+
+is
 
   # perform heap sort on the given array
   #
