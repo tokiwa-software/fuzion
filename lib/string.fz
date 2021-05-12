@@ -84,7 +84,7 @@ string ref : hasHash<string>, ordered<string> is
 
 
   # compare string byte-by-byte with other string
-  infix = (other string) =>
+  redef infix = (other string) =>
     s1 :=       asBytes.asStream
     s2 := other.asBytes.asStream
     while s1.hasNext && s2.hasNext
