@@ -1,0 +1,85 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature sortedArray
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# sortedarray -- sorted one-dimensional immutable array
+#
+# this take an unsorted array as an argument and returns a sorted one
+#
+sortedArray<T: ordered<T>>(from array<T>) : array<T> sort(from, 1).internalArray is
+
+  # perform heap sort on the given array
+  #
+  # result is a new array that is sorted
+  sort
+    (
+    # array with sub-heaps of heapSize sorted
+    a array<T>,
+
+    # the current heap size, 1 on initial call, must be power of 2
+    heapSize i32
+    ) array<T>
+
+    pre
+      debug: heapSize >= 0,
+      debug: (heapSize & (heapSize-1)) = 0
+      # NYI: analysis: for all i=0..a.length/heapSize: a[heapSize*i .. heapSize*(i+1)-1] is sorted
+  is
+    if heapSize >= a.length
+      a
+    else
+      # h1 is the mutable index within the current first heap, this is updated
+      # by the function passed to the array constructor.
+      #
+      # NYI: This might eventually be done using a monad with monadic lifting
+      # of array.
+      h1 := 0;
+
+      na := array<T> a.length, fun (i i32) =>
+        # index in current pair of heaps
+        hi := i & (heapSize*2-1)
+        # reset h1 in case we start new pair of heaps
+        set h1 := if (hi = 0) 0 else h1
+        # index within second heap
+        h2 := hi - h1
+
+        # absolute indices in first and second heap
+        i1 := i - hi + h1;
+        i2 := i - hi + heapSize + h2;
+
+        # did we reach end of first or second heap?
+        heap1Empty := h1 >= heapSize
+        heap2Empty := h2 >= heapSize || i2 >= a.length
+
+        # check if next element comes from first heap
+        if heap2Empty || !heap1Empty && a[i1] <= a[i2]
+          # if so, increment index in first heap and return element from first heap
+          set h1 := h1 + 1
+          a[i1]
+        else
+          # otherwise, return element from second heap
+          a[i2]
+
+      # continue sorting with doubled heap size
+      sort na, 2*heapSize
