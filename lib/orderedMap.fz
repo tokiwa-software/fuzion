@@ -1,0 +1,61 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature orderedMap
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# orderedMap -- an immutable map from ordered keys K to values V
+#
+orderedMap<K : ordered<K>, V>(keys array<K>,
+                              values array<V>)
+  pre
+    keys.length == values.length
+
+is
+
+  # entry is a pair key, value that is ordered by key
+  #
+  entry(k K, v V) : ordered<entry> is
+    infix <= (other entry) => k <= other.k
+
+  sortedKeys   := sortedArray<K> keys
+  sortedValues := (sortedArray<entry> array<entry> keys.length, fun (i i32) => entry keys[i], values[i]).map<V> fun(e entry) => e.v
+
+  # number of entries in this map
+  #
+  size => sortedKeys.length
+
+
+  # get the value k is mapped to
+  #
+  index [] (k K) Option<V> is
+    i := sortedKeys.find k
+    match i
+      nil => nil
+      x i32 => sortedValues[x]
+
+   /* NYI: with support for postfix ?, this code should be just
+
+    i := sortedKeys.find k
+    sortedValues[i?]
+
+    */
