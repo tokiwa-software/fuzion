@@ -25,6 +25,13 @@
 
 # orderedMap -- an immutable map from ordered keys K to values V
 #
+# Lookup performance is O(log size) since it uses binary search in a
+# sorted array.  When deterministic performance is desired, an ordered map
+# should be preferred over a hash map.
+#
+# performance of creation of the map is in O(n log n) where n is
+# keys.length.
+#
 orderedMap<K : ordered<K>, V>(keys array<K>,
                               values array<V>)
   pre
@@ -46,6 +53,8 @@ is
 
 
   # get the value k is mapped to
+  #
+  # performance is O(log size).
   #
   index [] (k K) Option<V> is
     i := sortedKeys.find k
