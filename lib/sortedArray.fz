@@ -28,16 +28,18 @@
 # This takes an unsorted array as an argument and returns a sorted one.
 #
 # Non-mutating heap sort is used internally. This gives guaranteed peformance in
-# O(n log n) for an array of size n.  This is a little wasteful on allocated
-# memory, which is also O(n log n) since partially sorted arrays are thrown away.
-# This might be improved to use an in-place heap sort to bring allocated memory down
-# to O(n).
+# O(n log n) comparisons and assignments for an array of size n.
+#
+# This is a little wasteful on allocated memory, which is also O(n log n) since
+# partially sorted arrays are thrown away.  This might be improved to use an
+# in-place heap sort to bring allocated memory down to O(n).
 #
 sortedArray<T: ordered<T>>(from array<T>) : array<T> sort(from, 1).internalArray is
 
   # perform heap sort on the given array
   #
   # result is a new array that is sorted
+  #
   sort
     (
     # array with sub-heaps of heapSize sorted
