@@ -94,7 +94,7 @@ public class Latex extends ANY
                      \\lstdefinelanguage{fuzion}{
                        keywords = {
                      %s},
-                       sensitive=true, %% keywords are not case-sensitive
+                       sensitive=true, %% keywords are case-sensitive
                        morecomment=[l]{\\#}, %% l is for line comment
                        morecomment=[l]{//}, %% l is for line comment
                        morecomment=[s]{/*}{*/}, %% s is for start and end delimiter
