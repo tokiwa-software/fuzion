@@ -39,32 +39,22 @@ orderedMap<K : ordered<K>, V>(keys array<K>,
 
 is
 
-  # entry is a pair key, value that is ordered by key
-  #
-  entry(k K, v V) : ordered<entry> is
-    infix <= (other entry) => k <= other.k
+  # entry is an index in keys/values
 
-  sortedKeys   := sortedArray<K> keys
-  sortedValues := (sortedArray<entry> array<entry> keys.length, fun (i i32) => entry keys[i], values[i]).map<V> fun(e entry) => e.v
+  entry(i i32) : ordered<entry> is
+    infix <= (other entry) => keys[i] <= keys[other.i]
+    val => values[i]
+  sortedEntries := sortedArray<entry> ((0..size-1).asStream.map<entry> (fun (i i32) => entry i).take keys.length)
 
   # number of entries in this map
   #
-  size => sortedKeys.length
+  size => sortedEntries.length
 
 
-  # get the value k is mapped to
+  # get the value k is mapped to, or nil if none.
   #
   # performance is O(log size).
   #
   index [] (k K) Option<V> is
-    i := sortedKeys.find k
-    match i
-      nil => nil
-      x i32 => sortedValues[x]
-
-   /* NYI: with support for postfix ?, this code should be just
-
-    i := sortedKeys.find k
-    sortedValues[i?]
-
-    */
+    sortedEntries.find(fun(e entry) => keys[e.i] <> k)
+                 .map<V> fun(i i32) => sortedEntries[i].val
