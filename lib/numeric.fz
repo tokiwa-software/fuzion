@@ -38,7 +38,7 @@ numeric<T : numeric<T>> : hasHash<T>, ordered<T> is
   isOne  => numeric.this == one
 
   # basic operations
-  prefix + T is abstract
+  prefix + T is thiz
   prefix - T is zero - thiz
   infix +  (other T) T is abstract
   infix -  (other T) T is abstract
