@@ -61,3 +61,11 @@ is
 
   # synonyme for infix >>=
   andThen (f fun (T) Option<T>) => Option.this >>= f
+
+
+  # map this Option using f, i.e., map nil to nil and any value v to f v
+  #
+  map <B> (f fun (T) B) Option<B> is
+    match Option.this
+      v T   => f v
+      _ nil => nil
