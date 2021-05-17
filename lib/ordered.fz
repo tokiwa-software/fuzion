@@ -47,8 +47,8 @@ is
 
   # does this come strictly before other?
   #
-  infix <  (other T) bool is  ordered.this <= other   && ordered.this /= other
+  infix <  (other T) bool is  !(ordered.this >= other)
 
   # does this come after other?
   #
-  infix >= (other T) bool is !(ordered.this <= other) || ordered.this =  other
+  infix >= (other T) bool is other <= ordered.this
