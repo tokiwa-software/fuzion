@@ -55,7 +55,7 @@ is
   #
   bind <B> (f fun (T) Option<B>) Option<B> is
     match Option.this
-      v T   => f(v)
+      v T   => f v
       _ nil => nil
 
 
