@@ -106,7 +106,7 @@ is
   #
   # The guaranteed performance is in O(log n) comparisons.
   #
-  # result is the index at here key was found or nil if key is not
+  # result is the index where key was found or nil if key is not
   # in this array.  In case several instance equal to key are in
   # this sortedArray, the index of one of the matching keys will be
   # returned, but is not specified which one.
@@ -131,14 +131,16 @@ is
   #
   # The guaranteed performance is in O(log n) comparisons.
   #
-  # result is the index at here key was found or nil if key is not
-  # in this array.  In case several instance equal to key are in
-  # this sortedArray, the index of one of the matching keys will be
-  # returned, but is not specified which one.
+  # result is the index where cmp results in 0 or nil if no such index
+  # was found in this array.  In case several instance equal match,
+  # the index of one matching key will be returned, but is not
+  # specified which one.
   #
   find (
 
     # cmp must be < 0 (> 0) if key is less (larger) than desired key.
+    #
+    # cmp must implement the same total order as 'T.infix <='.
     #
     cmp fun (T) i32
 
