@@ -111,7 +111,7 @@ is
   # this sortedArray, the index of one of the matching keys will be
   # returned, but is not specified which one.
   #
-  find (key T) Option<i32>
+  findKey (key T) Option<i32>
     post
       match result
         i i32 => sortedArray.this[i] = key
