@@ -125,3 +125,38 @@ is
       else                                   m
 
     binarySearch 0, length-1
+
+
+  # find index of key for which cmp returns 0
+  #
+  # The guaranteed performance is in O(log n) comparisons.
+  #
+  # result is the index at here key was found or nil if key is not
+  # in this array.  In case several instance equal to key are in
+  # this sortedArray, the index of one of the matching keys will be
+  # returned, but is not specified which one.
+  #
+  find (
+
+    # cmp must be < 0 (> 0) if key is less (larger) than desired key.
+    #
+    cmp fun (T) i32
+
+    ) Option<i32>
+
+    post
+      match result
+        i i32 => (cmp sortedArray.this[i]) = 0
+        nil   => true # NYI: analyis: for all i=0..a.length-1, sortedArray.this[i] /= key
+  is
+    binarySearch(l, r i32) Option<i32> is
+      m := (l + r) / 2
+      if l > r
+        nil
+      else
+        c := cmp sortedArray.this[m]
+        if      c < 0 then binarySearch m+1, r
+        else if c > 0 then binarySearch l, m-1
+        else               m
+
+    binarySearch 0, length-1
