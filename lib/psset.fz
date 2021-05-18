@@ -1,0 +1,105 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature psmap
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# psset -- a partially sorted set based on psmap
+#
+# psset is a persistent set of ordered values.  This set is generally
+# well-behaved with respect to cumulative and average performance.
+#
+# WARNING: Due to the high worst-case time for addition, this structure should
+# not be used in situations when adding a single element repeatedly to the same
+# instance of psset is performance critical. If the resulting set's size n is a
+# power of 2, this will trigger the worst-case addition time resutling in
+# O(m*n log² n) for adding an element m times.
+#
+psset<K : ordered<K>>
+  (psm psmap<K,unit>)
+is
+
+
+  # number of elements in this set
+  #
+  size => psm.size
+
+
+  # print contents of this set
+  #
+  show => psm.show
+
+
+  # add new element k to this set.
+  #
+  add (k K) => psset<K> psm.add k, unit
+
+
+  # create a sorted array from the elements of this set
+  #
+  asArray => psm.asKeyArray
+
+
+  # check if an element equal to given element k is part of this set
+  #
+  has (k K) => psm.has k
+
+
+  # get the lowest element in this set
+  #
+  min => psm.min
+
+
+  # get the highest element in this set
+  #
+  max => psm.max
+
+
+  # union of two pssets
+  #
+  infix ⋃ (other psset<K>) => psset<K> psm ⋃ other.psm
+
+
+  # add all elements of the given stream to this set
+  #
+  addAll (s stream<K>) psset<K> is
+    if s.hasNext
+      add(s.next).addAll s
+    else
+      psset.this
+
+
+/*
+has     -- NYI: 'has' keyword not supported yet, so the following require an instance of numeric to be called on
+*/
+
+  # an empty psset
+  #
+  empty psset<K> is psset<K>
+
+
+  # monoid of psset with infix ⋃ operation.
+  #
+  union : Monoid<psset<K>> is
+    redef infix ∙ (a, b psset<K>) => a ⋃ b
+    redef infix == (a, b psset<K>) => (a ⋃ b).size = a.size  # NYI: a bit expensive
+    redef e psset<K> is empty
