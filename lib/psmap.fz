@@ -25,8 +25,8 @@
 
 # psmap -- a partially sorted map
 #
-# psmap is a persitent map from an ordered key K to a value V.  This map is
-# generally well-behaved wtih respect to average performance.
+# psmap is a persistent map from an ordered key K to a value V.  This map is
+# generally well-behaved with respect to cumulative and average performance.
 #
 # The keys and values are stored in arrays consisting of sorted sub-arrays,
 # with sub-arrays corresponding to the 1-bits in the binary representation
