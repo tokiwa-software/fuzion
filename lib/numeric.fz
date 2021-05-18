@@ -74,7 +74,7 @@ numeric<T : numeric<T>> : hasHash<T>, ordered<T> is
   abs => if sign >= 0 then thiz else -thiz
 
 /*
-has     -- NYI: 'has' keyword not supported yet, so the following require an instance of numeric to be called on
+has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
 */
 
   # monoid of numeric with infix + operation.  Will create sum of all elements it
