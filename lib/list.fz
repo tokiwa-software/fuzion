@@ -178,3 +178,25 @@ list<A> : choice<nil, Cons<A, list<A>>> is
                 redef tail => c.tail.take n-1
               }
           }
+
+
+  # reverse the order of the elements in this list
+  #
+  reverse list<A> is
+    reverse nil
+
+
+  # recursively reverse the order of the elements in this list
+  # and append the already reversed reversedHead
+  #
+  reverse (reversedHead list<A>) list<A> is
+    match list.this
+      _ nil  => reversedHead
+      c Cons => c.tail.reverse cons c.head, reversedHead
+
+
+  # create a string representation of this list including all the string
+  # representations of its contents.
+  #
+  redef asString string is
+    map<string> (fun (x A) => x.asString).fold "".concat ","

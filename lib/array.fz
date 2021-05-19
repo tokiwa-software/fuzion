@@ -128,3 +128,22 @@ array<T>(internalArray sys.array<T>) : streamable<T> is
       s
     else
       fold i+1, m.op(s, array.this[i]), m
+
+
+  # reverse the order of the elements in this array
+  #
+  reverse array<T> is
+    array<T> array.this.length, fun(i i32) => array.this[array.this.length-1-i]
+
+
+  # create a string representation of this array including all the string
+  # representations of its contents.
+  #
+  redef asString string is
+    for
+      sep := "", ","
+      r := "[", r1
+      e in array.this
+      r1 string := r + sep + e
+    else
+      r + "]"
