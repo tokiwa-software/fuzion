@@ -32,19 +32,20 @@
 # performance of creation of the map is in O(n log n) where n is
 # keys.length.
 #
-orderedMap<K : ordered<K>, V>(keys array<K>,
-                              values array<V>)
+orderedMap<K : ordered<K>, V>(ks array<K>,
+                              vs array<V>) : map<K, V>
   pre
-    keys.length == values.length
+    ks.length == vs.length
 
 is
 
-  # entry is an index in keys/values
+  # entry is an index in ks/vs
 
   entry(i i32) : ordered<entry> is
-    infix <= (other entry) => keys[i] <= keys[other.i]
-    val => values[i]
-  sortedEntries := sortedArray<entry> ((0..size-1).asStream.map<entry> (fun (i i32) => entry i).take keys.length)
+    infix <= (other entry) => ks[i] <= ks[other.i]
+    key => ks[i]
+    val => vs[i]
+  sortedEntries := sortedArray<entry> ((0..size-1).asStream.map<entry> (fun (i i32) => entry i).take ks.length)
 
   # number of entries in this map
   #
@@ -56,5 +57,10 @@ is
   # performance is O(log size).
   #
   index [] (k K) Option<V> is
-    sortedEntries.find(fun(e entry) => keys[e.i] <> k)
+    sortedEntries.find(fun(e entry) => ks[e.i] <> k)
                  .map<V> fun(i i32) => sortedEntries[i].val
+
+
+  # get a stream of all key/value pairs in this map
+  #
+  items stream<Tuple<K,V>> is sortedEntries.asStream.map<Tuple<K,V>> fun (e entry) => (e.key, e.val)

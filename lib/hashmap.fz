@@ -25,17 +25,17 @@
 
 # hashmap -- an immutable hash map from keys K to values V
 #
-hashmap<K : hasHash<K>, V>(keys array<K>,
-                           values array<V>)
+hashmap<K : hasHash<K>, V>(ks array<K>,
+                           vs array<V>) : map<K, V>
   pre
-    keys.length == values.length
+    ks.length == vs.length
 
 is
 
 
   # number of entries in this map
   #
-  size => keys.length
+  size => ks.length
 
 
   # size of allocated contents array, allows for some empty slots
@@ -62,8 +62,8 @@ is
   contents :=
     for
       mcontents := (marray <Option<Tuple<K,V>>> allocatedSize, nil), mcontents
-      k in keys
-      v in values
+      k in ks
+      v in vs
     do
       store at k
 
@@ -107,3 +107,16 @@ is
             retrieve collision at
 
     retrieve at k
+
+
+  # get a stream of all key/value pairs in this map
+  #
+  items stream<Tuple<K,V>> is
+    contents
+      .asStream
+      .filter         (fun (o Option<Tuple<K,V>>) => match o
+                                                       nil     => false
+                                                       _ Tuple => true )
+      .map<Tuple<K,V>>(fun (o Option<Tuple<K,V>>) => match o
+                                                       nil     => fuzion.std.panic "filter failed"
+                                                       t Tuple => t)
