@@ -69,3 +69,14 @@ is
     match Option.this
       v T   => f v
       _ nil => nil
+
+
+  # converts Option to a string
+  #
+  # returns the result of T.asString for an option containing an instance
+  # of T, alternatively returns "--nil--" for an Option that is nil.
+  #
+  redef asString string is
+    match Option.this
+      v T   => v.asString
+      _ nil => "--nil--"
