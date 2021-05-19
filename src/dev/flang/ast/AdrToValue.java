@@ -79,7 +79,7 @@ public class AdrToValue extends Expr
        );
 
     this.adr_ = adr;
-    this.type_ = type; // outer.thisType().resolve(outer);
+    this.type_ = Types.intern(type); // outer.thisType().resolve(outer);
   }
 
 
