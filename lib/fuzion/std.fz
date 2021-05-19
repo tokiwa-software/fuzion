@@ -28,3 +28,10 @@ fuzion.std is
   # exit -- exit immediately with the given return code
   #
   exit(code i32) void is intrinsic
+
+
+  # panic -- display a panic message and exit immediately with erroc code 1
+  #
+  panic(msg string) void is
+    say "*** panic: " + msg
+    exit 1
