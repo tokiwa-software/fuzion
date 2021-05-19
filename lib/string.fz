@@ -140,3 +140,12 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
     redef infix ∙ (a, b string) => a + b
     redef infix == (a, b string) => a == b
     redef e => ""
+
+
+  # monoid of strings with infix '+ sep +' operation, i.e., concatenate with
+  # given separator
+  #
+  concat(sep string) : Monoid<string> is
+    redef infix ∙ (a, b string) string is if (a.isEmpty || b.isEmpty) a + b else a + sep + b
+    redef infix == (a, b string) => a == b
+    redef e => ""
