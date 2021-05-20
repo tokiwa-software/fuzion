@@ -88,6 +88,10 @@ is
       psset.this
 
 
+  # create a comma-separated string of the elements of this set
+  #
+  redef asString => psm.keys.asString
+
 /*
 has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
 */
