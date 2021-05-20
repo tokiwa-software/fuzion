@@ -80,3 +80,22 @@ is
     match Option.this
       v T   => v.asString
       _ nil => "--nil--"
+
+
+  # unwraps an Option that is known to contain a value
+  #
+  # this can only be called in cases where it is known for sure that this Option
+  # is not nil.  A runtime error will be created otherwise.
+  #
+  unwrap
+    pre
+      # NYI: better syntax:
+      #
+      # safety: Option.this?
+      safety: match Option.this
+        T   => true
+        nil => false
+    =>
+    match Option.this
+      v T => v
+      nil => fuzion.std.panic "Option.unwrap called on nil"
