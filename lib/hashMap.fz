@@ -17,15 +17,15 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature hashmap
+#  Source code of Fuzion standard library feature hashMap
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# hashmap -- an immutable hash map from keys K to values V
+# hashMap -- an immutable hash map from keys K to values V
 #
-hashmap<K : hasHash<K>, V>(ks array<K>,
+hashMap<K : hasHash<K>, V>(ks array<K>,
                            vs array<V>) : map<K, V>
   pre
     ks.length == vs.length
