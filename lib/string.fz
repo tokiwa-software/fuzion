@@ -129,6 +129,150 @@ string ref : hasHash<string>, ordered<string> is
     else
       h
 
+  # NYI: remove the convenience functions when Fuzion supports char literals
+  #
+  minusChar => "-".asBytes.asStream.next
+  plusChar  => "+".asBytes.asStream.next
+  zeroChar  => "0".asBytes.asStream.next
+  nineChar  => "9".asBytes.asStream.next
+  aChar     => "a".asBytes.asStream.next
+  zChar     => "z".asBytes.asStream.next
+  capAChar  => "A".asBytes.asStream.next
+  capZChar  => "Z".asBytes.asStream.next
+
+
+  # internal helper to create error for failed parsing
+  #
+  private parseError(msg string) => error "failed to parse '{string.this}': $msg"
+
+
+  # parse this string as a signed 32-bit integer value
+  #
+  parseI32       outcome<i32> is parseI32 10
+  parseI32Binary outcome<i32> is parseI32 2
+  parseI32Octal  outcome<i32> is parseI32 8
+  parseI32Hex    outcome<i32> is parseI32 16
+  parseI32 (base i32) outcome<i32>
+    pre 1 < base <= 36
+  is
+    parseInteger<i32> base
+
+
+  # parse this string as an unsigned 32-bit integer value
+  #
+  parseU32       outcome<u32> is parseU32 10
+  parseU32Binary outcome<u32> is parseU32 2
+  parseU32Octal  outcome<u32> is parseU32 8
+  parseU32Hex    outcome<u32> is parseU32 16
+  parseU32 (base u32) outcome<u32>
+    pre 1.as_u32 < base <= 36
+  is
+    parseInteger<u32> base
+
+
+  # parse this string as a signed 64-bit integer value
+  #
+  parseI64       outcome<i64> is parseI64 10
+  parseI64Binary outcome<i64> is parseI64 2
+  parseI64Octal  outcome<i64> is parseI64 8
+  parseI64Hex    outcome<i64> is parseI64 16
+  parseI64 (base i64) outcome<i64>
+    pre 1.as_i64 < base <= 36
+  is
+    parseInteger<i64> base
+
+
+  # parse this string as an unsigned 64-bit integer value
+  #
+  parseU64       outcome<u64> is parseU64 10
+  parseU64Binary outcome<u64> is parseU64 2
+  parseU64Octal  outcome<u64> is parseU64 8
+  parseU64Hex    outcome<u64> is parseU64 16
+  parseU64 (base u64) outcome<u64>
+    pre 1.as_u64 < base <= 36
+  is
+    parseInteger<u64> base
+
+
+  # parse this string as an int value of arbitrary size
+  #
+  parseInt       outcome<int> is parseInt int 10
+  parseIntBinary outcome<int> is parseInt int 2
+  parseIntOctal  outcome<int> is parseInt int 8
+  parseIntHex    outcome<int> is parseInt int 16
+  parseInt (base int) outcome<int>
+    pre (int 1) < base <= int 36
+  is
+    parseInteger<int> base
+
+
+  # parse this string as a integer value given as type parameter
+  #
+  parseInteger<T: integer<T>> (
+
+    # base gives the base of the integer, must be between 2 and 36, inclusive.
+    base T
+
+    ) outcome<T>
+
+    pre base.one < base <= base.from_u32 36
+
+  is
+    s := asBytes.asStream
+    c := if (s.hasNext) s.next else -1
+    negate := c = minusChar
+    d := if (negate || c = plusChar) zeroChar else c
+    parseInteger<T> base, negate, base.zero, d, s
+
+
+  # recursive helper for parseInteger<T>(T)
+  #
+  private parseInteger<T: integer<T>>(
+
+    # base gives the base, between 2 and 36
+    base T,
+
+    # do we parse a negative number?
+    neg bool,
+
+    # the value of the highest digits already parsed
+    hi numOption<T>,
+
+    # the current character to be parsed
+    c i32,
+
+    # the remaining characters to be parsed
+    s stream<i32>
+
+    ) outcome<T>
+
+  is
+
+    d i32 | error := if      (zeroChar <= c <= nineChar) c - zeroChar
+                     else if (aChar    <= c <= zChar   ) c - aChar    + 10
+                     else if (capAChar <= c <= capZChar) c - capAChar + 10
+                     else parseError "non-digit found"
+
+    # NYI: with more syntactic sugar, the following 3 lines could become
+    #
+    # i := d?
+
+    match d
+      e error => e
+      i i32 =>
+        t := base.from_u32 i.as_u32  # i converted to T
+        if t >= base
+          parseError "invalid integer digit for base $base"
+        else
+          v := if (neg) hi *? base -? t
+               else     hi *? base +? t
+          if s.hasNext
+            parseInteger<T> base, neg, v, s.next, s
+          else
+            match v
+              nil => parseError "numerical overflow"
+              u T => u
+
 
 /*
 has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
