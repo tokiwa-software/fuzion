@@ -211,7 +211,7 @@ O(n log n).
   asKeyArray array<K> is
     r := sys.array<K> size
 
-    # joid arrays data[ole..ole+sz-1] and r[dest..dest+rsz-1] to r[dest..dest+sz+rsz-1]
+    # join arrays data[ole..ole+sz-1] and r[dest..dest+rsz-1] to r[dest..dest+sz+rsz-1]
     #
     join (ole i32, sz i32, rsz i32, skip i32) unit is
       if sz <= size
