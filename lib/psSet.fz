@@ -17,25 +17,25 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature psmap
+#  Source code of Fuzion standard library feature psMap
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# psset -- a partially sorted set based on psmap
+# psSet -- a partially sorted set based on psMap
 #
-# psset is a persistent set of ordered values.  This set is generally
+# psSet is a persistent set of ordered values.  This set is generally
 # well-behaved with respect to cumulative and average performance.
 #
 # WARNING: Due to the high worst-case time for addition, this structure should
 # not be used in situations when adding a single element repeatedly to the same
-# instance of psset is performance critical. If the resulting set's size n is a
+# instance of psSet is performance critical. If the resulting set's size n is a
 # power of 2, this will trigger the worst-case addition time resutling in
 # O(m*n log² n) for adding an element m times.
 #
-psset<K : ordered<K>>
-  (psm psmap<K,unit>)
+psSet<K : ordered<K>>
+  (psm psMap<K,unit>)
 is
 
 
@@ -51,7 +51,7 @@ is
 
   # add new element k to this set.
   #
-  add (k K) => psset<K> psm.add k, unit
+  add (k K) => psSet<K> psm.add k, unit
 
 
   # create a sorted array from the elements of this set
@@ -74,18 +74,18 @@ is
   max => psm.max
 
 
-  # union of two pssets
+  # union of two psSets
   #
-  infix ⋃ (other psset<K>) => psset<K> psm ⋃ other.psm
+  infix ⋃ (other psSet<K>) => psSet<K> psm ⋃ other.psm
 
 
   # add all elements of the given stream to this set
   #
-  addAll (s stream<K>) psset<K> is
+  addAll (s stream<K>) psSet<K> is
     if s.hasNext
       add(s.next).addAll s
     else
-      psset.this
+      psSet.this
 
 
   # create a comma-separated string of the elements of this set
@@ -96,14 +96,14 @@ is
 has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
 */
 
-  # an empty psset
+  # an empty psSet
   #
-  empty psset<K> is psset<K>
+  empty psSet<K> is psSet<K>
 
 
-  # monoid of psset with infix ⋃ operation.
+  # monoid of psSet with infix ⋃ operation.
   #
-  union : Monoid<psset<K>> is
-    redef infix ∙ (a, b psset<K>) => a ⋃ b
-    redef infix == (a, b psset<K>) => (a ⋃ b).size = a.size  # NYI: a bit expensive
-    redef e psset<K> is empty
+  union : Monoid<psSet<K>> is
+    redef infix ∙ (a, b psSet<K>) => a ⋃ b
+    redef infix == (a, b psSet<K>) => (a ⋃ b).size = a.size  # NYI: a bit expensive
+    redef e psSet<K> is empty

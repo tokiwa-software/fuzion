@@ -17,16 +17,16 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature psset
+#  Source code of Fuzion standard library feature psSet
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# psset -- a partially sorted set based on psmap
+# psSet -- a partially sorted set based on psMap
 #
-# See psset.fz for details.
+# See psSet.fz for details.
 #
-# This feature creates an empty instance of psset.
+# This feature creates an empty instance of psSet.
 #
-psset<K : ordered<K>> => psset<K> psmap<K,unit>
+psSet<K : ordered<K>> => psSet<K> psMap<K,unit>

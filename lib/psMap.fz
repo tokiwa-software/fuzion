@@ -17,15 +17,15 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature psmap
+#  Source code of Fuzion standard library feature psMap
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# psmap -- a partially sorted map
+# psMap -- a partially sorted map
 #
-# psmap is a persistent map from an ordered key K to a value V.  This map is
+# psMap is a persistent map from an ordered key K to a value V.  This map is
 # generally well-behaved with respect to cumulative and average performance.
 #
 # The keys and values are stored in arrays consisting of sorted sub-arrays,
@@ -38,14 +38,14 @@
 #
 # WARNING: Due to the high worst-case time for addition, this structure should
 # not be used in situations when adding a single element repeatedly to the same
-# instance of psmap is performance critical. If the resulting map's size n is a
+# instance of psMap is performance critical. If the resulting map's size n is a
 # power of 2, this will trigger the worst-case addition time resutling in
 # O(m*n log² n) for adding an element m times.
 #
-# This constructor is for internal use only, to create instance of psmap, use
-# psmap<K,V> without arguments.
+# This constructor is for internal use only, to create instance of psMap, use
+# psMap<K,V> without arguments.
 #
-psmap<K : ordered<K>, V>
+psMap<K : ordered<K>, V>
   (
    # the array containg the sorted arrays, see below for details
    data sys.array<Tuple<K,V>>,
@@ -125,7 +125,7 @@ O(n log n).
 
   # add mapping from k to v
   #
-  add (k K, v V) psmap<K, V> is
+  add (k K, v V) psMap<K, V> is
     add((k,v))
 
 
@@ -134,16 +134,16 @@ O(n log n).
   # Adding has a cumulative average runtime in O(log size) and a worst-case
   # runtime of O(size)
   #
-  add (kv Tuple<K,V>) psmap<K, V> is
+  add (kv Tuple<K,V>) psMap<K, V> is
     nsize := size + 1
     ndata := data
     nfill := fill
 
     # join arrays data[ole..ole+sz-1] and ndata[dest..dest+sz-1] to ndata[dest..dest+2*sz-1]
     #
-    join (ole i32, dest i32, sz i32) psmap<K, V> is
+    join (ole i32, dest i32, sz i32) psMap<K, V> is
       if ((size & sz) = 0)
-        psmap<K,V> ndata, nsize, dest+sz
+        psMap<K,V> ndata, nsize, dest+sz
       else
         tmp := array<Tuple<K,V>> sz, fun(i i32) => ndata[dest+i]
         for
@@ -240,19 +240,19 @@ O(n log n).
   # get a stream of all key/value pairs in this map
   #
   redef items =>
-    asKeyArray.map<Tuple<K,V>>(fun (k K) => (k, psmap.this[k].unwrap)).asStream
+    asKeyArray.map<Tuple<K,V>>(fun (k K) => (k, psMap.this[k].unwrap)).asStream
 
 
   # check if key k is present in the set of keys
   #
   has (k K) bool is
-    match psmap.this[k]
+    match psMap.this[k]
       _ V => true
       nil => false
 
     # NYI: this should be just
     #
-    # psmap.this[k] ? true | false
+    # psMap.this[k] ? true | false
 
 
   # get the lowest key in this map
@@ -313,14 +313,14 @@ O(n log n).
       max data[0].values.0, 0, subSz, data.length - subSz
 
 
-  # union of two psmaps
+  # union of two psMaps
   #
-  infix ⋃ (other psmap<K, V>) psmap<K,V> is
+  infix ⋃ (other psMap<K, V>) psMap<K,V> is
     if other.size > size
-      other ⋃ psmap.this
+      other ⋃ psMap.this
     else
 
-      addAll (a psmap<K,V>, l i32, r i32) psmap<K,V> is
+      addAll (a psMap<K,V>, l i32, r i32) psMap<K,V> is
         if l > r
           a
         else
@@ -328,7 +328,7 @@ O(n log n).
           a0 := if (a.has kv.values.0) a else a.add kv
           addAll a0, l+1, r
 
-      addAll (a psmap<K,V>, at i32, sz i32, tail i32) psmap<K,V> is
+      addAll (a psMap<K,V>, at i32, sz i32, tail i32) psMap<K,V> is
         if sz = 0
           a
         else
@@ -343,4 +343,4 @@ O(n log n).
               a
           addAll a0, at0, sz0, nt
 
-      addAll psmap.this, 0, size.highestOneBit, data.length - size.highestOneBit
+      addAll psMap.this, 0, size.highestOneBit, data.length - size.highestOneBit

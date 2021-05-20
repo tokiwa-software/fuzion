@@ -17,16 +17,16 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature psmap
+#  Source code of Fuzion standard library feature psMap
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# psmap -- a partially sorted map
+# psMap -- a partially sorted map
 #
-# See psmap.fz for details.
+# See psMap.fz for details.
 #
-# This feature creates an empty instance of psmap.
+# This feature creates an empty instance of psMap.
 #
-psmap<K : ordered<K>, V> => psmap<K,V> (sys.array<Tuple<K,V>>(0), 0, 0)
+psMap<K : ordered<K>, V> => psMap<K,V> (sys.array<Tuple<K,V>>(0), 0, 0)
