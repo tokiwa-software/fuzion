@@ -264,8 +264,9 @@ string ref : hasHash<string>, ordered<string> is
         if t >= base
           parseError "invalid integer digit for base $base"
         else
-          v := if (neg) hi *? base -? t
-               else     hi *? base +? t
+          hi := hi *? base;
+          v := if (neg) hi -? t
+               else     hi +? t
           if s.hasNext
             parseInteger<T> base, neg, v, s.next, s
           else
