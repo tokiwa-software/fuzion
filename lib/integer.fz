@@ -43,7 +43,7 @@ integer<T : integer<T>> : numeric<T> is
     pre
       safety: other != zero
   is
-    thiz % other == thiz.zero
+    thiz % other == zero
 
   # bitwise operations
   infix &  (other T) T is abstract
