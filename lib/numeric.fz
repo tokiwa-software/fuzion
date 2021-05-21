@@ -128,6 +128,14 @@ numeric<T : numeric<T>> : hasHash<T>, ordered<T> is
 
   abs => if sign >= 0 then thiz else -thiz
 
+  # minimum of numeric.this and other
+  #
+  min(other T) T is if (numeric.this <= other) numeric.this else other
+
+  # maximum of numeric.this and other
+  #
+  max(other T) T is if (numeric.this >= other) numeric.this else other
+
 /*
 has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
 */
@@ -163,11 +171,3 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
     redef infix ∙ (a, b T) T is a *^ b
     redef infix == (a, b T) bool is a == b
     redef e T is one
-
-  # minimum of numeric.this and other
-  #
-  min(other T) T is if (numeric.this <= other) numeric.this else other
-
-  # maximum of numeric.this and other
-  #
-  max(other T) T is if (numeric.this >= other) numeric.this else other
