@@ -390,6 +390,15 @@ public class FeErrors extends ANY
       }
   }
 
+  static void matchSubjectMustNotBeTypeParameter(SourcePosition pos, Type t)
+  {
+    error(pos,
+          "'match' subject type must not be a type parameter",
+          "Matched type: '" + t + "'\n" +
+          "Which is a type parameter declared at " + t.generic._pos.show());
+
+  }
+
   static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, Type t, List<Type> choiceGenerics)
   {
     error(pos,

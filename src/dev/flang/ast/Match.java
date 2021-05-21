@@ -143,6 +143,10 @@ public class Match extends Expr
   public void resolveTypes(Resolution res, Feature outer)
   {
     var st = subject.type();
+    if (st.isGenericArgument())
+      {
+        FeErrors.matchSubjectMustNotBeTypeParameter(pos, st);
+      }
     st.featureOfType().resolveTypes(res);
     var cgs = st.choiceGenerics();
     check
