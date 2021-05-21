@@ -48,9 +48,14 @@ public class IntConst extends Expr
 
 
   /**
-   * The constant as it appeared in the source code.
+   * The radix _digits are represented in, one of 2, 8, 10, 16.
    */
-  private String fromSource;
+  private int _basis;
+
+  /**
+   * The digits, without prefix '0x' or similar and without separator '_'
+   */
+  private String _digits;
 
 
   /**
@@ -72,18 +77,20 @@ public class IntConst extends Expr
   public IntConst(SourcePosition pos, String s)
   {
     super(pos);
-    this.fromSource = s;
+    this._basis =
+      s.startsWith("0b") ?  2 :
+      s.startsWith("0o") ?  8 :
+      s.startsWith("0x") ? 16
+                         : 10;
+    this._digits = s.replace("_", "").substring(_basis == 10 ? 0 : 2);
+
     try
       {
-        s = s.replace("_", "");
-        this.l =
-          s.startsWith("0b") ? Long.parseUnsignedLong(s.substring(2),  2) :
-          s.startsWith("0o") ? Long.parseUnsignedLong(s.substring(2),  8) :
-          s.startsWith("0x") ? Long.parseUnsignedLong(s.substring(2), 16)
-                             : Long.parseUnsignedLong(s);
+        this.l = Long.parseUnsignedLong(_digits, _basis);
       }
     catch (NumberFormatException e)
       {
+        // NYI: Proper overflow handling
         e.printStackTrace();
       }
   }
@@ -97,8 +104,9 @@ public class IntConst extends Expr
   public IntConst(long l)
   {
     super(SourcePosition.builtIn);
-    this.fromSource = "" + l; // NYI: needed?
     this.l = l;
+    this._basis = 10;
+    this._digits = "" + l;
   }
 
 
@@ -143,10 +151,10 @@ public class IntConst extends Expr
   {
     if (type_ == null)
       {
-        if      (t == Types.resolved.t_i32) { Integer.parseInt         (fromSource); type_ = t; }
-        else if (t == Types.resolved.t_u32) { Integer.parseUnsignedInt (fromSource); type_ = t; }
-        else if (t == Types.resolved.t_i64) { Long   .parseLong        (fromSource); type_ = t; }
-        else if (t == Types.resolved.t_u64) { Long   .parseUnsignedLong(fromSource); type_ = t; }
+        if      (t == Types.resolved.t_i32) { Integer.parseInt         (_digits, _basis); type_ = t; }
+        else if (t == Types.resolved.t_u32) { Integer.parseUnsignedInt (_digits, _basis); type_ = t; }
+        else if (t == Types.resolved.t_i64) { Long   .parseLong        (_digits, _basis); type_ = t; }
+        else if (t == Types.resolved.t_u64) { Long   .parseUnsignedLong(_digits, _basis); type_ = t; }
       }
     return this;
   }
