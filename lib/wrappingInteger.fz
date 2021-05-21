@@ -51,6 +51,16 @@ wrappingInteger<T: wrappingInteger<T>> : integer<T> is
   underflowOnMul(other T) bool is abstract
   wrappedOnMul(other T) => overflowOnMul(other) || underflowOnMul(other)
 
+  # preconditions used in 'numeric' for basic operations: true if the
+  # operation is permitted for the given values
+  prefix -! => !wrappedOnNeg
+  infix +! (other T) => !(overflowOnAdd other) && !(underflowOnAdd other)
+  infix -! (other T) => !(overflowOnSub other) && !(underflowOnSub other)
+  infix *! (other T) => !(overflowOnMul other) && !(underflowOnMul other)
+  infix /! (other T) => true  # other != zero is checked in separate condition
+  infix %! (other T) => true  # other != zero is checked in separate condition
+  infix **!(other T) => !(overflowOnExp other)
+
   # neg, add, sub, mul with wrap-around semantics
   prefix -° T is abstract
   infix +° (other T) T is abstract

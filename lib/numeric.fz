@@ -37,24 +37,69 @@ numeric<T : numeric<T>> : hasHash<T>, ordered<T> is
   isZero => numeric.this == zero
   isOne  => numeric.this == one
 
-  # basic operations
-  prefix + T is thiz
-  prefix - T is zero - thiz
-  infix +  (other T) T is abstract
-  infix -  (other T) T is abstract
-  infix *  (other T) T is abstract
+  # basic operations: 'prefix +' (identity)
+  prefix + T
+    pre
+      safety: +!thiz
+  is thiz
+
+  # basic operations: 'prefix -' (negation)
+  prefix - T
+    pre
+      safety: -!thiz
+  is zero - thiz
+
+  # basic operations: 'infix +' (addition)
+  infix +  (other T) T
+    pre
+      safety: thiz +! other
+  is abstract
+
+  # basic operations: 'infix -' (substraction)
+  infix -  (other T) T
+    pre
+      safety: thiz -! other
+  is abstract
+
+  # basic operations: 'infix *' (multiplication)
+  infix *  (other T) T
+    pre
+      safety: thiz *! other
+  is abstract
+
+  # basic operations: 'infix /' (division)
   infix /  (other T) T
     pre
+      safety: thiz /! other,
       safety: other != zero
   is abstract
+
+  # basic operations: 'infix %' (division remainder)
   infix %  (other T) T
     pre
+      safety: thiz %! other,
       safety: other != zero
   is abstract
+
+  # basic operations: 'infix **' (exponentiation)
   infix ** (other T) T
     pre
-      safety: other >= zero,
+      safety: thiz **! other,
+      safety: other >= zero
   is abstract
+
+
+  # preconditions for basic operations: true if the operation is permitted for the
+  # given values
+  prefix +! bool is true
+  prefix -! bool is abstract
+  infix +! (other T) bool is abstract
+  infix -! (other T) bool is abstract
+  infix *! (other T) bool is abstract
+  infix /! (other T) bool is abstract
+  infix %! (other T) bool is abstract
+  infix **!(other T) bool is abstract
+
 
   # overflow checking operations
   prefix -? numOption<T> is - thiz
