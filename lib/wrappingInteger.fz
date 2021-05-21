@@ -81,8 +81,8 @@ wrappingInteger<T: wrappingInteger<T>> : integer<T> is
   # substraction, with check for overflow
   redef infix -  (other T) T
     pre
-      debug: !overflowOnAdd(other),
-      debug: !underflowOnAdd(other)
+      debug: !overflowOnSub(other),
+      debug: !underflowOnSub(other)
   is thiz -° other
 
   # multiplication, with check for overflow
