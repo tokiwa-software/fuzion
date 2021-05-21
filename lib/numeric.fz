@@ -89,8 +89,12 @@ numeric<T : numeric<T>> : hasHash<T>, ordered<T> is
   is abstract
 
 
-  # preconditions for basic operations: true if the operation is permitted for the
-  # given values
+  # preconditions for basic operations: true if the operation's result is
+  # representable for the given values
+  #
+  # This does not check if the operation is defined (i.e, it
+  # returns true for '3/!0' or '0**!0'.
+  #
   prefix +! bool is true
   prefix -! bool is abstract
   infix +! (other T) bool is abstract
