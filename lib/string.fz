@@ -275,40 +275,62 @@ string ref : hasHash<string>, ordered<string> is
               u T => u
 
 
-  # convert this string into a stream of code point and errors for encoding problems
+  # convert this string into an array of codepoints.
+  #
+  codepointsArray => codepoints.asArray
+
+
+  # convert this string into a stream of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
-  codePoints stream<outcome<u32>> is codePointStream
+  codepoints : streamable<codepoint> is
+    asStream stream<codepoint> is
+      s := codepointsAndErrors
+      n Option<codepoint> := nil
 
+      resultStream : stream<codepoint> is
+        redef hasNext => s.hasNext
+        redef next =>
+          match s.next
+            c codepoint => c
+            e error     => codepoint 0xFFFD # 'REPLACEMENT CHARACTER' (U+FFFD)
 
-  # the stream instance returned by codePoints
+      resultStream
+
+  # convert this string into a stream of codepoint and errors for encoding problems
+  # found in the underlying utf8 bytes
   #
-  private codePointStream : stream<outcome<u32>> is
+  codepointsAndErrors stream<outcome<codepoint>> is codepointStream
+
+
+  # the stream instance returned by codepoints
+  #
+  private codepointStream : stream<outcome<codepoint>> is
     s := asBytes.asStream
     hasNext => s.hasNext
-    next outcome<u32> is
-      b1 := s.next & 0xFF
+    next outcome<codepoint> is
+      b1 := (s.next & 0xFF).as_u32
       # UTF-8 definition taken from https://en.wikipedia.org/wiki/UTF-8
-      if 0x00 <= b1 <= 0x7f            # ASCII
-        b1.as_u32
-      else if 0xc0 <= b1 <= 0xf4
+      if 0x00.as_u32 <= b1 <= 0x7f            # ASCII
+        codepoint b1
+      else if 0xc0.as_u32 <= b1 <= 0xf4
         if !s.hasNext
           error "Bad UTF8 encoding found: cannot decode: " + b1 + " at end of string: expected continuation byte"
         else
-          b2 := s.next & 0xFF
+          b2 := (s.next & 0xFF).as_u32
           if (b2 & 0xc0) != 0x80
             error "Bad UTF8 encoding found: cannot decode " + b1 + ", " + b2 + ", expected continuation byte in the range 0x80..0xbf."
-          else if 0xc0 <= b1 <= 0xdf   # 0x0080..0x7ff encoded in 2 bytes
+          else if 0xc0.as_u32 <= b1 <= 0xdf   # 0x0080..0x7ff encoded in 2 bytes
             res := (b1 & 0x1f) << 6 | (b2 & 0x3f)
             if res < 0x80
-              error "Bad UTF8 encoding found: " + b1 + ", " + b2 + ": code point " + res + " uses overlong 2-byte encoding."
+              error "Bad UTF8 encoding found: " + b1 + ", " + b2 + ": codepoint " + res + " uses overlong 2-byte encoding."
             else
-              res.as_u32
-          else if 0xe0 <= b1
+              codepoint res
+          else if 0xe0.as_u32 <= b1
             if !s.hasNext
               error "Bad UTF8 encoding found: cannot decode: " + b1 + ", " + b2 + " at end of string, expected continuation byte"
             else
-              b3 := s.next & 0xFF
+              b3 := (s.next & 0xFF).as_u32
               if (b3 & 0xc0) != 0x80
                 error "Bad UTF8 encoding found: cannot decode " + b1 + ", " + b2 + ", " + b3 + ", expected two continuation bytes in the range 0x80..0xbf."
               else if b1 <= 0xef       # 0x0800..0xffff encoded in 3 bytes
@@ -316,16 +338,16 @@ string ref : hasHash<string>, ordered<string> is
                        ((b2 & 0x3f) <<  6) |
                        ((b3 & 0x3f)      )
                 if (res < 0x800)
-                  error "Bad UTF8 encoding found: " + b1 + ", " + b2 + ", " + b2 + ": code point " + res + " uses overlong 3-byte encoding."
-                else if 0xd800 <= res <= 0xdfff
-                  error "Bad UTF8 encoding found: " + b1 + ", " + b2 + ", " + b3 + ": code point " + res + " is invalid, values in the range 0xd800..0xdfff are reserved for UTF-16 surrogate halves."
+                  error "Bad UTF8 encoding found: " + b1 + ", " + b2 + ", " + b2 + ": codepoint " + res + " uses overlong 3-byte encoding."
+                else if 0xd800.as_u32 <= res <= 0xdfff
+                  error "Bad UTF8 encoding found: " + b1 + ", " + b2 + ", " + b3 + ": codepoint " + res + " is invalid, values in the range 0xd800..0xdfff are reserved for UTF-16 surrogate halves."
                 else
-                  res.as_u32
+                  codepoint res
               else                     # 0x010000..0x10ffff encoded in 4 bytes
                 if !s.hasNext
                   error "Bad UTF8 encoding found: cannot decode: " + b1 + ", " + b2 + "," + b2 + " at end of string, expected continuation byte"
                 else
-                  b4 := s.next & 0xFF
+                  b4 := (s.next & 0xFF).as_u32
                   if (b4 & 0xc0) != 0x80
                     error "Bad UTF8 encoding found: cannot decode " + b1 + ", " + b2 + ", " + b3 + ", " + b4 + ", expected three continuation bytes in the range 0x80..0xbf."
                   else
@@ -334,19 +356,19 @@ string ref : hasHash<string>, ordered<string> is
                             ((b3 & 0x3f) <<  6) |
                             ((b4 & 0x3f)      )   )
                     if res < 0x10000
-                      error "Bad UTF8 encoding found: " + b1 + ", " + b2 + ", " + b2 + ", " + b4 + ": code point " + res + " uses overlong 4-byte encoding."
+                      error "Bad UTF8 encoding found: " + b1 + ", " + b2 + ", " + b2 + ", " + b4 + ": codepoint " + res + " uses overlong 4-byte encoding."
                     else if res > 0x10ffff
-                      error "Bad UTF8 encoding found: " + b1 + ", " + b2 + ", " + b2 + ", " + b4 + ": code point " + res + " is outside of the allowed range for codepoints 0x000000..0x10ffff."
+                      error "Bad UTF8 encoding found: " + b1 + ", " + b2 + ", " + b2 + ", " + b4 + ": codepoint " + res + " is outside of the allowed range for codepoints 0x000000..0x10ffff."
                     else
-                      res.as_u32
-      else if 0x80 <= b1 <= 0xbf
+                      codepoint res
+      else if 0x80.as_u32 <= b1 <= 0xbf
         error "Bad UTF8 encoding found: " + b1 + ": stray continuation byte without preceding leading byte."
-      else if 0xf5 <= b1 <= 0xfd
+      else if 0xf5.as_u32 <= b1 <= 0xfd
         error "Bad UTF8 encoding found: " + b1 + ": codes 0xf8..0xff are undefined."
-      else if 0xfe <= b1 <= 0xff
+      else if 0xfe.as_u32 <= b1 <= 0xff
         error "Bad UTF8 encoding found: " + b1 + ": codes 0xfe and 0xff are undefined, used for endianess checking."
       else
-        fuzion.std.panic "string.codePointStream: missing case for " + b1
+        fuzion.std.panic "string.codepointStream: missing case for " + b1
 
 
 /*
