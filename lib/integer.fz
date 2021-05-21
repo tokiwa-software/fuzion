@@ -77,6 +77,9 @@ integer<T : integer<T>> : numeric<T> is
   # create a fraction
   infix /-/ (other T) => fraction(thiz, other)
 
+  # the constant '2' in whatever integer implementation we have, maximum in case of overflow
+  two => from_u32(2)
+
   # the constant '10' in whatever integer implementation we have, maximum in case of overflow
   ten => from_u32(10)
 

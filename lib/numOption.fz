@@ -62,6 +62,7 @@ is
   infix +? (other numOption<T>) numOption<T> is numOption.this >>= fun(v T) => other >>= fun(w T) => v +? w
   infix -? (other numOption<T>) numOption<T> is numOption.this >>= fun(v T) => other >>= fun(w T) => v -? w
   infix *? (other numOption<T>) numOption<T> is numOption.this >>= fun(v T) => other >>= fun(w T) => v *? w
+  infix **?(other numOption<T>) numOption<T> is numOption.this >>= fun(v T) => other >>= fun(w T) => v **? w
   infix /? (other numOption<T>) numOption<T>
     pre
       safety: !other.isZero

@@ -103,3 +103,77 @@ wrappingInteger<T: wrappingInteger<T>> : integer<T> is
   redef infix +^ (other T) => if overflowOnAdd(other) then max else if underflowOnAdd(other) then min else thiz + other
   redef infix -^ (other T) => if overflowOnSub(other) then max else if underflowOnSub(other) then min else thiz - other
   redef infix *^ (other T) => if overflowOnMul(other) then max else if underflowOnMul(other) then min else thiz * other
+
+
+  # exponentiation for positive exponent
+  #
+  # 'zero ** zero' is permitted and results in 'one'.
+  #
+  infix ** (other T) T
+    pre
+      safety: other >= zero,
+      debug: !overflowOnExp(other)
+  is
+    thiz **° other
+
+
+  # exponentiation with wrap-around semantics
+  #
+  # 'zero **° zero' is permitted and results in 'one'.
+  #
+  infix **° (other T) T
+    pre
+      safety: other >= zero
+  is
+    if      (other = zero) one
+    else if (other = one ) thiz
+    else
+      tmp := (thiz *° thiz) **° (other / two)
+      if other %% two
+        tmp
+      else
+        tmp *° thiz
+
+
+  # exponentiation with overflow checking semantics
+  #
+  # 'zero **? zero' is permitted and results in 'one'.
+  #
+  infix **? (other T) numOption<T>
+    pre
+      safety: other >= zero
+  is
+    if      (other = zero) one
+    else if (other = one ) thiz
+    else
+      tmp := (thiz *? thiz) **? (other / two)
+      if other %% two
+        tmp
+      else
+        tmp *? thiz
+
+
+  # would exponentiation 'this ** other' cause an overflow?
+  #
+  overflowOnExp(other T) =>
+    match thiz **? other
+      T   => false
+      nil => true
+    # NYI: this should be just '(thiz **? other)?'
+
+
+  # exponentiation with saturating semantics
+  #
+  # 'zero **^ zero' is permitted and results in 'one'.
+  #
+  infix **^ (other T) T
+    pre
+      safety: other >= zero
+  is
+    if overflowOnExp other
+      if thiz >= zero || other %% two
+        max
+      else
+        min
+    else
+      thiz ** other

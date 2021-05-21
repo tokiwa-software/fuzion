@@ -51,18 +51,24 @@ numeric<T : numeric<T>> : hasHash<T>, ordered<T> is
     pre
       safety: other != zero
   is abstract
+  infix ** (other T) T
+    pre
+      safety: other >= zero,
+  is abstract
 
   # overflow checking operations
   prefix -? numOption<T> is - thiz
   infix +? (other T) numOption<T> is thiz + other
   infix -? (other T) numOption<T> is thiz - other
   infix *? (other T) numOption<T> is thiz * other
+  infix **?(other T) numOption<T> is abstract
 
   # saturating  operations
   prefix -^  T is - thiz
   infix +^ (other T) T is thiz + other
   infix -^ (other T) T is thiz - other
   infix *^ (other T) T is thiz * other
+  infix **^(other T) T is abstract
 
   # comparison
   infix == (other T) bool is abstract   // NYI: remove, replace by 'infix ='
