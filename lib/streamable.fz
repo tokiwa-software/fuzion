@@ -29,6 +29,13 @@ streamable<T> ref is
 
   asStream stream<T> is abstract
 
+  # collect the contents of this streamable into an array
+  #
+  asArray array<T> is
+    s1 := asStream
+    s2 := asStream
+    array<T> s1.count, fun (i i32) => s2.next
+
 /* NYI: Does not work yet:
 
   forAll(f fun (T)) is asStream.consume(f)
