@@ -75,7 +75,12 @@ public class IntConst extends Expr
     this.fromSource = s;
     try
       {
-        this.l = Long.parseUnsignedLong(s);
+        s = s.replace("_", "");
+        this.l =
+          s.startsWith("0b") ? Long.parseUnsignedLong(s.substring(2),  2) :
+          s.startsWith("0o") ? Long.parseUnsignedLong(s.substring(2),  8) :
+          s.startsWith("0x") ? Long.parseUnsignedLong(s.substring(2), 16)
+                             : Long.parseUnsignedLong(s);
       }
     catch (NumberFormatException e)
       {
