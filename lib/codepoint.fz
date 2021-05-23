@@ -23,58 +23,28 @@
 #
 # -----------------------------------------------------------------------
 
-# codepoint represents a unicode code point
+# codepoint represents a unicode codepoint
 #
-codepoint(val u32) : string
+codepoint(val u32) : string, codepoints
   pre
     debug: range.contains(val),
     debug: !utf16Surrogate.contains val
 is
-
-  # range of permitted value for a codepoint
-  #
-  range => 0.as_u32 .. 0x10ffff
-
-
-  # range reserved for utf16 surrogate pairs
-  #
-  utf16Surrogate => 0xd800.as_u32 .. 0xdfff
-
-
-  # range of values encoded in one byte
-  #
-  encodedInOneByte => 0.as_u32 .. 0x7f
-
-
-  # range of values encoded in two bytes
-  #
-  encodedInTwoBytes => 0x80.as_u32 .. 0x7ff
-
-
-  # range of values encoded in three bytes
-  #
-  encodedInThreeBytes => 0x800.as_u32 .. 0xffff
-
-
-  # range of values encoded in four bytes
-  #
-  encodedInFourBytes => 0x10000.as_u32 .. 0x10ffff
-
 
   # the utf8 encoded bytes for the string representation
   # of this codepoint
   #
   redef asBytes streamable<i32> is
     v := val.as_i32
-    if      encodedInOneByte   .contains val then [ val.as_i32 ]
-    else if encodedInTwoBytes  .contains val then [ 0xc0 | (v >>  6) & 0x1f,
-                                                    0x80 |  v        & 0x3f ]
-    else if encodedInThreeBytes.contains val then [ 0xe0 | (v >> 12) & 0x1f,
-                                                    0x80 | (v >>  6) & 0x3f,
-                                                    0x80 |  v        & 0x3f ]
-    else if encodedInFourBytes .contains val then [ 0xf0 | (v >> 18) & 0x07,
-                                                    0x80 | (v >> 12) & 0x3f,
-                                                    0x80 | (v >>  6) & 0x3f,
-                                                    0x80 |  v        & 0x3f ]
+    if      utf8EncodedInOneByte   .contains val then [ val.as_i32 ]
+    else if utf8EncodedInTwoBytes  .contains val then [ 0xc0 | (v >>  6) & 0x1f,
+                                                        0x80 |  v        & 0x3f ]
+    else if utf8EncodedInThreeBytes.contains val then [ 0xe0 | (v >> 12) & 0x1f,
+                                                        0x80 | (v >>  6) & 0x3f,
+                                                        0x80 |  v        & 0x3f ]
+    else if utf8EncodedInFourBytes .contains val then [ 0xf0 | (v >> 18) & 0x07,
+                                                        0x80 | (v >> 12) & 0x3f,
+                                                        0x80 | (v >>  6) & 0x3f,
+                                                        0x80 |  v        & 0x3f ]
     else
       fuzion.std.panic "failed to encode code point " + codepoint.this
