@@ -25,12 +25,9 @@
 
 # u32 -- 32-bit unsigned integer values
 #
-u32(val u32) : wrappingInteger<u32>, hasInterval<u32> is
+u32(val u32) : wrappingInteger<u32>, hasInterval<u32>, u32s is
 
   redef thiz => u32.this.val
-
-  redef zero u32 is 0
-  redef one  u32 is 1
 
   # overflow checking
 
@@ -98,8 +95,9 @@ u32(val u32) : wrappingInteger<u32>, hasInterval<u32> is
 
   castTo_i32 i32 is intrinsic
 
-  redef min u32 is 0
-  redef max u32 is 4294967295
+  # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
+  # from hasInterval is abstract, fz should not complain about this conflict.
+  redef max u32 is 0x_ffff_ffff
 
   # create hash code from this number
   hash u64 is

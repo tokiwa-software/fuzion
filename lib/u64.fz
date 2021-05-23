@@ -25,12 +25,9 @@
 
 # u64 -- 64-bit unsigned integer values
 #
-u64(val u64) : wrappingInteger<u64>, hasInterval<u64> is
+u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
 
   redef thiz => u64.this.val
-
-  redef zero u64 is 0
-  redef one  u64 is 1
 
   # overflow checking
 
@@ -109,8 +106,9 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64> is
   low32bits  u32 is intrinsic
   castTo_i64 i64 is intrinsic
 
-  redef min u64 is 0
-  redef max u64 is (1.as_u64 << 63) -° 1 +° (1.as_u64 << 63)  # NYI: 18446744073709551615, need to improve parser/lexer to handle this
+  # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
+  # from hasInterval is abstract, fz should not complain about this conflict.
+  redef max => (1.as_u64 << 63) -° 1 +° (1.as_u64 << 63)  # NYI: 18446744073709551615, need to improve parser/lexer to handle this
 
   # create hash code from this number
   hash u64 is

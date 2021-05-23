@@ -25,14 +25,11 @@
 
 # numeric -- parent of all numeric features
 #
-numeric<T : numeric<T>> : hasHash<T>, ordered<T> is
+numeric<T : numeric<T>> : hasHash<T>, ordered<T>, numerics<T> is
 
   # get numeric.this value of type T.  This is used for a generic implemention
   # of some features (e.g. prefix -, abs
   thiz T is abstract
-
-  zero T is abstract
-  one  T is abstract
 
   isZero => numeric.this == zero
   isOne  => numeric.this == one
@@ -135,39 +132,3 @@ numeric<T : numeric<T>> : hasHash<T>, ordered<T> is
   # maximum of numeric.this and other
   #
   max(other T) T is if (numeric.this >= other) numeric.this else other
-
-/*
-has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
-*/
-
-  # monoid of numeric with infix + operation.  Will create sum of all elements it
-  # is applied to.
-  #
-  sum : Monoid<T> is
-    redef infix ∙ (a, b T) T is a + b
-    redef infix == (a, b T) bool is a == b
-    redef e T is zero
-
-  # monoid of numeric with infix * operation.  Will create product of all elements
-  # it is applied to.
-  #
-  product : Monoid<T> is
-    redef infix ∙ (a, b T) T is a * b
-    redef infix == (a, b T) bool is a == b
-    redef e T is one
-
-  # monoid of numeric with infix +^ operation.  Will create sum of all elements it
-  # is applied to, stopping at max/min value in case of overflow.
-  #
-  sumSaturating : Monoid<T> is
-    redef infix ∙ (a, b T) T is a +^ b
-    redef infix == (a, b T) bool is a == b
-    redef e T is zero
-
-  # monoid of numeric with infix *^ operation.  Will create product of all elements
-  # it is applied to, stopping at max/min value in case of overflow.
-  #
-  productSaturating : Monoid<T> is
-    redef infix ∙ (a, b T) T is a *^ b
-    redef infix == (a, b T) bool is a == b
-    redef e T is one
