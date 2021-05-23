@@ -25,7 +25,7 @@
 
 # string -- immutable sequences of utf8 encoded unicode characters
 #
-string ref : hasHash<string>, ordered<string> is
+string ref : hasHash<string>, ordered<string>, strings is
 
   # converting a string to a string is just returning string.this
   redef asString => string.this
@@ -369,24 +369,3 @@ string ref : hasHash<string>, ordered<string> is
         error "Bad UTF8 encoding found: " + b1 + ": codes 0xfe and 0xff are undefined, used for endianess checking."
       else
         fuzion.std.panic "string.codepointStream: missing case for " + b1
-
-
-/*
-has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
-*/
-
-  # monoid of strings with infix + operation.
-  #
-  concat : Monoid<string> is
-    redef infix ∙ (a, b string) => a + b
-    redef infix == (a, b string) => a == b
-    redef e => ""
-
-
-  # monoid of strings with infix '+ sep +' operation, i.e., concatenate with
-  # given separator
-  #
-  concat(sep string) : Monoid<string> is
-    redef infix ∙ (a, b string) string is if (a.isEmpty || b.isEmpty) a + b else a + sep + b
-    redef infix == (a, b string) => a == b
-    redef e => ""

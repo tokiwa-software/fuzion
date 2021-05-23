@@ -1,0 +1,46 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature strings
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# strings -- unit type defining features related to string but not
+# requiring an instance
+#
+strings is
+
+
+  # monoid of strings with infix + operation.
+  #
+  concat : Monoid<string> is
+    redef infix ∙ (a, b string) => a + b
+    redef infix == (a, b string) => a == b
+    redef e => ""
+
+
+  # monoid of strings with infix '+ sep +' operation, i.e., concatenate with
+  # given separator
+  #
+  concat(sep string) : Monoid<string> is
+    redef infix ∙ (a, b string) string is if (a.isEmpty || b.isEmpty) a + b else a + sep + b
+    redef infix == (a, b string) => a == b
+    redef e => ""
