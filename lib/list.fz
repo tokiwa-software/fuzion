@@ -199,4 +199,4 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   # representations of its contents.
   #
   redef asString string is
-    map<string> (fun (x A) => x.asString).fold "".concat ","
+    map<string> (fun (x A) => x.asString).fold strings.concat ","
