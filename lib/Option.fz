@@ -32,6 +32,22 @@ Option<T> :
   monad<T, Option<T>>
 is
 
+  # Does this Option contain a value of type T?
+  #
+  exists =>
+    match Option.this
+      T   => true
+      nil => false
+
+
+  # Does this Option contain no value of type T?
+  #
+  isNil =>
+    match Option.this
+      T   => false
+      nil => true
+
+
   # monadic operator
   #
   # This is handy to implement functions on optional values. As an example,
