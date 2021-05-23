@@ -45,7 +45,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
   #   a <  b: the interval from a to b, both inclusive
   #   a == b: the interval containing only one element, a
   #   a >  b: an empty interval
-  infix .. (upper T) : streamable<T> is
+  infix .. (upper T) : streamable<T>, Set<T> is
 
     lower T is thiz
     # lower => hasInterval.this  # NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
@@ -97,7 +97,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
     # that a negative step will produce a non-empty stream for an empty interval with
     # lower > upper!
     #
-    infix : (step T) : streamable<T> is
+    infix : (step T) : streamable<T>, Set<T> is
 
       # create a stream of all the elements of this interval, in order.
       redef asStream ref : stream<T> is
@@ -107,6 +107,11 @@ hasInterval<T: hasInterval<T>> : integer<T> is
 
       forAll  (f fun (T)) is asStream.consume(f)
       infix | (f fun (T)) is asStream.consume(f)
+
+
+      # does this range contain the given value?
+      #
+      contains (e T) => lower <= e <= upper && ((e - lower) %% step)
 
 
     # create a list from this interval
