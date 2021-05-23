@@ -68,6 +68,14 @@ stream<T> ref is
   hasNext bool is abstract
   next T is abstract
 
+  # get the next element or nil if !hasNext
+  #
+  nextIfExists Option<T> is
+    if hasNext
+      next
+    else
+      nil
+
   print unit is
     consume(fun (x T) is stdout.print(x); if hasNext then stdout.print(", ") )
 
