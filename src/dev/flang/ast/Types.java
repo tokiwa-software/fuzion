@@ -220,10 +220,10 @@ public class Types extends ANY
         {
           _doneInternallyUsed = true;
           var tag = FuzionConstants.CHOICE_TAG_NAME;
-          universe.get("i32").get("val").markUsed(res, SourcePosition.builtIn);
-          universe.get("u32").get("val").markUsed(res, SourcePosition.builtIn);
-          universe.get("i64").get("val").markUsed(res, SourcePosition.builtIn);
-          universe.get("u64").get("val").markUsed(res, SourcePosition.builtIn);
+          universe.get("i32",1).get("val").markUsed(res, SourcePosition.builtIn);
+          universe.get("u32",1).get("val").markUsed(res, SourcePosition.builtIn);
+          universe.get("i64",1).get("val").markUsed(res, SourcePosition.builtIn);
+          universe.get("u64",1).get("val").markUsed(res, SourcePosition.builtIn);
           universe.get("bool").get(tag) .markUsed(res, SourcePosition.builtIn);
           universe.get("conststring")   .markUsed(res, SourcePosition.builtIn);
           f_sys_array_data              .markUsed(res, SourcePosition.builtIn);
