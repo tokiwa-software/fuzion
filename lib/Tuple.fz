@@ -112,8 +112,8 @@
 # Tuples and decomposition can be used to swap two elements or create a
 # permutation as in
 #
-#   (a, b) = (b, a)
-#   (o, t, a, n) = (n, a, t, o)
+#   (a, b) := (b, a)
+#   (o, t, a, n) := (n, a, t, o)
 #
 # A Tuple type with no actual generic arguments is isomorphic to 'unit', i.e, it
 # is a type that has only one single value: '()'.
