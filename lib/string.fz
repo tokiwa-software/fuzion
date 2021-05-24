@@ -30,19 +30,19 @@ string ref : hasHash<string>, ordered<string>, strings is
   # converting a string to a string is just returning string.this
   redef asString => string.this
 
-  # any concrete string must implement asBytes
-  asBytes ref streamable<i32> is abstract
+  # any concrete string must implement utf8
+  utf8 ref streamable<i32> is abstract
 
   # is this string empty?
-  isEmpty => !asBytes.asStream.hasNext
+  isEmpty => !utf8.asStream.hasNext
 
   # length of this string in bytes
-  byteLength => asBytes.asStream.count
+  byteLength => utf8.asStream.count
 
   # concatenate string with string represenation of another object
   infix + (other Object) ref : string is
 
-    redef asBytes streamable<i32> is
+    redef utf8 streamable<i32> is
       byteStreamable  # NYI: this should be an anonymous inner feature
 
     private byteStreamable ref : streamable<i32> is  # NYI: code is very brittle: removing "ref" causes crash
@@ -51,8 +51,8 @@ string ref : hasHash<string>, ordered<string>, strings is
         byteStream  # NYI: this should be an anonymous inner feature
 
       byteStream ref : stream<i32> is  # NYI: code is very brittle: removing "ref" causes crash
-        head := string.this   .asBytes.asStream
-        tail := other.asString.asBytes.asStream
+        head := string.this   .utf8.asStream
+        tail := other.asString.utf8.asStream
 
         redef hasNext => head.hasNext || tail.hasNext
         redef next i32 is if head.hasNext then head.next else tail.next
@@ -62,7 +62,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   pre
     n >= 0
   is
-    redef asBytes streamable<i32> is
+    redef utf8 streamable<i32> is
       byteStreamable  # NYI: this should be an anonymous inner feature
 
     private byteStreamable ref : streamable<i32> is  # NYI: code is very brittle: removing "ref" causes crash
@@ -71,7 +71,7 @@ string ref : hasHash<string>, ordered<string>, strings is
 
       byteStream ref : stream<i32> is  # NYI: code is very brittle: removing "ref" causes crash
         i := 0
-        bytes := string.this.asBytes.asStream
+        bytes := string.this.utf8.asStream
 
         redef hasNext => bytes.hasNext
         redef next i32 is
@@ -79,14 +79,14 @@ string ref : hasHash<string>, ordered<string>, strings is
           if !bytes.hasNext
             set i := i + 1
             if i < n
-              set bytes := string.this.asBytes.asStream
+              set bytes := string.this.utf8.asStream
           res
 
 
   # compare string byte-by-byte with other string
   redef infix = (other string) =>
-    s1 :=       asBytes.asStream
-    s2 := other.asBytes.asStream
+    s1 :=       utf8.asStream
+    s2 := other.utf8.asStream
     while s1.hasNext && s2.hasNext
     until s1.next    != s2.next
       false
@@ -95,8 +95,8 @@ string ref : hasHash<string>, ordered<string>, strings is
 
     /* NYI: when lazy evaluation works, this should be possible:
 
-    s1 :=       asBytes.asStream
-    s2 := other.asBytes.asStream
+    s1 :=       utf8.asStream
+    s2 := other.utf8.asStream
     while s1.hasNext == s2.hasNext && (!s1.hasNext || s1.next == s2.next)
     until !s1.hasNext
 
@@ -109,8 +109,8 @@ string ref : hasHash<string>, ordered<string>, strings is
   # This defines a total order over strings that is unrelated to alphabetic order.
   #
   infix <= (other string) =>
-    s1 :=       asBytes.asStream     # NYI: can this be made more beautiful using lists?
-    s2 := other.asBytes.asStream
+    s1 :=       utf8.asStream     # NYI: can this be made more beautiful using lists?
+    s2 := other.utf8.asStream
     for
       b1 := if (s1.hasNext) s1.next else -1
       b2 := if (s2.hasNext) s2.next else -1
@@ -124,21 +124,21 @@ string ref : hasHash<string>, ordered<string>, strings is
     shR := 51.as_u64
     for
       h u64 := 0, ((h << shL) | (h >> shR)) ^ b.as_u64;
-      b in asBytes
+      b in utf8
     while true
     else
       h
 
   # NYI: remove the convenience functions when Fuzion supports char literals
   #
-  minusChar => "-".asBytes.asStream.next
-  plusChar  => "+".asBytes.asStream.next
-  zeroChar  => "0".asBytes.asStream.next
-  nineChar  => "9".asBytes.asStream.next
-  aChar     => "a".asBytes.asStream.next
-  zChar     => "z".asBytes.asStream.next
-  capAChar  => "A".asBytes.asStream.next
-  capZChar  => "Z".asBytes.asStream.next
+  minusChar => "-".utf8.asStream.next
+  plusChar  => "+".utf8.asStream.next
+  zeroChar  => "0".utf8.asStream.next
+  nineChar  => "9".utf8.asStream.next
+  aChar     => "a".utf8.asStream.next
+  zChar     => "z".utf8.asStream.next
+  capAChar  => "A".utf8.asStream.next
+  capZChar  => "Z".utf8.asStream.next
 
 
   # internal helper to create error for failed parsing
@@ -218,7 +218,7 @@ string ref : hasHash<string>, ordered<string>, strings is
     pre base.one < base <= base.from_u32 36
 
   is
-    s := asBytes.asStream
+    s := utf8.asStream
     c := if (s.hasNext) s.next else -1
     negate := c = minusChar
     d := if (negate || c = plusChar) zeroChar else c
@@ -306,7 +306,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   # the stream instance returned by codepointsStream
   #
   private codepointStream : stream<outcome<codepoint>> is
-    s := asBytes.asStream
+    s := utf8.asStream
     hasNext => s.hasNext
     next outcome<codepoint> is
       b1 := (s.next & 0xFF).as_u32

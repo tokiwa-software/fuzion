@@ -34,7 +34,7 @@ is
   # the utf8 encoded bytes for the string representation
   # of this codepoint
   #
-  redef asBytes streamable<i32> is
+  redef utf8 streamable<i32> is
     v := val.as_i32
     if      utf8EncodedInOneByte   .contains val then [ val.as_i32 ]
     else if utf8EncodedInTwoBytes  .contains val then [ 0xc0 | (v >>  6) & 0x1f,

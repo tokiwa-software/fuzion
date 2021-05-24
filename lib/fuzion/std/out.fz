@@ -26,12 +26,12 @@
 public fuzion.std.out single is
 
   public print(s ref Object) =>
-    for c in s.asString.asBytes do
+    for c in s.asString.utf8 do
       write(c)
     flush
 
   public println(s ref Object) =>
-    for c in s.asString.asBytes do
+    for c in s.asString.utf8 do
       write(c)
     println
 

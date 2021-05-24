@@ -115,7 +115,7 @@ integer<T : integer<T>> : numeric<T> is
 
   decimalStr ref : string is  # NYI: check why "ref" is needed here, make this an anonymous inner feature
 
-    redef asBytes => decimalBytes
+    redef utf8 => decimalBytes
 
     decimalBytes ref : streamable<i32> is  # NYI: check why "ref" is needed here, make this an anonymous inner feature
 
@@ -127,8 +127,8 @@ integer<T : integer<T>> : numeric<T> is
         else
           p := -? thiz
           match p
-            v T   => ("-" + v .asString).asBytes.asStream
-            _ nil => ("-" + (-(thiz / ten)).asString + (-(thiz % ten)).asString).asBytes.asStream
+            v T   => ("-" + v .asString).utf8.asStream
+            _ nil => ("-" + (-(thiz / ten)).asString + (-(thiz % ten)).asString).utf8.asStream
 
       posDecimalBytesStream ref : stream<i32> is  # NYI: check why "ref" is needed here, make this an anonymous inner feature
         p := thiz.highest10
