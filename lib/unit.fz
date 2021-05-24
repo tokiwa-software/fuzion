@@ -62,7 +62,7 @@
 # Other unit types in Fuzion are TRUE and FALSE.
 #
 # The simplest syntax to create a value of unit type is an empty block '{}'. Note
-# that an empty Tuple 'Tuple<>' is a different unit value of a different type and
+# that an empty tuple 'tuple<>' is a different unit value of a different type and
 # the syntax '()' is (at least for now) not supported.
 #
 # Please note the fundamental difference between
@@ -85,7 +85,7 @@ unit is
 
 # NYI: possible alternative definitions base on tuple types
 #
-# unit : Tuple <> is
+# unit : tuple <> is
 #
-# unit (contents Tuple<>) is
+# unit (contents tuple<>) is
 #

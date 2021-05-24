@@ -48,7 +48,7 @@
 psMap<K : ordered<K>, V>
   (
    # the array containg the sorted arrays, see below for details
-   data sys.array<Tuple<K,V>>,
+   data sys.array<tuple<K,V>>,
 
    # the number of key and value pairs in this map.
    size i32,
@@ -134,7 +134,7 @@ O(n log n).
   # Adding has a cumulative average runtime in O(log size) and a worst-case
   # runtime of O(size)
   #
-  add (kv Tuple<K,V>) psMap<K, V> is
+  add (kv tuple<K,V>) psMap<K, V> is
     nsize := size + 1
     ndata := data
     nfill := fill
@@ -145,7 +145,7 @@ O(n log n).
       if ((size & sz) = 0)
         psMap<K,V> ndata, nsize, dest+sz
       else
-        tmp := array<Tuple<K,V>> sz, fun(i i32) => ndata[dest+i]
+        tmp := array<tuple<K,V>> sz, fun(i i32) => ndata[dest+i]
         for
           i1 := 0, if (use1) i1+1 else i1
           i2 := 0, if (use1) i2   else i2+1
@@ -157,7 +157,7 @@ O(n log n).
         join((fill - sz - 2*(fill - ole - sz) - 2*sz), dest, 2*sz)
 
     if (nsize & size) = 0
-      set ndata := sys.array<Tuple<K,V>> data.length * 2 + (nsize+1) / 2
+      set ndata := sys.array<tuple<K,V>> data.length * 2 + (nsize+1) / 2
       set nfill := 0
     ndata[nfill] := kv
     join fill-1, nfill, 1
@@ -239,10 +239,10 @@ O(n log n).
 
   # get a stream of all key/value pairs in this map
   #
-  redef items streamable<Tuple<K,V>> is
-    res : streamable<Tuple<K,V>> is
+  redef items streamable<tuple<K,V>> is
+    res : streamable<tuple<K,V>> is
       redef asStream =>
-        asKeyArray.map<Tuple<K,V>>(fun (k K) => (k, psMap.this[k].unwrap)).asStream
+        asKeyArray.map<tuple<K,V>>(fun (k K) => (k, psMap.this[k].unwrap)).asStream
     res
 
 

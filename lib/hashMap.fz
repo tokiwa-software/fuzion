@@ -61,7 +61,7 @@ is
   /* NYI: local */
   contents :=
     for
-      mcontents := (marray <Option<Tuple<K,V>>> allocatedSize, nil), mcontents
+      mcontents := (marray <Option<tuple<K,V>>> allocatedSize, nil), mcontents
       k in ks
       v in vs
     do
@@ -74,7 +74,7 @@ is
           nil     =>     # slot is free, so use it:
             mcontents[at] := (k, v)
 
-          t Tuple =>     # we have a conflict
+          t tuple =>     # we have a conflict
             (ek, _) := t
             if ek = k    # no conflict, but remapping of k
               mcontents[at] := (k, v)
@@ -99,7 +99,7 @@ is
     retrieve (at i32) Option<V> is
       match contents[at]
         nil     => nil
-        t Tuple<K,V> =>
+        t tuple<K,V> =>
           (ek, v) := t
           if ek = k
             v
@@ -111,15 +111,15 @@ is
 
   # get a stream of all key/value pairs in this map
   #
-  items streamable<Tuple<K,V>> is
-    res : streamable<Tuple<K,V>> is
+  items streamable<tuple<K,V>> is
+    res : streamable<tuple<K,V>> is
       redef asStream =>
         contents
           .asStream
-          .filter         (fun (o Option<Tuple<K,V>>) => match o
+          .filter         (fun (o Option<tuple<K,V>>) => match o
                                                            nil     => false
-                                                           _ Tuple => true )
-          .map<Tuple<K,V>>(fun (o Option<Tuple<K,V>>) => match o
+                                                           _ tuple => true )
+          .map<tuple<K,V>>(fun (o Option<tuple<K,V>>) => match o
                                                            nil     => fuzion.std.panic "filter failed"
-                                                           t Tuple => t)
+                                                           t tuple => t)
     res

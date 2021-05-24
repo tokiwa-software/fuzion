@@ -1260,7 +1260,7 @@ actualGens  : "<" typeList ">"
     // confusing error message in case of a syntax error late in the actual
     // generics, as in
     //
-    //  t := Tuple<i32, bool, String, Tuple < int < bool >>();
+    //  t := tuple<i32, bool, String, tuple < int < bool >>();
     return fork().skipActualGens();
   }
 
@@ -1632,7 +1632,7 @@ tuple       : LPAREN RPAREN
     int oldLine = sameLine(-1);
     if (skip(Token.t_rparen)) // an empty tuple
       {
-        result = new Call(pos, null, "Tuple");
+        result = new Call(pos, null, "tuple");
       }
     else
       {
@@ -1645,7 +1645,7 @@ tuple       : LPAREN RPAREN
                 elements.add(expr());
               }
             while (skipComma());
-            result = new Call(pos, null, "Tuple", elements);
+            result = new Call(pos, null, "tuple", elements);
           }
         match(Token.t_rparen, "term");
       }

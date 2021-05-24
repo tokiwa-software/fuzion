@@ -26,7 +26,7 @@
 # stream -- a stream of values
 #
 # NYI: Check if stream should be replaced by a lazy list, which is a choice
-# of either nil or a Tuple (head, tail). This should avoid the need to store
+# of either nil or a tuple (head, tail). This should avoid the need to store
 # mutable state.
 stream<T> ref is
 

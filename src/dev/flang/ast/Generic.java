@@ -333,8 +333,8 @@ public class Generic extends ANY
         result = _select < openTypes.size()
           ? openTypes.get(_select)
           : // This is not an error, we can run into this situation, e.g., for
-            // the values of a Tuple for all the actual clazzes of Tuple with
-            // fewer actual generic arguments than the max size of a Tuple. In
+            // the values of a tuple for all the actual clazzes of tuple with
+            // fewer actual generic arguments than the max size of a tuple. In
             // this case, the types of all the unused select fields will be
             // t_unit.
             Types.resolved.t_unit;

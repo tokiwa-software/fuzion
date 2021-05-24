@@ -17,18 +17,18 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature Tuple
+#  Source code of Fuzion standard library feature tuple
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# Tuple -- feature used to define tuple types
+# tuple -- feature used to define tuple types
 #
 # tuple types provide algebraic product types of all the generic arguments
-# provided to Tuple.
+# provided to tuple.
 #
-# The values within a tuple 'Tuple<A, B, C>' can be accessed via the Tuple's
+# The values within a tuple 'tuple<A, B, C>' can be accessed via the tuple's
 # argument field 'values' followed by a selector referring to the generic
 # argument's position: 'values.0', 'values.1' and 'values.2', respectively.
 #
@@ -39,12 +39,12 @@
 #
 # is equivalent to
 #
-#   t := Tuple(a, b, c, ... )
+#   t := tuple(a, b, c, ... )
 #
 # The actual generic types are inferred from the static types of the values
 # 'a', 'b', 'c', ... the tuple is created from.
 #
-# Similarly, syntactic sugar for the decomposition of Tuples can be used
+# Similarly, syntactic sugar for the decomposition of tuples can be used
 # to access the values as in
 #
 #   (a, b, c, ...) := t
@@ -78,45 +78,45 @@
 #   p := point 3, 4
 #   (px, py) := p       # will set px to 3 and py to 4
 #
-# and the decomposed value can then be used to create a Tuple
+# and the decomposed value can then be used to create a tuple
 #
-#   t := (px, py)       # will create Tuple<i32,i32> instance
+#   t := (px, py)       # will create tuple<i32,i32> instance
 #
 # however, tuples are not assignment compatible with general features even
 # if they would decompose into the same types, i.e.,
 #
-#   u Tuple<i32, i32> = p  # will cause compile time error
+#   u tuple<i32, i32> = p  # will cause compile time error
 #   q point = (7, 12)      # will cause compile time error
 #
-# The unit Tuple '()' can be used as a short-hand to create the empty tuple
-# 'Tuple<>()'.  The empty tuple can be decomposed like any other tuple
+# The unit tuple '()' can be used as a short-hand to create the empty tuple
+# 'tuple<>()'.  The empty tuple can be decomposed like any other tuple
 # using
 #
 #   () := ()
 #
 # even though this has no effect.
 #
-# An instance of the single tuple 'Tuple<A>(a)' can not be created using
+# An instance of the single tuple 'tuple<A>(a)' can not be created using
 # syntactic sugar '(a)', this will produce the plain value of 'a' instead.
 # However, decomposition of a single tuple is possible:
 #
-#  (a0) := Tuple<A>(a)
+#  (a0) := tuple<A>(a)
 #
 # which is equivalent to
 #
 #   a0 := a
 #
-# NYI: A single tuple 'Tuple<A>' is currently not assignment compatible with
+# NYI: A single tuple 'tuple<A>' is currently not assignment compatible with
 # type 'A', which would make handling of general tuples easier.
 #
-# Tuples and decomposition can be used to swap two elements or create a
+# tuples and decomposition can be used to swap two elements or create a
 # permutation as in
 #
 #   (a, b) := (b, a)
 #   (o, t, a, n) := (n, a, t, o)
 #
-# A Tuple type with no actual generic arguments is isomorphic to 'unit', i.e, it
+# A tuple type with no actual generic arguments is isomorphic to 'unit', i.e, it
 # is a type that has only one single value: '()'.
 #
 
-Tuple<A...>(values A) is
+tuple<A...>(values A) is

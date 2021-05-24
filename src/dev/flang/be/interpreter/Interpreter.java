@@ -756,7 +756,7 @@ public class Interpreter extends Backend
     if (PRECONDITIONS) require
       (!thiz.isField(),
        thiz.impl != Impl.INTRINSIC,
-       args.size() == thiz.arguments.size() + 1 || thiz.hasOpenGenericsArgList() /* e.g. in call Tuple<i32>(42) */
+       args.size() == thiz.arguments.size() + 1 || thiz.hasOpenGenericsArgList() /* e.g. in call tuple<i32>(42) */
        );
 
     cur.checkStaticClazz(staticClazz);
