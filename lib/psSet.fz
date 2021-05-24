@@ -36,6 +36,7 @@
 #
 psSet<K : ordered<K>>
   (psm psMap<K,unit>)
+  : Set<K>
 is
 
 
@@ -79,11 +80,17 @@ is
   infix ⋃ (other psSet<K>) => psSet<K> psm ⋃ other.psm
 
 
+  # add all elements of the given streamable to this set
+  #
+  addAll (s streamable<K>) psSet<K> is
+    addAllFromStream s.asStream
+
+
   # add all elements of the given stream to this set
   #
-  addAll (s stream<K>) psSet<K> is
+  addAllFromStream (s stream<K>) psSet<K> is
     if s.hasNext
-      add(s.next).addAll s
+      add(s.next).addAllFromStream s
     else
       psSet.this
 
@@ -91,6 +98,17 @@ is
   # create a comma-separated string of the elements of this set
   #
   redef asString => psm.keys.asString
+
+
+  # number of entries in this set.  May be undefined, i.e., a range of
+  # floating point numbers or an infinite set.
+  #
+  redef sizeOption option<i32> is size
+
+
+  # does this set contain the given value?
+  #
+  contains (e K) bool is has e
 
 /*
 has     -- NYI: 'has' keyword not supported yet, so the following require an instance to be called on
