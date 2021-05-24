@@ -25,7 +25,7 @@
 
 # Set -- an abstract set of values V
 #
-Set<T> ref is
+Set<T: hasEquals<T>> ref is
 
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
