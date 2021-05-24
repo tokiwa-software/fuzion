@@ -49,7 +49,7 @@ stream<T> ref is
   # which 'f e' is false
   #
   before(f fun (T) bool) ref : stream<T> is
-    nextCache := stream.this.next  # NYI should be Option<T> and set to None if !stream.this.hasNext
+    nextCache := stream.this.next  # NYI should be option<T> and set to None if !stream.this.hasNext
     redef hasNext => !f(nextCache)
     redef next T is
       res := nextCache
@@ -60,7 +60,7 @@ stream<T> ref is
   # create new stream from all elements for which predicate f is true
   #
   filter(f fun (T) bool) ref : stream<T> is
-    cache T := ?  # NYI: should be Option<T>
+    cache T := ?  # NYI: should be option<T>
     cacheOk := false
     next2
     redef hasNext => cacheOk
@@ -114,7 +114,7 @@ stream<T> ref is
 
   # get the next element or nil if !hasNext
   #
-  nextIfExists Option<T> is
+  nextIfExists option<T> is
     if hasNext
       next
     else

@@ -34,7 +34,7 @@ map<K, V> is
 
   # get the value k is mapped to, or nil if none.
   #
-  index [] (k K) Option<V> is abstract
+  index [] (k K) option<V> is abstract
 
 
   # get a stream of all key/value pairs in this map

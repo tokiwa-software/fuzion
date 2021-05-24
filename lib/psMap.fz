@@ -166,9 +166,9 @@ O(n log n).
   # finde the value k is mapped to or nil if k is not part of this map
   #
   #
-  index [] (k K) Option<V> is
+  index [] (k K) option<V> is
 
-    binarySearch(l, r i32) Option<V> is
+    binarySearch(l, r i32) option<V> is
       m := (l + r) / 2
       if l > r
         nil
@@ -181,7 +181,7 @@ O(n log n).
 
     # find k in sub-arrays starting at data[at]
     #
-    get (at i32, sz i32, tail i32) Option<V> is
+    get (at i32, sz i32, tail i32) option<V> is
       if sz = 0
         nil
       else
@@ -260,7 +260,7 @@ O(n log n).
 
   # get the lowest key in this map
   #
-  min Option<K> is
+  min option<K> is
     if size = 0
       nil
     else
@@ -289,7 +289,7 @@ O(n log n).
 
   # get the highest key in this map
   #
-  max Option<K> is
+  max option<K> is
     if size = 0
       nil
     else

@@ -23,10 +23,10 @@
 #
 # -----------------------------------------------------------------------
 
-# nil -- value for Options that are not present
+# nil -- value for options that are not present
 #
 # This is a unit type that is preferred to represent instances that are
-# not present, e.g, in an Option.
+# not present, e.g, in an option.
 #
 # NYI: move to universe.fz
 nil is

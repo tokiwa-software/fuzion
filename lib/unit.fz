@@ -56,8 +56,8 @@
 # set of the map's keys.
 #
 # The Fuzion library knows several different unit types.  Another example is nil,
-# which is used as the alternative type in an Option.  This enables the use of
-# Option<void>, which can store two distinct values, void and nil.
+# which is used as the alternative type in an option.  This enables the use of
+# option<void>, which can store two distinct values, void and nil.
 #
 # Other unit types in Fuzion are TRUE and FALSE.
 #

@@ -286,7 +286,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   codepointsStream : streamable<codepoint> is
     asStream stream<codepoint> is
       s := codepointsAndErrors
-      n Option<codepoint> := nil
+      n option<codepoint> := nil
 
       resultStream : stream<codepoint> is
         redef hasNext => s.hasNext

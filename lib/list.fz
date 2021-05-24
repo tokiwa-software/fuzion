@@ -48,7 +48,7 @@ list<A> : choice<nil, Cons<A, list<A>>> is
 
   # get the head of this list if it exists
   #
-  head Option<A>
+  head option<A>
   is
     match list.this
       _ nil  => nil

@@ -111,13 +111,13 @@ is
   # this sortedArray, the index of one of the matching keys will be
   # returned, but is not specified which one.
   #
-  findKey (key T) Option<i32>
+  findKey (key T) option<i32>
     post
       match result
         i i32 => sortedArray.this[i] = key
         nil   => true # NYI: analyis: for all i=0..a.length-1, sortedArray.this[i] /= key
   is
-    binarySearch(l, r i32) Option<i32> is
+    binarySearch(l, r i32) option<i32> is
       m := (l + r) / 2
       if l > r                          then nil
       else if sortedArray.this[m] < key then binarySearch m+1, r
@@ -144,14 +144,14 @@ is
     #
     cmp fun (T) i32
 
-    ) Option<i32>
+    ) option<i32>
 
     post
       match result
         i i32 => (cmp sortedArray.this[i]) = 0
         nil   => true # NYI: analyis: for all i=0..a.length-1, sortedArray.this[i] /= key
   is
-    binarySearch(l, r i32) Option<i32> is
+    binarySearch(l, r i32) option<i32> is
       m := (l + r) / 2
       if l > r
         nil

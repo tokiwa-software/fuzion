@@ -61,7 +61,7 @@ is
   /* NYI: local */
   contents :=
     for
-      mcontents := (marray <Option<tuple<K,V>>> allocatedSize, nil), mcontents
+      mcontents := (marray <option<tuple<K,V>>> allocatedSize, nil), mcontents
       k in ks
       v in vs
     do
@@ -94,9 +94,9 @@ is
 
   # get the value k is mapped to
   #
-  index [] (k K) Option<V> is
+  index [] (k K) option<V> is
 
-    retrieve (at i32) Option<V> is
+    retrieve (at i32) option<V> is
       match contents[at]
         nil     => nil
         t tuple<K,V> =>
@@ -116,10 +116,10 @@ is
       redef asStream =>
         contents
           .asStream
-          .filter         (fun (o Option<tuple<K,V>>) => match o
+          .filter         (fun (o option<tuple<K,V>>) => match o
                                                            nil     => false
                                                            _ tuple => true )
-          .map<tuple<K,V>>(fun (o Option<tuple<K,V>>) => match o
+          .map<tuple<K,V>>(fun (o option<tuple<K,V>>) => match o
                                                            nil     => fuzion.std.panic "filter failed"
                                                            t tuple => t)
     res

@@ -67,7 +67,7 @@ is
 
   # get the highest bit in this bitset
   #
-  highest Option<u64> is
+  highest option<u64> is
     match bitset.this
       _ nil   => nil
       x u64   => x
@@ -76,7 +76,7 @@ is
   # compare two bitsets
   #
   infix == (other bitset) bool is
-     h := highest >>= fun (i u64) => other.highest >>= fun (j u64) Option<u64> is i.max j
+     h := highest >>= fun (i u64) => other.highest >>= fun (j u64) option<u64> is i.max j
      match h
        _ nil => true
        m u64 =>

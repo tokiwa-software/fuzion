@@ -56,7 +56,7 @@ is
   #
   # performance is O(log size).
   #
-  index [] (k K) Option<V> is
+  index [] (k K) option<V> is
     sortedEntries.find(fun(e entry) => ks[e.i] <> k)
                  .map<V> fun(i i32) => sortedEntries[i].val
 

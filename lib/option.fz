@@ -17,33 +17,33 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature Option
+#  Source code of Fuzion standard library feature option
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# Option represents an optional value of type T
+# option represents an optional value of type T
 #
 # NYI: move to universe.fz
 
-Option<T> :
+option<T> :
   choice<T, nil>,
-  monad<T, Option<T>>
+  monad<T, option<T>>
 is
 
-  # Does this Option contain a value of type T?
+  # Does this option contain a value of type T?
   #
   exists =>
-    match Option.this
+    match option.this
       T   => true
       nil => false
 
 
-  # Does this Option contain no value of type T?
+  # Does this option contain no value of type T?
   #
   isNil =>
-    match Option.this
+    match option.this
       T   => false
       nil => true
 
@@ -51,67 +51,67 @@ is
   # monadic operator
   #
   # This is handy to implement functions on optional values. As an example,
-  # take an Option<string> and you would like to add a filename suffix to
+  # take an option<string> and you would like to add a filename suffix to
   # this string if it is present. Then you can do this as follows:
   #
-  #   addTxt(o Option<string>) => o >>= fun (s string) Option<string> is s + ".txt"
+  #   addTxt(o option<string>) => o >>= fun (s string) option<string> is s + ".txt"
   #
   # NYI: With better type inference and syntactic sugar, this should be
   #
-  #   addTxt(o Option<string>) => o >>= s -> s + ".txt"
+  #   addTxt(o option<string>) => o >>= s -> s + ".txt"
   #
-  # NYI: Should maybe have generic parameter <B> and result in Option<B>
+  # NYI: Should maybe have generic parameter <B> and result in option<B>
   #
-  redef infix >>= (f fun (T) Option<T>) => Option.this.bind<T>(f)
+  redef infix >>= (f fun (T) option<T>) => option.this.bind<T>(f)
 
 
   # monadic operator
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  bind <B> (f fun (T) Option<B>) Option<B> is
-    match Option.this
+  bind <B> (f fun (T) option<B>) option<B> is
+    match option.this
       v T   => f v
       _ nil => nil
 
 
   # synonyme for infix >>=
-  andThen (f fun (T) Option<T>) => Option.this >>= f
+  andThen (f fun (T) option<T>) => option.this >>= f
 
 
-  # map this Option using f, i.e., map nil to nil and any value v to f v
+  # map this option using f, i.e., map nil to nil and any value v to f v
   #
-  map <B> (f fun (T) B) Option<B> is
-    match Option.this
+  map <B> (f fun (T) B) option<B> is
+    match option.this
       v T   => f v
       _ nil => nil
 
 
-  # converts Option to a string
+  # converts option to a string
   #
   # returns the result of T.asString for an option containing an instance
-  # of T, alternatively returns "--nil--" for an Option that is nil.
+  # of T, alternatively returns "--nil--" for an option that is nil.
   #
   redef asString string is
-    match Option.this
+    match option.this
       v T   => v.asString
       _ nil => "--nil--"
 
 
-  # unwraps an Option that is known to contain a value
+  # unwraps an option that is known to contain a value
   #
-  # this can only be called in cases where it is known for sure that this Option
+  # this can only be called in cases where it is known for sure that this option
   # is not nil.  A runtime error will be created otherwise.
   #
   unwrap
     pre
       # NYI: better syntax:
       #
-      # safety: Option.this?
-      safety: match Option.this
+      # safety: option.this?
+      safety: match option.this
         T   => true
         nil => false
     =>
-    match Option.this
+    match option.this
       v T => v
-      nil => fuzion.std.panic "Option.unwrap called on nil"
+      nil => fuzion.std.panic "option.unwrap called on nil"
