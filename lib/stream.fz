@@ -92,9 +92,15 @@ stream<T> ref is
   # check if predicate f holds for all elements produced by this stream
   #
   infix ∀ (f fun (T) bool) bool is
-    for
-      res := true, f(next)
-    until !res || !hasNext
+    while hasNext: f next   # hasNext implies f next
+    until !hasNext
+
+
+  # check if predicate f holds for at least one element produced by this stream
+  #
+  infix ∃ (f fun (T) bool) bool is
+    while hasNext
+    until f next
 
 
   # does this stream have one more element?

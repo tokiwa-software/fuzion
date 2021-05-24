@@ -91,6 +91,11 @@ streamable<T> ref is
   infix ∀ (f fun (T) bool) bool is asStream ∀ f
 
 
+  # create a stream and check if predicate f holds for at least one element produced
+  #
+  infix ∃ (f fun (T) bool) bool is asStream ∃ f
+
+
   # create a stream and then create a string from the elements of that stream
   #
   redef asString => asStream.asString
