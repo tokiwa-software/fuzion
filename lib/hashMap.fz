@@ -111,12 +111,15 @@ is
 
   # get a stream of all key/value pairs in this map
   #
-  items stream<Tuple<K,V>> is
-    contents
-      .asStream
-      .filter         (fun (o Option<Tuple<K,V>>) => match o
-                                                       nil     => false
-                                                       _ Tuple => true )
-      .map<Tuple<K,V>>(fun (o Option<Tuple<K,V>>) => match o
-                                                       nil     => fuzion.std.panic "filter failed"
-                                                       t Tuple => t)
+  items streamable<Tuple<K,V>> is
+    res : streamable<Tuple<K,V>> is
+      redef asStream =>
+        contents
+          .asStream
+          .filter         (fun (o Option<Tuple<K,V>>) => match o
+                                                           nil     => false
+                                                           _ Tuple => true )
+          .map<Tuple<K,V>>(fun (o Option<Tuple<K,V>>) => match o
+                                                           nil     => fuzion.std.panic "filter failed"
+                                                           t Tuple => t)
+    res

@@ -63,4 +63,4 @@ is
 
   # get a stream of all key/value pairs in this map
   #
-  items stream<Tuple<K,V>> is sortedEntries.asStream.map<Tuple<K,V>> fun (e entry) => (e.key, e.val)
+  items streamable<Tuple<K,V>> is sortedEntries.map<Tuple<K,V>> fun (e entry) => (e.key, e.val)
