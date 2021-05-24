@@ -27,7 +27,11 @@
 #
 streamable<T> ref is
 
+
+  # create a stream of T
+  #
   asStream stream<T> is abstract
+
 
   # collect the contents of this streamable into an array
   #
@@ -36,20 +40,57 @@ streamable<T> ref is
     s2 := asStream
     array<T> s1.count, fun (i i32) => s2.next
 
-/* NYI: Does not work yet:
 
-  forAll(f fun (T)) is asStream.consume(f)
+  # create a stream and have it consumed by f
+  #
+  forAll(f fun (T)) unit is asStream.consume f
 
+
+  # create a stream and have it consumed by f, infix operator synonyme of forAll.
+  #
+  infix | (f fun (T)) => forAll f
+
+
+  # create a stream, infix operator synonyme for asStream
+  #
+  postfix | => asStream
+
+
+  # create a new stream and apply 'f' to each element 'e' as long as 'f e'
+  #
+  forWhile(f fun (T) bool) is asStream.forWhile f
+
+
+  # create a new stream that contains the first elements of this stream for
+  # which 'f e' is false
+  #
+  before(f fun (T) bool) stream<T> is asStream.before f
+
+
+  # create a new stream and filter its elements using predicate f
+  #
+  filter   (f fun (T) bool) stream<T> is asStream.filter f
+
+
+  # create a new stream and filter its elements using predicate f, infix operator
+  # synonyme of filter.
+  #
+  infix |& (f fun (T) bool) => filter f
+
+
+  # create a new stream and filter its elements using predicate f, infix operator
+  # synonyme of filter.
+  #
+  # NYI: What is better, 'infix |&' or 'infix &', or something else?
+  #
+  infix & (f fun (T) bool) => filter f
+
+
+  # create a stream and check if predicate f holds for all elements produced
+  #
   infix ∀ (f fun (T) bool) bool is asStream ∀ f
 
-  infix | (f fun (T)) is asStream.consume(f)
 
-  forWhile(f fun (T) bool) is asStream.consume2(f)
-
-  before(f fun (T) bool) stream<T> is asStream.before(f)
-
-  filter   (f fun (T) bool) stream<T> is asStream.filter(f)  # NYI one-line comma separated decl "filter, infix |" does not work yet
-  infix |& (f fun (T) bool) stream<T> is asStream.filter(f)
-
-  postfix | () stream<T> is asStream
-  */
+  # create a stream and then create a string from the elements of that stream
+  #
+  redef asString => asStream.asString

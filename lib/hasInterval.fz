@@ -65,23 +65,6 @@ hasInterval<T: hasInterval<T>> : integer<T> is
       redef hasNext bool is x <= upper
       redef next T is res := x; set x := x + one; res
 
-    forAll(f fun (T)) is asStream.consume(f)
-
-    infix ∀ (f fun (T) bool) bool is asStream ∀ f
-
-    infix | (f fun (T)) is asStream.consume(f)
-
-    forWhile(f fun (T) bool) is asStream.consume2(f)
-
-    before(f fun (T) bool) stream<T> is asStream.before(f)
-
-    filter   (f fun (T) bool) stream<T> is asStream.filter(f)  # NYI one-line comma separated decl "filter, infix |" does not work yet
-    infix |& (f fun (T) bool) stream<T> is asStream.filter(f)
-
-    infix & (f fun (T) bool) stream<T> is asStream.filter(f)
-
-    postfix | () stream<T> is asStream
-
 
     # does this range contain the given value?
     #
@@ -104,9 +87,6 @@ hasInterval<T: hasInterval<T>> : integer<T> is
         x := lower
         redef hasNext bool is step > zero && x <= upper || step < zero && x >= upper
         redef next T is res := x; set x := x + step; res
-
-      forAll  (f fun (T)) is asStream.consume(f)
-      infix | (f fun (T)) is asStream.consume(f)
 
 
       # does this range contain the given value?

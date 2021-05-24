@@ -30,9 +30,40 @@
 # mutable state.
 stream<T> ref is
 
-  consume (f fun (T)) unit is while hasNext do f(next)
+  # apply f to all elements in this stream
+  #
+  forAll(f fun (T)) unit is while hasNext do f(next)
+
+
+  # apply f to all elements in this stream, synonyme for forAll
+  #
+  consume (f fun (T)) unit is forAll f
+
+
+  # apply f to all elements in this stream, infix operator synonyme of forAll.
+  #
   infix | (f fun (T)) unit is while hasNext do f(next)
-  consume2(f fun (T) bool) unit is while hasNext && f(next)
+
+
+  # apply 'f' to each element 'e' as long as 'f e'
+  #
+  forWhile(f fun (T) bool) unit is while hasNext && f(next)
+
+
+  # create a new stream that contains the first elements of this stream for
+  # which 'f e' is false
+  #
+  before(f fun (T) bool) ref : stream<T> is
+    nextCache := stream.this.next  # NYI should be Option<T> and set to None if !stream.this.hasNext
+    redef hasNext => !f(nextCache)
+    redef next T is
+      res := nextCache
+      set nextCache := stream.this.next
+      res
+
+
+  # create new stream from all elements for which predicate f is true
+  #
   filter(f fun (T) bool) ref : stream<T> is
     cache T := ?  # NYI: should be Option<T>
     cacheOk := false
@@ -47,26 +78,44 @@ stream<T> ref is
       while !cacheOk && stream.this.hasNext
         set cache := stream.this.next
         set cacheOk := f(cache)
+
+
+  # create a new stream from all elements for which predicate f is true, infix
+  # operator synonyme of filter.
+  #
   infix |& (f fun (T) bool) stream<T> is filter(f)
 
+
+  # create a new stream from all elements for which predicate f is true, infix
+  # operator synonyme of filter.
+  #
+  # NYI: What is better, 'infix |&' or 'infix &', or something else?
+  #
+  infix & (f fun (T) bool) => filter f
+
+
+  # check if predicate f holds for all elements produced by this stream
+  #
   infix ∀ (f fun (T) bool) bool is
     for
       res := true, f(next)
     until !res || !hasNext
 
-  # create a new stream that contains the first elements of this stream for
-  # which f(e) is false
-  #
-  before(f fun (T) bool) ref : stream<T> is
-    nextCache := stream.this.next  # NYI should be Option<T> and set to None if !stream.this.hasNext
-    redef hasNext => !f(nextCache)
-    redef next T is
-      res := nextCache
-      set nextCache := stream.this.next
-      res
 
+  # does this stream have one more element?
+  #
   hasNext bool is abstract
-  next T is abstract
+
+
+  # the next element in this stream
+  #
+  next T
+  /* NYI: C backend creates broken code for calling precondition of abstract feature
+    pre
+      hasNext
+   */
+  is abstract
+
 
   # get the next element or nil if !hasNext
   #
@@ -76,22 +125,38 @@ stream<T> ref is
     else
       nil
 
-  print unit is
-    consume(fun (x T) is stdout.print(x); if hasNext then stdout.print(", ") )
 
+  # print the elements of this stream
+  #
+  print unit is
+    consume(fun (x T) is
+      yak x
+      if hasNext then yak ", ")
+
+
+  # count the elements of this stream
+  #
   count i32 is
-# NYI: This does not work yet:
-#    result = 0
-#    consume(fun (x T) is result = result + 1 )
+    # NYI: check if this works: map<i32>(fun f(x T) => 1).fold i32.sum
     res := 0
     consume(fun (x T) is set res := res + 1)
     res
+
+
+  # collect the first n elements of this stream into an array
+  #
   take (n i32) => array<T>(n, fun (_ i32) => next)
 
+
+  # create a string from the elements of this stream
+  #
   redef asString ref string is
+    # NYI: check if this works: map<string>(fun f(x T) => x.asSring).fold strings.concat ", "
+    #
     res := ""
     consume(fun (x T) is set res := res + x.asString; if hasNext then set res := res + ", ")
     res
+
 
   # map the stream to a new stream applying function f to all elements
   #
@@ -105,6 +170,7 @@ stream<T> ref is
         next B is f stream.this.next
       }
 
+
   # NYI: This currently does not work with the C backend since generics resolution
   # for stream.this.next confuses the type from the outer feature (T) with the type
   # from the inherited feature (B).
@@ -112,11 +178,13 @@ stream<T> ref is
     hasNext => stream.this.hasNext
     next B is f stream.this.next
 
+
   # fold the elements of this stream using the given monoid.
   #
   # e.g., to sum the elements of a stream of i32, use s.fold i32.sum
   #
   fold (m Monoid<T>) => fold m.e, m
+
 
   # fold the elements of this stream using the given monoid m and initial value s.
   #
