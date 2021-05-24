@@ -53,11 +53,11 @@ hasInterval<T: hasInterval<T>> : integer<T> is
     size T is if lower <= upper then upper - lower + one else zero
 
     # apply function f to all elements in this interval
-    iterate(f fun (T)) is
+    redef forAll(f fun (T)) unit is
       for
         x := lower, x + one
       while x <= upper
-        f(x)
+        f x
 
     # create a stream of all the elements of this interval, in order.
     redef asStream ref : stream<T> is

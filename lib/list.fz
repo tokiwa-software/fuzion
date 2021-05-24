@@ -67,22 +67,10 @@ list<A> : choice<nil, Cons<A, list<A>>> is
 
   # call f in order on all elements of this list
   #
-  iterate(f fun (A)) is
+  forAll (f fun (A)) unit is
     match list.this
       _ nil  =>
-      c Cons => f c.head; c.tail.iterate f
-
-
-  # call f in order on all elements of this list
-  #
-  # NYI: Remove, this is just for experiments
-  #
-  iterateUsingLoop(f fun (A)) is
-    for
-      l := list.this, l.tail
-    while match l.head
-      _ nil => false
-      a A   => f a; true
+      c Cons => f c.head; c.tail.forAll f
 
 
   # get the head of this list, panic if list is empty

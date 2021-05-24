@@ -35,11 +35,6 @@ stream<T> ref is
   forAll(f fun (T)) unit is while hasNext do f(next)
 
 
-  # apply f to all elements in this stream, synonyme for forAll
-  #
-  consume (f fun (T)) unit is forAll f
-
-
   # apply f to all elements in this stream, infix operator synonyme of forAll.
   #
   infix | (f fun (T)) unit is while hasNext do f(next)
@@ -129,7 +124,7 @@ stream<T> ref is
   # print the elements of this stream
   #
   print unit is
-    consume(fun (x T) is
+    forAll(fun (x T) is
       yak x
       if hasNext then yak ", ")
 
@@ -139,7 +134,7 @@ stream<T> ref is
   count i32 is
     # NYI: check if this works: map<i32>(fun f(x T) => 1).fold i32.sum
     res := 0
-    consume(fun (x T) is set res := res + 1)
+    forAll(fun (x T) is set res := res + 1)
     res
 
 
@@ -154,7 +149,7 @@ stream<T> ref is
     # NYI: check if this works: map<string>(fun f(x T) => x.asSring).fold strings.concat ", "
     #
     res := ""
-    consume(fun (x T) is set res := res + x.asString; if hasNext then set res := res + ", ")
+    forAll(fun (x T) is set res := res + x.asString; if hasNext then set res := res + ", ")
     res
 
 

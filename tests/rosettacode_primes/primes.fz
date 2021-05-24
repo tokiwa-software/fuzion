@@ -65,7 +65,7 @@ primes
   primes3(n i32)   // sieve using streams and filters
   {
     a := marray n+1, false
-    (2..n).filter(fun (i i32) bool { !a[i] }).consume(fun (i i32)
+    (2..n).filter(fun (i i32) bool { !a[i] }).forAll(fun (i i32)
       {
           out.print(i); out.print(" ");
           (1..n/i).forAll(fun (j i32) { a[i*j] := true; } );

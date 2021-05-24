@@ -66,13 +66,15 @@ array<T>(internalArray sys.array<T>) : streamable<T> is
     # mapped trie.
     array<T> length.max(i+1), fun (ix i32) => if (ix == i) v else if (ix >= length) z else array.this[ix]
 
-  iterate(f fun (T)) unit is
-    asStream.consume(f)
 
   redef asStream ref : stream<T> is
     x := 0
     redef hasNext => x < length
     redef next => set x := x + 1; array.this[x-1]
+
+  redef forAll (f fun (T)) unit is
+    for i in indices do
+      f index[] i
 
 
   # create a list from this array

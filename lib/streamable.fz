@@ -41,9 +41,9 @@ streamable<T> ref is
     array<T> s1.count, fun (i i32) => s2.next
 
 
-  # create a stream and have it consumed by f
+  # create a stream and call 'forAll f' on it
   #
-  forAll(f fun (T)) unit is asStream.consume f
+  forAll(f fun (T)) unit is asStream.forAll f
 
 
   # create a stream and have it consumed by f, infix operator synonyme of forAll.
