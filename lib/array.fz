@@ -115,7 +115,7 @@ array<T>(internalArray sys.array<T>) : streamable<T> is
   #
   # e.g., to sum the elements of an array of i32, use a.fold i32.sum
   #
-  fold (m Monoid<T>) => fold 0, m.e, m
+  redef fold (m Monoid<T>) => fold 0, m.e, m
 
 
   # fold the elements of this array using the given monoid and initial value

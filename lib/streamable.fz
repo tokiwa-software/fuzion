@@ -33,12 +33,16 @@ streamable<T> ref is
   asStream stream<T> is abstract
 
 
+  # count the elements stream created from this streamable
+  #
+  count => asStream.count
+
+
   # collect the contents of this streamable into an array
   #
   asArray array<T> is
-    s1 := asStream
-    s2 := asStream
-    array<T> s1.count, fun (i i32) => s2.next
+    s := asStream
+    array<T> count, fun (i i32) => s.next
 
 
   # create a stream and call 'forAll f' on it
@@ -99,16 +103,14 @@ streamable<T> ref is
   # create a streamable that consists only of the first n elements of this
   # streamable, fewer if this stream has fewer elements
   #
-  take (n i32) streamable<T> is
-    sa : streamable<T> is
-      asStream stream<T> is
-        ref : stream<T> {
-            s := streamable.this.asStream
-            remaining := n
-            hasNext => remaining > 0 && s.hasNext
-            next => set remaining := remaining - 1; s.next
-          }
-    sa
+  take (n i32) ref : streamable<T> is
+        asStream stream<T> is
+          ref : stream<T> {
+              s := streamable.this.asStream
+              remaining := n
+              hasNext => remaining > 0 && s.hasNext
+              next => set remaining := remaining - 1; s.next
+            }
 
 
   # create a streamable that consists of the elements of this stream except the first
@@ -122,6 +124,15 @@ streamable<T> ref is
           s.next
         s
     sa
+
+
+  # create a slice from this streamable that consists of the elements starting at index
+  # from (including) up to index to (excluding).
+  #
+  slice(from, to i32) streamable<T> is
+    drop(from).take to-from
+    # NYI: OPTIMIZATION: We could redefine this, e.g. for to avoid copying array data
+    # on array.slice(from,to).asArray.
 
 
   # create a streamable that consists of all be the elements if this stream followed
@@ -164,3 +175,10 @@ streamable<T> ref is
               next => f s.next
             }
       }
+
+
+  # fold the elements of this streamable using the given monoid.
+  #
+  # e.g., to sum the elements of a stream of i32, use s.fold i32.sum
+  #
+  fold (m Monoid<T>) => asStream.fold m.e, m
