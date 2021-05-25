@@ -45,7 +45,7 @@ is
     infix <= (other entry) => ks[i] <= ks[other.i]
     key => ks[i]
     val => vs[i]
-  sortedEntries := sortedArray<entry> ((0..ks.length-1).asStream.map<entry> (fun (i i32) => entry i).asArray)
+  sortedEntries := sortedArray<entry> ((0..ks.length-1).mapStreamable<entry> (fun (i i32) => entry i).asArray)
 
   # number of entries in this map
   #

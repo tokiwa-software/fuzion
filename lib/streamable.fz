@@ -145,3 +145,22 @@ streamable<T> ref is
   # create a stream and then create a string from the elements of that stream
   #
   redef asString => asStream.asString
+
+
+  # map the stream to a new stream applying function f to all elements
+  #
+  # This performs a lazy mapping, f is called only when the elements
+  # are taken from the stream.
+  #
+  # NYI: As long as covariance for result type is not permitted we cannt
+  # call this 'map' since this would clash with, e.g., 'array.map'
+  #
+  mapStreamable<B>(f fun(T) B) streamable<B> is
+    ref : streamable<B> {
+        asStream =>
+          ref : stream<B> {
+              s := streamable.this.asStream
+              hasNext => s.hasNext
+              next => f s.next
+            }
+      }
