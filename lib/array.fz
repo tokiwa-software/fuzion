@@ -138,6 +138,10 @@ array<T>(internalArray sys.array<T>) : streamable<T> is
     array<T> array.this.length, fun(i i32) => array.this[array.this.length-1-i]
 
 
+  # sort this array using total order defined by lessOrEqual
+  sort(lessOrEqual fun(T, T) bool) => sortedArray<T> array.this, lessOrEqual
+
+
   # create a string representation of this array including all the string
   # representations of its contents.
   #
