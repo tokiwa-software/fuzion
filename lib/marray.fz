@@ -25,19 +25,22 @@
 
 # marray -- one-dimensional mutable array
 #
-marray<T>(length i32,  # length
-          init T       # initial value for elements
-          ) : streamable<T>
+marray<T>
+  (
+   # length of the marray
+   length i32,
+
+   # contents of the marray
+   private data sys.array<T>,
+
+   # just to distinguish constructor from marray<T>(i32, T)
+   _ unit
+   ) : streamable<T>
+
+  pre
+    debug: length <= data.length
+
 is
-
-# private:
-
-  data := sys.array<T> length
-
-  for x in indices do
-    data[x] := init
-
-# public:
 
   indices => 0..length-1
 
@@ -58,6 +61,29 @@ is
   #   marray.this[i] == o
   is
     data[i] := o
+
+
+  # create a new marray by adding a new element o at the end of this marray
+  #
+  add (o T) marray<T>
+    post
+      debug: result.length = length + 1
+      # debug: result[length] = o  -- there is no 'infix =' defined for T
+  is
+    d := if (data.length > length) data
+      else
+        newData := sys.array<T> 8.max data.length*2
+        for i in indices do
+          newData[i] := data[i]
+        newData
+    d[length] := o
+    marray<T> length + 1, d, unit
+
+
+  # infix operator synonyme for add
+  #
+  infix + (o T) => add o
+
 
   # create immutable array from this
   #
