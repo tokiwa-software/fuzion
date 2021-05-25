@@ -79,7 +79,7 @@ array<T>(internalArray sys.array<T>) : streamable<T> is
 
   # create a list from this array
   #
-  asList => asList 0
+  redef asList => asList 0
 
 
   # create a list from this array starting at the given index

@@ -96,7 +96,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
 
     # create a list from this interval
     #
-    asList list<T> is
+    redef asList list<T> is
       cons (head T) : Cons<T, list<T>> is
         tail list<T> is
           if (head >= upper) nil else cons head + head.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is hasInterval<i32>, it should be i32.

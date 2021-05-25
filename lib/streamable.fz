@@ -25,12 +25,17 @@
 
 # streamable -- ancestor for features that can be converted to a stream
 #
-streamable<T> ref is
+streamable<T> ref : hasList<T> is
 
 
   # create a stream of T
   #
   asStream stream<T> is abstract
+
+
+  # create a list from this streamable
+  #
+  asList => asStream.asList
 
 
   # count the elements stream created from this streamable

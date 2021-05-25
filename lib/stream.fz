@@ -30,6 +30,25 @@
 # mutable state.
 stream<T> ref is
 
+  # create a list from this stream
+  #
+  asList list<T> is
+    fromStream list<T> is
+      if hasNext
+        h := next;
+        ref : Cons<T,list<T>> {
+            memoizedTail option<some<list<T>>> := nil
+            head => h
+            tail =>
+              if !memoizedTail.exists
+                set memoizedTail := some fromStream
+              memoizedTail.unwrap.val
+          }
+      else
+        nil
+    fromStream
+
+
   # apply f to all elements in this stream
   #
   forAll(f fun (T)) unit is while hasNext do f(next)
