@@ -38,7 +38,7 @@ streamable<T> ref : hasList<T> is
   asList => asStream.asList
 
 
-  # count the elements stream created from this streamable
+  # count the elements of stream created from this streamable
   #
   count => asStream.count
 
