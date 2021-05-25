@@ -96,6 +96,52 @@ streamable<T> ref is
   infix ∃ (f fun (T) bool) bool is asStream ∃ f
 
 
+  # create a streamable that consists only of the first n elements of this
+  # streamable, fewer if this stream has fewer elements
+  #
+  take (n i32) streamable<T> is
+    sa : streamable<T> is
+      asStream stream<T> is
+        ref : stream<T> {
+            s := streamable.this.asStream
+            remaining := n
+            hasNext => remaining > 0 && s.hasNext
+            next => set remaining := remaining - 1; s.next
+          }
+    sa
+
+
+  # create a streamable that consists of the elements of this stream except the first
+  # n elements
+  #
+  drop (n i32) streamable<T> is
+    sa : streamable<T> is
+      asStream =>
+        s := streamable.this.asStream
+        for _ in 1..n while s.hasNext
+          s.next
+        s
+    sa
+
+
+  # create a streamable that consists of all be the elements if this stream followed
+  # by all the elements of s
+  #
+  concatStreamables (s streamable<T>) ref : streamable<T> is
+    asStream stream<T> is
+      st : stream<T> is
+        s1 := streamable.this.asStream
+        s2 := s.asStream
+        hasNext => s1.hasNext || s2.hasNext
+        next => if (s1.hasNext) s1.next else s2.next
+      st
+
+
+  # infix operand synonyme for concatSteramables
+  #
+  infix ++ (s streamable<T>) streamable<T> is concatStreamables s
+
+
   # create a stream and then create a string from the elements of that stream
   #
   redef asString => asStream.asString
