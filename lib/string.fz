@@ -39,6 +39,9 @@ string ref : hasHash<string>, ordered<string>, strings is
   # length of this string in bytes
   byteLength => utf8.asStream.count
 
+  # length of this string in codepoints
+  codepointLength => codepointsStream.count
+
   # concatenate string with string represenation of another object
   infix + (other Object) ref : string is
 
@@ -371,3 +374,16 @@ string ref : hasHash<string>, ordered<string>, strings is
         error "Bad UTF8 encoding found: " + b1 + ": codes 0xfe and 0xff are undefined, used for endianess checking."
       else
         fuzion.std.panic "string.codepointStream: missing case for " + b1
+
+
+  # create substring of this string consisting of codepoints from (indlusive) .. to (exclusive).
+  #
+  substring(from, to i32) string
+    pre
+#     debug: 0 <= from <= to <= codepointLength        -- NYI: this does not work yet
+      debug: 0 <= from <= to && to <= codepointLength
+  is
+    codepointsArray
+      .slice(from, to)
+      .mapStreamable<string>(fun (c codepoint) string is c)  # NYI: this should maybe not be needed since codepoint is a string
+      .fold strings.concat
