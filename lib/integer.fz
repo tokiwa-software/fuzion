@@ -111,29 +111,22 @@ integer<T : integer<T>> : numeric<T> is
       tens := one, tens * ten
     while thiz / ten >= tens
 
-  redef asString string is decimalStr
-
-  decimalStr ref : string is  # NYI: check why "ref" is needed here, make this an anonymous inner feature
-
-    redef utf8 => decimalBytes
-
-    decimalBytes ref : streamable<i32> is  # NYI: check why "ref" is needed here, make this an anonymous inner feature
-
-      redef asStream => decimalBytesStream
-
-      decimalBytesStream stream<i32> is
-        if thiz.sign >= 0
-          posDecimalBytesStream
-        else
-          p := -? thiz
-          match p
-            v T   => ("-" + v .asString).utf8.asStream
-            _ nil => ("-" + (-(thiz / ten)).asString + (-(thiz % ten)).asString).utf8.asStream
-
-      posDecimalBytesStream ref : stream<i32> is  # NYI: check why "ref" is needed here, make this an anonymous inner feature
-        p := thiz.highest10
-        redef hasNext => p.sign > 0
-        redef next =>
-          r := 48 + (thiz / p % ten).to_u32.as_i32
-          set p := p / ten
-          r
+  redef asString string is
+    ref : string {
+        redef utf8 ref : streamable<i32> is
+          redef asStream stream<i32> is
+            if thiz.sign >= 0
+              ref : stream<i32> {
+                  p := thiz.highest10
+                  redef hasNext => p.sign > 0
+                  redef next =>
+                    r := 48 + (thiz / p % ten).to_u32.as_i32
+                    set p := p / ten
+                    r
+                }
+            else
+              p := -? thiz
+              match p
+                v T   => ("-" + v .asString).utf8.asStream
+                _ nil => ("-" + (-(thiz / ten)).asString + (-(thiz % ten)).asString).utf8.asStream
+      }
