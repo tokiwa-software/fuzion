@@ -295,7 +295,8 @@ public class Clazzes extends ANY
                              "Recursive value type is not allowed",
                              "Value type " + actualType + " equals type of outer feature.\n"+
                              "The chain of outer types that lead to this recursion is:\n"+
-                             chain);
+                             chain + "\n" +
+                             "To solve this, you could make add a 'ref' after the arguments list at "+o._type.featureOfType().pos().show());
               }
           }
         o = o._outer;
