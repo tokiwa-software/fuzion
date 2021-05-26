@@ -141,7 +141,8 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
     (v4, s4) := if (v3 &         15)/=0 (v3, s3) else (v3 >>  4, s3 +  4)
     (v5, s5) := if (v4 &          3)/=0 (v4, s4) else (v4 >>  2, s4 +  2)
     (v6, s6) := if (v5 &          1)/=0 (v5, s5) else (v5 >>  1, s5 +  1)
-    s6
+    s7       := if (v6 &          1)/=0      s6  else                 64
+    s7
 
 
   # count the number of 1 bits in the binary representation of this
