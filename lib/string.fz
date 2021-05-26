@@ -114,17 +114,6 @@ string ref : hasHash<string>, ordered<string>, strings is
     else
       h
 
-  # NYI: remove the convenience functions when Fuzion supports char literals
-  #
-  minusChar => "-".utf8.asStream.next
-  plusChar  => "+".utf8.asStream.next
-  zeroChar  => "0".utf8.asStream.next
-  nineChar  => "9".utf8.asStream.next
-  aChar     => "a".utf8.asStream.next
-  zChar     => "z".utf8.asStream.next
-  capAChar  => "A".utf8.asStream.next
-  capZChar  => "Z".utf8.asStream.next
-
 
   # internal helper to create error for failed parsing
   #
