@@ -294,8 +294,8 @@ public class Intrinsics extends ANY
     else if (n.equals("u32.infix >"     )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) >  0); }
     else if (n.equals("u32.infix <="    )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) <= 0); }
     else if (n.equals("u32.infix >="    )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) >= 0); }
-    else if (n.equals("u64.low32bits"   )) { result = (args) -> new u32Value (                     (int) args.get(0).i64Value()); }
-    else if (n.equals("u64.castTo_u64"  )) { result = (args) -> new u64Value (                           args.get(0).i64Value()); }
+    else if (n.equals("u64.low32bits"   )) { result = (args) -> new u32Value (                     (int) args.get(0).u64Value()); }
+    else if (n.equals("u64.castTo_i64"  )) { result = (args) -> new i64Value (                           args.get(0).u64Value()); }
     else if (n.equals("u64.prefix -°"   )) { result = (args) -> new u64Value (                       -   args.get(0).u64Value()); }
     else if (n.equals("u64.infix +°"    )) { result = (args) -> new u64Value (args.get(0).u64Value() +   args.get(1).u64Value()); }
     else if (n.equals("u64.infix -°"    )) { result = (args) -> new u64Value (args.get(0).u64Value() -   args.get(1).u64Value()); }
