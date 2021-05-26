@@ -30,17 +30,8 @@
 #
 testOnesCount is
 
-  bin(x u64) unit is
-    bin 64, x
-
-  bin(n i32, x u64) unit is
-    if n /= 0
-      bin n-1, x>>1
-      if (x %% 2) yak "0" else yak "1"
-
   show(x u64) is
-    bin x
-    yak ": " + x.onesCount+" "+x.castTo_i64.onesCount+" "+x.low32bits.onesCount+" "+x.low32bits.castTo_i32.onesCount + " "
+    yak x.bin(64) + ": " + x.onesCount+" "+x.castTo_i64.onesCount+" "+x.low32bits.onesCount+" "+x.low32bits.castTo_i32.onesCount + " "
     yak $x.highestOneBit+" "+x.castTo_i64.highestOneBit+" "+x.low32bits.highestOneBit+" "+x.low32bits.castTo_i32.highestOneBit + " "
     yak $x.trailingZeros+" "+x.castTo_i64.trailingZeros+" "+x.low32bits.trailingZeros+" "+x.low32bits.castTo_i32.trailingZeros + "."
     say
