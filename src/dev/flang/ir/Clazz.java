@@ -773,7 +773,7 @@ public class Clazz extends ANY implements Comparable
                   }
               }
             check
-              (innerClazz._type.featureOfType() == af);
+              (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == af);
           }
       }
 
