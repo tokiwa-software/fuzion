@@ -95,38 +95,79 @@ integer<T : integer<T>> : numeric<T> is
     if (thiz > zero) ((thiz - one).to_u32 + 1)
     else 0
 
-  highest10 T
+
+  # find the highest power of b that is less or equal than thiz.
+  #
+  private highest(b T) T
     pre
       thiz.sign >= 0
     post
       thiz == zero: result == one,
-      thiz != zero: thiz / ten < result <= thiz
+      thiz != zero: thiz / b < result <= thiz
 # NYI: original postcondition code should cause a compiler error since
 # result.infix <= expectes an argument of type T while integer.this is
 # not of type T.
 #
-#     integer.this != zero: integer.this / ten < result <= integer.this
+#     integer.this != zero: integer.this / b < result <= integer.this
   is
     for
-      tens := one, tens * ten
-    while thiz / ten >= tens
+      bs := one, bs * b
+    while thiz / b >= bs
 
-  redef asString string is
+
+  # convert this to a decimal number in a string.  If negative, add "-" as
+  # the first character.
+  #
+  redef asString string is integer.this.asString 10
+
+
+  # convert this to a number using the given base.  If negative, add "-" as
+  # the first character.
+  #
+  asString(base u32) string
+    pre
+      debug: 1.as_u32 < base <= 36
+  is
     ref : string {
         redef utf8 ref : streamable<i32> is
           redef asStream stream<i32> is
+            b := from_u32 base
             if thiz.sign >= 0
               ref : stream<i32> {
-                  p := thiz.highest10
+                  p := thiz.highest b
                   redef hasNext => p.sign > 0
                   redef next =>
-                    r := 48 + (thiz / p % ten).to_u32.as_i32
-                    set p := p / ten
+                    d := (thiz / p % b).to_u32.as_i32
+                    r := if (d < 10) strings.zeroChar + d else strings.aChar + d -  10
+                    set p := p / b
                     r
                 }
             else
               p := -? thiz
               match p
-                v T   => ("-" + v .asString).utf8.asStream
-                _ nil => ("-" + (-(thiz / ten)).asString + (-(thiz % ten)).asString).utf8.asStream
+                v T   => ("-" + v .asString base).utf8.asStream
+                _ nil => (("-" + (-(thiz / b)).asString base) + (-(thiz % b)).asString base).utf8.asStream
       }
+
+
+  # convert this to a number using the given base.  If negative, add "-" as
+  # the first character.  Extend with leading "0" until the length is at
+  # least len
+  #
+  asString(len i32, base u32) string
+    pre
+      debug: 1.as_u32 < base <= 36
+    post
+      debug: result.byteLength >= len
+  is
+    # create number
+    n := integer.this.asString base
+
+    # split n into sign and digits
+    (sign, digits) := if (integer.this.sign < 0) ("-", strings.fromBytes n.utf8.drop 1) else ("", n)
+
+    # create required additional zeros
+    zeros := "0" * (0.max len - n.byteLength)
+
+    # put it all together
+    sign + zeros + digits
