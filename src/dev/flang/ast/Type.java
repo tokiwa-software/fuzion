@@ -649,7 +649,12 @@ public class Type extends ANY implements Comparable
         if (g2 != result._generics ||
             o2 != result.outer()    )
           {
-            result = new Type(result, g2, o2);
+            var hasError = o2 == Types.t_ERROR;
+            for (var t : g2)
+              {
+                hasError = hasError || (t == Types.t_ERROR);
+              }
+            result = hasError ? Types.t_ERROR : new Type(result, g2, o2);
           }
       }
     return result;
