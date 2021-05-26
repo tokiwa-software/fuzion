@@ -1112,6 +1112,8 @@ public class Interpreter extends Backend
        (curValue instanceof Instance) || (curValue instanceof LValue) ||
        curValue instanceof i32Value  && staticClazz == Clazzes.i32 .getIfCreated() ||
        curValue instanceof i64Value  && staticClazz == Clazzes.i64 .getIfCreated() ||
+       curValue instanceof u32Value  && staticClazz == Clazzes.u32 .getIfCreated() ||
+       curValue instanceof u64Value  && staticClazz == Clazzes.u64 .getIfCreated() ||
        curValue instanceof boolValue && staticClazz == Clazzes.bool.getIfCreated(),
        staticClazz != null);
 
@@ -1126,6 +1128,18 @@ public class Interpreter extends Backend
       {
         check
           (thiz.qualifiedName().equals("i64.val"));
+        result = curValue;
+      }
+    else if (staticClazz == Clazzes.u32.getIfCreated() && curValue instanceof u32Value)
+      {
+        check
+          (thiz.qualifiedName().equals("u32.val"));
+        result = curValue;
+      }
+    else if (staticClazz == Clazzes.u64.getIfCreated() && curValue instanceof u64Value)
+      {
+        check
+          (thiz.qualifiedName().equals("u64.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.bool.getIfCreated() && curValue instanceof boolValue)
