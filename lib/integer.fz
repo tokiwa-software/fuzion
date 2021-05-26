@@ -171,3 +171,18 @@ integer<T : integer<T>> : numeric<T> is
 
     # put it all together
     sign + zeros + digits
+
+
+  # creeate binary representation
+  #
+  bin => integer.this.asString 2
+
+
+  # creeate octal representation
+  #
+  oct => integer.this.asString 8
+
+
+  # creeate hexadecimal representation
+  #
+  hex => integer.this.asString 16
