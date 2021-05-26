@@ -121,14 +121,12 @@ streamable<T> ref : hasList<T> is
   # create a streamable that consists of the elements of this stream except the first
   # n elements
   #
-  drop (n i32) streamable<T> is
-    sa : streamable<T> is
-      asStream =>
-        s := streamable.this.asStream
-        for _ in 1..n while s.hasNext
-          s.next
-        s
-    sa
+  drop (n i32) ref : streamable<T> is
+    asStream =>
+      s := streamable.this.asStream
+      for _ in 1..n while s.hasNext
+        s.next
+      s
 
 
   # create a slice from this streamable that consists of the elements starting at index
