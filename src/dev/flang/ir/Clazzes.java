@@ -306,7 +306,7 @@ public class Clazzes extends ANY
         // NYI: We currently create new clazzes for every different outer
         // context. This gives us plenty of opportunity to specialize the code,
         // but it might be overkill in some cases. We might rethink this and,
-        // e.g. treat clazzes of inherited features with a referenc outer clazz
+        // e.g. treat clazzes of inherited features with a reference outer clazz
         // the same.
         var newcl =  new Clazz(actualType, outer);
         result = intern(newcl);
