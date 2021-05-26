@@ -43,22 +43,10 @@ string ref : hasHash<string>, ordered<string>, strings is
   codepointLength => codepointsStream.count
 
   # concatenate string with string represenation of another object
-  infix + (other Object) ref : string is
-
-    redef utf8 streamable<i32> is
-      byteStreamable  # NYI: this should be an anonymous inner feature
-
-    private byteStreamable ref : streamable<i32> is  # NYI: code is very brittle: removing "ref" causes crash
-
-      redef asStream stream<i32> is
-        byteStream  # NYI: this should be an anonymous inner feature
-
-      byteStream ref : stream<i32> is  # NYI: code is very brittle: removing "ref" causes crash
-        head := string.this   .utf8.asStream
-        tail := other.asString.utf8.asStream
-
-        redef hasNext => head.hasNext || tail.hasNext
-        redef next i32 is if head.hasNext then head.next else tail.next
+  infix + (other Object) string is
+    ma := marray<Object> 2, string.this
+    ma[1] := other
+    strings.fromArray ma
 
   # repeat string given number of times
   infix * (n i32) ref : string

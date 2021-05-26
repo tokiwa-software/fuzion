@@ -44,3 +44,47 @@ strings is
     redef infix ∙ (a, b string) string is if (a.isEmpty || b.isEmpty) a + b else a + sep + b
     redef infix == (a, b string) => a == b
     redef e => ""
+
+
+  # create string by concatenating the results of $a[a.indices].
+  #
+  # This uses a growing array if further strings are appended using 'infix +',
+  # so it avoids quadratic runtime caused if each 'infix +' would create its
+  # own concatenation-string.
+  #
+  # The performance of creating a string a0+a1+a2+...+a<n> is in O(n) since the
+  # backing array is shared and doubled in size when full (so the final array size
+  # is less than 2n in size and the sum of all arrays is less than 4n = 2n + n +
+  # n/2+n/4+...).
+  #
+  # The performance of iterating the utf8 bytes of a string is O(l+n) for an
+  # array of length l created by concatenating n sub-strings.
+  #
+  fromArray(a marray<Object>) string is
+
+    fromMArray(a marray<Object>) : string is
+      redef infix + (other Object) string is
+        fromMArray a.add other
+
+      redef utf8 streamable<i32> is
+        byteStreamable  # NYI: this should be an anonymous inner feature
+
+      private byteStreamable ref : streamable<i32> is  # NYI: code is very brittle: removing "ref" causes crash
+
+        redef asStream stream<i32> is
+          byteStream  # NYI: this should be an anonymous inner feature
+
+        byteStream ref : stream<i32> is  # NYI: code is very brittle: removing "ref" causes crash
+          i := 0
+          s := a[i].asString.utf8.asStream
+
+          findNext unit is
+            while !s.hasNext && i < a.length
+              set i := i + 1
+              if i < a.length
+                set s := a[i].asString.utf8.asStream
+
+          redef hasNext => findNext; s.hasNext
+          redef next    => findNext; s.next
+
+    fromMArray a
