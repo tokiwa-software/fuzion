@@ -77,3 +77,11 @@ strings is
 
         redef hasNext => findNext; s.hasNext
         redef next    => findNext; s.next
+
+
+  # create string from the given utf8 bytes
+  #
+  fromBytes(utf8Bytes streamable<i32>) string is
+    ref : string {
+        redef utf8 => utf8Bytes
+      }
