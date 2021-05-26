@@ -1,0 +1,81 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of fz command, the main Fuzion tools entry point
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+#!/bin/bash
+#
+# Run the fuzion example given as an argument $2 using the C backend and compare
+# the stdout/stderr output to $2.expected_out and $2.expected_err.
+#
+# The fz command is given as argument $1
+#
+# In case file $2.skip exists, do not run the example
+#
+
+if [ -f $2.skip ]; then
+    echo "SKIP $2"
+else
+    echo -n "RUN $2 "
+
+    rm -f testbin
+
+    # NYI: Use this version to check there are no warnings produced by C compiler:
+    (($1 $2 -c -o=testbin               && ./testbin) 2>tmp_err.txt | head -n 100) >tmp_out.txt;
+
+    # This version dumps stderr output if fz was successful, which essentially ignores C compiler warnings:
+    # (($1 $2 -c -o=testbin 2>tmp_err.txt && ./testbin 2>tmp_err.txt | head -n 100) >tmp_out.txt;
+
+    expout=$2.expected_out
+    experr=$2.expected_err
+    if [ -f $2.expected_out_c ]; then
+        expout=$2.expected_out_c
+    fi
+    if [ -f $2.expected_err_c ]; then
+        experr=$2.expected_err_c
+    fi
+    head -n 100 $expout >tmp_exp_out.txt
+    diff tmp_exp_out.txt tmp_out.txt
+    if [ $? -eq 0 ]; then
+        diff $experr tmp_err.txt >/dev/null
+        if [ $? -eq 0 ]; then
+            echo -ne "\033[32;1mPASSED\033[0m."
+        else
+            if [ -s $experr ] && [ -s tmp_err.txt ]; then
+                echo -ne "\033[33;1mDIFF IN STDERR\033[0m."
+            else
+                diff $experr tmp_err.txt
+                echo -e "\033[31;1m*** FAILED\033[0m err on $2"
+            fi
+        fi
+    else
+        diff $experr tmp_err.txt
+        echo -e "\033[31;1m*** FAILED\033[0m out on $2"
+    fi
+    if [ -f testbin ]; then
+        echo " (binary)"
+    else
+        echo " (no binary)"
+    fi
+    rm -f tmp_out.txt tmp_err.txt tmp_exp_out.txt
+fi
