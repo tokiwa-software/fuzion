@@ -428,39 +428,32 @@ public class Interpreter extends Backend
               {
                 check
                   (rc.isChoice());
-                if (vc.isChoiceOfOnlyRefs())
+
+                var vl = Layout.get(vc);
+                var rl = Layout.get(rc);
+                var voff = 0;
+                var roff = 0;
+                var vsz  = vl.size();
+                check
+                  (rl.size() == vsz);
+                if (val instanceof LValue)
                   {
-                    throw new Error("NYI: Boxing choiceOfOnlyRefs, does this happen at all?");
+                    voff += ((LValue) val).offset;
+                    val   = ((LValue) val).container;
+                  }
+                if (val instanceof boolValue)
+                  {
+                    val.storeNonRef(new LValue(Clazzes.bool.get(), ri, roff), Layout.get(Clazzes.bool.get()).size());
                   }
                 else
                   {
                     check
-                      (!rc.isChoiceOfOnlyRefs());
-
-                    var vl = Layout.get(vc);
-                    var rl = Layout.get(rc);
-                    var voff = 0;
-                    var roff = 0;
-                    var vsz  = vl.size();
-                    check
-                      (rl.size() == vsz);
-                    if (val instanceof LValue)
+                      (!rc.isChoiceOfOnlyRefs() || vsz == 1);
+                    var vi = (Instance) val;
+                    for (int i = 0; i<vsz; i++)
                       {
-                        voff += ((LValue) val).offset;
-                        val   = ((LValue) val).container;
-                      }
-                    if (val instanceof boolValue)
-                      {
-                        val.storeNonRef(new LValue(Clazzes.bool.get(), ri, roff), Layout.get(Clazzes.bool.get()).size());
-                      }
-                    else
-                      {
-                        var vi = (Instance) val;
-                        for (int i = 0; i<vsz; i++)
-                          {
-                            ri.refs   [roff+i] = vi.refs   [voff+i];
-                            ri.nonrefs[roff+i] = vi.nonrefs[voff+i];
-                          }
+                        ri.refs   [roff+i] = vi.refs   [voff+i];
+                        ri.nonrefs[roff+i] = vi.nonrefs[voff+i];
                       }
                   }
               }
