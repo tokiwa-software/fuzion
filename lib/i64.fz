@@ -114,17 +114,17 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
 
   # create hash code from this number
   hash u64 is
-    as_u64.hash
+    castTo_u64.hash
 
 
   # find the highest 1 bit in this integer and return integer with
   # this single bit set or 0 if this is 0.
   #
   highestOneBit i64 is
-    val.as_u64.highestOneBit.as_i64
+    val.castTo_u64.highestOneBit.castTo_i64
 
 
   # count the number of trailing zeros in this integer.
   #
   trailingZeros i32 is
-    val.as_u64.trailingZeros
+    val.castTo_u64.trailingZeros
