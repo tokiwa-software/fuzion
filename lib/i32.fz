@@ -120,3 +120,10 @@ i32(val i32) : wrappingInteger<i32>, hasInterval<i32>, i32s is
   #
   trailingZeros i32 is
     val.castTo_u32.trailingZeros
+
+
+  # count the number of 1 bits in the binary representation of this
+  # integer.
+  #
+  onesCount i32 is
+    val.castTo_u32.onesCount

@@ -142,3 +142,17 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
     (v5, s5) := if (v4 &          3)/=0 (v4, s4) else (v4 >>  2, s4 +  2)
     (v6, s6) := if (v5 &          1)/=0 (v5, s5) else (v5 >>  1, s5 +  1)
     s6
+
+
+  # count the number of 1 bits in the binary representation of this
+  # integer.
+  #
+  onesCount i32 is
+    v := val;
+    m := v & 0x_aaaaaaaa_aaaaaaaa; v := v - m + (m >> 1)
+    m := v & 0x_cccccccc_cccccccc; v := v - m + (m >> 2)
+    m := v & 0x_f0f0f0f0_f0f0f0f0; v := v - m + (m >> 4)
+    v := v + (v >>  8)
+    v := v + (v >> 16)
+    v := v + (v >> 32)
+    (v & 0xff).as_i32

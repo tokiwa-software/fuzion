@@ -128,3 +128,10 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
   #
   trailingZeros i32 is
     val.castTo_u64.trailingZeros
+
+
+  # count the number of 1 bits in the binary representation of this
+  # integer.
+  #
+  onesCount i32 is
+    val.castTo_u64.onesCount
