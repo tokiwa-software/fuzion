@@ -60,31 +60,20 @@ strings is
   # The performance of iterating the utf8 bytes of a string is O(l+n) for an
   # array of length l created by concatenating n sub-strings.
   #
-  fromArray(a marray<Object>) string is
+  fromArray(a marray<Object>) ref : string is
+    redef infix + (other Object) string is
+      fromArray a.add other
 
-    fromMArray(a marray<Object>) : string is
-      redef infix + (other Object) string is
-        fromMArray a.add other
+    redef utf8 ref : streamable<i32> is
+      redef asStream ref : stream<i32> is
+        i := 0
+        s := a[i].asString.utf8.asStream
 
-      redef utf8 streamable<i32> is
-        byteStreamable  # NYI: this should be an anonymous inner feature
+        findNext unit is
+          while !s.hasNext && i < a.length
+            set i := i + 1
+            if i < a.length
+              set s := a[i].asString.utf8.asStream
 
-      private byteStreamable ref : streamable<i32> is  # NYI: code is very brittle: removing "ref" causes crash
-
-        redef asStream stream<i32> is
-          byteStream  # NYI: this should be an anonymous inner feature
-
-        byteStream ref : stream<i32> is  # NYI: code is very brittle: removing "ref" causes crash
-          i := 0
-          s := a[i].asString.utf8.asStream
-
-          findNext unit is
-            while !s.hasNext && i < a.length
-              set i := i + 1
-              if i < a.length
-                set s := a[i].asString.utf8.asStream
-
-          redef hasNext => findNext; s.hasNext
-          redef next    => findNext; s.next
-
-    fromMArray a
+        redef hasNext => findNext; s.hasNext
+        redef next    => findNext; s.next

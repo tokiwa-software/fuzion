@@ -53,14 +53,8 @@ string ref : hasHash<string>, ordered<string>, strings is
   pre
     n >= 0
   is
-    redef utf8 streamable<i32> is
-      byteStreamable  # NYI: this should be an anonymous inner feature
-
-    private byteStreamable ref : streamable<i32> is  # NYI: code is very brittle: removing "ref" causes crash
-      redef asStream stream<i32> is
-        byteStream  # NYI: this should be an anonymous inner feature
-
-      byteStream ref : stream<i32> is  # NYI: code is very brittle: removing "ref" causes crash
+    redef utf8 ref : streamable<i32> is
+      redef asStream ref : stream<i32> is
         i := 0
         bytes := string.this.utf8.asStream
 
@@ -275,18 +269,15 @@ string ref : hasHash<string>, ordered<string>, strings is
   # found in the underlying utf8 bytes
   #
   codepointsStream : streamable<codepoint> is
-    asStream stream<codepoint> is
+    asStream ref : stream<codepoint> is
       s := codepointsAndErrors
       n option<codepoint> := nil
 
-      resultStream : stream<codepoint> is
-        redef hasNext => s.hasNext
-        redef next =>
-          match s.next
-            c codepoint => c
-            e error     => codepoint 0xFFFD # 'REPLACEMENT CHARACTER' (U+FFFD)
-
-      resultStream
+      redef hasNext => s.hasNext
+      redef next =>
+        match s.next
+          c codepoint => c
+          e error     => codepoint 0xFFFD # 'REPLACEMENT CHARACTER' (U+FFFD)
 
   # convert this string into a stream of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
