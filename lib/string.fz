@@ -58,7 +58,7 @@ string ref : hasHash<string>, ordered<string>, strings is
         i := 0
         bytes := string.this.utf8.asStream
 
-        redef hasNext => bytes.hasNext
+        redef hasNext => i < n && bytes.hasNext
         redef next i32 is
           res := bytes.next
           if !bytes.hasNext
