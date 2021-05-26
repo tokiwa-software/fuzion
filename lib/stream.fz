@@ -207,7 +207,7 @@ stream<T> ref is
   # create a string from the elements of this stream
   #
   redef asString ref string is
-    # NYI: check if this works: map<string>(fun f(x T) => x.asSring).fold strings.concat ", "
+    # NYI: check if this works: map<string>(fun (x T) => x.asString).fold strings.concat ", "
     #
     res := ""
     forAll(fun (x T) is set res := res + x.asString; if hasNext then set res := res + ", ")
