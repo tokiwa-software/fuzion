@@ -23,9 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-# hasEquals -- feature for that allows comparison using 'infix =' operator.
+# hasEquals -- feature that allows comparison using 'infix =' operator.
 #
-# features inheriting from this feature must be immutable. The operator
+# Features inheriting from this feature must be immutable.  The operator
 # 'infix =' provides a means to separate values into equivalence classes.
 #
 # NYI: the compiler should check that features inheriting from this are
