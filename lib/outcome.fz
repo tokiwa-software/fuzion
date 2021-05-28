@@ -28,6 +28,40 @@
 #
 outcome<T> : choice<T, error> is
 
+  # Does this outcome contain a value of type T?
+  #
+  ok =>
+    match outcome.this
+      T     => true
+      error => false
+
+
+  # Does this outcome contain an error
+  #
+  isError =>
+    match outcome.this
+      T     => false
+      error => true
+
+
+  # value of a numOption that is known to contain a value
+  #
+  # This can only be called in cases where it is known for sure that this
+  # outcomee is not an error.  A runtime error will be created otherwise.
+  #
+  val T
+    pre
+      # NYI: better syntax:
+      #
+      # safety: option.this?
+      safety: match outcome.this
+        T     => true
+        error => false
+  is
+    match outcome.this
+      v T   => v
+      error => fuzion.std.panic "outcome.val called on error"
+
 
   # converts outcome to a string
   #
