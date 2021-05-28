@@ -61,9 +61,9 @@ hasInterval<T: hasInterval<T>> : integer<T> is
 
     # create a stream of all the elements of this interval, in order.
     redef asStream ref : stream<T> is
-      x := lower
-      redef hasNext bool is x <= upper
-      redef next T is res := x; set x := x + one; res
+      x numOption<T> := lower
+      redef hasNext bool is x.exists && x.val <= upper
+      redef next T is res := x.val; set x := x +? one; res
 
 
     # does this range contain the given value?
@@ -84,9 +84,11 @@ hasInterval<T: hasInterval<T>> : integer<T> is
 
       # create a stream of all the elements of this interval, in order.
       redef asStream ref : stream<T> is
-        x := lower
-        redef hasNext bool is step > zero && x <= upper || step < zero && x >= upper
-        redef next T is res := x; set x := x + step; res
+        x numOption<T> := lower
+        redef hasNext bool is
+          (step > zero && x.exists && x.val <= upper ||
+           step < zero && x.exists && x.val >= upper    )
+        redef next T is res := x.val; set x := x +? step; res
 
 
       # does this range contain the given value?
