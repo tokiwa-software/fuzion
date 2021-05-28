@@ -52,7 +52,11 @@ is
 
   # add new element k to this set.
   #
-  add (k K) => psSet<K> psm.add k, unit
+  add (k K) =>
+    if has k
+      psSet.this
+    else
+      psSet<K> psm.add k, unit
 
 
   # create a sorted array from the elements of this set
