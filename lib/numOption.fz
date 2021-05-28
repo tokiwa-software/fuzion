@@ -34,6 +34,41 @@ numOption<T: numeric<T>> :
   monad<T, numOption<T>>
 is
 
+  # Does this option contain a value of type T?
+  #
+  exists =>
+    match numOption.this
+      T   => true
+      nil => false
+
+
+  # Does this option contain no value of type T?
+  #
+  isNil =>
+    match numOption.this
+      T   => false
+      nil => true
+
+
+  # value of an option that is known to contain a value
+  #
+  # this can only be called in cases where it is known for sure that this option
+  # is not nil.  A runtime error will be created otherwise.
+  #
+  val T
+    pre
+      # NYI: better syntax:
+      #
+      # safety: option.this?
+      safety: match numOption.this
+        T   => true
+        nil => false
+  is
+    match numOption.this
+      v T => v
+      nil => fuzion.std.panic "numOption.val called on nil"
+
+
   # monadic operator
   redef infix >>= (f fun (T) numOption<T>) => numOption.this.bind<T>(f)
 
