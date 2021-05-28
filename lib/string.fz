@@ -355,3 +355,29 @@ string ref : hasHash<string>, ordered<string>, strings is
       .slice(from, to)
       .mapStreamable<string>(fun (c codepoint) string is c)  # NYI: this should maybe not be needed since codepoint is a string
       .fold strings.concat
+
+
+  # check if this string starts with given prefix
+  #
+  startsWith(prefx string) =>
+    startsWith utf8.asList, prefx.utf8.asList
+
+
+  # helper for startsWith(string) to compare lists
+  #
+  private startsWith(a, prefx list<i32>) bool is
+    match prefx
+      nil     => true
+      cb Cons =>
+        match a
+          nil     => false
+          ca Cons => ca.head = cb.head && startsWith ca.tail, cb.tail
+
+
+  # check if this string ends with given suffix
+  #
+  endsWith(suffix string) =>
+    l  := byteLength
+    sl := suffix.byteLength
+    end := utf8.drop l-sl
+    startsWith end.asList, suffix.utf8.asList
