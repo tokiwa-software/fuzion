@@ -366,6 +366,14 @@ string ref : hasHash<string>, ordered<string>, strings is
   # helper for startsWith(string) to compare lists
   #
   private startsWith(a, prefx list<i32>) bool is
+    #
+    # NYI: If we could add a compile time check for the type of the actual generic
+    # such as
+    #
+    #   pre
+    #     A : hasEquals
+    #
+    # we could make this code generic and move it to list.fz
     match prefx
       nil     => true
       cb Cons =>
