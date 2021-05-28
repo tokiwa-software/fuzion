@@ -126,7 +126,10 @@ O(n log n).
   # add mapping from k to v
   #
   add (k K, v V) psMap<K, V> is
-    add((k,v))
+    if has k
+      fuzion.std.panic "NYI: psMap currently does not handle updates for existing key"
+    else
+      add((k,v))
 
 
   # add mapping from kv.values.0 to kv.values.1
@@ -163,8 +166,7 @@ O(n log n).
     join fill-1, nfill, 1
 
 
-  # finde the value k is mapped to or nil if k is not part of this map
-  #
+  # find the value k is mapped to or nil if k is not part of this map
   #
   index [] (k K) option<V> is
 
