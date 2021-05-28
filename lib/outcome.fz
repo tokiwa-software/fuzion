@@ -44,7 +44,7 @@ outcome<T> : choice<T, error> is
       error => true
 
 
-  # value of a numOption that is known to contain a value
+  # value of a outcome that is known to contain a value
   #
   # This can only be called in cases where it is known for sure that this
   # outcomee is not an error.  A runtime error will be created otherwise.
@@ -61,6 +61,25 @@ outcome<T> : choice<T, error> is
     match outcome.this
       v T   => v
       error => fuzion.std.panic "outcome.val called on error"
+
+
+  # error of an outcome that is known to contain an error
+  #
+  # This can only be called in cases where it is known for sure that this
+  # outcomee is an error.  A runtime error will be created otherwise.
+  #
+  err error
+    pre
+      # NYI: better syntax:
+      #
+      # safety: !(option.this?)
+      safety: match outcome.this
+        T     => false
+        error => true
+  is
+    match outcome.this
+      T       => fuzion.std.panic "outcome.err called on successful outcome"
+      e error => e
 
 
   # converts outcome to a string
