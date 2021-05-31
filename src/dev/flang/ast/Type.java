@@ -1030,7 +1030,9 @@ public class Type extends ANY implements Comparable
                         !t1.isGenericArgument() &&
                         !t2.isGenericArgument() &&
                         (t1.isAssignableFrom(t2) ||
-                         t2.isAssignableFrom(t1)    ))
+                         t2.isAssignableFrom(t1)    ) &&
+                        t1 != Types.t_ERROR &&
+                        t2 != Types.t_ERROR)
                       {
                         Errors.error(pos,
                                      "Generics arguments to choice type must be disjoint types",
