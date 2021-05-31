@@ -209,7 +209,7 @@ public class Type extends ANY implements Comparable
     if (PRECONDITIONS) require
       ( (t._generics instanceof FormalGenerics.AsActuals) || t._generics.size() == g.size(),
        !(t._generics instanceof FormalGenerics.AsActuals) || ((FormalGenerics.AsActuals)t._generics).sizeMatches(g),
-        (t.outer() == null) == (o == null));
+        t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
     outerMostInSource_ = t.outerMostInSource();
     checkedForGeneric = t.checkedForGeneric;
