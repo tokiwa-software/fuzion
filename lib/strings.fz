@@ -68,15 +68,20 @@ strings is
       redef asStream ref : stream<i32> is
         i := 0
         s := a[i].asString.utf8.asStream
+        gotNext := false
 
-        findNext unit is
-          while !s.hasNext && i < a.length
-            set i := i + 1
-            if i < a.length
+        findNext bool is
+          set gotNext := gotNext || (
+            for hs := s.hasNext
+            while !hs && i+1 < a.length
+              set i := i + 1
               set s := a[i].asString.utf8.asStream
+            else
+              hs)
+          gotNext
 
-        redef hasNext => findNext; s.hasNext
-        redef next    => findNext; s.next
+        redef hasNext => findNext
+        redef next    => findNext; set gotNext := false; s.next
 
 
   # create string from the given utf8 bytes
