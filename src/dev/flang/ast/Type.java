@@ -816,12 +816,7 @@ public class Type extends ANY implements Comparable
           {
             if (outer().isGenericArgument())
               {
-                Errors.error(outer().pos,
-                             "Formal generic cannot be used as outer type",
-                             "In a type >>a.b<<, the outer type >>a<< must not be a formal generic argument.\n" +
-                             "Type used: " + this + "\n" +
-                             "Formal generic used " + outer() + "\n" +
-                             "Formal generic declared in " + outer().genericArgument()._pos.show() + "\n");
+                FeErrors.formalGenericAsOuterType(pos, this);
               }
           }
         else
@@ -836,12 +831,7 @@ public class Type extends ANY implements Comparable
 
             if ((generic != null) && !_generics.isEmpty())
               {
-                Errors.error(pos,
-                             "Formal generic cannot have generic arguments",
-                             "In a type with generic arguments >>A<B><<, the base type >>A<< must not be a formal generic argument.\n" +
-                             "Type used: " + this + "\n" +
-                             "Formal generic used " + generic + "\n" +
-                             "Formal generic declared in " + generic._pos.show() + "\n");
+                FeErrors.formalGenericWithGenericArgs(pos, this, generic);
               }
           }
       }
@@ -1011,9 +1001,7 @@ public class Type extends ANY implements Comparable
       {
         if (isRef())
           {
-            Errors.error(pos,
-                         "ref to choice type is not allowed",
-                         "a choice is always a value type");
+            FeErrors.refToChoice(pos);
           }
 
         int i1 = 0;
@@ -1034,11 +1022,7 @@ public class Type extends ANY implements Comparable
                         t1 != Types.t_ERROR &&
                         t2 != Types.t_ERROR)
                       {
-                        Errors.error(pos,
-                                     "Generics arguments to choice type must be disjoint types",
-                                     "The following types have overlapping values:\n" +
-                                     t1 + /* " at " + t1.pos.show() + */ "\n" +  // NYI: use pos before Types were interned!
-                                     t2 + /* " at " + t2.pos.show() + */ "\n");
+                        FeErrors.genericsMustBeDisjoing(pos, t1, t2);
                       }
                   }
                 i2++;
@@ -1144,10 +1128,7 @@ public class Type extends ANY implements Comparable
 
     if (isOpenGeneric())
       {
-        Errors.error(pos,
-                     "Illegal use of open formal generic type",
-                     "Open formal generic type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.\n" +
-                     "Open formal argument: " + generic);
+        FeErrors.illegalUseOfOpenFormalGeneric(pos, generic);
         result = false;
       }
     return result;

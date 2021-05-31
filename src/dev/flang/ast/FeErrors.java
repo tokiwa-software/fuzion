@@ -722,6 +722,50 @@ public class FeErrors extends ANY
           "The else block of this loop is declared at " + elseBlock.pos.show());
   }
 
+  static void formalGenericAsOuterType(SourcePosition pos, Type t)
+  {
+    error(pos,
+          "Formal generic cannot be used as outer type",
+          "In a type >>a.b<<, the outer type >>a<< must not be a formal generic argument.\n" +
+          "Type used: " + t + "\n" +
+          "Formal generic used " + t.outer() + "\n" +
+          "Formal generic declared in " + t.outer().genericArgument()._pos.show() + "\n");
+  }
+
+  static void formalGenericWithGenericArgs(SourcePosition pos, Type t, Generic generic)
+  {
+    error(pos,
+          "Formal generic cannot have generic arguments",
+          "In a type with generic arguments >>A<B><<, the base type >>A<< must not be a formal generic argument.\n" +
+          "Type used: " + t + "\n" +
+          "Formal generic used " + generic + "\n" +
+          "Formal generic declared in " + generic._pos.show() + "\n");
+  }
+
+  static void refToChoice(SourcePosition pos)
+  {
+    error(pos,
+          "ref to a choice type is not allowed",
+          "a choice is always a value type");
+  }
+
+  static void genericsMustBeDisjoing(SourcePosition pos, Type t1, Type t2)
+  {
+    error(pos,
+          "Generics arguments to choice type must be disjoint types",
+          "The following types have overlapping values:\n" +
+          t1 + /* " at " + t1.pos.show() + */ "\n" +  // NYI: use pos before Types were interned!
+          t2 + /* " at " + t2.pos.show() + */ "\n");
+  }
+
+  static void illegalUseOfOpenFormalGeneric(SourcePosition pos, Generic generic)
+  {
+    error(pos,
+          "Illegal use of open formal generic type",
+          "Open formal generic type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.\n" +
+          "Open formal argument: " + generic);
+  }
+
 }
 
 /* end of file */
