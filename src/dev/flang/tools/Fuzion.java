@@ -534,9 +534,14 @@ class Fuzion extends ANY
           {
             options.setTailRec();
           }
+        long jvmStartTime = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime();
+        long prepTime = System.currentTimeMillis();
         var mir = new FrontEnd(options).createMIR();
+        long feTime = System.currentTimeMillis();
         var air = new MiddleEnd(options, mir).air();
+        long meTime = System.currentTimeMillis();
         var fuir = new Optimizer(options, air).fuir(_backend != Backend.interpreter);
+        long irTime = System.currentTimeMillis();
         switch (_backend)
           {
           case interpreter:
@@ -544,11 +549,21 @@ class Fuzion extends ANY
               Intrinsics.ENABLE_UNSAFE_INTRINSICS = _enableUnsafeIntrinsics;  // NYI: Add to Fuzion IR or BE Config
               Intrinsics.FUZION_DEBUG_LEVEL       = _debugLevel;              // NYI: Add to Fuzion IR or BE Config
               Intrinsics.FUZION_SAFETY            = _safety;                  // NYI: Add to Fuzion IR or BE Config
-              new Interpreter(fuir).run(); break;
+              var in = new Interpreter(fuir);
+              irTime = System.currentTimeMillis();
+              in.run(); break;
             }
           case c          : new C(new COptions(options, _binaryName_), fuir).compile(); break;
           default         : Errors.fatal("backend '" + _backend + "' not supported yet"); break;
           }
+        long beTime = System.currentTimeMillis();
+
+        beTime -= irTime;
+        irTime -= meTime;
+        meTime -= feTime;
+        feTime -= prepTime;
+        prepTime -= jvmStartTime;
+        options.verbosePrintln(1, "Elapsed time for phases: prep "+prepTime+"ms, fe "+feTime+"ms, me "+meTime+"ms, ir "+irTime+"ms, be "+beTime+"ms");
       };
   }
 
