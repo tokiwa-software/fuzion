@@ -136,6 +136,15 @@ public class Type extends ANY implements Comparable
 
 
   /**
+   * Cached result of outer(). Note the difference to outer_: outer_ is the
+   * outer type shown in the source code, while outer()/outerCache_ is the
+   * actual outer type taken from the type of the outer feature of this type's
+   * feature.
+   */
+  Type outerCache_;
+
+
+  /**
    *
    */
   Feature feature;
@@ -1301,24 +1310,33 @@ public class Type extends ANY implements Comparable
    */
   public Type outer()
   {
-    Type result = outer_;
+    Type result = outerCache_;
     if (result == null)
       {
-        if (feature != null && feature.state().atLeast(Feature.State.LOADED))
+        result = outer_;
+        if (result == null)
           {
-            Feature of = feature.outer();
-            if (of == null)
+            if (feature != null && feature.state().atLeast(Feature.State.LOADED))
               {
-                return null;
+                Feature of = feature.outer();
+                if (of == null)
+                  {
+                    return null;
+                  }
+                else
+                  {
+                    result = of.thisType();
+                  }
               }
-            else
+            else if (generic != null)
               {
-                return of.thisType();
+                check(Errors.count() > 0);
               }
-          }
-        else if (generic != null)
-          {
-            check(Errors.count() > 0);
+            if (result != null)
+              {
+                result = Types.intern(result);
+                outerCache_ = result;
+              }
           }
       }
     return result;
