@@ -57,18 +57,6 @@ public class Intrinsics extends ANY
   public static Boolean ENABLE_UNSAFE_INTRINSICS = null;
 
 
-  /**
-   * Result of debugLevel:
-   */
-  public static int FUZION_DEBUG_LEVEL = 1;
-
-
-  /**
-   * Result of safety
-   */
-  public static boolean FUZION_SAFETY = true;
-
-
   /*----------------------------  variables  ----------------------------*/
 
 

@@ -547,8 +547,6 @@ class Fuzion extends ANY
           case interpreter:
             {
               Intrinsics.ENABLE_UNSAFE_INTRINSICS = _enableUnsafeIntrinsics;  // NYI: Add to Fuzion IR or BE Config
-              Intrinsics.FUZION_DEBUG_LEVEL       = _debugLevel;              // NYI: Add to Fuzion IR or BE Config
-              Intrinsics.FUZION_SAFETY            = _safety;                  // NYI: Add to Fuzion IR or BE Config
               var in = new Interpreter(fuir);
               irTime = System.currentTimeMillis();
               in.run(); break;
