@@ -96,6 +96,11 @@ hasInterval<T: hasInterval<T>> : integer<T> is
       contains (e T) => lower <= e <= upper && ((e - lower) %% step)
 
 
+      # use map implementation from streamable:
+      #
+      map<B>(f fun(T) B)  => mapStreamable<B> f
+
+
     # create a list from this interval
     #
     redef asList list<T> is
@@ -103,6 +108,11 @@ hasInterval<T: hasInterval<T>> : integer<T> is
         tail list<T> is
           if (head >= upper) nil else cons head + head.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is hasInterval<i32>, it should be i32.
       if (lower > upper) nil else cons lower
+
+
+    # use map implementation from streamable:
+    #
+    map<B>(f fun(T) B)  => mapStreamable<B> f
 
 
     # string representation of this interval, e.g., "1..10"
