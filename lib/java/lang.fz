@@ -23,6 +23,6 @@
 #
 # -----------------------------------------------------------------------
 
-public java.lang single is
+public java.lang is
   public System_out java.io.PrintStream is
     fuzion.java.getStaticField<java.io.PrintStream>("java.lang.System","out")

@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-public fuzion.std.out single is
+public fuzion.std.out is
 
   public print(s ref Object) =>
     for c in s.asString.utf8 do

@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-public fuzion.java single is
+public fuzion.java is
 
   public getStaticField<T>(clazz string, field string) T is intrinsic
 
