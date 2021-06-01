@@ -63,13 +63,12 @@ import dev.flang.ast.IntConst; // NYI: remove dependency! Use dev.flang.fuir ins
 import dev.flang.ast.Match; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Old; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Singleton; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.SingleType; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Stmnt; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.StrConst; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Tag; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Type; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.Universe; // NYI: remove dependency! Use dev.flang.fuir instead.
 
 
 /**
@@ -384,11 +383,10 @@ public class Interpreter extends Backend
         result = execute(a.adr_, staticClazz, cur);
       }
 
-    else if (s instanceof Singleton)
-      {
-        var i = (Singleton) s;
-        result = getSingletonInstance(i.singleton_);
-      }
+    else if (s instanceof Universe)
+     {
+       result = Instance.universe;
+     }
 
     else if (s instanceof Box)
       {
@@ -585,39 +583,6 @@ public class Interpreter extends Backend
   }
 
 
-  public static Value getSingletonInstance(Feature thiz)
-  {
-    if (PRECONDITIONS) require
-      (thiz.isSingleton());
-
-    Value result;
-
-    var outerF = thiz.outer();
-    if (outerF == null)
-      {
-        result = Instance.universe;
-      }
-    else
-      {
-        var outer = getSingletonInstance(outerF);
-        var sc = Clazzes.singletonClazz(thiz);
-        result = getField(thiz, sc._outer, outer);
-
-        if (result == null)
-          {
-            // NYI: creation of a singleton must be made thread safe.
-            Instance res = new Instance(sc);
-            ArrayList<Value> args = new ArrayList<>();
-            args.add(outer);
-            callOnInstance(thiz, sc, res, args);
-            setField(thiz, sc._outer, outer, res); // singletonClazz_._type);
-            result = res;
-          }
-      }
-    return result;
-  }
-
-
   /*--------------------  methods to call a feature  --------------------*/
 
 
@@ -712,10 +677,6 @@ public class Interpreter extends Backend
                       };
                   }
               }
-          }
-        else if (f.isSingleton() && !f.isUniverse())
-          {
-            result = (args) -> getSingletonInstance(f);
           }
         else if (f.impl == Impl.INTRINSIC)
           {
@@ -958,8 +919,7 @@ public class Interpreter extends Backend
       v instanceof ChoiceIdAsRef && thiz.isChoice()                    /* a boxed choice tag    */ ||
       (v instanceof i32Value ||
        v instanceof i64Value   ) && thiz.isOuterRef()     /* e.g. outerref in integer.infix /-/ */ ||
-      v == null                  && (thiz.isChoice() ||
-                                     thiz.returnType == SingleType.INSTANCE) /* Nil/Null boxed choice tag or uninitialzed single value */;
+      v == null                  && thiz.isChoice()                /* Nil/Null boxed choice tag */;
   }
 
 
@@ -1108,7 +1068,7 @@ public class Interpreter extends Backend
   public static Value getField(Feature thiz, Clazz staticClazz, Value curValue)
   {
     if (PRECONDITIONS) require
-      (thiz.isField() || thiz.returnType == SingleType.INSTANCE,
+      (thiz.isField(),
        (curValue instanceof Instance) || (curValue instanceof LValue) ||
        curValue instanceof i32Value  && staticClazz == Clazzes.i32 .getIfCreated() ||
        curValue instanceof i64Value  && staticClazz == Clazzes.i64 .getIfCreated() ||
@@ -1156,8 +1116,7 @@ public class Interpreter extends Backend
       }
 
     if (POSTCONDITIONS) ensure
-      (   thiz.returnType == SingleType.INSTANCE  // null is used for not created singletons
-       || thiz.isChoice()                         // null is used e.g. in Option<T>: choice<T,Null>.
+      (   thiz.isChoice()                         // null is used e.g. in Option<T>: choice<T,Null>.
        || result != null                          // otherwise, there must not be any null
       );
 
@@ -1205,7 +1164,7 @@ public class Interpreter extends Backend
   public static void setField(Feature thiz, Clazz staticClazz, Value curValue, Value v)
   {
     if (PRECONDITIONS) require
-      (thiz.isField() || thiz.returnType == SingleType.INSTANCE,
+      (thiz.isField(),
        (curValue instanceof Instance) || (curValue instanceof LValue),
        staticClazz != null);
 

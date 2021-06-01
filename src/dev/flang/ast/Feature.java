@@ -147,8 +147,6 @@ public class Feature extends ANY implements Stmnt, Comparable
    * RefType: for constructors
    *
    * ValueType: for constructors of value types
-   *
-   * Single: for constructors of singletons.
    */
   public ReturnType returnType; // NYI: public field should not be written to
 
@@ -351,7 +349,7 @@ public class Feature extends ANY implements Stmnt, Comparable
     this(SourcePosition.builtIn,
          Consts.VISIBILITY_PUBLIC,
          0,
-         SingleType.INSTANCE,
+         ValueType.INSTANCE,
          new List<String>(UNIVERSE_NAME),
          FormalGenerics.NONE,
          new List<Feature>(),
@@ -3511,19 +3509,6 @@ public class Feature extends ANY implements Stmnt, Comparable
 
 
   /**
-   * Check if this is an instance of SingleType and all outer features
-   * of this are of SingleType as well. If this is the case, then
-   * there will be only one instance of this at runtime, i.e., there
-   * will be no need to store an outer reference to this.
-   */
-  public boolean isSingleton()
-  {
-    Feature o = outer_;
-    return (returnType == SingleType.INSTANCE) && ((o == null) || o.isSingleton());
-  }
-
-
-  /**
    * outerRefName
    *
    * @return
@@ -3531,8 +3516,7 @@ public class Feature extends ANY implements Stmnt, Comparable
   private String outerRefName()
   {
     if (PRECONDITIONS) require
-      (outer_ != null,
-       !isSingleton());
+      (outer_ != null);
 
     return "#^" + qualifiedName();
   }
@@ -3594,8 +3578,7 @@ public class Feature extends ANY implements Stmnt, Comparable
        state_ == State.FINDING_DECLARATIONS);
 
     Feature o = this.outer_;
-    if (!o.isSingleton()
-        && (impl.code_ != null || contract != null))
+    if (impl.code_ != null || contract != null)
       {
         Type outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
                                                    : o.thisType();
@@ -3616,7 +3599,6 @@ public class Feature extends ANY implements Stmnt, Comparable
   {
     if (PRECONDITIONS) require
       (outer() != null,
-       !outer().isSingleton(),
        state_.atLeast(State.RESOLVED_DECLARATIONS) &&
        (!state_.atLeast(State.CHECKING_TYPES2) || outerRef_ != null));
 
@@ -3649,7 +3631,7 @@ public class Feature extends ANY implements Stmnt, Comparable
     if (PRECONDITIONS) require
       (state_.atLeast(State.RESOLVED_DECLARATIONS));
 
-    return this.outer_ != null && !this.outer_.isSingleton()
+    return this.outer_ != null
       ? outerRef()
       : null;
   }
@@ -3807,7 +3789,6 @@ public class Feature extends ANY implements Stmnt, Comparable
     return
       this != Types.f_ERROR &&
       isNonGeneric() &&
-      !outer().isSingleton() &&
       !outer().isChoice();
   }
 

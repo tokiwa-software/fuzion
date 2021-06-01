@@ -46,7 +46,6 @@ import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
 import dev.flang.ast.InitArray; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.Match; // NYI: remove dependency!
-import dev.flang.ast.SingleType; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
@@ -524,7 +523,6 @@ public class Clazz extends ANY implements Comparable
       isRef() &&
       Clazzes.isUsed(f, this) &&
       (f.isField() ||
-       f.isSingleton() ||
        f.isCalledDynamically())
       ;
   }
@@ -584,7 +582,7 @@ public class Clazz extends ANY implements Comparable
               for (var f: feature().allInnerAndInheritedFeatures())
                 {
                   if (result == null &&
-                      (f.isField() || f.isSingleton()) &&
+                      f.isField() &&
                       Clazzes.isUsed(f, this) &&
                       !f.resultType().isOpenGeneric() &&
                       f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
@@ -593,7 +591,6 @@ public class Clazz extends ANY implements Comparable
                       fields.add(lookup(f, Call.NO_GENERICS, f.isUsedAt()));
                       var fieldClazz = clazzForField(f);
                       if (!fieldClazz.isRef() &&
-                          !f.isSingleton() &&
                           !fieldClazz.feature().isBuiltInPrimitive() &&
                           !fieldClazz.isVoidType())
                         {
@@ -794,8 +791,7 @@ public class Clazz extends ANY implements Comparable
   public Clazz clazzForField(Feature field)
   {
     check
-      (field.isField() ||
-       field.returnType == SingleType.INSTANCE /* NYI: ugly, try to avoid special handling for SingleType here */,
+      (field.isField(),
        feature().inheritsFrom(field.outer()));
 
     var result = clazzForField_.get(field);

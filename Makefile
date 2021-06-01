@@ -84,14 +84,13 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/RefType.java \
           $(SRC)/dev/flang/ast/Resolution.java \
           $(SRC)/dev/flang/ast/ReturnType.java \
-          $(SRC)/dev/flang/ast/Singleton.java \
-          $(SRC)/dev/flang/ast/SingleType.java \
           $(SRC)/dev/flang/ast/Stmnt.java \
           $(SRC)/dev/flang/ast/StrConst.java \
           $(SRC)/dev/flang/ast/Tag.java \
           $(SRC)/dev/flang/ast/This.java \
           $(SRC)/dev/flang/ast/Type.java \
           $(SRC)/dev/flang/ast/Types.java \
+          $(SRC)/dev/flang/ast/Universe.java \
           $(SRC)/dev/flang/ast/ValueType.java \
           $(SRC)/dev/flang/ast/Visi.java \
 

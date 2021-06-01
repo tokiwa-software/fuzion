@@ -244,15 +244,8 @@ public class JavaInterface
       }
     else
       {
-        Instance inst = new Instance(resultClass);
-        inst.javaRef = o;
-        result = inst;
-        var resultFeat = resultClass._type.featureOfType();
-        var resultOuter = resultFeat.outer();
-        if (resultOuter != null)
-          {
-            Interpreter.setOuter(resultFeat, resultClass, inst, Interpreter.getSingletonInstance(resultOuter));
-          }
+        result = new Instance(resultClass);
+        result.javaRef = o;
       }
     return result;
   }

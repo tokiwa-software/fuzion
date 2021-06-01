@@ -50,11 +50,11 @@ import dev.flang.ast.InitArray; // NYI: remove dependency!
 import dev.flang.ast.IntConst; // NYI: remove dependency!
 import dev.flang.ast.Match; // NYI: remove dependency!
 import dev.flang.ast.Old; // NYI: remove dependency!
-import dev.flang.ast.Singleton; // NYI: remove dependency!
 import dev.flang.ast.StrConst; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
+import dev.flang.ast.Universe; // NYI: remove dependency!
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -814,10 +814,9 @@ public class Clazzes extends ANY
         result = clazz(o.e, outerClazz);
       }
 
-    else if (e instanceof Singleton)
+    else if (e instanceof Universe)
       {
-        var s = (Singleton) e;
-        result = singletonClazz(s.singleton_);
+        result = universe.get();
       }
 
     else if (e instanceof StrConst)
@@ -927,22 +926,6 @@ public class Clazzes extends ANY
 
 
   /*-------------  methods for clazzes related to features  -------------*/
-
-
-  /**
-   * Obtain the static clazz of a singleton
-   */
-  public static Clazz singletonClazz(Feature thiz)
-  {
-    if (PRECONDITIONS) require
-      (thiz.isSingleton());
-
-    // NYI: caching of result!
-    Clazz result = thiz.outer() == null ? universe.get()
-      : singletonClazz(thiz.outer()).actualClazz(thiz.resultType());
-
-    return result;
-  }
 
 
   /**

@@ -47,7 +47,6 @@ import dev.flang.ast.InitArray; // NYI: remove dependency
 import dev.flang.ast.IntConst; // NYI: remove dependency
 import dev.flang.ast.Match; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
-import dev.flang.ast.Singleton; // NYI: remove dependency
 import dev.flang.ast.Stmnt; // NYI: remove dependency
 import dev.flang.ast.StrConst; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
@@ -1005,11 +1004,6 @@ hw25 is
       }
     else if (s instanceof Nop)
       {
-      }
-    else if (s instanceof Singleton) // NYI: remove eventually
-      {
-        var si = (Singleton) s;
-        // l.add(si);
       }
     else if (s instanceof StrConst)
       {

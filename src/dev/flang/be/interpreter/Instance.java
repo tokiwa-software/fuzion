@@ -142,7 +142,7 @@ public class Instance extends Value
   public Clazz clazz()
   {
     Clazz result = clazz;
-    if ((result != null) && !result.isRef() && !result.feature().isSingleton()) // NYI: ugly special handling of singleton
+    if ((result != null) && !result.isRef())
       {
         Errors.fatal("No clazz in a value instance: type " + result._type + " value " + this + "\n" + Interpreter.callStack());
       }

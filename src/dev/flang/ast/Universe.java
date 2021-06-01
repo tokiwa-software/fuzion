@@ -20,29 +20,24 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa GmbH, Berlin
  *
- * Source of class SingleType
+ * Source of class Universe
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.ast;
 
+import java.util.Iterator;
+
+import dev.flang.util.SourcePosition;
+
 
 /**
- * SingleType <description>
+ * Universe is an expression that returns the universe instance.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.eu)
  */
-public class SingleType extends ReturnType
+public class Universe extends Expr
 {
-
-
-  /*----------------------------  constants  ----------------------------*/
-
-
-  /**
-   * The singleton instance.
-   */
-  public static final SingleType INSTANCE = new SingleType();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -50,9 +45,12 @@ public class SingleType extends ReturnType
 
   /**
    * Constructor
+   *
+   * @param pos the soucecode position, used for error messages.
    */
-  private SingleType()
+  public Universe(SourcePosition pos)
   {
+    super(pos);
   }
 
 
@@ -60,26 +58,14 @@ public class SingleType extends ReturnType
 
 
   /**
-   * true iff this is the return type of a constructor feature, i.e., "this" is
-   * returned implicitly instead of "result".
+   * typeOrNull returns the type of this expression or Null if the type is still
+   * unknown, i.e., before or during type resolution.
    *
-   * @return true for a constructor return type.
+   * @return this Expr's type or null if not known.
    */
-  public boolean isConstructorType()
+  public Type typeOrNull()
   {
-    return true;
-  }
-
-
-  /**
-   * true iff this is the return type of a constructor feature that returns a
-   * reference, i.e., it is marked "ref" or "single".
-   *
-   * @return true for a refr return type, false for a function.
-   */
-  public boolean isRef()
-  {
-    return true;
+    return Types.resolved.universe.thisType();
   }
 
 
@@ -90,9 +76,12 @@ public class SingleType extends ReturnType
    * visited objects.
    *
    * @param outer the feature surrounding this expression.
+   *
+   * @return this.
    */
-  public void visit(FeatureVisitor v, Feature outer)
+  public Universe visit(FeatureVisitor v, Feature outer)
   {
+    return this;
   }
 
 
@@ -103,7 +92,7 @@ public class SingleType extends ReturnType
    */
   public String toString()
   {
-    return "single";
+    return Feature.UNIVERSE_NAME;
   }
 
 }

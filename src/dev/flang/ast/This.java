@@ -134,8 +134,7 @@ public class This extends Expr
 
   /**
    * Create Expression to access f.this during type resolution.  This will
-   * immediately create the corresponding Singleton instance or a call to the
-   * outer references to access f.this.
+   * create a call to the outer references to access f.this.
    *
    * @param res The Resolution instance to be used for resolveTypes().
    *
@@ -206,8 +205,8 @@ public class This extends Expr
    *
    * @param outer the root feature that contains this statement.
    *
-   * @return the corresponding Singleton instance or a call to the outer
-   * references to access the value represented by this.
+   * @return a call to the outer references to access the value represented by
+   * this.
    */
   public Expr resolveTypes(Resolution res, Feature outer)
   {
@@ -232,9 +231,9 @@ public class This extends Expr
 
     Expr getOuter = null;
     Feature f = this.feature_;
-    if (f.isSingleton() && (f != outer))
+    if (f.isUniverse())
       {
-        getOuter = new Singleton(pos, f);
+        getOuter = new Universe(pos);
       }
     else
       {
@@ -264,8 +263,8 @@ public class This extends Expr
 
   /**
    * Resolve syntatictic suger. In this case, This is removed completely, it has
-   * been replaced during resolveTypes by calls to the outer reference of to the
-   * singleton this refers to.
+   * been replaced during resolveTypes by calls to the outer reference this
+   * refers to.
    *
    * @return the Expr this was replaced by.
    */
@@ -287,9 +286,7 @@ public class This extends Expr
   {
     return
       (e instanceof This) &&
-      (((This) e).feature_.isUniverse()) ||
-      (e instanceof Singleton) &&
-      (((Singleton) e).singleton_.isUniverse());
+      ((This) e).feature_.isUniverse();
   }
 
 

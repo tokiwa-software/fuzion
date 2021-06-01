@@ -140,7 +140,7 @@ class Layout extends ANY
           {
             var fc = f.fieldClazz();
             int fsz;
-            if        (fc.isRef() || fc.feature().isSingleton()) { fsz = 1;
+            if        (fc.isRef()) { fsz = 1;
             } else if (fc._type == Types.resolved.t_i32   ) { fsz = 1;
             } else if (fc._type == Types.resolved.t_u32   ) { fsz = 1;
             } else if (fc._type == Types.resolved.t_i64   ) { fsz = 2;

@@ -958,7 +958,6 @@ argNames    : name ( COMMA argNames
    * Parse returnType
    *
 returnType  : type
-            | "single"
             | "value"
             | "ref"
             |
@@ -975,7 +974,6 @@ returnType  : type
       {
         switch (current())
           {
-          case t_single: next(); result = SingleType.INSTANCE; break;
           case t_value : next(); result = ValueType .INSTANCE; break;
           case t_ref   : next(); result = RefType   .INSTANCE; break;
           default      :         result = NoType    .INSTANCE; break;
@@ -995,7 +993,6 @@ returnType  : type
   {
     switch (current())
       {
-      case t_single:
       case t_value :
       case t_ref   : return true;
       default      : return false;
@@ -1014,7 +1011,6 @@ returnType  : type
   boolean skipNonFuncReturnType()
   {
     return
-      skip(Token.t_single) ||
       skip(Token.t_value ) ||
       skip(Token.t_ref   );
   }
@@ -2736,7 +2732,7 @@ callOrFeatOrThis
   Expr callOrFeatOrThis()
   {
     return
-      isAnonymousPrefix() ? anonymous() : // starts with single/value/ref/:/fun/name
+      isAnonymousPrefix() ? anonymous() : // starts with value/ref/:/fun/name
       isQualThisPrefix()  ? qualThis()  : // starts with name
       isNamePrefix()      ? call(null)    // starts with name
                           : null;
