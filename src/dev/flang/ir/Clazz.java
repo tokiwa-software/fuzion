@@ -772,7 +772,7 @@ public class Clazz extends ANY implements Comparable
       }
 
     if (POSTCONDITIONS) ensure
-      (af == null || innerClazz != Clazzes.error.get(),
+      (af == null || innerClazz._type != Types.t_ERROR,
        innerClazz != null);
 
     return innerClazz;
