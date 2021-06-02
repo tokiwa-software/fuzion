@@ -737,45 +737,43 @@ public class Clazz extends ANY implements Comparable
       (f != null);
 
     Feature af = findRedefinition(f);
+    check
+      (Errors.count() > 0 || af != null);
+
     Clazz innerClazz = null;
-    if (f == Types.f_ERROR)
+    if (f == Types.f_ERROR || af == null)
       {
         innerClazz = Clazzes.error.get();
       }
     else
       {
-        check
-          (Errors.count() > 0 || af != null);
-
-        if (af != null)
+        if (af.impl == Impl.ABSTRACT)
           {
-            if (af.impl == Impl.ABSTRACT)
+            if (abstractCalled_ == null)
               {
-                if (abstractCalled_ == null)
-                  {
-                    abstractCalled_ = new TreeSet<>();
-                  }
-                abstractCalled_.add(af);
+                abstractCalled_ = new TreeSet<>();
               }
-
-            Type t = af.thisType().actualType(af, actualGenerics);
-            t = actualType(t);
-            innerClazz = Clazzes.clazzWithSpecificOuter(t, this);
-            if (p != null)
-              {
-                innerClazz.called(p);
-                if (!isInheritanceCall)
-                  {
-                    innerClazz.instantiated(p);
-                  }
-              }
-            check
-              (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == af);
+            abstractCalled_.add(af);
           }
+
+        Type t = af.thisType().actualType(af, actualGenerics);
+        t = actualType(t);
+        innerClazz = Clazzes.clazzWithSpecificOuter(t, this);
+        if (p != null)
+          {
+            innerClazz.called(p);
+            if (!isInheritanceCall)
+              {
+                innerClazz.instantiated(p);
+              }
+          }
+        check
+          (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == af);
       }
 
     if (POSTCONDITIONS) ensure
-      (af == null || innerClazz != null);
+      (af == null || innerClazz != Clazzes.error.get(),
+       innerClazz != null);
 
     return innerClazz;
   }
