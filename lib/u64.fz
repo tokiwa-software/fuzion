@@ -85,7 +85,7 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
 
   as_i32 i32
     pre
-      u64.this <= i32(0).max.as_u64
+      u64.this <= i32.max.as_u64
     is
       low32bits.as_i32
   as_u32 u32
@@ -97,11 +97,16 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
       low32bits
   as_i64 i64
     pre
-      u64.this <= i64(0).max.as_u64
+      u64.this <= i64.max.as_u64
 #    post
 #      analysis:  result.as_u64 == u64.this
     is
       castTo_i64
+  as_u128 u128
+#    post
+#      analysis:  result.as_u64 == u64.this
+    is
+      u128 0, u64.this
 
   low32bits  u32 is intrinsic
   castTo_i64 i64 is intrinsic

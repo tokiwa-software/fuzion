@@ -25,8 +25,197 @@
 
 # u128 -- 128-bit unsigned integer values
 #
-u128(val u128) : integer<u128> is
-  redef infix + (other u128) u128 is intrinsic
-  redef infix - (other u128) u128 is intrinsic
-  redef infix * (other u128) u128 is intrinsic
-  redef infix / (other u128) u128 is intrinsic
+u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
+
+  #  redef thiz => u128.this  -- NYI: This causes a type error when using C backend
+  redef thiz => u128 hi, lo
+
+  # overflow checking
+
+  # would negation -thiz cause an overflow?
+  redef wrappedOnNeg => !isZero
+
+  # would addtion thiz + other cause an overflow or underflow?
+  redef overflowOnAdd (other u128) => max -° u128.this < other
+  redef underflowOnAdd(other u128) => false
+
+  # would subtraction thiz - other cause an overflow or underflow?
+  redef overflowOnSub (other u128) => false
+  redef underflowOnSub(other u128) => u128.this < other
+
+  # would multiplication thiz * other cause an overflow or underflow?
+  redef overflowOnMul (other u128) => if (other = zero) false else (u128.this *° other / other) != u128.this
+  redef underflowOnMul(other u128) => false
+
+  # neg, add, sub, mul with wrap-around semantics
+  redef prefix -°             u128 is carry u64 := { if (lo > 0             ) 1 else 0 }; u128 0.as_u64 -° hi -° carry, 0.as_u64 -° lo
+  redef infix +° (other u128) u128 is carry u64 := { if (lo +° other.lo < lo) 1 else 0 }; u128 hi +° other.hi +° carry, lo +° other.lo
+  redef infix -° (other u128) u128 is carry u64 := { if (lo < other.lo      ) 1 else 0 }; u128 hi -° other.hi -° carry, lo -° other.lo
+  redef infix *° (other u128) u128 is
+    a0 := lo & 0x_ffff_ffff
+    a1 := lo >> 32
+    a2 := hi & 0x_ffff_ffff
+    a3 := hi >> 32
+    b0 := other.lo & 0x_ffff_ffff
+    b1 := other.lo >> 32
+    b2 := other.hi & 0x_ffff_ffff
+    b3 := other.hi >> 32
+    ( u128(0            , a0*b0)                +
+     (u128(0            , a1*b0) << u128 0, 32) +
+      u128( a2*b0       , 0    )                +
+      u128((a3*b0) << 32, 0    )                +
+     (u128(0            , a0*b1) << u128 0, 32) +
+      u128( a1*b1       , 0    )                +
+      u128((a2*b1) << 32, 0    )                +
+      u128( a0*b2       , 0    )                +
+      u128((a1*b2) << 32, 0    )                +
+      u128((a0*b3) << 32, 0    )                  )
+    ( u128(0            , a0*b0)                +
+     (u128(0            , a1*b0) << u128 0, 32) +
+     (u128(0            , a0*b1) << u128 0, 32) +
+      u128( a2*b0       , 0    )                +
+      u128( a1*b1       , 0    )                +
+      u128( a0*b2       , 0    )                +
+      u128((a3*b0) << 32, 0    )                +
+      u128((a2*b1) << 32, 0    )                +
+      u128((a1*b2) << 32, 0    )                +
+      u128((a0*b3) << 32, 0    )                  )
+
+
+  # division and remainder with check for div-by-zero
+  redef infix / (other u128)
+    pre
+      safety: other != zero
+   => div other
+  redef infix %  (other u128)
+    pre
+      safety: other != zero
+   => mod other
+
+  # private division and remainder with crash in case of div-by-zero
+  private div (other u128) u128 is
+    if u128.this < other
+      0.as_u128
+    else
+      ob := other.highestOneBit.trailingZeros
+      for
+        rem := u128.this, rem - s
+        bit := rem.highestOneBit >> ob.as_u128, bit >> 1.as_u128
+        d := other << bit.trailingZeros.as_u128, d >> 1.as_u128
+        s := if (rem < d) 0.as_u128 else d
+        p := if (rem < d) 0.as_u128 else bit
+        res := p, res + p
+      until bit = 0.as_u128
+        check
+          debug: res *° other + rem = u128.this
+        res
+
+  private mod (other u128) u128 is
+    u128.this - div(other) *° other
+
+  # bitwise and, or and xor operations
+  redef infix &  (other u128) u128 is u128 hi & other.hi, lo & other.lo
+  redef infix |  (other u128) u128 is u128 hi | other.hi, lo | other.lo
+  redef infix ^  (other u128) u128 is u128 hi ^ other.hi, lo ^ other.lo
+
+  # shift operations (unsigned)
+  redef infix >> (other u128) u128 is
+    n := other.as_u64  # NYI: other should be of type u32
+    if n >= 128
+      u128 0, 0
+    else if n >= 64
+      u128 0, hi >> (n - 64)
+    else if n > 0
+      u128 hi >> n, (lo >> n) | (hi << (64.as_u64 - n))
+    else
+      u128.this
+
+  redef infix << (other u128) u128 is
+    n := other.as_u64  # NYI: other should be of type u32
+    if n >= 128
+      u128 0, 0
+    else if n >= 64
+      u128 lo << (n-64), 0
+    else if n > 0
+      u128((hi << n) | (lo >> (64.as_u64 - n)), lo << n)
+    else
+      u128.this
+
+  # comparison
+  redef infix == (other u128) bool is hi == other.hi && lo == other.lo
+  redef infix != (other u128) bool is !(u128.this == other)
+  redef infix <  (other u128) bool is hi < other.hi || hi = other.hi && lo <  other.lo
+  redef infix <= (other u128) bool is hi < other.hi || hi = other.hi && lo <= other.lo
+  redef infix >  (other u128) bool is hi > other.hi || hi = other.hi && lo >  other.lo
+  redef infix >= (other u128) bool is hi > other.hi || hi = other.hi && lo >= other.lo
+
+  redef infix =  (other u128) bool is hi = other.hi && lo = other.lo
+  redef infix /= (other u128) bool is !(u128.this = other)
+
+  as_i32 i32
+    pre
+      u128.this <= i32.max.as_u128
+    is
+      lo.as_i32
+  as_u32 u32
+    pre
+      u128.this <= u32.max.as_u128
+    post
+      analysis: result.as_u128 = u128.this
+    is
+      lo.as_u32
+  as_i64 i64
+    pre
+      u128.this <= i64.max.as_u128
+    post
+      analysis: result.as_u128 = u128.this
+    is
+      lo.as_i64
+  as_u64 u64
+    pre
+      u128.this <= u64.max.as_u128
+    post
+      analysis: result.as_u128 = u128.this
+    is
+      lo
+
+  low32bits  u32 is lo.low32bits
+  low64bits  u64 is lo
+
+  # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
+  # from hasInterval is abstract, fz should not complain about this conflict.
+  redef max => (1.as_u128 << u128 0, 127) -° u128(0, 1) +° (1.as_u128 << u128 0, 127)  # NYI: 340282366920938463463374607431768211455, need to improve parser/lexer to handle this
+
+
+  # create hash code from this number
+  hash u64 is
+    hi ^ lo
+
+
+  # find the highest 1 bit in this integer and return integer with
+  # this single bit set or 0 if this is 0.
+  #
+  highestOneBit u128 is
+    if hi = 0
+      u128(0, lo.highestOneBit)
+    else
+      u128(hi.highestOneBit, 0)
+
+
+  # count the number of trailing zeros in this integer.
+  #
+  trailingZeros i32 is
+    if lo = 0
+      64 + hi.trailingZeros
+    else
+      lo.trailingZeros
+
+
+  # count the number of 1 bits in the binary representation of this
+  # integer.
+  #
+  onesCount i32 is
+    hi.onesCount + lo.onesCount
+
+
+//  redef asString => "u128($hi,$lo)"

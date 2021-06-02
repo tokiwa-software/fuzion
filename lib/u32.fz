@@ -85,13 +85,16 @@ u32(val u32) : wrappingInteger<u32>, hasInterval<u32>, u32s is
 
   as_i32 i32
     pre
-      debug: u32.this <= i32(0).max.as_u32
+      debug: u32.this <= i32.max.as_u32
     is
       castTo_i32
   as_i64 i64 is intrinsic
   as_u64 u64
     is
       u32.this.as_i64.as_u64
+  as_u128 u128
+    is
+      u128 0, as_u64
 
   castTo_i32 i32 is intrinsic
 

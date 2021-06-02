@@ -95,6 +95,11 @@ i32(val i32) : wrappingInteger<i32>, hasInterval<i32>, i32s is
       debug: i32.this >= 0
     is
       as_i64.as_u64
+  as_u128 u128
+    pre
+      debug: i32.this >= 0
+    is
+      u128 0, as_i64.as_u64
 
   # casting to unsigned, adding 1<<32 if negative
   castTo_u32 u32 is intrinsic
