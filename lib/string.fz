@@ -360,26 +360,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   # check if this string starts with given prefix
   #
   startsWith(prefx string) =>
-    startsWith utf8.asList, prefx.utf8.asList
-
-
-  # helper for startsWith(string) to compare lists
-  #
-  private startsWith(a, prefx list<i32>) bool is
-    #
-    # NYI: If we could add a compile time check for the type of the actual generic
-    # such as
-    #
-    #   pre
-    #     A : hasEquals
-    #
-    # we could make this code generic and move it to list.fz
-    match prefx
-      nil     => true
-      cb Cons =>
-        match a
-          nil     => false
-          ca Cons => ca.head = cb.head && startsWith ca.tail, cb.tail
+    searchableList<i32>.startsWith utf8.asList, prefx.utf8.asList
 
 
   # check if this string ends with given suffix
@@ -388,4 +369,10 @@ string ref : hasHash<string>, ordered<string>, strings is
     l  := byteLength
     sl := suffix.byteLength
     end := utf8.drop l-sl
-    startsWith end.asList, suffix.utf8.asList
+    searchableList<i32>.startsWith end.asList, suffix.utf8.asList
+
+
+  # find (utf8-byte) index of substring witin this string.
+  #
+  find(substring string) =>
+    searchableList<i32>.find utf8.asList, substring.utf8.asList

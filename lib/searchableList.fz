@@ -1,0 +1,65 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature searchableList
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# searchableList -- a list whose elements inherit from hasEquals
+#
+searchableList<A: hasEquals<A>>
+/* : list<A> -- NYI: we might allow inherting from a choice to get a choice
+                     with more restrictions on the type arguments
+
+  also, if we could add a compile time check for the type of the actual generic
+  such as
+
+    pre
+      A : hasEquals
+
+  Then, the inner features of searchableList could move to list.fz.
+
+*/
+is
+
+  # does l1 start with l2?
+  #
+  startsWith (l1, l2 list<A>) bool is
+    match l2
+      nil     => true
+      c2 Cons =>
+        match l1
+          nil     => false
+          c1 Cons => c1.head = c2.head && startsWith c1.tail, c2.tail # tail recursion
+
+
+  # get the index of l2 within l1 or nil if it does not exist
+  #
+  find (l1, l2 list<A>) option<i32> is
+    if startsWith l1, l2
+      0
+    else
+      match l1
+        nil     => nil
+        c1 Cons =>
+          match find c1.tail, l2
+            nil   => nil
+            n i32 => n + 1
