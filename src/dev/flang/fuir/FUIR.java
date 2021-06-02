@@ -51,6 +51,7 @@ import dev.flang.ast.Stmnt; // NYI: remove dependency
 import dev.flang.ast.StrConst; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Types; // NYI: remove dependency
+import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.ir.Backend;
 import dev.flang.ir.BackendCallable;
@@ -1004,6 +1005,10 @@ hw25 is
       }
     else if (s instanceof Nop)
       {
+      }
+    else if (s instanceof Universe)
+      {
+        var un = (Universe) s;
       }
     else if (s instanceof StrConst)
       {
