@@ -489,7 +489,8 @@ public class Interpreter extends Backend
       {
         var c = (Check) s;
 
-        System.err.println("NYI: "+c);
+        // NYI: check not supported yet
+        // System.err.println("NYI: "+c);
 
         result = Value.NO_VALUE;
       }
