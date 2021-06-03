@@ -29,14 +29,24 @@
 List<T> ref : hasList<T> is
 
 
-  # create a stream of T.  Default implementation uses asList. heirs must
-  # redefine at least one of asList or asStream.
+  # create a stream of T.
+  #
+  # A stream contains mutable state, so it cannot be reused or shared
+  # between threads.
+  #
+  # Default implementation uses asList.  Heirs must redefine at least
+  # one of asList or asStream.
   #
   asStream stream<T> is asList.asStream
 
 
-  # create a list from this List.  Default implementation uses asStream.
-  # heirs must redefine at least one of asList or asStream.
+  # create a list from this List.
+  #
+  # A list is immutable, so it can be reused and shared between threads.
+  # Compared to a stream, a list may require more (heap) allocation.
+  #
+  # Default implementation uses asStream. Heirs must redefine at least
+  # one of asList or asStream.
   #
   asList list<T> is asStream.asList
 
