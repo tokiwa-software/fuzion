@@ -157,7 +157,13 @@ List<T> ref : hasList<T> is
   infix ++ (s List<T>) => asList ++ s.asList
 
 
-  # create a stream and then create a string from the elements of that stream
+  # create a list that repeats the current List indefinitely.  In case 'List.this'
+  # is empty, returns 'nil'
+  #
+  cycle list<T> is asList.cycle
+
+
+  # create a string representation of this list
   #
   redef asString => asList.asString
 

@@ -245,6 +245,22 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   redef slice(from, to i32) => drop(from).take to-from
 
 
+  # create a list that repeats the current list indefinitely.  In case 'list.this'
+  # is 'nil', returns 'nil'
+  #
+  redef cycle list<A> is
+    cycleCons (h, t Cons<A, list<A>>) : Cons<A, list<A>> is
+      head => h.head
+      tail list<A> is
+        match h.tail
+          nil    => cycleCons t, t
+          c Cons => cycleCons c, t
+
+    match list.this
+      nil    => nil
+      c Cons => cycleCons c, c
+
+
   # create stream from this list
   #
   # In contrast to list's immutable Cons cells, a stream instance is mutable, i.e,
