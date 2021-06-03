@@ -17,15 +17,16 @@
 #
 #  Tokiwa GmbH, Berlin
 #
-#  Source code of Fuzion standard library feature streamable
+#  Source code of Fuzion standard library feature List
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.eu)
 #
 # -----------------------------------------------------------------------
 
-# streamable -- ancestor for features that can be converted to a stream
+# List -- ancestor for features that can be converted to a 'list' or a
+# 'stream'
 #
-streamable<T> ref : hasList<T> is
+List<T> ref : hasList<T> is
 
 
   # create a stream of T.  Default implementation uses asList. heirs must
@@ -34,18 +35,18 @@ streamable<T> ref : hasList<T> is
   asStream stream<T> is asList.asStream
 
 
-  # create a list from this streamable.  Default implementation uses asStream.
+  # create a list from this List.  Default implementation uses asStream.
   # heirs must redefine at least one of asList or asStream.
   #
   asList list<T> is asStream.asList
 
 
-  # count the elements of stream created from this streamable
+  # count the elements of stream created from this List
   #
   count => asStream.count
 
 
-  # collect the contents of this streamable into an array
+  # collect the contents of this List into an array
   #
   asArray array<T> is
     s := asStream
@@ -108,18 +109,18 @@ streamable<T> ref : hasList<T> is
 
 
   # create a list that consists only of the first n elements of this
-  # streamable, fewer if this stream has fewer elements
+  # List, fewer if this stream has fewer elements
   #
   take (n i32) => asList.take n
 
 
-  # create a list that consists of the elements of this streamable except the first
+  # create a list that consists of the elements of this List except the first
   # n elements
   #
   drop (n i32) => asList.drop n
 
 
-  # create a slice from this streamable that consists of the elements starting at index
+  # create a slice from this List that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
   slice(from, to i32) => drop(from).take to-from
@@ -127,13 +128,13 @@ streamable<T> ref : hasList<T> is
     # on array.slice(from,to).asArray.
 
 
-  # create a streamable that consists of all be the elements if this stream followed
+  # create a List that consists of all be the elements if this List followed
   # by all the elements of s
   #
-  concatStreamables (s streamable<T>) ref : streamable<T> is
+  concatLists (s List<T>) ref : List<T> is
     redef asStream stream<T> is
       st : stream<T> is
-        s1 := streamable.this.asStream
+        s1 := List.this.asStream
         s2 := s.asStream
         hasNext => s1.hasNext || s2.hasNext
         next => if (s1.hasNext) s1.next else s2.next
@@ -142,7 +143,7 @@ streamable<T> ref : hasList<T> is
 
   # infix operand synonyme for concatSteramables
   #
-  infix ++ (s streamable<T>) => asList ++ s.asList
+  infix ++ (s List<T>) => asList ++ s.asList
 
 
   # create a stream and then create a string from the elements of that stream
@@ -150,26 +151,26 @@ streamable<T> ref : hasList<T> is
   redef asString => asList.asString
 
 
-  # map the streamable to a new streamable applying function f to all elements
+  # map the List to a new List applying function f to all elements
   #
   # This performs a lazy mapping, f is called only when the elements
-  # are taken from the stream.
+  # in the list are accessed.
   #
-  # NYI: As long as covariance for result type is not permitted we cannt
+  # NYI: As long as covariance for result type is not permitted we cannot
   # call this 'map' since this would clash with, e.g., 'array.map'
   #
-  mapStreamable<B>(f fun(T) B) streamable<B> is
-    ref : streamable<B> {
+  mapList<B>(f fun(T) B) List<B> is
+    ref : List<B> {
         redef asStream =>
           ref : stream<B> {
-              s := streamable.this.asStream
+              s := List.this.asStream
               hasNext => s.hasNext
               next => f s.next
             }
       }
 
 
-  # fold the elements of this streamable using the given monoid.
+  # fold the elements of this List using the given monoid.
   #
   # e.g., to sum the elements of a stream of i32, use s.fold i32.sum
   #

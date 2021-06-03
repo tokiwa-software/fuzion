@@ -33,7 +33,7 @@
 #
 #
 #
-list<A> : choice<nil, Cons<A, list<A>>>, streamable<A> is
+list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
 # list<A> : nil | Cons<A, list<A>> is   -- NYI: sum type syntax
 # list<A> : nil | Cons A, list A is     -- NYI: sum type syntax, optional '<', '>'
 # list A : nil | Cons A, list A is      -- NYI: sum type syntax, optional '<', '>' (2x)
@@ -224,7 +224,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, streamable<A> is
 
   # infix operand synonyme for concat
   #
-  redef infix ++ (t streamable<A>) => concat t.asList
+  redef infix ++ (t List<A>) => concat t.asList
 
 
   # create a list from the tail of list.this dropping n elements (or fewer

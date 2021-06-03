@@ -30,7 +30,7 @@
 #
 conststring (cannotBeCalled void) ref : string, array<i32> sys.array<i32> -1 is
 
-  redef utf8 ref streamable<i32> is conststring.this
+  redef utf8 List<i32> is conststring.this
 
   # Resolve repeated inheritance of asString from string and from array.
   #

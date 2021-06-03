@@ -31,7 +31,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   redef asString => string.this
 
   # any concrete string must implement utf8
-  utf8 ref streamable<i32> is abstract
+  utf8 List<i32> is abstract
 
   # is this string empty?
   isEmpty => !utf8.asStream.hasNext
@@ -53,7 +53,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   pre
     n >= 0
   is
-    redef utf8 ref : streamable<i32> is
+    redef utf8 ref : List<i32> is
       redef asStream ref : stream<i32> is
         i := 0
         bytes := string.this.utf8.asStream
@@ -257,7 +257,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   # convert this string into a stream of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
-  codepointsStream : streamable<codepoint> is
+  codepointsStream : List<codepoint> is
     redef asStream ref : stream<codepoint> is
       s := codepointsAndErrors
       n option<codepoint> := nil

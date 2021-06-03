@@ -45,7 +45,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
   #   a <  b: the interval from a to b, both inclusive
   #   a == b: the interval containing only one element, a
   #   a >  b: an empty interval
-  infix .. (upper T) : streamable<T>, Set<T> is
+  infix .. (upper T) : List<T>, Set<T> is
 
     lower T is thiz
     # lower => hasInterval.this  # NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
@@ -71,7 +71,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
     contains (e T) => lower <= e <= upper
 
 
-    # Create a streamable that is steping through this interval skipping values. For a
+    # Create a List that is steping through this interval skipping values. For a
     # non-negative step parameter, the stream will return lower, lower+step,
     # lower+2*step, etc. as long as these values are <= upper.
     #
@@ -80,7 +80,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
     # that a negative step will produce a non-empty stream for an empty interval with
     # lower > upper!
     #
-    infix : (step T) : streamable<T>, Set<T> is
+    infix : (step T) : List<T>, Set<T> is
 
       # create a stream of all the elements of this interval, in order.
       redef asStream ref : stream<T> is
@@ -96,9 +96,9 @@ hasInterval<T: hasInterval<T>> : integer<T> is
       contains (e T) => lower <= e <= upper && ((e - lower) %% step)
 
 
-      # use map implementation from streamable:
+      # use map implementation from List:
       #
-      map<B>(f fun(T) B)  => mapStreamable<B> f
+      map<B>(f fun(T) B)  => mapList<B> f
 
 
     # create a list from this interval
@@ -110,9 +110,9 @@ hasInterval<T: hasInterval<T>> : integer<T> is
       if (lower > upper) nil else cons lower
 
 
-    # use map implementation from streamable:
+    # use map implementation from List:
     #
-    map<B>(f fun(T) B)  => mapStreamable<B> f
+    map<B>(f fun(T) B)  => mapList<B> f
 
 
     # string representation of this interval, e.g., "1..10"

@@ -84,9 +84,9 @@ is
   infix ⋃ (other psSet<K>) => psSet<K> psm ⋃ other.psm
 
 
-  # add all elements of the given streamable to this set
+  # add all elements of the given List to this set
   #
-  addAll (s streamable<K>) psSet<K> is
+  addAll (s List<K>) psSet<K> is
     addAllFromStream s.asStream
 
 

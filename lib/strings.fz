@@ -64,7 +64,7 @@ strings is
     redef infix + (other Object) string is
       fromArray a.add other
 
-    redef utf8 ref : streamable<i32> is
+    redef utf8 ref : List<i32> is
       redef asStream ref : stream<i32> is
         i := 0
         s := a[i].asString.utf8.asStream
@@ -86,7 +86,7 @@ strings is
 
   # create string from the given utf8 bytes
   #
-  fromBytes(utf8Bytes streamable<i32>) string is
+  fromBytes(utf8Bytes List<i32>) string is
     ref : string {
         redef utf8 => utf8Bytes
       }

@@ -25,7 +25,7 @@
 
 # array -- one-dimensional immutable array
 #
-array<T>(internalArray sys.array<T>) : streamable<T> is
+array<T>(internalArray sys.array<T>) : List<T> is
 
 # public:
 

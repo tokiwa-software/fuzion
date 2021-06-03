@@ -45,7 +45,7 @@ is
     infix <= (other entry) => ks[i] <= ks[other.i]
     key => ks[i]
     val => vs[i]
-  sortedEntries := sortedArray<entry> ((0..ks.length-1).mapStreamable<entry> (fun (i i32) => entry i).asArray)
+  sortedEntries := sortedArray<entry> ((0..ks.length-1).mapList<entry> (fun (i i32) => entry i).asArray)
 
   # number of entries in this map
   #
@@ -63,4 +63,4 @@ is
 
   # get a stream of all key/value pairs in this map
   #
-  items streamable<tuple<K,V>> is sortedEntries.map<tuple<K,V>> fun (e entry) => (e.key, e.val)
+  items List<tuple<K,V>> is sortedEntries.map<tuple<K,V>> fun (e entry) => (e.key, e.val)

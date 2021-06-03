@@ -39,20 +39,20 @@ map<K, V> is
 
   # get a stream of all key/value pairs in this map
   #
-  items streamable<tuple<K,V>> is abstract
+  items List<tuple<K,V>> is abstract
 
 
   # get a stream of all keys in this map
   #
-  keys streamable<K> is
-    res : streamable<K> is
+  keys List<K> is
+    res : List<K> is
       redef asStream => items.asStream.map<K> fun(t tuple<K,V>) => { (k,_) := t; k }
     res
 
 
   # get a stream of all values in this map
   #
-  values streamable<V> is
-    res : streamable<V> is
+  values List<V> is
+    res : List<V> is
       redef asStream => items.asStream.map<V> fun(t tuple<K,V>) => { (_,v) := t; v }
     res

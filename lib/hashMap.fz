@@ -111,8 +111,8 @@ is
 
   # get a stream of all key/value pairs in this map
   #
-  items streamable<tuple<K,V>> is
-    res : streamable<tuple<K,V>> is
+  items List<tuple<K,V>> is
+    res : List<tuple<K,V>> is
       redef asStream =>
         contents
           .asStream

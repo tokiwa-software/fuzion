@@ -241,8 +241,8 @@ O(n log n).
 
   # get a stream of all key/value pairs in this map
   #
-  redef items streamable<tuple<K,V>> is
-    res : streamable<tuple<K,V>> is
+  redef items List<tuple<K,V>> is
+    res : List<tuple<K,V>> is
       redef asStream =>
         asKeyArray.map<tuple<K,V>>(fun (k K) => (k, psMap.this[k].unwrap)).asStream
     res
