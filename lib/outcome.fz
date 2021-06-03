@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 # outcome is a choice type that represents the result of a routine that
-# may produce something useful or it may fail producing an error condition.
+# may either produce something useful or fail producing an error condition.
 #
 outcome<T> : choice<T, error> is
 
