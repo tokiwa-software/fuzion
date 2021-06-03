@@ -170,15 +170,7 @@ List<T> ref : hasList<T> is
   # NYI: As long as covariance for result type is not permitted we cannot
   # call this 'map' since this would clash with, e.g., 'array.map'
   #
-  mapList<B>(f fun(T) B) List<B> is
-    ref : List<B> {
-        redef asStream =>
-          ref : stream<B> {
-              s := List.this.asStream
-              hasNext => s.hasNext
-              next => f s.next
-            }
-      }
+  mapList<B>(f fun(T) B) => asList.map<B> f
 
 
   # fold the elements of this List using the given monoid.
