@@ -29,17 +29,6 @@
 List<T> ref : hasList<T> is
 
 
-  # create a stream of T.
-  #
-  # A stream contains mutable state, so it cannot be reused or shared
-  # between threads.
-  #
-  # Default implementation uses asList.  Heirs must redefine at least
-  # one of asList or asStream.
-  #
-  asStream stream<T> is asList.asStream
-
-
   # create a list from this List.
   #
   # A list is immutable, so it can be reused and shared between threads.
@@ -49,6 +38,17 @@ List<T> ref : hasList<T> is
   # one of asList or asStream.
   #
   asList list<T> is asStream.asList
+
+
+  # create a stream of T.
+  #
+  # A stream contains mutable state, so it cannot be reused or shared
+  # between threads.
+  #
+  # Default implementation uses asList.  Heirs must redefine at least
+  # one of asList or asStream.
+  #
+  asStream stream<T> is asList.asStream
 
 
   # count the elements of stream created from this List
