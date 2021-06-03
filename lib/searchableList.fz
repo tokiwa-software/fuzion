@@ -63,3 +63,26 @@ is
           match find c1.tail, l2
             nil   => nil
             n i32 => n + 1
+
+
+  # replace all occurances of f within l by r
+  #
+  replace (l, f, r list<A>) =>
+
+    # tail recursive helper
+    #
+    replace (
+        # the head part of l with f already replaced by r
+        h,
+
+        # the tail that still needs to be searched for f
+        t list<A>
+
+      ) list<A>
+    is
+      match find t, f
+        nil   => h ++ t
+        n i32 =>
+          replace h ++ (t.take n) ++ r, t.drop n + f.count
+
+    replace nil, l

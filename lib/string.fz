@@ -368,7 +368,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   endsWith(suffix string) =>
     l  := byteLength
     sl := suffix.byteLength
-    end := utf8.drop l-sl
+    end := utf8.dropS l-sl
     searchableList<i32>.startsWith end.asList, suffix.utf8.asList
 
 
@@ -376,3 +376,8 @@ string ref : hasHash<string>, ordered<string>, strings is
   #
   find(substring string) =>
     searchableList<i32>.find utf8.asList, substring.utf8.asList
+
+
+  # replace all occurances of f within l by r
+  #
+  replace (f, r string) => strings.fromBytes searchableList<i32>.replace utf8.asList, f.utf8.asList, r.utf8.asList
