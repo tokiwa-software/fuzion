@@ -160,7 +160,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, streamable<A> is
       c Cons => c.tail.fold m.op(s, c.head), m
 
 
-  # Take the first n elements of a list, alternatively the whole list if it
+  # Lazily take the first n elements of a list, alternatively the whole list if it
   # is shorter than n, or the empty list if n <= 0
   #
   redef take (n i32) list<A>
@@ -170,15 +170,12 @@ list<A> : choice<nil, Cons<A, list<A>>>, streamable<A> is
     else
       match list.this
         _ nil  => nil
-        # c Cons => cons c.head, c.tail.take n-1      # NYI: does not work yet, need to check why
         c Cons =>
-          {                                         # NYI: indentation syntax for match not supported
-            ref : Cons<A, list<A>>
-              {                                     # NYI: indentation syntax for anonymous not supported
-                redef head => c.head
-                redef tail => c.tail.take n-1
-              }
-          }
+          ref : Cons<A, list<A>> {   # NYI: indentation syntax for anonymous not supported
+              redef head => c.head
+              redef tail => c.tail.take n-1
+            }
+
 
   # reverse the order of the elements in this list
   #
