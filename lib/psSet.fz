@@ -36,13 +36,18 @@
 #
 psSet<K : ordered<K>>
   (psm psMap<K,unit>)
-  : Set<K>
+  : Set<K>, List<K>
 is
 
 
   # number of elements in this set
   #
   size => psm.size
+
+
+  # list representation of values in this set
+  #
+  redef asList => psm.keys.asList
 
 
   # print contents of this set
@@ -61,7 +66,7 @@ is
 
   # create a sorted array from the elements of this set
   #
-  asArray => psm.asKeyArray
+  redef asArray => psm.asKeyArray
 
 
   # check if an element equal to given element k is part of this set
@@ -97,11 +102,6 @@ is
       add(s.next).addAllFromStream s
     else
       psSet.this
-
-
-  # create a comma-separated string of the elements of this set
-  #
-  redef asString => psm.keys.asString
 
 
   # number of entries in this set.  May be undefined, i.e., a range of
