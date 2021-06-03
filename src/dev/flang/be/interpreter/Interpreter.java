@@ -919,7 +919,9 @@ public class Interpreter extends Backend
       v instanceof LValue                                              /* ref type as LValue    */ ||
       v instanceof ChoiceIdAsRef && thiz.isChoice()                    /* a boxed choice tag    */ ||
       (v instanceof i32Value ||
-       v instanceof i64Value   ) && thiz.isOuterRef()     /* e.g. outerref in integer.infix /-/ */ ||
+       v instanceof i64Value ||
+       v instanceof u32Value ||
+       v instanceof u64Value   ) && thiz.isOuterRef()     /* e.g. outerref in integer.infix /-/ */ ||
       v == null                  && thiz.isChoice()                /* Nil/Null boxed choice tag */;
   }
 
