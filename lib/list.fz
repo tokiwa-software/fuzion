@@ -160,11 +160,10 @@ list<A> : choice<nil, Cons<A, list<A>>>, streamable<A> is
       c Cons => c.tail.fold m.op(s, c.head), m
 
 
-  # Take the first n elements of a list, or the whole list if it is shorter than n
+  # Take the first n elements of a list, alternatively the whole list if it
+  # is shorter than n, or the empty list if n <= 0
   #
-  take (n i32) list<A>
-    pre
-      debug: n >= 0
+  redef take (n i32) list<A>
   is
     if n <= 0
       nil
@@ -180,7 +179,6 @@ list<A> : choice<nil, Cons<A, list<A>>>, streamable<A> is
                 redef tail => c.tail.take n-1
               }
           }
-
 
   # reverse the order of the elements in this list
   #
@@ -229,19 +227,25 @@ list<A> : choice<nil, Cons<A, list<A>>>, streamable<A> is
 
   # infix operand synonyme for concat
   #
-  infix ++ (t list<A>) => concat t
+  redef infix ++ (t streamable<A>) => concat t.asList
 
 
   # create a list from the tail of list.this dropping n elements (or fewer
   # if the list is shorter than n).
   #
-  drop (n i32) list<A> is
+  redef drop (n i32) list<A> is
     if n <= 0
       list.this
     else
       match list.this
         nil    => nil
         c Cons => c.tail.drop n-1
+
+
+  # create a slice from this list that consists of the elements starting at index
+  # 'from' (including) up to index 'to' (excluding).
+  #
+  redef slice(from, to i32) => drop(from).take to-from
 
 
   # create stream from this list

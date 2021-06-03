@@ -28,14 +28,16 @@
 streamable<T> ref : hasList<T> is
 
 
-  # create a stream of T
+  # create a stream of T.  Default implementation uses asList. heirs must
+  # redefine at least one of asList or asStream.
   #
-  asStream stream<T> is abstract
+  asStream stream<T> is asList.asStream
 
 
-  # create a list from this streamable
+  # create a list from this streamable.  Default implementation uses asStream.
+  # heirs must redefine at least one of asList or asStream.
   #
-  asList => asStream.asList
+  asList list<T> is asStream.asList
 
 
   # count the elements of stream created from this streamable
@@ -105,36 +107,23 @@ streamable<T> ref : hasList<T> is
   infix ∃ (f fun (T) bool) bool is asStream ∃ f
 
 
-  # create a streamable that consists only of the first n elements of this
+  # create a list that consists only of the first n elements of this
   # streamable, fewer if this stream has fewer elements
   #
-  takeS (n i32) ref : streamable<T> is
-        asStream stream<T> is
-          ref : stream<T> {
-              s := streamable.this.asStream
-              remaining := n
-              hasNext => remaining > 0 && s.hasNext
-              next => set remaining := remaining - 1; s.next
-            }
+  take (n i32) => asList.take n
 
 
-  # create a streamable that consists of the elements of this stream except the first
+  # create a list that consists of the elements of this streamable except the first
   # n elements
   #
-  dropS (n i32) ref : streamable<T> is
-    asStream =>
-      s := streamable.this.asStream
-      for _ in 1..n while s.hasNext
-        s.next
-      s
+  drop (n i32) => asList.drop n
 
 
   # create a slice from this streamable that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
-  slice(from, to i32) streamable<T> is
-    dropS(from).takeS to-from
-    # NYI: OPTIMIZATION: We could redefine this, e.g. for to avoid copying array data
+  slice(from, to i32) => drop(from).take to-from
+    # NYI: OPTIMIZATION: We could redefine this, e.g. to avoid copying array data
     # on array.slice(from,to).asArray.
 
 
@@ -142,7 +131,7 @@ streamable<T> ref : hasList<T> is
   # by all the elements of s
   #
   concatStreamables (s streamable<T>) ref : streamable<T> is
-    asStream stream<T> is
+    redef asStream stream<T> is
       st : stream<T> is
         s1 := streamable.this.asStream
         s2 := s.asStream
@@ -153,15 +142,15 @@ streamable<T> ref : hasList<T> is
 
   # infix operand synonyme for concatSteramables
   #
-  infix +++ (s streamable<T>) streamable<T> is concatStreamables s
+  infix ++ (s streamable<T>) => asList ++ s.asList
 
 
   # create a stream and then create a string from the elements of that stream
   #
-  redef asString => asStream.asString
+  redef asString => asList.asString
 
 
-  # map the stream to a new stream applying function f to all elements
+  # map the streamable to a new streamable applying function f to all elements
   #
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the stream.
@@ -171,7 +160,7 @@ streamable<T> ref : hasList<T> is
   #
   mapStreamable<B>(f fun(T) B) streamable<B> is
     ref : streamable<B> {
-        asStream =>
+        redef asStream =>
           ref : stream<B> {
               s := streamable.this.asStream
               hasNext => s.hasNext
@@ -184,4 +173,4 @@ streamable<T> ref : hasList<T> is
   #
   # e.g., to sum the elements of a stream of i32, use s.fold i32.sum
   #
-  fold (m Monoid<T>) => asStream.fold m.e, m
+  fold (m Monoid<T>) => asList.fold m.e, m

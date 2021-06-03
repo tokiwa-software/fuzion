@@ -90,7 +90,7 @@ is
   as_array =>
     array<T> length, fun (i i32) => marray.this[i]
 
-  asStream => as_array.asStream
+  redef asStream => as_array.asStream
 
 
   # map the array to a new array applying function f to all elements

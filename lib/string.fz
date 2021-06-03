@@ -258,7 +258,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   # found in the underlying utf8 bytes
   #
   codepointsStream : streamable<codepoint> is
-    asStream ref : stream<codepoint> is
+    redef asStream ref : stream<codepoint> is
       s := codepointsAndErrors
       n option<codepoint> := nil
 
@@ -353,7 +353,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   is
     codepointsArray
       .slice(from, to)
-      .mapStreamable<string>(fun (c codepoint) string is c)  # NYI: this should maybe not be needed since codepoint is a string
+      .map<string>(fun (c codepoint) string is c)  # NYI: this should maybe not be needed since codepoint is a string
       .fold strings.concat
 
 
@@ -368,8 +368,8 @@ string ref : hasHash<string>, ordered<string>, strings is
   endsWith(suffix string) =>
     l  := byteLength
     sl := suffix.byteLength
-    end := utf8.dropS l-sl
-    searchableList<i32>.startsWith end.asList, suffix.utf8.asList
+    end := utf8.drop l-sl
+    searchableList<i32>.startsWith end, suffix.utf8.asList
 
 
   # find (utf8-byte) index of substring witin this string.
