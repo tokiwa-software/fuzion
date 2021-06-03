@@ -108,7 +108,7 @@ streamable<T> ref : hasList<T> is
   # create a streamable that consists only of the first n elements of this
   # streamable, fewer if this stream has fewer elements
   #
-  take (n i32) ref : streamable<T> is
+  takeS (n i32) ref : streamable<T> is
         asStream stream<T> is
           ref : stream<T> {
               s := streamable.this.asStream
@@ -121,7 +121,7 @@ streamable<T> ref : hasList<T> is
   # create a streamable that consists of the elements of this stream except the first
   # n elements
   #
-  drop (n i32) ref : streamable<T> is
+  dropS (n i32) ref : streamable<T> is
     asStream =>
       s := streamable.this.asStream
       for _ in 1..n while s.hasNext
@@ -133,7 +133,7 @@ streamable<T> ref : hasList<T> is
   # from (including) up to index to (excluding).
   #
   slice(from, to i32) streamable<T> is
-    drop(from).take to-from
+    dropS(from).takeS to-from
     # NYI: OPTIMIZATION: We could redefine this, e.g. for to avoid copying array data
     # on array.slice(from,to).asArray.
 
@@ -153,7 +153,7 @@ streamable<T> ref : hasList<T> is
 
   # infix operand synonyme for concatSteramables
   #
-  infix ++ (s streamable<T>) streamable<T> is concatStreamables s
+  infix +++ (s streamable<T>) streamable<T> is concatStreamables s
 
 
   # create a stream and then create a string from the elements of that stream

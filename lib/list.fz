@@ -33,7 +33,7 @@
 #
 #
 #
-list<A> : choice<nil, Cons<A, list<A>>> is
+list<A> : choice<nil, Cons<A, list<A>>>, streamable<A> is
 # list<A> : nil | Cons<A, list<A>> is   -- NYI: sum type syntax
 # list<A> : nil | Cons A, list A is     -- NYI: sum type syntax, optional '<', '>'
 # list A : nil | Cons A, list A is      -- NYI: sum type syntax, optional '<', '>' (2x)
@@ -44,6 +44,20 @@ list<A> : choice<nil, Cons<A, list<A>>> is
     match list.this
       _ nil  => true
       c Cons => false
+
+
+  # count the elements of this list
+  #
+  redef count => count 0
+
+
+  # count the elements of this list starting at n.
+  # carries n around to make this tail-recursive
+  #
+  private count (n i32) i32 is
+    match list.this
+      _ nil  => n
+      c Cons => c.tail.count n + 1
 
 
   # get the head of this list if it exists
@@ -67,7 +81,7 @@ list<A> : choice<nil, Cons<A, list<A>>> is
 
   # call f in order on all elements of this list
   #
-  forAll (f fun (A)) unit is
+  redef forAll (f fun (A)) unit is
     match list.this
       _ nil  =>
       c Cons => f c.head; c.tail.forAll f
@@ -133,7 +147,7 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   #
   # e.g., to sum the elements of a list of i32, use l.fold i32.sum
   #
-  fold (m Monoid<A>) => fold m.e, m
+  redef fold (m Monoid<A>) => fold m.e, m
 
 
   # fold the elements of this list using the given monoid and initial value
@@ -188,3 +202,60 @@ list<A> : choice<nil, Cons<A, list<A>>> is
   #
   redef asString string is
     map<string> (fun (x A) => x.asString).fold strings.concat ","
+
+
+  # List concatenation, O(count)
+  #
+  concatEagerly (t list<A>) list<A> is
+    match list.this
+      _ nil => t
+      c Cons => cons<A, list<A>> c.head, c.tail.concat t
+
+
+  # Lazy list concatenation, O(1)
+  #
+  concat (t list<A>) list<A> is
+    match list.this
+      _ nil => t
+      c Cons =>
+        match t
+          nil => list.this
+          c2 Cons =>
+            ref : Cons<A, list<A>> {
+                head => c.head
+                tail => c.tail.concat t
+              }
+
+
+  # infix operand synonyme for concat
+  #
+  infix ++ (t list<A>) => concat t
+
+
+  # create a list from the tail of list.this dropping n elements (or fewer
+  # if the list is shorter than n).
+  #
+  drop (n i32) list<A> is
+    if n <= 0
+      list.this
+    else
+      match list.this
+        nil    => nil
+        c Cons => c.tail.drop n-1
+
+
+  # create stream from this list
+  #
+  # In contrast to list's immutable Cons cells, a stream instance is mutable, i.e,
+  # it cannot be shared with threads or used in pure functions
+  #
+  redef asStream ref : stream<A> is
+    cur := list.this
+    redef hasNext =>
+      match cur
+        Cons => true
+        nil  => false
+    redef next =>
+      res := cur.forceHead
+      set cur := cur.forceTail
+      res
