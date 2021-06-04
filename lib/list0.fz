@@ -249,16 +249,16 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   # is 'nil', returns 'nil'
   #
   redef cycle list<A> is
-    cycleCons (h, t Cons<A, list<A>>) : Cons<A, list<A>> is
-      head => h.head
-      tail list<A> is
-        match h.tail
-          nil    => cycleCons t, t
-          c Cons => cycleCons c, t
-
     match list.this
       nil    => nil
-      c Cons => cycleCons c, c
+      c Cons =>
+        cycleCons (h Cons<A, list<A>>) : Cons<A, list<A>> is
+          head => h.head
+          tail list<A> is
+            cycleCons match h.tail
+              nil    => c
+              d Cons => d
+        cycleCons c
 
 
   # create stream from this list
