@@ -26,7 +26,7 @@
 # List -- ancestor for features that can be converted to a 'list' or a
 # 'stream'
 #
-List<T> ref : hasList<T> is
+List<T> ref is
 
 
   # create a list from this List.
