@@ -226,6 +226,7 @@ public class Types extends ANY
           universe.get("u64",1).get("val").markUsed(res, SourcePosition.builtIn);
           universe.get("bool").get(tag) .markUsed(res, SourcePosition.builtIn);
           universe.get("conststring")   .markUsed(res, SourcePosition.builtIn);
+          universe.get("conststring").get("isEmpty").markUsed(res, SourcePosition.builtIn);  // NYI: check why this is not found automatically
           f_sys_array_data              .markUsed(res, SourcePosition.builtIn);
           f_sys_array_length            .markUsed(res, SourcePosition.builtIn);
           universe.get("unit")          .markUsed(res, SourcePosition.builtIn);
