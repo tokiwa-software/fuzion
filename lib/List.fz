@@ -50,6 +50,10 @@ List<T> ref is
   #
   asStream stream<T> is asList.asStream
 
+  # is this list empty?
+  #
+  isEmpty => asList.isEmpty
+
 
   # count the number of elements in this List.  Note that this typically
   # runs forever if executed on an endless list

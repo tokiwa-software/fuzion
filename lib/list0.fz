@@ -40,7 +40,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
 
   # is this list empty?
   #
-  isEmpty =>
+  redef isEmpty =>
     match list.this
       _ nil  => true
       c Cons => false

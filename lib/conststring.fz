@@ -32,9 +32,10 @@ conststring (cannotBeCalled void) ref : string, array<i32> sys.array<i32> -1 is
 
   redef utf8 List<i32> is conststring.this
 
-  # Resolve repeated inheritance of asString from string and from array.
+  # Resolve repeated inheritance of asString, isEmpty from string and from array.
   #
   # NYI: Once we have a select-mechanism, we could select string.asString over
   # array.asString
   #
   redef asString string is conststring.this
+  redef isEmpty => length = 0
