@@ -62,7 +62,7 @@ is
 
 /*
 
-The structure of the data array for diffirent values of size and fill is as follows.
+The structure of the data array for different values of size and fill is as follows.
 
 size fill data.length data array structure
  0    0     0         .
