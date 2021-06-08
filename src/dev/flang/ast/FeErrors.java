@@ -707,7 +707,7 @@ public class FeErrors extends ANY
   static void constraintMustNotBeGenericArgument(Generic g)
   {
     error(g._pos,
-          "Constraing for generic argument must not be generic type parameter",
+          "Constraint for generic argument must not be generic type parameter",
           "Affected generic argument: " + g._name + "\n" +
           "_constraint: " + g.constraint() + " declared at " + g.constraint().generic._pos);
   }
