@@ -191,24 +191,74 @@ public class Block extends Expr
 
 
   /**
-   * resultExpression returns the last statement of this block if it is an
-   * expression, null if the blcok is empty or the last expression is not an
-   * Expr.
+   * resultExpressionIndex returns the index of the last non-NOP statement of
+   * this block if it is an expression, -1 if the block is empty or the last
+   * non-NOP statement is not an Expr.
    *
-   * @return the Expr that produces this Block's result
+   * @return the index of the Expr that produces this Block's result, -1 if none
+   * exists.
+   */
+  private int resultExpressionIndex()
+  {
+    var i = statements_.size() - 1;
+    while (i >= 0 && (statements_.get(i) instanceof Nop))
+      {
+        i--;
+      }
+    return (i >= 0 && (statements_.get(i) instanceof Expr))
+      ? i
+      : -1;
+  }
+
+
+  /**
+   * resultExpression returns the last non-NOP statement of this block if it is
+   * an expression, null if the block is empty or the last non-NOP statement is
+   * not an Expr.
+   *
+   * @return the Expr that produces this Block's result, or null if none.
    */
   public Expr resultExpression()
   {
-    Expr result = null;
-    if (!statements_.isEmpty())
+    var i = resultExpressionIndex();
+    return i >= 0
+      ? (Expr) statements_.get(i)
+      : null;
+  }
+
+
+  /**
+   * removeResultExpression removes and returns the last non-NOP statement of
+   * this block if it is an expression.  Does nothing an returns null if the
+   * block is empty or the last non-NOP statement is not an Expr.
+   *
+   * @return the Expr that produces this Block's result
+   */
+  private Expr removeResultExpression()
+  {
+    var i = resultExpressionIndex();
+    return i >= 0
+      ? (Expr) statements_.remove(i)
+      : null;
+  }
+
+
+  /**
+   * Check if this value might need boxing and wrap this into Box() if this is
+   * the case.
+   *
+   * @param frmlT the formal type this is assigned to.
+   *
+   * @return this or an instance of Box wrapping this.
+   */
+  Expr box(Type frmlT)
+  {
+    var r = removeResultExpression();
+    if (r != null)
       {
-        Stmnt s = statements_.getLast();
-        if (s instanceof Expr)
-          {
-            result = ((Expr)s);
-          }
+        statements_.add(r.box(frmlT));
       }
-    return result;
+    return this;
   }
 
 
@@ -287,10 +337,9 @@ public class Block extends Expr
    */
   Block assignToField(Resolution res, Feature outer, Feature r)
   {
-    Expr resExpr = resultExpression();
+    Expr resExpr = removeResultExpression();
     if (resExpr != null)
       {
-        statements_.removeLast();
         statements_.add(resExpr.assignToField(res, outer, r));
       }
     else
@@ -320,11 +369,10 @@ public class Block extends Expr
    */
   public Expr propagateExpectedType(Resolution res, Feature outer, Type type)
   {
-    Expr resExpr = resultExpression();
+    Expr resExpr = removeResultExpression();
     if (resExpr != null)
       {
-        resExpr = resExpr.propagateExpectedType(res, outer, type);
-        statements_.set(statements_.size() - 1, resExpr);
+        statements_.add(resExpr.propagateExpectedType(res, outer, type));
       }
     return this;
   }
