@@ -398,7 +398,7 @@ public class Interpreter extends Backend
           { // vc's type is a generic argument whose actual type does not need
             // boxing
             check
-              (b._value.type().isGenericArgument(),
+              (b._value.type().isGenericArgument() || b._value.isCallToOuterRef(),
                vc == rc);
 
             result = val;

@@ -282,6 +282,15 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
+   * Is this Expr a call to an outer ref?
+   */
+  public boolean isCallToOuterRef()
+  {
+    return false;
+  }
+
+
+  /**
    * Check if this value might need boxing and wrap this into Box() if this is
    * the case.
    *
@@ -294,7 +303,7 @@ public abstract class Expr extends ANY implements Stmnt
     Expr result = this;
     var t = type();
 
-    if (!t.isRef() && t != Types.resolved.t_void &&
+    if ((!t.isRef() || isCallToOuterRef()) && t != Types.resolved.t_void &&
         (frmlT.isRef() ||
          (frmlT.isChoice() &&
           !frmlT.isAssignableFrom(t) &&

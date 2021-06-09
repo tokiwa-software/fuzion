@@ -741,6 +741,15 @@ public class Call extends Expr
 
 
   /**
+   * Is this Expr a call to an outer ref?
+   */
+  public boolean isCallToOuterRef()
+  {
+    return calledFeature().isOuterRef();
+  }
+
+
+  /**
    * toString
    *
    * @return
