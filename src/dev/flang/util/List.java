@@ -137,10 +137,7 @@ public class List<T>
   public List(T... i)
   {
     super();
-    for (T x : i)
-      {
-        add(x);
-      }
+    addAll(i);
   }
 
 
@@ -249,6 +246,20 @@ public class List<T>
     while (i.hasNext())
       {
         add(i.next());
+      }
+  }
+
+
+  /**
+   * addAll adds all elements in the given array
+   *
+   * @param i an iterator
+   */
+  public void addAll(T... i)
+  {
+    for (T x : i)
+      {
+        add(x);
       }
   }
 
