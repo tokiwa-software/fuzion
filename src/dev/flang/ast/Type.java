@@ -168,13 +168,13 @@ public class Type extends ANY implements Comparable
   {
     yes,
     no,
-    dontKnow
+    don't Know
   }
 
   /**
    * Cached result of dependsOnGenerics().
    */
-  YesNo dependsOnGenerics = YesNo.dontKnow;
+  YesNo dependsOnGenerics = YesNo. don't Know;
 
 
   /**
