@@ -1467,7 +1467,7 @@ hw25 is
     var cc = _clazzIds.get(cl);
     var s = _codeIds.get(c).get(ix);
     Clazz ss = s instanceof If
-      ? Clazzes.bool.get()
+      ? cc.getRuntimeClazz(((If) s).runtimeClazzId_)
       : cc.getRuntimeClazz(((Match) s).runtimeClazzId_);
     return _clazzIds.get(ss);
   }

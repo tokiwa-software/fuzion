@@ -661,6 +661,19 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
+  public static void findClazzes(If i, Clazz outerClazz)
+  {
+    if (i.runtimeClazzId_ < 0)
+      {
+        i.runtimeClazzId_ = outerClazz.feature().getRuntimeClazzIds(1);
+      }
+    outerClazz.setRuntimeClazz(i.runtimeClazzId_, clazz(i.cond, outerClazz));
+  }
+
+
+  /**
+   * Find all static clazzes for this case and store them in outerClazz.
+   */
   public static void findClazzes(Case c, Clazz outerClazz)
   {
     // NYI: Check if this works for a case that is part of an inherits clause, do

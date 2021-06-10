@@ -480,6 +480,10 @@ public class C extends ANY
         {
           var subjClazz = _fuir.matchStaticSubject(cl, c, i);
           var sub       = pop(stack, subjClazz);
+          if (_fuir.clazzIsRef(subjClazz))
+            {
+              sub = sub.deref().field(CNames.FIELDS_IN_REF_CLAZZ);
+            }
           var uniyon    = sub.field(_names.CHOICE_UNION_NAME);
           var hasTag    = !_fuir.clazzIsChoiceOfOnlyRefs(subjClazz);
           var refEntry  = uniyon.field(_names.CHOICE_REF_ENTRY_NAME);
@@ -664,11 +668,6 @@ public class C extends ANY
           CExpr res = (_types.isScalar(vocc) && _fuir.clazzIsRef(tc) ? t.deref().field(_names.FIELDS_IN_REF_CLAZZ) :
                        _types.isScalar(vocc)                         ? t                                           :
                        _types.hasData(rt)                            ? accessField(tc, t, cc)                      : null);
-          if (_fuir.clazzIsRef(rt) && _fuir.clazzKind(_fuir.clazzAsValue(rt)) == FUIR.ClazzKind.Choice)
-            { // NYI: This special handling should better be part of match, but staticSubjectClazz is never ref
-              res = res.deref().field(_names.FIELDS_IN_REF_CLAZZ);
-              rt = _fuir.clazzAsValue(rt);
-            }
           push(stack, rt, res);
           break;
         }
