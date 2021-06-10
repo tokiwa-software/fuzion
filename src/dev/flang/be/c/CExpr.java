@@ -181,6 +181,7 @@ abstract class CExpr extends CStmnt
               if (c <  ' '  ||
                   c == '"'  ||
                   c == '\'' ||
+                  c == '\\' ||
                   c >  '~'     )
                 {
                   var b = (int) c;
