@@ -77,7 +77,7 @@ public class Box extends Expr
     if (PRECONDITIONS) require
       (pos != null,
        value != null,
-       !value.type().isRef());
+       !value.type().isRef() || value.isCallToOuterRef());
 
     this._value = value;
     this._type = _value.type().asRef();
