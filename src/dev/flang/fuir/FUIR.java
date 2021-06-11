@@ -759,7 +759,7 @@ hw25 is
             toStack(code, a);
             code.add(new Current(cc.feature().pos(), cc._type));
             // Field clazz means assign value to that field
-            code.add(cc.lookup(f, Call.NO_GENERICS, f.isUsedAt()));
+            code.add((Clazz) cc.getRuntimeData(p.parentCallArgFieldIds_ + i));
           }
         addCode(cc, code, p.calledFeature());
       }

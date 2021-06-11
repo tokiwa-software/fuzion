@@ -974,6 +974,18 @@ public class Clazz extends ANY implements Comparable
       for (Call c: f.inherits)
         {
           Feature cf = c.calledFeature();
+          var n = c._actuals.size();
+          for (var i = 0; i < n; i++)
+            {
+              var a = c._actuals.get(i);
+              var cfa = cf.arguments.get(i);
+              var ccc = lookup(cfa, Call.NO_GENERICS, f.isUsedAt());
+              if (c.parentCallArgFieldIds_ < 0)
+                {
+                  c.parentCallArgFieldIds_ = Clazz.this.feature().getRuntimeClazzIds(n);
+                }
+              Clazz.this.setRuntimeData(c.parentCallArgFieldIds_+i, ccc);
+            }
 
           check
             (Errors.count() > 0 || cf != null);

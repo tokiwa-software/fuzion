@@ -159,6 +159,12 @@ public class Call extends Expr
   // NYI: Move sid_ to target?
   public int sid_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
+  // For a call to parent in an inherits clause, these are the ids of the
+  // argument fields for the parent feature.
+  //
+  // NYI: remove, used in FUIR.  This should be replaced by explicit assignments to fields
+  public int parentCallArgFieldIds_ = -1;
+
 
   /**
    * Is this a tail recursive call?
