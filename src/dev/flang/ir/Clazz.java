@@ -143,11 +143,25 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
+   * Is this a normalized outer clazz? If so, there might be calls on this as an
+   * outer clazz even if it is not instantiated.
+   */
+  public boolean isNormalized_ = false;
+
+
+  /**
    * Is this clazz ever called?  Usually, this is the same as isInstantiated_,
    * except for instances created by intrinsics: These are created even for
    * clazzes that are not called.
    */
   public boolean isCalled_ = false;
+
+
+  /**
+   * Is there a non-dynamic call to this clazz?  If so, it has to be considered
+   * called even if the outer clazz is not instantiated.  NYI: check why!
+   */
+  boolean _isCalledDirectly = false;
 
 
   /**
@@ -287,11 +301,7 @@ public class Clazz extends ANY implements Comparable
      *    clazz can be shared with all other sub-clazzes of 'stack<i32>', but
      *    not with sub-clazzes with different actual generics.
      */
-    if (outer != null && outer.isRef())
-      {
-        outer = outer.normalize(actualType.featureOfType().outer());
-      }
-    this._outer = outer;
+    this._outer = normalizeOuter(actualType, outer);
 
     if (isChoice())
       {
@@ -321,9 +331,47 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
+   * Check if this clazz has an outer ref that is used.
+   *
+   * if an outer ref is used (i.e., state is resolved) to access the outer
+   * instance, we must not normalize because we will need the exact type of the
+   * outer instance to specialize code or to access features that only exist in
+   * the specific version
+   */
+  private boolean hasUsedOuterRef()
+  {
+    var or = feature().outerRef_;
+    return or != null && or.state().atLeast(Feature.State.RESOLVED);
+  }
+
+
+  /**
+   * Normalize an outer clazz for a given type. For a reference clazz that
+   * inherits from f, this will return the corresponding clazz derived from
+   * f. The idea is that, e.g., we do not need to distinguish conststring.length
+   * from array<u8>.length.
+   *
+   * @param t the type of the newly created clazz
+   *
+   * @param outer the outer clazz that should be normalized for the newly
+   * created clazz
+   *
+   * @return the normalized version of outer.
+   */
+  private Clazz normalizeOuter(Type t, Clazz outer)
+  {
+    if (outer != null && !hasUsedOuterRef())
+      {
+        outer = outer.normalize(t.featureOfType().outer());
+      }
+    return outer;
+  }
+
+
+  /**
    * Normalize a reference clazz to the given feature.  For a reference clazz
    * that inherits from f, this will return the corresponding clazz derived
-   * from f. The idea is that, e.g., we do not need to distinguish consstring.length
+   * from f. The idea is that, e.g., we do not need to distinguish conststring.length
    * from array<u8>.length.
    *
    * @param f the feature we want to normalize to (array in the example above).
@@ -332,63 +380,34 @@ public class Clazz extends ANY implements Comparable
    */
   private Clazz normalize(Feature f)
   {
-    if (f == Clazzes.object.get().feature())
+    if (f == Types.resolved.universe)
       {
-        return Clazzes.object.get();
+        return Clazzes.universe.get();
       }
-    else if (true) // NYI: Under development: normalization for clazzes different than Object
+    else if (// an outer clazz of value type is not normalized (except for
+             // univers, which was done already).
+             !isRef() ||
+
+             // optimization: if feature() is already f, there is nothing to
+             // normalize anymore
+             feature() == f ||
+
+             // if an outer ref is used (i.e., state is resolved) to access the
+             // outer instance, we must not normalize because we will need the
+             // exact type of the outer instance to specialize code or to access
+             // features that only exist in the specific version
+             hasUsedOuterRef()
+             )
       {
         return this;
       }
     else
       {
-        System.out.println(""+this+".normalize("+f.qualifiedName()+"):");
-        if (feature() == f)
-          {
-            System.out.println(""+this+".normalize("+f.qualifiedName()+") is this");
-            return this;
-          }
-        else
-          {
-            for (Call p : feature().inherits)
-              {
-                var pf = p.calledFeature();
-                check
-                  (Errors.count() > 0 || pf != null);
-
-                if (pf != null)
-                  {
-                    var tclazz  = Clazzes.clazz(p.target, this);
-                    if (pf == f)
-                      {
-                        System.out.println("Found parent feature "+f.qualifiedName()+" lookup in "+tclazz+" for "+pf.qualifiedName()+" "+p.generics);
-                        if (false && tclazz._outer == null)
-                          {
-                            return Clazzes.object.get();
-                          }
-                        var pc = tclazz.lookup(pf, actualGenerics(p.generics), p.pos()).normalize(f);
-                        System.out.println(""+this+".normalize("+f.qualifiedName()+") is parent "+pc+" at "+p.pos().show());
-                        return pc;
-                      }
-                    if (false)
-                      {
-                        System.out.println("lookup in tclazz: "+tclazz+" for "+pf.qualifiedName()+" "+p.generics);
-                        var pc = tclazz.lookup(pf, p.generics, p.pos()).normalize(f);
-                        if (pc != null)
-                          {
-                            System.out.println(""+this+".normalize("+f.qualifiedName()+"): parent taget "+tclazz);
-                            var result = pc.normalize(f);
-                            if (result != null)
-                              {
-                                return result;
-                              }
-                          }
-                      }
-                  }
-              }
-          }
+        var t = actualType(f.thisType());
+        var normalized = Clazzes.create(t, normalizeOuter(t, _outer));
+        normalized.isNormalized_ = true;
+        return normalized;
       }
-    return null;
   }
 
 
@@ -762,9 +781,9 @@ public class Clazz extends ANY implements Comparable
         innerClazz = Clazzes.clazzWithSpecificOuter(t, this);
         if (p != null)
           {
-            innerClazz.called(p);
             if (!isInheritanceCall)
               {
+                innerClazz.called(p);
                 innerClazz.instantiated(p);
               }
           }
@@ -940,10 +959,10 @@ public class Clazz extends ANY implements Comparable
        this ._type == Types.intern(this ._type),
        other._type == Types.intern(other._type));
 
-    int result = compareOuter(other);
+    var result = this._type.compareToIgnoreOuter(other._type);
     if (result == 0)
       {
-        result = this._type.compareToIgnoreOuter(other._type);
+        result = compareOuter(other);
       }
     return result;
   }
@@ -1271,6 +1290,19 @@ public class Clazz extends ANY implements Comparable
         !isCalled_)
       {
         isCalled_ = true;
+
+        if (isCalled())
+          {
+            var l = Clazzes._whenCalled_.remove(this);
+            if (l != null)
+              {
+                for (var r : l)
+                  {
+                    r.run();
+                  }
+              }
+          }
+
         if (feature().impl.kind_ == Impl.Kind.Intrinsic)
           { // value instances returned from intrinsics are recored to be
             // instantiated.  (ref instances are excluded since returning, e.g.,
@@ -1309,7 +1341,9 @@ public class Clazz extends ANY implements Comparable
    */
   public boolean isCalled()
   {
-    return isCalled_ && isOuterInstantiated();
+    return (isCalled_ && isOuterInstantiated() || _isCalledDirectly) && feature().impl.kind_ != Impl.Kind.Abstract
+      || toString().equals("array<i32>.internalArray") // NYI: Hack workaround for conststring
+      ;
   }
 
 
@@ -1325,6 +1359,8 @@ public class Clazz extends ANY implements Comparable
       // normalize() would replace by C if it occurs as an outer clazz.
       _outer == Clazzes.object.getIfCreated() ||
       _outer == Clazzes.string.getIfCreated() ||
+
+      _outer.isNormalized_ ||
 
       _outer.isInstantiated();
   }

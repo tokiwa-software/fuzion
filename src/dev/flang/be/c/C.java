@@ -330,8 +330,20 @@ public class C extends ANY
                 {
                   value = value.castTo(_types.clazz(fclazz));
                 }
+              else
+                {
+                  /* NYI: ugly special handling for outer ref: if outer is a ref
+                   * clazz, but used as a value, we need to unbox it. Need to
+                   * check if this works if outer ref is a heir feature:
+                   */
+                  var vc = _fuir.assignValueClazzIfOuterRef(cl, c, i);
+                  if (vc != -1 && _fuir.clazzIsRef(vc))
+                    {
+                      value = value.deref().field(_names.FIELDS_IN_REF_CLAZZ);
+                    }
+                }
               o = value == null
-                ? CStmnt.lineComment("valueluess assignment to " + outer)
+                ? CStmnt.lineComment("valueless assignment to " + outer)
                 : accessField(outercl, outer, field).assign(value);
             }
           break;
@@ -624,6 +636,9 @@ public class C extends ANY
    */
   CStmnt call(int tc, int cc, Stack<CExpr> stack, boolean pre)
   {
+    if (PRECONDITIONS) require
+      (_fuir.clazzNeedsCode(cc));
+
     CStmnt result = CStmnt.EMPTY;
     var ac = _fuir.clazzArgCount(cc);
     var rt = _fuir.clazzResultClazz(cc);
@@ -661,7 +676,8 @@ public class C extends ANY
           var occ   = _fuir.clazzOuterClazz(cc);
           var vocc  = _fuir.clazzAsValue(occ);
           if (occ != tc &&
-              !_fuir.clazzIsOuterRef(cc) /* NYI: tc for outer ref is wrong, avoid redundant casts */ )
+              !_fuir.clazzIsOuterRef(cc) /* NYI: tc for outer ref is wrong, avoid redundant casts */ &&
+              _fuir.clazzIsRef(occ))
             {
               t = t.castTo(_types.clazz(occ));  // t is a ref with different static type, so cast it to the actual type
             }
@@ -771,7 +787,7 @@ public class C extends ANY
   public CStmnt forwards(int cl)
   {
     var l = new List<CStmnt>();
-    if (_fuir.clazzIsCalled(cl))
+    if (_fuir.clazzNeedsCode(cl))
       {
         switch (_fuir.clazzKind(cl))
           {
@@ -797,7 +813,7 @@ public class C extends ANY
   public CStmnt code(int cl)
   {
     var l = new List<CStmnt>();
-    if (_fuir.clazzIsCalled(cl))
+    if (_fuir.clazzNeedsCode(cl))
       {
         var ck = _fuir.clazzKind(cl);
         switch (ck)

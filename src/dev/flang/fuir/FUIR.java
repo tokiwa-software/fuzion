@@ -324,14 +324,19 @@ public class FUIR extends ANY
 
   public ClazzKind clazzKind(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    return clazzKind(_clazzIds.get(cl));
+  }
+
+
+  ClazzKind clazzKind(Clazz cc)
+  {
     if (cc.isChoice())
       {
         return ClazzKind.Choice;
       }
     else
       {
-        var ff = _clazzIds.get(cl).feature();
+        var ff = cc.feature();
         switch (ff.impl.kind_)
           {
           case Routine    :
@@ -844,25 +849,40 @@ hw25 is
 
 
   /**
-   * Are there any calls to this clazz (Routine, Constructor, or Field)?
+   * Does the backend need to generate code for this clazz since it might be
+   * called at runtime.  This is true for all features that are called directly
+   * or dynamically in a 'normal' call, i.e., not in an inheritance call.
+   *
+   * An inheritance call is inlined since it works on a different instance, the
+   * instance of the heir class.  Consequently, a clazz resulting from an
+   * inheritance call does not need code for itself.
    */
-  public boolean clazzIsCalled(int cl)
+  public boolean clazzNeedsCode(int cl)
   {
-    var cc = _clazzIds.get(cl);
-    return cc.isCalled();
+    return clazzNeedsCode(_clazzIds.get(cl));
   }
 
 
   /**
-   * Is this clazz instantiated?  This might return true even for clazzes for
-   * which clazzIsCalld() returns false if cl refers to an instance that is the
-   * value result of an intrinsic, or it is internally created such as
-   * conststring, #universe, or the main feature.
+   * Does the backend need to generate code for this clazz since it might be
+   * called at runtime.  This is true for all features that are called directly
+   * or dynamically in a 'normal' call, i.e., not in an inheritance call.
+   *
+   * An inheritance call is inlined since it works on a different instance, the
+   * instance of the heir class.  Consequently, a clazz resulting from an
+   * inheritance call does not need code for itself.
    */
-  public boolean clazzIsInstantiated(int cl)
+  boolean clazzNeedsCode(Clazz cc)
   {
-    var cc = _clazzIds.get(cl);
-    return cc.isInstantiated() || (clazzKind(cl) == ClazzKind.Intrinsic);
+    switch (clazzKind(cc))
+      {
+      case Abstract : return false;
+      case Choice   : return false;
+      case Intrinsic: return true;
+      case Routine  :
+      case Field    : return cc.isInstantiated();
+      default: throw new Error("unhandled case: " + clazzKind(cc));
+      }
   }
 
 
@@ -1142,9 +1162,32 @@ hw25 is
     var s = _codeIds.get(c).get(ix);
     var ocl = (s instanceof Assign a)
       ? (Clazz) outerClazz.getRuntimeData(a.tid_)  // NYI: This should be the same as assignedField._outer
-      : ((Clazz) s)._outer;
+      : outerClazz; // assignment to arg field in inherits call, so outer clazz is current instance
 
     return _clazzIds.get(ocl);
+  }
+
+
+  /**
+   * NYI: Ugly special handling to unbox an outer ref to a value type on an
+   * assignment.  In case the value assigned in the assignment specified by
+   * (cl,c) as the result of reading an outer ref, this returns the type of that
+   * value.
+   */
+  public int assignValueClazzIfOuterRef(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Assign);
+
+    var outerClazz = _clazzIds.get(cl);
+    var s = _codeIds.get(c).get(ix);
+    var vcl = (s instanceof Assign a)
+      ? (Clazz) outerClazz.getRuntimeData(a.tid_ + 1)
+      : null;
+
+    return vcl != null ?_clazzIds.get(vcl) : -1;
   }
 
   public int tagValueClazz(int cl, int c, int ix)
@@ -1264,8 +1307,7 @@ hw25 is
                   {
                     var ina = in.argumentFields();
                     var inCa = innerClazz.argumentFields();
-                    if (in.feature().impl.kind_ != Impl.Kind.Abstract &&
-                        in.isCalled() &&
+                    if (clazzNeedsCode(in) &&
 
                         // NYI: instead of just comparing the arguments and
                         // result, we should ensure to only return features from

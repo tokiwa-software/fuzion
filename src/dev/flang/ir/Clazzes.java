@@ -196,6 +196,7 @@ public class Clazzes extends ANY
    * added to the dynamic binding data of heir classes of f.outer).
    */
   private static TreeMap<Feature, List<Runnable>> _whenCalledDynamically_ = new TreeMap();
+  static TreeMap<Clazz, List<Runnable>> _whenCalled_ = new TreeMap();
 
 
   /**
@@ -438,6 +439,32 @@ public class Clazzes extends ANY
 
 
   /**
+   * When it is detected that f is called dynamically, execute r.run().
+   */
+  static void whenCalled(Clazz c,
+                         Runnable r)
+  {
+    if (c.isCalled())
+      {
+        r.run();
+      }
+    else
+      {
+        var l = _whenCalled_.get(c);
+        if (l == null)
+          {
+            l = new List<Runnable>(r);
+            _whenCalled_.put(c, l);
+          }
+        else
+          {
+            l.add(r);
+          }
+      }
+  }
+
+
+  /**
    * Remember that f is called dynamically.  In case f was not known to be
    * called dynamically, execute all the runnables registered for f by
    * whenCalledDynamically.
@@ -574,8 +601,9 @@ public class Clazzes extends ANY
 
         Clazz sClazz = clazz(a.getOuter, outerClazz);
         outerClazz.setRuntimeClazz(a.tid_, sClazz);
-        if (outerClazz.actualType(a.assignedField.resultType()).isChoice())
-          { // NYI: Instead of creating vc, add the assignment to the tag explicitly here!
+        if (outerClazz.actualType(a.assignedField.resultType()).isChoice() || // NYI: Instead of creating vc, add the assignment to the tag explicitly here!
+            a.value.isCallToOuterRef())
+          {
             Clazz vc = clazz(a.value, outerClazz);
             outerClazz.setRuntimeClazz(a.tid_ + 1, vc);
           }
@@ -654,6 +682,30 @@ public class Clazzes extends ANY
             c.sid_ = outerClazz.feature().getRuntimeClazzId();
           }
         outerClazz.setRuntimeData(c.sid_, _backend_.callable(dynamic, innerClazz, tclazz));
+        if (!dynamic)
+          {
+            whenCalled(outerClazz,
+                       () ->
+                       {
+                         var ic = innerClazz.isCalled();
+                         innerClazz._isCalledDirectly = true;  // NYI: Check why this is needed
+                         if (!c.isInheritanceCall_)
+                           {
+                             innerClazz.instantiated(c.pos());
+                           }
+                         if (!ic && innerClazz.isCalled())
+                           {
+                             var l = _whenCalled_.remove(innerClazz);
+                             if (l != null)
+                               {
+                                 for (var r : l)
+                                   {
+                                     r.run();
+                                   }
+                               }
+                           }
+                       });
+          }
       }
   }
 
