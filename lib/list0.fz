@@ -245,6 +245,35 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   redef slice(from, to i32) => drop(from).take to-from
 
 
+  # Lazily take the first elements of a list for which predicate 'p' holds.
+  #
+  redef takeWhile (p fun(A) bool) list<A>
+  is
+    match list.this
+      _ nil  => nil
+      c Cons =>
+        if p c.head
+          ref : Cons<A, list<A>> {   # NYI: indentation syntax for anonymous not supported
+              redef head => c.head
+              redef tail => c.tail.takeWhile p
+            }
+        else
+          nil
+
+
+  # Lazily drop the first elements of a list for which predicate 'p' holds.
+  #
+  redef dropWhile (p fun(A) bool) list<A>
+  is
+    match list.this
+      _ nil  => nil
+      c Cons =>
+        if p c.head
+          c.tail.dropWhile p
+        else
+          c
+
+
   # create a list that repeats the current list indefinitely.  In case 'list.this'
   # is 'nil', returns 'nil'
   #

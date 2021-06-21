@@ -144,6 +144,16 @@ List<T> ref is
     # on array.slice(from,to).asArray.
 
 
+  # Lazily take the first elements of a list for which predicate 'p' holds.
+  #
+  takeWhile (p fun(T) bool) => asList.takeWhile p
+
+
+  # Lazily drop the first elements of a list for which predicate 'p' holds.
+  #
+  dropWhile (p fun(T) bool) => asList.dropWhile p
+
+
   # create a List that consists of all be the elements if this List followed
   # by all the elements of s
   #
