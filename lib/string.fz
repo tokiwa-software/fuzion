@@ -372,7 +372,7 @@ string ref : hasHash<string>, ordered<string>, strings is
     searchableList<i32>.startsWith end, suffix.utf8.asList
 
 
-  # find (utf8-byte) index of substring witin this string.
+  # find (utf8-byte-) index of 'substring' witin this string.
   #
   find(substring string) =>
     searchableList<i32>.find utf8.asList, substring.utf8.asList
