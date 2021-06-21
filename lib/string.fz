@@ -386,3 +386,39 @@ string ref : hasHash<string>, ordered<string>, strings is
   # does this string contain the given 'substring'
   #
   contains (substring string) => find(substring).exists
+
+
+  # is c an ASCII white-space character?  Used by split.
+  #
+  private isAsciiWhiteSpace(c i32) =>
+    (c =  9 ||  // HT
+     c = 10 ||  // LF
+     c = 11 ||  // VT
+     c = 12 ||  // FF
+     c = 13 ||  // CR
+     c = 32     // SPACE
+     )
+
+
+  # Split string separated by (ASCII) white space
+  #
+  # Leading and trailing white space is ignored, repeated white space is treated
+  # like a single white space
+  #
+  # The result is a, possibly empty, list of separate non-empty strings.
+  #
+  split list<string> is
+    l := utf8.asList.dropWhile fun (c i32) => isAsciiWhiteSpace c
+    if l.isEmpty
+      nil
+    else
+      ref : Cons<string, list<string>> {
+        head =>  strings.fromBytes l.takeWhile fun (c i32) => !isAsciiWhiteSpace c
+        tail => (strings.fromBytes l.dropWhile fun (c i32) => !isAsciiWhiteSpace c).split
+        # NYI using the inherited 'fromBytes' as in
+        #
+        #   head =>  fromBytes l.takeWhile fun (c i32) => !isAsciiWhiteSpace c
+        #
+        # currerntly creates an error (recursive value type), this needs to be fixed (or,
+        # at least, understood better).
+       }
