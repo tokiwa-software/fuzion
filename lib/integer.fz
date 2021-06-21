@@ -105,7 +105,7 @@ integer<T : integer<T>> : numeric<T> is
       debug: (thiz == zero: result == one),
       debug: (thiz != zero: thiz / b < result <= thiz)
 # NYI: original postcondition code should cause a compiler error since
-# result.infix <= expectes an argument of type T while integer.this is
+# result.infix <= expects an argument of type T while integer.this is
 # not of type T.
 #
 #     integer.this != zero: integer.this / b < result <= integer.this
