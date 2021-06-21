@@ -50,6 +50,7 @@ List<T> ref is
   #
   asStream stream<T> is asList.asStream
 
+
   # is this list empty?
   #
   isEmpty => asList.isEmpty
