@@ -1475,7 +1475,7 @@ public class Type extends ANY implements Comparable
   /**
    * Check if this or any of its generic arguments is Types.t_ERROR.
    */
-  private boolean containsError()
+  boolean containsError()
   {
     boolean result = false;
     if (this == Types.t_ERROR)
@@ -1489,6 +1489,10 @@ public class Type extends ANY implements Comparable
             result = result || t.containsError();
           }
       }
+
+    ensure
+      (!result || Errors.count() > 0);
+
     return result;
   }
 

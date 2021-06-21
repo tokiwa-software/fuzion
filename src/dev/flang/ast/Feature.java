@@ -2004,7 +2004,7 @@ public class Feature extends ANY implements Stmnt, Comparable
               {
                 Type t1 = ta[i];
                 Type t2 = ra[i];
-                if (t1 != t2)
+                if (t1 != t2 && !t1.containsError() && !t2.containsError())
                   {
                     // original arg list may be shorter if last arg is open generic:
                     check
