@@ -103,6 +103,25 @@ public class FUIR extends ANY
     Pop,
   }
 
+  public enum ContractKind
+  {
+    Pre,
+    Post;
+
+    /**
+     * String representation for debugging.
+     */
+    public String toString()
+    {
+      switch (this)
+        {
+        case Pre : return "pre-condition";
+        case Post: return "post-condition";
+        default: throw new Error("unhandled switch case");
+        }
+    }
+  }
+
 
   /**
    * Dummy Expr for Pop.  This is needed only temporily as long as we use
@@ -793,17 +812,21 @@ hw25 is
 
 
   /**
-   * Get access to the code of the precondition of a clazz of kind Routine,
+   * Get access to the code of the contract of a clazz of kind Routine,
    * Intrinsic, Abstract or Field.
    *
    * @param cl a clazz id
    *
-   * @param ix the index of the precondition, 0 for the first condition
+   * @param ck the part of the contract to be accessed, ContractKind.Pre or
+   * ContractKind.Post for pre- and post-conditions, respectively.
    *
-   * @return a code id referring to cl's precondition, -1 if cl does not have a
-   * precondition with the given index
+   * @param ix the index of the pre- or post-condition, 0 for the first
+   * condition
+   *
+   * @return a code id referring to cl's pre- or post-condition, -1 if cl does
+   * not have a pre- or post-condition with the given index
    */
-  public int clazzPre(int cl, int ix)
+  public int clazzContract(int cl, ContractKind ck, int ix)
   {
     if (PRECONDITIONS) require
       (clazzKind(cl) == ClazzKind.Routine   ||
@@ -814,36 +837,9 @@ hw25 is
 
     var ff = _clazzIds.get(cl).feature();
     var cc = ff.contract;
-    var pre = cc != null ? cc.req : null;
-    List<Object> code = pre != null && ix < pre.size() ? toStack(pre.get(ix).cond) : null;
-    return code != null ? _codeIds.add(code) : -1;
-  }
-
-
-  /**
-   * Get access to the code of the postcondition of a clazz of kind Routine,
-   * Intrinsic, Abstract or Field.
-   *
-   * @param cl a clazz id
-   *
-   * @param ix the index of the precondition, 0 for the first condition
-   *
-   * @return a code id referring to cl's precondition, -1 if cl does not have a
-   * precondition with the given index
-   */
-  public int clazzPost(int cl, int ix)
-  {
-    if (PRECONDITIONS) require
-      (clazzKind(cl) == ClazzKind.Routine   ||
-       clazzKind(cl) == ClazzKind.Field     ||
-       clazzKind(cl) == ClazzKind.Intrinsic ||
-       clazzKind(cl) == ClazzKind.Abstract     ,
-       ix >= 0);
-
-    var ff = _clazzIds.get(cl).feature();
-    var cc = ff.contract;
-    var post = cc != null ? cc.ens : null;
-    List<Object> code = post != null && ix < post.size() ? toStack(post.get(ix).cond) : null;
+    var cond = (cc != null && ck == ContractKind.Pre  ? cc.req :
+                cc != null && ck == ContractKind.Post ? cc.ens : null);
+    List<Object> code = cond != null && ix < cond.size() ? toStack(cond.get(ix).cond) : null;
     return code != null ? _codeIds.add(code) : -1;
   }
 

@@ -377,7 +377,7 @@ public class C extends ANY
           var rt = _fuir.clazzResultClazz(cc0);
           var tc = _fuir.callTargetClazz(cl, c, i);
           var ol = new List<CStmnt>();
-          if (_fuir.clazzPre(cc0, 0) != -1)
+          if (_fuir.clazzContract(cc0, FUIR.ContractKind.Pre, 0) != -1)
             {
               ol.add(call(tc, cc0, (Stack<CExpr>) stack.clone(), true));
             }
@@ -794,7 +794,7 @@ public class C extends ANY
           case Routine  :
           case Intrinsic: l.add(cFunctionDecl(cl, false, null));
           }
-        if (_fuir.clazzPre(cl, 0) != -1)
+        if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
           {
             l.add(cFunctionDecl(cl, true, null));
           }
@@ -827,7 +827,7 @@ public class C extends ANY
               l.add(cFunctionDecl(cl, false, o));
             }
           }
-        if (_fuir.clazzPre(cl, 0) != -1)
+        if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
           {
             l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" precondition of "+_fuir.clazzAsString(cl)+":"));
             l.add(cFunctionDecl(cl, true, codeForRoutine(cl, true)));
@@ -878,11 +878,15 @@ public class C extends ANY
             l.add(target.assign(new CIdent("arg" + i)));
           }
       }
-    if (!pre)
+    if (pre)
+      {
+        l.add(preOrPostCondition(cl, FUIR.ContractKind.Pre));
+      }
+    else
       {
         l.add(createCode(cl, new Stack<CExpr>(), _fuir.clazzCode(cl)));
+        l.add(preOrPostCondition(cl, FUIR.ContractKind.Post));
       }
-    l.add(preOrPostCondition(cl, pre));
     var res = _fuir.clazzResultClazz(cl);
     if (!pre && _types.hasData(res))
       {
@@ -905,20 +909,18 @@ public class C extends ANY
    *
    * @return the C code
    */
-  CStmnt preOrPostCondition(int cl, boolean pre)
+  CStmnt preOrPostCondition(int cl, FUIR.ContractKind ck)
   {
     var l = new List<CStmnt>();
     var stack = new Stack<CExpr>();
     for (int p, i = 0;
-         (p = pre ? _fuir.clazzPre (cl, i)
-                  : _fuir.clazzPost(cl, i)) != -1;
+         (p = _fuir.clazzContract(cl, ck, i)) != -1;
          i++)
       {
         l.add(createCode(cl, stack, p));
         var cc = stack.pop();
         l.add(CStmnt.iff(cc.field(_names.TAG_NAME).not(),
-                         CStmnt.seq(CExpr.fprintfstderr(pre ? "*** failed precondition on call to '%s'\n"
-                                                            : "*** failed postcondition after '%s'\n",
+                         CStmnt.seq(CExpr.fprintfstderr("*** failed " + ck + " on call to '%s'\n",
                                                         CExpr.string(_fuir.clazzAsString(cl))),
                                     CExpr.exit(1))));
       }
