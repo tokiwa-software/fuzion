@@ -381,3 +381,8 @@ string ref : hasHash<string>, ordered<string>, strings is
   # replace all occurances of f within l by r
   #
   replace (f, r string) => strings.fromBytes searchableList<i32>.replace utf8.asList, f.utf8.asList, r.utf8.asList
+
+
+  # does this string contain the given 'substring'
+  #
+  contains (substring string) => find(substring).exists
