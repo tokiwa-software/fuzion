@@ -90,7 +90,7 @@ integer<T : integer<T>> : numeric<T> is
   # the u32 value corresponding to this
   to_u32 u32
     pre
-      thiz >= zero
+      debug: thiz >= zero
   is
     if (thiz > zero) ((thiz - one).to_u32 + 1)
     else 0
@@ -100,10 +100,10 @@ integer<T : integer<T>> : numeric<T> is
   #
   private highest(b T) T
     pre
-      thiz.sign >= 0
+      debug: thiz.sign >= 0
     post
-      thiz == zero: result == one,
-      thiz != zero: thiz / b < result <= thiz
+      debug: (thiz == zero: result == one),
+      debug: (thiz != zero: thiz / b < result <= thiz)
 # NYI: original postcondition code should cause a compiler error since
 # result.infix <= expectes an argument of type T while integer.this is
 # not of type T.
