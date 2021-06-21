@@ -839,7 +839,20 @@ hw25 is
     var cc = ff.contract;
     var cond = (cc != null && ck == ContractKind.Pre  ? cc.req :
                 cc != null && ck == ContractKind.Post ? cc.ens : null);
-    List<Object> code = cond != null && ix < cond.size() ? toStack(cond.get(ix).cond) : null;
+    // NYI: PERFORMANCE: Always iterating the conditions results in performance
+    // quadratic in the number of conditions.  This could be improved by
+    // filtering BoolConst.TRUE once and reusing the resulting cond.
+    var i = 0;
+    while (cond != null && i < cond.size() &&
+           (cond.get(i).cond == BoolConst.TRUE || ix > 0))
+      {
+        if (cond.get(i).cond != BoolConst.TRUE)
+          {
+            ix--;
+          }
+        i++;
+      }
+    List<Object> code = cond != null && i < cond.size() ? toStack(cond.get(i).cond) : null;
     return code != null ? _codeIds.add(code) : -1;
   }
 

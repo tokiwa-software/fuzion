@@ -41,8 +41,8 @@ public class BoolConst extends Expr
   /*------------------------  static variables  -------------------------*/
 
 
-  static final BoolConst TRUE = new BoolConst(true);
-  static final BoolConst FALSE = new BoolConst(false);
+  public static final BoolConst TRUE = new BoolConst(true);
+  public static final BoolConst FALSE = new BoolConst(false);
 
 
   /*----------------------------  variables  ----------------------------*/
