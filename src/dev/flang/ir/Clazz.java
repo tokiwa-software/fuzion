@@ -997,13 +997,21 @@ public class Clazz extends ANY implements Comparable
           for (var i = 0; i < n; i++)
             {
               var a = c._actuals.get(i);
-              var cfa = cf.arguments.get(i);
-              var ccc = lookup(cfa, Call.NO_GENERICS, f.isUsedAt());
-              if (c.parentCallArgFieldIds_ < 0)
+              if (i >= cf.arguments.size())
                 {
-                  c.parentCallArgFieldIds_ = Clazz.this.feature().getRuntimeClazzIds(n);
+                  check
+                    (Errors.count() > 0);
                 }
-              Clazz.this.setRuntimeData(c.parentCallArgFieldIds_+i, ccc);
+              else
+                {
+                  var cfa = cf.arguments.get(i);
+                  var ccc = lookup(cfa, Call.NO_GENERICS, f.isUsedAt());
+                  if (c.parentCallArgFieldIds_ < 0)
+                    {
+                      c.parentCallArgFieldIds_ = Clazz.this.feature().getRuntimeClazzIds(n);
+                    }
+                  Clazz.this.setRuntimeData(c.parentCallArgFieldIds_+i, ccc);
+                }
             }
 
           check
