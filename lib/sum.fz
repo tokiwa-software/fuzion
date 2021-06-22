@@ -1,0 +1,49 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion standard library feature sum
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# sum -- generic sum of the elements of a List of numeric.
+#
+# This should allow summing the elements of a list, as in
+#
+#   l := [1,2,3]
+#   say sum l     # 6
+#
+# NYI: This is experimental and does not work yet
+#
+sum<T: numerics<T>> (l List<T>) =>
+
+  # NYI: the following code to get T's sum monoid does not work for l.isEmpty,
+  # it should be something like
+  #
+  #  m := T.sum
+  #
+  if l.isEmpty
+    fuzion.std.panic "NYI: sum does not work for empty list"
+  m := l.asList.forceHead.sum
+
+  # NYI: This currently causes an error in the backend (interpreter crash due to
+  # abstract feature being called and C compiler error for incompatible types):
+  #
+  l.fold m
