@@ -40,6 +40,7 @@ JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/List.java \
           $(SRC)/dev/flang/util/Map2Int.java \
           $(SRC)/dev/flang/util/MapComparable2Int.java \
+          $(SRC)/dev/flang/util/Profiler.java \
           $(SRC)/dev/flang/util/SourceFile.java \
           $(SRC)/dev/flang/util/SourcePosition.java \
           $(SRC)/dev/flang/util/Terminal.java \
