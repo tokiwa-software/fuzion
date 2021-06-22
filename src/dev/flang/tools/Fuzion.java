@@ -119,7 +119,7 @@ class Fuzion extends ANY
         }
       else
         {
-          _allBackendExtraUsage_.append("       " + CMD + " " + _arg + " " + usage() + STANDRD_OPTIONS + " --or--\n");
+          _allBackendExtraUsage_.append("       " + CMD + " " + _arg + " " + usage() + "@STANDARD_OPTIONS@ --or--\n");
         }
       _allBackends_.put(arg, this);
     }
@@ -151,12 +151,16 @@ class Fuzion extends ANY
 
   static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
 
-  static final String STANDRD_OPTIONS = "[-noANSI] [-debug[=<n>]] [-safety=(on|off)] [-enableUnsafeIntrinsics=(on|off)] [-verbose[=<n>]] (<main> | <srcfile>.fz | -) ";
-  static final String USAGE =
-    "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] " + STANDRD_OPTIONS + " --or--\n" +
+  static final String STANDARD_OPTIONS = "[-noANSI] [-debug[=<n>]] [-safety=(on|off)] [-enableUnsafeIntrinsics=(on|off)] [-verbose[=<n>]] (<main> | <srcfile>.fz | -) ";
+  static final String XTRA_OPTIONS = "[-X|--Xhelp] [-XjavaProf] ";
+  static final String USAGE0 =
+    "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] @STANDARD_OPTIONS@ --or--\n" +
     _allBackendExtraUsage_ +
     "       " + CMD + " -pretty [-noANSI] ({<file>} | -)\n" +
     "       " + CMD + " -latex\n";
+
+  static final String USAGE  = USAGE0.replace("@STANDARD_OPTIONS@", STANDARD_OPTIONS);
+  static final String XUSAGE = USAGE0.replace("@STANDARD_OPTIONS@", STANDARD_OPTIONS + XTRA_OPTIONS);
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -289,6 +293,17 @@ class Fuzion extends ANY
       {
         System.out.println(USAGE);
         System.exit(0);
+      }
+    else if (a.equals("-X"     ) ||
+             a.equals("-Xhelp" ) ||
+             a.equals("--Xhelp")    )
+      {
+        System.out.println(XUSAGE);
+        System.exit(0);
+      }
+    else if (a.equals("-XjavaProf"))
+      {
+        dev.flang.util.Profiler.start();
       }
     else
       {
