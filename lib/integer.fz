@@ -173,7 +173,7 @@ integer<T : integer<T>> : numeric<T> is
     sign + zeros + digits
 
 
-  # creeate binary representation
+  # create binary representation
   #
   bin => integer.this.asString 2
 
