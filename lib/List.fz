@@ -178,6 +178,12 @@ List<T> ref is
   cycle list<T> is asList.cycle
 
 
+  # create a lazy list of all the tails of this list, including the complete list
+  # 'list.this' and the empty list 'nil'.
+  #
+  tails list<list<T>> is asList.tails
+
+
   # create a string representation of this list
   #
   redef asString => asList.asString

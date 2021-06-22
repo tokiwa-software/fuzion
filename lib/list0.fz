@@ -290,6 +290,19 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
         cycleCons c
 
 
+  # create a lazy list of all the tails of this list, including the complete list
+  # 'list.this' and the empty list 'nil'.
+  #
+  redef tails list<list<A>> is
+    ref : Cons<list<A>, list<list<A>>> {
+        head => list.this
+        tail =>
+          match list.this
+            nil    => nil
+            c Cons => c.tail.tails
+      }
+
+
   # create stream from this list
   #
   # In contrast to list's immutable Cons cells, a stream instance is mutable, i.e,
