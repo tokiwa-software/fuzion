@@ -65,7 +65,7 @@ public class Profiler extends ANY
    * Flag indicating that sampling should happen.  Set to false when printing
    * results.
    */
-  private static boolean _running_ = true;
+  private static volatile boolean _running_ = true;
 
 
   /**
@@ -124,7 +124,13 @@ public class Profiler extends ANY
             catch (InterruptedException e)
               { // ignore
               }
-            takeSample(getThreadGroup());
+            synchronized (_results_)
+              {
+                if (_running_)
+                  {
+                    takeSample(getThreadGroup());
+                  }
+              }
           }
       }
 
@@ -146,7 +152,10 @@ public class Profiler extends ANY
       {
         public void run()
         {
-          _running_ = false;
+          synchronized (_results_)
+            {
+              _running_ = false;
+            }
           StackTraceElement[] s = (StackTraceElement[]) _results_.keySet().toArray(new StackTraceElement[0]);
           Arrays.sort(s,new Comparator()
             {
