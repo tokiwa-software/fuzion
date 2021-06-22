@@ -564,17 +564,23 @@ public class Type extends ANY implements Comparable
           {
             result = YesNo.yes;
           }
-        else if (_generics != NONE)
-          {
-            result = YesNo.yes;
-          }
-        else if (outer() != null)
-          {
-            result = outer().dependsOnGenerics() ? YesNo.yes : YesNo.no;
-          }
         else
           {
             result = YesNo.no;
+            if (_generics != NONE)
+              {
+                for (var t: _generics)
+                  {
+                    if (t.dependsOnGenerics())
+                      {
+                        result = YesNo.yes;
+                      }
+                  }
+              }
+            if (outer() != null && outer().dependsOnGenerics())
+              {
+                result = YesNo.yes;
+              }
           }
         dependsOnGenerics = result;
       }
