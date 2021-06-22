@@ -86,3 +86,20 @@ is
           replace h ++ (t.take n) ++ r, t.drop n + f.count
 
     replace nil, l
+
+
+  # get the number of matches of l2 within l1
+  #
+  countMatchesOverlapping (l1, l2 list<A>) i32 is
+    match l1
+      nil     => 0
+      c1 Cons => ((if (startsWith l1, l2) 1 else 0) + countMatchesOverlapping c1.tail, l2)
+
+
+  # get the number of non-overlapping matches of l2 within l1
+  #
+  countMatches (l1, l2 list<A>) i32 is
+    match l1
+      nil     => 0
+      c1 Cons => (if (startsWith l1, l2) 1 + countMatches l1.drop(l2.count), l2
+                  else                       countMatches c1.tail          , l2)
