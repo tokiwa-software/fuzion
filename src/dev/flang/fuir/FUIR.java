@@ -889,7 +889,7 @@ hw25 is
       case Choice   : return false;
       case Intrinsic: return true;
       case Routine  :
-      case Field    : return cc.isInstantiated();
+      case Field    : return cc.isInstantiated() && cc != Clazzes.conststring.getIfCreated();
       default: throw new Error("unhandled case: " + clazzKind(cc));
       }
   }
