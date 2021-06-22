@@ -273,6 +273,33 @@ class Fuzion extends ANY
 
 
   /**
+   * Parse the given argument against generic arguments (those that can always
+   * be applied).
+   *
+   * @param a the command line argument
+   *
+   * @return true iff a was a generic argument and was parsed, false if a still
+   * needs to be handled.
+   */
+  private boolean parseGenericArg(String a)
+  {
+    if (a.equals("-h"    ) ||
+        a.equals("-help" ) ||
+        a.equals("--help")    )
+      {
+        System.out.println(USAGE);
+        System.exit(0);
+      }
+    else
+      {
+        return false;
+      }
+    return true;
+  }
+
+
+
+  /**
    * Parse the given command line args for the pretty printer and create a
    * runnable that executes it.  System.exit() in case of error or -help.
    *
@@ -291,31 +318,25 @@ class Fuzion extends ANY
             Errors.fatal("duplicate argument: '" + a + "'", USAGE);
           }
         duplicates.add(a);
-        if (a.equals("-pretty"))
-          { // ignore, we know this already
-          }
-        else if (a.equals("-h"    ) ||
-                 a.equals("-help" ) ||
-                 a.equals("--help")    )
+        if (!a.equals("-pretty") && // ignore, we know this already
+            !parseGenericArg(a))
           {
-            System.out.println(USAGE);
-            System.exit(0);
-          }
-        else if (a.equals("-noANSI"))
-          {
-            System.setProperty("FUZION_DISABLE_ANSI_ESCAPES","true");
-          }
-        else if (a.equals("-"))
-          {
-            _readStdin = true;
-          }
-        else if (a.startsWith("-"))
-          {
-            Errors.fatal("unknown argument: '" + a + "'", USAGE);
-          }
-        else
-          {
-            sourceFiles.add(a);
+            if (a.equals("-noANSI"))
+              {
+                System.setProperty("FUZION_DISABLE_ANSI_ESCAPES","true");
+              }
+            else if (a.equals("-"))
+              {
+                _readStdin = true;
+              }
+            else if (a.startsWith("-"))
+              {
+                Errors.fatal("unknown argument: '" + a + "'", USAGE);
+              }
+            else
+              {
+                sourceFiles.add(a);
+              }
           }
       }
     if (sourceFiles.isEmpty() && !_readStdin)
@@ -362,23 +383,17 @@ class Fuzion extends ANY
             Errors.fatal("duplicate argument: '" + a + "'", USAGE);
           }
         duplicates.add(a);
-        if (a.equals("-latex"))
-          { // ignore, we know this already
-          }
-        else if (a.equals("-h"    ) ||
-                 a.equals("-help" ) ||
-                 a.equals("--help")    )
+        if (!a.equals("-latex") && // ignore, we know this already
+            !parseGenericArg(a))
           {
-            System.out.println(USAGE);
-            System.exit(0);
-          }
-        else if (a.startsWith("-"))
-          {
-            Errors.fatal("unknown argument: '" + a + "'", USAGE);
-          }
-        else
-          {
-            Errors.fatal("unknown argument: '" + a + "'", USAGE);
+            if (a.startsWith("-"))
+              {
+                Errors.fatal("unknown argument: '" + a + "'", USAGE);
+              }
+            else
+              {
+                Errors.fatal("unknown argument: '" + a + "'", USAGE);
+              }
           }
       }
     return () ->
@@ -468,47 +483,43 @@ class Fuzion extends ANY
             Errors.fatal("duplicate argument: '" + a + "'", USAGE);
           }
         duplicates.add(a);
-        if (a.equals("-"))
+        if (!parseGenericArg(a))
           {
-            _readStdin = true;
-          }
-        else if (_allBackends_.containsKey(a))
-        {
-          if (_backend != Backend.undefined)
-            {
-              Errors.fatal("arguments must specify at most one backend, found '" + _backend._arg + "' and '" + a + "'", USAGE);
-            }
-          _backend = _allBackends_.get(a);
-        }
-        else if (a.equals("-h"    ) ||
-                 a.equals("-help" ) ||
-                 a.equals("--help")    )
-          {
-            System.out.println(USAGE);
-            System.exit(0);
-          }
-        else if (a.equals("-noANSI"))
-          {
-            System.setProperty("FUZION_DISABLE_ANSI_ESCAPES","true");
-          }
-        else if (a.matches("-verbose(=\\d+|)"     )) { _verbose                = parsePositiveIntArg(a, 1); }
-        else if (a.matches("-debug(=\\d+|)"       )) { _debugLevel             = parsePositiveIntArg(a, 1); }
-        else if (a.startsWith("-safety="          )) { _safety                 = parseOnOffArg(a);          }
-        else if (a.startsWith("-unsafeIntrinsics=")) { _enableUnsafeIntrinsics = parseOnOffArg(a);          }
-        else if (_backend.handleOption(a))
-          {
-          }
-        else if (a.startsWith("-"))
-          {
-            Errors.fatal("unknown argument: '" + a + "'", USAGE);
-          }
-        else if (_main != null)
-          {
-            Errors.fatal("several main feature names provided: '" + _main + "', '" + a + "'", USAGE);
-          }
-        else
-          {
-            _main = a;
+            if (a.equals("-"))
+              {
+                _readStdin = true;
+              }
+            else if (_allBackends_.containsKey(a))
+              {
+                if (_backend != Backend.undefined)
+                  {
+                    Errors.fatal("arguments must specify at most one backend, found '" + _backend._arg + "' and '" + a + "'", USAGE);
+                  }
+                _backend = _allBackends_.get(a);
+              }
+            else if (a.equals("-noANSI"))
+              {
+                System.setProperty("FUZION_DISABLE_ANSI_ESCAPES","true");
+              }
+            else if (a.matches("-verbose(=\\d+|)"     )) { _verbose                = parsePositiveIntArg(a, 1); }
+            else if (a.matches("-debug(=\\d+|)"       )) { _debugLevel             = parsePositiveIntArg(a, 1); }
+            else if (a.startsWith("-safety="          )) { _safety                 = parseOnOffArg(a);          }
+            else if (a.startsWith("-unsafeIntrinsics=")) { _enableUnsafeIntrinsics = parseOnOffArg(a);          }
+            else if (_backend.handleOption(a))
+              {
+              }
+            else if (a.startsWith("-"))
+              {
+                Errors.fatal("unknown argument: '" + a + "'", USAGE);
+              }
+            else if (_main != null)
+              {
+                Errors.fatal("several main feature names provided: '" + _main + "', '" + a + "'", USAGE);
+              }
+            else
+              {
+                _main = a;
+              }
           }
       }
     if (_main == null && !_readStdin)
