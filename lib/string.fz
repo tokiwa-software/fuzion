@@ -388,6 +388,12 @@ string ref : hasHash<string>, ordered<string>, strings is
   contains (substring string) => find(substring).exists
 
 
+  # count number of occurances of given 'substring' in this string
+  #
+  count (substring string) =>
+    searchableList<i32>.countMatches utf8.asList, substring.utf8.asList
+
+
   # is c an ASCII white-space character?  Used by split.
   #
   private isAsciiWhiteSpace(c i32) =>
