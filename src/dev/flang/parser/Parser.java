@@ -2107,17 +2107,34 @@ block       : BRACEL stmnts BRACER
   Block block(boolean mayBeAtMinIndent)
   {
     SourcePosition pos1 = posObject();
-    int oldLine = sameLine(-1);
-    boolean gotLBrace = skip(mayBeAtMinIndent, Token.t_lbrace);
-    var l = stmnts();
-    var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
-    if (gotLBrace)
-      {
-        pos2 = posObject();
-        match(mayBeAtMinIndent, Token.t_rbrace, "block");
+    if (current() == Token.t_semicolon)
+      { // we have code like
+        //
+        //   if cond;
+        //
+        // or
+        //
+        //   for x in set
+        //   while cond(x);
+        //
+        // so there is an empty block.
+        //
+        return new Block(pos1, pos1, new List<>());
       }
-    sameLine(oldLine);
-    return new Block(pos1, pos2, l);
+    else
+      {
+        int oldLine = sameLine(-1);
+        boolean gotLBrace = skip(mayBeAtMinIndent, Token.t_lbrace);
+        var l = stmnts();
+        var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
+        if (gotLBrace)
+          {
+            pos2 = posObject();
+            match(mayBeAtMinIndent, Token.t_rbrace, "block");
+          }
+        sameLine(oldLine);
+        return new Block(pos1, pos2, l);
+      }
   }
 
 
@@ -2181,33 +2198,6 @@ stmnts      :
       }
     in.end();
     return l;
-  }
-
-
-  /**
-   * Parse blockOpt, i.e. a block or nothing.
-   *
-blockOpt    : block
-            |
-            ;
-   */
-  Block blockOpt()
-  {
-    Block result;
-    if (currentAtMinIndent() == Token.t_lbrace           ||
-        current()            != Token.t_indentationLimit &&
-        current()            != Token.t_rbrace &&
-        current()            != Token.t_semicolon &&
-        current()            != Token.t_until &&
-        current()            != Token.t_else)
-      {
-        result = block(true);
-      }
-    else
-      {
-        result = null;
-      }
-    return result;
   }
 
 
@@ -2335,13 +2325,12 @@ loopProlog  : "for" indexVars "variant" exprInLine
             | "for" indexVars
             |                 "variant" exprInLine
             ;
-loopBody    : "while" exprAtMinIndent <LF> blockOpt
-            | "while" exprAtMinIndent "do" blockOpt
-            |                         "do" blockOpt
+loopBody    : "while" exprAtMinIndent      block
+            | "while" exprAtMinIndent "do" block
+            |                         "do" block
             ;
-loopEpilog  : "until" exprAtMinIndent  <LF>  blockOpt elseBlockOpt
-            | "until" exprAtMinIndent "then" blockOpt elseBlockOpt
-            |                                         elseBlock
+loopEpilog  : "until" exprAtMinIndent thenPart elseBlockOpt
+            |                                  elseBlock
             ;
    */
   Expr loop()
@@ -2354,9 +2343,9 @@ loopEpilog  : "until" exprAtMinIndent  <LF>  blockOpt elseBlockOpt
     var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()      : null;
                                                 var i   = hasFor || v != null ? invariant(true)   : null;
     var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprAtMinIndent() : null;
-    var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? blockOpt()        : null;
+    var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block(true)       : null;
     var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprAtMinIndent() : null;
-                                                var ub  = hasUntil            ? blockOpt()        : null;
+                                                var ub  = hasUntil            ? thenPart(true)    : null;
                                                 var els1 =               fork().elseBlockOpt();
                                                 var els =                       elseBlockOpt();
 
@@ -2486,10 +2475,7 @@ cond        : exprInLine
   /**
    * Parse ifstmnt
    *
-ifstmt      : "if" exprInLine thenPart
-            ;
-thenPart    : "then" block elseBlock
-            |        block elseBlock
+ifstmt      : "if" exprInLine thenPart elseBlockOpt
             ;
    */
   If ifstmnt()
@@ -2498,8 +2484,7 @@ thenPart    : "then" block elseBlock
     int oldLine = sameLine(-1);
     match(Token.t_if, "ifstmnt");
     Expr e = exprInLine();
-    skip(Token.t_then);
-    Block b = block(true);
+    Block b = thenPart(false);
     If result = new If(pos, e, b);
     Expr els = elseBlockOpt();
     if (els instanceof If)
@@ -2518,6 +2503,22 @@ thenPart    : "then" block elseBlock
     sameLine(oldLine);
 
     return result;
+  }
+
+
+  /**
+   * Parse thenPart
+   *
+thenPart    : "then" block
+            |        block
+            ;
+   */
+  Block thenPart(boolean emptyBlockIfNoBlockPresent)
+  {
+    var p = pos();
+    skip(Token.t_then);
+    var result = block(true);
+    return emptyBlockIfNoBlockPresent && p == pos() ? null : result;
   }
 
 
