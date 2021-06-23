@@ -206,8 +206,9 @@ public class CTypes extends ANY
             // first, make sure structs used for inner fields are declared:
             for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
               {
-                var rcl = _fuir.clazzResultClazz(_fuir.clazzField(cl, i));
-                if (!_fuir.clazzIsRef(rcl))
+                var fcl = _fuir.clazzField(cl, i);
+                var rcl = _fuir.clazzResultClazz(fcl);
+                if (!_fuir.clazzIsRef(rcl) && !_fuir.clazzIsOuterRef(fcl))
                   {
                     findDeclarationOrder(rcl, result, visited);
                   }
