@@ -179,7 +179,7 @@ public class Match extends Expr
         var missingMatches = new List<Type>();
         for (var ix = 0; ix < cgs.size(); ix++)
           {
-            if (matched[ix] == null)
+            if (matched[ix] == null && cgs.get(ix) != Types.t_ERROR)
               {
                 missingMatches.add(cgs.get(ix));
               }
