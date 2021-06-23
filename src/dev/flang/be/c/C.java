@@ -512,13 +512,16 @@ public class C extends ANY
               for (var tagNum : tags)
                 {
                   var tc = _fuir.clazzChoice(subjClazz, tagNum);
-                  var isRef = !hasTag && _fuir.clazzIsRef(tc);
-                  foundRef = foundRef || isRef;
-                  if (!isRef)
+                  if (tc != -1)
                     {
-                      ctags.add(CExpr.int32const(tagNum));
-                      check
-                        (hasTag || !_types.hasData(tc));
+                      var isRef = !hasTag && _fuir.clazzIsRef(tc);
+                      foundRef = foundRef || isRef;
+                      if (!isRef)
+                        {
+                          ctags.add(CExpr.int32const(tagNum));
+                          check
+                            (hasTag || !_types.hasData(tc));
+                        }
                     }
                 }
               var sl = new List<CStmnt>();
