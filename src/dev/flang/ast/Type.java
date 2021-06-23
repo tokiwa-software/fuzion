@@ -1037,7 +1037,7 @@ public class Type extends ANY implements Comparable
                         t1 != Types.t_ERROR &&
                         t2 != Types.t_ERROR)
                       {
-                        FeErrors.genericsMustBeDisjoing(pos, t1, t2);
+                        FeErrors.genericsMustBeDisjoint(pos, t1, t2);
                       }
                   }
                 i2++;

@@ -749,7 +749,7 @@ public class FeErrors extends ANY
           "a choice is always a value type");
   }
 
-  static void genericsMustBeDisjoing(SourcePosition pos, Type t1, Type t2)
+  static void genericsMustBeDisjoint(SourcePosition pos, Type t1, Type t2)
   {
     error(pos,
           "Generics arguments to choice type must be disjoint types",
