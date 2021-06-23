@@ -1029,11 +1029,11 @@ public class Type extends ANY implements Comparable
                 t2 = Types.intern(t2);
                 if (i1 < i2)
                   {
-                    if (t1 == t2 ||
-                        !t1.isGenericArgument() &&
-                        !t2.isGenericArgument() &&
-                        (t1.isAssignableFrom(t2) ||
-                         t2.isAssignableFrom(t1)    ) &&
+                    if ((t1 == t2 ||
+                         !t1.isGenericArgument() &&
+                         !t2.isGenericArgument() &&
+                         (t1.isAssignableFrom(t2) ||
+                          t2.isAssignableFrom(t1)    )) &&
                         t1 != Types.t_ERROR &&
                         t2 != Types.t_ERROR)
                       {
