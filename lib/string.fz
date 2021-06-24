@@ -244,9 +244,8 @@ string ref : hasHash<string>, ordered<string>, strings is
           if s.hasNext
             parseInteger<T> base, neg, v, s.next, s
           else
-            match v
-              nil => parseError "numerical overflow"
-              u T => u
+            v ? nil => parseError "numerical overflow"
+              | u T => u
 
 
   # convert this string into an array of codepoints.
@@ -264,9 +263,8 @@ string ref : hasHash<string>, ordered<string>, strings is
 
       redef hasNext => s.hasNext
       redef next =>
-        match s.next
-          c codepoint => c
-          e error     => codepoint 0xFFFD # 'REPLACEMENT CHARACTER' (U+FFFD)
+        s.next ? c codepoint => c
+               | e error     => codepoint 0xFFFD # 'REPLACEMENT CHARACTER' (U+FFFD)
 
   # convert this string into a stream of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes

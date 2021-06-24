@@ -36,10 +36,8 @@ is
 
   # Does this option contain a value of type T?
   #
-  exists =>
-    match numOption.this
-      T   => true
-      nil => false
+  exists => numOption.this ? T   => true
+                           | nil => false
 
 
   # short-hand postfix operator for 'exists'
@@ -66,9 +64,8 @@ is
     pre
       safety: numOption.this??
   is
-    match numOption.this
-      v T => v
-      nil => fuzion.std.panic "numOption.val called on nil"
+    numOption.this ? v T => v
+                   | nil => fuzion.std.panic "numOption.val called on nil"
 
 
   # monadic operator
@@ -80,16 +77,15 @@ is
   # Same as non-generic >>=, but also maps to a different type B.
   #
   bind <B> (f fun (T) numOption<B>) numOption<B> is
-    match numOption.this
-      v T   => f(v)
-      _ nil => nil
+    numOption.this ? v T => f(v)
+                   | nil => nil
 
 
   # monadic operator for bool result, false for nil
   infix >>? (f fun (T) bool) =>
-    match numOption.this
-      v T   => f(v)
-      _ nil => false
+    numOption.this ? v T => f(v)
+                   | nil => false
+
 
   # basic prefix operations
   prefix +? numOption<T> is numOption.this >>= fun(v T) numOption<T> is +v
@@ -123,15 +119,13 @@ is
   isZero => sign ==? 0
 
   sign numOption<i32> is
-    match numOption.this
-      v T   => v.sign
-      _ nil => nil
+    numOption.this ? v T => v.sign
+                   | nil => nil
 
   abs numOption<T> is
     numOption.this >>= fun (v T) numOption<T> { if v.sign >= 0 v else -?v }
 //    numOption.this >>= fun (v T) => if v.sign >= 0 v else -?v     // NYI: check: causes crash! (precondition failure)
 
   redef asString string is
-    match numOption.this
-      v T   => v.asString
-      _ nil => "--no value--"
+    numOption.this ? v T => v.asString
+                   | nil => "--no value--"

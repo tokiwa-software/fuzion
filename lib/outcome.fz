@@ -30,10 +30,8 @@ outcome<T> : choice<T, error> is
 
   # Does this outcome contain a value of type T?
   #
-  ok =>
-    match outcome.this
-      T     => true
-      error => false
+  ok => outcome.this ? T     => true
+                     | error => false
 
 
   # short-hand postfix operator for 'ok'
@@ -60,9 +58,8 @@ outcome<T> : choice<T, error> is
     pre
       safety: outcome.this??
   is
-    match outcome.this
-      v T   => v
-      error => fuzion.std.panic "outcome.val called on error"
+    outcome.this ? v T   => v
+                 | error => fuzion.std.panic "outcome.val called on error"
 
 
   # error of an outcome that is known to contain an error
@@ -74,9 +71,8 @@ outcome<T> : choice<T, error> is
     pre
       safety: outcome.this!!
   is
-    match outcome.this
-      T       => fuzion.std.panic "outcome.err called on successful outcome"
-      e error => e
+    outcome.this ? T       => fuzion.std.panic "outcome.err called on successful outcome"
+                 | e error => e
 
 
   # converts outcome to a string
@@ -84,7 +80,6 @@ outcome<T> : choice<T, error> is
   # returns the result of T.asString for a successful outcome, or
   # "--$e--" for e error.
   #
-  redef asString string is
-    match outcome.this
-      v T     => v.asString
-      e error => "--$e--"
+  redef asString =>
+    outcome.this ? v T     => v.asString
+                 | e error => "--$e--"

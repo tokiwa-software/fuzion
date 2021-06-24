@@ -34,10 +34,8 @@ is
 
   # Does this option contain a value of type T?
   #
-  exists =>
-    match option.this
-      T   => true
-      nil => false
+  exists => option.this ? T   => true
+                        | nil => false
 
 
   # short-hand postfix operator for 'exists'
@@ -77,9 +75,8 @@ is
   # Same as non-generic >>=, but also maps to a different type B.
   #
   bind <B> (f fun (T) option<B>) option<B> is
-    match option.this
-      v T   => f v
-      _ nil => nil
+    option.this ? v T => f v
+                | nil => nil
 
 
   # synonyme for infix >>=
@@ -89,9 +86,8 @@ is
   # map this option using f, i.e., map nil to nil and any value v to f v
   #
   map <B> (f fun (T) B) option<B> is
-    match option.this
-      v T   => f v
-      _ nil => nil
+    option.this ? v T => f v
+                | nil => nil
 
 
   # converts option to a string
@@ -100,9 +96,8 @@ is
   # of T, alternatively returns "--nil--" for an option that is nil.
   #
   redef asString string is
-    match option.this
-      v T   => v.asString
-      _ nil => "--nil--"
+    option.this ? v T => v.asString
+                | nil => "--nil--"
 
 
   # unwraps an option that is known to contain a value
@@ -114,6 +109,5 @@ is
     pre
       safety: option.this??
     =>
-    match option.this
-      v T => v
-      nil => fuzion.std.panic "option.unwrap called on nil"
+      option.this ? v T => v
+                  | nil => fuzion.std.panic "option.unwrap called on nil"

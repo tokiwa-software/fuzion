@@ -40,10 +40,8 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
 
   # is this list empty?
   #
-  redef isEmpty =>
-    match list.this
-      _ nil  => true
-      c Cons => false
+  redef isEmpty => list.this ? nil  => true
+                             | Cons => false
 
 
   # count the elements of this list
@@ -55,18 +53,16 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   # carries n around to make this tail-recursive
   #
   private count (n i32) i32 is
-    match list.this
-      _ nil  => n
-      c Cons => c.tail.count n + 1
+    list.this ? nil    => n
+              | c Cons => c.tail.count n + 1
 
 
   # get the head of this list if it exists
   #
   head option<A>
   is
-    match list.this
-      _ nil  => nil
-      c Cons => c.head
+    list.this ? nil    => nil
+              | c Cons => c.head
 
 
   # get the tail of this list if it exists, nil if it does
@@ -74,43 +70,37 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   #
   tail list<A>
   is
-    match list.this
-      _ nil  => nil
-      c Cons => c.tail
+    list.this ? nil    => nil
+              | c Cons => c.tail
 
 
   # call f in order on all elements of this list
   #
   redef forAll (f fun (A)) unit is
-    match list.this
-      _ nil  =>
-      c Cons => f c.head; c.tail.forAll f
+    list.this ? nil    =>
+              | c Cons => f c.head; c.tail.forAll f
 
 
   # get the head of this list, panic if list is empty
   #
   # NYI: Remove, this is just for experiments
   #
-  forceHead A
+  forceHead
     pre
       debug: !isEmpty
-  is
-    match list.this
-      _ nil  => panic
-      c Cons => c.head
+    => list.this ? nil    => panic
+                 | c Cons => c.head
 
 
   # get the tail of this list, panic if list is empty
   #
   # NYI: Remove, this is just for experiments
   #
-  forceTail list<A>
+  forceTail
     pre
       debug: !isEmpty
-  is
-    match list.this
-      _ nil  => panic
-      c Cons => c.tail
+    => list.this ? nil    => panic
+                 | c Cons => c.tail
 
 
   # terminate with "*** panic"
@@ -154,10 +144,8 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   #
   # Used to fold a list tail-recursively
   #
-  fold (s A, m Monoid<A>) A is
-    match list.this
-      _ nil  => s
-      c Cons => c.tail.fold m.op(s, c.head), m
+  fold (s A, m Monoid<A>) A is list.this ? nil    => s
+                                         | c Cons => c.tail.fold m.op(s, c.head), m
 
 
   # Lazily take the first n elements of a list, alternatively the whole list if it
@@ -187,9 +175,8 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   # and append the already reversed reversedHead
   #
   reverse (reversedHead list<A>) list<A> is
-    match list.this
-      _ nil  => reversedHead
-      c Cons => c.tail.reverse cons c.head, reversedHead
+    list.this ? nil    => reversedHead
+              | c Cons => c.tail.reverse cons c.head, reversedHead
 
 
   # create a string representation of this list including all the string
@@ -202,9 +189,8 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   # List concatenation, O(count)
   #
   concatEagerly (t list<A>) list<A> is
-    match list.this
-      _ nil => t
-      c Cons => cons<A, list<A>> c.head, c.tail.concat t
+    list.this ? nil    => t
+              | c Cons => cons<A, list<A>> c.head, c.tail.concat t
 
 
   # Lazy list concatenation, O(1)
@@ -234,9 +220,8 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
     if n <= 0
       list.this
     else
-      match list.this
-        nil    => nil
-        c Cons => c.tail.drop n-1
+      list.this ? nil    => nil
+                | c Cons => c.tail.drop n-1
 
 
   # create a slice from this list that consists of the elements starting at index
@@ -284,9 +269,8 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
         cycleCons (h Cons<A, list<A>>) : Cons<A, list<A>> is
           head => h.head
           tail list<A> is
-            cycleCons match h.tail
-              nil    => c
-              d Cons => d
+            cycleCons h.tail ? nil    => c
+                             | d Cons => d
         cycleCons c
 
 
@@ -296,10 +280,8 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   redef tails list<list<A>> is
     ref : Cons<list<A>, list<list<A>>> {
         head => list.this
-        tail =>
-          match list.this
-            nil    => nil
-            c Cons => c.tail.tails
+        tail => list.this ? nil    => nil
+                          | c Cons => c.tail.tails
       }
 
 
@@ -310,10 +292,8 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   #
   redef asStream ref : stream<A> is
     cur := list.this
-    redef hasNext =>
-      match cur
-        Cons => true
-        nil  => false
+    redef hasNext => cur ? Cons => true
+                         | nil  => false
     redef next =>
       res := cur.forceHead
       set cur := cur.forceTail
