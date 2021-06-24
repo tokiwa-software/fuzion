@@ -235,8 +235,16 @@ public class Match extends Expr
       {
         if (matches.isEmpty())
           {
-            FeErrors.matchCaseDoesNotMatchAny(c.pos, original_t, cgs);
-            t = Types.t_ERROR;
+            if (t == Types.t_ERROR)
+              {
+                check
+                  (Errors.count() > 0);
+              }
+            else
+              {
+                FeErrors.matchCaseDoesNotMatchAny(c.pos, original_t, cgs);
+                t = Types.t_ERROR;
+              }
           }
         else
           {
