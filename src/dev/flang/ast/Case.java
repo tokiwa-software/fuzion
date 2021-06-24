@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.ListIterator;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -202,6 +203,69 @@ public class Case extends ANY
       }
     code = code.visit(v, outer);
     v.actionAfter(this, outer);
+  }
+
+
+  /**
+   * Resolve one type found in a case. Produce an error in case it does not
+   * match any of the subject's types or if it matches several of the subject's
+   * types.
+   *
+   * @param c the case we are resolving
+   *
+   * @param t the type within c we are resolving
+   *
+   * @param cgs the choiceGenerics of the match's subject's type
+   *
+   * @param outer the outer feature that contains this match statement
+   */
+  Type resolveType(Type t, List<Type> cgs, Feature outer, SourcePosition[] matched)
+  {
+    var original_t = t;
+    List<Type> matches = new List<Type>();
+    int i = 0;
+    t.resolveFeature(outer);
+    var inferGenerics = !t.isGenericArgument() && t._generics.isEmpty() && t.featureOfType().generics != FormalGenerics.NONE;
+    if (!inferGenerics)
+      {
+        t = t.resolve(outer);
+      }
+    for (var cg : cgs)
+      {
+        if (inferGenerics  && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
+            !inferGenerics && t == cg                                 /* match exactly */ )
+          {
+            t = cg;
+            matches.add(cg);
+            if (matched[i] != null)
+              {
+                FeErrors.repeatedMatch(pos, matched[i], t, cgs);
+              }
+            matched[i] = pos;
+          }
+        i++;
+      }
+    if (matches.size() != 1)
+      {
+        if (matches.isEmpty())
+          {
+            if (t == Types.t_ERROR)
+              {
+                check
+                  (Errors.count() > 0);
+              }
+            else
+              {
+                FeErrors.matchCaseDoesNotMatchAny(pos, original_t, cgs);
+                t = Types.t_ERROR;
+              }
+          }
+        else
+          {
+            FeErrors.matchCaseMatchesSeveral(pos, original_t, cgs, matches);
+          }
+      }
+    return t;
   }
 
 
