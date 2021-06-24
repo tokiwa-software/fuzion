@@ -116,9 +116,7 @@ is
       redef asStream =>
         contents
           .asStream
-          .filter         (fun (o option<tuple<K,V>>) => match o
-                                                           nil     => false
-                                                           _ tuple => true )
+          .filter         (fun (o option<tuple<K,V>>) => o??)
           .map<tuple<K,V>>(fun (o option<tuple<K,V>>) => match o
                                                            nil     => fuzion.std.panic "filter failed"
                                                            t tuple => t)
