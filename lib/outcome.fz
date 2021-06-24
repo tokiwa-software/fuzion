@@ -36,12 +36,19 @@ outcome<T> : choice<T, error> is
       error => false
 
 
+  # short-hand postfix operator for 'ok'
+  #
+  postfix ?? => ok
+
+
   # Does this outcome contain an error
   #
-  isError =>
-    match outcome.this
-      T     => false
-      error => true
+  isError => !ok
+
+
+  # short-hand postfix operator for 'isError'
+  #
+  postfix !! => isError
 
 
   # value of a outcome that is known to contain a value
@@ -51,12 +58,7 @@ outcome<T> : choice<T, error> is
   #
   val T
     pre
-      # NYI: better syntax:
-      #
-      # safety: option.this?
-      safety: match outcome.this
-        T     => true
-        error => false
+      safety: outcome.this??
   is
     match outcome.this
       v T   => v
@@ -70,12 +72,7 @@ outcome<T> : choice<T, error> is
   #
   err error
     pre
-      # NYI: better syntax:
-      #
-      # safety: !(option.this?)
-      safety: match outcome.this
-        T     => false
-        error => true
+      safety: outcome.this!!
   is
     match outcome.this
       T       => fuzion.std.panic "outcome.err called on successful outcome"

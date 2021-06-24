@@ -162,11 +162,7 @@ wrappingInteger<T: wrappingInteger<T>> : integer<T>, wrappingIntegers<T> is
 
   # would exponentiation 'this ** other' cause an overflow?
   #
-  overflowOnExp(other T) =>
-    match thiz **? other
-      T   => false
-      nil => true
-    # NYI: this should be just '(thiz **? other)?'
+  overflowOnExp(other T) => (thiz **? other)!!
 
 
   # exponentiation with saturating semantics

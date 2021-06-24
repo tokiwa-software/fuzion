@@ -40,12 +40,19 @@ is
       nil => false
 
 
+  # short-hand postfix operator for 'exists'
+  #
+  postfix ?? => exists
+
+
   # Does this option contain no value of type T?
   #
-  isNil =>
-    match option.this
-      T   => false
-      nil => true
+  isNil => !exists
+
+
+  # short-hand postfix operator for 'isNil'
+  #
+  postfix !! => isNil
 
 
   # monadic operator
@@ -105,12 +112,7 @@ is
   #
   unwrap
     pre
-      # NYI: better syntax:
-      #
-      # safety: option.this?
-      safety: match option.this
-        T   => true
-        nil => false
+      safety: option.this??
     =>
     match option.this
       v T => v
