@@ -207,17 +207,59 @@ public class Case extends ANY
 
 
   /**
-   * Resolve one type found in a case. Produce an error in case it does not
-   * match any of the subject's types or if it matches several of the subject's
-   * types.
-   *
-   * @param c the case we are resolving
-   *
-   * @param t the type within c we are resolving
+   * Resolve types in this case.  Produce an error in case it does not match any
+   * of the subject's types or if it matches several of the subject's types.
    *
    * @param cgs the choiceGenerics of the match's subject's type
    *
    * @param outer the outer feature that contains this match statement
+   *
+   * @param matched map from index in cgs to source position for all matches
+   * that have already beend found.  This is updated and used to report an error
+   * in case there are repeated matches.
+   *
+   * @return true iff all types could be resolved, false if any type resolution
+   * failed and the type was set to Types.t_ERROR.
+   */
+  boolean resolveType(List<Type> cgs, Feature outer, SourcePosition[] matched)
+  {
+    boolean result = true;
+    if (field != null)
+      {
+        var t = field.returnType.functionReturnType();
+        var rt = resolveType(t, cgs, outer, matched);
+        field.returnType = new FunctionReturnType(rt);
+        result &= rt != Types.t_ERROR;
+      }
+    if (types != null)
+      {
+        ListIterator<Type> ti = types.listIterator();
+        while (ti.hasNext())
+          {
+            var t = ti.next();
+            var rt = resolveType(t, cgs, outer, matched);
+            ti.set(rt);
+            result &= rt != Types.t_ERROR;
+          }
+      }
+    return result;
+  }
+
+
+  /**
+   * Resolve one type found in a case. Produce an error in case it does not
+   * match any of the subject's types or if it matches several of the subject's
+   * types.
+   *
+   * @param t the type within this case we are resolving
+   *
+   * @param cgs the choiceGenerics of the match's subject's type
+   *
+   * @param outer the outer feature that contains this match statement
+   *
+   * @param matched map from index in cgs to source position for all matches
+   * that have already beend found.  This is updated and used to report an error
+   * in case there are repeated matches.
    */
   Type resolveType(Type t, List<Type> cgs, Feature outer, SourcePosition[] matched)
   {

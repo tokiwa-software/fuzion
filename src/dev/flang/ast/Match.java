@@ -159,27 +159,10 @@ public class Match extends Expr
             i.set(i.next().resolve(outer));
           }
         SourcePosition[] matched = new SourcePosition[cgs.size()];
-        boolean anyError = false;
+        boolean ok = true;
         for (Case c: cases)
           {
-            if (c.field != null)
-              {
-                var t = c.field.returnType.functionReturnType();
-                var rt = c.resolveType(t, cgs, outer, matched);
-                c.field.returnType = new FunctionReturnType(rt);
-                anyError |= rt == Types.t_ERROR;
-              }
-            if (c.types != null)
-              {
-                ListIterator<Type> ti = c.types.listIterator();
-                while (ti.hasNext())
-                  {
-                    var t = ti.next();
-                    var rt = c.resolveType(t, cgs, outer, matched);
-                    ti.set(rt);
-                    anyError |= rt == Types.t_ERROR;
-                  }
-              }
+            ok &= c.resolveType(cgs, outer, matched);
           }
         var missingMatches = new List<Type>();
         for (var ix = 0; ix < cgs.size(); ix++)
@@ -189,7 +172,7 @@ public class Match extends Expr
                 missingMatches.add(cgs.get(ix));
               }
           }
-        if (!missingMatches.isEmpty() && !anyError)
+        if (!missingMatches.isEmpty() && ok)
           {
             FeErrors.missingMatches(pos, cgs, missingMatches);
           }
