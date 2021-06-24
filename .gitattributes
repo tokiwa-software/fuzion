@@ -1,0 +1,6 @@
+# Change language for files ending in .fz to Fuzion
+#
+# NYI: This should happen automatically if Fuzion support was added to
+# linguist: https://github.com/github/linguist
+#
+*.fz linguist-language=Fuzion
