@@ -1542,7 +1542,7 @@ expr        : opExpr
       {
         if (isCasesAndNotExpr())
           {
-            result = new Match(pos, result, cases());
+            result = new Match(pos, result, cases(false));
           }
         else
           {
@@ -1960,7 +1960,7 @@ match       : "match" exprInLine BRACEL cases BRACER
     Expr e = exprInLine();
     int oldLine = sameLine(-1);
     boolean gotLBrace = skip(true, Token.t_lbrace);
-    List<Case> c = cases();
+    List<Case> c = cases(true);
     if (gotLBrace)
       {
         match(true, Token.t_rbrace, "block");
@@ -1973,7 +1973,15 @@ match       : "match" exprInLine BRACEL cases BRACER
   /**
    * Parse cases
    *
-cases       : caze maybecomma ( cases
+cases       : caze maybecomma ( '|' casesBars   // NYI: grammar not correct yet.
+                              |     casesNoBars
+                              )
+            ;
+casesBars   : caze maybecomma ( '|' casesBars
+                              |
+                              )
+            ;
+caseNoBars  : caze maybecomma ( casesNoBars
                               |
                               )
             ;
@@ -1981,12 +1989,28 @@ maybecomma  : comma
             |
             ;
    */
-  List<Case> cases()
+  List<Case> cases(boolean indent)
   {
     List<Case> result = new List<>();
-    var in = new Indentation();
-    while (!endOfStmnts() && in.ok())
+    var in = indent ? new Indentation() : (Indentation) null;
+    var sl = -1;
+    var usesBars = false;
+    while (!endOfStmnts() && (in == null || in.ok()))
       {
+        if (result.size() == 0 && indent)
+          {
+            usesBars = skip('|');
+          }
+        else if (result.size() == 1 && !indent)
+          {
+            sl = sameLine(-1);
+            in = new Indentation();
+            usesBars = skip('|');
+          }
+        else if (usesBars)
+          {
+            matchOperator("|", "cases");
+          }
         result.add(caze());
         skipComma();
         if (!endOfStmnts())
@@ -1994,7 +2018,14 @@ maybecomma  : comma
             semiOrFlatLF();
           }
       }
-    in.end();
+    if (in != null)
+      {
+        in.end();
+      }
+    if (sl != -1)
+      {
+        sameLine(sl);
+      }
     return result;
   }
 
@@ -2007,11 +2038,11 @@ caze        : ( caseFldDcl
               | caseStar
               )
             ;
-caseFldDcl  : IDENT type ARROW block
+caseFldDcl  : IDENT type caseBlock
             ;
-caseTypes   : typeList   ARROW block
+caseTypes   : typeList   caseBlock
             ;
-caseStar    : STAR       ARROW block
+caseStar    : STAR       caseBlock
             ;
    */
   Case caze()
@@ -2020,24 +2051,48 @@ caseStar    : STAR       ARROW block
     SourcePosition pos = posObject();
     if (skip('*'))
       {
-        matchOperator("=>", "caze");
-        result = new Case(pos, block(true));
+        result = new Case(pos, caseBlock());
       }
     else if (isCaseFldDcl())
       {
         String n = identifier();
         match(Token.t_ident, "caze");
         Type t = type();
-        matchOperator("=>", "caze");
-        result = new Case(pos, t, n, block(true));
+        result = new Case(pos, t, n, caseBlock());
       }
     else
       {
         List<Type> l = typeList();
-        matchOperator("=>", "caze");
-        result = new Case(pos, l, block(true));
+        result = new Case(pos, l, caseBlock());
       }
     // NYI: Cleanup: new abstract class CaseCondition with three implementations: star, fieldDecl, typeList.
+    return result;
+  }
+
+
+  /**
+   * Parse caseBlock
+   *
+caseBlock   : ARROW          -- if followed by '|'
+            | ARROW block    -- if block does not start with '|'
+            ;
+   */
+  Block caseBlock()
+  {
+    Block result;
+    matchOperator("=>", "caseBlock");
+    var oldLine = sameLine(-1);
+    var bar = isOperator('|');
+    sameLine(oldLine);
+    if (bar)
+      {
+        SourcePosition pos1 = posObject();
+        result = new Block(pos1, pos1, new List<>());
+      }
+    else
+      {
+        result = block(true);
+      }
     return result;
   }
 
