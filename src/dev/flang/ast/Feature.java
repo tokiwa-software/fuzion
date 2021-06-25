@@ -2026,7 +2026,9 @@ public class Feature extends ANY implements Stmnt, Comparable
           {
             Type t1 = handDownNonOpen(resultType(), r.outer());
             Type t2 = r.resultType();
-            if (!t1.isAssignableFrom(t2))
+            if (t1.isChoice()
+                ? t1 != t2  // we (currently) do not tag the result in a redefined feature, see testRedefine
+                : !t1.isAssignableFrom(t2))
               {
                 FeErrors.resultTypeMismatchInRedefinition(this, r);
               }
