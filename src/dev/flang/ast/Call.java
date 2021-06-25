@@ -625,18 +625,15 @@ public class Call extends Expr
         Call t1 = new Call(pos(), new Current(pos, thiz.thisType()), tmp, -1);
         Call t2 = new Call(pos(), new Current(pos, thiz.thisType()), tmp, -1);
         var newCall = new Call(pos(), t2, name, _actuals);
-        if (targetFeature(res, thiz) == Types.resolved.f_bool)
-          {
-            _actuals = new List<Expr>(newCall);
-            calledFeature_ = Types.resolved.f_bool_AND;
-            name = calledFeature_.featureName().baseName();
-            var as = new Assign(res, pos(), tmp, b, thiz);
-            ((Call)target)._actuals = new List<Expr>(new Block(b.pos(),new List<Stmnt>(as, t1)));
-            var rt = new Feature.ResolveTypes(res);
-            t1     .visit(rt, thiz);
-            newCall.visit(rt, thiz);
-            as     .visit(rt, thiz);
-          }
+        _actuals = new List<Expr>(newCall);
+        calledFeature_ = Types.resolved.f_bool_AND;
+        name = calledFeature_.featureName().baseName();
+        var as = new Assign(res, pos(), tmp, b, thiz);
+        ((Call)target)._actuals = new List<Expr>(new Block(b.pos(),new List<Stmnt>(as, t1)));
+        var rt = new Feature.ResolveTypes(res);
+        t1     .visit(rt, thiz);
+        newCall.visit(rt, thiz);
+        as     .visit(rt, thiz);
       }
   }
 
