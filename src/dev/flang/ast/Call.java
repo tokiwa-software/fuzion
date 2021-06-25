@@ -658,6 +658,18 @@ public class Call extends Expr
 
 
   /**
+   * Does this call a non-generic infix operator?
+   */
+  boolean isInfixOperator()
+  {
+    return
+      name.startsWith("infix ") &&
+      _actuals.size() == 1 &&
+      generics == NO_GENERICS;
+  }
+
+
+  /**
    * Check if this call is a chained boolean call of the form
    *
    *   b <= c < d
@@ -678,9 +690,9 @@ public class Call extends Expr
     Call result = null;
     if (Types.resolved != null &&
         targetFeature(res, thiz) == Types.resolved.f_bool &&
-        generics == NO_GENERICS &&
+        isInfixOperator() &&
         target instanceof Call tc &&
-        tc._actuals.size() == 1)
+        tc.isInfixOperator())
       {
         result = (tc._actuals.get(0) instanceof Call acc && acc.isChainedBoolRHS())
           ? acc
