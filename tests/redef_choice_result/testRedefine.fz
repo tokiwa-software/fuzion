@@ -1,0 +1,53 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa GmbH, Berlin
+#
+#  Source code of Fuzion test testOnesCount
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#
+# -----------------------------------------------------------------------
+
+# Regression test for #19: https://github.com/fridis/fuzion/issues/19
+#
+# A simple negative test for redefining the result type of a feature.  This
+# should report errors for the redefinitions bad1.get and bad2.get.
+#
+# The test should be run and its output should be compared to the expected
+# output.
+#
+testRedefine is
+
+  getter <A> ref is
+    get A is abstract
+
+  good : getter<string | i32 | nil> is
+    get string | i32 | nil is 42
+
+  bad1 : getter<string | i32 | nil> is
+    get i32 is 42
+
+  bad2 : getter<string | i32 | nil> is
+    get => 42
+
+  show(g getter<string | i32 | nil>) is
+    say g.get
+
+  yak "good: "; show good
+  yak "bad1: "; show bad1
+  yak "bad2: "; show bad2

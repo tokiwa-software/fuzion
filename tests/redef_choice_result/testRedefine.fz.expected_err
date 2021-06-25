@@ -1,0 +1,17 @@
+
+[32m/home/fridi/fuzion/fuzion/build/tests/redef_choice_result/testRedefine.fz:41:5:[39m [1;31merror 1[0m[1m: Wrong result type in redefined feature[0m
+[34m    get i32 is 42
+[33m----^[0m
+In testRedefine.bad1.get that redefines testRedefine.getter.get result type is i32, result type should be testRedefine.getter.A. Original feature declared at [32m/home/fridi/fuzion/fuzion/build/tests/redef_choice_result/testRedefine.fz:35:5:[39m
+[34m    get A is abstract
+[33m----^[0m
+
+
+[32m/home/fridi/fuzion/fuzion/build/tests/redef_choice_result/testRedefine.fz:44:5:[39m [1;31merror 2[0m[1m: Wrong result type in redefined feature[0m
+[34m    get => 42
+[33m----^[0m
+In testRedefine.bad2.get that redefines testRedefine.getter.get result type is i32, result type should be testRedefine.getter.A. Original feature declared at [32m/home/fridi/fuzion/fuzion/build/tests/redef_choice_result/testRedefine.fz:35:5:[39m
+[34m    get A is abstract
+[33m----^[0m
+
+2 errors.
