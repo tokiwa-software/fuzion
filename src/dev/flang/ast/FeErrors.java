@@ -312,7 +312,7 @@ public class FeErrors extends ANY
     error(redefinedFeature.pos,
           "Wrong result type in redefined feature",
           "In " + redefinedFeature.qualifiedName() + " that redefines " + originalFeature.qualifiedName() + " " +
-          "result type is " + redefinedFeature.resultType() + ", result type should be " + originalFeature.resultType() + " " +
+          "result type is " + redefinedFeature.resultType() + ", result type should be " + originalFeature.resultType() + ". " +
           "Original feature declared at " + originalFeature.pos.show());
   }
 
