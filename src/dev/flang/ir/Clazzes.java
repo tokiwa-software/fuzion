@@ -852,7 +852,7 @@ public class Clazzes extends ANY
     else if (e instanceof If)
       {
         var i = (If) e;
-        result = outerClazz.actualClazz(i._type);
+        result = outerClazz.actualClazz(i.typeOrNull());
       }
 
     else if (e instanceof BoolConst)
