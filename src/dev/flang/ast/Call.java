@@ -701,10 +701,10 @@ public class Call extends Expr
               {
                 FeErrors.ambiguousCallTargets(pos, calledName, found);
               }
-            else if (calledFeature_ == null) // nothing found, so flag error
+            else if (calledFeature_ == null)
               {
                 findChainedBooleans(res, thiz);
-                if (calledFeature_ == null)
+                if (calledFeature_ == null) // nothing found, so flag error
                   {
                     FeErrors.calledFeatureNotFound(this, calledName, targetFeature);
                   }
