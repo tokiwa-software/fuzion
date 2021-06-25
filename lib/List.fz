@@ -154,7 +154,7 @@ List<T> ref is
   dropWhile (p fun(T) bool) => asList.dropWhile p
 
 
-  # create a List that consists of all be the elements if this List followed
+  # create a List that consists of all the elements of this List followed
   # by all the elements of s
   #
   concatLists (s List<T>) ref : List<T> is
