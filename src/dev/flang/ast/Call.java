@@ -593,6 +593,9 @@ public class Call extends Expr
   }
 
 
+  /*-------------------------------------------------------------------*/
+
+
   /**
    * if loadCalledFeature is about to fail, try if we can convert this call into
    * a chain of boolean calls:
@@ -605,17 +608,14 @@ public class Call extends Expr
    *
    *   a < {tmp := b; tmp} && tmp <= c
    */
-  void findChainedBooleans(Resolution res, Feature thiz)
+  private void findChainedBooleans(Resolution res, Feature thiz)
   {
-    if (Types.resolved != null &&
-        targetFeature(res, thiz) == Types.resolved.f_bool &&
-        generics == NO_GENERICS &&
-        target instanceof Call &&
-        ((Call) target)._actuals.size() == 1 &&
-        _actuals.size() == 1)
+    var cb = chainedBoolTarget(res, thiz);
+    if (cb != null && _actuals.size() == 1)
       {
-        var b = ((Call)target)._actuals.get(0);
-        b.visit(new Feature.ResolveTypes(res), thiz);
+        var rt = new Feature.ResolveTypes(res);
+        var b = cb._actuals.get(0);
+        b.visit(rt, thiz);
         String tmpName = "#chainedBoolTemp" + (_chainedBoolTempId_++);
         var tmp = new Feature(pos(),
                               Consts.VISIBILITY_INVISIBLE,
@@ -624,18 +624,73 @@ public class Call extends Expr
                               thiz);
         Call t1 = new Call(pos(), new Current(pos, thiz.thisType()), tmp, -1);
         Call t2 = new Call(pos(), new Current(pos, thiz.thisType()), tmp, -1);
-        var newCall = new Call(pos(), t2, name, _actuals);
-        _actuals = new List<Expr>(newCall);
+        var result = new Call(pos(), t2, name, _actuals)
+          {
+            boolean isChainedBoolRHS() { return true; }
+          };
+        var as = new Assign(res, pos(), tmp, b, thiz);
+        cb._actuals = new List<Expr>(new Block(b.pos(),new List<Stmnt>(as, t1)));
+        t1    .visit(rt, thiz);
+        result.visit(rt, thiz);
+        as    .visit(rt, thiz);
+        _actuals = new List<Expr>(result);
         calledFeature_ = Types.resolved.f_bool_AND;
         name = calledFeature_.featureName().baseName();
-        var as = new Assign(res, pos(), tmp, b, thiz);
-        ((Call)target)._actuals = new List<Expr>(new Block(b.pos(),new List<Stmnt>(as, t1)));
-        var rt = new Feature.ResolveTypes(res);
-        t1     .visit(rt, thiz);
-        newCall.visit(rt, thiz);
-        as     .visit(rt, thiz);
       }
   }
+
+
+
+  /**
+   * Predicate that is true if this call is the result of pushArgToTemp in a
+   * chain of boolean operators.  This is used for longer chains such as
+   *
+   *   a < b <= c < d
+   *
+   * which is first converted into
+   *
+   *   (a < {t1 := b; t1} && t1 <= c) < d
+   *
+   * where this returns 'true' for the call 't1 <= c', that in the next steps
+   * needs to get 'c' stored into a temporary variable as well.
+   */
+  boolean isChainedBoolRHS() { return false; }
+
+
+  /**
+   * Check if this call is a chained boolean call of the form
+   *
+   *   b <= c < d
+   *
+   * or, if the LHS is also a chained bool
+   *
+   *   (a < {t1 := b; t1} && t1 <= c) < d
+   *
+   * and return the part of the LHS that has the term that will need to be
+   * stored in a temp variable, 'c', as an argument, i.e., 'b <= c' or 't1 <=
+   * c', resp.
+   *
+   * @return the term whose RHS would have to be stored in a temp variable for a
+   * chained boolean call.
+   */
+  private Call chainedBoolTarget(Resolution res, Feature thiz)
+  {
+    Call result = null;
+    if (Types.resolved != null &&
+        targetFeature(res, thiz) == Types.resolved.f_bool &&
+        generics == NO_GENERICS &&
+        target instanceof Call tc &&
+        tc._actuals.size() == 1)
+      {
+        result = (tc._actuals.get(0) instanceof Call acc && acc.isChainedBoolRHS())
+          ? acc
+          : tc;
+      }
+    return result;
+  }
+
+
+  /*-------------------------------------------------------------------*/
 
 
   /**
