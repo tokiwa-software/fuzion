@@ -601,6 +601,7 @@ public class Type extends ANY implements Comparable
   {
     if (PRECONDITIONS) require
       (checkedForGeneric,
+       t != null,
        t.checkedForGeneric,
        Errors.count() > 0 || !t.isOpenGeneric(),
        featureOfType().generics.sizeMatches(_generics));
@@ -614,6 +615,9 @@ public class Type extends ANY implements Comparable
             result = outer().actualType(result);
           }
       }
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
     return result;
   }
 

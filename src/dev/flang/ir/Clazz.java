@@ -418,7 +418,8 @@ public class Clazz extends ANY implements Comparable
   public Type actualType(Type t)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || !t.isOpenGeneric());
+      (t != null,
+       Errors.count() > 0 || !t.isOpenGeneric());
 
     t = this._type.actualType(t);
     if (this._outer != null)
@@ -437,7 +438,8 @@ public class Clazz extends ANY implements Comparable
   public Clazz actualClazz(Type t)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || !t.isOpenGeneric());
+      (t != null,
+       Errors.count() > 0 || !t.isOpenGeneric());
 
     return Clazzes.clazz(actualType(t));
   }
