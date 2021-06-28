@@ -536,7 +536,6 @@ public class Errors extends ANY
           "For string starting at " + start.show());
   }
 
-
   public static void lineBreakNotAllowedHere(SourcePosition pos, String detail)
   {
     error(pos,
@@ -544,6 +543,13 @@ public class Errors extends ANY
           "This code is part of an expression that must reside within a single line.\n" +
           detail + "\n" +
           "To solve this, enclose the expression in parentheses '(' and ')'.");
+  }
+
+  public static void expectedStringContinuation(SourcePosition pos, String token)
+  {
+    error(pos,
+          "Expected constant string continuation.",
+          "Found '" + token + "' instead.");
   }
 
 }

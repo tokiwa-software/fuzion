@@ -1776,6 +1776,10 @@ stringTerm  : STRING
             result = stringTerm(concatString(posObject(), result, expr()));
           }
       }
+    else
+      {
+        Errors.expectedStringContinuation(posObject(), current().toString());
+      }
     return result;
   }
 
