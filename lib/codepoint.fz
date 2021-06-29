@@ -47,4 +47,4 @@ is
                                                         0x80 | (v >>  6) & 0x3f,
                                                         0x80 |  v        & 0x3f ]
     else
-      fuzion.std.panic "failed to encode code point " + codepoint.this
+      fuzion.std.panic "failed to encode code point {codepoint.this}"

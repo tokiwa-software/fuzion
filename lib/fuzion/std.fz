@@ -33,5 +33,5 @@ fuzion.std is
   # panic -- display a panic message and exit immediately with erroc code 1
   #
   panic(msg string) void is
-    say "*** panic: " + msg
+    say "*** panic: $msg"
     exit 1

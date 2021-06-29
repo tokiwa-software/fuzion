@@ -77,7 +77,7 @@ is
           newData[i] := data[i]
         newData
     d[length] := o
-    marray<T> length + 1, d, unit
+    marray<T> length+1, d, unit
 
 
   # infix operator synonyme for add

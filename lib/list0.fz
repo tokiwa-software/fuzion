@@ -54,7 +54,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   #
   private count (n i32) i32 is
     list.this ? nil    => n
-              | c Cons => c.tail.count n + 1
+              | c Cons => c.tail.count n+1
 
 
   # get the head of this list if it exists

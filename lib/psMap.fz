@@ -160,7 +160,7 @@ O(n log n).
         join((fill - sz - 2*(fill - ole - sz) - 2*sz), dest, 2*sz)
 
     if (nsize & size) = 0
-      set ndata := sys.array<tuple<K,V>> data.length * 2 + (nsize+1) / 2
+      set ndata := sys.array<tuple<K,V>> (data.length * 2 + (nsize+1) / 2)
       set nfill := 0
     ndata[nfill] := kv
     join fill-1, nfill, 1
@@ -207,7 +207,7 @@ O(n log n).
     for e in asKeyArray
         sep := "", " "
     do
-      yak sep + e
+      yak (sep + e)
     say
 
 

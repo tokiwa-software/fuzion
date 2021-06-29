@@ -83,7 +83,7 @@ is
       match find t, f
         nil   => h ++ t
         n i32 =>
-          replace h ++ (t.take n) ++ r, t.drop n + f.count
+          replace h++(t.take n)++r, t.drop n+f.count
 
     replace nil, l
 

@@ -48,9 +48,9 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
   redef underflowOnMul(other u128) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  redef prefix -°             u128 is carry u64 := { if (lo > 0             ) 1 else 0 }; u128 0.as_u64 -° hi -° carry, 0.as_u64 -° lo
-  redef infix +° (other u128) u128 is carry u64 := { if (lo +° other.lo < lo) 1 else 0 }; u128 hi +° other.hi +° carry, lo +° other.lo
-  redef infix -° (other u128) u128 is carry u64 := { if (lo < other.lo      ) 1 else 0 }; u128 hi -° other.hi -° carry, lo -° other.lo
+  redef prefix -°             u128 is carry u64 := { if (lo > 0             ) 1 else 0 }; u128(0.as_u64 -° hi -° carry, 0.as_u64 -° lo)
+  redef infix +° (other u128) u128 is carry u64 := { if (lo +° other.lo < lo) 1 else 0 }; u128(hi +° other.hi +° carry, lo +° other.lo)
+  redef infix -° (other u128) u128 is carry u64 := { if (lo < other.lo      ) 1 else 0 }; u128(hi -° other.hi -° carry, lo -° other.lo)
   redef infix *° (other u128) u128 is
     a0 := lo & 0x_ffff_ffff
     a1 := lo >> 32
@@ -114,9 +114,9 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
     u128.this - div(other) *° other
 
   # bitwise and, or and xor operations
-  redef infix &  (other u128) u128 is u128 hi & other.hi, lo & other.lo
-  redef infix |  (other u128) u128 is u128 hi | other.hi, lo | other.lo
-  redef infix ^  (other u128) u128 is u128 hi ^ other.hi, lo ^ other.lo
+  redef infix &  (other u128) u128 is u128(hi & other.hi, lo & other.lo)
+  redef infix |  (other u128) u128 is u128(hi | other.hi, lo | other.lo)
+  redef infix ^  (other u128) u128 is u128(hi ^ other.hi, lo ^ other.lo)
 
   # shift operations (unsigned)
   redef infix >> (other u128) u128 is
@@ -126,7 +126,7 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
     else if n >= 64
       u128 0, hi >> (n - 64)
     else if n > 0
-      u128 hi >> n, (lo >> n) | (hi << (64.as_u64 - n))
+      u128(hi >> n, (lo >> n) | (hi << (64.as_u64 - n)))
     else
       u128.this
 
@@ -135,7 +135,7 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
     if n >= 128
       u128 0, 0
     else if n >= 64
-      u128 lo << (n-64), 0
+      u128(lo << (n-64), 0)
     else if n > 0
       u128((hi << n) | (lo >> (64.as_u64 - n)), lo << n)
     else

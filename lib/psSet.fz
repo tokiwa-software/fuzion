@@ -86,7 +86,7 @@ is
 
   # union of two psSets
   #
-  infix ⋃ (other psSet<K>) => psSet<K> psm ⋃ other.psm
+  infix ⋃ (other psSet<K>) => psSet<K> (psm ⋃ other.psm)
 
 
   # add all elements of the given List to this set
