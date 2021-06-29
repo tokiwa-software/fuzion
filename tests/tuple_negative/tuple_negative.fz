@@ -29,9 +29,9 @@ tuple_negative {
 
   chck (b bool, msg string) unit is
     if b
-      say "PASSED: " + msg
+      say "PASSED: $msg"
     else
-      say "FAILED: " + msg
+      say "FAILED: $msg"
       set exitCode := 1
 
   out := stdout;

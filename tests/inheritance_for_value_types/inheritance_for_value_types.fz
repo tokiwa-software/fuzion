@@ -38,9 +38,9 @@ inheritance_for_value_types is
 
   chck (msg string, b bool) unit is
     if b
-      say "PASSED: " + msg
+      say "PASSED: $msg"
     else
-      say "FAILED: " + msg
+      say "FAILED: $msg"
       set exitCode := 1
 
   a is

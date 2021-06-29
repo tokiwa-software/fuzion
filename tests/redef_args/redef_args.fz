@@ -33,7 +33,7 @@ redef_args is
     else
       set exitCode := 1
       "FAILED: "
-    say s + msg
+    say (s + msg)
 
   Complex<T>(r, i T) is
   Complex1(r, i i32) is

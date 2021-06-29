@@ -29,14 +29,14 @@ visibility_negative
 
   chck (b bool, msg string) unit is
     if b
-      say "PASSED: " + msg
+      say "PASSED: $msg"
     else
-      say "FAILED: " + msg
+      say "FAILED: $msg"
       set exitCode := 1
 
   chck (a,b i32, msg string) is
     if a == b
-      say "PASSED: " + msg
+      say "PASSED: $msg"
     else
       say "FAILED: expected $b got $a"
       set exitCode := 1

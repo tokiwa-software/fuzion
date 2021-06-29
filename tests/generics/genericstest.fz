@@ -35,7 +35,7 @@ genericstest {
     else
       set exitCode := 1
       "FAILED: "
-    o.println s + msg
+    o.println (s + msg)
 
   List<T> {
     public Node (

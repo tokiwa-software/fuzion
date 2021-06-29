@@ -34,10 +34,10 @@ inheritance is
 
   A ref is
     ident i32 := id
-    say "A's body" + ident
+    say "A's body$ident"
     x is abstract
   B ref : A is
-    say "B's body" + ident
+    say "B's body$ident"
     redefine x { say "B.x" }
     xb { say "B.xb" }
   C ref : A is
@@ -212,10 +212,10 @@ inheritance is
     cnt := 0
     Z
     Z ref is
-        say "tricky_Inheritance.Z: " + cnt
+        say "tricky_Inheritance.Z: $cnt"
         B ref is
           q ref : Z is
-            say "tricky_Inheritance.Z.B.q: " + cnt
+            say "tricky_Inheritance.Z.B.q: $cnt"
         if cnt < 10
           set cnt := cnt + 1
           B.q
@@ -225,9 +225,9 @@ inheritance is
   call_inherited_from_parent_args is
     chck (b bool, msg string) unit is
       if b
-        say "PASSED: " + msg
+        say "PASSED: $msg"
       else
-        say "FAILED: " + msg
+        say "FAILED: $msg"
         set exitCode := 1
 
     cnt_A_y := 0
@@ -246,23 +246,23 @@ inheritance is
           1
       D(i i32) is
         say i
-        chck i == 1, "call to y in arguments must be performed on heir instance"
+        chck i=1, "call to y in arguments must be performed on heir instance"
 
       # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
       B ref : x, y, C, D y { }
 
     A.B
-    chck cnt_A_y == 2, "inherits calls to x and y must be performed in outer feature A"
-    chck cnt_C_y == 1, "C.y must be called exactly once as argument to parent D(y)"
+    chck cnt_A_y=2, "inherits calls to x and y must be performed in outer feature A"
+    chck cnt_C_y=1, "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args
 
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from ref feature A */
   call_inherited_from_parent_args2 is
     chck (b bool, msg string) unit is
       if b
-        say "PASSED: " + msg
+        say "PASSED: $msg"
       else
-        say "FAILED: " + msg
+        say "FAILED: $msg"
         set exitCode := 1
 
     cnt_A_y := 0
@@ -281,14 +281,14 @@ inheritance is
           1
       D(i i32) is
         say i
-        chck i == 1, "call to y in arguments must be performed on heir instance"
+        chck i=1, "call to y in arguments must be performed on heir instance"
 
       # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
       B ref : x, y, C, D x { }
 
     A.B
-    chck cnt_A_y == 2, "inherits calls to x and y must be performed in outer feature A"
-    chck cnt_C_y == 1, "C.y must be called exactly once as argument to parent D(y)"
+    chck cnt_A_y=2, "inherits calls to x and y must be performed in outer feature A"
+    chck cnt_C_y=1, "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args2
 
   /* check dynamic binding on call to A.x if ref feature B inherits from value feature A */
@@ -306,9 +306,9 @@ inheritance is
   call_inherited_from_parent_args3 is
     chck (b bool, msg string) unit is
       if b
-        say "PASSED: " + msg
+        say "PASSED: $msg"
       else
-        say "FAILED: " + msg
+        say "FAILED: $msg"
         set exitCode := 1
 
     cnt_A_y := 0
@@ -327,14 +327,14 @@ inheritance is
           1
       D(i i32) is
         say i
-        chck i == 1, "call to y in arguments must be performed on heir instance"
+        chck i=1, "call to y in arguments must be performed on heir instance"
 
       # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
       B ref : x, y, C, D x { }
 
     A.B
-    chck cnt_A_y == 2, "inherits calls to x and y must be performed in outer feature A"
-    chck cnt_C_y == 1, "C.y must be called exactly once via x as argument to parent D(x)"
+    chck cnt_A_y=2, "inherits calls to x and y must be performed in outer feature A"
+    chck cnt_C_y=1, "C.y must be called exactly once via x as argument to parent D(x)"
   call_inherited_from_parent_args3
 
   inheritOuter is
@@ -395,9 +395,9 @@ inheritance is
     chck "test Fcnt", Fcnt, 3
     chck(msg string, v, expected i32) is
       if v == expected
-        say msg + ": PASSED."
+        say "$msg: PASSED."
       else
-        say msg + ": " + v + " != " + expected + " *** FAILED."
+        say "$msg: $v != $expected *** FAILED."
         set exitCode := 1
   inheritOuter
 
