@@ -864,7 +864,7 @@ public class Clazzes extends ANY
     else if (e instanceof IntConst)
       {
         var i = (IntConst) e;
-        result = i32.get();
+        result = outerClazz.actualClazz(i.typeOrNull());
       }
 
     else if (e instanceof Match)
