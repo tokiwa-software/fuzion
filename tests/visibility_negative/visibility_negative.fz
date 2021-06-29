@@ -627,11 +627,11 @@ visibility_negative
       it1 in ix1..(ix2+a)                // can make unqualified call to a, ix1, ix2 ..
       it2 in it1..2*it1                  // can make unqualified call to a, ix1, ix2, it1 ..
       ix3 := a + ix1 + ix2 + it1 + it2   // can make unqualified call to a, ix1, ix2, it1, it2 ..
-    while a + ix1 + ix2 + it1 + it2 + ix3 < 10000 &&
-          b == 3 && // 285. should flag an error: feature not visible
-          q == 3 && // 286. should flag an error: feature not visible
-          r == 3 && // 287. should flag an error: feature not visible
-          s == 3    // 288. should flag an error: feature not visible
+    while (a + ix1 + ix2 + it1 + it2 + ix3 < 10000 &&
+           b == 3 && // 285. should flag an error: feature not visible
+           q == 3 && // 286. should flag an error: feature not visible
+           r == 3 && // 287. should flag an error: feature not visible
+           s == 3  ) // 288. should flag an error: feature not visible
       {
         b => 6
         t0:= q     // 289. should flag an error: feature not visible
@@ -639,9 +639,9 @@ visibility_negative
         t1 := r    // 290. should flag an error: feature not visible
         t2 := s    // 291. should flag an error: feature not visible
       }
-    until a * (ix1 + ix2 + it1 + it2 + ix3 + b + q) > 1000000 &&
-          r == 3   // 292. should flag an error: feature not visible
-          s == 3   // 293. should flag an error: feature not visible
+    until (a * (ix1 + ix2 + it1 + it2 + ix3 + b + q) > 1000000 &&
+           r == 3 &&  // 292. should flag an error: feature not visible
+           s == 3 )   // 293. should flag an error: feature not visible
       {
         t3 := r    // 294. should flag an error: feature not visible
         t4 := s    // 295. should flag an error: feature not visible
