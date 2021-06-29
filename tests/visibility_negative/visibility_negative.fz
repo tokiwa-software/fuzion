@@ -684,8 +684,8 @@ visibility_negative
     {
       c => "normal";
     }
-    stdout.println(b);  // 315. should flag an error: feature not visible
-    stdout.println(c);  // 316. should flag an error: feature not visible
+   stdout.println(b);  // 315. should flag an error: feature not visible
+   stdout.println(c);  // 316. should flag an error: feature not visible
   }
   visiA;
 
