@@ -1123,12 +1123,14 @@ call        : name ( actualGens actualArgs callTail
                    )
             ;
    */
-  Call call(Expr target)
+  Call call(Expr target) { return call(target, false); }
+  Call call(Expr target, boolean endAtSpace)
   {
     SourcePosition pos = posObject();
     String n = name();
+    var stop = endAtSpace && ignoredTokenBefore();
     Call result;
-    if (skipDot())
+    if (!stop && skipDot())
       {
         if (current() == Token.t_integer)
           {
@@ -1145,9 +1147,8 @@ call        : name ( actualGens actualArgs callTail
       {
         // we must check isActualGens() to distinguish the less operator in 'a < b'
         // from the actual generics in 'a<b>'.
-        List<Type> g = isActualGens() ? actualGens() : Call.NO_GENERICS;
-
-        List<Expr> l = actualArgs();
+        List<Type> g = (stop || !isActualGens()) ? Call.NO_GENERICS    : actualGens();
+        List<Expr> l =  stop                     ? Call.NO_PARENTHESES : actualArgs();
         result = new Call(pos, target, n, g, l);
         result = callTail(result);
       }
@@ -1320,10 +1321,9 @@ typeList    : type ( COMMA typeList
   /**
    * Parse actualArgs
    *
-actualArgs  :        exprLst
+actualArgs  : actualsList
             | LPAREN exprLst RPAREN
             | LPAREN RPAREN
-            |
             ;
    */
   List<Expr> actualArgs()
@@ -1346,62 +1346,68 @@ actualArgs  :        exprLst
     else
       {
         sameLine(oldLine);
-        var t = current();
-        switch (t)
-          {
-          case t_semicolon       :
-          case t_comma           :
-          case t_rparen          :
-          case t_lcrochet        :
-          case t_rcrochet        :
-          case t_lbrace          :
-          case t_rbrace          :
-          case t_is              :
-          case t_pre             :
-          case t_post            :
-          case t_inv             :
-          case t_require         :
-          case t_ensure          :
-          case t_invariant       :
-          case t_if              :
-          case t_then            :
-          case t_else            :
-          case t_for             :
-          case t_do              :
-          case t_while           :
-          case t_until           :
-          case t_indentationLimit:
-          case t_lineLimit       :
-          case t_eof             :
-            {
-              // NYI: We could also allow the arguments to be indented in a new line such as
-              //
-              //    stdout.println
-              //      "Hallo, World!"
-              //
-              result = Call.NO_PARENTHESES;
-              break;
-            }
-          default:
-            {
-              if (t == Token.t_op && (!ignoredTokenBefore() || ignoredTokenAfter()))
-                { // We have an operator expression like this: 'f-xyz', 'f- xyz' or 'f - xyz'
-                  result = Call.NO_PARENTHESES;
-                }
-              else if (isContinuedString(t))
-                { // We have a string continuation as in "value $x is ok" for the string after '$x'.
-                  result = Call.NO_PARENTHESES;
-                }
-              else
-
-                { // We have an arg list, if t is operator the call looks like this: 'f -xyz'
-                  result = exprList();
-                }
-              break;
-            }
-          }
+        // NYI: We could also allow the arguments to be indented in a new line such as
+        //
+        //    stdout.println
+        //      "Hallo, World!"
+        //
+        result = actualsList();
       }
     return result;
+  }
+
+
+  /**
+   * Does the current symbol end a list of space separated actual arguments to a
+   * call.
+   */
+  boolean endsActuals()
+  {
+    var t = current();
+    switch (t)
+      {
+      case t_semicolon       :
+      case t_comma           :
+      case t_rparen          :
+      case t_lcrochet        :
+      case t_rcrochet        :
+      case t_lbrace          :
+      case t_rbrace          :
+      case t_is              :
+      case t_pre             :
+      case t_post            :
+      case t_inv             :
+      case t_require         :
+      case t_ensure          :
+      case t_invariant       :
+      case t_if              :
+      case t_then            :
+      case t_else            :
+      case t_for             :
+      case t_do              :
+      case t_while           :
+      case t_until           :
+      case t_stringBD        :
+      case t_stringBQ        :
+      case t_stringBB        :
+      case t_indentationLimit:
+      case t_lineLimit       :
+      case t_eof             : return true;
+      case t_op              :
+        // !ignoredTokenBefore(): We have an operator '-' like this 'f-xyz', 'f-
+        // xyz', i.e, stuck to the called function, we do not parse it as part
+        // of the args.
+        //
+        // ignoredTokenBefore(): An operator '-' like this 'f a b - xyz', so the
+        // arg list ends with 'b' and '-' will be parsed as an infix operator on
+        // 'f a b' and 'xyz'.
+        return !ignoredTokenBefore() || ignoredTokenAfter();
+      default                :
+        // No more actuals if we have a string continuation as in "value $x is
+        // ok" for the string after '$x' or in "bla{f a b}blub" for the string
+        // after 'f a b'.
+        return isContinuedString(t);
+      }
   }
 
 
@@ -1415,10 +1421,46 @@ exprList    : expr ( COMMA exprList
    */
   List<Expr> exprList()
   {
-    List<Expr> result = new List<>(expr());
+    List<Expr> result = new List<>(expr(false));
     while (skipComma())
       {
-        result.add(expr());
+        result.add(expr(false));
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse
+   *
+actualsList : exprList
+            | expr actualsLst
+            |
+            ;
+actutalsLst : expr actualsLst
+            |
+            ;
+   */
+  List<Expr> actualsList()
+  {
+    List<Expr> result = Call.NO_PARENTHESES;
+    if (!endsActuals())
+      {
+        result = new List<>(expr(true));
+        if (current() == Token.t_comma)
+          {
+            while (skipComma())
+              {
+                result.add(expr(false));
+              }
+          }
+        else
+          {
+            while (!endsActuals())
+              {
+                result.add(expr(true));
+              }
+          }
       }
     return result;
   }
@@ -1495,12 +1537,12 @@ exprInLine  : expr             # within one line
           // is this desired?
           var f = fork();
           f.bracketTerm(false);
-          result = (f.line() == line || f.isOperator('.')) ? expr() : bracketTerm(false);
+          result = (f.line() == line || f.isOperator('.')) ? exprWithSpaces() : bracketTerm(false);
           break;
         }
       default:
         sameLine(line);
-        result = expr();
+        result = exprWithSpaces();
         break;
       }
     sameLine(oldLine);
@@ -1509,7 +1551,7 @@ exprInLine  : expr             # within one line
 
 
   /**
-   * An expr() that, if it is a block, is permitted to start at minIndent.
+   * An exprWithSpaces() that, if it is a block, is permitted to start at minIndent.
    *
 exprAtMinIndent
               : block
@@ -1534,9 +1576,10 @@ expr        : opExpr
               )
             ;
    */
-  Expr expr()
+  Expr exprWithSpaces() { return expr(false); }
+  Expr expr(boolean endAtSpace)
   {
-    Expr result = opExpr();
+    Expr result = opExpr(endAtSpace);
     SourcePosition pos = posObject();
     if (skip('?'))
       {
@@ -1546,9 +1589,9 @@ expr        : opExpr
           }
         else
           {
-            Expr f = expr();
+            Expr f = exprWithSpaces();
             matchOperator(":", "expr of the form >>a ? b : c<<");
-            Expr g = expr();
+            Expr g = exprWithSpaces();
             result = new Call(pos, result, "ternary ? :", null, new List<Expr>(f, g));
           }
       }
@@ -1564,14 +1607,18 @@ opExpr      : ( op
               opTail
             ;
    */
-  Expr opExpr()
+  Expr opExpr(boolean endAtSpace)
   {
     OpExpr oe = new OpExpr();
-    while (isOpPrefix())
+    if (isOpPrefix(false))
       {
-        oe.add(op());
+        do
+          {
+            oe.add(op());
+          }
+        while (isOpPrefix(endAtSpace));
       }
-    oe.add(opTail());
+    oe.add(opTail(endAtSpace));
     return oe.toExpr();
   }
 
@@ -1588,20 +1635,21 @@ opTail      : term
               )
             ;
    */
-  OpExpr opTail()
+  OpExpr opTail(boolean endAtSpace)
   {
     OpExpr oe = new OpExpr();
-    oe.add(term());
-    if (isOpPrefix())
+    oe.add(term(endAtSpace));
+    if (isOpPrefix(endAtSpace))
       {
         do
           {
             oe.add(op());
           }
-        while (isOpPrefix());
-        if (isTermPrefix())
+        while (isOpPrefix(endAtSpace));
+        if ((!endAtSpace || !ignoredTokenBefore()) // an operator expression like this: '-y', '- y'
+            && isTermPrefix())
           {
-            oe.add(opTail());
+            oe.add(opTail(endAtSpace));
           }
       }
     return oe;
@@ -1632,13 +1680,13 @@ tuple       : LPAREN RPAREN
       }
     else
       {
-        result = expr(); // a klammerexpr
+        result = exprWithSpaces(); // a klammerexpr
         if (skipComma()) // a tuple
           {
             List<Expr> elements = new List<>(result);
             do
               {
-                elements.add(expr());
+                elements.add(exprWithSpaces());
               }
             while (skipComma());
             result = new Call(pos, null, "tuple", elements);
@@ -1666,14 +1714,14 @@ initArray   : LBRACKET expr (COMMA expr)+ RBRACKET
     List<Expr> elements = new List<>();
     if (!skip(Token.t_rcrochet)) // not empty array
       {
-        elements.add(expr());
+        elements.add(exprWithSpaces());
         var sep = current();
         var s = sep;
         var p1 = pos();
         boolean reportedMixed = false;
         while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
           {
-            elements.add(expr());
+            elements.add(exprWithSpaces());
             s = current();
             if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
               {
@@ -1708,7 +1756,7 @@ simpleterm  : bracketTerm
             | callOrFeatOrThis
             ;
    */
-  Expr term()
+  Expr term(boolean endAtSpace)
   {
     Expr result;
     int p1 = pos();
@@ -1719,7 +1767,7 @@ simpleterm  : bracketTerm
       case t_lcrochet:         result = bracketTerm(true);                        break;
       case t_fun     :         result = fun();                                    break;
       case t_integer :         result = new IntConst(posObject(), skipInteger()); break;
-      case t_old     : next(); result = new Old(term()                         ); break;
+      case t_old     : next(); result = new Old(term(endAtSpace)               ); break;
       case t_match   :         result = match();                                  break;
       case t_for     :
       case t_variant :
@@ -1733,7 +1781,7 @@ simpleterm  : bracketTerm
           }
         else
           {
-            result = callOrFeatOrThis();
+            result = callOrFeatOrThis(endAtSpace);
             if (result == null)
               {
                 syntaxError(p1, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
@@ -1773,7 +1821,7 @@ stringTerm  : STRING
         next();
         if (isPartialString(t))
           {
-            result = stringTerm(concatString(posObject(), result, expr()));
+            result = stringTerm(concatString(posObject(), result, exprWithSpaces()));
           }
       }
     else
@@ -1836,7 +1884,7 @@ op          : OPERATOR
   Operator op()
   {
     if (PRECONDITIONS) require
-      (isOpPrefix());
+      (isOpPrefix(false));
 
     Operator result = new Operator(posObject(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
     match(Token.t_op, "op");
@@ -1850,9 +1898,14 @@ op          : OPERATOR
    *
    * @return true iff the next token(s) start an op.
    */
-  boolean isOpPrefix()
+  boolean isOpPrefix(boolean endAtSpace)
   {
-    return current() == Token.t_op && !isOperator('?');  // NYI: create a token for '?'.
+    var result =
+      current() == Token.t_op
+      && !isOperator('?')  // NYI: create a token for '?'.
+      && (!endAtSpace || !ignoredTokenBefore()); // an operator expression like this: 'x-y', 'x-', not 'x -y' nor 'x -'
+
+    return result;
   }
 
 
@@ -2789,12 +2842,12 @@ callOrFeatOrThis
             | call
             ;
    */
-  Expr callOrFeatOrThis()
+  Expr callOrFeatOrThis(boolean endAtSpace)
   {
     return
       isAnonymousPrefix() ? anonymous() : // starts with value/ref/:/fun/name
       isQualThisPrefix()  ? qualThis()  : // starts with name
-      isNamePrefix()      ? call(null)    // starts with name
+      isNamePrefix()      ? call(null, endAtSpace)    // starts with name
                           : null;
   }
 
