@@ -65,7 +65,9 @@ is
       k in ks
       v in vs
     do
-      store at k
+      ix := at k
+      store ix
+#     store (at k)     # NYI! Currently parser treats this like a declaration
 
       # store k,v for index at,
       store (at i32) unit is
@@ -79,7 +81,9 @@ is
             if ek = k    # no conflict, but remapping of k
               mcontents[at] := (k, v)
             else         # conflict
-              store collision at
+              newAt := collision at
+              store newAt
+#             store (collision at)     # NYI! Currently parser treats this like a declaration
 
 /* NYI: With better pattern matching, this could be:
         match mcontents[at]
@@ -104,9 +108,13 @@ is
           if ek = k
             v
           else
-            retrieve collision at
+            newAt := collision at
+            retrieve newAt
+#           retrieve (collision at)     # NYI! Currently parser treats this like a declaration
 
-    retrieve at k
+    ix := at k
+    retrieve ix
+#   retrieve (at k)     # NYI! Currently parser treats this like a declaration
 
 
   # get a stream of all key/value pairs in this map

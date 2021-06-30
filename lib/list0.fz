@@ -176,7 +176,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   #
   reverse (reversedHead list<A>) list<A> is
     list.this ? nil    => reversedHead
-              | c Cons => c.tail.reverse cons c.head, reversedHead
+              | c Cons => c.tail.reverse (cons c.head, reversedHead)
 
 
   # create a string representation of this list including all the string

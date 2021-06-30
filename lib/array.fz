@@ -74,7 +74,7 @@ array<T>(internalArray sys.array<T>) : List<T> is
 
   redef forAll (f fun (T)) unit is
     for i in indices do
-      f index[] i
+      f index[](i)
 
 
   # create a list from this array

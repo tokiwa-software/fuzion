@@ -170,10 +170,10 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # parse this string as an int value of arbitrary size
   #
-  parseInt       outcome<int> is parseInt int 10
-  parseIntBinary outcome<int> is parseInt int 2
-  parseIntOctal  outcome<int> is parseInt int 8
-  parseIntHex    outcome<int> is parseInt int 16
+  parseInt       outcome<int> is parseInt int(10)
+  parseIntBinary outcome<int> is parseInt int(2)
+  parseIntOctal  outcome<int> is parseInt int(8)
+  parseIntHex    outcome<int> is parseInt int(16)
   parseInt (base int) outcome<int>
     pre (int 1) < base <= int 36
   is
