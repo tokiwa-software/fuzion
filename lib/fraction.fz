@@ -82,4 +82,4 @@ is
   redef infix >  (b fraction<B>) =>  (a - b).num.sign >  0
   redef infix >= (b fraction<B>) =>  (a - b).num.sign >= 0
 
-  redef asString => "" + num + "/" + den
+  redef asString => "" + num + "⁄" + den
