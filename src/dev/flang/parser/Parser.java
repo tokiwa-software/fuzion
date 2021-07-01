@@ -1585,7 +1585,7 @@ expr        : opExpr
   {
     Expr result = opExpr(endAtSpace);
     SourcePosition pos = posObject();
-    if (skip('?'))
+    if ((!endAtSpace || !ignoredTokenBefore()) && skip('?'))
       {
         if (isCasesAndNotExpr())
           {
