@@ -272,12 +272,10 @@ public class Clazz extends ANY implements Comparable
        actualType.featureOfType().outer() == null || outer.feature().inheritsFrom(actualType.featureOfType().outer()),
        Errors.count() > 0 || actualType.featureOfType().outer() != null || outer == null,
        Errors.count() > 0 || (actualType != Types.t_ERROR     &&
-                              actualType != Types.t_UNDEFINED &&
-                              actualType != Types.t_INFER       ),
+                              actualType != Types.t_UNDEFINED   ),
        outer == null || outer._type != Types.t_ADDRESS);
 
-    if (actualType == Types.t_UNDEFINED ||
-        actualType == Types.t_INFER       )
+    if (actualType == Types.t_UNDEFINED)
       {
         actualType = Types.t_ERROR;
       }

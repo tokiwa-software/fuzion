@@ -69,13 +69,6 @@ public class Types extends ANY
 
 
   /**
-   * Dummy name used for Types.t_INFER which is used for argument types that
-   * need to be inferred from the actual arguments.
-   */
-  static final String INFER_NAME = "--INFER--";
-
-
-  /**
    * Dummy name used for undefined type t_UNDEFINED which is used for undefined
    * types that are expected to be replaced by the correct type during type
    * inference.  Examples are the result of union of distinct types on different
@@ -97,15 +90,11 @@ public class Types extends ANY
    */
   static Set<String> INTERNAL_NAMES = Collections.<String>unmodifiableSet
     (new TreeSet<>(Arrays.asList(ADDRESS_NAME,
-                                 INFER_NAME,
                                  UNDEFINED_NAME,
                                  ERROR_NAME)));
 
   /* artificial type for the address of a value type, used for outer refs to value instances */
   public static Type t_ADDRESS = new Type(ADDRESS_NAME);
-
-  /* artificial type for type that must be inferred from actual argument */
-  public static Type t_INFER = new Type(INFER_NAME);
 
   /* artificial type for Expr that does not have a well defined type such as the
    * union of two distinct types */
@@ -201,7 +190,6 @@ public class Types extends ANY
       f_sys_array_length    = f_sys_array.get("length");
       resolved = this;
       t_ADDRESS  .resolveArtificialType(universe.get("Object"));
-      t_INFER    .resolveArtificialType(universe);
       t_UNDEFINED.resolveArtificialType(universe);
       t_ERROR    .resolveArtificialType(f_ERROR);
     }
