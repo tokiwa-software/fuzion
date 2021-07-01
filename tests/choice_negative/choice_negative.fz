@@ -252,4 +252,15 @@ choice_negative
     x choice<i64,bool> := false;  // ok
   }
 
+
+  issue23 is
+
+    match 42   // 35. should flag an error, match subject must be choice
+      TRUE => say "T"
+      FALSE => say "F"
+
+    j := 42 ? TRUE => true   // 36. should flag an error, match subject must be choice
+            | FALSE => false
+
+
 }
