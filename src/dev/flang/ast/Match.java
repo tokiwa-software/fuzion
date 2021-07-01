@@ -145,7 +145,7 @@ public class Match extends Expr
     var st = subject.type();
     if (st.isGenericArgument())
       {
-        FeErrors.matchSubjectMustNotBeTypeParameter(pos, st);
+        FeErrors.matchSubjectMustNotBeTypeParameter(subject.pos(), st);
       }
     st.featureOfType().resolveTypes(res);
     var cgs = st.choiceGenerics();
