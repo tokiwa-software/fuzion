@@ -148,6 +148,10 @@ public class Match extends Expr
         FeErrors.matchSubjectMustNotBeTypeParameter(subject.pos(), st);
       }
     st.featureOfType().resolveTypes(res);
+    if (!st.isChoice())
+      {
+        FeErrors.matchSubjectMustBeChoice(subject.pos(), st);
+      }
     var cgs = st.choiceGenerics();
     check
       (cgs != null || Errors.count() > 0);

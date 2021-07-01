@@ -395,7 +395,15 @@ public class FeErrors extends ANY
     error(pos,
           "'match' subject type must not be a type parameter",
           "Matched type: '" + t + "'\n" +
-          "Which is a type parameter declared at " + t.generic._pos.show());
+          "which is a type parameter declared at " + t.generic._pos.show());
+
+  }
+
+  static void matchSubjectMustBeChoice(SourcePosition pos, Type t)
+  {
+    error(pos,
+          "'match' subject type must be a choice type",
+          "Matched type: '" + t + "', which is not a choice type");
 
   }
 
