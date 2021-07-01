@@ -884,18 +884,22 @@ argument    : visibility
           }
         do
           {
-            if (!isArgNamesPrefix())
+            do
+              {
+                if (!isArgNamesPrefix())
+                  {
+                    return FormalOrActual.actual;
+                  }
+                skipName();
+              }
+            while (skipComma());
+            if (!skipType())
               {
                 return FormalOrActual.actual;
               }
-            skipName();
           }
         while (skipComma());
-        if (isTypePrefix())
-          {
-            return FormalOrActual.formal;
-          }
-        else
+        if (!skip(Token.t_rparen))
           {
             return FormalOrActual.actual;
           }
@@ -2978,7 +2982,7 @@ contract    : require
    */
   boolean isContractPrefix()
   {
-    switch (current())
+    switch (currentAtMinIndent())
       {
       case t_require  :
       case t_ensure   :
