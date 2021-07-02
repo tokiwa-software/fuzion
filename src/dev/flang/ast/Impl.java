@@ -357,11 +357,7 @@ public class Impl extends ANY
   {
     if (needsImplicitAssignmentToResult(outer))
       {
-        var t = outer.resultType();
-        if (t != Types.resolved.t_unit)
-          {
-            code_ = code_.propagateExpectedType(res, outer, t);
-          }
+        code_ = code_.propagateExpectedType(res, outer, outer.resultType());
       }
   }
 
@@ -391,19 +387,15 @@ public class Impl extends ANY
     if (needsImplicitAssignmentToResult(outer))
       {
         Feature resultField = outer.resultField();
-        if (resultField.resultType() != Types.resolved.t_unit  // This may happen for loops or generics that may or may not produce a result
-            )
-          {
-            var endPos = (this.code_ instanceof Block) ? ((Block) this.code_).closingBracePos_ : this.code_.pos;
-            Assign ass = new Assign(res,
-                                    endPos,
-                                    resultField,
-                                    this.code_.box(resultField.resultType()),
-                                    outer);
-            this.code_ = new Block (this.code_.pos,
-                                    endPos,
-                                    new List<Stmnt>(ass));
-          }
+        var endPos = (this.code_ instanceof Block) ? ((Block) this.code_).closingBracePos_ : this.code_.pos;
+        Assign ass = new Assign(res,
+                                endPos,
+                                resultField,
+                                this.code_.box(resultField.resultType()),
+                                outer);
+        this.code_ = new Block (this.code_.pos,
+                                endPos,
+                                new List<Stmnt>(ass));
       }
   }
 
