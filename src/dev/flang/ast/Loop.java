@@ -298,11 +298,11 @@ public class Loop extends ANY
       }
 
     _prologSuccessBlock = new List<>();
-    _prolog             = new Block(prologPos, _prologSuccessBlock);
+    _prolog             = new Block(prologPos, _prologSuccessBlock, hasImplicitResult);
     if (!_indexVars.isEmpty())
       {
         _nextItSuccessBlock = new List<>();
-        _nextIteration = new Block(nextItPos, _nextItSuccessBlock);
+        _nextIteration = new Block(nextItPos, _nextItSuccessBlock, hasImplicitResult);
         addIterators();
       }
 

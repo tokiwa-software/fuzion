@@ -51,6 +51,14 @@ public class Block extends Expr
 
   boolean _newScope;
 
+
+  /**
+   * true iff this block produces an implicit result that can be ignored if
+   * assigned to unit type.
+   */
+  private boolean _hasImplicitResult;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -115,6 +123,26 @@ public class Block extends Expr
                List<Stmnt> s)
   {
     this(pos, pos, s, false);
+  }
+
+
+  /**
+   * Generate a block of statements that do not define a new scope, i.e.,
+   * declarations remain visible after this block.
+   *
+   * @param pos the soucecode position, used for error messages.
+   *
+   * @param s the list of statements
+   *
+   * @param hasImplicitResult true iff this block produces an implicit result
+   * that can be ignored if assigned to unit type.
+   */
+  public Block(SourcePosition pos,
+               List<Stmnt> s,
+               boolean hasImplicitResult)
+  {
+    this(pos, s);
+    this._hasImplicitResult = hasImplicitResult;
   }
 
 
@@ -323,6 +351,21 @@ public class Block extends Expr
 
 
   /**
+   * Does this block produce a result that does not explicitly appear in source
+   * code? This is the case, e.g., for loops that implicitly return the last
+   * value of the index variable for true/false to indicate success or failure.
+   *
+   * In this case, the implicit result can safely be replace by unit if it is
+   * used as a unit type.
+   */
+  private boolean hasImplicitResult()
+  {
+    return _hasImplicitResult ||
+      resultExpression() instanceof Block b && b.hasImplicitResult();
+  }
+
+
+  /**
    * Convert this Expression into an assignment to the given field.  In case
    * this is a statment with several branches such as an "if" or a "match"
    * statement, add corresponding assignments in each branch and convert this
@@ -369,6 +412,11 @@ public class Block extends Expr
    */
   public Expr propagateExpectedType(Resolution res, Feature outer, Type type)
   {
+    if (type == Types.resolved.t_unit && hasImplicitResult())
+      { // return unit if this is expected even if we would implicitly return
+        // something else:
+        statements_.add(new Block(pos, new List<>()));
+      }
     Expr resExpr = removeResultExpression();
     if (resExpr != null)
       {
