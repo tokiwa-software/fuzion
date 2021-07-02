@@ -385,7 +385,7 @@ public class Block extends Expr
       {
         statements_.add(resExpr.assignToField(res, outer, r));
       }
-    else
+    else if (r.resultType() != Types.resolved.t_unit)
       {
         FeErrors.blockMustEndWithExpression(closingBracePos_, r.resultType());
       }
