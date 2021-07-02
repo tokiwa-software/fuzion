@@ -325,6 +325,22 @@ public class Impl extends ANY
 
 
   /**
+   * Do we need to add implicit assignments to the result field? This is the
+   * case for routines that do not have an explicit assignment to the result
+   * field.
+   *
+   * @param outer the feature that contains this implementation.
+   */
+  private boolean needsImplicitAssignmentToResult(Feature outer)
+  {
+    return
+      (this.code_ != null) &&
+      outer.hasResultField() &&
+      !outer.hasAssignmentsToResult();
+  }
+
+
+  /**
    * During type inference: Inform this expression that it is used in an
    * environment that expects the given type.  In particular, if this
    * expression's result is assigned to a field, this will be called with the
@@ -339,16 +355,12 @@ public class Impl extends ANY
    */
   public void propagateExpectedType(Resolution res, Feature outer)
   {
-    if (this.code_ != null)
+    if (needsImplicitAssignmentToResult(outer))
       {
-        Feature resultField = outer.resultField();
-        if ((resultField != null) && !outer.hasAssignmentsToResult())
+        var t = outer.resultType();
+        if (t != Types.resolved.t_unit)
           {
-            var t = outer.resultType();
-            if (t != Types.resolved.t_unit)
-              {
-                code_ = code_.propagateExpectedType(res, outer, t);
-              }
+            code_ = code_.propagateExpectedType(res, outer, t);
           }
       }
   }
@@ -376,12 +388,10 @@ public class Impl extends ANY
    */
   public void resolveSyntacticSugar2(Resolution res, Feature outer)
   {
-    if (this.code_ != null)
+    if (needsImplicitAssignmentToResult(outer))
       {
         Feature resultField = outer.resultField();
-        if ((resultField != null) &&
-            !outer.hasAssignmentsToResult() &&
-            resultField.resultType() != Types.resolved.t_unit  // This may happen for loops or generics that may or may not produce a result
+        if (resultField.resultType() != Types.resolved.t_unit  // This may happen for loops or generics that may or may not produce a result
             )
           {
             var endPos = (this.code_ instanceof Block) ? ((Block) this.code_).closingBracePos_ : this.code_.pos;

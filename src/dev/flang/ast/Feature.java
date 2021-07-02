@@ -808,7 +808,7 @@ public class Feature extends ANY implements Stmnt, Comparable
    *
    * @return true iff this has a result field.
    */
-  private boolean hasResultField()
+  boolean hasResultField()
   {
     return
       (impl.kind_ == Impl.Kind.RoutineDef) ||
