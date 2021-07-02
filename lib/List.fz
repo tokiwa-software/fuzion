@@ -86,7 +86,7 @@ List<T> ref is
 
   # create a new stream and apply 'f' to each element 'e' as long as 'f e'
   #
-  forWhile(f fun (T) bool) is asStream.forWhile f
+  forWhile(f fun (T) bool) unit is asStream.forWhile f
 
 
   # create a new stream that contains the first elements of this stream for
