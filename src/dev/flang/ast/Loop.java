@@ -283,8 +283,8 @@ public class Loop extends ANY
     _successBlock = sb;
     _elseBlock0 = eb0;
     _elseBlock1 = eb1;
-    _rawLoopName = "loop" +  _id_++ ;
-    var loopName = "#" + _rawLoopName;
+    var loopName = "#loop" +  _id_++ ;
+    _rawLoopName = loopName;
     var iterates = iterates();
     if (!iterates && whileCond == null && _elseBlock0 != null)
       {
@@ -442,7 +442,7 @@ public class Loop extends ANY
     _loopElse = new Feature[2];
     for (int ei=0; ei<2; ei++)
       {
-        var name = "#" + _rawLoopName + "else" + ei;
+        var name = _rawLoopName + "else" + ei;
         _loopElse[ei] = new Feature(_elsePos,
                                     Consts.VISIBILITY_INVISIBLE,
                                     Consts.MODIFIER_FINAL,
@@ -544,7 +544,7 @@ public class Loop extends ANY
                 _nextItSuccessBlock.add(_loopElse[1]);
                 mustDeclareLoopElse = false;
               }
-            var streamName = "#" + _rawLoopName + "stream" + (iteratorCount++);
+            var streamName = _rawLoopName + "stream" + (iteratorCount++);
             Call asStream = new Call(f.pos, f.impl.initialValue, "asStream");
             Feature stream = new Feature(f.pos,
                                          Consts.VISIBILITY_INVISIBLE,
