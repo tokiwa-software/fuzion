@@ -333,7 +333,7 @@ public class Impl extends ANY
    * @param res this is called during type inference, res gives the resolution
    * instance.
    *
-   * @param outer the feature that contains this expression
+   * @param outer the feature that contains this implementation.
    *
    * @param t the expected type.
    */
@@ -372,7 +372,7 @@ public class Impl extends ANY
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    *
-   * @param outer the root feature that contains this statement.
+   * @param outer the feature that contains this implementation.
    */
   public void resolveSyntacticSugar2(Resolution res, Feature outer)
   {
