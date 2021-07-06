@@ -800,10 +800,10 @@ argument    : visibility
    */
   List<Feature> formArgs()
   {
-    List<Feature> result = new List<>();
-    if (skipLParen())
-      {
-        relaxLineAndSpaceLimit(() -> {
+    return relaxLineAndSpaceLimit(() -> {
+        List<Feature> result = new List<>();
+        if (skipLParen())
+          {
             if (isNonEmptyVisibilityPrefix() || isModifiersPrefix() || isArgNamesPrefix())
               {
                 do
@@ -822,10 +822,9 @@ argument    : visibility
                  while (skipComma());
               }
             match(Token.t_rparen, "formArgs");
-            return null;
-          });
-      }
-    return result;
+          }
+        return result;
+      });
   }
 
 
@@ -838,30 +837,28 @@ argument    : visibility
    */
   boolean skipFormArgs()
   {
-    boolean result = skipLParen();
-    if (result)
-      {
-        result = relaxLineAndSpaceLimit(() -> {
-            var res = true;
+    return relaxLineAndSpaceLimit(() -> {
+        boolean result = skipLParen();
+        if (result)
+          {
             if (isNonEmptyVisibilityPrefix() || isModifiersPrefix() || isArgNamesPrefix())
               {
                 do
                   {
                     visibility();
                     modifiers();
-                    res = skipArgNames() && skipType();
-                    if (res)
+                    result = skipArgNames() && skipType();
+                    if (result)
                       {
                         contract();  // NYI: should be skipContract
                       }
                   }
-                while (res && skipComma());
+                while (result && skipComma());
               }
-            res = res && skip(Token.t_rparen);
-            return res;
-          });
-      }
-    return result;
+            result = result && skip(Token.t_rparen);
+          }
+        return result;
+      });
   }
 
 
@@ -879,9 +876,9 @@ argument    : visibility
    */
   FormalOrActual skipFormArgsNotActualArgs()
   {
-    if (skipLParen())
-      {
-        return relaxLineAndSpaceLimit(() -> {
+    return relaxLineAndSpaceLimit(() -> {
+        if (skipLParen())
+          {
             if (skip(Token.t_rparen))
               {
                 return FormalOrActual.both;
@@ -911,10 +908,9 @@ argument    : visibility
               {
                 return FormalOrActual.actual;
               }
-            return FormalOrActual.both;
-          });
-      }
-    return FormalOrActual.both;
+          }
+        return FormalOrActual.both;
+      });
   }
 
 
