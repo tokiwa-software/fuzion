@@ -115,9 +115,9 @@ public class Parser extends Lexer
     int count = 0;
     for(StackTraceElement el: new Throwable().getStackTrace())
       {
-        String m = el.getMethodName();
-        if (el.getClassName().equals(Parser.class.getName()) && !m.startsWith("lambda$"))
+        if (el.getClassName().equals(Parser.class.getName()))
           {
+            String m = el.getMethodName();
             if (count != 0 && !m.equals(lastMethod))
               {
                 sb.append(sb.length() == 0 ? "" : ", ")
@@ -125,7 +125,9 @@ public class Parser extends Lexer
                   .append(count > 1 ? " ("+count+" times)" : "");
                 count = 0;
               }
-            if (!m.equals("parseStack") && !m.equals("parserDetail"))
+            if (!m.equals("parseStack") &&
+                !m.equals("parserDetail") &&
+                !m.startsWith("lambda$"))
               {
                 count++;
                 lastMethod = m;
