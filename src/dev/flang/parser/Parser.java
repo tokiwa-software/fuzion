@@ -1347,7 +1347,7 @@ actualArgs  : actualsList
     List<Expr> result;
     int oldLine = sameLine(-1);
     int oldEAS = endAtSpace(Integer.MAX_VALUE);
-    if (skipLParen())
+    if (!ignoredTokenBefore() && skipLParen())
       {
         if (current() != Token.t_rparen)
           {
