@@ -1457,7 +1457,7 @@ actualsList : exprList
             | expr actualsLst
             |
             ;
-actutalsLst : expr actualsLst
+actualsLst  : expr actualsLst
             |
             ;
    */
