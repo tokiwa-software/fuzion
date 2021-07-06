@@ -29,6 +29,7 @@ package dev.flang.parser;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
+import dev.flang.util.Callable;
 import dev.flang.util.Errors;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
@@ -551,6 +552,26 @@ public class Lexer extends SourceFile
     int result = _endAtSpace;;
     _endAtSpace = fromPos;
 
+    return result;
+  }
+
+
+  /**
+   * Convenience method to temporarily reset limits set via sameLine() or
+   * endAtSpace() while parsing.
+   *
+   * @param c functional interface for the parser code that should be executed
+   * without sameLine/endAtSpace limits.
+   *
+   * @return c.call()'s result.
+   */
+  <V> V relaxLineAndSpaceLimit(Callable<V> c)
+  {
+    int oldLine = sameLine(-1);
+    int oldEAS = endAtSpace(Integer.MAX_VALUE);
+    V result = c.call();
+    sameLine(oldLine);
+    endAtSpace(oldEAS);
     return result;
   }
 

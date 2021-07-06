@@ -803,28 +803,27 @@ argument    : visibility
     List<Feature> result = new List<>();
     if (skipLParen())
       {
-        int oldLine = sameLine(-1);
-        int oldEAS = endAtSpace(Integer.MAX_VALUE);
-        if (isNonEmptyVisibilityPrefix() || isModifiersPrefix() || isArgNamesPrefix())
-          {
-            do
+        relaxLineAndSpaceLimit(() -> {
+            if (isNonEmptyVisibilityPrefix() || isModifiersPrefix() || isArgNamesPrefix())
               {
-                SourcePosition pos = posObject();
-                Visi v = visibility();
-                int m = modifiers();
-                List<String> n = argNames();
-                Type t = type();
-                Contract c = contract();
-                for (String s : n)
+                do
                   {
-                    result.add(new Feature(pos, v, m, t, s, c));
+                    SourcePosition pos = posObject();
+                    Visi v = visibility();
+                    int m = modifiers();
+                    List<String> n = argNames();
+                    Type t = type();
+                    Contract c = contract();
+                    for (String s : n)
+                      {
+                        result.add(new Feature(pos, v, m, t, s, c));
+                      }
                   }
+                 while (skipComma());
               }
-            while (skipComma());
-          }
-        match(Token.t_rparen, "formArgs");
-        sameLine(oldLine);
-        endAtSpace(oldEAS);
+            match(Token.t_rparen, "formArgs");
+            return null;
+          });
       }
     return result;
   }
@@ -842,25 +841,25 @@ argument    : visibility
     boolean result = skipLParen();
     if (result)
       {
-        int oldLine = sameLine(-1);
-        int oldEAS = endAtSpace(Integer.MAX_VALUE);
-        if (isNonEmptyVisibilityPrefix() || isModifiersPrefix() || isArgNamesPrefix())
-          {
-            do
+        result = relaxLineAndSpaceLimit(() -> {
+            var res = true;
+            if (isNonEmptyVisibilityPrefix() || isModifiersPrefix() || isArgNamesPrefix())
               {
-                visibility();
-                modifiers();
-                result = skipArgNames() && skipType();
-                if (result)
+                do
                   {
-                    contract();
+                    visibility();
+                    modifiers();
+                    res = skipArgNames() && skipType();
+                    if (res)
+                      {
+                        contract();  // NYI: should be skipContract
+                      }
                   }
+                while (res && skipComma());
               }
-            while (result && skipComma());
-          }
-        result = result && skip(Token.t_rparen);
-        sameLine(oldLine);
-        endAtSpace(oldEAS);
+            res = res && skip(Token.t_rparen);
+            return res;
+          });
       }
     return result;
   }
@@ -882,39 +881,38 @@ argument    : visibility
   {
     if (skipLParen())
       {
-        int oldLine = sameLine(-1);
-        int oldEAS = endAtSpace(Integer.MAX_VALUE);
-        if (skip(Token.t_rparen))
-          {
-            return FormalOrActual.both;
-          }
-        if (isNonEmptyVisibilityPrefix() || isModifiersPrefix())
-          {
-            return FormalOrActual.formal;
-          }
-        do
-          {
+        return relaxLineAndSpaceLimit(() -> {
+            if (skip(Token.t_rparen))
+              {
+                return FormalOrActual.both;
+              }
+            if (isNonEmptyVisibilityPrefix() || isModifiersPrefix())
+              {
+                return FormalOrActual.formal;
+              }
             do
               {
-                if (!isArgNamesPrefix())
+                do
+                  {
+                    if (!isArgNamesPrefix())
+                      {
+                        return FormalOrActual.actual;
+                      }
+                    skipName();
+                  }
+                while (skipComma());
+                if (!skipType())
                   {
                     return FormalOrActual.actual;
                   }
-                skipName();
               }
             while (skipComma());
-            if (!skipType())
+            if (!skip(Token.t_rparen))
               {
                 return FormalOrActual.actual;
               }
-          }
-        while (skipComma());
-        if (!skip(Token.t_rparen))
-          {
-            return FormalOrActual.actual;
-          }
-        sameLine(oldLine);
-        endAtSpace(oldEAS);
+            return FormalOrActual.both;
+          });
       }
     return FormalOrActual.both;
   }
@@ -1187,12 +1185,11 @@ indexCall   : ( LBRACKET exprList RBRACKET
       {
         SourcePosition pos = posObject();
         next();
-        int oldLine = sameLine(-1);
-        int oldEAS = endAtSpace(Integer.MAX_VALUE);
-        List<Expr> l = exprList();
-        match(Token.t_rcrochet, "indexCall");
-        sameLine(oldLine);
-        endAtSpace(oldEAS);
+        var l = relaxLineAndSpaceLimit(() -> {
+            var res = exprList();
+            match(Token.t_rcrochet, "indexCall");
+            return res;
+          });
         if (skip(":="))
           {
             l.add(exprInLine());
@@ -1344,27 +1341,24 @@ actualArgs  : actualsList
    */
   List<Expr> actualArgs()
   {
-    List<Expr> result;
-    int oldLine = sameLine(-1);
-    int oldEAS = endAtSpace(Integer.MAX_VALUE);
-    if (!ignoredTokenBefore() && skipLParen())
-      {
-        if (current() != Token.t_rparen)
+    List<Expr> result = relaxLineAndSpaceLimit(() -> {
+        List<Expr> res = null;
+        if (!ignoredTokenBefore() && skipLParen())
           {
-            result = exprList();
+            if (current() != Token.t_rparen)
+              {
+                res = exprList();
+              }
+            else
+              {
+                res = new List<>();
+              }
+            match(Token.t_rparen, "actualArgs");
           }
-        else
-          {
-            result = new List<>();
-          }
-        match(Token.t_rparen, "actualArgs");
-        sameLine(oldLine);
-        endAtSpace(oldEAS);
-      }
-    else
+        return res;
+      });
+    if (result == null)
       {
-        sameLine(oldLine);
-        endAtSpace(oldEAS);
         // NYI: We could also allow the arguments to be indented in a new line such as
         //
         //    stdout.println
@@ -1692,33 +1686,31 @@ tuple       : LPAREN RPAREN
    */
   Expr klammer()
   {
-    Expr result;
-    SourcePosition pos = posObject();
-    match(Token.t_lparen, "klammer");
-    int oldLine = sameLine(-1);
-    int oldEAS = endAtSpace(Integer.MAX_VALUE);
-    if (skip(Token.t_rparen)) // an empty tuple
-      {
-        result = new Call(pos, null, "tuple");
-      }
-    else
-      {
-        result = expr(); // a klammerexpr
-        if (skipComma()) // a tuple
+    return relaxLineAndSpaceLimit(() -> {
+        Expr result;
+        SourcePosition pos = posObject();
+        match(Token.t_lparen, "klammer");
+        if (skip(Token.t_rparen)) // an empty tuple
           {
-            List<Expr> elements = new List<>(result);
-            do
-              {
-                elements.add(expr());
-              }
-            while (skipComma());
-            result = new Call(pos, null, "tuple", elements);
+            result = new Call(pos, null, "tuple");
           }
-        match(Token.t_rparen, "term");
-      }
-    sameLine(oldLine);
-    endAtSpace(oldEAS);
-    return result;
+        else
+          {
+            result = expr(); // a klammerexpr
+            if (skipComma()) // a tuple
+              {
+                List<Expr> elements = new List<>(result);
+                do
+                  {
+                    elements.add(expr());
+                  }
+                while (skipComma());
+                result = new Call(pos, null, "tuple", elements);
+              }
+            match(Token.t_rparen, "term");
+          }
+        return result;
+      });
   }
 
 
@@ -1731,34 +1723,31 @@ initArray   : LBRACKET expr (COMMA expr)+ RBRACKET
    */
   Expr initArray()
   {
-    Expr result;
-    SourcePosition pos = posObject();
-    match(Token.t_lcrochet, "initArray");
-    int oldLine = sameLine(-1);
-    int oldEAS = endAtSpace(Integer.MAX_VALUE);
-    List<Expr> elements = new List<>();
-    if (!skip(Token.t_rcrochet)) // not empty array
-      {
-        elements.add(expr());
-        var sep = current();
-        var s = sep;
-        var p1 = pos();
-        boolean reportedMixed = false;
-        while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
+    return relaxLineAndSpaceLimit(() -> {
+        SourcePosition pos = posObject();
+        match(Token.t_lcrochet, "initArray");
+        List<Expr> elements = new List<>();
+        if (!skip(Token.t_rcrochet)) // not empty array
           {
             elements.add(expr());
-            s = current();
-            if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
+            var sep = current();
+            var s = sep;
+            var p1 = pos();
+            boolean reportedMixed = false;
+            while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
               {
-                FeErrors.arrayInitCommaAndSemiMixed(pos, posObject(p1), posObject());
-                reportedMixed = true;
+                elements.add(expr());
+                s = current();
+                if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
+                  {
+                    FeErrors.arrayInitCommaAndSemiMixed(pos, posObject(p1), posObject());
+                    reportedMixed = true;
+                  }
               }
+            match(Token.t_rcrochet, "initArray");
           }
-        match(Token.t_rcrochet, "initArray");
-      }
-    sameLine(oldLine);
-    endAtSpace(oldEAS);
-    return new InitArray(pos, elements);
+        return new InitArray(pos, elements);
+      });
   }
 
 
@@ -1838,27 +1827,25 @@ stringTerm  : STRING
   */
   Expr stringTerm(Expr leftString)
   {
-    Expr result = leftString;
-    int oldLine = sameLine(-1);
-    int oldEAS = endAtSpace(Integer.MAX_VALUE);
-    if (isString(current()))
-      {
-        var str = new StrConst(posObject(), "\""+string()+"\"" /* NYI: remove "\"" */);
-        result = concatString(posObject(), leftString, str);
-        var t = current();
-        next();
-        if (isPartialString(t))
+    return relaxLineAndSpaceLimit(() -> {
+        Expr result = leftString;
+        if (isString(current()))
           {
-            result = stringTerm(concatString(posObject(), result, expr()));
+            var str = new StrConst(posObject(), "\""+string()+"\"" /* NYI: remove "\"" */);
+            result = concatString(posObject(), leftString, str);
+            var t = current();
+            next();
+            if (isPartialString(t))
+              {
+                result = stringTerm(concatString(posObject(), result, expr()));
+              }
           }
-      }
-    else
-      {
-        Errors.expectedStringContinuation(posObject(), current().toString());
-      }
-    sameLine(oldLine);
-    endAtSpace(oldEAS);
-    return result;
+        else
+          {
+            Errors.expectedStringContinuation(posObject(), current().toString());
+          }
+        return result;
+      });
   }
 
 
@@ -2041,20 +2028,18 @@ match       : "match" exprInLine BRACEL cases BRACER
    */
   Expr match()
   {
-    SourcePosition pos = posObject();
-    match(Token.t_match, "match");
-    int oldEAS = endAtSpace(Integer.MAX_VALUE);
-    Expr e = exprInLine();
-    int oldLine = sameLine(-1);
-    boolean gotLBrace = skip(true, Token.t_lbrace);
-    List<Case> c = cases(true);
-    if (gotLBrace)
-      {
-        match(true, Token.t_rbrace, "block");
-      }
-    sameLine(oldLine);
-    endAtSpace(oldEAS);
-    return new Match(pos, e, c);
+    return relaxLineAndSpaceLimit(() -> {
+        SourcePosition pos = posObject();
+        match(Token.t_match, "match");
+        Expr e = exprInLine();
+        boolean gotLBrace = skip(true, Token.t_lbrace);
+        List<Case> c = cases(true);
+        if (gotLBrace)
+          {
+            match(true, Token.t_rbrace, "block");
+          }
+        return new Match(pos, e, c);
+      });
   }
 
 
@@ -2266,19 +2251,17 @@ block       : BRACEL stmnts BRACER
       }
     else
       {
-        int oldLine = sameLine(-1);
-        int oldEAS = endAtSpace(Integer.MAX_VALUE);
-        boolean gotLBrace = skip(mayBeAtMinIndent, Token.t_lbrace);
-        var l = stmnts();
-        var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
-        if (gotLBrace)
-          {
-            pos2 = posObject();
-            match(mayBeAtMinIndent, Token.t_rbrace, "block");
-          }
-        sameLine(oldLine);
-        endAtSpace(oldEAS);
-        return new Block(pos1, pos2, l);
+        return relaxLineAndSpaceLimit(() -> {
+            boolean gotLBrace = skip(mayBeAtMinIndent, Token.t_lbrace);
+            var l = stmnts();
+            var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
+            if (gotLBrace)
+              {
+                pos2 = posObject();
+                match(mayBeAtMinIndent, Token.t_rbrace, "block");
+              }
+            return new Block(pos1, pos2, l);
+          });
       }
   }
 
@@ -2480,28 +2463,26 @@ loopEpilog  : "until" exprAtMinIndent thenPart elseBlockOpt
    */
   Expr loop()
   {
-    SourcePosition pos = posObject();
-    int oldLine = sameLine(-1);
-    var oldEAS = endAtSpace(Integer.MAX_VALUE);
-    List<Feature> indexVars  = new List<>();
-    List<Feature> nextValues = new List<>();
-    var hasFor   = skip(      Token.t_for    ); if (hasFor) { indexVars(indexVars, nextValues); }
-    var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()      : null;
-                                                var i   = hasFor || v != null ? invariant(true)   : null;
-    var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprAtMinIndent() : null;
-    var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block(true)       : null;
-    var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprAtMinIndent() : null;
-                                                var ub  = hasUntil            ? thenPart(true)    : null;
-                                                var els1 =               fork().elseBlockOpt();
-                                                var els =                       elseBlockOpt();
+    return relaxLineAndSpaceLimit(() -> {
+        SourcePosition pos = posObject();
+        List<Feature> indexVars  = new List<>();
+        List<Feature> nextValues = new List<>();
+        var hasFor   = skip(      Token.t_for    ); if (hasFor) { indexVars(indexVars, nextValues); }
+        var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()      : null;
+                                                    var i   = hasFor || v != null ? invariant(true)   : null;
+        var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprAtMinIndent() : null;
+        var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block(true)       : null;
+        var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprAtMinIndent() : null;
+                                                    var ub  = hasUntil            ? thenPart(true)    : null;
+                                                    var els1 =               fork().elseBlockOpt();
+                                                    var els =                       elseBlockOpt();
 
-    if (!hasWhile && !hasDo && !hasUntil && els == null)
-      {
-        syntaxError(pos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
-      }
-    sameLine(oldLine);
-    endAtSpace(oldEAS);
-    return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1).tailRecursiveLoop();
+        if (!hasWhile && !hasDo && !hasUntil && els == null)
+          {
+            syntaxError(pos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
+          }
+        return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1).tailRecursiveLoop();
+      });
   }
 
 
@@ -2627,31 +2608,28 @@ ifstmt      : "if" exprInLine thenPart elseBlockOpt
    */
   If ifstmnt()
   {
-    SourcePosition pos = posObject();
-    int oldLine = sameLine(-1);
-    int oldEAS = endAtSpace(Integer.MAX_VALUE);
-    match(Token.t_if, "ifstmnt");
-    Expr e = exprInLine();
-    Block b = thenPart(false);
-    If result = new If(pos, e, b);
-    Expr els = elseBlockOpt();
-    if (els instanceof If)
-      {
-        result.setElse((If) els);
-      }
-    else if (els instanceof Block)
-      {
-        result.setElse((Block) els);
-      }
-    else
-      {
-        check
-          (els == null);
-      }
-    sameLine(oldLine);
-    endAtSpace(oldEAS);
-
-    return result;
+    return relaxLineAndSpaceLimit(() -> {
+        SourcePosition pos = posObject();
+        match(Token.t_if, "ifstmnt");
+        Expr e = exprInLine();
+        Block b = thenPart(false);
+        If result = new If(pos, e, b);
+        Expr els = elseBlockOpt();
+        if (els instanceof If)
+          {
+            result.setElse((If) els);
+          }
+        else if (els instanceof Block)
+          {
+            result.setElse((Block) els);
+          }
+        else
+          {
+            check
+              (els == null);
+          }
+        return result;
+      });
   }
 
 

@@ -33,6 +33,7 @@ TESTS=$(shell echo $(BUILD_DIR)/tests/*/)
 
 JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/ANY.java \
+          $(SRC)/dev/flang/util/Callable.java \
           $(SRC)/dev/flang/util/Errors.java \
           $(SRC)/dev/flang/util/FuzionOptions.java \
           $(SRC)/dev/flang/util/FuzionConstants.java \
