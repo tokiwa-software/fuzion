@@ -545,6 +545,15 @@ public class Errors extends ANY
           "To solve this, enclose the expression in parentheses '(' and ')'.");
   }
 
+  public static void whiteSpaceNotAllowedHere(SourcePosition pos, String detail)
+  {
+    error(pos,
+          "No white space may occur before this position",
+          "This code is part of an actual argument that must not contain white space.\n" +
+          detail + "\n" +
+          "To solve this, enclose the expression in parentheses '(' and ')'.");
+  }
+
   public static void expectedStringContinuation(SourcePosition pos, String token)
   {
     error(pos,

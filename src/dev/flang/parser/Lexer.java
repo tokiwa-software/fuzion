@@ -121,6 +121,7 @@ public class Lexer extends SourceFile
     t_eof,               // end of file
     t_indentationLimit,  // token's indentation is not sufficient
     t_lineLimit,         // token is in next line while sameLine() parsing is enabled
+    t_spaceLimit,        // token follows white space while endAtSpace is enabled
     t_undefined;         // current token before first call to next()
 
     /**
@@ -382,6 +383,14 @@ public class Lexer extends SourceFile
 
 
   /**
+   * White space restriction for current()/currentAtMinIndent(): Symbols after
+   * this position that are preceded by white space will be replaced by
+   * t_spaceLimit.
+   */
+  private int _endAtSpace = Integer.MAX_VALUE;
+
+
+  /**
    * Has the raw token before current() been skipped because ignore(t) resulted
    * in true?
    */
@@ -419,6 +428,7 @@ public class Lexer extends SourceFile
     _minIndent = original._minIndent;
     _minIndentStartPos = original._minIndentStartPos;
     _sameLine = original._sameLine;
+    _endAtSpace = original._endAtSpace;
     _ignoredTokenBefore = original._ignoredTokenBefore;
     _stringLexer = original._stringLexer == null ? null : new StringLexer(original._stringLexer);
   }
@@ -525,6 +535,27 @@ public class Lexer extends SourceFile
 
 
   /**
+   * Restrict parsing until the next occurence of white space.  Symbols after
+   * fromPos that are preceded by white space will be replaced by t_spaceLimit.
+   *
+   * @param fromPos the position of the last token that is permitted to be
+   * preceded by white space.
+   *
+   * @return the previous endAtSpace-restriction, Integer.MAX_VALUE if none.
+   */
+  int endAtSpace(int fromPos)
+  {
+    if (PRECONDITIONS) require
+      (fromPos >= 0);
+
+    int result = _endAtSpace;;
+    _endAtSpace = fromPos;
+
+    return result;
+  }
+
+
+  /**
    * Advance to the next token that is not ignore()d.
    */
   public void next()
@@ -543,8 +574,17 @@ public class Lexer extends SourceFile
   /**
    * The current token.  If minIndent >= 0 and the current token is not indented
    * deeper than this limit, return Token.t_indentationLimit.
+   *
+   * @param minIndent the minimum indentation (-1 if none) for the next token,
+   * return t_indentationLimit if not met.
+   *
+   * @param sameLine the line number (-1 if any line) for the next token, return
+   * t_lineLimit if next token is in a different line.
+   *
+   * @param spaceLimit the white space restriction (Integer.MAX_VALUE if none):
+   * Any token after this position will be replaced by t_spaceLimit.
    */
-  Token current(int minIndent, int sameLine)
+  Token current(int minIndent, int sameLine, int endAtSpace)
   {
     var t = _curToken;
     int l = _curLine;
@@ -552,6 +592,7 @@ public class Lexer extends SourceFile
     return
       t == Token.t_eof                                     ? t                        :
       sameLine  >= 0 && l != sameLine                      ? Token.t_lineLimit        :
+      p > endAtSpace && ignoredTokenBefore()               ? Token.t_spaceLimit       :
       p == _minIndentStartPos                              ? t                        :
       minIndent >= 0 && codePointInLine(p, l) <= minIndent ? Token.t_indentationLimit
                                                            : _curToken;
@@ -564,7 +605,7 @@ public class Lexer extends SourceFile
    */
   public Token current()
   {
-    return current(_minIndent, _sameLine);
+    return current(_minIndent, _sameLine, _endAtSpace);
   }
 
 
@@ -574,7 +615,7 @@ public class Lexer extends SourceFile
    */
   Token currentAtMinIndent()
   {
-    return current(_minIndent - 1, _sameLine);
+    return current(_minIndent - 1, _sameLine, _endAtSpace);
   }
 
 
@@ -594,7 +635,7 @@ public class Lexer extends SourceFile
    */
   Token currentNoLimit()
   {
-    return current(-1, -1);
+    return current(-1, -1, Integer.MAX_VALUE);
   }
 
 
@@ -1111,6 +1152,10 @@ public class Lexer extends SourceFile
     else if (current() == Token.t_lineLimit)
       {
         Errors.lineBreakNotAllowedHere(sourcePos(lineEndPos(_sameLine)), detail);
+      }
+    else if (current() == Token.t_spaceLimit)
+      {
+        Errors.whiteSpaceNotAllowedHere(sourcePos(pos), detail);
       }
     else
       {
