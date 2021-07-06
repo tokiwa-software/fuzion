@@ -61,7 +61,7 @@ is
     if has k
       psSet.this
     else
-      psSet<K> psm.add k, unit
+      psSet<K> (psm.add k unit)
 
 
   # create a sorted array from the elements of this set

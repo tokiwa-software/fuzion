@@ -183,7 +183,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   # representations of its contents.
   #
   redef asString string is
-    "[{map<string> (fun (x A) => x.asString).fold strings.concat ","}]"
+    "[{map<string>(fun (x A) => x.asString).fold (strings.concat ",")}]"
 
 
   # List concatenation, O(count)

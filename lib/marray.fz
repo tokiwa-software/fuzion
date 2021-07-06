@@ -72,7 +72,7 @@ is
   is
     d := if (data.length > length) data
       else
-        newData := sys.array<T> 8.max data.length*2
+        newData := sys.array<T> (8.max data.length*2)
         for i in indices do
           newData[i] := data[i]
         newData

@@ -46,7 +46,7 @@ map<K, V> is
   #
   keys List<K> is
     res : List<K> is
-      redef asStream => items.asStream.map<K> fun(t tuple<K,V>) => { (k,_) := t; k }
+      redef asStream => items.asStream.map<K> (fun(t tuple<K,V>) => { (k,_) := t; k })
     res
 
 
@@ -54,5 +54,5 @@ map<K, V> is
   #
   values List<V> is
     res : List<V> is
-      redef asStream => items.asStream.map<V> fun(t tuple<K,V>) => { (_,v) := t; v }
+      redef asStream => items.asStream.map<V> (fun(t tuple<K,V>) => { (_,v) := t; v })
     res

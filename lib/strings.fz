@@ -62,7 +62,7 @@ strings is
   #
   fromArray(a marray<Object>) ref : string is
     redef infix + (other Object) string is
-      fromArray a.add other
+      fromArray (a.add other)
 
     redef utf8 ref : List<i32> is
       redef asStream ref : stream<i32> is

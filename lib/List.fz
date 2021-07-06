@@ -59,7 +59,7 @@ List<T> ref is
   # count the number of elements in this List.  Note that this typically
   # runs forever if executed on an endless list
   #
-  count => mapList<i32> (fun (_ T) => 1).fold i32.sum
+  count => mapList<i32>(fun (_ T) => 1).fold i32.sum
 
 
   # collect the contents of this List into an array

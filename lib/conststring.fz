@@ -28,7 +28,7 @@
 # conststring cannot be called directly, instances are created implicitly by the
 # backend.
 #
-conststring (cannotBeCalled void) ref : string, array<i32> sys.array<i32> -1 is
+conststring (cannotBeCalled void) ref : string, array<i32> (sys.array<i32> -1) is
 
   redef utf8 List<i32> is conststring.this
 
