@@ -167,7 +167,7 @@ inheritance is
   (1..).before(fun (x i32) => x > 100)
        .before(fun (x i32) => x > 40)
        .before(fun (x i32) => x > 20)
-       .forAll fun (x i32) is say x
+       .forAll(fun (x i32) is say x)
 
   // test for recursive inheritance/outer relation with refs
   strm.u.print

@@ -61,7 +61,7 @@ listFoldTest is
   sl := ["The ", "quick ", "brown ", "fox ", "jumps ", "over ", "the ", "lazy ", "dog."].asList;
   say "Fold string list: {sl.fold strings.concat}"
 
-  chck (((sl.fold strings.concat) == "The quick brown fox jumps over the lazy dog.") , "check string concat")
+  chck(((sl.fold strings.concat) == "The quick brown fox jumps over the lazy dog.") , "check string concat")
 
   say "sum 1 is {l1.fold i32.sum}"; chck((l1.fold i32.sum) == 0, "sum l1")
   say "sum 2 is {l2.fold i32.sum}"; chck((l2.fold i32.sum) == 9, "sum l2")
@@ -74,16 +74,16 @@ listFoldTest is
   say "sum 9 is {l9.fold i32.sum}"; chck((l9.fold i32.sum) == 23456789, "sum l9")
   say "sum 10 is {lA.fold i32.sum}"; chck((lA.fold i32.sum) == 123456789, "sum lA")
 
-  say "sum 1 is {l1.take (5).fold i32.sum}"; chck((l1.take (5).fold i32.sum) == 0, "take (5).sum l1")
-  say "sum 2 is {l2.take (5).fold i32.sum}"; chck((l2.take (5).fold i32.sum) == 9, "take (5).sum l2")
-  say "sum 3 is {l3.take (5).fold i32.sum}"; chck((l3.take (5).fold i32.sum) == 89, "take (5).sum l3")
-  say "sum 4 is {l4.take (5).fold i32.sum}"; chck((l4.take (5).fold i32.sum) == 789, "take (5).sum l4")
-  say "sum 5 is {l5.take (5).fold i32.sum}"; chck((l5.take (5).fold i32.sum) == 6789, "take (5).sum l5")
-  say "sum 6 is {l6.take (5).fold i32.sum}"; chck((l6.take (5).fold i32.sum) == 56789, "take (5).sum l6")
-  say "sum 7 is {l7.take (5).fold i32.sum}"; chck((l7.take (5).fold i32.sum) == 456780, "take (5).sum l7")
-  say "sum 8 is {l8.take (5).fold i32.sum}"; chck((l8.take (5).fold i32.sum) == 3456700, "take (5).sum l8")
-  say "sum 9 is {l9.take (5).fold i32.sum}"; chck((l9.take (5).fold i32.sum) == 23456000, "take (5).sum l9")
-  say "sum 10 is {lA.take (5).fold i32.sum}"; chck((lA.take (5).fold i32.sum) == 123450000, "take (5).sum lA")
+  say "sum 1 is {l1.take(5).fold i32.sum}"; chck((l1.take(5).fold i32.sum) == 0, "take(5).sum l1")
+  say "sum 2 is {l2.take(5).fold i32.sum}"; chck((l2.take(5).fold i32.sum) == 9, "take(5).sum l2")
+  say "sum 3 is {l3.take(5).fold i32.sum}"; chck((l3.take(5).fold i32.sum) == 89, "take(5).sum l3")
+  say "sum 4 is {l4.take(5).fold i32.sum}"; chck((l4.take(5).fold i32.sum) == 789, "take(5).sum l4")
+  say "sum 5 is {l5.take(5).fold i32.sum}"; chck((l5.take(5).fold i32.sum) == 6789, "take(5).sum l5")
+  say "sum 6 is {l6.take(5).fold i32.sum}"; chck((l6.take(5).fold i32.sum) == 56789, "take(5).sum l6")
+  say "sum 7 is {l7.take(5).fold i32.sum}"; chck((l7.take(5).fold i32.sum) == 456780, "take(5).sum l7")
+  say "sum 8 is {l8.take(5).fold i32.sum}"; chck((l8.take(5).fold i32.sum) == 3456700, "take(5).sum l8")
+  say "sum 9 is {l9.take(5).fold i32.sum}"; chck((l9.take(5).fold i32.sum) == 23456000, "take(5).sum l9")
+  say "sum 10 is {lA.take(5).fold i32.sum}"; chck((lA.take(5).fold i32.sum) == 123450000, "take(5).sum lA")
 
   say "string list 1 is {sl1.fold strings.concat}"; chck((sl1.fold strings.concat) == "", "concat sl1")
   say "string list 2 is {sl2.fold strings.concat}"; chck((sl2.fold strings.concat) == "dog.", "concat sl2")

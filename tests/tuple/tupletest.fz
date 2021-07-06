@@ -73,10 +73,10 @@ tupletest is
   // cant do any chck()s on empty tuples, let's hope everything is fine
 
   one1 tuple<i32> := tuple<i32>(42); p "one1 is {one1.values.0}" // one-tuple using explicit types
-  one2 tuple<i32> := tuple     (42); p "one2 is {one2.values.0}" // one-tuple using explicit type and inferring generic
+  one2 tuple<i32> := tuple(     42); p "one2 is {one2.values.0}" // one-tuple using explicit type and inferring generic
 # one3 tuple<i32> :=           (42); p "one3 is {one3.values.0}" // one-tuple using explicit type and tuple syntax sugar
 # one4 tuple      := tuple<i32>(42); p "one4 is {one4.values.0}" // one-tuple inferring generics and explicit type
-# one5 tuple      := tuple     (42); p "one5 is {one5.values.0}" // one-tuple inferring generics and inferring generic
+# one5 tuple      := tuple(     42); p "one5 is {one5.values.0}" // one-tuple inferring generics and inferring generic
 # one6 tuple      :=           (42); p "one6 is {one6.values.0}" // one-tuple inferring generics and tuple syntax sugar
   one7            := tuple<i32>(42); p "one7 is {one7.values.0}" // one-tuple inferring type and explicit type
   one8            := tuple<i32>(42); p "one8 is {one8.values.0}" // one-tuple inferring type and inferring generic
@@ -104,23 +104,23 @@ tupletest is
   chck one17=42, "one10"
 
   two1 tuple<i32,i32>  := tuple<i32,i32>(4, 2); p "two1 is {two1.values.0}, {two1.values.1}" // one-tuple using explicit types
-  two2 tuple<i32,i32>  := tuple         (4, 2); p "two2 is {two2.values.0}, {two2.values.1}" // one-tuple using explicit type and inferring generic
+  two2 tuple<i32,i32>  := tuple(         4, 2); p "two2 is {two2.values.0}, {two2.values.1}" // one-tuple using explicit type and inferring generic
   two3 tuple<i32,i32>  :=               (4, 2); p "two3 is {two3.values.0}, {two3.values.1}" // one-tuple using explicit type and tuple syntax sugar
 # two4 tuple           := tuple<i32,i32>(4, 2); p "two4 is {two4.values.0}, {two4.values.1}" // one-tuple inferring generics and explicit type
-# two5 tuple           := tuple         (4, 2); p "two5 is {two5.values.0}, {two5.values.1}" // one-tuple inferring generics and inferring generic
+# two5 tuple           := tuple(         4, 2); p "two5 is {two5.values.0}, {two5.values.1}" // one-tuple inferring generics and inferring generic
 # two6 tuple           :=               (4, 2); p "two6 is {two6.values.0}, {two6.values.1}" // one-tuple inferring generics and tuple syntax sugar
   two7                 := tuple<i32,i32>(4, 2); p "two7 is {two7.values.0}, {two7.values.1}" // one-tuple inferring type and explicit type
   two8                 := tuple<i32,i32>(4, 2); p "two8 is {two8.values.0}, {two8.values.1}" // one-tuple inferring type and inferring generic
   two9                 :=               (4, 2); p "two9 is {two9.values.0}, {two9.values.1}" // one-tuple inferring type and tuple syntax sugar
   (two10a, two10b)     := tuple<i32,i32>(4, 2); p "two10 is $two10a, $two10b" // two-tuple using decompose and explicit types
-  (two11a, two11b)     := tuple         (4, 2); p "two11 is $two11a, $two11b" // two-tuple using decompose and inferring generic
+  (two11a, two11b)     := tuple(         4, 2); p "two11 is $two11a, $two11b" // two-tuple using decompose and inferring generic
   (two12a, two12b)     :=               (4, 2); p "two12 is $two12a, $two12b" // two-tuple using decompore and tuple syntax sugar
   (two13a, two13b i32) := tuple<i32,i32>(4, 2); p "two13 is $two13a, $two13b" // two-tuple using decompose and explicit types
-  (two14a, two14b i32) := tuple         (4, 2); p "two14 is $two14a, $two14b" // two-tuple using decompose and inferring generic
+  (two14a, two14b i32) := tuple(         4, 2); p "two14 is $two14a, $two14b" // two-tuple using decompose and inferring generic
   (two15a, two15b i32) :=               (4, 2); p "two15 is $two15a, $two15b" // two-tuple using decompore and tuple syntax sugar
   two16a, two16b, two17a, two17b, two18a, two18b i32 := ?
   set (two16a, two16b)    := tuple<i32,i32>(4, 2); p "two16 is $two16a, $two16b" // two-tuple using decompose and explicit types
-  set (two17a, two17b)    := tuple         (4, 2); p "two17 is $two17a, $two17b" // two-tuple using decompose and inferring generic
+  set (two17a, two17b)    := tuple(         4, 2); p "two17 is $two17a, $two17b" // two-tuple using decompose and inferring generic
   set (two18a, two18b)    :=               (4, 2); p "two18 is $two18a, $two18b" // two-tuple using decompore and tuple syntax sugar
   chck(two1.values.0=4 && two1.values.1=2, "two1")
   chck(two2.values.0=4 && two2.values.1=2, "two2")
