@@ -803,6 +803,8 @@ argument    : visibility
     List<Feature> result = new List<>();
     if (skipLParen())
       {
+        int oldLine = sameLine(-1);
+        int oldEAS = endAtSpace(Integer.MAX_VALUE);
         if (isNonEmptyVisibilityPrefix() || isModifiersPrefix() || isArgNamesPrefix())
           {
             do
@@ -821,6 +823,8 @@ argument    : visibility
             while (skipComma());
           }
         match(Token.t_rparen, "formArgs");
+        sameLine(oldLine);
+        endAtSpace(oldEAS);
       }
     return result;
   }
@@ -838,6 +842,8 @@ argument    : visibility
     boolean result = skipLParen();
     if (result)
       {
+        int oldLine = sameLine(-1);
+        int oldEAS = endAtSpace(Integer.MAX_VALUE);
         if (isNonEmptyVisibilityPrefix() || isModifiersPrefix() || isArgNamesPrefix())
           {
             do
@@ -853,6 +859,8 @@ argument    : visibility
             while (result && skipComma());
           }
         result = result && skip(Token.t_rparen);
+        sameLine(oldLine);
+        endAtSpace(oldEAS);
       }
     return result;
   }
@@ -874,6 +882,8 @@ argument    : visibility
   {
     if (skipLParen())
       {
+        int oldLine = sameLine(-1);
+        int oldEAS = endAtSpace(Integer.MAX_VALUE);
         if (skip(Token.t_rparen))
           {
             return FormalOrActual.both;
@@ -903,6 +913,8 @@ argument    : visibility
           {
             return FormalOrActual.actual;
           }
+        sameLine(oldLine);
+        endAtSpace(oldEAS);
       }
     return FormalOrActual.both;
   }
@@ -1127,14 +1139,12 @@ call        : name ( actualGens actualArgs callTail
                    )
             ;
    */
-  Call call(Expr target) { return call(target, false); }
-  Call call(Expr target, boolean endAtSpace)
+  Call call(Expr target)
   {
     SourcePosition pos = posObject();
     String n = name();
-    var stop = endAtSpace && ignoredTokenBefore();
     Call result;
-    if (!stop && skipDot())
+    if (skipDot())
       {
         if (current() == Token.t_integer)
           {
@@ -1151,8 +1161,8 @@ call        : name ( actualGens actualArgs callTail
       {
         // we must check isActualGens() to distinguish the less operator in 'a < b'
         // from the actual generics in 'a<b>'.
-        List<Type> g = (stop || !isActualGens()) ? Call.NO_GENERICS    : actualGens();
-        List<Expr> l =  stop                     ? Call.NO_PARENTHESES : actualArgs();
+        List<Type> g = (!isActualGens()) ? Call.NO_GENERICS : actualGens();
+        List<Expr> l = actualArgs();
         result = new Call(pos, target, n, g, l);
         result = callTail(result);
       }
@@ -1178,9 +1188,11 @@ indexCall   : ( LBRACKET exprList RBRACKET
         SourcePosition pos = posObject();
         next();
         int oldLine = sameLine(-1);
+        int oldEAS = endAtSpace(Integer.MAX_VALUE);
         List<Expr> l = exprList();
         match(Token.t_rcrochet, "indexCall");
         sameLine(oldLine);
+        endAtSpace(oldEAS);
         if (skip(":="))
           {
             l.add(exprInLine());
@@ -1334,6 +1346,7 @@ actualArgs  : actualsList
   {
     List<Expr> result;
     int oldLine = sameLine(-1);
+    int oldEAS = endAtSpace(Integer.MAX_VALUE);
     if (skipLParen())
       {
         if (current() != Token.t_rparen)
@@ -1346,10 +1359,12 @@ actualArgs  : actualsList
           }
         match(Token.t_rparen, "actualArgs");
         sameLine(oldLine);
+        endAtSpace(oldEAS);
       }
     else
       {
         sameLine(oldLine);
+        endAtSpace(oldEAS);
         // NYI: We could also allow the arguments to be indented in a new line such as
         //
         //    stdout.println
@@ -1396,6 +1411,7 @@ actualArgs  : actualsList
       case t_stringBB        :
       case t_indentationLimit:
       case t_lineLimit       :
+      case t_spaceLimit      :
       case t_eof             : return true;
       case t_op              :
         // !ignoredTokenBefore(): We have an operator '-' like this 'f-xyz', 'f-
@@ -1425,10 +1441,10 @@ exprList    : expr ( COMMA exprList
    */
   List<Expr> exprList()
   {
-    List<Expr> result = new List<>(expr(false));
+    List<Expr> result = new List<>(expr());
     while (skipComma())
       {
-        result.add(expr(false));
+        result.add(expr());
       }
     return result;
   }
@@ -1450,19 +1466,23 @@ actutalsLst : expr actualsLst
     List<Expr> result = Call.NO_PARENTHESES;
     if (!endsActuals())
       {
-        result = new List<>(expr(true));
+        var eas = endAtSpace(pos());
+        result = new List<>(expr());
+        endAtSpace(eas);
         if (current() == Token.t_comma)
           {
             while (skipComma())
               {
-                result.add(expr(false));
+                result.add(expr());
               }
           }
         else
           {
             while (!endsActuals())
               {
-                result.add(expr(true));
+                eas = endAtSpace(pos());
+                result.add(expr());
+                endAtSpace(eas);
               }
           }
       }
@@ -1541,12 +1561,12 @@ exprInLine  : expr             # within one line
           // is this desired?
           var f = fork();
           f.bracketTerm(false);
-          result = (f.line() == line || f.isOperator('.')) ? exprWithSpaces() : bracketTerm(false);
+          result = (f.line() == line || f.isOperator('.')) ? expr() : bracketTerm(false);
           break;
         }
       default:
         sameLine(line);
-        result = exprWithSpaces();
+        result = expr();
         break;
       }
     sameLine(oldLine);
@@ -1555,7 +1575,7 @@ exprInLine  : expr             # within one line
 
 
   /**
-   * An exprWithSpaces() that, if it is a block, is permitted to start at minIndent.
+   * An expr() that, if it is a block, is permitted to start at minIndent.
    *
 exprAtMinIndent
               : block
@@ -1580,12 +1600,11 @@ expr        : opExpr
               )
             ;
    */
-  Expr exprWithSpaces() { return expr(false); }
-  Expr expr(boolean endAtSpace)
+  Expr expr()
   {
-    Expr result = opExpr(endAtSpace);
+    Expr result = opExpr();
     SourcePosition pos = posObject();
-    if ((!endAtSpace || !ignoredTokenBefore()) && skip('?'))
+    if (skip('?'))
       {
         if (isCasesAndNotExpr())
           {
@@ -1593,9 +1612,9 @@ expr        : opExpr
           }
         else
           {
-            Expr f = exprWithSpaces();
+            Expr f = expr();
             matchOperator(":", "expr of the form >>a ? b : c<<");
-            Expr g = exprWithSpaces();
+            Expr g = expr();
             result = new Call(pos, result, "ternary ? :", null, new List<Expr>(f, g));
           }
       }
@@ -1611,18 +1630,18 @@ opExpr      : ( op
               opTail
             ;
    */
-  Expr opExpr(boolean endAtSpace)
+  Expr opExpr()
   {
     OpExpr oe = new OpExpr();
-    if (isOpPrefix(false))
+    if (isOpPrefix())
       {
         do
           {
             oe.add(op());
           }
-        while (isOpPrefix(endAtSpace));
+        while (isOpPrefix());
       }
-    oe.add(opTail(endAtSpace));
+    oe.add(opTail());
     return oe.toExpr();
   }
 
@@ -1639,21 +1658,20 @@ opTail      : term
               )
             ;
    */
-  OpExpr opTail(boolean endAtSpace)
+  OpExpr opTail()
   {
     OpExpr oe = new OpExpr();
-    oe.add(term(endAtSpace));
-    if (isOpPrefix(endAtSpace))
+    oe.add(term());
+    if (isOpPrefix())
       {
         do
           {
             oe.add(op());
           }
-        while (isOpPrefix(endAtSpace));
-        if ((!endAtSpace || !ignoredTokenBefore()) // an operator expression like this: '-y', '- y'
-            && isTermPrefix())
+        while (isOpPrefix());
+        if (isTermPrefix())
           {
-            oe.add(opTail(endAtSpace));
+            oe.add(opTail());
           }
       }
     return oe;
@@ -1678,19 +1696,20 @@ tuple       : LPAREN RPAREN
     SourcePosition pos = posObject();
     match(Token.t_lparen, "klammer");
     int oldLine = sameLine(-1);
+    int oldEAS = endAtSpace(Integer.MAX_VALUE);
     if (skip(Token.t_rparen)) // an empty tuple
       {
         result = new Call(pos, null, "tuple");
       }
     else
       {
-        result = exprWithSpaces(); // a klammerexpr
+        result = expr(); // a klammerexpr
         if (skipComma()) // a tuple
           {
             List<Expr> elements = new List<>(result);
             do
               {
-                elements.add(exprWithSpaces());
+                elements.add(expr());
               }
             while (skipComma());
             result = new Call(pos, null, "tuple", elements);
@@ -1698,6 +1717,7 @@ tuple       : LPAREN RPAREN
         match(Token.t_rparen, "term");
       }
     sameLine(oldLine);
+    endAtSpace(oldEAS);
     return result;
   }
 
@@ -1715,17 +1735,18 @@ initArray   : LBRACKET expr (COMMA expr)+ RBRACKET
     SourcePosition pos = posObject();
     match(Token.t_lcrochet, "initArray");
     int oldLine = sameLine(-1);
+    int oldEAS = endAtSpace(Integer.MAX_VALUE);
     List<Expr> elements = new List<>();
     if (!skip(Token.t_rcrochet)) // not empty array
       {
-        elements.add(exprWithSpaces());
+        elements.add(expr());
         var sep = current();
         var s = sep;
         var p1 = pos();
         boolean reportedMixed = false;
         while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
           {
-            elements.add(exprWithSpaces());
+            elements.add(expr());
             s = current();
             if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
               {
@@ -1736,6 +1757,7 @@ initArray   : LBRACKET expr (COMMA expr)+ RBRACKET
         match(Token.t_rcrochet, "initArray");
       }
     sameLine(oldLine);
+    endAtSpace(oldEAS);
     return new InitArray(pos, elements);
   }
 
@@ -1760,7 +1782,7 @@ simpleterm  : bracketTerm
             | callOrFeatOrThis
             ;
    */
-  Expr term(boolean endAtSpace)
+  Expr term()
   {
     Expr result;
     int p1 = pos();
@@ -1771,7 +1793,7 @@ simpleterm  : bracketTerm
       case t_lcrochet:         result = bracketTerm(true);                        break;
       case t_fun     :         result = fun();                                    break;
       case t_integer :         result = new IntConst(posObject(), skipInteger()); break;
-      case t_old     : next(); result = new Old(term(endAtSpace)               ); break;
+      case t_old     : next(); result = new Old(term()                         ); break;
       case t_match   :         result = match();                                  break;
       case t_for     :
       case t_variant :
@@ -1785,7 +1807,7 @@ simpleterm  : bracketTerm
           }
         else
           {
-            result = callOrFeatOrThis(endAtSpace);
+            result = callOrFeatOrThis();
             if (result == null)
               {
                 syntaxError(p1, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
@@ -1817,6 +1839,8 @@ stringTerm  : STRING
   Expr stringTerm(Expr leftString)
   {
     Expr result = leftString;
+    int oldLine = sameLine(-1);
+    int oldEAS = endAtSpace(Integer.MAX_VALUE);
     if (isString(current()))
       {
         var str = new StrConst(posObject(), "\""+string()+"\"" /* NYI: remove "\"" */);
@@ -1825,13 +1849,15 @@ stringTerm  : STRING
         next();
         if (isPartialString(t))
           {
-            result = stringTerm(concatString(posObject(), result, exprWithSpaces()));
+            result = stringTerm(concatString(posObject(), result, expr()));
           }
       }
     else
       {
         Errors.expectedStringContinuation(posObject(), current().toString());
       }
+    sameLine(oldLine);
+    endAtSpace(oldEAS);
     return result;
   }
 
@@ -1888,7 +1914,7 @@ op          : OPERATOR
   Operator op()
   {
     if (PRECONDITIONS) require
-      (isOpPrefix(false));
+      (isOpPrefix());
 
     Operator result = new Operator(posObject(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
     match(Token.t_op, "op");
@@ -1902,12 +1928,11 @@ op          : OPERATOR
    *
    * @return true iff the next token(s) start an op.
    */
-  boolean isOpPrefix(boolean endAtSpace)
+  boolean isOpPrefix()
   {
     var result =
       current() == Token.t_op
-      && !isOperator('?')  // NYI: create a token for '?'.
-      && (!endAtSpace || !ignoredTokenBefore()); // an operator expression like this: 'x-y', 'x-', not 'x -y' nor 'x -'
+      && !isOperator('?');  // NYI: create a token for '?'.
 
     return result;
   }
@@ -2018,6 +2043,7 @@ match       : "match" exprInLine BRACEL cases BRACER
   {
     SourcePosition pos = posObject();
     match(Token.t_match, "match");
+    int oldEAS = endAtSpace(Integer.MAX_VALUE);
     Expr e = exprInLine();
     int oldLine = sameLine(-1);
     boolean gotLBrace = skip(true, Token.t_lbrace);
@@ -2027,6 +2053,7 @@ match       : "match" exprInLine BRACEL cases BRACER
         match(true, Token.t_rbrace, "block");
       }
     sameLine(oldLine);
+    endAtSpace(oldEAS);
     return new Match(pos, e, c);
   }
 
@@ -2240,6 +2267,7 @@ block       : BRACEL stmnts BRACER
     else
       {
         int oldLine = sameLine(-1);
+        int oldEAS = endAtSpace(Integer.MAX_VALUE);
         boolean gotLBrace = skip(mayBeAtMinIndent, Token.t_lbrace);
         var l = stmnts();
         var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
@@ -2249,6 +2277,7 @@ block       : BRACEL stmnts BRACER
             match(mayBeAtMinIndent, Token.t_rbrace, "block");
           }
         sameLine(oldLine);
+        endAtSpace(oldEAS);
         return new Block(pos1, pos2, l);
       }
   }
@@ -2453,6 +2482,7 @@ loopEpilog  : "until" exprAtMinIndent thenPart elseBlockOpt
   {
     SourcePosition pos = posObject();
     int oldLine = sameLine(-1);
+    var oldEAS = endAtSpace(Integer.MAX_VALUE);
     List<Feature> indexVars  = new List<>();
     List<Feature> nextValues = new List<>();
     var hasFor   = skip(      Token.t_for    ); if (hasFor) { indexVars(indexVars, nextValues); }
@@ -2470,6 +2500,7 @@ loopEpilog  : "until" exprAtMinIndent thenPart elseBlockOpt
         syntaxError(pos(), "loopBody or loopEpilog: 'while', 'do', 'until' or 'else'", "loop");
       }
     sameLine(oldLine);
+    endAtSpace(oldEAS);
     return new Loop(pos, indexVars, nextValues, v, i, w, b, u, ub, els, els1).tailRecursiveLoop();
   }
 
@@ -2598,6 +2629,7 @@ ifstmt      : "if" exprInLine thenPart elseBlockOpt
   {
     SourcePosition pos = posObject();
     int oldLine = sameLine(-1);
+    int oldEAS = endAtSpace(Integer.MAX_VALUE);
     match(Token.t_if, "ifstmnt");
     Expr e = exprInLine();
     Block b = thenPart(false);
@@ -2617,6 +2649,7 @@ ifstmt      : "if" exprInLine thenPart elseBlockOpt
           (els == null);
       }
     sameLine(oldLine);
+    endAtSpace(oldEAS);
 
     return result;
   }
@@ -2846,12 +2879,12 @@ callOrFeatOrThis
             | call
             ;
    */
-  Expr callOrFeatOrThis(boolean endAtSpace)
+  Expr callOrFeatOrThis()
   {
     return
       isAnonymousPrefix() ? anonymous() : // starts with value/ref/:/fun/name
       isQualThisPrefix()  ? qualThis()  : // starts with name
-      isNamePrefix()      ? call(null, endAtSpace)    // starts with name
+      isNamePrefix()      ? call(null)    // starts with name
                           : null;
   }
 
