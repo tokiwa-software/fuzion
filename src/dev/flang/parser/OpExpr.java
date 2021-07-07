@@ -380,29 +380,30 @@ public class OpExpr extends ANY
 
 
   /**
-   * Precedence <description>
-   *
-   * @author Fridtjof Siebert (siebert@tokiwa.software)
+   * Precedence represents the precedence of an operator
    */
   class Precedence
   {
 
     /**
-     *
+     * chars the operator starts with
      */
     final String chars;
 
+
     /**
-     *
+     * precedence if used as prefix, infix, or postfix operator
      */
     final int prefix, infix, postfix;
 
+
     /**
-     * Constructor
+     * Constructor for opeartor with given initial chars and equal precedence
+     * for prefix, infix, and postfix operator .
      *
-     * @param c
+     * @param p its precedence.
      *
-     * @param p
+     * @param c the chars the operator starts with
      */
     Precedence(int p, String c)
     {
@@ -410,11 +411,16 @@ public class OpExpr extends ANY
     }
 
     /**
-     * Constructor
+     * Constructor for opeartor with given initial chars and given precedence
+     * for prefix, infix, and postfix operator .
      *
-     * @param c
+     * @param prefix the precedence if used as a prefix operator
      *
-     * @param p
+     * @param infix the precedence if used as a infix operator
+     *
+     * @param postfix the precedence if used as a postfix operator
+     *
+     * @param c the chars the operator starts with
      */
     Precedence(int prefix, int infix, int postfix, String c)
     {
@@ -426,17 +432,26 @@ public class OpExpr extends ANY
 
   }
 
+  /**
+   * Does the given operator bind to the left?
+   */
   boolean isLeftToRight(Operator op)
   {
     return !isRightToLeft(op);
   }
 
+  /**
+   * Does the given operator bind to the rightt?
+   */
   boolean isRightToLeft(Operator op)
   {
     char c = op.text.charAt(0);
     return RIGHT_TO_LEFT_CHARS.indexOf(c) >= 0;
   }
 
+  /**
+   * Initial characters of operators that bind to the right.
+   */
   public final String RIGHT_TO_LEFT_CHARS = "^";
 
 }
