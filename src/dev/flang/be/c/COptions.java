@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class COptions
  *
@@ -34,7 +34,7 @@ import dev.flang.util.FuzionOptions;
 /**
  * COptions specify the configuration of the C back end
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class COptions extends FuzionOptions
 {

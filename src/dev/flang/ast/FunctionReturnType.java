@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class ValueType
  *
@@ -30,7 +30,7 @@ package dev.flang.ast;
 /**
  * FunctionReturnType represents the type of the value returned by a function.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class FunctionReturnType extends ReturnType
 {

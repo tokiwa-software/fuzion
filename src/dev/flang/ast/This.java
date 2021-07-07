@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class Self
  *
@@ -35,7 +35,7 @@ import dev.flang.util.SourcePosition;
 /**
  * This <description>
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class This extends Expr
 {

@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class Feature
  *
@@ -122,7 +122,7 @@ import dev.flang.util.List;
  *     feature call is done, e.g., since they are visible outside of f or they
  *     escape as part of the closure of an inner feature of f.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class Resolution extends ANY
 {

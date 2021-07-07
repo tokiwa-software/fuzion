@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class Fuzion
  *
@@ -50,7 +50,7 @@ import dev.flang.util.Errors;
 /**
  * Fuzion is the main class of the Fuzion interpreter and compiler.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 class Fuzion extends ANY
 {

@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class ParseUnicodeData
  *
@@ -47,7 +47,7 @@ import dev.flang.util.List;
  * information from that file to create Java classes to access unicode
  * properties.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class ParseUnicodeData extends ANY
 {

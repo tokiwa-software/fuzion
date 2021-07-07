@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class MapComparable2Int
  *
@@ -33,7 +33,7 @@ import java.util.HashMap;
 /**
  * Map2Int gives an efficient mapping from a comparable instance to int
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class MapComparable2Int<T extends Comparable> extends Map2Int<T>
 {

@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class Clazz
  *
@@ -60,7 +60,7 @@ import dev.flang.util.SourcePosition;
 /**
  * Clazz represents a runtime type, i.e, a Type with actual generic arguments.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class Clazz extends ANY implements Comparable
 {

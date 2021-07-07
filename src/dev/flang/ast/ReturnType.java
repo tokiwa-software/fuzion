@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class ValueType
  *
@@ -34,7 +34,7 @@ import dev.flang.util.ANY;
  * could be either a normal type if the feature is a function, or
  * RefType/ValueType if the feature is a constructor
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public abstract class ReturnType extends ANY
 {

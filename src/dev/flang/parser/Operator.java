@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class Operator
  *
@@ -34,7 +34,7 @@ import dev.flang.util.SourcePosition;
  * Operator represents an infix, prefix or postfix opeartor encountered while
  * parsing.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class Operator extends ANY
 {

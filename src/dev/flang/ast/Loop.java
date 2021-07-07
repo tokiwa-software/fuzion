@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class Loop
  *
@@ -143,7 +143,7 @@ import dev.flang.util.SourcePosition;
  * In case <success> or <failure> are missing or do (syntactically) not produce
  * a result, an automatic result TRUE or FALSE, resp., will be added.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class Loop extends ANY
 {

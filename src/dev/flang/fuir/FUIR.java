@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class FUIR
  *
@@ -69,7 +69,7 @@ import dev.flang.util.SourcePosition;
 /**
  * The FUIR contains the intermediate representation of fuzion applications.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class FUIR extends ANY
 {

@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class Optimizer
  *
@@ -37,7 +37,7 @@ import dev.flang.util.FuzionOptions;
 /**
  * The Optimizer creates the intermediate code FUIR from the application IR (air)
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class Optimizer extends ANY
 {

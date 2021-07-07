@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class Map2Int
  *
@@ -35,7 +35,7 @@ import java.util.TreeMap;
 /**
  * Map2Int gives an efficient mapping from a comparable instance to int
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class Map2Int<T> extends ANY
 {

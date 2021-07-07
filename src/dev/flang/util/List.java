@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class List
  *
@@ -34,7 +34,7 @@ import java.util.Iterator;
  * List provides a simple generic linked listed used throughout Fuzion, in
  * particular in the AST.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class List<T>
   extends LinkedList<T>

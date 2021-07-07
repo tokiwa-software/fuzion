@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class AdrToValue
  *
@@ -35,7 +35,7 @@ import dev.flang.util.SourcePosition;
  * AdrToValue is an expression that dereferences an address of a value type to
  * the value type.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class AdrToValue extends Expr
 {

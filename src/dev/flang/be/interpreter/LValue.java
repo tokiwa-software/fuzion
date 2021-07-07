@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class LValue
  *
@@ -34,7 +34,7 @@ import dev.flang.ir.Clazzes;
  * LValue represents an address of a modifyable value type, which is the result
  * of reading a value field.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class LValue extends Value
 {

@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class Clazzes
  *
@@ -66,7 +66,7 @@ import dev.flang.util.SourcePosition;
 /**
  * Clazzes manages the actual clazzes used in the system during runtime.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class Clazzes extends ANY
 {

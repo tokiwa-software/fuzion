@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class FList
  *
@@ -47,7 +47,7 @@ import dev.flang.util.SourcePosition;
  * FList is a list of declared features with the same name that exists during
  * parsing only.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class FList extends ANY implements Stmnt
 {

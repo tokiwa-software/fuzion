@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class MiddleEnd
  *
@@ -40,7 +40,7 @@ import dev.flang.util.FuzionOptions;
 /**
  * The MiddleEnd creates application IR (air) from the the module IRs (mir)
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class MiddleEnd extends ANY
 {

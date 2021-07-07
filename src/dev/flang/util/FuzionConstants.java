@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class FuzionConstants
  *
@@ -31,7 +31,7 @@ package dev.flang.util;
  * FuzionConstants specify some global constants required by different modules
  * of the Fuzion language implementation.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class FuzionConstants extends ANY
 {

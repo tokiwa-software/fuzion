@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class FrontEndOptions
  *
@@ -37,7 +37,7 @@ import dev.flang.util.FuzionOptions;
 /**
  * FrontEndOptions specify the configuration of the front end
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class FrontEndOptions extends FuzionOptions
 {

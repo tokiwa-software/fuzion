@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Package info of dev.flang.ast
  *
@@ -28,6 +28,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  * Package containing the classes for the abstract syntax tree (AST) created by
  * the Fuzion parser.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 package dev.flang.ast;

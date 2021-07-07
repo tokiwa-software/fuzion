@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class DynamicBinding
  *
@@ -39,7 +39,7 @@ import dev.flang.util.ANY;
  * DynamicBinding provides a means to lookup a dynamically bound feature in a
  * call or the offset of a field that is accessed.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class DynamicBinding extends ANY
 {

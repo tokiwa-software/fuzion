@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class SourcePosition
  *
@@ -39,7 +39,7 @@ import java.io.InputStreamReader;
  * of an parsed abstract syntax tree.  Instead, we could use an int or long id
  * consisting of a file id an a byte offset in that file.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class SourcePosition extends ANY implements Comparable
 {

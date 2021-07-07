@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class SourceFile
  *
@@ -39,7 +39,7 @@ import java.util.stream.IntStream;
  * SourceFile represents a UTF-8 encoded source code file and provides codepoint
  * encoding and line / position counting.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class SourceFile extends ANY
 {

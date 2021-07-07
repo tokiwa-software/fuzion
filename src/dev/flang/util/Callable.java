@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source code of interface Callable
  *
@@ -31,7 +31,7 @@ package dev.flang.util;
  * Callable is a Runnable with a result, but with exception (as in
  * java.util.concurrent.Callable).
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public interface Callable<V>
 {

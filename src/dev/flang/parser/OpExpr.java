@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class OpExpr
  *
@@ -37,7 +37,7 @@ import dev.flang.util.List;
 /**
  * OpExpr <description>
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class OpExpr extends ANY
 {
@@ -382,7 +382,7 @@ public class OpExpr extends ANY
   /**
    * Precedence <description>
    *
-   * @author Fridtjof Siebert (siebert@tokiwa.eu)
+   * @author Fridtjof Siebert (siebert@tokiwa.software)
    */
   class Precedence
   {

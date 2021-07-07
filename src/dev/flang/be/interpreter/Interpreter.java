@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class Interpreter
  *
@@ -75,7 +75,7 @@ import dev.flang.ast.Universe; // NYI: remove dependency! Use dev.flang.fuir ins
  * Interpreter contains interpreter for Fuzion application that is present as
  * intermediate code.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class Interpreter extends Backend
 {

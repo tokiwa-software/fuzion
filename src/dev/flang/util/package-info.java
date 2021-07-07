@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Package info of dev.flang.ast
  *
@@ -28,6 +28,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  * Package containing general utility classes for different Fuzion modules or
  * classes too small to have their own module.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 package dev.flang.util;

@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class FeatureVisitor
  *
@@ -36,7 +36,7 @@ import dev.flang.util.ANY;
  * This is used to perform some action on a feature and all the statements,
  * expresions, types, etc. within this feature
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public abstract class FeatureVisitor extends ANY
 {

@@ -15,11 +15,11 @@
 
 # -----------------------------------------------------------------------
 #
-#  Tokiwa GmbH, Berlin
+#  Tokiwa Software GmbH, Germany
 #
 #  Source code of fz command, the main Fuzion tools entry point
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.eu)
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 

@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class Nop
  *
@@ -33,7 +33,7 @@ import dev.flang.util.SourcePosition;
 /**
  * Nop performs no operation, it is just a placeholder for doing nothing.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class Nop extends ANY implements Stmnt
 {

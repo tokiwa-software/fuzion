@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class CStmnt
  *
@@ -36,7 +36,7 @@ import dev.flang.util.List;
  * source code into an AST, we create an AST for C and then create source code
  * from this.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 abstract class CStmnt extends ANY
 {

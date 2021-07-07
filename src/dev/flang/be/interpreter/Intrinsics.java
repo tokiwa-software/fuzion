@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class Intrinsics
  *
@@ -43,7 +43,7 @@ import dev.flang.util.List;
 /**
  * Intrinsics provides the implementation of Fuzion's intrinsic features.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class Intrinsics extends ANY
 {

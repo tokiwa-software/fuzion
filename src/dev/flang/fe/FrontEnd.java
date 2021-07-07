@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class FrontEnd
  *
@@ -57,7 +57,7 @@ import dev.flang.util.SourcePosition;
 /**
  * The FrontEnd creates the module IR (mir) from the AST.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class FrontEnd extends ANY
 {

@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class Backend
  *
@@ -32,7 +32,7 @@ import dev.flang.util.ANY;
 /**
  * Backend gives an abstract view of the Backend as seen from the Fuzion IR.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public abstract class Backend extends ANY
 {

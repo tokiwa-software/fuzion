@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class UnicodeData
  *
@@ -34,7 +34,7 @@ import dev.flang.util.ANY;
  * generated from https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
  * using class ParseUnicodeData.java.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class UnicodeData extends ANY
 {

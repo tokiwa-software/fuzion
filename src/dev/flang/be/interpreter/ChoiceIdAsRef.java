@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class ChoiceIdAsRef
  *
@@ -36,7 +36,7 @@ import dev.flang.ir.Clazz;
  * reference.  This can be used to avoid the need for a tag and use the
  * choiceValRef_ field instead.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class ChoiceIdAsRef extends Value
 {

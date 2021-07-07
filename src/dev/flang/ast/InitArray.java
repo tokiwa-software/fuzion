@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class InitArray
  *
@@ -35,7 +35,7 @@ import dev.flang.util.SourcePosition;
  * InitArray represents syntactic sugar for array initialization: '[1, 2, 3]' or
  * '[point x, y; point sin alpha, cos alpha]'.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class InitArray extends Expr
 {

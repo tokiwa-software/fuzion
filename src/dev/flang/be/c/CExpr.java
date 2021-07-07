@@ -18,7 +18,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 /*-----------------------------------------------------------------------
  *
- * Tokiwa GmbH, Berlin
+ * Tokiwa Software GmbH, Germany
  *
  * Source of class CExpr
  *
@@ -42,7 +42,7 @@ import dev.flang.util.List;
  * to put parentheses around every sub-expression. Using an AST, we can instead
  * create the minimum number of parentheses, resulting in cleaner C code.
  *
- * @author Fridtjof Siebert (siebert@tokiwa.eu)
+ * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 abstract class CExpr extends CStmnt
 {
