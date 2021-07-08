@@ -1,0 +1,14 @@
+unboxOuterRef is
+
+  y (i i32) is
+    redef asString => "y $i"
+    g (v y) is
+      vs := v.asString
+      say "in g: $vs $i"
+    f is
+      g y.this  // when in 'ref y', we need to unbox 'y.this' here.
+
+  v := y 42
+  v.f
+  r ref y := v
+  r.f
