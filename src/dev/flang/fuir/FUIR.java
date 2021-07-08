@@ -95,6 +95,7 @@ public class FUIR extends ANY
   {
     Assign,
     Box,
+    Unbox,
     Call,
     Current,
     Const,
@@ -952,7 +953,10 @@ hw25 is
       {
         var a = (AdrToValue) s;
         toStack(l, a.adr_);
-        // l.add(a);  -- NYI: ignored by backend, maybe remove AdrToValue completely
+        if (a._needed)
+          {
+            l.add(a);
+          }
       }
     else if (s instanceof Box)
       {
@@ -1091,6 +1095,10 @@ hw25 is
       {
         result = ExprKind.Box;
       }
+    else if (e instanceof AdrToValue)
+      {
+        result = ExprKind.Unbox;
+      }
     else if (e instanceof Call)
       {
         result = ExprKind.Call;
@@ -1160,7 +1168,7 @@ hw25 is
     var outerClazz = _clazzIds.get(cl);
     var s = _codeIds.get(c).get(ix);
     var fc = (s instanceof Assign a)
-      ? (Clazz) outerClazz.getRuntimeData(a.tid_ + 2)
+      ? (Clazz) outerClazz.getRuntimeData(a.tid_ + 1)
       : (Clazz) s;
     return fc == null ? -1 : _clazzIds.get(fc);
   }
@@ -1181,28 +1189,6 @@ hw25 is
     return _clazzIds.get(ocl);
   }
 
-
-  /**
-   * NYI: Ugly special handling to unbox an outer ref to a value type on an
-   * assignment.  In case the value assigned in the assignment specified by
-   * (cl,c) as the result of reading an outer ref, this returns the type of that
-   * value.
-   */
-  public int assignValueClazzIfOuterRef(int cl, int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Assign);
-
-    var outerClazz = _clazzIds.get(cl);
-    var s = _codeIds.get(c).get(ix);
-    var vcl = (s instanceof Assign a)
-      ? (Clazz) outerClazz.getRuntimeData(a.tid_ + 1)
-      : null;
-
-    return vcl != null ?_clazzIds.get(vcl) : -1;
-  }
 
   public int tagValueClazz(int cl, int c, int ix)
   {
@@ -1254,6 +1240,32 @@ hw25 is
     var b = (Box) _codeIds.get(c).get(ix);
     Clazz rc = (Clazz) outerClazz.getRuntimeData(b._valAndRefClazzId+1);
     return _clazzIds.get(rc);
+  }
+
+  public int unboxOuterRefClazz(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Unbox);
+
+    var outerClazz = _clazzIds.get(cl);
+    var u = (AdrToValue) _codeIds.get(c).get(ix);
+    Clazz orc = (Clazz) outerClazz.getRuntimeData(u._refAndValClazzId);
+    return _clazzIds.get(orc);
+  }
+
+  public int unboxResultClazz(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Unbox);
+
+    var outerClazz = _clazzIds.get(cl);
+    var u = (AdrToValue) _codeIds.get(c).get(ix);
+    Clazz vc = (Clazz) outerClazz.getRuntimeData(u._refAndValClazzId+1);
+    return _clazzIds.get(vc);
   }
 
 

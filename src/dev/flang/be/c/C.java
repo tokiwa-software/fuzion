@@ -330,18 +330,6 @@ public class C extends ANY
                 {
                   value = value.castTo(_types.clazz(fclazz));
                 }
-              else
-                {
-                  /* NYI: ugly special handling for outer ref: if outer is a ref
-                   * clazz, but used as a value, we need to unbox it. Need to
-                   * check if this works if outer ref is a heir feature:
-                   */
-                  var vc = _fuir.assignValueClazzIfOuterRef(cl, c, i);
-                  if (vc != -1 && _fuir.clazzIsRef(vc))
-                    {
-                      value = value.deref().field(_names.FIELDS_IN_REF_CLAZZ);
-                    }
-                }
               o = value == null
                 ? CStmnt.lineComment("valueless assignment to " + outer)
                 : accessField(outercl, outer, field).assign(value);
@@ -368,6 +356,17 @@ public class C extends ANY
                              val == null ? CStmnt.EMPTY
                              : t.deref().field(_names.FIELDS_IN_REF_CLAZZ).assign(val));
               push(stack, rc, t);
+            }
+          break;
+        }
+      case Unbox:
+        {
+          var orc = _fuir.unboxOuterRefClazz(cl, c, i);
+          var vc = _fuir.unboxResultClazz(cl, c, i);
+          if (_fuir.clazzIsRef(orc) && !_fuir.clazzIsRef(vc))
+            {
+              var refval = pop(stack, orc);
+              push(stack, vc, refval.deref().field(_names.FIELDS_IN_REF_CLAZZ));
             }
           break;
         }

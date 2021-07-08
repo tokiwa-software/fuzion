@@ -56,6 +56,20 @@ public class AdrToValue extends Expr
   private Type type_;
 
 
+  /**
+   * This this AdrToValue needed, i.e, not a NOP. This might be a NOP if this is
+   * used as a reference.
+   */
+  public boolean _needed = false;
+
+
+  /**
+   * Clazz index for value clazz that is being unboxed and, at
+   * _refAndValClazzId+1, value clazz that is the result clazz of the unboxing.
+   */
+  public int _refAndValClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -111,7 +125,32 @@ public class AdrToValue extends Expr
   public AdrToValue visit(FeatureVisitor v, Feature outer)
   {
     adr_ = adr_.visit(v, outer);
+    v.action(this, outer);
     return this;
+  }
+
+
+  /**
+   * Check if this value might need boxing, unboxing or tagging and wrap this
+   * into Box()/Tag() if this is the case.
+   *
+   * @param frmlT the formal type this is assigned to.
+   *
+   * @return this or an instance of Box wrapping this.
+   */
+  Expr box(Type frmlT)
+  {
+    var t = type();
+    if (t != Types.resolved.t_void &&
+        ((!frmlT.isRef() ||
+          (frmlT.isChoice() &&
+           !frmlT.isAssignableFrom(t) &&
+           frmlT.isAssignableFrom(t.asValue())))))
+      {
+        this._needed = true;
+        this.type_ = frmlT;
+      }
+    return super.box(frmlT);
   }
 
 

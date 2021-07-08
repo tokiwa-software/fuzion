@@ -57,26 +57,27 @@ public abstract class FeatureVisitor extends ANY
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public void    action      (Assign    a, Feature outer) { }
-  public void    actionBefore(Block     b, Feature outer) { }
-  public void    actionAfter (Block     b, Feature outer) { }
-  public void    action      (Box       b, Feature outer) { }
-  public Expr    action      (Call      c, Feature outer) { return c; }
-  public void    actionBefore(Case      c, Feature outer) { }
-  public void    actionAfter (Case      c, Feature outer) { }
-  public void    action      (Cond      c, Feature outer) { }
-  public Expr    action      (Current   c, Feature outer) { return c; }
-  public Stmnt   action      (Decompose d, Feature outer) { return d; }
-  public Stmnt   action      (Feature   f, Feature outer) { return f; }
-  public Expr    action      (Function  f, Feature outer) { return f; }
-  public void    action      (Generic   g, Feature outer) { }
-  public void    action      (If        i, Feature outer) { }
-  public void    action      (Impl      i, Feature outer) { }
-  public Expr    action      (InitArray i, Feature outer) { return i; }
-  public void    action      (Match     m, Feature outer) { }
-  public void    action      (Tag       b, Feature outer) { }
-  public Expr    action      (This      t, Feature outer) { return t; }
-  public Type    action      (Type      t, Feature outer) { return t; }
+  public void    action      (AdrToValue u, Feature outer) { }
+  public void    action      (Assign     a, Feature outer) { }
+  public void    actionBefore(Block      b, Feature outer) { }
+  public void    actionAfter (Block      b, Feature outer) { }
+  public void    action      (Box        b, Feature outer) { }
+  public Expr    action      (Call       c, Feature outer) { return c; }
+  public void    actionBefore(Case       c, Feature outer) { }
+  public void    actionAfter (Case       c, Feature outer) { }
+  public void    action      (Cond       c, Feature outer) { }
+  public Expr    action      (Current    c, Feature outer) { return c; }
+  public Stmnt   action      (Decompose  d, Feature outer) { return d; }
+  public Stmnt   action      (Feature    f, Feature outer) { return f; }
+  public Expr    action      (Function   f, Feature outer) { return f; }
+  public void    action      (Generic    g, Feature outer) { }
+  public void    action      (If         i, Feature outer) { }
+  public void    action      (Impl       i, Feature outer) { }
+  public Expr    action      (InitArray  i, Feature outer) { return i; }
+  public void    action      (Match      m, Feature outer) { }
+  public void    action      (Tag        b, Feature outer) { }
+  public Expr    action      (This       t, Feature outer) { return t; }
+  public Type    action      (Type       t, Feature outer) { return t; }
 
   /**
    * Visotors that want a different treatment for visiting actual arguments of a

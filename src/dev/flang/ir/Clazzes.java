@@ -596,22 +596,16 @@ public class Clazzes extends ANY
       {
         if (a.tid_ < 0)
           {
-            a.tid_ = outerClazz.feature().getRuntimeClazzIds(3);
+            a.tid_ = outerClazz.feature().getRuntimeClazzIds(2);
           }
 
         Clazz sClazz = clazz(a.getOuter, outerClazz);
         outerClazz.setRuntimeClazz(a.tid_, sClazz);
-        if (outerClazz.actualType(a.assignedField.resultType()).isChoice() || // NYI: Instead of creating vc, add the assignment to the tag explicitly here!
-            a.value.isCallToOuterRef())
-          {
-            Clazz vc = clazz(a.value, outerClazz);
-            outerClazz.setRuntimeClazz(a.tid_ + 1, vc);
-          }
         if (isUsed(a.assignedField, sClazz))
           {
             var vc = sClazz.asValue();
             var fc = vc.lookup(a.assignedField, Call.NO_GENERICS, a.pos());
-            outerClazz.setRuntimeClazz(a.tid_ + 2, fc);
+            outerClazz.setRuntimeClazz(a.tid_ + 1, fc);
           }
       }
   }
@@ -634,6 +628,22 @@ public class Clazzes extends ANY
       {
         rc.instantiated(b.pos());
       }
+  }
+
+
+  /**
+   * Find all static clazzes for this AdrToValue and store them in outerClazz.
+   */
+  public static void findClazzes(AdrToValue u, Clazz outerClazz)
+  {
+    Clazz rc = clazz(u.adr_, outerClazz);
+    Clazz vc = rc.asValue();
+    if (u._refAndValClazzId < 0)
+      {
+        u._refAndValClazzId = outerClazz.feature().getRuntimeClazzIds(2);
+      }
+    outerClazz.setRuntimeClazz(u._refAndValClazzId    , rc);
+    outerClazz.setRuntimeClazz(u._refAndValClazzId + 1, vc);
   }
 
 

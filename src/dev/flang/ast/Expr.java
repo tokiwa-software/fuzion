@@ -291,8 +291,8 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * Check if this value might need boxing and wrap this into Box() if this is
-   * the case.
+   * Check if this value might need boxing, unboxing or tagging and wrap this
+   * into Box()/Tag() if this is the case.
    *
    * @param frmlT the formal type this is assigned to.
    *
