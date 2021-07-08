@@ -127,11 +127,11 @@ numeric<T : numeric<T>> : hasHash<T>, ordered<T>, numerics<T> is
 
   # minimum of numeric.this and other
   #
-  min(other T) T is if (numeric.this <= other) numeric.this else other
+  min(other T) T is if (numeric.this <= other) thiz else other
 
   # maximum of numeric.this and other
   #
-  max(other T) T is if (numeric.this >= other) numeric.this else other
+  max(other T) T is if (numeric.this >= other) thiz else other
 
   # is this part of given set
   #
