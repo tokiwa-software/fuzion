@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class AdrToValue
+ * Source of class Unbox
  *
  *---------------------------------------------------------------------*/
 
@@ -32,12 +32,12 @@ import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
 
 /**
- * AdrToValue is an expression that dereferences an address of a value type to
+ * Unbox is an expression that dereferences an address of a value type to
  * the value type.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class AdrToValue extends Expr
+public class Unbox extends Expr
 {
 
 
@@ -57,7 +57,7 @@ public class AdrToValue extends Expr
 
 
   /**
-   * This this AdrToValue needed, i.e, not a NOP. This might be a NOP if this is
+   * This this Unbox needed, i.e, not a NOP. This might be a NOP if this is
    * used as a reference.
    */
   public boolean _needed = false;
@@ -80,7 +80,7 @@ public class AdrToValue extends Expr
    *
    * @param t the result type
    */
-  public AdrToValue(SourcePosition pos, Expr adr, Type type, Feature outer)
+  public Unbox(SourcePosition pos, Expr adr, Type type, Feature outer)
   {
     super(pos);
 
@@ -122,7 +122,7 @@ public class AdrToValue extends Expr
    *
    * @return this.
    */
-  public AdrToValue visit(FeatureVisitor v, Feature outer)
+  public Unbox visit(FeatureVisitor v, Feature outer)
   {
     adr_ = adr_.visit(v, outer);
     v.action(this, outer);

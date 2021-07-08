@@ -45,7 +45,6 @@ import dev.flang.ir.Backend;
 import dev.flang.ir.Clazz;
 import dev.flang.ir.Clazzes;
 
-import dev.flang.ast.AdrToValue; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Assign; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Block; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.BoolConst; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -68,6 +67,7 @@ import dev.flang.ast.StrConst; // NYI: remove dependency! Use dev.flang.fuir ins
 import dev.flang.ast.Tag; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Type; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.Unbox; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Universe; // NYI: remove dependency! Use dev.flang.fuir instead.
 
 
@@ -374,13 +374,11 @@ public class Interpreter extends Backend
 
       }
 
-    else if (s instanceof AdrToValue)
+    else if (s instanceof Unbox u)
       {
-        var a = (AdrToValue) s;
-
         // This is a NOP here since values of reference type and value type are
         // treated the same way by the interpreter.
-        result = execute(a.adr_, staticClazz, cur);
+        result = execute(u.adr_, staticClazz, cur);
       }
 
     else if (s instanceof Universe)

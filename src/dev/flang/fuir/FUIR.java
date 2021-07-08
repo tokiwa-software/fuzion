@@ -32,7 +32,6 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.TreeSet;
 
-import dev.flang.ast.AdrToValue; // NYI: remove dependency
 import dev.flang.ast.Assign; // NYI: remove dependency
 import dev.flang.ast.Block; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
@@ -51,6 +50,7 @@ import dev.flang.ast.Stmnt; // NYI: remove dependency
 import dev.flang.ast.StrConst; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Types; // NYI: remove dependency
+import dev.flang.ast.Unbox; // NYI: remove dependency
 import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.ir.Backend;
@@ -949,9 +949,9 @@ hw25 is
         toStack(l, a.getOuter);
         l.add(a);
       }
-    else if (s instanceof AdrToValue)
+    else if (s instanceof Unbox)
       {
-        var a = (AdrToValue) s;
+        var a = (Unbox) s;
         toStack(l, a.adr_);
         if (a._needed)
           {
@@ -1095,7 +1095,7 @@ hw25 is
       {
         result = ExprKind.Box;
       }
-    else if (e instanceof AdrToValue)
+    else if (e instanceof Unbox)
       {
         result = ExprKind.Unbox;
       }
@@ -1250,7 +1250,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Unbox);
 
     var outerClazz = _clazzIds.get(cl);
-    var u = (AdrToValue) _codeIds.get(c).get(ix);
+    var u = (Unbox) _codeIds.get(c).get(ix);
     Clazz orc = (Clazz) outerClazz.getRuntimeData(u._refAndValClazzId);
     return _clazzIds.get(orc);
   }
@@ -1263,7 +1263,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Unbox);
 
     var outerClazz = _clazzIds.get(cl);
-    var u = (AdrToValue) _codeIds.get(c).get(ix);
+    var u = (Unbox) _codeIds.get(c).get(ix);
     Clazz vc = (Clazz) outerClazz.getRuntimeData(u._refAndValClazzId+1);
     return _clazzIds.get(vc);
   }

@@ -34,7 +34,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import dev.flang.ast.AdrToValue; // NYI: remove dependency!
 import dev.flang.ast.Assign; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Call; // NYI: remove dependency!
@@ -51,6 +50,7 @@ import dev.flang.ast.Match; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
+import dev.flang.ast.Unbox; // NYI: remove dependency!
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -980,7 +980,7 @@ public class Clazz extends ANY implements Comparable
    */
   private class FindClassesVisitor extends FeatureVisitor
   {
-    public void      action     (AdrToValue u, Feature outer) { Clazzes.findClazzes(u, Clazz.this); }
+    public void      action     (Unbox      u, Feature outer) { Clazzes.findClazzes(u, Clazz.this); }
     public void      action     (Assign     a, Feature outer) { Clazzes.findClazzes(a, Clazz.this); }
     public void      action     (Box        b, Feature outer) { Clazzes.findClazzes(b, Clazz.this); }
     public void      actionAfter(Case       c, Feature outer) { Clazzes.findClazzes(c, Clazz.this); }

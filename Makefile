@@ -51,7 +51,6 @@ JAVA_FILES_UTIL_UNICODE = \
           $(SRC)/dev/flang/util/unicode/ParseUnicodeData.java \
 
 JAVA_FILES_AST = \
-          $(SRC)/dev/flang/ast/AdrToValue.java \
           $(SRC)/dev/flang/ast/Assign.java \
           $(SRC)/dev/flang/ast/Block.java \
           $(SRC)/dev/flang/ast/BoolConst.java \
@@ -92,6 +91,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/This.java \
           $(SRC)/dev/flang/ast/Type.java \
           $(SRC)/dev/flang/ast/Types.java \
+          $(SRC)/dev/flang/ast/Unbox.java \
           $(SRC)/dev/flang/ast/Universe.java \
           $(SRC)/dev/flang/ast/ValueType.java \
           $(SRC)/dev/flang/ast/Visi.java \

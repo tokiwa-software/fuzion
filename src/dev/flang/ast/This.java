@@ -250,7 +250,7 @@ public class This extends Expr
               .resolveTypes(res, outer);
             if (cur.isOuterRefAdrOfValue())
               {
-                c = new AdrToValue(pos, c, cur.outer().thisType(), cur.outer());
+                c = new Unbox(pos, c, cur.outer().thisType(), cur.outer());
               }
             getOuter = c;
             cur = cur.outer();

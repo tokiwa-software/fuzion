@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import dev.flang.ast.AdrToValue; // NYI: remove dependency!
 import dev.flang.ast.Assign; // NYI: remove dependency!
 import dev.flang.ast.Block; // NYI: remove dependency!
 import dev.flang.ast.BoolConst; // NYI: remove dependency!
@@ -54,6 +53,7 @@ import dev.flang.ast.StrConst; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
+import dev.flang.ast.Unbox; // NYI: remove dependency!
 import dev.flang.ast.Universe; // NYI: remove dependency!
 
 import dev.flang.util.ANY;
@@ -632,9 +632,9 @@ public class Clazzes extends ANY
 
 
   /**
-   * Find all static clazzes for this AdrToValue and store them in outerClazz.
+   * Find all static clazzes for this Unbox and store them in outerClazz.
    */
-  public static void findClazzes(AdrToValue u, Clazz outerClazz)
+  public static void findClazzes(Unbox u, Clazz outerClazz)
   {
     Clazz rc = clazz(u.adr_, outerClazz);
     Clazz vc = rc.asValue();
@@ -826,10 +826,9 @@ public class Clazzes extends ANY
   public static Clazz clazz(Expr e, Clazz outerClazz)
   {
     Clazz result;
-    if (e instanceof AdrToValue)
+    if (e instanceof Unbox u)
       {
-        var a = (AdrToValue) e;
-        result = clazz(a.adr_, outerClazz);
+        result = clazz(u.adr_, outerClazz);
       }
     else if (e instanceof Block)
       {
