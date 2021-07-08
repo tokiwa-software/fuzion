@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
+import java.util.Set;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -1417,9 +1418,9 @@ public class Type extends ANY implements Comparable
    * @param actual the actual type.
    *
    * @param assignableTo in case we want to show all types actual is assignable
-   * to in an error message, this collects the types.
+   * to in an error message, this collects the types converted to strings.
    */
-  boolean isAssignableFrom(Type actual, List<Type> assignableTo)
+  boolean isAssignableFrom(Type actual, Set<String> assignableTo)
   {
     if (PRECONDITIONS) require
       (Types.intern(this  ) == this,
@@ -1430,7 +1431,7 @@ public class Type extends ANY implements Comparable
 
     if (assignableTo != null)
       {
-        assignableTo.add(actual);
+        assignableTo.add(actual.toString());
       }
     var result =
       this   == actual                ||

@@ -87,16 +87,16 @@ public class FeErrors extends ANY
                                Type actlT,
                                Expr value)
   {
-    var assignableTo = new List<Type>();
+    var assignableTo = new TreeSet<String>();
     frmlT.isAssignableFrom(actlT, assignableTo);
     var assignableToSB = new StringBuilder();
-    for (Type t : assignableTo)
+    for (var ts : assignableTo)
       {
         assignableToSB
           .append(assignableToSB.length() == 0
                   ?    "assignable to       : "
                   : ",\n                      ")
-          .append(t.toString());
+          .append(ts);
       }
     error(pos,
           "Incompatible types " + where,
