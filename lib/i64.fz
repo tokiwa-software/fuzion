@@ -28,6 +28,7 @@
 i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
 
   redef thiz => i64.this.val
+  redef orderedThis => i64.this.val
 
   # overflow checking
 

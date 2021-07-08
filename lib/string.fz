@@ -27,6 +27,8 @@
 #
 string ref : hasHash<string>, ordered<string>, strings is
 
+  redef orderedThis => string.this
+
   # converting a string to a string is just returning string.this
   redef asString => string.this
 

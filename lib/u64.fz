@@ -28,6 +28,7 @@
 u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
 
   redef thiz => u64.this.val
+  redef orderedThis => u64.this.val
 
   # overflow checking
 

@@ -28,6 +28,7 @@
 i32(val i32) : wrappingInteger<i32>, hasInterval<i32>, i32s is
 
   redef thiz => i32.this.val
+  redef orderedThis => i32.this.val
 
   # overflow checking
 

@@ -44,10 +44,17 @@ partiallyOrdered<T: partiallyOrdered<T>> : hasEquals<T>
 
 is
 
+  # get value of type T.
+  #
+  # NYI: Once Eiffel-style 'like this' works, we can use 'like this' instead of
+  # T and no longer need this feature.
+  #
+  orderedThis T is abstract
+
   # does this come before other?
   #
   infix <= (other T) bool is abstract
 
   # equality check for immutable values
   #
-  infix = (o T) => partiallyOrdered.this <= o && o <= partiallyOrdered.this
+  infix = (o T) => orderedThis <= o && o <= orderedThis
