@@ -1428,35 +1428,22 @@ public class Type extends ANY implements Comparable
        actual.feature != null || actual.isGenericArgument() || Errors.count() > 0,
        Errors.count() > 0 || this != Types.t_ERROR && actual != Types.t_ERROR);
 
-    boolean result;
     if (assignableTo != null)
       {
         assignableTo.add(actual);
       }
-    if (this   == actual                ||
-        actual == Types.resolved.t_void ||
-        this   == Types.t_ERROR         ||
-        actual == Types.t_ERROR           )
+    var result =
+      this   == actual                ||
+      actual == Types.resolved.t_void ||
+      this   == Types.t_ERROR         ||
+      actual == Types.t_ERROR;
+    if (!result && !isGenericArgument() && isRef() && actual.isRef())
       {
-        result = true;
-      }
-    else if (actual.isGenericArgument())
-      {
-        Type constraint = actual.generic.constraint();
-        if (actual.isRef())
+        if (actual.isGenericArgument())
           {
-            constraint = constraint.asRef();
+            result = isAssignableFrom(actual.generic.constraint().asRef());
           }
-        result = isAssignableFrom(constraint, assignableTo);
-      }
-    else if (isGenericArgument())
-      {
-        result = generic.constraint().isAssignableFrom(actual, assignableTo);
-      }
-    else
-      {
-        result = false;
-        if (isRef() && actual.isRef())
+        else
           {
             check
               (actual.feature != null || Errors.count() > 0);
@@ -1476,10 +1463,10 @@ public class Type extends ANY implements Comparable
                   }
               }
           }
-        if (!result)
-          {
-            result = isChoiceMatch(actual);
-          }
+      }
+    if (!result && isChoice())
+      {
+        result = isChoiceMatch(actual);
       }
     return result;
   }
