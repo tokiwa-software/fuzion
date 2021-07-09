@@ -1,0 +1,56 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test redefineAsVoid
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Regression test for #27: https://github.com/fridis/fuzion/issues/27
+#
+# A simple test that creates a call to a target that is never instantiated
+#
+# The test should be run and its output should be compared to the expected
+# output.
+#
+callWithUninstantiatedTarget is
+
+  # x is declared to return y, but never returns
+  #
+  x y is
+    say "x takes the back door out"
+    fuzion.std.exit 0
+
+  # y is only used as a type, never instantiated
+  #
+  y is
+
+    # y.z is never called and not compiled!
+    #
+    z is say "z!"
+
+  # y0 will never be set since x will not return
+  y0 := x;
+
+  # so this call is dead code
+  say "this is dead code"
+
+  # and y.z does not even need to exist
+  y0.z
