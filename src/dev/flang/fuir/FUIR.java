@@ -37,6 +37,7 @@ import dev.flang.ast.Block; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Call; // NYI: remove dependency
+import dev.flang.ast.Check; // NYI: remove dependency
 import dev.flang.ast.Current; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.Feature; // NYI: remove dependency
@@ -1055,6 +1056,12 @@ hw25 is
     else if (s instanceof InitArray)
       {
         l.add(s);
+      }
+    else if (s instanceof Check c)
+      {
+        // NYI: Check not supported yet
+        //
+        // l.add(s);
       }
     else
       {
