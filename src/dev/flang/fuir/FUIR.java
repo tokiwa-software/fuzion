@@ -943,31 +943,27 @@ hw25 is
       (l != null,
        s != null);
 
-    if (s instanceof Assign)
+    if (s instanceof Assign a)
       {
-        var a = (Assign) s;
         toStack(l, a.value);
         toStack(l, a.getOuter);
         l.add(a);
       }
-    else if (s instanceof Unbox)
+    else if (s instanceof Unbox u)
       {
-        var a = (Unbox) s;
-        toStack(l, a.adr_);
-        if (a._needed)
+        toStack(l, u.adr_);
+        if (u._needed)
           {
-            l.add(a);
+            l.add(u);
           }
       }
-    else if (s instanceof Box)
+    else if (s instanceof Box b)
       {
-        Box b = (Box) s;
         toStack(l, b._value);
         l.add(b);
       }
-    else if (s instanceof Block)
+    else if (s instanceof Block b)
       {
-        Block b = (Block) s;
         // for (var st : b.statements_)
         for (int i=0; i<b.statements_.size(); i++)
           {
@@ -983,10 +979,9 @@ hw25 is
       {
         l.add(s);
       }
-    else if (s instanceof If)
+    else if (s instanceof If i)
       {
         // if is converted to If, blockId, elseBlockId
-        var i = (If) s;
         toStack(l, i.cond);
         l.add(i);
         List<Object> block = toStack(i.block);
@@ -1011,9 +1006,8 @@ hw25 is
       {
         l.add(s);
       }
-    else if (s instanceof Call)
+    else if (s instanceof Call c)
       {
-        var c = (Call) s;
         toStack(l, c.target);
         for (var a : c._actuals)
           {
@@ -1025,9 +1019,8 @@ hw25 is
             l.add(WIPE_STACK);
           }
       }
-    else if (s instanceof Match)
+    else if (s instanceof Match m)
       {
-        var m = (Match) s;
         toStack(l, m.subject);
         l.add(m);
         for (var c : m.cases)
@@ -1036,9 +1029,8 @@ hw25 is
             l.add(new IntConst(_codeIds.add(caseCode)));
           }
       }
-    else if (s instanceof Tag)
+    else if (s instanceof Tag t)
       {
-        Tag t = (Tag) s;
         toStack(l, t._value);
         l.add(t);
       }
@@ -1566,10 +1558,9 @@ hw25 is
 
     var s = _codeIds.get(c).get(ix);
     int result = 2; // two cases for If
-    if (s instanceof Match)
+    if (s instanceof Match m)
       {
-        var match = (Match) s;
-        result = match.cases.size();
+        result = m.cases.size();
       }
     return result;
   }
@@ -1600,10 +1591,9 @@ hw25 is
     var cc = _clazzIds.get(cl);
     var s = _codeIds.get(c).get(ix);
     int result = -1; // no field for If
-    if (s instanceof Match)
+    if (s instanceof Match m)
       {
-        var match = (Match) s;
-        var mc = match.cases.get(cix);
+        var mc = m.cases.get(cix);
         var f = mc.field;
         var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc.runtimeClazzId_) : null;
         result = fc != null ? _clazzIds.get(fc) : -1;
