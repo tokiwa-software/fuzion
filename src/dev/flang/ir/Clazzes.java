@@ -831,61 +831,52 @@ public class Clazzes extends ANY
       {
         result = clazz(u.adr_, outerClazz);
       }
-    else if (e instanceof Block)
+    else if (e instanceof Block b)
       {
-        var b = (Block) e;
         Expr resExpr = b.resultExpression();
         result = resExpr != null ? clazz(resExpr, outerClazz)
                                  : c_unit.get();
       }
-    else if (e instanceof Box)
+    else if (e instanceof Box b)
       {
-        var b = (Box) e;
         result = outerClazz.actualClazz(b._type);
       }
 
-    else if (e instanceof Call)
+    else if (e instanceof Call c)
       {
-        var c = (Call) e;
         var tclazz = clazz(c.target, outerClazz);
         var inner = tclazz.lookup(c.calledFeature(),
                                   outerClazz.actualGenerics(c.generics),
                                   c.pos());
         result = inner.resultClazz();
       }
-    else if (e instanceof Current)
+    else if (e instanceof Current c)
       {
-        var c = (Current) e;
         result = outerClazz;
       }
 
-    else if (e instanceof If)
+    else if (e instanceof If i)
       {
-        var i = (If) e;
         result = outerClazz.actualClazz(i.typeOrNull());
       }
 
-    else if (e instanceof BoolConst)
+    else if (e instanceof BoolConst b)
       {
-        var b = (BoolConst) e;
         result = bool.get();
       }
 
-    else if (e instanceof IntConst)
+    else if (e instanceof IntConst i)
       {
-        var i = (IntConst) e;
         result = outerClazz.actualClazz(i.typeOrNull());
       }
 
-    else if (e instanceof Match)
+    else if (e instanceof Match m)
       {
-        var m = (Match) e;
         result = outerClazz.actualClazz(m.type_);
       }
 
-    else if (e instanceof Old)
+    else if (e instanceof Old o)
       {
-        var o = (Old) e;
         result = clazz(o.e, outerClazz);
       }
 
@@ -894,23 +885,20 @@ public class Clazzes extends ANY
         result = universe.get();
       }
 
-    else if (e instanceof StrConst)
+    else if (e instanceof StrConst s)
       {
-        var s = (StrConst) e;
         i32.get();
         object.get();
         result = conststring.get();
       }
 
-    else if (e instanceof Tag)
+    else if (e instanceof Tag t)
       {
-        var t = (Tag) e;
         result = outerClazz.actualClazz(t._taggedType);
       }
 
-    else if (e instanceof InitArray)
+    else if (e instanceof InitArray ia)
       {
-        var ia = (InitArray) e;
         result = outerClazz.actualClazz(ia.type());
       }
 
