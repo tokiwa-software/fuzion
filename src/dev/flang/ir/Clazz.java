@@ -679,7 +679,7 @@ public class Clazz extends ANY implements Comparable
   {
     var fn = f.featureName();
     var tf = feature();
-    if (tf != Types.f_ERROR && f != Types.f_ERROR)
+    if (tf != Types.f_ERROR && f != Types.f_ERROR && tf != Types.resolved.f_void)
       {
         var chain = tf.findInheritanceChain(f.outer());
         check
@@ -755,7 +755,8 @@ public class Clazz extends ANY implements Comparable
                boolean isInheritanceCall)
   {
     if (PRECONDITIONS) require
-      (f != null);
+      (f != null,
+       this != Clazzes.c_void.get());
 
     Feature af = findRedefinition(f);
     check

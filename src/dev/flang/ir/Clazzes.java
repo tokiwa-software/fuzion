@@ -152,6 +152,7 @@ public class Clazzes extends ANY
    * Handy preallocated classes to be used during execution:
    */
   public static final OnDemandClazz universe    = new OnDemandClazz(null, true);
+  public static final OnDemandClazz c_void      = new OnDemandClazz(() -> Types.resolved.t_void             );
   public static final OnDemandClazz bool        = new OnDemandClazz(() -> Types.resolved.t_bool             );
   public static final OnDemandClazz c_TRUE      = new OnDemandClazz(() -> Types.resolved.f_TRUE .thisType() );
   public static final OnDemandClazz c_FALSE     = new OnDemandClazz(() -> Types.resolved.f_FALSE.thisType() );
@@ -684,7 +685,7 @@ public class Clazzes extends ANY
       {
         calledDynamically(cf);
       }
-    if (!cf.isChoice())
+    if (!cf.isChoice() && tclazz != c_void.get())
       {
         var innerClazz = tclazz.lookup(cf, outerClazz.actualGenerics(c.generics), c.pos, c.isInheritanceCall_);
         if (c.sid_ < 0)

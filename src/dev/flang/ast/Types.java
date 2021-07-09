@@ -132,6 +132,7 @@ public class Types extends ANY
      * since the union of void  with any other type is the other type.
      */
     public final Type t_void;
+    public final Feature f_void;
     public final Feature f_choice;
     public final Feature f_TRUE;
     public final Feature f_FALSE;
@@ -169,6 +170,7 @@ public class Types extends ANY
       t_object        = Type.type(      "Object"      , universe);
       t_unit          = Type.type(      "unit"        , universe);
       t_void          = Type.type(      "void"        , universe);
+      f_void          = universe.get("void");
       f_choice        = universe.get("choice");
       f_TRUE          = universe.get("TRUE");
       f_FALSE         = universe.get("FALSE");
