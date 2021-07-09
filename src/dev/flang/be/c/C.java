@@ -420,14 +420,16 @@ public class C extends ANY
                       var cc = ccs[cci+1];
                       var stk = (Stack<CExpr>) stackWithArgs.clone();
                       var co = call(tc, cc, stk, false);
-                      var rv = pop(stk, rt);
-                      if (rt != _fuir.clazzResultClazz(cc) && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
+                      var rti = _fuir.clazzResultClazz(cc);
+                      var rv = pop(stk, rti);
+                      if (rv != null && rt != rti && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
                         {
                           rv = rv.castTo(_types.clazz(rt));
                         }
+                      var as = rv != null && res != null ? res.assign(rv) : CStmnt.EMPTY;
                       cll = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
                                        co,
-                                       res != null ? res.assign(rv) : CStmnt.EMPTY);
+                                       as);
                       cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
                                             CStmnt.seq(cll, CStmnt.BREAK)));
                     }
