@@ -203,10 +203,8 @@ public class Interpreter extends Backend
   public static Value execute(Stmnt s, Clazz staticClazz, Value cur)
   {
     Value result;
-    if (s instanceof Call)
+    if (s instanceof Call c)
       {
-        var c = (Call) s;
-
         if (PRECONDITIONS) require
           (!c.isInheritanceCall_,  // inheritance calls are handled in Fature.callOnInstance
            c.sid_ >= 0);
@@ -232,9 +230,8 @@ public class Interpreter extends Backend
         result = cur;
       }
 
-    else if (s instanceof Assign)
+    else if (s instanceof Assign a)
       {
-        var a = (Assign) s;
         Value v    = execute(a.value   , staticClazz, cur);
         Value thiz = execute(a.getOuter, staticClazz, cur);
         Clazz sClazz = staticClazz.getRuntimeClazz(a.tid_ + 0);
@@ -242,15 +239,13 @@ public class Interpreter extends Backend
         result = Value.NO_VALUE;
       }
 
-    else if (s instanceof BoolConst)
+    else if (s instanceof BoolConst b)
       {
-        var b = (BoolConst) s;
         result = new boolValue(b.b);
       }
 
-    else if (s instanceof IntConst)
+    else if (s instanceof IntConst i)
       {
-        var i = (IntConst) s;
         var t = i.type();
         if      (t == Types.resolved.t_i32) { result = new i32Value((int ) i.l); }
         else if (t == Types.resolved.t_u32) { result = new u32Value((int ) i.l); }
@@ -259,9 +254,8 @@ public class Interpreter extends Backend
         else                                { result = Value.NO_VALUE; check(false); }
       }
 
-    else if (s instanceof Block)
+    else if (s instanceof Block b)
       {
-        var b = (Block) s;
         result = Value.NO_VALUE;
         for (Stmnt stmnt : b.statements_)
           {
@@ -269,10 +263,8 @@ public class Interpreter extends Backend
           }
       }
 
-    else if (s instanceof If)
+    else if (s instanceof If i)
       {
-        var i = (If) s;
-
         Value c = execute(i.cond, staticClazz, cur);
         if (c.boolValue())
           {
@@ -292,9 +284,8 @@ public class Interpreter extends Backend
           }
       }
 
-    else if (s instanceof Match)
+    else if (s instanceof Match m)
       {
-        var m = (Match) s;
         result = null;
         Clazz staticSubjectClazz = staticClazz.getRuntimeClazz(m.runtimeClazzId_);
         Value sub = execute(m.subject, staticClazz, cur);
@@ -386,9 +377,8 @@ public class Interpreter extends Backend
        result = Instance.universe;
      }
 
-    else if (s instanceof Box)
+    else if (s instanceof Box b)
       {
-        var b = (Box) s;
         Value val = execute(b._value, staticClazz, cur);
         Clazz vc = (Clazz) staticClazz.getRuntimeData(b._valAndRefClazzId);
         Clazz rc = (Clazz) staticClazz.getRuntimeData(b._valAndRefClazzId + 1);
@@ -432,10 +422,10 @@ public class Interpreter extends Backend
                 var vsz  = vl.size();
                 check
                   (rl.size() == vsz);
-                if (val instanceof LValue)
+                if (val instanceof LValue lv)
                   {
-                    voff += ((LValue) val).offset;
-                    val   = ((LValue) val).container;
+                    voff += lv.offset;
+                    val   = lv.container;
                   }
                 if (val instanceof boolValue)
                   {
@@ -456,9 +446,8 @@ public class Interpreter extends Backend
           }
       }
 
-    else if (s instanceof StrConst)
+    else if (s instanceof StrConst t)
       {
-        var t = (StrConst) s;
         var str = t.str;
         result = _cachedStrings_.get(str);
         if (result == null)
@@ -468,9 +457,8 @@ public class Interpreter extends Backend
           }
       }
 
-    else if (s instanceof Tag)
+    else if (s instanceof Tag t)
       {
-        var t = (Tag) s;
         Value v       = execute(t._value, staticClazz, cur);
         Clazz vClazz  = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 0);
         Clazz tClazz  = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 1);
@@ -483,10 +471,8 @@ public class Interpreter extends Backend
                        v);
       }
 
-    else if (s instanceof Check)
+    else if (s instanceof Check c)
       {
-        var c = (Check) s;
-
         // NYI: check not supported yet
         // System.err.println("NYI: "+c);
 
@@ -503,9 +489,8 @@ public class Interpreter extends Backend
         throw new Error("NYI: Expr.execute() for " + s.getClass() + " " +s);
       }
 
-    else if (s instanceof InitArray)
+    else if (s instanceof InitArray i)
       {
-        var i = (InitArray) s;
         Clazz ac  = staticClazz.getRuntimeClazz(i._arrayClazzId + 0);
         Clazz sac = staticClazz.getRuntimeClazz(i._arrayClazzId + 1);
         var sa = new Instance(sac);
@@ -1014,8 +999,8 @@ public class Interpreter extends Backend
     var clazz = staticClazz;
     if (staticClazz.isRef())
       {
-        curValue = (curValue instanceof LValue) ? loadRefField(thiz, (LValue) curValue)
-                                                : curValue;
+        curValue = (curValue instanceof LValue lv) ? loadRefField(thiz, lv)
+                                                   : curValue;
         clazz = ((Instance) curValue).clazz();
       }
     off = Layout.get(clazz).offset(thiz);
