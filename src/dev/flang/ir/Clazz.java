@@ -605,6 +605,7 @@ public class Clazz extends ANY implements Comparable
                   if (result == null &&
                       f.isField() &&
                       Clazzes.isUsed(f, this) &&
+                      this != Clazzes.c_void.get() &&
                       !f.resultType().isOpenGeneric() &&
                       f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
                       )
@@ -720,7 +721,8 @@ public class Clazz extends ANY implements Comparable
                       SourcePosition p)
   {
     if (PRECONDITIONS) require
-      (f != null);
+      (f != null,
+       this != Clazzes.c_void.get());
 
     return lookup(f, actualGenerics, p, false);
   }
@@ -1634,7 +1636,7 @@ public class Clazz extends ANY implements Comparable
                             }
                         }
                     }
-                  else
+                  else if (this != Clazzes.c_void.get())
                     {
                       args.add(lookup(a, Call.NO_GENERICS, a.isUsedAt()));
                     }
