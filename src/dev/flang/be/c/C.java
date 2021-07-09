@@ -449,7 +449,14 @@ public class C extends ANY
               else
                 {
                   ol.add(call(tc, cc0, stack, false));
-                  res = pop(stack, rt);
+                  if (_fuir.clazzNeedsCode(cc0))
+                    {
+                      res = pop(stack, rt);
+                    }
+                  else
+                    {
+                      ignoreResult = true;
+                    }
                 }
               if (!ignoreResult || _fuir.clazzIsVoidType(rt))
                 {
@@ -640,9 +647,6 @@ public class C extends ANY
    */
   CStmnt call(int tc, int cc, Stack<CExpr> stack, boolean pre)
   {
-    if (PRECONDITIONS) require
-      (_fuir.clazzNeedsCode(cc));
-
     CStmnt result = CStmnt.EMPTY;
     var ac = _fuir.clazzArgCount(cc);
     var rt = _fuir.clazzResultClazz(cc);
@@ -656,18 +660,19 @@ public class C extends ANY
         {
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = null;
-          var call = CExpr.call(_names.function(cc, pre), args(tc, cc, stack, ac));
+          var a = args(tc, cc, stack, ac);
+          var call = _fuir.clazzNeedsCode(cc) ? CExpr.call(_names.function(cc, pre), a) : null;
           if (!pre && _types.hasData(rt))
             {
               var tmp = _names.newTemp();
               res = tmp;
               result = CStmnt.seq(CStmnt.decl(_types.clazz(rt), tmp),
-                                  res.assign(call));
+                                  call != null ? res.assign(call) : CStmnt.EMPTY);
               push(stack, rt, res);
             }
           else
             {
-              result = call;
+              result = call != null ? call : CStmnt.EMPTY;
             }
           if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
           break;
