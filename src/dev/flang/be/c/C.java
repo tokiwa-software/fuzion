@@ -386,7 +386,6 @@ public class C extends ANY
             }
           if (!_fuir.callPreconditionOnly(cl, c, i))
             {
-              var ignoreResult = !_types.hasData(rt) || _fuir.withinCode(c, i+1) && _fuir.codeAt(c, i+1) == FUIR.ExprKind.Pop;
               CExpr res = null;
               if (_fuir.callIsDynamic(cl, c, i))
                 {
@@ -401,7 +400,7 @@ public class C extends ANY
                   var tt0 = _types.clazz(tc);
                   ol.add(CStmnt.decl(tt0, tvar, target.castTo(tt0)));
                   stackWithArgs.set(stack.size(), tvar);
-                  if (!ignoreResult)
+                  if (_types.hasData(rt) && (_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.Pop))
                     {
                       var resvar = _names.newTemp();
                       res = resvar;
@@ -423,17 +422,20 @@ public class C extends ANY
                       var tt = ccs[cci  ];
                       var cc = ccs[cci+1];
                       var stk = (Stack<CExpr>) stackWithArgs.clone();
-                      var co = call(tc, cc, stk, false);
+                      cll = call(tc, cc, stk, false);
                       var rti = _fuir.clazzResultClazz(cc);
-                      var rv = pop(stk, rti);
-                      if (rv != null && rt != rti && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
+                      if (!containsVoid(stk))
                         {
-                          rv = rv.castTo(_types.clazz(rt));
+                          var rv = pop(stk, rti);
+                          if (rv != null && rt != rti && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
+                            {
+                              rv = rv.castTo(_types.clazz(rt));
+                            }
+                          var as = rv != null && res != null ? res.assign(rv) : CStmnt.EMPTY;
+                          cll = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
+                                           cll,
+                                           as);
                         }
-                      var as = rv != null && res != null ? res.assign(rv) : CStmnt.EMPTY;
-                      cll = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
-                                       co,
-                                       as);
                       cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
                                             CStmnt.seq(cll, CStmnt.BREAK)));
                     }
@@ -458,11 +460,7 @@ public class C extends ANY
                       res = pop(stack, rt);
                     }
                 }
-              else
-                {
-                  ignoreResult = true;
-                }
-              if (!containsVoid(stack) && (!ignoreResult || _fuir.clazzIsVoidType(rt)))
+              if (res != null || _fuir.clazzIsVoidType(rt) && !containsVoid(stack))
                 {
                   var rres = _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
                   push(stack, rt, rres);
@@ -665,18 +663,21 @@ public class C extends ANY
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
           CExpr res = null;
           var a = args(tc, cc, stack, ac);
-          var call = _fuir.clazzNeedsCode(cc) ? CExpr.call(_names.function(cc, pre), a) : null;
-          if (!pre && _types.hasData(rt))
+          if (_fuir.clazzNeedsCode(cc))
             {
-              var tmp = _names.newTemp();
-              res = tmp;
-              result = CStmnt.seq(CStmnt.decl(_types.clazz(rt), tmp),
-                                  call != null ? res.assign(call) : CStmnt.EMPTY);
-              push(stack, rt, res);
-            }
-          else
-            {
-              result = call != null ? call : CStmnt.EMPTY;
+              var call = CExpr.call(_names.function(cc, pre), a);
+              result = call;
+              if (!pre)
+                {
+                  if (_types.hasData(rt))
+                    {
+                      var tmp = _names.newTemp();
+                      res = tmp;
+                      result = CStmnt.seq(CStmnt.decl(_types.clazz(rt), tmp),
+                                          res.assign(call));
+                    }
+                  push(stack, rt, res);
+                }
             }
           if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
           break;
