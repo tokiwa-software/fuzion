@@ -650,7 +650,6 @@ public class C extends ANY
   CStmnt call(int tc, int cc, Stack<CExpr> stack, boolean pre)
   {
     CStmnt result = CStmnt.EMPTY;
-    var ac = _fuir.clazzArgCount(cc);
     var rt = _fuir.clazzResultClazz(cc);
     switch (pre ? FUIR.ClazzKind.Routine : _fuir.clazzKind(cc))
       {
@@ -661,14 +660,14 @@ public class C extends ANY
       case Intrinsic:
         {
           if (SHOW_STACK_ON_CALL) System.out.println("Before call to "+_fuir.clazzAsString(cc)+": "+stack);
-          CExpr res = null;
-          var a = args(tc, cc, stack, ac);
+          var a = args(tc, cc, stack, _fuir.clazzArgCount(cc));
           if (_fuir.clazzNeedsCode(cc))
             {
               var call = CExpr.call(_names.function(cc, pre), a);
               result = call;
               if (!pre)
                 {
+                  CExpr res = null;
                   if (_types.hasData(rt))
                     {
                       var tmp = _names.newTemp();
