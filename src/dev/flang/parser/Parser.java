@@ -2299,7 +2299,7 @@ stmnts      :
         boolean handleSurpriseIndentation()
         {
           var result = false;
-          if (!l.isEmpty() && l.getLast() instanceof Feature && ((Feature)l.getLast()).impl == Impl.FIELD)
+          if (!l.isEmpty() && l.getLast() instanceof Feature f && f.impl == Impl.FIELD)
             { // Let's be nice in the common case of a forgotten 'is'
               syntaxError(pos(), "'is' followed by routine code", "stmtns");
               block(true); // skip the code of the routine.
@@ -2311,9 +2311,9 @@ stmnts      :
     while (!endOfStmnts() && in.ok())
       {
         Stmnt s = stmnt();
-        if (s instanceof FList)
+        if (s instanceof FList fl)
           {
-            l.addAll(((FList) s)._list);
+            l.addAll(fl._list);
           }
         else
           {
@@ -2615,13 +2615,13 @@ ifstmt      : "if" exprInLine thenPart elseBlockOpt
         Block b = thenPart(false);
         If result = new If(pos, e, b);
         Expr els = elseBlockOpt();
-        if (els instanceof If)
+        if (els instanceof If i)
           {
-            result.setElse((If) els);
+            result.setElse(i);
           }
-        else if (els instanceof Block)
+        else if (els instanceof Block blk)
           {
-            result.setElse((Block) els);
+            result.setElse(blk);
           }
         else
           {
