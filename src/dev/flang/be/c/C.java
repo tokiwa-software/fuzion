@@ -450,17 +450,17 @@ public class C extends ANY
                     }
                   ol.add(cll);
                 }
-              else
+              else if (_fuir.clazzNeedsCode(cc0))
                 {
                   ol.add(call(tc, cc0, stack, false));
-                  if (_fuir.clazzNeedsCode(cc0) && !containsVoid(stack))
+                  if (!containsVoid(stack))
                     {
                       res = pop(stack, rt);
                     }
-                  else
-                    {
-                      ignoreResult = true;
-                    }
+                }
+              else
+                {
+                  ignoreResult = true;
                 }
               if (!containsVoid(stack) && (!ignoreResult || _fuir.clazzIsVoidType(rt)))
                 {
