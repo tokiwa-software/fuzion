@@ -255,6 +255,10 @@ public class C extends ANY
    */
   CExpr pop(Stack<CExpr> stack, int cl)
   {
+    if (PRECONDITIONS) require
+      (!_types.hasData(cl) || stack.size() > 0,
+       !containsVoid(stack));
+
     return _types.hasData(cl) ? stack.pop()
                               : null;
   }
@@ -449,7 +453,7 @@ public class C extends ANY
               else
                 {
                   ol.add(call(tc, cc0, stack, false));
-                  if (_fuir.clazzNeedsCode(cc0))
+                  if (_fuir.clazzNeedsCode(cc0) && !containsVoid(stack))
                     {
                       res = pop(stack, rt);
                     }
