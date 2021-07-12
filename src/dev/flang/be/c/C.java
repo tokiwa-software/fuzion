@@ -458,7 +458,7 @@ public class C extends ANY
                       ignoreResult = true;
                     }
                 }
-              if (!ignoreResult || _fuir.clazzIsVoidType(rt))
+              if (!containsVoid(stack) && (!ignoreResult || _fuir.clazzIsVoidType(rt)))
                 {
                   var rres = _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
                   push(stack, rt, rres);
