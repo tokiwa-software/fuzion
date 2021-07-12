@@ -460,6 +460,15 @@ public class C extends ANY
                       res = pop(stack, rt);
                     }
                 }
+              else
+                {
+                  ol.add(CStmnt.seq(CExpr.fprintfstderr("*** %s:%d no code generated for static call to %s within %s\n",
+                                                        CIdent.FILE,
+                                                        CIdent.LINE,
+                                                        CExpr.string(_fuir.clazzAsString(cc0)),
+                                                        CExpr.string(_fuir.clazzAsString(cl ))),
+                                    CExpr.exit(1)));
+                }
               if (res != null || _fuir.clazzIsVoidType(rt) && !containsVoid(stack))
                 {
                   var rres = _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
