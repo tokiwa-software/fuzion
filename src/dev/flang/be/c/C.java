@@ -468,6 +468,7 @@ public class C extends ANY
                                                         CExpr.string(_fuir.clazzAsString(cc0)),
                                                         CExpr.string(_fuir.clazzAsString(cl ))),
                                     CExpr.exit(1)));
+                  stack.push(null);  // push void, i.e., stop code generation here
                 }
               if (res != null || _fuir.clazzIsVoidType(rt) && !containsVoid(stack))
                 {
