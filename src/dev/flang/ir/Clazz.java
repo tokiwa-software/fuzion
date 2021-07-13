@@ -1380,12 +1380,26 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
+   * Check if this is a ref and there are heir clazzes of this that are refs and
+   * that are instantiated.
+   *
+   * @return true iff this is a ref and there exists a heir of this that is
+   * instantiated.
+   */
+  private boolean isRefWithInstantiatedHeirs()
+  {
+    return isRef();  // NYI: We currently do not have a set of heirs so we
+                     // return true for all refs as a simple approximation.
+  }
+
+
+  /**
    * Is this clazz instantiated?  This tests this.isInstantiated_ and,
    * recursively, _outer.isInstantiated().
    */
   public boolean isInstantiated()
   {
-    return (isOuterInstantiated() || isChoice()) && isInstantiated_;
+    return (isOuterInstantiated() || isChoice() || _outer.isRefWithInstantiatedHeirs()) && isInstantiated_;
   }
 
 
