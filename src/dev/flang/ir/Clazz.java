@@ -1431,16 +1431,34 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
-   * Check if this is a ref and there are heir clazzes of this that are refs and
-   * that are instantiated.
+   * Flag to detetect endless recursion between isInstantiated() and
+   * isRefWithInstantiatedHeirs(). This may happen in a clazz that inherits from
+   * its outer clazz.
+   */
+  private boolean _checkingInstantiatedHeirs = false;
+
+
+  /**
+   * Helper for isInstantiated to check if outer clazz this is a ref and there
+   * are heir clazzes of this that are refs and that are instantiated.
    *
    * @return true iff this is a ref and there exists a heir of this that is
    * instantiated.
    */
   private boolean isRefWithInstantiatedHeirs()
   {
-    return isRef();  // NYI: We currently do not have a set of heirs so we
-                     // return true for all refs as a simple approximation.
+    var result = false;
+    if (isRef())
+      {
+        _checkingInstantiatedHeirs = true;
+        for (var h : heirs())
+          {
+            result = result
+              || h != this && h.isInstantiated();
+          }
+        _checkingInstantiatedHeirs = false;
+      }
+    return result;
   }
 
 
@@ -1450,7 +1468,7 @@ public class Clazz extends ANY implements Comparable
    */
   public boolean isInstantiated()
   {
-    return (isOuterInstantiated() || isChoice() || _outer.isRefWithInstantiatedHeirs()) && isInstantiated_;
+    return _checkingInstantiatedHeirs || (isOuterInstantiated() || isChoice() || _outer.isRefWithInstantiatedHeirs()) && isInstantiated_;
   }
 
 
