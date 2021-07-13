@@ -937,15 +937,18 @@ public class C extends ANY
     var l = new List<CStmnt>();
     var stack = new Stack<CExpr>();
     for (int p, i = 0;
-         (p = _fuir.clazzContract(cl, ck, i)) != -1;
+         !containsVoid(stack) && (p = _fuir.clazzContract(cl, ck, i)) != -1;
          i++)
       {
         l.add(createCode(cl, stack, p));
-        var cc = stack.pop();
-        l.add(CStmnt.iff(cc.field(_names.TAG_NAME).not(),
-                         CStmnt.seq(CExpr.fprintfstderr("*** failed " + ck + " on call to '%s'\n",
-                                                        CExpr.string(_fuir.clazzAsString(cl))),
-                                    CExpr.exit(1))));
+        if (!containsVoid(stack))
+          {
+            var cc = stack.pop();
+            l.add(CStmnt.iff(cc.field(_names.TAG_NAME).not(),
+                             CStmnt.seq(CExpr.fprintfstderr("*** failed " + ck + " on call to '%s'\n",
+                                                            CExpr.string(_fuir.clazzAsString(cl))),
+                                        CExpr.exit(1))));
+          }
       }
     return CStmnt.seq(l);
   }
