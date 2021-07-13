@@ -320,6 +320,7 @@ public class Clazzes extends ANY
               {
                 clazzesToBeVisited.add(result);
               }
+            result.registerAsHeir();
             _options_.verbosePrintln(3, "GLOBAL CLAZZ: " + result);
             if (_options_.verbose(10))
               {

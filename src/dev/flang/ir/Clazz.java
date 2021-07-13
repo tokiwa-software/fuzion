@@ -180,6 +180,12 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
+   * Set of all heirs of this clazz.
+   */
+  TreeSet<Clazz> _heirs = null;
+
+
+  /**
    * The dynamic binding implementation used for this clazz. null if !isRef().
    */
   public DynamicBinding _dynamicBinding;
@@ -407,6 +413,51 @@ public class Clazz extends ANY implements Comparable
         normalized.isNormalized_ = true;
         return normalized;
       }
+  }
+
+
+  /**
+   * Make sure this clazz is added to the set of heirs for all of its parents.
+   */
+  void registerAsHeir()
+  {
+    if (isRef())
+      {
+        registerAsHeir(this);
+      }
+  }
+
+  /**
+   * private helper for registerAsHeir().  Make sure this clazz is added to the
+   * set of heirs of parent ann all of parent's parents.
+   */
+  private void registerAsHeir(Clazz parent)
+  {
+    if (parent._heirs == null)
+      {
+        parent._heirs = new TreeSet<>();
+      }
+    parent._heirs.add(this);
+    for (Call p: parent.feature().inherits)
+      {
+        var pc = parent.actualClazz(p.type().asRef());
+        registerAsHeir(pc);
+      }
+  }
+
+
+  /**
+   * Set of heirs of this clazz, including this itself.  This is defined for
+   * clazzes with isRef() only.
+   *
+   * @return the heirs including this.
+   */
+  public Set<Clazz> heirs()
+  {
+    if (PRECONDITIONS) require
+      (isRef());
+
+    return _heirs;
   }
 
 
