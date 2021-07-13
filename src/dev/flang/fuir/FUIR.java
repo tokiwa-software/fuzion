@@ -1320,39 +1320,13 @@ hw25 is
     var tclazz     = bc.outer();
     var innerClazz = bc.inner();
     var result = new List<Clazz>();
-    for (var cl : Clazzes.all())  // NYI: Overkill, better check only sub-clazzes of tclazz
+    for (var cl : tclazz.heirs())
       {
-        if (cl._type != Types.t_ADDRESS     // NYI: would be better to not create this dummy clazz in the first place
-            )
+        var in = cl._dynamicBinding.inner(cf);
+        if (clazzNeedsCode(in))
           {
-            if (cl._dynamicBinding != null)
-              {
-                var in = cl._dynamicBinding.inner(cf);
-                if (in != null)
-                  {
-                    var ina = in.argumentFields();
-                    var inCa = innerClazz.argumentFields();
-                    if (clazzNeedsCode(in) &&
-
-                        // NYI: instead of just comparing the arguments and
-                        // result, we should ensure to only return features from
-                        // heir clazzes with equal generic parameters:
-                        ina.length == inCa.length &&
-                        (in.feature().isOuterRef() || innerClazz.resultClazz().isAssignableFrom(in.resultClazz())))
-                      {
-                        boolean ok = true;
-                        for (int i = 0; i < ina.length; i++)
-                          {
-                            ok = ok && ina[i].resultClazz().isAssignableFrom(inCa[i].resultClazz());
-                          }
-                        if (ok)
-                          {
-                            result.add(cl);
-                            result.add(in);
-                          }
-                      }
-                  }
-              }
+            result.add(cl);
+            result.add(in);
           }
       }
     return result;
