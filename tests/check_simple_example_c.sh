@@ -33,6 +33,7 @@
 # In case file $2.skip exists, do not run the example
 #
 
+RC=0
 if [ -f $2.skip ]; then
     echo "SKIP $2"
 else
@@ -66,11 +67,13 @@ else
             else
                 diff $experr tmp_err.txt
                 echo -e "\033[31;1m*** FAILED\033[0m err on $2"
+                RC=1
             fi
         fi
     else
         diff $experr tmp_err.txt
         echo -e "\033[31;1m*** FAILED\033[0m out on $2"
+        RC=1
     fi
     if [ -f testbin ]; then
         echo " (binary)"
@@ -79,3 +82,4 @@ else
     fi
     rm -f tmp_out.txt tmp_err.txt tmp_exp_out.txt
 fi
+exit $RC
