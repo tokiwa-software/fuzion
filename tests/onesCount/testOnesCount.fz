@@ -31,9 +31,9 @@
 testOnesCount is
 
   show(x u64) is
-    yak x.bin(64) + ": " + x.onesCount+" "+x.castTo_i64.onesCount+" "+x.low32bits.onesCount+" "+x.low32bits.castTo_i32.onesCount + " "
-    yak $x.highestOneBit+" "+x.castTo_i64.highestOneBit+" "+x.low32bits.highestOneBit+" "+x.low32bits.castTo_i32.highestOneBit + " "
-    yak $x.trailingZeros+" "+x.castTo_i64.trailingZeros+" "+x.low32bits.trailingZeros+" "+x.low32bits.castTo_i32.trailingZeros + "."
+    yak (x.bin(64) + ": " + x.onesCount+" "+x.castTo_i64.onesCount+" "+x.low32bits.onesCount+" "+x.low32bits.castTo_i32.onesCount + " ")
+    yak ($x.highestOneBit+" "+x.castTo_i64.highestOneBit+" "+x.low32bits.highestOneBit+" "+x.low32bits.castTo_i32.highestOneBit + " ")
+    yak ($x.trailingZeros+" "+x.castTo_i64.trailingZeros+" "+x.low32bits.trailingZeros+" "+x.low32bits.castTo_i32.trailingZeros + ".")
     say
 
   show 0
