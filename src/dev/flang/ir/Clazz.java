@@ -251,7 +251,7 @@ public class Clazz extends ANY implements Comparable
    * For a clazz with isRef()==true, this will be set to a value version of this
    * clazz.
    */
-  Clazz _asValue;
+  private Clazz _asValue;
 
 
   /**
@@ -346,7 +346,8 @@ public class Clazz extends ANY implements Comparable
   private boolean hasUsedOuterRef()
   {
     var or = feature().outerRef_;
-    return or != null && or.state().atLeast(Feature.State.RESOLVED);
+    return feature().hasResult()  // do not specialize a constructor
+      && or != null && or.state().atLeast(Feature.State.RESOLVED);
   }
 
 
@@ -385,31 +386,39 @@ public class Clazz extends ANY implements Comparable
    */
   private Clazz normalize(Feature f)
   {
-    if (f == Types.resolved.universe)
-      {
-        return Clazzes.universe.get();
-      }
-    else if (// an outer clazz of value type is not normalized (except for
-             // univers, which was done already).
-             !isRef() ||
+    if (// an outer clazz of value type is not normalized (except for
+        // univers, which was done already).
+        !isRef() ||
 
-             // optimization: if feature() is already f, there is nothing to
-             // normalize anymore
-             feature() == f ||
+        // optimization: if feature() is already f, there is nothing to
+        // normalize anymore
+        feature() == f ||
 
-             // if an outer ref is used (i.e., state is resolved) to access the
-             // outer instance, we must not normalize because we will need the
-             // exact type of the outer instance to specialize code or to access
-             // features that only exist in the specific version
-             hasUsedOuterRef()
-             )
+        // if an outer ref is used (i.e., state is resolved) to access the
+        // outer instance, we must not normalize because we will need the
+        // exact type of the outer instance to specialize code or to access
+        // features that only exist in the specific version
+        hasUsedOuterRef()
+        )
       {
         return this;
       }
     else
       {
-        var t = actualType(f.thisType());
-        var normalized = Clazzes.create(t, normalizeOuter(t, _outer));
+        var t = actualType(f.thisType()).asRef();
+        return normalize2(t);
+      }
+  }
+  private Clazz normalize2(Type t)
+  {
+    var f = t.featureOfType();
+    if (f == Types.resolved.universe)
+      {
+        return Clazzes.universe.get();
+      }
+    else
+      {
+        var normalized = Clazzes.create(t, normalize2(f.outer().thisType()));
         normalized.isNormalized_ = true;
         return normalized;
       }
@@ -1435,7 +1444,7 @@ public class Clazz extends ANY implements Comparable
    * isRefWithInstantiatedHeirs(). This may happen in a clazz that inherits from
    * its outer clazz.
    */
-  private boolean _checkingInstantiatedHeirs = false;
+  private int _checkingInstantiatedHeirs = 0;
 
 
   /**
@@ -1450,13 +1459,13 @@ public class Clazz extends ANY implements Comparable
     var result = false;
     if (isRef())
       {
-        _checkingInstantiatedHeirs = true;
         for (var h : heirs())
           {
+            h._checkingInstantiatedHeirs++;
             result = result
               || h != this && h.isInstantiated();
+            h._checkingInstantiatedHeirs--;
           }
-        _checkingInstantiatedHeirs = false;
       }
     return result;
   }
@@ -1468,7 +1477,28 @@ public class Clazz extends ANY implements Comparable
    */
   public boolean isInstantiated()
   {
-    return _checkingInstantiatedHeirs || (isOuterInstantiated() || isChoice() || _outer.isRefWithInstantiatedHeirs()) && isInstantiated_;
+    return this == Clazzes.constStringBytesArray ||
+      this == Clazzes.conststring.get() ||
+      _checkingInstantiatedHeirs>0 || (isOuterInstantiated() || isChoice() || _outer.isRefWithInstantiatedHeirs()) && isInstantiated_;
+  }
+
+
+  /**
+   * Check if this and all its (potentially normalized) outer clazzes are instantiated.
+   */
+  public boolean allOutersInstantiated()
+  {
+    return isInstantiated() && (_outer == null || _outer.allOutersInstantiated2());
+  }
+
+
+  /**
+   * Helper for allOutersInstantiated to check outers if they are either
+   * instantiated directly or are refs that have instantiated heirs.
+   */
+  private boolean allOutersInstantiated2()
+  {
+    return (isInstantiated() || isRefWithInstantiatedHeirs()) && (_outer == null || _outer.allOutersInstantiated2());
   }
 
 
@@ -1635,6 +1665,17 @@ public class Clazz extends ANY implements Comparable
             else
               {
                 // NYI: This branch should never be taken when rebasing above is implemented correctly.
+                if (f.impl.kind_ == Impl.Kind.FieldDef)
+                  {
+                    return Clazzes.clazz(f.impl.initialValue(), this._outer);
+                  }
+                else if (f.impl.kind_ == Impl.Kind.RoutineDef)
+                  {
+                    /* NYI: Do we need special handling for inferred routine result as well?
+                     *
+                     *   return Clazzes.clazz(f.impl.initialValue, this._outer);
+                     */
+                  }
                 return actualClazz(t);
               }
           }

@@ -1652,8 +1652,7 @@ public class Call extends Expr
     return
       cf != null &&
       cf.isDynamic() &&
-      !(target instanceof Current) &&
-      target.type().isRef();
+      !(target instanceof Current);
   }
 
 }

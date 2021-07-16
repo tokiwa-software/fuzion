@@ -75,6 +75,7 @@ public class Impl extends ANY
    *
    */
   Expr initialValue;
+  public Expr initialValue() { return initialValue; }
 
   Feature _outerOfInitialValue = null;
 

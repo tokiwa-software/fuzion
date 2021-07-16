@@ -2165,7 +2165,7 @@ public class Feature extends ANY implements Stmnt, Comparable
    *
    * @return the found feature or null in case of an error.
    */
-  Feature get(String qname)
+  public /* NYI: public only due to one hacky use in be.interpreter.Interpreter */ Feature get(String qname)
   {
     return get(null, qname, false);
   }

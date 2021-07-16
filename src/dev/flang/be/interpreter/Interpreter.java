@@ -587,7 +587,17 @@ public class Interpreter extends Backend
   {
     Callable result;
 
-    if (dynamic)
+    // Special handling for reading 'val' field from ref version of built in integer types
+    var builtInVal =
+      innerClazz.feature().isField() &&
+      (outerClazz == Clazzes.ref_i32.getIfCreated() ||
+       outerClazz == Clazzes.ref_u32.getIfCreated() ||
+       outerClazz == Clazzes.ref_i64.getIfCreated() ||
+       outerClazz == Clazzes.ref_u64.getIfCreated()) &&
+      /* NYI: somewhat ugly way to access "val" field, should better have Clazzes.ref_i32_val.getIfCreate() etc. */
+      innerClazz.feature() == outerClazz.feature().get("val");
+
+    if (dynamic && !builtInVal)
       {
         return null; // in dynamic case, interpreter does not use this, but dynamic lookup only
       }
@@ -610,11 +620,7 @@ public class Interpreter extends Backend
             //
             // specialize for i32.val and bool.tag
             var ocv = outerClazz.asValue();
-            if (ocv == Clazzes.i32 .getIfCreated() ||
-                ocv == Clazzes.i64 .getIfCreated() ||
-                ocv == Clazzes.u32 .getIfCreated() ||
-                ocv == Clazzes.u64 .getIfCreated() ||
-                ocv == Clazzes.bool.getIfCreated()    )
+            if (builtInVal || ocv == Clazzes.bool.getIfCreated())
               {
                 check
                   (ocv != Clazzes.i32 .getIfCreated() || f.qualifiedName().equals("i32.val"),
