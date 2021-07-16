@@ -33,6 +33,7 @@
 # In case file $2.skip exists, do not run the example
 #
 
+RC=0
 if [ -f $2.skip ]; then
     echo "SKIP $2"
 else
@@ -53,5 +54,7 @@ else
     diff $2.expected_out tmp_out.txt || (echo -e "\033[31;1m*** FAILED\033[0m out on $2")
     diff $2.expected_err tmp_err.txt || (echo -e "\033[31;1m*** FAILED\033[0m err on $2")
     diff $2.expected_out tmp_out.txt >/dev/null && diff $2.expected_err tmp_err.txt >/dev/null && echo -e "\033[32;1mPASSED\033[0m."
+    RC=$?
     rm tmp_out.txt tmp_err.txt
 fi
+exit $RC
