@@ -42,10 +42,13 @@ else
     rm -f testbin
 
     # NYI: Use this version to check there are no warnings produced by C compiler:
-    (($1 $2 -c -o=testbin               && ./testbin) 2>tmp_err.txt | head -n 100) >tmp_out.txt;
+    (($1 $2 -c -o=testbin                && ./testbin) 2>tmp_err0.txt | head -n 100) >tmp_out.txt;
 
     # This version dumps stderr output if fz was successful, which essentially ignores C compiler warnings:
-    # (($1 $2 -c -o=testbin 2>tmp_err.txt && ./testbin 2>tmp_err.txt | head -n 100) >tmp_out.txt;
+    # (($1 $2 -c -o=testbin 2>tmp_err0.txt && ./testbin  2>tmp_err0.txt | head -n 100) >tmp_out.txt;
+
+    cat tmp_err0.txt | sed "s:$PWD:--CURDIR--:g" >tmp_err.txt
+    rm -rf tmp_err0.txt
 
     expout=$2.expected_out
     experr=$2.expected_err
