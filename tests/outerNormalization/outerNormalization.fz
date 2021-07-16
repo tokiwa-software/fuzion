@@ -1,0 +1,150 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test outerNormalization
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# A simple test that tests certain scenarios with normalization of clazzes
+# depending on their outer features that caused errors during testing.
+#
+# The test should be run and its output should be compared to the expected
+# output.
+#
+outerNormalization is
+
+
+  # call numeric.zero via a ref.  This only works if the actual clazz is
+  # i32.zero, it would fail for numeric<i32>.zero or integer<i32>.zero since
+  # zero is abstract in those clazzes
+  #
+  testZero is
+    x ref i32 := 3
+    z := x.zero
+
+  say "testZero.z is {testZero.z}"
+
+
+  # string.codepointsStream is a constructor that, if it was specialized for
+  # actual strings, would result in different, incompatible types
+  #
+  testCodepointsStream(s string) is
+      l := s.codepointsStream
+
+  say "testCodepointsStream of \$1234 is {(testCodepointsStream $1234).l}"
+  say "testCodepointsStream of \$true is {(testCodepointsStream $true).l}"
+
+
+  # similar to testCodepointsStream, testConstructor tests that constructor a.f
+  # is not specialized for sub-clazzes b and c.  If it was, the result would not
+  # be assignemnt compatible to x
+  #
+  testConstructor is
+
+    a (i i32) ref is
+      f is
+        set i := i+1
+        s := i
+
+    b : a 3 is
+    c : a 4 is
+
+    call_f (v a) is
+      x a.f := v.f
+      say "testConstructor: {x.s}"
+
+    call_f b
+    call_f c
+
+  testConstructor
+
+
+  # similar problem may occur already with a single heir 'b':
+  #
+  testConstructor2 is
+
+    a (i i32) ref is
+      f is
+        set i := i+1
+        s := i
+
+    b : a 3 is
+
+    call_f (v a) is
+      x a.f := v.f
+      say "testConstructor2: {x.s}"
+
+    call_f b
+
+  testConstructor2
+
+  # testNormalize maps the problem checked by testZero from i32/numeric to
+  # simpler features j/n
+  #
+  testNormalize is
+    n<T: n<T>> is
+      a T is abstract
+      b T is a
+
+    j : n<j> is
+      a => j
+      redef asString => "a 'j'"
+
+    t(r ref j) is
+      say "testNormalize: {r.b}"
+
+    t j
+
+  testNormalize
+
+
+  # testNormalize2 maps the problem checked by testZero from i32/numeric to
+  # simpler features j/n that are not even generic
+  #
+  testNormalize2 is
+    n is
+      a i32 is abstract
+      b i32 is a
+
+    j : n is
+      a => 3
+      redef asString => "a 'j'"
+
+    t(r ref j) is
+      say "testNormalize2: {r.b}"
+
+    t j
+
+  testNormalize2
+
+
+  # An (open) interval such as '0..' is of type 'hasInterval<i32>.infix ..', but
+  # that should be converted to 'i32.infix ..' in FUIR:
+  #
+  testInterval is
+    x := 0..
+    y := x.asStream
+    z := y.hasNext
+    for i in 0.. do
+      say $i
+    until i > 3
+
+  testInterval
