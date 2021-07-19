@@ -250,7 +250,7 @@ looptest
   chck(testLoop7(a, fun (i i32) => i >    100) == 3333, "testLoop7 returns 3333 in until branch");
   chck(testLoop7(a, fun (i i32) => i >  10000) == 4444, "testLoop7 returns 4444 in else branch");
 
-  out.print("testLoop8: loop return success index as default and 4444 in else branch");
+  out.println("testLoop8: loop return success index as default and 4444 in else branch");
   testLoop8(data array<i32>, isWhatWeWant fun (i32) bool) i32
   {
     for ix := 0, ix + 1;
