@@ -9,7 +9,7 @@ To clone the repository:
 
   > git clone https://github.com/fridis/fuzion
 
-Note that the current directly must not contain any spaces.
+Note that the current directory must not contain any spaces.
 
 Requirements:
 
