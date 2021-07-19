@@ -1442,6 +1442,7 @@ public class Call extends Expr
                 count++;
               }
           }
+        target = target.propagateExpectedType(res, outer, target.typeOrNull());
       }
   }
 
