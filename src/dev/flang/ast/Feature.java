@@ -2510,7 +2510,10 @@ public class Feature extends ANY implements Stmnt, Comparable
     // here, while impl.code is visited when impl.visit is called with this as
     // outer argument.
     //
-    if (impl.initialValue != null)
+    if (impl.initialValue != null &&
+        /* initial value has been replaced by explicit assignment during
+         * RESOLVING_TYPES phase: */
+        !outer.state().atLeast(State.RESOLVING_SUGAR1))
       {
         impl.initialValue = impl.initialValue.visit(v, outer);
       }
