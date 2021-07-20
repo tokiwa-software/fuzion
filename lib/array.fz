@@ -68,9 +68,16 @@ array<T>(internalArray sys.array<T>) : List<T> is
 
 
   redef asStream ref : stream<T> is
+
+    # NYI: we create heap allocated instance of array explicitly, needed while
+    # issue #30 is not fixed.  Once issue is fixed, array.this can be used instead.
+    # See idiom40ex.fz for a test case
+    #
+    array_this ref array<T> := array.this
+
     x := 0
-    redef hasNext => x < length
-    redef next => set x := x + 1; array.this[x-1]
+    redef hasNext => x < array_this.length
+    redef next => set x := x + 1; array_this[x-1]
 
   redef forAll (f fun (T)) unit is
     for i in indices do
