@@ -89,3 +89,6 @@ unit is
 #
 # unit (contents tuple<>) is
 #
+
+  # human readable string
+  redef asString => "unit"
