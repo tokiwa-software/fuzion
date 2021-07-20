@@ -83,6 +83,6 @@ else
     else
         echo " (no binary)"
     fi
-    rm -f tmp_out.txt tmp_err.txt tmp_exp_out.txt
+    rm -f tmp_out.txt tmp_err.txt tmp_exp_out.txt testbin testbin.c
 fi
 exit $RC

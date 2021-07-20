@@ -38,6 +38,6 @@ if [ -f $2.skip ]; then
 else
     (($1 $2 -c -o=testbin && ./testbin) 2>$2.expected_err_c0 | head -n 100) >$2.expected_out_c
     cat $2.expected_err_c0 | sed "s:$PWD:--CURDIR--:g" >$2.expected_err_c
-    rm -rf $2.expected_err_c0
+    rm -rf $2.expected_err_c0 testbin testbin.c
     echo "RECORDED $2"
 fi
