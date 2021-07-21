@@ -314,7 +314,7 @@ O(n log n).
   # union of two psMaps
   #
   infix ⋃ (other psMap<K, V>) psMap<K,V> is
-    if other.size > size
+    if other.size < size
       other ⋃ psMap.this
     else
 
