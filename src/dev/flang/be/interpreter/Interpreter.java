@@ -383,11 +383,10 @@ public class Interpreter extends Backend
         Clazz vc = (Clazz) staticClazz.getRuntimeData(b._valAndRefClazzId);
         Clazz rc = (Clazz) staticClazz.getRuntimeData(b._valAndRefClazzId + 1);
         if (vc.isRef())
-          { // vc's type is a generic argument whose actual type does not need
-            // boxing
+          { // vc's type is a generic argument or outer type whose actual type
+            // does not need boxing
             check
-              (b._value.type().isGenericArgument() || b._value.isCallToOuterRef(),
-               vc == rc);
+              (vc == rc);
 
             result = val;
           }
