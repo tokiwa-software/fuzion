@@ -331,7 +331,7 @@ O(n log n).
         else
           kv := data[l]
           a0 := if (a.has kv.values.0) a else a.add kv
-          addAll a0, l+1, r
+          addAll a0 l+1 r
 
       # helper to add 'sz' elements from 'psMap.this.data[at..at+sz]' to 'a', with
       # 'tail' elements at indices larger or equal to 'at+sz' added recursively as
@@ -344,15 +344,15 @@ O(n log n).
           sz0 := sz / 2
           nt := (tail - sz0) / 2
           at0 := (at
-                  + {if ((size & sz0) != 0) nt else 0}
-                  + {if ((size & sz ) != 0) sz else 0})
-          a0 := if ((size & sz) != 0)
-              addAll(a, at, at + sz - 1)
+                  + {if (size & sz0) /= 0 nt else 0}
+                  + {if (size & sz ) /= 0 sz else 0})
+          a0 := if (size & sz) != 0
+              addAll a at at+sz-1
             else
               a
-          addAll a0, at0, sz0, nt
+          addAll a0 at0 sz0 nt
 
-      addAll other, 0, size.highestOneBit, data.length - size.highestOneBit
+      addAll other 0 size.highestOneBit (data.length - size.highestOneBit)
 
 
   # infix operator synonyme for union of two psMaps
