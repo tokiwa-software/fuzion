@@ -313,11 +313,18 @@ O(n log n).
 
   # union of two psMaps
   #
-  infix ⋃ (other psMap<K, V>) psMap<K,V> is
+  # creates a new psMap that maps all the keys that exist either in psMap.this
+  # or in other to the values they are mapped to.  In case a key k exists in
+  # both psMap.this and other, it will be mapped to psMap.this[k] or to other[k],
+  # but it is undefined to which of these two.
+  #
+  union (other psMap<K, V>) psMap<K,V> is
     if other.size < size
       other ⋃ psMap.this
     else
 
+      # helper to add 'psMap.this.data[l..r]' to 'a' and return the resulting map.
+      #
       addAll (a psMap<K,V>, l i32, r i32) psMap<K,V> is
         if l > r
           a
@@ -326,6 +333,10 @@ O(n log n).
           a0 := if (a.has kv.values.0) a else a.add kv
           addAll a0, l+1, r
 
+      # helper to add 'sz' elements from 'psMap.this.data[at..at+sz]' to 'a', with
+      # 'tail' elements at indices larger or equal to 'at+sz' added recursively as
+      # well.
+      #
       addAll (a psMap<K,V>, at i32, sz i32, tail i32) psMap<K,V> is
         if sz = 0
           a
@@ -342,3 +353,8 @@ O(n log n).
           addAll a0, at0, sz0, nt
 
       addAll other, 0, size.highestOneBit, data.length - size.highestOneBit
+
+
+  # infix operator synonyme for union of two psMaps
+  #
+  infix ⋃ (other psMap<K, V>) => union other
