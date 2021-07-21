@@ -522,23 +522,29 @@ public class C extends ANY
           var ref       = hasTag ? refEntry                   : _names.newTemp();
           var getRef    = hasTag ? CStmnt.EMPTY               : CStmnt.decl(_types.clazz(_fuir.clazzObject()), (CIdent) ref, refEntry);
           var tag       = hasTag ? sub.field(_names.TAG_NAME) : ref.castTo("int64_t");
-          var ccases    = new List<CStmnt>();
-          CStmnt cdef   = null;
+          var tcases    = new List<CStmnt>(); // cases depending on tag value or ref cast to int64
+          var rcases    = new List<CStmnt>(); // cases depending on clazzId of ref type
+          CStmnt tdefault = null;
           for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
             {
               var ctags = new List<CExpr>();
-              boolean foundRef = false;
+              var rtags = new List<CExpr>();
               var tags = _fuir.matchCaseTags(cl, c, i, mc);
               for (var tagNum : tags)
                 {
                   var tc = _fuir.clazzChoice(subjClazz, tagNum);
                   if (tc != -1)
                     {
-                      var isRef = !hasTag && _fuir.clazzIsRef(tc);
-                      foundRef = foundRef || isRef;
-                      if (!isRef)
+                      if (!hasTag && _fuir.clazzIsRef(tc))  // do we need to check the clazzId of a ref?
                         {
-                          ctags.add(CExpr.int32const(tagNum));
+                          for (var h : _fuir.clazzInstantiatedHeirs(tc))
+                            {
+                              rtags.add(_names.clazzId(h).comment(_fuir.clazzAsString(h)));
+                            }
+                        }
+                      else
+                        {
+                          ctags.add(CExpr.int32const(tagNum).comment(_fuir.clazzAsString(tc)));
                           check
                             (hasTag || !_types.hasData(tc));
                         }
@@ -558,18 +564,21 @@ public class C extends ANY
               sl.add(createCode(cl, (Stack<CExpr>) stack.clone(), _fuir.matchCaseCode(c, i, mc)));
               sl.add(CStmnt.BREAK);
               var cazecode = CStmnt.seq(sl);
-              ccases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
-              if (foundRef) // we need default clause to handle refs without a tag
+              tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
+              if (!rtags.isEmpty()) // we need default clause to handle refs without a tag
                 {
-                  cdef = cdef == null ? cazecode :
-                    CStmnt.seq(CExpr.fprintfstderr("*** %s:%d match in '%s': C backend does not support multiple different refs yet\n",
-                                                   CIdent.FILE,
-                                                   CIdent.LINE,
-                                                   CExpr.string(_fuir.clazzAsString(cl))),
-                               CExpr.exit(1));
+                  rcases.add(CStmnt.caze(rtags, cazecode));
+                  tdefault = cazecode;
                 }
             }
-          o = CStmnt.seq(getRef, CStmnt.suitch(tag, ccases, cdef));
+          if (rcases.size() >= 2)
+            { // more than two reference cases: we have to create separate switch of clazzIds for refs
+              var id = refEntry.deref().field(_names.CLAZZ_ID);
+              var notFound = CStmnt.seq(CExpr.fprintfstderr("*** %s:%d Unexpected reference type %d found in match\n", CIdent.FILE, CIdent.LINE, id),
+                                        CExpr.exit(1));
+              tdefault = CStmnt.suitch(id, rcases, notFound);
+            }
+          o = CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault));
           break;
         }
       case Tag:

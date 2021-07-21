@@ -288,6 +288,35 @@ public class FUIR extends ANY
 
 
   /**
+   * Get all heirs of given clazz that are instantiated.
+   *
+   * @param cl a clazz id
+   *
+   * @return an array of the clazz id's of all heirs for cl that are
+   * instantiated, including cl itself, provided that cl is instantiated.
+   */
+  public int[] clazzInstantiatedHeirs(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    var result = new List<Clazz>();
+    for (var h : cc.heirs())
+      {
+        if (h.isInstantiated())
+          {
+            result.add(h);
+          }
+      }
+    var res = new int[result.size()];
+    for (var i = 0; i < result.size(); i++)
+      {
+        res[i] = _clazzIds.get(result.get(i));
+        check(res[i] != -1);
+      }
+    return res;
+  }
+
+
+  /**
    * Is this a choice type with some elements of ref type?
    *
    * @param cl a clazz id
