@@ -341,4 +341,4 @@ O(n log n).
               a
           addAll a0, at0, sz0, nt
 
-      addAll psMap.this, 0, size.highestOneBit, data.length - size.highestOneBit
+      addAll other, 0, size.highestOneBit, data.length - size.highestOneBit
