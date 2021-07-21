@@ -129,7 +129,7 @@ O(n log n).
     if has k
       fuzion.std.panic "NYI: psMap currently does not handle updates for existing key"
     else
-      add((k,v))
+      add (k,v)
 
 
   # add mapping from kv.values.0 to kv.values.1
@@ -145,10 +145,10 @@ O(n log n).
     # join arrays data[ole..ole+sz-1] and ndata[dest..dest+sz-1] to ndata[dest..dest+2*sz-1]
     #
     join (ole i32, dest i32, sz i32) psMap<K, V> is
-      if ((size & sz) = 0)
-        psMap<K,V> ndata, nsize, dest+sz
+      if (size & sz) = 0
+        psMap<K,V> ndata nsize dest+sz
       else
-        tmp := array<tuple<K,V>> sz, fun(i i32) => ndata[dest+i]
+        tmp := array<tuple<K,V>> sz (fun(i i32) => ndata[dest+i])
         for
           i1 := 0, if (use1) i1+1 else i1
           i2 := 0, if (use1) i2   else i2+1
@@ -157,13 +157,13 @@ O(n log n).
         do
           ndata[dest + i1 + i2] := e
         until i1 + i2 = 2*sz-1
-        join((fill - sz - 2*(fill - ole - sz) - 2*sz), dest, 2*sz)
+        join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
 
     if (nsize & size) = 0
       set ndata := sys.array<tuple<K,V>> (data.length * 2 + (nsize+1) / 2)
       set nfill := 0
     ndata[nfill] := kv
-    join fill-1, nfill, 1
+    join fill-1 nfill 1
 
 
   # find the value k is mapped to or nil if k is not part of this map
@@ -177,8 +177,8 @@ O(n log n).
       else
         (mk,mv) := data[m]
         c := (mk) <> k
-        if      c < 0 then binarySearch m+1, r
-        else if c > 0 then binarySearch l, m-1
+        if      c < 0 then binarySearch m+1 r
+        else if c > 0 then binarySearch l m-1
         else               mv
 
     # find k in sub-arrays starting at data[at]
@@ -190,17 +190,17 @@ O(n log n).
         sz0 := sz / 2
         nt := (tail - sz0) / 2
         at0 := (at
-                + {if ((size & sz0) != 0) nt else 0}
-                + {if ((size & sz ) != 0) sz else 0})
+                + {if (size & sz0) != 0 nt else 0}
+                + {if (size & sz ) != 0 sz else 0})
         if (size & sz) != 0
-          match binarySearch at, at+sz-1
+          match binarySearch at at+sz-1
             v V => v
-            nil => get at0, sz0, nt
+            nil => get at0 sz0 nt
         else
-          get at0, sz0, nt
+          get at0 sz0 nt
 
     subSz := size.highestOneBit
-    get 0, subSz, data.length - subSz
+    get 0 subSz (data.length - subSz)
 
 
   show unit is
@@ -221,7 +221,7 @@ O(n log n).
     join (ole i32, sz i32, rsz i32, skip i32) unit is
       if sz <= size
         if (size & sz) /= 0
-          tmp := array<K> rsz, fun(i i32) => r[i]
+          tmp := array<K> rsz (fun(i i32) => r[i])
           for
             i1 := 0, if (use1) i1+1 else i1
             i2 := 0, if (use1) i2   else i2+1
@@ -230,12 +230,12 @@ O(n log n).
           do
             r[i1 + i2] := e
           until i1 + i2 = sz+rsz-1
-          join(ole - skip - 2*sz, 2*sz, rsz+sz, skip + sz + skip)
+          join (ole - skip - 2*sz) 2*sz rsz+sz (skip + sz + skip)
         else
-          join ole-sz, 2*sz, rsz, skip + sz + skip
+          join ole-sz 2*sz rsz (skip + sz + skip)
 
     if size /= 0
-      join fill-1, 1, 0, 0
+      join fill-1 1 0 0
     array<K> r
 
 
@@ -270,16 +270,16 @@ O(n log n).
           sz0 := sz / 2
           nt := (tail - sz0) / 2
           at0 := (at
-                  + {if ((size & sz0) != 0) nt else 0}
-                  + {if ((size & sz ) != 0) sz else 0})
-          m0 := if ((size & sz) != 0)
-              min(m, at, at + sz - 1)
+                  + {if (size & sz0) != 0 nt else 0}
+                  + {if (size & sz ) != 0 sz else 0})
+          m0 := if (size & sz) != 0
+              min m at at+sz-1
             else
               m
-          min m0, at0, sz0, nt
+          min m0 at0 sz0 nt
 
       subSz := size.highestOneBit
-      min data[0].values.0, 0, subSz, data.length - subSz
+      min data[0].values.0 0 subSz (data.length - subSz)
 
 
   # get the highest key in this map
@@ -299,16 +299,16 @@ O(n log n).
           sz0 := sz / 2
           nt := (tail - sz0) / 2
           at0 := (at
-                  + {if ((size & sz0) != 0) nt else 0}
-                  + {if ((size & sz ) != 0) sz else 0})
+                  + {if (size & sz0) /= 0 nt else 0}
+                  + {if (size & sz ) /= 0 sz else 0})
           m0 := if ((size & sz) != 0)
-              max(m, at, at + sz - 1)
+              max m at at+sz-1
             else
               m
-          max m0, at0, sz0, nt
+          max m0 at0 sz0 nt
 
       subSz := size.highestOneBit
-      max data[0].values.0, 0, subSz, data.length - subSz
+      max data[0].values.0 0 subSz (data.length - subSz)
 
 
   # union of two psMaps
