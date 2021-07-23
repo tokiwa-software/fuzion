@@ -65,6 +65,21 @@ public class FeErrors extends ANY
 
 
   /**
+   * Create an error message for a declaration of a feature using
+   * Feature.RESULT_NAME.
+   *
+   * @param pos the source code position
+   */
+  static void declarationOfResultFeature(SourcePosition pos)
+  {
+    error(pos,
+          "Feature declaration may not declare a feature with name '" + Feature.RESULT_NAME + "'",
+          "'"+Feature.RESULT_NAME+"' is an automatically declared field for a routine's result value.\n"+
+          "To solve this, if your intention was to return a result value, use 'set " + Feature.RESULT_NAME + " := <value>'.\n"+
+          "Otherwise, you may chose a different name than '"+Feature.RESULT_NAME+"' for your feature.");
+  }
+
+  /**
    * Create an error message for incompatible types, e.g., in an assignment to a
    * field or in passing an argument to a call.
    *

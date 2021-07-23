@@ -707,6 +707,10 @@ public class Feature extends ANY implements Stmnt, Comparable
                          "Feature " + qname + " is declared in wrong environment " + outer_.qualifiedName());
           }
       }
+    if (!isResultField() && qname.getLast().equals(RESULT_NAME))
+      {
+        FeErrors.declarationOfResultFeature(pos);
+      }
   }
 
 
@@ -805,6 +809,18 @@ public class Feature extends ANY implements Stmnt, Comparable
 
 
   /**
+   * true iff this is the automatically generated field RESULT_NAME or
+   * INTERNAL_RESULT_NAME.
+   *
+   * @return true iff this is a result field.
+   */
+  boolean isResultField()
+  {
+    return false;
+  }
+
+
+  /**
    * true iff this feature as a result field. This is the case if the returnType
    * is not a constructortype (self, value, single) and this is not a field.
    *
@@ -840,8 +856,11 @@ public class Feature extends ANY implements Stmnt, Comparable
                                    Consts.VISIBILITY_PRIVATE,
                                    t,
                                    resultInternal() ? INTERNAL_RESULT_NAME
-                                                    : RESULT_NAME;
-                                   this);
+                                                    : RESULT_NAME,
+                                   this)
+          {
+            boolean isResultField() { return true; }
+          };
       }
   }
 
