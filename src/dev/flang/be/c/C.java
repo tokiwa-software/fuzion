@@ -707,9 +707,7 @@ public class C extends ANY
             (t != null || !_types.hasData(rt) || tc == _fuir.clazzUniverse());
           var occ   = _fuir.clazzOuterClazz(cc);
           var vocc  = _fuir.clazzAsValue(occ);
-          if (occ != tc &&
-              !_fuir.clazzIsOuterRef(cc) /* NYI: tc for outer ref is wrong, avoid redundant casts */ &&
-              _fuir.clazzIsRef(occ))
+          if (occ != tc && _fuir.clazzIsRef(occ))
             {
               t = t.castTo(_types.clazz(occ));  // t is a ref with different static type, so cast it to the actual type
             }
