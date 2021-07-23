@@ -58,8 +58,10 @@ public class Feature extends ANY implements Stmnt, Comparable
   /*----------------------------  constants  ----------------------------*/
 
 
-  static final String UNIVERSE_NAME = "#universe";
-  static final String OBJECT_NAME = "Object";
+  static final String UNIVERSE_NAME        = "#universe";
+  static final String OBJECT_NAME          = "Object";
+  static final String RESULT_NAME          = "result";
+  static final String INTERNAL_RESULT_NAME = "#result";
 
 
   public enum State {
@@ -837,8 +839,8 @@ public class Feature extends ANY implements Stmnt, Comparable
         resultField_ = new Feature(pos,
                                    Consts.VISIBILITY_PRIVATE,
                                    t,
-                                   resultInternal() ? "#result"
-                                                    : "result",
+                                   resultInternal() ? INTERNAL_RESULT_NAME
+                                                    : RESULT_NAME;
                                    this);
       }
   }
