@@ -746,7 +746,7 @@ public class Call extends Expr
                 if (fn.equalsExceptId(calledName))  /* an exact match, so use it: */
                   {
                     check
-                      (!match);
+                      (Errors.count() > 0 || !match);
                     calledFeature_ = ff;
                     match = true;
                   }
