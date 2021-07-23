@@ -1352,7 +1352,7 @@ hw25 is
     for (var cl : tclazz.heirs())
       {
         var in = cl._dynamicBinding.inner(cf);
-        if (clazzNeedsCode(in))
+        if (in != null && clazzNeedsCode(in))
           {
             result.add(cl);
             result.add(in);
