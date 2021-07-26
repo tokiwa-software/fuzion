@@ -1553,13 +1553,12 @@ public class Call extends Expr
           {
             var f = fi.next();
             var g = gi.next();
-            if (!f.constraint().isAssignableFromOrContainsError(g))
-              { // NYI: This is too strict, we need to allow value types of heir classes
-                if (false)
-                  Errors.error(pos,
-                               "Incompatible actual generic parameter",
-                               "formal type "+f+"\n"+
-                               "actual type "+g+"\n");
+            if (!f.constraint().constraintAssignableFrom(g))
+              {
+                Errors.error(pos,
+                             "Incompatible actual generic parameter",
+                             "formal type "+f+"\n"+
+                             "actual type "+g+"\n");
               }
           }
       }

@@ -1473,6 +1473,74 @@ public class Type extends ANY implements Comparable
 
 
   /**
+   * Check if a type parameter actual can be assigned to a type parameter with
+   * constraint this.
+   *
+   * @param actual the actual type.
+   */
+  boolean constraintAssignableFrom(Type actual)
+  {
+    if (PRECONDITIONS) require
+      (Types.intern(this  ) == this,
+       Types.intern(actual) == actual,
+       this  .feature != null || this  .isGenericArgument() || Errors.count() > 0,
+       actual.feature != null || actual.isGenericArgument() || Errors.count() > 0,
+       Errors.count() > 0 || this != Types.t_ERROR && actual != Types.t_ERROR);
+
+    var result = containsError() ||
+      actual.containsError()     ||
+      this   == actual           ||
+      actual == Types.resolved.t_void;
+    if (!result && !isGenericArgument())
+      {
+        if (actual.isGenericArgument())
+          {
+            result = constraintAssignableFrom(actual.generic.constraint());
+          }
+        else
+          {
+            check
+              (actual.feature != null || Errors.count() > 0);
+            if (actual.feature != null)
+              {
+                if (actual.feature == feature)
+                  {
+                    if (actual._generics.size() == _generics.size()) // NYI: Check: What aboout open generics?
+                      {
+                        result = true;
+                        // NYI: Should we check if the generics are assignable as well?
+                        //
+                        //  for (int i = 0; i < _generics.size(); i++)
+                        //    {
+                        //      var g0 = _generics.get(i);
+                        //      var g = _generics.get(i);
+                        //      if (g.isGenericArgument())
+                        //        {
+                        //          g = g.generic.constraint();
+                        //        }
+                        //      result = result && g0.constraintAssignableFrom(actual._generics.get(i));
+                        //    }
+                      }
+                  }
+                if (!result)
+                  {
+                    for (Call p: actual.feature.inherits)
+                      {
+                        Type pt = Types.intern(actual.actualType(p.type()));
+                        if (constraintAssignableFrom(pt))
+                          {
+                            result = true;
+                          }
+                      }
+                  }
+              }
+          }
+      }
+    return result;
+  }
+
+
+  /**
    * Check if this or any of its generic arguments is Types.t_ERROR.
    */
   boolean containsError()
