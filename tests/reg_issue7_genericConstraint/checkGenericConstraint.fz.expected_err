@@ -1,0 +1,8 @@
+
+[32m--CURDIR--/checkGenericConstraint.fz:40:8:[39m [1;31merror 1[0m[1m: Incompatible actual generic parameter[0m
+[34m  m := hm<m32> m32     # should produce error, m32 is not compatible to H
+[33m-------^[0m
+formal type T -> checkGenericConstraint.H
+actual type checkGenericConstraint.m32
+
+one error.
