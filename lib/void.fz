@@ -44,6 +44,14 @@
 # since no such value can be produced, and the field can never be read since it
 # remains not initialized forever.
 #
+# Type void is assignable to all other types, e.g, we can assign void to a value
+# of type i32:
+#
+#   i i32 := fuzion.std.exit 1
+#
+# Since no value of type void can ever be produced, the assignment is dead code that
+# will be removed by the fuzion implementation.
+#
 # Type void may be used as an actual generic argument for a generic feature.  If this
 # is done, it will turn all features that have arguments of that type into absurd
 # features.  Also, this will ensure that any feature that produce a result of that
