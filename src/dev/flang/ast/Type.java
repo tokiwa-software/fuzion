@@ -681,7 +681,6 @@ public class Type extends ANY implements Comparable
   }
 
 
-
   /**
    * Replace generic types used in given List of types by the actual generic arguments
    * given as actualGenerics.
