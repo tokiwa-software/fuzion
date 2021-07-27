@@ -159,7 +159,7 @@ public class FrontEnd extends ANY
           }
         if (!d.generics.list.isEmpty())
           {
-            FeErrors.mainFeatureMustNotHaveArguments(d);
+            FeErrors.mainFeatureMustNotHaveTypeArguments(d);
           }
       }
     return new MIR(d);

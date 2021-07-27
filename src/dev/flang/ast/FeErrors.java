@@ -651,7 +651,16 @@ public class FeErrors extends ANY
   {
     error(m.pos,
           "Main feature must not have arguments",
-          "Main feature has " + argumentsString(m.arguments.size()) + ", but should have no arguments to be used as main feature in an application\n" +
+          "Main feature has " + argumentsString(m.arguments.size()) + m.arguments.size()+", but should have no arguments to be used as main feature in an application\n" +
+          "To solve this, remove the arguments from feature " + m.qualifiedName() + "\n");
+  }
+
+  public static void mainFeatureMustNotHaveTypeArguments(Feature m)
+  {
+    var g = m.generics.list;
+    error(m.pos,
+          "Main feature must not have type arguments",
+          "Main feature has " + singularOrPlural(g.size(),"type argument") + " " + g + ", but should have no arguments to be used as main feature in an application\n" +
           "To solve this, remove the arguments from feature " + m.qualifiedName() + "\n");
   }
 
