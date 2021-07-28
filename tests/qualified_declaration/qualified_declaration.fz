@@ -23,29 +23,21 @@
 #
 # -----------------------------------------------------------------------
 
-qualified_declaration
-{
-  x
-  {
-    y
-    {
-      z
-      {
-        f1(i i32) => i+i;
-      }
-    }
-  }
+qualified_declaration is
 
-  public x.y.z.f2(i i32) i32 { set result := i*i }
-  x.y.z.f3(i i32) i32 { set result := i*i }
-  x.y.z.f4(i i32) i32 { i*i }
+  x is
+    y is
+      z is
+        f1(i i32) => i+i
+
+  public x.y.z.f2(i i32) i32 is set result := i*i
+  x.y.z.f3(i i32) i32 is set result := i*i
+  x.y.z.f4(i i32) i32 is i*i
   x.y.z.f5(i i32) => i*i
 
-  1..10 | fun (i i32) { stdout.println("" + i + " " +
-                                       x.y.z.f1(i)+ " " +
-                                       x.y.z.f2(i)+ " " +
-                                       x.y.z.f3(i)+ " " +
-                                       x.y.z.f4(i)+ " " +
-                                       x.y.z.f5(i)); }
-
-}
+  1..10 | fun (i i32) is say ("$i " +
+                              "{x.y.z.f1(i)} " +
+                              "{x.y.z.f2(i)} " +
+                              "{x.y.z.f3(i)} " +
+                              "{x.y.z.f4(i)} " +
+                              "{x.y.z.f5(i)}")
