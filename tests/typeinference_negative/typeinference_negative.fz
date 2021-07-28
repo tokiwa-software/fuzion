@@ -23,374 +23,284 @@
 #
 # -----------------------------------------------------------------------
 
-typeinference_negative {
+typeinference_negative is
 
-  cyclic0
-   {
-     x := x;  // 1. c0.a should flag an error, cyclic type inference from oneself
-   }
+  cyclic0 is
+     x := x  // 1. c0.a should flag an error, cyclic type inference from oneself
 
-  cyclic1
-   {
-     x := y;  // 2. c1.a should flag an error, field invisible
-     y := x;
-   }
+  cyclic1 is
+     x := y  // 2. c1.a should flag an error, field invisible
+     y := x
 
-  cyclic1a
-   {
-     x := y;  // 4. c1a.a should flag an error, field invisible
-     y := z;  // 5. c1a.b should flag an error, field invisible
-     z := x;
-   }
+  cyclic1a is
+     x := y  // 4. c1a.a should flag an error, field invisible
+     y := z  // 5. c1a.b should flag an error, field invisible
+     z := x
 
-  cyclic2a
-   {
-     x := cyclic2b.x;  // 7. c2.a should flag an error, cyclic type inference between cousins
-   }
+  cyclic2a is
+     x := cyclic2b.x  // 7. c2.a should flag an error, cyclic type inference between cousins
 
-  cyclic2b
-   {
-     x := cyclic2a.x;  // 8. c2.b should flag an error, cyclic type inference between cousins
-   }
+  cyclic2b is
+     x := cyclic2a.x  // 8. c2.b should flag an error, cyclic type inference between cousins
 
 
-  cyclic3aok
-   {
-     x := cyclic3aok.y;
-     y := 3;
-   }
+  cyclic3aok is
+     x := cyclic3aok.y
+     y := 3
 
-  cyclic3bok
-   {
-     x := cyclic3bok.y;
-     y := "Hello";
-   }
+  cyclic3bok is
+     x := cyclic3bok.y
+     y := "Hello"
 
-  cyclic4
-   {
-     a := b;  //  9. c4.a should flag an error, field invisible
-     b := c;  // 10. c4.b should flag an error, field invisible
-     c := d;  // 11. c4.c should flag an error, field invisible
-     d := e;  // 12. c4.d should flag an error, field invisible
-     e := f;  // 13. c4.e should flag an error, field invisible
-     f := g;  // 14. c4.f should flag an error, field invisible
-     g := h;  // 15. c4.g should flag an error, field invisible
-     h := i;  // 16. c4.h should flag an error, field invisible
-     i := j;  // 17. c4.i should flag an error, field invisible
-     j := k;  // 18. c4.j should flag an error, field invisible
-     k := l;  // 19. c4.k should flag an error, field invisible
-     l := m;  // 20. c4.l should flag an error, field invisible
-     m := n;  // 21. c4.m should flag an error, field invisible
-     n := o;  // 22. c4.n should flag an error, field invisible
-     o := p;  // 23. c4.o should flag an error, field invisible
-     p := q;  // 24. c4.p should flag an error, field invisible
-     q := r;  // 25. c4.q should flag an error, field invisible
-     r := s;  // 26. c4.r should flag an error, field invisible
-     s := t;  // 27. c4.s should flag an error, field invisible
-     t := u;  // 28. c4.t should flag an error, field invisible
-     u := v;  // 29. c4.u should flag an error, field invisible
-     v := w;  // 30. c4.v should flag an error, field invisible
-     w := x;  // 31. c4.w should flag an error, field invisible
-     x := y;  // 32. c4.x should flag an error, field invisible
-     y := z;  // 33. c4.y should flag an error, field invisible
-     z := a;
-   }
+  cyclic4 is
+     a := b  //  9. c4.a should flag an error, field invisible
+     b := c  // 10. c4.b should flag an error, field invisible
+     c := d  // 11. c4.c should flag an error, field invisible
+     d := e  // 12. c4.d should flag an error, field invisible
+     e := f  // 13. c4.e should flag an error, field invisible
+     f := g  // 14. c4.f should flag an error, field invisible
+     g := h  // 15. c4.g should flag an error, field invisible
+     h := i  // 16. c4.h should flag an error, field invisible
+     i := j  // 17. c4.i should flag an error, field invisible
+     j := k  // 18. c4.j should flag an error, field invisible
+     k := l  // 19. c4.k should flag an error, field invisible
+     l := m  // 20. c4.l should flag an error, field invisible
+     m := n  // 21. c4.m should flag an error, field invisible
+     n := o  // 22. c4.n should flag an error, field invisible
+     o := p  // 23. c4.o should flag an error, field invisible
+     p := q  // 24. c4.p should flag an error, field invisible
+     q := r  // 25. c4.q should flag an error, field invisible
+     r := s  // 26. c4.r should flag an error, field invisible
+     s := t  // 27. c4.s should flag an error, field invisible
+     t := u  // 28. c4.t should flag an error, field invisible
+     u := v  // 29. c4.u should flag an error, field invisible
+     v := w  // 30. c4.v should flag an error, field invisible
+     w := x  // 31. c4.w should flag an error, field invisible
+     x := y  // 32. c4.x should flag an error, field invisible
+     y := z  // 33. c4.y should flag an error, field invisible
+     z := a
 
-  cyclic5ok
-   {
-     a := 1;
-     b := a;
-     c := b;
-     d := c;
-     e := d;
-     f := e;
-     g := f;
-     h := g;
-     i := h;
-     j := i;
-     k := j;
-     l := k;
-     m := l;
-     n := m;
-     o := n;
-     p := o;
-     q := p;
-     r := q;
-     s := r;
-     t := s;
-     u := t;
-     v := u;
-     w := v;
-     x := w;
-     y := x;
-     z := y;
-   }
+  cyclic5ok is
+     a := 1
+     b := a
+     c := b
+     d := c
+     e := d
+     f := e
+     g := f
+     h := g
+     i := h
+     j := i
+     k := j
+     l := k
+     m := l
+     n := m
+     o := n
+     p := o
+     q := p
+     r := q
+     s := r
+     t := s
+     u := t
+     v := u
+     w := v
+     x := w
+     y := x
+     z := y
 
-  funct1
-   {
-     a := fun () i32 { 3 };
-     b := a;
-     c := b;
-     d := c;
+  funct1 is
+     a := fun () i32 { 3 }
+     b := a
+     c := b
+     d := c
 
-     xx := d(); // should work
-   }
+     xx := d() // should work
 
-  funct2
-   {
-     a := d;  // 35. f2. should flag an error, illegal forward reference
-     b := fun () i32 { 3 };
-     c := b;
-     d := c;
+  funct2 is
+     a := d  // 35. f2. should flag an error, illegal forward reference
+     b := fun () i32 { 3 }
+     c := b
+     d := c
 
-     xx := d(); // should work
-   }
+     xx := d() // should work
 
-  stmnt1
-   {
-     a := 3;
-     b := { a };
-   }
+  stmnt1 is
+     a := 3
+     b := { a }
 
-  stmnt2
-   {
-     a := 3;
-     b := 5;
-     c := true;
-     d := { if c { a } else { b } };
-   }
+  stmnt2 is
+     a := 3
+     b := 5
+     c := true
+     d := { if c { a } else { b } }
 
-  stmnt3
-   {
-     a := 3;
-     b := 5;
-     c := a > b;
-     //  d := c ? a : b; -- NYI: ? : not working yet
-   }
+  stmnt3 is
+     a := 3
+     b := 5
+     c := a > b
+     //  d := c ? a : b -- NYI: ? : not working yet
 
-  result1
-  {
-    x => 3;
-    y => true;
-    z => x;
-  }
+  result1 is
+    x => 3
+    y => true
+    z => x
 
-  result2
-  {
-    x => y;
-    y => z;
-    z => 3;
-  }
+  result2 is
+    x => y
+    y => z
+    z => 3
 
-  result2a
-  {
-    x => true;
-    y => z;
-    z => x;
-  }
+  result2a is
+    x => true
+    y => z
+    z => x
 
-  result3
-  {
+  result3 is
     x => z; y => x;  z => y; // 36. r3.z should flag an error, cyclic result type inference
-  }
 
-  result4
-  {
-    x => x; // 37. r4. should flag an error, cannot infer result type from itself
-  }
+  result4 is
+    x => x // 37. r4. should flag an error, cannot infer result type from itself
 
-  result5
-  {
-    x => y; // 38. r5.x should flag an error, cyclic result type inference
-    y => x; // 39. r5.y should flag an error, cyclic result type inference
-  }
+  result5 is
+    x => y // 38. r5.x should flag an error, cyclic result type inference
+    y => x // 39. r5.y should flag an error, cyclic result type inference
 
-  mix1
-  {
-    x := f;
-    f => 3;
-  }
+  mix1 is
+    x := f
+    f => 3
 
-  mix2
-  {
-    f => x;
-    x := 3;
-  }
+  mix2 is
+    f => x
+    x := 3
 
-  mix3
-  {
-    x := f; // 40. m3.x should flag an error, cyclic type inference between field and feature result type
-    f => x; // 41. m3.f should flag an error, cyclic type inference between field and feature result type
-  }
+  mix3 is
+    x := f // 40. m3.x should flag an error, cyclic type inference between field and feature result type
+    f => x // 41. m3.f should flag an error, cyclic type inference between field and feature result type
 
-  mix4
-  {
-    f => x; // 42. m4.f should flag an error, field invisible
-    x := f;
-  }
+  mix4 is
+    f => x // 42. m4.f should flag an error, field invisible
+    x := f
 
-  mix5
-  {
-    x := 3;
-    f => x;
-    g => y;
-    y := f;
-    z := g;
-  }
+  mix5 is
+    x := 3
+    f => x
+    g => y
+    y := f
+    z := g
 
-  mix6
-  { // the types here are ok, but this has an access to an uninitialized field
-    x := 3;
-    f => x;
-    g => y; // 44. m6.z should flag an error, y accessed before it is initilized
-    z := g;
-    y := f;
-  }
+  mix6 is // the types here are ok, but this has an access to an uninitialized field
+    x := 3
+    f => x
+    g => y // 44. m6.z should flag an error, y accessed before it is initilized
+    z := g
+    y := f
 
-  mix7
-  {
-    x := 3;
-    f => x;
-    g => f;
-    h => y;
-    y := g;
-    z := h;
-  }
+  mix7 is
+    x := 3
+    f => x
+    g => f
+    h => y
+    y := g
+    z := h
 
-  mix8
-  {
-    x := h; f => x; g => f; h => y; y := g; // 45. m8.y should flag an error, cyclic type inference between field and feature result type
-    z := h;
-  }
+  mix8 is
+    x := h; f => x; g => f; h => y; y := g // 45. m8.y should flag an error, cyclic type inference between field and feature result type
+    z := h
 
   typeInferencingFromIf1(b bool) =>
-  {
     if       b     { 3 }         // 46. should flag an error: result type cannot be inferred
     else if !b     { "string" }
-    else if b && b { x i32 := 3; }
+    else if b && b { x i32 := 3 }
     else if b || b { }
     else           { false }
-  }
 
-  typeInferencingFromIf2(b bool)
-  {
+  typeInferencingFromIf2(b bool) is
     f =>
-    {
       if       b     { 3 }         // 47. should flag an error: result type cannot be inferred
       else if !b     { "string" }
-      else if b && b { x i32 := 3; }
+      else if b && b { x i32 := 3 }
       else if b || b { }
       else           { false }
-    }
-  }
 
-  typeInferencingFromIf3(b bool)
-  {
+  typeInferencingFromIf3(b bool) is
     f choice<i32,string,bool> :=
     {
       if       b { 3 }
       else if !b { "string" }
       else       { false }
     }
-  }
 
-  typeInferencingFromIf4(b bool)
-  {
-    f(x choice<i32,string,bool>) { }
+  typeInferencingFromIf4(b bool) is
+    f(x choice<i32,string,bool>) is
     f({
         if       b { 3 }
         else if !b { "string" }
         else       { false }
-      });
-  }
+      })
 
-  typeInferencingFromMatch1
-  {
-    A { }
-    B { }
-    C { }
-    D { }
-    E { }
-    abcde : choice<A,B,C,D,E> { }
+  typeInferencingFromMatch1 is
+    A is
+    B is
+    C is
+    D is
+    E is
+    abcde : choice<A,B,C,D,E> is
 
     test(x abcde) =>
-    {
       match x          // 48. should flag an error: result type cannot be inferred
-      {
         a A => 3
         B,C => "string"
         d D => false
         e E => e
-      }
-    }
-  }
 
-  typeInferencingFromMatch2
-  {
-    A { }
-    B { }
-    C { }
-    D { }
-    E { }
-    abcde : choice<A,B,C,D,E> { }
+  typeInferencingFromMatch2 is
+    A is
+    B is
+    C is
+    D is
+    E is
+    abcde : choice<A,B,C,D,E> is
 
-    test(x abcde)
-    {
+    test(x abcde) is
       f =>
-      {
         match x          // 49. should flag an error: result type cannot be inferred
-        {
           a A => 3
           B,C => "string"
           d D => false
           e E => e
-        }
-      }
-    }
-  }
 
-  typeInferencingFromMatch3
-  {
-    A { }
-    B { }
-    C { }
-    D { }
-    E { }
-    abcde : choice<A,B,C,D,E> { }
-    x abcde := A;
+  typeInferencingFromMatch3 is
+    A is
+    B is
+    C is
+    D is
+    E is
+    abcde : choice<A,B,C,D,E> is
+    x abcde := A
 
     f choice<i32,string,bool,E> :=
     {
       match x
-      {
         a A => 3
         B,C => "string"
         d D => false
         e E => e
-      }
     }
-  }
 
-  typeInferencingFromMatch4
-  {
-    A { }
-    B { }
-    C { }
-    D { }
-    E { }
-    abcde : choice<A,B,C,D,E> { }
-    x abcde := A;
+  typeInferencingFromMatch4 is
+    A is
+    B is
+    C is
+    D is
+    E is
+    abcde : choice<A,B,C,D,E> is
+    x abcde := A
 
-    f(y choice<i32,string,bool,E>);
+    f(y choice<i32,string,bool,E>)
     f({
         match x
-        {
           a A => 3
           B,C => "string"
           d D => false
           e E => e
-        }
-      });
-  }
-
-}
+      })
