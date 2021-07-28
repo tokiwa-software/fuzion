@@ -37,7 +37,7 @@ tupletest is
   p(s Object) is say s
 
   // start with some generic type inference tests, which are a pre-requisite for tuples to work
-  g1<A>(a A) { }
+  g1<A>(a A) is
   g1 "Hello" // should infer <string>
   g1 123 // should infer <i32>
 # chck g1("Hello").a.length=5, "g1<A> infer A==string"   // NYI: string.length
@@ -49,7 +49,7 @@ tupletest is
 # chck itaa.length=6, "g1a<A> infer A==string"   // NYI: string.length
   chck itab=123, "g1a<A> infer A==i32"
 
-  g1b<AAAA>(a,b,c AAAA) { }
+  g1b<AAAA>(a,b,c AAAA) is
   g1bv1 := g1b true,true,false  // should infer <bool>
   g1bv2 := g1b "string","A", "test"  // should infer <string>
   chck(g1bv1.a && g1bv1.b && !g1bv1.c, "g1b<AAAA> infer AAAA==bool")
@@ -139,7 +139,7 @@ tupletest is
   chck(two18a=4 && two18b=2, "two18")
 
 # t10 (i32, bool) { (3, false) }
-  t10 tuple<i32, bool> { (3, false) }
+  t10 tuple<i32, bool> is (3, false)
   p "tuple t10 is {t10.values.0}, {t10.values.1}"
   chck t10.values.0=3    , "t10.values.0"
   chck(t10.values.1 <=> false, "t10.values.1")
@@ -154,7 +154,7 @@ tupletest is
   chck(t10aa.values.0=42, "t10aa.values.0")
 # chck(t10aa.values.1.length=10, "t10aa.values.1")   // NYI: string.length
 
-  t10aaa => { ("devil's number", 666) }
+  t10aaa => ("devil's number", 666)
   p "tuple t10aaa is {t10aaa.values.0}, {t10aaa.values.1}"
 # chck(t10aaa.values.0.length=14, "t10aaa.values.0")   // NYI: string.length
   chck(t10aaa.values.1=666, "t10aaa.values.1")
@@ -166,7 +166,7 @@ tupletest is
 
   t10b1 i32 := ?
   t10b2 bool := ?
-  ib (i i32, b bool) { }
+  ib (i i32, b bool) is
   set (t10b1, t10b2) := ib 33,true
   p "tuple t10b1/2 = ib is {t10b1}, {t10b2}"
   chck t10b1=33, "t10b1"
