@@ -44,46 +44,46 @@ inheritance_for_value_types is
       set exitCode := 1
 
   a is
-    x (msg string, expected i32) unit is chck msg, expected == 1
-    y (msg string, expected i32) unit is x msg, expected
-    z (msg string, expected i32) =>      x msg, expected
+    x (msg string, expected i32) unit is chck msg expected=1
+    y (msg string, expected i32) unit is x msg expected
+    z (msg string, expected i32) =>      x msg expected
     q (msg string, expected i32) is
-      xx is z msg, expected
+      xx is z msg expected
 
   b : a is
-    redef x (msg string, expected i32) unit is chck msg, expected == 2
+    redef x (msg string, expected i32) unit is chck msg expected=2
 
   c : a is
-    redef x (msg string, expected i32) unit is chck msg, expected == 3
+    redef x (msg string, expected i32) unit is chck msg expected=3
 
   v (v a.q) is
     v.xx
 
   rx (rv ref a, msg string, expected i32) unit is
-    rv.x msg, expected
+    rv.x msg expected
 
   ry (rv ref a, msg string, expected i32) unit is
-    rv.y msg, expected
+    rv.y msg expected
 
   rz (rv ref a, msg string, expected i32) unit is
-    rv.z msg, expected
+    rv.z msg expected
 
-  a.y "a.y", 1
-  b.y "b.y", 2
-  c.y "c.y", 3
-  a.z "a.z", 1
-  b.z "b.z", 2
-  c.z "c.z", 3
-  rx a, "rx a", 1
-  rx b, "rx b", 2
-  rx c, "rx c", 3
-  ry a, "ry a", 1
-  ry b, "ry b", 2
-  ry c, "ry c", 3
-  rz a, "rz a", 1
-  rz b, "rz b", 2
-  rz c, "rz c", 3
-  v (a.q "v a.q", 1)
+  a.y "a.y" 1
+  b.y "b.y" 2
+  c.y "c.y" 3
+  a.z "a.z" 1
+  b.z "b.z" 2
+  c.z "c.z" 3
+  rx a "rx a" 1
+  rx b "rx b" 2
+  rx c "rx c" 3
+  ry a "ry a" 1
+  ry b "ry b" 2
+  ry c "ry c" 3
+  rz a "rz a" 1
+  rz b "rz b" 2
+  rz c "rz c" 3
+  v (a.q "v a.q" 1)
   // v (b.q "v b.q" 2)   # b.q not assignment compatible to a.q
   // v (c.q "v c.q" 3)   # c.q not assignment compatible to a.q
 
