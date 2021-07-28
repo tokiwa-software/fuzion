@@ -23,11 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-genericstest {
+genericstest is
 
   exitCode := 0
-
-  o := stdout;
 
   chck(b bool, msg string) is
     s := if b
@@ -35,191 +33,161 @@ genericstest {
     else
       set exitCode := 1
       "FAILED: "
-    o.println (s + msg)
+    say (s + msg)
 
-  List<T> {
-    public Node (
+  List<T> is
+    public Node(
       public el T,
-      public n, p OptNode) ref : Object {
-    }
+      public n, p OptNode) ref : Object is
 
-    public Nil { }
-    OptNode : choice<Node,Nil> { }
+    public Nil is
+    OptNode : choice<Node,Nil> is
 
-    h OptNode := Nil;
-    add(e T) {
-      set h := Node(e,h,Nil);
-    }
-    print {
+    h OptNode := Nil
+    add(e T) is
+      set h := Node e h Nil
+
+    print is
       // for   -- NYI: must update i in the loop prolog
-      i := h;
-      while (i ? Node => { true }; Nil => false) {  // NYI: This screams for recursion
+      i := h
+      while (i ? Node => { true }; Nil => false)  // NYI: This screams for recursion
         match i
-        {
           n Node =>
-            {
-              stdout.println("print el in loop: " + n.el);
-              set i := n.n;
-            }
-          Nil => { }
-        }
-      }
-    }
-    size i32 {
+              say "print el in loop: {n.el}"
+              set i := n.n
+          Nil =>
+
+    size i32 is
+      set result := 0
       // for   -- NYI: must update i in the loop prolog
-      i := h;
-      while (i ? Node => { true }; Nil => false) {   // NYI: This screams for recursion
+      i := h
+      while (i ? Node => { true }; Nil => false)   // NYI: This screams for recursion
         match i
-        {
           n Node =>
-            {
-              set result := result + 1;
-              set i := n.n;
-            }
-          Nil => { }
-        }
-      }
-    }
-  }
+              set result := result + 1
+              set i := n.n
+          Nil =>
 
-  li List<i32> := List<i32>;
-  li.add(3);
-  li.add(4);
-  li.add(5);
-  li.add(6);
-  li.add(7);
-  li.add(8);
-  li.add(9);
-  li.print;
-  o.println("size: " + li.size);
+  li List<i32> := List<i32>
+  li.add 3
+  li.add 4
+  li.add 5
+  li.add 6
+  li.add 7
+  li.add 8
+  li.add 9
+  li.print
+  say "size: {li.size}"
 
-  Complex1(r, i i32) { };
+  Complex1(r, i i32) is
 
-  Complex<T>(r, i T) { };
-  Complex2(rr, ii i32) : Complex<i32>(rr, ii) { };
+  Complex<T>(r, i T) is
+  Complex2(rr, ii i32) : Complex<i32>(rr, ii) is
 
-  lc0 := List<Complex1>;
-  lc0.add(Complex1(3,4));
-  lc0.add(Complex1(4,5));
-  lc0.add(Complex1(5,6));
-  lc0.add(Complex1(7,8));
-  lc0.print;
-  o.println("0: size: " + lc0.size);
+  lc0 := List<Complex1>
+  lc0.add (Complex1 3 4)
+  lc0.add (Complex1 4 5)
+  lc0.add (Complex1 5 6)
+  lc0.add (Complex1 7 8)
+  lc0.print
+  say "0: size: {lc0.size}"
 
   // The parser uses some tricks to distinguish multiple ">" in a list of actual
   // generics from an operator consisting of multiple ">". So we check if such an
   // operator works here:
-  q(a i32)
-  {
-    infix >    (b i32) bool { a      > b }
-    infix >>   (b i32) bool { a/10   > b }
-    infix >>>  (b i32) bool { a/100  > b }
-    infix >>>> (b i32) bool { a/1000 > b }
+  q(a i32) is
+    infix >    (b i32) bool is a      > b
+    infix >>   (b i32) bool is a/10   > b
+    infix >>>  (b i32) bool is a/100  > b
+    infix >>>> (b i32) bool is a/1000 > b
 
-    prefix >    i32 { a+1    }  // >q is 1 larger than q
-    prefix >>   i32 { a+10   }  // >>q is 10 larger
-    prefix >>>  i32 { a+100  }  // >>q is 100 larger
-    prefix >>>> i32 { a+1000 }  // >>q is 1000 larger
+    prefix >    i32 is a+1      // >q is 1 larger than q
+    prefix >>   i32 is a+10     // >>q is 10 larger
+    prefix >>>  i32 is a+100    // >>q is 100 larger
+    prefix >>>> i32 is a+1000   // >>q is 1000 larger
 
-    postfix >    i32 { a-1    } // q> is 1 smaller than q
-    postfix >>   i32 { a-10   } // q>> is 10 smaller
-    postfix >>>  i32 { a-100  } // q>>> is 100 smaller
-    postfix >>>> i32 { a-1000 } // q>>>> is 1000 smaller
-  }
+    postfix >    i32 is a-1     // q> is 1 smaller than q
+    postfix >>   i32 is a-10    // q>> is 10 smaller
+    postfix >>>  i32 is a-100   // q>>> is 100 smaller
+    postfix >>>> i32 is a-1000  // q>>>> is 1000 smaller
 
-  a q := ?;
-  set a := q(    2); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
-  set a := q(   20); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
-  set a := q(  200); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
-  set a := q( 2000); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
-  set a := q(20000); o.print("a(" + a.a + ",10) infix > is " + (a > 10) + "," + (a >> 10) + "," + (a >>> 10) + "," + (a >>>> 10));
+  a q := ?
+  set a := q     2; yak "a({a.a},10) infix > is {a > 10},{a >> 10},{a >>> 10},{a >>>> 10}"
+  set a := q    20; yak "a({a.a},10) infix > is {a > 10},{a >> 10},{a >>> 10},{a >>>> 10}"
+  set a := q   200; yak "a({a.a},10) infix > is {a > 10},{a >> 10},{a >>> 10},{a >>>> 10}"
+  set a := q  2000; yak "a({a.a},10) infix > is {a > 10},{a >> 10},{a >>> 10},{a >>>> 10}"
+  set a := q 20000; yak "a({a.a},10) infix > is {a > 10},{a >> 10},{a >>> 10},{a >>>> 10}"
 
-  set a := q(    2); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
-  set a := q(   20); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
-  set a := q(  200); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
-  set a := q( 2000); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
-  set a := q(20000); o.print("a(" + a.a + ") prefix > is " + (>a) + "," + (>>a) + "," + (>>>a) + "," + (>>>>a));
+  set a := q     2; yak "a({a.a}) prefix > is {>a},{>>a},{>>>a},{>>>>a}"
+  set a := q    20; yak "a({a.a}) prefix > is {>a},{>>a},{>>>a},{>>>>a}"
+  set a := q   200; yak "a({a.a}) prefix > is {>a},{>>a},{>>>a},{>>>>a}"
+  set a := q  2000; yak "a({a.a}) prefix > is {>a},{>>a},{>>>a},{>>>>a}"
+  set a := q 20000; yak "a({a.a}) prefix > is {>a},{>>a},{>>>a},{>>>>a}"
 
-  set a := q(    2); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
-  set a := q(   20); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
-  set a := q(  200); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
-  set a := q( 2000); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
-  set a := q(20000); o.print("a(" + a.a + ") postfix > is " + (a>) + "," + (a>>) + "," + (a>>>) + "," + (a>>>>));
+  set a := q     2; yak "a({a.a}) postfix > is {a>},{a>>},{a>>>},{a>>>>}"
+  set a := q    20; yak "a({a.a}) postfix > is {a>},{a>>},{a>>>},{a>>>>}"
+  set a := q   200; yak "a({a.a}) postfix > is {a>},{a>>},{a>>>},{a>>>>}"
+  set a := q  2000; yak "a({a.a}) postfix > is {a>},{a>>},{a>>>},{a>>>>}"
+  set a := q 20000; yak "a({a.a}) postfix > is {a>},{a>>},{a>>>},{a>>>>}"
 
-  lc1 := List<Complex2>;
-  lc1.add(Complex2(3,4));
-  lc1.add(Complex2(4,5));
-  lc1.add(Complex2(5,6));
-  lc1.add(Complex2(7,8));
-  lc1.print;
-  o.println("1: size: " + lc1.size);
+  lc1 := List<Complex2>
+  lc1.add (Complex2 3 4)
+  lc1.add (Complex2 4 5)
+  lc1.add (Complex2 5 6)
+  lc1.add (Complex2 7 8)
+  lc1.print
+  say "1: size: {lc1.size}"
 
   // lets see if we can derive actual generics automatically:
   lc2 := List<Complex <i32>>;
-  lc2.add(Complex<i32>(3,4));
-  lc2.add(Complex<i32>(4,5));
-  lc2.add(Complex<i32>(5,6));
-  lc2.add(Complex<i32>(7,8));
-  lc2.print;
-  o.print("2: size: " + lc2.size);
+  lc2.add (Complex<i32> 3 4)
+  lc2.add (Complex<i32> 4 5)
+  lc2.add (Complex<i32> 5 6)
+  lc2.add (Complex<i32> 7 8)
+  lc2.print
+  yak "2: size: {lc2.size}"
 
 /* NYI: this currently does not work:
 
   // can we inherit paramter fields r, i?
-  Complex3(redefine r, i i32) : Complex<i32>(r, i) { };
+  Complex3(redefine r, i i32) : Complex<i32> r i is
   lc3 := List<Complex3>;
-  lc3.add(Complex3(3,4));
-  lc3.add(Complex3(4,5));
-  lc3.add(Complex3(5,6));
-  lc3.add(Complex3(7,8));
-  lc3.print;
-  o.print("3: size: " + lc3.size);
+  lc3.add (Complex3 3 4)
+  lc3.add (Complex3 4 5)
+  lc3.add (Complex3 5 6)
+  lc3.add (Complex3 7 8)
+  lc3.prin;
+  yak "3: size: {lc3.size}"
 
 */
 
-  outerGenerics
-  {
-    A<T,U>
-    {
-      B<V,W>(y U)
-      {
-        p
-        {
-          out := stdout;
-          out.println("y is" + y);
-        }
-      }
-    }
-    x0 A<i32,bool  > := A<i32,bool>;
-    x1 A<i32,bool  >.B<string,bool> := A<i32,bool>.B<string,bool>(true);
-    x1.p;
-  }
-  outerGenerics;  // should print "y is true".
+  outerGenerics is
+    A<T,U> is
+      B<V,W>(y U) is
+        p is
+          say "y is{y}"
+    x0 A<i32,bool  > := A<i32,bool>
+    x1 A<i32,bool  >.B<string,bool> := A<i32,bool>.B<string,bool> true
+    x1.p
 
-  opengenerics12
-  {
-    F<A...> ref
-    {
+  outerGenerics  // should print "y is true".
+
+  opengenerics12 is
+
+    F<A...> ref is
       f(a A) is abstract
-    }
 
-    G ref : F<i32,bool,i32>()
-    {
-      redefine f(a0 i32, a1 bool, a2 i32)
-      {
-       chck(a0 == a2, "f only called with first and last element equal");
-       chck(a1, "f only called with a1 true");
-      }
-    }
+    G ref : F<i32,bool,i32> is
+      redefine f(a0 i32, a1 bool, a2 i32) is
+       chck a0==a2 "f only called with first and last element equal"
+       chck a1     "f only called with a1 true"
 
-    x G := G();
-    x.f(3,true,3);
-    y F<i32,bool,i32> := x;
-    y.f(5,true,5);
-    z := G;
-    z.f(7,true,7);
-  }
-  opengenerics12;
+    x G := G
+    x.f 3 true 3
+    y F<i32,bool,i32> := x
+    y.f 5 true 5
+    z := G
+    z.f 7 true 7
+  opengenerics12
 
   fuzion.std.exit exitCode
-}
