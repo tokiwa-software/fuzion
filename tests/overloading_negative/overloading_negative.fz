@@ -23,8 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
-overloading_negative
-{
+overloading_negative is
+
   exitCode := 0
 
   chck (msg string, b bool) unit is
@@ -34,44 +34,36 @@ overloading_negative
       say "FAILED: " + msg
       set exitCode := 1
 
-  out := stdout;
+  test1 is
+    a is
+    a(i i32) is
+    a(i, j i32) is
 
+    x := a
+    y := a 42
+    z := a 47 11
+
+    a1 a       // 1. should flag an error: ambiguous types
+    a2 a       // 2. should flag an error: ambiguous types
+    a3 a       // 3. should flag an error: ambiguous types
+    set a1 := a
+    set a2 := a 42
+    set a3 := a 47 11
   test1
-  {
-    a() { }
-    a(i i32) { }
-    a(i, j i32) { }
 
-    x := a();
-    y := a(42);
-    z := a(47,11);
+  test2 is
+    a() unit is
+    a(i i32) i32 is 13
+    a(i, j i32) string is "foo"
 
-    a1 a;       // 1. should flag an error: ambiguous types
-    a2 a;       // 2. should flag an error: ambiguous types
-    a3 a;       // 3. should flag an error: ambiguous types
-    set a1 := a();
-    set a2 := a(42);
-    set a3 := a(47,11);
-  }
-  test1;
+    x := a
+    y := a 42
+    z := a 47 11
 
+    a1 a       // 4. should flag an error: type not found
+    a2 a       // 5. should flag an error: type not found
+    a3 a       // 6. should flag an error: type not found
+    set a1 := a
+    set a2 := a 42
+    set a3 := a 47 11
   test2
-  {
-    a() unit { }
-    a(i i32) i32 { 13 }
-    a(i, j i32) string { "foo" }
-
-    x := a();
-    y := a(42);
-    z := a(47,11);
-
-    a1 a;       // 4. should flag an error: type not found
-    a2 a;       // 5. should flag an error: type not found
-    a3 a;       // 6. should flag an error: type not found
-    set a1 := a();
-    set a2 := a(42);
-    set a3 := a(47,11);
-  }
-  test2;
-
-}
