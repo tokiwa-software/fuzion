@@ -23,235 +23,136 @@
 #
 # -----------------------------------------------------------------------
 
-choice_negative
-{
+choice_negative is
 
-  cyclic1
-  {
-    A : choice<A,i32,string> { }  // 1. should flag an error: cyclic choice
-  }
+  cyclic1 is
+    A : choice<A,i32,string> is  // 1. should flag an error: cyclic choice
 
-  cyclic2
-  {
-    A : choice<ref A,i32,string> { }
-  }
+  cyclic2 is
+    A : choice<ref A,i32,string> is
 
-  cyclic3
-  {
-    A : choice<i32,A,string> { }  // 2. should flag an error: cyclic choice
-  }
+  cyclic3 is
+    A : choice<i32,A,string> is  // 2. should flag an error: cyclic choice
 
-  cyclic4
-  {
-    A : choice<i32,ref A,string> { }
-  }
+  cyclic4 is
+    A : choice<i32,ref A,string> is
 
-  cyclic5
-  {
-    A : choice<i32,string,A> { }  // 3. should flag an error: cyclic choice
-  }
+  cyclic5 is
+    A : choice<i32,string,A> is  // 3. should flag an error: cyclic choice
 
-  cyclic6
-  {
-    A : choice<i32,string,ref A> { }
-  }
+  cyclic6 is
+    A : choice<i32,string,ref A> is
 
 /* NYI: cycle7..cycle12 moved to choice_negative2 since these currently are
   detected during clazz creation only, which is not performed when earlier
   phases caused errors: */
 
-  instantiate1
-  {
-    x := choice<i32, string>;  // 7. should flag an error: cannot instanciate choice
-  }
+  instantiate1 is
+    x := choice<i32, string>  // 7. should flag an error: cannot instanciate choice
 
-  instantiate2
-  {
-    MyChoice : choice<string, bool, f64> { }
-    x := MyChoice;  // 8. should flag an error: cannot instanciate choice
-  }
+  instantiate2 is
+    MyChoice : choice<string, bool, f64> is
+    x := MyChoice  // 8. should flag an error: cannot instanciate choice
 
-  multi1
-  {
-    A : choice<i32,bool>, choice<string,f64> { } // 9. should flag an error: choice type must inherit exaclty once from choice
-  }
+  multi1 is
+    A : choice<i32,bool>, choice<string,f64> is // 9. should flag an error: choice type must inherit exaclty once from choice
 
-  multi2
-  {
-    A : choice<i32,bool> { }
-    B : choice<string,f64> { }
-    C : A, B { } // 10. should flag an error: choice type must inherit exaclty once from choice
-  }
+  multi2 is
+    A : choice<i32,bool> is
+    B : choice<string,f64> is
+    C : A, B is // 10. should flag an error: choice type must inherit exaclty once from choice
 
-  multi3
-  {
-    A : choice<i32,bool> { }
-    B : A, choice<string,f64> { } // 11. should flag an error: choice type must inherit exaclty once from choice
-  }
+  multi3 is
+    A : choice<i32,bool> is
+    B : A, choice<string,f64> is // 11. should flag an error: choice type must inherit exaclty once from choice
 
   multi4
-  {
-    A : choice<i32,bool> { }
-    B : choice<string,f64>, A { } // 12. should flag an error: choice type must inherit exaclty once from choice
-  }
+    A : choice<i32,bool> is
+    B : choice<string,f64>, A is // 12. should flag an error: choice type must inherit exaclty once from choice
 
-  nofields1
-  {
-    A : choice<i32, string, bool>
-    {
-      x i32 := ?; // 13. should flag an error: choice type must not have any fields
-    }
-  }
+  nofields1 is
+    A : choice<i32, string, bool> is
+      x i32 := ? // 13. should flag an error: choice type must not have any fields
 
-  nofields2
-  {
-    A (x i32)  : choice<i32, string, bool>  // 14. should flag an error: choice type must not have any fields
-    {
-    }
-  }
+  nofields2 is
+    A (x i32)  : choice<i32, string, bool> is  // 14. should flag an error: choice type must not have any fields
 
-  nofields3
-  {
-    A { x i32 := ? }
-    B : A, choice<i32, string, bool>  // 15. should flag an error: choice type must not have any fields
-    {
-    }
-  }
+  nofields3 is
+    A is x i32 := ?
+    B : A, choice<i32, string, bool> is // 15. should flag an error: choice type must not have any fields
 
-  nofields4
-  {
-    A { x i32 := ? }
-    B : choice<i32, string, bool>, A  // 16. should flag an error: choice type must not have any fields
-    {
-    }
-  }
+  nofields4 is
+    A is x i32 := ?
+    B : choice<i32, string, bool>, A is // 16. should flag an error: choice type must not have any fields
 
-  nofields5
-  {
-    A (x int) { }
-    B : A(3) { }
-    C : B, choice<i32, string, bool>  // 17. should flag an error: choice type must not have any fields
-    {
-    }
-  }
+  nofields5 is
+    A (x int) is
+    B : A(3) is
+    C : B, choice<i32, string, bool> is // 17. should flag an error: choice type must not have any fields
 
-  nofields6
-  {
-    A (x int) { }
-    B : A(3) { }
-    C : choice<i32, string, bool>, B  // 18. should flag an error: choice type must not have any fields
-    {
-    }
-  }
+  nofields6 is
+    A (x int) is
+    B : A(3) is
+    C : choice<i32, string, bool>, B is // 18. should flag an error: choice type must not have any fields
 
-  leaf1
-  {
-    A : choice<f32,f64> { }
-    B : A { } // 19. should flag an error: choice type must be leaf
-  }
+  leaf1 is
+    A : choice<f32,f64> is
+    B : A is // 19. should flag an error: choice type must be leaf
 
-  args1
-  {
-    A : choice<i32, i32>  // 20. should flag an error: generic args to choice must be different
-    {
-    }
-  }
+  args1 is
+    A : choice<i32, i32> is // 20. should flag an error: generic args to choice must be different
 
-  args2
-  {
+  args2 is
     x choice<i32, i32> := ? // 21. should flag an error: generic args to choice must be different
-  }
 
-  args3
-  {
-    x i32 | i32 := ?;  // 22. should flag an error: generic args to choice must be different
-  }
+  args3 is
+    x i32 | i32 := ?  // 22. should flag an error: generic args to choice must be different
 
-  args4
-  {
-    S ref { }
-    R ref : S { }
-    A : choice<R, S>  // 23. should flag an error: generic args to choice must be different
-    {
-    }
-  }
+  args4 is
+    S ref is
+    R ref : S is
+    A : choice<R, S> is // 23. should flag an error: generic args to choice must be different
 
-  args5
-  {
-    S ref { }
-    R ref : S { }
-    x choice<R, S> := ?;  // 24. should flag an error: generic args to choice must be different
-  }
+  args5 is
+    S ref is
+    R ref : S is
+    x choice<R, S> := ?  // 24. should flag an error: generic args to choice must be different
 
-  args6
-  {
-    S ref { }
-    R ref : S { }
-    x R | S := ?;  // 25. should flag an error: generic args to choice must be different
-  }
+  args6 is
+    S ref is
+    R ref : S is
+    x R | S := ?  // 25. should flag an error: generic args to choice must be different
 
-  outer1(x i32)
-  {
-    A : choice<i64,f32>
-    {
-      f
-      {
-        y := x; // 26. should flag an error: access to closure not permitted in choice
-      }
-    }
-  }
+  outer1(x i32) is
+    A : choice<i64,f32> is
+      f is
+        y := x // 26. should flag an error: access to closure not permitted in choice
 
-  outer2(x i32)
-  {
-    A
-    {
-      f
-      {
-        y := x; // 27. should flag an error: access to closure not permitted in choice
-      }
-    }
-    B : A, choice<i64,f32>
-    {
-    }
-  }
+  outer2(x i32) is
+    A is
+      f is
+        y := x // 27. should flag an error: access to closure not permitted in choice
+    B : A, choice<i64,f32> is
 
-  impl1
-  {
-    x bool : choice<i64,bool> := true;  // 28. should flag an error, choice feature must not be field
-  }
-  impl2
-  {
-    x : choice<i64,bool> := true;  // 29. should flag an error, choice feature must not be field
-  }
-  impl3
-  {
-    x bool : choice<i64,bool>;  // 30. should flag an error, choice feature must not be field
-  }
-  impl4
-  {
-    x : choice<i64,bool> => 3;  // 31. should flag an error, choice feature must not contain code
-  }
-  impl5
-  {
-    x : choice<i64,bool> { stdout.print("Hello"); }  // 32. should flag an error, choice feature must not contain code
-  }
-  impl6
-  {
+  impl1 is
+    x bool : choice<i64,bool> := true  // 28. should flag an error, choice feature must not be field
+
+  impl2 is
+    x : choice<i64,bool> := true  // 29. should flag an error, choice feature must not be field
+  impl3 is
+    x bool : choice<i64,bool>  // 30. should flag an error, choice feature must not be field
+  impl4 is
+    x : choice<i64,bool> => 3  // 31. should flag an error, choice feature must not contain code
+  impl5 is
+    x : choice<i64,bool> is say "Hello" // 32. should flag an error, choice feature must not contain code
+  impl6 is
     x : choice<i64,bool> is abstract  // 33. should flag an error, choice feature must not be abstract
-  }
-  impl7
-  {
+  impl7 is
      x : choice<i64,bool> is intrinsic  // 34. should flag an error, choice feature must not be intrinsic
-  }
-  impl8
-  {
-    x : choice<i64,bool> { }  // ok
-  }
-  impl9
-  {
-    x choice<i64,bool> := false;  // ok
-  }
-
+  impl8 is
+    x : choice<i64,bool> is  // ok
+  impl9 is
+    x choice<i64,bool> := false  // ok
 
   issue23 is
 
@@ -261,6 +162,3 @@ choice_negative
 
     j := 42 ? TRUE => true   // 36. should flag an error, match subject must be choice
             | FALSE => false
-
-
-}
