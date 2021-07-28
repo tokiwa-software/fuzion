@@ -246,14 +246,14 @@ inheritance is
           1
       D(i i32) is
         say i
-        chck i=1, "call to y in arguments must be performed on heir instance"
+        chck i=1 "call to y in arguments must be performed on heir instance"
 
       # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
       B ref : x, y, C, D y is
 
     A.B
-    chck cnt_A_y=2, "inherits calls to x and y must be performed in outer feature A"
-    chck cnt_C_y=1, "C.y must be called exactly once as argument to parent D(y)"
+    chck cnt_A_y=2 "inherits calls to x and y must be performed in outer feature A"
+    chck cnt_C_y=1 "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args
 
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from ref feature A */
@@ -281,14 +281,14 @@ inheritance is
           1
       D(i i32) is
         say i
-        chck i=1, "call to y in arguments must be performed on heir instance"
+        chck i=1 "call to y in arguments must be performed on heir instance"
 
       # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
       B ref : x, y, C, D x is
 
     A.B
-    chck cnt_A_y=2, "inherits calls to x and y must be performed in outer feature A"
-    chck cnt_C_y=1, "C.y must be called exactly once as argument to parent D(y)"
+    chck cnt_A_y=2 "inherits calls to x and y must be performed in outer feature A"
+    chck cnt_C_y=1 "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args2
 
   /* check dynamic binding on call to A.x if ref feature B inherits from value feature A */
@@ -327,14 +327,14 @@ inheritance is
           1
       D(i i32) is
         say i
-        chck i=1, "call to y in arguments must be performed on heir instance"
+        chck i=1 "call to y in arguments must be performed on heir instance"
 
       # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
       B ref : x, y, C, D x is
 
     A.B
-    chck cnt_A_y=2, "inherits calls to x and y must be performed in outer feature A"
-    chck cnt_C_y=1, "C.y must be called exactly once via x as argument to parent D(x)"
+    chck cnt_A_y=2 "inherits calls to x and y must be performed in outer feature A"
+    chck cnt_C_y=1 "C.y must be called exactly once via x as argument to parent D(x)"
   call_inherited_from_parent_args3
 
   inheritOuter is
@@ -387,12 +387,12 @@ inheritance is
     D2
     E2
     F2
-    chck "test Acnt", Acnt, 18
-    chck "test Bcnt", Bcnt, 15
-    chck "test Ccnt", Ccnt, 12
-    chck "test Dcnt", Dcnt, 9
-    chck "test Ecnt", Ecnt, 6
-    chck "test Fcnt", Fcnt, 3
+    chck "test Acnt" Acnt 18
+    chck "test Bcnt" Bcnt 15
+    chck "test Ccnt" Ccnt 12
+    chck "test Dcnt" Dcnt 9
+    chck "test Ecnt" Ecnt 6
+    chck "test Fcnt" Fcnt 3
     chck(msg string, v, expected i32) is
       if v == expected
         say "$msg: PASSED."
