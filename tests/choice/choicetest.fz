@@ -26,21 +26,21 @@
 choicetest is
 
   // object-oriented style using subclasses
-  Light ref { }
-  Red    ref : Light {}
-  Yellow ref : Light {}
-  Green  ref : Light {}
+  Light ref is
+  Red    ref : Light is
+  Yellow ref : Light is
+  Green  ref : Light is
 
-  l1 Light := Red;
-  l2 Light := Green;
+  l1 Light := Red
+  l2 Light := Green
 
   say "l1 is Red, l2 is Green"
 
   // using choice-type
-  Penny   {}
-  Nickel  {}
-  Dime    {}
-  Quarter {}
+  Penny   is
+  Nickel  is
+  Dime    is
+  Quarter is
 
   Coin : choice
     <Penny,
@@ -62,7 +62,7 @@ choicetest is
       Quarter => 25
 
   say "creating array:"
-  a := marray<Coin> 10, Penny
+  a := marray<Coin> 10 Penny
   a[0] := Penny
   a[1] := Penny
   a[2] := Penny
@@ -91,4 +91,4 @@ choicetest is
   a.forAll (fun (c Coin) => set sum := sum + c.value_in_cents)
   say sum
 
-  say ("summing array using monoid: "+a.map<i32>(fun (c Coin) => c.value_in_cents).fold i32.sum)   # NYI: Should become 'a.map(c => c.value_in_cents).fold i32.sum'
+  say "summing array using monoid: {a.map<i32>(fun (c Coin) => c.value_in_cents).fold i32.sum}"   # NYI: Should become 'a.map(c => c.value_in_cents).fold i32.sum'
