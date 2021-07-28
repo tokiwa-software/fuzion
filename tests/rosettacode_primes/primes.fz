@@ -23,77 +23,57 @@
 #
 # -----------------------------------------------------------------------
 
-primes
-{
-  out := stdout;
+primes is
 
-  primes(n i32)  // sieve using loops
-  {
+  primes(n i32) is // sieve using loops
     for
       a := marray n+1 false, a
       i := 2, i + 1
     while i <= n
-    {
       if !a[i]
-      {
-        out.print(i); out.print(" ");
+        yak "$i "
         for
           j := i, j + i;
         while j <= n
-        {
           a[j] := true;
-        }
-      }
-    }
-  }
-  out.println("Primes using loop:"); primes(1000); out.println;
+  say "Primes using loop:"; primes 1000; say
 
-  primes2(n i32)   // sieve using streams
-  {
+  primes2(n i32) is   // sieve using streams
     a := marray n+1, false
     (2..n).forAll(fun (i i32)
       {
-        if (!a[i])
-        {
-          out.print(i); out.print(" ");
-          (1..n).forWhile(fun (j i32) bool { a[i*j] := true; (i*j+i) <= n });
-        }
-      });
-  }
-  out.println("Primes using streams:"); primes2(1000); out.println;
+        if !a[i]
+          yak "$i "
+          (1..n).forWhile (fun (j i32) bool { a[i*j] := true; (i*j+i) <= n })
+      })
+  say "Primes using streams:"; primes2 1000; say
 
-  primes3(n i32)   // sieve using streams and filters
-  {
+  primes3(n i32) is   // sieve using streams and filters
     a := marray n+1, false
     (2..n).filter(fun (i i32) bool { !a[i] }).forAll(fun (i i32)
       {
-          out.print(i); out.print(" ");
+          yak "$i "
           (1..n/i).forAll(fun (j i32) { a[i*j] := true; } );
-         /* with more syntactic sugar, this could become:
+         /* NYI: with more syntactic sugar, this could become:
 
           (1..n/i).forAll(j => a[i*j] := true);
           */
-      });
-  }
-  out.println("Primes using streams and filters:"); primes3(1000); out.println;
+      })
+  say "Primes using streams and filters:"; primes3 1000; say
 
-  primes4(n i32)   // sieve using pipes
-  {
+  primes4(n i32) is  // sieve using pipes
     a := marray n+1, false
 
     (2..n) |& (fun (i i32) => !a[i]) | fun (i i32)
       {
-          out.print(i); out.print(" ");
-          (1..n/i) | fun (j i32) { a[i*j] := true; };
-      };
+          yak "$i "
+          (1..n/i) | fun (j i32) { a[i*j] := true; }
+      }
 /*
     (2..n) |& (i => !a[i]) | i =>
       {
-          out.print(i); out.print(" ");
-          (1..n/i) | j => { a[i*j] := true; };
-      };
+          yak "$i "
+          (1..n/i) | j => { a[i*j] := true; }
+      }
       */
-  }
-  out.println("Primes using pipes:"); primes4(1000); out.println;
-
-}
+  say "Primes using pipes:"; primes4 1000; say
