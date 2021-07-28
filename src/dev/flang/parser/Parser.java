@@ -1201,7 +1201,7 @@ indexCall   : ( LBRACKET exprList RBRACKET
           }
         target = result;
       }
-    while (current() == Token.t_lcrochet);
+    while (!ignoredTokenBefore() && current() == Token.t_lcrochet);
     return result;
   }
 
@@ -1220,7 +1220,7 @@ callTail    : ( indexCall
   Call callTail(Call target)
   {
     Call result = target;
-    if (current() == Token.t_lcrochet)
+    if (!ignoredTokenBefore() && current() == Token.t_lcrochet)
       {
         result = indexCall(result);
       }
@@ -1382,7 +1382,6 @@ actualArgs  : actualsList
       case t_semicolon       :
       case t_comma           :
       case t_rparen          :
-      case t_lcrochet        :
       case t_rcrochet        :
       case t_lbrace          :
       case t_rbrace          :
@@ -1458,7 +1457,7 @@ actualsLst  : expr actualsLst
   List<Expr> actualsList()
   {
     List<Expr> result = Call.NO_PARENTHESES;
-    if (!endsActuals())
+    if (ignoredTokenBefore() && !endsActuals())
       {
         var eas = endAtSpace(pos());
         result = new List<>(expr());
@@ -1805,7 +1804,7 @@ simpleterm  : bracketTerm
           }
         break;
       }
-    if (current() == Token.t_lcrochet)
+    if (!ignoredTokenBefore() && current() == Token.t_lcrochet)
       {
         result = indexCall(result);
       }
@@ -1876,13 +1875,14 @@ stringTerm  : STRING
   {
     switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
-      case t_lparen :
-      case t_fun    :
-      case t_integer:
-      case t_old    :
-      case t_match  :
-      case t_lbrace : return true;
-      default       :
+      case t_lparen  :
+      case t_lcrochet:
+      case t_lbrace  :
+      case t_fun     :
+      case t_integer :
+      case t_old     :
+      case t_match   : return true;
+      default        :
         return
           isStartedString(current())
           || isNamePrefix()    // Matches call and qualThis
