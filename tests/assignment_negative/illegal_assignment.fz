@@ -23,74 +23,69 @@
 #
 # -----------------------------------------------------------------------
 
-illegal_assignment {
+illegal_assignment is
 
-  Q ref {
-    A ref { x { stdout.println("*** should never be here ***"); } }
-    B ref { x { stdout.println("*** should never be here ***"); } }
-    C ref { x { stdout.println("*** should never be here ***"); } xc {}; }
-    D ref { x { stdout.println("*** should never be here ***"); } xb {}; xc {}; }
-    E ref { x { stdout.println("*** should never be here ***"); } xb {}; xc {}; }
-  }
+  Q ref is
+    A ref { x { say "*** should never be here ***" } }
+    B ref { x { say "*** should never be here ***" } }
+    C ref { x { say "*** should never be here ***" }; xc {} }
+    D ref { x { say "*** should never be here ***" }; xb {}; xc {} }
+    E ref { x { say "*** should never be here ***" }; xb {}; xc {} }
 
-  curid i32 := 0;
-  id i32
-  {
-    set result := curid;
-    set curid := result + 1;
-  }
+  curid i32 := 0
+  id i32 is
+    set result := curid
+    set curid := result + 1
 
-  A ref {
-    ident := id;
-    stdout.println("A's body" + ident);
+  A ref is
+    ident := id
+    say "A's body$ident"
     x is abstract
-  }
-  B ref : A {
-    stdout.println("B's body" + ident);
-    redefine x { stdout.println("B.x"); }
-    xb { stdout.println("B.xb"); }
-  }
-  C ref : A {
-    redefine x { stdout.println("C.x"); }
-    xc { stdout.println("C.xc"); }
-  }
-  D ref : B, C {
-  }
-  E ref : D {
-    redefine x  { stdout.println("E.x" ); }
-    redefine xb { stdout.println("E.xb"); }
-    redefine xc { stdout.println("E.xc"); }
-  }
-  bi := B;
-  ci Q.C; set ci := C;  // 1. should flag an error: illegal assignment
-  aa Q.A; set aa := bi; // 2. should flag an error: illegal assignment
-  bi.x;
-  ci.x;
-  aa.x;
-  set aa := ci; // 3. should flag an error: illegal assignment
-  aa.x;
-  di Q.D; set di := D; // 4. should flag an error: illegal assignment
-  ei Q.E; set ei := E; // 5. should flag an error: illegal assignment
-  stdout.println("Calling non-redefed multiple");
-  di.x;
-  di.xb;
-  di.xc;
-  stdout.println("Calling redefed multiple");
-  ei.x;
-  ei.xb;
-  ei.xc;
-  stdout.println("Calling redefed multiple from non-redefed static ");
-  set di := ei;  // 6. should flag an error: illegal assignment
-  di.x;
-  di.xb;
-  di.xc;
-  set bi := di;  // 7. should flag an error: illegal assignment
-  set ci := di;  // 8. should flag an error: illegal assignment
-  bi.x;
-  bi.xb;
-  ci.x;
-  ci.xc;
-  set aa := ei;  // 9. should flag an error: illegal assignment
-  aa.x;
 
-}
+  B ref : A is
+    say "B's body$ident
+    redefine x is say "B.x"
+    xb is say "B.xb"
+
+  C ref : A is
+    redefine x is say "C.x"
+    xc is say "C.xc"
+
+  D ref : B, C is
+
+  E ref : D is
+    redefine x  is say "E.x"
+    redefine xb is say "E.xb"
+    redefine xc is say "E.xc"
+
+  bi := B
+  ci Q.C; set ci := C  // 1. should flag an error: illegal assignment
+  aa Q.A; set aa := bi // 2. should flag an error: illegal assignment
+  bi.x
+  ci.x
+  aa.x
+  set aa := ci // 3. should flag an error: illegal assignment
+  aa.x
+  di Q.D; set di := D // 4. should flag an error: illegal assignment
+  ei Q.E; set ei := E // 5. should flag an error: illegal assignment
+  say "Calling non-redefed multiple"
+  di.x
+  di.xb
+  di.xc
+  say "Calling redefed multiple"
+  ei.x
+  ei.xb
+  ei.xc
+  say "Calling redefed multiple from non-redefed static "
+  set di := ei  // 6. should flag an error: illegal assignment
+  di.x
+  di.xb
+  di.xc
+  set bi := di  // 7. should flag an error: illegal assignment
+  set ci := di  // 8. should flag an error: illegal assignment
+  bi.x
+  bi.xb
+  ci.x
+  ci.xc
+  set aa := ei  // 9. should flag an error: illegal assignment
+  aa.x
