@@ -23,72 +23,58 @@
 #
 # -----------------------------------------------------------------------
 
-lists {
-  List<T> {
-    xb { stdout.println("B.xb"); }
+lists is
+  List<T> is
+    xb is say "B.xb"
     public Node (
       public el T,
-      public n, p OptNode) ref : Object {
-    }
+      public n, p OptNode) ref : Object is
 
-    public Nil { }
-    OptNode : choice<Node,Nil> { }
+    public Nil is
+    OptNode : choice<Node,Nil> is
 
-    h OptNode := Nil;
-    add(e T) {
-      set h := Node(e,h,Nil);
-    }
-    print {
+    h OptNode := Nil
+    add(e T) is
+      set h := Node e h Nil
+
+    print is
       // for   -- NYI: must update i in the loop prolog
       i := h;
-      while (i ? Node => { true }; Nil => false) {  // NYI: This screams for recursion
+      while (i ? Node => { true }; Nil => false)   // NYI: This screams for recursion
         match i
-        {
           n Node =>
-            {
-              stdout.println("print el in loop: " + n.el);
-              set i := n.n;
-            }
-          Nil => { }
-        }
-      }
-    }
-    size i32 {
+              say "print el in loop: {n.el}"
+              set i := n.n
+          Nil =>
+
+    size i32 is
       set result := 0;
       // for   -- NYI: must update i in the loop prolog
       i := h;
-      while (i ? Node => { true }; Nil => false) {   // NYI: This screams for recursion
+      while (i ? Node => { true }; Nil => false)    // NYI: This screams for recursion
         match i
-        {
           n Node =>
-            {
-              set result := result + 1;
-              set i := n.n;
-            }
-          Nil => { }
-        }
-      }
-    }
-  }
+              set result := result + 1
+              set i := n.n
+          Nil =>
 
-  li List<i32> := List<i32>;
-  li.add(3);
-  li.add(4);
-  li.add(5);
-  li.add(6);
-  li.add(7);
-  li.add(8);
-  li.add(9);
-  li.print;
-  stdout.println("size: " + li.size);
+  li List<i32> := List<i32>
+  li.add 3
+  li.add 4
+  li.add 5
+  li.add 6
+  li.add 7
+  li.add 8
+  li.add 9
+  li.print
+  say "size: {li.size}"
 
-  Complex(r, i i32) { };
+  Complex(r, i i32) is
 
-  lc List<Complex> := List<Complex>;
-  lc.add(Complex(3,4));
-  lc.add(Complex(4,5));
-  lc.add(Complex(5,6));
-  lc.add(Complex(7,8));
-  lc.print;
-  stdout.println("size: " + lc.size);
-}
+  lc List<Complex> := List<Complex>
+  lc.add (Complex 3 4)
+  lc.add (Complex 4 5)
+  lc.add (Complex 5 6)
+  lc.add (Complex 7 8)
+  lc.print
+  say "size: {lc.size}"
