@@ -23,6 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-HelloWorld {
-  stdout.println("Hello World!");
-}
+HelloWorld is
+  say "Hello World!"
