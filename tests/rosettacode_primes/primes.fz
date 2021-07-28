@@ -30,7 +30,7 @@ primes
   primes(n i32)  // sieve using loops
   {
     for
-      a := marray n+1, false
+      a := marray n+1 false, a
       i := 2, i + 1
     while i <= n
     {
