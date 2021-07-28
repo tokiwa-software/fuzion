@@ -38,8 +38,8 @@ SquareRoot is
     until (( result    * result     <= a) &&
            ((result+1) * (result+1) >  a)    )
     else
-      stdout.println("*** error, sqrt diverges")
+      say "*** error, sqrt diverges"
 
-  stdout.println("sqrt(16) == " + sqrt(16))
-  stdout.println("sqrt(81) == " + sqrt(81))
-  stdout.println("sqrt(-16) == " + sqrt(-16)) // 1. should flag an error, precondition failed
+  say "sqrt(16) = {sqrt(16)}"
+  say "sqrt(81) = {sqrt(81)}"
+  say "sqrt(-16) = {sqrt(-16)}" // 1. should flag an error, precondition failed
