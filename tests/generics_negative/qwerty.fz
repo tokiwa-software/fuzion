@@ -23,20 +23,16 @@
 #
 # -----------------------------------------------------------------------
 
-qwerty<T>
-{
-  stdout.println("QWERTY");
-  uiop
-  {
-    stdout.println("UIOP");
-    asdfg
-    {
-      stdout.println("ASDFG");
-      hjkl(x T)
-      {
-        stdout.print(x);
-        stdout.println("HJKL");
-      }
-    }
-  }
-}
+qwerty<T> is
+
+  say "QWERTY"
+
+  uiop is
+    say "UIOP"
+
+    asdfg is
+      say "ASDFG"
+
+      hjkl(x T) is
+        yak x
+        say "HJKL"
