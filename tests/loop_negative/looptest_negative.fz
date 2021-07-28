@@ -29,162 +29,113 @@ looptest_negative
 
   chck (msg string, b bool) unit is
     if b
-      say "PASSED: " + msg
+      say "PASSED: $msg"
     else
-      say "FAILED: " + msg
+      say "FAILED: $msg"
       set exitCode := 1
 
-  out := stdout;
+  a := array<i32>(100, fun (i i32) => { if (i % 23 == 0) { -2*i } else { i*i } })
 
-  a := array<i32>(100, fun (i i32) => { if (i % 23 == 0) { -2*i } else { i*i } });
-
-  out.println("testLoop_neg1: loop return 3333 on success and 4444 in else branch");
+  say "testLoop_neg1: loop return 3333 on success and 4444 in else branch"
   testLoop_neg1(data array<i32>, isWhatWeWant fun (i32) bool) =>
-  {
     for
-      ix := 0, ix + 1;
+      ix := 0, ix + 1
     while ix < data.length
-    {
-      element := data[ix];
-    }
+      element := data[ix]
     until isWhatWeWant(data[ix])     //  1.a should flag an error: incompatible result types i32 vs. string
-    {
       3333              //  1.a should flag an error: incompatible result types i32 vs. string
-    }
     else
-    {
       "4444"            //  1.b should flag an error: incompatible result types i32 vs. string
-    }
-  }
 
-  out.println("testLoop_neg2: loop return success index as default and 4444 in else branch");
+  say "testLoop_neg2: loop return success index as default and 4444 in else branch"
   testLoop_neg2(data array<i32>, isWhatWeWant fun (i32) bool) =>
     for
-      ix := 0, ix + 1;
+      ix := 0, ix + 1
     while ix < data.length
-      element := data[ix];
+      element := data[ix]
     until isWhatWeWant(data[ix])    //  2.a should flag an error: incompatible result types i32 vs. string
       ix                //  2.a should flag an error: incompatible result types i32 vs. string
     else
       "4444"            //  2.b should flag an error: incompatible result types i32 vs. string
 
-  out.println("testLoop_neg3: loop return 3333 on success, index as default");
+  say "testLoop_neg3: loop return 3333 on success, index as default"
   testLoop_neg3(data array<i32>, isWhatWeWant fun (i32) bool) =>
-  {
     for
-      ix := 0, ix + 1;
+      ix := 0, ix + 1
     while ix < data.length
-    {
-      element := data[ix];
-    }
+      element := data[ix]
     until isWhatWeWant(data[ix])
-    {
       "3333"
-    }
-  }
-  neg3i i32    := testLoop_neg3(a, fun(i i32) => i > 10); //  3.a should flag an error: incompatible result types VOID vs. i32
-  neg3i string := testLoop_neg3(a, fun(i i32) => i > 10); //  3.b should flag an error: incompatible result types VOID vs. string
+  neg3i i32    := testLoop_neg3 a (fun(i i32) => i > 10) //  3.a should flag an error: incompatible result types VOID vs. i32
+  neg3i string := testLoop_neg3 a (fun(i i32) => i > 10) //  3.b should flag an error: incompatible result types VOID vs. string
 
-  out.println("testLoop_neg4: loop return 4444 on else branch, no success possible");
+  say "testLoop_neg4: loop return 4444 on else branch, no success possible"
   testLoop_neg4(data array<i32>, isWhatWeWant fun (i32) bool) =>
-  {
     for
-      ix := 0, ix + 1;
+      ix := 0, ix + 1
     while ix < data.length
-    {
-      element := data[ix];
-    }
+      element := data[ix]
     else
-    {
       "4444"            //  ok
-    }
-  }
 
-  out.println("testLoop_neg5: loop returns last index");
+  say "testLoop_neg5: loop returns last index"
   testLoop_neg5(data array<i32>, isWhatWeWant fun (i32) bool) =>
-  {
     for
-      ix := 0, ix + 1;   // ok
-    while ix < data.length;
-  }
+      ix := 0, ix + 1   // ok
+    while ix < data.length
 
+  testWriteToIndexVar is
+    for
+      i i32 := 0, i+1
+      j := 100, j-1
+      k in 0..10
+      l in 0..20 : 2
+    do
+      set i := 2   //  4. should flag an error: must not assign value to loop index var
+      set j := i*i //  5. should flag an error: must not assign value to loop index var
+      set k := 3   //  6. should flag an error: must not assign value to loop index var
+      set l := k-j //  7. should flag an error: must not assign value to loop index var
   testWriteToIndexVar
-  {
-    for
-      i i32 := 0, i+1;
-      j := 100, j-1;
-      k in 0..10;
-      l in 0..20 : 2;
-    do
-      {
-        set i := 2;   //  4. should flag an error: must not assign value to loop index var
-        set j := i*i; //  5. should flag an error: must not assign value to loop index var
-        set k := 3;   //  6. should flag an error: must not assign value to loop index var
-        set l := k-j; //  7. should flag an error: must not assign value to loop index var
-      }
-  }
-  testWriteToIndexVar;
 
+  testWriteToDeclaredVar is
+    for
+      i i32 := 0
+      j := 100
+    do
+      set i := i+2 //  7a. should flag an error: must not assign value to loop index var
+      set j := i*i //  7b. should flag an error: must not assign value to loop index var
   testWriteToDeclaredVar
-  {
-    for
-      i i32 := 0;
-      j := 100;
-    do
-      {
-        set i := i+2; //  7a. should flag an error: must not assign value to loop index var
-        set j := i*i; //  7b. should flag an error: must not assign value to loop index var
-      }
-  }
-  testWriteToDeclaredVar;
 
-  testNonBooleanWhile1
-  {
+  testNonBooleanWhile1 is
     while "string"  // 8. should flag an error: must be of type bool
-    {
-    }
-  }
-  testNonBooleanWhile1;
+  testNonBooleanWhile1
 
-  testNonBooleanWhile2
-  {
+  testNonBooleanWhile2 is
     while 23  // 9. should flag an error: must be of type bool
-    {
-    }
-  }
-  testNonBooleanWhile2;
+  testNonBooleanWhile2
 
-  testBooleanWhile3 { while false  { } }; testBooleanWhile3;  // ok
-  testBooleanWhile4 { while true   { } }; testBooleanWhile4;  // ok
-  testBooleanWhile5 { while FALSE  { } }; testBooleanWhile5;  // ok
-  testBooleanWhile6 { while TRUE   { } }; testBooleanWhile6;  // ok
-  testBooleanWhile7 { while !false { } }; testBooleanWhile7;  // ok
-  testBooleanWhile8 { while !true  { } }; testBooleanWhile8;  // ok
+  testBooleanWhile3 { while false  { } }; testBooleanWhile3  // ok
+  testBooleanWhile4 { while true   { } }; testBooleanWhile4  // ok
+  testBooleanWhile5 { while FALSE  { } }; testBooleanWhile5  // ok
+  testBooleanWhile6 { while TRUE   { } }; testBooleanWhile6  // ok
+  testBooleanWhile7 { while !false { } }; testBooleanWhile7  // ok
+  testBooleanWhile8 { while !true  { } }; testBooleanWhile8  // ok
 
-  testNonBooleanUntil1
-  {
+  testNonBooleanUntil1 is
     do
-    {
-    }
     until "string"  // 10. should flag an error: must be of type bool
-  }
-  testNonBooleanUntil1;
+  testNonBooleanUntil1
 
-  testNonBooleanUntil2
-  {
+  testNonBooleanUntil2 is
     do
-    {
-    }
     until 23  // 11. should flag an error: must be of type bool
-  }
-  testNonBooleanUntil2;
+  testNonBooleanUntil2
 
-  testBooleanUntil3 { do { } until false  }; testBooleanUntil3;  // ok
-  testBooleanUntil4 { do { } until true   }; testBooleanUntil4;  // ok
-  testBooleanUntil5 { do { } until FALSE  }; testBooleanUntil5;  // ok
-  testBooleanUntil6 { do { } until TRUE   }; testBooleanUntil6;  // ok
-  testBooleanUntil7 { do { } until !false }; testBooleanUntil7;  // ok
-  testBooleanUntil8 { do { } until !true  }; testBooleanUntil8;  // ok
+  testBooleanUntil3 { do { } until false  }; testBooleanUntil3  // ok
+  testBooleanUntil4 { do { } until true   }; testBooleanUntil4  // ok
+  testBooleanUntil5 { do { } until FALSE  }; testBooleanUntil5  // ok
+  testBooleanUntil6 { do { } until TRUE   }; testBooleanUntil6  // ok
+  testBooleanUntil7 { do { } until !false }; testBooleanUntil7  // ok
+  testBooleanUntil8 { do { } until !true  }; testBooleanUntil8  // ok
 
   fuzion.std.exit exitCode
-}
