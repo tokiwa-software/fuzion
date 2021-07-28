@@ -23,113 +23,70 @@
 #
 # -----------------------------------------------------------------------
 
-choice_negative
-{
-  cyclic7
-  {
-    A
-    {
-      x A | i32 | string := "Hello";  // 4. should flag an error: cyclic choice
-      s
-      {
-        match x
-        {
-          a A      => { stdout.println("A.x is A") }
-          i i32    => { stdout.println("A.x is i32") }
-          s string => { stdout.println("A.x is string") }
-        }
-      }
-    }
-  }
-  cyclic7.A.s; // NYI: would be nice if this was detected w/o a call to x
+choice_negative is
 
-  cyclic8
-  {
-    A
-    {
-      x ref A | i32 | string := "Hello";
-      s
-      {
+  cyclic7 is
+    A is
+      x A | i32 | string := "Hello"  // 4. should flag an error: cyclic choice
+      s is
         match x
-        {
-          a ref A  => { stdout.println("A.x is A") }
-          i i32    => { stdout.println("A.x is i32") }
-          s string => { stdout.println("A.x is string") }
-        }
-      }
-    }
-  }
-  cyclic8.A.s;
+          a A      => say "A.x is A"
+          i i32    => say "A.x is i32"
+          s string => say "A.x is string"
 
-  cyclic9
-  {
-    A
-    {
-      x i32 | A | string := "Hello";  // 5. should flag an error: cyclic choice
-      s
-      {
-        match x
-        {
-          a A      => { stdout.println("A.x is A") }
-          i i32    => { stdout.println("A.x is i32") }
-          s string => { stdout.println("A.x is string") }
-        }
-      }
-    }
-  }
-  cyclic9.A.s; // NYI: would be nice if this was detected w/o a call to x
+  cyclic7.A.s // NYI: would be nice if this was detected w/o a call to x
 
-  cyclic10
-  {
-    A
-    {
-      x i32 | ref A | string := "Hello";
-      s
-      {
+  cyclic8 is
+    A is
+      x ref A | i32 | string := "Hello"
+      s is
         match x
-        {
-          a ref A  => { stdout.println("A.x is A") }
-          i i32    => { stdout.println("A.x is i32") }
-          s string => { stdout.println("A.x is string") }
-        }
-      }
-    }
-  }
-  cyclic10.A.s;
+          a ref A  => say "A.x is A"
+          i i32    => say "A.x is i32"
+          s string => say "A.x is string"
 
-  cyclic11
-  {
-    A
-    {
-      x i32 | string | A := "Hello";  // 6. should flag an error: cyclic choice
-      s
-      {
-        match x
-        {
-          a A      => { stdout.println("A.x is A") }
-          i i32    => { stdout.println("A.x is i32") }
-          s string => { stdout.println("A.x is string") }
-        }
-      }
-    }
-  }
-  cyclic11.A.s; // NYI: would be nice if this was detected w/o a call to x
+  cyclic8.A.s
 
-  cyclic12
-  {
-    A
-    {
-      x i32 | string | ref A := "Hello";
-      s
-      {
+  cyclic9 is
+    A is
+      x i32 | A | string := "Hello"  // 5. should flag an error: cyclic choice
+      s is
         match x
-        {
-          a ref A  => { stdout.println("A.x is A") }
-          i i32    => { stdout.println("A.x is i32") }
-          s string => { stdout.println("A.x is string") }
-        }
-      }
-    }
-  }
-  cyclic12.A.s;
-}
+          a A      => say "A.x is A"
+          i i32    => say "A.x is i32"
+          s string => say "A.x is string"
+
+  cyclic9.A.s // NYI: would be nice if this was detected w/o a call to x
+
+  cyclic10 is
+    A is
+      x i32 | ref A | string := "Hello"
+      s is
+        match x
+          a ref A  => say "A.x is A"
+          i i32    => say "A.x is i32"
+          s string => say "A.x is string"
+
+  cyclic10.A.s
+
+  cyclic11 is
+    A is
+      x i32 | string | A := "Hello"  // 6. should flag an error: cyclic choice
+      s is
+        match x
+          a A      => say "A.x is A"
+          i i32    => say "A.x is i32"
+          s string => say "A.x is string"
+
+  cyclic11.A.s // NYI: would be nice if this was detected w/o a call to x
+
+  cyclic12 is
+    A is
+      x i32 | string | ref A := "Hello"
+      s is
+        match x
+          a ref A  => say "A.x is A"
+          i i32    => say "A.x is i32"
+          s string => say "A.x is string"
+
+  cyclic12.A.s
