@@ -23,214 +23,166 @@
 #
 # -----------------------------------------------------------------------
 
-choice_mix {
+choice_mix is
 
-  out := stdout;
-
-  Nil { }
-  MyObj ref { }
-  MyRef(x,y,z i32) ref : MyObj
-  {
-    a,b,c i32 := ?;
-    set a := x+x;
-    set b := y+y;
-    set c := z+z;
-  }
+  Nil is
+  MyObj ref is
+  MyRef(x,y,z i32) ref : MyObj is
+    a,b,c i32 := ?
+    set a := x+x
+    set b := y+y
+    set c := z+z
 
   Mix : choice<i32,
                bool,
                string,
                Nil,
-               MyRef> { };
+               MyRef> is
 
-  a Mix := 3;
-  b Mix := true;
-  c Mix := "string";
-  d Mix := Nil;
-  e Mix := MyRef(3,4,5);
+  a Mix := 3
+  b Mix := true
+  c Mix := "string"
+  d Mix := Nil
+  e Mix := MyRef 3 4 5
 
-  show_a()
-  {
-    out.print("show_a ");
+  show_a is
+    yak "show_a "
     match a
-    {
-      i32    => { out.println("i32:    "); }
-      bool   => { out.println("bool:   "); }
-      string => { out.println("string: "); }
-      Nil    => { out.println("Nil:    "); }
-      MyRef  => { out.println("MyRef:  "); }
-    }
-  }
+      i32    => say "i32:    "
+      bool   => say "bool:   "
+      string => say "string: "
+      Nil    => say "Nil:    "
+      MyRef  => say "MyRef:  "
 
-  show_v()
-  {
-    out.print("show_v ");
+  show_v is
+    yak "show_v "
     match a
-    {
-      i i32    => { out.println("i32:    " + i); }
-      b bool   => { out.println("bool:   " + b); }
-      s string => { out.println("string: " + s); }
-      n Nil    => { out.println("Nil:    " + n); }
-      m MyRef  => { out.println("MyRef:  " + m); }
-    }
-  }
+      i i32    => say "i32:    $i"
+      b bool   => say "bool:   $b"
+      s string => say "string: $s"
+      n Nil    => say "Nil:    $n"
+      m MyRef  => say "MyRef:  $m"
 
-  show_i()
-  {
-    out.print("show_a ");
+  show_i is
+    yak "show_a "
     match a
-    {
-      i32, string, Nil => { out.println("has 'i'"); }
-      bool, MyRef      => { out.println("has no 'i'"); }
-    }
-  }
+      i32, string, Nil => say "has 'i'"
+      bool, MyRef      => say "has no 'i'"
 
-  show_b()
-  {
-    out.print("show_b  ");
+  show_b is
+    yak "show_b  "
     match b
-    {
-      i32    => { out.println("i32:    "); }
-      bool   => { out.println("bool:   "); }
-      string => { out.println("string: "); }
-      Nil    => { out.println("Nil:    "); }
-      MyRef  => { out.println("MyRef:  "); }
-    }
-  }
+      i32    => say "i32:    "
+      bool   => say "bool:   "
+      string => say "string: "
+      Nil    => say "Nil:    "
+      MyRef  => say "MyRef:  "
 
-  show_c()
-  {
-    out.print("show_c  ");
+  show_c is
+    yak "show_c  "
     match c
-    {
-      i32    => { out.println("i32:    "); }
-      bool   => { out.println("bool:   "); }
-      string => { out.println("string: "); }
-      Nil    => { out.println("Nil:    "); }
-      MyRef  => { out.println("MyRef:  "); }
-    }
-  }
+      i32    => say "i32:    "
+      bool   => say "bool:   "
+      string => say "string: "
+      Nil    => say "Nil:    "
+      MyRef  => say "MyRef:  "
 
-  show_d()
-  {
-    out.print("show_d  ");
+  show_d is
+    yak "show_d  "
     match d
-    {
-      i32    => { out.println("i32:    "); }
-      bool   => { out.println("bool:   "); }
-      string => { out.println("string: "); }
-      Nil    => { out.println("Nil:    "); }
-      MyRef  => { out.println("MyRef:  "); }
-    }
-  }
+      i32    => say "i32:    "
+      bool   => say "bool:   "
+      string => say "string: "
+      Nil    => say "Nil:    "
+      MyRef  => say "MyRef:  "
 
-  show_e()
-  {
-    out.print("show_e  ");
+  show_e is
+    yak "show_e  "
     match e
-    {
-      i32    => { out.println("i32:    "); }
-      bool   => { out.println("bool:   "); }
-      string => { out.println("string: "); }
-      Nil    => { out.println("Nil:    "); }
-      MyRef  => { out.println("MyRef:  "); }
-    }
-  }
+      i32    => say "i32:    "
+      bool   => say "bool:   "
+      string => say "string: "
+      Nil    => say "Nil:    "
+      MyRef  => say "MyRef:  "
 
-  v00 Mix := ?;
+  v00 Mix := ?
 
-  show00()
-  {
-    out.print("show00 ");
+  show00 is
+    yak "show00 "
     match v00
-    {
-      i32    => { out.println("i32:    "); }
-      bool   => { out.println("bool:   "); }
-      string => { out.println("string: "); }
-      Nil    => { out.println("Nil:    "); }
-      MyRef  => { out.println("MyRef:  "); }
-    }
-  }
+      i32    => say "i32:    "
+      bool   => say "bool:   "
+      string => say "string: "
+      Nil    => say "Nil:    "
+      MyRef  => say "MyRef:  "
 
-  show0(v Mix)
-  {
-    out.print("show0  ");
+  show0(v Mix) is
+    yak "show0  "
     match v
-    {
-      i32    => { out.println("i32:    "); }
-      bool   => { out.println("bool:   "); }
-      string => { out.println("string: "); }
-      Nil    => { out.println("Nil:    "); }
-      MyRef  => { out.println("MyRef:  "); }
-    }
-  }
+      i32    => say "i32:    "
+      bool   => say "bool:   "
+      string => say "string: "
+      Nil    => say "Nil:    "
+      MyRef  => say "MyRef:  "
 
-  show(v Mix)
-  {
-    out.print("show   ");
+  show(v Mix) is
+    yak "show   "
     match v
-    {
-      i i32    => { out.println("i32:    " + i); }
-      b bool   => { out.println("bool:   " + b); }
-      s string => { out.println("string: " + s); }
-      n Nil    => { out.println("Nil:    " + n); }
-      m MyRef  => { out.println("MyRef:  " + m); }
-    }
-  }
+      i i32    => say "i32:    $i"
+      b bool   => say "bool:   $b"
+      s string => say "string: $s"
+      n Nil    => say "Nil:    $n"
+      m MyRef  => say "MyRef:  $m"
 
-  out.print("a: "); show_a();
-  out.print("b: "); show_b();
-  out.print("c: "); show_c();
-  out.print("d: "); show_d();
-  out.print("e: "); show_e();
+  yak "a: "; show_a
+  yak "b: "; show_b
+  yak "c: "; show_c
+  yak "d: "; show_d
+  yak "e: "; show_e
 
-  out.print("a: "); set v00 := a; show00();
-  out.print("b: "); set v00 := b; show00();
-  out.print("c: "); set v00 := c; show00();
-  out.print("d: "); set v00 := d; show00();
-  out.print("e: "); set v00 := e; show00();
+  yak "a: "; set v00 := a; show00
+  yak "b: "; set v00 := b; show00
+  yak "c: "; set v00 := c; show00
+  yak "d: "; set v00 := d; show00
+  yak "e: "; set v00 := e; show00
 
-  out.print("a: "); show0(a);
-  out.print("b: "); show0(b);
-  out.print("c: "); show0(c);
-  out.print("d: "); show0(d);
-  out.print("e: "); show0(e);
+  yak "a: "; show0 a
+  yak "b: "; show0 b
+  yak "c: "; show0 c
+  yak "d: "; show0 d
+  yak "e: "; show0 e
 
   for
-    i := 0, i + 1;
+    i := 0, i + 1
   while i < 6
-    {
-      if i > 0 { out.println("-------------") }
-      out.print("show_a : "); show_a;
-      out.print("show_v : "); show_v;
-      out.print("show_i : "); show_i;
-      out.print("show(a): "); show(a);
-      out.print("show(b): "); show(b);
-      out.print("show(c): "); show(c);
-      out.print("show(d): "); show(d);
-      x Mix := a;
-      set a := b;
-      set b := c;
-      set c := d;
-      set d := e;
-      set e := x;
-    }
+    if i > 0 say "-------------"
+    yak "show_a : "; show_a
+    yak "show_v : "; show_v
+    yak "show_i : "; show_i
+    yak "show a: "; show a
+    yak "show b: "; show b
+    yak "show c: "; show c
+    yak "show d: "; show d
+    x Mix := a
+    set a := b
+    set b := c
+    set c := d
+    set d := e
+    set e := x
 
-  colors1  // using choice over features inheriting from abstract feature
-  {
-    color { rgb u32 is abstract }
-    red     : color { redefine rgb u32 is 255.as_u32*256*256;  }
-    green   : color { redefine rgb u32 is 255.as_u32*256;      }
-    blue    : color { redefine rgb u32 is 255.as_u32;          }
-    yellow  : color { redefine rgb u32 is red.rgb + green.rgb; }
-    magenta : color { redefine rgb u32 is red.rgb + blue.rgb;  }
-    black   : color { redefine rgb u32 is 0.as_u32;            }
-    white   : color { redefine rgb u32 is red.rgb + blue.rgb + green.rgb; }
+  colors1 is  // using choice over features inheriting from abstract feature
+    color is rgb u32 is abstract
+    red     : color is redefine rgb u32 is 255.as_u32*256*256
+    green   : color is redefine rgb u32 is 255.as_u32*256
+    blue    : color is redefine rgb u32 is 255.as_u32
+    yellow  : color is redefine rgb u32 is red.rgb + green.rgb
+    magenta : color is redefine rgb u32 is red.rgb + blue.rgb
+    black   : color is redefine rgb u32 is 0.as_u32
+    white   : color is redefine rgb u32 is red.rgb + blue.rgb + green.rgb
     transparent (alpha u32) : color
-      pre alpha >= 0, alpha <= 255;
-    {
-      redefine rgb => alpha * 256*256*256;
-    };
+      pre alpha >= 0, alpha <= 255
+    is
+      redefine rgb => alpha * 256*256*256
 
     p, q, r, s, t choice<red,
                          green,
@@ -239,7 +191,7 @@ choice_mix {
                          magenta,
                          black,
                          white,
-                         transparent> := ?;
+                         transparent> := ?
 
     print(c choice<red,
                    green,
@@ -249,47 +201,42 @@ choice_mix {
                    black,
                    white,
                    transparent>)
-    {
+    is
       match c
-      {
-        r red         => { out.println("red" + r.rgb); }
-        g green       => { out.println("grn" + g.rgb); }
-        b blue        => { out.println("blu" + b.rgb); }
-        y yellow      => { out.println("yel" + y.rgb); }
-        m magenta     => { out.println("mag" + m.rgb); }
-        k black       => { out.println("blk" + k.rgb); }
-        w white       => { out.println("wht" + w.rgb); }
-        t transparent => { out.println("trp" + t.rgb); }
-      }
-    }
-    set p := red;
-    set q := green;
-    set r := black;
-    set s := transparent(200);
-    set t := transparent(100);
-    print(p);
-    print(q);
-    print(r);
-    print(s);
-    print(t);
-  }
-  colors1;
+        r red         => say "red {r.rgb}"
+        g green       => say "grn {g.rgb}"
+        b blue        => say "blu {b.rgb}"
+        y yellow      => say "yel {y.rgb}"
+        m magenta     => say "mag {m.rgb}"
+        k black       => say "blk {k.rgb}"
+        w white       => say "wht {w.rgb}"
+        t transparent => say "trp {t.rgb}"
 
-  colors2  // same as colors1, using pipe notation
-  {
-    color { rgb u32 is abstract }
-    red     : color { redefine rgb u32 is 255.as_u32*256*256;  }
-    green   : color { redefine rgb u32 is 255.as_u32*256;      }
-    blue    : color { redefine rgb u32 is 255.as_u32;          }
-    yellow  : color { redefine rgb u32 is red.rgb + green.rgb; }
-    magenta : color { redefine rgb u32 is red.rgb + blue.rgb;  }
-    black   : color { redefine rgb u32 is 0.as_u32;            }
-    white   : color { redefine rgb u32 is red.rgb + blue.rgb + green.rgb; }
+    set p := red
+    set q := green
+    set r := black
+    set s := transparent 200
+    set t := transparent 100
+    print p
+    print q
+    print r
+    print s
+    print t
+  colors1
+
+  colors2 is // same as colors1, using pipe notation
+    color is rgb u32 is abstract
+    red     : color is redefine rgb u32 is 255.as_u32*256*256
+    green   : color is redefine rgb u32 is 255.as_u32*256
+    blue    : color is redefine rgb u32 is 255.as_u32
+    yellow  : color is redefine rgb u32 is red.rgb + green.rgb
+    magenta : color is redefine rgb u32 is red.rgb + blue.rgb
+    black   : color is redefine rgb u32 is 0.as_u32
+    white   : color is redefine rgb u32 is red.rgb + blue.rgb + green.rgb
     transparent (alpha u32) : color
-    require alpha >= 0, alpha <= 255;
-    {
-      redefine rgb => alpha * 256*256*256;
-    };
+      pre alpha >= 0, alpha <= 255
+    is
+      redefine rgb => alpha * 256*256*256
 
     p, q, r, s, t red
                 | green
@@ -298,7 +245,7 @@ choice_mix {
                 | magenta
                 | black
                 | white
-                | transparent := ?;
+                | transparent := ?
 
     print(c red
           | green
@@ -308,86 +255,68 @@ choice_mix {
           | black
           | white
           | transparent)
-    {
+    is
       match c
-      {
-        r red         => { out.println("red"+ r.rgb); }
-        g green       => { out.println("grn"+ g.rgb); }
-        b blue        => { out.println("blu"+ b.rgb); }
-        y yellow      => { out.println("yel"+ y.rgb); }
-        m magenta     => { out.println("mag"+ m.rgb); }
-        k black       => { out.println("blk"+ k.rgb); }
-        w white       => { out.println("wht"+ w.rgb); }
-        t transparent => { out.println("trp"+ t.rgb); }
-      }
-    }
-    set p := red;
-    set q := green;
-    set r := black;
-    set s := transparent(200);
-    set t := transparent(100);
-    print(p);
-    print(q);
-    print(r);
-    print(s);
-    print(t);
-  }
-  colors2;
+        r red         => say "red{r.rgb}"
+        g green       => say "grn{g.rgb}"
+        b blue        => say "blu{b.rgb}"
+        y yellow      => say "yel{y.rgb}"
+        m magenta     => say "mag{m.rgb}"
+        k black       => say "blk{k.rgb}"
+        w white       => say "wht{w.rgb}"
+        t transparent => say "trp{t.rgb}"
+    set p := red
+    set q := green
+    set r := black
+    set s := transparent 200
+    set t := transparent 100
+    print p
+    print q
+    print r
+    print s
+    print t
+  colors2
 
-  alternatives1  // use pipe for choice result type
-  {
-    f(i i32) i32 | bool | string
-    {
+  alternatives1 is // use pipe for choice result type
+    f(i i32) i32 | bool | string is
       if i < 10 { i }
       else if i < 20 { i > 15 }
       else { "Large" }
-    }
     for
-      i := 0, i + 1;
+      i := 0, i + 1
     while i<25
-    {
-      out.print(i); out.print(" ==> ");
+      yak "$i ==> "
       match f(i)
-      {
-        x i32 => out.print(x)
-        b bool => { if b { out.print( "true") } else { out.print("false") } }
-        s string => out.print(s)
-      }
-      out.println;
-    }
+        x i32 => yak x
+        b bool => { if b { yak  "true" } else { yak "false" } }
+        s string => yak s
+      say
 
     // check that pipe also works as operator:
-    (1..10) | { fun (i i32) { out.print(i); } }; out.println;
-  }
-  alternatives1;
+    (1..10) | { fun (i i32) { yak i } }; say
+  alternatives1
 
-  alternatives2  // use pipe for choice argument type
-  {
-    Nil { }
-    MyRef (a,b,c i32) ref { }
+  alternatives2 is // use pipe for choice argument type
+    Nil is
+    MyRef (a,b,c i32) ref is
 
-    test(p i32 | bool | string | Nil | MyRef)
-    {
+    test(p i32 | bool | string | Nil | MyRef) is
       match p
-      {
-        i i32    => { out.println("i32:    " + i); }
-        b bool   => { out.println("bool:   " + b); }
-        s string => { out.println("string: " + s); }
-        n Nil    => { out.println("Nil:    " + n); }
-        m MyRef  => { out.println("MyRef:  " + m); }
-      }
-    }
+        i i32    => say "i32:    $i"
+        b bool   => say "bool:   $b"
+        s string => say "string: $s"
+        n Nil    => say "Nil:    $n"
+        m MyRef  => say "MyRef:  $m"
 
-    test(3);
-    test(true);
-    test("string");
-    test(Nil);
-    test(MyRef(3,4,5));
-  }
-  alternatives2;
+    test 3
+    test true
+    test "string"
+    test Nil
+    test (MyRef 3 4 5)
+  alternatives2
 
 
-/* possible syntactic sugar:
+/* NYI: possible syntactic sugar:
 
   enum col
   {
@@ -398,13 +327,11 @@ choice_mix {
 
 as sugar for
 
-  col : choice<red, green, blue> { }
-  red { }
-  green { }
-  blue { }
+  col : choice<red, green, blue> is
+  red is
+  green is
+  blue is
 
 ?
 
 */
-
-}
