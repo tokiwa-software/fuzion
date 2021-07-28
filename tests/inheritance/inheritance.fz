@@ -38,17 +38,17 @@ inheritance is
     x is abstract
   B ref : A is
     say "B's body$ident"
-    redefine x { say "B.x" }
-    xb { say "B.xb" }
+    redefine x is say "B.x"
+    xb is say "B.xb"
   C ref : A is
-    redefine x { say "C.x" }
-    xc { say "C.xc" }
+    redefine x is say "C.x"
+    xc is say "C.xc"
   D ref : B, C is
-    redefine x { say "D.x" }
+    redefine x is say "D.x"
   E ref : D is
-    redefine x  { say "E.x"  }
-    redefine xb { say "E.xb" }
-    redefine xc { say "E.xc" }
+    redefine x  is say "E.x"
+    redefine xb is say "E.xb"
+    redefine xc is say "E.xc"
   bi B := B
   ci inheritance.C := C
   aa inheritance.A := bi
@@ -87,32 +87,32 @@ inheritance is
     // simple test: value type inheriting form ref type:
     A ref is
       x := 3
-      p { print }
+      p is print
       print is
         say x
-    B : A { }
+    B : A is
     b := B
     b.p // all type info is static in this call
 
     c := 1000
-    count => { set c := c + 1; c }
+    count => set c := c + 1; c
 
     // nested features with a ref (P, Q, R, S) and a value (Pv, Qv, Rv, Sv)
     // variant and calls to features of the corresponding outer features.
     P ref is
       id := count
-      p { print }
-      print { say id }
+      p is print
+      print is say id
       Q ref is
-        q { yak "q"; p }
+        q is yak "q"; p
         R ref is
-          r { yak "r"; p }
+          r is yak "r"; p
           S ref is
-            s { yak "s"; p }
-          Sv : S { }
-        Rv : R { }
-      Qv : Q { }
-    Pv : P { }
+            s is yak "s"; p
+          Sv : S is
+        Rv : R is
+      Qv : Q is
+    Pv : P is
 
     say "only refs:"
 
@@ -194,15 +194,15 @@ inheritance is
     u ref : strm5Z is
     print is
       say "strm5.print"
-  strm5X ref : strm5  { }
-  strm5Y ref : strm5X { }
-  strm5Z ref : strm5Y { }
+  strm5X ref : strm5  is
+  strm5Y ref : strm5X is
+  strm5Z ref : strm5Y is
 
   /* simple inheritance of outer feature example: */
   cnt := 0
   Z
   Z ref is
-    B ref : Z { }
+    B ref : Z is
     if cnt < 10
       set cnt := cnt + 1
       B
@@ -249,7 +249,7 @@ inheritance is
         chck i=1, "call to y in arguments must be performed on heir instance"
 
       # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
-      B ref : x, y, C, D y { }
+      B ref : x, y, C, D y is
 
     A.B
     chck cnt_A_y=2, "inherits calls to x and y must be performed in outer feature A"
@@ -284,7 +284,7 @@ inheritance is
         chck i=1, "call to y in arguments must be performed on heir instance"
 
       # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
-      B ref : x, y, C, D x { }
+      B ref : x, y, C, D x is
 
     A.B
     chck cnt_A_y=2, "inherits calls to x and y must be performed in outer feature A"
@@ -294,11 +294,11 @@ inheritance is
   /* check dynamic binding on call to A.x if ref feature B inherits from value feature A */
   check_dyn_binding_when_inheriting_value is
     A is
-      a { x }
-      x { say "A.x: FAILED."; set exitCode := 1 }
+      a is x
+      x is say "A.x: FAILED."; set exitCode := 1
     B ref : A is
       a
-      redefine x { say "B.x: PASSED." }
+      redefine x is say "B.x: PASSED."
     B
   check_dyn_binding_when_inheriting_value
 
@@ -330,7 +330,7 @@ inheritance is
         chck i=1, "call to y in arguments must be performed on heir instance"
 
       # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
-      B ref : x, y, C, D x { }
+      B ref : x, y, C, D x is
 
     A.B
     chck cnt_A_y=2, "inherits calls to x and y must be performed in outer feature A"
@@ -357,24 +357,24 @@ inheritance is
               set Ecnt := Ecnt + 1
               F ref is
                 set Fcnt := Fcnt + 1
-                F3 ref : F { }
-              E3 ref : E { }
-            D3 ref : D { }
-          C3 ref : C { }
-        B3 ref : B { }
-      A3 ref : A { }
-    A1 ref : A { }
-    B1 ref : A1.B { }
-    C1 ref : B1.C { }
-    D1 ref : C1.D { }
-    E1 ref : D1.E { }
-    F1 ref : E1.F { }
-    A2 ref : A.A3 { }
-    B2 ref : A2.B.B3 { }
-    C2 ref : B2.C.C3 { }
-    D2 ref : C2.D.D3 { }
-    E2 ref : D2.E.E3 { }
-    F2 ref : E2.F.F3 { }
+                F3 ref : F is
+              E3 ref : E is
+            D3 ref : D is
+          C3 ref : C is
+        B3 ref : B is
+      A3 ref : A is
+    A1 ref : A is
+    B1 ref : A1.B is
+    C1 ref : B1.C is
+    D1 ref : C1.D is
+    E1 ref : D1.E is
+    F1 ref : E1.F is
+    A2 ref : A.A3 is
+    B2 ref : A2.B.B3 is
+    C2 ref : B2.C.C3 is
+    D2 ref : C2.D.D3 is
+    E2 ref : D2.E.E3 is
+    F2 ref : E2.F.F3 is
     A1
     B1
     C1
