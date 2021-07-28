@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = qualifed_declaration
+NAME = qualified_declaration
 include ../positive.mk
