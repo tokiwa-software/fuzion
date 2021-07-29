@@ -167,7 +167,7 @@ List<T> ref is
       st
 
 
-  # infix operand synonyme for concatSteramables
+  # infix operand synonyme for concatLists
   #
   infix ++ (s List<T>) => asList ++ s.asList
 
