@@ -23,11 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-iftest_negative
-{
-  exitCode := 0
+iftest_negative is
 
-  out := stdout;
+  exitCode := 0
 
   chck(b bool, msg string) is
     s := if b
@@ -35,36 +33,23 @@ iftest_negative
     else
       set exitCode := 1
       "FAILED: "
-    out.println s + msg
+    say (s + msg)
 
-  testIfNonBoolean1
-  {
+  testIfNonBoolean1 is
     if "string"       // 1. should flag an error: must be of type bool
-    {
-    }
     else if "string"  // 2. should flag an error: must be of type bool
-    {
-    }
-  }
-  testIfNonBoolean1;
+  testIfNonBoolean1
 
-  testIfNonBoolean2
-  {
+  testIfNonBoolean2 is
     if 42             // 3. should flag an error: must be of type bool
-    {
-    }
     else if 42        // 4. should flag an error: must be of type bool
-    {
-    }
-  }
-  testIfNonBoolean2;
+  testIfNonBoolean2
 
-  testIfBoolean1 { if false  { } else if false  { } } testIfBoolean1; // ok
-  testIfBoolean2 { if true   { } else if true   { } } testIfBoolean2; // ok
-  testIfBoolean3 { if FALSE  { } else if FALSE  { } } testIfBoolean3; // ok
-  testIfBoolean4 { if TRUE   { } else if TRUE   { } } testIfBoolean4; // ok
-  testIfBoolean5 { if !false { } else if !false { } } testIfBoolean5; // ok
-  testIfBoolean6 { if !true  { } else if !true  { } } testIfBoolean6; // ok
+  testIfBoolean1 { if false  { } else if false  { } }; testIfBoolean1 // ok
+  testIfBoolean2 { if true   { } else if true   { } }; testIfBoolean2 // ok
+  testIfBoolean3 { if FALSE  { } else if FALSE  { } }; testIfBoolean3 // ok
+  testIfBoolean4 { if TRUE   { } else if TRUE   { } }; testIfBoolean4 // ok
+  testIfBoolean5 { if !false { } else if !false { } }; testIfBoolean5 // ok
+  testIfBoolean6 { if !true  { } else if !true  { } }; testIfBoolean6 // ok
 
   fuzion.std.exit exitCode
-}
