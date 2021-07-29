@@ -1446,11 +1446,14 @@ exprList    : expr ( COMMA exprList
   /**
    * Parse
    *
-actualsList : exprList
-            | expr actualsLst
+actualsList : exprUntilSp actualsLst
+            | exprUntilSp actualsLstC
             |
             ;
-actualsLst  : expr actualsLst
+actualsLst  : exprUntilSp actualsLst
+            |
+            ;
+actualsLstC : COMMA expr actualsLstC
             |
             ;
    */
@@ -1459,10 +1462,9 @@ actualsLst  : expr actualsLst
     List<Expr> result = Call.NO_PARENTHESES;
     if (ignoredTokenBefore() && !endsActuals())
       {
-        var eas = endAtSpace(pos());
-        result = new List<>(expr());
-        endAtSpace(eas);
-        if (current() == Token.t_comma)
+        result = new List<>(exprUntilSpace());
+        var hasComma = current() == Token.t_comma;
+        if (hasComma)
           {
             while (skipComma())
               {
@@ -1473,9 +1475,7 @@ actualsLst  : expr actualsLst
           {
             while (!endsActuals())
               {
-                eas = endAtSpace(pos());
-                result.add(expr());
-                endAtSpace(eas);
+                result.add(exprUntilSpace());
               }
           }
       }
@@ -1506,6 +1506,22 @@ bracketTerm : block
       case t_lcrochet: return initArray();
       default: throw new Error("Unexpected case: "+c);
       }
+  }
+
+
+  /**
+   * An Expr that ends in white space unless enclosed in { }, [ ], or ( ).
+   *
+exprUntilSp : expr         # no white space except enclosed in { }, [ ], or ( ).
+            ;
+
+   */
+  Expr exprUntilSpace()
+  {
+    var eas = endAtSpace(pos());
+    var result = expr();
+    endAtSpace(eas);
+    return result;
   }
 
 
