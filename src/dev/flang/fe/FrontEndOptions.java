@@ -82,17 +82,30 @@ public class FrontEndOptions extends FuzionOptions
                           !readStdin || main == null);
 
     _readStdin = readStdin;
-    var p = main != null ? Path.of(main).toAbsolutePath() : null;
-    if (p != null && main.toUpperCase().endsWith(".FZ") && Files.exists(p))
+    Path inputFile = null;
+    if (main != null)
       {
-        _inputFile = p;
-        _main = null;
+        var ix = main.lastIndexOf(".");
+        if (ix >= 0)
+          {
+            var suffix = main.substring(ix+1).toUpperCase();
+            if (suffix.equals("FZ"    ) ||
+                suffix.equals("FU"    ) ||
+                suffix.equals("FUZION") ||
+                suffix.equals("TXT"   ) ||
+                suffix.equals("SRC"   )    )
+              {
+                var p = Path.of(main).toAbsolutePath();
+                if (Files.exists(p))
+                  {
+                    inputFile = p;
+                    main = null;
+                  }
+              }
+          }
       }
-    else
-      {
-        _inputFile = null;
-        _main = main;
-      }
+    _inputFile = inputFile;
+    _main = main;
   }
 
 
