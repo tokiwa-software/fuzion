@@ -157,14 +157,7 @@ List<T> ref is
   # create a List that consists of all the elements of this List followed
   # by all the elements of s
   #
-  concatLists (s List<T>) ref : List<T> is
-    redef asStream stream<T> is
-      st : stream<T> is
-        s1 := List.this.asStream
-        s2 := s.asStream
-        hasNext => s1.hasNext || s2.hasNext
-        next => if (s1.hasNext) s1.next else s2.next
-      st
+  concatLists (s List<T>) List<T> is asList.concat s.asList
 
 
   # infix operand synonyme for concatLists
