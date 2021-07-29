@@ -58,7 +58,7 @@ public class FeErrors extends ANY
     for (var f : fs)
       {
         sb.append(sb.length() > 0 ? "and " : "");
-        sb.append(f.qualifiedName() + " defined at " + f.pos.show() + "\n");
+        sb.append("'" +f.qualifiedName() + "' defined at " + f.pos.show() + "\n");
       }
     return sb.toString();
   }
@@ -116,10 +116,10 @@ public class FeErrors extends ANY
     error(pos,
           "Incompatible types " + where,
           detail +
-          "expected formal type: " + frmlT + "\n" +
-          "actual type found   : " + actlT + "\n" +
+          "expected formal type: '" + frmlT + "'\n" +
+          "actual type found   : '" + actlT + "'\n" +
           assignableToSB + (assignableToSB.length() > 0 ? "\n" : "") +
-          "for value assigned  : " + value + "\n");
+          "for value assigned  : '" + value + "'\n");
   }
 
 
@@ -145,7 +145,7 @@ public class FeErrors extends ANY
   {
     incompatibleType(pos,
                      "in assignment",
-                     "assignment to field : " + field.qualifiedName() + "\n",
+                     "assignment to field : '" + field.qualifiedName() + "'\n",
                      frmlT,
                      actlT,
                      value);
@@ -184,8 +184,8 @@ public class FeErrors extends ANY
                                                      : "";
     incompatibleType(value.pos,
                      "when passing argument in a call",
-                     "Actual type for argument #" + (count+1) + " " + name + "does not match expected type.\n" +
-                     "In call to          : " + calledFeature.qualifiedName() + "\n",
+                     "Actual type for argument #" + (count+1) + " '" + name + "' does not match expected type.\n" +
+                     "In call to          : '" + calledFeature.qualifiedName() + "'\n",
                      frmlT,
                      actlT,
                      value);
@@ -214,7 +214,7 @@ public class FeErrors extends ANY
   {
     incompatibleType(pos,
                      "in array initialization",
-                     "array type          : " + arrayType + "\n",
+                     "array type          : '" + arrayType + "'\n",
                      frmlT,
                      actlT,
                      value);
@@ -232,27 +232,27 @@ public class FeErrors extends ANY
   {
     error(ass.pos,
           "Could not find target field '" + ass.name + "' in assignment",
-          "Field not found: " + ass.name + "\n" +
-          "Within feature: " + outer.qualifiedName() + "\n" +
-          "For assignment: " + ass + "\n");
+          "Field not found: '" + ass.name + "'\n" +
+          "Within feature: '" + outer.qualifiedName() + "'\n" +
+          "For assignment: '" + ass + "'\n");
   }
 
   static void assignmentToNonField(Assign ass, Feature f, Feature outer)
   {
     error(ass.pos,
           "Target of assignment is not a field",
-          "Target of assignement: " + f.qualifiedName() + "\n" +
-          "Within feature: " + outer.qualifiedName() + "\n" +
-          "For assignment: " + ass + "\n");
+          "Target of assignement: '" + f.qualifiedName() + "'\n" +
+          "Within feature: '" + outer.qualifiedName() + "'\n" +
+          "For assignment: '" + ass + "'\n");
   }
 
   static void assignmentToIndexVar(Assign ass, Feature f, Feature outer)
   {
     error(ass.pos,
           "Target of assignment must not be a loop index variable",
-          "Target of assignement: " + f.qualifiedName() + "\n" +
-          "Within feature: " + outer.qualifiedName() + "\n" +
-          "For assignment: " + ass + "\n" +
+          "Target of assignement: '" + f.qualifiedName() + "'\n" +
+          "Within feature: '" + outer.qualifiedName() + "'\n" +
+          "For assignment: '" + ass + "'\n" +
           "Was defined as loop index variable at " + f.pos.show());
   }
 
@@ -277,8 +277,8 @@ public class FeErrors extends ANY
         error(call.pos,
               "Wrong number of actual arguments in call",
               "Number of actual arguments is " + call._actuals.size() + ", while call expects " + argumentsString(fsz) + ".\n" +
-              "Called feature: " + call.calledFeature().qualifiedName()+ "\n"+
-              "Formal arguments: " + fstr);
+              "Called feature: '" + call.calledFeature().qualifiedName()+ "'\n"+
+              "Formal arguments: '" + fstr + "'");
       }
   }
 
@@ -307,7 +307,7 @@ public class FeErrors extends ANY
           "Wrong number of generic arguments",
           "Wrong number of actual generic arguments in " + detail1 + ":\n" +
           detail2 +
-          "expected " + fg.sizeText() + (fg == FormalGenerics.NONE ? "" : " for " + fg.feature().qualifiedName() + fg) + "\n" +
+          "expected " + fg.sizeText() + (fg == FormalGenerics.NONE ? "" : " for '" + fg.feature().qualifiedName() + fg + "'") + "\n" +
           "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + actualGenerics + "" ) + ".\n");
   }
 
@@ -316,8 +316,8 @@ public class FeErrors extends ANY
   {
     error(redefinedArg.pos,
           "Wrong argument type in redefined feature",
-          "In " + redefinedFeature.qualifiedName() + " that redefines " + originalFeature.qualifiedName() + " " +
-          "argument type is " + redefinedArg.resultType() + ", argument type should be " + originalArg.resultType() + " " +
+          "In '" + redefinedFeature.qualifiedName() + "' that redefines '" + originalFeature.qualifiedName() + "' " +
+          "argument type is '" + redefinedArg.resultType() + "', argument type should be '" + originalArg.resultType() + "' " +
           "Original argument declared at " + originalArg.pos.show());
   }
 
@@ -326,8 +326,8 @@ public class FeErrors extends ANY
   {
     error(redefinedFeature.pos,
           "Wrong result type in redefined feature",
-          "In " + redefinedFeature.qualifiedName() + " that redefines " + originalFeature.qualifiedName() + " " +
-          "result type is " + redefinedFeature.resultType() + ", result type should be " + originalFeature.resultType() + ". " +
+          "In '" + redefinedFeature.qualifiedName() + "' that redefines '" + originalFeature.qualifiedName() + "' " +
+          "result type is '" + redefinedFeature.resultType() + "', result type should be '" + originalFeature.resultType() + "'. " +
           "Original feature declared at " + originalFeature.pos.show());
   }
 
@@ -336,7 +336,7 @@ public class FeErrors extends ANY
   {
     error(redefinedFeature.pos,
           "Wrong number of arguments in redefined feature",
-          "In " + redefinedFeature.qualifiedName() + " that redefines " + originalFeature.qualifiedName() + " " +
+          "In '" + redefinedFeature.qualifiedName() + "' that redefines '" + originalFeature.qualifiedName() + "' " +
           "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + " " +
           "Original feature declared at " + originalFeature.pos.show());
   }
@@ -350,14 +350,14 @@ public class FeErrors extends ANY
     for (Feature af : abstractFeature)
       {
         abs.append(abs.length() == 0 ? "" : ", ").append(af._featureName.baseName());
-        abstracts.append((abstracts.length() == 0 ? "inherits or declares" : "and") + " abstract feature " +
-                         af.qualifiedName() + " declared at " + af.pos.show() + "\n" +
+        abstracts.append((abstracts.length() == 0 ? "inherits or declares" : "and") + " abstract feature '" +
+                         af.qualifiedName() + "' declared at " + af.pos.show() + "\n" +
                          "which is called at " + af.isUsedAt().show() + "\n");
       }
     abstracts.append("without providing an implementation\n");
     error(featureThatDoesNotImplementAbstract.pos,
           "Used abstract " + (abstractFeature.size() > 1 ? "features " + abs + " are" : "feature " + abs + " is") + " not implemented",
-          "Feature " + featureThatDoesNotImplementAbstract.qualifiedName() + " " +
+          "Feature '" + featureThatDoesNotImplementAbstract.qualifiedName() + "' " +
           "instantiated at " + instantiatedAt.show() + "\n" +
           abstracts);
   }
@@ -401,7 +401,7 @@ public class FeErrors extends ANY
       {
         error(pos,
               "If condition must be assignable to type 'bool'",
-              "Actual type is " + type);
+              "Actual type is '" + type + "'");
       }
   }
 
@@ -527,25 +527,25 @@ public class FeErrors extends ANY
   {
     error(pos,
           "Internally referenced feature '" + qname + "' not found",
-          "Feature not found: " + name + "\n" +
-          ((outer == null || outer.isUniverse()) ? "" : "Outer feature: " + outer.qualifiedName() + "\n"));
+          "Feature not found: '" + name + "'\n" +
+          ((outer == null || outer.isUniverse()) ? "" : "Outer feature: '" + outer.qualifiedName() + "'\n"));
   }
 
   static void repeatedInheritanceCannotBeResolved(SourcePosition pos, Feature heir, FeatureName fn, Feature f1, Feature f2)
   {
     error(pos,
           "Repeated inheritance of conflicting features",
-          "Feature " + heir.qualifiedName() + " inherits feature " + fn + " repeatedly: " +
-          f1.qualifiedName() + " defined at " + f1.pos.show() + "\n" + "and " +
-          f2.qualifiedName() + " defined at " + f2.pos.show() + "\n" +
-          "To solve this, you could add a redefintion of " + f1._featureName.baseName() + " to " + heir.qualifiedName() + ".");
+          "Feature '" + heir.qualifiedName() + "' inherits feature '" + fn + "' repeatedly: " +
+          "'" + f1.qualifiedName() + "' defined at " + f1.pos.show() + "\n" + "and " +
+          "'" + f2.qualifiedName() + "' defined at " + f2.pos.show() + "\n" +
+          "To solve this, you could add a redefintion of '" + f1._featureName.baseName() + "' to '" + heir.qualifiedName() + "'.");
   }
 
   static void duplicateFeatureDeclaration(SourcePosition pos, Feature f, Feature existing)
   {
     error(pos,
           "Duplicate feature declaration",
-          "Feature that was declared repeatedly: " + f.qualifiedName() + "\n" +
+          "Feature that was declared repeatedly: '" + f.qualifiedName() + "'\n" +
           "originally declared at " + existing.pos.show() + "\n" +
           "To solve this, consider renaming one of these two features or changing its number of arguments");
   }
@@ -554,8 +554,8 @@ public class FeErrors extends ANY
   {
     error(pos,
           msg,
-          "Feature that redefines existing feature: " + f.qualifiedName() + "\n" +
-          "original feature: " + existing.qualifiedName() + "\n" +
+          "Feature that redefines existing feature: '" + f.qualifiedName() + "'\n" +
+          "original feature: '" + existing.qualifiedName() + "'\n" +
           "original feature defined in " + existing.pos.fileNameWithPosition()+ "\n" +
           solution);
   }
@@ -572,16 +572,16 @@ public class FeErrors extends ANY
                    "To solve this, if you did not intent to redefine an inherited feature, " +
                    "chose a different name for " + f.featureName().baseName() + ".  Otherwise, if you do " +
                    "want to redefine an inherited feature, add a 'redef' modifier before the " +
-                   "declaration of " + f.qualifiedName() + ".");
+                   "declaration of '" + f.qualifiedName() + "'.");
   }
 
   static void redefineModifierDoesNotRedefine(Feature f)
   {
     error(f.pos,
           "Feature declared using modifier 'redef' does not redefine another feature",
-          "Redefining feature: " + f.qualifiedName() + "\n" +
+          "Redefining feature: '" + f.qualifiedName() + "'\n" +
           "To solve this, check spelling and argument count against the feature you want to redefine or " +
-          "remove 'redef' modifier in the declaration of " + f.qualifiedName() + ".");
+          "remove 'redef' modifier in the declaration of '" + f.qualifiedName() + "'.");
   }
 
   static void ambiguousCallTargets(SourcePosition pos,
@@ -589,7 +589,7 @@ public class FeErrors extends ANY
                                    List<Feature> targets)
   {
     error(pos,
-          "Ambiguous call targets found for call to " + fn,
+          "Ambiguous call targets found for call to '" + fn + "'",
           "Found several possible targets that match this call:\n" +
           featureList(targets));
   }
@@ -600,9 +600,9 @@ public class FeErrors extends ANY
   {
     error(call.pos,
           "Could not find called feature",
-          "Feature not found: " + calledName + "\n" +
-          "Target feature: " +  targetFeature.qualifiedName() + "\n" +
-          "In call: " + call + "\n");
+          "Feature not found: '" + calledName + "'\n" +
+          "Target feature: '" +  targetFeature.qualifiedName() + "'\n" +
+          "In call: '" + call + "'\n");
   }
 
   static void ambiguousType(Type t,
@@ -611,7 +611,7 @@ public class FeErrors extends ANY
     error(t.pos,
           "Ambiguous type",
           "For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.\n" +
-          "Type that is ambiguous: " +  t + "\n" +
+          "Type that is ambiguous: '" +  t + "'\n" +
           "Possible features that match this type: \n" +
           featureList(possibilities) + "\n" +
           "To solve this, rename these features such that each one has a unique name.");
@@ -632,8 +632,8 @@ public class FeErrors extends ANY
     error(t.pos,
           "Type not found",
           "Type '" + t.name + "' was not found, no corresponding feature nor formal generic argument exists\n" +
-          "Type that was not found: " + t + "\n" +
-          "within feature: " + outerfeat.qualifiedName() + "\n" +
+          "Type that was not found: '" + t + "'\n" +
+          "within feature: '" + outerfeat.qualifiedName() + "'\n" +
           (n == 0 ? "" :
            "However, " + singularOrPlural(n, "feature") + " " +
            (n == 1 ? "has been found that matches the type name but that does not define a type:\n"
@@ -652,7 +652,7 @@ public class FeErrors extends ANY
     error(m.pos,
           "Main feature must not have arguments",
           "Main feature has " + argumentsString(m.arguments.size()) + m.arguments.size()+", but should have no arguments to be used as main feature in an application\n" +
-          "To solve this, remove the arguments from feature " + m.qualifiedName() + "\n");
+          "To solve this, remove the arguments from feature '" + m.qualifiedName() + "'\n");
   }
 
   public static void mainFeatureMustNotHaveTypeArguments(Feature m)
@@ -661,7 +661,7 @@ public class FeErrors extends ANY
     error(m.pos,
           "Main feature must not have type arguments",
           "Main feature has " + singularOrPlural(g.size(),"type argument") + " " + g + ", but should have no arguments to be used as main feature in an application\n" +
-          "To solve this, remove the arguments from feature " + m.qualifiedName() + "\n");
+          "To solve this, remove the arguments from feature '" + m.qualifiedName() + "'\n");
   }
 
   static void mainFeatureMustNot(Feature m, String what)
@@ -709,7 +709,7 @@ public class FeErrors extends ANY
       {
         error(f.pos,
               "Missing result type in field declaration with initializaton",
-              "Field declared: " + f.qualifiedName());
+              "Field declared: '" + f.qualifiedName() + "'");
       }
   }
 
@@ -717,8 +717,8 @@ public class FeErrors extends ANY
   {
     error(t.pos,
           "Could not find outer feature in '.this'-expression",
-          "Within feature: " + feat.qualifiedName() + "\n" +
-          "Outer feature that was not found: " + qname + "\n" +
+          "Within feature: '" + feat.qualifiedName() + "'\n" +
+          "Outer feature that was not found: '" + qname + "'\n" +
           "Outer features available: " + (available.size() == 0 ? "-- none! --" : available));
   }
 
@@ -732,7 +732,7 @@ public class FeErrors extends ANY
         error(pos,
               "Block must end with a result expression",
               "This block must produce a value since its result is used by the enclosing statement.\n" +
-              "Expected type of value: " + expectedType);
+              "Expected type of value: '" + expectedType + "'");
       }
   }
 
@@ -740,8 +740,8 @@ public class FeErrors extends ANY
   {
     error(g._pos,
           "Constraint for generic argument must not be generic type parameter",
-          "Affected generic argument: " + g._name + "\n" +
-          "_constraint: " + g.constraint() + " declared at " + g.constraint().generic._pos);
+          "Affected generic argument: '" + g._name + "'\n" +
+          "_constraint: '" + g.constraint() + "' declared at " + g.constraint().generic._pos);
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
@@ -759,8 +759,8 @@ public class FeErrors extends ANY
     error(pos,
           "Formal generic cannot be used as outer type",
           "In a type >>a.b<<, the outer type >>a<< must not be a formal generic argument.\n" +
-          "Type used: " + t + "\n" +
-          "Formal generic used " + t.outer() + "\n" +
+          "Type used: '" + t + "'\n" +
+          "Formal generic used '" + t.outer() + "'\n" +
           "Formal generic declared in " + t.outer().genericArgument()._pos.show() + "\n");
   }
 
@@ -769,8 +769,8 @@ public class FeErrors extends ANY
     error(pos,
           "Formal generic cannot have generic arguments",
           "In a type with generic arguments >>A<B><<, the base type >>A<< must not be a formal generic argument.\n" +
-          "Type used: " + t + "\n" +
-          "Formal generic used " + generic + "\n" +
+          "Type used: '" + t + "'\n" +
+          "Formal generic used '" + generic + "'\n" +
           "Formal generic declared in " + generic._pos.show() + "\n");
   }
 
@@ -786,8 +786,8 @@ public class FeErrors extends ANY
     error(pos,
           "Generics arguments to choice type must be disjoint types",
           "The following types have overlapping values:\n" +
-          t1 + /* " at " + t1.pos.show() + */ "\n" +  // NYI: use pos before Types were interned!
-          t2 + /* " at " + t2.pos.show() + */ "\n");
+          "'" + t1 + "'" + /* " at " + t1.pos.show() + */ "\n" +  // NYI: use pos before Types were interned!
+          "'" + t2 + "'" + /* " at " + t2.pos.show() + */ "\n");
   }
 
   static void illegalUseOfOpenFormalGeneric(SourcePosition pos, Generic generic)
@@ -795,7 +795,7 @@ public class FeErrors extends ANY
     error(pos,
           "Illegal use of open formal generic type",
           "Open formal generic type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.\n" +
-          "Open formal argument: " + generic);
+          "Open formal argument: '" + generic + "'");
   }
 
 }
