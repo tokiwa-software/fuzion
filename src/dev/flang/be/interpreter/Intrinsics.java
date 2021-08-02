@@ -104,7 +104,7 @@ public class Intrinsics extends ANY
             return Value.EMPTY_VALUE;
           };
       }
-    else if (n.equals("fuzion.java.getStaticField"))
+    else if (n.equals("fuzion.java.getStaticField0"))
       {
         var actualGenerics = innerClazz._type._generics;
         if ((actualGenerics == null) || (actualGenerics.size() != 1))
@@ -132,8 +132,8 @@ public class Intrinsics extends ANY
                 System.err.println("fuzion.java.getStaticField called with null field argument");
                 System.exit(1);
               }
-            String clazz = clazzI.string;
-            String field = fieldI.string;
+            String clazz = (String) clazzI.javaRef;
+            String field = (String) fieldI.javaRef;
             if (clazz == null)
               {
                 System.err.println("fuzion.java.getStaticField called with non-String class argument");
@@ -175,8 +175,8 @@ public class Intrinsics extends ANY
                 System.err.println("fuzion.java.callVirtual called with null thiz argument");
                 System.exit(1);
               }
-            String name = nameI.string;
-            String sig  = sigI.string;
+            var name = (String) nameI.javaRef;
+            var sig  = (String) sigI.javaRef;
             Object thiz = thizI.javaRef;
             return JavaInterface.callVirtual(name,sig,thiz,argz);
           };

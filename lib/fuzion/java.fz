@@ -25,8 +25,23 @@
 
 public fuzion.java is
 
-  public getStaticField<T>(clazz string, field string) T is intrinsic
 
+  # read a static field of given name in class with given name. Wrap result into
+  # an instance of T.
+  #
+  public getStaticField<T>(clazz string, field string) =>
+    c := stringToJavaObject clazz
+    f := stringToJavaObject field
+    getStaticField0<T> c f
+
+
+  # intrinsic to read static field
+  #
+  private getStaticField0<T>(clazz JavaObject, field JavaObject) T is intrinsic
+
+
+  # A Java reference
+  #
   public JavaObject(private javaRef Object) ref
   is
     isNull => false   # NYI: comparing Java ref to 'null'
@@ -35,8 +50,6 @@ public fuzion.java is
   # Call a virtual Java method with given name and signature on instance thiz
   # with given arguments
   #
-  #
-  #
   public callVirtual(name string,
                      signature string,
                      thiz JavaObject,
@@ -44,13 +57,16 @@ public fuzion.java is
   pre
     safety: !thiz.isNull
   is
-    callV0 name signature thiz args.internalArray
+    n := stringToJavaObject name
+    s := stringToJavaObject signature
+    a := args.internalArray
+    callV0 n s thiz a
 
 
   # intrinsic to call given Java method
   #
-  private callV0(name string,
-                 signature string,
+  private callV0(name JavaObject,
+                 signature JavaObject,
                  thiz JavaObject,
                  args sys.array<JavaObject>) JavaObject is intrinsic
 
