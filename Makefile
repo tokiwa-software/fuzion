@@ -136,6 +136,7 @@ JAVA_FILES_BE_INTERPRETER = \
           $(SRC)/dev/flang/be/interpreter/Instance.java \
           $(SRC)/dev/flang/be/interpreter/Interpreter.java \
           $(SRC)/dev/flang/be/interpreter/JavaInterface.java \
+          $(SRC)/dev/flang/be/interpreter/JavaRef.java \
           $(SRC)/dev/flang/be/interpreter/Layout.java \
           $(SRC)/dev/flang/be/interpreter/LValue.java \
           $(SRC)/dev/flang/be/interpreter/Intrinsics.java \

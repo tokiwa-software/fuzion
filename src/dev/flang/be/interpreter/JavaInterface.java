@@ -33,13 +33,15 @@ import java.lang.reflect.Modifier;
 
 import dev.flang.ir.Clazz;
 
+import dev.flang.util.ANY;
+
 
 /**
  * JavaInterface <description>
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class JavaInterface
+public class JavaInterface extends ANY
 {
 
 
@@ -207,35 +209,20 @@ public class JavaInterface
 
   static Object instanceToJavaObject(Instance i)
   {
-    Object result;
-    if (i == null)
-      {
-        result = i;
-      }
-    else if (i.javaRef != null)
-      {
-        result = i.javaRef;
-      }
-    else
-      {
-        System.err.println("JavaInterface.instanceToJavaObject: cannot convert instance to Java: "+i);
-        System.exit(1);
-        result = null;
-      }
-    return result;
+    return ((JavaRef)i.refs[0])._javaRef;
   }
 
   static Instance javaObjectToInstance(Object o, Clazz resultClass)
   {
     Instance result;
-    if (o == null)
+    if (resultClass == null)  // NYI: remove this case, require resultClass != null instead!
       {
         result = null;
       }
     else
       {
         result = new Instance(resultClass);
-        result.javaRef = o;
+        result.refs[0] = new JavaRef(o);
       }
     return result;
   }

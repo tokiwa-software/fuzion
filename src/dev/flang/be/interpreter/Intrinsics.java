@@ -134,8 +134,8 @@ public class Intrinsics extends ANY
                 System.err.println("fuzion.java.getStaticField called with null field argument");
                 System.exit(1);
               }
-            String clazz = (String) clazzI.javaRef;
-            String field = (String) fieldI.javaRef;
+            String clazz = (String) JavaInterface.instanceToJavaObject(clazzI);
+            String field = (String) JavaInterface.instanceToJavaObject(fieldI);
             if (clazz == null)
               {
                 System.err.println("fuzion.java.getStaticField called with non-String class argument");
@@ -177,9 +177,9 @@ public class Intrinsics extends ANY
                 System.err.println("fuzion.java.callVirtual called with null thiz argument");
                 System.exit(1);
               }
-            var name = (String) nameI.javaRef;
-            var sig  = (String) sigI.javaRef;
-            Object thiz = thizI.javaRef;
+            String name = (String) JavaInterface.instanceToJavaObject(nameI);
+            String sig  = (String) JavaInterface.instanceToJavaObject(sigI );
+            Object thiz =          JavaInterface.instanceToJavaObject(thizI);
             return JavaInterface.callVirtual(name,sig,thiz,argz);
           };
       }
