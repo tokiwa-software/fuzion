@@ -549,7 +549,6 @@ public class Interpreter extends Backend
   {
     Clazz cl = Clazzes.conststring.get();
     Instance result = new Instance(cl);
-    result.string = str; // NYI: remove eventually, only for convenience in intrinsic features
     var saCl = Clazzes.constStringBytesArray;
     Instance sa = new Instance(saCl);
     byte[] bytes = str.getBytes(StandardCharsets.UTF_8);

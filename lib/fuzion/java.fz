@@ -74,9 +74,9 @@ public fuzion.java is
   # convert a string to a Java string object
   #
   public stringToJavaObject(s string) JavaObject is
-    stringToJavaObject0 s
+    stringToJavaObject0 s.utf8.asArray.internalArray
 
 
   # intrinsic to convert a string to a Java string object
   #
-  private stringToJavaObject0(s string) JavaObject is intrinsic
+  private stringToJavaObject0(s sys.array<i32>) JavaObject is intrinsic

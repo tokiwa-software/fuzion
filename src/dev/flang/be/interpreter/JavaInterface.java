@@ -212,10 +212,6 @@ public class JavaInterface
       {
         result = i;
       }
-    else if (i.string != null)
-      {
-        result = i.string;
-      }
     else if (i.javaRef != null)
       {
         result = i.javaRef;

@@ -76,13 +76,6 @@ public class Instance extends Value
 
 
   /**
-   * The string, if this is an instance of conststring. Only for convenience in
-   * intrinsic features, should be removed.
-   */
-  public String string; // NYI: remove!
-
-
-  /**
    * The corresponding Java object if this instance is JavaRef
    */
   public Object javaRef;
@@ -338,10 +331,6 @@ public class Instance extends Value
     for (int i=0; i<nonrefs.length; i++)
       {
         System.out.println(" field["+i+"] ==\t int:"+nonrefs[i]+"\tref: "+refs[i]);
-      }
-    if (string != null)
-      {
-        System.out.println("  string == \""+string+"\"");
       }
     if (javaRef != null)
       {

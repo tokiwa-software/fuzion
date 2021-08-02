@@ -39,6 +39,8 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 
+import java.nio.charset.StandardCharsets;
+
 
 /**
  * Intrinsics provides the implementation of Fuzion's intrinsic features.
@@ -190,8 +192,14 @@ public class Intrinsics extends ANY
                 System.err.println("*** error: unsafe feature "+n+" disabled");
                 System.exit(1);
               }
-            Instance strI = (Instance) args.get(1);
-            String str = strI.string;
+            var strI = args.get(1).instance();
+            var l = strI.nonrefs.length;
+            var ba = new byte[l];
+            for (var i = 0; i < l; i++)
+              {
+                ba[i] = (byte) strI.nonrefs[i];
+              }
+            String str = new String(ba, StandardCharsets.UTF_8);
             Clazz resultClazz = innerClazz.resultClazz();
             return JavaInterface.javaObjectToInstance(str, resultClazz);
           };
