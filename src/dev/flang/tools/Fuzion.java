@@ -151,7 +151,7 @@ class Fuzion extends ANY
 
   static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
 
-  static final String STANDARD_OPTIONS = "[-noANSI] [-debug[=<n>]] [-safety=(on|off)] [-enableUnsafeIntrinsics=(on|off)] [-verbose[=<n>]] (<main> | <srcfile>.fz | -) ";
+  static final String STANDARD_OPTIONS = "[-noANSI] [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] [-verbose[=<n>]] (<main> | <srcfile>.fz | -) ";
   static final String XTRA_OPTIONS = "[-X|--Xhelp] [-XjavaProf] ";
   static final String USAGE0 =
     "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] @STANDARD_OPTIONS@ --or--\n" +
