@@ -214,16 +214,11 @@ public class JavaInterface extends ANY
 
   static Instance javaObjectToInstance(Object o, Clazz resultClass)
   {
-    Instance result;
-    if (resultClass == null)  // NYI: remove this case, require resultClass != null instead!
-      {
-        result = null;
-      }
-    else
-      {
-        result = new Instance(resultClass);
-        result.refs[0] = new JavaRef(o);
-      }
+    if (PRECONDITIONS) require
+      (resultClass != null);
+
+    var result = new Instance(resultClass);
+    result.refs[0] = new JavaRef(o);
     return result;
   }
 
@@ -241,7 +236,7 @@ public class JavaInterface extends ANY
   }
 
 
-  static Instance callVirtual(String name, String sig, Object thiz, Value argI)
+  static Instance callVirtual(String name, String sig, Object thiz, Value argI, Clazz resultClass)
   {
     Instance result;
     Object res;
@@ -284,8 +279,7 @@ public class JavaInterface extends ANY
         System.exit(1);
         res = null;
       }
-    result = javaObjectToInstance(res,null);
-    return result;
+    return javaObjectToInstance(res, resultClass);
   }
 
 

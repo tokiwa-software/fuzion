@@ -47,28 +47,34 @@ public fuzion.java is
     isNull => false   # NYI: comparing Java ref to 'null'
 
 
+  # Java's 'void' type (which is used in Java like Fuzion's 'unit' type').
+  #
+  public JavaVoid(forbiddenToCallDirectly void) : JavaObject(Object)
+  is
+
+
   # Call a virtual Java method with given name and signature on instance thiz
   # with given arguments
   #
-  public callVirtual(name string,
-                     signature string,
-                     thiz JavaObject,
-                     args array<JavaObject>) JavaObject
+  public callVirtual<T>(name string,
+                        signature string,
+                        thiz JavaObject,
+                        args array<JavaObject>) T
   pre
     safety: !thiz.isNull
   is
     n := stringToJavaObject name
     s := stringToJavaObject signature
     a := args.internalArray
-    callV0 n s thiz a
+    callV0<T> n s thiz a
 
 
   # intrinsic to call given Java method
   #
-  private callV0(name JavaObject,
-                 signature JavaObject,
-                 thiz JavaObject,
-                 args sys.array<JavaObject>) JavaObject is intrinsic
+  private callV0<T>(name JavaObject,
+                    signature JavaObject,
+                    thiz JavaObject,
+                    args sys.array<JavaObject>) T is intrinsic
 
 
   # convert a string to a Java string object

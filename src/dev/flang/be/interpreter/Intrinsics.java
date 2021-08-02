@@ -151,6 +151,8 @@ public class Intrinsics extends ANY
       }
     else if (n.equals("fuzion.java.callV0"))
       {
+        var actualGenerics = innerClazz._type._generics;
+        Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
         result = (args) ->
           {
             if (!ENABLE_UNSAFE_INTRINSICS)
@@ -180,7 +182,7 @@ public class Intrinsics extends ANY
             String name = (String) JavaInterface.instanceToJavaObject(nameI);
             String sig  = (String) JavaInterface.instanceToJavaObject(sigI );
             Object thiz =          JavaInterface.instanceToJavaObject(thizI);
-            return JavaInterface.callVirtual(name,sig,thiz,argz);
+            return JavaInterface.callVirtual(name,sig,thiz,argz,resultClazz);
           };
       }
     else if (n.equals("fuzion.java.stringToJavaObject0"))
