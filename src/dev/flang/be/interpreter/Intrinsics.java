@@ -147,7 +147,7 @@ public class Intrinsics extends ANY
             return JavaInterface.getStaticField(clazz, field, resultClazz);
           };
       }
-    else if (n.equals("fuzion.java.callVirtual"))
+    else if (n.equals("fuzion.java.callV0"))
       {
         result = (args) ->
           {
@@ -159,7 +159,7 @@ public class Intrinsics extends ANY
             Instance nameI = (Instance) args.get(1);
             Instance sigI  = (Instance) args.get(2);
             Instance thizI = (Instance) args.get(3);
-            Instance argI  = (Instance) args.get(4);
+            var argz = args.get(4);
             if (nameI == null)
               {
                 System.err.println("fuzion.java.callVirtual called with null name argument");
@@ -178,8 +178,22 @@ public class Intrinsics extends ANY
             String name = nameI.string;
             String sig  = sigI.string;
             Object thiz = thizI.javaRef;
-            JavaInterface.callVirtual(name,sig,thiz,argI);
-            return Value.EMPTY_VALUE;
+            return JavaInterface.callVirtual(name,sig,thiz,argz);
+          };
+      }
+    else if (n.equals("fuzion.java.stringToJavaObject0"))
+      {
+        result = (args) ->
+          {
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                System.err.println("*** error: unsafe feature "+n+" disabled");
+                System.exit(1);
+              }
+            Instance strI = (Instance) args.get(1);
+            String str = strI.string;
+            Clazz resultClazz = innerClazz.resultClazz();
+            return JavaInterface.javaObjectToInstance(str, resultClazz);
           };
       }
     else if (n.equals("sys.array.alloc"))

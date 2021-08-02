@@ -236,12 +236,6 @@ public class JavaInterface
       {
         result = null;
       }
-    else if (o instanceof String)
-      {
-        System.err.println("javaObjectToInstance: String conversion NYI");
-        System.exit(1);
-        result = null;
-      }
     else
       {
         result = new Instance(resultClass);
@@ -250,8 +244,33 @@ public class JavaInterface
     return result;
   }
 
+  static Object[] instanceToJavaObjects(Value v)
+  {
+    // NYI: Check i.clazz is sys.internalArray
+    Instance i;
+    if (v instanceof Instance vi)
+      {
+        i = vi;
+      }
+    else if (v instanceof LValue lv)
+      {
+        i = (Instance) lv.container.refs[lv.offset];
+      }
+    else
+      {
+        throw new Error("Unexpected value "+(v == null ? "null" : "type "+v.getClass()));
+      }
+    var sz = i.refs.length;
+    var result = new Object[sz];
+    for (var ix = 0; ix < sz; ix++)
+      {
+        result[ix] = instanceToJavaObject((Instance) i.refs[ix]);
+      }
+    return result;
+  }
 
-  static Instance callVirtual(String name, String sig, Object thiz, Instance argI)
+
+  static Instance callVirtual(String name, String sig, Object thiz, Value argI)
   {
     Instance result;
     Object res;
@@ -277,10 +296,10 @@ public class JavaInterface
         System.err.println("fuzion.java.callVirtual: method "+name+sig+" not found in target "+thiz.getClass());
         System.exit(1);
       }
-    Object arg = instanceToJavaObject(argI);
+    Object[] argz = instanceToJavaObjects(argI);
     try
       {
-        res = m.invoke(thiz,new Object[] { arg });
+        res = m.invoke(thiz, argz);
       }
     catch (IllegalAccessException e)
       {

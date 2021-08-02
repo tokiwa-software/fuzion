@@ -27,9 +27,40 @@ public fuzion.java is
 
   public getStaticField<T>(clazz string, field string) T is intrinsic
 
-  public JavaObject(private javaRef Object) ref is
+  public JavaObject(private javaRef Object) ref
+  is
+    isNull => false   # NYI: comparing Java ref to 'null'
 
-  public callVirtual(method string,
+
+  # Call a virtual Java method with given name and signature on instance thiz
+  # with given arguments
+  #
+  #
+  #
+  public callVirtual(name string,
                      signature string,
                      thiz JavaObject,
-                     arguments string) JavaObject is intrinsic
+                     args array<JavaObject>) JavaObject
+  pre
+    safety: !thiz.isNull
+  is
+    callV0 name signature thiz args.internalArray
+
+
+  # intrinsic to call given Java method
+  #
+  private callV0(name string,
+                 signature string,
+                 thiz JavaObject,
+                 args sys.array<JavaObject>) JavaObject is intrinsic
+
+
+  # convert a string to a Java string object
+  #
+  public stringToJavaObject(s string) JavaObject is
+    stringToJavaObject0 s
+
+
+  # intrinsic to convert a string to a Java string object
+  #
+  private stringToJavaObject0(s string) JavaObject is intrinsic
