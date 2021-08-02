@@ -184,6 +184,17 @@ public abstract class Value extends ANY
     throw new Error("value " + this + " not allowed for clazz "+ expected);
   }
 
+
+  /**
+   * Return the instance this value contains.  If this is an Instance, return
+   * this, if this is an LValue containing an instance, get that instance.
+   */
+  Instance instance()
+  {
+    throw new Error("value "+ this + " of class " + getClass() + " is not an instance");
+  }
+
+
 }
 
 /* end of file */

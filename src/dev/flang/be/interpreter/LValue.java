@@ -199,6 +199,19 @@ public class LValue extends Value
 
 
   /**
+   * Return the instance this value contains.  If this is an Instance, return
+   * this, if this is an LValue containing an instance, get that instance.
+   */
+  Instance instance()
+  {
+    if (PRECONDITIONS) require
+      (clazz.isRef());
+
+    return (Instance) container.refs[offset];
+  }
+
+
+  /**
    * toString
    *
    * @return

@@ -247,19 +247,7 @@ public class JavaInterface
   static Object[] instanceToJavaObjects(Value v)
   {
     // NYI: Check i.clazz is sys.internalArray
-    Instance i;
-    if (v instanceof Instance vi)
-      {
-        i = vi;
-      }
-    else if (v instanceof LValue lv)
-      {
-        i = (Instance) lv.container.refs[lv.offset];
-      }
-    else
-      {
-        throw new Error("Unexpected value "+(v == null ? "null" : "type "+v.getClass()));
-      }
+    Instance i = v.instance();
     var sz = i.refs.length;
     var result = new Object[sz];
     for (var ix = 0; ix < sz; ix++)

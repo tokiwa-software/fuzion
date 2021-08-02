@@ -309,6 +309,16 @@ public class Instance extends Value
 
 
   /**
+   * Return the instance this value contains.  If this is an Instance, return
+   * this, if this is an LValue containing an instance, get that instance.
+   */
+  Instance instance()
+  {
+    return this;
+  }
+
+
+  /**
    * toString
    *
    * @return
