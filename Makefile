@@ -164,6 +164,7 @@ JAVA_FILES_TOOLS = \
           $(SRC)/dev/flang/tools/Fuzion.java \
           $(SRC)/dev/flang/tools/Latex.java \
           $(SRC)/dev/flang/tools/Pretty.java \
+          $(SRC)/dev/flang/tools/Tool.java \
 
 CLASS_FILES_UTIL           = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
 CLASS_FILES_UTIL_UNICODE   = $(CLASSES_DIR)/dev/flang/util/unicode/__marker_for_make__

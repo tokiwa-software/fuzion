@@ -52,7 +52,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-class Fuzion extends ANY
+class Fuzion extends Tool
 {
 
   /*----------------------------  constants  ----------------------------*/
@@ -119,7 +119,7 @@ class Fuzion extends ANY
         }
       else
         {
-          _allBackendExtraUsage_.append("       " + CMD + " " + _arg + " " + usage() + "@STANDARD_OPTIONS@ --or--\n");
+          _allBackendExtraUsage_.append("       @CMD@ " + _arg + " " + usage() + STD_OPTIONS + " --or--\n");
         }
       _allBackends_.put(arg, this);
     }
@@ -147,29 +147,10 @@ class Fuzion extends ANY
   static StringBuilder _allBackendExtraUsage_ = new StringBuilder();
   static TreeMap<String, Backend> _allBackends_ = new TreeMap<>();
 
-  static final String CMD = System.getProperty("fuzion.command", "fz");
-
   static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
-
-  static final String STANDARD_OPTIONS = "[-noANSI] [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] [-verbose[=<n>]] (<main> | <srcfile>.fz | -) ";
-  static final String XTRA_OPTIONS = "[-X|--Xhelp] [-XjavaProf] ";
-  static final String USAGE0 =
-    "Usage: " + CMD + " [-h|--help] [" + _allBackendArgs_ + "] @STANDARD_OPTIONS@ --or--\n" +
-    _allBackendExtraUsage_ +
-    "       " + CMD + " -pretty [-noANSI] ({<file>} | -)\n" +
-    "       " + CMD + " -latex\n";
-
-  static final String USAGE  = USAGE0.replace("@STANDARD_OPTIONS@", STANDARD_OPTIONS);
-  static final String XUSAGE = USAGE0.replace("@STANDARD_OPTIONS@", STANDARD_OPTIONS + XTRA_OPTIONS);
 
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * Level of verbosity of output
-   */
-  int _verbose = Integer.getInteger("fuzion.verbose", 0);
 
 
   /**
@@ -220,7 +201,7 @@ class Fuzion extends ANY
    */
   public static void main(String[] args)
   {
-    new Fuzion(args);
+    new Fuzion().run(args);
   }
 
 
@@ -229,26 +210,40 @@ class Fuzion extends ANY
 
   /**
    * Constructor for the Fuzion class
-   *
-   * @param args the command line arguments.  One argument is
-   * currently supported: the main feature name.
    */
-  private Fuzion(String[] args)
+  private Fuzion()
   {
-    try
-      {
-        parseArgs(args).run();
-        Errors.showAndExit(true);
-      }
-    catch(Throwable e)
-      {
-        e.printStackTrace();
-        System.exit(1);
-      }
+    super("fz");
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * The standard options that come with every tool.  May be redefined to add
+   * more standard options to be used in different configurations.
+   *
+   * @param xtra include extra options such as -Xhelp, -XjavaPof, etc.
+   */
+  protected String STANDARD_OPTIONS(boolean xtra)
+  {
+    return super.STANDARD_OPTIONS(xtra);
+  }
+
+
+  /**
+   * The basic usage, using STD_OPTIONS as a placeholder for standard
+   * options.
+   */
+  protected String USAGE0()
+  {
+    return
+      "Usage: " + _cmd + " [-h|--help] [" + _allBackendArgs_ + "] " + STD_OPTIONS + "[-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] (<main> | <srcfile>.fz | -)  --or--\n" +
+      _allBackendExtraUsage_.toString().replace("@CMD@", _cmd) +
+      "       " + _cmd + " -pretty " + STD_OPTIONS + " ({<file>} | -)\n" +
+      "       " + _cmd + " -latex " + STD_OPTIONS + "\n";
+  }
 
 
   /**
@@ -259,7 +254,7 @@ class Fuzion extends ANY
    *
    * @return a Runnable to run the selected tool.
    */
-  private Runnable parseArgs(String[] args)
+  public Runnable parseArgs(String[] args)
   {
     if (args.length >= 1 && args[0].equals("-pretty"))
       {
@@ -277,44 +272,6 @@ class Fuzion extends ANY
 
 
   /**
-   * Parse the given argument against generic arguments (those that can always
-   * be applied).
-   *
-   * @param a the command line argument
-   *
-   * @return true iff a was a generic argument and was parsed, false if a still
-   * needs to be handled.
-   */
-  private boolean parseGenericArg(String a)
-  {
-    if (a.equals("-h"    ) ||
-        a.equals("-help" ) ||
-        a.equals("--help")    )
-      {
-        System.out.println(USAGE);
-        System.exit(0);
-      }
-    else if (a.equals("-X"     ) ||
-             a.equals("-Xhelp" ) ||
-             a.equals("--Xhelp")    )
-      {
-        System.out.println(XUSAGE);
-        System.exit(0);
-      }
-    else if (a.equals("-XjavaProf"))
-      {
-        dev.flang.util.Profiler.start();
-      }
-    else
-      {
-        return false;
-      }
-    return true;
-  }
-
-
-
-  /**
    * Parse the given command line args for the pretty printer and create a
    * runnable that executes it.  System.exit() in case of error or -help.
    *
@@ -324,29 +281,20 @@ class Fuzion extends ANY
    */
   private Runnable parseArgsPretty(String[] args)
   {
-    var duplicates = new TreeSet<String>();
     var sourceFiles = new List<String>();
     for (var a : args)
       {
-        if (duplicates.contains(a))
+        if (!parseGenericArg(a) &&
+            !a.equals("-pretty")  // ignore, we know this already
+            )
           {
-            Errors.fatal("duplicate argument: '" + a + "'", USAGE);
-          }
-        duplicates.add(a);
-        if (!a.equals("-pretty") && // ignore, we know this already
-            !parseGenericArg(a))
-          {
-            if (a.equals("-noANSI"))
-              {
-                System.setProperty("FUZION_DISABLE_ANSI_ESCAPES","true");
-              }
-            else if (a.equals("-"))
+            if (a.equals("-"))
               {
                 _readStdin = true;
               }
             else if (a.startsWith("-"))
               {
-                Errors.fatal("unknown argument: '" + a + "'", USAGE);
+                unknownArg(a);
               }
             else
               {
@@ -356,11 +304,11 @@ class Fuzion extends ANY
       }
     if (sourceFiles.isEmpty() && !_readStdin)
       {
-        Errors.fatal("no source files given", USAGE);
+        fatal("no source files given");
       }
     else if (!sourceFiles.isEmpty() && _readStdin)
       {
-        Errors.fatal("cannot process both, stdin input '-' and a list of source files", USAGE);
+        fatal("cannot process both, stdin input '-' and a list of source files");
       }
     return () ->
       {
@@ -389,93 +337,20 @@ class Fuzion extends ANY
    */
   private Runnable parseArgsLatex(String[] args)
   {
-    var duplicates = new TreeSet<String>();
     var sourceFiles = new List<String>();
     for (var a : args)
       {
-        if (duplicates.contains(a))
+        if (!parseGenericArg(a) &&
+            !a.equals("-latex")   // ignore, we know this already
+            )
           {
-            Errors.fatal("duplicate argument: '" + a + "'", USAGE);
-          }
-        duplicates.add(a);
-        if (!a.equals("-latex") && // ignore, we know this already
-            !parseGenericArg(a))
-          {
-            if (a.startsWith("-"))
-              {
-                Errors.fatal("unknown argument: '" + a + "'", USAGE);
-              }
-            else
-              {
-                Errors.fatal("unknown argument: '" + a + "'", USAGE);
-              }
+            unknownArg(a);
           }
       }
     return () ->
       {
         new Latex();
       };
-  }
-
-
-  /**
-   * Parse argument of the form "-xyz" or "-xyz=123".
-   *
-   * @param a the argument
-   *
-   * @param defawlt value to be returned in case a does not specify an explicit
-   * value.
-   *
-   * @return defawlt or the values specifed in a after '='.
-   */
-  int parsePositiveIntArg(String a, int defawlt)
-  {
-    if (PRECONDITIONS) require
-      (a.split("=").length == 2);
-
-    int result = defawlt;
-    var s = a.split("=");
-    if (s.length > 1)
-      {
-        try
-          {
-            result = Integer.parseInt(s[1]);
-          }
-        catch (NumberFormatException e)
-          {
-            Errors.fatal("failed to parse number",
-                         "While analysing command line argument '" + a + "', encountered: '" + e + "'");
-          }
-      }
-    return result;
-  }
-
-
-  /**
-   * Parse argument of the form "-xyz=on" or "-xyz=off".
-   *
-   * @param a the argument
-   *
-   * @return true iff a is set to 'on' or an error was reported.
-   */
-  boolean parseOnOffArg(String a)
-  {
-    if (PRECONDITIONS) require
-      (a.indexOf("=") >= 0);
-
-    var s = a.split("=");
-    return
-      switch (s.length == 2 ? s[1] : "**fail**")
-        {
-        case "on" -> true;
-        case "off" -> false;
-        default ->
-        {
-          Errors.fatal("Unsupported parameter to command line option '" + s[0] + "'",
-                       "While analysing command line argument '" + a + "'.  Paramter must be 'on' or 'off'");
-          yield true;
-        }
-        };
   }
 
 
@@ -490,14 +365,8 @@ class Fuzion extends ANY
    */
   private Runnable parseArgsForBackend(String[] args)
   {
-    var duplicates = new TreeSet<String>();
     for (var a : args)
       {
-        if (duplicates.contains(a))
-          {
-            Errors.fatal("duplicate argument: '" + a + "'", USAGE);
-          }
-        duplicates.add(a);
         if (!parseGenericArg(a))
           {
             if (a.equals("-"))
@@ -508,15 +377,10 @@ class Fuzion extends ANY
               {
                 if (_backend != Backend.undefined)
                   {
-                    Errors.fatal("arguments must specify at most one backend, found '" + _backend._arg + "' and '" + a + "'", USAGE);
+                    fatal("arguments must specify at most one backend, found '" + _backend._arg + "' and '" + a + "'");
                   }
                 _backend = _allBackends_.get(a);
               }
-            else if (a.equals("-noANSI"))
-              {
-                System.setProperty("FUZION_DISABLE_ANSI_ESCAPES","true");
-              }
-            else if (a.matches("-verbose(=\\d+|)"     )) { _verbose                = parsePositiveIntArg(a, 1); }
             else if (a.matches("-debug(=\\d+|)"       )) { _debugLevel             = parsePositiveIntArg(a, 1); }
             else if (a.startsWith("-safety="          )) { _safety                 = parseOnOffArg(a);          }
             else if (a.startsWith("-unsafeIntrinsics=")) { _enableUnsafeIntrinsics = parseOnOffArg(a);          }
@@ -525,11 +389,11 @@ class Fuzion extends ANY
               }
             else if (a.startsWith("-"))
               {
-                Errors.fatal("unknown argument: '" + a + "'", USAGE);
+                unknownArg(a);
               }
             else if (_main != null)
               {
-                Errors.fatal("several main feature names provided: '" + _main + "', '" + a + "'", USAGE);
+                fatal("several main feature names provided: '" + _main + "', '" + a + "'");
               }
             else
               {
@@ -539,11 +403,11 @@ class Fuzion extends ANY
       }
     if (_main == null && !_readStdin)
       {
-        Errors.fatal("missing main feature name in command line args", USAGE);
+        fatal("missing main feature name in command line args");
       }
     if (_main != null && _readStdin)
       {
-        Errors.fatal("cannot process main feature name together with stdin input", USAGE);
+        fatal("cannot process main feature name together with stdin input");
       }
     if (_backend == Backend.undefined)
       {
