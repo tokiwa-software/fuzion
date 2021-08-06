@@ -69,17 +69,37 @@ class FZJava extends Tool
   /*----------------------------  variables  ----------------------------*/
 
 
+  /**
+   * The set of Java modules specified on the command line, e.g., ["java.base",
+   * "java.desktop"].
+   */
   List<String> _modules = new List<String>();
+
+
+  /**
+   * The set of regex patterns to use to filter java classes, e.g., ["java..*",
+   * "javax..*"]
+   */
   List<String> _patterns = new List<String>();
 
+
+  /**
+   * The module to create, .e.g. "build/modules/java.base"
+   */
   Path _dest;
 
+
+  /**
+   * Should existing files be overwritten?
+   */
   boolean _overwrite = false;
+
 
   /**
    * Set of outer package fuzion features created already using createOuter.
    */
   TreeSet<String> _pkgs = new TreeSet<String>();
+
 
   /*--------------------------  static methods  -------------------------*/
 
