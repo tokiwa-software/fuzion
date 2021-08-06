@@ -163,6 +163,7 @@ JAVA_FILES_BE_C = \
 JAVA_FILES_TOOLS = \
           $(SRC)/dev/flang/tools/Fuzion.java \
           $(SRC)/dev/flang/tools/Latex.java \
+          $(SRC)/dev/flang/tools/AceMode.java \
           $(SRC)/dev/flang/tools/Pretty.java \
           $(SRC)/dev/flang/tools/Tool.java \
 
