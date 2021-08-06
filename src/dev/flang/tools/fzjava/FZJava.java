@@ -378,7 +378,10 @@ class FZJava extends Tool
           }
         for (var fi : c.getFields())
           {
-            processField(fi, cn, n, data_dynamic, data_static);
+            if (fi.getDeclaringClass() == c)
+              {
+                processField(fi, cn, n, data_dynamic, data_static);
+              }
           }
         // NYI: Constructors not supported
 
@@ -451,7 +454,14 @@ class FZJava extends Tool
                     StringBuilder data_static)
   {
     if ((fi.getModifiers() & Modifier.STATIC) != 0 &&
-        fi.getType().toString().indexOf("java.io") >= 0)
+        fi.getType() != Byte     .TYPE &&
+        fi.getType() != Character.TYPE &&
+        fi.getType() != Short    .TYPE &&
+        fi.getType() != Integer  .TYPE &&
+        fi.getType() != Long     .TYPE &&
+        fi.getType() != Float    .TYPE &&
+        fi.getType() != Double   .TYPE &&
+        fi.getType() != Boolean  .TYPE    )
       {
         var tn = fi.getType().getName();
         if (!tn.startsWith("["))
