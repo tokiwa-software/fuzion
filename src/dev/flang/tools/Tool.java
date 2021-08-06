@@ -79,7 +79,7 @@ public abstract class Tool extends ANY
   /**
    * Level of verbosity of output
    */
-  int _verbose = Integer.getInteger("fuzion.verbose", 0);
+  public int _verbose = Integer.getInteger("fuzion.verbose", 0);
 
 
   /**
