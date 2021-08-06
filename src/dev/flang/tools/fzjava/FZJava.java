@@ -522,6 +522,12 @@ class FZJava extends Tool
             // so we replace it by '_jObject'.
             s = "_jObject";
           }
+        else if (s.equals("string"))
+          {
+            // NYI: this is just a precaution to avoid confusion with Fuzion
+            // strings. Needs to test if this is really necessary.
+            s = "_jstring";
+          }
 
         if (res.length() > 0)
           {
