@@ -188,7 +188,7 @@ CLASS_FILES_TOOLS_FZJAVA   = $(CLASSES_DIR)/dev/flang/tools/fzjava/__marker_for_
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
 .PHONY: all
-all: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/bin/fzjava $(BUILD_DIR)/modules/java.base $(BUILD_DIR)/tests
+all: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/bin/fzjava $(BUILD_DIR)/modules/java.base $(BUILD_DIR)/tests $(BUILD_DIR)/examples
 
 # phony target to compile all java sources
 .PHONY: javac
@@ -295,6 +295,10 @@ $(BUILD_DIR)/tests: $(FZ_SRC)/tests
 	mkdir -p $(@D)
 	cp -rf $^ $@
 	chmod +x $@/*.sh
+
+$(BUILD_DIR)/examples: $(FZ_SRC)/examples
+	mkdir -p $(@D)
+	cp -rf $^ $@
 
 $(BUILD_DIR)/UnicodeData.txt:
 	cd $(BUILD_DIR) && wget https://www.unicode.org/Public/UCD/latest/ucd/UnicodeData.txt
