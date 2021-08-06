@@ -58,9 +58,7 @@ public class COptions extends FuzionOptions
    */
   public COptions(FuzionOptions fo, String binaryName)
   {
-    super(fo.verbose(),
-          fo.fuzionSafety(),
-          fo.fuzionDebugLevel());
+    super(fo);
 
     _binaryName = binaryName;
   }

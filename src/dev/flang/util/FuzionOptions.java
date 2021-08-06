@@ -68,15 +68,26 @@ public class FuzionOptions extends ANY
   /**
    * Costructor initializing fields as given.
    */
-  public FuzionOptions(int verbose, boolean fuzionSafety, int fuzionDebugLevel)
+  public FuzionOptions(int verbose, int fuzionDebugLevel, boolean fuzionSafety)
   {
     if (PRECONDITIONS) require
                          (verbose >= 0);
 
     _verbose = verbose;
-    _fuzionSafety = fuzionSafety;
     _fuzionDebugLevel = fuzionDebugLevel;
+    _fuzionSafety = fuzionSafety;
 
+  }
+
+
+  /**
+   * Costructor initializing fields from existing FuzionOptions instance
+   */
+  public FuzionOptions(FuzionOptions fo)
+  {
+    this(fo.verbose(),
+         fo.fuzionDebugLevel(),
+         fo.fuzionSafety());
   }
 
 

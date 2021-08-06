@@ -167,6 +167,12 @@ class Fuzion extends Tool
 
 
   /**
+   * List of modules added using '-module'.
+   */
+  List<String> _modules = new List<>();
+
+
+  /**
    * Default result of safety:
    */
   boolean _safety = Boolean.valueOf(System.getProperty("fuzion.safety", "true"));
@@ -239,7 +245,7 @@ class Fuzion extends Tool
   protected String USAGE0()
   {
     return
-      "Usage: " + _cmd + " [-h|--help] [" + _allBackendArgs_ + "] " + STD_OPTIONS + "[-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] (<main> | <srcfile>.fz | -)  --or--\n" +
+      "Usage: " + _cmd + " [-h|--help] [" + _allBackendArgs_ + "] " + STD_OPTIONS + "[-modules={<m>,..} [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] (<main> | <srcfile>.fz | -)  --or--\n" +
       _allBackendExtraUsage_.toString().replace("@CMD@", _cmd) +
       "       " + _cmd + " -pretty " + STD_OPTIONS + " ({<file>} | -)\n" +
       "       " + _cmd + " -latex " + STD_OPTIONS + "\n";
@@ -381,6 +387,7 @@ class Fuzion extends Tool
                   }
                 _backend = _allBackends_.get(a);
               }
+            else if (a.startsWith("-modules="         )) { _modules.addAll(parseStringListArg(a));              }
             else if (a.matches("-debug(=\\d+|)"       )) { _debugLevel             = parsePositiveIntArg(a, 1); }
             else if (a.startsWith("-safety="          )) { _safety                 = parseOnOffArg(a);          }
             else if (a.startsWith("-unsafeIntrinsics=")) { _enableUnsafeIntrinsics = parseOnOffArg(a);          }
@@ -416,8 +423,9 @@ class Fuzion extends Tool
     return () ->
       {
         var options = new FrontEndOptions(_verbose,
-                                          _safety,
+                                          _modules,
                                           _debugLevel,
+                                          _safety,
                                           _readStdin,
                                           _main);
         if (_backend == Backend.c)

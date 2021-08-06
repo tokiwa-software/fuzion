@@ -32,6 +32,7 @@ import java.nio.file.Path;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
+import dev.flang.util.List;
 
 
 /**
@@ -59,6 +60,12 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
+   * List of modules added to fuzion.
+   */
+  final List<String> _modules; // = new List<>("java.base");
+
+
+  /**
    * main feature name, null iff _readStdin
    */
   final String _main;
@@ -70,16 +77,17 @@ public class FrontEndOptions extends FuzionOptions
   /**
    * Costructor initializing fields as given.
    */
-  public FrontEndOptions(int verbose, boolean fuzionSafety, int fuzionDebugLevel, boolean readStdin, String main)
+  public FrontEndOptions(int verbose, List<String> modules, int fuzionDebugLevel, boolean fuzionSafety, boolean readStdin, String main)
   {
     super(verbose,
-          fuzionSafety,
-          fuzionDebugLevel);
+          fuzionDebugLevel,
+          fuzionSafety);
 
     if (PRECONDITIONS) require
                          (verbose >= 0,
                           readStdin || main != null,
-                          !readStdin || main == null);
+                          !readStdin || main == null,
+                          modules != null);
 
     _readStdin = readStdin;
     Path inputFile = null;
@@ -105,6 +113,7 @@ public class FrontEndOptions extends FuzionOptions
           }
       }
     _inputFile = inputFile;
+    _modules = modules;
     _main = main;
   }
 

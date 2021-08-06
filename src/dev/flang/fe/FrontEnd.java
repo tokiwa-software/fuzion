@@ -79,12 +79,27 @@ public class FrontEnd extends ANY
   public final FrontEndOptions _options;
 
 
+  /**
+   * All the directories we are reading Fuzion sources form.
+   */
+  private final Dir[] _sourceDirs;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   public FrontEnd(FrontEndOptions options)
   {
     _options = options;
+    _sourceDirs = new Dir[SOURCE_PATHS.length + options._modules.size()];
+    for (int i = 0; i < SOURCE_PATHS.length; i++)
+      {
+        _sourceDirs[i] = new Dir(SOURCE_PATHS[i]);
+      }
+    for (int i = 0; i < options._modules.size(); i++)
+      {
+        _sourceDirs[SOURCE_PATHS.length + i] = new Dir(FUZION_HOME.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
+      }
   }
 
 
@@ -231,7 +246,7 @@ public class FrontEnd extends ANY
    */
   private void loadInnerFeatures(Resolution res, Feature f)
   {
-    for (Dir root : SOURCE_DIRS)
+    for (Dir root : _sourceDirs)
       {
         try
           {
@@ -283,7 +298,6 @@ public class FrontEnd extends ANY
   private static final Path FUZION_HOME;
   private static final Path CURRENT_DIRECTORY;
   private static final Path[] SOURCE_PATHS;
-  private static final Dir[] SOURCE_DIRS;
   static {
 
     CURRENT_DIRECTORY = Path.of(".");
@@ -305,11 +319,6 @@ public class FrontEnd extends ANY
     FUZION_HOME = Path.of(p).getParent();
 
     SOURCE_PATHS = new Path[] { FUZION_HOME.resolve("lib"), CURRENT_DIRECTORY };
-    SOURCE_DIRS = new Dir[SOURCE_PATHS.length];
-    for (int i = 0; i < SOURCE_PATHS.length; i++)
-      {
-        SOURCE_DIRS[i] = new Dir(SOURCE_PATHS[i]);
-      }
   }
 
   /**

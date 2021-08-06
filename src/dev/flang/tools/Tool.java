@@ -309,6 +309,27 @@ public abstract class Tool extends ANY
   }
 
 
+  /**
+   * Parse argument of the form "-xyz=abc,def,ghi".
+   *
+   * @param a the argument
+   *
+   * @return the list containing the single elements, e.g. ["abc","def","ghi"]
+   */
+  protected List<String> parseStringListArg(String a)
+  {
+    if (PRECONDITIONS) require
+      (a.indexOf("=") >= 0);
+
+    List<String> result = new List<>();
+    for (var s : a.substring(a.indexOf("=")+1).split(","))
+      {
+        result.add(s);
+      }
+    return result;
+  }
+
+
 }
 
 /* end of file */
