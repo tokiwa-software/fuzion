@@ -166,6 +166,9 @@ JAVA_FILES_TOOLS = \
           $(SRC)/dev/flang/tools/Pretty.java \
           $(SRC)/dev/flang/tools/Tool.java \
 
+JAVA_FILES_TOOLS_FZJAVA = \
+          $(SRC)/dev/flang/tools/fzjava/FZJava.java \
+
 CLASS_FILES_UTIL           = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
 CLASS_FILES_UTIL_UNICODE   = $(CLASSES_DIR)/dev/flang/util/unicode/__marker_for_make__
 CLASS_FILES_AST            = $(CLASSES_DIR)/dev/flang/ast/__marker_for_make__
@@ -180,15 +183,16 @@ CLASS_FILES_OPT            = $(CLASSES_DIR)/dev/flang/opt/__marker_for_make__
 CLASS_FILES_BE_INTERPRETER = $(CLASSES_DIR)/dev/flang/be/interpreter/__marker_for_make__
 CLASS_FILES_BE_C           = $(CLASSES_DIR)/dev/flang/be/c/__marker_for_make__
 CLASS_FILES_TOOLS          = $(CLASSES_DIR)/dev/flang/tools/__marker_for_make__
+CLASS_FILES_TOOLS_FZJAVA   = $(CLASSES_DIR)/dev/flang/tools/fzjava/__marker_for_make__
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
 .PHONY: all
-all: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
+all: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/bin/fzjava $(BUILD_DIR)/tests
 
 # phony target to compile all java sources
 .PHONY: javac
-javac: $(CLASS_FILES_TOOLS)
+javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA)
 
 $(FUZION_EBNF): $(SRC)/dev/flang/parser/Parser.java
 	mkdir -p $(@D)
@@ -264,6 +268,11 @@ $(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS)
 	touch $@
 
+$(CLASS_FILES_TOOLS_FZJAVA): $(JAVA_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS) $(CLASS_FILES_PARSER) $(CLASS_FILES_UTIL)
+	mkdir -p $(CLASSES_DIR)
+	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS_FZJAVA)
+	touch $@
+
 $(BUILD_DIR)/lib: $(FZ_SRC)/lib
 	mkdir -p $(@D)
 	cp -rf $^ $@
@@ -271,6 +280,11 @@ $(BUILD_DIR)/lib: $(FZ_SRC)/lib
 $(BUILD_DIR)/bin/fz: $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/bin/fz $@
+	chmod +x $@
+
+$(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
+	mkdir -p $(@D)
+	cp -rf $(FZ_SRC)/bin/fzjava $@
 	chmod +x $@
 
 $(BUILD_DIR)/tests: $(FZ_SRC)/tests
