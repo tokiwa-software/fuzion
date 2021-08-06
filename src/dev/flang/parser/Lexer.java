@@ -986,6 +986,39 @@ public class Lexer extends SourceFile
 
 
   /**
+   * Check if the current token in _sourceFile at pos()..endPos() is a keyword.
+   *
+   * @return the corresponding keyword token such as Token.t_public if this is
+   * the case, Token.t_ident otherwise.
+   */
+  public static boolean isKeyword(String s)
+  {
+    // perform binary search in Token.keywords array:
+    int l = 0;
+    int r = Token._keywords.length-1;
+    while (l <= r)
+      {
+        int m = (l + r) / 2;
+        Token t = Token._keywords[m];
+        int c = s.compareTo(t._keyword);
+        if (c == 0)
+          {
+            return true;
+          }
+        if (c <= 0)
+          {
+            r = m - 1;
+          }
+        if (c >= 0)
+          {
+            l = m + 1;
+          }
+      }
+    return false;
+  }
+
+
+  /**
    * Determine the kind (K_*) for a given codepoint.
    */
   private int kind(int p)
