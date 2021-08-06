@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -413,21 +414,110 @@ class FZJava extends Tool
                      StringBuilder data_static)
   {
     var pa = me.getParameters();
+    var p = formalParameters(pa);
     if ((me.getModifiers() & Modifier.STATIC) == 0 &&
-        pa.length == 0 &&
+        p != null &&
         me.getReturnType() == Void.TYPE)
       {
-        data_dynamic.append("  "+mangle(cleanName(me.getName()))+" is " +
+        data_dynamic.append("  "+mangle(cleanName(me.getName())) + p + " is " +
                             "fuzion.java.callVirtual<fuzion.java.JavaVoid> " +
                             fuzionString(mangle(me.getName())) + " " +
-                            fuzionString("()V") +
+                            fuzionString(signature(pa, me.getReturnType())) +
                             " " + mangle(classBaseName) + ".this "+
-                            "[]\n");
+                            parametersArray(pa) + "\n");
       }
     else
       {
         // NYI: instance methods, methods with non-empty parameter lists, methods with non-void result not supported
       }
+  }
+
+
+  /**
+   * Declare the formal parameters for a Fuzion feature that provides a link to
+   * a Java method with the given parameters.
+   *
+   * @param pa array of parameters
+   *
+   * @return the Fuzion parameters list, e.g., "(arg0 string) "
+   */
+  String formalParameters(Parameter[] pa)
+  {
+    StringBuilder res = new StringBuilder();
+    for (var p : pa)
+      {
+        var t = p.getType();
+        res.append(res.length() == 0 ? "(" : ", ");
+        if (t == String.class)
+          {
+            res.append(mangle(cleanName(p.getName())) + " string");
+          }
+        else
+          { // NYI: handle other parameter types
+            return null;
+          }
+      }
+    if (!res.isEmpty())
+      {
+        res.append(") ");
+      }
+    return res.toString();
+  }
+
+
+  /**
+   * Get the Java signature string for a method with the given parameters.
+   *
+   * @param pa array of parameters
+   *
+   * @return the signature, e.g., "(Ljava/lang/String;)V"
+   */
+  String signature(Parameter[] pa, Class returnType)
+  {
+    StringBuilder res = new StringBuilder("(");
+    for (var p : pa)
+      {
+        var t = p.getType();
+        if (t == String.class)
+          {
+            res.append("Ljava/lang/String;");
+          }
+        else
+          { // NYI: handle other parameter types
+            return null;
+          }
+      }
+    res.append(")");
+    if (returnType == Void.TYPE)
+      {
+        res.append("V");
+      }
+    else
+      {
+        res.append("NYI"); // NYI: handle other result type thatn void
+      }
+    return res.toString();
+  }
+
+
+  String parametersArray(Parameter[] pa)
+  {
+    StringBuilder res = new StringBuilder("[");
+    for (var p : pa)
+      {
+        var t = p.getType();
+        res.append(res.length() == 1 ? "" : "; ");
+        if (t == String.class)
+          {
+            res.append("fuzion.java.stringToJavaObject " + mangle(cleanName(p.getName())));
+          }
+        else
+          { // NYI: handle other parameter types
+            return null;
+          }
+      }
+    res.append("]");
+    return res.toString();
   }
 
 
