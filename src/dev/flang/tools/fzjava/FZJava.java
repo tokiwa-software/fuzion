@@ -614,6 +614,14 @@ class FZJava extends Tool
           {
             res.appendCodePoint(i);
           }
+        else if (i == '_')
+          {
+            res.append("__");
+          }
+        else if (i == '$')
+          {
+            res.append("_S_");
+          }
         else
           {
             res.append("_u").append(Integer.toHexString(0x1000000 + i).substring(1)).append("_");
