@@ -70,6 +70,13 @@ public abstract class Tool extends ANY
 
 
   /**
+   * This command.  This might be different to the command entered by the user,
+   * e.g., if the user executes a shell script that starts the JVM.
+   */
+  protected final String _rawCmd;
+
+
+  /**
    * The actual command entered by the user.  This is typically a command that
    * executes a shell script that starts the JVM.
    */
@@ -107,6 +114,7 @@ public abstract class Tool extends ANY
    */
   protected Tool(String name, String[] args)
   {
+    _rawCmd = name;
     _cmd = System.getProperty("fuzion.command", name);
     _args = args;
   }
@@ -182,6 +190,24 @@ public abstract class Tool extends ANY
   }
 
 
+  /**
+   * Return the version number of this tool
+   */
+  public String version()
+  {
+    return Version.VERSION;
+  }
+
+
+  /**
+   * Return the full version information of this tool, including build date, git
+   * hash, built by.
+   */
+  public String fullVersion()
+  {
+    return Version.VERSION + " (" + Version.DATE + " GIT hash " + Version.GIT_HASH + " built by " + Version.BUILTBY + ")";
+  }
+
 
   /**
    * Parse the given command line args and create a runnable to run the
@@ -222,6 +248,11 @@ public abstract class Tool extends ANY
              a.equals("--Xhelp")    )
       {
         System.out.println(USAGE(true));
+        System.exit(0);
+      }
+    else if (a.equals("-version"))
+      {
+        System.out.println(_rawCmd + " V" + fullVersion()); ;
         System.exit(0);
       }
     else if (a.equals("-XjavaProf"))

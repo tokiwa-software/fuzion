@@ -246,7 +246,7 @@ class Fuzion extends Tool
   protected String USAGE0()
   {
     return
-      "Usage: " + _cmd + " [-h|--help] [" + _allBackendArgs_ + "] " + STD_OPTIONS + "[-modules={<m>,..} [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] (<main> | <srcfile>.fz | -)  --or--\n" +
+      "Usage: " + _cmd + " [-h|--help|-version] [" + _allBackendArgs_ + "] " + STD_OPTIONS + "[-modules={<m>,..} [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] (<main> | <srcfile>.fz | -)  --or--\n" +
       _allBackendExtraUsage_.toString().replace("@CMD@", _cmd) +
       "       " + _cmd + " -pretty " + STD_OPTIONS + " ({<file>} | -)\n" +
       "       " + _cmd + " -latex " + STD_OPTIONS + "\n";

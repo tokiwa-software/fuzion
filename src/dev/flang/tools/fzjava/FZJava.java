@@ -64,6 +64,7 @@ import java.util.zip.ZipFile;
 class FZJava extends Tool
 {
 
+
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -146,7 +147,7 @@ class FZJava extends Tool
    */
   protected String USAGE0()
   {
-    return "Usage: " + _cmd + " [-h|--help] " + STD_OPTIONS + "[-to=<dir>] {module}+\n";
+    return "Usage: " + _cmd + " [-h|--help|-version] " + STD_OPTIONS + "[-to=<dir>] {module}+\n";
   }
 
 
@@ -444,7 +445,7 @@ class FZJava extends Tool
       "#\n" +
       "# !!!!!!  DO NOT EDIT, GENERATED CODE !!!!!!\n" +
       "#\n" +
-      "# This code was generated automatically using the " + FZJAVA_TOOL + " tool called \n" +
+      "# This code was generated automatically using the " + FZJAVA_TOOL + " tool V" + version() + " called \n" +
       "# as follows:\n" +
       "#\n" +
       "#   " + command() + "\n" +

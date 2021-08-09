@@ -160,11 +160,18 @@ JAVA_FILES_BE_C = \
           $(SRC)/dev/flang/be/c/CTypes.java \
           $(SRC)/dev/flang/be/c/Intrinsics.java \
 
+JAVA_FILE_TOOLS_VERSION_IN = \
+	  $(SRC)/dev/flang/tools/Version.java.in
+
+JAVA_FILE_TOOLS_VERSION = \
+	  $(BUILD_DIR)/generated/src/dev/flang/tools/Version.java
+
 JAVA_FILES_TOOLS = \
           $(SRC)/dev/flang/tools/Fuzion.java \
           $(SRC)/dev/flang/tools/Latex.java \
           $(SRC)/dev/flang/tools/Pretty.java \
           $(SRC)/dev/flang/tools/Tool.java \
+	  $(JAVA_FILE_TOOLS_VERSION)
 
 JAVA_FILES_TOOLS_FZJAVA = \
           $(SRC)/dev/flang/tools/fzjava/FZJava.java \
@@ -197,6 +204,14 @@ javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA)
 $(FUZION_EBNF): $(SRC)/dev/flang/parser/Parser.java
 	mkdir -p $(@D)
 	which pcregrep && pcregrep -M "^[a-zA-Z0-9]+[ ]*:(\n|.)*?;" $^ >$@ || echo "*** need pcregrep tool installed" >$@
+
+$(JAVA_FILE_TOOLS_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_TOOLS_VERSION_IN)
+	mkdir -p $(@D)
+	cat $(JAVA_FILE_TOOLS_VERSION_IN) \
+          | sed "s^@@VERSION@@^`cat $(FZ_SRC)/version.txt`^g" \
+          | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); echo -n \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" \
+          | sed "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g"  \
+          | sed "s^@@BUILTBY@@^`echo -n $(USER)@; hostname`^g" >$@
 
 $(CLASS_FILES_UTIL): $(JAVA_FILES_UTIL)
 	mkdir -p $(CLASSES_DIR)
