@@ -202,12 +202,11 @@ class Fuzion extends Tool
   /**
    * main the main method
    *
-   * @param args the command line arguments.  One argument is
-   * currently supported: the main feature name.
+   * @param args the command line arguments.
    */
   public static void main(String[] args)
   {
-    new Fuzion().run(args);
+    new Fuzion(args).run();
   }
 
 
@@ -216,10 +215,12 @@ class Fuzion extends Tool
 
   /**
    * Constructor for the Fuzion class
+   *
+   * @param args the command line arguments.
    */
-  private Fuzion()
+  private Fuzion(String[] args)
   {
-    super("fz");
+    super("fz", args);
   }
 
 

@@ -89,6 +89,12 @@ public abstract class Tool extends ANY
   private Set<String> _duplicates = new TreeSet<>();
 
 
+  /**
+   * The arguments passed to this command.
+   */
+  private String[] _args;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -96,10 +102,13 @@ public abstract class Tool extends ANY
    * Constructor for the Fuzion class
    *
    * @param name the default tool command name
+   *
+   * @param args the command line arguments.
    */
-  protected Tool(String name)
+  protected Tool(String name, String[] args)
   {
     _cmd = System.getProperty("fuzion.command", name);
+    _args = args;
   }
 
 
@@ -138,15 +147,12 @@ public abstract class Tool extends ANY
 
   /**
    * parse args and run this tool
-   *
-   * @param args the command line arguments.  One argument is
-   * currently supported: the main feature name.
    */
-  protected void run(String[] args)
+  protected void run()
   {
     try
       {
-        parseArgs(args).run();
+        parseArgs(_args).run();
         Errors.showAndExit(true);
       }
     catch(Throwable e)
@@ -155,6 +161,26 @@ public abstract class Tool extends ANY
         System.exit(1);
       }
   }
+
+
+  /**
+   * The command string including all arguments.
+   */
+  public String command()
+  {
+    StringBuilder result = new StringBuilder();
+    result.append(_cmd);
+    for (var a : _args)
+      {
+        if (a.indexOf(" ") >= 0)
+          {
+            a = "'" + a + "'";
+          }
+        result.append(" ").append(a);
+      }
+    return result.toString();
+  }
+
 
 
   /**

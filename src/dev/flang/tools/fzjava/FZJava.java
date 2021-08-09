@@ -50,6 +50,7 @@ import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 
 import java.util.TreeSet;
+import java.util.TreeMap;
 
 import java.util.zip.ZipFile;
 
@@ -64,6 +65,12 @@ class FZJava extends Tool
 {
 
   /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Name of this tool, i.e., the command that typically starts this tool.
+   */
+  static final String FZJAVA_TOOL = "fzjava";
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -112,7 +119,7 @@ class FZJava extends Tool
    */
   public static void main(String[] args)
   {
-    new FZJava().run(args);
+    new FZJava(args).run();
   }
 
 
@@ -121,10 +128,12 @@ class FZJava extends Tool
 
   /**
    * Constructor for the FZJava class
+   *
+   * @param args the command line arguments.
    */
-  private FZJava()
+  private FZJava(String[] args)
   {
-    super("fzjava");
+    super(FZJAVA_TOOL, args);
   }
 
 
@@ -385,17 +394,26 @@ class FZJava extends Tool
   void processClass(Class c)
   {
     var cn  = c.getName();
-    var jfn = "Java/" + cleanName(cn.replace('.','/'));
-    var jcn = jfn.replace('/','.');
+    var ccn = cleanName(cn);
+    var jfn = "Java/" + ccn.replace('.', '/');
+    var jtn = typeName(c);
     if (c != null && (c.getModifiers() & Modifier.PUBLIC) != 0)
       {
-        var n = jcn.substring(jcn.lastIndexOf(".")+1);
-        StringBuilder data_dynamic = new StringBuilder(mangle(jcn) + "(forbidden void) ref : fuzion.java.JavaObject(forbidden) is\n");
-        StringBuilder data_static  = new StringBuilder(mangle(jcn) + STATIC_SUFFIX + " is\n");
-        StringBuilder data_unit    = new StringBuilder(mangle(jcn) + " => " + mangle(jcn) + STATIC_SUFFIX + "\n");
+        var n = jfn.substring(jfn.lastIndexOf("/") + 1);
+        StringBuilder data_dynamic = new StringBuilder(header("Fuzion interface to instance members of Java instance class '" + cn + "'") +
+                                                       jtn + "(forbidden void) ref : fuzion.java.JavaObject(forbidden) is\n");
+        StringBuilder data_static  = new StringBuilder(header("Fuzion interface to static members of Java class '" + cn + "'") +
+                                                       jtn + STATIC_SUFFIX + " is\n");
+        StringBuilder data_unit    = new StringBuilder(header("Fuzion unit feature to call static members of Java class '" + cn + "'") +
+                                                       jtn + " => " + jtn + STATIC_SUFFIX + "\n");
+        TreeMap<String,Method> overloaded = new TreeMap<>();
         for (var me : c.getMethods())
           {
-            processMethod(me, n, data_dynamic, data_static);
+            processMethod(me, n, data_dynamic, data_static, overloaded);
+          }
+        for (var me : overloaded.values())
+          {
+            shortHand(me, n, data_dynamic, data_static);
           }
         for (var fi : c.getFields())
           {
@@ -415,6 +433,26 @@ class FZJava extends Tool
 
 
   /**
+   * Create Fuzion header for a generated source file.
+   *
+   * @param main the main comment describing the generated file, must fit in a single line
+   */
+  String header(String main)
+  {
+    return
+      "# " + main + "\n" +
+      "#\n" +
+      "# !!!!!!  DO NOT EDIT, GENERATED CODE !!!!!!\n" +
+      "#\n" +
+      "# This code was generated automatically using the " + FZJAVA_TOOL + " tool called \n" +
+      "# as follows:\n" +
+      "#\n" +
+      "#   " + command() + "\n" +
+      "#\n";
+  }
+
+
+  /**
    * Create Fuzion feature for given method
    *
    * @param me the method to create fuzion code for
@@ -427,11 +465,16 @@ class FZJava extends Tool
    *
    * @param data_static the fuzion feature containing the static members of
    * the class
+   *
+   * @param overloaded Set of overloaded methods, mapping name comdined with
+   * number or parameters (name + " " + n) to Methods.  In case of overloading,
+   * the Method is always the preferred method to use a short name.
    */
   void processMethod(Method me,
                      String classBaseName,
                      StringBuilder data_dynamic,
-                     StringBuilder data_static)
+                     StringBuilder data_static,
+                     TreeMap<String, Method> overloaded)
   {
     var pa = me.getParameters();
     var p = formalParameters(pa);
@@ -439,17 +482,118 @@ class FZJava extends Tool
         p != null &&
         me.getReturnType() == Void.TYPE)
       {
-        data_dynamic.append("  "+mangle(cleanName(me.getName())) + p + " is " +
-                            "fuzion.java.callVirtual<fuzion.java.JavaVoid> " +
-                            fuzionString(mangle(me.getName())) + " " +
-                            fuzionString(signature(pa, me.getReturnType())) +
-                            " " + mangle(classBaseName) + ".this "+
-                            parametersArray(pa) + "\n");
+        var n = me.getName();
+        var sp = signature(pa);
+        var s = signature(pa, me.getReturnType());
+        data_dynamic.append("\n" +
+                            "  # call Java instance method '" + me + "':\n" +
+                            "  #\n" +
+                            "  " + mangle(cleanName(n)) + (sp.length() == 0 ? "" : "_" + mangle(sp)) + p + " is\n" +
+                            "    " + ("fuzion.java.callVirtual<fuzion.java.JavaVoid> " +
+                                      fuzionString(n) + " " +
+                                      fuzionString(s) +
+                                      " " + mangle(classBaseName) + ".this "+
+                                      parametersArray(pa) + "\n")
+                            );
+        String nn = n + " " + pa.length;
+        if (sp.length() > 0)
+          {
+            var existing = overloaded.get(nn);
+            if (existing == null || !preferred(existing.getParameters(), pa))
+              {
+                overloaded.put(nn, me);
+              }
+          }
       }
     else
       {
         // NYI: instance methods, methods with non-empty parameter lists, methods with non-void result not supported
       }
+  }
+
+
+  /**
+   * Create Fuzion shortHand for given method.  A shortHand is a feature that
+   * does not have the mangled Java signature as part of its name. In case of
+   * overloading, only one method will be choses as a shortHand.
+   *
+   * @param me the method to create fuzion code for
+   *
+   * @param classBaseName is the base name of the Java class not including the
+   * package name, e.g. "Object"
+   *
+   * @param data_dynamic the fuzion feature containing the instance members of
+   * the class
+   *
+   * @param data_static the fuzion feature containing the static members of
+   * the class
+   */
+  void shortHand(Method me,
+                 String classBaseName,
+                 StringBuilder data_dynamic,
+                 StringBuilder data_static)
+  {
+    var pa = me.getParameters();
+    var p = formalParameters(pa);
+    var n = me.getName();
+    var mcn = mangle(cleanName(n));
+    var sp = signature(pa);
+    data_dynamic.append("\n" +
+                        "  # short-hand to call Java instance method '" + me + "':\n" +
+                        "  #\n" +
+                        "  " + mcn + p + " is\n" +
+                        "    " + mcn + "_" + mangle(sp) + parametersList(pa) + "\n");
+  }
+
+
+
+  /**
+   * For two overloaded methods with parameter lists pa1 and pa2, choose which
+   * one should be preferred for a short-hand call: the first one (pa1, true),
+   * or the second one (pa2, false).
+   *
+   * @param pa1 paramaters of first cantidate
+   *
+   * @param pa2 paramaters of second cantidate
+   */
+  boolean preferred(Parameter[] pa1, Parameter[] pa2)
+  {
+    if (PRECONDITIONS) require
+      (pa1.length == pa2.length);
+
+    for (int i = 0; i < pa1.length; i++)
+      {
+        var t1 = pa1[i].getType();
+        var t2 = pa2[i].getType();
+        if (t1 != t2)
+          {
+            if (t1 == String.class)
+              {
+                return true;
+              }
+            else if (t2 == String.class)
+              {
+                return false;
+              }
+            else if (t1 == Object.class)
+              {
+                return true;
+              }
+            else if (t2 == Object.class)
+              {
+                return false;
+              }
+            else
+              {
+                return false; // no clear preference, so choose the first we found.
+              }
+          }
+      }
+
+    check
+      (false);     // all parameters are equal, this should be unreachable
+
+    return false;
   }
 
 
@@ -468,20 +612,54 @@ class FZJava extends Tool
       {
         var t = p.getType();
         res.append(res.length() == 0 ? "(" : ", ");
+        var mp = mangle(cleanName(p.getName()));
+        String mt = null;
         if (t == String.class)
           {
-            res.append(mangle(cleanName(p.getName())) + " string");
+            mt = "string";
           }
-        else
-          { // NYI: handle other parameter types
+        else if (t.isArray())
+          { // NYI: handle array types
             return null;
           }
+        else if (t == Byte     .TYPE ||
+                 t == Character.TYPE ||
+                 t == Short    .TYPE ||
+                 t == Integer  .TYPE ||
+                 t == Long     .TYPE ||
+                 t == Float    .TYPE ||
+                 t == Double   .TYPE ||
+                 t == Boolean  .TYPE    )
+          { // NYI: handle basic type
+            return null;
+          }
+        else
+          {
+            mt = typeName(t);
+          }
+        res.append(mp).append(" ").append(mt);
       }
     if (!res.isEmpty())
       {
-        res.append(") ");
+        res.append(")");
       }
     return res.toString();
+  }
+
+
+  /**
+   * Get the Java signature string for a method with the given parameters and
+   * return type.
+   *
+   * @param pa array of parameters
+   *
+   * @param returnType the result type
+   *
+   * @return the signature, e.g., "(Ljava/lang/String;IJ)V"
+   */
+  String signature(Parameter[] pa, Class returnType)
+  {
+    return "(" + signature(pa) + ")" + signature(returnType);
   }
 
 
@@ -490,36 +668,70 @@ class FZJava extends Tool
    *
    * @param pa array of parameters
    *
-   * @return the signature, e.g., "(Ljava/lang/String;)V"
+   * @return the signature, e.g., "Ljava/lang/String;IJ"
    */
-  String signature(Parameter[] pa, Class returnType)
+  String signature(Parameter[] pa)
   {
-    StringBuilder res = new StringBuilder("(");
+    StringBuilder res = new StringBuilder();
     for (var p : pa)
       {
         var t = p.getType();
-        if (t == String.class)
-          {
-            res.append("Ljava/lang/String;");
-          }
-        else
-          { // NYI: handle other parameter types
-            return null;
-          }
-      }
-    res.append(")");
-    if (returnType == Void.TYPE)
-      {
-        res.append("V");
-      }
-    else
-      {
-        res.append("NYI"); // NYI: handle other result type thatn void
+        res.append(signature(t));
       }
     return res.toString();
   }
 
 
+  /**
+   * Get the Java signature string for a given type
+   *
+   * @param t the tye
+   *
+   * @return the signature, e.g., "V"
+   */
+  String signature(Class t)
+  {
+    String res;
+    if (t == String.class)
+      {
+        res = "Ljava/lang/String;";
+      }
+    else if (t.isArray())
+      { // NYI: handle array types
+        res = "NYI:array";
+      }
+    else if (t == Byte     .TYPE ||
+             t == Character.TYPE ||
+             t == Short    .TYPE ||
+             t == Integer  .TYPE ||
+             t == Long     .TYPE ||
+             t == Float    .TYPE ||
+             t == Double   .TYPE ||
+             t == Boolean  .TYPE    )
+      { // NYI: handle primitive type
+        res = "NYI:primitive";
+      }
+    else if (t == Void.TYPE)
+      {
+        res = "V";
+      }
+    else
+      {
+        res = "L" + t.getName().replace(".","/") + ";";
+      }
+    return res;
+  }
+
+
+  /**
+   * Get a string containing code to create a Fuzion array containting Java
+   * objects corresponding to all the parameters.
+   *
+   * @param pa array of parameters
+   *
+   * @return a string declaring such an array, e.g.,
+   * "[fuzion.java.stringToJavaObject arg0]".
+   */
   String parametersArray(Parameter[] pa)
   {
     StringBuilder res = new StringBuilder("[");
@@ -527,17 +739,68 @@ class FZJava extends Tool
       {
         var t = p.getType();
         res.append(res.length() == 1 ? "" : "; ");
+        var mp = mangle(cleanName(p.getName()));
         if (t == String.class)
           {
-            res.append("fuzion.java.stringToJavaObject " + mangle(cleanName(p.getName())));
+            res.append("fuzion.java.stringToJavaObject").append(" ").append(mp);
+          }
+        else if (t.isArray())
+          { // NYI: handle array types
+            return null;
+          }
+        else if (t == Byte     .TYPE ||
+                 t == Character.TYPE ||
+                 t == Short    .TYPE ||
+                 t == Integer  .TYPE ||
+                 t == Long     .TYPE ||
+                 t == Float    .TYPE ||
+                 t == Double   .TYPE ||
+                 t == Boolean  .TYPE    )
+          { // NYI: handle basic type
+            return null;
           }
         else
-          { // NYI: handle other parameter types
-            return null;
+          {
+            res.append(mp);
           }
       }
     res.append("]");
     return res.toString();
+  }
+
+
+  /**
+   * Get a string containing all the mangled, cleaned names of the parameters.
+   * This is used to pass parameters from short-hand features to those with
+   * fully mangled signature in their name.
+   *
+   * @param pa array of parameters
+   *
+   * @return a string with space-separated parameter names, e.g., "arg0 arg1"
+   */
+  String parametersList(Parameter[] pa)
+  {
+    StringBuilder res = new StringBuilder("");
+    for (var p : pa)
+      {
+        res.append(" ");
+        var mp = mangle(cleanName(p.getName()));
+        res.append(mp);
+      }
+    return res.toString();
+  }
+
+
+  /**
+   * Get the mangled, clean name of a given type
+   *
+   * @param t a Java type
+   *
+   * @return the corresponding Fuzion type, e.g., "Java.java.lang.String".
+   */
+  String typeName(Class t)
+  {
+    return  mangle("Java." + cleanName(t.getName()));
   }
 
 
@@ -573,15 +836,18 @@ class FZJava extends Tool
         fi.getType() != Double   .TYPE &&
         fi.getType() != Boolean  .TYPE    )
       {
-        var tn = fi.getType().getName();
-        if (!tn.startsWith("["))
+        var t = fi.getType();
+        if (!t.isArray())
           {
-            var rt = mangle("Java." + cleanName(tn));
+            var rt = typeName(t);
             var fin = mangle(cleanName(fi.getName()));
-            data_static.append("  " + fin + " " + rt + " is " +
-                               "fuzion.java.getStaticField<" + rt + "> " +
-                               fuzionString(cn) + " " +
-                               fuzionString(fin) + "\n");
+            data_static.append("\n" +
+                               "  # read static Java field '" + fi + "':\n" +
+                               "  #\n" +
+                               "  " + fin + " " + rt + " is\n" +
+                               "    " + ("fuzion.java.getStaticField<" + rt + "> " +
+                                         fuzionString(cn) + " " +
+                                         fuzionString(fin) + "\n"));
           }
       }
     else
@@ -620,7 +886,7 @@ class FZJava extends Tool
 
 
   /**
-   * For a name that is separated by '/', find all parts that are Fuzion
+   * For a name that is separated by '.', find all parts that are Fuzion
    * keywords and replace them by "_k_" + <keyword>
    *
    * @param n a string, e.g., "java/lang/ref/PhantomReference"
@@ -630,7 +896,7 @@ class FZJava extends Tool
   String cleanName(String n)
   {
     StringBuilder res = new StringBuilder();
-    for (var s : n.split("/"))
+    for (var s : n.split("\\."))
       {
         if (Lexer.isKeyword(s))
           {
@@ -651,7 +917,7 @@ class FZJava extends Tool
 
         if (res.length() > 0)
           {
-            res.append("/");
+            res.append(".");
           }
         res.append(s);
       }
@@ -679,7 +945,7 @@ class FZJava extends Tool
     if (!_pkgs.contains(pkg))
       {
         _pkgs.add(pkg);
-        writeFeature(pkg, "", pkg.replace("/",".") + " is\n");
+        writeFeature(pkg, "", mangle(pkg.replace("/",".")) + " is\n");
       }
   }
 
@@ -695,7 +961,14 @@ class FZJava extends Tool
    */
   void writeFeature(String fn, String suffix, String data)
   {
-    var fzp = _dest.resolve(Path.of(mangle(fn) + suffix + ".fz"));
+    var fzp = _dest;
+    while (fn.indexOf("/") >= 0)
+      {
+        var d = mangle(fn.substring(0, fn.indexOf("/")));
+        fzp = fzp.resolve(d);
+        fn = fn.substring(fn.indexOf("/")+1);
+      }
+    fzp = fzp.resolve(mangle(fn) + suffix + ".fz");
     try
       {
         var fzd = fzp.getParent();
@@ -735,8 +1008,7 @@ class FZJava extends Tool
         if (i >= 'a' && i <= 'z' ||
             i >= 'A' && i <= 'Z' ||
             i >= '0' && i <= '9' ||
-            i == '.' ||
-            i == '/')
+            i == '.')
           {
             res.appendCodePoint(i);
           }
@@ -747,6 +1019,14 @@ class FZJava extends Tool
         else if (i == '$')
           {
             res.append("_S_");
+          }
+        else if (i == '/')
+          {
+            res.append("_7_");
+          }
+        else if (i == ';')
+          {
+            res.append("_s_");
           }
         else
           {
