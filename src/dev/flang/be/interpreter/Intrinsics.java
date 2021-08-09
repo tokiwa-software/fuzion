@@ -206,6 +206,36 @@ public class Intrinsics extends ANY
             return JavaInterface.javaObjectToInstance(str, resultClazz);
           };
       }
+    else if (n.equals("fuzion.java.i32ToJavaObject"))
+      {
+        result = (args) ->
+          {
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                System.err.println("*** error: unsafe feature "+n+" disabled");
+                System.exit(1);
+              }
+            var i = args.get(1).i32Value();
+            var ji = Integer.valueOf(i);
+            Clazz resultClazz = innerClazz.resultClazz();
+            return JavaInterface.javaObjectToInstance(ji, resultClazz);
+          };
+      }
+    else if (n.equals("fuzion.java.i64ToJavaObject"))
+      {
+        result = (args) ->
+          {
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                System.err.println("*** error: unsafe feature "+n+" disabled");
+                System.exit(1);
+              }
+            var l = args.get(1).i64Value();
+            var jl = Long.valueOf(l);
+            Clazz resultClazz = innerClazz.resultClazz();
+            return JavaInterface.javaObjectToInstance(jl, resultClazz);
+          };
+      }
     else if (n.equals("sys.array.alloc"))
       {
         result = (args) ->

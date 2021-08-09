@@ -623,6 +623,14 @@ class FZJava extends Tool
           { // NYI: handle array types
             return null;
           }
+        else if (t == Integer  .TYPE    )
+          {
+            mt = "i32";
+          }
+        else if (t == Long     .TYPE    )
+          {
+            mt = "i64";
+          }
         else if (t == Byte     .TYPE ||
                  t == Character.TYPE ||
                  t == Short    .TYPE ||
@@ -701,6 +709,14 @@ class FZJava extends Tool
       { // NYI: handle array types
         res = "NYI:array";
       }
+    else if (t == Integer  .TYPE    )
+      {
+        res = "I";
+      }
+    else if (t == Long     .TYPE    )
+      {
+        res = "J";
+      }
     else if (t == Byte     .TYPE ||
              t == Character.TYPE ||
              t == Short    .TYPE ||
@@ -748,6 +764,14 @@ class FZJava extends Tool
         else if (t.isArray())
           { // NYI: handle array types
             return null;
+          }
+        else if (t == Integer  .TYPE    )
+          {
+            res.append("fuzion.java.i32ToJavaObject").append(" ").append(mp);
+          }
+        else if (t == Long     .TYPE    )
+          {
+            res.append("fuzion.java.i64ToJavaObject").append(" ").append(mp);
           }
         else if (t == Byte     .TYPE ||
                  t == Character.TYPE ||
@@ -801,7 +825,7 @@ class FZJava extends Tool
    */
   String typeName(Class t)
   {
-    return  mangle("Java." + cleanName(t.getName()));
+    return mangle("Java." + cleanName(t.getName()));
   }
 
 

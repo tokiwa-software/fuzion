@@ -77,12 +77,22 @@ public fuzion.java is
                     args sys.array<JavaObject>) T is intrinsic
 
 
-  # convert a string to a Java string object
+  # convert a string to a Java String object
   #
   public stringToJavaObject(s string) JavaObject is
     stringToJavaObject0 s.utf8.asArray.internalArray
 
 
-  # intrinsic to convert a string to a Java string object
+  # intrinsic to convert a string to a Java String object
   #
   private stringToJavaObject0(s sys.array<i32>) JavaObject is intrinsic
+
+
+  # intrinsic to convert a i32 to a Java Integer object
+  #
+  public i32ToJavaObject(i i32) JavaObject is intrinsic
+
+
+  # intrinsic to convert a i32 to a Java Integer object
+  #
+  public i64ToJavaObject(l i64) JavaObject is intrinsic
