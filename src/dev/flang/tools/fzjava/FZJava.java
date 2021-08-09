@@ -615,37 +615,20 @@ class FZJava extends Tool
         res.append(res.length() == 0 ? "(" : ", ");
         var mp = mangle(cleanName(p.getName()));
         String mt = null;
-        if (t == String.class)
-          {
-            mt = "string";
-          }
-        else if (t.isArray())
+        if (t.isArray())
           { // NYI: handle array types
             return null;
           }
-        else if (t == Integer  .TYPE    )
-          {
-            mt = "i32";
-          }
-        else if (t == Long     .TYPE    )
-          {
-            mt = "i64";
-          }
-        else if (t == Byte     .TYPE ||
-                 t == Character.TYPE ||
-                 t == Short    .TYPE ||
-                 t == Integer  .TYPE ||
-                 t == Long     .TYPE ||
-                 t == Float    .TYPE ||
-                 t == Double   .TYPE ||
-                 t == Boolean  .TYPE    )
-          { // NYI: handle basic type
-            return null;
-          }
-        else
-          {
-            mt = typeName(t);
-          }
+        else if (t == Byte     .TYPE) { mt = "i32";       }  // NYI: should be i8
+        else if (t == Character.TYPE) { mt = "i32";       }  // NYI: should be u16
+        else if (t == Short    .TYPE) { mt = "i32";       }  // NYI: should be i16
+        else if (t == Integer  .TYPE) { mt = "i32";       }
+        else if (t == Long     .TYPE) { mt = "i64";       }
+        else if (t == Float    .TYPE) { mt = "i32";       }  // NYI: should be f32
+        else if (t == Double   .TYPE) { mt = "i64";       }  // NYI: should be f64
+        else if (t == Boolean  .TYPE) { mt = "bool";      }
+        else if (t == String.class  ) { mt = "string";    }
+        else                          { mt = typeName(t); }
         res.append(mp).append(" ").append(mt);
       }
     if (!res.isEmpty())
@@ -701,37 +684,19 @@ class FZJava extends Tool
   String signature(Class t)
   {
     String res;
-    if (t == String.class)
-      {
-        res = "Ljava/lang/String;";
-      }
-    else if (t.isArray())
+    if (t.isArray())
       { // NYI: handle array types
         res = "NYI:array";
       }
-    else if (t == Integer  .TYPE    )
-      {
-        res = "I";
-      }
-    else if (t == Long     .TYPE    )
-      {
-        res = "J";
-      }
-    else if (t == Byte     .TYPE ||
-             t == Character.TYPE ||
-             t == Short    .TYPE ||
-             t == Integer  .TYPE ||
-             t == Long     .TYPE ||
-             t == Float    .TYPE ||
-             t == Double   .TYPE ||
-             t == Boolean  .TYPE    )
-      { // NYI: handle primitive type
-        res = "NYI:primitive";
-      }
-    else if (t == Void.TYPE)
-      {
-        res = "V";
-      }
+    else if (t == Byte     .TYPE) { res = "B"; }
+    else if (t == Character.TYPE) { res = "C"; }
+    else if (t == Short    .TYPE) { res = "S"; }
+    else if (t == Integer  .TYPE) { res = "I"; }
+    else if (t == Long     .TYPE) { res = "J"; }
+    else if (t == Float    .TYPE) { res = "F"; }
+    else if (t == Double   .TYPE) { res = "D"; }
+    else if (t == Boolean  .TYPE) { res = "Z"; }
+    else if (t == Void     .TYPE) { res = "V"; }
     else
       {
         res = "L" + t.getName().replace(".","/") + ";";
@@ -757,33 +722,19 @@ class FZJava extends Tool
         var t = p.getType();
         res.append(res.length() == 1 ? "" : "; ");
         var mp = mangle(cleanName(p.getName()));
-        if (t == String.class)
-          {
-            res.append("fuzion.java.stringToJavaObject").append(" ").append(mp);
-          }
-        else if (t.isArray())
+        if (t.isArray())
           { // NYI: handle array types
             return null;
           }
-        else if (t == Integer  .TYPE    )
-          {
-            res.append("fuzion.java.i32ToJavaObject").append(" ").append(mp);
-          }
-        else if (t == Long     .TYPE    )
-          {
-            res.append("fuzion.java.i64ToJavaObject").append(" ").append(mp);
-          }
-        else if (t == Byte     .TYPE ||
-                 t == Character.TYPE ||
-                 t == Short    .TYPE ||
-                 t == Integer  .TYPE ||
-                 t == Long     .TYPE ||
-                 t == Float    .TYPE ||
-                 t == Double   .TYPE ||
-                 t == Boolean  .TYPE    )
-          { // NYI: handle basic type
-            return null;
-          }
+        else if (t == Byte     .TYPE) { res.append("fuzion.java.i8ToJavaObject "    ).append(mp); }
+        else if (t == Character.TYPE) { res.append("fuzion.java.u16ToJavaObject "   ).append(mp); }
+        else if (t == Short    .TYPE) { res.append("fuzion.java.i16ToJavaObject "   ).append(mp); }
+        else if (t == Integer  .TYPE) { res.append("fuzion.java.i32ToJavaObject "   ).append(mp); }
+        else if (t == Long     .TYPE) { res.append("fuzion.java.i64ToJavaObject "   ).append(mp); }
+        else if (t == Float    .TYPE) { res.append("fuzion.java.f32ToJavaObject "   ).append(mp); }
+        else if (t == Double   .TYPE) { res.append("fuzion.java.f64ToJavaObject "   ).append(mp); }
+        else if (t == Boolean  .TYPE) { res.append("fuzion.java.boolToJavaObject "  ).append(mp); }
+        else if (t == String.class  ) { res.append("fuzion.java.stringToJavaObject ").append(mp); }
         else
           {
             res.append(mp);

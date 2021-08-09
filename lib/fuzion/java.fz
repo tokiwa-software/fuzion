@@ -88,11 +88,41 @@ public fuzion.java is
   private stringToJavaObject0(s sys.array<i32>) JavaObject is intrinsic
 
 
-  # intrinsic to convert a i32 to a Java Integer object
+  # intrinsic to convert an i8 to a Java Byte object
+  #
+  public i8ToJavaObject(i i32 /* NYI: i8 */) JavaObject is intrinsic
+
+
+  # intrinsic to convert an u16 to a Java Character object
+  #
+  public u16ToJavaObject(i i32 /* NYI: u16 */) JavaObject is intrinsic
+
+
+  # intrinsic to convert an i16 to a Java Short object
+  #
+  public i16ToJavaObject(i i32 /* NYI: i16 */) JavaObject is intrinsic
+
+
+  # intrinsic to convert an i32 to a Java Integer object
   #
   public i32ToJavaObject(i i32) JavaObject is intrinsic
 
 
-  # intrinsic to convert a i32 to a Java Integer object
+  # intrinsic to convert an i64 to a Java Long object
   #
   public i64ToJavaObject(l i64) JavaObject is intrinsic
+
+
+  # intrinsic to convert an f32 to a Java Float object
+  #
+  public f32ToJavaObject(i i32 /* NYI: f32 */) JavaObject is intrinsic
+
+
+  # intrinsic to convert a f64 to a Java Double object
+  #
+  public f64ToJavaObject(i i64) JavaObject is intrinsic
+
+
+  # intrinsic to convert a bool to a Java Boolean object
+  #
+  public boolToJavaObject(b bool) JavaObject is intrinsic

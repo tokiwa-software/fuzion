@@ -206,6 +206,51 @@ public class Intrinsics extends ANY
             return JavaInterface.javaObjectToInstance(str, resultClazz);
           };
       }
+    else if (n.equals("fuzion.java.i8ToJavaObject"))
+      {
+        result = (args) ->
+          {
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                System.err.println("*** error: unsafe feature "+n+" disabled");
+                System.exit(1);
+              }
+            var b = args.get(1).i32Value(); // NYI: Should be i8Value
+            var jb = Byte.valueOf((byte) b);
+            Clazz resultClazz = innerClazz.resultClazz();
+            return JavaInterface.javaObjectToInstance(jb, resultClazz);
+          };
+      }
+    else if (n.equals("fuzion.java.u16ToJavaObject"))
+      {
+        result = (args) ->
+          {
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                System.err.println("*** error: unsafe feature "+n+" disabled");
+                System.exit(1);
+              }
+            var c = args.get(1).i32Value(); // NYI: Should be u16Value
+            var jc = Character.valueOf((char) c);
+            Clazz resultClazz = innerClazz.resultClazz();
+            return JavaInterface.javaObjectToInstance(jc, resultClazz);
+          };
+      }
+    else if (n.equals("fuzion.java.i16ToJavaObject"))
+      {
+        result = (args) ->
+          {
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                System.err.println("*** error: unsafe feature "+n+" disabled");
+                System.exit(1);
+              }
+            var s = args.get(1).i32Value(); // NYI: Should be i16Value
+            var js = Short.valueOf((short) s);
+            Clazz resultClazz = innerClazz.resultClazz();
+            return JavaInterface.javaObjectToInstance(js, resultClazz);
+          };
+      }
     else if (n.equals("fuzion.java.i32ToJavaObject"))
       {
         result = (args) ->
@@ -234,6 +279,51 @@ public class Intrinsics extends ANY
             var jl = Long.valueOf(l);
             Clazz resultClazz = innerClazz.resultClazz();
             return JavaInterface.javaObjectToInstance(jl, resultClazz);
+          };
+      }
+    else if (n.equals("fuzion.java.f32ToJavaObject"))
+      {
+        result = (args) ->
+          {
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                System.err.println("*** error: unsafe feature "+n+" disabled");
+                System.exit(1);
+              }
+            var f32 = args.get(1).i32Value(); // NYI: Should be f32Value
+            var jf = Float.valueOf((float) f32);
+            Clazz resultClazz = innerClazz.resultClazz();
+            return JavaInterface.javaObjectToInstance(jf, resultClazz);
+          };
+      }
+    else if (n.equals("fuzion.java.f64ToJavaObject"))
+      {
+        result = (args) ->
+          {
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                System.err.println("*** error: unsafe feature "+n+" disabled");
+                System.exit(1);
+              }
+            var d = args.get(1).i32Value(); // NYI: Should be f64Value
+            var jd = Double.valueOf((double) d);
+            Clazz resultClazz = innerClazz.resultClazz();
+            return JavaInterface.javaObjectToInstance(jd, resultClazz);
+          };
+      }
+    else if (n.equals("fuzion.java.boolToJavaObject"))
+      {
+        result = (args) ->
+          {
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                System.err.println("*** error: unsafe feature "+n+" disabled");
+                System.exit(1);
+              }
+            var b = args.get(1).boolValue();
+            var jb = Boolean.valueOf(b);
+            Clazz resultClazz = innerClazz.resultClazz();
+            return JavaInterface.javaObjectToInstance(jb, resultClazz);
           };
       }
     else if (n.equals("sys.array.alloc"))
