@@ -1037,7 +1037,7 @@ class FZJava extends Tool
     else if (t == Boolean  .TYPE) { return "bool";      }
     else if (t == Void     .TYPE) { return "unit";      }
     else if (t.isArray()        ) { return null;        }  // NYI: Array not supported yet
-    //    else if (t == String.class  ) { return "string";    } // NYI: Convert Java.java.lang.String to string
+    else if (t == String.class  ) { return "string";    }
     else                          { return typeName(t); }
   }
 
