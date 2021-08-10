@@ -74,6 +74,13 @@ class FZJava extends Tool
   static final String FZJAVA_TOOL = "fzjava";
 
 
+  /**
+   * Some public members in a Java module may return a result type or expect an
+   * argument that that is not public.  This flag enables warnings in this case.
+   */
+  static final boolean SHOW_WARNINGS_FOR_NON_PUBLIC_TYPES = false;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -401,16 +408,22 @@ class FZJava extends Tool
     if (c != null && (c.getModifiers() & Modifier.PUBLIC) != 0)
       {
         var n = jfn.substring(jfn.lastIndexOf("/") + 1);
+        var fcn = mangle(n);
         StringBuilder data_dynamic = new StringBuilder(header("Fuzion interface to instance members of Java instance class '" + cn + "'") +
                                                        jtn + "(forbidden void) ref : fuzion.java.JavaObject(forbidden) is\n");
         StringBuilder data_static  = new StringBuilder(header("Fuzion interface to static members of Java class '" + cn + "'") +
                                                        jtn + STATIC_SUFFIX + " is\n");
         StringBuilder data_unit    = new StringBuilder(header("Fuzion unit feature to call static members of Java class '" + cn + "'") +
                                                        jtn + " => " + jtn + STATIC_SUFFIX + "\n");
-        TreeMap<String,Method> overloaded = new TreeMap<>();
+        TreeMap<String, Method> overloaded = new TreeMap<>();
+        TreeMap<String, Method> generate = new TreeMap<>();
         for (var me : c.getMethods())
           {
-            processMethod(me, n, data_dynamic, data_static, overloaded);
+            findMethod(me, generate, overloaded);
+          }
+        for (var me : generate.values())
+          {
+            processMethod(me, fcn, data_dynamic, data_static);
           }
         for (var me : overloaded.values())
           {
@@ -454,62 +467,111 @@ class FZJava extends Tool
 
 
   /**
+   * Find Java methods to generate code for
+   *
+   * @param me the method to create fuzion code for
+   *
+   * @param generate Map from parameters-signature to Method to find what method
+   * to use if several methods differ only in their result type.
+   *
+   * @param overloaded Set of overloaded methods, mapping name comdined with
+   * number or parameters (name + " " + n) to Methods.  In case of overloading,
+   * the Method is always the preferred method to use a short name.
+   */
+  void findMethod(Method me,
+                  TreeMap<String, Method> generate,
+                  TreeMap<String, Method> overloaded)
+  {
+    if ((me.getModifiers() & Modifier.PUBLIC) != 0)
+      {
+        var pa = me.getParameters();
+        var p = formalParameters(pa);
+        var rt = me.getReturnType();
+        var r = resultType(rt);
+        if ((me.getModifiers() & Modifier.STATIC) == 0 &&
+            p != null &&
+            r != null)
+          {
+            var jn = me.getName();
+            var jp = signature(pa);
+            var fn = fuzionName(jn, jp);
+            var existing = generate.get(fn);
+            if (existing == null || !preferred(existing, me))
+              {
+                generate.put(fn, me);
+              }
+            if (pa.length > 0)
+              {
+                String nn = jn + " " + pa.length;
+                var existingOver = overloaded.get(nn);
+                if (existingOver == null || !preferred(existingOver, me))
+                  {
+                    overloaded.put(nn, me);
+                  }
+              }
+          }
+        else
+          {
+            // NYI: instance methods, methods with non-empty parameter lists, methods with non-void result not supported
+          }
+      }
+  }
+
+
+  /**
+   * Fuzion name for a Java method with Java name jn and parameters signature jp
+   *
+   * @param jn the Java name, e.g., "indexOf"
+   *
+   * @param jp the Java parameters signature, e.g., "Ljava/lang/String;I"
+   *
+   * @return a mangled fuzion name for this method, e.g.,
+   * "indexOf_Ljava_7_lang_7_String_s_I"
+   */
+  String fuzionName(String jn,
+                    String jp)
+  {
+    return mangle(cleanName(jn)) + (jp.length() == 0 ? "" : "_" + mangle(jp));
+  }
+
+
+  /**
    * Create Fuzion feature for given method
    *
    * @param me the method to create fuzion code for
    *
-   * @param classBaseName is the base name of the Java class not including the
-   * package name, e.g. "Object"
+   * @param fcn is the mangled base name of the Java class not
+   * including the package name, e.g. "String"
    *
    * @param data_dynamic the fuzion feature containing the instance members of
    * the class
    *
    * @param data_static the fuzion feature containing the static members of
    * the class
-   *
-   * @param overloaded Set of overloaded methods, mapping name comdined with
-   * number or parameters (name + " " + n) to Methods.  In case of overloading,
-   * the Method is always the preferred method to use a short name.
    */
   void processMethod(Method me,
-                     String classBaseName,
+                     String fcn,
                      StringBuilder data_dynamic,
-                     StringBuilder data_static,
-                     TreeMap<String, Method> overloaded)
+                     StringBuilder data_static)
   {
     var pa = me.getParameters();
-    var p = formalParameters(pa);
-    if ((me.getModifiers() & Modifier.STATIC) == 0 &&
-        p != null &&
-        me.getReturnType() == Void.TYPE)
-      {
-        var n = me.getName();
-        var sp = signature(pa);
-        var s = signature(pa, me.getReturnType());
-        data_dynamic.append("\n" +
-                            "  # call Java instance method '" + me + "':\n" +
-                            "  #\n" +
-                            "  " + mangle(cleanName(n)) + (sp.length() == 0 ? "" : "_" + mangle(sp)) + p + " is\n" +
-                            "    " + ("fuzion.java.callVirtual<fuzion.java.JavaVoid> " +
-                                      fuzionString(n) + " " +
-                                      fuzionString(s) +
-                                      " " + mangle(classBaseName) + ".this "+
-                                      parametersArray(pa) + "\n")
-                            );
-        String nn = n + " " + pa.length;
-        if (sp.length() > 0)
-          {
-            var existing = overloaded.get(nn);
-            if (existing == null || !preferred(existing.getParameters(), pa))
-              {
-                overloaded.put(nn, me);
-              }
-          }
-      }
-    else
-      {
-        // NYI: instance methods, methods with non-empty parameter lists, methods with non-void result not supported
-      }
+    var rt = me.getReturnType();
+    var jn = me.getName();                    // Java name
+    var js = signature(pa, rt);               // Java signature
+    var jp = signature(pa);                   // Java signature of parameters
+    var fp = formalParameters(pa);            // Fuzion parameters
+    var fr = resultType(me.getReturnType());  // Fuzion result type
+    var fn = fuzionName(jn, jp);
+    data_dynamic.append("\n" +
+                        "  # call Java instance method '" + me + "':\n" +
+                        "  #\n" +
+                        "  " + fn + fp + " " + fr + " is\n" +
+                        "    " + ("fuzion.java.callVirtual<" + fr + "> " +
+                                  fuzionString(jn) + " " +
+                                  fuzionString(js) +
+                                  " " + fcn + ".this "+
+                                  parametersArray(pa) + "\n")
+                        );
   }
 
 
@@ -547,6 +609,23 @@ class FZJava extends Tool
   }
 
 
+  /**
+   * For two overloaded methods with parameter lists pa1 and pa2, choose which
+   * one should be preferred for a short-hand call: the first one (pa1, true),
+   * or the second one (pa2, false).
+   *
+   * @param r1 the first result type
+   *
+   * @param r2 the second result type
+   *
+   * @return if two methods are overloaded and differ only in there result
+   * types, true iff the first one with result r1 is preferred, false otherwise.
+   */
+  boolean preferredResult(Class r1, Class r2)
+  {
+    return r2.isAssignableFrom(r1);
+  }
+
 
   /**
    * For two overloaded methods with parameter lists pa1 and pa2, choose which
@@ -557,10 +636,13 @@ class FZJava extends Tool
    *
    * @param pa2 paramaters of second cantidate
    */
-  boolean preferred(Parameter[] pa1, Parameter[] pa2)
+  boolean preferred(Method m1, Method m2)
   {
     if (PRECONDITIONS) require
-      (pa1.length == pa2.length);
+      (m1.getParameters().length == m2.getParameters().length);
+
+    var pa1 = m1.getParameters();
+    var pa2 = m2.getParameters();
 
     for (int i = 0; i < pa1.length; i++)
       {
@@ -591,10 +673,9 @@ class FZJava extends Tool
           }
       }
 
-    check
-      (false);     // all parameters are equal, this should be unreachable
-
-    return false;
+    var r1 = m1.getReturnType();
+    var r2 = m2.getReturnType();
+    return preferredResult(r1, r2);
   }
 
 
@@ -768,6 +849,38 @@ class FZJava extends Tool
 
 
   /**
+   * Get the Fuzion result type corresponding to a given Java type
+   *
+   * @param t a Java type, e.g., Integer.TYPE, String.class, java.util.Vector
+   *
+   * @return the corresponding Fuzion type, e.g., "i32", "string",
+   * "Java.java.util.Vector".
+   */
+  String resultType(Class t)
+  {
+    if ((t.getModifiers() & Modifier.PUBLIC) == 0)
+      {
+        if (SHOW_WARNINGS_FOR_NON_PUBLIC_TYPES)
+          {
+            Errors.warning("Used type '" + t + "' is not public");
+          }
+        return null;
+      }
+    else if (t == Byte     .TYPE) { return "i32";       }  // NYI: should be i8
+    else if (t == Character.TYPE) { return "i32";       }  // NYI: should be u16
+    else if (t == Short    .TYPE) { return "i32";       }  // NYI: should be i16
+    else if (t == Integer  .TYPE) { return "i32";       }
+    else if (t == Long     .TYPE) { return "i64";       }
+    else if (t == Float    .TYPE) { return "i32";       }  // NYI: should be f32
+    else if (t == Double   .TYPE) { return "i64";       }  // NYI: should be f64
+    else if (t == Boolean  .TYPE) { return "bool";      }
+    else if (t == Void     .TYPE) { return "unit";      }
+    else if (t.isArray()        ) { return null;        }  // NYI: Array not supported yet
+    //    else if (t == String.class  ) { return "string";    } // NYI: Convert Java.java.lang.String to string
+    else                          { return typeName(t); }
+  }
+
+  /**
    * Get the mangled, clean name of a given type
    *
    * @param t a Java type
@@ -884,11 +997,15 @@ class FZJava extends Tool
             // so we replace it by '_jObject'.
             s = "_jObject";
           }
-        else if (s.equals("string"))
+        else if (s.equals("hashCode") ||
+                 s.equals("string"  ) ||
+                 s.equals("array"   )    )
           {
             // NYI: this is just a precaution to avoid confusion with Fuzion
-            // strings. Needs to test if this is really necessary.
-            s = "_jstring";
+            // types.  Need to find a way to avoid this, e.g., by using
+            // 'universe.string' to refer to the Fuzion string or by renaming
+            // inherited 'hashCode'
+            s = "_j" + s;
           }
 
         if (res.length() > 0)

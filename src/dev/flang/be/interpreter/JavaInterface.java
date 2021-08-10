@@ -32,6 +32,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import dev.flang.ir.Clazz;
+import dev.flang.ir.Clazzes;
 
 import dev.flang.util.ANY;
 
@@ -212,14 +213,26 @@ public class JavaInterface extends ANY
     return ((JavaRef)i.refs[0])._javaRef;
   }
 
-  static Instance javaObjectToInstance(Object o, Clazz resultClass)
+  static Value javaObjectToInstance(Object o, Clazz resultClass)
   {
     if (PRECONDITIONS) require
       (resultClass != null);
 
-    var result = new Instance(resultClass);
-    result.refs[0] = new JavaRef(o);
-    return result;
+    if      (resultClass == Clazzes.i32.getIfCreated() && o instanceof Byte      b) { return new i32Value(b); }
+    else if (resultClass == Clazzes.i32.getIfCreated() && o instanceof Character c) { return new i32Value(c); }
+    else if (resultClass == Clazzes.i32.getIfCreated() && o instanceof Short     s) { return new i32Value(s); }
+    else if (resultClass == Clazzes.i32.getIfCreated() && o instanceof Integer   i) { return new i32Value(i); }
+    else if (resultClass == Clazzes.i32.getIfCreated() && o instanceof Long      j) { return new i64Value(j); }
+    else if (resultClass == Clazzes.i32.getIfCreated() && o instanceof Float     f) { return new i32Value(f.intValue()); }
+    else if (resultClass == Clazzes.i32.getIfCreated() && o instanceof Double    d) { return new i64Value(d.longValue()); }
+    else if (resultClass == Clazzes.i32.getIfCreated() && o instanceof Boolean   z) { return new boolValue(z); }
+    else if (resultClass == Clazzes.c_unit.getIfCreated() &&  o == null           ) { return new Instance(resultClass); }
+    else
+      {
+        var result = new Instance(resultClass);
+        result.refs[0] = new JavaRef(o);
+        return result;
+      }
   }
 
   static Object[] instanceToJavaObjects(Value v)
@@ -236,7 +249,7 @@ public class JavaInterface extends ANY
   }
 
 
-  static Instance callVirtual(String name, String sig, Object thiz, Value argI, Clazz resultClass)
+  static Value callVirtual(String name, String sig, Object thiz, Value argI, Clazz resultClass)
   {
     Instance result;
     Object res;
