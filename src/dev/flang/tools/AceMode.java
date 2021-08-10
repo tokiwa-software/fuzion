@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Fuzion
+ * Source of class AceMode
  *
  *---------------------------------------------------------------------*/
 
@@ -30,7 +30,12 @@ import dev.flang.parser.Lexer;
 import dev.flang.util.ANY;
 import java.util.stream.*;
 
-public class AceMode extends ANY {
+/**
+ * This class generates a mode for text editor ace.
+ * A mode provides syntax highlighting, code folding, etc.
+ */
+public class AceMode extends ANY
+{
 
   private final String AceModeTemplate = """
       // This File contains the fuzion mode for the editor ace.
@@ -234,8 +239,12 @@ public class AceMode extends ANY {
       });
       """;
 
-  AceMode() {
+  AceMode()
+  {
     var keywords = Stream.of(Lexer.Token._keywords).map(token -> token.toString()).collect(Collectors.joining("|"));
     System.out.print(AceModeTemplate.formatted(keywords));
   }
+
 }
+
+/* end of file */

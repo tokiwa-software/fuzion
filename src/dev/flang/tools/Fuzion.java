@@ -362,6 +362,8 @@ class Fuzion extends Tool
   /**
    * Parse the given command line args for the acemode generator and create a
    * runnable that executes it.  System.exit() in case of error or -help.
+   * A mode provides syntax highlighting, code folding etc. for text editor ace.
+   * For more information see: https://ace.c9.io/#nav=higlighter&api=tokenizer
    *
    * @param args the command line arguments
    *
