@@ -36,6 +36,7 @@ import dev.flang.util.List;
 
 import java.io.IOException;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -415,19 +416,19 @@ class FZJava extends Tool
                                                        jtn + STATIC_SUFFIX + " is\n");
         StringBuilder data_unit    = new StringBuilder(header("Fuzion unit feature to call static members of Java class '" + cn + "'") +
                                                        jtn + " => " + jtn + STATIC_SUFFIX + "\n");
-        TreeMap<String, Method> overloaded = new TreeMap<>();
-        TreeMap<String, Method> generate = new TreeMap<>();
+        TreeMap<String, Method> overloadedM = new TreeMap<>();
+        TreeMap<String, Method> generateM = new TreeMap<>();
         for (var me : c.getMethods())
           {
-            findMethod(me, generate, overloaded);
+            findMethod(me, generateM, overloadedM);
           }
-        for (var me : generate.values())
+        for (var me : generateM.values())
           {
             processMethod(me, fcn, data_dynamic, data_static);
           }
-        for (var me : overloaded.values())
+        for (var me : overloadedM.values())
           {
-            shortHand(me, n, data_dynamic, data_static);
+            shortHand(me, data_dynamic);
           }
         for (var fi : c.getFields())
           {
@@ -436,7 +437,20 @@ class FZJava extends Tool
                 processField(fi, cn, n, data_dynamic, data_static);
               }
           }
-        // NYI: Constructors not supported
+        TreeMap<Integer, Constructor> overloadedC = new TreeMap<>();
+        List<Constructor> generateC = new List<>();
+        for (var co : c.getConstructors())
+          {
+            findConstructor(co, generateC, overloadedC);
+          }
+        for (var co : generateC)
+          {
+            processConstructor(co, fcn, data_static);
+          }
+        for (var co : overloadedC.values())
+          {
+            shortHand(co, fcn, data_static);
+          }
 
         createOuter(jfn);
         writeFeature(jfn, DYNAMIC_SUFFIX, data_dynamic.toString());
@@ -531,7 +545,7 @@ class FZJava extends Tool
   String fuzionName(String jn,
                     String jp)
   {
-    return mangle(cleanName(jn)) + (jp.length() == 0 ? "" : "_" + mangle(jp));
+    return mangle(cleanName(jn)) + (jp == null || jp.length() == 0 ? "" : "_" + mangle(jp));
   }
 
 
@@ -576,50 +590,143 @@ class FZJava extends Tool
 
 
   /**
-   * Create Fuzion shortHand for given method.  A shortHand is a feature that
-   * does not have the mangled Java signature as part of its name. In case of
-   * overloading, only one method will be choses as a shortHand.
+   * Find Java constructors to generate code for
    *
-   * @param me the method to create fuzion code for
+   * @param c the constructor to create fuzion code for
    *
-   * @param classBaseName is the base name of the Java class not including the
-   * package name, e.g. "Object"
+   * @param generate Set of constructors to generate code for
    *
-   * @param data_dynamic the fuzion feature containing the instance members of
-   * the class
-   *
-   * @param data_static the fuzion feature containing the static members of
-   * the class
+   * @param overloaded Set of overloaded methods, mapping name comdined with
+   * number or parameters (name + " " + n) to Methods.  In case of overloading,
+   * the Method is always the preferred method to use a short name.
    */
-  void shortHand(Method me,
-                 String classBaseName,
-                 StringBuilder data_dynamic,
-                 StringBuilder data_static)
+  void findConstructor(Constructor co,
+                       List<Constructor> generate,
+                       TreeMap<Integer, Constructor> overloaded)
   {
-    var pa = me.getParameters();
-    var p = formalParameters(pa);
-    var n = me.getName();
-    var mcn = mangle(cleanName(n));
-    var sp = signature(pa);
-    data_dynamic.append("\n" +
-                        "  # short-hand to call Java instance method '" + me + "':\n" +
-                        "  #\n" +
-                        "  " + mcn + p + " is\n" +
-                        "    " + mcn + "_" + mangle(sp) + parametersList(pa) + "\n");
+    if ((co.getModifiers() & Modifier.PUBLIC) != 0)
+      {
+        var pa = co.getParameters();
+        var fp = formalParameters(pa);            // Fuzion parameters
+        if (fp != null)
+          {
+            generate.add(co);
+            if (pa.length > 0)
+              {
+                Integer nn = pa.length;
+                var existingOver = overloaded.get(nn);
+                if (existingOver == null || !preferred(existingOver, co))
+                  {
+                    overloaded.put(nn, co);
+                  }
+              }
+          }
+      }
   }
 
 
   /**
-   * For two overloaded methods with parameter lists pa1 and pa2, choose which
-   * one should be preferred for a short-hand call: the first one (pa1, true),
-   * or the second one (pa2, false).
+   * Create Fuzion feature for given constructors
+   *
+   * @param c the constructor to create fuzion code for
+   *
+   * @param fcn is the mangled base name of the Java class not
+   * including the package name, e.g., "String"
+   *
+   * @param data_static the fuzion feature containing the static members of
+   * the class
+   */
+  void processConstructor(Constructor co,
+                          String fcn,
+                          StringBuilder data_static)
+  {
+    var pa = co.getParameters();
+    var js = signature(pa, Void.TYPE);        // Java signature
+    var jp = signature(pa);                   // Java signature of parameters
+    var fp = formalParameters(pa);            // Fuzion parameters
+    var fr = fcn;                             // Fuzion result type
+    var fn = fuzionName("new", jp);
+    data_static.append("\n" +
+                       "  # call Java constructor '" + co + "':\n" +
+                       "  #\n" +
+                       "  " + fn + fp + " " + fr + " is\n" +
+                       "    " + ("fuzion.java.callConstructor<" + fr + "> " +
+                                 fuzionString(co.getDeclaringClass().getName()) +
+                                 fuzionString(js) + " " +
+                                 parametersArray(pa) + "\n")
+                       );
+  }
+
+
+  /**
+   * Create Fuzion shortHand for given method.  A shortHand is a feature that
+   * does not have the mangled Java signature as part of its name.  In case of
+   * overloading, only one method will be chosen as a shortHand.
+   *
+   * @param me the method to create short hand fuzion code for
+   *
+   * @param data_dynamic the fuzion feature containing the instance members of
+   * the class
+   */
+  void shortHand(Method me,
+                 StringBuilder data_dynamic)
+  {
+    var pa = me.getParameters();
+    var fp = formalParameters(pa);
+    var jn = me.getName();
+    var fr = resultType(me.getReturnType());  // Fuzion result type
+    var jp = signature(pa);                   // Java signature of parameters
+    var fn0= fuzionName(jn, null);
+    var fn = fuzionName(jn, jp);
+    data_dynamic.append("\n" +
+                        "  # short-hand to call Java instance method '" + me + "':\n" +
+                        "  #\n" +
+                        "  " + fn0 + fp + " " + fr + " is\n" +
+                        "    " + fn + parametersList(pa) + "\n");
+  }
+
+
+  /**
+   * Create Fuzion shortHand for given constructor.  A shortHand is a feature that
+   * does not have the mangled Java signature as part of its name.  In case of
+   * overloading, only one constructor will be chosen as a shortHand.
+   *
+   * @param co the constructor to create short hand fuzion code for
+   *
+   * @param fcn is the mangled base name of the Java class not including the
+   * package name, e.g., "String"
+   *
+   * @param data_static the fuzion feature containing the static members of
+   * the class
+   */
+  void shortHand(Constructor co,
+                 String fcn,
+                 StringBuilder data_static)
+  {
+    var pa = co.getParameters();
+    var fp = formalParameters(pa);
+    var jp = signature(pa);                   // Java signature of parameters
+    var fr = fcn;                             // Fuzion result type
+    var fn0= "new";
+    var fn = fuzionName(fn0, jp);
+    data_static.append("\n" +
+                       "  # short-hand to call Java consctructor '" + co + "':\n" +
+                       "  #\n" +
+                       "  " + fn0 + fp + " " + fr + " is\n" +
+                       "    " + fn + parametersList(pa) + "\n");
+  }
+
+
+  /**
+   * For two overloaded methods that only differ in the result type, choose
+   * which one should be preferred for a short-hand call: the first one (r1, true),
+   * or the second one (r2, false).
    *
    * @param r1 the first result type
    *
    * @param r2 the second result type
    *
-   * @return if two methods are overloaded and differ only in there result
-   * types, true iff the first one with result r1 is preferred, false otherwise.
+   * @return true iff the first one with result r1 is preferred, false otherwise.
    */
   boolean preferredResult(Class r1, Class r2)
   {
@@ -628,21 +735,20 @@ class FZJava extends Tool
 
 
   /**
-   * For two overloaded methods with parameter lists pa1 and pa2, choose which
-   * one should be preferred for a short-hand call: the first one (pa1, true),
-   * or the second one (pa2, false).
+   * For two overloaded parameter lists pa1 and pa2, choose which one should be
+   * preferred for a short-hand call: the first one (pa1, true), or the second
+   * one (pa2, false) or none (null)
    *
    * @param pa1 paramaters of first cantidate
    *
    * @param pa2 paramaters of second cantidate
+   *
+   * @return true, false or null.
    */
-  boolean preferred(Method m1, Method m2)
+  Boolean preferredParameters(Parameter[] pa1, Parameter[] pa2)
   {
     if (PRECONDITIONS) require
-      (m1.getParameters().length == m2.getParameters().length);
-
-    var pa1 = m1.getParameters();
-    var pa2 = m2.getParameters();
+      (pa1.length == pa2.length);
 
     for (int i = 0; i < pa1.length; i++)
       {
@@ -668,14 +774,65 @@ class FZJava extends Tool
               }
             else
               {
-                return false; // no clear preference, so choose the first we found.
+                return true; // no clear preference, so choose the first we found.
               }
           }
       }
+    return null;
+  }
 
+
+  /**
+   * For two overloaded methods m1 and m2, choose which one should be preferred
+   * for a short-hand call: the first one (pa1, true), or the second one (pa2,
+   * false).
+   *
+   * @param m1 first cantidate
+   *
+   * @param m2 second cantidate
+   *
+   * @return true iff m1 is preferred.
+   */
+  boolean preferred(Method m1, Method m2)
+  {
+    if (PRECONDITIONS) require
+      (m1.getParameters().length == m2.getParameters().length);
+
+    var result = preferredParameters(m1.getParameters(),
+                                     m2.getParameters());
+    if (result != null)
+      {
+        return result;
+      }
     var r1 = m1.getReturnType();
     var r2 = m2.getReturnType();
     return preferredResult(r1, r2);
+  }
+
+
+  /**
+   * For two overloaded constructors c1 and c2, choose which one should be
+   * preferred for a short-hand call: the first one (c1, true), or the second
+   * one (c2, false).
+   *
+   * @param c1 first cantidate
+   *
+   * @param c2 second cantidate
+   *
+   * @return true iff c1 is preferred.
+   */
+  boolean preferred(Constructor c1, Constructor c2)
+  {
+    if (PRECONDITIONS) require
+      (c1.getParameters().length == c2.getParameters().length);
+
+    var result = preferredParameters(c1.getParameters(),
+                                     c2.getParameters());
+    if (result != null)
+      {
+        return result;
+      }
+    return true;  // no preference, so chose the first.
   }
 
 
@@ -696,7 +853,11 @@ class FZJava extends Tool
         res.append(res.length() == 0 ? "(" : ", ");
         var mp = mangle(cleanName(p.getName()));
         String mt = null;
-        if (t.isArray())
+        if ((t.getModifiers() & Modifier.PUBLIC) == 0)
+          {
+            return null;
+          }
+        else if (t.isArray())
           { // NYI: handle array types
             return null;
           }

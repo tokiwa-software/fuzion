@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -249,7 +250,20 @@ public class JavaInterface extends ANY
   }
 
 
-  static Value callVirtual(String name, String sig, Object thiz, Value argI, Clazz resultClass)
+  /**
+   * Call virtual Java method
+   *
+   * @param name name the method
+   *
+   * @param sig Java signature of the method
+   *
+   * @param thiz target instance to call method on
+   *
+   * @param args array of arguments to be passed to constructor
+   *
+   * @param resultClass the result type of the constructed instance
+   */
+  static Value callVirtual(String name, String sig, Object thiz, Value args, Clazz resultClass)
   {
     Instance result;
     Object res;
@@ -275,10 +289,81 @@ public class JavaInterface extends ANY
         System.err.println("fuzion.java.callVirtual: method "+name+sig+" not found in target "+thiz.getClass());
         System.exit(1);
       }
-    Object[] argz = instanceToJavaObjects(argI);
+    Object[] argz = instanceToJavaObjects(args);
     try
       {
         res = m.invoke(thiz, argz);
+      }
+    catch (IllegalAccessException e)
+      {
+        System.err.println("fuzion.java.callVirtual: method "+name+sig+" causes IllegalAccessException");
+        System.exit(1);
+        res = null;
+      }
+    catch (InvocationTargetException e)
+      {
+        System.err.println("fuzion.java.callVirtual: method "+name+sig+" causes InvocationTargetException");
+        System.exit(1);
+        res = null;
+      }
+    return javaObjectToInstance(res, resultClass);
+  }
+
+
+  /**
+   * Call Java constructor
+   *
+   * @param name name of class to be constructed
+   *
+   * @param sig Java signature of constructor
+   *
+   * @param args array of arguments to be passed to constructor
+   *
+   * @param resultClass the result type of the constructed instance
+   */
+  static Value callConstructor(String name, String sig, Value args, Clazz resultClass)
+  {
+    Instance result;
+    Object res;
+    Constructor co;
+    Class[] p = getPars(sig);
+    if (p == null)
+      {
+        System.err.println("could not parse signature >>"+sig+"<<");
+        System.exit(1);
+      }
+    try
+      {
+        var cl = Class.forName(name);
+        co = cl.getConstructor(p);
+      }
+    catch (ClassNotFoundException e)
+      {
+        System.err.println("ClassNotFoundException when calling fuzion.java.callConstructor for class "+name+" signature "+sig);
+        System.exit(1);
+        co = null;
+      }
+    catch (NoSuchMethodException e)
+      {
+        System.err.println("NoSuchMethodException when calling fuzion.java.callConstructor for class "+name+" signature "+sig);
+        System.exit(1);
+        co = null;
+      }
+    if (co == null)
+      {
+        System.err.println("fuzion.java.callConstructor: constructor for class "+name+" signature "+sig + " not found.");
+        System.exit(1);
+      }
+    Object[] argz = instanceToJavaObjects(args);
+    try
+      {
+        res = co.newInstance(argz);
+      }
+    catch (InstantiationException e)
+      {
+        System.err.println("fuzion.java.callVirtual: method "+name+sig+" causes IllegalAccessException");
+        System.exit(1);
+        res = null;
       }
     catch (IllegalAccessException e)
       {

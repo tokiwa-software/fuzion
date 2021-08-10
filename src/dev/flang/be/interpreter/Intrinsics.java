@@ -185,6 +185,35 @@ public class Intrinsics extends ANY
             return JavaInterface.callVirtual(name,sig,thiz,argz,resultClazz);
           };
       }
+    else if (n.equals("fuzion.java.callC0"))
+      {
+        var actualGenerics = innerClazz._type._generics;
+        Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
+        result = (args) ->
+          {
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                System.err.println("*** error: unsafe feature "+n+" disabled");
+                System.exit(1);
+              }
+            Instance nameI = (Instance) args.get(1);
+            Instance sigI  = (Instance) args.get(2);
+            var argz = args.get(3);
+            if (nameI == null)
+              {
+                System.err.println("fuzion.java.callVirtual called with null name argument");
+                System.exit(1);
+              }
+            if (sigI == null)
+              {
+                System.err.println("fuzion.java.callVirtual called with null signature argument");
+                System.exit(1);
+              }
+            String name = (String) JavaInterface.instanceToJavaObject(nameI);
+            String sig  = (String) JavaInterface.instanceToJavaObject(sigI );
+            return JavaInterface.callConstructor(name, sig, argz, resultClazz);
+          };
+      }
     else if (n.equals("fuzion.java.stringToJavaObject0"))
       {
         result = (args) ->
