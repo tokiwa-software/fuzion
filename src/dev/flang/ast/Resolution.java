@@ -398,7 +398,6 @@ public class Resolution extends ANY
     else if (!forDeclarations.isEmpty())
       {
         Feature f = forDeclarations.removeFirst();
-        innerFeaturesLoader.loadInnerFeatures(this, f);
         f.resolveDeclarations(this);
       }
     else if (!forType.isEmpty())
