@@ -27,8 +27,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.tools;
 
 import dev.flang.parser.Lexer;
+
 import dev.flang.util.ANY;
-import java.util.stream.*;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * This class generates a mode for text editor ace.
