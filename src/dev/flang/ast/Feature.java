@@ -787,7 +787,7 @@ public class Feature extends ANY implements Stmnt, Comparable
     this.declaredFeatures_.put(fn, f);
     if (this.state().atLeast(State.RESOLVED_DECLARATIONS))
       {
-        check(f.isAnonymousInnerFeature());
+        check(Errors.count() > 0 || f.isAnonymousInnerFeature());
         check(Errors.count() > 0 || !this.declaredOrInheritedFeatures_.containsKey(fn));
         this.declaredOrInheritedFeatures_.put(fn, f);
       }
