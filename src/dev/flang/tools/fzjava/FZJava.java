@@ -117,6 +117,13 @@ class FZJava extends Tool
   TreeSet<String> _pkgs = new TreeSet<String>();
 
 
+  /**
+   * Classes for which Fuzion wrappers are generated.  Super classes will be
+   * generated before sub-classes.
+   */
+  TreeMap<String, ForClass> _classes = new TreeMap<>();
+
+
   /*--------------------------  static methods  -------------------------*/
 
 
@@ -395,6 +402,255 @@ class FZJava extends Tool
   static String UNIT_SUFFIX    = "_unit";
 
 
+
+  class ForClass
+  {
+
+    /**
+     * The original Java class
+     */
+    Class _class;
+
+
+    /**
+     * The super class if this exists as a fuzion wrapper. null if no super
+     * class or no wrapper.
+     */
+    ForClass _superClass;
+
+    /**
+     * Map from parameters-signature to Method to find what method
+     * to use if several methods differ only in their result type.
+     */
+    TreeMap<String, Method> _generateM = new TreeMap<>();
+
+
+    /**
+     * Set of overloaded methods, mapping name combined with number or
+     * parameters (name + " " + n) to Methods.  In case of overloading, the
+     * Method is always the preferred method to use a short name.
+     */
+    TreeMap<String, Method> _overloadedM = new TreeMap<>();
+
+
+    /**
+     * Set of constructors to generate code for
+     */
+    List<Constructor> _generateC = new List<>();
+
+
+    /**
+     * Set of overloaded constructors, mapping name combined with number or
+     * parameters (name + " " + n) to Constructors.  In case of overloading, the
+     * the mapped value is always the preferred constructor to use a short name.
+     */
+    TreeMap<Integer, Constructor> _overloadedC = new TreeMap<>();
+
+
+    ForClass(Class c)
+    {
+      _class = c;
+      _classes.put(c.getName(), ForClass.this);
+      var sc = c.getSuperclass();
+      if (sc != null)
+        {
+          _superClass = forClass(sc);
+        }
+      for (var me : c.getMethods())
+        {
+          findMethod(me);
+        }
+      for (var co : c.getConstructors())
+        {
+          findConstructor(co);
+        }
+    }
+
+
+    /**
+     * Find Java methods to generate code for
+     *
+     * @param me the method to create fuzion code for
+     *
+     * @param generate Map from parameters-signature to Method to find what method
+     * to use if several methods differ only in their result type.
+     *
+     * @param overloaded Set of overloaded methods, mapping name combined with
+     * number or parameters (name + " " + n) to Methods.  In case of overloading,
+     * the Method is always the preferred method to use a short name.
+     */
+    void findMethod(Method me)
+    {
+      if (me.getDeclaringClass() == _class &&
+          (me.getModifiers() & Modifier.PUBLIC) != 0)
+        {
+          var pa = me.getParameters();
+          var p = formalParameters(pa);
+          var rt = me.getReturnType();
+          var r = resultType(rt);
+          if ((me.getModifiers() & Modifier.STATIC) == 0 &&
+              p != null &&
+              r != null)
+            {
+              var jn = me.getName();
+              var jp = signature(pa);
+              var fn = fuzionName(jn, jp);
+              var existing = _generateM.get(fn);
+              if (existing == null || !preferred(existing, me))
+                {
+                  _generateM.put(fn, me);
+                }
+              if (pa.length > 0)
+                {
+                  String nn = jn + " " + pa.length;
+                  var existingOver = _overloadedM.get(nn);
+                  if (existingOver == null || !preferred(existingOver, me))
+                    {
+                      _overloadedM.put(nn, me);
+                    }
+                }
+            }
+          else
+            {
+              // NYI: instance methods, methods with non-empty parameter lists, methods with non-void result not supported
+            }
+        }
+    }
+
+
+    /**
+     * Find Java constructors to generate code for
+     *
+     * @param c the constructor to create fuzion code for
+     */
+    void findConstructor(Constructor co)
+    {
+      if ((co.getModifiers() & Modifier.PUBLIC) != 0)
+        {
+          var pa = co.getParameters();
+          var fp = formalParameters(pa);            // Fuzion parameters
+          if (fp != null)
+            {
+              _generateC.add(co);
+              if (pa.length > 0)
+                {
+                  Integer nn = pa.length;
+                  var existingOver = _overloadedC.get(nn);
+                  if (existingOver == null || !preferred(existingOver, co))
+                    {
+                      _overloadedC.put(nn, co);
+                    }
+                }
+            }
+        }
+    }
+
+
+    /**
+     * Check if the super class' wrapper feature already defines a short hand
+     * 'name' with 'n' parameters.  If so, we do not add another short hand.
+     */
+    boolean inheritsShortHand(String name, int n)
+    {
+      var sc = _superClass;
+      return sc != null && (sc._overloadedM.containsKey(name + " " + n) || sc.inheritsShortHand(name, n));
+    }
+
+    /**
+     * Check if the super class' wrapper feature already defines a method with
+     * given fuzionName 'fn'.  If so, we do not add another short hand.
+     *
+     * @param fn a name generated by a call to 'fuzionName()'
+     */
+    boolean inheritsMethod(String fn)
+    {
+      var sc = _superClass;
+      return sc != null && (sc._generateM.containsKey(fn) || sc.inheritsMethod(fn));
+    }
+
+
+    /**
+     * Write wrappers for this class.
+     */
+    void write()
+    {
+      var cn  = _class.getName();
+      var ccn = cleanName(cn);
+      var jfn = "Java/" + ccn.replace('.', '/');
+      var jtn = typeName(_class);
+      var n = jfn.substring(jfn.lastIndexOf("/") + 1);
+      var fcn = mangle(n);
+      var sc = _superClass == null ? null : _superClass._class;
+      var inh = sc != null ? typeName(sc) + "(forbidden), " : "";
+      var rf  = sc != null ? "redef " : "";
+      StringBuilder data_dynamic = new StringBuilder(header("Fuzion interface to instance members of Java instance class '" + cn + "'") +
+                                                     jtn + "(" + rf + "forbidden void) ref : " + inh + "fuzion.java.JavaObject(forbidden) is\n");
+      StringBuilder data_static  = new StringBuilder(header("Fuzion interface to static members of Java class '" + cn + "'") +
+                                                     jtn + STATIC_SUFFIX + " is\n");
+      StringBuilder data_unit    = new StringBuilder(header("Fuzion unit feature to call static members of Java class '" + cn + "'") +
+                                                     jtn + " => " + jtn + STATIC_SUFFIX + "\n");
+      for (var me : _generateM.values())
+        {
+          var pa = me.getParameters();
+          var jn = me.getName();
+          var jp = signature(pa);
+          var fn = fuzionName(jn, jp);
+          if (!inheritsMethod(fn))
+            {
+              processMethod(me, fcn, data_dynamic, data_static);
+            }
+        }
+      for (var me : _overloadedM.values())
+        {
+          if (!inheritsShortHand(me.getName(), me.getParameterTypes().length))
+            {
+              shortHand(me, data_dynamic);
+            }
+        }
+      for (var fi : _class.getFields())
+        {
+          if (fi.getDeclaringClass() == _class)
+            {
+              processField(fi, cn, n, data_dynamic, data_static);
+            }
+        }
+      for (var co : _generateC)
+        {
+          processConstructor(co, fcn, data_static);
+        }
+      for (var co : _overloadedC.values())
+        {
+          shortHand(co, fcn, data_static);
+        }
+
+      createOuter(jfn);
+      writeFeature(jfn, DYNAMIC_SUFFIX, data_dynamic.toString());
+      writeFeature(jfn, STATIC_SUFFIX , data_static .toString());
+      writeFeature(jfn, UNIT_SUFFIX   , data_unit   .toString());
+    }
+  }
+
+
+  /**
+   * Create Fuzion features to interface Java code for given class.
+   *
+   * @param c the Java class
+   */
+  ForClass forClass(Class c)
+  {
+    if (c != null && (c.getModifiers() & Modifier.PUBLIC) != 0)
+      {
+        var res = _classes.get(c.getName());
+        if (res == null)
+          {
+            res = new ForClass(c);
+          }
+        return res;
+      }
+    return null;
+  }
+
+
   /**
    * Create Fuzion features to interface Java code for given class.
    *
@@ -402,60 +658,10 @@ class FZJava extends Tool
    */
   void processClass(Class c)
   {
-    var cn  = c.getName();
-    var ccn = cleanName(cn);
-    var jfn = "Java/" + ccn.replace('.', '/');
-    var jtn = typeName(c);
-    if (c != null && (c.getModifiers() & Modifier.PUBLIC) != 0)
+    var fc = forClass(c);
+    if (fc != null)
       {
-        var n = jfn.substring(jfn.lastIndexOf("/") + 1);
-        var fcn = mangle(n);
-        StringBuilder data_dynamic = new StringBuilder(header("Fuzion interface to instance members of Java instance class '" + cn + "'") +
-                                                       jtn + "(forbidden void) ref : fuzion.java.JavaObject(forbidden) is\n");
-        StringBuilder data_static  = new StringBuilder(header("Fuzion interface to static members of Java class '" + cn + "'") +
-                                                       jtn + STATIC_SUFFIX + " is\n");
-        StringBuilder data_unit    = new StringBuilder(header("Fuzion unit feature to call static members of Java class '" + cn + "'") +
-                                                       jtn + " => " + jtn + STATIC_SUFFIX + "\n");
-        TreeMap<String, Method> overloadedM = new TreeMap<>();
-        TreeMap<String, Method> generateM = new TreeMap<>();
-        for (var me : c.getMethods())
-          {
-            findMethod(me, generateM, overloadedM);
-          }
-        for (var me : generateM.values())
-          {
-            processMethod(me, fcn, data_dynamic, data_static);
-          }
-        for (var me : overloadedM.values())
-          {
-            shortHand(me, data_dynamic);
-          }
-        for (var fi : c.getFields())
-          {
-            if (fi.getDeclaringClass() == c)
-              {
-                processField(fi, cn, n, data_dynamic, data_static);
-              }
-          }
-        TreeMap<Integer, Constructor> overloadedC = new TreeMap<>();
-        List<Constructor> generateC = new List<>();
-        for (var co : c.getConstructors())
-          {
-            findConstructor(co, generateC, overloadedC);
-          }
-        for (var co : generateC)
-          {
-            processConstructor(co, fcn, data_static);
-          }
-        for (var co : overloadedC.values())
-          {
-            shortHand(co, fcn, data_static);
-          }
-
-        createOuter(jfn);
-        writeFeature(jfn, DYNAMIC_SUFFIX, data_dynamic.toString());
-        writeFeature(jfn, STATIC_SUFFIX , data_static .toString());
-        writeFeature(jfn, UNIT_SUFFIX   , data_unit   .toString());
+        fc.write();
       }
   }
 
@@ -477,58 +683,6 @@ class FZJava extends Tool
       "#\n" +
       "#   " + command() + "\n" +
       "#\n";
-  }
-
-
-  /**
-   * Find Java methods to generate code for
-   *
-   * @param me the method to create fuzion code for
-   *
-   * @param generate Map from parameters-signature to Method to find what method
-   * to use if several methods differ only in their result type.
-   *
-   * @param overloaded Set of overloaded methods, mapping name comdined with
-   * number or parameters (name + " " + n) to Methods.  In case of overloading,
-   * the Method is always the preferred method to use a short name.
-   */
-  void findMethod(Method me,
-                  TreeMap<String, Method> generate,
-                  TreeMap<String, Method> overloaded)
-  {
-    if ((me.getModifiers() & Modifier.PUBLIC) != 0)
-      {
-        var pa = me.getParameters();
-        var p = formalParameters(pa);
-        var rt = me.getReturnType();
-        var r = resultType(rt);
-        if ((me.getModifiers() & Modifier.STATIC) == 0 &&
-            p != null &&
-            r != null)
-          {
-            var jn = me.getName();
-            var jp = signature(pa);
-            var fn = fuzionName(jn, jp);
-            var existing = generate.get(fn);
-            if (existing == null || !preferred(existing, me))
-              {
-                generate.put(fn, me);
-              }
-            if (pa.length > 0)
-              {
-                String nn = jn + " " + pa.length;
-                var existingOver = overloaded.get(nn);
-                if (existingOver == null || !preferred(existingOver, me))
-                  {
-                    overloaded.put(nn, me);
-                  }
-              }
-          }
-        else
-          {
-            // NYI: instance methods, methods with non-empty parameter lists, methods with non-void result not supported
-          }
-      }
   }
 
 
@@ -589,40 +743,6 @@ class FZJava extends Tool
   }
 
 
-  /**
-   * Find Java constructors to generate code for
-   *
-   * @param c the constructor to create fuzion code for
-   *
-   * @param generate Set of constructors to generate code for
-   *
-   * @param overloaded Set of overloaded methods, mapping name comdined with
-   * number or parameters (name + " " + n) to Methods.  In case of overloading,
-   * the Method is always the preferred method to use a short name.
-   */
-  void findConstructor(Constructor co,
-                       List<Constructor> generate,
-                       TreeMap<Integer, Constructor> overloaded)
-  {
-    if ((co.getModifiers() & Modifier.PUBLIC) != 0)
-      {
-        var pa = co.getParameters();
-        var fp = formalParameters(pa);            // Fuzion parameters
-        if (fp != null)
-          {
-            generate.add(co);
-            if (pa.length > 0)
-              {
-                Integer nn = pa.length;
-                var existingOver = overloaded.get(nn);
-                if (existingOver == null || !preferred(existingOver, co))
-                  {
-                    overloaded.put(nn, co);
-                  }
-              }
-          }
-      }
-  }
 
 
   /**
