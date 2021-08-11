@@ -169,6 +169,7 @@ JAVA_FILE_TOOLS_VERSION = \
 JAVA_FILES_TOOLS = \
           $(SRC)/dev/flang/tools/Fuzion.java \
           $(SRC)/dev/flang/tools/Latex.java \
+          $(SRC)/dev/flang/tools/AceMode.java \
           $(SRC)/dev/flang/tools/Pretty.java \
           $(SRC)/dev/flang/tools/Tool.java \
 	  $(JAVA_FILE_TOOLS_VERSION)
