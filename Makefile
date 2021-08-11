@@ -174,7 +174,10 @@ JAVA_FILES_TOOLS = \
 	  $(JAVA_FILE_TOOLS_VERSION)
 
 JAVA_FILES_TOOLS_FZJAVA = \
+          $(SRC)/dev/flang/tools/fzjava/ForClass.java \
           $(SRC)/dev/flang/tools/fzjava/FZJava.java \
+          $(SRC)/dev/flang/tools/fzjava/FZJavaOptions.java \
+          $(SRC)/dev/flang/tools/fzjava/FeatureWriter.java \
 
 CLASS_FILES_UTIL           = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
 CLASS_FILES_UTIL_UNICODE   = $(CLASSES_DIR)/dev/flang/util/unicode/__marker_for_make__
