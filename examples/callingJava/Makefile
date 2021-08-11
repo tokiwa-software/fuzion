@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile
+#  Source code of Fuzion callingJava example Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
