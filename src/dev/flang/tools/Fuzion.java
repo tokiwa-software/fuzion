@@ -249,7 +249,8 @@ class Fuzion extends Tool
       "Usage: " + _cmd + " [-h|--help|-version] [" + _allBackendArgs_ + "] " + STD_OPTIONS + "[-modules={<m>,..} [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] (<main> | <srcfile>.fz | -)  --or--\n" +
       _allBackendExtraUsage_.toString().replace("@CMD@", _cmd) +
       "       " + _cmd + " -pretty " + STD_OPTIONS + " ({<file>} | -)\n" +
-      "       " + _cmd + " -latex " + STD_OPTIONS + "\n";
+      "       " + _cmd + " -latex " + STD_OPTIONS + "\n" +
+      "       " + _cmd + " -acemode " + STD_OPTIONS + "\n";
   }
 
 
@@ -270,6 +271,10 @@ class Fuzion extends Tool
     else if (args.length >= 1 && args[0].equals("-latex"))
       {
         return parseArgsLatex(args);
+      }
+    else if (args.length >= 1 && args[0].equals("-acemode"))
+      {
+        return parseArgsAceMode(args);
       }
     else
       {
@@ -335,12 +340,12 @@ class Fuzion extends Tool
 
 
   /**
-   * Parse the given command line args for the pretty printer and create a
+   * Parse the given command line args for the latex style output and create a
    * runnable that executes it.  System.exit() in case of error or -help.
    *
    * @param args the command line arguments
    *
-   * @return a Runnable to run the pretty printer.
+   * @return a Runnable to run the latex styles output.
    */
   private Runnable parseArgsLatex(String[] args)
   {
@@ -357,6 +362,34 @@ class Fuzion extends Tool
     return () ->
       {
         new Latex();
+      };
+  }
+
+
+  /**
+   * Parse the given command line args for the acemode generator and create a
+   * runnable that executes it.  System.exit() in case of error or -help.
+   * A mode provides syntax highlighting, code folding etc. for text editor ace.
+   * For more information see: https://ace.c9.io/#nav=higlighter&api=tokenizer
+   *
+   * @param args the command line arguments
+   *
+   * @return a Runnable to run the acemode generator.
+   */
+  private Runnable parseArgsAceMode(String[] args)
+  {
+    for (var a : args)
+      {
+        if (!parseGenericArg(a) &&
+            !a.equals("-acemode")   // ignore, we know this already
+            )
+          {
+            unknownArg(a);
+          }
+      }
+    return () ->
+      {
+        new AceMode();
       };
   }
 
