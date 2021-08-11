@@ -1,0 +1,78 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example webserver
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# webserver is a minimalistic webserver example based on the Java module
+# java.base.
+#
+# See Makefile for how to start fuzion to run this webserver.
+#
+webserver is
+
+   # declare short hands to access Java net and io packages
+   net := Java.java.net
+   io  := Java.java.io
+
+   # open socket
+   port := 8080
+   serversocket := net.ServerSocket.new port
+
+   for n in 1.. do
+     say "accepting connections to localhost:$port"
+
+     # accept and handle connection
+     socket := serversocket.accept
+     input  := io.BufferedReader.new (io.InputStreamReader.new socket.getInputStream)
+     output := io.DataOutputStream.new socket.getOutputStream
+
+     req := read
+     say "got request ({req.byteLength} bytes): $req"
+     if req.startsWith "GET "
+       send200 "<html>Hello Fuzion $n!</html>";
+
+     # close streams
+     input.close
+     output.close
+
+
+     # helpr to read request
+     #
+     read string is
+       for
+         r := "", "$r$s\n"
+         s := input.readLine
+       until s = "" || !input.ready
+         r
+
+
+     # helper to send data in HTTP response with status 200
+     #
+     send200(data string) is
+       output.writeBytes ( "HTTP/1.1 200 OK\n"
+                         + "Connection: close\n"
+                         + "Server: Fuzion demo WebServer v0.01\n"
+                         + "Content-Length: " + data.byteLength + "\n"
+                         + "Content-Type: text/html\n"
+                         + "\n"
+                         + data)
