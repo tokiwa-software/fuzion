@@ -677,33 +677,23 @@ public class Clazz extends ANY implements Comparable
             }
           else if (feature().impl.kind_ != Impl.Kind.Intrinsic)
             {
-              var fields = new ArrayList<Clazz>();
-              for (var f: feature().allInnerAndInheritedFeatures())
+              for (var fc : fields())
                 {
+                  var f = fc.feature();
+                  var fieldClazz = clazzForField(f);
                   if (result == null &&
-                      f.isField() &&
-                      Clazzes.isUsed(f, this) &&
-                      this != Clazzes.c_void.get() &&
-                      !f.resultType().isOpenGeneric() &&
-                      f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
-                      )
+                      !fieldClazz.isRef() &&
+                      !fieldClazz.feature().isBuiltInPrimitive() &&
+                      !fieldClazz.isVoidType())
                     {
-                      fields.add(lookup(f, Call.NO_GENERICS, f.isUsedAt()));
-                      var fieldClazz = clazzForField(f);
-                      if (!fieldClazz.isRef() &&
-                          !fieldClazz.feature().isBuiltInPrimitive() &&
-                          !fieldClazz.isVoidType())
+                      result = fieldClazz.layout();
+                      if (result != null)
                         {
-                          result = fieldClazz.layout();
-                          if (result != null)
-                            {
-                              result.add(f.pos);
-                              result.add(this._type.pos);
-                            }
+                          result.add(f.pos);
+                          result.add(this._type.pos);
                         }
                     }
                 }
-              _fields = fields.toArray(new Clazz[fields.size()]);
             }
           layouting_ = LayoutStatus.After;
         }
@@ -1899,7 +1889,24 @@ public class Clazz extends ANY implements Comparable
    */
   public Clazz[] fields()
   {
-    return isRef() || _fields == null ? NO_CLAZZES : _fields;
+    if (_fields == null)
+      {
+        var fields = new List<Clazz>();
+        for (var f: feature().allInnerAndInheritedFeatures())
+          {
+            if (f.isField() &&
+                Clazzes.isUsed(f, this) &&
+                this != Clazzes.c_void.get() &&
+                !f.resultType().isOpenGeneric() &&
+                f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
+                )
+              {
+                fields.add(lookup(f, Call.NO_GENERICS, f.isUsedAt()));
+              }
+          }
+        _fields = fields.toArray(new Clazz[fields.size()]);
+      }
+    return isRef() ? NO_CLAZZES : _fields;
   }
 
 
