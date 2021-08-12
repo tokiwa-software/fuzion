@@ -260,6 +260,12 @@ public class Clazz extends ANY implements Comparable
   public Object _backendData;
 
 
+  /**
+   * Cached result of isUnitType().
+   */
+  private Type.YesNo _isUnitType = Type.YesNo.dontKnow;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -548,6 +554,17 @@ public class Clazz extends ANY implements Comparable
    */
   public boolean isUnitType()
   {
+    if (_isUnitType != Type.YesNo.dontKnow)
+      {
+        return _isUnitType == Type.YesNo.yes;
+      }
+    // Tricky: To avoid endless recursion, we set _isUnitType to No. In case we
+    // have a recursive type, isUnitType() will return false, so recursion will
+    // stop and the result for the recursive type will be false.
+    //
+    // Object layout will later report an error for this case.
+    _isUnitType = Type.YesNo.no;
+
     if (isRef() || feature().isBuiltInPrimitive() || isVoidType())
       {
         return false;
@@ -576,6 +593,7 @@ public class Clazz extends ANY implements Comparable
               }
           }
       }
+    _isUnitType = Type.YesNo.yes;
     return true;
   }
 

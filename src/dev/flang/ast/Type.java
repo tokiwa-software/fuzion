@@ -165,7 +165,7 @@ public class Type extends ANY implements Comparable
    */
   boolean checkedForGeneric = false;
 
-  enum YesNo
+  public enum YesNo
   {
     yes,
     no,
