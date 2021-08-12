@@ -761,7 +761,7 @@ public class FUIR extends ANY
    *
    * @param cl a clazz id
    *
-   * @param gix indec of the generic paramter
+   * @param gix indec of the generic parameter
    *
    * @return id of cl's actual generic parameter #gix
    */

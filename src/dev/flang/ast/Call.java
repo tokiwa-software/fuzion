@@ -1338,7 +1338,7 @@ public class Call extends Expr
         Errors.error(pos,
                      "Failed to infer actual generic parameters",
                      "In call to " + calledFeature_.qualifiedName() + ", no actual generic parameters are given and inference of the generic parameters failed.\n" +
-                     "Expected generic paramters: " + calledFeature_.generics + "\n"+
+                     "Expected generic parameters: " + calledFeature_.generics + "\n"+
                      "Type inference failed for generic " + (missing.size() > 1 ? "arguments" : "argument") + " " + missing + "\n");
       }
   }

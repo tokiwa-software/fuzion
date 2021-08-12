@@ -359,7 +359,7 @@ public abstract class Tool extends ANY
         default ->
         {
           Errors.fatal("Unsupported parameter to command line option '" + s[0] + "'",
-                       "While analysing command line argument '" + a + "'.  Paramter must be 'on' or 'off'");
+                       "While analysing command line argument '" + a + "'.  Parameter must be 'on' or 'off'");
           yield true;
         }
         };
