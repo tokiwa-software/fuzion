@@ -1821,7 +1821,7 @@ public class Feature extends ANY implements Stmnt, Comparable
     List<Call> result = tryFindInheritanceChain(ancestor);
 
     if (POSTCONDITIONS) ensure
-      (this == Types.f_ERROR || ancestor == Types.f_ERROR || result != null);
+      (this == Types.f_ERROR || ancestor == Types.f_ERROR || Errors.count() > 0 || result != null);
 
     return result;
   }
