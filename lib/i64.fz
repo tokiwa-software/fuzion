@@ -89,7 +89,7 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
       i64.this >= i32.min.as_i64,
       i64.this <= i32.max.as_i64
     is
-      low32bits.as_i32
+      low32bits.castTo_i32
   as_u32 u32
     pre
       i64.this >= 0
