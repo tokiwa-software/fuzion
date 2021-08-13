@@ -190,7 +190,36 @@ public class Interpreter extends Backend
   }
 
 
-  /*----------------  methods to find execute statments  ----------------*/
+  /*----------------  methods to execute statments  ----------------*/
+
+
+  /**
+   * From a value val of type valueClazz which is in
+   * choiceClazz.choiceGenerics_, create a new value of type choiceClazz
+   * consisting of val and the choice tag.
+   *
+   * @param choiceClazz the choice clazz the result should have
+   *
+   * @param valueClazz the static type of val
+   *
+   * @param val the value
+   *
+   * @return a new value of type choiceClazz containing val.
+   */
+  static Value tag(Clazz choiceClazz, Clazz valueClazz, Value val)
+  {
+    if (PRECONDITIONS) require
+      (choiceClazz.isChoice());
+
+    var result  = new Instance(choiceClazz);
+    LValue slot = result.at(choiceClazz, 0); // NYI: needed? just result?
+    setChoiceField(choiceClazz.feature(),
+                   choiceClazz,
+                   slot,
+                   valueClazz._type,
+                   val);
+    return result;
+  }
 
 
   /**
@@ -458,16 +487,10 @@ public class Interpreter extends Backend
 
     else if (s instanceof Tag t)
       {
-        Value v       = execute(t._value, staticClazz, cur);
-        Clazz vClazz  = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 0);
-        Clazz tClazz  = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 1);
-        result        = new Instance(tClazz);
-        LValue slot   = result.at(tClazz, 0); // NYI: needed? just result?
-        setChoiceField(tClazz.feature(),
-                       tClazz,
-                       slot,
-                       vClazz._type,
-                       v);
+        Value v      = execute(t._value, staticClazz, cur);
+        Clazz vClazz = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 0);
+        Clazz tClazz = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 1);
+        result = tag(tClazz, vClazz, v);
       }
 
     else if (s instanceof Check c)
