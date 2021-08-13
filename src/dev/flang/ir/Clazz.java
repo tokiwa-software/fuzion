@@ -372,7 +372,7 @@ public class Clazz extends ANY implements Comparable
    */
   private Clazz normalizeOuter(Type t, Clazz outer)
   {
-    if (outer != null && !hasUsedOuterRef())
+    if (outer != null && !hasUsedOuterRef() && t != Types.t_ERROR)
       {
         outer = outer.normalize(t.featureOfType().outer());
       }
