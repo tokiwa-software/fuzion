@@ -1364,7 +1364,6 @@ public class Clazz extends ANY implements Comparable
 
     if (at != null &&
         (_outer == null || !_outer.isVoidType()) &&
-        (Arrays.stream(argumentFields()).filter(a -> a.resultClazz().isVoidType()).findAny().isEmpty()) &&
         !isCalled_)
       {
         isCalled_ = true;
@@ -1415,13 +1414,28 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
-   * Is this clazz called?  This tests this.isCalled_ and isInstantiated().
+   * Is this clazz called?  This tests this.isCalled_ and isInstantiated() and !isAbsurd().
    */
   public boolean isCalled()
   {
-    return (isCalled_ && isOuterInstantiated() || _isCalledDirectly) && feature().impl.kind_ != Impl.Kind.Abstract
+    if (PRECONDITIONS) require
+      (_argumentFields != null);
+
+    return (isCalled_ && isOuterInstantiated() || _isCalledDirectly) && feature().impl.kind_ != Impl.Kind.Abstract &&
+      !isAbsurd()
       || toString().equals("array<i32>.internalArray") // NYI: Hack workaround for conststring
       ;
+  }
+
+  /**
+   * Is this clazz absured, i.e., does it have any arguments of type void?
+   */
+  public boolean isAbsurd()
+  {
+    if (PRECONDITIONS) require
+      (_argumentFields != null);
+
+    return Arrays.stream(argumentFields()).anyMatch(a -> a.resultClazz().isVoidType());
   }
 
 
@@ -1725,6 +1739,9 @@ public class Clazz extends ANY implements Comparable
    */
   public Clazz[] argumentFields()
   {
+    if (PRECONDITIONS) require
+      (_argumentFields != null);
+
     return _argumentFields;
   }
 
