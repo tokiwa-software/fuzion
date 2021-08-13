@@ -220,8 +220,7 @@ public class FUIR extends ANY
 
   public int clazzNumFields(int cl)
   {
-    var f = _clazzIds.get(cl).fields();
-    return f == null ? -1 : f.length;
+    return _clazzIds.get(cl).fields().length;
   }
 
 
