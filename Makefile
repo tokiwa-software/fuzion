@@ -199,7 +199,7 @@ CLASS_FILES_TOOLS_FZJAVA   = $(CLASSES_DIR)/dev/flang/tools/fzjava/__marker_for_
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
 .PHONY: all
-all: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/bin/fzjava $(BUILD_DIR)/modules/java.base $(BUILD_DIR)/tests $(BUILD_DIR)/examples
+all: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/bin/fzjava $(BUILD_DIR)/modules/java.base/Java.fz $(BUILD_DIR)/tests $(BUILD_DIR)/examples
 
 # phony target to compile all java sources
 .PHONY: javac
@@ -306,9 +306,10 @@ $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
 	chmod +x $@
 
-$(BUILD_DIR)/modules/java.base: $(BUILD_DIR)/bin/fzjava
+$(BUILD_DIR)/modules/java.base/Java.fz: $(BUILD_DIR)/bin/fzjava
+	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(BUILD_DIR)/bin/fzjava java.base -to=$@ -verbose=0
+	$(BUILD_DIR)/bin/fzjava java.base -to=$(@D) -verbose=0
 
 $(BUILD_DIR)/tests: $(FZ_SRC)/tests
 	mkdir -p $(@D)
