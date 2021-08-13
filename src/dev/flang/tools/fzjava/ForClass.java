@@ -164,8 +164,7 @@ class ForClass extends ANY
       {
         var pa = me.getParameters();
         var p = formalParameters(pa);
-        var rt = me.getReturnType();
-        var r = resultType(rt);
+        var r = resultType(me);
         if ((me.getModifiers() & Modifier.STATIC) == 0 &&
             p != null &&
             r != null)
@@ -371,7 +370,7 @@ class ForClass extends ANY
     var js = signature(pa, rt);               // Java signature
     var jp = signature(pa);                   // Java signature of parameters
     var fp = formalParameters(pa);            // Fuzion parameters
-    var fr = resultType(me.getReturnType());  // Fuzion result type
+    var fr = resultType(me);                  // Fuzion result type
     var fn = fuzionName(jn, jp);
     data_dynamic.append("\n" +
                         "  # call Java instance method '" + me + "':\n" +
@@ -435,7 +434,7 @@ class ForClass extends ANY
     var pa = me.getParameters();
     var fp = formalParameters(pa);
     var jn = me.getName();
-    var fr = resultType(me.getReturnType());  // Fuzion result type
+    var fr = resultType(me);                  // Fuzion result type
     var jp = signature(pa);                   // Java signature of parameters
     var fn0= fuzionName(jn, null);
     var fn = fuzionName(jn, jp);
@@ -771,14 +770,39 @@ class ForClass extends ANY
 
 
   /**
-   * Get the Fuzion result type corresponding to a given Java type
+   * Get the Fuzion result type corresponding to the return type of a Method,
+   * wrapping it onto 'outcome' in case exceptions are thrown.
    *
-   * @param t a Java type, e.g., Integer.TYPE, String.class, java.util.Vector
+   * @param me the Java Method
    *
-   * @return the corresponding Fuzion type, e.g., "i32", "string",
+   * @return the corresponding Fuzion type, e.g., "i32", "outcome<string>",
    * "Java.java.util.Vector".
    */
-  String resultType(Class t)
+  String resultType(Method me)
+  {
+    var res = plainResultType(me.getReturnType());
+    if (res != null)
+      {
+        var e = me.getExceptionTypes();
+        if (e != null)
+          {
+            res = "outcome<" + res + ">";
+          }
+      }
+    return res;
+  }
+
+
+  /**
+   * Get the Fuzion result type corresponding to the return type of a Method.
+   *
+   * @param t a Java type, e.g., Integer.TYPE, String.class,
+   * java.util.Vector.class
+   *
+   * @return the corresponding Fuzion type, e.g., "i32", "string",
+   * "Java.java.util.Vector", null if not supported.
+   */
+  String plainResultType(Class t)
   {
     if ((t.getModifiers() & Modifier.PUBLIC) == 0)
       {

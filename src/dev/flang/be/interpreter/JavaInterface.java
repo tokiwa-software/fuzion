@@ -32,6 +32,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import dev.flang.ast.Types;
+
 import dev.flang.ir.Clazz;
 import dev.flang.ir.Clazzes;
 
@@ -209,37 +211,147 @@ public class JavaInterface extends ANY
     return result;
   }
 
+  /**
+   * Extract Java object from an Instance of fuzion.java.JavaObject
+   *
+   * @param i an instance, must be of a clazz that inherits
+   * fuzion.java.JavaObject
+   */
   static Object instanceToJavaObject(Instance i)
   {
     return ((JavaRef)i.refs[0])._javaRef;
   }
 
-  static Value javaObjectToInstance(Object o, Clazz resultClass)
+
+  /**
+   * Wrap Java object into an instance of resultClazz
+   *
+   * @param o a Java object
+   *
+   * @param resultClazz the clazz to wrap o into.  Must be either a heir of
+   * 'fuzion.java.JavaObject' or 'outcome&lt;X&gt;' where 'X' is a heir of
+   * 'fuzion.java.JavaObject'.
+   *
+   * @return a value of resultClazz that contains o.
+   */
+  static Value javaObjectToInstance(Object o, Clazz resultClazz)
+  {
+    return javaObjectToInstance(o, null, resultClazz);
+  }
+
+
+  /**
+   * Wrap Java object or an exception into an instance of resultClazz.  In case
+   * e!=null and resultClazz is not 'outcome', throws an error since we cannot
+   * wrap the exception.
+   *
+   * @param o a Java object
+   *
+   * @param e a Java exception
+   *
+   * @param resultClazz the clazz to wrap o into.  Must be either a heir of
+   * 'fuzion.java.JavaObject' or 'outcome&lt;X&gt;' where 'X' is a heir of
+   * 'fuzion.java.JavaObject'.
+   *
+   * @return a value of resultClazz that contains o or, in case e!=null, e.
+   */
+  static Value javaObjectToInstance(Object o, Throwable e, Clazz resultClazz)
   {
     if (PRECONDITIONS) require
-      (resultClass != null);
+      (resultClazz != null);
 
-    if      (resultClass == Clazzes.i32.getIfCreated() && o instanceof Byte      b) { return new i32Value(b); }
-    else if (resultClass == Clazzes.i32.getIfCreated() && o instanceof Character c) { return new i32Value(c); }
-    else if (resultClass == Clazzes.i32.getIfCreated() && o instanceof Short     s) { return new i32Value(s); }
-    else if (resultClass == Clazzes.i32.getIfCreated() && o instanceof Integer   i) { return new i32Value(i); }
-    else if (resultClass == Clazzes.i32.getIfCreated() && o instanceof Long      j) { return new i64Value(j); }
-    else if (resultClass == Clazzes.i32.getIfCreated() && o instanceof Float     f) { return new i32Value(f.intValue()); }
-    else if (resultClass == Clazzes.i32.getIfCreated() && o instanceof Double    d) { return new i64Value(d.longValue()); }
-    else if (resultClass == Clazzes.i32.getIfCreated() && o instanceof Boolean   z) { return new boolValue(z); }
-    else if (resultClass == Clazzes.c_unit.getIfCreated() &&  o == null           ) { return new Instance(resultClass); }
-    else if (resultClass == Clazzes.string.getIfCreated() && o instanceof String s) { return Interpreter.value(s); }
+    Value result;
+    var ok = e == null;
+    if (resultClazz.feature().qualifiedName().equals("outcome"))
+      {
+        var valClazz = resultClazz.choiceGenerics_.get(ok ? 0 : 1);
+        var res = ok ? javaObjectToPlainInstance(o, valClazz)
+                     : javaThrowableToError     (e, valClazz);
+        result = Interpreter.tag(resultClazz, valClazz, res);
+      }
+    else if (ok)
+      {
+        result = javaObjectToPlainInstance(o, resultClazz);
+      }
+    else
+      { // NYI: Instead of throwing an exception, cause a panic and stop the
+        // current thread in an ordered way.
+        throw new Error("Java code returned with unexpected exception: " + e, e);
+      }
+    return result;
+  }
+
+
+  /**
+   * Convert a Java object returned from a refelction call to the corresponding
+   * Fuzion value.
+   *
+   * @param o a Java Object
+   *
+   * @param resultClazz a clazz like i32, i64, Java.java.lang.String, etc.
+   *
+   * @return a new value that represents o
+   */
+  static Value javaObjectToPlainInstance(Object o, Clazz resultClazz)
+  {
+    if (PRECONDITIONS) require
+      (resultClazz != null);
+
+    if      (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Byte      b) { return new i32Value(b); }
+    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Character c) { return new i32Value(c); }
+    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Short     s) { return new i32Value(s); }
+    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Integer   i) { return new i32Value(i); }
+    else if (resultClazz == Clazzes.i64.getIfCreated() && o instanceof Long      j) { return new i64Value(j); }
+    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Float     f) { return new i32Value(f.intValue()); }
+    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Double    d) { return new i64Value(d.longValue()); }
+    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Boolean   z) { return new boolValue(z); }
+    else if (resultClazz == Clazzes.c_unit.getIfCreated() &&  o == null           ) { return new Instance(resultClazz); }
+    else if (resultClazz == Clazzes.string.getIfCreated() && o instanceof String s) { return Interpreter.value(s); }
     else
       {
-        var result = new Instance(resultClass);
-        result.refs[0] = new JavaRef(o);
+        var result = new Instance(resultClazz);
+        if (result.refs.length > 0 /* better check that result is heir of fuzion.java.JavaObject */ )
+          {
+            result.refs[0] = new JavaRef(o);
+          }
         return result;
       }
   }
 
+
+  /**
+   * Wrap a Java exception into an instance of 'error'.
+   *
+   * @param e the Java exception, must not be null,
+   */
+  static Value javaThrowableToError(Throwable e, Clazz resultClazz)
+  {
+    if (PRECONDITIONS) require
+      (e != null,
+       resultClazz != null);
+
+    var result = new Instance(resultClazz);
+    check
+      (result.refs.length == 1);    // an 'error' has exactly one ref field of type string
+    result.refs[0] = Interpreter.value(e.toString());
+
+    return result;
+  }
+
+
+  /**
+   * Convert an instance of 'sys.array<Object>' to a Java Object[] with
+   * the corresponding Java values.
+   *
+   * @param v a value of type 'sys.array<Object>'.
+   *
+   * @return corresponding Java array.
+   */
   static Object[] instanceToJavaObjects(Value v)
   {
-    // NYI: Check i.clazz is sys.internalArray
+    if (PRECONDITIONS) require
+      (v.instance().clazz().feature() == Types.resolved.f_sys_array);
+
     Instance i = v.instance();
     var sz = i.refs.length;
     var result = new Object[sz];
@@ -262,12 +374,13 @@ public class JavaInterface extends ANY
    *
    * @param args array of arguments to be passed to constructor
    *
-   * @param resultClass the result type of the constructed instance
+   * @param resultClazz the result type of the constructed instance
    */
-  static Value callVirtual(String name, String sig, Object thiz, Value args, Clazz resultClass)
+  static Value callVirtual(String name, String sig, Object thiz, Value args, Clazz resultClazz)
   {
     Instance result;
-    Object res;
+    Object res = null;
+    Throwable err = null;
     Method m;
     Class[] p = getPars(sig);
     if (p == null)
@@ -285,29 +398,20 @@ public class JavaInterface extends ANY
         System.exit(1);
         m = null;
       }
-    if (m == null)
-      {
-        System.err.println("fuzion.java.callVirtual: method "+name+sig+" not found in target "+thiz.getClass());
-        System.exit(1);
-      }
     Object[] argz = instanceToJavaObjects(args);
     try
       {
         res = m.invoke(thiz, argz);
       }
-    catch (IllegalAccessException e)
-      {
-        System.err.println("fuzion.java.callVirtual: method "+name+sig+" causes IllegalAccessException");
-        System.exit(1);
-        res = null;
-      }
     catch (InvocationTargetException e)
       {
-        System.err.println("fuzion.java.callVirtual: method "+name+sig+" causes InvocationTargetException");
-        System.exit(1);
-        res = null;
+        err = e.getCause();
       }
-    return javaObjectToInstance(res, resultClass);
+    catch (IllegalAccessException e)
+      {
+        err = e;
+      }
+    return javaObjectToInstance(res, err, resultClazz);
   }
 
 
@@ -320,12 +424,13 @@ public class JavaInterface extends ANY
    *
    * @param args array of arguments to be passed to constructor
    *
-   * @param resultClass the result type of the constructed instance
+   * @param resultClazz the result type of the constructed instance
    */
-  static Value callConstructor(String name, String sig, Value args, Clazz resultClass)
+  static Value callConstructor(String name, String sig, Value args, Clazz resultClazz)
   {
     Instance result;
-    Object res;
+    Object res = null;
+    Throwable err = null;
     Constructor co;
     Class[] p = getPars(sig);
     if (p == null)
@@ -350,35 +455,20 @@ public class JavaInterface extends ANY
         System.exit(1);
         co = null;
       }
-    if (co == null)
-      {
-        System.err.println("fuzion.java.callConstructor: constructor for class "+name+" signature "+sig + " not found.");
-        System.exit(1);
-      }
     Object[] argz = instanceToJavaObjects(args);
     try
       {
         res = co.newInstance(argz);
       }
-    catch (InstantiationException e)
-      {
-        System.err.println("fuzion.java.callVirtual: method "+name+sig+" causes IllegalAccessException");
-        System.exit(1);
-        res = null;
-      }
-    catch (IllegalAccessException e)
-      {
-        System.err.println("fuzion.java.callVirtual: method "+name+sig+" causes IllegalAccessException");
-        System.exit(1);
-        res = null;
-      }
     catch (InvocationTargetException e)
       {
-        System.err.println("fuzion.java.callVirtual: method "+name+sig+" causes InvocationTargetException");
-        System.exit(1);
-        res = null;
+        err = e.getCause();
       }
-    return javaObjectToInstance(res, resultClass);
+    catch (InstantiationException | IllegalAccessException e)
+      {
+        err = e;
+      }
+    return javaObjectToInstance(res, err, resultClazz);
   }
 
 
