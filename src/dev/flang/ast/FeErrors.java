@@ -292,11 +292,13 @@ public class FeErrors extends ANY
 
   static void assignmentTargetNotFound(Assign ass, Feature outer)
   {
+    var solution = solutionDeclareReturnTypeIfResult(ass.name, 0);
     error(ass.pos,
           "Could not find target field " + sbn(ass.name) + " in assignment",
           "Field not found: " + sbn(ass.name) + "\n" +
           "Within feature: " + s(outer) + "\n" +
-          "For assignment: " + s(ass) + "\n");
+          "For assignment: " + s(ass) + "\n" +
+          solution);
   }
 
   static void assignmentToNonField(Assign ass, Feature f, Feature outer)
@@ -656,15 +658,34 @@ public class FeErrors extends ANY
           featureList(targets));
   }
 
+  /**
+   * If name is Feature.RESULT_NAME and argcount is 0, return text that suggests
+   * declaring a return type in the outer feature. Otherwise, return "".
+   */
+  static String solutionDeclareReturnTypeIfResult(String name, int argCount)
+  {
+    var solution = "";
+    if (name.equals(Feature.RESULT_NAME) &&
+        argCount == 0)
+      {
+        solution = "To solve this, make sure you declare a return type in the surrounding feature such that " +
+          "the " + sbn(Feature.RESULT_NAME) + " field will be declared automatically.";
+      }
+    return solution;
+  }
+
   static void calledFeatureNotFound(Call call,
                                     FeatureName calledName,
                                     Feature targetFeature)
   {
+    var solution = solutionDeclareReturnTypeIfResult(calledName.baseName(),
+                                                     calledName.argCount());
     error(call.pos,
           "Could not find called feature",
           "Feature not found: " + calledName + "\n" +
           "Target feature: " + s( targetFeature) + "\n" +
-          "In call: " + s(call) + "\n");
+          "In call: " + s(call) + "\n" +
+          solution);
   }
 
   static void ambiguousType(Type t,
