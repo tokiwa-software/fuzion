@@ -1,4 +1,5 @@
-# The Fuzion language implementation
+
+# <img src="assets/logo.svg" alt="fuzion logo" width="25" /> The Fuzion language implementation
 
 This is work under development, documentation is mostly not existing.
 
