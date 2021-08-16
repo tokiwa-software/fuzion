@@ -60,7 +60,7 @@ public class ValueType extends ReturnType
 
 
   /**
-   * true iff this is the return type of a constructor feature, i.e., "this" is
+   * true if this is the return type of a constructor feature, i.e., "this" is
    * returned implicitly instead of "result".
    *
    * @return true for a constructor return type.
