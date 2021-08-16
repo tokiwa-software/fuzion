@@ -180,6 +180,9 @@ JAVA_FILES_TOOLS_FZJAVA = \
           $(SRC)/dev/flang/tools/fzjava/FZJavaOptions.java \
           $(SRC)/dev/flang/tools/fzjava/FeatureWriter.java \
 
+JAVA_FILES_MISC_LOGO =\
+          $(SRC)/dev/flang/misc/logo/FuzionLogo.java
+
 CLASS_FILES_UTIL           = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
 CLASS_FILES_UTIL_UNICODE   = $(CLASSES_DIR)/dev/flang/util/unicode/__marker_for_make__
 CLASS_FILES_AST            = $(CLASSES_DIR)/dev/flang/ast/__marker_for_make__
@@ -195,6 +198,10 @@ CLASS_FILES_BE_INTERPRETER = $(CLASSES_DIR)/dev/flang/be/interpreter/__marker_fo
 CLASS_FILES_BE_C           = $(CLASSES_DIR)/dev/flang/be/c/__marker_for_make__
 CLASS_FILES_TOOLS          = $(CLASSES_DIR)/dev/flang/tools/__marker_for_make__
 CLASS_FILES_TOOLS_FZJAVA   = $(CLASSES_DIR)/dev/flang/tools/fzjava/__marker_for_make__
+CLASS_FILES_MISC_LOGO      = $(CLASSES_DIR)/dev/flang/misc/logo/__marker_for_make__
+
+JFREE_SVG_URL = https://repo1.maven.org/maven2/org/jfree/org.jfree.svg/5.0.1/org.jfree.svg-5.0.1.jar
+JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
@@ -292,6 +299,20 @@ $(CLASS_FILES_TOOLS_FZJAVA): $(JAVA_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS) $(C
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS_FZJAVA)
 	touch $@
 
+$(JARS_JFREE_SVG_JAR):
+	mkdir -p $(@D)
+	curl $(JFREE_SVG_URL) --output $@
+
+$(CLASS_FILES_MISC_LOGO): $(JAVA_FILES_MISC_LOGO) $(JARS_JFREE_SVG_JAR)
+	mkdir -p $(CLASSES_DIR)
+	$(JAVAC) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) -d $(CLASSES_DIR) $(JAVA_FILES_MISC_LOGO)
+	touch $@
+
+$(BUILD_DIR)/assets/logo.svg: $(CLASS_FILES_MISC_LOGO)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) dev.flang.misc.logo.FuzionLogo $@
+	touch $@
+
 $(BUILD_DIR)/lib: $(FZ_SRC)/lib
 	mkdir -p $(@D)
 	cp -rf $^ $@
@@ -335,6 +356,12 @@ $(BUILD_DIR)/UnicodeData.java: $(BUILD_DIR)/UnicodeData.java.generated $(SRC)/de
 .phony: unicode
 unicode: $(BUILD_DIR)/UnicodeData.java
 	cp $^ $(SRC)/dev/flang/util/UnicodeData.java
+
+# phony target to regenerate Fuzion logo.
+# This must be phony since $(SRC)/assets/logo.svg would be a circular dependency
+.phony: logo
+logo: $(BUILD_DIR)/assets/logo.svg
+	cp $^ $(FZ_SRC)/assets/
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests
