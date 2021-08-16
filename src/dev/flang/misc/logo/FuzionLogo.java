@@ -111,17 +111,17 @@ public class FuzionLogo
    */
   static interface Draw
   {
-    void draw(Color c, Color c2);
+    void draw(Color c);
   }
 
   /**
-   * Call d.draw three times, rotating g2 by 120° and rotating the color arguments.
+   * Call d.draw three times, rotating g2 by 120°.
    */
   static void threeTimes(Graphics2D g2, Draw d)
   {
-    d.draw(C1, C3); g2.rotate(-2*Math.PI/3);
-    d.draw(C2, C1); g2.rotate(-2*Math.PI/3);
-    d.draw(C3, C2); g2.rotate(-2*Math.PI/3);
+    d.draw(C1); g2.rotate(-2*Math.PI/3);
+    d.draw(C2); g2.rotate(-2*Math.PI/3);
+    d.draw(C3); g2.rotate(-2*Math.PI/3);
   }
 
   /**
@@ -152,19 +152,20 @@ public class FuzionLogo
     cir(g2, BACKGROUND, 0, 0, r);
 
     // three arcs
-    threeTimes(g2, (c,d) -> { arc(g2, c, 0,0,r1, -30, 120);});
+    threeTimes(g2, c -> { arc(g2, c, 0,0,r1, -30, 120);});
 
     // black circle in the center, radius to touch the sides of the inner triangle
     cir(g2, BACKGROUND, 0, 0, (r - r2 - b) / 2);
 
     // black arcs around inner circles
-    threeTimes(g2, (c,d) -> arc(g2, BACKGROUND, 0,-r+r2+b, r2+b, 90, 210));
+    threeTimes(g2, c -> arc(g2, BACKGROUND, 0,-r+r2+b, r2+b, 90, 210));
 
     // inner circles
-    threeTimes(g2, (c,d) -> cir(g2, c, 0,-r+b+r2, r2));
+    threeTimes(g2, c -> cir(g2, c, 0,-r+b+r2, r2));
 
     // small circles
-    threeTimes(g2, (c,d) -> cir(g2, d, 0,-r+b+r2, r3));
+    g2.rotate(-2*Math.PI/3);
+    threeTimes(g2, c -> cir(g2, c, 0,-r+b+r2, r3));
   }
 
 
