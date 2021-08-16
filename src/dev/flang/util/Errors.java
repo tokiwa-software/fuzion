@@ -54,14 +54,14 @@ public class Errors extends ANY
 
 
   /**
-   * Ser of errors that have been shown so far. This is used to avoid presenting
+   * Set of errors that have been shown so far. This is used to avoid presenting
    * error repeatedly.
    */
   private static final TreeSet<Error> _errors_ = new TreeSet<>();
 
 
   /**
-   * Ser of warnings that have been shown so far. This is used to avoid presenting
+   * Set of warnings that have been shown so far. This is used to avoid presenting
    * error repeatedly.
    */
   private static final TreeSet<Error> _warnings_ = new TreeSet<>();
