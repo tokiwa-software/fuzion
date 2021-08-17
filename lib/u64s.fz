@@ -28,6 +28,8 @@
 #
 u64s : wrappingIntegers<u64> is
 
+  redef name => "u64"
+
   redef zero u64 is 0
   redef one  u64 is 1
 

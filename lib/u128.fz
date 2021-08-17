@@ -152,18 +152,21 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
   redef infix =  (other u128) bool is hi = other.hi && lo = other.lo
   redef infix /= (other u128) bool is !(u128.this = other)
 
+  as_i8 i8
+    pre
+      u128.this <= i8.max.as_u128
+    is
+      lo.as_i8
+  as_i16 i16
+    pre
+      u128.this <= i16.max.as_u128
+    is
+      lo.as_i16
   as_i32 i32
     pre
       u128.this <= i32.max.as_u128
     is
       lo.as_i32
-  as_u32 u32
-    pre
-      u128.this <= u32.max.as_u128
-    post
-      analysis: result.as_u128 = u128.this
-    is
-      lo.as_u32
   as_i64 i64
     pre
       u128.this <= i64.max.as_u128
@@ -171,6 +174,27 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
       analysis: result.as_u128 = u128.this
     is
       lo.as_i64
+  as_u8 u8
+    pre
+      u128.this <= u8.max.as_u128
+    post
+      analysis: result.as_u128 = u128.this
+    is
+      lo.as_u8
+  as_u16 u16
+    pre
+      u128.this <= u16.max.as_u128
+    post
+      analysis: result.as_u128 = u128.this
+    is
+      lo.as_u16
+  as_u32 u32
+    pre
+      u128.this <= u32.max.as_u128
+    post
+      analysis: result.as_u128 = u128.this
+    is
+      lo.as_u32
   as_u64 u64
     pre
       u128.this <= u64.max.as_u128
@@ -179,8 +203,10 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
     is
       lo
 
-  low32bits  u32 is lo.low32bits
-  low64bits  u64 is lo
+  low8bits  u8  is lo.low8bits
+  low16bits u16 is lo.low16bits
+  low32bits u32 is lo.low32bits
+  low64bits u64 is lo
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from hasInterval is abstract, fz should not complain about this conflict.

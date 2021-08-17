@@ -85,12 +85,37 @@ i32(val i32) : wrappingInteger<i32>, hasInterval<i32>, i32s is
   redef infix >= (other i32) bool is intrinsic
 
   # conversion to u32, i64 and u64, with range check
+  as_i8 i8
+    pre
+      i32.this >= i8.min.as_i32,
+      i32.this <= i8.max.as_i32
+    is
+      low8bits.castTo_i8
+  as_i16 i16
+    pre
+      i32.this >= i16.min.as_i32,
+      i32.this <= i16.max.as_i32
+    is
+      low16bits.castTo_i16
+  as_i64 i64 is intrinsic
+# as_i128 NYI
+  as_u8 u8
+    pre
+      i32.this >= u8.min.as_i32,
+      i32.this <= u8.max.as_i32
+    is
+      low8bits
+  as_u16 u16
+    pre
+      i32.this >= u16.min.as_i32,
+      i32.this <= u16.max.as_i32
+    is
+      low16bits
   as_u32 u32
     pre
       debug: i32.this >= 0
     is
       castTo_u32
-  as_i64 i64 is intrinsic
   as_u64 u64
     pre
       debug: i32.this >= 0
@@ -102,9 +127,12 @@ i32(val i32) : wrappingInteger<i32>, hasInterval<i32>, i32s is
     is
       u128 0, as_i64.as_u64
 
-  # casting to unsigned, adding 1<<32 if negative
-  castTo_u32 u32 is intrinsic
-  castTo_u64 u64 is castTo_u32.as_u64
+  # casting bit representation to unsigned
+  low8bits    u8   is castTo_u32.low8bits   # 0x1234_5678 ->        0x78, -0x1234_5678 -> 0x88
+  low16bits   u16  is castTo_u32.low16bits  # 0x1234_5678 ->      0x5678, -0x1234_5678 -> 0xa988
+  castTo_u32  u32  is intrinsic             # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0xedcb_a988
+  castTo_u64  u64  is castTo_u32.as_u64     # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_edcb_a988
+  castTo_u128 u128 is castTo_u32.as_u128    # 0x1234_5678 -> 0x1234_5678, -0x1234_5678 -> 0x0000_0000_0000_0000_0000_0000_edcb_a988
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from hasInterval<i32> is abstract, fz should not complain about this conflict.

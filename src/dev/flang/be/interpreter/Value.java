@@ -89,13 +89,35 @@ public abstract class Value extends ANY
 
 
   /**
+   * For a value of type i8, return the value.
+   *
+   * @return the i8 value
+   */
+  public int i8Value()
+  {
+    throw new Error("this is not of type i8Value, but " + getClass());
+  }
+
+
+  /**
+   * For a value of type i16, return the value.
+   *
+   * @return the i16 value
+   */
+  public int i16Value()
+  {
+    throw new Error("this is not of type i16Value, but " + getClass());
+  }
+
+
+  /**
    * For a value of type i32, return the value.
    *
    * @return the i32 value
    */
   public int i32Value()
   {
-    throw new Error("this is not of type i32Value1, but " + getClass());
+    throw new Error("this is not of type i32Value, but " + getClass());
   }
 
 
@@ -107,6 +129,28 @@ public abstract class Value extends ANY
   public long i64Value()
   {
     throw new Error("this is not of type i64Value, but " + getClass());
+  }
+
+
+  /**
+   * For a value of type u8, return the value.
+   *
+   * @return the u8 value
+   */
+  public int u8Value()
+  {
+    throw new Error("this is not of type u8Value, but " + getClass());
+  }
+
+
+  /**
+   * For a value of type u16, return the value.
+   *
+   * @return the u16 value
+   */
+  public int u16Value()
+  {
+    throw new Error("this is not of type u16Value, but " + getClass());
   }
 
 

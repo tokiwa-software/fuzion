@@ -28,7 +28,16 @@
 #
 numerics<T : numeric<T>> is
 
+  # name of this numeric type, e.g., "u64"
+  #
+  name string is abstract
+
+  # identity element for 'infix +'
+  #
   zero T is abstract
+
+  # identity element for 'infix *'
+  #
   one  T is abstract
 
   # monoid of numeric with infix + operation.  Will create sum of all elements it

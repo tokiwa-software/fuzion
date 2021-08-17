@@ -17,21 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature i64s
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# i64s -- unit type defining features related to i32 but not requiring an
-# instance
-#
-i64s : wrappingIntegers<i64> is
-
-  redef name => "i64"
-
-  redef zero i64 is 0
-  redef one  i64 is 1
-
-  redef min => -° max -° 1
-  redef max => i64 0x_7fff_ffff_ffff_ffff
+NAME = basicIntegers
+include ../simple.mk

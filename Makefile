@@ -142,8 +142,12 @@ JAVA_FILES_BE_INTERPRETER = \
           $(SRC)/dev/flang/be/interpreter/Intrinsics.java \
           $(SRC)/dev/flang/be/interpreter/Value.java \
           $(SRC)/dev/flang/be/interpreter/boolValue.java \
+          $(SRC)/dev/flang/be/interpreter/i8Value.java \
+          $(SRC)/dev/flang/be/interpreter/i16Value.java \
           $(SRC)/dev/flang/be/interpreter/i32Value.java \
           $(SRC)/dev/flang/be/interpreter/i64Value.java \
+          $(SRC)/dev/flang/be/interpreter/u8Value.java \
+          $(SRC)/dev/flang/be/interpreter/u16Value.java \
           $(SRC)/dev/flang/be/interpreter/u32Value.java \
           $(SRC)/dev/flang/be/interpreter/u64Value.java \
 

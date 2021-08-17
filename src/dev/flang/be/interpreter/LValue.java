@@ -86,6 +86,28 @@ public class LValue extends Value
 
 
   /**
+   * For a value of type i8, return the value.
+   *
+   * @return the integer value
+   */
+  public int i8Value()
+  {
+    return container.nonrefs[offset];
+  }
+
+
+  /**
+   * For a value of type i16, return the value.
+   *
+   * @return the integer value
+   */
+  public int i16Value()
+  {
+    return container.nonrefs[offset];
+  }
+
+
+  /**
    * For a value of type i32, return the value.
    *
    * @return the integer value
@@ -106,6 +128,28 @@ public class LValue extends Value
     return
         container.nonrefs[offset    ] & 0xFFFFffffL |
       ((container.nonrefs[offset + 1] & 0xFFFFffffL) << 32);
+  }
+
+
+  /**
+   * For a value of type u8, return the value.
+   *
+   * @return the integer value
+   */
+  public int u8Value()
+  {
+    return container.nonrefs[offset];
+  }
+
+
+  /**
+   * For a value of type u16, return the value.
+   *
+   * @return the integer value
+   */
+  public int u16Value()
+  {
+    return container.nonrefs[offset];
   }
 
 

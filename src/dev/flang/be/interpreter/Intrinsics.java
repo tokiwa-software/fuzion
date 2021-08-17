@@ -397,79 +397,158 @@ public class Intrinsics extends ANY
           }
         result = (args) -> Value.NO_VALUE;
       }
-    else if (n.equals("i32.prefix -°"   )) { result = (args) -> new i32Value (                       -   args.get(0).i32Value()); }
-    else if (n.equals("i32.castTo_u32"  )) { result = (args) -> new u32Value (                           args.get(0).i32Value()); }
-    else if (n.equals("i32.as_i64"      )) { result = (args) -> new i64Value (                    (long) args.get(0).i32Value()); }
-    else if (n.equals("i32.infix +°"    )) { result = (args) -> new i32Value (args.get(0).i32Value() +   args.get(1).i32Value()); }
-    else if (n.equals("i32.infix -°"    )) { result = (args) -> new i32Value (args.get(0).i32Value() -   args.get(1).i32Value()); }
-    else if (n.equals("i32.infix *°"    )) { result = (args) -> new i32Value (args.get(0).i32Value() *   args.get(1).i32Value()); }
-    else if (n.equals("i32.div"         )) { result = (args) -> new i32Value (args.get(0).i32Value() /   args.get(1).i32Value()); }
-    else if (n.equals("i32.mod"         )) { result = (args) -> new i32Value (args.get(0).i32Value() %   args.get(1).i32Value()); }
-    else if (n.equals("i32.infix &"     )) { result = (args) -> new i32Value (args.get(0).i32Value() &   args.get(1).i32Value()); }
-    else if (n.equals("i32.infix |"     )) { result = (args) -> new i32Value (args.get(0).i32Value() |   args.get(1).i32Value()); }
-    else if (n.equals("i32.infix ^"     )) { result = (args) -> new i32Value (args.get(0).i32Value() ^   args.get(1).i32Value()); }
-    else if (n.equals("i32.infix >>"    )) { result = (args) -> new i32Value (args.get(0).i32Value() >>  args.get(1).i32Value()); }
-    else if (n.equals("i32.infix <<"    )) { result = (args) -> new i32Value (args.get(0).i32Value() <<  args.get(1).i32Value()); }
-    else if (n.equals("i32.infix =="    )) { result = (args) -> new boolValue(args.get(0).i32Value() ==  args.get(1).i32Value()); }
-    else if (n.equals("i32.infix !="    )) { result = (args) -> new boolValue(args.get(0).i32Value() !=  args.get(1).i32Value()); }
-    else if (n.equals("i32.infix <"     )) { result = (args) -> new boolValue(args.get(0).i32Value() <   args.get(1).i32Value()); }
-    else if (n.equals("i32.infix >"     )) { result = (args) -> new boolValue(args.get(0).i32Value() >   args.get(1).i32Value()); }
-    else if (n.equals("i32.infix <="    )) { result = (args) -> new boolValue(args.get(0).i32Value() <=  args.get(1).i32Value()); }
-    else if (n.equals("i32.infix >="    )) { result = (args) -> new boolValue(args.get(0).i32Value() >=  args.get(1).i32Value()); }
-    else if (n.equals("i64.prefix -°"   )) { result = (args) -> new i64Value (                       -   args.get(0).i64Value()); }
-    else if (n.equals("i64.low32bits"   )) { result = (args) -> new u32Value (                     (int) args.get(0).i64Value()); }
-    else if (n.equals("i64.castTo_u64"  )) { result = (args) -> new u64Value (                           args.get(0).i64Value()); }
-    else if (n.equals("i64.prefix -°"   )) { result = (args) -> new u64Value (                       -   args.get(0).u64Value()); }
-    else if (n.equals("i64.infix +°"    )) { result = (args) -> new i64Value (args.get(0).i64Value() +   args.get(1).i64Value()); }
-    else if (n.equals("i64.infix -°"    )) { result = (args) -> new i64Value (args.get(0).i64Value() -   args.get(1).i64Value()); }
-    else if (n.equals("i64.infix *°"    )) { result = (args) -> new i64Value (args.get(0).i64Value() *   args.get(1).i64Value()); }
-    else if (n.equals("i64.div"         )) { result = (args) -> new i64Value (args.get(0).i64Value() /   args.get(1).i64Value()); }
-    else if (n.equals("i64.mod"         )) { result = (args) -> new i64Value (args.get(0).i64Value() %   args.get(1).i64Value()); }
-    else if (n.equals("i64.infix &"     )) { result = (args) -> new i64Value (args.get(0).i64Value() &   args.get(1).i64Value()); }
-    else if (n.equals("i64.infix |"     )) { result = (args) -> new i64Value (args.get(0).i64Value() |   args.get(1).i64Value()); }
-    else if (n.equals("i64.infix ^"     )) { result = (args) -> new i64Value (args.get(0).i64Value() ^   args.get(1).i64Value()); }
-    else if (n.equals("i64.infix >>"    )) { result = (args) -> new i64Value (args.get(0).i64Value() >>  args.get(1).i64Value()); }
-    else if (n.equals("i64.infix <<"    )) { result = (args) -> new i64Value (args.get(0).i64Value() <<  args.get(1).i64Value()); }
-    else if (n.equals("i64.infix =="    )) { result = (args) -> new boolValue(args.get(0).i64Value() ==  args.get(1).i64Value()); }
-    else if (n.equals("i64.infix !="    )) { result = (args) -> new boolValue(args.get(0).i64Value() !=  args.get(1).i64Value()); }
-    else if (n.equals("i64.infix <"     )) { result = (args) -> new boolValue(args.get(0).i64Value() <   args.get(1).i64Value()); }
-    else if (n.equals("i64.infix >"     )) { result = (args) -> new boolValue(args.get(0).i64Value() >   args.get(1).i64Value()); }
-    else if (n.equals("i64.infix <="    )) { result = (args) -> new boolValue(args.get(0).i64Value() <=  args.get(1).i64Value()); }
-    else if (n.equals("i64.infix >="    )) { result = (args) -> new boolValue(args.get(0).i64Value() >=  args.get(1).i64Value()); }
+    else if (n.equals("i8.as_i32"       )) { result = (args) -> new i32Value (              (                           args.get(0).i8Value() )); }
+    else if (n.equals("i8.castTo_u8"    )) { result = (args) -> new u8Value  (       0xff & (                           args.get(0).i8Value() )); }
+    else if (n.equals("i8.prefix -°"    )) { result = (args) -> new i8Value  ((int) (byte)  (                       -   args.get(0).i8Value() )); }
+    else if (n.equals("i8.infix +°"     )) { result = (args) -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  +   args.get(1).i8Value() )); }
+    else if (n.equals("i8.infix -°"     )) { result = (args) -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  -   args.get(1).i8Value() )); }
+    else if (n.equals("i8.infix *°"     )) { result = (args) -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  *   args.get(1).i8Value() )); }
+    else if (n.equals("i8.div"          )) { result = (args) -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  /   args.get(1).i8Value() )); }
+    else if (n.equals("i8.mod"          )) { result = (args) -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  %   args.get(1).i8Value() )); }
+    else if (n.equals("i8.infix &"      )) { result = (args) -> new i8Value  (              (args.get(0).i8Value()  &   args.get(1).i8Value() )); }
+    else if (n.equals("i8.infix |"      )) { result = (args) -> new i8Value  (              (args.get(0).i8Value()  |   args.get(1).i8Value() )); }
+    else if (n.equals("i8.infix ^"      )) { result = (args) -> new i8Value  (              (args.get(0).i8Value()  ^   args.get(1).i8Value() )); }
+    else if (n.equals("i8.infix >>"     )) { result = (args) -> new i8Value  (              (args.get(0).i8Value()  >>  args.get(1).i8Value() )); }
+    else if (n.equals("i8.infix <<"     )) { result = (args) -> new i8Value  ((int) (byte)  (args.get(0).i8Value()  <<  args.get(1).i8Value() )); }
+    else if (n.equals("i8.infix =="     )) { result = (args) -> new boolValue(              (args.get(0).i8Value()  ==  args.get(1).i8Value() )); }
+    else if (n.equals("i8.infix !="     )) { result = (args) -> new boolValue(              (args.get(0).i8Value()  !=  args.get(1).i8Value() )); }
+    else if (n.equals("i8.infix <"      )) { result = (args) -> new boolValue(              (args.get(0).i8Value()  <   args.get(1).i8Value() )); }
+    else if (n.equals("i8.infix >"      )) { result = (args) -> new boolValue(              (args.get(0).i8Value()  >   args.get(1).i8Value() )); }
+    else if (n.equals("i8.infix <="     )) { result = (args) -> new boolValue(              (args.get(0).i8Value()  <=  args.get(1).i8Value() )); }
+    else if (n.equals("i8.infix >="     )) { result = (args) -> new boolValue(              (args.get(0).i8Value()  >=  args.get(1).i8Value() )); }
+    else if (n.equals("i16.as_i32"      )) { result = (args) -> new i32Value (              (                           args.get(0).i16Value())); }
+    else if (n.equals("i16.castTo_u16"  )) { result = (args) -> new u16Value (     0xffff & (                           args.get(0).i16Value())); }
+    else if (n.equals("i16.prefix -°"   )) { result = (args) -> new i16Value ((int) (short) (                       -   args.get(0).i16Value())); }
+    else if (n.equals("i16.infix +°"    )) { result = (args) -> new i16Value ((int) (short) (args.get(0).i16Value() +   args.get(1).i16Value())); }
+    else if (n.equals("i16.infix -°"    )) { result = (args) -> new i16Value ((int) (short) (args.get(0).i16Value() -   args.get(1).i16Value())); }
+    else if (n.equals("i16.infix *°"    )) { result = (args) -> new i16Value ((int) (short) (args.get(0).i16Value() *   args.get(1).i16Value())); }
+    else if (n.equals("i16.div"         )) { result = (args) -> new i16Value ((int) (short) (args.get(0).i16Value() /   args.get(1).i16Value())); }
+    else if (n.equals("i16.mod"         )) { result = (args) -> new i16Value ((int) (short) (args.get(0).i16Value() %   args.get(1).i16Value())); }
+    else if (n.equals("i16.infix &"     )) { result = (args) -> new i16Value (              (args.get(0).i16Value() &   args.get(1).i16Value())); }
+    else if (n.equals("i16.infix |"     )) { result = (args) -> new i16Value (              (args.get(0).i16Value() |   args.get(1).i16Value())); }
+    else if (n.equals("i16.infix ^"     )) { result = (args) -> new i16Value (              (args.get(0).i16Value() ^   args.get(1).i16Value())); }
+    else if (n.equals("i16.infix >>"    )) { result = (args) -> new i16Value (              (args.get(0).i16Value() >>  args.get(1).i16Value())); }
+    else if (n.equals("i16.infix <<"    )) { result = (args) -> new i16Value ((int) (short) (args.get(0).i16Value() <<  args.get(1).i16Value())); }
+    else if (n.equals("i16.infix =="    )) { result = (args) -> new boolValue(              (args.get(0).i16Value() ==  args.get(1).i16Value())); }
+    else if (n.equals("i16.infix !="    )) { result = (args) -> new boolValue(              (args.get(0).i16Value() !=  args.get(1).i16Value())); }
+    else if (n.equals("i16.infix <"     )) { result = (args) -> new boolValue(              (args.get(0).i16Value() <   args.get(1).i16Value())); }
+    else if (n.equals("i16.infix >"     )) { result = (args) -> new boolValue(              (args.get(0).i16Value() >   args.get(1).i16Value())); }
+    else if (n.equals("i16.infix <="    )) { result = (args) -> new boolValue(              (args.get(0).i16Value() <=  args.get(1).i16Value())); }
+    else if (n.equals("i16.infix >="    )) { result = (args) -> new boolValue(              (args.get(0).i16Value() >=  args.get(1).i16Value())); }
+    else if (n.equals("i32.as_i64"      )) { result = (args) -> new i64Value ((long)        (                           args.get(0).i32Value())); }
+    else if (n.equals("i32.castTo_u32"  )) { result = (args) -> new u32Value (              (                           args.get(0).i32Value())); }
+    else if (n.equals("i32.prefix -°"   )) { result = (args) -> new i32Value (              (                       -   args.get(0).i32Value())); }
+    else if (n.equals("i32.infix +°"    )) { result = (args) -> new i32Value (              (args.get(0).i32Value() +   args.get(1).i32Value())); }
+    else if (n.equals("i32.infix -°"    )) { result = (args) -> new i32Value (              (args.get(0).i32Value() -   args.get(1).i32Value())); }
+    else if (n.equals("i32.infix *°"    )) { result = (args) -> new i32Value (              (args.get(0).i32Value() *   args.get(1).i32Value())); }
+    else if (n.equals("i32.div"         )) { result = (args) -> new i32Value (              (args.get(0).i32Value() /   args.get(1).i32Value())); }
+    else if (n.equals("i32.mod"         )) { result = (args) -> new i32Value (              (args.get(0).i32Value() %   args.get(1).i32Value())); }
+    else if (n.equals("i32.infix &"     )) { result = (args) -> new i32Value (              (args.get(0).i32Value() &   args.get(1).i32Value())); }
+    else if (n.equals("i32.infix |"     )) { result = (args) -> new i32Value (              (args.get(0).i32Value() |   args.get(1).i32Value())); }
+    else if (n.equals("i32.infix ^"     )) { result = (args) -> new i32Value (              (args.get(0).i32Value() ^   args.get(1).i32Value())); }
+    else if (n.equals("i32.infix >>"    )) { result = (args) -> new i32Value (              (args.get(0).i32Value() >>  args.get(1).i32Value())); }
+    else if (n.equals("i32.infix <<"    )) { result = (args) -> new i32Value (              (args.get(0).i32Value() <<  args.get(1).i32Value())); }
+    else if (n.equals("i32.infix =="    )) { result = (args) -> new boolValue(              (args.get(0).i32Value() ==  args.get(1).i32Value())); }
+    else if (n.equals("i32.infix !="    )) { result = (args) -> new boolValue(              (args.get(0).i32Value() !=  args.get(1).i32Value())); }
+    else if (n.equals("i32.infix <"     )) { result = (args) -> new boolValue(              (args.get(0).i32Value() <   args.get(1).i32Value())); }
+    else if (n.equals("i32.infix >"     )) { result = (args) -> new boolValue(              (args.get(0).i32Value() >   args.get(1).i32Value())); }
+    else if (n.equals("i32.infix <="    )) { result = (args) -> new boolValue(              (args.get(0).i32Value() <=  args.get(1).i32Value())); }
+    else if (n.equals("i32.infix >="    )) { result = (args) -> new boolValue(              (args.get(0).i32Value() >=  args.get(1).i32Value())); }
+    else if (n.equals("i64.castTo_u64"  )) { result = (args) -> new u64Value (              (                           args.get(0).i64Value())); }
+    else if (n.equals("i64.prefix -°"   )) { result = (args) -> new i64Value (              (                       -   args.get(0).u64Value())); }
+    else if (n.equals("i64.infix +°"    )) { result = (args) -> new i64Value (              (args.get(0).i64Value() +   args.get(1).i64Value())); }
+    else if (n.equals("i64.infix -°"    )) { result = (args) -> new i64Value (              (args.get(0).i64Value() -   args.get(1).i64Value())); }
+    else if (n.equals("i64.infix *°"    )) { result = (args) -> new i64Value (              (args.get(0).i64Value() *   args.get(1).i64Value())); }
+    else if (n.equals("i64.div"         )) { result = (args) -> new i64Value (              (args.get(0).i64Value() /   args.get(1).i64Value())); }
+    else if (n.equals("i64.mod"         )) { result = (args) -> new i64Value (              (args.get(0).i64Value() %   args.get(1).i64Value())); }
+    else if (n.equals("i64.infix &"     )) { result = (args) -> new i64Value (              (args.get(0).i64Value() &   args.get(1).i64Value())); }
+    else if (n.equals("i64.infix |"     )) { result = (args) -> new i64Value (              (args.get(0).i64Value() |   args.get(1).i64Value())); }
+    else if (n.equals("i64.infix ^"     )) { result = (args) -> new i64Value (              (args.get(0).i64Value() ^   args.get(1).i64Value())); }
+    else if (n.equals("i64.infix >>"    )) { result = (args) -> new i64Value (              (args.get(0).i64Value() >>  args.get(1).i64Value())); }
+    else if (n.equals("i64.infix <<"    )) { result = (args) -> new i64Value (              (args.get(0).i64Value() <<  args.get(1).i64Value())); }
+    else if (n.equals("i64.infix =="    )) { result = (args) -> new boolValue(              (args.get(0).i64Value() ==  args.get(1).i64Value())); }
+    else if (n.equals("i64.infix !="    )) { result = (args) -> new boolValue(              (args.get(0).i64Value() !=  args.get(1).i64Value())); }
+    else if (n.equals("i64.infix <"     )) { result = (args) -> new boolValue(              (args.get(0).i64Value() <   args.get(1).i64Value())); }
+    else if (n.equals("i64.infix >"     )) { result = (args) -> new boolValue(              (args.get(0).i64Value() >   args.get(1).i64Value())); }
+    else if (n.equals("i64.infix <="    )) { result = (args) -> new boolValue(              (args.get(0).i64Value() <=  args.get(1).i64Value())); }
+    else if (n.equals("i64.infix >="    )) { result = (args) -> new boolValue(              (args.get(0).i64Value() >=  args.get(1).i64Value())); }
+    else if (n.equals("u8.as_i32"       )) { result = (args) -> new i32Value (              (                           args.get(0).u8Value() )); }
+    else if (n.equals("u8.castTo_i8"    )) { result = (args) -> new i8Value  ((int) (byte)  (                           args.get(0).u8Value() )); }
+    else if (n.equals("u8.prefix -°"    )) { result = (args) -> new u8Value  (       0xff & (                       -   args.get(0).u8Value() )); }
+    else if (n.equals("u8.infix +°"     )) { result = (args) -> new u8Value  (       0xff & (args.get(0).u8Value()  +   args.get(1).u8Value() )); }
+    else if (n.equals("u8.infix -°"     )) { result = (args) -> new u8Value  (       0xff & (args.get(0).u8Value()  -   args.get(1).u8Value() )); }
+    else if (n.equals("u8.infix *°"     )) { result = (args) -> new u8Value  (       0xff & (args.get(0).u8Value()  *   args.get(1).u8Value() )); }
+    else if (n.equals("u8.div"          )) { result = (args) -> new u8Value  (Integer.divideUnsigned   (args.get(0).u8Value(), args.get(1).u8Value())); }
+    else if (n.equals("u8.mod"          )) { result = (args) -> new u8Value  (Integer.remainderUnsigned(args.get(0).u8Value(), args.get(1).u8Value())); }
+    else if (n.equals("u8.infix &"      )) { result = (args) -> new u8Value  (              (args.get(0).u8Value()  &   args.get(1).u8Value() )); }
+    else if (n.equals("u8.infix |"      )) { result = (args) -> new u8Value  (              (args.get(0).u8Value()  |   args.get(1).u8Value() )); }
+    else if (n.equals("u8.infix ^"      )) { result = (args) -> new u8Value  (              (args.get(0).u8Value()  ^   args.get(1).u8Value() )); }
+    else if (n.equals("u8.infix >>"     )) { result = (args) -> new u8Value  (              (args.get(0).u8Value()  >>> args.get(1).u8Value() )); }
+    else if (n.equals("u8.infix <<"     )) { result = (args) -> new u8Value  (       0xff & (args.get(0).u8Value()  <<  args.get(1).u8Value() )); }
+    else if (n.equals("u8.infix =="     )) { result = (args) -> new boolValue(              (args.get(0).u8Value()  ==  args.get(1).u8Value() )); }
+    else if (n.equals("u8.infix !="     )) { result = (args) -> new boolValue(              (args.get(0).u8Value()  !=  args.get(1).u8Value() )); }
+    else if (n.equals("u8.infix <"      )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u8Value(), args.get(1).u8Value()) <  0); }
+    else if (n.equals("u8.infix >"      )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u8Value(), args.get(1).u8Value()) >  0); }
+    else if (n.equals("u8.infix <="     )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u8Value(), args.get(1).u8Value()) <= 0); }
+    else if (n.equals("u8.infix >="     )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u8Value(), args.get(1).u8Value()) >= 0); }
+    else if (n.equals("u16.as_i32"      )) { result = (args) -> new i32Value (              (                           args.get(0).u16Value())); }
+    else if (n.equals("u16.low8bits"    )) { result = (args) -> new u8Value  (       0xff & (                           args.get(0).u16Value())); }
+    else if (n.equals("u16.castTo_i16"  )) { result = (args) -> new i16Value ((short)       (                           args.get(0).u16Value())); }
+    else if (n.equals("u16.prefix -°"   )) { result = (args) -> new u16Value (     0xffff & (                       -   args.get(0).u16Value())); }
+    else if (n.equals("u16.infix +°"    )) { result = (args) -> new u16Value (     0xffff & (args.get(0).u16Value() +   args.get(1).u16Value())); }
+    else if (n.equals("u16.infix -°"    )) { result = (args) -> new u16Value (     0xffff & (args.get(0).u16Value() -   args.get(1).u16Value())); }
+    else if (n.equals("u16.infix *°"    )) { result = (args) -> new u16Value (     0xffff & (args.get(0).u16Value() *   args.get(1).u16Value())); }
+    else if (n.equals("u16.div"         )) { result = (args) -> new u16Value (Integer.divideUnsigned   (args.get(0).u16Value(), args.get(1).u16Value())); }
+    else if (n.equals("u16.mod"         )) { result = (args) -> new u16Value (Integer.remainderUnsigned(args.get(0).u16Value(), args.get(1).u16Value())); }
+    else if (n.equals("u16.infix &"     )) { result = (args) -> new u16Value (              (args.get(0).u16Value() &   args.get(1).u16Value())); }
+    else if (n.equals("u16.infix |"     )) { result = (args) -> new u16Value (              (args.get(0).u16Value() |   args.get(1).u16Value())); }
+    else if (n.equals("u16.infix ^"     )) { result = (args) -> new u16Value (              (args.get(0).u16Value() ^   args.get(1).u16Value())); }
+    else if (n.equals("u16.infix >>"    )) { result = (args) -> new u16Value (              (args.get(0).u16Value() >>> args.get(1).u16Value())); }
+    else if (n.equals("u16.infix <<"    )) { result = (args) -> new u16Value (     0xffff & (args.get(0).u16Value() <<  args.get(1).u16Value())); }
+    else if (n.equals("u16.infix =="    )) { result = (args) -> new boolValue(              (args.get(0).u16Value() ==  args.get(1).u16Value())); }
+    else if (n.equals("u16.infix !="    )) { result = (args) -> new boolValue(              (args.get(0).u16Value() !=  args.get(1).u16Value())); }
+    else if (n.equals("u16.infix <"     )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u16Value(), args.get(1).u16Value()) <  0); }
+    else if (n.equals("u16.infix >"     )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u16Value(), args.get(1).u16Value()) >  0); }
+    else if (n.equals("u16.infix <="    )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u16Value(), args.get(1).u16Value()) <= 0); }
+    else if (n.equals("u16.infix >="    )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u16Value(), args.get(1).u16Value()) >= 0); }
     else if (n.equals("u32.as_i64"      )) { result = (args) -> new i64Value (Integer.toUnsignedLong(args.get(0).u32Value())); }
-    else if (n.equals("u32.castTo_i32"  )) { result = (args) -> new i32Value (                            args.get(0).u32Value()); }
-    else if (n.equals("u32.prefix -°"   )) { result = (args) -> new u32Value (                       -   args.get(0).u32Value()); }
-    else if (n.equals("u32.infix +°"    )) { result = (args) -> new u32Value (args.get(0).u32Value() +   args.get(1).u32Value()); }
-    else if (n.equals("u32.infix -°"    )) { result = (args) -> new u32Value (args.get(0).u32Value() -   args.get(1).u32Value()); }
-    else if (n.equals("u32.infix *°"    )) { result = (args) -> new u32Value (args.get(0).u32Value() *   args.get(1).u32Value()); }
-    else if (n.equals("u32.div"         )) { result = (args) -> new u32Value (Integer.divideUnsigned(args.get(0).u32Value(), args.get(1).u32Value())); }
+    else if (n.equals("u32.low8bits"    )) { result = (args) -> new u8Value  (       0xff & (                           args.get(0).u32Value())); }
+    else if (n.equals("u32.low16bits"   )) { result = (args) -> new u16Value (     0xffff & (                           args.get(0).u32Value())); }
+    else if (n.equals("u32.castTo_i32"  )) { result = (args) -> new i32Value (              (                           args.get(0).u32Value())); }
+    else if (n.equals("u32.prefix -°"   )) { result = (args) -> new u32Value (              (                       -   args.get(0).u32Value())); }
+    else if (n.equals("u32.infix +°"    )) { result = (args) -> new u32Value (              (args.get(0).u32Value() +   args.get(1).u32Value())); }
+    else if (n.equals("u32.infix -°"    )) { result = (args) -> new u32Value (              (args.get(0).u32Value() -   args.get(1).u32Value())); }
+    else if (n.equals("u32.infix *°"    )) { result = (args) -> new u32Value (              (args.get(0).u32Value() *   args.get(1).u32Value())); }
+    else if (n.equals("u32.div"         )) { result = (args) -> new u32Value (Integer.divideUnsigned   (args.get(0).u32Value(), args.get(1).u32Value())); }
     else if (n.equals("u32.mod"         )) { result = (args) -> new u32Value (Integer.remainderUnsigned(args.get(0).u32Value(), args.get(1).u32Value())); }
-    else if (n.equals("u32.infix &"     )) { result = (args) -> new u32Value (args.get(0).u32Value() &   args.get(1).u32Value()); }
-    else if (n.equals("u32.infix |"     )) { result = (args) -> new u32Value (args.get(0).u32Value() |   args.get(1).u32Value()); }
-    else if (n.equals("u32.infix ^"     )) { result = (args) -> new u32Value (args.get(0).u32Value() ^   args.get(1).u32Value()); }
-    else if (n.equals("u32.infix >>"    )) { result = (args) -> new u32Value (args.get(0).u32Value() >>> args.get(1).u32Value()); }
-    else if (n.equals("u32.infix <<"    )) { result = (args) -> new u32Value (args.get(0).u32Value() <<  args.get(1).u32Value()); }
-    else if (n.equals("u32.infix =="    )) { result = (args) -> new boolValue(args.get(0).u32Value() ==  args.get(1).u32Value()); }
-    else if (n.equals("u32.infix !="    )) { result = (args) -> new boolValue(args.get(0).u32Value() !=  args.get(1).u32Value()); }
+    else if (n.equals("u32.infix &"     )) { result = (args) -> new u32Value (              (args.get(0).u32Value() &   args.get(1).u32Value())); }
+    else if (n.equals("u32.infix |"     )) { result = (args) -> new u32Value (              (args.get(0).u32Value() |   args.get(1).u32Value())); }
+    else if (n.equals("u32.infix ^"     )) { result = (args) -> new u32Value (              (args.get(0).u32Value() ^   args.get(1).u32Value())); }
+    else if (n.equals("u32.infix >>"    )) { result = (args) -> new u32Value (              (args.get(0).u32Value() >>> args.get(1).u32Value())); }
+    else if (n.equals("u32.infix <<"    )) { result = (args) -> new u32Value (              (args.get(0).u32Value() <<  args.get(1).u32Value())); }
+    else if (n.equals("u32.infix =="    )) { result = (args) -> new boolValue(              (args.get(0).u32Value() ==  args.get(1).u32Value())); }
+    else if (n.equals("u32.infix !="    )) { result = (args) -> new boolValue(              (args.get(0).u32Value() !=  args.get(1).u32Value())); }
     else if (n.equals("u32.infix <"     )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) <  0); }
     else if (n.equals("u32.infix >"     )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) >  0); }
     else if (n.equals("u32.infix <="    )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) <= 0); }
     else if (n.equals("u32.infix >="    )) { result = (args) -> new boolValue(Integer.compareUnsigned(args.get(0).u32Value(), args.get(1).u32Value()) >= 0); }
-    else if (n.equals("u64.low32bits"   )) { result = (args) -> new u32Value (                     (int) args.get(0).u64Value()); }
-    else if (n.equals("u64.castTo_i64"  )) { result = (args) -> new i64Value (                           args.get(0).u64Value()); }
-    else if (n.equals("u64.prefix -°"   )) { result = (args) -> new u64Value (                       -   args.get(0).u64Value()); }
-    else if (n.equals("u64.infix +°"    )) { result = (args) -> new u64Value (args.get(0).u64Value() +   args.get(1).u64Value()); }
-    else if (n.equals("u64.infix -°"    )) { result = (args) -> new u64Value (args.get(0).u64Value() -   args.get(1).u64Value()); }
-    else if (n.equals("u64.infix *°"    )) { result = (args) -> new u64Value (args.get(0).u64Value() *   args.get(1).u64Value()); }
-    else if (n.equals("u64.div"         )) { result = (args) -> new u64Value (Long.divideUnsigned(args.get(0).u64Value(), args.get(1).u64Value())); }
+    else if (n.equals("u64.low8bits"    )) { result = (args) -> new u8Value  (       0xff & ((int)                      args.get(0).u64Value())); }
+    else if (n.equals("u64.low16bits"   )) { result = (args) -> new u16Value (     0xffff & ((int)                      args.get(0).u64Value())); }
+    else if (n.equals("u64.low32bits"   )) { result = (args) -> new u32Value ((int)         (                           args.get(0).u64Value())); }
+    else if (n.equals("u64.castTo_i64"  )) { result = (args) -> new i64Value (              (                           args.get(0).u64Value())); }
+    else if (n.equals("u64.prefix -°"   )) { result = (args) -> new u64Value (              (                       -   args.get(0).u64Value())); }
+    else if (n.equals("u64.infix +°"    )) { result = (args) -> new u64Value (              (args.get(0).u64Value() +   args.get(1).u64Value())); }
+    else if (n.equals("u64.infix -°"    )) { result = (args) -> new u64Value (              (args.get(0).u64Value() -   args.get(1).u64Value())); }
+    else if (n.equals("u64.infix *°"    )) { result = (args) -> new u64Value (              (args.get(0).u64Value() *   args.get(1).u64Value())); }
+    else if (n.equals("u64.div"         )) { result = (args) -> new u64Value (Long.divideUnsigned   (args.get(0).u64Value(), args.get(1).u64Value())); }
     else if (n.equals("u64.mod"         )) { result = (args) -> new u64Value (Long.remainderUnsigned(args.get(0).u64Value(), args.get(1).u64Value())); }
-    else if (n.equals("u64.infix &"     )) { result = (args) -> new u64Value (args.get(0).u64Value() &   args.get(1).u64Value()); }
-    else if (n.equals("u64.infix |"     )) { result = (args) -> new u64Value (args.get(0).u64Value() |   args.get(1).u64Value()); }
-    else if (n.equals("u64.infix ^"     )) { result = (args) -> new u64Value (args.get(0).u64Value() ^   args.get(1).u64Value()); }
-    else if (n.equals("u64.infix >>"    )) { result = (args) -> new u64Value (args.get(0).u64Value() >>> args.get(1).u64Value()); }
-    else if (n.equals("u64.infix <<"    )) { result = (args) -> new u64Value (args.get(0).u64Value() <<  args.get(1).u64Value()); }
-    else if (n.equals("u64.infix =="    )) { result = (args) -> new boolValue(args.get(0).u64Value() ==  args.get(1).u64Value()); }
-    else if (n.equals("u64.infix !="    )) { result = (args) -> new boolValue(args.get(0).u64Value() !=  args.get(1).u64Value()); }
+    else if (n.equals("u64.infix &"     )) { result = (args) -> new u64Value (              (args.get(0).u64Value() &   args.get(1).u64Value())); }
+    else if (n.equals("u64.infix |"     )) { result = (args) -> new u64Value (              (args.get(0).u64Value() |   args.get(1).u64Value())); }
+    else if (n.equals("u64.infix ^"     )) { result = (args) -> new u64Value (              (args.get(0).u64Value() ^   args.get(1).u64Value())); }
+    else if (n.equals("u64.infix >>"    )) { result = (args) -> new u64Value (              (args.get(0).u64Value() >>> args.get(1).u64Value())); }
+    else if (n.equals("u64.infix <<"    )) { result = (args) -> new u64Value (              (args.get(0).u64Value() <<  args.get(1).u64Value())); }
+    else if (n.equals("u64.infix =="    )) { result = (args) -> new boolValue(              (args.get(0).u64Value() ==  args.get(1).u64Value())); }
+    else if (n.equals("u64.infix !="    )) { result = (args) -> new boolValue(              (args.get(0).u64Value() !=  args.get(1).u64Value())); }
     else if (n.equals("u64.infix <"     )) { result = (args) -> new boolValue(Long.compareUnsigned(args.get(0).u64Value(), args.get(1).u64Value()) <  0); }
     else if (n.equals("u64.infix >"     )) { result = (args) -> new boolValue(Long.compareUnsigned(args.get(0).u64Value(), args.get(1).u64Value()) >  0); }
     else if (n.equals("u64.infix <="    )) { result = (args) -> new boolValue(Long.compareUnsigned(args.get(0).u64Value(), args.get(1).u64Value()) <= 0); }

@@ -1,0 +1,72 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test basicIntegers
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# test for basic integer operations
+#
+# A simple test for integer operations
+#
+basicIntegers is
+
+  test<T: wrappingInteger<T>> (a, b T) unit is
+    say "{a.name}: $a +° $b = {a +° b}"
+    say "{a.name}: $a -° $b = {a -° b}"
+    say "{a.name}: $a *° $b = {a *° b}"
+    if !b.isZero
+      say "{a.name}: $a / $b = {a / b}"
+      say "{a.name}: $a % $b = {a % b}"
+
+  test_i64 (a, b i64) unit is test<i64> a                      b
+  test_i32 (a, b i64) unit is test<i32> a.low32bits.castTo_i32 b.low32bits.castTo_i32
+  test_i16 (a, b i64) unit is test<i16> a.low16bits.castTo_i16 b.low16bits.castTo_i16
+  test_i8  (a, b i64) unit is test<i8>  a.low8bits.castTo_i8   b.low8bits.castTo_i8
+  test_u64 (a, b i64) unit is test<u64> a.castTo_u64           b.castTo_u64
+  test_u32 (a, b i64) unit is test<u32> a.low32bits            b.low32bits
+  test_u16 (a, b i64) unit is test<u16> a.low16bits            b.low16bits
+  test_u8  (a, b i64) unit is test<u8>  a.low8bits             b.low8bits
+
+  testAll (a, b i64) is
+    test_i64 a b
+    test_i32 a b
+    test_i16 a b
+    test_i8 a b
+    test_u64 a b
+    test_u32 a b
+    test_u16 a b
+    test_u8 a b
+
+  testAll 0 0
+  testAll 1 2
+  testAll -(i64 1) 2
+  testAll -(i64 2) -(i64 3)
+  testAll 100 23
+  testAll -(i64 100) 23
+  testAll 100 -(i64 23)
+  testAll -(i64 100) -(i64 23)
+  testAll 12300 45
+  testAll 1234567000 890
+  testAll 12345670000000 8901234
+  testAll -(i64 12345670000000) 8901234
+  testAll 12345670000000 -(i64 8901234)
+  testAll -(i64 12345670000000) -(i64 8901234)
