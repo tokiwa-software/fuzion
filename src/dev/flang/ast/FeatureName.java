@@ -215,10 +215,14 @@ public class FeatureName extends ANY implements Comparable
     return _argCount;
   }
 
+  public String argCountAndIdString()
+  {
+    return " (" + Errors.argumentsString(_argCount) + (_id > 0 ? "," + _id : "") + ")";
+  }
 
   public String toString()
   {
-    return _baseName + " (" + Errors.argumentsString(_argCount) + (_id > 0 ? "," + _id : "") + ")";
+    return _baseName + argCountAndIdString();
   }
 
   public boolean equals(Object o)

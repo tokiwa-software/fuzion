@@ -65,6 +65,10 @@ public class FeErrors extends ANY
   {
     return sbn(f._featureName.baseName());
   }
+  static String sbn(FeatureName fn) // feature base name plus arg count and id string
+  {
+    return sbn(fn.baseName()) + fn.argCountAndIdString();
+  }
   static String sbn(String s) // feature base name
   {
     return code(s);
@@ -599,7 +603,7 @@ public class FeErrors extends ANY
   {
     error(pos,
           "Repeated inheritance of conflicting features",
-          "Feature " + s(heir) + " inherits feature " + fn + " repeatedly: " +
+          "Feature " + s(heir) + " inherits feature " + sbn(fn) + " repeatedly: " +
           "" + s(f1) + " defined at " + f1.pos.show() + "\n" + "and " +
           "" + s(f2) + " defined at " + f2.pos.show() + "\n" +
           "To solve this, you could add a redefintion of " + sbn(f1) + " to " + s(heir) + ".");
@@ -653,7 +657,7 @@ public class FeErrors extends ANY
                                    List<Feature> targets)
   {
     error(pos,
-          "Ambiguous call targets found for call to " + fn + "",
+          "Ambiguous call targets found for call to " + sbn(fn) + "",
           "Found several possible targets that match this call:\n" +
           featureList(targets));
   }
@@ -682,7 +686,7 @@ public class FeErrors extends ANY
                                                      calledName.argCount());
     error(call.pos,
           "Could not find called feature",
-          "Feature not found: " + calledName + "\n" +
+          "Feature not found: " + sbn(calledName) + "\n" +
           "Target feature: " + s( targetFeature) + "\n" +
           "In call: " + s(call) + "\n" +
           solution);
