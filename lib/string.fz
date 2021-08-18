@@ -431,3 +431,21 @@ string ref : hasHash<string>, ordered<string>, strings is
         # currerntly creates an error (recursive value type), this needs to be fixed (or,
         # at least, understood better).
        }
+
+
+  # remove leading and traling white space from this string
+  #
+  trim string is
+    s0 := utf8
+
+# NYI: This causes fz to crash:
+#   s1 := (s0.dropWhile (fun isAsciiWhiteSpace)).reverse
+#   s2 := (s1.dropWhile (fun isAsciiWhiteSpace)).reverse
+
+    s1 := (s0.dropWhile (fun (c u8) => isAsciiWhiteSpace c)).reverse
+    s2 := (s1.dropWhile (fun (c u8) => isAsciiWhiteSpace c)).reverse
+
+# NYI: This causes fz to crash:
+#   fromBytes s2
+
+    strings.fromBytes s2
