@@ -27,17 +27,17 @@ public fuzion.std.out is
 
   public print(s ref Object) =>
     for c in s.asString.utf8 do
-      write(c)
+      write c
     flush
 
   public println(s ref Object) =>
     for c in s.asString.utf8 do
-      write(c)
+      write c
     println
 
   public println =>
-    write(10)
+    write 10.as_u8
     flush
 
-  public write(b i32) unit is intrinsic
+  public write(b u8) unit is intrinsic
   public flush unit is intrinsic

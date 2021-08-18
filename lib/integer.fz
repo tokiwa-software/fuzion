@@ -132,16 +132,16 @@ integer<T : integer<T>> : numeric<T> is
       debug: 1.as_u32 < base <= 36
   is
     ref : string {
-        redef utf8 ref : List<i32> is
-          redef asStream stream<i32> is
+        redef utf8 ref : List<u8> is
+          redef asStream stream<u8> is
             b := from_u32 base
             if thiz.sign >= 0
-              ref : stream<i32> {
+              ref : stream<u8> {
                   p := thiz.highest b
                   redef hasNext => p.sign > 0
                   redef next =>
-                    d := (thiz / p % b).to_u32.as_i32
-                    r := if (d < 10) strings.zeroChar + d else strings.aChar + d -  10
+                    d := (thiz / p % b).to_u32.as_u8
+                    r := if (d < 10.as_u8) strings.zeroChar + d else strings.aChar + d
                     set p := p / b
                     r
                 }

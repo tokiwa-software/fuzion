@@ -521,7 +521,7 @@ public class Interpreter extends Backend
         Clazz sac = staticClazz.getRuntimeClazz(i._arrayClazzId + 1);
         var sa = new Instance(sac);
         int l = i._elements.size();
-        var arrayData = new Instance(l);
+        var arrayData = Intrinsics.sysArrayAlloc(l, sac);
         setField(Types.resolved.f_sys_array_data  , sac, sa, arrayData);
         setField(Types.resolved.f_sys_array_length, sac, sa, new i32Value(l));
         for (int x = 0; x < l; x++)
@@ -580,11 +580,7 @@ public class Interpreter extends Backend
     Instance sa = new Instance(saCl);
     byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
     setField(Types.resolved.f_sys_array_length, saCl, sa, new i32Value(bytes.length));
-    Instance arrayData = new Instance(bytes.length);
-    for (int i = 0; i<bytes.length; i++)
-      {
-        arrayData.nonrefs[i] = bytes[i];
-      }
+    var arrayData = new ArrayData(bytes);
     setField(Types.resolved.f_sys_array_data, saCl, sa, arrayData);
     setField(Types.resolved.f_array_internalArray, cl, result, sa);
 
@@ -938,6 +934,7 @@ public class Interpreter extends Backend
   {
     return
       v instanceof Instance                                            /* a normal ref type     */ ||
+      v instanceof ArrayData                                           /* sys.array.data        */ ||
       v instanceof LValue                                              /* ref type as LValue    */ ||
       v instanceof ChoiceIdAsRef && thiz.isChoice()                    /* a boxed choice tag    */ ||
       (v instanceof i8Value ||

@@ -359,14 +359,15 @@ public class Intrinsics extends ANY
       {
         result = (args) ->
           {
-            return new Instance(args.get(1).i32Value());
+            return sysArrayAlloc(/* size */ args.get(1).i32Value(),
+                                 /* type */ innerClazz._outer);
           };
       }
     else if (n.equals("sys.array.get"))
       {
         result = (args) ->
           {
-            return sysArrayGet(/* data  */ ((Instance)args.get(1)),
+            return sysArrayGet(/* data  */ ((ArrayData)args.get(1)),
                                /* index */ args.get(2).i32Value(),
                                /* type  */ innerClazz._outer);
           };
@@ -375,7 +376,7 @@ public class Intrinsics extends ANY
       {
         result = (args) ->
           {
-            sysArraySetEl(/* data  */ ((Instance)args.get(1)),
+            sysArraySetEl(/* data  */ ((ArrayData)args.get(1)),
                           /* index */ args.get(2).i32Value(),
                           /* value */ args.get(3),
                           /* type  */ innerClazz._outer);
@@ -584,58 +585,61 @@ public class Intrinsics extends ANY
       }
   }
 
+  static ArrayData sysArrayAlloc(int sz,
+                                Clazz arrayClazz)
+  {
+    // NYI: Properly determine generic argument type of array
+    var elementType = elementType(arrayClazz);
+    if      (elementType == Types.resolved.t_i8  ) { return new ArrayData(new byte   [sz]); }
+    else if (elementType == Types.resolved.t_i16 ) { return new ArrayData(new short  [sz]); }
+    else if (elementType == Types.resolved.t_i32 ) { return new ArrayData(new int    [sz]); }
+    else if (elementType == Types.resolved.t_i64 ) { return new ArrayData(new long   [sz]); }
+    else if (elementType == Types.resolved.t_u8  ) { return new ArrayData(new byte   [sz]); }
+    else if (elementType == Types.resolved.t_u16 ) { return new ArrayData(new char   [sz]); }
+    else if (elementType == Types.resolved.t_u32 ) { return new ArrayData(new int    [sz]); }
+    else if (elementType == Types.resolved.t_u64 ) { return new ArrayData(new long   [sz]); }
+    else if (elementType == Types.resolved.t_bool) { return new ArrayData(new boolean[sz]); }
+    else                                           { return new ArrayData(new Value  [sz]); }
+  }
 
-  static void sysArraySetEl(Instance ai,
+  static void sysArraySetEl(ArrayData ad,
                             int x,
                             Value v,
                             Clazz arrayClazz)
   {
     // NYI: Properly determine generic argument type of array
     var elementType = elementType(arrayClazz);
-    if (x < 0 || x >= ai.refs.length)
-      {
-        Errors.fatal("array index out of bounds: " + x + " not in 0.."+(ai.refs.length-1)+"\n"+Interpreter.callStack());
-      }
-    else
-      {
-        if (elementType == Types.resolved.t_i32)
-          {
-            ai.nonrefs[x] = v.i32Value();
-          }
-        else if (elementType == Types.resolved.t_bool)
-          {
-            ai.nonrefs[x] = v.boolValue() ? 1 : 0;
-          }
-        else
-          {
-            ai.refs[x] = v;
-          }
-      }
+    ad.checkIndex(x);
+    if      (elementType == Types.resolved.t_i8  ) { ((byte   [])ad._array)[x] = (byte   ) v.i8Value();   }
+    else if (elementType == Types.resolved.t_i16 ) { ((short  [])ad._array)[x] = (short  ) v.i16Value();  }
+    else if (elementType == Types.resolved.t_i32 ) { ((int    [])ad._array)[x] =           v.i32Value();  }
+    else if (elementType == Types.resolved.t_i64 ) { ((long   [])ad._array)[x] =           v.i64Value();  }
+    else if (elementType == Types.resolved.t_u8  ) { ((byte   [])ad._array)[x] = (byte   ) v.u8Value();   }
+    else if (elementType == Types.resolved.t_u16 ) { ((char   [])ad._array)[x] = (char   ) v.u16Value();  }
+    else if (elementType == Types.resolved.t_u32 ) { ((int    [])ad._array)[x] =           v.u32Value();  }
+    else if (elementType == Types.resolved.t_u64 ) { ((long   [])ad._array)[x] =           v.u64Value();  }
+    else if (elementType == Types.resolved.t_bool) { ((boolean[])ad._array)[x] =           v.boolValue(); }
+    else                                           { ((Value  [])ad._array)[x] =           v;             }
   }
 
 
-  static Value sysArrayGet(Instance ai,
+  static Value sysArrayGet(ArrayData ad,
                            int x,
                            Clazz arrayClazz)
   {
+    // NYI: Properly determine generic argument type of array
     var elementType = elementType(arrayClazz);
-    if (x < 0 || x >= ai.refs.length)
-      {
-        Errors.fatal("array index out of bounds: " + x + " not in 0.."+(ai.refs.length-1)+"\n"+Interpreter.callStack());
-        return Value.NO_VALUE; // just to keep javac from complaining
-      }
-    else if (elementType == Types.resolved.t_i32)
-      {
-        return new i32Value(ai.nonrefs[x]);
-      }
-    else if (elementType == Types.resolved.t_bool)
-      {
-        return new boolValue(ai.nonrefs[x] != 0);
-      }
-    else
-      {
-        return ai.refs[x];
-      }
+    ad.checkIndex(x);
+    if      (elementType == Types.resolved.t_i8  ) { return new i8Value  (((byte   [])ad._array)[x]       ); }
+    else if (elementType == Types.resolved.t_i16 ) { return new i16Value (((short  [])ad._array)[x]       ); }
+    else if (elementType == Types.resolved.t_i32 ) { return new i32Value (((int    [])ad._array)[x]       ); }
+    else if (elementType == Types.resolved.t_i64 ) { return new i64Value (((long   [])ad._array)[x]       ); }
+    else if (elementType == Types.resolved.t_u8  ) { return new u8Value  (((byte   [])ad._array)[x] & 0xff); }
+    else if (elementType == Types.resolved.t_u16 ) { return new u16Value (((char   [])ad._array)[x]       ); }
+    else if (elementType == Types.resolved.t_u32 ) { return new u32Value (((int    [])ad._array)[x]       ); }
+    else if (elementType == Types.resolved.t_u64 ) { return new u64Value (((long   [])ad._array)[x]       ); }
+    else if (elementType == Types.resolved.t_bool) { return new boolValue(((boolean[])ad._array)[x]       ); }
+    else                                           { return              ((Value   [])ad._array)[x]        ; }
   }
 
 }

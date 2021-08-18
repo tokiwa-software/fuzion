@@ -131,6 +131,7 @@ JAVA_FILES_OPT = \
           $(SRC)/dev/flang/opt/Optimizer.java \
 
 JAVA_FILES_BE_INTERPRETER = \
+          $(SRC)/dev/flang/be/interpreter/ArrayData.java \
           $(SRC)/dev/flang/be/interpreter/Callable.java \
           $(SRC)/dev/flang/be/interpreter/ChoiceIdAsRef.java \
           $(SRC)/dev/flang/be/interpreter/Instance.java \

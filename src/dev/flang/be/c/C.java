@@ -641,17 +641,11 @@ public class C extends ANY
    */
   CStmnt constString(byte[] bytes, CIdent tmp)
   {
-    StringBuilder sb = new StringBuilder();
-    for (var b : bytes)
-      {
-        sb.append((char) (b & 0xFF));
-        sb.append("\0\0\0");
-      }
     var sysArray = tmp.deref().field(_names.FIELDS_IN_REF_CLAZZ).field(new CIdent("fzF_0_internalArray"));
     return CStmnt.seq(CStmnt.decl("fzT__R1conststring *", tmp),
                       tmp.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("fzT__R1conststring")))),
                       tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(_fuir.clazz_conststring())),
-                      sysArray.field(new CIdent("fzF_0_data"  )).assign(CExpr.string(sb.toString()).castTo("void *")),
+                      sysArray.field(new CIdent("fzF_0_data"  )).assign(CExpr.string(bytes).castTo("void *")),
                       sysArray.field(new CIdent("fzF_1_length")).assign(CExpr.int32const(bytes.length)));
   }
 

@@ -29,6 +29,7 @@ package dev.flang.be.c;
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 
+import java.nio.charset.StandardCharsets;
 
 /**
  * CExpr provides infrastructure to generate C code expressions
@@ -185,22 +186,35 @@ abstract class CExpr extends CStmnt
    */
   static CExpr string(String s)
   {
+    return string(s.getBytes(StandardCharsets.UTF_8));
+  }
+
+
+  /**
+   * Create a C expression for a C string
+   *
+   * @param bytes the UTF8-encoded byts of the string
+   *
+   * @return the resulting expression
+   */
+  static CExpr string(byte[] bytes)
+  {
     return new CExpr()
       {
         void code(CString sb)
         {
           sb.append("\"");
-          for (int i = 0; i < s.length(); i++)
+          for (var b : bytes)
             {
-              var c = s.charAt(i);
+              var c = (char) (b & 0xff);
               if (c <  ' '  ||
                   c == '"'  ||
                   c == '\'' ||
                   c == '\\' ||
                   c >  '~'     )
                 {
-                  var b = (int) c;
-                  sb.append("\\"+((b >> 6) & 7)+((b >> 3) & 7)+(b & 7));
+                  var i = (int) c;
+                  sb.append("\\"+((i >> 6) & 7)+((i >> 3) & 7)+(i & 7));
                 }
               else
                 {

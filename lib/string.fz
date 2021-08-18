@@ -33,7 +33,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   redef asString => string.this
 
   # any concrete string must implement utf8
-  utf8 List<i32> is abstract
+  utf8 List<u8> is abstract
 
   # is this string empty?
   isEmpty => !utf8.asStream.hasNext
@@ -55,13 +55,13 @@ string ref : hasHash<string>, ordered<string>, strings is
   pre
     n >= 0
   is
-    redef utf8 ref : List<i32> is
-      redef asStream ref : stream<i32> is
+    redef utf8 ref : List<u8> is
+      redef asStream ref : stream<u8> is
         i := 0
         bytes := string.this.utf8.asStream
 
         redef hasNext => i < n && bytes.hasNext
-        redef next i32 is
+        redef next u8 is
           res := bytes.next
           if !bytes.hasNext
             set i := i + 1
@@ -99,8 +99,8 @@ string ref : hasHash<string>, ordered<string>, strings is
     s1 :=       utf8.asStream     # NYI: can this be made more beautiful using lists?
     s2 := other.utf8.asStream
     for
-      b1 := if (s1.hasNext) s1.next else -1
-      b2 := if (s2.hasNext) s2.next else -1
+      b1 := if (s1.hasNext) s1.next.as_i32 else -1
+      b2 := if (s2.hasNext) s2.next.as_i32 else -1
     until b1 != b2 || b1 < 0
       b1 <= b2
 
@@ -195,10 +195,13 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   is
     s := utf8.asStream
-    c := if (s.hasNext) s.next else -1
-    negate := c = minusChar
-    d := if (negate || c = plusChar) zeroChar else c
-    parseInteger<T> base, negate, base.zero, d, s
+    if s.hasNext
+      c := s.next
+      negate := c = minusChar
+      d := if (negate || c = plusChar) zeroChar else c
+      parseInteger<T> base, negate, base.zero, d, s
+    else
+      parseError "empty string"
 
 
   # recursive helper for parseInteger<T>(T)
@@ -215,19 +218,19 @@ string ref : hasHash<string>, ordered<string>, strings is
     hi numOption<T>,
 
     # the current character to be parsed
-    c i32,
+    c u8,
 
     # the remaining characters to be parsed
-    s stream<i32>
+    s stream<u8>
 
     ) outcome<T>
 
   is
 
-    d i32 | error := if      (zeroChar <= c <= nineChar) c - zeroChar
-                     else if (aChar    <= c <= zChar   ) c - aChar    + 10
-                     else if (capAChar <= c <= capZChar) c - capAChar + 10
-                     else parseError "non-digit found"
+    d u8 | error := if      (zeroChar <= c <= nineChar) c - zeroChar
+                    else if (aChar    <= c <= zChar   ) c - aChar    + 10.as_u8
+                    else if (capAChar <= c <= capZChar) c - capAChar + 10.as_u8
+                    else parseError "non-digit found"
 
     # NYI: with more syntactic sugar, the following 3 lines could become
     #
@@ -235,8 +238,8 @@ string ref : hasHash<string>, ordered<string>, strings is
 
     match d
       e error => e
-      i i32 =>
-        t := base.from_u32 i.as_u32  # i converted to T
+      b u8 =>
+        t := base.from_u32 b.as_u32  # i converted to T
         if t >= base
           parseError "invalid integer digit for base $base"
         else
@@ -280,28 +283,28 @@ string ref : hasHash<string>, ordered<string>, strings is
     s := utf8.asStream
     hasNext => s.hasNext
     next outcome<codepoint> is
-      b1 := (s.next & 0xFF).as_u32
+      b1 := s.next.as_u32
       # UTF-8 definition taken from https://en.wikipedia.org/wiki/UTF-8
       if b1 ∈ codepoints.utf8EncodedInOneByte           # ASCII
         codepoint b1
-      else if 0xc0.as_u32 <= b1 <= 0xf4
+      else if (u32 0xc0) <= b1 <= 0xf4
         if !s.hasNext
           error "Bad UTF8 encoding found: cannot decode: $b1 at end of string: expected continuation byte"
         else
-          b2 := (s.next & 0xFF).as_u32
+          b2 := s.next.as_u32
           if (b2 & 0xc0) != 0x80
             error "Bad UTF8 encoding found: cannot decode $b1, $b2, expected continuation byte in the range 0x80..0xbf."
-          else if 0xc0.as_u32 <= b1 <= 0xdf   # 0x0080..0x7ff encoded in 2 bytes
+          else if (u32 0xc0) <= b1 <= 0xdf   # 0x0080..0x7ff encoded in 2 bytes
             res := (b1 & 0x1f) << 6 | (b2 & 0x3f)
             if res ∉ codepoints.utf8EncodedInTwoBytes
               error "Bad UTF8 encoding found: $b1, $b2: codepoint $res uses overlong 2-byte encoding, allowed for range {codepoints.utf8EncodedInTwoBytes}."
             else
               codepoint res
-          else if 0xe0.as_u32 <= b1
+          else if (u32 0xe0) <= b1
             if !s.hasNext
               error "Bad UTF8 encoding found: cannot decode: $b1, $b2 at end of string, expected continuation byte"
             else
-              b3 := (s.next & 0xFF).as_u32
+              b3 := s.next.as_u32
               if (b3 & 0xc0) != 0x80
                 error "Bad UTF8 encoding found: cannot decode $b1, $b2, $b3, expected two continuation bytes in the range 0x80..0xbf."
               else if b1 <= 0xef       # 0x0800..0xffff encoded in 3 bytes
@@ -320,7 +323,7 @@ string ref : hasHash<string>, ordered<string>, strings is
                 if !s.hasNext
                   error "Bad UTF8 encoding found: cannot decode: $b1, $b2,$b2 at end of string, expected continuation byte"
                 else
-                  b4 := (s.next & 0xFF).as_u32
+                  b4 := s.next.as_u32
                   if (b4 & 0xc0) != 0x80
                     error "Bad UTF8 encoding found: cannot decode $b1, $b2, $b3, $b4, expected three continuation bytes in the range 0x80..0xbf."
                   else
@@ -334,11 +337,11 @@ string ref : hasHash<string>, ordered<string>, strings is
                       error "Bad UTF8 encoding found: $b1, $b2, $b2, $b4: codepoint $res is outside of the allowed range for codepoints 0x000000..0x10ffff."
                     else
                       codepoint res
-      else if 0x80.as_u32 <= b1 <= 0xbf
+      else if (u32 0x80) <= b1 <= 0xbf
         error "Bad UTF8 encoding found: $b1: stray continuation byte without preceding leading byte."
-      else if 0xf5.as_u32 <= b1 <= 0xfd
+      else if (u32 0xf5) <= b1 <= 0xfd
         error "Bad UTF8 encoding found: $b1: codes 0xf8..0xff are undefined."
-      else if 0xfe.as_u32 <= b1 <= 0xff
+      else if (u32 0xfe) <= b1 <= 0xff
         error "Bad UTF8 encoding found: $b1: codes 0xfe and 0xff are undefined, used for endianess checking."
       else
         fuzion.std.panic "string.codepointStream: missing case for $b1"
@@ -360,7 +363,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   # check if this string starts with given prefix
   #
   startsWith(prefx string) =>
-    searchableList<i32>.startsWith utf8.asList, prefx.utf8.asList
+    searchableList<u8>.startsWith utf8.asList, prefx.utf8.asList
 
 
   # check if this string ends with given suffix
@@ -369,18 +372,18 @@ string ref : hasHash<string>, ordered<string>, strings is
     l  := byteLength
     sl := suffix.byteLength
     end := utf8.drop l-sl
-    searchableList<i32>.startsWith end, suffix.utf8.asList
+    searchableList<u8>.startsWith end, suffix.utf8.asList
 
 
   # find (utf8-byte-) index of 'substring' witin this string.
   #
   find(substring string) =>
-    searchableList<i32>.find utf8.asList, substring.utf8.asList
+    searchableList<u8>.find utf8.asList, substring.utf8.asList
 
 
   # replace all occurances of f within l by r
   #
-  replace (f, r string) => strings.fromBytes (searchableList<i32>.replace utf8.asList f.utf8.asList r.utf8.asList)
+  replace (f, r string) => strings.fromBytes (searchableList<u8>.replace utf8.asList f.utf8.asList r.utf8.asList)
 
 
   # does this string contain the given 'substring'
@@ -391,18 +394,18 @@ string ref : hasHash<string>, ordered<string>, strings is
   # count number of occurances of given 'substring' in this string
   #
   count (substring string) =>
-    searchableList<i32>.countMatches utf8.asList, substring.utf8.asList
+    searchableList<u8>.countMatches utf8.asList, substring.utf8.asList
 
 
   # is c an ASCII white-space character?  Used by split.
   #
-  private isAsciiWhiteSpace(c i32) =>
-    (c =  9 ||  // HT
-     c = 10 ||  // LF
-     c = 11 ||  // VT
-     c = 12 ||  // FF
-     c = 13 ||  // CR
-     c = 32     // SPACE
+  private isAsciiWhiteSpace(c u8) =>
+    (c =  9.as_u8 ||  // HT
+     c = 10.as_u8 ||  // LF
+     c = 11.as_u8 ||  // VT
+     c = 12.as_u8 ||  // FF
+     c = 13.as_u8 ||  // CR
+     c = 32.as_u8     // SPACE
      )
 
 
@@ -414,13 +417,13 @@ string ref : hasHash<string>, ordered<string>, strings is
   # The result is a, possibly empty, list of separate non-empty strings.
   #
   split list<string> is
-    l := utf8.asList.dropWhile (fun (c i32) => isAsciiWhiteSpace c)
+    l := utf8.asList.dropWhile (fun (c u8) => isAsciiWhiteSpace c)
     if l.isEmpty
       nil
     else
       ref : Cons<string, list<string>> {
-        head =>  strings.fromBytes (l.takeWhile (fun (c i32) => !isAsciiWhiteSpace c))
-        tail => (strings.fromBytes (l.dropWhile (fun (c i32) => !isAsciiWhiteSpace c))).split
+        head =>  strings.fromBytes (l.takeWhile (fun (c u8) => !isAsciiWhiteSpace c))
+        tail => (strings.fromBytes (l.dropWhile (fun (c u8) => !isAsciiWhiteSpace c))).split
         # NYI using the inherited 'fromBytes' as in
         #
         #   head =>  fromBytes l.takeWhile fun (c i32) => !isAsciiWhiteSpace c

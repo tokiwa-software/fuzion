@@ -105,7 +105,7 @@ public fuzion.java is
 
   # intrinsic to convert a string to a Java String object
   #
-  private stringToJavaObject0(s sys.array<i32>) JavaObject is intrinsic
+  private stringToJavaObject0(s sys.array<u8>) JavaObject is intrinsic
 
 
   # intrinsic to convert an i8 to a Java Byte object

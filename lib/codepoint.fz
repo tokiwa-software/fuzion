@@ -34,17 +34,16 @@ is
   # the utf8 encoded bytes for the string representation
   # of this codepoint
   #
-  redef utf8 List<i32> is
-    v := val.as_i32
-    if      utf8EncodedInOneByte   .contains val then [ val.as_i32 ]
-    else if utf8EncodedInTwoBytes  .contains val then [ 0xc0 | (v >>  6) & 0x1f,
-                                                        0x80 |  v        & 0x3f ]
-    else if utf8EncodedInThreeBytes.contains val then [ 0xe0 | (v >> 12) & 0x1f,
-                                                        0x80 | (v >>  6) & 0x3f,
-                                                        0x80 |  v        & 0x3f ]
-    else if utf8EncodedInFourBytes .contains val then [ 0xf0 | (v >> 18) & 0x07,
-                                                        0x80 | (v >> 12) & 0x3f,
-                                                        0x80 | (v >>  6) & 0x3f,
-                                                        0x80 |  v        & 0x3f ]
+  redef utf8 List<u8> is
+    if      utf8EncodedInOneByte   .contains val then [ val.low8bits ]
+    else if utf8EncodedInTwoBytes  .contains val then [ (0xc0.as_u32 | (val >>  6) & 0x1f).low8bits,
+                                                        (0x80.as_u32 |  val        & 0x3f).low8bits ]
+    else if utf8EncodedInThreeBytes.contains val then [ (0xe0.as_u32 | (val >> 12) & 0x1f).low8bits,
+                                                        (0x80.as_u32 | (val >>  6) & 0x3f).low8bits,
+                                                        (0x80.as_u32 |  val        & 0x3f).low8bits ]
+    else if utf8EncodedInFourBytes .contains val then [ (0xf0.as_u32 | (val >> 18) & 0x07).low8bits,
+                                                        (0x80.as_u32 | (val >> 12) & 0x3f).low8bits,
+                                                        (0x80.as_u32 | (val >>  6) & 0x3f).low8bits,
+                                                        (0x80.as_u32 |  val        & 0x3f).low8bits ]
     else
       fuzion.std.panic "failed to encode code point {codepoint.this}"
