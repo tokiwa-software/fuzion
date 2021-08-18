@@ -141,7 +141,7 @@ integer<T : integer<T>> : numeric<T> is
                   redef hasNext => p.sign > 0
                   redef next =>
                     d := (thiz / p % b).to_u32.as_u8
-                    r := if (d < 10.as_u8) strings.zeroChar + d else strings.aChar + d
+                    r := if (d < 10.as_u8) strings.zeroChar + d else strings.aChar + (d - 10.as_u8)
                     set p := p / b
                     r
                 }
