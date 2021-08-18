@@ -157,11 +157,14 @@ public class CTypes extends ANY
    */
   String scalar(int cl)
   {
-    return
-      _fuir.clazzIsI32(cl) ? "int32_t" :
-      _fuir.clazzIsI64(cl) ? "int64_t" :
-      _fuir.clazzIsU32(cl) ? "uint32_t" :
-      _fuir.clazzIsU64(cl) ? "uint64_t" : null;
+    return switch (_fuir.getSpecialId(cl))
+      {
+      case c_i32 -> "int32_t";
+      case c_i64 -> "int64_t";
+      case c_u32 -> "uint32_t";
+      case c_u64 -> "uint64_t";
+      default    -> null;
+      };
   }
 
 

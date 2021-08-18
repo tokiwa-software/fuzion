@@ -30,6 +30,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.ast.Assign; // NYI: remove dependency
@@ -120,6 +121,47 @@ public class FUIR extends ANY
         case Pre : return "pre-condition";
         case Post: return "post-condition";
         default: throw new Error("unhandled switch case");
+        }
+    }
+  }
+
+
+  /**
+   * Map used by getSpecialId() to quickly find the SpecialClazz corresponding
+   * to a Clazz.
+   */
+  private static TreeMap<Clazz, SpecialClazzes> SPECIAL_ID = new TreeMap<>();
+
+
+  /**
+   * Enum of clazzes that require special handling in the backend
+   */
+  public enum SpecialClazzes
+  {
+    c_i8          { Clazz getIfCreated() { return Clazzes.i8         .getIfCreated(); } },
+    c_i16         { Clazz getIfCreated() { return Clazzes.i16        .getIfCreated(); } },
+    c_i32         { Clazz getIfCreated() { return Clazzes.i32        .getIfCreated(); } },
+    c_i64         { Clazz getIfCreated() { return Clazzes.i64        .getIfCreated(); } },
+    c_u8          { Clazz getIfCreated() { return Clazzes.u8         .getIfCreated(); } },
+    c_u16         { Clazz getIfCreated() { return Clazzes.u16        .getIfCreated(); } },
+    c_u32         { Clazz getIfCreated() { return Clazzes.u32        .getIfCreated(); } },
+    c_u64         { Clazz getIfCreated() { return Clazzes.u64        .getIfCreated(); } },
+    c_bool        { Clazz getIfCreated() { return Clazzes.bool       .getIfCreated(); } },
+    c_TRUE        { Clazz getIfCreated() { return Clazzes.c_TRUE     .getIfCreated(); } },
+    c_FALSE       { Clazz getIfCreated() { return Clazzes.c_FALSE    .getIfCreated(); } },
+    c_conststring { Clazz getIfCreated() { return Clazzes.conststring.getIfCreated(); } },
+
+    // dummy entry to report failure of getSpecialId()
+    c_NOT_FOUND   { Clazz getIfCreated() { return null;                               } };
+
+    abstract Clazz getIfCreated();
+
+    SpecialClazzes()
+    {
+      var c = getIfCreated();
+      if (c != null)
+        {
+          SPECIAL_ID.put(c, this);
         }
     }
   }
@@ -612,101 +654,36 @@ public class FUIR extends ANY
   }
 
 
+
   /**
-   * Check if a clazz is the standard lib i32.fz.
+   * Obtain SpecialClazzes id from a given clazz.
    *
    * @param cl a clazz id
    *
-   * @return true iff cl is i32.fz.
+   * @return the corresponding SpecialClazzes id or c_NOT_FOUND if cl is not a
+   * special clazz.
    */
-  public boolean clazzIsI32(int cl)
+  public SpecialClazzes getSpecialId(int cl)
   {
     var cc = _clazzIds.get(cl);
-    return cc == Clazzes.i32.getIfCreated();
+    var result = SPECIAL_ID.get(cc);
+    return result == null ? SpecialClazzes.c_NOT_FOUND : result;
   }
 
 
   /**
-   * Check if a clazz is the standard lib i64.fz.
+   * Check if a clazz is the special clazz c.
    *
    * @param cl a clazz id
    *
-   * @return true iff cl is i64.fz.
+   * @param One of the constants SpecialClazzes.c_i8,...
+   *
+   * @return true iff cl is the specified special clazz c
    */
-  public boolean clazzIsI64(int cl)
+  public boolean clazzIs(int cl, SpecialClazzes c)
   {
     var cc = _clazzIds.get(cl);
-    return cc == Clazzes.i64.getIfCreated();
-  }
-
-
-  /**
-   * Check if a clazz is the standard lib u32.fz.
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is u32.fz.
-   */
-  public boolean clazzIsU32(int cl)
-  {
-    var cc = _clazzIds.get(cl);
-    return cc == Clazzes.u32.getIfCreated();
-  }
-
-
-  /**
-   * Check if a clazz is the standard lib u64.fz.
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is u64.fz.
-   */
-  public boolean clazzIsU64(int cl)
-  {
-    var cc = _clazzIds.get(cl);
-    return cc == Clazzes.u64.getIfCreated();
-  }
-
-
-  /**
-   * Check if a clazz is the standard lib bool.fz.
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is bool.fz.
-   */
-  public boolean clazzIsBool(int cl)
-  {
-    var cc = _clazzIds.get(cl);
-    return cc == Clazzes.bool.getIfCreated();
-  }
-
-
-  /**
-   * Check if a clazz is the standard lib TRUE.fz.
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is TRUE.fz.
-   */
-  public boolean clazzIsTRUE(int cl)
-  {
-    var cc = _clazzIds.get(cl);
-    return cc == Clazzes.c_TRUE.getIfCreated();
-  }
-
-
-  /**
-   * Check if a clazz is the standard lib FALSE.fz.
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is FALSE.fz.
-   */
-  public boolean clazzIsFALSE(int cl)
-  {
-    var cc = _clazzIds.get(cl);
-    return cc == Clazzes.c_FALSE.getIfCreated();
+    return cc == c.getIfCreated();
   }
 
 

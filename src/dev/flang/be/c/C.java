@@ -488,23 +488,26 @@ public class C extends ANY
         {
           var constCl = _fuir.constClazz(c, i);
           var d = _fuir.constData(c, i);
-          CExpr r = null;
-          if      (_fuir.clazzIsBool(constCl)) { r = d[0] == 1 ? _names.FZ_TRUE : _names.FZ_FALSE; }
-          else if (_fuir.clazzIsI32 (constCl)) { r = CExpr. int32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt ()); }
-          else if (_fuir.clazzIsU32 (constCl)) { r = CExpr.uint32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt ()); }
-          else if (_fuir.clazzIsI64 (constCl)) { r = CExpr. int64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong()); }
-          else if (_fuir.clazzIsU64 (constCl)) { r = CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong()); }
-          else if (constCl == _fuir.clazz_conststring())
+          var r = switch (_fuir.getSpecialId(constCl))
+            {
+            case c_bool -> d[0] == 1 ? _names.FZ_TRUE : _names.FZ_FALSE;
+            case c_i32  -> CExpr. int32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt ());
+            case c_u32  -> CExpr.uint32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt ());
+            case c_i64  -> CExpr. int64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong());
+            case c_u64  -> CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong());
+            case c_conststring ->
             {
               var tmp = _names.newTemp();
               o = constString(d, tmp);
-              r = tmp;
+              yield tmp;
             }
-          else
+            default ->
             {
               Errors.error("Unsupported constant in C backend.",
                            "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+              yield null;
             }
+            };
           push(stack, constCl, r);
           break;
         }
