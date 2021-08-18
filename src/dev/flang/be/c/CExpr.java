@@ -86,6 +86,21 @@ abstract class CExpr extends CStmnt
 
 
   /**
+   * Create a C expression from a uint16_t constant
+   *
+   * @return the resulting expression
+   */
+  static CExpr uint16const(int value)
+  {
+    return new CExpr()
+      {
+        void code(CString sb) { sb.append("((uint16_t)").append(value & 0xffff).append('U').append(")"); }
+        int precedence() { return 0; }
+      };
+  }
+
+
+  /**
    * Create a C expression from a int32_t constant
    *
    * @return the resulting expression

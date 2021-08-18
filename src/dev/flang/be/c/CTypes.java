@@ -159,8 +159,12 @@ public class CTypes extends ANY
   {
     return switch (_fuir.getSpecialId(cl))
       {
+      case c_i8  -> "int8_t";
+      case c_i16 -> "int16_t";
       case c_i32 -> "int32_t";
       case c_i64 -> "int64_t";
+      case c_u8  -> "uint8_t";
+      case c_u16 -> "uint16_t";
       case c_u32 -> "uint32_t";
       case c_u64 -> "uint64_t";
       default    -> null;
