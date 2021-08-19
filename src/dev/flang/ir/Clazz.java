@@ -1418,11 +1418,9 @@ public class Clazz extends ANY implements Comparable
    */
   public boolean isCalled()
   {
-    if (PRECONDITIONS) require
-      (_argumentFields != null);
-
     return (isCalled_ && isOuterInstantiated() || _isCalledDirectly) && feature().impl.kind_ != Impl.Kind.Abstract &&
-      !isAbsurd()
+      (_argumentFields == null || /* this may happen when creating deterḿining isUnitType() on cyclic value type, will cause an error during layout() */
+       !isAbsurd())
       || toString().equals("array<i32>.internalArray") // NYI: Hack workaround for conststring
       ;
   }
