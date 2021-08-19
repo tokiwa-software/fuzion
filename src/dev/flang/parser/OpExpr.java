@@ -359,15 +359,16 @@ public class OpExpr extends ANY
   /**
    *
    */
-  public final Precedence[] precedences = { new Precedence(15,        "@"  ),
-                                            new Precedence(14,        "^"  ),
-                                            new Precedence(13, 5, 13, "!"  ),
-                                            new Precedence(12,        "~"  ),
+  public final Precedence[] precedences = { new Precedence(16,        "@"  ),
+                                            new Precedence(15,        "^"  ),
+                                            new Precedence(14, 5, 14, "!"  ),
+                                            new Precedence(13,        "~"  ),
+                                            new Precedence(12,        "⁄"  ),
                                             new Precedence(11,        "*/%⊛⊗⊘⦸⊝⊚⊙⦾⦿⦸⨸⨁⨂⨷"),
                                             new Precedence(10,        "+-⊕⊖" ),
                                             new Precedence( 9,        "."  ),
                                             new Precedence( 8,        "#"  ),
-                                            new Precedence(13, 7, 13, "$"  ),
+                                            new Precedence(14, 7, 14, "$"  ),
                                             new Precedence( 6,        ""   ),
                                             new Precedence( 5,        "<>=⧁⧀⊜⩹⩺⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪴⪵⪶⪷⪸⪹⪺⪻⪼⫷⫸⫹⫺"),
                                             new Precedence( 4,        "&"  ),
