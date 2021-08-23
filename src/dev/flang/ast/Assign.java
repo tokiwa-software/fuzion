@@ -243,15 +243,15 @@ public class Assign extends ANY implements Stmnt
    *
    * @param outer the root feature that contains this statement.
    *
-   * @param decompose if this is called for an assignment that is created to
-   * replace a Decompose, this refers to the Decompose statement.
+   * @param destructure if this is called for an assignment that is created to
+   * replace a Destructure, this refers to the Destructure statement.
    */
-  void resolveTypes(Resolution res, Feature outer, Decompose decompose)
+  void resolveTypes(Resolution res, Feature outer, Destructure destructure)
   {
     Feature f = assignedField;
     if (f == null)
       {
-        var fo = outer.findDeclaredInheritedOrOuterFeatures(name, null, decompose == null ? this : null, decompose);
+        var fo = outer.findDeclaredInheritedOrOuterFeatures(name, null, destructure == null ? this : null, destructure);
         check
           (Errors.count() > 0 || fo == null || fo.features.size() == 1);
         f = (fo == null || fo.features.size() == 0) ? null : fo.features.values().iterator().next();

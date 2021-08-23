@@ -81,17 +81,17 @@ tupletest is
   one7            := tuple<i32>(42); p "one7 is {one7.values.0}" // one-tuple inferring type and explicit type
   one8            := tuple<i32>(42); p "one8 is {one8.values.0}" // one-tuple inferring type and inferring generic
 # one9            :=           (42); p "one9 is {one9.values.0}" // one-tuple inferring type and tuple syntax sugar
-  (one10)         := tuple<i32>(42); p "one10 is $one10" // one-tuple using decompose and explicit type
-  (one11)         := tuple<i32>(42); p "one11 is $one11" // one-tuple using decompose and inferring generic
-  (one12)         :=           (42); p "one12 is $one12" // special case: Decompose i32, which works!
-# (one12b)        :=          (nil); p "one12 is $one12" // one-tuple using decompose and tuple syntax sugar
-  (one13 i32)     := tuple<i32>(42); p "one13 is $one13" // one-tuple using decompose and explicit type
-  (one14 i32)     := tuple<i32>(42); p "one14 is $one14" // one-tuple using decompose and inferring generic
-# (one15 i32)     :=           (42); p "one15 is $one15" // one-tuple using decompose and tuple syntax sugar
+  (one10)         := tuple<i32>(42); p "one10 is $one10" // one-tuple using destructure and explicit type
+  (one11)         := tuple<i32>(42); p "one11 is $one11" // one-tuple using destructure and inferring generic
+  (one12)         :=           (42); p "one12 is $one12" // special case: Destructure i32, which works!
+# (one12b)        :=          (nil); p "one12 is $one12" // one-tuple using destructure and tuple syntax sugar
+  (one13 i32)     := tuple<i32>(42); p "one13 is $one13" // one-tuple using destructure and explicit type
+  (one14 i32)     := tuple<i32>(42); p "one14 is $one14" // one-tuple using destructure and inferring generic
+# (one15 i32)     :=           (42); p "one15 is $one15" // one-tuple using destructure and tuple syntax sugar
   one16, one17, one18 i32 := ?
-  set (one16)     := tuple<i32>(42); p "one16 is $one16" // one-tuple using decompose and explicit type
-  set (one17)     := tuple<i32>(42); p "one17 is $one17" // one-tuple using decompose and inferring generic
-# set (one18)     :=           (42); p "one18 is $one18" // one-tuple using decompose and tuple syntax sugar
+  set (one16)     := tuple<i32>(42); p "one16 is $one16" // one-tuple using destructure and explicit type
+  set (one17)     := tuple<i32>(42); p "one17 is $one17" // one-tuple using destructure and inferring generic
+# set (one18)     :=           (42); p "one18 is $one18" // one-tuple using destructure and tuple syntax sugar
   chck one1.values.0=42 "one1"
   chck one2.values.0=42 "one2"
   chck one7.values.0=42 "one7"
@@ -112,16 +112,16 @@ tupletest is
   two7                 := tuple<i32,i32> 4 2 ; p "two7 is {two7.values.0}, {two7.values.1}" // one-tuple inferring type and explicit type
   two8                 := tuple<i32,i32> 4 2 ; p "two8 is {two8.values.0}, {two8.values.1}" // one-tuple inferring type and inferring generic
   two9                 :=               (4,2); p "two9 is {two9.values.0}, {two9.values.1}" // one-tuple inferring type and tuple syntax sugar
-  (two10a, two10b)     := tuple<i32,i32> 4 2 ; p "two10 is $two10a, $two10b" // two-tuple using decompose and explicit types
-  (two11a, two11b)     := tuple          4 2 ; p "two11 is $two11a, $two11b" // two-tuple using decompose and inferring generic
-  (two12a, two12b)     :=               (4,2); p "two12 is $two12a, $two12b" // two-tuple using decompore and tuple syntax sugar
-  (two13a, two13b i32) := tuple<i32,i32> 4 2 ; p "two13 is $two13a, $two13b" // two-tuple using decompose and explicit types
-  (two14a, two14b i32) := tuple          4 2 ; p "two14 is $two14a, $two14b" // two-tuple using decompose and inferring generic
-  (two15a, two15b i32) :=               (4,2); p "two15 is $two15a, $two15b" // two-tuple using decompore and tuple syntax sugar
+  (two10a, two10b)     := tuple<i32,i32> 4 2 ; p "two10 is $two10a, $two10b" // two-tuple using destructure and explicit types
+  (two11a, two11b)     := tuple          4 2 ; p "two11 is $two11a, $two11b" // two-tuple using destructure and inferring generic
+  (two12a, two12b)     :=               (4,2); p "two12 is $two12a, $two12b" // two-tuple using destructure and tuple syntax sugar
+  (two13a, two13b i32) := tuple<i32,i32> 4 2 ; p "two13 is $two13a, $two13b" // two-tuple using destructure and explicit types
+  (two14a, two14b i32) := tuple          4 2 ; p "two14 is $two14a, $two14b" // two-tuple using destructure and inferring generic
+  (two15a, two15b i32) :=               (4,2); p "two15 is $two15a, $two15b" // two-tuple using destructure and tuple syntax sugar
   two16a, two16b, two17a, two17b, two18a, two18b i32 := ?
-  set (two16a, two16b) := tuple<i32,i32> 4 2 ; p "two16 is $two16a, $two16b" // two-tuple using decompose and explicit types
-  set (two17a, two17b) := tuple          4 2 ; p "two17 is $two17a, $two17b" // two-tuple using decompose and inferring generic
-  set (two18a, two18b) :=               (4,2); p "two18 is $two18a, $two18b" // two-tuple using decompore and tuple syntax sugar
+  set (two16a, two16b) := tuple<i32,i32> 4 2 ; p "two16 is $two16a, $two16b" // two-tuple using destructure and explicit types
+  set (two17a, two17b) := tuple          4 2 ; p "two17 is $two17a, $two17b" // two-tuple using destructure and inferring generic
+  set (two18a, two18b) :=               (4,2); p "two18 is $two18a, $two18b" // two-tuple using destructure and tuple syntax sugar
   chck (two1.values.0=4 && two1.values.1=2) "two1"
   chck (two2.values.0=4 && two2.values.1=2) "two2"
   chck (two3.values.0=4 && two3.values.1=2) "two3"
@@ -177,8 +177,8 @@ tupletest is
   chck t10b1=3 "t10b1"
   chck !t10b2  "t10b2"
 
-# (t10b1, t10b2, t10b2) = t10   // should cause error: too many decomposition variables
-# (t10b1) = t10                 // should cause error: too few decomposition variables
+# (t10b1, t10b2, t10b2) = t10   // should cause error: too many destructuring variables
+# (t10b1) = t10                 // should cause error: too few destructuring variables
 
   (t10c1 i32, t10c2 bool) := t10
   p "tuple t10c1/2 is {t10c1}, {t10c2}"
@@ -197,17 +197,17 @@ tupletest is
   chck t12a1=4   "first must be 4"
   chck t12a2=16  "second must be 16"
   chck t12a3=64  "third must be 64"
-# (t12a1,t12a1,t12a1) = t11 4 // 18. should flag an error, repeated elements in decomposition
+# (t12a1,t12a1,t12a1) = t11 4 // 18. should flag an error, repeated elements in destructuring
 
-# (t12b1,t12b1,t12b3 i32) = t11 4 // 19. should flag an error, repeated elements in decomposition
-# (t12c1,t12c2,t12c2 i32) = t11 4 // 20. should flag an error, repeated elements in decomposition
+# (t12b1,t12b1,t12b3 i32) = t11 4 // 19. should flag an error, repeated elements in destructuring
+# (t12c1,t12c2,t12c2 i32) = t11 4 // 20. should flag an error, repeated elements in destructuring
   (t12d1,t12d2,t12d3 i32) := t11 6
   chck t12d1=6   "first must be 6"
   chck t12d2=36  "second must be 36"
   chck t12d3=216 "third must be 216"
 
-# (t12e1,t12e2,t12e1) := t11 7 // 21. should flag an error, repeated elements in decomposition
-# (t12f1,t12f1,t12f3) := t11 7 // 22. should flag an error, repeated elements in decomposition
+# (t12e1,t12e2,t12e1) := t11 7 // 21. should flag an error, repeated elements in destructuring
+# (t12f1,t12f1,t12f3) := t11 7 // 22. should flag an error, repeated elements in destructuring
   (t12g1,t12g2,t12g3) := t11 7
   chck t12g1=7   "first must be 7"
   chck t12g2=49  "second must be 49"

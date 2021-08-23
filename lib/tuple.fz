@@ -44,12 +44,12 @@
 # The actual generic types are inferred from the static types of the values
 # 'a', 'b', 'c', ... the tuple is created from.
 #
-# Similarly, syntactic sugar for the decomposition of tuples can be used
+# Similarly, syntactic sugar for the destructuring of tuples can be used
 # to access the values as in
 #
 #   (a, b, c, ...) := t
 #
-# In decompositions, we can denote values we are not interested in using
+# In destructurings, we can denote values we are not interested in using
 # '_' as in
 #
 #  (_, b) := ("first", "second")
@@ -71,25 +71,25 @@
 #
 #   (name, _) := c
 #
-# Decomposition also works for general features, e.g.
+# Destructuring also works for general features, e.g.
 #
 #   point (x,y i32) is {}
 #
 #   p := point 3, 4
 #   (px, py) := p       # will set px to 3 and py to 4
 #
-# and the decomposed value can then be used to create a tuple
+# and the destructured value can then be used to create a tuple
 #
 #   t := (px, py)       # will create tuple<i32,i32> instance
 #
 # however, tuples are not assignment compatible with general features even
-# if they would decompose into the same types, i.e.,
+# if they would destructure into the same types, i.e.,
 #
 #   u tuple<i32, i32> = p  # will cause compile time error
 #   q point = (7, 12)      # will cause compile time error
 #
 # The unit tuple '()' can be used as a short-hand to create the empty tuple
-# 'tuple<>()'.  The empty tuple can be decomposed like any other tuple
+# 'tuple<>()'.  The empty tuple can be destructured like any other tuple
 # using
 #
 #   () := ()
@@ -98,7 +98,7 @@
 #
 # An instance of the single tuple 'tuple<A>(a)' can not be created using
 # syntactic sugar '(a)', this will produce the plain value of 'a' instead.
-# However, decomposition of a single tuple is possible:
+# However, destructuring of a single tuple is possible:
 #
 #  (a0) := tuple<A>(a)
 #
@@ -109,7 +109,7 @@
 # NYI: A single tuple 'tuple<A>' is currently not assignment compatible with
 # type 'A', which would make handling of general tuples easier.
 #
-# tuples and decomposition can be used to swap two elements or create a
+# tuples and destructuring can be used to swap two elements or create a
 # permutation as in
 #
 #   (a, b) := (b, a)

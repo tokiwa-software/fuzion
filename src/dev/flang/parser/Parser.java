@@ -2441,7 +2441,7 @@ stmnts      :
    *
 stmnt       : feature
             | assign
-            | decompose
+            | destructure
             | exprInLine
             | checkstmt
             ;
@@ -2449,10 +2449,10 @@ stmnt       : feature
   Stmnt stmnt()
   {
     return
-      isCheckPrefix()     ? checkstmnt() :
-      isAssignPrefix()    ? assign()     :
-      isDecomposePrefix() ? decompose()  :
-      isFeaturePrefix()   ? feature()    : exprInLine();
+      isCheckPrefix()       ? checkstmnt()  :
+      isAssignPrefix()      ? assign()      :
+      isDestructurePrefix() ? destructure() :
+      isFeaturePrefix()     ? feature()     : exprInLine();
   }
 
 
@@ -2778,74 +2778,74 @@ assign      : "set" name ":=" exprInLine
 
 
   /**
-   * Parse decompose
+   * Parse destructure
    *
-decompose   : decomp
-            | decompDecl
-            | decompSet
-            | decompOld
-            | decompDclOld
+destructure : destructr
+            | destructrDcl
+            | destructrSet
+            | destructrOld
+            | destructrDclOld
             ;
-decomp      : "(" argNames ")"       ":=" exprInLine
-decompDecl  : formArgs               ":=" exprInLine
-decompSet   : "set" "(" argNames ")" ":=" exprInLine
+destructr   : "(" argNames ")"       ":=" exprInLine
+destructrDcl: formArgs               ":=" exprInLine
+destructrSet: "set" "(" argNames ")" ":=" exprInLine
             ;
    */
-  Stmnt decompose()
+  Stmnt destructure()
   {
     if (fork().skipFormArgs())
       {
         var a = formArgs();
         var pos = posObject();
-        matchOperator(":=", "decompose");
-        return Decompose.create(pos, a, null, false, exprInLine());
+        matchOperator(":=", "destructure");
+        return Destructure.create(pos, a, null, false, exprInLine());
       }
     else
       {
         var hasSet = skip(Token.t_set);
-        match(Token.t_lparen, "decompose");
+        match(Token.t_lparen, "destructure");
         var names = argNames();
-        match(Token.t_rparen, "decompose");
+        match(Token.t_rparen, "destructure");
         var pos = posObject();
-        matchOperator(":=", "decompose");
-        return Decompose.create(pos, null, names, !hasSet, exprInLine());
+        matchOperator(":=", "destructure");
+        return Destructure.create(pos, null, names, !hasSet, exprInLine());
       }
   }
 
 
   /**
-   * Check if the current position starts decompose.  Does not change the
+   * Check if the current position starts destructure.  Does not change the
    * position of the parser.
    *
-   * @return true iff the next token(s) start a decompose.
+   * @return true iff the next token(s) start a destructure.
    */
-  boolean isDecomposePrefix()
+  boolean isDestructurePrefix()
   {
-    return (current() == Token.t_lparen) && (fork().skipDecompDeclPrefix() ||
-                                             fork().skipDecompPrefix()        ) ||
-      (current() == Token.t_set) && (fork().skipDecompPrefix());
+    return (current() == Token.t_lparen) && (fork().skipDestructrDclPrefix() ||
+                                             fork().skipDestructrPrefix()        ) ||
+      (current() == Token.t_set) && (fork().skipDestructrPrefix());
   }
 
 
   /**
-   * Check if the current position starts a decompose using formArgs and skip an
+   * Check if the current position starts a destructure using formArgs and skip an
    * unspecified part of it.
    *
-   * @return true iff the next token(s) start a decomposeDecl
+   * @return true iff the next token(s) start a destructureDecl
    */
-  boolean skipDecompDeclPrefix()
+  boolean skipDestructrDclPrefix()
   {
     return skipFormArgs() && isOperator(":=");
   }
 
 
   /**
-   * Check if the current position starts a decomp and skip an unspecified part
+   * Check if the current position starts a destructr and skip an unspecified part
    * of it.
    *
-   * @return true iff the next token(s) start a decompoe.
+   * @return true iff the next token(s) start a destructroe.
    */
-  boolean skipDecompPrefix()
+  boolean skipDestructrPrefix()
   {
     boolean result = false;
     skip(Token.t_set);

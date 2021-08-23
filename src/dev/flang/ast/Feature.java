@@ -627,7 +627,7 @@ public class Feature extends ANY implements Stmnt, Comparable
     if (n.equals("_"))
       {
         // NYI: Check that this feature is allowed to have this name, i.e., it
-        // is declared in a Decompose statement.
+        // is declared in a Destructure statement.
         n = "#_"+ underscoreId++;
       }
     this.qname      = qname;
@@ -1273,15 +1273,15 @@ public class Feature extends ANY implements Stmnt, Comparable
       {
         res = r;
       }
-    public void     action(Assign     a, Feature outer) {        a.resolveTypes(res, outer); }
-    public Call     action(Call       c, Feature outer) { return c.resolveTypes(res, outer); }
-    public Stmnt    action(Decompose  d, Feature outer) { return d.resolveTypes(res, outer); }
-    public Stmnt    action(Feature    f, Feature outer) { return f.resolveTypes(res, outer); }
-    public Function action(Function   f, Feature outer) {        f.resolveTypes(res, outer); return f; }
-    public void     action(Generic    g, Feature outer) {        g.resolveTypes(res, outer); }
-    public void     action(Match      m, Feature outer) {        m.resolveTypes(res, outer); }
-    public Expr     action(This       t, Feature outer) { return t.resolveTypes(res, outer); }
-    public Type     action(Type       t, Feature outer) { return t.resolve(outer); }
+    public void     action(Assign      a, Feature outer) {        a.resolveTypes(res, outer); }
+    public Call     action(Call        c, Feature outer) { return c.resolveTypes(res, outer); }
+    public Stmnt    action(Destructure d, Feature outer) { return d.resolveTypes(res, outer); }
+    public Stmnt    action(Feature     f, Feature outer) { return f.resolveTypes(res, outer); }
+    public Function action(Function    f, Feature outer) {        f.resolveTypes(res, outer); return f; }
+    public void     action(Generic     g, Feature outer) {        g.resolveTypes(res, outer); }
+    public void     action(Match       m, Feature outer) {        m.resolveTypes(res, outer); }
+    public Expr     action(This        t, Feature outer) { return t.resolveTypes(res, outer); }
+    public Type     action(Type        t, Feature outer) { return t.resolve(outer); }
 
     /**
      * visitActuals delays type resolution for actual arguments within a feature
@@ -2827,8 +2827,8 @@ public class Feature extends ANY implements Stmnt, Comparable
    * @param assign the assign we are trying to resolve, or null when not resolving an
    * assign
    *
-   * @param decompose the decompose we are strying to resolve, or null when not
-   * resolving a decompose.
+   * @param destructure the destructure we are strying to resolve, or null when not
+   * resolving a destructure.
    *
    * @param inner the inner feature that contains call or assign, null if
    * call/assign is part of current feature's code.
@@ -2836,13 +2836,13 @@ public class Feature extends ANY implements Stmnt, Comparable
    * @return in case we found a feature visible in the call's or assign's scope,
    * this is the feature.
    */
-  private Feature findFieldDefInScope(String name, Call call, Assign assign, Decompose decompose, Feature inner)
+  private Feature findFieldDefInScope(String name, Call call, Assign assign, Destructure destructure, Feature inner)
   {
     if (PRECONDITIONS) require
       (name != null,
-       call != null && assign == null && decompose == null ||
-       call == null && assign != null && decompose == null ||
-       call == null && assign == null && decompose != null,
+       call != null && assign == null && destructure == null ||
+       call == null && assign != null && destructure == null ||
+       call == null && assign == null && destructure != null,
        inner == null || inner.outer() == this);
 
     // curres[0]: currently visible field with name name
@@ -2900,9 +2900,9 @@ public class Feature extends ANY implements Stmnt, Comparable
               found();
             }
         }
-        public Stmnt action(Decompose d, Feature outer)
+        public Stmnt action(Destructure d, Feature outer)
         {
-          if (d == decompose)
+          if (d == destructure)
             { // Found the assign, so we got the result!
               found();
             }
@@ -3029,13 +3029,13 @@ public class Feature extends ANY implements Stmnt, Comparable
    * @param assign the assign we are trying to resolve, or null when not resolving an
    * assign
    *
-   * @param decompose the decompose we are strying to resolve, or null when not
-   * resolving a decompose.
+   * @param destructure the destructure we are strying to resolve, or null when not
+   * resolving a destructure.
    *
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  FeaturesAndOuter findDeclaredInheritedOrOuterFeatures(String name, Call call, Assign assign, Decompose decompose)
+  FeaturesAndOuter findDeclaredInheritedOrOuterFeatures(String name, Call call, Assign assign, Destructure destructure)
   {
     if (PRECONDITIONS) require
       (state_.atLeast(State.RESOLVED_DECLARATIONS));
@@ -3061,7 +3061,7 @@ public class Feature extends ANY implements Stmnt, Comparable
               }
             if (!fields.isEmpty())
               {
-                var f = outer.findFieldDefInScope(name, call, assign, decompose, inner);
+                var f = outer.findFieldDefInScope(name, call, assign, destructure, inner);
                 fs = new TreeMap<>(fs);
                 if (f != null)
                   {

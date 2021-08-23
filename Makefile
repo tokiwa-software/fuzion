@@ -62,7 +62,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Consts.java \
           $(SRC)/dev/flang/ast/Contract.java \
           $(SRC)/dev/flang/ast/Current.java \
-          $(SRC)/dev/flang/ast/Decompose.java \
+          $(SRC)/dev/flang/ast/Destructure.java \
           $(SRC)/dev/flang/ast/Expr.java \
           $(SRC)/dev/flang/ast/FeErrors.java \
           $(SRC)/dev/flang/ast/Feature.java \

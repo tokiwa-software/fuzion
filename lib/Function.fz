@@ -36,7 +36,7 @@ Function<R,A...> ref is
 #  compose<B>(f fun (B) A) => fun(B b) R => call f b
 #
 #  # compose f: B -> A with this: A -> R into this ∘ f: B -> R
-#  compose<B>(f fun (B) tuple<A>) => fun(B b) R => call f b /* decompose result automatically? */
+#  compose<B>(f fun (B) tuple<A>) => fun(B b) R => call f b /* destructure result automatically? */
 #
 #  # short-hand infix operation for composition
 #  infix ∘ (f fun (B) A) => compose f
