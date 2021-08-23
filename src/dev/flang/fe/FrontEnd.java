@@ -109,17 +109,30 @@ public class FrontEnd extends ANY
 
   /**
    * Run the given parser to parse statements. This is used for processing stdin
-   * or an explicit input file.
+   * or an explicit input file.  These require special treatment since it is
+   * allowed to declare initializes fields in here.
    *
    * @return the main feature found or null if none
    */
-  String parse(Parser p)
+  String parseStdIn(Parser p)
   {
     var stmnts = p.stmntsEof();
     ((Block) _universe.impl.code_).statements_.addAll(stmnts);
-    var main = (stmnts.size() == 1 && stmnts.getFirst() instanceof Feature)
-      ? ((Feature) stmnts.getFirst()).featureName().baseName()
-      : null;
+    boolean first = true;
+    String main = null;
+    for (var s : stmnts)
+      {
+        main = null;
+        if (s instanceof Feature f)
+          {
+            f.legalPartOfUniverse();  // suppress FeErrors.initialValueNotAllowed
+            if (first)
+              {
+                main = f.featureName().baseName();
+              }
+          }
+        first = false;
+      }
     return main;
   }
 
@@ -132,11 +145,11 @@ public class FrontEnd extends ANY
     var main = _options._main;
     if (_options._readStdin)
       {
-        main = parse(new Parser(SourceFile.STDIN));
+        main = parseStdIn(new Parser(SourceFile.STDIN));
       }
     else if (_options._inputFile != null)
       {
-        main = parse(new Parser(_options._inputFile));
+        main = parseStdIn(new Parser(_options._inputFile));
       }
     _universe.findDeclarations(null);
     var res = new Resolution(_options, _universe, (r, f) -> loadInnerFeatures(r, f));

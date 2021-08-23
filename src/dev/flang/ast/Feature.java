@@ -1072,7 +1072,7 @@ public class Feature extends ANY implements Stmnt, Comparable
 
     if (impl.initialValue != null &&
         outer.pos._sourceFile != pos._sourceFile &&
-        pos._sourceFile._fileName != SourceFile.STDIN &&
+        (!outer.isUniverse() || !_legalPartOfUniverse) &&
         !_isIndexVarUpdatedByLoop  /* required for loop in universe, e.g.
                                     *
                                     *   echo "for i in 1..10 do stdout.println(i)" | fz -
@@ -1089,6 +1089,23 @@ public class Feature extends ANY implements Stmnt, Comparable
     if (POSTCONDITIONS) ensure
       (outer_ == outer,
        state_ == State.LOADED);
+  }
+
+
+  /**
+   * May this be a field declared directly in universe?
+   */
+  private boolean _legalPartOfUniverse = false;
+
+
+  /**
+   * Application code that is read from stdin or directly from a file is allowed
+   * to declare and initialize fields directly in the universe.  This is called
+   * for features that are declared in stdin or directly read file.
+   */
+  public void legalPartOfUniverse()
+  {
+    this._legalPartOfUniverse = true;
   }
 
 
