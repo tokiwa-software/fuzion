@@ -103,11 +103,10 @@ public class IntConst extends Expr
    */
   private final int _radix;
 
-  /**
-   * The digits, without prefix '0x' or similar and without separator '_'
-   */
-  private final String _digits;
 
+  /**
+   * The constant value, converted to BigInteger
+   */
   public final BigInteger _value;
 
 
@@ -133,13 +132,19 @@ public class IntConst extends Expr
     super(pos);
 
     this._originalString = s;
+    var neg = s.startsWith("-");
+    if (s.startsWith("+") || neg)
+      {
+        s = s.substring(1);
+      }
     this._radix =
       s.startsWith("0b") ?  2 :
       s.startsWith("0o") ?  8 :
       s.startsWith("0x") ? 16
                          : 10;
-    this._digits = s.replace("_", "").substring(_radix == 10 ? 0 : 2);
-    this._value = new BigInteger(_digits, _radix);
+    var digits = s.replace("_", "").substring(_radix == 10 ? 0 : 2);
+    var v = new BigInteger(digits, _radix);
+    this._value = neg ? v.negate() : v;
   }
 
 
