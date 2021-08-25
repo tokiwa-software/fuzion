@@ -87,6 +87,81 @@ abstract class CExpr extends CStmnt
 
 
   /**
+   * Create a C expression from a int8_t constant
+   *
+   * @return the resulting expression
+   */
+  static CExpr int8const(int value)
+  {
+    return new CExpr()
+      {
+        void code(CString sb) { sb.append("((int8_t) ").append(value).append(")"); }
+        int precedence() { return 0; }
+    };
+  }
+
+
+  /**
+   * Create a C expression from a int16_t constant
+   *
+   * @return the resulting expression
+   */
+  static CExpr int16const(int value)
+  {
+    return new CExpr()
+      {
+        void code(CString sb) { sb.append("((int16_t) ").append(value).append(")"); }
+        int precedence() { return 0; }
+    };
+  }
+
+
+  /**
+   * Create a C expression from a int32_t constant
+   *
+   * @return the resulting expression
+   */
+  static CExpr int32const(int value)
+  {
+    return new CExpr()
+      {
+        void code(CString sb) { sb.append(value); }
+        int precedence() { return 0; }
+    };
+  }
+
+
+  /**
+   * Create a C expression from a int64_t constant
+   *
+   * @return the resulting expression
+   */
+  static CExpr int64const(long value)
+  {
+    return new CExpr()
+      {
+        void code(CString sb) { sb.append(value).append("LL"); }
+        int precedence() { return 0; }
+    };
+  }
+
+
+  /**
+   * Create a C expression from a uint16_t constant
+   *
+   * @return the resulting expression
+   */
+  static CExpr uint8const(int value)
+  {
+    return new CExpr()
+      {
+        void code(CString sb) { sb.append("((uint8_t)").append(value & 0xff).append('U').append(")"); }
+        int precedence() { return 0; }
+      };
+  }
+
+
+  /**
    * Create a C expression from a uint16_t constant
    *
    * @return the resulting expression
@@ -102,23 +177,6 @@ abstract class CExpr extends CStmnt
 
 
   /**
-   * Create a C expression from a int32_t constant
-   *
-   * @return the resulting expression
-   */
-  static CExpr int32const(int value)
-  {
-    return value >= 0
-      ? new CExpr()
-        {
-          void code(CString sb) { sb.append(value); }
-          int precedence() { return 0; }
-        }
-      : int32const(-value).neg();
-  }
-
-
-  /**
    * Create a C expression from a uint32_t constant
    *
    * @return the resulting expression
@@ -130,23 +188,6 @@ abstract class CExpr extends CStmnt
         void code(CString sb) { sb.append(value & 0xFFFFffff).append('U'); }
         int precedence() { return 0; }
       };
-  }
-
-
-  /**
-   * Create a C expression from a int64_t constant
-   *
-   * @return the resulting expression
-   */
-  static CExpr int64const(long value)
-  {
-    return value >= 0
-      ? new CExpr()
-        {
-          void code(CString sb) { sb.append(value).append("LL"); }
-          int precedence() { return 0; }
-        }
-      : int64const(-value).neg();
   }
 
 

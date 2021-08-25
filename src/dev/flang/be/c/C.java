@@ -491,10 +491,14 @@ public class C extends ANY
           var r = switch (_fuir.getSpecialId(constCl))
             {
             case c_bool -> d[0] == 1 ? _names.FZ_TRUE : _names.FZ_FALSE;
-            case c_i32  -> CExpr. int32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt ());
-            case c_u32  -> CExpr.uint32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt ());
-            case c_i64  -> CExpr. int64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong());
-            case c_u64  -> CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong());
+            case c_i8   -> CExpr. int8const( ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     ());
+            case c_i16  -> CExpr. int16const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort());
+            case c_i32  -> CExpr. int32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ());
+            case c_i64  -> CExpr. int64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
+            case c_u8   -> CExpr.uint8const (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     () & 0xff);
+            case c_u16  -> CExpr.uint16const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getChar ());
+            case c_u32  -> CExpr.uint32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ());
+            case c_u64  -> CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
             case c_conststring ->
             {
               var tmp = _names.newTemp();

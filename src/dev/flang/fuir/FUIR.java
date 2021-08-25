@@ -1451,9 +1451,13 @@ hw25 is
     var ic = _codeIds.get(c).get(ix);
     var t = ((Expr) ic).type();
     if      (t == Types.resolved.t_bool  ) { clazz = Clazzes.bool       .get(); }
+    else if (t == Types.resolved.t_i8    ) { clazz = Clazzes.i8         .get(); }
+    else if (t == Types.resolved.t_i16   ) { clazz = Clazzes.i16        .get(); }
     else if (t == Types.resolved.t_i32   ) { clazz = Clazzes.i32        .get(); }
-    else if (t == Types.resolved.t_u32   ) { clazz = Clazzes.u32        .get(); }
     else if (t == Types.resolved.t_i64   ) { clazz = Clazzes.i64        .get(); }
+    else if (t == Types.resolved.t_u8    ) { clazz = Clazzes.u8         .get(); }
+    else if (t == Types.resolved.t_u16   ) { clazz = Clazzes.u16        .get(); }
+    else if (t == Types.resolved.t_u32   ) { clazz = Clazzes.u32        .get(); }
     else if (t == Types.resolved.t_u64   ) { clazz = Clazzes.u64        .get(); }
     else if (t == Types.resolved.t_string) { clazz = Clazzes.conststring.get(); } // NYI: a slight inconsistency here, need to change AST
     else if (ic instanceof InitArray)
