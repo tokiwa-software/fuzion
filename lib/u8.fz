@@ -102,7 +102,7 @@ u8(val u8) : wrappingInteger<u8>, hasInterval<u8>, u8s is
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from hasInterval is abstract, fz should not complain about this conflict.
-  redef max u8 is 0xff.as_u8
+  redef max => u8 0xff
 
 
   # create hash code from this number
@@ -115,10 +115,10 @@ u8(val u8) : wrappingInteger<u8>, hasInterval<u8>, u8s is
   #
   highestOneBit u8 is
     // NYI: should be possible to reuse v, s names
-    (v0, s0) := (val, 0.as_u8)
-    (v1, s1) := if (v0 < 0x10.as_u8) (v0, s0) else (v0 >> 4.as_u8, s0 +  4.as_u8)
-    (v2, s2) := if (v1 <    4.as_u8) (v1, s1) else (v1 >> 2.as_u8, s1 +  2.as_u8)
-    (v3, s3) := if (v2 <    2.as_u8) (v2, s2) else (v2 >> 1.as_u8, s2 +  1.as_u8)
+    (v0, s0) := (val, u8 0)
+    (v1, s1) := if (v0 < 0x10) (v0, s0) else (v0 >> 4, s0 + 4)
+    (v2, s2) := if (v1 <    4) (v1, s1) else (v1 >> 2, s1 + 2)
+    (v3, s3) := if (v2 <    2) (v2, s2) else (v2 >> 1, s2 + 1)
     v3 << s3
 
 
@@ -127,10 +127,10 @@ u8(val u8) : wrappingInteger<u8>, hasInterval<u8>, u8s is
   trailingZeros i32 is
     // NYI: should be possible to reuse v, s names
     (v0, s0) := (val, 0)
-    (v1, s1) := if (v0 &        0xf.as_u8)/=0.as_u8 then (v0, s0) else (v0 >>  4.as_u8, s0 +  4)
-    (v2, s2) := if (v1 &          3.as_u8)/=0.as_u8 then (v1, s1) else (v1 >>  2.as_u8, s1 +  2)
-    (v3, s3) := if (v2 &          1.as_u8)/=0.as_u8 then (v2, s2) else (v2 >>  1.as_u8, s2 +  1)
-    s4       := if (v3 &          1.as_u8)/=0.as_u8 then      s3  else                        8
+    (v1, s1) := if (v0 & 0xf) /= 0 then (v0, s0) else (v0 >> 4, s0 + 4)
+    (v2, s2) := if (v1 &   3) /= 0 then (v1, s1) else (v1 >> 2, s1 + 2)
+    (v3, s3) := if (v2 &   1) /= 0 then (v2, s2) else (v2 >> 1, s2 + 1)
+    s4       := if (v3 &   1) /= 0 then      s3  else                8
     s4
 
 

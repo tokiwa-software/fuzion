@@ -125,7 +125,7 @@ i8(val i8) : wrappingInteger<i8>, hasInterval<i8>, i8s is
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from hasInterval<i8> is abstract, fz should not complain about this conflict.
-  redef max => 127.as_i8
+  redef max => i8 127
 
   # create hash code from this number
   hash u64 is

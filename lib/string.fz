@@ -228,8 +228,8 @@ string ref : hasHash<string>, ordered<string>, strings is
   is
 
     d u8 | error := if      (zeroChar <= c <= nineChar) c - zeroChar
-                    else if (aChar    <= c <= zChar   ) c - aChar    + 10.as_u8
-                    else if (capAChar <= c <= capZChar) c - capAChar + 10.as_u8
+                    else if (aChar    <= c <= zChar   ) c - aChar    + 10
+                    else if (capAChar <= c <= capZChar) c - capAChar + 10
                     else parseError "non-digit found"
 
     # NYI: with more syntactic sugar, the following 3 lines could become
@@ -400,12 +400,12 @@ string ref : hasHash<string>, ordered<string>, strings is
   # is c an ASCII white-space character?  Used by split.
   #
   private isAsciiWhiteSpace(c u8) =>
-    (c =  9.as_u8 ||  // HT
-     c = 10.as_u8 ||  // LF
-     c = 11.as_u8 ||  // VT
-     c = 12.as_u8 ||  // FF
-     c = 13.as_u8 ||  // CR
-     c = 32.as_u8     // SPACE
+    (c =  9 ||  // HT
+     c = 10 ||  // LF
+     c = 11 ||  // VT
+     c = 12 ||  // FF
+     c = 13 ||  // CR
+     c = 32     // SPACE
      )
 
 
