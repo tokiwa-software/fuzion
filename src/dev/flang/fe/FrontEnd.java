@@ -140,7 +140,7 @@ public class FrontEnd extends ANY
   public MIR createMIR()
   {
     /* create the universe */
-    _universe = true ? new Feature()
+    _universe = true ? Feature.createUniverse()
                     : loadUniverse();
     var main = _options._main;
     if (_options._readStdin)

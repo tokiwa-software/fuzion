@@ -201,7 +201,7 @@ public class Feature extends ANY implements Stmnt, Comparable
   /**
    * Reference to this feature's root, i.e., its outer feature.
    */
-  private Feature outer_ = null;
+  protected Feature outer_ = null;
 
 
   /**
@@ -361,6 +361,31 @@ public class Feature extends ANY implements Stmnt, Comparable
                   new Block(SourcePosition.builtIn,
                             new List<Stmnt>()),
                   Impl.Kind.Routine));
+  }
+
+
+  /**
+   * Class for the Universe Feature.
+   */
+  static class Universe extends Feature
+  {
+    Universe()
+    {
+    }
+    public boolean isUniverse()
+    {
+      check
+        (outer_ == null);
+      return true;
+    }
+  }
+
+  /**
+   * Constructor for universe
+   */
+  public static Feature createUniverse()
+  {
+    return new Universe();
   }
 
 
@@ -734,10 +759,7 @@ public class Feature extends ANY implements Stmnt, Comparable
 
   public boolean isUniverse()
   {
-    if (PRECONDITIONS) require
-      (state().atLeast(State.LOADED));
-
-    return outer_ == null;
+    return false;
   }
 
 
