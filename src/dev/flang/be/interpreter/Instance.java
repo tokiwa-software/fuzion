@@ -138,6 +138,36 @@ public class Instance extends Value
 
 
   /**
+   * For a value of type i8, return the value.
+   *
+   * @return the i8 value
+   */
+  public int i8Value()
+  {
+    if (PRECONDITIONS) require
+      (clazz == Clazzes.i8    .getIfCreated() ||
+       clazz == Clazzes.ref_i8.getIfCreated()   );
+
+    return nonrefs[0];
+  }
+
+
+  /**
+   * For a value of type i16, return the value.
+   *
+   * @return the i16 value
+   */
+  public int i16Value()
+  {
+    if (PRECONDITIONS) require
+      (clazz == Clazzes.i16    .getIfCreated() ||
+       clazz == Clazzes.ref_i16.getIfCreated()   );
+
+    return nonrefs[0];
+  }
+
+
+  /**
    * For a value of type i32, return the value.
    *
    * @return the i32 value
@@ -167,6 +197,38 @@ public class Instance extends Value
         nonrefs[0    ] & 0xFFFFffffL |
       ((nonrefs[0 + 1] & 0xFFFFffffL) << 32);
   }
+
+
+  /**
+   * For a value of type u8, return the value.
+   *
+   * @return the u8 value
+   */
+  public int u8Value()
+  {
+    if (PRECONDITIONS) require
+      (clazz == Clazzes.u8    .getIfCreated() ||
+       clazz == Clazzes.ref_u8.getIfCreated()    );
+
+    return nonrefs[0];
+  }
+
+
+
+  /**
+   * For a value of type u16, return the value.
+   *
+   * @return the u16 value
+   */
+  public int u16Value()
+  {
+    if (PRECONDITIONS) require
+      (clazz == Clazzes.u16    .getIfCreated() ||
+       clazz == Clazzes.ref_u16.getIfCreated()    );
+
+    return nonrefs[0];
+  }
+
 
 
   /**
