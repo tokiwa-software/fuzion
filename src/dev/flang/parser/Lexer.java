@@ -833,91 +833,7 @@ public class Lexer extends SourceFile
             }
           case K_DIGIT   :    // '0'..'9'
             {
-              int c1 = curCodePoint();
-              int firstGroupSize = -1;
-              int groupSize = -1;
-              int currentGroupSize = 0;
-              boolean hasDigit = false;
-              boolean hasError = false;
-              if (c1 == 'b' ||
-                  c1 == 'o' ||
-                  c1 == 'x'    )
-                {
-                  nextCodePoint();
-                  if (curCodePoint() == '_')
-                    {
-                      firstGroupSize = 0;
-                      nextCodePoint();
-                    }
-                }
-              else
-                {
-                  hasDigit = true;
-                }
-              while ((kind(curCodePoint()) == K_DIGIT ||
-                      curCodePoint() == '_' ||
-                      (c1 == 'x' && "abcdefABCDEF".indexOf((char) curCodePoint()) >= 0)))
-                {
-                  if (curCodePoint() != '_')
-                    {
-                      currentGroupSize = currentGroupSize + 1;
-                      hasDigit = true;
-                    }
-                  else
-                    {
-                      if (firstGroupSize < 0)
-                        {
-                          firstGroupSize = currentGroupSize;
-                        }
-                      else if (currentGroupSize == 0 && !hasError)
-                        {
-                          Errors.error(sourcePos(),
-                                       "Broken integer literal, repeated '_' are not allowed",
-                                       null);
-                          hasError = true;
-                        }
-                      else if (groupSize < 0)
-                        {
-                          if (currentGroupSize < 2 && !hasError)
-                            {
-                              Errors.error(sourcePos(),
-                                           "Broken integer literal, grouping fewer than two digits is not allowed",
-                                           null);
-                              hasError = true;
-                            }
-                          groupSize = currentGroupSize;
-                          if (firstGroupSize > groupSize && !hasError)
-                            {
-                              Errors.error(sourcePos(),
-                                           "Broken integer literal, inconsistent grouping of digits.",
-                                           "First group has " + firstGroupSize + " digits, while next group has " + groupSize + " digits.");
-                              hasError = true;
-                            }
-                        }
-                      else if (groupSize != currentGroupSize && !hasError)
-                        {
-                          Errors.error(sourcePos(),
-                                       "Broken integer literal, inconsistent grouping of digits.",
-                                       "Previous group has " + groupSize + " digits, while later group has "+currentGroupSize+" digits.");
-                          hasError = true;
-                        }
-                      currentGroupSize = 0;
-                    }
-                  nextCodePoint();
-                }
-              if (!hasError && !hasDigit)
-                {
-                  Errors.error(sourcePos(),
-                               "Broken " +
-                               (switch (c1) {
-                               case 'b' -> "bool";
-                               case 'o' -> "octal";
-                               case 'x' -> "hex";
-                               default -> "?!?"; } ) + "constant, expected digits after '0" + (char) c1 + "'.",
-                               null);
-                  hasError = true;
-                }
-              token = Token.t_integer;
+              token = literal();
               break;
             }
           case K_LETTER  :    // 'A'..'Z', 'a'..'z'
@@ -1075,6 +991,101 @@ public class Lexer extends SourceFile
           };
       }
     return kind;
+  }
+
+
+  /**
+   * skip an integer or, at some point, a float literal.
+   *
+   * @return the corresponding Token, currently always Token.t_integer.
+   */
+  Token literal()
+  {
+    int c1 = curCodePoint();
+    int firstGroupSize = -1;
+    int groupSize = -1;
+    int currentGroupSize = 0;
+    boolean hasDigit = false;
+    boolean hasError = false;
+    if (c1 == 'b' ||
+        c1 == 'o' ||
+        c1 == 'x'    )
+      {
+        nextCodePoint();
+        if (curCodePoint() == '_')
+          {
+            firstGroupSize = 0;
+            nextCodePoint();
+          }
+      }
+    else
+      {
+        hasDigit = true;
+      }
+    while ((kind(curCodePoint()) == K_DIGIT ||
+            curCodePoint() == '_' ||
+            (c1 == 'x' && "abcdefABCDEF".indexOf((char) curCodePoint()) >= 0)))
+      {
+        if (curCodePoint() != '_')
+          {
+            currentGroupSize = currentGroupSize + 1;
+            hasDigit = true;
+          }
+        else
+          {
+            if (firstGroupSize < 0)
+              {
+                firstGroupSize = currentGroupSize;
+              }
+            else if (currentGroupSize == 0 && !hasError)
+              {
+                Errors.error(sourcePos(),
+                             "Broken integer literal, repeated '_' are not allowed",
+                             null);
+                hasError = true;
+              }
+            else if (groupSize < 0)
+              {
+                if (currentGroupSize < 2 && !hasError)
+                  {
+                    Errors.error(sourcePos(),
+                                 "Broken integer literal, grouping fewer than two digits is not allowed",
+                                 null);
+                    hasError = true;
+                  }
+                groupSize = currentGroupSize;
+                if (firstGroupSize > groupSize && !hasError)
+                  {
+                    Errors.error(sourcePos(),
+                                 "Broken integer literal, inconsistent grouping of digits.",
+                                 "First group has " + firstGroupSize + " digits, while next group has " + groupSize + " digits.");
+                    hasError = true;
+                  }
+              }
+            else if (groupSize != currentGroupSize && !hasError)
+              {
+                Errors.error(sourcePos(),
+                             "Broken integer literal, inconsistent grouping of digits.",
+                             "Previous group has " + groupSize + " digits, while later group has "+currentGroupSize+" digits.");
+                hasError = true;
+              }
+            currentGroupSize = 0;
+          }
+        nextCodePoint();
+      }
+    if (!hasError && !hasDigit)
+      {
+        Errors.error(sourcePos(),
+                     "Broken " +
+                     (switch (c1) {
+                     case 'b' -> "bool";
+                     case 'o' -> "octal";
+                     case 'x' -> "hex";
+                     default -> "?!?"; } ) + "constant, expected digits after '0" + (char) c1 + "'.",
+                     null);
+        hasError = true;
+      }
+    return Token.t_integer;
   }
 
 
