@@ -1479,10 +1479,14 @@ hw25 is
     var ic = _codeIds.get(c).get(ix);
     var t = ((Expr) ic).type();
     if      (t == Types.resolved.t_bool  ) { return new byte[] { ((BoolConst) ic).b ? (byte) 1 : (byte) 0 }; }
-    else if (t == Types.resolved.t_i32 ||
-             t == Types.resolved.t_u32   ) { return ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt((int) ((IntConst) ic).l).array(); }
-    else if (t == Types.resolved.t_i64 ||
-             t == Types.resolved.t_u64   ) { return ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(     ((IntConst) ic).l).array(); }
+    else if (t == Types.resolved.t_i8 ||
+             t == Types.resolved.t_i16 ||
+             t == Types.resolved.t_i32 ||
+             t == Types.resolved.t_i64 ||
+             t == Types.resolved.t_u8 ||
+             t == Types.resolved.t_u16 ||
+             t == Types.resolved.t_u32 ||
+             t == Types.resolved.t_u64   ) { return ((IntConst) ic).data(); }
     else if (t == Types.resolved.t_string) { return ((StrConst) ic).str.getBytes(StandardCharsets.UTF_8); }
     else if (ic instanceof InitArray)
       {
@@ -1661,7 +1665,7 @@ hw25 is
        0 <= cix && cix <= matchCaseCount(c, ix));
 
     var s = _codeIds.get(c).get(ix+1+cix);
-    return (int) ((IntConst)s).l;
+    return ((IntConst)s)._value.intValueExact();
   }
 
 }

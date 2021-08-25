@@ -97,7 +97,7 @@ public class FeErrors extends ANY
   {
     return ss(s.toString());
   }
-  static String ss(String s) // statement
+  static String ss(String s) // statement or expression
   {
     return expr(s);
   }
@@ -883,6 +883,17 @@ public class FeErrors extends ANY
           "Illegal use of open formal generic type",
           "Open formal generic type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.\n" +
           "Open formal argument: " + s(generic) + "");
+  }
+
+
+  static void integerConstantOutOfLegalRange(SourcePosition pos, String constant, Type t, String from, String to)
+  {
+    error(pos,
+          "Integer constant value outside of allowed range for target type",
+          "Type propagation results in a type that is too small for the value represented by the given constant.\n" +
+          "Constant value: " + ss(constant) + "\n" +
+          "Assigned to type: " + s(t) + "\n" +
+          "Acceptable range of values: " + ss(from) + " .. " + ss(to));
   }
 
 }

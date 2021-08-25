@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import dev.flang.util.SourcePosition;
 
+import java.math.BigInteger;
 
 /**
  * IntConst <description>
@@ -38,24 +39,76 @@ public class IntConst extends Expr
 {
 
 
+  /*----------------------------  constants  ----------------------------*/
+
+
+  static enum ConstantType
+  {
+    ct_i8  (true, 1),
+    ct_i16 (true, 2),
+    ct_i32 (true, 4),
+    ct_i64 (true, 8),
+    ct_u8  (false, 1),
+    ct_u16 (false, 2),
+    ct_u32 (false, 4),
+    ct_u64 (false, 8);
+    final BigInteger _min, _max;
+    final int _bytes;
+    final boolean _signed;
+    ConstantType(boolean signed, int bytes)
+    {
+      _signed = signed;
+      _bytes = bytes;
+      var minb = new byte[bytes];
+      var maxb = new byte[signed ? bytes : bytes + 1];
+      if (signed)
+        {
+          for (var i = 0; i < bytes; i++)
+            {
+              minb[i] = (byte) (i == 0 ? 0x80 : 0x00);
+              maxb[i] = (byte) (i == 0 ? 0x7f : 0xff);
+            }
+        }
+      else
+        {
+          for (var i = 0; i <= bytes; i++)
+            {
+              maxb[i] = (byte) (i == 0 ? 0x00 : 0xff);
+            }
+        }
+      _min = new BigInteger(minb);
+      _max = new BigInteger(maxb);
+    }
+    boolean canHold(BigInteger value)
+    {
+      return
+        _min.compareTo(value) <= 0 &&
+        _max.compareTo(value) >= 0;
+    }
+  }
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
   /**
-   *
+   * The constant as it appeared in the source code
    */
-  public long l;
+  private final String _originalString;
+
 
 
   /**
    * The radix _digits are represented in, one of 2, 8, 10, 16.
    */
-  private int _basis;
+  private final int _radix;
 
   /**
    * The digits, without prefix '0x' or similar and without separator '_'
    */
-  private String _digits;
+  private final String _digits;
+
+  public final BigInteger _value;
 
 
   /**
@@ -63,6 +116,7 @@ public class IntConst extends Expr
    * depending on what this is assigned to.
    */
   private Type type_;
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -77,22 +131,15 @@ public class IntConst extends Expr
   public IntConst(SourcePosition pos, String s)
   {
     super(pos);
-    this._basis =
+
+    this._originalString = s;
+    this._radix =
       s.startsWith("0b") ?  2 :
       s.startsWith("0o") ?  8 :
       s.startsWith("0x") ? 16
                          : 10;
-    this._digits = s.replace("_", "").substring(_basis == 10 ? 0 : 2);
-
-    try
-      {
-        this.l = Long.parseUnsignedLong(_digits, _basis);
-      }
-    catch (NumberFormatException e)
-      {
-        // NYI: Proper overflow handling
-        e.printStackTrace();
-      }
+    this._digits = s.replace("_", "").substring(_radix == 10 ? 0 : 2);
+    this._value = new BigInteger(_digits, _radix);
   }
 
 
@@ -101,12 +148,12 @@ public class IntConst extends Expr
    *
    * @param i
    */
-  public IntConst(long l)
+  public IntConst(int i)
   {
-    super(SourcePosition.builtIn);
-    this.l = l;
-    this._basis = 10;
-    this._digits = "" + l;
+    this(SourcePosition.builtIn, Integer.toString(i));
+
+    if (PRECONDITIONS) require
+      (i >= 0);
   }
 
 
@@ -123,10 +170,87 @@ public class IntConst extends Expr
   {
     if (type_ == null)
       {
-        type_ = (l == (int) l) ? Types.resolved.t_i32
-                               : Types.resolved.t_i64;
+        if (ConstantType.ct_i32.canHold(_value))
+          {
+            type_ = Types.resolved.t_i32;
+          }
+        else
+          {
+            type_ = Types.resolved.t_i64;
+          }
+        checkRange();
       }
     return type_;
+  }
+
+
+  /**
+   * Check that this constant is in the range allowed for its type_.
+   */
+  void checkRange()
+  {
+    if (PRECONDITIONS) require
+      (findConstantType(type_) != null);
+
+    ConstantType ct = findConstantType(type_);
+    if (!ct.canHold(_value))
+      {
+        FeErrors.integerConstantOutOfLegalRange(pos(),
+                                                _originalString,
+                                                type_,
+                                                toString(ct._min),
+                                                toString(ct._max));
+      }
+  }
+
+
+  /*
+   * Convert given value to a string using _radix. Prepend "0x" or "0b" for hex
+   * / binary representation.s
+   *
+   * @param v a constant
+   *
+   * @return the string representation of v.
+   */
+  String toString(BigInteger v)
+  {
+    String sign = "";
+    if (v.signum() < 0)
+      {
+        sign = "-";
+        v = v.negate();
+      }
+    String prefix =
+      switch (_radix)
+        {
+        case  2 -> "0b";
+        case 10 -> "";
+        case 16 -> "0x";
+        default -> throw new Error("unexpected radix: " + _radix);
+        };
+    return sign + prefix + v.toString(_radix);
+  }
+
+
+  /**
+   * Check if type t is one of the known integer types i8, i16, i32, i64, u8,
+   * u16, u32, u64 and return the corresponding ConstantType constant.
+   *
+   * @param t an interned type
+   *
+   * @return the corresponding ConstantType or nul if none.
+   */
+  ConstantType findConstantType(Type t)
+  {
+    if      (t == Types.resolved.t_i8 ) { return ConstantType.ct_i8 ; }
+    else if (t == Types.resolved.t_i16) { return ConstantType.ct_i16; }
+    else if (t == Types.resolved.t_i32) { return ConstantType.ct_i32; }
+    else if (t == Types.resolved.t_i64) { return ConstantType.ct_i64; }
+    else if (t == Types.resolved.t_u8 ) { return ConstantType.ct_u8 ; }
+    else if (t == Types.resolved.t_u16) { return ConstantType.ct_u16; }
+    else if (t == Types.resolved.t_u32) { return ConstantType.ct_u32; }
+    else if (t == Types.resolved.t_u64) { return ConstantType.ct_u64; }
+    else                                { return null;             }
   }
 
 
@@ -149,12 +273,10 @@ public class IntConst extends Expr
    */
   public Expr propagateExpectedType(Resolution res, Feature outer, Type t)
   {
-    if (type_ == null)
+    if (type_ == null && findConstantType(t) != null)
       {
-        if      (t == Types.resolved.t_i32) { Integer.parseInt         (_digits, _basis); type_ = t; }
-        else if (t == Types.resolved.t_u32) { Integer.parseUnsignedInt (_digits, _basis); type_ = t; }
-        else if (t == Types.resolved.t_i64) { Long   .parseLong        (_digits, _basis); type_ = t; }
-        else if (t == Types.resolved.t_u64) { Long   .parseUnsignedLong(_digits, _basis); type_ = t; }
+        type_ = t;
+        checkRange();
       }
     return this;
   }
@@ -178,13 +300,39 @@ public class IntConst extends Expr
 
 
   /**
+   * Get the little-endian representation of this constant.
+   *
+   * @return an array with length findConstantType(type_)._bytes containing the
+   * constant as a little-endian unsigned or two's complement value.
+   */
+  public byte[] data()
+  {
+    var b = _value.toByteArray();
+    var bytes = findConstantType(type_)._bytes;
+    var result = new byte[bytes];
+    for (var i = 0; i < bytes; i++)
+      {
+        if (i >= b.length)
+          {
+            result[i] = (byte) (_value.signum() < 0 ? 0xff : 0x00);
+          }
+        else
+          {
+            result[i] = b[b.length - 1 - i];
+          }
+      }
+    return result;
+  }
+
+
+  /**
    * toString
    *
    * @return
    */
   public String toString()
   {
-    return Long.toUnsignedString(l);
+    return _originalString;
   }
 
 }
