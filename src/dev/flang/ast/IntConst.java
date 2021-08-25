@@ -166,6 +166,23 @@ public class IntConst extends Expr
 
 
   /**
+   * Create new constant by flipping the sign.
+   */
+  public IntConst neg(SourcePosition pos)
+  {
+    var osWithSign = _originalString;
+    var os = (osWithSign.startsWith("-") || osWithSign.startsWith("+")) ? osWithSign.substring(1) : osWithSign;
+    return switch (_value.signum())
+      {
+      case  0 -> this;
+      case -1 -> new IntConst(pos, os);
+      case +1 -> new IntConst(pos, "-" + os);
+      default -> throw new Error("unexpected result of BigInteger.signum()");
+      };
+  }
+
+
+  /**
    * typeOrNull returns the type of this expression or Null if the type is still
    * unknown, i.e., before or during type resolution.
    *

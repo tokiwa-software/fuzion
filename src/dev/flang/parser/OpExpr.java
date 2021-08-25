@@ -30,6 +30,7 @@ import java.util.ArrayList;
 
 import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
+import dev.flang.ast.IntConst;
 
 import dev.flang.util.ANY;
 import dev.flang.util.List;
@@ -201,7 +202,9 @@ public class OpExpr extends ANY
         else if (isExpr(max+1))
           {                       // prefix op:
             Expr e2 = expr(max+1);
-            Expr e = new Call(op.pos, e2, "prefix "+op.text, null, Expr.NO_EXPRS);
+            Expr e =
+              (op.text.equals("+") && (e2 instanceof IntConst i2)) ? i2             :
+              (op.text.equals("-") && (e2 instanceof IntConst i2)) ? i2.neg(op.pos) : new Call(op.pos, e2, "prefix "+op.text, null, Expr.NO_EXPRS);
             els.remove(max+1);
             els.set(max, e);
           }
