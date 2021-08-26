@@ -621,9 +621,9 @@ class ForClass extends ANY
           { // NYI: handle array types
             return null;
           }
-        else if (t == Byte     .TYPE) { mt = "i32";       }  // NYI: should be i8
-        else if (t == Character.TYPE) { mt = "i32";       }  // NYI: should be u16
-        else if (t == Short    .TYPE) { mt = "i32";       }  // NYI: should be i16
+        else if (t == Byte     .TYPE) { mt = "i8";        }
+        else if (t == Character.TYPE) { mt = "u16";       }
+        else if (t == Short    .TYPE) { mt = "i16";       }
         else if (t == Integer  .TYPE) { mt = "i32";       }
         else if (t == Long     .TYPE) { mt = "i64";       }
         else if (t == Float    .TYPE) { mt = "i32";       }  // NYI: should be f32
@@ -812,9 +812,9 @@ class ForClass extends ANY
           }
         return null;
       }
-    else if (t == Byte     .TYPE) { return "i32";       }  // NYI: should be i8
-    else if (t == Character.TYPE) { return "i32";       }  // NYI: should be u16
-    else if (t == Short    .TYPE) { return "i32";       }  // NYI: should be i16
+    else if (t == Byte     .TYPE) { return "i8";        }
+    else if (t == Character.TYPE) { return "u16";       }
+    else if (t == Short    .TYPE) { return "i16";       }
     else if (t == Integer  .TYPE) { return "i32";       }
     else if (t == Long     .TYPE) { return "i64";       }
     else if (t == Float    .TYPE) { return "i32";       }  // NYI: should be f32

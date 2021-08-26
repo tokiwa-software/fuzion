@@ -110,27 +110,27 @@ public fuzion.java is
 
   # intrinsic to convert an i8 to a Java Byte object
   #
-  public i8ToJavaObject(i i32 /* NYI: i8 */) JavaObject is intrinsic
+  public i8ToJavaObject(v i8) JavaObject is intrinsic
 
 
   # intrinsic to convert an u16 to a Java Character object
   #
-  public u16ToJavaObject(i i32 /* NYI: u16 */) JavaObject is intrinsic
+  public u16ToJavaObject(v u16) JavaObject is intrinsic
 
 
   # intrinsic to convert an i16 to a Java Short object
   #
-  public i16ToJavaObject(i i32 /* NYI: i16 */) JavaObject is intrinsic
+  public i16ToJavaObject(v i16) JavaObject is intrinsic
 
 
   # intrinsic to convert an i32 to a Java Integer object
   #
-  public i32ToJavaObject(i i32) JavaObject is intrinsic
+  public i32ToJavaObject(v i32) JavaObject is intrinsic
 
 
   # intrinsic to convert an i64 to a Java Long object
   #
-  public i64ToJavaObject(l i64) JavaObject is intrinsic
+  public i64ToJavaObject(v i64) JavaObject is intrinsic
 
 
   # intrinsic to convert an f32 to a Java Float object

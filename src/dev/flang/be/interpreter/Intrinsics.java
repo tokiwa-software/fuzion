@@ -239,7 +239,7 @@ public class Intrinsics extends ANY
                 System.err.println("*** error: unsafe feature "+n+" disabled");
                 System.exit(1);
               }
-            var b = args.get(1).i32Value(); // NYI: Should be i8Value
+            var b = args.get(1).i8Value();
             var jb = Byte.valueOf((byte) b);
             Clazz resultClazz = innerClazz.resultClazz();
             return JavaInterface.javaObjectToInstance(jb, resultClazz);
@@ -254,7 +254,7 @@ public class Intrinsics extends ANY
                 System.err.println("*** error: unsafe feature "+n+" disabled");
                 System.exit(1);
               }
-            var c = args.get(1).i32Value(); // NYI: Should be u16Value
+            var c = args.get(1).u16Value();
             var jc = Character.valueOf((char) c);
             Clazz resultClazz = innerClazz.resultClazz();
             return JavaInterface.javaObjectToInstance(jc, resultClazz);
@@ -269,7 +269,7 @@ public class Intrinsics extends ANY
                 System.err.println("*** error: unsafe feature "+n+" disabled");
                 System.exit(1);
               }
-            var s = args.get(1).i32Value(); // NYI: Should be i16Value
+            var s = args.get(1).i16Value();
             var js = Short.valueOf((short) s);
             Clazz resultClazz = innerClazz.resultClazz();
             return JavaInterface.javaObjectToInstance(js, resultClazz);
