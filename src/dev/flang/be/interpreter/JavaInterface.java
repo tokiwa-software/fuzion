@@ -364,158 +364,70 @@ public class JavaInterface extends ANY
 
 
   /**
-   * Call virtual Java method
+   * Call virtual or static Java method or constructor
    *
-   * @param name name the method
+   * @param clName name of the class that declares the static method or
+   * constructor. null for virtual call.
    *
-   * @param sig Java signature of the method
+   * @param name name the method, null to call constructor
    *
-   * @param thiz target instance to call method on
+   * @param sig Java signature of the method or constructor
    *
-   * @param args array of arguments to be passed to constructor
+   * @param thiz target instance for a virtual call, null for static method or
+   * constructor call
+   *
+   * @param args array of arguments to be passed to the method or constructor
    *
    * @param resultClazz the result type of the constructed instance
    */
-  static Value callVirtual(String name, String sig, Object thiz, Value args, Clazz resultClazz)
+  static Value call(String clName, String name, String sig, Object thiz, Value args, Clazz resultClazz)
   {
-    Instance result;
+    if (PRECONDITIONS) require
+      ((clName != null) != (thiz != null));
+
     Object res = null;
     Throwable err = null;
-    Method m;
-    Class[] p = getPars(sig);
+    Method m = null;
+    Constructor co = null;
+    var  p = getPars(sig);
     if (p == null)
       {
         System.err.println("could not parse signature >>"+sig+"<<");
         System.exit(1);
       }
+    Class cl;
     try
       {
-        m = thiz.getClass().getMethod(name,p);
-      }
-    catch (NoSuchMethodException e)
-      {
-        System.err.println("NoSuchMethodException when calling fuzion.java.callVirtual for field "+thiz.getClass()+"."+name+sig);
-        System.exit(1);
-        m = null;
-      }
-    Object[] argz = instanceToJavaObjects(args);
-    try
-      {
-        res = m.invoke(thiz, argz);
-      }
-    catch (InvocationTargetException e)
-      {
-        err = e.getCause();
-      }
-    catch (IllegalAccessException e)
-      {
-        err = e;
-      }
-    return javaObjectToInstance(res, err, resultClazz);
-  }
-
-
-  /**
-   * Call static Java method
-   *
-   * @param name name the method
-   *
-   * @param sig Java signature of the method
-   *
-   * @param args array of arguments to be passed to constructor
-   *
-   * @param resultClazz the result type of the constructed instance
-   */
-  static Value callStatic(String clName, String name, String sig, Value args, Clazz resultClazz)
-  {
-    Instance result;
-    Object res = null;
-    Throwable err = null;
-    Method m;
-    Class[] p = getPars(sig);
-    if (p == null)
-      {
-        System.err.println("could not parse signature >>"+sig+"<<");
-        System.exit(1);
-      }
-    try
-      {
-        var cl = Class.forName(clName);
-        m = cl.getMethod(name, p);
+        cl = clName == null ? thiz.getClass() : Class.forName(clName);
       }
     catch (ClassNotFoundException e)
       {
-        System.err.println("ClassNotFoundException when calling fuzion.java.callStatic for method " + clName + "." + name + sig);
+        System.err.println("ClassNotFoundException when calling fuzion.java.callStatic/callConstructor for class " +
+                           clName + " calling " + (name == null ? "new " + clName : name ) + sig);
         System.exit(1);
-        m = null;
+        cl = Object.class; // not reached.
+      }
+    try
+      {
+        if (name == null)
+          {
+            co = cl.getConstructor(p);
+          }
+        else
+          {
+            m = cl.getMethod(name,p);
+          }
       }
     catch (NoSuchMethodException e)
       {
-        System.err.println("NoSuchMethodException when calling fuzion.java.callStatic for method " + clName + "." + name + sig);
+        System.err.println("NoSuchMethodException when calling fuzion.java.callStatic/callVirtual/callConstructor calling " +
+                           (name == null ? "new " + clName : (cl.getName() + "." + name)) + sig);
         System.exit(1);
-        m = null;
       }
     Object[] argz = instanceToJavaObjects(args);
     try
       {
-        res = m.invoke(null, argz);
-      }
-    catch (InvocationTargetException e)
-      {
-        err = e.getCause();
-      }
-    catch (IllegalAccessException e)
-      {
-        err = e;
-      }
-    return javaObjectToInstance(res, err, resultClazz);
-  }
-
-
-  /**
-   * Call Java constructor
-   *
-   * @param name name of class to be constructed
-   *
-   * @param sig Java signature of constructor
-   *
-   * @param args array of arguments to be passed to constructor
-   *
-   * @param resultClazz the result type of the constructed instance
-   */
-  static Value callConstructor(String clName, String sig, Value args, Clazz resultClazz)
-  {
-    Instance result;
-    Object res = null;
-    Throwable err = null;
-    Constructor co;
-    Class[] p = getPars(sig);
-    if (p == null)
-      {
-        System.err.println("could not parse signature >>"+sig+"<<");
-        System.exit(1);
-      }
-    try
-      {
-        var cl = Class.forName(clName);
-        co = cl.getConstructor(p);
-      }
-    catch (ClassNotFoundException e)
-      {
-        System.err.println("ClassNotFoundException when calling fuzion.java.callConstructor for class "+clName+" signature "+sig);
-        System.exit(1);
-        co = null;
-      }
-    catch (NoSuchMethodException e)
-      {
-        System.err.println("NoSuchMethodException when calling fuzion.java.callConstructor for class "+clName+" signature "+sig);
-        System.exit(1);
-        co = null;
-      }
-    Object[] argz = instanceToJavaObjects(args);
-    try
-      {
-        res = co.newInstance(argz);
+        res = (name == null) ? co.newInstance(argz) : m.invoke(thiz, argz);
       }
     catch (InvocationTargetException e)
       {

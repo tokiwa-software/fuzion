@@ -175,10 +175,7 @@ public class Intrinsics extends ANY
             String name   = nameI   == null ? null : (String) JavaInterface.instanceToJavaObject(nameI  );
             String sig    =                          (String) JavaInterface.instanceToJavaObject(sigI   );
             Object thiz   = thizI   == null ? null :          JavaInterface.instanceToJavaObject(thizI  );
-            return
-              virtual  ? JavaInterface.callVirtual    (        name, sig, thiz, argz, resultClazz) :
-              statique ? JavaInterface.callStatic     (clName, name, sig,       argz, resultClazz)
-                       : JavaInterface.callConstructor(        name, sig, argz,       resultClazz);
+            return JavaInterface.call(clName, name, sig, thiz, argz, resultClazz);
           };
       }
     else if (n.equals("fuzion.java.stringToJavaObject0"))
