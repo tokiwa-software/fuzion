@@ -103,6 +103,13 @@ class ForClass extends ANY
 
 
   /**
+   * Map from fuzion-name to Field to find what fields will be generated.
+   */
+  TreeMap<String, Field> _generateF = new TreeMap<>();
+  TreeMap<String, Field> _generateSF = new TreeMap<>();
+
+
+  /**
    * Set of overloaded methods, mapping name combined with number or
    * parameters (name + " " + n) to Methods.  In case of overloading, the
    * Method is always the preferred method to use a short name.
@@ -147,6 +154,10 @@ class ForClass extends ANY
       {
         findConstructor(co);
       }
+    for (var fi : _class.getFields())
+      {
+        findField(fi);
+      }
   }
 
 
@@ -155,7 +166,7 @@ class ForClass extends ANY
 
 
   /**
-   * Find Java methods to generate code for
+   * Find Java methods to generate code for.
    *
    * @param me the method to create fuzion code for
    */
@@ -194,7 +205,7 @@ class ForClass extends ANY
 
 
   /**
-   * Find Java constructors to generate code for
+   * Find Java constructors to generate code for this class
    *
    * @param c the constructor to create fuzion code for
    */
@@ -222,6 +233,38 @@ class ForClass extends ANY
 
 
   /**
+   * Find Java fields to generate code for.
+   *
+   * @param fi the field to create fuzion code for
+   */
+  void findField(Field fi)
+  {
+    if (fi.getDeclaringClass() == _class &&
+        (fi.getModifiers() & Modifier.PUBLIC) != 0)
+      {
+        var r = plainResultType(fi.getType());
+        if (r != null)
+          {
+            var statique = (fi.getModifiers() & Modifier.STATIC) != 0;
+            var fm = statique ? _generateSF   : _generateF;
+            var jn = fi.getName();
+            var fn = fuzionName(jn, null);
+            var fn0 = fn;
+            int count = 0;
+            var existing = hasFeature(statique, fn);
+            while (existing)
+              {
+                fn = fn + "__FIELD" + (count == 0 ? "" : "_" + count);
+                count++;
+                existing = hasFeature(statique, fn);
+              }
+            fm.put(fn, fi);
+          }
+      }
+  }
+
+
+  /**
    * Check if the super class' wrapper feature already defines a short hand
    * 'name' with 'n' parameters.  If so, we do not add another short hand.
    */
@@ -234,6 +277,19 @@ class ForClass extends ANY
   {
     var sc = _superClass;
     return sc != null && (sc._overloadedSM.containsKey(name + " " + n) || sc.inheritsShortHandStatic(name, n));
+  }
+
+
+  /**
+   * Check if an instance or static feature with given name is generated in this
+   * or any super feature.
+   */
+  boolean hasFeature(boolean statique, String fn)
+  {
+    var sc = _superClass;
+    return
+      !statique && (_generateM .containsKey(fn) || _generateF .containsKey(fn) || (sc != null && sc.hasFeature(statique, fn))) ||
+       statique && (_generateSM.containsKey(fn) || _generateSF.containsKey(fn));
   }
 
 
@@ -311,12 +367,13 @@ class ForClass extends ANY
             shortHand(me, data_static);
           }
       }
-    for (var fi : _class.getFields())
+    for (var fi : _generateF.entrySet())
       {
-        if (fi.getDeclaringClass() == _class)
-          {
-            processField(fi, cn, n, data_dynamic, data_static);
-          }
+        processField(fi.getKey(), fi.getValue(), cn, fcn, n, data_dynamic, data_static);
+      }
+    for (var fi : _generateSF.entrySet())
+      {
+        processField(fi.getKey(), fi.getValue(), cn, fcn, n, data_dynamic, data_static);
       }
     for (var co : _generateC)
       {
@@ -884,9 +941,14 @@ class ForClass extends ANY
   /**
    * Create Fuzion feature for given field
    *
+   * @param fn the field name
+   *
    * @param fi the field to create fuzion code for
    *
    * @param cn the name of the Java class, e.g. "java.lang.Object"
+   *
+   * @param fcn is the mangled base name of the Java class not
+   * including the package name, e.g., "String"
    *
    * @param classBaseName is the base name of the Java class not including the
    * package name, e.g. "Object"
@@ -897,8 +959,10 @@ class ForClass extends ANY
    * @param data_static the fuzion feature containing the static members of
    * the class
    */
-  void processField(Field fi,
+  void processField(String fn,
+                    Field fi,
                     String cn,
+                    String fcn,
                     String classBaseName,
                     StringBuilder data_dynamic,
                     StringBuilder data_static)
@@ -906,10 +970,9 @@ class ForClass extends ANY
     var rt = plainResultType(fi.getType());
     if (rt != null)
       {
+        var jn = fi.getName();                    // Java name
         if ((fi.getModifiers() & Modifier.STATIC) != 0)
           {
-            var jn = fi.getName();                    // Java name
-            var fn = fuzionName(jn, null);
             data_static.append("\n" +
                                "  # read static Java field '" + fi + "':\n" +
                                "  #\n" +
@@ -920,7 +983,14 @@ class ForClass extends ANY
           }
         else
           {
-            // NYI: instance fields, fields with non-java.io.* type not supported
+            data_dynamic.append("\n" +
+                                "  # read instance Java field '" + fi + "':\n" +
+                                "  #\n" +
+                                "  " + fn + " " + rt + " is\n" +
+                                "    " + ("fuzion.java.getField<" + rt + "> " +
+                                          fcn + ".this " +
+                                          fuzionString(jn) + "\n"
+                                          ));
           }
       }
   }

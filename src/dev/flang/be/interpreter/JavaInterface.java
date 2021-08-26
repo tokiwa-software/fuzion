@@ -52,21 +52,17 @@ public class JavaInterface extends ANY
   /*-----------------------------  methods  -----------------------------*/
 
 
-  static Value getStaticField(String clazz,
-                              String field,
-                              Clazz  resultClass)
+  static Value getField(String clazz,
+                        Object thiz,
+                        String field,
+                        Clazz  resultClass)
   {
     Value result;
     try
       {
-        Class cl = Class.forName(clazz);
+        Class cl = clazz != null ? Class.forName(clazz) : thiz.getClass();
         Field f = cl.getDeclaredField(field);
-        if (!Modifier.isStatic(f.getModifiers()))
-          {
-            System.err.println("fuzion.java.getStaticField called for field "+f+" which is not static");
-            System.exit(1);
-          }
-        Object value = f.get(null);
+        Object value = f.get(thiz);
         result = javaObjectToInstance(value, resultClass);
       }
     catch (IllegalAccessException e)

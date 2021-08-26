@@ -106,8 +106,10 @@ public class Intrinsics extends ANY
             return Value.EMPTY_VALUE;
           };
       }
-    else if (n.equals("fuzion.java.getStaticField0"))
+    else if (n.equals("fuzion.java.getStaticField0") ||
+             n.equals("fuzion.java.getField0"      )    )
       {
+        var statique = n.equals("fuzion.java.getStaticField0");
         var actualGenerics = innerClazz._type._generics;
         if ((actualGenerics == null) || (actualGenerics.size() != 1))
           {
@@ -122,31 +124,12 @@ public class Intrinsics extends ANY
                 System.err.println("*** error: unsafe feature "+n+" disabled");
                 System.exit(1);
               }
-            Instance clazzI = (Instance) args.get(1);
+            Instance clazzOrThizI = (Instance) args.get(1);
             Instance fieldI = (Instance) args.get(2);
-            if (clazzI == null)
-              {
-                System.err.println("fuzion.java.getStaticField called with null class argument");
-                System.exit(1);
-              }
-            if (fieldI == null)
-              {
-                System.err.println("fuzion.java.getStaticField called with null field argument");
-                System.exit(1);
-              }
-            String clazz = (String) JavaInterface.instanceToJavaObject(clazzI);
+            String clazz = !statique ? null : (String) JavaInterface.instanceToJavaObject(clazzOrThizI);
+            Object thiz  = statique  ? null :          JavaInterface.instanceToJavaObject(clazzOrThizI);
             String field = (String) JavaInterface.instanceToJavaObject(fieldI);
-            if (clazz == null)
-              {
-                System.err.println("fuzion.java.getStaticField called with non-String class argument");
-                System.exit(1);
-              }
-            if (field == null)
-              {
-                System.err.println("fuzion.java.getStaticField called with non-String field argument");
-                System.exit(1);
-              }
-            return JavaInterface.getStaticField(clazz, field, resultClazz);
+            return JavaInterface.getField(clazz, thiz, field, resultClazz);
           };
       }
     else if (n.equals("fuzion.java.callV0") ||

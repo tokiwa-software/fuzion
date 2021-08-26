@@ -26,7 +26,7 @@
 public fuzion.java is
 
 
-  # read a static field of given name in class with given name. Wrap result into
+  # read a static field of given name in class with given name.  Wrap result into
   # an instance of T.
   #
   public getStaticField<T>(clazz string, field string) =>
@@ -35,9 +35,22 @@ public fuzion.java is
     getStaticField0<T> c f
 
 
+  # read a field of given name from given object instance thiz.  Wrap result into
+  # an instance of T.
+  #
+  public getField<T>(thiz JavaObject, field string) =>
+    f := stringToJavaObject field
+    getField0<T> thiz f
+
+
   # intrinsic to read static field
   #
   private getStaticField0<T>(clazz JavaObject, field JavaObject) T is intrinsic
+
+
+  # intrinsic to read instance field
+  #
+  private getField0<T>(thiz JavaObject, field JavaObject) T is intrinsic
 
 
   # A Java reference
