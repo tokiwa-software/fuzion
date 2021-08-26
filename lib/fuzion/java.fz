@@ -100,12 +100,12 @@ public fuzion.java is
   # convert a string to a Java String object
   #
   public stringToJavaObject(s string) JavaObject is
-    stringToJavaObject0 s.utf8.asArray.internalArray
+    stringToJavaObject0 s.utf8.asArray.internalArray.data
 
 
   # intrinsic to convert a string to a Java String object
   #
-  private stringToJavaObject0(s sys.array<u8>) JavaObject is intrinsic
+  private stringToJavaObject0(s Object) JavaObject is intrinsic
 
 
   # intrinsic to convert an i8 to a Java Byte object

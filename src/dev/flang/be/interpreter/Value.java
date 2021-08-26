@@ -239,6 +239,16 @@ public abstract class Value extends ANY
   }
 
 
+  /**
+   * Return the ArrayData this value contains.  If this is an ArrayData, return
+   * this, if this is an LValue containing an ArrayData, get that ArrayData.
+   */
+  ArrayData arrayData()
+  {
+    throw new Error("value "+ this + " of class " + getClass() + " is not an ArrayData");
+  }
+
+
 }
 
 /* end of file */

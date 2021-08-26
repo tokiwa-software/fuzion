@@ -352,12 +352,12 @@ public class JavaInterface extends ANY
     if (PRECONDITIONS) require
       (v.instance().clazz().feature() == Types.resolved.f_sys_array);
 
-    Instance i = v.instance();
-    var sz = i.refs.length;
+    var a = v.arrayData();
+    var sz = a.length();
     var result = new Object[sz];
     for (var ix = 0; ix < sz; ix++)
       {
-        result[ix] = instanceToJavaObject((Instance) i.refs[ix]);
+        result[ix] = instanceToJavaObject((Instance)(((Object[])a._array)[ix]));
       }
     return result;
   }

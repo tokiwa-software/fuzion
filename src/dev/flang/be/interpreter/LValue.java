@@ -256,6 +256,16 @@ public class LValue extends Value
 
 
   /**
+   * Return the ArrayData this value contains.  If this is an ArrayData, return
+   * this, if this is an LValue containing an ArrayData, get that ArrayData.
+   */
+  ArrayData arrayData()
+  {
+    return (ArrayData) container.refs[offset];
+  }
+
+
+  /**
    * toString
    *
    * @return

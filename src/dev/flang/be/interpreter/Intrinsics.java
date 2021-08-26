@@ -223,13 +223,8 @@ public class Intrinsics extends ANY
                 System.err.println("*** error: unsafe feature "+n+" disabled");
                 System.exit(1);
               }
-            var strI = args.get(1).instance();
-            var l = strI.nonrefs.length;
-            var ba = new byte[l];
-            for (var i = 0; i < l; i++)
-              {
-                ba[i] = (byte) strI.nonrefs[i];
-              }
+            var strA = args.get(1).arrayData();
+            var ba = (byte[]) strA._array;
             String str = new String(ba, StandardCharsets.UTF_8);
             Clazz resultClazz = innerClazz.resultClazz();
             return JavaInterface.javaObjectToInstance(str, resultClazz);
