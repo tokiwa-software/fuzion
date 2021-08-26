@@ -230,7 +230,6 @@ public class Instance extends Value
   }
 
 
-
   /**
    * For a value of type u32, return the value.
    *
@@ -260,6 +259,39 @@ public class Instance extends Value
     return
         nonrefs[0    ] & 0xFFFFffffL |
       ((nonrefs[0 + 1] & 0xFFFFffffL) << 32);
+  }
+
+
+  /**
+   * For a value of type f32, return the value.
+   *
+   * @return the f32 value
+   */
+  public float f32Value()
+  {
+    if (PRECONDITIONS) require
+      (clazz == Clazzes.f32    .getIfCreated() ||
+       clazz == Clazzes.ref_f32.getIfCreated()    );
+
+    return Float.intBitsToFloat(nonrefs[0]);
+  }
+
+
+  /**
+   * For a value of type f64, return the value.
+   *
+   * @return the f64 value
+   */
+  public double f64Value()
+  {
+    if (PRECONDITIONS) require
+      (clazz == Clazzes.f64    .getIfCreated() ||
+       clazz == Clazzes.ref_f64.getIfCreated()    );
+
+    var l =
+        nonrefs[0    ] & 0xFFFFffffL |
+      ((nonrefs[0 + 1] & 0xFFFFffffL) << 32);
+    return Double.longBitsToDouble(l);
   }
 
 

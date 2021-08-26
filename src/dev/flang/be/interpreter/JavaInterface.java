@@ -288,8 +288,8 @@ public class JavaInterface extends ANY
     else if (resultClazz == Clazzes.i16.getIfCreated() && o instanceof Short     s) { return new i16Value(s); }
     else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Integer   i) { return new i32Value(i); }
     else if (resultClazz == Clazzes.i64.getIfCreated() && o instanceof Long      j) { return new i64Value(j); }
-    //    else if (resultClazz == Clazzes.f32.getIfCreated() && o instanceof Float     f) { return new f32Value(f.floatValue()); } // NYI: f32Value
-    //    else if (resultClazz == Clazzes.f64.getIfCreated() && o instanceof Double    d) { return new f64Value(d.doubleValue()); } // NYI: f64Value
+    else if (resultClazz == Clazzes.f32.getIfCreated() && o instanceof Float     f) { return new f32Value(f.floatValue()); }
+    else if (resultClazz == Clazzes.f64.getIfCreated() && o instanceof Double    d) { return new f64Value(d.doubleValue()); }
     else if (resultClazz == Clazzes.bool  .getIfCreated() && o instanceof Boolean z) { return new boolValue(z); }
     else if (resultClazz == Clazzes.c_unit.getIfCreated() && o == null             ) { return new Instance(resultClazz); }
     else if (resultClazz == Clazzes.string.getIfCreated() && o instanceof String  s) { return Interpreter.value(s); }

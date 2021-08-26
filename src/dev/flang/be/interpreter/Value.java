@@ -177,6 +177,28 @@ public abstract class Value extends ANY
 
 
   /**
+   * For a value of type f32, return the value.
+   *
+   * @return the f32 value
+   */
+  public float f32Value()
+  {
+    throw new Error("this is not of type f32Value, but " + getClass());
+  }
+
+
+  /**
+   * For a value of type f64, return the value.
+   *
+   * @return the f64 value
+   */
+  public double f64Value()
+  {
+    throw new Error("this is not of type f64Value, but " + getClass());
+  }
+
+
+  /**
    * For a value of type bool, return the value.
    *
    * @return the bool value

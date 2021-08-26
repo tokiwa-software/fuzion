@@ -151,6 +151,8 @@ JAVA_FILES_BE_INTERPRETER = \
           $(SRC)/dev/flang/be/interpreter/u16Value.java \
           $(SRC)/dev/flang/be/interpreter/u32Value.java \
           $(SRC)/dev/flang/be/interpreter/u64Value.java \
+          $(SRC)/dev/flang/be/interpreter/f32Value.java \
+          $(SRC)/dev/flang/be/interpreter/f64Value.java \
 
 JAVA_FILES_BE_C = \
           $(SRC)/dev/flang/be/c/C.java \

@@ -170,12 +170,12 @@ public fuzion.java is
 
   # intrinsic to convert an f32 to a Java Float object
   #
-  public f32ToJavaObject(i i32 /* NYI: f32 */) JavaObject is intrinsic
+  public f32ToJavaObject(v f32) JavaObject is intrinsic
 
 
   # intrinsic to convert a f64 to a Java Double object
   #
-  public f64ToJavaObject(i i64) JavaObject is intrinsic
+  public f64ToJavaObject(v f64) JavaObject is intrinsic
 
 
   # intrinsic to convert a bool to a Java Boolean object

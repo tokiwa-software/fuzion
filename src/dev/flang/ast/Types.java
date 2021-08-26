@@ -117,6 +117,8 @@ public class Types extends ANY
     public final Type t_u16 ;
     public final Type t_u32 ;
     public final Type t_u64 ;
+    public final Type t_f32 ;
+    public final Type t_f64 ;
     public final Type t_ref_i8  ;
     public final Type t_ref_i16 ;
     public final Type t_ref_i32 ;
@@ -125,6 +127,8 @@ public class Types extends ANY
     public final Type t_ref_u16 ;
     public final Type t_ref_u32 ;
     public final Type t_ref_u64 ;
+    public final Type t_ref_f32 ;
+    public final Type t_ref_f64 ;
     public final Type t_bool;
     public final Type t_object;
     public final Type t_sys;
@@ -171,6 +175,8 @@ public class Types extends ANY
       t_u16           = Type.type(      "u16"         , universe);
       t_u32           = Type.type(      "u32"         , universe);
       t_u64           = Type.type(      "u64"         , universe);
+      t_f32           = Type.type(      "f32"         , universe);
+      t_f64           = Type.type(      "f64"         , universe);
       t_ref_i8        = Type.type(true, "i8"          , universe);
       t_ref_i16       = Type.type(true, "i16"         , universe);
       t_ref_i32       = Type.type(true, "i32"         , universe);
@@ -179,6 +185,8 @@ public class Types extends ANY
       t_ref_u16       = Type.type(true, "u16"         , universe);
       t_ref_u32       = Type.type(true, "u32"         , universe);
       t_ref_u64       = Type.type(true, "u64"         , universe);
+      t_ref_f32       = Type.type(true, "f32"         , universe);
+      t_ref_f64       = Type.type(true, "f64"         , universe);
       t_bool          = Type.type(      "bool"        , universe);
       t_sys           = Type.type(      "sys"         , universe);
       t_string        = Type.type(      "string"      , universe);

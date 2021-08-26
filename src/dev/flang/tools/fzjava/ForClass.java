@@ -725,8 +725,8 @@ class ForClass extends ANY
         else if (t == Short    .TYPE) { mt = "i16";       }
         else if (t == Integer  .TYPE) { mt = "i32";       }
         else if (t == Long     .TYPE) { mt = "i64";       }
-        else if (t == Float    .TYPE) { mt = "i32";       }  // NYI: should be f32
-        else if (t == Double   .TYPE) { mt = "i64";       }  // NYI: should be f64
+        else if (t == Float    .TYPE) { mt = "f32";       }
+        else if (t == Double   .TYPE) { mt = "f64";       }
         else if (t == Boolean  .TYPE) { mt = "bool";      }
         else if (t == String.class  ) { mt = "string";    }
         else                          { mt = typeName(t); }
@@ -916,8 +916,8 @@ class ForClass extends ANY
     else if (t == Short    .TYPE) { return "i16";       }
     else if (t == Integer  .TYPE) { return "i32";       }
     else if (t == Long     .TYPE) { return "i64";       }
-    else if (t == Float    .TYPE) { return "i32";       }  // NYI: should be f32
-    else if (t == Double   .TYPE) { return "i64";       }  // NYI: should be f64
+    else if (t == Float    .TYPE) { return "f32";       }
+    else if (t == Double   .TYPE) { return "f64";       }
     else if (t == Boolean  .TYPE) { return "bool";      }
     else if (t == Void     .TYPE) { return "unit";      }
     else if (t.isArray()        ) { return null;        }  // NYI: Array not supported yet

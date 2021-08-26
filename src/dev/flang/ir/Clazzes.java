@@ -164,6 +164,8 @@ public class Clazzes extends ANY
   public static final OnDemandClazz u16         = new OnDemandClazz(() -> Types.resolved.t_u16              );
   public static final OnDemandClazz u32         = new OnDemandClazz(() -> Types.resolved.t_u32              );
   public static final OnDemandClazz u64         = new OnDemandClazz(() -> Types.resolved.t_u64              );
+  public static final OnDemandClazz f32         = new OnDemandClazz(() -> Types.resolved.t_f32              );
+  public static final OnDemandClazz f64         = new OnDemandClazz(() -> Types.resolved.t_f64              );
   public static final OnDemandClazz ref_i8      = new OnDemandClazz(() -> Types.resolved.t_ref_i8           );
   public static final OnDemandClazz ref_i16     = new OnDemandClazz(() -> Types.resolved.t_ref_i16          );
   public static final OnDemandClazz ref_i32     = new OnDemandClazz(() -> Types.resolved.t_ref_i32          );
@@ -172,6 +174,8 @@ public class Clazzes extends ANY
   public static final OnDemandClazz ref_u16     = new OnDemandClazz(() -> Types.resolved.t_ref_u16          );
   public static final OnDemandClazz ref_u32     = new OnDemandClazz(() -> Types.resolved.t_ref_u32          );
   public static final OnDemandClazz ref_u64     = new OnDemandClazz(() -> Types.resolved.t_ref_u64          );
+  public static final OnDemandClazz ref_f32     = new OnDemandClazz(() -> Types.resolved.t_ref_f32          );
+  public static final OnDemandClazz ref_f64     = new OnDemandClazz(() -> Types.resolved.t_ref_f64          );
   public static final OnDemandClazz object      = new OnDemandClazz(() -> Types.resolved.t_object           );
   public static final OnDemandClazz string      = new OnDemandClazz(() -> Types.resolved.t_string           );
   public static final OnDemandClazz conststring = new OnDemandClazz(() -> Types.resolved.t_conststring      , true /* needed? */);
