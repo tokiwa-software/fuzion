@@ -129,7 +129,7 @@ integer<T : integer<T>> : numeric<T> is
   #
   asString(base u32) string
     pre
-      debug: 1.as_u32 < base <= 36
+      debug: u32 1 < base <= 36
   is
     ref : string {
         redef utf8 ref : List<u8> is
@@ -159,7 +159,7 @@ integer<T : integer<T>> : numeric<T> is
   #
   asString(len i32, base u32) string
     pre
-      debug: 1.as_u32 < base <= 36
+      debug: u32 1 < base <= 36
     post
       debug: result.byteLength >= len
   is

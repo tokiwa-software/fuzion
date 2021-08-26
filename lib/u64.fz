@@ -141,7 +141,7 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from hasInterval is abstract, fz should not complain about this conflict.
-  redef max => (1.as_u64 << 63) -° 1 +° (1.as_u64 << 63)  # NYI: 18446744073709551615, need to improve parser/lexer to handle this
+  redef max u64 is 0x_ffff_ffff_ffff_ffff
 
 
   # create hash code from this number
@@ -154,7 +154,7 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
   #
   highestOneBit u64 is
     // NYI: should be possible to reuse v, s names
-    (v0, s0) := (val, 0.as_u64)
+    (v0, s0) := (val, u64 0)
     (v1, s1) := if (v0 < 0x1_0000_0000) (v0, s0) else (v0 >> 32, s0 + 32)
     (v2, s2) := if (v1 <      0x1_0000) (v1, s1) else (v1 >> 16, s1 + 16)
     (v3, s3) := if (v2 <         0x100) (v2, s2) else (v2 >>  8, s2 +  8)

@@ -121,7 +121,8 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from hasInterval is abstract, fz should not complain about this conflict.
-  redef max => 9223372036854775807
+  redef max => i64 0x_7fff_ffff_ffff_ffff
+
 
   # create hash code from this number
   hash u64 is

@@ -30,8 +30,8 @@ i64s : wrappingIntegers<i64> is
 
   redef name => "i64"
 
-  redef zero i64 is 0
-  redef one  i64 is 1
+  redef zero => i64 0
+  redef one  => i64 1
 
-  redef min => -° max -° 1
-  redef max => i64 0x_7fff_ffff_ffff_ffff
+  redef min => -0x_8000_0000_0000_0000
+  redef max =>  0x_7fff_ffff_ffff_ffff

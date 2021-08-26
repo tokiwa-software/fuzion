@@ -132,6 +132,7 @@ i16(val i16) : wrappingInteger<i16>, hasInterval<i16>, i16s is
   # from hasInterval<i8> is abstract, fz should not complain about this conflict.
   redef max => i16 0x7fff
 
+
   # create hash code from this number
   hash u64 is
     castTo_u64.hash

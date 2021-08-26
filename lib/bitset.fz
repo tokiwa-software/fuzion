@@ -82,7 +82,7 @@ is
        m u64 =>
          for
            r := true, r && ((has i) <=> other.has i)
-           i in 0.as_u64 .. m
+           i in u64 0 .. m
          else
            r
 
@@ -96,7 +96,7 @@ is
           first := true, first && !(has i)
           s := "", s + (if (has i) comma + $i else "")
           comma := if (first) "" else ", "
-          i in 0.as_u64..h
+          i in u64 0 .. h
         else
           "\{" + s + "}"
 

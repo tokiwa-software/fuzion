@@ -30,8 +30,8 @@ u16s : wrappingIntegers<u16> is
 
   redef name => "u16"
 
-  redef zero u16 is 0.low16bits  # NYI: should be 'u16 0'
-  redef one  u16 is 1.low16bits  # NYI: should be 'u16 1'
+  redef zero => u16 0
+  redef one  => u16 1
 
-  redef min u16 is zero
-  redef max u16 is 0xffff.low16bits  # NYI: should be 'u16 0xffff'
+  redef min => u16 0
+  redef max => u16 0xffff

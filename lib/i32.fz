@@ -125,7 +125,7 @@ i32(val i32) : wrappingInteger<i32>, hasInterval<i32>, i32s is
     pre
       debug: i32.this >= 0
     is
-      u128 0, as_i64.as_u64
+      u128 0 as_i64.as_u64
 
   # casting bit representation to unsigned
   low8bits    u8   is castTo_u32.low8bits   # 0x1234_5678 ->        0x78, -0x1234_5678 -> 0x88
@@ -136,7 +136,8 @@ i32(val i32) : wrappingInteger<i32>, hasInterval<i32>, i32s is
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from hasInterval<i32> is abstract, fz should not complain about this conflict.
-  redef max => 2147483647
+  redef max => 0x_7fff_ffff
+
 
   # create hash code from this number
   hash u64 is

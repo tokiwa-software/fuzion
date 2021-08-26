@@ -30,8 +30,8 @@ i16s : wrappingIntegers<i16> is
 
   redef name => "i16"
 
-  redef zero i16 is 0.low16bits.castTo_i16  # NYI: should be (i16 0)
-  redef one  i16 is 1.low16bits.castTo_i16  # NYI: should be (i16 1)
+  redef zero => i16 0
+  redef one  => i16 1
 
-  redef min i16 is -°max-°one                         # NYI: should be (i16 -0x8000)
-  redef max i16 is i16 0x7fff.low16bits.castTo_i16    # NYI: should be (i16  0x7fff)
+  redef min => i16 -0x8000
+  redef max => i16  0x7fff

@@ -107,8 +107,8 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # create hash code from a string
   hash u64 is
-    shL := 13.as_u64
-    shR := 51.as_u64
+    shL := u64 13
+    shR := u64 51
     for
       h u64 := 0, ((h << shL) | (h >> shR)) ^ b.as_u64;
       b in utf8
@@ -141,7 +141,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   parseU32Octal  outcome<u32> is parseU32 8
   parseU32Hex    outcome<u32> is parseU32 16
   parseU32 (base u32) outcome<u32>
-    pre 1.as_u32 < base <= 36
+    pre u32 1 < base <= 36
   is
     parseInteger<u32> base
 
@@ -153,7 +153,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   parseI64Octal  outcome<i64> is parseI64 8
   parseI64Hex    outcome<i64> is parseI64 16
   parseI64 (base i64) outcome<i64>
-    pre 1.as_i64 < base <= 36
+    pre i64 1 < base <= 36
   is
     parseInteger<i64> base
 
@@ -165,7 +165,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   parseU64Octal  outcome<u64> is parseU64 8
   parseU64Hex    outcome<u64> is parseU64 16
   parseU64 (base u64) outcome<u64>
-    pre 1.as_u64 < base <= 36
+    pre u64 1 < base <= 36
   is
     parseInteger<u64> base
 

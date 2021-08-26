@@ -30,8 +30,8 @@ u64s : wrappingIntegers<u64> is
 
   redef name => "u64"
 
-  redef zero u64 is 0
-  redef one  u64 is 1
+  redef zero => u64 0
+  redef one  => u64 1
 
-  redef min u64 is 0
-  redef max u64 is 0x_ffff_ffff_ffff_ffff
+  redef min => u64 0
+  redef max => u64 0x_ffff_ffff_ffff_ffff
