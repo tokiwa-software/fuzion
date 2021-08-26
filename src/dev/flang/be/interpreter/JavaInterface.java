@@ -66,18 +66,8 @@ public class JavaInterface extends ANY
             System.err.println("fuzion.java.getStaticField called for field "+f+" which is not static");
             System.exit(1);
           }
-        Class t = f.getType();
-        if (t.isPrimitive())
-          {
-            System.err.println("fuzion.java.getStaticField called for field of primitive type, which is not yet supported");
-            System.exit(1);
-            result = null;
-          }
-        else
-          {
-            Object value = f.get(null);
-            result = javaObjectToInstance(value,resultClass);
-          }
+        Object value = f.get(null);
+        result = javaObjectToInstance(value, resultClass);
       }
     catch (IllegalAccessException e)
       {
@@ -297,16 +287,16 @@ public class JavaInterface extends ANY
     if (PRECONDITIONS) require
       (resultClazz != null);
 
-    if      (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Byte      b) { return new i32Value(b); }
-    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Character c) { return new i32Value(c); }
-    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Short     s) { return new i32Value(s); }
+    if      (resultClazz == Clazzes.i8 .getIfCreated() && o instanceof Byte      b) { return new i8Value(b); }
+    else if (resultClazz == Clazzes.u16.getIfCreated() && o instanceof Character c) { return new u16Value(c); }
+    else if (resultClazz == Clazzes.i16.getIfCreated() && o instanceof Short     s) { return new i16Value(s); }
     else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Integer   i) { return new i32Value(i); }
     else if (resultClazz == Clazzes.i64.getIfCreated() && o instanceof Long      j) { return new i64Value(j); }
-    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Float     f) { return new i32Value(f.intValue()); }
-    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Double    d) { return new i64Value(d.longValue()); }
-    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Boolean   z) { return new boolValue(z); }
-    else if (resultClazz == Clazzes.c_unit.getIfCreated() &&  o == null           ) { return new Instance(resultClazz); }
-    else if (resultClazz == Clazzes.string.getIfCreated() && o instanceof String s) { return Interpreter.value(s); }
+    //    else if (resultClazz == Clazzes.f32.getIfCreated() && o instanceof Float     f) { return new f32Value(f.floatValue()); } // NYI: f32Value
+    //    else if (resultClazz == Clazzes.f64.getIfCreated() && o instanceof Double    d) { return new f64Value(d.doubleValue()); } // NYI: f64Value
+    else if (resultClazz == Clazzes.bool  .getIfCreated() && o instanceof Boolean z) { return new boolValue(z); }
+    else if (resultClazz == Clazzes.c_unit.getIfCreated() && o == null             ) { return new Instance(resultClazz); }
+    else if (resultClazz == Clazzes.string.getIfCreated() && o instanceof String  s) { return Interpreter.value(s); }
     else
       {
         var result = new Instance(resultClazz);

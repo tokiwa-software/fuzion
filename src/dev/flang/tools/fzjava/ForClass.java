@@ -836,7 +836,7 @@ class ForClass extends ANY
 
 
   /**
-   * Get the Fuzion result type corresponding to the return type of a Method.
+   * Get the Fuzion result type corresponding to the return type of a Method or Field.
    *
    * @param t a Java type, e.g., Integer.TYPE, String.class,
    * java.util.Vector.class
@@ -903,33 +903,25 @@ class ForClass extends ANY
                     StringBuilder data_dynamic,
                     StringBuilder data_static)
   {
-    if ((fi.getModifiers() & Modifier.STATIC) != 0 &&
-        fi.getType() != Byte     .TYPE &&
-        fi.getType() != Character.TYPE &&
-        fi.getType() != Short    .TYPE &&
-        fi.getType() != Integer  .TYPE &&
-        fi.getType() != Long     .TYPE &&
-        fi.getType() != Float    .TYPE &&
-        fi.getType() != Double   .TYPE &&
-        fi.getType() != Boolean  .TYPE    )
+    var rt = plainResultType(fi.getType());
+    if (rt != null)
       {
-        var t = fi.getType();
-        if (!t.isArray())
+        if ((fi.getModifiers() & Modifier.STATIC) != 0)
           {
-            var rt = typeName(t);
-            var fin = FeatureWriter.mangledCleanName(fi.getName());
+            var jn = fi.getName();                    // Java name
+            var fn = fuzionName(jn, null);
             data_static.append("\n" +
                                "  # read static Java field '" + fi + "':\n" +
                                "  #\n" +
-                               "  " + fin + " " + rt + " is\n" +
+                               "  " + fn + " " + rt + " is\n" +
                                "    " + ("fuzion.java.getStaticField<" + rt + "> " +
                                          fuzionString(cn) + " " +
-                                         fuzionString(fin) + "\n"));
+                                         fuzionString(jn) + "\n"));
           }
-      }
-    else
-      {
-        // NYI: instance fields, fields with non-java.io.* type not supported
+        else
+          {
+            // NYI: instance fields, fields with non-java.io.* type not supported
+          }
       }
   }
 
