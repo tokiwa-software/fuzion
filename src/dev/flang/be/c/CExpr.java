@@ -140,7 +140,20 @@ abstract class CExpr extends CStmnt
   {
     return new CExpr()
       {
-        void code(CString sb) { sb.append(value).append("LL"); }
+        void code(CString sb)
+        {
+          if (value == Long.MIN_VALUE)
+            {
+              // workaround to avoid clang warning 'integer literal is too large
+              // to be represented in a signed integer type, interpreting as
+              // unsigned [-Wimplicitly-unsigned-literal]'
+              sb.append("((int64_t)").append(value).append("ULL)");
+            }
+          else
+            {
+              sb.append(value).append("LL");
+            }
+        }
         int precedence() { return 0; }
     };
   }
