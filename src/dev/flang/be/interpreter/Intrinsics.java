@@ -149,8 +149,13 @@ public class Intrinsics extends ANY
             return JavaInterface.getStaticField(clazz, field, resultClazz);
           };
       }
-    else if (n.equals("fuzion.java.callV0"))
+    else if (n.equals("fuzion.java.callV0") ||
+             n.equals("fuzion.java.callS0") ||
+             n.equals("fuzion.java.callC0")    )
       {
+        var virtual     = n.equals("fuzion.java.callV0");
+        var statique    = n.equals("fuzion.java.callS0");
+        var constructor = n.equals("fuzion.java.callC0");
         var actualGenerics = innerClazz._type._generics;
         Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
         result = (args) ->
@@ -160,58 +165,20 @@ public class Intrinsics extends ANY
                 System.err.println("*** error: unsafe feature "+n+" disabled");
                 System.exit(1);
               }
-            Instance nameI = (Instance) args.get(1);
-            Instance sigI  = (Instance) args.get(2);
-            Instance thizI = (Instance) args.get(3);
-            var argz = args.get(4);
-            if (nameI == null)
-              {
-                System.err.println("fuzion.java.callVirtual called with null name argument");
-                System.exit(1);
-              }
-            if (sigI == null)
-              {
-                System.err.println("fuzion.java.callVirtual called with null signature argument");
-                System.exit(1);
-              }
-            if (thizI == null)
-              {
-                System.err.println("fuzion.java.callVirtual called with null thiz argument");
-                System.exit(1);
-              }
-            String name = (String) JavaInterface.instanceToJavaObject(nameI);
-            String sig  = (String) JavaInterface.instanceToJavaObject(sigI );
-            Object thiz =          JavaInterface.instanceToJavaObject(thizI);
-            return JavaInterface.callVirtual(name,sig,thiz,argz,resultClazz);
-          };
-      }
-    else if (n.equals("fuzion.java.callC0"))
-      {
-        var actualGenerics = innerClazz._type._generics;
-        Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
-        result = (args) ->
-          {
-            if (!ENABLE_UNSAFE_INTRINSICS)
-              {
-                System.err.println("*** error: unsafe feature "+n+" disabled");
-                System.exit(1);
-              }
-            Instance nameI = (Instance) args.get(1);
-            Instance sigI  = (Instance) args.get(2);
-            var argz = args.get(3);
-            if (nameI == null)
-              {
-                System.err.println("fuzion.java.callVirtual called with null name argument");
-                System.exit(1);
-              }
-            if (sigI == null)
-              {
-                System.err.println("fuzion.java.callVirtual called with null signature argument");
-                System.exit(1);
-              }
-            String name = (String) JavaInterface.instanceToJavaObject(nameI);
-            String sig  = (String) JavaInterface.instanceToJavaObject(sigI );
-            return JavaInterface.callConstructor(name, sig, argz, resultClazz);
+            int a = 1;
+            var clNameI = virtual     ? null : (Instance) args.get(a++);
+            var nameI   = constructor ? null : (Instance) args.get(a++);
+            var sigI    =                      (Instance) args.get(a++);
+            var thizI   = !virtual    ? null : (Instance) args.get(a++);
+            var argz = args.get(a);
+            String clName = clNameI == null ? null : (String) JavaInterface.instanceToJavaObject(clNameI);
+            String name   = nameI   == null ? null : (String) JavaInterface.instanceToJavaObject(nameI  );
+            String sig    =                          (String) JavaInterface.instanceToJavaObject(sigI   );
+            Object thiz   = thizI   == null ? null :          JavaInterface.instanceToJavaObject(thizI  );
+            return
+              virtual  ? JavaInterface.callVirtual    (        name, sig, thiz, argz, resultClazz) :
+              statique ? JavaInterface.callStatic     (clName, name, sig,       argz, resultClazz)
+                       : JavaInterface.callConstructor(        name, sig, argz,       resultClazz);
           };
       }
     else if (n.equals("fuzion.java.stringToJavaObject0"))

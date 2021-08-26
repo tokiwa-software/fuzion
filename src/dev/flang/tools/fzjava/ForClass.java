@@ -99,6 +99,7 @@ class ForClass extends ANY
    * to use if several methods differ only in their result type.
    */
   TreeMap<String, Method> _generateM = new TreeMap<>();
+  TreeMap<String, Method> _generateSM = new TreeMap<>();
 
 
   /**
@@ -107,6 +108,7 @@ class ForClass extends ANY
    * Method is always the preferred method to use a short name.
    */
   TreeMap<String, Method> _overloadedM = new TreeMap<>();
+  TreeMap<String, Method> _overloadedSM = new TreeMap<>();
 
 
   /**
@@ -165,31 +167,27 @@ class ForClass extends ANY
         var pa = me.getParameters();
         var p = formalParameters(pa);
         var r = resultType(me);
-        if ((me.getModifiers() & Modifier.STATIC) == 0 &&
-            p != null &&
-            r != null)
+        if (p != null && r != null)
           {
+            var gm = (me.getModifiers() & Modifier.STATIC) == 0 ? _generateM   : _generateSM;
+            var om = (me.getModifiers() & Modifier.STATIC) == 0 ? _overloadedM : _overloadedSM;
             var jn = me.getName();
             var jp = signature(pa);
             var fn = fuzionName(jn, jp);
-            var existing = _generateM.get(fn);
+            var existing = gm.get(fn);
             if (existing == null || !preferred(existing, me))
               {
-                _generateM.put(fn, me);
+                gm.put(fn, me);
               }
             if (pa.length > 0)
               {
                 String nn = jn + " " + pa.length;
-                var existingOver = _overloadedM.get(nn);
+                var existingOver = om.get(nn);
                 if (existingOver == null || !preferred(existingOver, me))
                   {
-                    _overloadedM.put(nn, me);
+                    om.put(nn, me);
                   }
               }
-          }
-        else
-          {
-            // NYI: instance methods, methods with non-empty parameter lists, methods with non-void result not supported
           }
       }
   }
@@ -232,6 +230,11 @@ class ForClass extends ANY
     var sc = _superClass;
     return sc != null && (sc._overloadedM.containsKey(name + " " + n) || sc.inheritsShortHand(name, n));
   }
+  boolean inheritsShortHandStatic(String name, int n)
+  {
+    var sc = _superClass;
+    return sc != null && (sc._overloadedSM.containsKey(name + " " + n) || sc.inheritsShortHandStatic(name, n));
+  }
 
 
   /**
@@ -244,6 +247,11 @@ class ForClass extends ANY
   {
     var sc = _superClass;
     return sc != null && (sc._generateM.containsKey(fn) || sc.inheritsMethod(fn));
+  }
+  boolean inheritsStaticMethod(String fn)
+  {
+    var sc = _superClass;
+    return sc != null && (sc._generateSM.containsKey(fn) || sc.inheritsStaticMethod(fn));
   }
 
 
@@ -278,11 +286,29 @@ class ForClass extends ANY
             processMethod(me, fcn, data_dynamic, data_static);
           }
       }
+    for (var me : _generateSM.values())
+      {
+        var pa = me.getParameters();
+        var jn = me.getName();
+        var jp = signature(pa);
+        var fn = fuzionName(jn, jp);
+        if (!inheritsStaticMethod(fn))
+          {
+            processMethod(me, fcn, data_dynamic, data_static);
+          }
+      }
     for (var me : _overloadedM.values())
       {
         if (!inheritsShortHand(me.getName(), me.getParameterTypes().length))
           {
             shortHand(me, data_dynamic);
+          }
+      }
+    for (var me : _overloadedSM.values())
+      {
+        if (!inheritsShortHandStatic(me.getName(), me.getParameterTypes().length))
+          {
+            shortHand(me, data_static);
           }
       }
     for (var fi : _class.getFields())
@@ -372,16 +398,32 @@ class ForClass extends ANY
     var fp = formalParameters(pa);            // Fuzion parameters
     var fr = resultType(me);                  // Fuzion result type
     var fn = fuzionName(jn, jp);
-    data_dynamic.append("\n" +
-                        "  # call Java instance method '" + me + "':\n" +
-                        "  #\n" +
-                        "  " + fn + fp + " " + fr + " is\n" +
-                        "    " + ("fuzion.java.callVirtual<" + fr + "> " +
-                                  fuzionString(jn) + " " +
-                                  fuzionString(js) +
-                                  " " + fcn + ".this "+
+    if ((me.getModifiers() & Modifier.STATIC) == 0)
+      {
+        data_dynamic.append("\n" +
+                            "  # call Java instance method '" + me + "':\n" +
+                            "  #\n" +
+                            "  " + fn + fp + " " + fr + " is\n" +
+                            "    " + ("fuzion.java.callVirtual<" + fr + "> " +
+                                      fuzionString(jn) + " " +
+                                      fuzionString(js) + " " +
+                                      fcn + ".this "+
                                   parametersArray(pa) + "\n")
-                        );
+                            );
+      }
+    else
+      {
+        data_static.append("\n" +
+                            "  # call Java static method '" + me + "':\n" +
+                            "  #\n" +
+                            "  " + fn + fp + " " + fr + " is\n" +
+                            "    " + ("fuzion.java.callStatic<" + fr + "> " +
+                                      fuzionString(me.getDeclaringClass().getName()) + " " +
+                                      fuzionString(jn) + " " +
+                                      fuzionString(js) + " " +
+                                  parametersArray(pa) + "\n")
+                            );
+      }
   }
 
 
@@ -429,7 +471,7 @@ class ForClass extends ANY
    * the class
    */
   void shortHand(Method me,
-                 StringBuilder data_dynamic)
+                 StringBuilder data)
   {
     var pa = me.getParameters();
     var fp = formalParameters(pa);
@@ -438,11 +480,11 @@ class ForClass extends ANY
     var jp = signature(pa);                   // Java signature of parameters
     var fn0= fuzionName(jn, null);
     var fn = fuzionName(jn, jp);
-    data_dynamic.append("\n" +
-                        "  # short-hand to call Java instance method '" + me + "':\n" +
-                        "  #\n" +
-                        "  " + fn0 + fp + " " + fr + " is\n" +
-                        "    " + fn + parametersList(pa) + "\n");
+    data.append("\n" +
+                "  # short-hand to call Java method '" + me + "':\n" +
+                "  #\n" +
+                "  " + fn0 + fp + " " + fr + " is\n" +
+                "    " + fn + parametersList(pa) + "\n");
   }
 
 

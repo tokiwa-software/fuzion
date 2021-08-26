@@ -416,6 +416,63 @@ public class JavaInterface extends ANY
 
 
   /**
+   * Call static Java method
+   *
+   * @param name name the method
+   *
+   * @param sig Java signature of the method
+   *
+   * @param args array of arguments to be passed to constructor
+   *
+   * @param resultClazz the result type of the constructed instance
+   */
+  static Value callStatic(String clName, String name, String sig, Value args, Clazz resultClazz)
+  {
+    Instance result;
+    Object res = null;
+    Throwable err = null;
+    Method m;
+    Class[] p = getPars(sig);
+    if (p == null)
+      {
+        System.err.println("could not parse signature >>"+sig+"<<");
+        System.exit(1);
+      }
+    try
+      {
+        var cl = Class.forName(clName);
+        m = cl.getMethod(name, p);
+      }
+    catch (ClassNotFoundException e)
+      {
+        System.err.println("ClassNotFoundException when calling fuzion.java.callStatic for method " + clName + "." + name + sig);
+        System.exit(1);
+        m = null;
+      }
+    catch (NoSuchMethodException e)
+      {
+        System.err.println("NoSuchMethodException when calling fuzion.java.callStatic for method " + clName + "." + name + sig);
+        System.exit(1);
+        m = null;
+      }
+    Object[] argz = instanceToJavaObjects(args);
+    try
+      {
+        res = m.invoke(null, argz);
+      }
+    catch (InvocationTargetException e)
+      {
+        err = e.getCause();
+      }
+    catch (IllegalAccessException e)
+      {
+        err = e;
+      }
+    return javaObjectToInstance(res, err, resultClazz);
+  }
+
+
+  /**
    * Call Java constructor
    *
    * @param name name of class to be constructed
@@ -426,7 +483,7 @@ public class JavaInterface extends ANY
    *
    * @param resultClazz the result type of the constructed instance
    */
-  static Value callConstructor(String name, String sig, Value args, Clazz resultClazz)
+  static Value callConstructor(String clName, String sig, Value args, Clazz resultClazz)
   {
     Instance result;
     Object res = null;
@@ -440,18 +497,18 @@ public class JavaInterface extends ANY
       }
     try
       {
-        var cl = Class.forName(name);
+        var cl = Class.forName(clName);
         co = cl.getConstructor(p);
       }
     catch (ClassNotFoundException e)
       {
-        System.err.println("ClassNotFoundException when calling fuzion.java.callConstructor for class "+name+" signature "+sig);
+        System.err.println("ClassNotFoundException when calling fuzion.java.callConstructor for class "+clName+" signature "+sig);
         System.exit(1);
         co = null;
       }
     catch (NoSuchMethodException e)
       {
-        System.err.println("NoSuchMethodException when calling fuzion.java.callConstructor for class "+name+" signature "+sig);
+        System.err.println("NoSuchMethodException when calling fuzion.java.callConstructor for class "+clName+" signature "+sig);
         System.exit(1);
         co = null;
       }

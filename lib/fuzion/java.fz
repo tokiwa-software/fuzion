@@ -69,6 +69,21 @@ public fuzion.java is
     callV0<T> n s thiz a
 
 
+  # Call a static Java method with given name and signature with given
+  # arguments
+  #
+  public callStatic<T>(className string,
+                       name string,
+                       signature string,
+                       args array<JavaObject>) T
+  is
+    c := stringToJavaObject className
+    n := stringToJavaObject name
+    s := stringToJavaObject signature
+    a := args.internalArray
+    callS0<T> c n s a
+
+
   # Call a Java constructor with given signature for class with given name
   # with given arguments
   #
@@ -82,11 +97,18 @@ public fuzion.java is
     callC0<T> c s a
 
 
-  # intrinsic to call given Java method
+  # intrinsic to call given Java instance method
   #
   private callV0<T>(name JavaObject,
                     signature JavaObject,
                     thiz JavaObject,
+                    args sys.array<JavaObject>) T is intrinsic
+
+  # intrinsic to call given Java static method
+  #
+  private callS0<T>(className JavaObject,
+                    name JavaObject,
+                    signature JavaObject,
                     args sys.array<JavaObject>) T is intrinsic
 
 
