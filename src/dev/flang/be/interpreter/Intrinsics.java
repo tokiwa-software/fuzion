@@ -85,7 +85,7 @@ public class Intrinsics extends ANY
       {
         result = (args) ->
           {
-            System.out.write(args.get(1).i32Value());
+            System.out.write(args.get(1).u8Value());
             return Value.EMPTY_VALUE;
           };
       }

@@ -36,7 +36,7 @@ public fuzion.std.out is
     println
 
   public println =>
-    write 10.as_u8
+    write 10
     flush
 
   public write(b u8) unit is intrinsic
