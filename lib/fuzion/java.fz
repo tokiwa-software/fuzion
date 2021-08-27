@@ -60,6 +60,41 @@ public fuzion.java is
     isNull => false   # NYI: comparing Java ref to 'null'
 
 
+  # A Java array
+  #
+  public Array<T>(private redef javaRef Object) ref : List<T>, JavaObject javaRef
+  is
+    length            => arrayLength<T> Array.this
+    index [ ] (i i32) => arrayGet<T>    Array.this i
+    redef asList => asList 0
+
+    # create list starting at index from
+    #
+    asList (from i32) list<T> is
+      if length <= from
+        nil
+      else
+        arrayCons from
+
+    # create a cons cell for a list of this array starting at the given
+    # index
+    #
+    private arrayCons (i i32) : Cons<T, list<T>>
+      pre
+        debug: 0 <= i < length
+    is
+      head => Array.this[i]
+      tail => asList i+1
+
+
+
+  # Java's 'java.lang.String' type
+  #
+  public JavaString(private redef javaRef Object) : string, JavaObject javaRef
+  is
+    utf8 => (javaStringToString JavaString.this).utf8
+
+
   # Java's 'void' type (which is used in Java like Fuzion's 'unit' type').
   #
   public JavaVoid(forbiddenToCallDirectly void) : JavaObject(Object)
@@ -132,6 +167,27 @@ public fuzion.java is
                     args sys.array<JavaObject>) T is intrinsic
 
 
+  # intrinsic to get the length of a Java array of arbitrary type
+  #
+  private arrayLength<T>(a Array<T>) i32 is intrinsic
+
+
+  # intrinsic to get an element of a Java array of arbitrary type
+  #
+  private arrayGet<T>(a Array<T>, ix i32) T is intrinsic
+
+
+  # convert a List to a Java Array object
+  #
+  public arrayToJavaObject<T>(a List<T>) Array<T> is
+    arrayToJavaObject0<T> a.asArray.internalArray.data
+
+
+  # intrinsic to convert an array to a Java Array object
+  #
+  private arrayToJavaObject0<T>(a Object) Array<T> is intrinsic
+
+
   # convert a string to a Java String object
   #
   public stringToJavaObject(s string) JavaObject is
@@ -141,6 +197,11 @@ public fuzion.java is
   # intrinsic to convert a string to a Java String object
   #
   private stringToJavaObject0(s Object) JavaObject is intrinsic
+
+
+  # convert a Java String to a stirng
+  #
+  private javaStringToString(js JavaString) string is intrinsic
 
 
   # intrinsic to convert an i8 to a Java Byte object

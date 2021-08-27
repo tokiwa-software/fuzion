@@ -29,7 +29,7 @@
 # See Makefile for how to start fuzion to run this example.
 #
 javaHello
-: Java  # inheriting Java adds make Java packages visible
+: Java  # inheriting Java makes Java packages visible
 is
 
   # we can call code in Java package directly using fully
@@ -56,3 +56,15 @@ is
   #
   println (s string) => java.lang.System.out.println s
   println "Hello Java 🌍!"
+
+  # let's work a bit with Java:
+  #
+  javaString := java.lang.String.new "Hello Java 🌍!"                          # create Java string, type Java.java.lang.String
+//  javaBytes  := javaString.getBytes java.nio.charset.StandardCharsets.UTF__8   # get its UTF8 bytes, type is fuzion.java.Array<i8>
+  javaBytes  := javaString.getBytes "UTF8"                                     # get its UTF8 bytes, type is fuzion.java.Array<i8>
+  match javaBytes
+    err error => say "got an error: $err"
+    bytes fuzion.java.Array =>
+      say "string has {bytes.count} bytes: $bytes"
+      javaString2 := java.lang.String.new bytes 6 bytes.count-6                # create Java string from bytes subset,
+      say "Hello "+javaString2                                                 # append Java string to Fuzion string and print it

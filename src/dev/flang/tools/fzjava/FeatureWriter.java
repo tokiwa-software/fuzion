@@ -130,6 +130,12 @@ class FeatureWriter extends ANY
             // so we replace it by '_jObject'.
             s = "_jObject";
           }
+        else if (s.equals("List"))
+          {
+            // NYI: Due to #40, we cannot declare an inner feature with name 'List',
+            // so we replace it by '_jList'.
+            s = "_jList";
+          }
         else if (s.equals("hashCode") ||
                  s.equals("string"  ) ||
                  s.equals("array"   )    )

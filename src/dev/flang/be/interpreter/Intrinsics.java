@@ -39,6 +39,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 
 
@@ -161,6 +162,50 @@ public class Intrinsics extends ANY
             return JavaInterface.call(clName, name, sig, thiz, argz, resultClazz);
           };
       }
+    else if (n.equals("fuzion.java.arrayLength"))
+      {
+        result = (args) ->
+          {
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                System.err.println("*** error: unsafe feature "+n+" disabled");
+                System.exit(1);
+              }
+            var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());
+            return new i32Value(Array.getLength(arr));
+          };
+      }
+    else if (n.equals("fuzion.java.arrayGet"))
+      {
+        result = (args) ->
+          {
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                System.err.println("*** error: unsafe feature "+n+" disabled");
+                System.exit(1);
+              }
+            var arr = JavaInterface.instanceToJavaObject(args.get(1).instance());
+            var ix  = args.get(2).i32Value();
+            var res = Array.get(arr, ix);
+            Clazz resultClazz = innerClazz.resultClazz();
+            return JavaInterface.javaObjectToInstance(res, resultClazz);
+          };
+      }
+    else if (n.equals("fuzion.java.arrayToJavaObject0"))
+      {
+        result = (args) ->
+          {
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                System.err.println("*** error: unsafe feature "+n+" disabled");
+                System.exit(1);
+              }
+            var arrA = args.get(1).arrayData();
+            var res = arrA._array;
+            Clazz resultClazz = innerClazz.resultClazz();
+            return JavaInterface.javaObjectToInstance(res, resultClazz);
+          };
+      }
     else if (n.equals("fuzion.java.stringToJavaObject0"))
       {
         result = (args) ->
@@ -175,6 +220,19 @@ public class Intrinsics extends ANY
             String str = new String(ba, StandardCharsets.UTF_8);
             Clazz resultClazz = innerClazz.resultClazz();
             return JavaInterface.javaObjectToInstance(str, resultClazz);
+          };
+      }
+    else if (n.equals("fuzion.java.javaStringToString"))
+      {
+        result = (args) ->
+          {
+            if (!ENABLE_UNSAFE_INTRINSICS)
+              {
+                System.err.println("*** error: unsafe feature "+n+" disabled");
+                System.exit(1);
+              }
+            var javaString = (String) JavaInterface.instanceToJavaObject(args.get(1).instance());
+            return Interpreter.value(javaString);
           };
       }
     else if (n.equals("fuzion.java.i8ToJavaObject"))
