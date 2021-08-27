@@ -292,7 +292,6 @@ public class JavaInterface extends ANY
     else if (resultClazz == Clazzes.f64.getIfCreated() && o instanceof Double    d) { return new f64Value(d.doubleValue()); }
     else if (resultClazz == Clazzes.bool  .getIfCreated() && o instanceof Boolean z) { return new boolValue(z); }
     else if (resultClazz == Clazzes.c_unit.getIfCreated() && o == null             ) { return new Instance(resultClazz); }
-    else if (resultClazz == Clazzes.string.getIfCreated() && o instanceof String  s) { return Interpreter.value(s); }
     else
       {
         var result = new Instance(resultClazz);
