@@ -1,0 +1,52 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example gfx
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# gfx is a minimalistic example that shows how Java's
+# java.awt graphics can be called from Fuzion code.
+#
+# See Makefile for how to start fuzion to run this example.
+#
+gfx
+: Java  # inheriting Java makes Java packages visible
+is
+
+  gfx // : java.lang.Thread_static    # NYI: causes NullPointerException in fz
+  is
+    match java.awt.Frame.new
+      e error => say "error: $e"
+      f java.awt.Frame =>
+        f.setSize 800 800
+        f.setTitle "Fuzion's first window!"
+        match java.awt.Button.new "If you like Fuzion, click here!"
+          e error => say "error: $e"
+          b java.awt.Button =>
+            b.setBounds 50 50 50 50
+            f.add_Ljava_7_awt_7_Component_s_ b
+            f.setVisible true
+            java.lang.Thread.sleep 5000
+            say "done.";
+            f.setVisible false
+            fuzion.std.exit 0
+  gfx
