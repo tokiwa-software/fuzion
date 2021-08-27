@@ -373,6 +373,10 @@ public class FZJava extends Tool
           {
             ForClass sfc = null;
             var sc = c.getSuperclass();
+            while (sc != null && (sc.getModifiers() & Modifier.PUBLIC) == 0)
+              {
+                sc = sc.getSuperclass();
+              }
             if (sc != null)
               {
                 sfc = forClass(sc);
