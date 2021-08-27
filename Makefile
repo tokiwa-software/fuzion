@@ -212,8 +212,23 @@ JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
+MOD_JAVA_BASE         = $(BUILD_DIR)/modules/java.base/__marker_for_make__
+MOD_JAVA_XML          = $(BUILD_DIR)/modules/java.xml/__marker_for_make__
+MOD_JAVA_DATATRANSFER = $(BUILD_DIR)/modules/java.datatransfer/__marker_for_make__
+MOD_JAVA_DESKTOP      = $(BUILD_DIR)/modules/java.desktop/__marker_for_make__
+
+ALL = \
+	$(BUILD_DIR)/bin/fz \
+	$(BUILD_DIR)/bin/fzjava \
+	$(MOD_JAVA_BASE) \
+	$(MOD_JAVA_XML) \
+	$(MOD_JAVA_DATATRANSFER) \
+	$(MOD_JAVA_DESKTOP) \
+	$(BUILD_DIR)/tests \
+	$(BUILD_DIR)/examples
+
 .PHONY: all
-all: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/bin/fzjava $(BUILD_DIR)/modules/java.base/Java.fz $(BUILD_DIR)/tests $(BUILD_DIR)/examples
+all: $(ALL)
 
 # phony target to compile all java sources
 .PHONY: javac
@@ -334,10 +349,47 @@ $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
 	chmod +x $@
 
-$(BUILD_DIR)/modules/java.base/Java.fz: $(BUILD_DIR)/bin/fzjava
+$(MOD_JAVA_BASE): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
 	$(BUILD_DIR)/bin/fzjava java.base -to=$(@D) -verbose=0
+	touch $@
+
+$(MOD_JAVA_XML): $(BUILD_DIR)/bin/fzjava
+	rm -rf $(@D)
+	mkdir -p $(@D)
+	$(BUILD_DIR)/bin/fzjava java.xml -to=$(@D) -verbose=0
+	# NYI: manually delete redundant features
+	rm $(BUILD_DIR)/modules/java.xml/Java.fz
+	rm $(BUILD_DIR)/modules/java.xml/Java/jdk.fz
+	rm $(BUILD_DIR)/modules/java.xml/Java/javax.fz
+	rm $(BUILD_DIR)/modules/java.xml/Java/com.fz
+	rm $(BUILD_DIR)/modules/java.xml/Java/com/sun.fz
+	touch $@
+
+$(MOD_JAVA_DATATRANSFER): $(BUILD_DIR)/bin/fzjava
+	rm -rf $(@D)
+	mkdir -p $(@D)
+	$(BUILD_DIR)/bin/fzjava java.datatransfer -to=$(@D) -verbose=0
+	# NYI: manually delete redundant features
+	rm $(BUILD_DIR)/modules/java.datatransfer/Java.fz
+	rm $(BUILD_DIR)/modules/java.datatransfer/Java/java.fz
+	rm $(BUILD_DIR)/modules/java.datatransfer/Java/sun.fz
+	rm $(BUILD_DIR)/modules/java.datatransfer/Java/java/awt.fz
+	touch $@
+
+$(MOD_JAVA_DESKTOP): $(BUILD_DIR)/bin/fzjava
+	rm -rf $(@D)
+	mkdir -p $(@D)
+	$(BUILD_DIR)/bin/fzjava java.desktop -to=$(@D) -verbose=0
+	# NYI: manually delete redundant features
+	rm $(BUILD_DIR)/modules/java.desktop/Java.fz
+	rm $(BUILD_DIR)/modules/java.desktop/Java/javax.fz
+	rm $(BUILD_DIR)/modules/java.desktop/Java/com.fz
+	rm $(BUILD_DIR)/modules/java.desktop/Java/sun.fz
+	rm $(BUILD_DIR)/modules/java.desktop/Java/com/sun.fz
+	rm $(BUILD_DIR)/modules/java.desktop/Java/java.fz
+	touch $@
 
 $(BUILD_DIR)/tests: $(FZ_SRC)/tests
 	mkdir -p $(@D)
