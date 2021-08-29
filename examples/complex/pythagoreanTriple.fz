@@ -1,0 +1,59 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example pythagoreanTriple
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# pyhtagoreanTriple -- demo using complex numbers bases on integers
+#
+# See Makefile for how to start fuzion to run this example.
+#
+# inspired by 3Blue1Brown https://www.youtube.com/watch?v=QJYmyhnaaek
+#
+# For any complex number v with v.r/v.i integers, v.abs² is also an
+# integer.  Since v² has absolute v².r and v².i, and v².abs = v.abs²,
+# we find a pythagorean triple (v².r, v².i, v².abs) for every such v.
+#
+pythagoreanTriple is
+
+  max := 100
+
+  for r in 1..max do
+    for
+      # i >= r is not interesting, v².r or v².i would be negative
+      # so we start end i at r-1
+      i in 1..r-1
+      t := triple r i
+      a := t.a
+      b := t.b
+      c := t.c
+    while c < max
+      if r.gcd i = 1 # filter duplicates
+        say "{a}² + {b}² = {c}² = {a*a} + {b*b} = {c*c}"
+
+  triple(r, i i32) is
+    v := complex r i
+    v² := v * v
+    f := v².r.gcd v².i  # 1 or 2 (if r+i is even)
+    a := v².r / f
+    b := v².i / f
+    c := v.abs² / f
