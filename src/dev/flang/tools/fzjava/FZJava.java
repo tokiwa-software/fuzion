@@ -425,7 +425,7 @@ public class FZJava extends Tool
     if (!_pkgs.contains(pkg))
       {
         _pkgs.add(pkg);
-        FeatureWriter.write(this, pkg, "", FeatureWriter.mangle(pkg.replace("/",".")) + " is\n");
+        FeatureWriter.write(this, pkg, "_pkg", FeatureWriter.mangle(pkg.replace("/",".")) + " is\n");
       }
   }
 

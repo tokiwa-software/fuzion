@@ -360,11 +360,11 @@ $(MOD_JAVA_XML): $(BUILD_DIR)/bin/fzjava
 	mkdir -p $(@D)
 	$(BUILD_DIR)/bin/fzjava java.xml -to=$(@D) -verbose=0
 	# NYI: manually delete redundant features
-	rm $(BUILD_DIR)/modules/java.xml/Java.fz
-	rm $(BUILD_DIR)/modules/java.xml/Java/jdk.fz
-	rm $(BUILD_DIR)/modules/java.xml/Java/javax.fz
-	rm $(BUILD_DIR)/modules/java.xml/Java/com.fz
-	rm $(BUILD_DIR)/modules/java.xml/Java/com/sun.fz
+	rm $(BUILD_DIR)/modules/java.xml/Java_pkg.fz
+	rm $(BUILD_DIR)/modules/java.xml/Java/jdk_pkg.fz
+	rm $(BUILD_DIR)/modules/java.xml/Java/javax_pkg.fz
+	rm $(BUILD_DIR)/modules/java.xml/Java/com_pkg.fz
+	rm $(BUILD_DIR)/modules/java.xml/Java/com/sun_pkg.fz
 	touch $@
 
 $(MOD_JAVA_DATATRANSFER): $(BUILD_DIR)/bin/fzjava
@@ -372,10 +372,10 @@ $(MOD_JAVA_DATATRANSFER): $(BUILD_DIR)/bin/fzjava
 	mkdir -p $(@D)
 	$(BUILD_DIR)/bin/fzjava java.datatransfer -to=$(@D) -verbose=0
 	# NYI: manually delete redundant features
-	rm $(BUILD_DIR)/modules/java.datatransfer/Java.fz
-	rm $(BUILD_DIR)/modules/java.datatransfer/Java/java.fz
-	rm $(BUILD_DIR)/modules/java.datatransfer/Java/sun.fz
-	rm $(BUILD_DIR)/modules/java.datatransfer/Java/java/awt.fz
+	rm $(BUILD_DIR)/modules/java.datatransfer/Java_pkg.fz
+	rm $(BUILD_DIR)/modules/java.datatransfer/Java/java_pkg.fz
+	rm $(BUILD_DIR)/modules/java.datatransfer/Java/sun_pkg.fz
+	rm $(BUILD_DIR)/modules/java.datatransfer/Java/java/awt_pkg.fz
 	touch $@
 
 $(MOD_JAVA_DESKTOP): $(BUILD_DIR)/bin/fzjava
@@ -383,12 +383,12 @@ $(MOD_JAVA_DESKTOP): $(BUILD_DIR)/bin/fzjava
 	mkdir -p $(@D)
 	$(BUILD_DIR)/bin/fzjava java.desktop -to=$(@D) -verbose=0
 	# NYI: manually delete redundant features
-	rm $(BUILD_DIR)/modules/java.desktop/Java.fz
-	rm $(BUILD_DIR)/modules/java.desktop/Java/javax.fz
-	rm $(BUILD_DIR)/modules/java.desktop/Java/com.fz
-	rm $(BUILD_DIR)/modules/java.desktop/Java/sun.fz
-	rm $(BUILD_DIR)/modules/java.desktop/Java/com/sun.fz
-	rm $(BUILD_DIR)/modules/java.desktop/Java/java.fz
+	rm $(BUILD_DIR)/modules/java.desktop/Java_pkg.fz
+	rm $(BUILD_DIR)/modules/java.desktop/Java/javax_pkg.fz
+	rm $(BUILD_DIR)/modules/java.desktop/Java/com_pkg.fz
+	rm $(BUILD_DIR)/modules/java.desktop/Java/sun_pkg.fz
+	rm $(BUILD_DIR)/modules/java.desktop/Java/com/sun_pkg.fz
+	rm $(BUILD_DIR)/modules/java.desktop/Java/java_pkg.fz
 	touch $@
 
 $(BUILD_DIR)/tests: $(FZ_SRC)/tests
