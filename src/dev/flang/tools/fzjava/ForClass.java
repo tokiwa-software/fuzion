@@ -474,6 +474,7 @@ class ForClass extends ANY
                             "  #\n" +
                             "  " + fn + fp + " " + fr + " is\n" +
                             "    " + ("fuzion.java.callVirtual<" + fr + "> " +
+                                      fuzionString(_class.getName()) + " " +
                                       fuzionString(jn) + " " +
                                       fuzionString(js) + " " +
                                       fcn + ".this "+

@@ -101,20 +101,22 @@ public fuzion.java is
   is
 
 
-  # Call a virtual Java method with given name and signature on instance thiz
-  # with given arguments
+  # Call a virtual Java method className.name with given signature signature
+  # on instance thiz with given arguments
   #
-  public callVirtual<T>(name string,
+  public callVirtual<T>(className string,
+                        name string,
                         signature string,
                         thiz JavaObject,
                         args array<JavaObject>) T
   pre
     safety: !thiz.isNull
   is
+    c := stringToJavaObject className
     n := stringToJavaObject name
     s := stringToJavaObject signature
     a := args.internalArray
-    callV0<T> n s thiz a
+    callV0<T> c n s thiz a
 
 
   # Call a static Java method with given name and signature with given
@@ -147,7 +149,8 @@ public fuzion.java is
 
   # intrinsic to call given Java instance method
   #
-  private callV0<T>(name JavaObject,
+  private callV0<T>(className JavaObject,
+                    name JavaObject,
                     signature JavaObject,
                     thiz JavaObject,
                     args sys.array<JavaObject>) T is intrinsic

@@ -351,8 +351,7 @@ public class JavaInterface extends ANY
   /**
    * Call virtual or static Java method or constructor
    *
-   * @param clName name of the class that declares the static method or
-   * constructor. null for virtual call.
+   * @param clName name of the class that declares the method or constructor.
    *
    * @param name name the method, null to call constructor
    *
@@ -383,7 +382,7 @@ public class JavaInterface extends ANY
     Class cl;
     try
       {
-        cl = clName == null ? thiz.getClass() : Class.forName(clName);
+        cl = Class.forName(clName);
       }
     catch (ClassNotFoundException e)
       {

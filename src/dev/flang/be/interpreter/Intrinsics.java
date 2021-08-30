@@ -150,12 +150,12 @@ public class Intrinsics extends ANY
                 System.exit(1);
               }
             int a = 1;
-            var clNameI = virtual     ? null : (Instance) args.get(a++);
+            var clNameI =                      (Instance) args.get(a++);
             var nameI   = constructor ? null : (Instance) args.get(a++);
             var sigI    =                      (Instance) args.get(a++);
             var thizI   = !virtual    ? null : (Instance) args.get(a++);
             var argz = args.get(a);
-            String clName = clNameI == null ? null : (String) JavaInterface.instanceToJavaObject(clNameI);
+            String clName =                          (String) JavaInterface.instanceToJavaObject(clNameI);
             String name   = nameI   == null ? null : (String) JavaInterface.instanceToJavaObject(nameI  );
             String sig    =                          (String) JavaInterface.instanceToJavaObject(sigI   );
             Object thiz   = thizI   == null ? null :          JavaInterface.instanceToJavaObject(thizI  );
