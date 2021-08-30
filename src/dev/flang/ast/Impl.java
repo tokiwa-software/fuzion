@@ -68,14 +68,15 @@ public class Impl extends ANY
   /**
    *
    */
-  public Expr code_;
+  public Expr _code;
 
 
   /**
    *
    */
-  Expr initialValue;
-  public Expr initialValue() { return initialValue; }
+  Expr _initialValue;
+  public Expr initialValue() { return _initialValue; }
+
 
   Feature _outerOfInitialValue = null;
 
@@ -157,8 +158,8 @@ public class Impl extends ANY
         kind == Kind.FieldActual ||
         kind == Kind.FieldIter   )
       {
-        this.code_ = null;
-        this.initialValue = e;
+        this._code = null;
+        this._initialValue = e;
         this._outerOfInitialValue = outerOfInitialValue;
       }
     else
@@ -166,8 +167,8 @@ public class Impl extends ANY
         check
           (kind == Kind.Routine    ||
            kind == Kind.RoutineDef    );
-        this.code_ = e;
-        this.initialValue = null;
+        this._code = e;
+        this._initialValue = null;
       }
 
     this.pos = pos;
@@ -180,8 +181,8 @@ public class Impl extends ANY
    */
   public Impl(Kind kind)
   {
-    this.code_ = null;
-    this.initialValue = null;
+    this._code = null;
+    this._initialValue = null;
     this.pos = null;
     this.kind_ = kind;
   }
@@ -310,9 +311,9 @@ public class Impl extends ANY
    */
   public void visit(FeatureVisitor v, Feature outer)
   {
-    if (this.code_ != null)
+    if (this._code != null)
       {
-        this.code_ = this.code_.visit(v, outer);
+        this._code = this._code.visit(v, outer);
       }
     else
       {
@@ -335,7 +336,7 @@ public class Impl extends ANY
   private boolean needsImplicitAssignmentToResult(Feature outer)
   {
     return
-      (this.code_ != null) &&
+      (this._code != null) &&
       outer.hasResultField() &&
       !outer.hasAssignmentsToResult();
   }
@@ -358,7 +359,7 @@ public class Impl extends ANY
   {
     if (needsImplicitAssignmentToResult(outer))
       {
-        code_ = code_.propagateExpectedType(res, outer, outer.resultType());
+        _code = _code.propagateExpectedType(res, outer, outer.resultType());
       }
   }
 
@@ -369,7 +370,7 @@ public class Impl extends ANY
    */
   boolean containsOnlyDeclarations()
   {
-    return code_ == null || code_.containsOnlyDeclarations();
+    return _code == null || _code.containsOnlyDeclarations();
   }
 
 
@@ -388,13 +389,13 @@ public class Impl extends ANY
     if (needsImplicitAssignmentToResult(outer))
       {
         Feature resultField = outer.resultField();
-        var endPos = (this.code_ instanceof Block) ? ((Block) this.code_).closingBracePos_ : this.code_.pos;
+        var endPos = (this._code instanceof Block) ? ((Block) this._code).closingBracePos_ : this._code.pos;
         Assign ass = new Assign(res,
                                 endPos,
                                 resultField,
-                                this.code_.box(resultField.resultType()),
+                                this._code.box(resultField.resultType()),
                                 outer);
-        this.code_ = new Block (this.code_.pos,
+        this._code = new Block (this._code.pos,
                                 endPos,
                                 new List<Stmnt>(ass));
       }
@@ -409,17 +410,17 @@ public class Impl extends ANY
   public String toString()
   {
     String result;
-    if (code_ != null) {
-      result = code_.toString();
+    if (_code != null) {
+      result = _code.toString();
     } else {
       switch (kind_)
         {
-        case FieldInit  : result = " = "  + initialValue.getClass() + ": " +initialValue; break;
-        case FieldDef   : result = " := " + initialValue.getClass() + ": " +initialValue; break;
-        case FieldActual: result = " typefrom(" + initialValue.pos() + ")";               break;
+        case FieldInit  : result = " = "  + _initialValue.getClass() + ": " +_initialValue; break;
+        case FieldDef   : result = " := " + _initialValue.getClass() + ": " +_initialValue; break;
+        case FieldActual: result = " typefrom(" + _initialValue.pos() + ")";               break;
         case Field      : result = "";                                                    break;
-        case RoutineDef : result = " => " + code_.toString();                             break;
-        case Routine    : result =          code_.toString();                             break;
+        case RoutineDef : result = " => " + _code.toString();                             break;
+        case Routine    : result =          _code.toString();                             break;
         case Abstract   : result = "is abstract";                                         break;
         case Intrinsic  : result = "is intrinsic";                                        break;
         default: throw new Error("Unexpected Kind: "+kind_);

@@ -799,7 +799,7 @@ hw25 is
           }
         addCode(cc, code, p.calledFeature());
       }
-    toStack(code, ff.impl.code_);
+    toStack(code, ff.impl._code);
   }
 
 

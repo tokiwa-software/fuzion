@@ -117,7 +117,7 @@ public class FrontEnd extends ANY
   String parseStdIn(Parser p)
   {
     var stmnts = p.stmntsEof();
-    ((Block) _universe.impl.code_).statements_.addAll(stmnts);
+    ((Block) _universe.impl._code).statements_.addAll(stmnts);
     boolean first = true;
     String main = null;
     for (var s : stmnts)

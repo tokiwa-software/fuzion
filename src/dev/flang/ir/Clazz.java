@@ -1688,7 +1688,7 @@ public class Clazz extends ANY implements Comparable
                   {
                     /* NYI: Do we need special handling for inferred routine result as well?
                      *
-                     *   return Clazzes.clazz(f.impl.initialValue, this._outer);
+                     *   return Clazzes.clazz(f.impl.initialValue(), this._outer);
                      */
                   }
                 return actualClazz(t);

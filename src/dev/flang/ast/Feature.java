@@ -1092,7 +1092,7 @@ public class Feature extends ANY implements Stmnt, Comparable
         public Feature   action(Feature   f, Feature outer) { f.findDeclarations(outer); return f; }
       });
 
-    if (impl.initialValue != null &&
+    if (impl._initialValue != null &&
         outer.pos._sourceFile != pos._sourceFile &&
         (!outer.isUniverse() || !_legalPartOfUniverse) &&
         !_isIndexVarUpdatedByLoop  /* required for loop in universe, e.g.
@@ -1367,12 +1367,12 @@ public class Feature extends ANY implements Stmnt, Comparable
             thisType_ = thisType().resolve(this);
           }
 
-        if ((impl.kind_ == Impl.Kind.FieldActual) && (impl.initialValue.typeOrNull() == null))
+        if ((impl.kind_ == Impl.Kind.FieldActual) && (impl._initialValue.typeOrNull() == null))
           {
-            impl.initialValue.visit(new ResolveTypes(res),
-                                    true /* NYI: impl_outerOfInitialValue not set yet */
-                                    ? outer().outer() :
-                                    impl._outerOfInitialValue);
+            impl._initialValue.visit(new ResolveTypes(res),
+                                     true /* NYI: impl_outerOfInitialValue not set yet */
+                                     ? outer().outer() :
+                                     impl._outerOfInitialValue);
           }
 
         state_ = State.RESOLVED_TYPES;
@@ -2571,12 +2571,12 @@ public class Feature extends ANY implements Stmnt, Comparable
     // here, while impl.code is visited when impl.visit is called with this as
     // outer argument.
     //
-    if (impl.initialValue != null &&
+    if (impl._initialValue != null &&
         /* initial value has been replaced by explicit assignment during
          * RESOLVING_TYPES phase: */
         !outer.state().atLeast(State.RESOLVING_SUGAR1))
       {
-        impl.initialValue = impl.initialValue.visit(v, outer);
+        impl._initialValue = impl._initialValue.visit(v, outer);
       }
     return v.action(this, outer);
   }
@@ -2606,7 +2606,7 @@ public class Feature extends ANY implements Stmnt, Comparable
                          "Field definition using := must not specify an explicit type",
                          "Definition of field: " + qualifiedName() + "\n" +
                          "Explicit type given: " + returnType + "\n" +
-                         "Defining expression: " + impl.initialValue);
+                         "Defining expression: " + impl._initialValue);
           }
       }
     if (impl.kind_ == Impl.Kind.RoutineDef)
@@ -2617,16 +2617,16 @@ public class Feature extends ANY implements Stmnt, Comparable
                          "Function definition using => must not specify an explicit type",
                          "Definition of function: " + qualifiedName() + "\n" +
                          "Explicit type given: " + returnType + "\n" +
-                         "Defining expression: " + impl.code_);
+                         "Defining expression: " + impl._code);
           }
       }
-    if (impl.initialValue != null)
+    if (impl._initialValue != null)
       {
         /* add assignment of initial value: */
         result = new Block
           (pos, new List<>
            (this,
-            new Assign(res, pos, this, impl.initialValue, outer)
+            new Assign(res, pos, this, impl._initialValue, outer)
             {
               public Assign visit(FeatureVisitor v, Feature outer)
               {
@@ -3004,9 +3004,9 @@ public class Feature extends ANY implements Stmnt, Comparable
 
     // then iterate the statements making fields visible as they are declared
     // and checking which one is visible when we reach call:
-    if (impl.code_ != null)
+    if (impl._code != null)
       {
-        impl.code_.visit(fv, this);
+        impl._code.visit(fv, this);
       }
 
     return curres[1];
@@ -3040,7 +3040,7 @@ public class Feature extends ANY implements Stmnt, Comparable
   {
     if (outer_ != null)
       {
-        var b = outer_.impl.code_;
+        var b = outer_.impl._code;
         if (b instanceof Block)
           {
             for (var s : ((Block)b).statements_)
@@ -3176,13 +3176,13 @@ public class Feature extends ANY implements Stmnt, Comparable
       {
         check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = impl.initialValue.typeOrNull();
+        result = impl._initialValue.typeOrNull();
       }
     else if (impl.kind_ == Impl.Kind.RoutineDef)
       {
         check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = impl.code_.typeOrNull();
+        result = impl._code.typeOrNull();
       }
     else if (returnType.isConstructorType())
       {
@@ -3645,7 +3645,7 @@ public class Feature extends ANY implements Stmnt, Comparable
        state_ == State.FINDING_DECLARATIONS);
 
     Feature o = this.outer_;
-    if (impl.code_ != null || contract != null)
+    if (impl._code != null || contract != null)
       {
         Type outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
                                                    : o.thisType();

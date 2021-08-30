@@ -809,7 +809,7 @@ public class Interpreter extends Backend
                      "Feature called: " + thiz.qualifiedName() + "\n" +
                      "Target instance: " + cur);
       }
-    execute(i.code_, staticClazz, cur);
+    execute(i._code, staticClazz, cur);
     for (var c : thiz.contract.ens)
       {
         var v = execute(c.cond, staticClazz, cur);
