@@ -232,7 +232,7 @@ public class Intrinsics extends ANY
                 System.exit(1);
               }
             var javaString = (String) JavaInterface.instanceToJavaObject(args.get(1).instance());
-            return Interpreter.value(javaString);
+            return Interpreter.value(javaString == null ? "--null--" : javaString);
           };
       }
     else if (n.equals("fuzion.java.i8ToJavaObject"))
