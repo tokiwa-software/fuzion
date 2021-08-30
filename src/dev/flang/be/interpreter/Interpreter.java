@@ -620,7 +620,9 @@ public class Interpreter extends Backend
        outerClazz == Clazzes.ref_u8 .getIfCreated() ||
        outerClazz == Clazzes.ref_u16.getIfCreated() ||
        outerClazz == Clazzes.ref_u32.getIfCreated() ||
-       outerClazz == Clazzes.ref_u64.getIfCreated()) &&
+       outerClazz == Clazzes.ref_u64.getIfCreated() ||
+       outerClazz == Clazzes.ref_f32.getIfCreated() ||
+       outerClazz == Clazzes.ref_f64.getIfCreated()) &&
       /* NYI: somewhat ugly way to access "val" field, should better have Clazzes.ref_i32_val.getIfCreate() etc. */
       innerClazz.feature() == outerClazz.feature().get("val");
 
@@ -658,6 +660,8 @@ public class Interpreter extends Backend
                    ocv != Clazzes.u16 .getIfCreated() || f.qualifiedName().equals("u16.val"),
                    ocv != Clazzes.u32 .getIfCreated() || f.qualifiedName().equals("u32.val"),
                    ocv != Clazzes.u64 .getIfCreated() || f.qualifiedName().equals("u64.val"),
+                   ocv != Clazzes.f32 .getIfCreated() || f.qualifiedName().equals("f32.val") &&
+                   ocv != Clazzes.f64 .getIfCreated() || f.qualifiedName().equals("f64.val"),
                    ocv != Clazzes.bool.getIfCreated() || f.qualifiedName().equals("bool." + FuzionConstants.CHOICE_TAG_NAME));
                 result = (args) -> args.get(0);
               }
@@ -946,7 +950,9 @@ public class Interpreter extends Backend
        v instanceof u8Value ||
        v instanceof u16Value ||
        v instanceof u32Value ||
-       v instanceof u64Value   ) && thiz.isOuterRef()     /* e.g. outerref in integer.infix /-/ */ ||
+       v instanceof u64Value ||
+       v instanceof f32Value ||
+       v instanceof f64Value   ) && thiz.isOuterRef()     /* e.g. outerref in integer.infix /-/ */ ||
       v == null                  && thiz.isChoice()                /* Nil/Null boxed choice tag */;
   }
 
@@ -1108,6 +1114,8 @@ public class Interpreter extends Backend
        curValue instanceof u16Value  && staticClazz == Clazzes.u16 .getIfCreated() ||
        curValue instanceof u32Value  && staticClazz == Clazzes.u32 .getIfCreated() ||
        curValue instanceof u64Value  && staticClazz == Clazzes.u64 .getIfCreated() ||
+       curValue instanceof f32Value  && staticClazz == Clazzes.f32 .getIfCreated() ||
+       curValue instanceof f64Value  && staticClazz == Clazzes.f64 .getIfCreated() ||
        curValue instanceof boolValue && staticClazz == Clazzes.bool.getIfCreated(),
        staticClazz != null);
 
@@ -1158,6 +1166,18 @@ public class Interpreter extends Backend
       {
         check
           (thiz.qualifiedName().equals("u64.val"));
+        result = curValue;
+      }
+    else if (staticClazz == Clazzes.f32.getIfCreated() && curValue instanceof f32Value)
+      {
+        check
+          (thiz.qualifiedName().equals("f32.val"));
+        result = curValue;
+      }
+    else if (staticClazz == Clazzes.f64.getIfCreated() && curValue instanceof f64Value)
+      {
+        check
+          (thiz.qualifiedName().equals("f64.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.bool.getIfCreated() && curValue instanceof boolValue)

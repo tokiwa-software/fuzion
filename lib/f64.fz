@@ -23,10 +23,57 @@
 #
 # -----------------------------------------------------------------------
 
-# f64-- 64 bit floating point values
+# f64 -- 64 bit floating point values
 #
-f64(val f64) is
+#
+# f64 are binary64-numbers as defined in the IEEE 754-2019 standard, see
+# https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
+#
+f64(val f64) : float<f64>, hasInterval<f64>, f64s is
+
+  redef thiz        => f64.this.val
+  redef orderedThis => f64.this.val
+
+
+  # basic operations: 'prefix -' (negation)
+  redef prefix - f64 is intrinsic
   infix + (other f64) f64 is intrinsic
   infix - (other f64) f64 is intrinsic
   infix * (other f64) f64 is intrinsic
   infix / (other f64) f64 is intrinsic
+  infix % (other f64) f64 is intrinsic
+  infix ** (other f64) f64 is intrinsic
+
+
+  # comparison
+  redef infix == (other f64) bool is intrinsic
+  redef infix != (other f64) bool is intrinsic
+  redef infix <  (other f64) bool is intrinsic
+  redef infix <= (other f64) bool is intrinsic
+  redef infix >  (other f64) bool is intrinsic
+  redef infix >= (other f64) bool is intrinsic
+
+
+  # conversion
+  as_i64 i64
+    pre
+      safety: f64.this >= f64s.from_i64 i64.min && f64.this <= from_i64 i64.max
+    is
+      fuzion.std.panic "NYI: f64.as_i64"
+  as_f32 f32
+    is
+      fuzion.std.panic "NYI: f64.as_f32"
+
+
+  # casting bit representation to u64
+  castTo_u64 u64 is intrinsic
+
+
+  # create hash code from this number
+  hash u64 is
+    castTo_u64.hash
+
+
+  # convert this to a string.
+  #
+  redef asString string is intrinsic

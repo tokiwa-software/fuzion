@@ -51,10 +51,13 @@ public class IntConst extends Expr
     ct_u8  (false, 1),
     ct_u16 (false, 2),
     ct_u32 (false, 4),
-    ct_u64 (false, 8);
+    ct_u64 (false, 8),
+    ct_f32 (4),
+    ct_f64 (8);
     final BigInteger _min, _max;
     final int _bytes;
     final boolean _signed;
+    final boolean _float;
     ConstantType(boolean signed, int bytes)
     {
       _signed = signed;
@@ -78,6 +81,15 @@ public class IntConst extends Expr
         }
       _min = new BigInteger(minb);
       _max = new BigInteger(maxb);
+      _float = false;
+    }
+    ConstantType(int bytes)
+    {
+      _bytes = bytes;
+      _signed = true;
+      _float = true;
+      _min = new BigInteger("-1000000");  // NYI
+      _max = new BigInteger( "1000000");  // NYI
     }
     boolean canHold(BigInteger value)
     {
@@ -272,6 +284,8 @@ public class IntConst extends Expr
     else if (t == Types.resolved.t_u16) { return ConstantType.ct_u16; }
     else if (t == Types.resolved.t_u32) { return ConstantType.ct_u32; }
     else if (t == Types.resolved.t_u64) { return ConstantType.ct_u64; }
+    else if (t == Types.resolved.t_f32) { return ConstantType.ct_f32; }
+    else if (t == Types.resolved.t_f64) { return ConstantType.ct_f64; }
     else                                { return null;             }
   }
 

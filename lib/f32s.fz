@@ -17,21 +17,41 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature i64s
+#  Source code of Fuzion standard library feature f64s
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# i64s -- unit type defining features related to i64 but not requiring an
+# f32s -- unit type defining features related to f32 but not requiring an
 # instance
 #
-i64s : wrappingIntegers<i64> is
+#
+# f32 are binary32-numbers as defined in the IEEE 754-2019 standard, see
+# https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
+#
+f32s : floats<f32> is
 
-  redef name => "i64"
+  redef name => "f32"
 
-  redef zero => i64 0
-  redef one  => i64 1
+  redef zero => f32 0
+  redef one  => f32 1
 
-  redef min => -0x_8000_0000_0000_0000
-  redef max =>  0x_7fff_ffff_ffff_ffff
+  redef bytes => 4
+  significandBites => 24
+  exponentBits => 8
+
+  exponentRange => -126..127
+
+  # redef range => f32 # NYI: -3.4028235E38..3.4028235E38
+
+  # minPositive => # NYI:1.4E-45
+
+  # nan => ...
+
+  #  infinity =>
+
+  # negInfinity =>
+
+
+  from_i64(v i64) f32 is intrinsic

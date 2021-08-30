@@ -17,21 +17,46 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature i64s
+#  Source code of Fuzion standard library feature wrappingIntegers
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# i64s -- unit type defining features related to i64 but not requiring an
-# instance
+# floats -- unit type defining features related to float but not requiring
+# an instance
 #
-i64s : wrappingIntegers<i64> is
+#
+# floats are binary floating point numbers as defined in the IEEE 754-2019
+# standard, see https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
+#
+floats<T: float<T>> : numerics<T> is
 
-  redef name => "i64"
+  # number of bytes required to store this value
+  #
+  bytes i32 is abstract
 
-  redef zero => i64 0
-  redef one  => i64 1
+  # number of bits required to store this value
+  #
+  size => 8*bytes
 
-  redef min => -0x_8000_0000_0000_0000
-  redef max =>  0x_7fff_ffff_ffff_ffff
+  # number of bits used for mantissa, including leading '1' that is not actually
+  # stored
+  #
+  significandBites i32 is abstract
+
+  # number of bits used for exponent
+  #
+  exponentBits i32 is abstract
+
+  # redef exponentRange => -126..127
+
+  # redef range => f32 # NYI: -3.4028235E38..3.4028235E38
+
+  # minPositive => # NYI:1.4E-45
+
+  # nan => ...
+
+  # infinity =>
+
+  # negInfinity T is abstract
