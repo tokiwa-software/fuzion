@@ -261,7 +261,7 @@ public class JavaInterface extends ANY
       }
     else
       { // NYI: Instead of throwing an exception, cause a panic and stop the
-        // current thread in an ordered way.
+        // current thread in an orderly way.
         throw new Error("Java code returned with unexpected exception: " + e, e);
       }
     return result;
