@@ -57,7 +57,7 @@ public fuzion.java is
   #
   public JavaObject(private javaRef Object) ref
   is
-    isNull => false   # NYI: comparing Java ref to 'null'
+    isNull bool is intrinsic
 
 
   # A Java array

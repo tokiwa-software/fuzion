@@ -107,6 +107,15 @@ public class Intrinsics extends ANY
             return Value.EMPTY_VALUE;
           };
       }
+    else if (n.equals("fuzion.java.JavaObject.isNull"))
+      {
+        result = (args) ->
+          {
+            Instance thizI = (Instance) args.get(0);
+            Object thiz  =  JavaInterface.instanceToJavaObject(thizI);
+            return new boolValue(thiz == null);
+          };
+      }
     else if (n.equals("fuzion.java.getStaticField0") ||
              n.equals("fuzion.java.getField0"      )    )
       {
