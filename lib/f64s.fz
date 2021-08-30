@@ -38,7 +38,7 @@ f64s : floats<f64> is
   redef one  => f64 1
 
   redef bytes => 8
-  significandBites => 53
+  significandBits => 53
   exponentBits => 11
 
   exponentRange => -1024..1023

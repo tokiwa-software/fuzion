@@ -38,7 +38,7 @@ f32s : floats<f32> is
   redef one  => f32 1
 
   redef bytes => 4
-  significandBites => 24
+  significandBits => 24
   exponentBits => 8
 
   exponentRange => -126..127

@@ -43,7 +43,7 @@ floats<T: float<T>> : numerics<T> is
   # number of bits used for mantissa, including leading '1' that is not actually
   # stored
   #
-  significandBites i32 is abstract
+  significandBits i32 is abstract
 
   # number of bits used for exponent
   #
