@@ -30,8 +30,8 @@ u8s : wrappingIntegers<u8> is
 
   redef name => "u8"
 
-  redef zero u8 is 0.low8bits  # NYI: should be 'u8 0'
-  redef one  u8 is 1.low8bits  # NYI: should be 'u8 1'
+  redef zero => u8 0
+  redef one  => u8 1
 
-  redef min u8 is zero
-  redef max u8 is 0xff.low8bits  # NYI: should be 'u8 0xff'
+  redef min => zero
+  redef max => u8 0xff
