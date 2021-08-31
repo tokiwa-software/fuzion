@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.parser;
 
+import java.math.BigInteger;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
@@ -1142,6 +1143,37 @@ PLUSMINUS   : "+"
         }
     }
 
+
+    /**
+     * The value of the mantissa, ignoring decimal '.' position (i.e., value of
+     * '123.456' is 123456).
+     */
+    BigInteger mantissaValue()
+    {
+      if (_hasError)
+        {
+          return new BigInteger(new byte[1]);
+        }
+      else
+        {
+          return _mantissa.value();
+        }
+    }
+
+    /**
+     * The base of the mantissa
+     */
+    int mantissaBase()
+    {
+      if (_hasError)
+        {
+          return 10;
+        }
+      else
+        {
+          return _mantissa._base._base;
+        }
+    }
   }
 
 
@@ -1155,10 +1187,17 @@ PLUSMINUS   : "+"
      * The radix.
      */
     public enum Base {
-      bin,
-      oct,
-      dec,
-      hex;
+      bin(2 , "binary" ),
+      oct(8 , "octal"  ),
+      dec(10, "decimal"),
+      hex(16, "hex"    );
+      final int _base;
+      final String _name;
+      Base(int base, String name)
+      {
+        _base = base;
+        _name = name;
+      }
     };
 
 
@@ -1388,17 +1427,23 @@ HEX_TAIL    : "." HEX_DIGITS
       if (!_hasError && digits.isEmpty())
         {
           Errors.error(sourcePos(),
-                       "Broken " +
-                       (switch (_base) {
-                       case bin -> "binary";
-                       case oct -> "octal";
-                       case hex -> "hex";
-                       case dec -> "decimal"; } ) + "literal, expected digits after '0" + (char) c1 + "'.",
+                       "Broken " + _base._name + "literal, expected digits after '0" + (char) c1 + "'.",
                        null);
           _hasError = true;
         }
       _digits = digits.toString();
     }
+
+
+    /**
+     * The value, ignoring decimal '.' position (i.e., value of '123.456' is
+     * 123456).
+     */
+    BigInteger value()
+    {
+      return new BigInteger(_digits, _base._base);
+    }
+
   }
 
 

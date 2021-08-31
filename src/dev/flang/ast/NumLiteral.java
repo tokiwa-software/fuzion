@@ -111,7 +111,7 @@ public class NumLiteral extends Expr
 
 
   /**
-   * The radix _digits are represented in, one of 2, 8, 10, 16.
+   * The radix _originalString is represented in, one of 2, 8, 10, 16.
    */
   private final int _radix;
 
@@ -139,24 +139,13 @@ public class NumLiteral extends Expr
    *
    * @param s
    */
-  public NumLiteral(SourcePosition pos, String s)
+  public NumLiteral(SourcePosition pos, String s, int base, BigInteger v)
   {
     super(pos);
 
     this._originalString = s;
-    var neg = s.startsWith("-");
-    if (s.startsWith("+") || neg)
-      {
-        s = s.substring(1);
-      }
-    this._radix =
-      s.startsWith("0b") ?  2 :
-      s.startsWith("0o") ?  8 :
-      s.startsWith("0x") ? 16
-                         : 10;
-    var digits = s.replace("_", "").substring(_radix == 10 ? 0 : 2);
-    var v = new BigInteger(digits, _radix);
-    this._value = neg ? v.negate() : v;
+    this._radix = base;
+    this._value = v;
   }
 
 
@@ -167,7 +156,7 @@ public class NumLiteral extends Expr
    */
   public NumLiteral(int i)
   {
-    this(SourcePosition.builtIn, Integer.toString(i));
+    this(SourcePosition.builtIn, Integer.toString(i), 10, BigInteger.valueOf(i));
 
     if (PRECONDITIONS) require
       (i >= 0);
@@ -182,15 +171,9 @@ public class NumLiteral extends Expr
    */
   public NumLiteral neg(SourcePosition pos)
   {
-    var osWithSign = _originalString;
-    var os = (osWithSign.startsWith("-") || osWithSign.startsWith("+")) ? osWithSign.substring(1) : osWithSign;
-    return switch (_value.signum())
-      {
-      case  0 -> this;
-      case -1 -> new NumLiteral(pos, os);
-      case +1 -> new NumLiteral(pos, "-" + os);
-      default -> throw new Error("unexpected result of BigInteger.signum()");
-      };
+    var o = _originalString;
+    var s = o.startsWith("-") ? o.substring(1) : "-" + o;
+    return new NumLiteral(pos, s, _radix, _value.negate());
   }
 
 

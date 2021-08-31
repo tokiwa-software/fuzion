@@ -1797,7 +1797,11 @@ simpleterm  : bracketTerm
       case t_lparen    :
       case t_lcrochet  :         result = bracketTerm(true);                           break;
       case t_fun       :         result = fun();                                       break;
-      case t_numliteral:         result = new NumLiteral(posObject(), skipNumLiteral()._originalString); break;
+      case t_numliteral: var l = skipNumLiteral();
+                         var m = l.mantissaValue();
+                         var b = l.mantissaBase();
+                         var o = l._originalString;
+                                 result = new NumLiteral(posObject(), o, b, m); break;
       case t_old       : next(); result = new Old(term()                            ); break;
       case t_match     :         result = match();                                     break;
       case t_for       :
