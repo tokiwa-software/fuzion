@@ -342,6 +342,12 @@ public class Lexer extends SourceFile
 
 
   /**
+   * For _curToken == Token.t_numliteral, this gives the details:
+   */
+  private Literal _curLiteral = null;
+
+
+  /**
    * Position of the current token
    */
   private int _curPos = -1;
@@ -833,7 +839,8 @@ public class Lexer extends SourceFile
             }
           case K_DIGIT   :    // '0'..'9'
             {
-              token = literal();
+              _curLiteral = literal(p);
+              token = Token.t_numliteral;
               break;
             }
           case K_LETTER  :    // 'A'..'Z', 'a'..'z'
@@ -995,97 +1002,403 @@ public class Lexer extends SourceFile
 
 
   /**
-   * skip an integer or, at some point, a float literal.
+   * skip a numeric literal.
+   *
+LITERAL     : DIGITS_W_DOT EXPONENT
+            ;
+EXPONENT    : "E" PLUSMINUS DIGITS
+            | "P" PLUSMINUS DIGITS
+            |
+            ;
+PLUSMINUS   : "+"
+            | "-"
+            |
+            ;
    *
    * @return the corresponding Token, currently always Token.t_numliteral.
    */
-  Token literal()
+  Literal literal(int firstDigit)
   {
-    int c1 = curCodePoint();
-    int firstGroupSize = -1;
-    int groupSize = -1;
-    int currentGroupSize = 0;
-    boolean hasDigit = false;
-    boolean hasError = false;
-    if (c1 == 'b' ||
-        c1 == 'o' ||
-        c1 == 'x'    )
+    var m = new Digits(firstDigit, true, false);
+    var p = curCodePoint();
+    return switch (p)
+      {
+      case 'P', 'E' ->
       {
         nextCodePoint();
-        if (curCodePoint() == '_')
+        var neg = switch (curCodePoint())
           {
-            firstGroupSize = 0;
+          case '+' -> { nextCodePoint(); yield false; }
+          case '-' -> { nextCodePoint(); yield true; }
+          default  -> false;
+          };
+        var fd = curCodePoint();
+        if (kind(fd) == K_DIGIT)
+          {
             nextCodePoint();
-          }
-      }
-    else
-      {
-        hasDigit = true;
-      }
-    while ((kind(curCodePoint()) == K_DIGIT ||
-            curCodePoint() == '_' ||
-            (c1 == 'x' && "abcdefABCDEF".indexOf((char) curCodePoint()) >= 0)))
-      {
-        if (curCodePoint() != '_')
-          {
-            currentGroupSize = currentGroupSize + 1;
-            hasDigit = true;
+            var e = new Digits(fd, false, neg);
+            yield new Literal(m, e, p == 'P');
           }
         else
           {
-            if (firstGroupSize < 0)
-              {
-                firstGroupSize = currentGroupSize;
-              }
-            else if (currentGroupSize == 0 && !hasError)
-              {
-                Errors.error(sourcePos(),
-                             "Broken integer literal, repeated '_' are not allowed",
-                             null);
-                hasError = true;
-              }
-            else if (groupSize < 0)
-              {
-                if (currentGroupSize < 2 && !hasError)
-                  {
-                    Errors.error(sourcePos(),
-                                 "Broken integer literal, grouping fewer than two digits is not allowed",
-                                 null);
-                    hasError = true;
-                  }
-                groupSize = currentGroupSize;
-                if (firstGroupSize > groupSize && !hasError)
-                  {
-                    Errors.error(sourcePos(),
-                                 "Broken integer literal, inconsistent grouping of digits.",
-                                 "First group has " + firstGroupSize + " digits, while next group has " + groupSize + " digits.");
-                    hasError = true;
-                  }
-              }
-            else if (groupSize != currentGroupSize && !hasError)
-              {
-                Errors.error(sourcePos(),
-                             "Broken integer literal, inconsistent grouping of digits.",
-                             "Previous group has " + groupSize + " digits, while later group has "+currentGroupSize+" digits.");
-                hasError = true;
-              }
-            currentGroupSize = 0;
+            Errors.error(sourcePos(),
+                         "Broken numeric literal, expected exponent's digits after 'P' or 'E'",
+                         null);
+            yield new Literal();
           }
-        nextCodePoint();
       }
-    if (!hasError && !hasDigit)
-      {
-        Errors.error(sourcePos(),
-                     "Broken " +
-                     (switch (c1) {
-                     case 'b' -> "bool";
-                     case 'o' -> "octal";
-                     case 'x' -> "hex";
-                     default -> "?!?"; } ) + "constant, expected digits after '0" + (char) c1 + "'.",
-                     null);
-        hasError = true;
-      }
-    return Token.t_numliteral;
+      default -> new Literal(m);
+      };
+  }
+
+
+  /**
+   * Class holding the details for a numeric literal found be the parser.
+   */
+  class Literal
+  {
+    /**
+     * Was there an error when scanning this literal?  If so, all the rest is
+     * undefined.
+     */
+    public final boolean _hasError;
+
+
+    /**
+     * The main digits parts, e.g., for "0x_de_ad.c0deP0o123", this will have
+     * _digits == "deadc0de", _base == hex, _dotAt == 4, _hasDot == true.
+     */
+    public final Digits _mantissa;
+
+    /**
+     * The exponents part or null if none. E.g., for "0x_de_ad.c0deP0o123", this
+     * will have _digits == "123", _base == oct, _dotAt == 0, _hasDot ==
+     * false.
+     */
+    public final Digits _exponent;
+
+    /**
+     * Is the exponent given with 'P' (and not with 'E').  E.g., for
+     * "0x_de_ad.c0deP0o123", this will be true.
+     */
+    public final boolean _binaryExponent;
+
+
+    /**
+     * The original string of this literal, E.g., for
+     * "0x_de_ad.c0deP0o123", this will be "0x_de_ad.c0deP0o123"
+     */
+    public final String _originalString;
+
+
+    /**
+     * Create literal with given mantissa, exponent and binaryExponent.
+     */
+    Literal(Digits m, Digits e, boolean binaryExponent)
+    {
+      _mantissa = m;
+      _exponent = e;
+      _binaryExponent = binaryExponent;
+      _hasError = m == null || m._hasError || e != null && e._hasError;
+      _originalString = tokenAsString();
+    }
+
+    /**
+     * Create literal with given mantissa and no exponent.
+     */
+    Literal(Digits m)
+    {
+      this(m, null, false);
+    }
+
+    /**
+     * Create literal with _hasError set.
+     */
+    Literal()
+    {
+      this(null);
+    }
+
+
+    /**
+     * Check that this is a plain base-10 integer without dot and without exponent and return its digits.
+     */
+    String plainInteger()
+    {
+      if (_hasError)
+        {
+          return null;
+        }
+      else if (_mantissa._base != Digits.Base.dec || _mantissa._hasDot || _exponent != null)
+        {
+          Errors.error(sourcePos(),
+                       "Plain integer literal expected, not binary, octal, hex or float",
+                       "Literal is '"+_originalString+"'");
+          return null;
+        }
+      else
+        {
+          return _mantissa._digits;
+        }
+    }
+
+  }
+
+
+  /**
+   * class holding the digits of the mantissa or the exponent in a Literal.
+   */
+  public class Digits
+  {
+
+    /**
+     * The radix.
+     */
+    public enum Base {
+      bin,
+      oct,
+      dec,
+      hex;
+    };
+
+
+    /**
+     * The base as indicated by prefix '0b', '0o', '0d', '0x'. E.g., for
+     * "0x_de_ad.c0de", this will be hex.
+     */
+    public final Base _base;
+
+
+    /**
+     * The digits, without base prefix and without '_' separators.  E.g., for
+     * "0x_de_ad.c0de", this will be "deadc0de"
+     */
+    public final String _digits;
+
+    /**
+     * Position of the decimal dot.  E.g., for "0x_de_ad.c0de", this will be
+     * 4.
+     */
+    public int _dotAt = 0;
+
+    /**
+     * Is there a decimal dot?  E.g., for "0x_de_ad.c0de", this will be true.
+     */
+    public boolean _hasDot = false;
+
+    /**
+     * Was there a '-' preceding these digits?
+     */
+    public final boolean _negative;
+
+    /**
+     * Did an error occure?  E.g., for "0x_de_ad.c0de", this will be
+     * false.
+     */
+    public boolean _hasError = false;
+
+    /**
+     * Helper routine to check if codepoint p is a digit for base. This is
+     * generous, i.e., it will consider any digits '0'..'9' a digit even for
+     * bases bin and oct and it will consider any letter a digit for base hex.
+     */
+    boolean isDigit(int p)
+    {
+      return kind(p) == K_DIGIT || (_base == Base.hex && kind(p) == K_LETTER);
+    }
+
+    /**
+     * Scan digits of the form
+     *
+     * @param firstDigit the first digit that was skipped already
+     *
+     * @param allowDot true to parse DIGITS_W_DOT, false to parse DIGITS
+     *
+     * @param negative true if a '-' was encountered before firstDigit.
+     *
+DIGITS      :         DEC_DIGIT_ DEC_DIGITS_
+            | "0" "b" BIN_DIGIT_ BIN_DIGITS_
+            | "0" "o" OCT_DIGIT_ OCT_DIGITS_
+            | "0" "d" DEC_DIGIT_ DEC_DIGITS_
+            | "0" "x" HEX_DIGIT_ HEX_DIGITS_
+            ;
+DIGITS_W_DOT: DIGITS
+            |         DEC_DIGIT_ DEC_DIGITS_ DEC_TAIL
+            | "0" "b" BIN_DIGIT_ BIN_DIGITS_ BIN_TAIL
+            | "0" "o" OCT_DIGIT_ OCT_DIGITS_ OCT_TAIL
+            | "0" "d" DEC_DIGIT_ DEC_DIGITS_ DEC_TAIL
+            | "0" "x" HEX_DIGIT_ HEX_DIGITS_ HEX_TAIL
+            ;
+UNDERSCORE  : "_"
+            |
+            ;
+BIN_DIGIT   : "0" | "1"
+            ;
+BIN_DIGIT_  : UNDERSCORE BIN_DIGIT
+            ;
+BIN_DIGITS_ : BIN_DIGIT_ BIN_DIGITS_
+            |
+            ;
+BIN_DIGITS  : BIN_DIGIT BIN_DIGITS
+            |
+            ;
+BIN_TAIL    : "." BIN_DIGITS
+            ;
+OCT_DIGIT   : "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7"
+            ;
+OCT_DIGIT_  : UNDERSCORE OCT_DIGIT
+            ;
+OCT_DIGITS_ : OCT_DIGIT_ OCT_DIGITS_
+            |
+            ;
+OCT_DIGITS  : OCT_DIGIT OCT_DIGITS
+            |
+            ;
+OCT_TAIL    : "." OCT_DIGITS
+            ;
+DEC_DIGIT   : "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+            ;
+DEC_DIGIT_  : UNDERSCORE DEC_DIGIT
+            ;
+DEC_DIGITS_ : DEC_DIGIT_ DEC_DIGITS_
+            |
+            ;
+DEC_DIGITS  : DEC_DIGIT DEC_DIGITS
+            |
+            ;
+DEC_TAIL    : "." DEC_DIGITS
+            ;
+HEX_DIGIT   : "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+            | "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"
+            | "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z"
+            ;
+HEX_DIGIT_  : UNDERSCORE HEX_DIGIT
+            ;
+HEX_DIGITS_ : HEX_DIGIT_ HEX_DIGITS_
+            |
+            ;
+HEX_DIGITS  : HEX_DIGIT HEX_DIGITS
+            |
+            ;
+HEX_TAIL    : "." HEX_DIGITS
+            ;
+     */
+    Digits(int firstDigit, boolean allowDot, boolean negative)
+    {
+      _negative = negative;
+      var digits = new StringBuilder();
+      int c1 = curCodePoint();
+      int firstGroupSize = -1;
+      int groupSize = -1;
+      int currentGroupSize = 0;
+      _base =  firstDigit != '0' ? Base.dec :
+        switch (c1)
+          {
+          case 'b' -> Base.bin;
+          case 'o' -> Base.oct;
+          case 'd' -> Base.dec;
+          case 'x' -> Base.hex;
+          default  -> Base.dec;
+          };
+      if (_base == Base.dec)
+        {
+          digits.appendCodePoint(firstDigit);
+        }
+      else
+        {
+          nextCodePoint();
+          if (curCodePoint() == '_')
+            {
+              firstGroupSize = 0;
+              nextCodePoint();
+            }
+        }
+      var d = curCodePoint();
+      var start = sourcePos();
+      while (isDigit(d) || d == '_')
+        {
+          if (d != '_')
+            {
+              currentGroupSize = currentGroupSize + 1;
+              digits.appendCodePoint(d);
+            }
+          else
+            {
+              if (firstGroupSize < 0)
+                {
+                  firstGroupSize = currentGroupSize;
+                }
+              else if (currentGroupSize == 0 && !_hasError)
+                {
+                  Errors.error(sourcePos(),
+                               "Broken numeric literal, repeated '_' are not allowed",
+                               null);
+                  _hasError = true;
+                }
+              else if (groupSize < 0)
+                {
+                  if (currentGroupSize < 2 && !_hasError)
+                    {
+                      Errors.error(sourcePos(),
+                                   "Broken numeric literal, grouping fewer than two digits is not allowed",
+                                   null);
+                      _hasError = true;
+                    }
+                  groupSize = currentGroupSize;
+                  if (firstGroupSize > groupSize && !_hasError)
+                    {
+                      Errors.error(sourcePos(),
+                                   "Broken numeric literal, inconsistent grouping of digits.",
+                                   "First group has " + firstGroupSize + " digits, while next group has " + groupSize + " digits.");
+                      _hasError = true;
+                    }
+                }
+              else if (groupSize != currentGroupSize && !_hasError)
+                {
+                  Errors.error(sourcePos(),
+                               "Broken numeric literal, inconsistent grouping of digits.",
+                               "Previous group has " + groupSize + " digits, while later group has "+currentGroupSize+" digits.");
+                  _hasError = true;
+                }
+              currentGroupSize = 0;
+            }
+          nextCodePoint();
+          d = curCodePoint();
+        }
+      if (allowDot && curCodePoint() == '.')
+        {
+          var f = new Lexer(Lexer.this);
+          f.nextCodePoint();
+          var fd = f.curCodePoint();
+          if (isDigit(fd))
+            {
+              _hasDot = true;
+              nextCodePoint();
+              d = curCodePoint();
+              while (isDigit(d))
+                {
+                  digits.appendCodePoint(d);
+                  _dotAt++;
+                  nextCodePoint();
+                  d = curCodePoint();
+                }
+            }
+        }
+
+      if (!_hasError && digits.isEmpty())
+        {
+          Errors.error(sourcePos(),
+                       "Broken " +
+                       (switch (_base) {
+                       case bin -> "binary";
+                       case oct -> "octal";
+                       case hex -> "hex";
+                       case dec -> "decimal"; } ) + "literal, expected digits after '0" + (char) c1 + "'.",
+                       null);
+          _hasError = true;
+        }
+      _digits = digits.toString();
+    }
   }
 
 
@@ -1440,15 +1753,14 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Return the actual integer constant of the current t_numliteral token as a
-   * string.
+   * Return an object with the details of the current t_numliteral token.
    */
-  String integer()
+  Literal curLiteral()
   {
     if (PRECONDITIONS) require
       (current() == Token.t_numliteral);
 
-    return tokenAsString();
+    return _curLiteral;
   }
 
 

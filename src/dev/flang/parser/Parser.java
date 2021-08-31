@@ -1146,7 +1146,8 @@ call        : name ( actualGens actualArgs callTail
       {
         if (current() == Token.t_numliteral)
           {
-            result = new Call(pos, target, n, skipNumLiteral());
+            var select = skipNumLiteral();
+            result = new Call(pos, target, n, select == null ? "0" : select.plainInteger());
             result = callTail(result);
           }
         else
@@ -1796,7 +1797,7 @@ simpleterm  : bracketTerm
       case t_lparen    :
       case t_lcrochet  :         result = bracketTerm(true);                           break;
       case t_fun       :         result = fun();                                       break;
-      case t_numliteral:         result = new NumLiteral(posObject(), skipNumLiteral()); break;
+      case t_numliteral:         result = new NumLiteral(posObject(), skipNumLiteral()._originalString); break;
       case t_old       : next(); result = new Old(term()                            ); break;
       case t_match     :         result = match();                                     break;
       case t_for       :
@@ -3619,12 +3620,14 @@ LPAREN      : "("
 
 
   /**
-   * Return the actual integer constant of the current t_numliteral token as a
-   * string.
+   * Return the details of the numeric literal of the current t_numliteral token.
    */
-  String skipNumLiteral()
+  Literal skipNumLiteral()
   {
-    String result = integer();
+    if (PRECONDITIONS) require
+      (current() == Token.t_numliteral);
+
+    var result = curLiteral();
     next();
     return result;
   }
