@@ -58,7 +58,7 @@ import dev.flang.ast.Feature; // NYI: remove dependency! Use dev.flang.fuir inst
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.InitArray; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.IntConst; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.NumLiteral; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Match; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Old; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -273,7 +273,7 @@ public class Interpreter extends Backend
         result = new boolValue(b.b);
       }
 
-    else if (s instanceof IntConst i)
+    else if (s instanceof NumLiteral i)
       {
         var t = i.type();
         if      (t == Types.resolved.t_i8 ) { result = new i8Value (i._value.intValue()); }

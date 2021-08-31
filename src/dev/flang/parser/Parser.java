@@ -1132,7 +1132,7 @@ callList    : call ( COMMA callList
    * Parse call
    *
 call        : name ( actualGens actualArgs callTail
-                   | dot ( INTEGER callTail
+                   | dot ( NUM_LITERAL callTail
                          | call
                    )
             ;
@@ -1144,9 +1144,9 @@ call        : name ( actualGens actualArgs callTail
     Call result;
     if (skipDot())
       {
-        if (current() == Token.t_integer)
+        if (current() == Token.t_numliteral)
           {
-            result = new Call(pos, target, n, skipInteger());
+            result = new Call(pos, target, n, skipNumLiteral());
             result = callTail(result);
           }
         else
@@ -1778,7 +1778,7 @@ term        : simpleterm ( indexCall
 simpleterm  : bracketTerm
             | fun
             | string
-            | INTEGER
+            | NUM_LITERAL
             | "old" term
             | match
             | loop
@@ -1792,19 +1792,19 @@ simpleterm  : bracketTerm
     int p1 = pos();
     switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
-      case t_lbrace  :
-      case t_lparen  :
-      case t_lcrochet:         result = bracketTerm(true);                        break;
-      case t_fun     :         result = fun();                                    break;
-      case t_integer :         result = new IntConst(posObject(), skipInteger()); break;
-      case t_old     : next(); result = new Old(term()                         ); break;
-      case t_match   :         result = match();                                  break;
-      case t_for     :
-      case t_variant :
-      case t_while   :
-      case t_do      :         result = loop();                                   break;
-      case t_if      :         result = ifstmnt();                                break;
-      default        :
+      case t_lbrace    :
+      case t_lparen    :
+      case t_lcrochet  :         result = bracketTerm(true);                           break;
+      case t_fun       :         result = fun();                                       break;
+      case t_numliteral:         result = new NumLiteral(posObject(), skipNumLiteral()); break;
+      case t_old       : next(); result = new Old(term()                            ); break;
+      case t_match     :         result = match();                                     break;
+      case t_for       :
+      case t_variant   :
+      case t_while     :
+      case t_do        :         result = loop();                                      break;
+      case t_if        :         result = ifstmnt();                                   break;
+      default          :
         if (isStartedString(current()))
           {
             result = stringTerm(null);
@@ -1891,14 +1891,14 @@ stringTerm  : STRING
   {
     switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
-      case t_lparen  :
-      case t_lcrochet:
-      case t_lbrace  :
-      case t_fun     :
-      case t_integer :
-      case t_old     :
-      case t_match   : return true;
-      default        :
+      case t_lparen    :
+      case t_lcrochet  :
+      case t_lbrace    :
+      case t_fun       :
+      case t_numliteral:
+      case t_old       :
+      case t_match     : return true;
+      default          :
         return
           isStartedString(current())
           || isNamePrefix()    // Matches call and qualThis
@@ -3619,10 +3619,10 @@ LPAREN      : "("
 
 
   /**
-   * Return the actual integer constant of the current t_integer token as a
+   * Return the actual integer constant of the current t_numliteral token as a
    * string.
    */
-  String skipInteger()
+  String skipNumLiteral()
   {
     String result = integer();
     next();

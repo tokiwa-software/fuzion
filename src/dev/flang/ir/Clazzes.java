@@ -46,7 +46,7 @@ import dev.flang.ast.FunctionReturnType; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.InitArray; // NYI: remove dependency!
-import dev.flang.ast.IntConst; // NYI: remove dependency!
+import dev.flang.ast.NumLiteral; // NYI: remove dependency!
 import dev.flang.ast.Match; // NYI: remove dependency!
 import dev.flang.ast.Old; // NYI: remove dependency!
 import dev.flang.ast.StrConst; // NYI: remove dependency!
@@ -878,7 +878,7 @@ public class Clazzes extends ANY
         result = bool.get();
       }
 
-    else if (e instanceof IntConst i)
+    else if (e instanceof NumLiteral i)
       {
         result = outerClazz.actualClazz(i.typeOrNull());
       }

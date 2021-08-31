@@ -45,7 +45,7 @@ import dev.flang.ast.Feature; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.Impl; // NYI: remove dependency
 import dev.flang.ast.InitArray; // NYI: remove dependency
-import dev.flang.ast.IntConst; // NYI: remove dependency
+import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Match; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
 import dev.flang.ast.Stmnt; // NYI: remove dependency
@@ -173,7 +173,7 @@ public class FUIR extends ANY
    *
    * NYI: remove once bytecode instructions are here.
    */
-  static final Expr WIPE_STACK = new IntConst(42);
+  static final Expr WIPE_STACK = new NumLiteral(42);
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -990,7 +990,7 @@ hw25 is
         toStack(l, i.cond);
         l.add(i);
         List<Object> block = toStack(i.block);
-        l.add(new IntConst(_codeIds.add(block)));
+        l.add(new NumLiteral(_codeIds.add(block)));
         Stmnt elseBlock;
         if (i.elseBlock != null)
           {
@@ -1005,9 +1005,9 @@ hw25 is
             elseBlock = new Block(i.pos(), new List<>());
           }
         List<Object> elseBlockCode = toStack(elseBlock);
-        l.add(new IntConst(_codeIds.add(elseBlockCode)));
+        l.add(new NumLiteral(_codeIds.add(elseBlockCode)));
       }
-    else if (s instanceof IntConst)
+    else if (s instanceof NumLiteral)
       {
         l.add(s);
       }
@@ -1031,7 +1031,7 @@ hw25 is
         for (var c : m.cases)
           {
             var caseCode = toStack(c.code);
-            l.add(new IntConst(_codeIds.add(caseCode)));
+            l.add(new NumLiteral(_codeIds.add(caseCode)));
           }
       }
     else if (s instanceof Tag t)
@@ -1086,7 +1086,7 @@ hw25 is
 
     ExprKind result;
     var e = _codeIds.get(c).get(ix);
-    if (e == WIPE_STACK) // Take care: must be first since WIPE_STACK is IntConst (for now)
+    if (e == WIPE_STACK) // Take care: must be first since WIPE_STACK is NumLiteral (for now)
       {
         result = ExprKind.Pop;
       }
@@ -1121,7 +1121,7 @@ hw25 is
         result = ExprKind.Tag;
       }
     else if (e instanceof BoolConst ||
-             e instanceof IntConst  ||
+             e instanceof NumLiteral  ||
              e instanceof StrConst  ||
              e instanceof InitArray   )
       {
@@ -1490,7 +1490,7 @@ hw25 is
              t == Types.resolved.t_u8 ||
              t == Types.resolved.t_u16 ||
              t == Types.resolved.t_u32 ||
-             t == Types.resolved.t_u64   ) { return ((IntConst) ic).data(); }
+             t == Types.resolved.t_u64   ) { return ((NumLiteral) ic).data(); }
     else if (t == Types.resolved.t_string) { return ((StrConst) ic).str.getBytes(StandardCharsets.UTF_8); }
     else if (ic instanceof InitArray)
       {
@@ -1669,7 +1669,7 @@ hw25 is
        0 <= cix && cix <= matchCaseCount(c, ix));
 
     var s = _codeIds.get(c).get(ix+1+cix);
-    return ((IntConst)s)._value.intValueExact();
+    return ((NumLiteral)s)._value.intValueExact();
   }
 
 }

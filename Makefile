@@ -74,13 +74,13 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Generic.java \
           $(SRC)/dev/flang/ast/If.java \
           $(SRC)/dev/flang/ast/InitArray.java \
-          $(SRC)/dev/flang/ast/IntConst.java \
           $(SRC)/dev/flang/ast/Impl.java \
           $(SRC)/dev/flang/ast/IncompatibleResultsOnBranches.java \
           $(SRC)/dev/flang/ast/Loop.java \
           $(SRC)/dev/flang/ast/Match.java \
           $(SRC)/dev/flang/ast/Nop.java \
           $(SRC)/dev/flang/ast/NoType.java \
+          $(SRC)/dev/flang/ast/NumLiteral.java \
           $(SRC)/dev/flang/ast/Old.java \
           $(SRC)/dev/flang/ast/RefType.java \
           $(SRC)/dev/flang/ast/Resolution.java \

@@ -65,7 +65,7 @@ public class Lexer extends SourceFile
     t_lcrochet,    // [
     t_rcrochet,    // ]
     t_semicolon,   // ;
-    t_integer,     // 123
+    t_numliteral,  // 123
     t_ident,       // abc
     t_stringQQ,    // "abc"
     t_stringQD,    // '"x is $'   in "x is $x.".
@@ -206,7 +206,7 @@ public class Lexer extends SourceFile
             case t_lcrochet          : result = "left crochet '['"                           ; break;
             case t_rcrochet          : result = "right crochet ']'"                          ; break;
             case t_semicolon         : result = "semicolon ';'"                              ; break;
-            case t_integer           : result = "integer constant"                           ; break;
+            case t_numliteral        : result = "numeric literal"                            ; break;
             case t_ident             : result = "identifier"                                 ; break;
             case t_stringQQ          : result = "string constant"                            ; break;
             case t_stringQD          : result = "string constant ending in $"                ; break;
@@ -997,7 +997,7 @@ public class Lexer extends SourceFile
   /**
    * skip an integer or, at some point, a float literal.
    *
-   * @return the corresponding Token, currently always Token.t_integer.
+   * @return the corresponding Token, currently always Token.t_numliteral.
    */
   Token literal()
   {
@@ -1085,7 +1085,7 @@ public class Lexer extends SourceFile
                      null);
         hasError = true;
       }
-    return Token.t_integer;
+    return Token.t_numliteral;
   }
 
 
@@ -1440,13 +1440,13 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Return the actual integer constant of the current t_integer token as a
+   * Return the actual integer constant of the current t_numliteral token as a
    * string.
    */
   String integer()
   {
     if (PRECONDITIONS) require
-      (current() == Token.t_integer);
+      (current() == Token.t_numliteral);
 
     return tokenAsString();
   }
@@ -1933,10 +1933,10 @@ public class Lexer extends SourceFile
     var result = t.toString();
     switch (t)
       {
-      case t_op      :
-      case t_integer :
-      case t_ident   : result = result + " '" + tokenAsString() + "'"; break;
-      default        :
+      case t_op        :
+      case t_numliteral:
+      case t_ident     : result = result + " '" + tokenAsString() + "'"; break;
+      default          :
         if (isString(t))
           {
             result = result + " '" + tokenAsString() + "'";

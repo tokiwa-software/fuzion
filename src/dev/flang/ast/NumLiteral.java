@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class IntConst
+ * Source of class NumLiteral
  *
  *---------------------------------------------------------------------*/
 
@@ -31,11 +31,11 @@ import dev.flang.util.SourcePosition;
 import java.math.BigInteger;
 
 /**
- * IntConst <description>
+ * NumLiteral <description>
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class IntConst extends Expr
+public class NumLiteral extends Expr
 {
 
 
@@ -139,7 +139,7 @@ public class IntConst extends Expr
    *
    * @param s
    */
-  public IntConst(SourcePosition pos, String s)
+  public NumLiteral(SourcePosition pos, String s)
   {
     super(pos);
 
@@ -165,7 +165,7 @@ public class IntConst extends Expr
    *
    * @param i
    */
-  public IntConst(int i)
+  public NumLiteral(int i)
   {
     this(SourcePosition.builtIn, Integer.toString(i));
 
@@ -180,15 +180,15 @@ public class IntConst extends Expr
   /**
    * Create new constant by flipping the sign.
    */
-  public IntConst neg(SourcePosition pos)
+  public NumLiteral neg(SourcePosition pos)
   {
     var osWithSign = _originalString;
     var os = (osWithSign.startsWith("-") || osWithSign.startsWith("+")) ? osWithSign.substring(1) : osWithSign;
     return switch (_value.signum())
       {
       case  0 -> this;
-      case -1 -> new IntConst(pos, os);
-      case +1 -> new IntConst(pos, "-" + os);
+      case -1 -> new NumLiteral(pos, os);
+      case +1 -> new NumLiteral(pos, "-" + os);
       default -> throw new Error("unexpected result of BigInteger.signum()");
       };
   }
@@ -328,7 +328,7 @@ public class IntConst extends Expr
    *
    * @return this.
    */
-  public IntConst visit(FeatureVisitor v, Feature outer)
+  public NumLiteral visit(FeatureVisitor v, Feature outer)
   {
     // nothing to be done for a constant
     return this;

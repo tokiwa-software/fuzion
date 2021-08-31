@@ -531,7 +531,7 @@ public class Call extends Expr
         target.loadCalledFeature(res, thiz);
         if (inh)
           {
-            targetFeature = target.calledFeature();  // NYI: What if target is not a call, but, e.g., an IntConst?
+            targetFeature = target.calledFeature();  // NYI: What if target is not a call, but, e.g., an NumLiteral?
           }
         else
           {
@@ -1608,7 +1608,7 @@ public class Call extends Expr
         // intrinsic features for pre- and postconditions
         else if (calledFeature_ == Types.resolved.f_safety      ) { result = BoolConst.get(res._options.fuzionSafety());      }
         else if (calledFeature_ == Types.resolved.f_debug       ) { result = BoolConst.get(res._options.fuzionDebug());       }
-        else if (calledFeature_ == Types.resolved.f_debugLevel  ) { result = new IntConst (res._options.fuzionDebugLevel());  }
+        else if (calledFeature_ == Types.resolved.f_debugLevel  ) { result = new NumLiteral (res._options.fuzionDebugLevel());  }
       }
     return result;
   }
