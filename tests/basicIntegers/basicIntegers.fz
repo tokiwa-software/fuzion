@@ -81,6 +81,20 @@ basicIntegers is
     i8b i8 := - - 1
     say "$i1 $i2 $i4 $i5 $i6 $i8a $i8b"
 
+    i9a i8 := 0.123E3
+    i9b i8 := 0.120E2
+    i9c i8 := 0.100E1
+    i9d i8 := 1230E-1
+    i9e i8 := 12300E-2
+    i10a i8 := 2.0P-1
+    i10b i8 := 1.0P+0
+    i10c i8 := 1.0P-0
+    i10d i8 := 0.5P+1
+    i10e i8 := 0.25P2
+    i10f i8 := 0.125P+3
+    i10g i8 := 0.0625P4
+    say "$i9a $i9b $i9c $i9d $i9e $i10a $i10b $i10c $i10d $i10e $i10f $i10g"
+
     u1 u8 := 0
     u2 u8 := 127
     u3 u8 := 128
@@ -110,14 +124,17 @@ basicIntegers is
     say "$c1 $c2 $c4 $c6 $c8 $c10"
 
     l1 i64 := 9223372036854775807
-    say "$l1"
+    l2 i64 :=  9.22E18
+    l3 i64 := -9.22E18
+    say "$l1 $l2 $l3"
 
     ul1 u64 := 9223372036854775807
     ul2 u64 := 9223372036854775808
     ul3 u64 := 18446744073709551615
     ul5 u64 := - 0
     ul7 u64 := - -1
-    say "$ul1 $ul2 $ul3 $ul5 $ul7"
+    ul8 u64 := 1.844E19
+    say "$ul1 $ul2 $ul3 $ul5 $ul7 $ul8"
 
   assignConstants
 
@@ -130,6 +147,20 @@ basicIntegers is
     i8a := i8 (- -1)
     i8b := i8 (- - 1)
     say "$i1 $i2 $i4 $i5 $i6 $i8a $i8b"
+
+    i9a := i8 0.123E3
+    i9b := i8 0.120E2
+    i9c := i8 0.100E1
+    i9d := i8 1230E-1
+    i9e := i8 12300E-2
+    i10a := i8 2.0P-1
+    i10b := i8 1.0P+0
+    i10c := i8 1.0P-0
+    i10d := i8 0.5P+1
+    i10e := i8 0.25P2
+    i10f := i8 0.125P+3
+    i10g := i8 0.0625P4
+    say "$i9a $i9b $i9c $i9d $i9e $i10a $i10b $i10c $i10d $i10e $i10f $i10g"
 
     u1 := u8 0
     u2 := u8 127
@@ -160,13 +191,16 @@ basicIntegers is
     say "$c1 $c2 $c4 $c6 $c8 $c10"
 
     l1 := i64 9223372036854775807
-    say "$l1"
+    l2 := i64 9.22E18
+    l3 := i64 -9.22E18
+    say "$l1 $l2 $l3"
 
     ul1 := u64 9223372036854775807
     ul2 := u64 9223372036854775808
     ul3 := u64 18446744073709551615
     ul5 := u64 (- 0)
     ul7 := u64 (- -1)
-    say "$ul1 $ul2 $ul3 $ul5 $ul7"
+    ul8 := u64 1.844E19
+    say "$ul1 $ul2 $ul3 $ul5 $ul7 $ul8"
 
   assignConstantsToConstructor
