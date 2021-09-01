@@ -276,16 +276,16 @@ public class Interpreter extends Backend
     else if (s instanceof NumLiteral i)
       {
         var t = i.type();
-        if      (t == Types.resolved.t_i8 ) { result = new i8Value (i._value.intValue()); }
-        else if (t == Types.resolved.t_i16) { result = new i16Value(i._value.intValue()); }
-        else if (t == Types.resolved.t_i32) { result = new i32Value(i._value.intValue()); }
-        else if (t == Types.resolved.t_i64) { result = new i64Value(i._value.longValue()); }
-        else if (t == Types.resolved.t_u8 ) { result = new u8Value (i._value.intValue()); }
-        else if (t == Types.resolved.t_u16) { result = new u16Value(i._value.intValue()); }
-        else if (t == Types.resolved.t_u32) { result = new u32Value(i._value.intValue()); }
-        else if (t == Types.resolved.t_u64) { result = new u64Value(i._value.longValue()); }
-        else if (t == Types.resolved.t_f32) { result = new f32Value(i._value.floatValue()); }
-        else if (t == Types.resolved.t_f64) { result = new f64Value(i._value.doubleValue()); }
+        if      (t == Types.resolved.t_i8 ) { result = new i8Value (i.intValue().intValue()); }
+        else if (t == Types.resolved.t_i16) { result = new i16Value(i.intValue().intValue()); }
+        else if (t == Types.resolved.t_i32) { result = new i32Value(i.intValue().intValue()); }
+        else if (t == Types.resolved.t_i64) { result = new i64Value(i.intValue().longValue()); }
+        else if (t == Types.resolved.t_u8 ) { result = new u8Value (i.intValue().intValue()); }
+        else if (t == Types.resolved.t_u16) { result = new u16Value(i.intValue().intValue()); }
+        else if (t == Types.resolved.t_u32) { result = new u32Value(i.intValue().intValue()); }
+        else if (t == Types.resolved.t_u64) { result = new u64Value(i.intValue().longValue()); }
+        else if (t == Types.resolved.t_f32) { result = new f32Value(i.intValue().floatValue()); }
+        else if (t == Types.resolved.t_f64) { result = new f64Value(i.intValue().doubleValue()); }
         else                                { result = Value.NO_VALUE; check(false); }
       }
 

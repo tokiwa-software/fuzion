@@ -1800,8 +1800,11 @@ simpleterm  : bracketTerm
       case t_numliteral: var l = skipNumLiteral();
                          var m = l.mantissaValue();
                          var b = l.mantissaBase();
+                         var d = l.mantissaDotAt();
+                         var e = l.exponent();
+                         var eb = l.exponentBase();
                          var o = l._originalString;
-                                 result = new NumLiteral(posObject(), o, b, m); break;
+                         result = new NumLiteral(posObject(p1), o, b, m, d, e, eb); break;
       case t_old       : next(); result = new Old(term()                            ); break;
       case t_match     :         result = match();                                     break;
       case t_for       :

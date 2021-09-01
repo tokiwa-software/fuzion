@@ -91,6 +91,10 @@ public class NumLiteral extends Expr
       _min = new BigInteger("-1000000");  // NYI
       _max = new BigInteger( "1000000");  // NYI
     }
+    int bits()
+    {
+      return _bytes*8;
+    }
     boolean canHold(BigInteger value)
     {
       return
@@ -111,16 +115,34 @@ public class NumLiteral extends Expr
 
 
   /**
-   * The radix _originalString is represented in, one of 2, 8, 10, 16.
+   * The base the main part of _originalString is represented in, one of 2, 8,
+   * 10, 16 (the exponent might use a different base).
    */
-  private final int _radix;
+  private final int _base;
 
 
   /**
-   * The constant value, converted to BigInteger
+   * The mantissa of the constant value, converted to BigInteger and with '.'
+   * removed.  The value represented by this instance is
+   *
+   *   _mantissa * 2 ^ _exponent2 * 5 ^ _exponent5.
+   *
    */
-  public final BigInteger _value;
+  private final BigInteger _mantissa;
 
+
+  /**
+   * Exponent to the base of 2 that has to be multiplied with _mantissa to
+   * obtain the value represented by this.
+   */
+  private final int _exponent2;
+
+
+  /**
+   * Exponent to the base of 2 that has to be multiplied with _mantissa to
+   * obtain the value represented by this.
+   */
+  private final int _exponent5;
 
   /**
    * The type of this constant.  This can be set by the user of this type
@@ -139,31 +161,115 @@ public class NumLiteral extends Expr
    *
    * @param s
    */
-  public NumLiteral(SourcePosition pos, String s, int base, BigInteger v)
+  public NumLiteral(SourcePosition pos,
+                    String s,
+                    int base,
+                    BigInteger v,
+                    int dotAt,
+                    BigInteger exponent,
+                    int exponentBase)
   {
     super(pos);
 
+    this._base = base;
     this._originalString = s;
-    this._radix = base;
-    this._value = v;
+    var b = base;
+    var e2 = 0;
+    var e5 = 0;
+    var min = BigInteger.valueOf(-1000000);
+    var max = BigInteger.valueOf( 1000000);
+    var e = exponent.min(max).max(min).intValue();   // force within range min..max
+
+    while (exponentBase % 2 == 0)
+      {
+        exponentBase = exponentBase / 2;
+        e2 += e;
+      }
+    while (exponentBase % 5 == 0)
+      {
+        exponentBase = exponentBase / 5;
+        e5 += e;
+      }
+    check
+      (exponentBase == 1); // we do not support exponentBases other that 2^n*5^m
+
+    while (b % 2 == 0)
+      {
+        b = b / 2;
+        e2 -= dotAt;
+      }
+    while (b % 5 == 0)
+      {
+        b = b / 5;
+        e5 -= dotAt;
+      }
+    check
+      (b == 1); // we do not support bases other that 2^n*5^m
+
+    while (v.signum() != 0 && v.mod(BigInteger.valueOf(2)).signum() == 0)
+      {
+        v = v.divide(BigInteger.valueOf(2));
+        e2 = e2+1;
+      }
+    while (v.signum() != 0 && v.mod(BigInteger.valueOf(5)).signum() == 0)
+      {
+        v = v.divide(BigInteger.valueOf(5));
+        e5 = e5 + 1;
+      }
+    this._mantissa = v;
+    this._exponent2 = e2;
+    this._exponent5 = e5;
+  }
+
+
+
+  /**
+   * Constructor for literal with given values its fields.
+   */
+  private NumLiteral(SourcePosition pos,
+                     String s,
+                     int base,
+                     BigInteger m,
+                     int e2,
+                     int e5)
+  {
+    super(pos);
+
+    this._base = base;
+    this._originalString = s;
+    this._mantissa = m;
+    this._exponent2 = e2;
+    this._exponent5 = e5;
   }
 
 
   /**
-   * Constructor
+   * Constructor for an artificial literal of given value.
    *
    * @param i
    */
   public NumLiteral(int i)
   {
-    this(SourcePosition.builtIn, Integer.toString(i), 10, BigInteger.valueOf(i));
+    this(SourcePosition.builtIn, Integer.toString(i), 10, BigInteger.valueOf(i), 0, 0);
 
     if (PRECONDITIONS) require
       (i >= 0);
+
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+
+  /**
+   * Was this declared with a '.'?  If so, the preferred type is f64, not
+   * i32/i64.
+   */
+  private boolean hasDot()
+  {
+    return _originalString.contains(".");
+  }
 
 
   /**
@@ -173,7 +279,7 @@ public class NumLiteral extends Expr
   {
     var o = _originalString;
     var s = o.startsWith("-") ? o.substring(1) : "-" + o;
-    return new NumLiteral(pos, s, _radix, _value.negate());
+    return new NumLiteral(pos, s, _base, _mantissa.negate(), _exponent2, _exponent5);
   }
 
 
@@ -187,7 +293,12 @@ public class NumLiteral extends Expr
   {
     if (type_ == null)
       {
-        if (ConstantType.ct_i32.canHold(_value))
+        var i = intValue(ConstantType.ct_i32);
+        if (i == null)
+          {
+            type_ = Types.resolved.t_f64;
+          }
+        else if (ConstantType.ct_i32.canHold(i))
           {
             type_ = Types.resolved.t_i32;
           }
@@ -202,6 +313,59 @@ public class NumLiteral extends Expr
 
 
   /**
+   * Get this value if it is an integer. In case the value is above/below
+   * +/-2^max, the result might get replaced by 2^max.
+   *
+   * @return the integer represented by this,
+   */
+  public BigInteger intValue()
+  {
+    return intValue(findConstantType(typeOrNull()));
+  }
+
+
+  /**
+   * Get this value if it is an integer. In case the value is above/below
+   * +/-2^max, the result might get replaced by 2^max.
+   *
+   * @return the integer represented by this,
+   */
+  private BigInteger intValue(ConstantType ct)
+  {
+    var max = ct.bits();
+    var v = _mantissa;
+    var e2 = _exponent2;
+    var e5 = _exponent5;
+    if (e2 < 0 || e5 < 0)
+      {
+        return null;
+      }
+    else if (v.signum() == 0)
+      {
+        return v;
+      }
+    else if (e2 > 256 || e5 > 128)
+      {
+        return BigInteger.valueOf(2).pow(256);
+      }
+    else
+      {
+        while (e2 > 0)
+          {
+            v = v.multiply(BigInteger.valueOf(2));
+            e2 = e2 - 1;
+          }
+        while (e5 > 0)
+          {
+            v = v.multiply(BigInteger.valueOf(5));
+            e5 = e5 - 1;
+          }
+        return v;
+      }
+  }
+
+
+  /**
    * Check that this constant is in the range allowed for its type_.
    */
   void checkRange()
@@ -210,7 +374,14 @@ public class NumLiteral extends Expr
       (findConstantType(type_) != null);
 
     ConstantType ct = findConstantType(type_);
-    if (!ct.canHold(_value))
+    var i = intValue(ct);
+    if (i == null)
+      {
+        FeErrors.nonWholeNumberUsedAsIntegerConstant(pos(),
+                                                     _originalString,
+                                                     type_);
+      }
+    else if (!ct.canHold(i))
       {
         FeErrors.integerConstantOutOfLegalRange(pos(),
                                                 _originalString,
@@ -222,7 +393,7 @@ public class NumLiteral extends Expr
 
 
   /*
-   * Convert given value to a string using _radix. Prepend "0x" or "0b" for hex
+   * Convert given value to a string using _base. Prepend "0x" or "0b" for hex
    * / binary representation.s
    *
    * @param v a constant
@@ -238,14 +409,14 @@ public class NumLiteral extends Expr
         v = v.negate();
       }
     String prefix =
-      switch (_radix)
+      switch (_base)
         {
         case  2 -> "0b";
         case 10 -> "";
         case 16 -> "0x";
-        default -> throw new Error("unexpected radix: " + _radix);
+        default -> throw new Error("unexpected base: " + _base);
         };
-    return sign + prefix + v.toString(_radix);
+    return sign + prefix + v.toString(_base);
   }
 
 
@@ -326,18 +497,20 @@ public class NumLiteral extends Expr
    */
   public byte[] data()
   {
-    var b = _value.toByteArray();
-    var bytes = findConstantType(type_)._bytes;
+    var ct = findConstantType(type_);
+    var i = intValue(ct);
+    var b = i.toByteArray();
+    var bytes = ct._bytes;
     var result = new byte[bytes];
-    for (var i = 0; i < bytes; i++)
+    for (var ix = 0; ix < bytes; ix++)
       {
-        if (i >= b.length)
+        if (ix >= b.length)
           {
-            result[i] = (byte) (_value.signum() < 0 ? 0xff : 0x00);
+            result[ix] = (byte) (_mantissa.signum() < 0 ? 0xff : 0x00);
           }
         else
           {
-            result[i] = b[b.length - 1 - i];
+            result[ix] = b[b.length - 1 - ix];
           }
       }
     return result;

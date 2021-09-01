@@ -1067,14 +1067,13 @@ PLUSMINUS   : "+"
 
     /**
      * The main digits parts, e.g., for "0x_de_ad.c0deP0o123", this will have
-     * _digits == "deadc0de", _base == hex, _dotAt == 4, _hasDot == true.
+     * _digits == "deadc0de", _base == hex, _dotAt == 4.
      */
     public final Digits _mantissa;
 
     /**
      * The exponents part or null if none. E.g., for "0x_de_ad.c0deP0o123", this
-     * will have _digits == "123", _base == oct, _dotAt == 0, _hasDot ==
-     * false.
+     * will have _digits == "123", _base == oct, _dotAt == 0.
      */
     public final Digits _exponent;
 
@@ -1130,7 +1129,7 @@ PLUSMINUS   : "+"
         {
           return null;
         }
-      else if (_mantissa._base != Digits.Base.dec || _mantissa._hasDot || _exponent != null)
+      else if (_mantissa._base != Digits.Base.dec || _exponent != null)
         {
           Errors.error(sourcePos(),
                        "Plain integer literal expected, not binary, octal, hex or float",
@@ -1152,7 +1151,7 @@ PLUSMINUS   : "+"
     {
       if (_hasError)
         {
-          return new BigInteger(new byte[1]);
+          return BigInteger.valueOf(0);
         }
       else
         {
@@ -1174,6 +1173,18 @@ PLUSMINUS   : "+"
           return _mantissa._base._base;
         }
     }
+    int mantissaDotAt()
+    {
+      return _hasError ? 0 : _mantissa._dotAt;
+    }
+    BigInteger exponent()
+    {
+      return _hasError || _exponent == null ? BigInteger.valueOf(0) : _exponent.value();
+    }
+    int exponentBase()
+    {
+      return _binaryExponent ? 2 : 10;
+    }
   }
 
 
@@ -1184,7 +1195,7 @@ PLUSMINUS   : "+"
   {
 
     /**
-     * The radix.
+     * The base.
      */
     public enum Base {
       bin(2 , "binary" ),
@@ -1219,11 +1230,6 @@ PLUSMINUS   : "+"
      * 4.
      */
     public int _dotAt = 0;
-
-    /**
-     * Is there a decimal dot?  E.g., for "0x_de_ad.c0de", this will be true.
-     */
-    public boolean _hasDot = false;
 
     /**
      * Was there a '-' preceding these digits?
@@ -1411,7 +1417,6 @@ HEX_TAIL    : "." HEX_DIGITS
           var fd = f.curCodePoint();
           if (isDigit(fd))
             {
-              _hasDot = true;
               nextCodePoint();
               d = curCodePoint();
               while (isDigit(d))
@@ -1441,7 +1446,8 @@ HEX_TAIL    : "." HEX_DIGITS
      */
     BigInteger value()
     {
-      return new BigInteger(_digits, _base._base);
+      var v = new BigInteger(_digits, _base._base);
+      return _negative ? v.negate() : v;
     }
 
   }

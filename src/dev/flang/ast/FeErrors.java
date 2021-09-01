@@ -885,15 +885,23 @@ public class FeErrors extends ANY
           "Open formal argument: " + s(generic) + "");
   }
 
-
   static void integerConstantOutOfLegalRange(SourcePosition pos, String constant, Type t, String from, String to)
   {
     error(pos,
           "Integer constant value outside of allowed range for target type",
           "Type propagation results in a type that is too small for the value represented by the given constant.\n" +
-          "Constant value: " + ss(constant) + "\n" +
+          "Numeric literal: " + ss(constant) + "\n" +
           "Assigned to type: " + s(t) + "\n" +
           "Acceptable range of values: " + ss(from) + " .. " + ss(to));
+  }
+
+  static void nonWholeNumberUsedAsIntegerConstant(SourcePosition pos, String constant, Type t)
+  {
+    error(pos,
+          "Numeric literal used for integer type is not a whole number",
+          "Type propagation results in an integer type that cannot whole a value that is not integer.\n" +
+          "Numeric literal: " + ss(constant) + "\n" +
+          "Assigned to type: " + s(t) + "\n");
   }
 
 }

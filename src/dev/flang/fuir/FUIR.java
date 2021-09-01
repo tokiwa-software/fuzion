@@ -1669,7 +1669,7 @@ hw25 is
        0 <= cix && cix <= matchCaseCount(c, ix));
 
     var s = _codeIds.get(c).get(ix+1+cix);
-    return ((NumLiteral)s)._value.intValueExact();
+    return ((NumLiteral)s).intValue().intValueExact();
   }
 
 }
