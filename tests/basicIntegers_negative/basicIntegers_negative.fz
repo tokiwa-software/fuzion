@@ -57,3 +57,17 @@ basicIntegers_negative is
   ul5 u64 := - 0
   ul6 u64 := -1                   // 17. should flag an error, constant out of range
   ul7 u64 := - -1
+
+  sa (x i32) is
+    say x
+
+  sa 123456        # ok
+  sa 123.456       # 18. should flag an error, must be integer
+  sa 123456.789    # 19. should flag an error, must be integer
+  sa 123456.000    # ok
+  sa 123456.789E2  # 20. should flag an error, must be integer
+  sa 123456.789E3  # ok
+  sa 123456.789E4  # ok
+  sa 123456780E-1  # ok
+  sa 123456780E-2  # 21. should flag an error, must be integer
+  sa 123456780E-3  # 22. should flag an error, must be integer
