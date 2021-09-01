@@ -107,7 +107,7 @@ import dev.flang.util.List;
  *
  * 11. If there are any features scheduled for inheritance, declaration. type,
  *     syntactic sugar resolution, or entries in the list of features to be
- *     searched for runtime types, go to step 11. Otherwise, take a type (f,G)
+ *     searched for runtime types, go to step 10. Otherwise, take a type (f,G)
  *     from the list of runtime types to be layouted and start the layout.
  *
  * 12. Recursive layout of (f,G): For all fields in f, determine the actual
