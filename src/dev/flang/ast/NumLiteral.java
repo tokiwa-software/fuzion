@@ -30,6 +30,9 @@ import dev.flang.util.SourcePosition;
 
 import java.math.BigInteger;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 /**
  * NumLiteral <description>
  *
@@ -52,15 +55,42 @@ public class NumLiteral extends Expr
     ct_u16 (false, 2),
     ct_u32 (false, 4),
     ct_u64 (false, 8),
-    ct_f32 (4),
-    ct_f64 (8);
-    final BigInteger _min, _max;
+    // ct_f16 (11, 5),   -- NYI: support for f16
+    ct_f32 (24, 8),
+    ct_f64 (53, 11);
+    // ct_f128 (113, 15),   -- NYI: support for f128
+    // ct_f256 (237, 19),   -- NYI: support for f256
+
+    /**
+     * bytes in memory occuplied by this type
+     */
     final int _bytes;
-    final boolean _signed;
-    final boolean _float;
+
+    /**
+     * float or integer type?
+     */
+    final boolean _isFloat;
+
+    /**
+     * for integers: allowed range
+     */
+    final BigInteger _min, _max;
+
+    /**
+     * for float: length of mantissa (including leading '1' bit)
+     */
+    final int _mBits;
+
+    /**
+     * for float: length of exponent
+     */
+    final int _eBits;
+
+    /**
+     * Constructor for integer
+     */
     ConstantType(boolean signed, int bytes)
     {
-      _signed = signed;
       _bytes = bytes;
       var minb = new byte[bytes];
       var maxb = new byte[signed ? bytes : bytes + 1];
@@ -81,27 +111,55 @@ public class NumLiteral extends Expr
         }
       _min = new BigInteger(minb);
       _max = new BigInteger(maxb);
-      _float = false;
+      _isFloat = false;
+      _mBits = -1;
+      _eBits = -1;
     }
-    ConstantType(int bytes)
+
+    /**
+     * Constructor for float
+     */
+    ConstantType(int mBits, int eBits)
     {
-      _bytes = bytes;
-      _signed = true;
-      _float = true;
-      _min = new BigInteger("-1000000");  // NYI
-      _max = new BigInteger( "1000000");  // NYI
+      _bytes = (mBits + eBits) / 8;
+      _mBits = mBits;
+      _eBits = eBits;
+      _isFloat = true;
+      _min = null;
+      _max = null;
     }
+
+    /**
+     * # of bits occupied by this type
+     */
     int bits()
     {
       return _bytes*8;
     }
+
+    /**
+     * check if this can hold an integer of the given value
+     */
     boolean canHold(BigInteger value)
     {
+      if (PRECONDITIONS) require
+        (!_isFloat);
+
       return
         _min.compareTo(value) <= 0 &&
         _max.compareTo(value) >= 0;
     }
   }
+
+
+  /**
+   * Convenience BitInteger values:
+   */
+  BigInteger B0 = BigInteger.valueOf(0);
+  BigInteger B1 = BigInteger.valueOf(1);
+  BigInteger B2 = BigInteger.valueOf(2);
+  BigInteger B5 = BigInteger.valueOf(5);
+  BigInteger B10 = BigInteger.valueOf(10);
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -206,14 +264,14 @@ public class NumLiteral extends Expr
     check
       (b == 1); // we do not support bases other that 2^n*5^m
 
-    while (v.signum() != 0 && v.mod(BigInteger.valueOf(2)).signum() == 0)
+    while (v.signum() != 0 && v.mod(B2).signum() == 0)
       {
-        v = v.divide(BigInteger.valueOf(2));
+        v = v.divide(B2);
         e2 = e2+1;
       }
-    while (v.signum() != 0 && v.mod(BigInteger.valueOf(5)).signum() == 0)
+    while (v.signum() != 0 && v.mod(B5).signum() == 0)
       {
-        v = v.divide(BigInteger.valueOf(5));
+        v = v.divide(B5);
         e5 = e5 + 1;
       }
     this._mantissa = v;
@@ -346,22 +404,168 @@ public class NumLiteral extends Expr
       }
     else if (e2 > 256 || e5 > 128)
       {
-        return BigInteger.valueOf(2).pow(256);
+        return B2.pow(256);
       }
     else
       {
         while (e2 > 0)
           {
-            v = v.multiply(BigInteger.valueOf(2));
+            v = v.multiply(B2);
             e2 = e2 - 1;
           }
         while (e5 > 0)
           {
-            v = v.multiply(BigInteger.valueOf(5));
+            v = v.multiply(B5);
             e5 = e5 - 1;
           }
         return v;
       }
+  }
+
+
+  /**
+   * Get the data in little endian order for a float
+   */
+  private byte[] floatBits()
+  {
+    ConstantType ct = findConstantType(type_);
+
+    check
+      (ct._isFloat);
+
+    var res = new byte[ct._bytes];
+    var m = _mantissa;
+    var s = m.signum();
+    if (s != 0)
+      {
+        var e5 = _exponent5;
+        var e2 = _exponent2;
+        m = s > 0 ? m : m.negate();
+
+        // incorporate e5 into m/e2:
+        if (e5 > 0)
+          { // for positive e5, multiply m with 5^e5
+            m = m.multiply(B5.pow(e5));
+          }
+        else  if (e5 < 0)
+          {  // for negative e5, divide m by 5^(-e5), but ensure we have enough result bits
+            var div5 = B5.pow(-e5);
+            // make sure m has at least mBits after division
+            var extraBits = ct._mBits + 1 - (m.bitLength() - div5.bitLength());
+            if (extraBits > 0)
+              {
+                m = m.multiply(B2.pow(extraBits));
+                e2 = e2 - extraBits;
+              }
+            m = m.divide(div5);
+          }
+
+        // make sure m's bitLength is exactly mBits
+        var deltaBits = ct._mBits - m.bitLength();
+        if (deltaBits > 0)
+          {
+            m = m.shiftLeft(deltaBits);
+          }
+        else
+          {
+            var roundingBit = B2.pow(-deltaBits-1);
+            var div2        = B2.pow(-deltaBits  );
+            m = m.add(roundingBit).divide(div2);
+          }
+        e2 = e2 - deltaBits;
+        check
+          (m.bitLength() == ct._mBits);
+
+        // add bias to e2 and handle overflow and denormalized numbers
+        var eBias    = (1 << (ct._eBits-1))-1;
+        var eSpecial = (1 << ct._eBits) -1;
+        e2 = e2 + eBias + ct._mBits -1;
+        if (e2 >= eSpecial)  // exponent too large
+          {
+            // NYI: Determination of max float value is a little clumsy:
+            var mmax = B1.shiftLeft(ct._mBits).subtract(B1);
+            var bmax = mmax.multiply(B2.pow(eSpecial-eBias-ct._mBits));
+            var ndigits = 0;
+            while (B10.pow(ndigits).subtract(mmax).signum() < 0)
+              {
+                ndigits++;
+              }
+            ndigits += 1;
+            var d = bmax.toString();
+            var max = d.charAt(0) + "." + d.substring(1,ndigits) + "E" + (d.length()-1);
+            var maxH = "0x1P" + (eBias + ct._mBits - 1);
+            FeErrors.floatConstantTooLarge(pos(),
+                                           _originalString,
+                                           type_,
+                                           max, maxH);
+            e2 = eSpecial; // +/- infinity
+            m = B0;
+          }
+        else if (e2 <= 0)
+          { // denormalized
+            var sh = -e2+1;
+            m = m.shiftRight(sh);
+            e2 = 0;
+            if (m.signum() == 0)
+              {
+                // NYI: Determination of min float value is a little clumsy:
+                var minE2 = -eBias-ct._mBits+2;
+                var b5min  = B5 .pow(-minE2).toString();
+                var b10min = B10.pow(-minE2).toString();
+                var exp = b5min.length() - b10min.length();
+                var min = b5min.charAt(0) + "." + b5min.charAt(1) + "E" + exp;
+                var minH = "0x1P" + minE2;
+                FeErrors.floatConstantTooSmall(pos(),
+                                               _originalString,
+                                               type_,
+                                               min, minH);
+              }
+          }
+        else
+          {
+            var high1 = B1.shiftLeft(ct._mBits-1);
+            check
+              (m.and(high1).signum() != 0);
+            m = m.andNot(high1);
+          }
+        var f = BigInteger.valueOf((2-s)/2) .shiftLeft(ct._eBits  )
+          .or(  BigInteger.valueOf(e2     )).shiftLeft(ct._mBits-1)
+          .or(m);
+        var b = f.toByteArray();
+        var l0 = 0L;
+        var bl = Math.min(b.length, ct._bytes);
+        var bs = Math.max(0, b.length - ct._bytes);
+        for (var i = 0; i < bl; i++)
+          {
+            var bv = b[i+bs];
+            l0 = l0 | (((long) bv & 0xff) << ((bl-1-i)*8));
+            res[bl-1-i] = bv;
+          }
+      }
+    return res;
+  }
+
+
+  /**
+   * Get the value of this f32 constant
+   */
+  public float f32Value()
+  {
+    if (PRECONDITIONS) require
+      (typeOrNull() == Types.resolved.t_f32);
+
+    return ByteBuffer.wrap(data()).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+  }
+
+  /**
+   * Get the value of this f64 constant
+   */
+  public double f64Value()
+  {
+    if (PRECONDITIONS) require
+      (typeOrNull() == Types.resolved.t_f64);
+
+    return ByteBuffer.wrap(data()).order(ByteOrder.LITTLE_ENDIAN).getDouble();
   }
 
 
@@ -374,20 +578,27 @@ public class NumLiteral extends Expr
       (findConstantType(type_) != null);
 
     ConstantType ct = findConstantType(type_);
-    var i = intValue(ct);
-    if (i == null)
+    if (ct._isFloat)
       {
-        FeErrors.nonWholeNumberUsedAsIntegerConstant(pos(),
-                                                     _originalString,
-                                                     type_);
+        floatBits();
       }
-    else if (!ct.canHold(i))
+    else
       {
-        FeErrors.integerConstantOutOfLegalRange(pos(),
-                                                _originalString,
-                                                type_,
-                                                toString(ct._min),
-                                                toString(ct._max));
+        var i = intValue(ct);
+        if (i == null)
+          {
+            FeErrors.nonWholeNumberUsedAsIntegerConstant(pos(),
+                                                         _originalString,
+                                                         type_);
+          }
+        else if (!ct.canHold(i))
+          {
+            FeErrors.integerConstantOutOfLegalRange(pos(),
+                                                    _originalString,
+                                                    type_,
+                                                    toString(ct._min),
+                                                    toString(ct._max));
+          }
       }
   }
 
@@ -498,22 +709,29 @@ public class NumLiteral extends Expr
   public byte[] data()
   {
     var ct = findConstantType(type_);
-    var i = intValue(ct);
-    var b = i.toByteArray();
-    var bytes = ct._bytes;
-    var result = new byte[bytes];
-    for (var ix = 0; ix < bytes; ix++)
+    if (ct._isFloat)
       {
-        if (ix >= b.length)
-          {
-            result[ix] = (byte) (_mantissa.signum() < 0 ? 0xff : 0x00);
-          }
-        else
-          {
-            result[ix] = b[b.length - 1 - ix];
-          }
+        return floatBits();
       }
-    return result;
+    else
+      {
+        var i = intValue(ct);
+        var b = i.toByteArray();
+        var bytes = ct._bytes;
+        var result = new byte[bytes];
+        for (var ix = 0; ix < bytes; ix++)
+          {
+            if (ix >= b.length)
+              {
+                result[ix] = (byte) (_mantissa.signum() < 0 ? 0xff : 0x00);
+              }
+            else
+              {
+                result[ix] = b[b.length - 1 - ix];
+              }
+          }
+        return result;
+      }
   }
 
 

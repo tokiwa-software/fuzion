@@ -284,8 +284,8 @@ public class Interpreter extends Backend
         else if (t == Types.resolved.t_u16) { result = new u16Value(i.intValue().intValue()); }
         else if (t == Types.resolved.t_u32) { result = new u32Value(i.intValue().intValue()); }
         else if (t == Types.resolved.t_u64) { result = new u64Value(i.intValue().longValue()); }
-        else if (t == Types.resolved.t_f32) { result = new f32Value(i.intValue().floatValue()); }
-        else if (t == Types.resolved.t_f64) { result = new f64Value(i.intValue().doubleValue()); }
+        else if (t == Types.resolved.t_f32) { result = new f32Value(i.f32Value()); }
+        else if (t == Types.resolved.t_f64) { result = new f64Value(i.f64Value()); }
         else                                { result = Value.NO_VALUE; check(false); }
       }
 

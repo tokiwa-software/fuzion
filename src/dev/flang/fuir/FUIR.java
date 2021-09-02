@@ -1459,6 +1459,8 @@ hw25 is
     else if (t == Types.resolved.t_u16   ) { clazz = Clazzes.u16        .get(); }
     else if (t == Types.resolved.t_u32   ) { clazz = Clazzes.u32        .get(); }
     else if (t == Types.resolved.t_u64   ) { clazz = Clazzes.u64        .get(); }
+    else if (t == Types.resolved.t_f32   ) { clazz = Clazzes.f32        .get(); }
+    else if (t == Types.resolved.t_f64   ) { clazz = Clazzes.f64        .get(); }
     else if (t == Types.resolved.t_string) { clazz = Clazzes.conststring.get(); } // NYI: a slight inconsistency here, need to change AST
     else if (ic instanceof InitArray)
       {
@@ -1482,15 +1484,8 @@ hw25 is
 
     var ic = _codeIds.get(c).get(ix);
     var t = ((Expr) ic).type();
-    if      (t == Types.resolved.t_bool  ) { return new byte[] { ((BoolConst) ic).b ? (byte) 1 : (byte) 0 }; }
-    else if (t == Types.resolved.t_i8 ||
-             t == Types.resolved.t_i16 ||
-             t == Types.resolved.t_i32 ||
-             t == Types.resolved.t_i64 ||
-             t == Types.resolved.t_u8 ||
-             t == Types.resolved.t_u16 ||
-             t == Types.resolved.t_u32 ||
-             t == Types.resolved.t_u64   ) { return ((NumLiteral) ic).data(); }
+    if      (ic instanceof BoolConst     ) { return new byte[] { ((BoolConst) ic).b ? (byte) 1 : (byte) 0 }; }
+    else if (ic instanceof NumLiteral    ) { return ((NumLiteral) ic).data(); }
     else if (t == Types.resolved.t_string) { return ((StrConst) ic).str.getBytes(StandardCharsets.UTF_8); }
     else if (ic instanceof InitArray)
       {

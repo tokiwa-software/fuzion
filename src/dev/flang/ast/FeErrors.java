@@ -904,6 +904,26 @@ public class FeErrors extends ANY
           "Assigned to type: " + s(t) + "\n");
   }
 
+  static void floatConstantTooLarge(SourcePosition pos, String constant, Type t, String max, String maxH)
+  {
+    error(pos,
+          "Float constant value outside of allowed range for target type",
+          "Type propagation results in a type that is too small for the value represented by the given constant.\n" +
+          "Numeric literal: " + ss(constant) + "\n" +
+          "Assigned to type: " + s(t) + "\n" +
+          "Max allowed value: " + ss("-"+max) + " .. " + ss(max) + " or " + ss("-" + maxH) + " .. " + ss(maxH));
+  }
+
+  static void floatConstantTooSmall(SourcePosition pos, String constant, Type t, String min, String minH)
+  {
+    error(pos,
+          "Float constant value too small, would underflow to 0",
+          "Type propagation results in a type whose precision does not allow to represented the given constant.\n" +
+          "Numeric literal: " + ss(constant) + "\n" +
+          "Assigned to type: " + s(t) + "\n" +
+          "Min representable value > 0: " + ss(min) + " or " + ss(minH));
+  }
+
 }
 
 /* end of file */
