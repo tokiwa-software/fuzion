@@ -351,7 +351,7 @@ public class NumLiteral extends Expr
   {
     if (type_ == null)
       {
-        var i = intValue(ConstantType.ct_i32);
+        var i = hasDot() ? null : intValue(ConstantType.ct_i32);
         if (i == null)
           {
             type_ = Types.resolved.t_f64;
