@@ -1336,17 +1336,18 @@ HEX_TAIL    : "." HEX_DIGITS
       int firstGroupSize = -1;
       int groupSize = -1;
       int currentGroupSize = 0;
-      _base =  firstDigit != '0' ? Base.dec :
+      var b =  firstDigit != '0' ? Base.dec :
         switch (c1)
           {
           case 'b' -> Base.bin;
           case 'o' -> Base.oct;
           case 'd' -> Base.dec;
           case 'x' -> Base.hex;
-          default  -> Base.dec;
+          default  -> null;
           };
-      if (_base == Base.dec)
+      if (b == null)
         {
+          b = Base.dec;
           checkAndAppendDigit(digits, firstDigit);
         }
       else
@@ -1358,6 +1359,7 @@ HEX_TAIL    : "." HEX_DIGITS
               nextCodePoint();
             }
         }
+      _base = b;
       var d = curCodePoint();
       var start = sourcePos();
       while (isDigit(d) || d == '_')
