@@ -1347,7 +1347,7 @@ HEX_TAIL    : "." HEX_DIGITS
           };
       if (_base == Base.dec)
         {
-          digits.appendCodePoint(firstDigit);
+          checkAndAppendDigit(digits, firstDigit);
         }
       else
         {
@@ -1365,7 +1365,7 @@ HEX_TAIL    : "." HEX_DIGITS
           if (d != '_')
             {
               currentGroupSize = currentGroupSize + 1;
-              digits.appendCodePoint(d);
+              checkAndAppendDigit(digits, d);
             }
           else
             {
@@ -1421,7 +1421,7 @@ HEX_TAIL    : "." HEX_DIGITS
               d = curCodePoint();
               while (isDigit(d))
                 {
-                  digits.appendCodePoint(d);
+                  checkAndAppendDigit(digits, d);
                   _dotAt++;
                   nextCodePoint();
                   d = curCodePoint();
@@ -1438,6 +1438,24 @@ HEX_TAIL    : "." HEX_DIGITS
         }
       _digits = digits.toString();
     }
+
+    void checkAndAppendDigit(StringBuilder digits, int d)
+    {
+      var v =
+        ('0' <= d && d <= '9') ? d - (int) '0' :
+        ('a' <= d && d <= 'z') ? d - (int) 'a' + 10 :
+        ('A' <= d && d <= 'Z') ? d - (int) 'Z' + 10 : Integer.MAX_VALUE;
+      if (v >= _base._base)
+        {
+          Errors.error(sourcePos(),
+                       "Invalid digit '" + Character.toString(d) + "' for base " + _base._base + ".",
+                       null);
+          d = '0';
+        }
+      digits.appendCodePoint(d);
+    }
+
+
 
 
     /**
