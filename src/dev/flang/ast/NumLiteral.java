@@ -623,6 +623,7 @@ public class NumLiteral extends Expr
       switch (_base)
         {
         case  2 -> "0b";
+        case  8 -> "0o";
         case 10 -> "";
         case 16 -> "0x";
         default -> throw new Error("unexpected base: " + _base);
