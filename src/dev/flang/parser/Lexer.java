@@ -1362,15 +1362,17 @@ HEX_TAIL    : "." HEX_DIGITS
         }
       var d = curCodePoint();
       var start = sourcePos();
-      while (isDigit(d) || d == '_')
+      var end = false;
+      while (isDigit(d) || d == '_' || !end)
         {
-          if (d != '_')
+          if (isDigit(d) && d != '_')
             {
               currentGroupSize = currentGroupSize + 1;
               checkAndAppendDigit(digits, d);
             }
           else
             {
+              end = d != '_';
               if (firstGroupSize < 0)
                 {
                   firstGroupSize = currentGroupSize;
@@ -1409,8 +1411,11 @@ HEX_TAIL    : "." HEX_DIGITS
                 }
               currentGroupSize = 0;
             }
-          nextCodePoint();
-          d = curCodePoint();
+          if (!end)
+            {
+              nextCodePoint();
+              d = curCodePoint();
+            }
         }
       if (allowDot && curCodePoint() == '.')
         {
