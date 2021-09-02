@@ -1249,7 +1249,7 @@ PLUSMINUS   : "+"
      */
     boolean isDigit(int p)
     {
-      return kind(p) == K_DIGIT || (_base == Base.hex && kind(p) == K_LETTER);
+      return kind(p) == K_DIGIT || (_base == Base.hex && kind(p) == K_LETTER && p != 'P');
     }
 
     /**
