@@ -1,0 +1,46 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature float
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# float -- floating point values
+#
+#
+# float is the abstract parent of concrete floating point features such as
+# f32 or f64.
+#
+float<T: float<T>> : numeric<T>, hasInterval<T>, floats<T> is
+
+
+  # preconditions for basic operations: true if the operation's result is
+  # representable for the given values.  For IEEE_754, all operations are
+  # defined for all values.
+  #
+  redef prefix +! bool is true
+  redef prefix -! bool is true
+  redef infix +! (other T) bool is true
+  redef infix -! (other T) bool is true
+  redef infix *! (other T) bool is true
+  redef infix /! (other T) bool is true
+  redef infix %! (other T) bool is true
+  redef infix **!(other T) bool is true
