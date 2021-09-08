@@ -181,7 +181,7 @@ public class FeatureName extends ANY implements Comparable
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public int compareTo​(FeatureName o)
+  public int compareTo(FeatureName o)
   {
     int result = _baseName.compareTo(o._baseName);
     return
@@ -192,7 +192,7 @@ public class FeatureName extends ANY implements Comparable
   }
 
 
-  public int compareTo​(Object o)
+  public int compareTo(Object o)
   {
     return compareTo((FeatureName) o);
   }
