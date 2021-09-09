@@ -1134,6 +1134,7 @@ callList    : call ( COMMA callList
 call        : name ( actualGens actualArgs callTail
                    | dot ( NUM_LITERAL callTail
                          | call
+                     )
                    )
             ;
    */
@@ -1176,7 +1177,7 @@ indexCall   : ( LBRACKET exprList RBRACKET
                 ( ":=" exprInLine
                 |
                 )
-              )+
+              )
             ;
    */
   Call indexCall(Expr target)
