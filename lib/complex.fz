@@ -71,5 +71,5 @@ is
   redef asString => "{a.r}+{a.i}i"
 
   # NYI: these two should be implemented in complexes, not here:
-  redef zero => complex r.zero r.one
+  redef zero => complex r.zero r.zero
   redef one  => complex r.one r.zero
