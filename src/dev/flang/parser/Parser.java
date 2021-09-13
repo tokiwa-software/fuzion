@@ -1474,8 +1474,11 @@ actualsLstC : COMMA expr actualsLstC
           }
         else
           {
-            while (!endsActuals())
+            var p = -1;
+            while (!endsActuals() &&
+                   p != pos() /* make sure we do not get stuck on a syntax error */)
               {
+                p = pos();
                 result.add(exprUntilSpace());
               }
           }
