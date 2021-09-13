@@ -557,7 +557,7 @@ public class Errors extends ANY
   public static void expectedStringContinuation(SourcePosition pos, String token)
   {
     error(pos,
-          "Expected constant string continuation.",
+          "Expected constant string continuation starting with closing bracket, e.g., '} done.\"'.",
           "Found " + token + " instead.");
   }
 
