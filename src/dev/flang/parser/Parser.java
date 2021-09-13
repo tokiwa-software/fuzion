@@ -1855,11 +1855,11 @@ stringTerm  : STRING
   {
     return relaxLineAndSpaceLimit(() -> {
         Expr result = leftString;
-        if (isString(current()))
+        var t = current();
+        if (isString(t))
           {
             var str = new StrConst(posObject(), "\""+string()+"\"" /* NYI: remove "\"" */);
             result = concatString(posObject(), leftString, str);
-            var t = current();
             next();
             if (isPartialString(t))
               {
