@@ -61,6 +61,13 @@ public class Errors extends ANY
 
 
   /**
+   * Positions that produced a syntax error. If a syntax error occured, all
+   * other errors at this position will be supressed.
+   */
+  private static final TreeSet<SourcePosition> _syntaxErrorPositions_ = new TreeSet<>();
+
+
+  /**
    * Ser of warnings that have been shown so far. This is used to avoid presenting
    * error repeatedly.
    */
@@ -236,7 +243,7 @@ public class Errors extends ANY
       (msg != null);
 
     Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
-    if (!_errors_.contains(e))
+    if (!_errors_.contains(e) && (pos == null || !_syntaxErrorPositions_.contains(pos)))
       {
         _errors_.add(e);
         print(pos, errorMessage(msg), detail);
@@ -244,6 +251,29 @@ public class Errors extends ANY
           {
             showAndExit();
           }
+      }
+  }
+
+
+  /**
+   * Record the given syntax error found during compilation.  A syntax error
+   * will automatically suppress all other errors at pos.
+   *
+   * @param pos source code position where this error occured, may be null
+   *
+   * @param msg the error message, should not contain any LF or any case specific details
+   *
+   * @param detail details for this error, may contain LFs and case specific details, may be null
+   */
+  public static void syntaxError(SourcePosition pos, String msg, String detail)
+  {
+    if (PRECONDITIONS) require
+      (msg != null);
+
+    error(pos, msg, detail);
+    if (pos != null)
+      {
+        _syntaxErrorPositions_.add(pos);
       }
   }
 
@@ -475,17 +505,17 @@ public class Errors extends ANY
                                                    SourcePosition firstPos,
                                                    String detail)
   {
-    error(pos,
-          "Inconsistent indentation",
-          "Indentation reference point is " + firstPos.show() + "\n" +
-          detail);
+    syntaxError(pos,
+                "Inconsistent indentation",
+                "Indentation reference point is " + firstPos.show() + "\n" +
+                detail);
   }
 
   public static void syntax(SourcePosition pos, String expected, String found, String detail)
   {
-    error(pos,
-          "Syntax error: expected " + expected + ", found " + found,
-          detail);
+    syntaxError(pos,
+                "Syntax error: expected " + expected + ", found " + found,
+                detail);
   }
 
   private static String legalEscapes(char[][] escapes)
@@ -502,63 +532,63 @@ public class Errors extends ANY
 
   public static void unknownEscapedChar(SourcePosition pos, int found, char[][] escapes)
   {
-    error(pos,
-          "Unknown escaped character found in constant string.",
-          "Escaped character found: '" + new StringBuilder().appendCodePoint(found) +
-          "', legal escaped characters are " + legalEscapes(escapes) + ".");
+    syntaxError(pos,
+                "Unknown escaped character found in constant string.",
+                "Escaped character found: '" + new StringBuilder().appendCodePoint(found) +
+                "', legal escaped characters are " + legalEscapes(escapes) + ".");
   }
 
   public static void unterminatedString(SourcePosition pos, SourcePosition start)
   {
-    error(pos,
-          "Unterminated constant string.",
-          "Expected double quotes '\"' to mark end of constant string starting at " + start.show());
+    syntaxError(pos,
+                "Unterminated constant string.",
+                "Expected double quotes '\"' to mark end of constant string starting at " + start.show());
   }
 
   public static void unexpectedControlCodeInString(SourcePosition pos, String controlSeq, int codePoint, SourcePosition start)
   {
-    error(pos,
-          "Unexpected control sequence in constant string.",
-          "Found unexpected control sequence '" + controlSeq + "' (0x" + Integer.toHexString(codePoint) + ") in constant string starting at " + start.show());
+    syntaxError(pos,
+                "Unexpected control sequence in constant string.",
+                "Found unexpected control sequence '" + controlSeq + "' (0x" + Integer.toHexString(codePoint) + ") in constant string starting at " + start.show());
   }
 
   public static void unexpectedEndOfLineInString(SourcePosition pos, SourcePosition start)
   {
-    error(pos,
-          "Unexpected end-of-line in constant string.",
-          "Found unexpected end-of-line in constant string starting at " + start.show());
+    syntaxError(pos,
+                "Unexpected end-of-line in constant string.",
+                "Found unexpected end-of-line in constant string starting at " + start.show());
   }
 
   public static void identifierInStringExpected(SourcePosition pos, SourcePosition start)
   {
-    error(pos,
-          "Expected identifier immediately following '$' in constant string",
-          "For string starting at " + start.show());
+    syntaxError(pos,
+                "Expected identifier immediately following '$' in constant string",
+                "For string starting at " + start.show());
   }
 
   public static void lineBreakNotAllowedHere(SourcePosition pos, String detail)
   {
-    error(pos,
-          "No line break may occur at this position",
-          "This code is part of an expression that must reside within a single line.\n" +
-          detail + "\n" +
-          "To solve this, enclose the expression in parentheses '(' and ')'.");
+    syntaxError(pos,
+                "No line break may occur at this position",
+                "This code is part of an expression that must reside within a single line.\n" +
+                detail + "\n" +
+                "To solve this, enclose the expression in parentheses '(' and ')'.");
   }
 
   public static void whiteSpaceNotAllowedHere(SourcePosition pos, String detail)
   {
-    error(pos,
-          "No white space may occur before this position",
-          "This code is part of an actual argument that must not contain white space.\n" +
-          detail + "\n" +
-          "To solve this, enclose the expression in parentheses '(' and ')'.");
+    syntaxError(pos,
+                "No white space may occur before this position",
+                "This code is part of an actual argument that must not contain white space.\n" +
+                detail + "\n" +
+                "To solve this, enclose the expression in parentheses '(' and ')'.");
   }
 
   public static void expectedStringContinuation(SourcePosition pos, String token)
   {
-    error(pos,
-          "Expected constant string continuation starting with closing bracket, e.g., '} done.\"'.",
-          "Found " + token + " instead.");
+    syntaxError(pos,
+                "Expected constant string continuation starting with closing bracket, e.g., '} done.\"'.",
+                "Found " + token + " instead.");
   }
 
 }
