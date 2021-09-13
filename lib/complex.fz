@@ -68,7 +68,15 @@ is
 
   abs² => r*r+i*i
 
-  redef asString => "{a.r}+{a.i}i"
+  redef asString =>
+    si :=
+      for c in ($i).codepointsStream
+      until !("0123456789.+-".contains c)
+        "($i)"
+      else
+        $i
+    p := if (si.startsWith "-") then "" else "+"
+    "{r}$p{si}i"
 
   # NYI: these two should be implemented in complexes, not here:
   redef zero => complex r.zero r.one
