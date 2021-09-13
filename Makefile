@@ -333,6 +333,23 @@ $(CLASS_FILES_MISC_LOGO): $(JAVA_FILES_MISC_LOGO) $(JARS_JFREE_SVG_JAR)
 $(BUILD_DIR)/assets/logo.svg: $(CLASS_FILES_MISC_LOGO)
 	mkdir -p $(@D)
 	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) dev.flang.misc.logo.FuzionLogo $@
+	inkscape $@ -o $@.pdf
+	touch $@
+
+$(BUILD_DIR)/assets/logo_bleed.svg: $(CLASS_FILES_MISC_LOGO)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) dev.flang.misc.logo.FuzionLogo -b $@
+	inkscape $@ -o $@.tmp.pdf
+	pdfjam --papersize '{46mm,46mm}' --outfile $@.pdf $@.tmp.pdf
+	rm -f $@.tmp.pdf
+	touch $@
+
+$(BUILD_DIR)/assets/logo_bleed_cropmark.svg: $(CLASS_FILES_MISC_LOGO)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) dev.flang.misc.logo.FuzionLogo -c $@
+	inkscape $@ -o $@.tmp.pdf
+	pdfjam --papersize '{46mm,46mm}' --outfile $@.pdf $@.tmp.pdf
+	rm -f $@.tmp.pdf
 	touch $@
 
 $(BUILD_DIR)/lib: $(FZ_SRC)/lib
@@ -419,7 +436,7 @@ unicode: $(BUILD_DIR)/UnicodeData.java
 # phony target to regenerate Fuzion logo.
 # This must be phony since $(SRC)/assets/logo.svg would be a circular dependency
 .phony: logo
-logo: $(BUILD_DIR)/assets/logo.svg
+logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DIR)/assets/logo_bleed_cropmark.svg
 	cp $^ $(FZ_SRC)/assets/
 
 # phony target to run Fuzion tests and report number of failures

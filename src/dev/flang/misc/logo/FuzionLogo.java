@@ -67,44 +67,65 @@ public class FuzionLogo
   /* the following values are geometry values that are fixed and should not be
    * changed:
    */
+  static class Geometry
+  {
 
-  // total size
-  static int SIZE = 2048;
+    static final double PIXEL_PER_CM = 37.8;
 
-  // main radius
-  static int r = SIZE / 2;
+    // geometry in pixels: bleed, total size, radius with bleed r0, radius
+    // without bleed r, radius of main wedges r1, radius of three circles r2,
+    // radius of three small circles r3, width of black lines b.
+    final double bleed, sz, r0, r, r1, r2, r3, b;
 
-  // width of black lines
-  static double b = r * BLACK_LINE_WIDTH;
+    Geometry(int size_in_cm,
+             double bleed_in_cm)
+    {
+      var size  = size_in_cm * PIXEL_PER_CM;
+      bleed = bleed_in_cm * PIXEL_PER_CM;
 
-  // outer radius of three main wedges
-  static double r1 = r-b;
+      // diameter including bleed
+      sz = size + 2*bleed;
 
-  // side length of triangle of the centers of the three main circles with radius r2:
-  //
-  //  l = 2*r2 + b;
-  //
-  // distance from center to center of three main circles
-  //
-  //  h = r - r2 - b               -- using radius r
-  //
-  //  h =  (2*r2+b)/ (2*(cos 30))  -- using trigonomy
-  //
-  // so we get for r2
-  //
-  //  r - r2 - b = (2*r2+b)/ (2*(cos 30))
-  //
-  //  r - (b * (1 + 1/(2*(cos 30)))) = r2 * (1 + 1 / (cos 30))
-  //
-  //  r2 = (r - (b * (1 + 1/(2*(cos 30))))) / (1 + 1 / (cos 30))
-  //     = (r - (b * (1 + 1/(2*sqrt(3/4))))) / (1 + 1 / sqrt(3/4))
-  //     = (r - (b * (1 + 1/sqrt(3)))) / (1 + 2 / sqrt(3))
-  //
-  // radius of three main circles:
-  static double r2 = (r - b * (1+Math.sqrt(1/3.0D)))/(1 + 2*Math.sqrt(1/3.0D));
+      // main radius including bleed
+      r0 = sz / 2;
 
-  // radius of three small circles
-  static double r3 = r2 * SMALL_CIRCLE_PERCENTAGE;
+      // main radius
+      r = size / 2;
+
+      // width of black lines
+      b = (int) (r * BLACK_LINE_WIDTH);
+
+      // outer radius of three main wedges
+      r1 = r-b;
+
+      // side length of triangle of the centers of the three main circles with radius r2:
+      //
+      //  l = 2*r2 + b;
+      //
+      // distance from center to center of three main circles
+      //
+      //  h = r - r2 - b               -- using radius r
+      //
+      //  h =  (2*r2+b)/ (2*(cos 30))  -- using trigonomy
+      //
+      // so we get for r2
+      //
+      //  r - r2 - b = (2*r2+b)/ (2*(cos 30))
+      //
+      //  r - (b * (1 + 1/(2*(cos 30)))) = r2 * (1 + 1 / (cos 30))
+      //
+      //  r2 = (r - (b * (1 + 1/(2*(cos 30))))) / (1 + 1 / (cos 30))
+      //     = (r - (b * (1 + 1/(2*sqrt(3/4))))) / (1 + 1 / sqrt(3/4))
+      //     = (r - (b * (1 + 1/sqrt(3)))) / (1 + 2 / sqrt(3))
+      //
+      // radius of three main circles:
+      r2 = (r - b * (1+Math.sqrt(1/3.0D)))/(1 + 2*Math.sqrt(1/3.0D));
+
+      // radius of three small circles
+      r3 = r2 * SMALL_CIRCLE_PERCENTAGE;
+    }
+  }
+
 
   /**
    * Functional interface used to draw repeatedly.
@@ -146,10 +167,22 @@ public class FuzionLogo
   /**
    * Draw the Fuzion logo to the given g2 instance
    */
-  static void drawLogo(Graphics2D g2)
+  static void drawLogo(Graphics2D g2, Geometry geo, boolean crop)
   {
+    var b = geo.b;
+    var r = geo.r;
+    var ri = (int) r;
+    var r1 = geo.r1;
+    var r2 = geo.r2;
+    var r3 = geo.r3;
+
     // black background circle
-    cir(g2, BACKGROUND, 0, 0, r);
+    cir(g2, BACKGROUND, 0, 0, geo.r0);
+    if (crop)
+      {
+        g2.setPaint(Color.MAGENTA);
+        g2.drawOval(-ri,-ri,2*ri,2*ri);
+      }
 
     // three arcs
     threeTimes(g2, c -> { arc(g2, c, 0,0,r1, -30, 120);});
@@ -174,14 +207,33 @@ public class FuzionLogo
    */
   public static void main(String[] args)
   {
-    if (args.length > 1 || args.length == 1 && args[0].startsWith("-"))
+    var name = FILE_NAME;
+    var crop = false;
+    var bleed = 0.0;
+    for (var a : args)
       {
-        System.err.println("Usage: java FuzionLogo <svg-filename>");
+        if (a.equals("-b"))
+          {
+            bleed = 3;
+          }
+        else if (a.equals("-c"))
+          {
+            bleed = 3;
+            crop = true;
+          }
+        else if (name != FILE_NAME || a.startsWith("-"))
+          {
+            System.err.println("Usage: java FuzionLogo {-b|-c} <svg-filename>");
+          }
+        else
+          {
+            name = a;
+          }
       }
-    SVGGraphics2D g2 = new SVGGraphics2D(SIZE, SIZE);
-    g2.translate(r, r);
-    drawLogo(g2);
-    var name = args.length > 0 ? args[0] : FILE_NAME;
+    var geo = new Geometry(40, bleed);
+    SVGGraphics2D g2 = new SVGGraphics2D(geo.sz, geo.sz);
+    g2.translate(geo.r0, geo.r0);
+    drawLogo(g2, geo, crop);
     try
       {
         System.out.println(" + " + name);
