@@ -2331,7 +2331,7 @@ HEX_TAIL    : "." HEX_DIGITS
           }
         else if (t.isKeyword())
           {
-            result = "'" + result + "'";
+            result = "keyword '" + result + "'";
           }
         break;
       }

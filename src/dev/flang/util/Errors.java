@@ -558,7 +558,7 @@ public class Errors extends ANY
   {
     error(pos,
           "Expected constant string continuation.",
-          "Found '" + token + "' instead.");
+          "Found " + token + " instead.");
   }
 
 }

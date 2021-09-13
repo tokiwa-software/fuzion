@@ -1865,7 +1865,7 @@ stringTerm  : STRING
           }
         else
           {
-            Errors.expectedStringContinuation(posObject(), current().toString());
+            Errors.expectedStringContinuation(posObject(), currentAsString());
           }
         return result;
       });
