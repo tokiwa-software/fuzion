@@ -332,6 +332,10 @@ public class Interpreter extends Backend
             refVal = getChoiceRefVal(sf, staticSubjectClazz, sub);
             tag = ChoiceIdAsRef.get(staticSubjectClazz, refVal);
           }
+        else if (staticSubjectClazz == Clazzes.bool.get())
+          {
+            tag = sub.boolValue() ? 1 : 0;
+          }
         else
           {
             tag = getField(sf.choiceTag_, staticSubjectClazz, sub).i32Value();
