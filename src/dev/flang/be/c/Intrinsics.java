@@ -46,6 +46,14 @@ class Intrinsics extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * Predefined identifiers to access args:
+   */
+  static CIdent A0 = new CIdent("arg0");
+  static CIdent A1 = new CIdent("arg1");
+  static CIdent A2 = new CIdent("arg2");
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -84,12 +92,12 @@ class Intrinsics extends ANY
 
     switch (c._fuir.clazzIntrinsicName(cl))
       {
-      case "fuzion.std.exit"     : return CExpr.call("exit", new List<>(new CIdent("arg0")));
+      case "fuzion.std.exit"     : return CExpr.call("exit", new List<>(A0));
       case "fuzion.std.out.write": var cid = new CIdent("c");
                                    return CStmnt.seq(CStmnt.decl("char",cid),
-                                                       cid.assign(new CIdent("arg0").castTo("char")),
+                                                       cid.assign(A0.castTo("char")),
                                                        CExpr.call("fwrite",
-                                                                  new List<>(new CIdent("c").adrOf(),
+                                                                  new List<>(cid.adrOf(),
                                                                              CExpr.int32const(1),
                                                                              CExpr.int32const(1),
                                                                              new CIdent("stdout"))));
@@ -118,56 +126,56 @@ class Intrinsics extends ANY
       case "i8.div"              :
       case "i16.div"             :
       case "i32.div"             :
-      case "i64.div"             : return outer.div(new CIdent("arg0")).ret();
+      case "i64.div"             : return outer.div(A0).ret();
       case "i8.mod"              :
       case "i16.mod"             :
       case "i32.mod"             :
-      case "i64.mod"             : return outer.mod(new CIdent("arg0")).ret();
+      case "i64.mod"             : return outer.mod(A0).ret();
       case "i8.infix <<"         :
       case "i16.infix <<"        :
       case "i32.infix <<"        :
-      case "i64.infix <<"        : return outer.shl(new CIdent("arg0")).ret();
+      case "i64.infix <<"        : return outer.shl(A0).ret();
       case "i8.infix >>"         :
       case "i16.infix >>"        :
       case "i32.infix >>"        :
-      case "i64.infix >>"        : return outer.shr(new CIdent("arg0")).ret();
+      case "i64.infix >>"        : return outer.shr(A0).ret();
       case "i8.infix &"          :
       case "i16.infix &"         :
       case "i32.infix &"         :
-      case "i64.infix &"         : return outer.and(new CIdent("arg0")).ret();
+      case "i64.infix &"         : return outer.and(A0).ret();
       case "i8.infix |"          :
       case "i16.infix |"         :
       case "i32.infix |"         :
-      case "i64.infix |"         : return outer.or (new CIdent("arg0")).ret();
+      case "i64.infix |"         : return outer.or (A0).ret();
       case "i8.infix ^"          :
       case "i16.infix ^"         :
       case "i32.infix ^"         :
-      case "i64.infix ^"         : return outer.xor(new CIdent("arg0")).ret();
+      case "i64.infix ^"         : return outer.xor(A0).ret();
 
       case "i8.infix =="         :
       case "i16.infix =="        :
       case "i32.infix =="        :
-      case "i64.infix =="        : return outer.eq(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "i64.infix =="        : return outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "i8.infix !="         :
       case "i16.infix !="        :
       case "i32.infix !="        :
-      case "i64.infix !="        : return outer.ne(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "i64.infix !="        : return outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "i8.infix >"          :
       case "i16.infix >"         :
       case "i32.infix >"         :
-      case "i64.infix >"         : return outer.gt(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "i64.infix >"         : return outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "i8.infix >="         :
       case "i16.infix >="        :
       case "i32.infix >="        :
-      case "i64.infix >="        : return outer.ge(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "i64.infix >="        : return outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "i8.infix <"          :
       case "i16.infix <"         :
       case "i32.infix <"         :
-      case "i64.infix <"         : return outer.lt(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "i64.infix <"         : return outer.lt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "i8.infix <="         :
       case "i16.infix <="        :
       case "i32.infix <="        :
-      case "i64.infix <="        : return outer.le(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "i64.infix <="        : return outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
 
       case "u8.prefix -°"        :
       case "u16.prefix -°"       :
@@ -176,68 +184,68 @@ class Intrinsics extends ANY
       case "u8.infix -°"         :
       case "u16.infix -°"        :
       case "u32.infix -°"        :
-      case "u64.infix -°"        : return outer.sub(new CIdent("arg0")).ret();
+      case "u64.infix -°"        : return outer.sub(A0).ret();
       case "u8.infix +°"         :
       case "u16.infix +°"        :
       case "u32.infix +°"        :
-      case "u64.infix +°"        : return outer.add(new CIdent("arg0")).ret();
+      case "u64.infix +°"        : return outer.add(A0).ret();
       case "u8.infix *°"         :
       case "u16.infix *°"        :
       case "u32.infix *°"        :
-      case "u64.infix *°"        : return outer.mul(new CIdent("arg0")).ret();
+      case "u64.infix *°"        : return outer.mul(A0).ret();
       case "u8.div"              :
       case "u16.div"             :
       case "u32.div"             :
-      case "u64.div"             : return outer.div(new CIdent("arg0")).ret();
+      case "u64.div"             : return outer.div(A0).ret();
       case "u8.mod"              :
       case "u16.mod"             :
       case "u32.mod"             :
-      case "u64.mod"             : return outer.mod(new CIdent("arg0")).ret();
+      case "u64.mod"             : return outer.mod(A0).ret();
       case "u8.infix <<"         :
       case "u16.infix <<"        :
       case "u32.infix <<"        :
-      case "u64.infix <<"        : return outer.shl(new CIdent("arg0")).ret();
+      case "u64.infix <<"        : return outer.shl(A0).ret();
       case "u8.infix >>"         :
       case "u16.infix >>"        :
       case "u32.infix >>"        :
-      case "u64.infix >>"        : return outer.shr(new CIdent("arg0")).ret();
+      case "u64.infix >>"        : return outer.shr(A0).ret();
       case "u8.infix &"          :
       case "u16.infix &"         :
       case "u32.infix &"         :
-      case "u64.infix &"         : return outer.and(new CIdent("arg0")).ret();
+      case "u64.infix &"         : return outer.and(A0).ret();
       case "u8.infix |"          :
       case "u16.infix |"         :
       case "u32.infix |"         :
-      case "u64.infix |"         : return outer.or (new CIdent("arg0")).ret();
+      case "u64.infix |"         : return outer.or (A0).ret();
       case "u8.infix ^"          :
       case "u16.infix ^"         :
       case "u32.infix ^"         :
-      case "u64.infix ^"         : return outer.xor(new CIdent("arg0")).ret();
+      case "u64.infix ^"         : return outer.xor(A0).ret();
 
       case "u8.infix =="         :
       case "u16.infix =="        :
       case "u32.infix =="        :
-      case "u64.infix =="        : return outer.eq(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "u64.infix =="        : return outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "u8.infix !="         :
       case "u16.infix !="        :
       case "u32.infix !="        :
-      case "u64.infix !="        : return outer.ne(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "u64.infix !="        : return outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "u8.infix >"          :
       case "u16.infix >"         :
       case "u32.infix >"         :
-      case "u64.infix >"         : return outer.gt(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "u64.infix >"         : return outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "u8.infix >="         :
       case "u16.infix >="        :
       case "u32.infix >="        :
-      case "u64.infix >="        : return outer.ge(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "u64.infix >="        : return outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "u8.infix <"          :
       case "u16.infix <"         :
       case "u32.infix <"         :
-      case "u64.infix <"         : return outer.lt(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "u64.infix <"         : return outer.lt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "u8.infix <="         :
       case "u16.infix <="        :
       case "u32.infix <="        :
-      case "u64.infix <="        : return outer.le(new CIdent("arg0")).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "u64.infix <="        : return outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
 
       case "i8.as_i32"           : return outer.castTo("fzT_1i32").ret();
       case "i16.as_i32"          : return outer.castTo("fzT_1i32").ret();
@@ -279,20 +287,20 @@ class Intrinsics extends ANY
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return CExpr.call("malloc",
-                            new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(new CIdent("arg0")))).ret();
+                            new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(A0))).ret();
         }
       case "sys.array.setel"     :
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return c._types.hasData(gc)
-            ? new CIdent("arg0").castTo(c._types.clazz(gc) + "*").index(new CIdent("arg1")).assign(new CIdent("arg2"))
+            ? A0.castTo(c._types.clazz(gc) + "*").index(A1).assign(A2)
             : CStmnt.EMPTY;
         }
       case "sys.array.get"       :
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return c._types.hasData(gc)
-            ? new CIdent("arg0").castTo(c._types.clazz(gc) + "*").index(new CIdent("arg1")).ret()
+            ? A0.castTo(c._types.clazz(gc) + "*").index(A1).ret()
             : CStmnt.EMPTY;
         }
 
