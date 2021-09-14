@@ -448,13 +448,13 @@ public class NumLiteral extends Expr
             m = m.multiply(B5.pow(e5));
           }
         else  if (e5 < 0)
-          {  // for negative e5, divide m by 5^(-e5), but ensure we have enough result bits
+          { // for negative e5, divide m by 5^(-e5), but ensure we have enough result bits
             var div5 = B5.pow(-e5);
             // make sure m has at least mBits after division
             var extraBits = ct._mBits + 1 - (m.bitLength() - div5.bitLength());
             if (extraBits > 0)
               {
-                m = m.multiply(B2.pow(extraBits));
+                m = m.shiftLeft(extraBits);
                 e2 = e2 - extraBits;
               }
             m = m.divide(div5);
@@ -475,7 +475,7 @@ public class NumLiteral extends Expr
           {
             // NYI: Determination of max float value is a little clumsy:
             var mmax = B1.shiftLeft(ct._mBits).subtract(B1);
-            var bmax = mmax.multiply(B2.pow(eSpecial-eBias-ct._mBits));
+            var bmax = mmax.shiftLeft(eSpecial-eBias-ct._mBits);
             var ndigits = 0;
             while (B10.pow(ndigits).subtract(mmax).signum() < 0)
               {
