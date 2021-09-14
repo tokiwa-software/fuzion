@@ -316,19 +316,11 @@ public class FrontEnd extends ANY
     CURRENT_DIRECTORY = Path.of(".");
 
     // find fuzion home via classes directory:
-    Class<FrontEnd> cl = FrontEnd.class;
-    String clname = cl.getName().replace(".",File.separator)+ ".class";
-    var url = FrontEnd.class.getClassLoader().getResource(clname);
-    String p;
-    try
-      { // convert to URI to remove URL encoded chars ('%20' -> ' ')
-        p = new URI(url.toString()).getPath();
-      }
-    catch (URISyntaxException e)  // when could this happen?
-      {
-        p = url.getPath();  // as long as there are no URLEncoded chars, this should do as a fallback
-      }
-    p = p.substring(0, p.length() - clname.length());
+    String p = new File(FrontEnd.class.getProtectionDomain().getCodeSource().getLocation().getPath())
+      .getAbsolutePath()
+      // NYI properly decode all special characters in paths
+      .replace("%20", " ");
+
     FUZION_HOME = Path.of(p).getParent();
 
     SOURCE_PATHS = new Path[] { FUZION_HOME.resolve("lib"), CURRENT_DIRECTORY };
