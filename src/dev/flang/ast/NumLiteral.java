@@ -462,16 +462,7 @@ public class NumLiteral extends Expr
 
         // make sure m's bitLength is exactly mBits
         var deltaBits = ct._mBits - m.bitLength();
-        if (deltaBits > 0)
-          {
-            m = m.shiftLeft(deltaBits);
-          }
-        else
-          {
-            var roundingBit = B2.pow(-deltaBits-1);
-            var div2        = B2.pow(-deltaBits  );
-            m = m.add(roundingBit).divide(div2);
-          }
+        m = shiftWithRounding(m, deltaBits);
         e2 = e2 - deltaBits;
         check
           (m.bitLength() == ct._mBits);
@@ -503,9 +494,7 @@ public class NumLiteral extends Expr
           }
         else if (e2 <= 0)
           { // denormalized
-            var sh = -e2+1;
-            var roundingBit = B1.shiftLeft(sh-1);
-            m = m.add(roundingBit).shiftRight(sh);
+            m = shiftWithRounding(m, e2-1);
             e2 = 0;
             if (m.signum() == 0)
               {
@@ -544,6 +533,35 @@ public class NumLiteral extends Expr
           }
       }
     return res;
+  }
+
+
+  /**
+   * Helper routine to shift BigInteger v left (sh > 0) or right (sh < 0) and
+   * perform rounding in case of a right shift.
+   *
+   * @param v a BigInteger value
+   *
+   * @param sh a shift distance
+   *
+   * @return v shifted, plus one in case of right shift with the highest lost
+   * bit being 1.
+   */
+  private BigInteger shiftWithRounding(BigInteger v, int sh)
+  {
+    if (sh > 0)
+      {
+        return v.shiftLeft(sh);
+      }
+    else if (sh < 0)
+      {
+        var roundingBit = B1.shiftLeft(-sh-1);
+        return v.add(roundingBit).shiftRight(-sh);
+      }
+    else
+      {
+        return v;
+      }
   }
 
 
