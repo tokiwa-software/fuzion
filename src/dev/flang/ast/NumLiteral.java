@@ -504,7 +504,8 @@ public class NumLiteral extends Expr
         else if (e2 <= 0)
           { // denormalized
             var sh = -e2+1;
-            m = m.shiftRight(sh);
+            var roundingBit = B1.shiftLeft(sh-1);
+            m = m.add(roundingBit).shiftRight(sh);
             e2 = 0;
             if (m.signum() == 0)
               {
