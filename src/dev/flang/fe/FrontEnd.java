@@ -318,6 +318,7 @@ public class FrontEnd extends ANY
     // find fuzion home via classes directory:
     String p = new File(FrontEnd.class.getProtectionDomain().getCodeSource().getLocation().getPath())
       .getAbsolutePath()
+      // NYI properly decode all special characters in paths
       .replace("%20", " ");
 
     FUZION_HOME = Path.of(p).getParent();
