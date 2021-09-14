@@ -157,7 +157,22 @@ public class CTypes extends ANY
    */
   String scalar(int cl)
   {
-    return switch (_fuir.getSpecialId(cl))
+    return scalar(_fuir.getSpecialId(cl));
+  }
+
+
+  /**
+   * Check if the given special clazz specifies a scalar type in the C code,
+   * i.e, standard numeric types i32, u64, etc. If so, return that C type.
+   *
+   * @param sc a SpeicalClazzes value or null
+   *
+   * @return the C scalar type corresponding to cl, null if cl is not scaler or
+   * null.
+   */
+  String scalar(FUIR.SpecialClazzes sc)
+  {
+    return switch (sc)
       {
       case c_i8  -> "int8_t";
       case c_i16 -> "int16_t";

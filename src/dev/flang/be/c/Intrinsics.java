@@ -107,22 +107,22 @@ class Intrinsics extends ANY
         /* NYI: The C standard does not guarentee wrap-around semantics for signed types, need
          * to check if this is the case for the C compilers used for Fuzion.
          */
-      case "i8.prefix -°"        :
-      case "i16.prefix -°"       :
-      case "i32.prefix -°"       :
-      case "i64.prefix -°"       : return outer.neg().ret();
-      case "i8.infix -°"         :
-      case "i16.infix -°"        :
-      case "i32.infix -°"        :
-      case "i64.infix -°"        : return outer.sub(new CIdent("arg0")).ret();
-      case "i8.infix +°"         :
-      case "i16.infix +°"        :
-      case "i32.infix +°"        :
-      case "i64.infix +°"        : return outer.add(new CIdent("arg0")).ret();
-      case "i8.infix *°"         :
-      case "i16.infix *°"        :
-      case "i32.infix *°"        :
-      case "i64.infix *°"        : return outer.mul(new CIdent("arg0")).ret();
+      case "i8.prefix -°"        : return castToUnsignedForArithmetic(c, CExpr.int8const (0), outer, '-', FUIR.SpecialClazzes.c_u8 , FUIR.SpecialClazzes.c_i8 ).ret();
+      case "i16.prefix -°"       : return castToUnsignedForArithmetic(c, CExpr.int16const(0), outer, '-', FUIR.SpecialClazzes.c_u16, FUIR.SpecialClazzes.c_i16).ret();
+      case "i32.prefix -°"       : return castToUnsignedForArithmetic(c, CExpr.int32const(0), outer, '-', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i32).ret();
+      case "i64.prefix -°"       : return castToUnsignedForArithmetic(c, CExpr.int64const(0), outer, '-', FUIR.SpecialClazzes.c_u64, FUIR.SpecialClazzes.c_i64).ret();
+      case "i8.infix -°"         : return castToUnsignedForArithmetic(c, outer, A0, '-', FUIR.SpecialClazzes.c_u8 , FUIR.SpecialClazzes.c_i8 ).ret();
+      case "i16.infix -°"        : return castToUnsignedForArithmetic(c, outer, A0, '-', FUIR.SpecialClazzes.c_u16, FUIR.SpecialClazzes.c_i16).ret();
+      case "i32.infix -°"        : return castToUnsignedForArithmetic(c, outer, A0, '-', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i32).ret();
+      case "i64.infix -°"        : return castToUnsignedForArithmetic(c, outer, A0, '-', FUIR.SpecialClazzes.c_u64, FUIR.SpecialClazzes.c_i64).ret();
+      case "i8.infix +°"         : return castToUnsignedForArithmetic(c, outer, A0, '+', FUIR.SpecialClazzes.c_u8 , FUIR.SpecialClazzes.c_i8 ).ret();
+      case "i16.infix +°"        : return castToUnsignedForArithmetic(c, outer, A0, '+', FUIR.SpecialClazzes.c_u16, FUIR.SpecialClazzes.c_i16).ret();
+      case "i32.infix +°"        : return castToUnsignedForArithmetic(c, outer, A0, '+', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i32).ret();
+      case "i64.infix +°"        : return castToUnsignedForArithmetic(c, outer, A0, '+', FUIR.SpecialClazzes.c_u64, FUIR.SpecialClazzes.c_i64).ret();
+      case "i8.infix *°"         : return castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u8 , FUIR.SpecialClazzes.c_i8 ).ret();
+      case "i16.infix *°"        : return castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u16, FUIR.SpecialClazzes.c_i16).ret();
+      case "i32.infix *°"        : return castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u32, FUIR.SpecialClazzes.c_i32).ret();
+      case "i64.infix *°"        : return castToUnsignedForArithmetic(c, outer, A0, '*', FUIR.SpecialClazzes.c_u64, FUIR.SpecialClazzes.c_i64).ret();
       case "i8.div"              :
       case "i16.div"             :
       case "i32.div"             :
@@ -314,6 +314,50 @@ class Intrinsics extends ANY
                           CExpr.call("exit", new List<>(CExpr.int32const(1))));
 
       }
+  }
+
+
+  /**
+   * Helper for signed wrapping arithmetic: Since C semantics are undefined for
+   * an overflow for signed values, we cast signed values to their unsigned
+   * counterparts for wrapping arithmetic and cast the result back to signed.
+   *
+   * @param c the C backend
+   *
+   * @param a the left expression
+   *
+   * @param b the right expression
+   *
+   * @param op an operator, one of '+', '-', '*'
+   *
+   * @param unsigned the unsigned type to cast to
+   *
+   * @param signed the signed type of a and b and the type the result has to be
+   * casted to.
+   */
+  CExpr castToUnsignedForArithmetic(C c, CExpr a, CExpr b, char op, FUIR.SpecialClazzes unsigned, FUIR.SpecialClazzes signed)
+  {
+    // C type
+    var ut = c._types.scalar(unsigned);
+    var st = c._types.scalar(signed  );
+
+    // unsigned versions of a and b
+    var au = a.castTo(ut);
+    var bu = b.castTo(ut);
+
+    // unsigned result
+    var ru = switch (op)
+      {
+      case '+' -> au.add(bu);
+      case '-' -> au.sub(bu);
+      case '*' -> au.mul(bu);
+      default -> throw new Error("unexpected arithmetic operator '" + op + "' for intrinsic.");
+      };
+
+    // signed result
+    var rs = ru.castTo(st);
+
+    return rs;
   }
 
 }
