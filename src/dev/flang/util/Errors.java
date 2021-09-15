@@ -87,7 +87,18 @@ public class Errors extends ANY
    * Maximum number of error messages that are displayed. If this limit is
    * reached, we terminate with return code 1.
    */
-  public static int MAX_ERROR_MESSAGES = Integer.getInteger("fuzion.maxErrorCount", Integer.MAX_VALUE);
+  public static String MAX_ERROR_MESSAGES_PROPERTY = "fuzion.maxErrorCount";
+  public static String MAX_ERROR_MESSAGES_OPTION = "-XmaxErrors";
+  public static int MAX_ERROR_MESSAGES = Integer.getInteger(MAX_ERROR_MESSAGES_PROPERTY, 20);
+
+
+  /**
+   * Maximum number of warning messages that are displayed. If this limit is
+   * reached, we stop printing further warnings.
+   */
+  public static String MAX_WARNING_MESSAGES_PROPERTY = "fuzion.maxWarningCount";
+  public static String MAX_WARNING_MESSAGES_OPTION = "-XmaxWarnings";
+  public static int MAX_WARNING_MESSAGES = Integer.getInteger(MAX_WARNING_MESSAGES_PROPERTY, Integer.MAX_VALUE);
 
 
   /*-----------------------------  classes  -----------------------------*/
@@ -414,6 +425,13 @@ public class Errors extends ANY
   {
     if (count() > 0)
       {
+        if (count() >= MAX_ERROR_MESSAGES)
+          {
+            warning(SourcePosition.builtIn,
+                    "Maximum error count reached, terminating.",
+                    "Maximum error count is " + MAX_ERROR_MESSAGES + ".\n" +
+                    "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "'.");
+          }
         println(singularOrPlural(count(), "error") +
                 (warningCount() > 0 ? " and " + singularOrPlural(warningCount(), "warning")
                                     : "") +
@@ -472,11 +490,21 @@ public class Errors extends ANY
     if (PRECONDITIONS) require
       (msg != null);
 
-    Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
-    if (!_warnings_.contains(e))
+    if (warningCount() < MAX_WARNING_MESSAGES)
       {
-        _warnings_.add(e);
-        print(pos, warningMessage(msg), detail);
+        if (warningCount()+1 == MAX_WARNING_MESSAGES)
+          {
+            pos = SourcePosition.builtIn;
+            msg = "Maximum warning count reached, suppressing further warnings";
+            detail = "Maximum warning count is " + MAX_WARNING_MESSAGES + ".\n" +
+              "Change this via property '" + MAX_WARNING_MESSAGES_PROPERTY + "' or command line option '" + MAX_WARNING_MESSAGES_OPTION + "'.";
+          }
+        Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
+        if (!_warnings_.contains(e))
+          {
+            _warnings_.add(e);
+            print(pos, warningMessage(msg), detail);
+          }
       }
   }
 

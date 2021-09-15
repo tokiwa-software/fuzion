@@ -43,8 +43,9 @@ import dev.flang.me.MiddleEnd;
 import dev.flang.opt.Optimizer;
 
 import dev.flang.util.ANY;
-import dev.flang.util.List;
 import dev.flang.util.Errors;
+import dev.flang.util.List;
+import dev.flang.util.Profiler;
 
 
 /**
@@ -63,7 +64,9 @@ public abstract class Tool extends ANY
    */
   public static final String STD_OPTIONS = "@STANDARD_OPTIONS@";
 
-  private static final String XTRA_OPTIONS = "[-X|--Xhelp] [-XjavaProf] ";
+  private static final String XTRA_OPTIONS = "[-X|--Xhelp] [-XjavaProf] " +
+    "[" + Errors.MAX_ERROR_MESSAGES_OPTION   + "=<n>] " +
+    "[" + Errors.MAX_WARNING_MESSAGES_OPTION + "=<n>] ";
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -127,7 +130,7 @@ public abstract class Tool extends ANY
    * The standard options that come with every tool.  May be redefined to add
    * more standard options to be used in different configurations.
    *
-   * @param xtra include extra options such as -Xhelp, -XjavaPof, etc.
+   * @param xtra include extra options such as -Xhelp, -XjavaProf, etc.
    */
   protected String STANDARD_OPTIONS(boolean xtra)
   {
@@ -257,7 +260,15 @@ public abstract class Tool extends ANY
       }
     else if (a.equals("-XjavaProf"))
       {
-        dev.flang.util.Profiler.start();
+        Profiler.start();
+      }
+    else if (a.startsWith(Errors.MAX_ERROR_MESSAGES_OPTION) && a.startsWith(Errors.MAX_ERROR_MESSAGES_OPTION + "="))
+      {
+        Errors.MAX_ERROR_MESSAGES = Integer.parseInt(a.substring(a.indexOf("=")+1));
+      }
+    else if (a.startsWith(Errors.MAX_WARNING_MESSAGES_OPTION) && a.startsWith(Errors.MAX_WARNING_MESSAGES_OPTION + "="))
+      {
+        Errors.MAX_WARNING_MESSAGES = Integer.parseInt(a.substring(a.indexOf("=")+1));
       }
     else if (a.equals("-noANSI"))
       {
