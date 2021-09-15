@@ -310,7 +310,7 @@ public class Clazzes extends ANY
                              "Value type " + actualType + " equals type of outer feature.\n"+
                              "The chain of outer types that lead to this recursion is:\n"+
                              chain + "\n" +
-                             "To solve this, you could make add a 'ref' after the arguments list at "+o._type.featureOfType().pos().show());
+                             "To solve this, you could add a 'ref' after the arguments list at "+o._type.featureOfType().pos().show());
               }
           }
         o = o._outer;
