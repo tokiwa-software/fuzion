@@ -155,11 +155,11 @@ public class NumLiteral extends Expr
   /**
    * Convenience BitInteger values:
    */
-  BigInteger B0 = BigInteger.valueOf(0);
-  BigInteger B1 = BigInteger.valueOf(1);
-  BigInteger B2 = BigInteger.valueOf(2);
-  BigInteger B5 = BigInteger.valueOf(5);
-  BigInteger B10 = BigInteger.valueOf(10);
+  static BigInteger B0 = BigInteger.valueOf(0);
+  static BigInteger B1 = BigInteger.valueOf(1);
+  static BigInteger B2 = BigInteger.valueOf(2);
+  static BigInteger B5 = BigInteger.valueOf(5);
+  static BigInteger B10 = BigInteger.valueOf(10);
 
 
   /*----------------------------  variables  ----------------------------*/
