@@ -2997,6 +2997,11 @@ public class Feature extends ANY implements Stmnt, Comparable
         c.cond.visit(fv, this);
       }
 
+    for (var c : contract.ens)
+      {
+        c.cond.visit(fv, this);
+      }
+
     for (Call p: inherits)
       {
         p.visit(fv, this);
