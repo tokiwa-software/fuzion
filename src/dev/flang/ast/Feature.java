@@ -831,6 +831,18 @@ public class Feature extends ANY implements Stmnt, Comparable
 
 
   /**
+   * Is this a field that was added by fz, not by the user. If so, we do not
+   * enforce visibility only after its declaration.
+   *
+   * @return true iff this feature is anonymous.
+   */
+  private boolean isArtificialField()
+  {
+    return isField() && _featureName.baseName().startsWith("#");
+  }
+
+
+  /**
    * true iff this is the automatically generated field RESULT_NAME or
    * INTERNAL_RESULT_NAME.
    *
@@ -3108,12 +3120,17 @@ public class Feature extends ANY implements Stmnt, Comparable
               {
                 var f = outer.findFieldDefInScope(name, call, assign, destructure, inner);
                 fs = new TreeMap<>(fs);
-                if (f != null)
+                // if we found f in scope, remove all other entries, otherwise remove all entries within this since they are not in scope.
+                for (var fn : fields)
                   {
-                    for (var fn : fields)
+                    var fi = fs.get(fn);
+                    if (f != null || fi.outer() == this && !fi.isArtificialField())
                       {
                         fs.remove(fn);
                       }
+                  }
+                if (f != null)
+                  {
                     fs.put(f.featureName(), f);
                   }
               }
