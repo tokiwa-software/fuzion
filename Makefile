@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 JAVA = java
-JAVAC = javac -source 16
+JAVAC = javac -encoding UTF8 -source 16
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
@@ -369,13 +369,15 @@ $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 $(MOD_JAVA_BASE): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(BUILD_DIR)/bin/fzjava java.base -to=$(@D) -verbose=0
+# wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
+	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.base -to=$(@D) -verbose=0"
 	touch $@
 
 $(MOD_JAVA_XML): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(BUILD_DIR)/bin/fzjava java.xml -to=$(@D) -verbose=0
+# wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
+	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.xml -to=$(@D) -verbose=0"
 	# NYI: manually delete redundant features
 	rm -f $(BUILD_DIR)/modules/java.xml/Java_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.xml/Java/jdk_pkg.fz
@@ -387,7 +389,8 @@ $(MOD_JAVA_XML): $(BUILD_DIR)/bin/fzjava
 $(MOD_JAVA_DATATRANSFER): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(BUILD_DIR)/bin/fzjava java.datatransfer -to=$(@D) -verbose=0
+# wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
+	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.datatransfer -to=$(@D) -verbose=0"
 	# NYI: manually delete redundant features
 	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java/java_pkg.fz
@@ -398,7 +401,8 @@ $(MOD_JAVA_DATATRANSFER): $(BUILD_DIR)/bin/fzjava
 $(MOD_JAVA_DESKTOP): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(BUILD_DIR)/bin/fzjava java.desktop -to=$(@D) -verbose=0
+# wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
+	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.desktop -to=$(@D) -verbose=0"
 	# NYI: manually delete redundant features
 	rm -f $(BUILD_DIR)/modules/java.desktop/Java_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.desktop/Java/javax_pkg.fz
