@@ -253,6 +253,13 @@ public class Feature extends ANY implements Stmnt, Comparable
 
 
   /**
+   * All features that have been found to inherit from this feature.  This set
+   * is collected during RESOLVING_DECLARATIONS.
+   */
+  private Set<Feature> _heirs = new TreeSet<>();
+
+
+  /**
    * In case this is a function returning a result different than self or single
    * and not implemented as a field, this is the result variable. Created during
    * LOADING.
@@ -812,6 +819,32 @@ public class Feature extends ANY implements Stmnt, Comparable
         check(Errors.count() > 0 || f.isAnonymousInnerFeature());
         check(Errors.count() > 0 || !this.declaredOrInheritedFeatures_.containsKey(fn));
         this.declaredOrInheritedFeatures_.put(fn, f);
+        if (!f.isChoiceTag())  // NYI: somewhat ugly special handling of choice tags should not be needed
+          {
+            addToHeirs(fn, f);
+          }
+      }
+  }
+
+
+  /**
+   * Add feature under given name to declaredOrInheritedFeatures_ of all direct
+   * and indirect heirs of this feature.
+   *
+   * This is used in addDeclaredInnerFeature to add features during syntactic
+   * sugar resolution after declaredOrInheritedFeatures_ has already been set.
+   *
+   * @param fn the name of the feature, after possible renaming during inheritance
+   *
+   * @param f the feature to be added.
+   */
+  private void addToHeirs(FeatureName fn, Feature f)
+  {
+    for (var h : _heirs)
+      {
+        var pos = SourcePosition.builtIn; // NYI: Would be nicer to use Call.pos for the inheritance call in h.inhertis
+        h.addInheritedFeature(pos, fn, f);
+        h.addToHeirs(fn, f);
       }
   }
 
@@ -1176,7 +1209,7 @@ public class Feature extends ANY implements Stmnt, Comparable
    *
    * @param p the inherits call from this that is part of a cycle
    *
-   * @param i the iterator over this.inhertis that has produced p. This will be
+   * @param i the iterator over this.inherits that has produced p. This will be
    * used to replace this entry to break the cycle (and hopefully avoid other
    * problems during compilation).
    */
@@ -2715,6 +2748,7 @@ public class Feature extends ANY implements Stmnt, Comparable
 
         if (cf != null)
           {
+            cf._heirs.add(this);
             res.resolveDeclarations(cf);
             for (var fnf : cf.declaredOrInheritedFeatures().entrySet())
               {
@@ -2724,27 +2758,45 @@ public class Feature extends ANY implements Stmnt, Comparable
                   (cf != this);
 
                 var newfn = cf.handDown(f, fn, p, this);
-                var existing = declaredOrInheritedFeatures_.get(newfn);
-                if (existing != null)
-                  {
-                    if (existing.redefinitions_.contains(f))
-                      { // f redefined existing, so we are fine
-                      }
-                    else if (f.redefinitions_.contains(existing))
-                      { // existing redefines f, so use existing
-                        f = existing;
-                      }
-                    else if (existing == f && f.generics != FormalGenerics.NONE ||
-                             existing != f && declaredFeatures().get(fn) == null)
-                      { // NYI: Should be ok if existing or f is abstract.
-                        FeErrors.repeatedInheritanceCannotBeResolved(p.pos, this, newfn, existing, f);
-                      }
-                  }
-                declaredOrInheritedFeatures_.put(newfn, f);
+                addInheritedFeature(p.pos, newfn, f);
               }
           }
       }
   }
+
+
+  /**
+   * Helper method for findInheritedFeatures and addToHeirs to add a feature
+   * that this feature inherits.
+   *
+   * @param pos the source code position of the inherits call responsible for
+   * the inheritance.
+   *
+   * @param fn the name of the feature, after possible renaming during inheritance
+   *
+   * @param f the feature to be added.
+   */
+  private void addInheritedFeature(SourcePosition pos, FeatureName fn, Feature f)
+  {
+    var existing = declaredOrInheritedFeatures_.get(fn);
+    if (existing != null)
+      {
+        if (existing.redefinitions_.contains(f))
+          { // f redefined existing, so we are fine
+          }
+        else if (f.redefinitions_.contains(existing))
+          { // existing redefines f, so use existing
+            f = existing;
+          }
+        else if (existing == f && f.generics != FormalGenerics.NONE ||
+                 existing != f && declaredFeatures().get(fn) == null)
+          { // NYI: Should be ok if existing or f is abstract.
+            FeErrors.repeatedInheritanceCannotBeResolved(pos, this, fn, existing, f);
+          }
+      }
+    declaredOrInheritedFeatures_.put(fn, f);
+  }
+
 
   /**
    * Add all declared features to declaredOrInheritedFeatures_.  In case a
