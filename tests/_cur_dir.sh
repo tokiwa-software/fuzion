@@ -17,9 +17,9 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of fz command, the main Fuzion tools entry point
+#  echos the current directory depending on presence of cygpath
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
