@@ -43,7 +43,7 @@ illegal_assignment is
     x is abstract
 
   B ref : A is
-    say "B's body$ident
+    say "B's body"
     redefine x is say "B.x"
     xb is say "B.xb"
 
@@ -52,6 +52,7 @@ illegal_assignment is
     xc is say "C.xc"
 
   D ref : B, C is
+    redefine x is say "D.x"
 
   E ref : D is
     redefine x  is say "E.x"
@@ -59,15 +60,15 @@ illegal_assignment is
     redefine xc is say "E.xc"
 
   bi := B
-  ci Q.C; set ci := C  // 1. should flag an error: illegal assignment
-  aa Q.A; set aa := bi // 2. should flag an error: illegal assignment
+  ci Q.C := C  // 1. should flag an error: illegal assignment
+  aa Q.A := bi // 2. should flag an error: illegal assignment
   bi.x
   ci.x
   aa.x
   set aa := ci // 3. should flag an error: illegal assignment
   aa.x
-  di Q.D; set di := D // 4. should flag an error: illegal assignment
-  ei Q.E; set ei := E // 5. should flag an error: illegal assignment
+  di Q.D := D // 4. should flag an error: illegal assignment
+  ei Q.E := E // 5. should flag an error: illegal assignment
   say "Calling non-redefed multiple"
   di.x
   di.xb
