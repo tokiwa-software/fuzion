@@ -19,7 +19,8 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of fz command, the main Fuzion tools entry point
+#  Source code of record_simple_example_c.sh script, records expected output of
+#  simple test using C backend
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #

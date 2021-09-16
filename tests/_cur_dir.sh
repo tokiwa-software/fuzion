@@ -19,7 +19,8 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  echos the current directory depending on presence of cygpath
+#  Source code of _cur_dir.sh command, echos the current directory in a platform
+#  independent way using $PWD or cygpath
 #
 #  Author: Michael Lill (michael.lill@tokiwa.software)
 #
