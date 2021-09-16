@@ -33,6 +33,9 @@
 # In case file $2.skip exists, do not run the example
 #
 
+SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+CURDIR=$($SCRIPTPATH/_cur_dir.sh)
+
 RC=0
 if [ -f $2.skip ]; then
     echo "SKIP $2"
@@ -51,7 +54,7 @@ else
     head -n 1 $2 | grep -q -E "# fuzion.debugLevel=1( .*|)$" && export OPT=-Dfuzion.debugLevel=1
     head -n 1 $2 | grep -q -E "# fuzion.debugLevel=0( .*|)$" && export OPT=-Dfuzion.debugLevel=0
     $1 $2 >tmp_out.txt 2>tmp_err0.txt
-    cat tmp_err0.txt | sed "s:$PWD:--CURDIR--:g" >tmp_err.txt
+    cat tmp_err0.txt | sed "s|$CURDIR[\\\/]|--CURDIR--/|g" >tmp_err.txt
     rm -rf tmp_err0.txt
     diff $2.expected_out tmp_out.txt || (echo -e "\033[31;1m*** FAILED\033[0m out on $2")
     diff $2.expected_err tmp_err.txt || (echo -e "\033[31;1m*** FAILED\033[0m err on $2")

@@ -33,11 +33,14 @@
 # In case file $2.skip exists, do not run the example
 #
 
+SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+CURDIR=$($SCRIPTPATH/_cur_dir.sh)
+
 if [ -f $2.skip ]; then
     echo "SKIPPED $2"
 else
     (($1 $2 -c -o=testbin && ./testbin) 2>$2.expected_err_c0 | head -n 100) >$2.expected_out_c
-    cat $2.expected_err_c0 | sed "s:$PWD:--CURDIR--:g" >$2.expected_err_c
+    cat $2.expected_err_c0 | sed "s|$CURDIR[\\\/]|--CURDIR--/|g" >$2.expected_err_c
     rm -rf $2.expected_err_c0 testbin testbin.c
     echo "RECORDED $2"
 fi
