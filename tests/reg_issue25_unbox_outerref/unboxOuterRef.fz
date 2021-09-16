@@ -39,8 +39,10 @@ unboxOuterRef is
       say "in g: $vs $i"
     f is
       g y.this  // when in 'ref y', we need to unbox 'y.this' here.
+      unit
 
   v := y 42
   v.f
   r ref y := v
   r.f
+  unit

@@ -58,6 +58,7 @@ inheritance_for_value_types is
 
   v (v a.q) is
     v.xx
+    unit
 
   rx (rv ref a, msg string, expected i32) unit is
     rv.x msg expected

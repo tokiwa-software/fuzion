@@ -90,3 +90,4 @@ illegal_assignment is
   ci.xc
   set aa := ei  // 9. should flag an error: illegal assignment
   aa.x
+  unit

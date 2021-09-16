@@ -90,3 +90,4 @@ choice_negative is
           s string => say "A.x is string"
 
   cyclic12.A.s
+  unit

@@ -91,3 +91,4 @@ functions is
     x0 (fun f1)
     say "here x (fun f1)---------------"
     x (fun f1)
+    unit

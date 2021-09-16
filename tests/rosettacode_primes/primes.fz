@@ -36,6 +36,7 @@ primes is
           j := i, j + i;
         while j <= n
           a[j] := true;
+    unit # NYI: the loop returns the last value of index variable 'i'. Loops should not force such an automatic result upon us.
   say "Primes using loop:"; primes 1000; say
 
   primes2(n i32) is   // sieve using streams

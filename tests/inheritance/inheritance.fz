@@ -87,8 +87,8 @@ inheritance is
     // simple test: value type inheriting form ref type:
     A ref is
       x := 3
-      p is print
-      print is
+      p => print
+      print =>
         say x
     B : A is
     b := B
@@ -101,14 +101,14 @@ inheritance is
     // variant and calls to features of the corresponding outer features.
     P ref is
       id := count
-      p is print
-      print is say id
+      p => print
+      print => say id
       Q ref is
-        q is yak "q"; p
+        q => yak "q"; p
         R ref is
-          r is yak "r"; p
+          r => yak "r"; p
           S ref is
-            s is yak "s"; p
+            s => yak "s"; p
           Sv : S is
         Rv : R is
       Qv : Q is
@@ -219,6 +219,7 @@ inheritance is
         if cnt < 10
           set cnt := cnt + 1
           B.q
+    unit
   tricky_Inheritance
 
   /* calling inherited feature y from arguments to parent class D(y), feature y is inherited from value feature A */
@@ -294,12 +295,13 @@ inheritance is
   /* check dynamic binding on call to A.x if ref feature B inherits from value feature A */
   check_dyn_binding_when_inheriting_value is
     A is
-      a is x
-      x is say "A.x: FAILED."; set exitCode := 1
+      a => x
+      x => say "A.x: FAILED."; set exitCode := 1
     B ref : A is
       a
       redefine x is say "B.x: PASSED."
     B
+    unit
   check_dyn_binding_when_inheriting_value
 
   /* calling inherited feature x from arguments to parent class D(x), feature x is inherited from value feature A and calls A.y which is redefined in C */
@@ -393,7 +395,7 @@ inheritance is
     chck "test Dcnt" Dcnt 9
     chck "test Ecnt" Ecnt 6
     chck "test Fcnt" Fcnt 3
-    chck(msg string, v, expected i32) is
+    chck(msg string, v, expected i32) =>
       if v == expected
         say "$msg: PASSED."
       else

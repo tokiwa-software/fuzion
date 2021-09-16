@@ -67,3 +67,5 @@ overloading_negative is
     set a2 := a 42
     set a3 := a 47 11
   test2
+
+  unit
