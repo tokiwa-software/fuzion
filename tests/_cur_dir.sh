@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # This file is part of the Fuzion language implementation.
 #
 # The Fuzion language implementation is free software: you can redistribute it
@@ -23,7 +25,7 @@
 #
 # -----------------------------------------------------------------------
 
-#!/bin/bash
+
 set -euo pipefail
 
 # @returns:

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # This file is part of the Fuzion language implementation.
 #
 # The Fuzion language implementation is free software: you can redistribute it
@@ -23,8 +25,7 @@
 #
 # -----------------------------------------------------------------------
 
-#!/bin/bash
-#
+
 # Run the fuzion example given as an argument $2 using the C backend and store
 # the stdout/stderr output to $2.expected_out_c and $2.expected_err_c.
 #
