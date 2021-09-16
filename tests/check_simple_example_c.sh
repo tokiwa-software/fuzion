@@ -33,6 +33,9 @@
 # In case file $2.skip exists, do not run the example
 #
 
+SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+CURDIR=$($SCRIPTPATH/_cur_dir.sh)
+
 RC=0
 if [ -f $2.skip ]; then
     echo "SKIP $2"
@@ -47,7 +50,7 @@ else
     # This version dumps stderr output if fz was successful, which essentially ignores C compiler warnings:
     # (($1 $2 -c -o=testbin 2>tmp_err0.txt && ./testbin  2>tmp_err0.txt | head -n 100) >tmp_out.txt;
 
-    cat tmp_err0.txt | sed "s:$PWD:--CURDIR--:g" >tmp_err.txt
+    cat tmp_err0.txt | sed "s|$CURDIR[\\\/]|--CURDIR--/|g" >tmp_err.txt
     rm -rf tmp_err0.txt
 
     expout=$2.expected_out

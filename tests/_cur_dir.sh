@@ -17,30 +17,23 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of fz command, the main Fuzion tools entry point
+#  echos the current directory depending on presence of cygpath
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
 #!/bin/bash
-#
-# Run the fuzion example given as an argument $2 using the C backend and store
-# the stdout/stderr output to $2.expected_out_c and $2.expected_err_c.
-#
-# The fz command is given as argument $1
-#
-# In case file $2.skip exists, do not run the example
-#
+set -euo pipefail
 
-SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
-CURDIR=$($SCRIPTPATH/_cur_dir.sh)
+# @returns:
+#   - unix: /my/current/path
+#   - windows: C:\\\my\\\current\\\path
 
-if [ -f $2.skip ]; then
-    echo "SKIPPED $2"
-else
-    (($1 $2 -c -o=testbin && ./testbin) 2>$2.expected_err_c0 | head -n 100) >$2.expected_out_c
-    cat $2.expected_err_c0 | sed "s|$CURDIR[\\\/]|--CURDIR--/|g" >$2.expected_err_c
-    rm -rf $2.expected_err_c0 testbin testbin.c
-    echo "RECORDED $2"
+CURDIR="$PWD"
+if [ -x "$(command -v cygpath)" ]
+then
+    CURDIR=$(cygpath -w $PWD | sed 's/\\/\\\\/g')
 fi
+
+echo $CURDIR

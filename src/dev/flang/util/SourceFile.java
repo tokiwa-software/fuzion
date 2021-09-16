@@ -117,18 +117,6 @@ public class SourceFile extends ANY
   /*-----------------------------  statics  -----------------------------*/
 
 
-  static
-  {
-    // present a warning if platform encoding is not UTF8.
-    Charset defcs = Charset.defaultCharset();
-    Charset utf8 = StandardCharsets.UTF_8;
-    if (defcs != utf8)
-      {
-        Errors.warning("Platform encoding is " + defcs + ", source files are nevertheless treated as UTF8 files.");
-      }
-  }
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
