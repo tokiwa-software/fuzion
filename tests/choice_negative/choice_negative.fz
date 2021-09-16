@@ -66,7 +66,7 @@ choice_negative is
     A : choice<i32,bool> is
     B : A, choice<string,f64> is // 11. should flag an error: choice type must inherit exaclty once from choice
 
-  multi4
+  multi4 is
     A : choice<i32,bool> is
     B : choice<string,f64>, A is // 12. should flag an error: choice type must inherit exaclty once from choice
 
@@ -86,12 +86,12 @@ choice_negative is
     B : choice<i32, string, bool>, A is // 16. should flag an error: choice type must not have any fields
 
   nofields5 is
-    A (x int) is
+    A (x i32) is
     B : A(3) is
     C : B, choice<i32, string, bool> is // 17. should flag an error: choice type must not have any fields
 
   nofields6 is
-    A (x int) is
+    A (x i32) is
     B : A(3) is
     C : choice<i32, string, bool>, B is // 18. should flag an error: choice type must not have any fields
 
@@ -140,7 +140,7 @@ choice_negative is
   impl2 is
     x : choice<i64,bool> := true  // 29. should flag an error, choice feature must not be field
   impl3 is
-    x bool : choice<i64,bool>  // 30. should flag an error, choice feature must not be field
+    x bool : choice<i64,bool> := ?  // 30. should flag an error, choice feature must not be field
   impl4 is
     x : choice<i64,bool> => 3  // 31. should flag an error, choice feature must not contain code
   impl5 is
