@@ -1647,7 +1647,7 @@ public class Feature extends ANY implements Stmnt, Comparable
             if (t == thisType())
               {
                 Errors.error(pos,
-                             "Choice cannot refer to its own value type as one of the choice alternatives\n",
+                             "Choice cannot refer to its own value type as one of the choice alternatives",
                              "Embedding a choice type in itself would result in an infinitely large type.\n" +
                              "Fauly generic argument: "+t+" at "+t.pos.show());
                 thisType_ = Types.t_ERROR;
@@ -1659,7 +1659,7 @@ public class Feature extends ANY implements Stmnt, Comparable
                 if (t == o.thisType())
                   {
                     Errors.error(pos,
-                                 "Choice cannot refer to an outer value type as one of the choice alternatives\n",
+                                 "Choice cannot refer to an outer value type as one of the choice alternatives",
                                  "Embedding an outer value in a choice type would result in infinitely large type.\n" +
                                  "Fauly generic argument: "+t+" at "+t.pos.show());
                     o.thisType_ = Types.t_ERROR;
