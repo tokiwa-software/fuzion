@@ -2140,6 +2140,16 @@ public class Feature extends ANY implements Stmnt, Comparable
               }
           }
       }
+
+    if (returnType.isConstructorType())
+      {
+        var res = impl._code;
+        var rt = res.typeOrNull();
+        if (!Types.resolved.t_unit.isAssignableFrom(rt))
+          {
+            FeErrors.constructorResultMustBeUnit(impl._code);
+          }
+      }
   }
 
 
