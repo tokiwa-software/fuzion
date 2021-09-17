@@ -571,29 +571,22 @@ public class Call extends Expr
     if (PRECONDITIONS) require
       (targetFeature != null);
 
-    Feature.FeaturesAndOuter fo = null;
+    Feature.FeaturesAndOuter result;
     // are we searching for features called via thiz' inheritance calls?
     SortedMap<FeatureName, Feature> fs = EMPTY_MAP;
     if (target != null)
       {
         res.resolveDeclarations(targetFeature);
-        fs = targetFeature.findDeclaredOrInheritedFeatures(name);
+        result = new Feature.FeaturesAndOuter();
+        result.features = targetFeature.findDeclaredOrInheritedFeatures(name);
+        result.outer = targetFeature;
       }
     else
       { /* search for feature in thiz and outer classes */
-        fo = targetFeature.findDeclaredInheritedOrOuterFeatures(name, this, null, null);
-        if (fo != null)
-          {
-            target = fo.target(pos, res, thiz);
-          }
+        result = targetFeature.findDeclaredInheritedOrOuterFeatures(name, this, null, null);
+        target = result.target(pos, res, thiz);
       }
-    if (fo == null)
-      {
-        fo = new Feature.FeaturesAndOuter();
-        fo.features = fs;
-        fo.outer = targetFeature;
-      }
-    return fo;
+    return result;
   }
 
 

@@ -3228,7 +3228,7 @@ public class Feature extends ANY implements Stmnt, Comparable
     if (PRECONDITIONS) require
       (state_.atLeast(State.RESOLVED_DECLARATIONS));
 
-    FeaturesAndOuter result = null;
+    FeaturesAndOuter result = new FeaturesAndOuter();
     Feature outer = this;
     Feature inner = null;
     do
@@ -3265,17 +3265,13 @@ public class Feature extends ANY implements Stmnt, Comparable
                     fs.put(f.featureName(), f);
                   }
               }
-            if (!fs.isEmpty())
-              {
-                result = new FeaturesAndOuter();
-                result.features = fs;
-                result.outer = outer;
-              }
           }
+        result.features = fs;
+        result.outer = outer;
         inner = outer;
         outer = outer.outer();
       }
-    while ((result == null) && (outer != null));
+    while ((result.features.isEmpty()) && (outer != null));
 
     return result;
   }
