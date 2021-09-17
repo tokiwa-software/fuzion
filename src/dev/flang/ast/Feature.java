@@ -2948,6 +2948,43 @@ public class Feature extends ANY implements Stmnt, Comparable
         }
       return result;
     }
+
+
+    /**
+     * Filter the features to find an exact match for name or a set of
+     * candidates.
+     *
+     * If one feature f matches exactly, return a list with only one element f.
+     * Otherwise, return a list of all features f for which isCandidate.test(f)
+     * holds.
+     *
+     * @param name the name to search for an exact match
+     *
+     * @param isCandidate predicate to decide if a feature is a candidate even
+     * if its name is not an exact match.
+     */
+    List<Feature> filter(FeatureName name, java.util.function.Predicate<Feature> isCandidate)
+    {
+      var match = false;
+      var result = new List<Feature>();
+      for (var f : features.entrySet())
+        {
+          var ff = f.getValue();
+          var fn = f.getKey();
+          if (fn.equalsExceptId(name))  /* an exact match, so use it: */
+            {
+              check
+                (Errors.count() > 0 || !match);
+              result = new List<>(ff);
+              match = true;
+            }
+          else if (!match && isCandidate.test(ff))
+            { /* no exact match, but we have a candidate to check later: */
+              result.add(ff);
+            }
+        }
+      return result;
+    }
   }
 
 

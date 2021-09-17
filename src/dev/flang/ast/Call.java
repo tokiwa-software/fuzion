@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -70,7 +72,7 @@ public class Call extends Expr
   /**
    * Empty map for general use.
    */
-  public static final Map EMPTY_MAP = Map.of();
+  public static final SortedMap EMPTY_MAP = new TreeMap();
 
 
   /*------------------------  static variables  -------------------------*/
@@ -564,13 +566,14 @@ public class Call extends Expr
    * @return the map of FeatureName to Features of the found candidates. May be
    * empty. ERROR_MAP in case an error occured and was reported already.
    */
-  private Map<FeatureName, Feature> calledFeatureCandidates(Feature targetFeature, Resolution res, Feature thiz)
+  private Feature.FeaturesAndOuter calledFeatureCandidates(Feature targetFeature, Resolution res, Feature thiz)
   {
     if (PRECONDITIONS) require
       (targetFeature != null);
 
+    Feature.FeaturesAndOuter fo = null;
     // are we searching for features called via thiz' inheritance calls?
-    Map<FeatureName, Feature> fs = EMPTY_MAP;
+    SortedMap<FeatureName, Feature> fs = EMPTY_MAP;
     if (target != null)
       {
         res.resolveDeclarations(targetFeature);
@@ -578,14 +581,19 @@ public class Call extends Expr
       }
     else
       { /* search for feature in thiz and outer classes */
-        var fo = targetFeature.findDeclaredInheritedOrOuterFeatures(name, this, null, null);
+        fo = targetFeature.findDeclaredInheritedOrOuterFeatures(name, this, null, null);
         if (fo != null)
           {
             target = fo.target(pos, res, thiz);
-            fs = fo.features;
           }
       }
-    return fs;
+    if (fo == null)
+      {
+        fo = new Feature.FeaturesAndOuter();
+        fo.features = fs;
+        fo.outer = targetFeature;
+      }
+    return fo;
   }
 
 
@@ -731,37 +739,21 @@ public class Call extends Expr
           (Errors.count() > 0 || targetFeature != null);
         if (targetFeature != null && targetFeature != Types.f_ERROR)
           {
-            var fs = calledFeatureCandidates(targetFeature, res, thiz);
+            var fo = calledFeatureCandidates(targetFeature, res, thiz);
             FeatureName calledName = FeatureName.get(name, _actuals.size());
-            boolean match = false;
-            List<Feature> found = new List<Feature>();
-            for (var f : fs.entrySet())
+            var found = fo.filter(calledName, ff ->  (ff.hasOpenGenericsArgList()               /* actual generics might come from type inference */
+                                                      || forFun                                 /* a fun-declaration "fun a.b.f" */
+                                                      || ff.featureName().argCount() == 0 && hasParentheses() /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
+                                                      ));
+            if (found.size() == 1)
               {
-                var ff = f.getValue();
-                var fn = f.getKey();
-                if (fn.equalsExceptId(calledName))  /* an exact match, so use it: */
-                  {
-                    check
-                      (Errors.count() > 0 || !match);
-                    calledFeature_ = ff;
-                    match = true;
-                  }
-                else if (!match &&
-                         (ff.hasOpenGenericsArgList()               /* actual generics might come from type inference */
-                          || forFun                                 /* a fun-declaration "fun a.b.f" */
-                          || fn.argCount() == 0 && hasParentheses() /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
-                          )
-                         )
-                  { /* no exact match, but we have a candidate to check later: */
-                    calledFeature_ = ff;
-                    found.add(ff);
-                  }
+                calledFeature_ = found.get(0);
               }
-            if (!match && found.size() > 1)
+            else if (found.size() > 1)
               {
                 FeErrors.ambiguousCallTargets(pos, calledName, found);
               }
-            else if (calledFeature_ == null)
+            else
               {
                 findChainedBooleans(res, thiz);
                 if (calledFeature_ == null) // nothing found, so flag error
