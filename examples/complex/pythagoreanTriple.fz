@@ -37,12 +37,13 @@ pythagoreanTriple is
 
   max := 100
 
+  # iterate over all interesting r/i pairs while c<max
   for r in 1..max do
     for
       # i >= r is not interesting, v².r or v².i would be negative
-      # so we start end i at r-1
+      # so we end i at r-1
       i in 1..r-1
-      t := triple r i
+      t := triple (complex r i)
       a := t.a
       b := t.b
       c := t.c
@@ -50,8 +51,9 @@ pythagoreanTriple is
       if r.gcd i = 1 # filter duplicates
         say "{a}² + {b}² = {c}² = {a*a} + {b*b} = {c*c}"
 
-  triple(r, i i32) is
-    v := complex r i
+  # for complex number v, get the pythagorean triple when squaring v
+  #
+  triple(v complex<i32>) is
     v² := v * v
     f := v².r.gcd v².i  # 1 or 2 (if r+i is even)
     a := v².r / f
