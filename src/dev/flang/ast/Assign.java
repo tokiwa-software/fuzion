@@ -107,28 +107,6 @@ public class Assign extends ANY implements Stmnt
 
 
   /**
-   * Constructor to create an assignment to a given field.
-   *
-   * @param pos the soucecode position, used for error messages.
-   *
-   * @param f
-   *
-   * @param v
-   */
-  public Assign(SourcePosition pos, Feature f, Expr v, boolean indexVarAllowed)
-  {
-    if (PRECONDITIONS) require
-      (f != null);
-
-    this.pos = pos;
-    this.name = null;
-    this.assignedField = f;
-    this.value = v;
-    this._indexVarAllowed = indexVarAllowed;
-  }
-
-
-  /**
    * Constructor to create an assignment to a given field.  This is used to
    * create an implicit assignment to result if the code does not do this
    * explicitly.
