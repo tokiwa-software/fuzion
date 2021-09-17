@@ -42,7 +42,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Type extends ANY implements Comparable
+public class Type extends ANY implements Comparable<Type>
 {
 
   //  static int counter;  {counter++; if ((counter&(counter-1))==0) { System.out.println("######################"+counter+" "+this.getClass()); if(false)Thread.dumpStack(); } }
@@ -1166,15 +1166,6 @@ public class Type extends ANY implements Comparable
   {
     return
       feature == Types.resolved.f_function;
-  }
-
-
-  /**
-   * Compare this to other for creating unique types.
-   */
-  public int compareTo(Object other)
-  {
-    return compareTo((Type) other);
   }
 
 

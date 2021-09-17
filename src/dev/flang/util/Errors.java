@@ -104,7 +104,7 @@ public class Errors extends ANY
   /*-----------------------------  classes  -----------------------------*/
 
 
-  static class Error implements Comparable
+  static class Error implements Comparable<Error>
   {
     SourcePosition pos;
     String msg, detail;
@@ -124,9 +124,8 @@ public class Errors extends ANY
      * Compare two errors. Compares first by the source code position, such that
      * we can easily print them in order if we wish to.
      */
-    public int compareTo(Object other)
+    public int compareTo(Error o)
     {
-      Error o = (Error) other;
       int result = ((pos == o.pos)
                     ? 0
                     : ((pos == null)

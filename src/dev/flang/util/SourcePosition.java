@@ -41,7 +41,7 @@ import java.io.InputStreamReader;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class SourcePosition extends ANY implements Comparable
+public class SourcePosition extends ANY implements Comparable<SourcePosition>
 {
 
   /*----------------------------  variables  ----------------------------*/
@@ -192,9 +192,8 @@ public class SourcePosition extends ANY implements Comparable
   }
 
 
-  public int compareTo(Object other)
+  public int compareTo(SourcePosition o)
   {
-    SourcePosition o = (SourcePosition) other;
     int result = fileName().compareTo(o.fileName());
     if (result == 0)
       {

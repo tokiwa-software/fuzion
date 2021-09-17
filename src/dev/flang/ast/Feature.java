@@ -51,7 +51,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Feature extends ANY implements Stmnt, Comparable
+public class Feature extends ANY implements Stmnt, Comparable<Feature>
 {
 
 
@@ -3560,15 +3560,6 @@ public class Feature extends ANY implements Stmnt, Comparable
     check(arguments.size() == _featureName.argCount());
     return _featureName;
   }
-
-  /**
-   * Compare this to other for sorting Features
-   */
-  public int compareTo(Object other)
-  {
-    return compareTo((Feature) other);
-  }
-
 
   /**
    * Compare this to other for sorting Feature
