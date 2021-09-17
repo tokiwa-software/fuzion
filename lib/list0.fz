@@ -28,7 +28,7 @@
 # The core of the implementation of an actual list lies in the implementation
 # of the actual Cons cell a non-empty list consists of.
 #
-# Lists can typically be treversed using only immutable data. This makes them
+# Lists can typically be traversed using only immutable data. This makes them
 # more flexible than streams that require to store and update their state.
 #
 #
