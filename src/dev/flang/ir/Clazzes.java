@@ -858,17 +858,10 @@ public class Clazzes extends ANY
     else if (e instanceof Call c)
       {
         var tclazz = clazz(c.target, outerClazz);
-        if (tclazz != c_void.get())
-          {
-            var inner = tclazz.lookup(c.calledFeature(),
-                                      outerClazz.actualGenerics(c.generics),
-                                      c.pos());
-            result = inner.resultClazz();
-          }
-        else
-          {
-            result = tclazz;
-          }
+        var inner = tclazz.lookup(c.calledFeature(),
+                                  outerClazz.actualGenerics(c.generics),
+                                  c.pos());
+        result = inner.resultClazz();
       }
     else if (e instanceof Current c)
       {
