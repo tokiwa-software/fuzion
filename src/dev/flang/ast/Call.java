@@ -741,19 +741,13 @@ public class Call extends Expr
           {
             var fo = calledFeatureCandidates(targetFeature, res, thiz);
             FeatureName calledName = FeatureName.get(name, _actuals.size());
-            var found = fo.filter(calledName, ff ->  (ff.hasOpenGenericsArgList()               /* actual generics might come from type inference */
-                                                      || forFun                                 /* a fun-declaration "fun a.b.f" */
-                                                      || ff.featureName().argCount() == 0 && hasParentheses() /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
-                                                      ));
-            if (found.size() == 1)
-              {
-                calledFeature_ = found.get(0);
-              }
-            else if (found.size() > 1)
-              {
-                FeErrors.ambiguousCallTargets(pos, calledName, found);
-              }
-            else
+            calledFeature_ = fo.filter(pos,
+                                       calledName,
+                                       ff ->  (ff.hasOpenGenericsArgList()               /* actual generics might come from type inference */
+                                               || forFun                                 /* a fun-declaration "fun a.b.f" */
+                                               || ff.featureName().argCount() == 0 && hasParentheses() /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
+                                               ));
+            if (calledFeature_ == null)
               {
                 findChainedBooleans(res, thiz);
                 if (calledFeature_ == null) // nothing found, so flag error

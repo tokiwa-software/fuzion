@@ -2951,22 +2951,24 @@ public class Feature extends ANY implements Stmnt, Comparable
 
 
     /**
-     * Filter the features to find an exact match for name or a set of
-     * candidates.
+     * Filter the features to find an exact match for name or a candidate.
      *
-     * If one feature f matches exactly, return a list with only one element f.
-     * Otherwise, return a list of all features f for which isCandidate.test(f)
-     * holds.
+     * If one feature f matches exactly or there is exactly one for which
+     * isCandidate.test(f) holds, return that candidate. Otherwise, return null
+     * if no candidate was found, or create an error and return Types.f_ERROR if
+     * several candidates were found.
+     *
+     * @param pos source position of the access, for error reporting.
      *
      * @param name the name to search for an exact match
      *
      * @param isCandidate predicate to decide if a feature is a candidate even
      * if its name is not an exact match.
      */
-    List<Feature> filter(FeatureName name, java.util.function.Predicate<Feature> isCandidate)
+    Feature filter(SourcePosition pos, FeatureName name, java.util.function.Predicate<Feature> isCandidate)
     {
       var match = false;
-      var result = new List<Feature>();
+      var found = new List<Feature>();
       for (var f : features.entrySet())
         {
           var ff = f.getValue();
@@ -2975,15 +2977,24 @@ public class Feature extends ANY implements Stmnt, Comparable
             {
               check
                 (Errors.count() > 0 || !match);
-              result = new List<>(ff);
+              found = new List<>(ff);
               match = true;
             }
           else if (!match && isCandidate.test(ff))
             { /* no exact match, but we have a candidate to check later: */
-              result.add(ff);
+              found.add(ff);
             }
         }
-      return result;
+      return switch (found.size())
+        {
+        case 0 -> null;
+        case 1 -> found.get(0);
+        default ->
+        {
+          FeErrors.ambiguousCallTargets(pos, name, found);
+          yield Types.f_ERROR;
+        }
+        };
     }
   }
 
