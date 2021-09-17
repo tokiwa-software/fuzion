@@ -231,11 +231,8 @@ public class Assign extends ANY implements Stmnt
         var fo = outer.findDeclaredInheritedOrOuterFeatures(_name, null, destructure == null ? this : null, destructure);
         check
           (Errors.count() > 0 || fo == null || fo.features.size() == 1);
-        if (fo != null && fo.features.size() != 0)
-          {
-            _assignedField = fo.features.values().iterator().next();
-            _target = fo.target(_pos, res, outer);
-          }
+        _assignedField = fo.filter(_pos, FeatureName.get(_name, 0), f -> false);
+        _target        = fo.target(_pos, res, outer);
       }
     Feature f = _assignedField;
     if      (f == null                 ) { FeErrors.assignmentTargetNotFound(this,    outer); }
