@@ -329,9 +329,10 @@ public class Assign extends ANY implements Stmnt
     check
       (assignedField != null || Errors.count() > 0);
 
-    if (assignedField != null)
+    var f = assignedField;
+    if (f != null)
       {
-        Type frmlT = assignedField.resultType();
+        Type frmlT = f.resultType();
 
         Type actlT = value.type();
 
@@ -344,11 +345,11 @@ public class Assign extends ANY implements Stmnt
 
         if (!frmlT.isAssignableFromOrContainsError(actlT))
           {
-            FeErrors.incompatibleTypeInAssignment(pos, assignedField, frmlT, actlT, value);
+            FeErrors.incompatibleTypeInAssignment(pos, f, frmlT, actlT, value);
           }
 
         check
-          (this.getOuter.type().featureOfType().findDeclaredOrInheritedFeature(assignedField.featureName()) == assignedField || Errors.count() > 0);
+          (this.getOuter.type().featureOfType().findDeclaredOrInheritedFeature(f.featureName()) == f || Errors.count() > 0);
       }
   }
 
