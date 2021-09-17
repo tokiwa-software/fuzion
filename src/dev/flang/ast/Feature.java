@@ -2927,6 +2927,27 @@ public class Feature extends ANY implements Stmnt, Comparable
   {
     SortedMap<FeatureName, Feature> features;
     Feature outer;
+
+    /**
+     * For an access (call to or assignment to field), create an expression to
+     * get the outer instance that contains the accessed feature(s).
+     *
+     * @param pos source code position of the access
+     *
+     * @param res Resolution instance
+     *
+     * @param cur the feature that contains the access.
+     */
+    Expr target(SourcePosition pos, Resolution res, Feature cur)
+    {
+      var t = new This(pos, cur, outer);
+      Expr result = t;
+      if (cur.state() != Feature.State.RESOLVING_INHERITANCE)
+        {
+          result = t.resolveTypes(res, cur);
+        }
+      return result;
+    }
   }
 
 

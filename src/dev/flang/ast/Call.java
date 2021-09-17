@@ -581,11 +581,7 @@ public class Call extends Expr
         var fo = targetFeature.findDeclaredInheritedOrOuterFeatures(name, this, null, null);
         if (fo != null)
           {
-            target = new This(pos, thiz, fo.outer);
-            if (thiz.state() != Feature.State.RESOLVING_INHERITANCE)
-              {
-                target = ((This)target).resolveTypes(res, thiz);
-              }
+            target = fo.target(pos, res, thiz);
             fs = fo.features;
           }
       }

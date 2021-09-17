@@ -248,14 +248,18 @@ public class Assign extends ANY implements Stmnt
    */
   void resolveTypes(Resolution res, Feature outer, Destructure destructure)
   {
-    Feature f = assignedField;
-    if (f == null)
+    if (assignedField == null)
       {
         var fo = outer.findDeclaredInheritedOrOuterFeatures(name, null, destructure == null ? this : null, destructure);
         check
           (Errors.count() > 0 || fo == null || fo.features.size() == 1);
-        f = (fo == null || fo.features.size() == 0) ? null : fo.features.values().iterator().next();
+        if (fo != null && fo.features.size() != 0)
+          {
+            assignedField = fo.features.values().iterator().next();
+            getOuter = fo.target(pos, res, outer);
+          }
       }
+    Feature f = assignedField;
     if      (f == null                 ) { FeErrors.assignmentTargetNotFound(this,    outer); }
     else if (!f.isField()              ) { FeErrors.assignmentToNonField    (this, f, outer); }
     else if (!_indexVarAllowed &&
@@ -266,11 +270,6 @@ public class Assign extends ANY implements Stmnt
         if (f == f.outer().resultField())
           {
             f.outer().foundAssignmentToResult();
-          }
-        f.scheduleForResolution(res);
-        if (getOuter == null)
-          {
-            this.getOuter = This.thiz(res, pos, outer, assignedField.outer());
           }
       }
   }
@@ -349,7 +348,7 @@ public class Assign extends ANY implements Stmnt
           }
 
         check
-          (this.getOuter.type().featureOfType() == assignedField.outer() || Errors.count() > 0);
+          (this.getOuter.type().featureOfType().findDeclaredOrInheritedFeature(assignedField.featureName()) == assignedField || Errors.count() > 0);
       }
   }
 
