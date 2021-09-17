@@ -296,10 +296,10 @@ public class FeErrors extends ANY
 
   static void assignmentTargetNotFound(Assign ass, Feature outer)
   {
-    var solution = solutionDeclareReturnTypeIfResult(ass.name, 0);
-    error(ass.pos,
-          "Could not find target field " + sbn(ass.name) + " in assignment",
-          "Field not found: " + sbn(ass.name) + "\n" +
+    var solution = solutionDeclareReturnTypeIfResult(ass._name, 0);
+    error(ass.pos(),
+          "Could not find target field " + sbn(ass._name) + " in assignment",
+          "Field not found: " + sbn(ass._name) + "\n" +
           "Within feature: " + s(outer) + "\n" +
           "For assignment: " + s(ass) + "\n" +
           solution);
@@ -307,7 +307,7 @@ public class FeErrors extends ANY
 
   static void assignmentToNonField(Assign ass, Feature f, Feature outer)
   {
-    error(ass.pos,
+    error(ass.pos(),
           "Target of assignment is not a field",
           "Target of assignement: " + s(f) + "\n" +
           "Within feature: " + s(outer) + "\n" +
@@ -316,7 +316,7 @@ public class FeErrors extends ANY
 
   static void assignmentToIndexVar(Assign ass, Feature f, Feature outer)
   {
-    error(ass.pos,
+    error(ass.pos(),
           "Target of assignment must not be a loop index variable",
           "Target of assignement: " + s(f) + "\n" +
           "Within feature: " + s(outer) + "\n" +

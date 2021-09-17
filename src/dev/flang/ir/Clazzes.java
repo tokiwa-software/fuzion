@@ -604,21 +604,21 @@ public class Clazzes extends ANY
       (a != null, outerClazz != null);
 
     check
-      (Errors.count() > 0 || a.getOuter != null);
+      (Errors.count() > 0 || a._target != null);
 
-    if (a.getOuter != null)
+    if (a._target != null)
       {
         if (a.tid_ < 0)
           {
             a.tid_ = outerClazz.feature().getRuntimeClazzIds(2);
           }
 
-        Clazz sClazz = clazz(a.getOuter, outerClazz);
+        Clazz sClazz = clazz(a._target, outerClazz);
         outerClazz.setRuntimeClazz(a.tid_, sClazz);
-        if (isUsed(a.assignedField, sClazz))
+        if (isUsed(a._assignedField, sClazz))
           {
             var vc = sClazz.asValue();
-            var fc = vc.lookup(a.assignedField, Call.NO_GENERICS, a.pos());
+            var fc = vc.lookup(a._assignedField, Call.NO_GENERICS, a.pos());
             outerClazz.setRuntimeClazz(a.tid_ + 1, fc);
           }
       }

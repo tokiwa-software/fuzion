@@ -261,10 +261,10 @@ public class Interpreter extends Backend
 
     else if (s instanceof Assign a)
       {
-        Value v    = execute(a.value   , staticClazz, cur);
-        Value thiz = execute(a.getOuter, staticClazz, cur);
+        Value v    = execute(a._value   , staticClazz, cur);
+        Value thiz = execute(a._target, staticClazz, cur);
         Clazz sClazz = staticClazz.getRuntimeClazz(a.tid_ + 0);
-        setField(a.assignedField, sClazz, thiz, v);
+        setField(a._assignedField, sClazz, thiz, v);
         result = Value.NO_VALUE;
       }
 

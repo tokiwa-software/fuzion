@@ -950,8 +950,8 @@ hw25 is
 
     if (s instanceof Assign a)
       {
-        toStack(l, a.value);
-        toStack(l, a.getOuter);
+        toStack(l, a._value);
+        toStack(l, a._target);
         l.add(a);
       }
     else if (s instanceof Unbox u)
