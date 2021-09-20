@@ -1311,7 +1311,7 @@ hw25 is
     var result = new List<Clazz>();
     for (var cl : tclazz.heirs())
       {
-        var in = cl._dynamicBinding.inner(cf);
+        var in = cl.lookup(cf, Call.NO_GENERICS, cf.isUsedAt());
         if (in != null && clazzNeedsCode(in))
           {
             result.add(cl);

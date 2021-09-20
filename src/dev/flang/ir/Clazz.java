@@ -186,6 +186,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Actual inner clazzes when calling a dynamically bound feature on this.
+   */
+  Map<Feature, Clazz> _inner = new TreeMap<>();
+
+
+  /**
    * The dynamic binding implementation used for this clazz. null if !isRef().
    */
   public DynamicBinding _dynamicBinding;
@@ -726,6 +732,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                     )
                   {
                     var innerClazz = lookup(f, Call.NO_GENERICS, f.isUsedAt());
+                    _inner.put(f, innerClazz);
                     _dynamicBinding.add(f, innerClazz, this);
                   }
               }
@@ -823,43 +830,46 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (f != null,
        this != Clazzes.c_void.get());
 
-    Feature af = findRedefinition(f);
-    check
-      (Errors.count() > 0 || af != null);
-
-    Clazz innerClazz = null;
-    if (f == Types.f_ERROR || af == null)
+    var innerClazz = _inner.get(f);
+    if (innerClazz == null)
       {
-        innerClazz = Clazzes.error.get();
-      }
-    else
-      {
-        if (af.impl == Impl.ABSTRACT)
-          {
-            if (abstractCalled_ == null)
-              {
-                abstractCalled_ = new TreeSet<>();
-              }
-            abstractCalled_.add(af);
-          }
-
-        Type t = af.thisType().actualType(af, actualGenerics);
-        t = actualType(t);
-        innerClazz = Clazzes.clazzWithSpecificOuter(t, this);
-        if (p != null)
-          {
-            if (!isInheritanceCall)
-              {
-                innerClazz.called(p);
-                innerClazz.instantiated(p);
-              }
-          }
+        Feature af = findRedefinition(f);
         check
-          (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == af);
+          (Errors.count() > 0 || af != null);
+
+        if (f == Types.f_ERROR || af == null)
+          {
+            innerClazz = Clazzes.error.get();
+          }
+        else
+          {
+            if (af.impl == Impl.ABSTRACT)
+              {
+                if (abstractCalled_ == null)
+                  {
+                    abstractCalled_ = new TreeSet<>();
+                  }
+                abstractCalled_.add(af);
+              }
+
+            Type t = af.thisType().actualType(af, actualGenerics);
+            t = actualType(t);
+            innerClazz = Clazzes.clazzWithSpecificOuter(t, this);
+            if (p != null)
+              {
+                if (!isInheritanceCall)
+                  {
+                    innerClazz.called(p);
+                    innerClazz.instantiated(p);
+                  }
+              }
+            check
+              (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == af);
+          }
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || af == null || innerClazz._type != Types.t_ERROR,
+      (Errors.count() > 0 || findRedefinition(f) == null || innerClazz._type != Types.t_ERROR,
        innerClazz != null);
 
     return innerClazz;
