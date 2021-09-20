@@ -703,9 +703,17 @@ public class Clazzes extends ANY
         var innerClazz = tclazz.lookup(cf, outerClazz.actualGenerics(c.generics), c.pos, c.isInheritanceCall_);
         if (c.sid_ < 0)
           {
-            c.sid_ = outerClazz.feature().getRuntimeClazzId();
+            c.sid_ = outerClazz.feature().getRuntimeClazzIds(2);
           }
-        outerClazz.setRuntimeData(c.sid_, _backend_.callable(dynamic, innerClazz, tclazz));
+        if (_backend_ != null)
+          {
+            outerClazz.setRuntimeData(c.sid_, _backend_.callable(dynamic, innerClazz, tclazz));
+          }
+        else
+          {
+            outerClazz.setRuntimeData(c.sid_ + 0, innerClazz);
+            outerClazz.setRuntimeData(c.sid_ + 1, tclazz    );
+          }
         if (!dynamic)
           {
             whenCalled(outerClazz,

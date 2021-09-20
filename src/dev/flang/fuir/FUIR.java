@@ -55,8 +55,6 @@ import dev.flang.ast.Types; // NYI: remove dependency
 import dev.flang.ast.Unbox; // NYI: remove dependency
 import dev.flang.ast.Universe; // NYI: remove dependency
 
-import dev.flang.ir.Backend;
-import dev.flang.ir.BackendCallable;
 import dev.flang.ir.Clazz;
 import dev.flang.ir.Clazzes;
 
@@ -197,20 +195,7 @@ public class FUIR extends ANY
     _main = main;
     if (findClazzes)
       {
-        Clazzes.findAllClasses(new Backend()
-          {
-            public BackendCallable callable(boolean dynamic,
-                                            Clazz innerClazz,
-                                            Clazz outerClazz)
-            {
-              return new BackendCallable()
-                {
-                  public Clazz inner() { return innerClazz; }
-                  public Clazz outer() { return outerClazz; }
-              };
-            }
-          }
-          , main());
+        Clazzes.findAllClasses(null, main());
       }
   }
 
@@ -1294,7 +1279,7 @@ hw25 is
 
     var outerClazz = _clazzIds.get(cl);
     var call = (Call) _codeIds.get(c).get(ix);
-    var innerClazz = ((dev.flang.ir.BackendCallable)outerClazz.getRuntimeData(call.sid_)).inner();
+    var innerClazz = (Clazz) outerClazz.getRuntimeData(call.sid_ + 0);
     return _clazzIds.get(innerClazz);
   }
 
@@ -1321,9 +1306,8 @@ hw25 is
        outerClazz != null);
 
     var cf = call.calledFeature();
-    var bc         = (dev.flang.ir.BackendCallable) outerClazz.getRuntimeData(call.sid_);
-    var tclazz     = bc.outer();
-    var innerClazz = bc.inner();
+    var innerClazz = (Clazz) outerClazz.getRuntimeData(call.sid_ + 0);
+    var tclazz     = (Clazz) outerClazz.getRuntimeData(call.sid_ + 1);
     var result = new List<Clazz>();
     for (var cl : tclazz.heirs())
       {
@@ -1379,8 +1363,8 @@ hw25 is
 
     var outerClazz = _clazzIds.get(cl);
     var call = (Call) _codeIds.get(c).get(ix);
-    var outer = ((dev.flang.ir.BackendCallable)outerClazz.getRuntimeData(call.sid_)).outer();
-    return call.isDynamic() && outer.isRef();
+    var tclazz = (Clazz) outerClazz.getRuntimeData(call.sid_ + 1);
+    return call.isDynamic() && tclazz.isRef();
   }
 
 
@@ -1423,7 +1407,7 @@ hw25 is
 
     var call = (Call) _codeIds.get(c).get(ix);
     var outerClazz = _clazzIds.get(cl);
-    var tclazz = ((dev.flang.ir.BackendCallable)outerClazz.getRuntimeData(call.sid_)).outer();
+    var tclazz = (Clazz) outerClazz.getRuntimeData(call.sid_ + 1);
     return _clazzIds.get(tclazz);
   }
 
