@@ -19,13 +19,15 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  1) Extracts ebnf grammar from Lexer/Parser.java
-#  2) Test if grammar can be parsed with antlr4
+#  source code of bash script ebnf.sh
 #
 #  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
+# echos ebnf grammar and tests the resulting grammar with antlr
+# 1) Extract ebnf grammar from Lexer/Parser.java
+# 2) Test if grammar can be parsed with antlr4
 
 set -euo pipefail
 
