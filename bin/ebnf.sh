@@ -68,4 +68,5 @@ antlr4 -long-messages -o /tmp/fuzion_grammar /tmp/fuzion_grammar/Fuzion.g4
 
 if [ ! $? -eq 0 ]; then
   echo "antlr4 failed parsing grammar"
+  exit 1
 fi
