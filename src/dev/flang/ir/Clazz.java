@@ -726,11 +726,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
                     )
                   {
                     var innerClazz = lookup(f, Call.NO_GENERICS, f.isUsedAt());
-                    if (Clazzes._backend_ != null)
-                      {
-                        var callable = Clazzes._backend_.callable(false, innerClazz, this);
-                        _dynamicBinding.addCallable(f, callable);
-                      }
                     _dynamicBinding.add(f, innerClazz, this);
                   }
               }

@@ -100,27 +100,6 @@ public class DynamicBinding extends ANY
 
 
   /**
-   * Record a callable corresponding the the given feature in the corresponding
-   * clazz.
-   *
-   * @param f a feature inherited or defined in _clazz.
-   *
-   * @param callable backend data needed to perform a call to the actual
-   * implementation of f in _clazz.
-   */
-  public void addCallable(Feature f, BackendCallable callable)
-  {
-    if (PRECONDITIONS) require
-      (f != null);
-
-    _callables.put(f, callable);
-
-    if (POSTCONDITIONS) ensure
-      (callable(f) == callable);
-  }
-
-
-  /**
    * Record inner and outer clazz for a call corresponding the the given feature
    * in the corresponding clazz.
    *
@@ -134,6 +113,11 @@ public class DynamicBinding extends ANY
     if (PRECONDITIONS) require
       (f != null);
 
+    if (Clazzes._backend_ != null)
+      {
+        var callable = Clazzes._backend_.callable(false, inner, outer);
+        _callables.put(f, callable);
+      }
     _inner.put(f, inner);
     _outer.put(f, outer);
 
