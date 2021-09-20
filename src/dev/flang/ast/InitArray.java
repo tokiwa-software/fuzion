@@ -274,7 +274,7 @@ public class InitArray extends Expr
     if (true)  // NYI: This syntactic sugar should not be resolved if this array is a compile-time constant
       {
         var eT           = new List<Type>(elementType());
-        var lengthArgs   = new List<Expr>(new IntConst(_elements.size()));
+        var lengthArgs   = new List<Expr>(new NumLiteral(_elements.size()));
         var sys          = new Call(pos(), null, "sys"                  ).resolveTypes(res, outer);
         var sysArrayCall = new Call(pos(), sys , "array", eT, lengthArgs).resolveTypes(res, outer);
         var sysT         = new Type(pos(), "sys", Type.NONE, null);
@@ -289,7 +289,7 @@ public class InitArray extends Expr
         for (var i = 0; i < _elements.size(); i++)
           {
             var e = _elements.get(i);
-            var setArgs         = new List<Expr>(new IntConst(i), e);
+            var setArgs         = new List<Expr>(new NumLiteral(i), e);
             var readSysArrayVar = new Call(e.pos(), null           , sysArrayName          ).resolveTypes(res, outer);
             var setElement      = new Call(e.pos(), readSysArrayVar, "index [ ] =", setArgs).resolveTypes(res, outer);
             stmnts.add(setElement);

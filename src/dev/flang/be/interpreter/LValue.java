@@ -86,6 +86,28 @@ public class LValue extends Value
 
 
   /**
+   * For a value of type i8, return the value.
+   *
+   * @return the integer value
+   */
+  public int i8Value()
+  {
+    return container.nonrefs[offset];
+  }
+
+
+  /**
+   * For a value of type i16, return the value.
+   *
+   * @return the integer value
+   */
+  public int i16Value()
+  {
+    return container.nonrefs[offset];
+  }
+
+
+  /**
    * For a value of type i32, return the value.
    *
    * @return the integer value
@@ -110,6 +132,28 @@ public class LValue extends Value
 
 
   /**
+   * For a value of type u8, return the value.
+   *
+   * @return the integer value
+   */
+  public int u8Value()
+  {
+    return container.nonrefs[offset];
+  }
+
+
+  /**
+   * For a value of type u16, return the value.
+   *
+   * @return the integer value
+   */
+  public int u16Value()
+  {
+    return container.nonrefs[offset];
+  }
+
+
+  /**
    * For a value of type u32, return the value.
    *
    * @return the integer value
@@ -130,6 +174,29 @@ public class LValue extends Value
     return
         container.nonrefs[offset    ] & 0xFFFFffffL |
       ((container.nonrefs[offset + 1] & 0xFFFFffffL) << 32);
+  }
+
+
+  /**
+   * For a value of type f32, return the value.
+   *
+   * @return the f32 value
+   */
+  public float f32Value()
+  {
+    return Float.intBitsToFloat(container.nonrefs[offset]);
+  }
+
+
+  /**
+   * For a value of type f64, return the value.
+   *
+   * @return the f64 value
+   */
+  public double f64Value()
+  {
+    return Double.longBitsToDouble(  container.nonrefs[offset    ] & 0xFFFFffffL |
+                                   ((container.nonrefs[offset + 1] & 0xFFFFffffL) << 32));
   }
 
 
@@ -208,6 +275,16 @@ public class LValue extends Value
       (clazz.isRef());
 
     return (Instance) container.refs[offset];
+  }
+
+
+  /**
+   * Return the ArrayData this value contains.  If this is an ArrayData, return
+   * this, if this is an LValue containing an ArrayData, get that ArrayData.
+   */
+  ArrayData arrayData()
+  {
+    return (ArrayData) container.refs[offset];
   }
 
 

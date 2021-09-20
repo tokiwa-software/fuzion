@@ -65,6 +65,10 @@ public class FeErrors extends ANY
   {
     return sbn(f._featureName.baseName());
   }
+  static String sbn(FeatureName fn) // feature base name plus arg count and id string
+  {
+    return sbn(fn.baseName()) + fn.argCountAndIdString();
+  }
   static String sbn(String s) // feature base name
   {
     return code(s);
@@ -93,7 +97,7 @@ public class FeErrors extends ANY
   {
     return ss(s.toString());
   }
-  static String ss(String s) // statement
+  static String ss(String s) // statement or expression
   {
     return expr(s);
   }
@@ -292,10 +296,10 @@ public class FeErrors extends ANY
 
   static void assignmentTargetNotFound(Assign ass, Feature outer)
   {
-    var solution = solutionDeclareReturnTypeIfResult(ass.name, 0);
-    error(ass.pos,
-          "Could not find target field " + sbn(ass.name) + " in assignment",
-          "Field not found: " + sbn(ass.name) + "\n" +
+    var solution = solutionDeclareReturnTypeIfResult(ass._name, 0);
+    error(ass.pos(),
+          "Could not find target field " + sbn(ass._name) + " in assignment",
+          "Field not found: " + sbn(ass._name) + "\n" +
           "Within feature: " + s(outer) + "\n" +
           "For assignment: " + s(ass) + "\n" +
           solution);
@@ -303,7 +307,7 @@ public class FeErrors extends ANY
 
   static void assignmentToNonField(Assign ass, Feature f, Feature outer)
   {
-    error(ass.pos,
+    error(ass.pos(),
           "Target of assignment is not a field",
           "Target of assignement: " + s(f) + "\n" +
           "Within feature: " + s(outer) + "\n" +
@@ -312,7 +316,7 @@ public class FeErrors extends ANY
 
   static void assignmentToIndexVar(Assign ass, Feature f, Feature outer)
   {
-    error(ass.pos,
+    error(ass.pos(),
           "Target of assignment must not be a loop index variable",
           "Target of assignement: " + s(f) + "\n" +
           "Within feature: " + s(outer) + "\n" +
@@ -393,6 +397,18 @@ public class FeErrors extends ANY
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
           "result type is " + s(redefinedFeature.resultType()) + ", result type should be " + s(originalFeature.resultType()) + ". " +
           "Original feature declared at " + originalFeature.pos.show());
+  }
+
+  static void constructorResultMustBeUnit(Expr res)
+  {
+    var rt = res.typeOrNull();
+    error(res.posOfLast(), "Constructor code should result in type " + st("unit") + "",
+          "Type returned by this constructor's implementation is " +s(rt) + "\n" +
+          "To solve this, you could turn this contstructor into routine by adding a matching result type " +
+          "compatible to " + s(rt) + " or by using " + code("=>") + " instead of " + code("is") + " to "+
+          "infer the result type from the result expression.\n" +
+          "Alternatively, you could explicitly return " + st("unit") + " as the last statement or " +
+          "explicitly ignore the result of the last expression by an assignment " + st("_ := <expression>") + ".");
   }
 
   static void argumentLengthsMismatch(Feature originalFeature, int originalNumArgs,
@@ -599,7 +615,7 @@ public class FeErrors extends ANY
   {
     error(pos,
           "Repeated inheritance of conflicting features",
-          "Feature " + s(heir) + " inherits feature " + fn + " repeatedly: " +
+          "Feature " + s(heir) + " inherits feature " + sbn(fn) + " repeatedly: " +
           "" + s(f1) + " defined at " + f1.pos.show() + "\n" + "and " +
           "" + s(f2) + " defined at " + f2.pos.show() + "\n" +
           "To solve this, you could add a redefintion of " + sbn(f1) + " to " + s(heir) + ".");
@@ -653,7 +669,7 @@ public class FeErrors extends ANY
                                    List<Feature> targets)
   {
     error(pos,
-          "Ambiguous call targets found for call to " + fn + "",
+          "Ambiguous call targets found for call to " + sbn(fn) + "",
           "Found several possible targets that match this call:\n" +
           featureList(targets));
   }
@@ -682,7 +698,7 @@ public class FeErrors extends ANY
                                                      calledName.argCount());
     error(call.pos,
           "Could not find called feature",
-          "Feature not found: " + calledName + "\n" +
+          "Feature not found: " + sbn(calledName) + "\n" +
           "Target feature: " + s( targetFeature) + "\n" +
           "In call: " + s(call) + "\n" +
           solution);
@@ -879,6 +895,45 @@ public class FeErrors extends ANY
           "Illegal use of open formal generic type",
           "Open formal generic type is permitted only as the type of the last argument in a formal arguments list of an abstract feature.\n" +
           "Open formal argument: " + s(generic) + "");
+  }
+
+  static void integerConstantOutOfLegalRange(SourcePosition pos, String constant, Type t, String from, String to)
+  {
+    error(pos,
+          "Integer constant value outside of allowed range for target type",
+          "Type propagation results in a type that is too small for the value represented by the given constant.\n" +
+          "Numeric literal: " + ss(constant) + "\n" +
+          "Assigned to type: " + s(t) + "\n" +
+          "Acceptable range of values: " + ss(from) + " .. " + ss(to));
+  }
+
+  static void nonWholeNumberUsedAsIntegerConstant(SourcePosition pos, String constant, Type t)
+  {
+    error(pos,
+          "Numeric literal used for integer type is not a whole number",
+          "Type propagation results in an integer type that cannot whole a value that is not integer.\n" +
+          "Numeric literal: " + ss(constant) + "\n" +
+          "Assigned to type: " + s(t) + "\n");
+  }
+
+  static void floatConstantTooLarge(SourcePosition pos, String constant, Type t, String max, String maxH)
+  {
+    error(pos,
+          "Float constant value outside of allowed range for target type",
+          "Type propagation results in a type that is too small for the value represented by the given constant.\n" +
+          "Numeric literal: " + ss(constant) + "\n" +
+          "Assigned to type: " + s(t) + "\n" +
+          "Max allowed value: " + ss("-"+max) + " .. " + ss(max) + " or " + ss("-" + maxH) + " .. " + ss(maxH));
+  }
+
+  static void floatConstantTooSmall(SourcePosition pos, String constant, Type t, String min, String minH)
+  {
+    error(pos,
+          "Float constant value too small, would underflow to 0",
+          "Type propagation results in a type whose precision does not allow to represented the given constant.\n" +
+          "Numeric literal: " + ss(constant) + "\n" +
+          "Assigned to type: " + s(t) + "\n" +
+          "Min representable value > 0: " + ss(min) + " or " + ss(minH));
   }
 
 }

@@ -159,11 +159,11 @@ public class Pretty extends ANY
       {
         switch (t)
           {
-          case t_comment: result = s.comment(); break;
-          case t_ident  : result = s.ident();  break;
-          case t_integer: result = s.integer();  break;
-          case t_op     : result = s.op();  break;
-          default       :
+          case t_comment   : result = s.comment(); break;
+          case t_ident     : result = s.ident();  break;
+          case t_numliteral: result = s.integer();  break;
+          case t_op        : result = s.op();  break;
+          default          :
             if (Lexer.isString(t))
               {
                 result = s.string(); break;

@@ -34,14 +34,14 @@ visibility_negative is
       say "FAILED: $msg"
       set exitCode := 1
 
-  chck (a,b i32, msg string) is
+  chck (a,b i32, msg string) unit is
     if a == b
       say "PASSED: $msg"
     else
       say "FAILED: expected $b got $a"
       set exitCode := 1
 
-  visi1 is
+  visi1 =>
     a1 is
       b1 is
         c1(b bool) i32 is
@@ -110,7 +110,7 @@ visibility_negative is
     chck (a2.b3.c6 true == 66) "call a2.b3.c6"
   visi1
 
-  visi2 is
+  visi2 =>
     count := 0
     expr => set count := count + 11; count
     use(i i32) is
@@ -176,6 +176,7 @@ visibility_negative is
           use f7   // 71. should flag an error: feature not found / not visible
           use f8   // 72. should flag an error: feature not found / not visible
           use f9   // 73. should flag an error: feature not found / not visible
+          unit
         chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
         chck (f2 == 33 || f2 == 99) "can access f2"
         use f3   // 74. should flag an error: feature not found / not visible
@@ -216,6 +217,7 @@ visibility_negative is
           use f7   // 96. should flag an error: feature not found / not visible
           use f8   // 97. should flag an error: feature not found / not visible
           use f9   // 98. should flag an error: feature not found / not visible
+          unit
         chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
         chck (f2 == 33 || f2 == 99) "can access f2"
         use f3   // 99. should flag an error: feature not found / not visible
@@ -235,6 +237,7 @@ visibility_negative is
         chck (f7 == 44 || f7 == 110) "can access f7"
         use f8   // 110. should flag an error: feature not found / not visible
         use f9   // 111. should flag an error: feature not found / not visible
+        unit
       chck (f1 == 11 || f1 == 77 || f1 == 143) "can access f1"
       use f2   // 112. should flag an error: feature not found / not visible
       use f3   // 113. should flag an error: feature not found / not visible
@@ -284,12 +287,13 @@ visibility_negative is
       use f7   // 145. should flag an error: feature not found / not visible
       chck (f8 == 22 || f8 == 88 || f8 == 154) "can access f8"
       use f9   // 146. should flag an error: feature not found / not visible
+      unit
     a1.b1.c1
     a1.b1.c2
     a1.b2
   visi2
 
-  visi3 is
+  visi3 =>
     count := 0
     expr => set count := count + 11; count
 
@@ -467,7 +471,7 @@ visibility_negative is
     a1.b2
   visi3
 
-  visi5 is
+  visi5 =>
     a is
       chck (x == "Outer!") "outer x"               // 261. should flag an error: field used before it is declared
       chck (a.this.x == "Outer!") "a.this.x"       // 262. should flag an error: field used before it is declared
@@ -502,7 +506,7 @@ visibility_negative is
     a.b.c
   visi5
 
-  visi6 is
+  visi6 =>
     say "x is $x"   // 271. should flag an error: feature used before it is declared
     x := 2;        say "x is $x"
     x := x as f64; say "x is $x"
@@ -510,7 +514,7 @@ visibility_negative is
     x := x as i32; say "x is $x"
   visi6
 
-  visi7 is
+  visi7 =>
     e := fun => "x is "+x+""   // 272. should flag an error: feature used before it is declared
     x := 2;          f := fun => "x is "+x+""
     x := x*x*x*x;    g := fun => "x is "+x+""
@@ -522,7 +526,7 @@ visibility_negative is
     chck (i.call == "x is 1616161616") "x is 1616161616"
   visi7
 
-  visi8(cond bool) is
+  visi8(cond bool) =>
     a is
     b // 273. should flag an error: feature not visible
     c // 274. should flag an error: feature not visible
@@ -544,7 +548,7 @@ visibility_negative is
   visi8 true
   visi8 false
 
-  visi9 is
+  visi9 =>
     a i32 is 3
     for
       ixtest1  := ix1     // 281. should flag an error: feature not visible
@@ -598,7 +602,7 @@ visibility_negative is
     t := a
   visi9
 
-  visiA is
+  visiA =>
    if 3 == 4
       b => "strange"
    else

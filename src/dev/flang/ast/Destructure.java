@@ -37,7 +37,7 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Decompose represents syntactic sugar for a decomposing assignment of the form
+ * Destructure represents syntactic sugar for a destructuring assignment of the form
  *
  * (a,b) = point;
  *
@@ -49,7 +49,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Decompose extends ANY implements Stmnt
+public class Destructure extends ANY implements Stmnt
 {
 
 
@@ -66,20 +66,20 @@ public class Decompose extends ANY implements Stmnt
 
 
   /**
-   * The soucecode position of this decompose, used for error messages.
+   * The soucecode position of this destructure, used for error messages.
    */
   final SourcePosition _pos;
 
 
   /**
-   * The field names of the fields we are decomposing into. May not be empty.
+   * The field names of the fields we are destructuring into. May not be empty.
    * null if _fields != null.
    */
   final List<String> _names;
 
 
   /**
-   * The fields created by this decomposition.  May be empty. null if _names !=
+   * The fields created by this destructuring.  May be empty. null if _names !=
    * null.
    */
   final List<Feature> _fields;
@@ -88,7 +88,7 @@ public class Decompose extends ANY implements Stmnt
   final boolean _isDefinition;
 
   /**
-   * The value that will be decomposed
+   * The value that will be destructured
    */
   Expr _value;
 
@@ -107,7 +107,7 @@ public class Decompose extends ANY implements Stmnt
    *
    * @param v
    */
-  private Decompose(SourcePosition pos, List<String> n, List<Feature> fs, boolean def, Expr v)
+  private Destructure(SourcePosition pos, List<String> n, List<Feature> fs, boolean def, Expr v)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -150,21 +150,21 @@ public class Decompose extends ANY implements Stmnt
 
 
   /**
-   * Create a Decompose instance during parsing.
+   * Create a Destructure instance during parsing.
    *
    * @param pos the source code position
    *
-   * @param fields the fields we are decomposing into in case they are declared
-   * within the decompose statement
+   * @param fields the fields we are destructuring into in case they are declared
+   * within the destructure statement
    *
-   * @param names the names of the variables to store the decomposed values if
-   * we are not decomposing to new fields.
+   * @param names the names of the variables to store the destructured values if
+   * we are not destructuring to new fields.
    *
-   * @param def true if decomposing using :=
+   * @param def true if destructuring using :=
    *
-   * @param v the value that is decomposed.
+   * @param v the value that is destructured.
    *
-   * @return a statement that implements the decomposition.
+   * @return a statement that implements the destructuring.
    */
   public static Stmnt create(SourcePosition pos, List<Feature> fields, List<String> names, boolean def, Expr v)
   {
@@ -202,7 +202,7 @@ public class Decompose extends ANY implements Stmnt
             names.add(f._featureName.baseName());
           }
       }
-    return new Decompose(pos, names, fields, def, v).expand();
+    return new Destructure(pos, names, fields, def, v).expand();
   }
 
 
@@ -283,9 +283,9 @@ public class Decompose extends ANY implements Stmnt
     if (t.isGenericArgument())
       {
         Errors.error(_pos,
-                     "Decomposition not possible for value whose type is a generic argument.",
+                     "Destructuring not possible for value whose type is a generic argument.",
                      "Type of expression is " + t + "\n" +
-                     "Cannot decompose value of generic argument type into (" + _names + ")");
+                     "Cannot destructure value of generic argument type into (" + _names + ")");
       }
     else if (t != Types.t_ERROR)
       {
@@ -294,12 +294,12 @@ public class Decompose extends ANY implements Stmnt
           .filter(n -> !n.equals("_"))
           .filter(n -> Collections.frequency(_names, n) > 1)
           .forEach(n -> Errors.error(_pos,
-                                     "Repeated entry in decomposition",
+                                     "Repeated entry in destructuring",
                                      "Variable " + n + " appears "+Collections.frequency(_names, n)+" times."));
         Feature tmp = new Feature(_pos,
                                   Consts.VISIBILITY_PRIVATE,
                                   t,
-                                  "#decompose" + id++,
+                                  "#destructure" + id++,
                                   outer);
         tmp.scheduleForResolution(res);
         stmnts.add(tmp.resolveTypes(res, outer));
@@ -336,13 +336,13 @@ public class Decompose extends ANY implements Stmnt
             int fn = fieldNames.size();
             int nn = _names.size();
             Errors.error(_pos,
-                         "Decomposition mismatch between number of visible fields and number of target variables.",
+                         "Destructuring mismatch between number of visible fields and number of target variables.",
                          "Found " + ((fn == 0) ? "no visible argument fields" :
                                      (fn == 1) ? "one visible argument field" :
                                      "" + fn + " visible argument fields"     ) + " " + fieldNames + "\n" +
-                         (nn == 0 ? "while there are no decomposition variables" :
-                          nn == 1 ? "while there is one decomposition variable: " + _names
-                                  : "while there are " + nn + " decomposition variables: " + _names) + ".\n"
+                         (nn == 0 ? "while there are no destructuring variables" :
+                          nn == 1 ? "while there is one destructuring variable: " + _names
+                                  : "while there are " + nn + " destructuring variables: " + _names) + ".\n"
                          );
           }
       }
@@ -364,7 +364,7 @@ public class Decompose extends ANY implements Stmnt
    */
   public boolean containsOnlyDeclarations()
   {
-    throw new Error("Decompose should have disappeared after resolveTypes");
+    throw new Error("Destructure should have disappeared after resolveTypes");
   }
 
 

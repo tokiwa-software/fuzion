@@ -32,6 +32,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -70,7 +72,7 @@ public class Call extends Expr
   /**
    * Empty map for general use.
    */
-  public static final Map EMPTY_MAP = Map.of();
+  public static final SortedMap EMPTY_MAP = new TreeMap();
 
 
   /*------------------------  static variables  -------------------------*/
@@ -531,7 +533,7 @@ public class Call extends Expr
         target.loadCalledFeature(res, thiz);
         if (inh)
           {
-            targetFeature = target.calledFeature();  // NYI: What if target is not a call, but, e.g., an IntConst?
+            targetFeature = target.calledFeature();  // NYI: What if target is not a call, but, e.g., an NumLiteral?
           }
         else
           {
@@ -564,32 +566,27 @@ public class Call extends Expr
    * @return the map of FeatureName to Features of the found candidates. May be
    * empty. ERROR_MAP in case an error occured and was reported already.
    */
-  private Map<FeatureName, Feature> calledFeatureCandidates(Feature targetFeature, Resolution res, Feature thiz)
+  private Feature.FeaturesAndOuter calledFeatureCandidates(Feature targetFeature, Resolution res, Feature thiz)
   {
     if (PRECONDITIONS) require
       (targetFeature != null);
 
+    Feature.FeaturesAndOuter result;
     // are we searching for features called via thiz' inheritance calls?
-    Map<FeatureName, Feature> fs = EMPTY_MAP;
+    SortedMap<FeatureName, Feature> fs = EMPTY_MAP;
     if (target != null)
       {
         res.resolveDeclarations(targetFeature);
-        fs = targetFeature.findDeclaredOrInheritedFeatures(name);
+        result = new Feature.FeaturesAndOuter();
+        result.features = targetFeature.findDeclaredOrInheritedFeatures(name);
+        result.outer = targetFeature;
       }
     else
       { /* search for feature in thiz and outer classes */
-        var fo = targetFeature.findDeclaredInheritedOrOuterFeatures(name, this, null, null);
-        if (fo != null)
-          {
-            target = new This(pos, thiz, fo.outer);
-            if (thiz.state() != Feature.State.RESOLVING_INHERITANCE)
-              {
-                target = ((This)target).resolveTypes(res, thiz);
-              }
-            fs = fo.features;
-          }
+        result = targetFeature.findDeclaredInheritedOrOuterFeatures(name, this, null, null);
+        target = result.target(pos, res, thiz);
       }
-    return fs;
+    return result;
   }
 
 
@@ -735,37 +732,15 @@ public class Call extends Expr
           (Errors.count() > 0 || targetFeature != null);
         if (targetFeature != null && targetFeature != Types.f_ERROR)
           {
-            var fs = calledFeatureCandidates(targetFeature, res, thiz);
+            var fo = calledFeatureCandidates(targetFeature, res, thiz);
             FeatureName calledName = FeatureName.get(name, _actuals.size());
-            boolean match = false;
-            List<Feature> found = new List<Feature>();
-            for (var f : fs.entrySet())
-              {
-                var ff = f.getValue();
-                var fn = f.getKey();
-                if (fn.equalsExceptId(calledName))  /* an exact match, so use it: */
-                  {
-                    check
-                      (Errors.count() > 0 || !match);
-                    calledFeature_ = ff;
-                    match = true;
-                  }
-                else if (!match &&
-                         (ff.hasOpenGenericsArgList()               /* actual generics might come from type inference */
-                          || forFun                                 /* a fun-declaration "fun a.b.f" */
-                          || fn.argCount() == 0 && hasParentheses() /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
-                          )
-                         )
-                  { /* no exact match, but we have a candidate to check later: */
-                    calledFeature_ = ff;
-                    found.add(ff);
-                  }
-              }
-            if (!match && found.size() > 1)
-              {
-                FeErrors.ambiguousCallTargets(pos, calledName, found);
-              }
-            else if (calledFeature_ == null)
+            calledFeature_ = fo.filter(pos,
+                                       calledName,
+                                       ff ->  (ff.hasOpenGenericsArgList()               /* actual generics might come from type inference */
+                                               || forFun                                 /* a fun-declaration "fun a.b.f" */
+                                               || ff.featureName().argCount() == 0 && hasParentheses() /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
+                                               ));
+            if (calledFeature_ == null)
               {
                 findChainedBooleans(res, thiz);
                 if (calledFeature_ == null) // nothing found, so flag error
@@ -1608,7 +1583,7 @@ public class Call extends Expr
         // intrinsic features for pre- and postconditions
         else if (calledFeature_ == Types.resolved.f_safety      ) { result = BoolConst.get(res._options.fuzionSafety());      }
         else if (calledFeature_ == Types.resolved.f_debug       ) { result = BoolConst.get(res._options.fuzionDebug());       }
-        else if (calledFeature_ == Types.resolved.f_debugLevel  ) { result = new IntConst (res._options.fuzionDebugLevel());  }
+        else if (calledFeature_ == Types.resolved.f_debugLevel  ) { result = new NumLiteral (res._options.fuzionDebugLevel());  }
       }
     return result;
   }

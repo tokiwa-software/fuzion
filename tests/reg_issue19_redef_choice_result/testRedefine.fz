@@ -45,7 +45,7 @@ testRedefine is
   bad2 : getter<string | i32 | nil> is
     get => 42
 
-  show(g getter<string | i32 | nil>) is
+  show(g getter<string | i32 | nil>) =>
     say g.get
 
   yak "good: "; show good

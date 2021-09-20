@@ -48,7 +48,7 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
   redef underflowOnMul(other u128) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  redef prefix -°             u128 is carry u64 := { if (lo > 0             ) 1 else 0 }; u128(0.as_u64 -° hi -° carry, 0.as_u64 -° lo)
+  redef prefix -°             u128 is carry u64 := { if (lo > 0             ) 1 else 0 }; u128(u64 0 -° hi -° carry, u64 0 -° lo)
   redef infix +° (other u128) u128 is carry u64 := { if (lo +° other.lo < lo) 1 else 0 }; u128(hi +° other.hi +° carry, lo +° other.lo)
   redef infix -° (other u128) u128 is carry u64 := { if (lo < other.lo      ) 1 else 0 }; u128(hi -° other.hi -° carry, lo -° other.lo)
   redef infix *° (other u128) u128 is
@@ -95,17 +95,17 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
   # private division and remainder with crash in case of div-by-zero
   private div (other u128) u128 is
     if u128.this < other
-      0.as_u128
+      zero
     else
       ob := other.highestOneBit.trailingZeros
       for
         rem := u128.this, rem - s
-        bit := rem.highestOneBit >> ob.as_u128, bit >> 1.as_u128
-        d := other << bit.trailingZeros.as_u128, d >> 1.as_u128
-        s := if (rem < d) 0.as_u128 else d
-        p := if (rem < d) 0.as_u128 else bit
+        bit := rem.highestOneBit >> ob.as_u128, bit >> one
+        d := other << bit.trailingZeros.as_u128, d >> one
+        s := if (rem < d) zero else d
+        p := if (rem < d) zero else bit
         res := p, res + p
-      until bit = 0.as_u128
+      until bit = zero
         check
           debug: res *° other + rem = u128.this
         res
@@ -126,7 +126,7 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
     else if n >= 64
       u128 0, hi >> (n - 64)
     else if n > 0
-      u128(hi >> n, (lo >> n) | (hi << (64.as_u64 - n)))
+      u128(hi >> n, (lo >> n) | (hi << (u64 64 - n)))
     else
       u128.this
 
@@ -137,7 +137,7 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
     else if n >= 64
       u128(lo << (n-64), 0)
     else if n > 0
-      u128((hi << n) | (lo >> (64.as_u64 - n)), lo << n)
+      u128((hi << n) | (lo >> (u64 64 - n)), lo << n)
     else
       u128.this
 
@@ -152,18 +152,21 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
   redef infix =  (other u128) bool is hi = other.hi && lo = other.lo
   redef infix /= (other u128) bool is !(u128.this = other)
 
+  as_i8 i8
+    pre
+      u128.this <= i8.max.as_u128
+    is
+      lo.as_i8
+  as_i16 i16
+    pre
+      u128.this <= i16.max.as_u128
+    is
+      lo.as_i16
   as_i32 i32
     pre
       u128.this <= i32.max.as_u128
     is
       lo.as_i32
-  as_u32 u32
-    pre
-      u128.this <= u32.max.as_u128
-    post
-      analysis: result.as_u128 = u128.this
-    is
-      lo.as_u32
   as_i64 i64
     pre
       u128.this <= i64.max.as_u128
@@ -171,6 +174,27 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
       analysis: result.as_u128 = u128.this
     is
       lo.as_i64
+  as_u8 u8
+    pre
+      u128.this <= u8.max.as_u128
+    post
+      analysis: result.as_u128 = u128.this
+    is
+      lo.as_u8
+  as_u16 u16
+    pre
+      u128.this <= u16.max.as_u128
+    post
+      analysis: result.as_u128 = u128.this
+    is
+      lo.as_u16
+  as_u32 u32
+    pre
+      u128.this <= u32.max.as_u128
+    post
+      analysis: result.as_u128 = u128.this
+    is
+      lo.as_u32
   as_u64 u64
     pre
       u128.this <= u64.max.as_u128
@@ -179,12 +203,14 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
     is
       lo
 
-  low32bits  u32 is lo.low32bits
-  low64bits  u64 is lo
+  low8bits  u8  is lo.low8bits
+  low16bits u16 is lo.low16bits
+  low32bits u32 is lo.low32bits
+  low64bits u64 is lo
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from hasInterval is abstract, fz should not complain about this conflict.
-  redef max => (1.as_u128 << u128 0, 127) -° u128(0, 1) +° (1.as_u128 << u128 0, 127)  # NYI: 340282366920938463463374607431768211455, need to improve parser/lexer to handle this
+  redef max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
 
   # create hash code from this number

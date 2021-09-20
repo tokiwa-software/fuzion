@@ -63,7 +63,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Clazz extends ANY implements Comparable
+public class Clazz extends ANY implements Comparable<Clazz>
 {
 
 
@@ -372,7 +372,7 @@ public class Clazz extends ANY implements Comparable
    */
   private Clazz normalizeOuter(Type t, Clazz outer)
   {
-    if (outer != null && !hasUsedOuterRef() && t != Types.t_ERROR)
+    if (outer != null && !hasUsedOuterRef() && !feature().isField() && t != Types.t_ERROR)
       {
         outer = outer.normalize(t.featureOfType().outer());
       }
@@ -968,14 +968,6 @@ public class Clazz extends ANY implements Comparable
 
 
   /**
-   * Compare this to other for creating unique clazzes.
-   */
-  public int compareTo(Object other)
-  {
-    return compareTo((Clazz) other);
-  }
-
-  /**
    * Helper routine for compareTo: compare the outer classes.  If outer are refs
    * for both clazzes, they can be considered the same as long as their outer
    * classes (recursively) are the same. If they are values, they need to be
@@ -1418,13 +1410,9 @@ public class Clazz extends ANY implements Comparable
    */
   public boolean isCalled()
   {
-    if (PRECONDITIONS) require
-      (_argumentFields != null);
-
     return (isCalled_ && isOuterInstantiated() || _isCalledDirectly) && feature().impl.kind_ != Impl.Kind.Abstract &&
-      !isAbsurd()
-      || toString().equals("array<i32>.internalArray") // NYI: Hack workaround for conststring
-      ;
+      (_argumentFields == null || /* this may happen when creating deterḿining isUnitType() on cyclic value type, will cause an error during layout() */
+       !isAbsurd());
   }
 
   /**
@@ -1692,7 +1680,7 @@ public class Clazz extends ANY implements Comparable
                   {
                     /* NYI: Do we need special handling for inferred routine result as well?
                      *
-                     *   return Clazzes.clazz(f.impl.initialValue, this._outer);
+                     *   return Clazzes.clazz(f.impl.initialValue(), this._outer);
                      */
                   }
                 return actualClazz(t);
@@ -1953,7 +1941,7 @@ public class Clazz extends ANY implements Comparable
           }
         i++;
       }
-    throw new Error("Clazz.fieldIndex() did not find field");
+    throw new Error("Clazz.fieldIndex() did not find field " + this);
   }
 
 

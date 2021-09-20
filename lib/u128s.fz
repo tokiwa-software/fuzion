@@ -28,8 +28,8 @@
 #
 u128s : wrappingIntegers<u128> is
 
-  redef zero u128 is u128 0, 0
-  redef one  u128 is u128 0, 1
+  redef zero => u128 0 0
+  redef one  => u128 0 1
 
-  redef min u128 is u128 0, 0
-  redef max u128 is u128 0x_ffff_ffff_ffff_ffff, 0x_ffff_ffff_ffff_ffff
+  redef min => u128 0 0
+  redef max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff

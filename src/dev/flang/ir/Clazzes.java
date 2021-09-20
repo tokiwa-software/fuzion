@@ -46,7 +46,7 @@ import dev.flang.ast.FunctionReturnType; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.InitArray; // NYI: remove dependency!
-import dev.flang.ast.IntConst; // NYI: remove dependency!
+import dev.flang.ast.NumLiteral; // NYI: remove dependency!
 import dev.flang.ast.Match; // NYI: remove dependency!
 import dev.flang.ast.Old; // NYI: remove dependency!
 import dev.flang.ast.StrConst; // NYI: remove dependency!
@@ -156,14 +156,26 @@ public class Clazzes extends ANY
   public static final OnDemandClazz bool        = new OnDemandClazz(() -> Types.resolved.t_bool             );
   public static final OnDemandClazz c_TRUE      = new OnDemandClazz(() -> Types.resolved.f_TRUE .thisType() );
   public static final OnDemandClazz c_FALSE     = new OnDemandClazz(() -> Types.resolved.f_FALSE.thisType() );
+  public static final OnDemandClazz i8          = new OnDemandClazz(() -> Types.resolved.t_i8               );
+  public static final OnDemandClazz i16         = new OnDemandClazz(() -> Types.resolved.t_i16              );
   public static final OnDemandClazz i32         = new OnDemandClazz(() -> Types.resolved.t_i32              );
-  public static final OnDemandClazz u32         = new OnDemandClazz(() -> Types.resolved.t_u32              );
   public static final OnDemandClazz i64         = new OnDemandClazz(() -> Types.resolved.t_i64              );
+  public static final OnDemandClazz u8          = new OnDemandClazz(() -> Types.resolved.t_u8               );
+  public static final OnDemandClazz u16         = new OnDemandClazz(() -> Types.resolved.t_u16              );
+  public static final OnDemandClazz u32         = new OnDemandClazz(() -> Types.resolved.t_u32              );
   public static final OnDemandClazz u64         = new OnDemandClazz(() -> Types.resolved.t_u64              );
+  public static final OnDemandClazz f32         = new OnDemandClazz(() -> Types.resolved.t_f32              );
+  public static final OnDemandClazz f64         = new OnDemandClazz(() -> Types.resolved.t_f64              );
+  public static final OnDemandClazz ref_i8      = new OnDemandClazz(() -> Types.resolved.t_ref_i8           );
+  public static final OnDemandClazz ref_i16     = new OnDemandClazz(() -> Types.resolved.t_ref_i16          );
   public static final OnDemandClazz ref_i32     = new OnDemandClazz(() -> Types.resolved.t_ref_i32          );
-  public static final OnDemandClazz ref_u32     = new OnDemandClazz(() -> Types.resolved.t_ref_u32          );
   public static final OnDemandClazz ref_i64     = new OnDemandClazz(() -> Types.resolved.t_ref_i64          );
+  public static final OnDemandClazz ref_u8      = new OnDemandClazz(() -> Types.resolved.t_ref_u8           );
+  public static final OnDemandClazz ref_u16     = new OnDemandClazz(() -> Types.resolved.t_ref_u16          );
+  public static final OnDemandClazz ref_u32     = new OnDemandClazz(() -> Types.resolved.t_ref_u32          );
   public static final OnDemandClazz ref_u64     = new OnDemandClazz(() -> Types.resolved.t_ref_u64          );
+  public static final OnDemandClazz ref_f32     = new OnDemandClazz(() -> Types.resolved.t_ref_f32          );
+  public static final OnDemandClazz ref_f64     = new OnDemandClazz(() -> Types.resolved.t_ref_f64          );
   public static final OnDemandClazz object      = new OnDemandClazz(() -> Types.resolved.t_object           );
   public static final OnDemandClazz string      = new OnDemandClazz(() -> Types.resolved.t_string           );
   public static final OnDemandClazz conststring = new OnDemandClazz(() -> Types.resolved.t_conststring      , true /* needed? */);
@@ -298,7 +310,7 @@ public class Clazzes extends ANY
                              "Value type " + actualType + " equals type of outer feature.\n"+
                              "The chain of outer types that lead to this recursion is:\n"+
                              chain + "\n" +
-                             "To solve this, you could make add a 'ref' after the arguments list at "+o._type.featureOfType().pos().show());
+                             "To solve this, you could add a 'ref' after the arguments list at "+o._type.featureOfType().pos().show());
               }
           }
         o = o._outer;
@@ -592,21 +604,21 @@ public class Clazzes extends ANY
       (a != null, outerClazz != null);
 
     check
-      (Errors.count() > 0 || a.getOuter != null);
+      (Errors.count() > 0 || a._target != null);
 
-    if (a.getOuter != null)
+    if (a._target != null)
       {
         if (a.tid_ < 0)
           {
             a.tid_ = outerClazz.feature().getRuntimeClazzIds(2);
           }
 
-        Clazz sClazz = clazz(a.getOuter, outerClazz);
+        Clazz sClazz = clazz(a._target, outerClazz);
         outerClazz.setRuntimeClazz(a.tid_, sClazz);
-        if (isUsed(a.assignedField, sClazz))
+        if (isUsed(a._assignedField, sClazz))
           {
             var vc = sClazz.asValue();
-            var fc = vc.lookup(a.assignedField, Call.NO_GENERICS, a.pos());
+            var fc = vc.lookup(a._assignedField, Call.NO_GENERICS, a.pos());
             outerClazz.setRuntimeClazz(a.tid_ + 1, fc);
           }
       }
@@ -846,10 +858,17 @@ public class Clazzes extends ANY
     else if (e instanceof Call c)
       {
         var tclazz = clazz(c.target, outerClazz);
-        var inner = tclazz.lookup(c.calledFeature(),
-                                  outerClazz.actualGenerics(c.generics),
-                                  c.pos());
-        result = inner.resultClazz();
+        if (tclazz != c_void.get())
+          {
+            var inner = tclazz.lookup(c.calledFeature(),
+                                      outerClazz.actualGenerics(c.generics),
+                                      c.pos());
+            result = inner.resultClazz();
+          }
+        else
+          {
+            result = tclazz;
+          }
       }
     else if (e instanceof Current c)
       {
@@ -866,7 +885,7 @@ public class Clazzes extends ANY
         result = bool.get();
       }
 
-    else if (e instanceof IntConst i)
+    else if (e instanceof NumLiteral i)
       {
         result = outerClazz.actualClazz(i.typeOrNull());
       }

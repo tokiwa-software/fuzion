@@ -1,0 +1,83 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature complex
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# complex -- complex numbers based on arbitrary numeric type
+#
+# complex provides complex numbers based on a numeric type (e.g. f64, i32).
+# A complex number consists of a real and an imaginary part.
+#
+complex<T : numeric<T>> (r,    # real part
+                         i T   # imaginary part
+                         ) : numeric<complex<T>>, complexes<T>
+is
+
+# private:
+
+  # just for brevity
+  a => complex.this
+
+# public:
+
+  # enable generic features in ancestors
+  redef thiz => complex.this
+  redef orderedThis => complex.this
+
+  # basic operations
+  redef prefix + => a
+  redef infix +  (b complex<T>) => complex a.r+b.r a.i+b.i
+  redef infix -  (b complex<T>) => complex a.r-b.r a.i-b.i
+  redef infix *  (b complex<T>) => complex a.r*b.r-a.i*b.i a.r*b.i+a.i*b.r
+  redef infix /  (b complex<T>) complex<T>
+    pre
+      safety: b != zero
+  is
+    n := b.r*b.r+b.i*b.i
+    complex (a.r*b.r+a.i*b.i)/n (a.i*b.r-a.r*b.i)/n
+
+  # comparison
+  redef infix == (b complex<T>) => a.r  = b.r && a.i  = b.i
+  redef infix != (b complex<T>) => a.r != b.r || a.i != b.i
+
+  # NYI: total order ignoring i
+  redef infix <  (b complex<T>) => a.r <  b.r
+  redef infix <= (b complex<T>) => a.r <= b.r
+  redef infix >  (b complex<T>) => a.r >  b.r
+  redef infix >= (b complex<T>) => a.r >= b.r
+
+  abs² => r*r+i*i
+
+  redef asString =>
+    si :=
+      for c in ($i).codepointsStream
+      until !("0123456789.+-".contains c)
+        "($i)"
+      else
+        $i
+    p := if (si.startsWith "-") then "" else "+"
+    "{r}$p{si}i"
+
+  # NYI: these two should be implemented in complexes, not here:
+  redef zero => complex r.zero r.zero
+  redef one  => complex r.one r.zero

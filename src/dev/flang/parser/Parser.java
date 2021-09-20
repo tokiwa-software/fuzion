@@ -1132,7 +1132,7 @@ callList    : call ( COMMA callList
    * Parse call
    *
 call        : name ( actualGens actualArgs callTail
-                   | dot ( INTEGER callTail
+                   | dot ( NUM_LITERAL callTail
                          | call
                    )
             ;
@@ -1144,9 +1144,10 @@ call        : name ( actualGens actualArgs callTail
     Call result;
     if (skipDot())
       {
-        if (current() == Token.t_integer)
+        if (current() == Token.t_numliteral)
           {
-            result = new Call(pos, target, n, skipInteger());
+            var select = skipNumLiteral();
+            result = new Call(pos, target, n, select == null ? "0" : select.plainInteger());
             result = callTail(result);
           }
         else
@@ -1473,8 +1474,11 @@ actualsLstC : COMMA expr actualsLstC
           }
         else
           {
-            while (!endsActuals())
+            var p = -1;
+            while (!endsActuals() &&
+                   p != pos() /* make sure we do not get stuck on a syntax error */)
               {
+                p = pos();
                 result.add(exprUntilSpace());
               }
           }
@@ -1778,7 +1782,7 @@ term        : simpleterm ( indexCall
 simpleterm  : bracketTerm
             | fun
             | string
-            | INTEGER
+            | NUM_LITERAL
             | "old" term
             | match
             | loop
@@ -1792,19 +1796,26 @@ simpleterm  : bracketTerm
     int p1 = pos();
     switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
-      case t_lbrace  :
-      case t_lparen  :
-      case t_lcrochet:         result = bracketTerm(true);                        break;
-      case t_fun     :         result = fun();                                    break;
-      case t_integer :         result = new IntConst(posObject(), skipInteger()); break;
-      case t_old     : next(); result = new Old(term()                         ); break;
-      case t_match   :         result = match();                                  break;
-      case t_for     :
-      case t_variant :
-      case t_while   :
-      case t_do      :         result = loop();                                   break;
-      case t_if      :         result = ifstmnt();                                break;
-      default        :
+      case t_lbrace    :
+      case t_lparen    :
+      case t_lcrochet  :         result = bracketTerm(true);                           break;
+      case t_fun       :         result = fun();                                       break;
+      case t_numliteral: var l = skipNumLiteral();
+                         var m = l.mantissaValue();
+                         var b = l.mantissaBase();
+                         var d = l.mantissaDotAt();
+                         var e = l.exponent();
+                         var eb = l.exponentBase();
+                         var o = l._originalString;
+                         result = new NumLiteral(posObject(p1), o, b, m, d, e, eb); break;
+      case t_old       : next(); result = new Old(term()                            ); break;
+      case t_match     :         result = match();                                     break;
+      case t_for       :
+      case t_variant   :
+      case t_while     :
+      case t_do        :         result = loop();                                      break;
+      case t_if        :         result = ifstmnt();                                   break;
+      default          :
         if (isStartedString(current()))
           {
             result = stringTerm(null);
@@ -1844,11 +1855,11 @@ stringTerm  : STRING
   {
     return relaxLineAndSpaceLimit(() -> {
         Expr result = leftString;
-        if (isString(current()))
+        var t = current();
+        if (isString(t))
           {
             var str = new StrConst(posObject(), "\""+string()+"\"" /* NYI: remove "\"" */);
             result = concatString(posObject(), leftString, str);
-            var t = current();
             next();
             if (isPartialString(t))
               {
@@ -1857,7 +1868,7 @@ stringTerm  : STRING
           }
         else
           {
-            Errors.expectedStringContinuation(posObject(), current().toString());
+            Errors.expectedStringContinuation(posObject(), currentAsString());
           }
         return result;
       });
@@ -1891,14 +1902,14 @@ stringTerm  : STRING
   {
     switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
-      case t_lparen  :
-      case t_lcrochet:
-      case t_lbrace  :
-      case t_fun     :
-      case t_integer :
-      case t_old     :
-      case t_match   : return true;
-      default        :
+      case t_lparen    :
+      case t_lcrochet  :
+      case t_lbrace    :
+      case t_fun       :
+      case t_numliteral:
+      case t_old       :
+      case t_match     : return true;
+      default          :
         return
           isStartedString(current())
           || isNamePrefix()    // Matches call and qualThis
@@ -2441,7 +2452,7 @@ stmnts      :
    *
 stmnt       : feature
             | assign
-            | decompose
+            | destructure
             | exprInLine
             | checkstmt
             ;
@@ -2449,10 +2460,10 @@ stmnt       : feature
   Stmnt stmnt()
   {
     return
-      isCheckPrefix()     ? checkstmnt() :
-      isAssignPrefix()    ? assign()     :
-      isDecomposePrefix() ? decompose()  :
-      isFeaturePrefix()   ? feature()    : exprInLine();
+      isCheckPrefix()       ? checkstmnt()  :
+      isAssignPrefix()      ? assign()      :
+      isDestructurePrefix() ? destructure() :
+      isFeaturePrefix()     ? feature()     : exprInLine();
   }
 
 
@@ -2778,74 +2789,74 @@ assign      : "set" name ":=" exprInLine
 
 
   /**
-   * Parse decompose
+   * Parse destructure
    *
-decompose   : decomp
-            | decompDecl
-            | decompSet
-            | decompOld
-            | decompDclOld
+destructure : destructr
+            | destructrDcl
+            | destructrSet
+            | destructrOld
+            | destructrDclOld
             ;
-decomp      : "(" argNames ")"       ":=" exprInLine
-decompDecl  : formArgs               ":=" exprInLine
-decompSet   : "set" "(" argNames ")" ":=" exprInLine
+destructr   : "(" argNames ")"       ":=" exprInLine
+destructrDcl: formArgs               ":=" exprInLine
+destructrSet: "set" "(" argNames ")" ":=" exprInLine
             ;
    */
-  Stmnt decompose()
+  Stmnt destructure()
   {
     if (fork().skipFormArgs())
       {
         var a = formArgs();
         var pos = posObject();
-        matchOperator(":=", "decompose");
-        return Decompose.create(pos, a, null, false, exprInLine());
+        matchOperator(":=", "destructure");
+        return Destructure.create(pos, a, null, false, exprInLine());
       }
     else
       {
         var hasSet = skip(Token.t_set);
-        match(Token.t_lparen, "decompose");
+        match(Token.t_lparen, "destructure");
         var names = argNames();
-        match(Token.t_rparen, "decompose");
+        match(Token.t_rparen, "destructure");
         var pos = posObject();
-        matchOperator(":=", "decompose");
-        return Decompose.create(pos, null, names, !hasSet, exprInLine());
+        matchOperator(":=", "destructure");
+        return Destructure.create(pos, null, names, !hasSet, exprInLine());
       }
   }
 
 
   /**
-   * Check if the current position starts decompose.  Does not change the
+   * Check if the current position starts destructure.  Does not change the
    * position of the parser.
    *
-   * @return true iff the next token(s) start a decompose.
+   * @return true iff the next token(s) start a destructure.
    */
-  boolean isDecomposePrefix()
+  boolean isDestructurePrefix()
   {
-    return (current() == Token.t_lparen) && (fork().skipDecompDeclPrefix() ||
-                                             fork().skipDecompPrefix()        ) ||
-      (current() == Token.t_set) && (fork().skipDecompPrefix());
+    return (current() == Token.t_lparen) && (fork().skipDestructrDclPrefix() ||
+                                             fork().skipDestructrPrefix()        ) ||
+      (current() == Token.t_set) && (fork().skipDestructrPrefix());
   }
 
 
   /**
-   * Check if the current position starts a decompose using formArgs and skip an
+   * Check if the current position starts a destructure using formArgs and skip an
    * unspecified part of it.
    *
-   * @return true iff the next token(s) start a decomposeDecl
+   * @return true iff the next token(s) start a destructureDecl
    */
-  boolean skipDecompDeclPrefix()
+  boolean skipDestructrDclPrefix()
   {
     return skipFormArgs() && isOperator(":=");
   }
 
 
   /**
-   * Check if the current position starts a decomp and skip an unspecified part
+   * Check if the current position starts a destructr and skip an unspecified part
    * of it.
    *
-   * @return true iff the next token(s) start a decompoe.
+   * @return true iff the next token(s) start a destructroe.
    */
-  boolean skipDecompPrefix()
+  boolean skipDestructrPrefix()
   {
     boolean result = false;
     skip(Token.t_set);
@@ -3619,12 +3630,14 @@ LPAREN      : "("
 
 
   /**
-   * Return the actual integer constant of the current t_integer token as a
-   * string.
+   * Return the details of the numeric literal of the current t_numliteral token.
    */
-  String skipInteger()
+  Literal skipNumLiteral()
   {
-    String result = integer();
+    if (PRECONDITIONS) require
+      (current() == Token.t_numliteral);
+
+    var result = curLiteral();
     next();
     return result;
   }

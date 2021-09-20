@@ -1,0 +1,57 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature f64s
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# f32s -- unit type defining features related to f32 but not requiring an
+# instance
+#
+#
+# f32 are binary32-numbers as defined in the IEEE 754-2019 standard, see
+# https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
+#
+f32s : floats<f32> is
+
+  redef name => "f32"
+
+  redef zero => f32 0
+  redef one  => f32 1
+
+  redef bytes => 4
+  significandBits => 24
+  exponentBits => 8
+
+  exponentRange => -126..127
+
+  # redef range => f32 # NYI: -3.4028235E38..3.4028235E38
+
+  # minPositive => # NYI:1.4E-45
+
+  # nan => ...
+
+  #  infinity =>
+
+  # negInfinity =>
+
+
+  from_i64(v i64) f32 is intrinsic

@@ -47,3 +47,4 @@ redefineAsVoid is
     fuzion.std.exit 0
 
  h
+ unit

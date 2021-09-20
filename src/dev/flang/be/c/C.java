@@ -488,23 +488,30 @@ public class C extends ANY
         {
           var constCl = _fuir.constClazz(c, i);
           var d = _fuir.constData(c, i);
-          CExpr r = null;
-          if      (_fuir.clazzIsBool(constCl)) { r = d[0] == 1 ? _names.FZ_TRUE : _names.FZ_FALSE; }
-          else if (_fuir.clazzIsI32 (constCl)) { r = CExpr. int32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt ()); }
-          else if (_fuir.clazzIsU32 (constCl)) { r = CExpr.uint32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt ()); }
-          else if (_fuir.clazzIsI64 (constCl)) { r = CExpr. int64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong()); }
-          else if (_fuir.clazzIsU64 (constCl)) { r = CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong()); }
-          else if (constCl == _fuir.clazz_conststring())
+          var r = switch (_fuir.getSpecialId(constCl))
+            {
+            case c_bool -> d[0] == 1 ? _names.FZ_TRUE : _names.FZ_FALSE;
+            case c_i8   -> CExpr. int8const( ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     ());
+            case c_i16  -> CExpr. int16const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort());
+            case c_i32  -> CExpr. int32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ());
+            case c_i64  -> CExpr. int64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
+            case c_u8   -> CExpr.uint8const (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get     () & 0xff);
+            case c_u16  -> CExpr.uint16const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getChar ());
+            case c_u32  -> CExpr.uint32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ());
+            case c_u64  -> CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
+            case c_conststring ->
             {
               var tmp = _names.newTemp();
               o = constString(d, tmp);
-              r = tmp;
+              yield tmp;
             }
-          else
+            default ->
             {
               Errors.error("Unsupported constant in C backend.",
                            "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
+              yield null;
             }
+            };
           push(stack, constCl, r);
           break;
         }
@@ -638,17 +645,11 @@ public class C extends ANY
    */
   CStmnt constString(byte[] bytes, CIdent tmp)
   {
-    StringBuilder sb = new StringBuilder();
-    for (var b : bytes)
-      {
-        sb.append((char) (b & 0xFF));
-        sb.append("\0\0\0");
-      }
     var sysArray = tmp.deref().field(_names.FIELDS_IN_REF_CLAZZ).field(new CIdent("fzF_0_internalArray"));
     return CStmnt.seq(CStmnt.decl("fzT__R1conststring *", tmp),
                       tmp.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("fzT__R1conststring")))),
                       tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(_fuir.clazz_conststring())),
-                      sysArray.field(new CIdent("fzF_0_data"  )).assign(CExpr.string(sb.toString()).castTo("void *")),
+                      sysArray.field(new CIdent("fzF_0_data"  )).assign(CExpr.string(bytes).castTo("void *")),
                       sysArray.field(new CIdent("fzF_1_length")).assign(CExpr.int32const(bytes.length)));
   }
 

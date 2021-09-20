@@ -32,7 +32,7 @@
 #
 chainedBool is
 
-  test(a, b, c, d, e, f, g, h i32) is
+  test(a, b, c, d, e, f, g, h i32) =>
     say ("$a <= $b <  $c <= $d <  $e <= $f <  $g <= $h = " + (a <= b <  c <= d <  e <= f <  g <= h))
     if ((a <= b <  c <= d <  e <= f <  g <= h) ^ ((a <= b) && (b <  c) && (c <= d) && (d <  e) && (e <= f) && (f <  g) && (g <= h)))
       fuzion.std.panic "*** FAILED!"

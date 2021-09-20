@@ -23,13 +23,15 @@
 #
 # -----------------------------------------------------------------------
 
-# i64s -- unit type defining features related to i32 but not requiring an
+# i64s -- unit type defining features related to i64 but not requiring an
 # instance
 #
 i64s : wrappingIntegers<i64> is
 
-  redef zero i64 is 0
-  redef one  i64 is 1
+  redef name => "i64"
 
-  redef min => -° max -° 1
-  redef max => 0x_7fff_ffff_ffff_ffff
+  redef zero => i64 0
+  redef one  => i64 1
+
+  redef min => -0x_8000_0000_0000_0000
+  redef max =>  0x_7fff_ffff_ffff_ffff

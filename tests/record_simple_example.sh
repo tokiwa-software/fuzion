@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # This file is part of the Fuzion language implementation.
 #
 # The Fuzion language implementation is free software: you can redistribute it
@@ -17,14 +19,14 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of fz command, the main Fuzion tools entry point
+#  Source code of record_simple_example.sh script, records expected output of
+#  simple test using interpreter backend
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-#!/bin/bash
-#
+
 # Run the fuzion example given as an argument $2 and store the stdout/stderr
 # output to $2.expected_out and $2.expected_err.
 #
@@ -32,6 +34,9 @@
 #
 # In case file $2.skip exists, do not run the example
 #
+
+SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+CURDIR=$($SCRIPTPATH/_cur_dir.sh)
 
 if [ -f $2.skip ]; then
     echo "SKIPPED $2"
@@ -49,7 +54,7 @@ else
     head -n 1 $2 | grep -q -E "# fuzion.debugLevel=1( .*|)$" && export OPT=-Dfuzion.debugLevel=1
     head -n 1 $2 | grep -q -E "# fuzion.debugLevel=0( .*|)$" && export OPT=-Dfuzion.debugLevel=0
     $1 $2 >$2.expected_out 2>$2.expected_err0
-    cat $2.expected_err0 | sed "s:$PWD:--CURDIR--:g" >$2.expected_err
+    cat $2.expected_err0 | sed "s|$CURDIR[\\\/]|--CURDIR--/|g" >$2.expected_err
     rm -rf $2.expected_err0
     echo "RECORDED $2"
 fi

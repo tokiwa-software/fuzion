@@ -84,12 +84,33 @@ u32(val u32) : wrappingInteger<u32>, hasInterval<u32>, u32s is
   redef infix >  (other u32) bool is intrinsic
   redef infix >= (other u32) bool is intrinsic
 
+  as_i8 i8
+    pre
+      debug: u32.this <= i8.max.as_u32
+    is
+      castTo_i32.as_i8
+  as_i16 i16
+    pre
+      debug: u32.this <= i16.max.as_u32
+    is
+      castTo_i32.as_i16
   as_i32 i32
     pre
       debug: u32.this <= i32.max.as_u32
     is
       castTo_i32
   as_i64 i64 is intrinsic
+# as_i128 i128 is as_i64.as_i128
+  as_u8 u8
+    pre
+      debug: u32.this <= u8.max.as_u32
+    is
+      castTo_i32.as_u8
+  as_u16 u16
+    pre
+      debug: u32.this <= u16.max.as_u32
+    is
+      castTo_i32.as_u16
   as_u64 u64
     is
       u32.this.as_i64.as_u64
@@ -97,11 +118,13 @@ u32(val u32) : wrappingInteger<u32>, hasInterval<u32>, u32s is
     is
       u128 0, as_u64
 
+  low8bits  u8  is intrinsic
+  low16bits u16 is intrinsic
   castTo_i32 i32 is intrinsic
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from hasInterval is abstract, fz should not complain about this conflict.
-  redef max u32 is 0x_ffff_ffff
+  redef max => u32 0x_ffff_ffff
 
 
   # create hash code from this number
@@ -114,7 +137,7 @@ u32(val u32) : wrappingInteger<u32>, hasInterval<u32>, u32s is
   #
   highestOneBit u32 is
     // NYI: should be possible to reuse v, s names
-    (v0, s0) := (val, 0.as_u32)
+    (v0, s0) := (val, u32 0)
     (v1, s1) := if (v0 >= 0 && v0 < 0x10000) (v0, s0) else (v0 >> 16, s0 + 16)
     (v2, s2) := if (           v1 <   0x100) (v1, s1) else (v1 >>  8, s1 +  8)
     (v3, s3) := if (           v2 <    0x10) (v2, s2) else (v2 >>  4, s2 +  4)

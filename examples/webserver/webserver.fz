@@ -37,13 +37,16 @@ webserver is
    # open socket
    port := 8080
    serversocket := net.ServerSocket.new port
+   match serversocket
+     err error => say "#### $err ####"
+     ss Java.java.net.ServerSocket =>
 
-   for n in 1.. do
-     say "accepting connections to localhost:$port"
+       for n in 1.. do
+         say "accepting connections to localhost:$port"
 
-     match accept
-       unit      => say "ok."
-       err error => say "#### $err ####"
+         match accept
+           unit      => say "ok."
+           err error => say "#### $err ####"
 
 /* NYI: This syntactic sugar is not supported yet: 'pstfix ?' should return immediately in case of error and unwrap outcome otherwise:
 
@@ -86,55 +89,55 @@ webserver is
        unit
 */
 
-     accept outcome<unit> is
-       # accept and handle connection
-       match serversocket.accept
-         e error => e
-         s Java.java.net.Socket =>
-           match s.getInputStream
+         accept outcome<unit> is
+           # accept and handle connection
+           match ss.accept
              e error => e
-             i Java.java.io.InputStream =>
-               input  := io.BufferedReader.new (io.InputStreamReader.new i)
-               match s.getOutputStream
+             s Java.java.net.Socket =>
+               match s.getInputStream
                  e error => e
-                 o Java.java.io.OutputStream =>
-                   output := io.DataOutputStream.new o
+                 i Java.java.io.InputStream =>
+                   input  := io.BufferedReader.new (io.InputStreamReader.new i)
+                   match s.getOutputStream
+                     e error => e
+                     o Java.java.io.OutputStream =>
+                       output := io.DataOutputStream.new o
 
-                   req := read
-                   say "got request ({req.byteLength} bytes): $req"
-                   if req.startsWith "GET "
-                     send200 "<html>Hello Fuzion $n!</html>";
+                       req := read
+                       say "got request ({req.byteLength} bytes): $req"
+                       if req.startsWith "GET "
+                         send200 "<html>Hello Fuzion $n!</html>";
 
-                   # close streams
-                   input.close
-                   output.close
+                       # close streams
+                       input.close
+                       output.close
 
-                   # helper to read request
-                   #
-                   read string is
-                     for
-                       r := "", "$r$s\n"
-                       s := input.readLine
-                       ready := input.ready
-                     while s?? && (ready??)
-                     until s.val = "" || !ready.val
-                       r
-                     else
-                       say "#### {if (s.ok) s.err else ready.err}"
-                       "--error--"
+                       # helper to read request
+                       #
+                       read string is
+                         for
+                           r := "", "$r$s\n"
+                           s := input.readLine
+                           ready := input.ready
+                         while s?? && (ready??)
+                         until s.val = "" || !ready.val
+                           r
+                         else
+                           say "#### {if (s.ok) s.err else ready.err}"
+                           "--error--"
 
 
-                   # helper to send data in HTTP response with status 200
-                   #
-                   send200(data string) =>
-                     ok := output.writeBytes ( "HTTP/1.1 200 OK\n"
-                                       + "Connection: close\n"
-                                       + "Server: Fuzion demo WebServer v0.01\n"
-                                       + "Content-Length: " + data.byteLength + "\n"
-                                       + "Content-Type: text/html\n"
-                                       + "\n"
-                                       + data)
-                     if ok!!
-                       say "#### "+ok.err
+                       # helper to send data in HTTP response with status 200
+                       #
+                       send200(data string) =>
+                         ok := output.writeBytes ( "HTTP/1.1 200 OK\n"
+                                           + "Connection: close\n"
+                                           + "Server: Fuzion demo WebServer v0.01\n"
+                                           + "Content-Length: " + data.byteLength + "\n"
+                                           + "Content-Type: text/html\n"
+                                           + "\n"
+                                           + data)
+                         if ok!!
+                           say "#### "+ok.err
 
-                   unit
+                       unit

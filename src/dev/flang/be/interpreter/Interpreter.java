@@ -58,7 +58,7 @@ import dev.flang.ast.Feature; // NYI: remove dependency! Use dev.flang.fuir inst
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.InitArray; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.IntConst; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.NumLiteral; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Match; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Old; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -261,10 +261,10 @@ public class Interpreter extends Backend
 
     else if (s instanceof Assign a)
       {
-        Value v    = execute(a.value   , staticClazz, cur);
-        Value thiz = execute(a.getOuter, staticClazz, cur);
+        Value v    = execute(a._value   , staticClazz, cur);
+        Value thiz = execute(a._target, staticClazz, cur);
         Clazz sClazz = staticClazz.getRuntimeClazz(a.tid_ + 0);
-        setField(a.assignedField, sClazz, thiz, v);
+        setField(a._assignedField, sClazz, thiz, v);
         result = Value.NO_VALUE;
       }
 
@@ -273,13 +273,19 @@ public class Interpreter extends Backend
         result = new boolValue(b.b);
       }
 
-    else if (s instanceof IntConst i)
+    else if (s instanceof NumLiteral i)
       {
         var t = i.type();
-        if      (t == Types.resolved.t_i32) { result = new i32Value((int ) i.l); }
-        else if (t == Types.resolved.t_u32) { result = new u32Value((int ) i.l); }
-        else if (t == Types.resolved.t_i64) { result = new i64Value((long) i.l); }
-        else if (t == Types.resolved.t_u64) { result = new u64Value((long) i.l); }
+        if      (t == Types.resolved.t_i8 ) { result = new i8Value (i.intValue().intValue()); }
+        else if (t == Types.resolved.t_i16) { result = new i16Value(i.intValue().intValue()); }
+        else if (t == Types.resolved.t_i32) { result = new i32Value(i.intValue().intValue()); }
+        else if (t == Types.resolved.t_i64) { result = new i64Value(i.intValue().longValue()); }
+        else if (t == Types.resolved.t_u8 ) { result = new u8Value (i.intValue().intValue()); }
+        else if (t == Types.resolved.t_u16) { result = new u16Value(i.intValue().intValue()); }
+        else if (t == Types.resolved.t_u32) { result = new u32Value(i.intValue().intValue()); }
+        else if (t == Types.resolved.t_u64) { result = new u64Value(i.intValue().longValue()); }
+        else if (t == Types.resolved.t_f32) { result = new f32Value(i.f32Value()); }
+        else if (t == Types.resolved.t_f64) { result = new f64Value(i.f64Value()); }
         else                                { result = Value.NO_VALUE; check(false); }
       }
 
@@ -325,6 +331,10 @@ public class Interpreter extends Backend
           {
             refVal = getChoiceRefVal(sf, staticSubjectClazz, sub);
             tag = ChoiceIdAsRef.get(staticSubjectClazz, refVal);
+          }
+        else if (staticSubjectClazz == Clazzes.bool.get())
+          {
+            tag = sub.boolValue() ? 1 : 0;
           }
         else
           {
@@ -517,7 +527,7 @@ public class Interpreter extends Backend
         Clazz sac = staticClazz.getRuntimeClazz(i._arrayClazzId + 1);
         var sa = new Instance(sac);
         int l = i._elements.size();
-        var arrayData = new Instance(l);
+        var arrayData = Intrinsics.sysArrayAlloc(l, sac);
         setField(Types.resolved.f_sys_array_data  , sac, sa, arrayData);
         setField(Types.resolved.f_sys_array_length, sac, sa, new i32Value(l));
         for (int x = 0; x < l; x++)
@@ -576,11 +586,7 @@ public class Interpreter extends Backend
     Instance sa = new Instance(saCl);
     byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
     setField(Types.resolved.f_sys_array_length, saCl, sa, new i32Value(bytes.length));
-    Instance arrayData = new Instance(bytes.length);
-    for (int i = 0; i<bytes.length; i++)
-      {
-        arrayData.nonrefs[i] = bytes[i];
-      }
+    var arrayData = new ArrayData(bytes);
     setField(Types.resolved.f_sys_array_data, saCl, sa, arrayData);
     setField(Types.resolved.f_array_internalArray, cl, result, sa);
 
@@ -611,10 +617,16 @@ public class Interpreter extends Backend
     // Special handling for reading 'val' field from ref version of built in integer types
     var builtInVal =
       innerClazz.feature().isField() &&
-      (outerClazz == Clazzes.ref_i32.getIfCreated() ||
-       outerClazz == Clazzes.ref_u32.getIfCreated() ||
+      (outerClazz == Clazzes.ref_i8 .getIfCreated() ||
+       outerClazz == Clazzes.ref_i16.getIfCreated() ||
+       outerClazz == Clazzes.ref_i32.getIfCreated() ||
        outerClazz == Clazzes.ref_i64.getIfCreated() ||
-       outerClazz == Clazzes.ref_u64.getIfCreated()) &&
+       outerClazz == Clazzes.ref_u8 .getIfCreated() ||
+       outerClazz == Clazzes.ref_u16.getIfCreated() ||
+       outerClazz == Clazzes.ref_u32.getIfCreated() ||
+       outerClazz == Clazzes.ref_u64.getIfCreated() ||
+       outerClazz == Clazzes.ref_f32.getIfCreated() ||
+       outerClazz == Clazzes.ref_f64.getIfCreated()) &&
       /* NYI: somewhat ugly way to access "val" field, should better have Clazzes.ref_i32_val.getIfCreate() etc. */
       innerClazz.feature() == outerClazz.feature().get("val");
 
@@ -644,10 +656,16 @@ public class Interpreter extends Backend
             if (builtInVal || ocv == Clazzes.bool.getIfCreated())
               {
                 check
-                  (ocv != Clazzes.i32 .getIfCreated() || f.qualifiedName().equals("i32.val"),
+                  (ocv != Clazzes.i8  .getIfCreated() || f.qualifiedName().equals("i8.val"),
+                   ocv != Clazzes.i16 .getIfCreated() || f.qualifiedName().equals("i16.val"),
+                   ocv != Clazzes.i32 .getIfCreated() || f.qualifiedName().equals("i32.val"),
                    ocv != Clazzes.i64 .getIfCreated() || f.qualifiedName().equals("i64.val"),
+                   ocv != Clazzes.u8  .getIfCreated() || f.qualifiedName().equals("u8.val"),
+                   ocv != Clazzes.u16 .getIfCreated() || f.qualifiedName().equals("u16.val"),
                    ocv != Clazzes.u32 .getIfCreated() || f.qualifiedName().equals("u32.val"),
                    ocv != Clazzes.u64 .getIfCreated() || f.qualifiedName().equals("u64.val"),
+                   ocv != Clazzes.f32 .getIfCreated() || f.qualifiedName().equals("f32.val") &&
+                   ocv != Clazzes.f64 .getIfCreated() || f.qualifiedName().equals("f64.val"),
                    ocv != Clazzes.bool.getIfCreated() || f.qualifiedName().equals("bool." + FuzionConstants.CHOICE_TAG_NAME));
                 result = (args) -> args.get(0);
               }
@@ -799,7 +817,7 @@ public class Interpreter extends Backend
                      "Feature called: " + thiz.qualifiedName() + "\n" +
                      "Target instance: " + cur);
       }
-    execute(i.code_, staticClazz, cur);
+    execute(i._code, staticClazz, cur);
     for (var c : thiz.contract.ens)
       {
         var v = execute(c.cond, staticClazz, cur);
@@ -926,12 +944,19 @@ public class Interpreter extends Backend
   {
     return
       v instanceof Instance                                            /* a normal ref type     */ ||
+      v instanceof ArrayData                                           /* sys.array.data        */ ||
       v instanceof LValue                                              /* ref type as LValue    */ ||
       v instanceof ChoiceIdAsRef && thiz.isChoice()                    /* a boxed choice tag    */ ||
-      (v instanceof i32Value ||
+      (v instanceof i8Value ||
+       v instanceof i16Value ||
+       v instanceof i32Value ||
        v instanceof i64Value ||
+       v instanceof u8Value ||
+       v instanceof u16Value ||
        v instanceof u32Value ||
-       v instanceof u64Value   ) && thiz.isOuterRef()     /* e.g. outerref in integer.infix /-/ */ ||
+       v instanceof u64Value ||
+       v instanceof f32Value ||
+       v instanceof f64Value   ) && thiz.isOuterRef()     /* e.g. outerref in integer.infix /-/ */ ||
       v == null                  && thiz.isChoice()                /* Nil/Null boxed choice tag */;
   }
 
@@ -999,6 +1024,8 @@ public class Interpreter extends Backend
        v != null || thiz.isChoice() ||
        v instanceof LValue    ||
        v instanceof Instance  ||
+       v instanceof i8Value   ||  // NYI: what about u8/u16/..
+       v instanceof i16Value  ||
        v instanceof i32Value  ||
        v instanceof i64Value  ||
        v instanceof boolValue    );
@@ -1083,15 +1110,33 @@ public class Interpreter extends Backend
     if (PRECONDITIONS) require
       (thiz.isField(),
        (curValue instanceof Instance) || (curValue instanceof LValue) ||
+       curValue instanceof i8Value   && staticClazz == Clazzes.i8  .getIfCreated() ||
+       curValue instanceof i16Value  && staticClazz == Clazzes.i16 .getIfCreated() ||
        curValue instanceof i32Value  && staticClazz == Clazzes.i32 .getIfCreated() ||
        curValue instanceof i64Value  && staticClazz == Clazzes.i64 .getIfCreated() ||
+       curValue instanceof u8Value   && staticClazz == Clazzes.u8  .getIfCreated() ||
+       curValue instanceof u16Value  && staticClazz == Clazzes.u16 .getIfCreated() ||
        curValue instanceof u32Value  && staticClazz == Clazzes.u32 .getIfCreated() ||
        curValue instanceof u64Value  && staticClazz == Clazzes.u64 .getIfCreated() ||
+       curValue instanceof f32Value  && staticClazz == Clazzes.f32 .getIfCreated() ||
+       curValue instanceof f64Value  && staticClazz == Clazzes.f64 .getIfCreated() ||
        curValue instanceof boolValue && staticClazz == Clazzes.bool.getIfCreated(),
        staticClazz != null);
 
     Value result;
-    if (staticClazz == Clazzes.i32.getIfCreated() && curValue instanceof i32Value)
+    if (staticClazz == Clazzes.i8.getIfCreated() && curValue instanceof i8Value)
+      {
+        check
+          (thiz.qualifiedName().equals("i8.val"));
+        result = curValue;
+      }
+    else if (staticClazz == Clazzes.i16.getIfCreated() && curValue instanceof i16Value)
+      {
+        check
+          (thiz.qualifiedName().equals("i16.val"));
+        result = curValue;
+      }
+    else if (staticClazz == Clazzes.i32.getIfCreated() && curValue instanceof i32Value)
       {
         check
           (thiz.qualifiedName().equals("i32.val"));
@@ -1101,6 +1146,18 @@ public class Interpreter extends Backend
       {
         check
           (thiz.qualifiedName().equals("i64.val"));
+        result = curValue;
+      }
+    else if (staticClazz == Clazzes.u8.getIfCreated() && curValue instanceof u8Value)
+      {
+        check
+          (thiz.qualifiedName().equals("u8.val"));
+        result = curValue;
+      }
+    else if (staticClazz == Clazzes.u16.getIfCreated() && curValue instanceof u16Value)
+      {
+        check
+          (thiz.qualifiedName().equals("u16.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.u32.getIfCreated() && curValue instanceof u32Value)
@@ -1113,6 +1170,18 @@ public class Interpreter extends Backend
       {
         check
           (thiz.qualifiedName().equals("u64.val"));
+        result = curValue;
+      }
+    else if (staticClazz == Clazzes.f32.getIfCreated() && curValue instanceof f32Value)
+      {
+        check
+          (thiz.qualifiedName().equals("f32.val"));
+        result = curValue;
+      }
+    else if (staticClazz == Clazzes.f64.getIfCreated() && curValue instanceof f64Value)
+      {
+        check
+          (thiz.qualifiedName().equals("f64.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.bool.getIfCreated() && curValue instanceof boolValue)

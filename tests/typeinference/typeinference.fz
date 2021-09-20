@@ -93,7 +93,7 @@ typeinference is
     abcde : choice<A,B,C,D,E> is
 
     test(x abcde) is
-      f(a choice<i32,string,bool,E>) is
+      f(a choice<i32,string,bool,E>) unit is
       f({
           match x
             a A => 3

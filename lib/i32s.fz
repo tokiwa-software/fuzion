@@ -28,8 +28,10 @@
 #
 i32s : wrappingIntegers<i32> is
 
-  redef zero i32 is 0
-  redef one  i32 is 1
+  redef name => "i32"
 
-  redef min => -°max-°1
-  redef max => 0x_7fff_ffff
+  redef zero => 0
+  redef one  => 1
+
+  redef min => -0x_8000_0000
+  redef max =>  0x_7fff_ffff

@@ -25,8 +25,55 @@
 
 # f32 -- 32 bit floating point values
 #
-f32(val f32) is
+#
+# f32 are binary32-numbers as defined in the IEEE 754-2019 standard, see
+# https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
+#
+f32(val f32) : float<f32>, hasInterval<f32>, f32s is
+
+  redef thiz        => f32.this.val
+  redef orderedThis => f32.this.val
+
+
+  # basic operations: 'prefix -' (negation)
+  redef prefix - f32 is intrinsic
   infix + (other f32) f32 is intrinsic
   infix - (other f32) f32 is intrinsic
   infix * (other f32) f32 is intrinsic
   infix / (other f32) f32 is intrinsic
+  infix % (other f32) f32 is intrinsic
+  infix ** (other f32) f32 is intrinsic
+
+
+  # comparison
+  redef infix == (other f32) bool is intrinsic
+  redef infix != (other f32) bool is intrinsic
+  redef infix <  (other f32) bool is intrinsic
+  redef infix <= (other f32) bool is intrinsic
+  redef infix >  (other f32) bool is intrinsic
+  redef infix >= (other f32) bool is intrinsic
+
+
+  # conversion
+  as_i64 i64
+    pre
+      safety: f32.this >= from_i64 i64.min && f32.this <= from_i64 i64.max
+    is
+      as_f64.as_i64
+  as_f64 f64
+    is
+      fuzion.std.panic "NYI: f32.as_f64"
+
+
+  # casting bit representation to u32
+  castTo_u32 u32 is intrinsic
+
+
+  # create hash code from this number
+  hash u64 is
+    castTo_u32.hash
+
+
+  # convert this to a string.
+  #
+  redef asString string is intrinsic

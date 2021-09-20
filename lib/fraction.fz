@@ -66,6 +66,7 @@ is
 
   # basic operations
   redef prefix + => a
+  redef prefix - => fraction -a.num a.den
   redef infix +  (b fraction<B>) => fraction(num * b.den + b.num * den, den * b.den).reduce
   redef infix -  (b fraction<B>) => fraction(num * b.den - b.num * den, den * b.den).reduce
   redef infix *  (b fraction<B>) => fraction(num * b.num              , den * b.den).reduce

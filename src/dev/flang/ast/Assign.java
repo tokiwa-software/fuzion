@@ -46,30 +46,30 @@ public class Assign extends ANY implements Stmnt
   /**
    * The soucecode position of this assignment, used for error messages.
    */
-  final SourcePosition pos;
+  final SourcePosition _pos;
 
 
   /**
    * The field name if it comes from parsing source code, null if this is
    * generated and assignedField is set directly.
    */
-  final String name;
+  final String _name;
 
 
   /**
    *
    */
-  public Expr value;
+  public Expr _value;
 
 
   /**
    * Field that is assigned by this assign statement. initialized
    * during init() phase.
    */
-  public Feature assignedField;
+  public Feature _assignedField;
 
 
-  public Expr getOuter;
+  public Expr _target;
 
 
   /**
@@ -100,31 +100,9 @@ public class Assign extends ANY implements Stmnt
       (pos != null,
        n != null,
        v != null);
-    this.pos = pos;
-    this.name = n;
-    this.value = v;
-  }
-
-
-  /**
-   * Constructor to create an assignment to a given field.
-   *
-   * @param pos the soucecode position, used for error messages.
-   *
-   * @param f
-   *
-   * @param v
-   */
-  public Assign(SourcePosition pos, Feature f, Expr v, boolean indexVarAllowed)
-  {
-    if (PRECONDITIONS) require
-      (f != null);
-
-    this.pos = pos;
-    this.name = null;
-    this.assignedField = f;
-    this.value = v;
-    this._indexVarAllowed = indexVarAllowed;
+    this._pos = pos;
+    this._name = n;
+    this._value = v;
   }
 
 
@@ -147,11 +125,11 @@ public class Assign extends ANY implements Stmnt
       (outer.state().atLeast(Feature.State.RESOLVED_TYPES),
        f != null);
 
-    this.pos = pos;
-    this.name = null;
-    this.assignedField = f;
-    this.value = v;
-    this.getOuter = new This(pos, outer, assignedField.outer());
+    this._pos = pos;
+    this._name = null;
+    this._assignedField = f;
+    this._value = v;
+    this._target = new This(pos, outer, f.outer());
   }
 
 
@@ -178,11 +156,11 @@ public class Assign extends ANY implements Stmnt
        outer.state() == Feature.State.TYPES_INFERENCING ||
        outer.state() == Feature.State.RESOLVING_SUGAR2);
 
-    this.pos = pos;
-    this.name = null;
-    this.assignedField = f;
-    this.value = v;
-    this.getOuter = This.thiz(res, pos, outer, assignedField.outer());
+    this._pos = pos;
+    this._name = null;
+    this._assignedField = f;
+    this._value = v;
+    this._target = This.thiz(res, pos, outer, f.outer());
     if (outer.state().atLeast(Feature.State.TYPES_INFERENCING))
       {
         propagateExpectedType(res, outer);
@@ -198,7 +176,7 @@ public class Assign extends ANY implements Stmnt
    */
   public SourcePosition pos()
   {
-    return pos;
+    return _pos;
   }
 
 
@@ -214,10 +192,10 @@ public class Assign extends ANY implements Stmnt
    */
   public Assign visit(FeatureVisitor v, Feature outer)
   {
-    value = value.visit(v, outer);
-    if (getOuter != null)
+    _value = _value.visit(v, outer);
+    if (_target != null)
       {
-        getOuter = getOuter.visit(v, outer);
+        _target = _target.visit(v, outer);
       }
     v.action(this, outer);
     return this;
@@ -243,34 +221,30 @@ public class Assign extends ANY implements Stmnt
    *
    * @param outer the root feature that contains this statement.
    *
-   * @param decompose if this is called for an assignment that is created to
-   * replace a Decompose, this refers to the Decompose statement.
+   * @param destructure if this is called for an assignment that is created to
+   * replace a Destructure, this refers to the Destructure statement.
    */
-  void resolveTypes(Resolution res, Feature outer, Decompose decompose)
+  void resolveTypes(Resolution res, Feature outer, Destructure destructure)
   {
-    Feature f = assignedField;
-    if (f == null)
+    if (_assignedField == null)
       {
-        var fo = outer.findDeclaredInheritedOrOuterFeatures(name, null, decompose == null ? this : null, decompose);
+        var fo = outer.findDeclaredInheritedOrOuterFeatures(_name, null, destructure == null ? this : null, destructure);
         check
           (Errors.count() > 0 || fo == null || fo.features.size() == 1);
-        f = (fo == null || fo.features.size() == 0) ? null : fo.features.values().iterator().next();
+        _assignedField = fo.filter(_pos, FeatureName.get(_name, 0), f -> false);
+        _target        = fo.target(_pos, res, outer);
       }
+    Feature f = _assignedField;
     if      (f == null                 ) { FeErrors.assignmentTargetNotFound(this,    outer); }
     else if (!f.isField()              ) { FeErrors.assignmentToNonField    (this, f, outer); }
     else if (!_indexVarAllowed &&
              f._isIndexVarUpdatedByLoop) { FeErrors.assignmentToIndexVar    (this, f, outer); }
     else
       {
-        assignedField = f;
+        _assignedField = f;
         if (f == f.outer().resultField())
           {
             f.outer().foundAssignmentToResult();
-          }
-        f.scheduleForResolution(res);
-        if (getOuter == null)
-          {
-            this.getOuter = This.thiz(res, pos, outer, assignedField.outer());
           }
       }
   }
@@ -292,11 +266,11 @@ public class Assign extends ANY implements Stmnt
   public void propagateExpectedType(Resolution res, Feature outer)
   {
     check
-      (assignedField != null || Errors.count() > 0);
+      (_assignedField != null || Errors.count() > 0);
 
-    if (assignedField != null)
+    if (_assignedField != null)
       {
-        value = value.propagateExpectedType(res, outer, assignedField.resultType());
+        _value = _value.propagateExpectedType(res, outer, _assignedField.resultType());
       }
   }
 
@@ -310,12 +284,12 @@ public class Assign extends ANY implements Stmnt
   public void box(Feature outer)
   {
     check
-      (assignedField != null || Errors.count() > 0);
+      (_assignedField != null || Errors.count() > 0);
 
-    if (assignedField != null)
+    if (_assignedField != null)
       {
-        Type frmlT = assignedField.resultType();
-        value = value.box(frmlT);
+        Type frmlT = _assignedField.resultType();
+        _value = _value.box(frmlT);
       }
   }
 
@@ -328,13 +302,14 @@ public class Assign extends ANY implements Stmnt
   public void checkTypes()
   {
     check
-      (assignedField != null || Errors.count() > 0);
+      (_assignedField != null || Errors.count() > 0);
 
-    if (assignedField != null)
+    var f = _assignedField;
+    if (f != null)
       {
-        Type frmlT = assignedField.resultType();
+        Type frmlT = f.resultType();
 
-        Type actlT = value.type();
+        Type actlT = _value.type();
 
         check
           (actlT == Types.intern(actlT));
@@ -345,11 +320,11 @@ public class Assign extends ANY implements Stmnt
 
         if (!frmlT.isAssignableFromOrContainsError(actlT))
           {
-            FeErrors.incompatibleTypeInAssignment(pos, assignedField, frmlT, actlT, value);
+            FeErrors.incompatibleTypeInAssignment(_pos, f, frmlT, actlT, _value);
           }
 
         check
-          (this.getOuter.type().featureOfType() == assignedField.outer() || Errors.count() > 0);
+          (this._target.type().featureOfType().findDeclaredOrInheritedFeature(f.featureName()) == f || Errors.count() > 0);
       }
   }
 
@@ -371,7 +346,7 @@ public class Assign extends ANY implements Stmnt
    */
   public String toString()
   {
-    return (name == null ? assignedField._featureName.baseName() : name) + " = " + value;
+    return (_name == null ? _assignedField._featureName.baseName() : _name) + " = " + _value;
   }
 
 }

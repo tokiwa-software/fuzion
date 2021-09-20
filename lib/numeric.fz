@@ -133,13 +133,14 @@ numeric<T : numeric<T>> : hasHash<T>, ordered<T>, numerics<T> is
   #
   max(other T) T is if (numeric.this >= other) thiz else other
 
+
   # is this part of given set
   #
   elementOf(s Set<T>) => s.contains thiz
   infix ∈ (s Set<T>) => numeric.this.elementOf s
 
 
-  # is this part of given set
+  # is this not part of given set
   #
   notElementOf(s Set<T>) => !elementOf s
   infix ∉ (s Set<T>) => numeric.this.notElementOf s

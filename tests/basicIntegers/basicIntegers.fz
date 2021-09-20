@@ -1,0 +1,206 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test basicIntegers
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# test for basic integer operations
+#
+# A simple test for integer operations
+#
+basicIntegers =>
+
+  test<T: wrappingInteger<T>> (a, b T) unit is
+    say "{a.name}: $a +° $b = {a +° b}"
+    say "{a.name}: $a -° $b = {a -° b}"
+    say "{a.name}: $a *° $b = {a *° b}"
+    if !b.isZero
+      say "{a.name}: $a / $b = {a / b}"
+      say "{a.name}: $a % $b = {a % b}"
+
+  test_i64 (a, b i64) unit is test<i64> a                      b
+  test_i32 (a, b i64) unit is test<i32> a.low32bits.castTo_i32 b.low32bits.castTo_i32
+  test_i16 (a, b i64) unit is test<i16> a.low16bits.castTo_i16 b.low16bits.castTo_i16
+  test_i8  (a, b i64) unit is test<i8>  a.low8bits.castTo_i8   b.low8bits.castTo_i8
+  test_u64 (a, b i64) unit is test<u64> a.castTo_u64           b.castTo_u64
+  test_u32 (a, b i64) unit is test<u32> a.low32bits            b.low32bits
+  test_u16 (a, b i64) unit is test<u16> a.low16bits            b.low16bits
+  test_u8  (a, b i64) unit is test<u8>  a.low8bits             b.low8bits
+
+  testAll (a, b i64) is
+    test_i64 a b
+    test_i32 a b
+    test_i16 a b
+    test_i8 a b
+    test_u64 a b
+    test_u32 a b
+    test_u16 a b
+    test_u8 a b
+
+  testAll 0 0
+  testAll 1 2
+  testAll -(i64 1) 2
+  testAll -(i64 2) -(i64 3)
+  testAll 100 23
+  testAll -(i64 100) 23
+  testAll 100 -(i64 23)
+  testAll -(i64 100) -(i64 23)
+  testAll 12300 45
+  testAll 1234567000 890
+  testAll 12345670000000 8901234
+  testAll -(i64 12345670000000) 8901234
+  testAll 12345670000000 -(i64 8901234)
+  testAll -(i64 12345670000000) -(i64 8901234)
+
+  assignConstants =>
+    i1 i8 := 0
+    i2 i8 := 127
+    i4 i8 := -1
+    i5 i8 := -127
+    i6 i8 := -128
+    i8a i8 := - -1
+    i8b i8 := - - 1
+    say "$i1 $i2 $i4 $i5 $i6 $i8a $i8b"
+
+    i9a i8 := 0.123E3
+    i9b i8 := 0.120E2
+    i9c i8 := 0.100E1
+    i9d i8 := 1230E-1
+    i9e i8 := 12300E-2
+    i10a i8 := 2.0P-1
+    i10b i8 := 1.0P+0
+    i10c i8 := 1.0P-0
+    i10d i8 := 0.5P+1
+    i10e i8 := 0.25P2
+    i10f i8 := 0.125P+3
+    i10g i8 := 0.0625P4
+    say "$i9a $i9b $i9c $i9d $i9e $i10a $i10b $i10c $i10d $i10e $i10f $i10g"
+
+    u1 u8 := 0
+    u2 u8 := 127
+    u3 u8 := 128
+    u4 u8 := 255
+    u6 u8 := -0
+    u8a u8 := - -1
+    u8b u8 := - - 1
+    say "$u1 $u2 $u3 $u4 $u6 $u8a $u8b"
+
+    s1 i16 := 0
+    s2 i16 := 127
+    s3 i16 := 128
+    s4 i16 := 0x7fff
+    s6 i16 := 0b111111111111111
+    s8 i16 := -0
+    s9 i16 := -32768
+    s9a i16 := -(32768)
+    s9c i16 := -(-(-32768))
+    say "$s1 $s2 $s3 $s4 $s6 $s8 $s9 $s9a $s9c"
+
+    c1 u16 := 0
+    c2 u16 := 65535
+    c4 u16 := 0xffff
+    c6 u16 := 0b1111111111111111
+    c8 u16 := -0
+    c10 u16 := - - 1
+    say "$c1 $c2 $c4 $c6 $c8 $c10"
+
+    l1 i64 := 9223372036854775807
+    l2 i64 :=  9.22E18
+    l3 i64 := -9.22E18
+    say "$l1 $l2 $l3"
+
+    ul1 u64 := 9223372036854775807
+    ul2 u64 := 9223372036854775808
+    ul3 u64 := 18446744073709551615
+    ul5 u64 := - 0
+    ul7 u64 := - -1
+    ul8 u64 := 1.844E19
+    say "$ul1 $ul2 $ul3 $ul5 $ul7 $ul8"
+
+  assignConstants
+
+  assignConstantsToConstructor =>
+    i1 := i8 0
+    i2 := i8 127
+    i4 := i8 -1
+    i5 := i8 -127
+    i6 := i8 -128
+    i8a := i8 (- -1)
+    i8b := i8 (- - 1)
+    say "$i1 $i2 $i4 $i5 $i6 $i8a $i8b"
+
+    i9a := i8 0.123E3
+    i9b := i8 0.120E2
+    i9c := i8 0.100E1
+    i9d := i8 1230E-1
+    i9e := i8 12300E-2
+    i10a := i8 2.0P-1
+    i10b := i8 1.0P+0
+    i10c := i8 1.0P-0
+    i10d := i8 0.5P+1
+    i10e := i8 0.25P2
+    i10f := i8 0.125P+3
+    i10g := i8 0.0625P4
+    say "$i9a $i9b $i9c $i9d $i9e $i10a $i10b $i10c $i10d $i10e $i10f $i10g"
+
+    u1 := u8 0
+    u2 := u8 127
+    u3 := u8 128
+    u4 := u8 255
+    u6 := u8 -0
+    u8a := u8 (- -1)
+    u8b := u8 (- - 1)
+    say "$u1 $u2 $u3 $u4 $u6 $u8a $u8b"
+
+    s1 := i16 0
+    s2 := i16 127
+    s3 := i16 128
+    s4 := i16 0x7fff
+    s6 := i16 0b111111111111111
+    s8 := i16 -0
+    s9 := i16 -32768
+    s9a := i16 -(32768)
+    s9c := i16 -(-(-32768))
+    say "$s1 $s2 $s3 $s4 $s6 $s8 $s9 $s9a $s9c"
+
+    c1 := u16 0
+    c2 := u16 65535
+    c4 := u16 0xffff
+    c6 := u16 0b1111111111111111
+    c8 := u16 -0
+    c10 := u16 (- - 1)
+    say "$c1 $c2 $c4 $c6 $c8 $c10"
+
+    l1 := i64 9223372036854775807
+    l2 := i64 9.22E18
+    l3 := i64 -9.22E18
+    say "$l1 $l2 $l3"
+
+    ul1 := u64 9223372036854775807
+    ul2 := u64 9223372036854775808
+    ul3 := u64 18446744073709551615
+    ul5 := u64 (- 0)
+    ul7 := u64 (- -1)
+    ul8 := u64 1.844E19
+    say "$ul1 $ul2 $ul3 $ul5 $ul7 $ul8"
+
+  assignConstantsToConstructor

@@ -67,7 +67,7 @@ outerNormalization is
     b : a 3 is
     c : a 4 is
 
-    call_f (v a) is
+    call_f (v a) unit is
       x a.f := v.f
       say "testConstructor: {x.s}"
 
@@ -88,7 +88,7 @@ outerNormalization is
 
     b : a 3 is
 
-    call_f (v a) is
+    call_f (v a) unit is
       x a.f := v.f
       say "testConstructor2: {x.s}"
 
@@ -112,6 +112,7 @@ outerNormalization is
       say "testNormalize: {r.b}"
 
     t j
+    unit
 
   testNormalize
 
@@ -132,6 +133,7 @@ outerNormalization is
       say "testNormalize2: {r.b}"
 
     t j
+    unit
 
   testNormalize2
 
@@ -146,5 +148,8 @@ outerNormalization is
     for i in 0.. do
       say $i
     until i > 3
+    unit # NYI: This has to be added since the loop result is bool. A loop should not force the bool result upon us if we do not need it.
 
   testInterval
+
+  unit

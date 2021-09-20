@@ -169,6 +169,7 @@ genericstest is
     x0 A<i32,bool  > := A<i32,bool>
     x1 A<i32,bool  >.B<string,bool> := A<i32,bool>.B<string,bool> true
     x1.p
+    unit
 
   outerGenerics  // should print "y is true".
 
@@ -181,6 +182,7 @@ genericstest is
       redefine f(a0 i32, a1 bool, a2 i32) is
        chck a0==a2 "f only called with first and last element equal"
        chck a1     "f only called with a1 true"
+       unit
 
     x G := G
     x.f 3 true 3
@@ -188,6 +190,7 @@ genericstest is
     y.f 5 true 5
     z := G
     z.f 7 true 7
+    unit
   opengenerics12
 
   fuzion.std.exit exitCode

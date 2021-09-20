@@ -49,7 +49,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FeatureName extends ANY implements Comparable
+public class FeatureName extends ANY implements Comparable<FeatureName>
 {
 
 
@@ -181,7 +181,7 @@ public class FeatureName extends ANY implements Comparable
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public int compareTo​(FeatureName o)
+  public int compareTo(FeatureName o)
   {
     int result = _baseName.compareTo(o._baseName);
     return
@@ -189,12 +189,6 @@ public class FeatureName extends ANY implements Comparable
       : _argCount < o._argCount ? -1 : _argCount > o._argCount ? +1
       : _id       < o._id       ? -1 : _id       > o._id       ? +1
                                 : 0;
-  }
-
-
-  public int compareTo​(Object o)
-  {
-    return compareTo((FeatureName) o);
   }
 
 
@@ -215,15 +209,14 @@ public class FeatureName extends ANY implements Comparable
     return _argCount;
   }
 
+  public String argCountAndIdString()
+  {
+    return " (" + Errors.argumentsString(_argCount) + (_id > 0 ? "," + _id : "") + ")";
+  }
 
   public String toString()
   {
-    return _baseName + " (" + Errors.argumentsString(_argCount) + (_id > 0 ? "," + _id : "") + ")";
-  }
-
-  public boolean equals(Object o)
-  {
-    return compareTo(o) == 0;
+    return _baseName + argCountAndIdString();
   }
 
   public boolean equalsExceptId(FeatureName o)

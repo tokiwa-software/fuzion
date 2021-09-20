@@ -36,5 +36,6 @@ checkGenericConstraint is
 
   hm<T : H> (x T) is
     x.h
+    unit
 
   m := hm<m32> m32     # should produce error, m32 is not compatible to H

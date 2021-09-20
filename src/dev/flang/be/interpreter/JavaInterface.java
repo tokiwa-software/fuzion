@@ -52,32 +52,18 @@ public class JavaInterface extends ANY
   /*-----------------------------  methods  -----------------------------*/
 
 
-  static Value getStaticField(String clazz,
-                              String field,
-                              Clazz  resultClass)
+  static Value getField(String clazz,
+                        Object thiz,
+                        String field,
+                        Clazz  resultClass)
   {
     Value result;
     try
       {
-        Class cl = Class.forName(clazz);
+        Class cl = clazz != null ? Class.forName(clazz) : thiz.getClass();
         Field f = cl.getDeclaredField(field);
-        if (!Modifier.isStatic(f.getModifiers()))
-          {
-            System.err.println("fuzion.java.getStaticField called for field "+f+" which is not static");
-            System.exit(1);
-          }
-        Class t = f.getType();
-        if (t.isPrimitive())
-          {
-            System.err.println("fuzion.java.getStaticField called for field of primitive type, which is not yet supported");
-            System.exit(1);
-            result = null;
-          }
-        else
-          {
-            Object value = f.get(null);
-            result = javaObjectToInstance(value,resultClass);
-          }
+        Object value = f.get(thiz);
+        result = javaObjectToInstance(value, resultClass);
       }
     catch (IllegalAccessException e)
       {
@@ -275,7 +261,7 @@ public class JavaInterface extends ANY
       }
     else
       { // NYI: Instead of throwing an exception, cause a panic and stop the
-        // current thread in an ordered way.
+        // current thread in an orderly way.
         throw new Error("Java code returned with unexpected exception: " + e, e);
       }
     return result;
@@ -297,16 +283,15 @@ public class JavaInterface extends ANY
     if (PRECONDITIONS) require
       (resultClazz != null);
 
-    if      (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Byte      b) { return new i32Value(b); }
-    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Character c) { return new i32Value(c); }
-    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Short     s) { return new i32Value(s); }
+    if      (resultClazz == Clazzes.i8 .getIfCreated() && o instanceof Byte      b) { return new i8Value(b); }
+    else if (resultClazz == Clazzes.u16.getIfCreated() && o instanceof Character c) { return new u16Value(c); }
+    else if (resultClazz == Clazzes.i16.getIfCreated() && o instanceof Short     s) { return new i16Value(s); }
     else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Integer   i) { return new i32Value(i); }
     else if (resultClazz == Clazzes.i64.getIfCreated() && o instanceof Long      j) { return new i64Value(j); }
-    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Float     f) { return new i32Value(f.intValue()); }
-    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Double    d) { return new i64Value(d.longValue()); }
-    else if (resultClazz == Clazzes.i32.getIfCreated() && o instanceof Boolean   z) { return new boolValue(z); }
-    else if (resultClazz == Clazzes.c_unit.getIfCreated() &&  o == null           ) { return new Instance(resultClazz); }
-    else if (resultClazz == Clazzes.string.getIfCreated() && o instanceof String s) { return Interpreter.value(s); }
+    else if (resultClazz == Clazzes.f32.getIfCreated() && o instanceof Float     f) { return new f32Value(f.floatValue()); }
+    else if (resultClazz == Clazzes.f64.getIfCreated() && o instanceof Double    d) { return new f64Value(d.doubleValue()); }
+    else if (resultClazz == Clazzes.bool  .getIfCreated() && o instanceof Boolean z) { return new boolValue(z); }
+    else if (resultClazz == Clazzes.c_unit.getIfCreated() && o == null             ) { return new Instance(resultClazz); }
     else
       {
         var result = new Instance(resultClazz);
@@ -352,113 +337,81 @@ public class JavaInterface extends ANY
     if (PRECONDITIONS) require
       (v.instance().clazz().feature() == Types.resolved.f_sys_array);
 
-    Instance i = v.instance();
-    var sz = i.refs.length;
+    var a = v.arrayData();
+    var sz = a.length();
     var result = new Object[sz];
     for (var ix = 0; ix < sz; ix++)
       {
-        result[ix] = instanceToJavaObject((Instance) i.refs[ix]);
+        result[ix] = instanceToJavaObject((Instance)(((Object[])a._array)[ix]));
       }
     return result;
   }
 
 
   /**
-   * Call virtual Java method
+   * Call virtual or static Java method or constructor
    *
-   * @param name name the method
+   * @param clName name of the class that declares the method or constructor.
    *
-   * @param sig Java signature of the method
+   * @param name name the method, null to call constructor
    *
-   * @param thiz target instance to call method on
+   * @param sig Java signature of the method or constructor
    *
-   * @param args array of arguments to be passed to constructor
+   * @param thiz target instance for a virtual call, null for static method or
+   * constructor call
+   *
+   * @param args array of arguments to be passed to the method or constructor
    *
    * @param resultClazz the result type of the constructed instance
    */
-  static Value callVirtual(String name, String sig, Object thiz, Value args, Clazz resultClazz)
+  static Value call(String clName, String name, String sig, Object thiz, Value args, Clazz resultClazz)
   {
-    Instance result;
+    if (PRECONDITIONS) require
+      ((clName != null) != (thiz != null));
+
     Object res = null;
     Throwable err = null;
-    Method m;
-    Class[] p = getPars(sig);
+    Method m = null;
+    Constructor co = null;
+    var  p = getPars(sig);
     if (p == null)
       {
         System.err.println("could not parse signature >>"+sig+"<<");
         System.exit(1);
       }
+    Class cl;
     try
       {
-        m = thiz.getClass().getMethod(name,p);
-      }
-    catch (NoSuchMethodException e)
-      {
-        System.err.println("NoSuchMethodException when calling fuzion.java.callVirtual for field "+thiz.getClass()+"."+name+sig);
-        System.exit(1);
-        m = null;
-      }
-    Object[] argz = instanceToJavaObjects(args);
-    try
-      {
-        res = m.invoke(thiz, argz);
-      }
-    catch (InvocationTargetException e)
-      {
-        err = e.getCause();
-      }
-    catch (IllegalAccessException e)
-      {
-        err = e;
-      }
-    return javaObjectToInstance(res, err, resultClazz);
-  }
-
-
-  /**
-   * Call Java constructor
-   *
-   * @param name name of class to be constructed
-   *
-   * @param sig Java signature of constructor
-   *
-   * @param args array of arguments to be passed to constructor
-   *
-   * @param resultClazz the result type of the constructed instance
-   */
-  static Value callConstructor(String name, String sig, Value args, Clazz resultClazz)
-  {
-    Instance result;
-    Object res = null;
-    Throwable err = null;
-    Constructor co;
-    Class[] p = getPars(sig);
-    if (p == null)
-      {
-        System.err.println("could not parse signature >>"+sig+"<<");
-        System.exit(1);
-      }
-    try
-      {
-        var cl = Class.forName(name);
-        co = cl.getConstructor(p);
+        cl = Class.forName(clName);
       }
     catch (ClassNotFoundException e)
       {
-        System.err.println("ClassNotFoundException when calling fuzion.java.callConstructor for class "+name+" signature "+sig);
+        System.err.println("ClassNotFoundException when calling fuzion.java.callStatic/callConstructor for class " +
+                           clName + " calling " + (name == null ? "new " + clName : name ) + sig);
         System.exit(1);
-        co = null;
+        cl = Object.class; // not reached.
+      }
+    try
+      {
+        if (name == null)
+          {
+            co = cl.getConstructor(p);
+          }
+        else
+          {
+            m = cl.getMethod(name,p);
+          }
       }
     catch (NoSuchMethodException e)
       {
-        System.err.println("NoSuchMethodException when calling fuzion.java.callConstructor for class "+name+" signature "+sig);
+        System.err.println("NoSuchMethodException when calling fuzion.java.callStatic/callVirtual/callConstructor calling " +
+                           (name == null ? "new " + clName : (cl.getName() + "." + name)) + sig);
         System.exit(1);
-        co = null;
       }
     Object[] argz = instanceToJavaObjects(args);
     try
       {
-        res = co.newInstance(argz);
+        res = (name == null) ? co.newInstance(argz) : m.invoke(thiz, argz);
       }
     catch (InvocationTargetException e)
       {

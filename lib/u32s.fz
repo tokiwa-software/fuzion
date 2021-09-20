@@ -28,8 +28,10 @@
 #
 u32s : wrappingIntegers<u32> is
 
-  redef zero u32 is 0
-  redef one  u32 is 1
+  redef name => "u32"
 
-  redef min u32 is 0
-  redef max u32 is 0x_ffff_ffff
+  redef zero => u32 0
+  redef one  => u32 1
+
+  redef min => u32 0
+  redef max => u32 0x_ffff_ffff

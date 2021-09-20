@@ -30,6 +30,7 @@ import java.util.ArrayList;
 
 import dev.flang.ast.Call;
 import dev.flang.ast.Expr;
+import dev.flang.ast.NumLiteral;
 
 import dev.flang.util.ANY;
 import dev.flang.util.List;
@@ -201,7 +202,9 @@ public class OpExpr extends ANY
         else if (isExpr(max+1))
           {                       // prefix op:
             Expr e2 = expr(max+1);
-            Expr e = new Call(op.pos, e2, "prefix "+op.text, null, Expr.NO_EXPRS);
+            Expr e =
+              (op.text.equals("+") && (e2 instanceof NumLiteral i2)) ? i2             :
+              (op.text.equals("-") && (e2 instanceof NumLiteral i2)) ? i2.neg(op.pos) : new Call(op.pos, e2, "prefix "+op.text, null, Expr.NO_EXPRS);
             els.remove(max+1);
             els.set(max, e);
           }
@@ -359,15 +362,16 @@ public class OpExpr extends ANY
   /**
    *
    */
-  public final Precedence[] precedences = { new Precedence(15,        "@"  ),
-                                            new Precedence(14,        "^"  ),
-                                            new Precedence(13, 5, 13, "!"  ),
-                                            new Precedence(12,        "~"  ),
+  public final Precedence[] precedences = { new Precedence(16,        "@"  ),
+                                            new Precedence(15,        "^"  ),
+                                            new Precedence(14, 5, 14, "!"  ),
+                                            new Precedence(13,        "~"  ),
+                                            new Precedence(12,        "⁄"  ),
                                             new Precedence(11,        "*/%⊛⊗⊘⦸⊝⊚⊙⦾⦿⦸⨸⨁⨂⨷"),
                                             new Precedence(10,        "+-⊕⊖" ),
                                             new Precedence( 9,        "."  ),
                                             new Precedence( 8,        "#"  ),
-                                            new Precedence(13, 7, 13, "$"  ),
+                                            new Precedence(14, 7, 14, "$"  ),
                                             new Precedence( 6,        ""   ),
                                             new Precedence( 5,        "<>=⧁⧀⊜⩹⩺⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪴⪵⪶⪷⪸⪹⪺⪻⪼⫷⫸⫹⫺"),
                                             new Precedence( 4,        "&"  ),

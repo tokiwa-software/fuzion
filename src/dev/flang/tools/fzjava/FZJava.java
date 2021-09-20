@@ -373,6 +373,10 @@ public class FZJava extends Tool
           {
             ForClass sfc = null;
             var sc = c.getSuperclass();
+            while (sc != null && (sc.getModifiers() & Modifier.PUBLIC) == 0)
+              {
+                sc = sc.getSuperclass();
+              }
             if (sc != null)
               {
                 sfc = forClass(sc);
@@ -421,7 +425,7 @@ public class FZJava extends Tool
     if (!_pkgs.contains(pkg))
       {
         _pkgs.add(pkg);
-        FeatureWriter.write(this, pkg, "", FeatureWriter.mangle(pkg.replace("/",".")) + " is\n");
+        FeatureWriter.write(this, pkg, "_pkg", FeatureWriter.mangle(pkg.replace("/",".")) + " is\n");
       }
   }
 

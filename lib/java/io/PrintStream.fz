@@ -25,5 +25,5 @@
 
 public java.io.PrintStream(forbiddenToCallDirectly void) ref : fuzion.java.JavaObject(Object) is
 
-  public println(s string) is
-    fuzion.java.callVirtual<fuzion.java.JavaVoid> "println" "(Ljava/lang/String;)V" PrintStream.this [fuzion.java.stringToJavaObject s]
+  public println(s string) unit is
+    _ := fuzion.java.callVirtual<fuzion.java.JavaVoid> "java.io.PrintStream" "println" "(Ljava/lang/String;)V" PrintStream.this [fuzion.java.stringToJavaObject s]

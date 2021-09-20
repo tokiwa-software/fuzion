@@ -1,0 +1,73 @@
+basicIntegers_negative is
+
+  i1 i8 := 0
+  i2 i8 := 127
+  i3 i8 := 128  // 1. should flag an error, constant out of range
+  i4 i8 := -1
+  i5 i8 := -127
+  i6 i8 := -128
+  i7 i8 := -129  // 2. should flag an error, constant out of range
+  i8a i8 := - -1
+  i8b i8 := - - 1
+
+  u1 u8 := 0
+  u2 u8 := 127
+  u3 u8 := 128
+  u4 u8 := 255
+  u5 u8 := 256  // 3. should flag an error, constant out of range
+  u6 u8 := -0
+  u7 u8 := -1   // 4. should flag an error, constant out of range
+  u8a u8 := - -1
+  u8b u8 := - - 1
+
+  s1 i16 := 0
+  s2 i16 := 127
+  s3 i16 := 128
+  s4 i16 := 0x7fff
+  s5 i16 := 0x8000               // 5. should flag an error, constant out of range
+  s6 i16 := 0b111111111111111
+  s7 i16 := 0b1111111111111111   // 6. should flag an error, constant out of range
+  s8 i16 := -0
+  s9 i16 := -32768
+  s9a i16 := -(32768)
+  s9b i16 := -(-32768)           // 7. should flag an error, constant out of range
+  s9c i16 := -(-(-32768))
+  s10 i16 := -32769              // 8. should flag an error, constant out of range
+  s10a i16 := -(-(-(32769)))     // 9. should flag an error, constant out of range
+  s10b i16 := +(-(+(32769)))     // 10. should flag an error, constant out of range
+
+  c1 u16 := 0
+  c2 u16 := 65535
+  c3 u16 := 65536                // 11. should flag an error, constant out of range
+  c4 u16 := 0xffff
+  c5 u16 := 0x10000              // 12. should flag an error, constant out of range
+  c6 u16 := 0b1111111111111111
+  c7 u16 := 0b10000000000000000  // 13. should flag an error, constant out of range
+  c8 u16 := -0
+  c9 u16 := -1                   // 14. should flag an error, constant out of range
+  c10 u16 := - - 1
+
+  l1 i64 := 9223372036854775807
+  l2 i64 := 9223372036854775808  // 15. should flag an error, constant out of range
+
+  ul1 u64 := 9223372036854775807
+  ul2 u64 := 9223372036854775808
+  ul3 u64 := 18446744073709551615
+  ul4 u64 := 18446744073709551616 // 16. should flag an error, constant out of range
+  ul5 u64 := - 0
+  ul6 u64 := -1                   // 17. should flag an error, constant out of range
+  ul7 u64 := - -1
+
+  sa (x i32) is
+    say x
+
+  sa 123456        # ok
+  sa 123.456       # 18. should flag an error, must be integer
+  sa 123456.789    # 19. should flag an error, must be integer
+  sa 123456.000    # ok
+  sa 123456.789E2  # 20. should flag an error, must be integer
+  sa 123456.789E3  # ok
+  sa 123456.789E4  # ok
+  sa 123456780E-1  # ok
+  sa 123456780E-2  # 21. should flag an error, must be integer
+  sa 123456780E-3  # 22. should flag an error, must be integer

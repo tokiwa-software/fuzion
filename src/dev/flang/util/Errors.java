@@ -61,6 +61,13 @@ public class Errors extends ANY
 
 
   /**
+   * Positions that produced a syntax error. If a syntax error occured, all
+   * other errors at this position will be supressed.
+   */
+  private static final TreeSet<SourcePosition> _syntaxErrorPositions_ = new TreeSet<>();
+
+
+  /**
    * Set of warnings that have been shown so far. This is used to avoid presenting
    * error repeatedly.
    */
@@ -80,13 +87,24 @@ public class Errors extends ANY
    * Maximum number of error messages that are displayed. If this limit is
    * reached, we terminate with return code 1.
    */
-  public static int MAX_ERROR_MESSAGES = Integer.getInteger("fuzion.maxErrorCount", Integer.MAX_VALUE);
+  public static String MAX_ERROR_MESSAGES_PROPERTY = "fuzion.maxErrorCount";
+  public static String MAX_ERROR_MESSAGES_OPTION = "-XmaxErrors";
+  public static int MAX_ERROR_MESSAGES = Integer.getInteger(MAX_ERROR_MESSAGES_PROPERTY, 20);
+
+
+  /**
+   * Maximum number of warning messages that are displayed. If this limit is
+   * reached, we stop printing further warnings.
+   */
+  public static String MAX_WARNING_MESSAGES_PROPERTY = "fuzion.maxWarningCount";
+  public static String MAX_WARNING_MESSAGES_OPTION = "-XmaxWarnings";
+  public static int MAX_WARNING_MESSAGES = Integer.getInteger(MAX_WARNING_MESSAGES_PROPERTY, Integer.MAX_VALUE);
 
 
   /*-----------------------------  classes  -----------------------------*/
 
 
-  static class Error implements Comparable
+  static class Error implements Comparable<Error>
   {
     SourcePosition pos;
     String msg, detail;
@@ -106,9 +124,8 @@ public class Errors extends ANY
      * Compare two errors. Compares first by the source code position, such that
      * we can easily print them in order if we wish to.
      */
-    public int compareTo(Object other)
+    public int compareTo(Error o)
     {
-      Error o = (Error) other;
       int result = ((pos == o.pos)
                     ? 0
                     : ((pos == null)
@@ -236,7 +253,7 @@ public class Errors extends ANY
       (msg != null);
 
     Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
-    if (!_errors_.contains(e))
+    if (!_errors_.contains(e) && (pos == null || !_syntaxErrorPositions_.contains(pos)))
       {
         _errors_.add(e);
         print(pos, errorMessage(msg), detail);
@@ -244,6 +261,29 @@ public class Errors extends ANY
           {
             showAndExit();
           }
+      }
+  }
+
+
+  /**
+   * Record the given syntax error found during compilation.  A syntax error
+   * will automatically suppress all other errors at pos.
+   *
+   * @param pos source code position where this error occured, may be null
+   *
+   * @param msg the error message, should not contain any LF or any case specific details
+   *
+   * @param detail details for this error, may contain LFs and case specific details, may be null
+   */
+  public static void syntaxError(SourcePosition pos, String msg, String detail)
+  {
+    if (PRECONDITIONS) require
+      (msg != null);
+
+    error(pos, msg, detail);
+    if (pos != null)
+      {
+        _syntaxErrorPositions_.add(pos);
       }
   }
 
@@ -384,6 +424,13 @@ public class Errors extends ANY
   {
     if (count() > 0)
       {
+        if (count() >= MAX_ERROR_MESSAGES)
+          {
+            warning(SourcePosition.builtIn,
+                    "Maximum error count reached, terminating.",
+                    "Maximum error count is " + MAX_ERROR_MESSAGES + ".\n" +
+                    "Change this via property '" + MAX_ERROR_MESSAGES_PROPERTY + "' or command line option '" + MAX_ERROR_MESSAGES_OPTION + "'.");
+          }
         println(singularOrPlural(count(), "error") +
                 (warningCount() > 0 ? " and " + singularOrPlural(warningCount(), "warning")
                                     : "") +
@@ -442,11 +489,21 @@ public class Errors extends ANY
     if (PRECONDITIONS) require
       (msg != null);
 
-    Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
-    if (!_warnings_.contains(e))
+    if (warningCount() < MAX_WARNING_MESSAGES)
       {
-        _warnings_.add(e);
-        print(pos, warningMessage(msg), detail);
+        if (warningCount()+1 == MAX_WARNING_MESSAGES)
+          {
+            pos = SourcePosition.builtIn;
+            msg = "Maximum warning count reached, suppressing further warnings";
+            detail = "Maximum warning count is " + MAX_WARNING_MESSAGES + ".\n" +
+              "Change this via property '" + MAX_WARNING_MESSAGES_PROPERTY + "' or command line option '" + MAX_WARNING_MESSAGES_OPTION + "'.";
+          }
+        Error e = new Error(pos == null ? SourcePosition.builtIn : pos, msg, detail);
+        if (!_warnings_.contains(e))
+          {
+            _warnings_.add(e);
+            print(pos, warningMessage(msg), detail);
+          }
       }
   }
 
@@ -475,17 +532,17 @@ public class Errors extends ANY
                                                    SourcePosition firstPos,
                                                    String detail)
   {
-    error(pos,
-          "Inconsistent indentation",
-          "Indentation reference point is " + firstPos.show() + "\n" +
-          detail);
+    syntaxError(pos,
+                "Inconsistent indentation",
+                "Indentation reference point is " + firstPos.show() + "\n" +
+                detail);
   }
 
   public static void syntax(SourcePosition pos, String expected, String found, String detail)
   {
-    error(pos,
-          "Syntax error: expected " + expected + ", found " + found,
-          detail);
+    syntaxError(pos,
+                "Syntax error: expected " + expected + ", found " + found,
+                detail);
   }
 
   private static String legalEscapes(char[][] escapes)
@@ -502,63 +559,63 @@ public class Errors extends ANY
 
   public static void unknownEscapedChar(SourcePosition pos, int found, char[][] escapes)
   {
-    error(pos,
-          "Unknown escaped character found in constant string.",
-          "Escaped character found: '" + new StringBuilder().appendCodePoint(found) +
-          "', legal escaped characters are " + legalEscapes(escapes) + ".");
+    syntaxError(pos,
+                "Unknown escaped character found in constant string.",
+                "Escaped character found: '" + new StringBuilder().appendCodePoint(found) +
+                "', legal escaped characters are " + legalEscapes(escapes) + ".");
   }
 
   public static void unterminatedString(SourcePosition pos, SourcePosition start)
   {
-    error(pos,
-          "Unterminated constant string.",
-          "Expected double quotes '\"' to mark end of constant string starting at " + start.show());
+    syntaxError(pos,
+                "Unterminated constant string.",
+                "Expected double quotes '\"' to mark end of constant string starting at " + start.show());
   }
 
   public static void unexpectedControlCodeInString(SourcePosition pos, String controlSeq, int codePoint, SourcePosition start)
   {
-    error(pos,
-          "Unexpected control sequence in constant string.",
-          "Found unexpected control sequence '" + controlSeq + "' (0x" + Integer.toHexString(codePoint) + ") in constant string starting at " + start.show());
+    syntaxError(pos,
+                "Unexpected control sequence in constant string.",
+                "Found unexpected control sequence '" + controlSeq + "' (0x" + Integer.toHexString(codePoint) + ") in constant string starting at " + start.show());
   }
 
   public static void unexpectedEndOfLineInString(SourcePosition pos, SourcePosition start)
   {
-    error(pos,
-          "Unexpected end-of-line in constant string.",
-          "Found unexpected end-of-line in constant string starting at " + start.show());
+    syntaxError(pos,
+                "Unexpected end-of-line in constant string.",
+                "Found unexpected end-of-line in constant string starting at " + start.show());
   }
 
   public static void identifierInStringExpected(SourcePosition pos, SourcePosition start)
   {
-    error(pos,
-          "Expected identifier immediately following '$' in constant string",
-          "For string starting at " + start.show());
+    syntaxError(pos,
+                "Expected identifier immediately following '$' in constant string",
+                "For string starting at " + start.show());
   }
 
   public static void lineBreakNotAllowedHere(SourcePosition pos, String detail)
   {
-    error(pos,
-          "No line break may occur at this position",
-          "This code is part of an expression that must reside within a single line.\n" +
-          detail + "\n" +
-          "To solve this, enclose the expression in parentheses '(' and ')'.");
+    syntaxError(pos,
+                "No line break may occur at this position",
+                "This code is part of an expression that must reside within a single line.\n" +
+                detail + "\n" +
+                "To solve this, enclose the expression in parentheses '(' and ')'.");
   }
 
   public static void whiteSpaceNotAllowedHere(SourcePosition pos, String detail)
   {
-    error(pos,
-          "No white space may occur before this position",
-          "This code is part of an actual argument that must not contain white space.\n" +
-          detail + "\n" +
-          "To solve this, enclose the expression in parentheses '(' and ')'.");
+    syntaxError(pos,
+                "No white space may occur before this position",
+                "This code is part of an actual argument that must not contain white space.\n" +
+                detail + "\n" +
+                "To solve this, enclose the expression in parentheses '(' and ')'.");
   }
 
   public static void expectedStringContinuation(SourcePosition pos, String token)
   {
-    error(pos,
-          "Expected constant string continuation.",
-          "Found '" + token + "' instead.");
+    syntaxError(pos,
+                "Expected constant string continuation starting with closing bracket, e.g., '} done.\"'.",
+                "Found " + token + " instead.");
   }
 
 }

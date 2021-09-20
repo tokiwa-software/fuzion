@@ -54,3 +54,5 @@ callWithUninstantiatedTarget is
 
   # and y.z does not even need to exist
   y0.z
+
+  unit

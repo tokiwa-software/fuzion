@@ -23,8 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
-looptest_negative
-{
+looptest_negative is
+
   exitCode := 0
 
   chck (msg string, b bool) unit is
@@ -67,7 +67,7 @@ looptest_negative
     until isWhatWeWant(data[ix])
       "3333"
   neg3i i32    := testLoop_neg3 a (fun(i i32) => i > 10) //  3.a should flag an error: incompatible result types VOID vs. i32
-  neg3i string := testLoop_neg3 a (fun(i i32) => i > 10) //  3.b should flag an error: incompatible result types VOID vs. string
+  neg3s string := testLoop_neg3 a (fun(i i32) => i > 10) //  3.b should flag an error: incompatible result types VOID vs. string
 
   say "testLoop_neg4: loop return 4444 on else branch, no success possible"
   testLoop_neg4(data array<i32>, isWhatWeWant fun (i32) bool) =>

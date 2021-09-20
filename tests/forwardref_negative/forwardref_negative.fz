@@ -83,3 +83,4 @@ forwardref_negative is
     set y := x
     set z := 1
   cyclic2
+  unit

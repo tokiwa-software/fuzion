@@ -157,11 +157,33 @@ public class CTypes extends ANY
    */
   String scalar(int cl)
   {
-    return
-      _fuir.clazzIsI32(cl) ? "int32_t" :
-      _fuir.clazzIsI64(cl) ? "int64_t" :
-      _fuir.clazzIsU32(cl) ? "uint32_t" :
-      _fuir.clazzIsU64(cl) ? "uint64_t" : null;
+    return scalar(_fuir.getSpecialId(cl));
+  }
+
+
+  /**
+   * Check if the given special clazz specifies a scalar type in the C code,
+   * i.e, standard numeric types i32, u64, etc. If so, return that C type.
+   *
+   * @param sc a SpeicalClazzes value or null
+   *
+   * @return the C scalar type corresponding to cl, null if cl is not scaler or
+   * null.
+   */
+  String scalar(FUIR.SpecialClazzes sc)
+  {
+    return switch (sc)
+      {
+      case c_i8  -> "int8_t";
+      case c_i16 -> "int16_t";
+      case c_i32 -> "int32_t";
+      case c_i64 -> "int64_t";
+      case c_u8  -> "uint8_t";
+      case c_u16 -> "uint16_t";
+      case c_u32 -> "uint32_t";
+      case c_u64 -> "uint64_t";
+      default    -> null;
+      };
   }
 
 

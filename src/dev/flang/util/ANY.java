@@ -469,6 +469,216 @@ public class ANY
   }
 
 
+  /**
+   * check is a static method for checks as in Eiffel
+   *
+   * @param cond1 the condition that must hold
+   *
+   * @param cond2 the condition that must hold
+   *
+   * @param cond3 the condition that must hold
+   *
+   * @param cond4 the condition that must hold
+   *
+   * @param cond5 the condition that must hold
+   *
+   * @param cond6 the condition that must hold
+   *
+   * @throws Error in case any argument is false
+   */
+  public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6)
+  {
+    if (!cond1)
+      throw new Error("check-condition1 failed!");
+    if (!cond2)
+      throw new Error("check-condition2 failed!");
+    if (!cond3)
+      throw new Error("check-condition3 failed!");
+    if (!cond4)
+      throw new Error("check-condition4 failed!");
+    if (!cond5)
+      throw new Error("check-condition5 failed!");
+    if (!cond6)
+      throw new Error("check-condition6 failed!");
+  }
+
+
+  /**
+   * check is a static method for checks as in Eiffel
+   *
+   * @param cond1 the condition that must hold
+   *
+   * @param cond2 the condition that must hold
+   *
+   * @param cond3 the condition that must hold
+   *
+   * @param cond4 the condition that must hold
+   *
+   * @param cond5 the condition that must hold
+   *
+   * @param cond6 the condition that must hold
+   *
+   * @param cond7 the condition that must hold
+   *
+   * @throws Error in case any argument is false
+   */
+  public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6, boolean cond7)
+  {
+    if (!cond1)
+      throw new Error("check-condition1 failed!");
+    if (!cond2)
+      throw new Error("check-condition2 failed!");
+    if (!cond3)
+      throw new Error("check-condition3 failed!");
+    if (!cond4)
+      throw new Error("check-condition4 failed!");
+    if (!cond5)
+      throw new Error("check-condition5 failed!");
+    if (!cond6)
+      throw new Error("check-condition6 failed!");
+    if (!cond7)
+      throw new Error("check-condition7 failed!");
+  }
+
+
+  /**
+   * check is a static method for checks as in Eiffel
+   *
+   * @param cond1 the condition that must hold
+   *
+   * @param cond2 the condition that must hold
+   *
+   * @param cond3 the condition that must hold
+   *
+   * @param cond4 the condition that must hold
+   *
+   * @param cond5 the condition that must hold
+   *
+   * @param cond6 the condition that must hold
+   *
+   * @param cond7 the condition that must hold
+   *
+   * @param cond8 the condition that must hold
+   *
+   * @throws Error in case any argument is false
+   */
+  public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6, boolean cond7, boolean cond8)
+  {
+    if (!cond1)
+      throw new Error("check-condition1 failed!");
+    if (!cond2)
+      throw new Error("check-condition2 failed!");
+    if (!cond3)
+      throw new Error("check-condition3 failed!");
+    if (!cond4)
+      throw new Error("check-condition4 failed!");
+    if (!cond5)
+      throw new Error("check-condition5 failed!");
+    if (!cond6)
+      throw new Error("check-condition6 failed!");
+    if (!cond7)
+      throw new Error("check-condition7 failed!");
+    if (!cond8)
+      throw new Error("check-condition8 failed!");
+  }
+
+
+  /**
+   * check is a static method for checks as in Eiffel
+   *
+   * @param cond1 the condition that must hold
+   *
+   * @param cond2 the condition that must hold
+   *
+   * @param cond3 the condition that must hold
+   *
+   * @param cond4 the condition that must hold
+   *
+   * @param cond5 the condition that must hold
+   *
+   * @param cond6 the condition that must hold
+   *
+   * @param cond7 the condition that must hold
+   *
+   * @param cond8 the condition that must hold
+   *
+   * @param cond9 the condition that must hold
+   *
+   * @throws Error in case any argument is false
+   */
+  public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6, boolean cond7, boolean cond8, boolean cond9)
+  {
+    if (!cond1)
+      throw new Error("check-condition1 failed!");
+    if (!cond2)
+      throw new Error("check-condition2 failed!");
+    if (!cond3)
+      throw new Error("check-condition3 failed!");
+    if (!cond4)
+      throw new Error("check-condition4 failed!");
+    if (!cond5)
+      throw new Error("check-condition5 failed!");
+    if (!cond6)
+      throw new Error("check-condition6 failed!");
+    if (!cond7)
+      throw new Error("check-condition7 failed!");
+    if (!cond8)
+      throw new Error("check-condition8 failed!");
+    if (!cond9)
+      throw new Error("check-condition9 failed!");
+  }
+
+
+  /**
+   * check is a static method for checks as in Eiffel
+   *
+   * @param cond1 the condition that must hold
+   *
+   * @param cond2 the condition that must hold
+   *
+   * @param cond3 the condition that must hold
+   *
+   * @param cond4 the condition that must hold
+   *
+   * @param cond5 the condition that must hold
+   *
+   * @param cond6 the condition that must hold
+   *
+   * @param cond7 the condition that must hold
+   *
+   * @param cond8 the condition that must hold
+   *
+   * @param cond9 the condition that must hold
+   *
+   * @param cond10 the condition that must hold
+   *
+   * @throws Error in case any argument is false
+   */
+  public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6, boolean cond7, boolean cond8, boolean cond9, boolean cond10)
+  {
+    if (!cond1)
+      throw new Error("check-condition1 failed!");
+    if (!cond2)
+      throw new Error("check-condition2 failed!");
+    if (!cond3)
+      throw new Error("check-condition3 failed!");
+    if (!cond4)
+      throw new Error("check-condition4 failed!");
+    if (!cond5)
+      throw new Error("check-condition5 failed!");
+    if (!cond6)
+      throw new Error("check-condition6 failed!");
+    if (!cond7)
+      throw new Error("check-condition7 failed!");
+    if (!cond8)
+      throw new Error("check-condition8 failed!");
+    if (!cond9)
+      throw new Error("check-condition9 failed!");
+    if (!cond10)
+      throw new Error("check-condition10 failed!");
+  }
+
+
   /* ----------------------------------------------------------------------------- */
 
 

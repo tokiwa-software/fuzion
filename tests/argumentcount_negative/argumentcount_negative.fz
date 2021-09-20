@@ -17,13 +17,13 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test generics_negative
+#  Source code of Fuzion test argumentcount_negative
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-generics_negative is
+argumentcount_negative is
 
   opengenerics11 ref : Function<i32> is
     redefine call() i32 is 42

@@ -30,6 +30,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.ast.Assign; // NYI: remove dependency
@@ -44,7 +45,7 @@ import dev.flang.ast.Feature; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.Impl; // NYI: remove dependency
 import dev.flang.ast.InitArray; // NYI: remove dependency
-import dev.flang.ast.IntConst; // NYI: remove dependency
+import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Match; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
 import dev.flang.ast.Stmnt; // NYI: remove dependency
@@ -126,12 +127,53 @@ public class FUIR extends ANY
 
 
   /**
+   * Map used by getSpecialId() to quickly find the SpecialClazz corresponding
+   * to a Clazz.
+   */
+  private static TreeMap<Clazz, SpecialClazzes> SPECIAL_ID = new TreeMap<>();
+
+
+  /**
+   * Enum of clazzes that require special handling in the backend
+   */
+  public enum SpecialClazzes
+  {
+    c_i8          { Clazz getIfCreated() { return Clazzes.i8         .getIfCreated(); } },
+    c_i16         { Clazz getIfCreated() { return Clazzes.i16        .getIfCreated(); } },
+    c_i32         { Clazz getIfCreated() { return Clazzes.i32        .getIfCreated(); } },
+    c_i64         { Clazz getIfCreated() { return Clazzes.i64        .getIfCreated(); } },
+    c_u8          { Clazz getIfCreated() { return Clazzes.u8         .getIfCreated(); } },
+    c_u16         { Clazz getIfCreated() { return Clazzes.u16        .getIfCreated(); } },
+    c_u32         { Clazz getIfCreated() { return Clazzes.u32        .getIfCreated(); } },
+    c_u64         { Clazz getIfCreated() { return Clazzes.u64        .getIfCreated(); } },
+    c_bool        { Clazz getIfCreated() { return Clazzes.bool       .getIfCreated(); } },
+    c_TRUE        { Clazz getIfCreated() { return Clazzes.c_TRUE     .getIfCreated(); } },
+    c_FALSE       { Clazz getIfCreated() { return Clazzes.c_FALSE    .getIfCreated(); } },
+    c_conststring { Clazz getIfCreated() { return Clazzes.conststring.getIfCreated(); } },
+
+    // dummy entry to report failure of getSpecialId()
+    c_NOT_FOUND   { Clazz getIfCreated() { return null;                               } };
+
+    abstract Clazz getIfCreated();
+
+    SpecialClazzes()
+    {
+      var c = getIfCreated();
+      if (c != null)
+        {
+          SPECIAL_ID.put(c, this);
+        }
+    }
+  }
+
+
+  /**
    * Dummy Expr for Pop.  This is needed only temporily as long as we use
    * the AST instances instead of proper bytecodes.
    *
    * NYI: remove once bytecode instructions are here.
    */
-  static final Expr WIPE_STACK = new IntConst(42);
+  static final Expr WIPE_STACK = new NumLiteral(42);
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -612,101 +654,36 @@ public class FUIR extends ANY
   }
 
 
+
   /**
-   * Check if a clazz is the standard lib i32.fz.
+   * Obtain SpecialClazzes id from a given clazz.
    *
    * @param cl a clazz id
    *
-   * @return true iff cl is i32.fz.
+   * @return the corresponding SpecialClazzes id or c_NOT_FOUND if cl is not a
+   * special clazz.
    */
-  public boolean clazzIsI32(int cl)
+  public SpecialClazzes getSpecialId(int cl)
   {
     var cc = _clazzIds.get(cl);
-    return cc == Clazzes.i32.getIfCreated();
+    var result = SPECIAL_ID.get(cc);
+    return result == null ? SpecialClazzes.c_NOT_FOUND : result;
   }
 
 
   /**
-   * Check if a clazz is the standard lib i64.fz.
+   * Check if a clazz is the special clazz c.
    *
    * @param cl a clazz id
    *
-   * @return true iff cl is i64.fz.
+   * @param One of the constants SpecialClazzes.c_i8,...
+   *
+   * @return true iff cl is the specified special clazz c
    */
-  public boolean clazzIsI64(int cl)
+  public boolean clazzIs(int cl, SpecialClazzes c)
   {
     var cc = _clazzIds.get(cl);
-    return cc == Clazzes.i64.getIfCreated();
-  }
-
-
-  /**
-   * Check if a clazz is the standard lib u32.fz.
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is u32.fz.
-   */
-  public boolean clazzIsU32(int cl)
-  {
-    var cc = _clazzIds.get(cl);
-    return cc == Clazzes.u32.getIfCreated();
-  }
-
-
-  /**
-   * Check if a clazz is the standard lib u64.fz.
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is u64.fz.
-   */
-  public boolean clazzIsU64(int cl)
-  {
-    var cc = _clazzIds.get(cl);
-    return cc == Clazzes.u64.getIfCreated();
-  }
-
-
-  /**
-   * Check if a clazz is the standard lib bool.fz.
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is bool.fz.
-   */
-  public boolean clazzIsBool(int cl)
-  {
-    var cc = _clazzIds.get(cl);
-    return cc == Clazzes.bool.getIfCreated();
-  }
-
-
-  /**
-   * Check if a clazz is the standard lib TRUE.fz.
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is TRUE.fz.
-   */
-  public boolean clazzIsTRUE(int cl)
-  {
-    var cc = _clazzIds.get(cl);
-    return cc == Clazzes.c_TRUE.getIfCreated();
-  }
-
-
-  /**
-   * Check if a clazz is the standard lib FALSE.fz.
-   *
-   * @param cl a clazz id
-   *
-   * @return true iff cl is FALSE.fz.
-   */
-  public boolean clazzIsFALSE(int cl)
-  {
-    var cc = _clazzIds.get(cl);
-    return cc == Clazzes.c_FALSE.getIfCreated();
+    return cc == c.getIfCreated();
   }
 
 
@@ -822,7 +799,7 @@ hw25 is
           }
         addCode(cc, code, p.calledFeature());
       }
-    toStack(code, ff.impl.code_);
+    toStack(code, ff.impl._code);
   }
 
 
@@ -973,8 +950,8 @@ hw25 is
 
     if (s instanceof Assign a)
       {
-        toStack(l, a.value);
-        toStack(l, a.getOuter);
+        toStack(l, a._value);
+        toStack(l, a._target);
         l.add(a);
       }
     else if (s instanceof Unbox u)
@@ -1013,7 +990,7 @@ hw25 is
         toStack(l, i.cond);
         l.add(i);
         List<Object> block = toStack(i.block);
-        l.add(new IntConst(_codeIds.add(block)));
+        l.add(new NumLiteral(_codeIds.add(block)));
         Stmnt elseBlock;
         if (i.elseBlock != null)
           {
@@ -1028,9 +1005,9 @@ hw25 is
             elseBlock = new Block(i.pos(), new List<>());
           }
         List<Object> elseBlockCode = toStack(elseBlock);
-        l.add(new IntConst(_codeIds.add(elseBlockCode)));
+        l.add(new NumLiteral(_codeIds.add(elseBlockCode)));
       }
-    else if (s instanceof IntConst)
+    else if (s instanceof NumLiteral)
       {
         l.add(s);
       }
@@ -1054,7 +1031,7 @@ hw25 is
         for (var c : m.cases)
           {
             var caseCode = toStack(c.code);
-            l.add(new IntConst(_codeIds.add(caseCode)));
+            l.add(new NumLiteral(_codeIds.add(caseCode)));
           }
       }
     else if (s instanceof Tag t)
@@ -1109,7 +1086,7 @@ hw25 is
 
     ExprKind result;
     var e = _codeIds.get(c).get(ix);
-    if (e == WIPE_STACK) // Take care: must be first since WIPE_STACK is IntConst (for now)
+    if (e == WIPE_STACK) // Take care: must be first since WIPE_STACK is NumLiteral (for now)
       {
         result = ExprKind.Pop;
       }
@@ -1144,7 +1121,7 @@ hw25 is
         result = ExprKind.Tag;
       }
     else if (e instanceof BoolConst ||
-             e instanceof IntConst  ||
+             e instanceof NumLiteral  ||
              e instanceof StrConst  ||
              e instanceof InitArray   )
       {
@@ -1474,10 +1451,16 @@ hw25 is
     var ic = _codeIds.get(c).get(ix);
     var t = ((Expr) ic).type();
     if      (t == Types.resolved.t_bool  ) { clazz = Clazzes.bool       .get(); }
+    else if (t == Types.resolved.t_i8    ) { clazz = Clazzes.i8         .get(); }
+    else if (t == Types.resolved.t_i16   ) { clazz = Clazzes.i16        .get(); }
     else if (t == Types.resolved.t_i32   ) { clazz = Clazzes.i32        .get(); }
-    else if (t == Types.resolved.t_u32   ) { clazz = Clazzes.u32        .get(); }
     else if (t == Types.resolved.t_i64   ) { clazz = Clazzes.i64        .get(); }
+    else if (t == Types.resolved.t_u8    ) { clazz = Clazzes.u8         .get(); }
+    else if (t == Types.resolved.t_u16   ) { clazz = Clazzes.u16        .get(); }
+    else if (t == Types.resolved.t_u32   ) { clazz = Clazzes.u32        .get(); }
     else if (t == Types.resolved.t_u64   ) { clazz = Clazzes.u64        .get(); }
+    else if (t == Types.resolved.t_f32   ) { clazz = Clazzes.f32        .get(); }
+    else if (t == Types.resolved.t_f64   ) { clazz = Clazzes.f64        .get(); }
     else if (t == Types.resolved.t_string) { clazz = Clazzes.conststring.get(); } // NYI: a slight inconsistency here, need to change AST
     else if (ic instanceof InitArray)
       {
@@ -1501,11 +1484,8 @@ hw25 is
 
     var ic = _codeIds.get(c).get(ix);
     var t = ((Expr) ic).type();
-    if      (t == Types.resolved.t_bool  ) { return new byte[] { ((BoolConst) ic).b ? (byte) 1 : (byte) 0 }; }
-    else if (t == Types.resolved.t_i32 ||
-             t == Types.resolved.t_u32   ) { return ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt((int) ((IntConst) ic).l).array(); }
-    else if (t == Types.resolved.t_i64 ||
-             t == Types.resolved.t_u64   ) { return ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putLong(     ((IntConst) ic).l).array(); }
+    if      (ic instanceof BoolConst     ) { return new byte[] { ((BoolConst) ic).b ? (byte) 1 : (byte) 0 }; }
+    else if (ic instanceof NumLiteral    ) { return ((NumLiteral) ic).data(); }
     else if (t == Types.resolved.t_string) { return ((StrConst) ic).str.getBytes(StandardCharsets.UTF_8); }
     else if (ic instanceof InitArray)
       {
@@ -1684,7 +1664,7 @@ hw25 is
        0 <= cix && cix <= matchCaseCount(c, ix));
 
     var s = _codeIds.get(c).get(ix+1+cix);
-    return (int) ((IntConst)s).l;
+    return ((NumLiteral)s).intValue().intValueExact();
   }
 
 }

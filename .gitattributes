@@ -3,4 +3,5 @@
 # NYI: This should happen automatically if Fuzion support was added to
 # linguist: https://github.com/github/linguist
 #
+*.fz linguist-detectable
 *.fz linguist-language=Fuzion

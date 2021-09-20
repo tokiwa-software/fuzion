@@ -109,14 +109,26 @@ public class Types extends ANY
   public static class Resolved
   {
     public final Feature universe;
+    public final Type t_i8  ;
+    public final Type t_i16 ;
     public final Type t_i32 ;
-    public final Type t_u32 ;
     public final Type t_i64 ;
+    public final Type t_u8  ;
+    public final Type t_u16 ;
+    public final Type t_u32 ;
     public final Type t_u64 ;
+    public final Type t_f32 ;
+    public final Type t_f64 ;
+    public final Type t_ref_i8  ;
+    public final Type t_ref_i16 ;
     public final Type t_ref_i32 ;
-    public final Type t_ref_u32 ;
     public final Type t_ref_i64 ;
+    public final Type t_ref_u8  ;
+    public final Type t_ref_u16 ;
+    public final Type t_ref_u32 ;
     public final Type t_ref_u64 ;
+    public final Type t_ref_f32 ;
+    public final Type t_ref_f64 ;
     public final Type t_bool;
     public final Type t_object;
     public final Type t_sys;
@@ -155,14 +167,26 @@ public class Types extends ANY
     Resolved(Feature universe)
     {
       this.universe = universe;
+      t_i8            = Type.type(      "i8"          , universe);
+      t_i16           = Type.type(      "i16"         , universe);
       t_i32           = Type.type(      "i32"         , universe);
-      t_u32           = Type.type(      "u32"         , universe);
       t_i64           = Type.type(      "i64"         , universe);
+      t_u8            = Type.type(      "u8"          , universe);
+      t_u16           = Type.type(      "u16"         , universe);
+      t_u32           = Type.type(      "u32"         , universe);
       t_u64           = Type.type(      "u64"         , universe);
+      t_f32           = Type.type(      "f32"         , universe);
+      t_f64           = Type.type(      "f64"         , universe);
+      t_ref_i8        = Type.type(true, "i8"          , universe);
+      t_ref_i16       = Type.type(true, "i16"         , universe);
       t_ref_i32       = Type.type(true, "i32"         , universe);
-      t_ref_u32       = Type.type(true, "u32"         , universe);
       t_ref_i64       = Type.type(true, "i64"         , universe);
+      t_ref_u8        = Type.type(true, "u8"          , universe);
+      t_ref_u16       = Type.type(true, "u16"         , universe);
+      t_ref_u32       = Type.type(true, "u32"         , universe);
       t_ref_u64       = Type.type(true, "u64"         , universe);
+      t_ref_f32       = Type.type(true, "f32"         , universe);
+      t_ref_f64       = Type.type(true, "f64"         , universe);
       t_bool          = Type.type(      "bool"        , universe);
       t_sys           = Type.type(      "sys"         , universe);
       t_string        = Type.type(      "string"      , universe);
@@ -210,9 +234,13 @@ public class Types extends ANY
         {
           _doneInternallyUsed = true;
           var tag = FuzionConstants.CHOICE_TAG_NAME;
+          universe.get("i8" ,1).get("val").markUsed(res, SourcePosition.builtIn);
+          universe.get("i16",1).get("val").markUsed(res, SourcePosition.builtIn);
           universe.get("i32",1).get("val").markUsed(res, SourcePosition.builtIn);
-          universe.get("u32",1).get("val").markUsed(res, SourcePosition.builtIn);
           universe.get("i64",1).get("val").markUsed(res, SourcePosition.builtIn);
+          universe.get("u8" ,1).get("val").markUsed(res, SourcePosition.builtIn);
+          universe.get("u16",1).get("val").markUsed(res, SourcePosition.builtIn);
+          universe.get("u32",1).get("val").markUsed(res, SourcePosition.builtIn);
           universe.get("u64",1).get("val").markUsed(res, SourcePosition.builtIn);
           universe.get("bool").get(tag) .markUsed(res, SourcePosition.builtIn);
           universe.get("conststring")   .markUsed(res, SourcePosition.builtIn);

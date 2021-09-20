@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 JAVA = java
-JAVAC = javac -source 16
+JAVAC = javac -encoding UTF8 -source 16
 FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
@@ -62,7 +62,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Consts.java \
           $(SRC)/dev/flang/ast/Contract.java \
           $(SRC)/dev/flang/ast/Current.java \
-          $(SRC)/dev/flang/ast/Decompose.java \
+          $(SRC)/dev/flang/ast/Destructure.java \
           $(SRC)/dev/flang/ast/Expr.java \
           $(SRC)/dev/flang/ast/FeErrors.java \
           $(SRC)/dev/flang/ast/Feature.java \
@@ -74,13 +74,13 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Generic.java \
           $(SRC)/dev/flang/ast/If.java \
           $(SRC)/dev/flang/ast/InitArray.java \
-          $(SRC)/dev/flang/ast/IntConst.java \
           $(SRC)/dev/flang/ast/Impl.java \
           $(SRC)/dev/flang/ast/IncompatibleResultsOnBranches.java \
           $(SRC)/dev/flang/ast/Loop.java \
           $(SRC)/dev/flang/ast/Match.java \
           $(SRC)/dev/flang/ast/Nop.java \
           $(SRC)/dev/flang/ast/NoType.java \
+          $(SRC)/dev/flang/ast/NumLiteral.java \
           $(SRC)/dev/flang/ast/Old.java \
           $(SRC)/dev/flang/ast/RefType.java \
           $(SRC)/dev/flang/ast/Resolution.java \
@@ -131,6 +131,7 @@ JAVA_FILES_OPT = \
           $(SRC)/dev/flang/opt/Optimizer.java \
 
 JAVA_FILES_BE_INTERPRETER = \
+          $(SRC)/dev/flang/be/interpreter/ArrayData.java \
           $(SRC)/dev/flang/be/interpreter/Callable.java \
           $(SRC)/dev/flang/be/interpreter/ChoiceIdAsRef.java \
           $(SRC)/dev/flang/be/interpreter/Instance.java \
@@ -142,10 +143,16 @@ JAVA_FILES_BE_INTERPRETER = \
           $(SRC)/dev/flang/be/interpreter/Intrinsics.java \
           $(SRC)/dev/flang/be/interpreter/Value.java \
           $(SRC)/dev/flang/be/interpreter/boolValue.java \
+          $(SRC)/dev/flang/be/interpreter/i8Value.java \
+          $(SRC)/dev/flang/be/interpreter/i16Value.java \
           $(SRC)/dev/flang/be/interpreter/i32Value.java \
           $(SRC)/dev/flang/be/interpreter/i64Value.java \
+          $(SRC)/dev/flang/be/interpreter/u8Value.java \
+          $(SRC)/dev/flang/be/interpreter/u16Value.java \
           $(SRC)/dev/flang/be/interpreter/u32Value.java \
           $(SRC)/dev/flang/be/interpreter/u64Value.java \
+          $(SRC)/dev/flang/be/interpreter/f32Value.java \
+          $(SRC)/dev/flang/be/interpreter/f64Value.java \
 
 JAVA_FILES_BE_C = \
           $(SRC)/dev/flang/be/c/C.java \
@@ -180,6 +187,9 @@ JAVA_FILES_TOOLS_FZJAVA = \
           $(SRC)/dev/flang/tools/fzjava/FZJavaOptions.java \
           $(SRC)/dev/flang/tools/fzjava/FeatureWriter.java \
 
+JAVA_FILES_MISC_LOGO =\
+          $(SRC)/dev/flang/misc/logo/FuzionLogo.java
+
 CLASS_FILES_UTIL           = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
 CLASS_FILES_UTIL_UNICODE   = $(CLASSES_DIR)/dev/flang/util/unicode/__marker_for_make__
 CLASS_FILES_AST            = $(CLASSES_DIR)/dev/flang/ast/__marker_for_make__
@@ -195,11 +205,30 @@ CLASS_FILES_BE_INTERPRETER = $(CLASSES_DIR)/dev/flang/be/interpreter/__marker_fo
 CLASS_FILES_BE_C           = $(CLASSES_DIR)/dev/flang/be/c/__marker_for_make__
 CLASS_FILES_TOOLS          = $(CLASSES_DIR)/dev/flang/tools/__marker_for_make__
 CLASS_FILES_TOOLS_FZJAVA   = $(CLASSES_DIR)/dev/flang/tools/fzjava/__marker_for_make__
+CLASS_FILES_MISC_LOGO      = $(CLASSES_DIR)/dev/flang/misc/logo/__marker_for_make__
+
+JFREE_SVG_URL = https://repo1.maven.org/maven2/org/jfree/org.jfree.svg/5.0.1/org.jfree.svg-5.0.1.jar
+JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
+MOD_JAVA_BASE         = $(BUILD_DIR)/modules/java.base/__marker_for_make__
+MOD_JAVA_XML          = $(BUILD_DIR)/modules/java.xml/__marker_for_make__
+MOD_JAVA_DATATRANSFER = $(BUILD_DIR)/modules/java.datatransfer/__marker_for_make__
+MOD_JAVA_DESKTOP      = $(BUILD_DIR)/modules/java.desktop/__marker_for_make__
+
+ALL = \
+	$(BUILD_DIR)/bin/fz \
+	$(BUILD_DIR)/bin/fzjava \
+	$(MOD_JAVA_BASE) \
+	$(MOD_JAVA_XML) \
+	$(MOD_JAVA_DATATRANSFER) \
+	$(MOD_JAVA_DESKTOP) \
+	$(BUILD_DIR)/tests \
+	$(BUILD_DIR)/examples
+
 .PHONY: all
-all: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/bin/fzjava $(BUILD_DIR)/modules/java.base/Java.fz $(BUILD_DIR)/tests $(BUILD_DIR)/examples
+all: $(ALL)
 
 # phony target to compile all java sources
 .PHONY: javac
@@ -292,6 +321,37 @@ $(CLASS_FILES_TOOLS_FZJAVA): $(JAVA_FILES_TOOLS_FZJAVA) $(CLASS_FILES_TOOLS) $(C
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS_FZJAVA)
 	touch $@
 
+$(JARS_JFREE_SVG_JAR):
+	mkdir -p $(@D)
+	curl $(JFREE_SVG_URL) --output $@
+
+$(CLASS_FILES_MISC_LOGO): $(JAVA_FILES_MISC_LOGO) $(JARS_JFREE_SVG_JAR)
+	mkdir -p $(CLASSES_DIR)
+	$(JAVAC) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) -d $(CLASSES_DIR) $(JAVA_FILES_MISC_LOGO)
+	touch $@
+
+$(BUILD_DIR)/assets/logo.svg: $(CLASS_FILES_MISC_LOGO)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) dev.flang.misc.logo.FuzionLogo $@
+	inkscape $@ -o $@.pdf
+	touch $@
+
+$(BUILD_DIR)/assets/logo_bleed.svg: $(CLASS_FILES_MISC_LOGO)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) dev.flang.misc.logo.FuzionLogo -b $@
+	inkscape $@ -o $@.tmp.pdf
+	pdfjam --papersize '{46mm,46mm}' --outfile $@.pdf $@.tmp.pdf
+	rm -f $@.tmp.pdf
+	touch $@
+
+$(BUILD_DIR)/assets/logo_bleed_cropmark.svg: $(CLASS_FILES_MISC_LOGO)
+	mkdir -p $(@D)
+	$(JAVA) -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) dev.flang.misc.logo.FuzionLogo -c $@
+	inkscape $@ -o $@.tmp.pdf
+	pdfjam --papersize '{46mm,46mm}' --outfile $@.pdf $@.tmp.pdf
+	rm -f $@.tmp.pdf
+	touch $@
+
 $(BUILD_DIR)/lib: $(FZ_SRC)/lib
 	mkdir -p $(@D)
 	cp -rf $^ $@
@@ -306,10 +366,51 @@ $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
 	chmod +x $@
 
-$(BUILD_DIR)/modules/java.base/Java.fz: $(BUILD_DIR)/bin/fzjava
+$(MOD_JAVA_BASE): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
-	$(BUILD_DIR)/bin/fzjava java.base -to=$(@D) -verbose=0
+# wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
+	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.base -to=$(@D) -verbose=0"
+	touch $@
+
+$(MOD_JAVA_XML): $(BUILD_DIR)/bin/fzjava
+	rm -rf $(@D)
+	mkdir -p $(@D)
+# wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
+	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.xml -to=$(@D) -verbose=0"
+	# NYI: manually delete redundant features
+	rm -f $(BUILD_DIR)/modules/java.xml/Java_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.xml/Java/jdk_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.xml/Java/javax_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.xml/Java/com_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.xml/Java/com/sun_pkg.fz
+	touch $@
+
+$(MOD_JAVA_DATATRANSFER): $(BUILD_DIR)/bin/fzjava
+	rm -rf $(@D)
+	mkdir -p $(@D)
+# wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
+	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.datatransfer -to=$(@D) -verbose=0"
+	# NYI: manually delete redundant features
+	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java/java_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java/sun_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java/java/awt_pkg.fz
+	touch $@
+
+$(MOD_JAVA_DESKTOP): $(BUILD_DIR)/bin/fzjava
+	rm -rf $(@D)
+	mkdir -p $(@D)
+# wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
+	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.desktop -to=$(@D) -verbose=0"
+	# NYI: manually delete redundant features
+	rm -f $(BUILD_DIR)/modules/java.desktop/Java_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.desktop/Java/javax_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.desktop/Java/com_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.desktop/Java/sun_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.desktop/Java/com/sun_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.desktop/Java/java_pkg.fz
+	touch $@
 
 $(BUILD_DIR)/tests: $(FZ_SRC)/tests
 	mkdir -p $(@D)
@@ -335,6 +436,12 @@ $(BUILD_DIR)/UnicodeData.java: $(BUILD_DIR)/UnicodeData.java.generated $(SRC)/de
 .phony: unicode
 unicode: $(BUILD_DIR)/UnicodeData.java
 	cp $^ $(SRC)/dev/flang/util/UnicodeData.java
+
+# phony target to regenerate Fuzion logo.
+# This must be phony since $(SRC)/assets/logo.svg would be a circular dependency
+.phony: logo
+logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DIR)/assets/logo_bleed_cropmark.svg
+	cp $^ $(FZ_SRC)/assets/
 
 # phony target to run Fuzion tests and report number of failures
 .PHONY: run_tests

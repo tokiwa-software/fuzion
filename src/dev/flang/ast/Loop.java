@@ -575,7 +575,7 @@ public class Loop extends ANY
                 mustDeclareLoopElse = false;
               }
             var streamName = _rawLoopName + "stream" + (iteratorCount++);
-            Call asStream = new Call(f.pos, f.impl.initialValue, "asStream");
+            Call asStream = new Call(f.pos, f.impl._initialValue, "asStream");
             Feature stream = new Feature(f.pos,
                                          Consts.VISIBILITY_INVISIBLE,
                                          /* modifiers */   0,
