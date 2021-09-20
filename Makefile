@@ -104,8 +104,6 @@ JAVA_FILES_PARSER = \
           $(SRC)/dev/flang/parser/Parser.java \
 
 JAVA_FILES_IR = \
-          $(SRC)/dev/flang/ir/Backend.java \
-          $(SRC)/dev/flang/ir/BackendCallable.java \
           $(SRC)/dev/flang/ir/Clazz.java \
           $(SRC)/dev/flang/ir/Clazzes.java \
           $(SRC)/dev/flang/ir/IrErrors.java \
@@ -131,6 +129,7 @@ JAVA_FILES_OPT = \
 
 JAVA_FILES_BE_INTERPRETER = \
           $(SRC)/dev/flang/be/interpreter/ArrayData.java \
+          $(SRC)/dev/flang/be/interpreter/BackendCallable.java \
           $(SRC)/dev/flang/be/interpreter/Callable.java \
           $(SRC)/dev/flang/be/interpreter/ChoiceIdAsRef.java \
           $(SRC)/dev/flang/be/interpreter/DynamicBinding.java \

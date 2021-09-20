@@ -32,7 +32,6 @@ import java.util.TreeMap;
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 
-import dev.flang.ir.BackendCallable;
 import dev.flang.ir.Clazz;
 import dev.flang.ir.Clazzes;
 
@@ -112,16 +111,13 @@ public class DynamicBinding extends ANY
    * @param callable backend data needed to perform a call to the actual
    * implementation of f in _clazz.
    */
-  public void add(Feature f, Clazz inner, Clazz outer)
+  public void add(Interpreter be, Feature f, Clazz inner, Clazz outer)
   {
     if (PRECONDITIONS) require
       (f != null);
 
-    if (Clazzes._backend_ != null)
-      {
-        var callable = Clazzes._backend_.callable(false, inner, outer);
-        _callables.put(f, callable);
-      }
+    var callable = be.callable(false, inner, outer);
+    _callables.put(f, callable);
     _inner.put(f, inner);
     _outer.put(f, outer);
 

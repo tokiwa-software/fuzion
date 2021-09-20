@@ -41,7 +41,6 @@ import dev.flang.util.List;
 
 import dev.flang.fuir.FUIR;
 
-import dev.flang.ir.Backend;
 import dev.flang.ir.Clazz;
 import dev.flang.ir.Clazzes;
 
@@ -77,7 +76,7 @@ import dev.flang.ast.Universe; // NYI: remove dependency! Use dev.flang.fuir ins
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Interpreter extends Backend
+public class Interpreter extends ANY
 {
 
 
@@ -153,7 +152,7 @@ public class Interpreter extends Backend
   public Interpreter(FUIR fuir)
   {
     _fuir = fuir;
-    Clazzes.findAllClasses(this, _fuir.main());
+    Clazzes.findAllClasses(_fuir.main());
     Errors.showAndExit();
     Clazzes.showStatistics();
   }
@@ -179,7 +178,7 @@ public class Interpreter extends Backend
                 db = new DynamicBinding(cl);
                 cl._dynamicBinding = db;
               }
-            db.add(e.getKey(), e.getValue(), cl);
+            db.add(this, e.getKey(), e.getValue(), cl);
           }
       }
 
@@ -244,7 +243,7 @@ public class Interpreter extends Backend
    * binding and it uses way too much stack since recursion keeps this giant
    * stack frame alive.
    */
-  public static Value execute(Stmnt s, Clazz staticClazz, Value cur)
+  public Value execute(Stmnt s, Clazz staticClazz, Value cur)
   {
     Value result;
     if (s instanceof Call c)
@@ -256,12 +255,25 @@ public class Interpreter extends Backend
         ArrayList<Value> args = executeArgs(c, staticClazz, cur);
         _callStack.push(c);
 
-        var ca = (Callable) staticClazz.getRuntimeData(c.sid_);
-        if (ca == null)
+        var d = staticClazz.getRuntimeData(c.sid_ + 0);
+        if (d instanceof Clazz innerClazz)
           {
-            check
-              (c.isDynamic());
-
+            var tclazz = (Clazz) staticClazz.getRuntimeData(c.sid_ + 1);
+            var dyn = tclazz.isRef() && c.isDynamic();
+            d = callable(dyn, innerClazz, tclazz);
+            if (d == null)
+              {
+                d = "dyn"; // anything else, null would also do, but could be confused with 'not initialized'
+              }
+            staticClazz.setRuntimeData(c.sid_ + 0, d);  // cache callable
+          }
+        Callable ca;
+        if (d instanceof Callable dca)
+          {
+            ca = dca;
+          }
+        else // if (d == "dyn")
+          {
             var cl = ((Instance) args.get(0)).clazz();
             ca = (Callable) ((DynamicBinding)cl._dynamicBinding).callable(c.calledFeature());
           }
@@ -571,9 +583,9 @@ public class Interpreter extends Backend
    *
    * @return the evaluated arguments
    */
-  public static ArrayList<Value> executeArgs(Call c,
-                                             Clazz staticClazz,
-                                             Value cur)
+  public ArrayList<Value> executeArgs(Call c,
+                                      Clazz staticClazz,
+                                      Value cur)
   {
     Value targt = execute(c.target, staticClazz, cur);
     ArrayList<Value> args = new ArrayList<>();
@@ -749,7 +761,7 @@ public class Interpreter extends Backend
    *
    * @return
    */
-  public static Value callOnInstance(Feature thiz, Clazz staticClazz, Instance cur, ArrayList<Value> args)
+  public Value callOnInstance(Feature thiz, Clazz staticClazz, Instance cur, ArrayList<Value> args)
   {
     if (PRECONDITIONS) require
       (!thiz.isField(),

@@ -30,8 +30,6 @@ import java.util.ArrayList;
 
 import dev.flang.ast.Type; // NYI: remove dependency! Use dev.flang.fuir instead.
 
-import dev.flang.ir.BackendCallable;
-
 
 /**
  * Callable represents a call to a feature.

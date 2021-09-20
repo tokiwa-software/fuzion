@@ -195,7 +195,7 @@ public class FUIR extends ANY
     _main = main;
     if (findClazzes)
       {
-        Clazzes.findAllClasses(null, main());
+        Clazzes.findAllClasses(main());
       }
   }
 
@@ -1311,7 +1311,7 @@ hw25 is
     var result = new List<Clazz>();
     for (var cl : tclazz.heirs())
       {
-        var in = cl.lookup(cf, Call.NO_GENERICS, cf.isUsedAt());
+        var in = cl._inner.get(cf);
         if (in != null && clazzNeedsCode(in))
           {
             result.add(cl);

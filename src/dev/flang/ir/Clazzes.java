@@ -200,9 +200,6 @@ public class Clazzes extends ANY
   static boolean closed = false;
 
 
-  public static Backend _backend_ = null;
-
-
   /**
    * Collection of actions to be performed during findClasses phase when it is
    * found that a feature is called dynamically: Then this features needs to be
@@ -357,9 +354,8 @@ public class Clazzes extends ANY
    * Once this returns, all runtime classes required during execution have been
    * created.
    */
-  public static void findAllClasses(Backend be, Clazz main)
+  public static void findAllClasses(Clazz main)
   {
-    _backend_ = be;
     var toLayout = new List<Clazz>();
     int clazzCount = 0;
 
@@ -705,15 +701,13 @@ public class Clazzes extends ANY
           {
             c.sid_ = outerClazz.feature().getRuntimeClazzIds(2);
           }
-        if (_backend_ != null)
+        outerClazz.setRuntimeData(c.sid_ + 0, innerClazz);
+        outerClazz.setRuntimeData(c.sid_ + 1, tclazz    );
+        if (innerClazz.feature().isField()) // NYI: workaround to create temp clazz created by clazzForField, remove one clazzForField is removed
           {
-            outerClazz.setRuntimeData(c.sid_, _backend_.callable(dynamic, innerClazz, tclazz));
+            Clazz fclazz = tclazz.clazzForField(innerClazz.feature());
           }
-        else
-          {
-            outerClazz.setRuntimeData(c.sid_ + 0, innerClazz);
-            outerClazz.setRuntimeData(c.sid_ + 1, tclazz    );
-          }
+
         if (!dynamic)
           {
             whenCalled(outerClazz,

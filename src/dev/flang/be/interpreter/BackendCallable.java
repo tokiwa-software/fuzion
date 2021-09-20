@@ -24,7 +24,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.ir;  // NYI: move to dev.flang.fuir?
+package dev.flang.be.interpreter;
+
+import dev.flang.ir.Clazz;
 
 import dev.flang.util.ANY;
 
