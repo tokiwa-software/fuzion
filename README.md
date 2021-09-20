@@ -23,7 +23,7 @@ Please check [https://flang.dev](https://flang.dev) for language and implementat
 2) In Powershell:
 2.1) choco install git openjdk make msys2 diffutils
 2.2) [Environment]::SetEnvironmentVariable("Path","c:\tools\msys64\mingw64\bin;" + $env:Path , "User")
-3) In File C:\tools\msys64\msys2_shell.cmd change line: 'rem setMSYS2_PATH_TYPE=inherit' to 'set MSYS2_PATH_TYPE=inherit'
+3) In file C:\tools\msys64\msys2_shell.cmd change line: 'rem set MSYS2_PATH_TYPE=inherit' to 'set MSYS2_PATH_TYPE=inherit'
 4) In msys2 shell (execute C:\tools\msys64\msys2_shell.cmd):
 4.1) pacman -S mingw-w64-x86_64-clang
 4.2) make
