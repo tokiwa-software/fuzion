@@ -169,6 +169,21 @@ public class Interpreter extends Backend
    */
   public void run()
   {
+    for (var cl : Clazzes.all())
+      {
+        DynamicBinding db = null;
+        for (var e : cl._inner.entrySet())
+          {
+            if (db == null)
+              {
+                db = new DynamicBinding(cl);
+                cl._dynamicBinding = db;
+              }
+            db.add(e.getKey(), e.getValue(), cl);
+          }
+      }
+
+
     ArrayList<Value> mainargs = new ArrayList<>();
     mainargs.add(Instance.universe); // outer instance
     // mainargs.add(null); // NYI: args
@@ -248,7 +263,7 @@ public class Interpreter extends Backend
               (c.isDynamic());
 
             var cl = ((Instance) args.get(0)).clazz();
-            ca = (Callable) cl._dynamicBinding.callable(c.calledFeature());
+            ca = (Callable) ((DynamicBinding)cl._dynamicBinding).callable(c.calledFeature());
           }
         result = ca.call(args);
         _callStack.pop();

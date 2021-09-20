@@ -188,13 +188,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Actual inner clazzes when calling a dynamically bound feature on this.
    */
-  Map<Feature, Clazz> _inner = new TreeMap<>();
+  public final Map<Feature, Clazz> _inner = new TreeMap<>();
 
 
   /**
    * The dynamic binding implementation used for this clazz. null if !isRef().
    */
-  public DynamicBinding _dynamicBinding;
+  public Object _dynamicBinding;
 
 
   /**
@@ -711,10 +711,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   private void createDynamicBinding()
   {
-    if (isRef() && _dynamicBinding == null)
+    if (isRef())
       {
-        this._dynamicBinding = new DynamicBinding(this);
-
         // NYI: Inheritance must be done differently: We should
         // (recursively) traverse all parents and hand down features from
         // each parent to this clazz to find the actual FeatureName of the
@@ -733,7 +731,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
                   {
                     var innerClazz = lookup(f, Call.NO_GENERICS, f.isUsedAt());
                     _inner.put(f, innerClazz);
-                    _dynamicBinding.add(f, innerClazz, this);
                   }
               }
           }

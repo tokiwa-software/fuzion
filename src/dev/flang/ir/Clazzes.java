@@ -200,7 +200,7 @@ public class Clazzes extends ANY
   static boolean closed = false;
 
 
-  static Backend _backend_ = null;
+  public static Backend _backend_ = null;
 
 
   /**

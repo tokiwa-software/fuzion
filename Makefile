@@ -108,7 +108,6 @@ JAVA_FILES_IR = \
           $(SRC)/dev/flang/ir/BackendCallable.java \
           $(SRC)/dev/flang/ir/Clazz.java \
           $(SRC)/dev/flang/ir/Clazzes.java \
-          $(SRC)/dev/flang/ir/DynamicBinding.java \
           $(SRC)/dev/flang/ir/IrErrors.java \
 
 JAVA_FILES_MIR = \
@@ -134,6 +133,7 @@ JAVA_FILES_BE_INTERPRETER = \
           $(SRC)/dev/flang/be/interpreter/ArrayData.java \
           $(SRC)/dev/flang/be/interpreter/Callable.java \
           $(SRC)/dev/flang/be/interpreter/ChoiceIdAsRef.java \
+          $(SRC)/dev/flang/be/interpreter/DynamicBinding.java \
           $(SRC)/dev/flang/be/interpreter/Instance.java \
           $(SRC)/dev/flang/be/interpreter/Interpreter.java \
           $(SRC)/dev/flang/be/interpreter/JavaInterface.java \

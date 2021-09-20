@@ -24,13 +24,17 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.ir;
+package dev.flang.be.interpreter;
 
 import java.util.Map;
 import java.util.TreeMap;
 
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
+
+import dev.flang.ir.BackendCallable;
+import dev.flang.ir.Clazz;
+import dev.flang.ir.Clazzes;
 
 import dev.flang.util.ANY;
 
