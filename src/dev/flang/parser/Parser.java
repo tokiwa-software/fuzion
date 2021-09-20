@@ -3521,9 +3521,6 @@ dot         : "."
   /**
    * Parse "(" if it is found
    *
-LPAREN      : "("
-            ;
-   *
    * @return true iff a "(" was found and skipped.
    */
   boolean skipLParen()
