@@ -49,7 +49,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FeatureName extends ANY implements Comparable
+public class FeatureName extends ANY implements Comparable<FeatureName>
 {
 
 
@@ -192,12 +192,6 @@ public class FeatureName extends ANY implements Comparable
   }
 
 
-  public int compareTo(Object o)
-  {
-    return compareTo((FeatureName) o);
-  }
-
-
   public boolean equals(FeatureName o)
   {
     return compareTo(o) == 0;
@@ -223,11 +217,6 @@ public class FeatureName extends ANY implements Comparable
   public String toString()
   {
     return _baseName + argCountAndIdString();
-  }
-
-  public boolean equals(Object o)
-  {
-    return compareTo(o) == 0;
   }
 
   public boolean equalsExceptId(FeatureName o)

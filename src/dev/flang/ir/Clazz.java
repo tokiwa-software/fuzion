@@ -63,7 +63,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Clazz extends ANY implements Comparable
+public class Clazz extends ANY implements Comparable<Clazz>
 {
 
 
@@ -966,14 +966,6 @@ public class Clazz extends ANY implements Comparable
     return (this==other) || isRef() && this._type.isAssignableFrom(other._type);
   }
 
-
-  /**
-   * Compare this to other for creating unique clazzes.
-   */
-  public int compareTo(Object other)
-  {
-    return compareTo((Clazz) other);
-  }
 
   /**
    * Helper routine for compareTo: compare the outer classes.  If outer are refs
