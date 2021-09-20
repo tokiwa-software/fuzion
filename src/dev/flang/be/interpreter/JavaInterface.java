@@ -269,7 +269,7 @@ public class JavaInterface extends ANY
 
 
   /**
-   * Convert a Java object returned from a refelction call to the corresponding
+   * Convert a Java object returned from a reflection call to the corresponding
    * Fuzion value.
    *
    * @param o a Java Object

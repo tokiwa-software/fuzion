@@ -118,7 +118,7 @@ public class List<T>
 
 
   /**
-   * Constructor that adds eleemnts of given iterator.
+   * Constructor that adds elements of given iterator.
    *
    * @param i
    */
@@ -130,7 +130,7 @@ public class List<T>
 
 
   /**
-   * Constructor that adds eleemnts of given array
+   * Constructor that adds elements of given array
    *
    * @param i
    */
