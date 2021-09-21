@@ -1135,50 +1135,6 @@ hw25 is
   }
 
 
-  /**
-   * Get the clazz field that is assigned to with the given assignment
-   *
-   * @parm cl a clazz id
-   *
-   * @param c code id
-   *
-   * @param ix index of assignment in code referred to by c
-   *
-   * @return the clazz id of the field that is assigned or -1 if that field
-   * is unused, so the assignment is not needed.
-   */
-  public int assignedField(int cl, int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Assign);
-
-    var outerClazz = _clazzIds.get(cl);
-    var s = _codeIds.get(c).get(ix);
-    var fc = (s instanceof Assign a)
-      ? (Clazz) outerClazz.getRuntimeData(a.tid_ + 1)
-      : (Clazz) s;
-    return fc == null ? -1 : _clazzIds.get(fc);
-  }
-
-  public int assignOuterClazz(int cl, int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Assign);
-
-    var outerClazz = _clazzIds.get(cl);
-    var s = _codeIds.get(c).get(ix);
-    var ocl = (s instanceof Assign a)
-      ? (Clazz) outerClazz.getRuntimeData(a.tid_)  // NYI: This should be the same as assignedField._outer
-      : outerClazz; // assignment to arg field in inherits call, so outer clazz is current instance
-
-    return _clazzIds.get(ocl);
-  }
-
-
   public int tagValueClazz(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
@@ -1259,92 +1215,95 @@ hw25 is
 
 
   /**
-   * Get the inner clazz for a non dynamic call or the static clazz of a dynamic
-   * call.
+   * Get the inner clazz for a non dynamic access or the static clazz of a dynamic
+   * access.
    *
-   * @param cl index of clazz containing the call
+   * @param cl index of clazz containing the access
    *
-   * @param c code block containing the call
+   * @param c code block containing the access
    *
-   * @param ix index of the call
+   * @param ix index of the access
    *
-   * @return the clazz that has to be called
+   * @return the clazz that has to be accessed or -1 if the access is an
+   * assignment to a field that is unused, so the assignment is not needed.
    */
-  public int callCalledClazz(int cl, int c, int ix)
+  public int accessedClazz(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call);
+       codeAt(c, ix) == ExprKind.Call   ||
+       codeAt(c, ix) == ExprKind.Assign    );
 
     var outerClazz = _clazzIds.get(cl);
-    var call = (Call) _codeIds.get(c).get(ix);
-    var innerClazz = (Clazz) outerClazz.getRuntimeData(call.sid_ + 0);
-    return _clazzIds.get(innerClazz);
+    var s = _codeIds.get(c).get(ix);
+    Clazz innerClazz =
+      (s instanceof Call   call) ? (Clazz) outerClazz.getRuntimeData(call.sid_ + 0) :
+      (s instanceof Assign a   ) ? (Clazz) outerClazz.getRuntimeData(a   .tid_ + 1) :
+      (s instanceof Clazz  fld ) ? fld :
+      (Clazz) (Object) new Object() { { if (true) throw new Error("acccessedClazz found unexpected Stmnt."); } } /* Java is ugly... */;
+
+    return innerClazz == null ? -1 : _clazzIds.get(innerClazz);
   }
 
 
   /**
-   * Get the possible inner clazzes for a dynamic call
+   * Get the possible inner clazzes for a dynamic call or assignment to a field
    *
-   * NYI: This should not only return the list of inner clazzes, but a mapping
-   * from outer clazzes to corresponding inner clazzes since different outer
-   * clazzes could result in calls to the same inner clazz.
+   * @param cl index of clazz containing the access
    *
-   * @param outerClazz the caller
+   * @param c code block containing the access
    *
-   * @param call the call
+   * @param ix index of the call
    *
-   * @return a list with an even number of element pairs with call target
-   * clazzes at even indices followed by the corresponding inner clazz to be
-   * called for this target.
+   * @return an array with an even number of element pairs with accessed target
+   * clazzes at even indices followed by the corresponding inner clazz of the
+   * feature to be accessed for this target.
    */
-  private List<Clazz> callCalledClazzes(Clazz outerClazz, Call call)
+  public int[] accessedClazzes(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
-      (call != null,
-       outerClazz != null);
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Call   ||
+       codeAt(c, ix) == ExprKind.Assign    );
 
-    var cf = call.calledFeature();
-    var innerClazz = (Clazz) outerClazz.getRuntimeData(call.sid_ + 0);
-    var tclazz     = (Clazz) outerClazz.getRuntimeData(call.sid_ + 1);
-    var result = new List<Clazz>();
-    for (var cl : tclazz.heirs())
+    var outerClazz = _clazzIds.get(cl);
+    var s =  _codeIds.get(c).get(ix);
+    Clazz tclazz;
+    Feature f;
+
+    if (s instanceof Call call)
       {
-        var in = cl._inner.get(cf);
+        f = call.calledFeature();
+        tclazz     = (Clazz) outerClazz.getRuntimeData(call.sid_ + 1);
+      }
+    else if (s instanceof Assign ass)
+      {
+        var assignedField = (Clazz) outerClazz.getRuntimeData(ass.tid_+ 1);
+        tclazz = (Clazz) outerClazz.getRuntimeData(ass.tid_);  // NYI: This should be the same as assignedField._outer
+        f = assignedField.feature();
+      }
+    else if (s instanceof Clazz fld)
+      {
+        tclazz = (Clazz) fld._outer;
+        f = fld.feature();
+      }
+    else
+      {
+        throw new Error();
+      }
+    var innerClazzes = new List<Clazz>();
+    for (var clz : tclazz.heirs())
+      {
+        var in = clz._inner.get(f);
         if (in != null && clazzNeedsCode(in))
           {
-            result.add(cl);
-            result.add(in);
+            innerClazzes.add(clz);
+            innerClazzes.add(in);
           }
       }
-    return result;
-  }
 
-
-  /**
-   * Get the possible inner clazzes for a dynamic call
-   *
-   * @param cl index of clazz containing the call
-   *
-   * @param c code block containing the call
-   *
-   * @param ix index of the call
-   *
-   * @return an array with an even number of element pairs with call target
-   * clazzes at even indices followed by the corresponding inner clazz to be
-   * called for this target.
-   */
-  public int[] callCalledClazzes(int cl, int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call);
-
-    var outerClazz = _clazzIds.get(cl);
-    var call = (Call) _codeIds.get(c).get(ix);
-    var innerClazzes = callCalledClazzes(outerClazz, call);
     var innerClazzIds = new int[innerClazzes.size()];
     for (var i = 0; i < innerClazzes.size(); i++)
       {
@@ -1354,17 +1313,36 @@ hw25 is
     return innerClazzIds;
   }
 
-  public boolean callIsDynamic(int cl, int c, int ix)
+
+  /**
+   * Is an access to a feature (assignment, call) dynamic?
+   *
+   * @param cl index of clazz containing the access
+   *
+   * @param c code block containing the access
+   *
+   * @param ix index of the acces
+   *
+   * @return true iff the assignment or call requires dynamic binding depending
+   * on the actual target type.
+   */
+  public boolean accessIsDynamic(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call);
+       codeAt(c, ix) == ExprKind.Assign ||
+       codeAt(c, ix) == ExprKind.Call  );
 
     var outerClazz = _clazzIds.get(cl);
-    var call = (Call) _codeIds.get(c).get(ix);
-    var tclazz = (Clazz) outerClazz.getRuntimeData(call.sid_ + 1);
-    return call.isDynamic() && tclazz.isRef();
+    var s = _codeIds.get(c).get(ix);
+    var res =
+      (s instanceof Assign ass ) ? ((Clazz) outerClazz.getRuntimeData(ass.tid_)).isRef() : // NYI: This should be the same as assignedField._outer
+      (s instanceof Clazz  arg ) ? outerClazz.isRef() : // assignment to arg field in inherits call, so outer clazz is current instance
+      (s instanceof Call   call) ? call.isDynamic() && ((Clazz) outerClazz.getRuntimeData(call.sid_ + 1)).isRef() :
+      new Object() { { if (true) throw new Error("acccessIsDynamic found unexpected Stmnt."); } } == null /* Java is ugly... */;
+
+    return res;
   }
 
 
@@ -1398,16 +1376,34 @@ hw25 is
     return call.isInheritanceCall_;
   }
 
-  public int callTargetClazz(int cl, int c, int ix)
+
+  /**
+   * Get the target (outer) clazz of a feature access
+   *
+   * @param cl index of clazz containing the access
+   *
+   * @param c code block containing the access
+   *
+   * @param ix index of the access
+   *
+   * @return index of the static outer clazz of the accessed feature.
+   */
+  public int accessTargetClazz(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
       (ix >= 0,
        withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Call);
+       codeAt(c, ix) == ExprKind.Assign ||
+       codeAt(c, ix) == ExprKind.Call  );
 
-    var call = (Call) _codeIds.get(c).get(ix);
     var outerClazz = _clazzIds.get(cl);
-    var tclazz = (Clazz) outerClazz.getRuntimeData(call.sid_ + 1);
+    var s = _codeIds.get(c).get(ix);
+    var tclazz =
+      (s instanceof Assign ass ) ? (Clazz) outerClazz.getRuntimeData(ass.tid_) : // NYI: This should be the same as assignedField._outer
+      (s instanceof Clazz  arg ) ? outerClazz : // assignment to arg field in inherits call, so outer clazz is current instance
+      (s instanceof Call   call) ? (Clazz) outerClazz.getRuntimeData(call.sid_ + 1) :
+      (Clazz) (Object) new Object() { { if (true) throw new Error("acccessTargetClazz found unexpected Stmnt."); } } /* Java is ugly... */;
+
     return _clazzIds.get(tclazz);
   }
 

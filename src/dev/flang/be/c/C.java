@@ -301,6 +301,136 @@ public class C extends ANY
 
 
   /**
+   * Create code to access (call or write) a feature.
+   *
+   * @param cl clazz id
+   *
+   * @param stack the stack containing the target and arguments for the access
+   *
+   * @param c the code block to compile
+   *
+   * @param i index of the access statement, must be ExprKind.Assign or ExprKind.Call
+   *
+   * @return statement to perform the given access
+   */
+  CStmnt access(int cl, Stack<CExpr> stack, int c, int i)
+  {
+    CStmnt result;
+    CExpr res = null;
+    var isCall = _fuir.codeAt(c, i) == FUIR.ExprKind.Call;
+    var cc0 = _fuir.accessedClazz  (cl, c, i);
+    var tc = _fuir.accessTargetClazz(cl, c, i);
+    var rt = _fuir.clazzResultClazz(cc0); // only needed if iCall
+
+    if (_fuir.accessIsDynamic(cl, c, i))
+      {
+        var ol = new List<CStmnt>(CStmnt.lineComment("Dynamic access of " + _fuir.clazzAsString(cc0)));
+        var ccs = _fuir.accessedClazzes(cl, c, i);
+        check
+          (_types.hasData(tc)); // target in dynamic call cannot be unit type
+        var stackWithArgs = (Stack<CExpr>) stack.clone();
+        args(-1, cc0, stack, _fuir.clazzArgCount(cc0));  // pop all args except target
+        var target = pop(stack, tc);
+        var tvar = _names.newTemp();
+        var tt0 = _types.clazz(tc);
+        ol.add(CStmnt.decl(tt0, tvar, target.castTo(tt0)));
+        stackWithArgs.set(stack.size(), tvar);
+        if (isCall && _types.hasData(rt) && (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.Pop))
+          {
+            var resvar = _names.newTemp();
+            res = resvar;
+            ol.add(CStmnt.decl(_types.clazzField(cc0), resvar));
+          }
+        if (ccs.length == 0)
+          {
+            ol.add(CStmnt.seq(CExpr.fprintfstderr("*** %s:%d no targets for dynamic access of %s within %s\n",
+                                                  CIdent.FILE,
+                                                  CIdent.LINE,
+                                                  CExpr.string(_fuir.clazzAsString(cc0)),
+                                                  CExpr.string(_fuir.clazzAsString(cl ))),
+                              CExpr.exit(1)));
+          }
+        var cazes = new List<CStmnt>();
+        CStmnt acc = CStmnt.EMPTY;
+        for (var cci = 0; cci < ccs.length; cci += 2)
+          {
+            var tt = ccs[cci  ];
+            var cc = ccs[cci+1];
+            var stk = (Stack<CExpr>) stackWithArgs.clone();
+            if (isCall)
+              {
+                var cal = call(tc, cc, stk, false);
+                var as = CStmnt.EMPTY;
+                if (!containsVoid(stk))
+                  {
+                    var rti = _fuir.clazzResultClazz(cc);
+                    var rv = pop(stk, rti);
+                    if (rv != null && res != null)
+                      {
+                        if (rt != rti && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
+                          {
+                            rv = rv.castTo(_types.clazz(rt));
+                          }
+                        as = res.assign(rv);
+                      }
+                  }
+                acc = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
+                                 cal,
+                                 as);
+              }
+            else
+              {
+                acc = assignField(stk, tc, tt, cc);
+              }
+            cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
+                                  CStmnt.seq(acc, CStmnt.BREAK)));
+          }
+        if (ccs.length > 2)
+          {
+            var id = tvar.deref().field(_names.CLAZZ_ID);
+            acc = CStmnt.suitch(id, cazes,
+                                CStmnt.seq(CExpr.fprintfstderr("*** %s:%d unhandled dynamic target %d in access of %s within %s\n",
+                                                               CIdent.FILE, CIdent.LINE,
+                                                               id,
+                                                               CExpr.string(_fuir.clazzAsString(cc0)),
+                                                               CExpr.string(_fuir.clazzAsString(cl ))),
+                                           CExpr.exit(1)));
+          }
+        ol.add(acc);
+        result = CStmnt.seq(ol);
+      }
+    else if (_fuir.clazzNeedsCode(cc0))
+      {
+        if (isCall)
+          {
+            result = call(tc, cc0, stack, false);
+            res = containsVoid(stack) ? null : pop(stack, rt);
+          }
+        else
+          {
+            result = assignField(stack, tc, tc, cc0);
+          }
+      }
+    else
+      {
+        result = CStmnt.seq(CExpr.fprintfstderr("*** %s:%d no code generated for static call to %s within %s\n",
+                                                CIdent.FILE,
+                                                CIdent.LINE,
+                                                CExpr.string(_fuir.clazzAsString(cc0)),
+                                                CExpr.string(_fuir.clazzAsString(cl ))),
+                            CExpr.exit(1));
+        stack.push(null);  // push void, i.e., stop code generation here
+      }
+    if (isCall && (res != null || _fuir.clazzIsVoidType(rt) && !containsVoid(stack)))
+      {
+        var rres = _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
+        push(stack, rt, rres);
+      }
+    return result;
+  }
+
+
+  /**
    * Create C code for one statement in a code block c of clazz cl with given
    * stack contents.
    *
@@ -323,20 +453,9 @@ public class C extends ANY
       {
       case Assign:
         {
-          var field = _fuir.assignedField(cl, c, i);  // field we are assigning to
-          if (field != -1)
+          if (_fuir.accessedClazz(cl, c, i) != -1)  // field we are assigning to may be unused, i.e., -1
             {
-              var outercl = _fuir.assignOuterClazz(cl, c, i);  // static clazz of outer
-              var fclazz  = _fuir.clazzResultClazz(field);     // static clazz of assigned field
-              var outer   = pop(stack, outercl);               // instance containing assigned field
-              var value   = pop(stack, fclazz);                // value assigned to field
-              if (_fuir.clazzIsRef(fclazz))
-                {
-                  value = value.castTo(_types.clazz(fclazz));
-                }
-              o = value == null
-                ? CStmnt.lineComment("valueless assignment to " + outer)
-                : accessField(outercl, outer, field).assign(value);
+              o = access(cl, stack, c, i);
             }
           break;
         }
@@ -376,9 +495,8 @@ public class C extends ANY
         }
       case Call:
         {
-          var cc0 = _fuir.callCalledClazz  (cl, c, i);
-          var rt = _fuir.clazzResultClazz(cc0);
-          var tc = _fuir.callTargetClazz(cl, c, i);
+          var tc = _fuir.accessTargetClazz(cl, c, i);
+          var cc0 = _fuir.accessedClazz  (cl, c, i);
           var ol = new List<CStmnt>();
           if (_fuir.clazzContract(cc0, FUIR.ContractKind.Pre, 0) != -1)
             {
@@ -386,95 +504,7 @@ public class C extends ANY
             }
           if (!_fuir.callPreconditionOnly(cl, c, i))
             {
-              CExpr res = null;
-              if (_fuir.callIsDynamic(cl, c, i))
-                {
-                  ol.add(CStmnt.lineComment("Dynamic call to " + _fuir.clazzAsString(cc0)));
-                  var ccs = _fuir.callCalledClazzes(cl, c, i);
-                  check
-                    (_types.hasData(tc)); // target in dynamic call cannot be unit type
-                  var stackWithArgs = (Stack<CExpr>) stack.clone();
-                  args(-1, cc0, stack, _fuir.clazzArgCount(cc0));  // pop all args except target
-                  var target = pop(stack, tc);
-                  var tvar = _names.newTemp();
-                  var tt0 = _types.clazz(tc);
-                  ol.add(CStmnt.decl(tt0, tvar, target.castTo(tt0)));
-                  stackWithArgs.set(stack.size(), tvar);
-                  if (_types.hasData(rt) && (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.Pop))
-                    {
-                      var resvar = _names.newTemp();
-                      res = resvar;
-                      ol.add(CStmnt.decl(_types.clazzField(cc0), resvar));
-                    }
-                  if (ccs.length == 0)
-                    {
-                      ol.add(CStmnt.seq(CExpr.fprintfstderr("*** %s:%d no targets for dynamic call to %s within %s\n",
-                                                            CIdent.FILE,
-                                                            CIdent.LINE,
-                                                            CExpr.string(_fuir.clazzAsString(cc0)),
-                                                            CExpr.string(_fuir.clazzAsString(cl ))),
-                                        CExpr.exit(1)));
-                    }
-                  var cazes = new List<CStmnt>();
-                  CStmnt cll = CStmnt.EMPTY;
-                  for (var cci = 0; cci < ccs.length; cci += 2)
-                    {
-                      var tt = ccs[cci  ];
-                      var cc = ccs[cci+1];
-                      var stk = (Stack<CExpr>) stackWithArgs.clone();
-                      cll = call(tc, cc, stk, false);
-                      var rti = _fuir.clazzResultClazz(cc);
-                      if (!containsVoid(stk))
-                        {
-                          var rv = pop(stk, rti);
-                          if (rv != null && rt != rti && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
-                            {
-                              rv = rv.castTo(_types.clazz(rt));
-                            }
-                          var as = rv != null && res != null ? res.assign(rv) : CStmnt.EMPTY;
-                          cll = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
-                                           cll,
-                                           as);
-                        }
-                      cazes.add(CStmnt.caze(new List<>(_names.clazzId(tt)),
-                                            CStmnt.seq(cll, CStmnt.BREAK)));
-                    }
-                  if (ccs.length > 2)
-                    {
-                      var id = tvar.deref().field(_names.CLAZZ_ID);
-                      cll = CStmnt.suitch(id, cazes,
-                                          CStmnt.seq(CExpr.fprintfstderr("*** %s:%d unhandled dynamic call target %d in call to %s within %s\n",
-                                                                         CIdent.FILE, CIdent.LINE,
-                                                                         id,
-                                                                         CExpr.string(_fuir.clazzAsString(cc0)),
-                                                                         CExpr.string(_fuir.clazzAsString(cl ))),
-                                                     CExpr.exit(1)));
-                    }
-                  ol.add(cll);
-                }
-              else if (_fuir.clazzNeedsCode(cc0))
-                {
-                  ol.add(call(tc, cc0, stack, false));
-                  if (!containsVoid(stack))
-                    {
-                      res = pop(stack, rt);
-                    }
-                }
-              else
-                {
-                  ol.add(CStmnt.seq(CExpr.fprintfstderr("*** %s:%d no code generated for static call to %s within %s\n",
-                                                        CIdent.FILE,
-                                                        CIdent.LINE,
-                                                        CExpr.string(_fuir.clazzAsString(cc0)),
-                                                        CExpr.string(_fuir.clazzAsString(cl ))),
-                                    CExpr.exit(1)));
-                  stack.push(null);  // push void, i.e., stop code generation here
-                }
-              if (res != null || _fuir.clazzIsVoidType(rt) && !containsVoid(stack))
-                {
-                  var rres = _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
-                  push(stack, rt, rres);
-                }
+              ol.add(access(cl, stack, c, i));
             }
           o = CStmnt.seq(ol);
           break;
@@ -655,6 +685,60 @@ public class C extends ANY
 
 
   /**
+   * Create code to assign value to a field
+   *
+   * @param stack the stack containing the value and the target instance
+   *
+   * @param tc the static target clazz
+   *
+   * @param tt the actual target clazz in case the assignment is dynamic
+   *
+   * @param f the field
+   */
+  CStmnt assignField(Stack<CExpr> stack, int tc, int tt, int f)
+  {
+    var af = accessField(stack, tc, f);
+    var rt = _fuir.clazzResultClazz(f);
+    var value = pop(stack, rt);
+    if (_fuir.clazzIsRef(rt))
+      {
+        value = value.castTo(_types.clazz(rt));
+      }
+    return (af == null)
+      ? CStmnt.lineComment("unit type assignment to "+ _fuir.clazzAsString(f) + " target: " + _fuir.clazzAsString(tt) + " is a NOP")
+      : CStmnt.seq(CStmnt.lineComment("assignment to "+ _fuir.clazzAsString(f) + " target: " + _fuir.clazzAsString(tt) + ":"),
+                   af.assign(value));
+  }
+
+
+  /**
+   * Create code to access a field
+   *
+   * @param stack the stack containing the value and the target instance
+   *
+   * @param tc the static target clazz
+   *
+   * @param f the field
+   */
+  CExpr accessField(Stack<CExpr> stack, int tc, int f)
+  {
+    var rt = _fuir.clazzResultClazz(f);
+    var t = pop(stack, tc);
+    check
+      (t != null || !_types.hasData(rt) || tc == _fuir.clazzUniverse());
+    var occ   = _fuir.clazzOuterClazz(f);
+    var vocc  = _fuir.clazzAsValue(occ);
+    if (occ != tc && _fuir.clazzIsRef(occ))
+      {
+        t = t.castTo(_types.clazz(occ));  // t is a ref with different static type, so cast it to the actual type
+      }
+    return (_types.isScalar(vocc) && _fuir.clazzIsRef(tc) ? t.deref().field(_names.FIELDS_IN_REF_CLAZZ) :
+            _types.isScalar(vocc)                         ? t                                           :
+            _types.hasData(rt)                            ? accessField(tc, t, f)                       : null);
+  }
+
+
+  /**
    * Create C code for a statically bound call.
    *
    * @param tc clazz id of the outer clazz of the called clazz
@@ -703,19 +787,7 @@ public class C extends ANY
         }
       case Field:
         {
-          var t = pop(stack, tc);
-          check
-            (t != null || !_types.hasData(rt) || tc == _fuir.clazzUniverse());
-          var occ   = _fuir.clazzOuterClazz(cc);
-          var vocc  = _fuir.clazzAsValue(occ);
-          if (occ != tc && _fuir.clazzIsRef(occ))
-            {
-              t = t.castTo(_types.clazz(occ));  // t is a ref with different static type, so cast it to the actual type
-            }
-          CExpr res = (_types.isScalar(vocc) && _fuir.clazzIsRef(tc) ? t.deref().field(_names.FIELDS_IN_REF_CLAZZ) :
-                       _types.isScalar(vocc)                         ? t                                           :
-                       _types.hasData(rt)                            ? accessField(tc, t, cc)                      : null);
-          push(stack, rt, res);
+          push(stack, rt, accessField(stack, tc, cc));
           break;
         }
       default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.clazzKind(cc));
