@@ -79,9 +79,9 @@ genericstest is
   li.print
   say "size: {li.size}"
 
-  Complex1(r, i i32) is
+  Complex1(real, imag i32) is
 
-  Complex<T>(r, i T) is
+  Complex<T>(real, imag T) is
   Complex2(rr, ii i32) : Complex<i32>(rr, ii) is
 
   lc0 := List<Complex1>
@@ -149,8 +149,8 @@ genericstest is
 
 /* NYI: this currently does not work:
 
-  // can we inherit paramter fields r, i?
-  Complex3(redefine r, i i32) : Complex<i32> r i is
+  // can we inherit paramter fields real, imag?
+  Complex3(redefine real, imag i32) : Complex<i32> real imag is
   lc3 := List<Complex3>;
   lc3.add (Complex3 3 4)
   lc3.add (Complex3 4 5)

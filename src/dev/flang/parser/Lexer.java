@@ -769,6 +769,13 @@ public class Lexer extends SourceFile
               token = skipOp();
               break;
             }
+          /**
+LF          : ( '\r'? '\n'
+                | '\r'
+                | '\f'
+              )
+            ;
+          */
           case K_WS      :   // spaces, tabs, lf, cr, ...
             {
               int last = p;
@@ -798,46 +805,82 @@ public class Lexer extends SourceFile
                                          : skipOp();
               break;
             }
+          /**
+COMMA       : ','
+            ;
+          */
           case K_COMMA   :   // ','
             {
               token = Token.t_comma;
               break;
             }
+          /**
+LPAREN      : '('
+            ;
+          */
           case K_LPAREN  :    // '('  round brackets or parentheses
             {
               token = Token.t_lparen;
               break;
             }
+          /**
+RPAREN      : ')'
+            ;
+          */
           case K_RPAREN  :    // ')'
             {
               token = Token.t_rparen;
               break;
             }
+          /**
+BRACEL      : '{'
+            ;
+          */
           case K_LBRACE  :    // '{'  curly brackets or braces
             {
               token = Token.t_lbrace;
               break;
             }
+          /**
+BRACER      : '}'
+            ;
+          */
           case K_RBRACE  :    // '}'
             {
               token = Token.t_rbrace;
               break;
             }
+          /**
+LBRACKET    : '['
+            ;
+          */
           case K_LCROCH  :    // '['  square brackets or crochets
             {
               token = Token.t_lcrochet;
               break;
             }
+          /**
+RBRACKET    : ']'
+            ;
+          */
           case K_RCROCH  :    // ']'
             {
               token = Token.t_rcrochet;
               break;
             }
+          /**
+SEMI        : ';'
+            ;
+          */
           case K_SEMI    :    // ';'
             {
               token = Token.t_semicolon;
               break;
             }
+          /**
+NUM_LITERAL : [0-9]+
+            ;
+          */
           case K_DIGIT   :    // '0'..'9'
             {
               _curLiteral = literal(p);

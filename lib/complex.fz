@@ -28,8 +28,8 @@
 # complex provides complex numbers based on a numeric type (e.g. f64, i32).
 # A complex number consists of a real and an imaginary part.
 #
-complex<T : numeric<T>> (r,    # real part
-                         i T   # imaginary part
+complex<T : numeric<T>> (real,    # real part
+                         imag T   # imaginary part
                          ) : numeric<complex<T>>, complexes<T>
 is
 
@@ -46,38 +46,39 @@ is
 
   # basic operations
   redef prefix + => a
-  redef infix +  (b complex<T>) => complex a.r+b.r a.i+b.i
-  redef infix -  (b complex<T>) => complex a.r-b.r a.i-b.i
-  redef infix *  (b complex<T>) => complex a.r*b.r-a.i*b.i a.r*b.i+a.i*b.r
+  redef infix +  (b complex<T>) => complex a.real+b.real a.imag+b.imag
+  redef infix -  (b complex<T>) => complex a.real-b.real a.imag-b.imag
+  redef infix *  (b complex<T>) => complex a.real*b.real-a.imag*b.imag a.real*b.imag+a.imag*b.real
   redef infix /  (b complex<T>) complex<T>
     pre
       safety: b != zero
   is
-    n := b.r*b.r+b.i*b.i
-    complex (a.r*b.r+a.i*b.i)/n (a.i*b.r-a.r*b.i)/n
+    n := b.real*b.real+b.imag*b.imag
+    complex (a.real*b.real+a.imag*b.imag)/n (a.imag*b.real-a.real*b.imag)/n
 
   # comparison
-  redef infix == (b complex<T>) => a.r  = b.r && a.i  = b.i
-  redef infix != (b complex<T>) => a.r != b.r || a.i != b.i
+  redef infix == (b complex<T>) => a.real  = b.real && a.imag  = b.imag
+  redef infix != (b complex<T>) => a.real != b.real || a.imag != b.imag
 
-  # NYI: total order ignoring i
-  redef infix <  (b complex<T>) => a.r <  b.r
-  redef infix <= (b complex<T>) => a.r <= b.r
-  redef infix >  (b complex<T>) => a.r >  b.r
-  redef infix >= (b complex<T>) => a.r >= b.r
+  # NYI: total order ignoring imag
+  redef infix <  (b complex<T>) => a.real <  b.real
+  redef infix <= (b complex<T>) => a.real <= b.real
+  redef infix >  (b complex<T>) => a.real >  b.real
+  redef infix >= (b complex<T>) => a.real >= b.real
 
-  abs² => r*r+i*i
+  abs² => real*real+imag*imag
 
   redef asString =>
     si :=
-      for c in ($i).codepointsStream
+      for c in ($imag).codepointsStream
       until !("0123456789.+-".contains c)
-        "($i)"
+        "($imag)"
       else
-        $i
+        $imag
     p := if (si.startsWith "-") then "" else "+"
-    "{r}$p{si}i"
+    "{real}$p{si}i"
 
-  # NYI: these two should be implemented in complexes, not here:
-  redef zero => complex r.zero r.zero
-  redef one  => complex r.one r.zero
+  # NYI: these three should be implemented in complexes, not here:
+  redef zero => complex real.zero real.zero
+  redef one  => complex real.one real.zero
+  i => complex real.zero real.one

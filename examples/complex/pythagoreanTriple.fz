@@ -29,33 +29,33 @@
 #
 # inspired by 3Blue1Brown https://www.youtube.com/watch?v=QJYmyhnaaek
 #
-# For any complex number v with v.r/v.i integers, v.abs² is also an
-# integer.  Since v² has absolute v².r and v².i, and v².abs = v.abs²,
-# we find a pythagorean triple (v².r, v².i, v².abs) for every such v.
+# For any complex number v with v.real/v.imag integers, v.abs² is also an
+# integer.  Since v² has absolute v².real and v².imag, and v².abs = v.abs²,
+# we find a pythagorean triple (v².real, v².imag, v².abs) for every such v.
 #
 pythagoreanTriple is
 
   max := 100
 
-  # iterate over all interesting r/i pairs while c<max
-  for r in 1..max do
+  # iterate over all interesting real/imag pairs while c<max
+  for real in 1..max do
     for
-      # i >= r is not interesting, v².r or v².i would be negative
-      # so we end i at r-1
-      i in 1..r-1
-      t := triple (complex r i)
+      # imag >= real is not interesting, v².real or v².imag would be negative
+      # so we end imag at real-1
+      imag in 1..real-1
+      t := triple (complex real imag)
       a := t.a
       b := t.b
       c := t.c
     while c < max
-      if r.gcd i = 1 # filter duplicates
+      if real.gcd imag = 1 # filter duplicates
         say "{a}² + {b}² = {c}² = {a*a} + {b*b} = {c*c}"
 
   # for complex number v, get the pythagorean triple when squaring v
   #
   triple(v complex<i32>) is
     v² := v * v
-    f := v².r.gcd v².i  # 1 or 2 (if r+i is even)
-    a := v².r / f
-    b := v².i / f
+    f := v².real.gcd v².imag  # 1 or 2 (if real+imag is even)
+    a := v².real / f
+    b := v².imag / f
     c := v.abs² / f
