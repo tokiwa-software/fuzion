@@ -234,7 +234,7 @@ javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA)
 
 $(FUZION_EBNF): $(SRC)/dev/flang/parser/Parser.java
 	mkdir -p $(@D)
-	./bin/ebnf.sh > $@
+	$(FZ_SRC)/bin/ebnf.sh > $@
 
 $(JAVA_FILE_TOOLS_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_TOOLS_VERSION_IN)
 	mkdir -p $(@D)
