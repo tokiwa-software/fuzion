@@ -455,7 +455,11 @@ run_tests_int: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
           if test -n "$(VERBOSE)"; then \
             echo -n "\nrun interpreted $$test: "; \
           fi; \
-	  make -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
+	  if test -e $$test/skip -o -e $$test/skip_int; then \
+	    echo -n "_"; \
+	  else \
+	    make -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
+	  fi; \
 	done
 	echo " `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`echo $(TESTS) | wc -w` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed"; \
 	cat $(BUILD_DIR)/run_tests.results | grep failed$$
@@ -469,7 +473,11 @@ run_tests_c: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
           if test -n "$(VERBOSE)"; then \
             echo -n "\nrun C backend $$test"; \
           fi; \
-	  make c -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
+	  if test -e $$test/skip -o -e $$test/skip_c; then \
+	    echo -n "_"; \
+	  else \
+	    make c -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
+	  fi; \
 	done
 	echo " `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`echo $(TESTS) | wc -w` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed"; \
 	cat $(BUILD_DIR)/run_tests.results | grep failed$$
