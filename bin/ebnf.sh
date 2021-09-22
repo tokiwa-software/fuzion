@@ -33,14 +33,16 @@ set -euo pipefail
 
 if [ ! -x "$(command -v pcregrep)" ]
 then
-  echo "*** need pcregrep tool installed"
-  exit 1
+  echo "*** no ebnf generated, missing pcregrep tool"
+  echo "*** no ebnf generated, missing pcregrep tool" 1>&2
+  exit 0
 fi
 
 if [ ! -x "$(command -v antlr4)" ]
 then
-  echo "*** need antlr4 installed"
-  exit 1
+  echo "*** no ebnf generated, missing antlr4 tool"
+  echo "*** no ebnf generated, missing antlr4 tool" 1>&2
+  exit 0
 fi
 
 NEW_LINE=$'\n'
