@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 import dev.flang.parser.Lexer;
@@ -125,7 +126,7 @@ public class Pretty extends ANY
   {
     Styler s = new TerminalStyler();
     var style = s.plain();
-    for (int j = 0; j < f.byteLength(); j++)
+    for (int j = 0; j < f.byteLength(); j = j + f.codePointSize(j))
       {
         var t = i.get(j);
         var newStyle = style(s, t);
@@ -135,7 +136,9 @@ public class Pretty extends ANY
             style = newStyle;
             System.out.print(style.start());
           }
-        System.out.write(f.byteAt(j));
+        byte[] codePointBytes = f.bytesAt(j);
+        String codePoint = new String(codePointBytes, StandardCharsets.UTF_8);
+        System.out.print(codePoint);
       }
     System.out.print(style.end());
   }
