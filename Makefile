@@ -457,11 +457,14 @@ run_tests_int: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
           fi; \
 	  if test -e $$test/skip -o -e $$test/skip_int; then \
 	    echo -n "_"; \
+	    echo "$$test: skipped" >>$(BUILD_DIR)/run_tests.results; \
 	  else \
 	    make -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
 	  fi; \
 	done
-	echo " `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`echo $(TESTS) | wc -w` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed"; \
+	echo -n " `cat $(BUILD_DIR)/run_tests.results | grep ok$$      | wc -l`/`echo $(TESTS) | wc -w` tests passed"; \
+	echo -n " `cat $(BUILD_DIR)/run_tests.results | grep skipped$$ | wc -l` skipped"; \
+	echo    " `cat $(BUILD_DIR)/run_tests.results | grep failed$$  | wc -l` failed"; \
 	cat $(BUILD_DIR)/run_tests.results | grep failed$$
 
 # phony target to run Fuzion tests using c backend and report number of failures
@@ -475,11 +478,14 @@ run_tests_c: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
           fi; \
 	  if test -e $$test/skip -o -e $$test/skip_c; then \
 	    echo -n "_"; \
+	    echo "$$test: skipped" >>$(BUILD_DIR)/run_tests.results; \
 	  else \
 	    make c -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
 	  fi; \
 	done
-	echo " `cat $(BUILD_DIR)/run_tests.results | grep ok$$ | wc -l`/`echo $(TESTS) | wc -w` tests passed, `cat $(BUILD_DIR)/run_tests.results | grep failed$$ | wc -l` tests failed"; \
+	echo -n " `cat $(BUILD_DIR)/run_tests.results | grep ok$$      | wc -l`/`echo $(TESTS) | wc -w` tests passed"; \
+	echo -n " `cat $(BUILD_DIR)/run_tests.results | grep skipped$$ | wc -l` skipped"; \
+	echo    " `cat $(BUILD_DIR)/run_tests.results | grep failed$$  | wc -l` failed"; \
 	cat $(BUILD_DIR)/run_tests.results | grep failed$$
 
 .PHONY: clean
