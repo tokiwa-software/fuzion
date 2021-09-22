@@ -35,32 +35,32 @@ redef_args is
       "FAILED: "
     say (s + msg)
 
-  Complex<T>(r, i T) is
-  Complex1(r, i i32) is
+  Complex<T>(real, imag T) is
+  Complex1(real, imag i32) is
   Complex2(rr, ii i32) : Complex<i32>(rr, ii) is
-  Complex3(redefine r, i i32) : Complex<i32>(r, i) is
-  Complex4(redefine r, i i32) : Complex3(r, i) is
+  Complex3(redefine real, imag i32) : Complex<i32>(real, imag) is
+  Complex4(redefine real, imag i32) : Complex3(real, imag) is
 
-  chck ((Complex<i32> 3 4).r  == 3) "generic field r set correctly"
-  chck ((Complex<i32> 3 4).i  == 4) "generic field i set correctly"
-  chck ((Complex1     3 4).r  == 3) "non-generic field r set correctly"
-  chck ((Complex1     3 4).i  == 4) "non-generic field i set correctly"
-  chck ((Complex2     3 4).r  == 3) "inherited generic field r set correctly"
-  chck ((Complex2     3 4).i  == 4) "inherited generic field i set correctly"
+  chck ((Complex<i32> 3 4).real  == 3) "generic field real set correctly"
+  chck ((Complex<i32> 3 4).imag  == 4) "generic field imag set correctly"
+  chck ((Complex1     3 4).real  == 3) "non-generic field real set correctly"
+  chck ((Complex1     3 4).imag  == 4) "non-generic field imag set correctly"
+  chck ((Complex2     3 4).real  == 3) "inherited generic field real set correctly"
+  chck ((Complex2     3 4).imag  == 4) "inherited generic field imag set correctly"
   chck ((Complex2     3 4).rr == 3) "non-generic field rr set correctly"
   chck ((Complex2     3 4).ii == 4) "non-generic field ii set correctly"
-  chck ((Complex3     3 4).r  == 3) "redefined generic field r set correctly"
-  chck ((Complex3     3 4).i  == 4) "redefined generic field i set correctly"
+  chck ((Complex3     3 4).real  == 3) "redefined generic field real set correctly"
+  chck ((Complex3     3 4).imag  == 4) "redefined generic field imag set correctly"
   c ref Complex<i32> := Complex3 3 4
-  chck (c                 .r  == 3) "redefined generic field r accessed through super feature set correctly"
-  chck (c                 .i  == 4) "redefined generic field i accessed through super feature set correctly"
-  chck ((Complex4     3 4).r  == 3) "double redefined generic field r set correctly"
-  chck ((Complex4     3 4).i  == 4) "double redefined generic field i set correctly"
+  chck (c                 .real  == 3) "redefined generic field real accessed through super feature set correctly"
+  chck (c                 .imag  == 4) "redefined generic field imag accessed through super feature set correctly"
+  chck ((Complex4     3 4).real  == 3) "double redefined generic field real set correctly"
+  chck ((Complex4     3 4).imag  == 4) "double redefined generic field imag set correctly"
   c2 ref Complex<i32> := Complex4 3 4
-  chck (c2                .r  == 3) "double redefined generic field r accessed through super-super feature set correctly"
-  chck (c2                .i  == 4) "double redefined generic field i accessed through super-super feature set correctly"
+  chck (c2                .real  == 3) "double redefined generic field real accessed through super-super feature set correctly"
+  chck (c2                .imag  == 4) "double redefined generic field imag accessed through super-super feature set correctly"
   c3 ref Complex3 := Complex4 3 4
-  chck (c3                .r  == 3) "double redefined generic field r accessed through super feature set correctly"
-  chck (c3                .i  == 4) "double redefined generic field i accessed through super feature set correctly"
+  chck (c3                .real  == 3) "double redefined generic field real accessed through super feature set correctly"
+  chck (c3                .imag  == 4) "double redefined generic field imag accessed through super feature set correctly"
 
   fuzion.std.exit exitCode

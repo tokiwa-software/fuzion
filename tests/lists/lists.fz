@@ -69,7 +69,7 @@ lists is
   li.print
   say "size: {li.size}"
 
-  Complex(r, i i32) is
+  Complex(real, imag i32) is
 
   lc List<Complex> := List<Complex>
   lc.add (Complex 3 4)
