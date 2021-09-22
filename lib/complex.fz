@@ -78,6 +78,7 @@ is
     p := if (si.startsWith "-") then "" else "+"
     "{real}$p{si}i"
 
-  # NYI: these two should be implemented in complexes, not here:
+  # NYI: these three should be implemented in complexes, not here:
   redef zero => complex real.zero real.zero
   redef one  => complex real.one real.zero
+  i => complex real.zero real.one
