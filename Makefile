@@ -29,7 +29,6 @@ FZ_SRC = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
 CLASSES_DIR = $(BUILD_DIR)/classes
-TESTS=$(shell echo $(BUILD_DIR)/tests/*/)
 
 JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/ANY.java \
@@ -449,44 +448,14 @@ run_tests: run_tests_int run_tests_c
 # phony target to run Fuzion tests using interpreter and report number of failures
 .PHONY .SILENT: run_tests_int
 run_tests_int: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
-	rm -rf $(BUILD_DIR)/run_tests.results
-	echo -n "testing interpreter: "; \
-	for test in $(TESTS); do \
-          if test -n "$(VERBOSE)"; then \
-            echo -n "\nrun interpreted $$test: "; \
-          fi; \
-	  if test -e $$test/skip -o -e $$test/skip_int; then \
-	    echo -n "_"; \
-	    echo "$$test: skipped" >>$(BUILD_DIR)/run_tests.results; \
-	  else \
-	    make -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
-	  fi; \
-	done
-	echo -n " `cat $(BUILD_DIR)/run_tests.results | grep ok$$      | wc -l`/`echo $(TESTS) | wc -w` tests passed"; \
-	echo -n " `cat $(BUILD_DIR)/run_tests.results | grep skipped$$ | wc -l` skipped"; \
-	echo    " `cat $(BUILD_DIR)/run_tests.results | grep failed$$  | wc -l` failed"; \
-	cat $(BUILD_DIR)/run_tests.results | grep failed$$
+	echo -n "testing interpreter: "
+	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) all
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c
 run_tests_c: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
-	rm -rf $(BUILD_DIR)/run_tests.results
 	echo -n "testing C backend: "; \
-	for test in $(TESTS); do \
-          if test -n "$(VERBOSE)"; then \
-            echo -n "\nrun C backend $$test"; \
-          fi; \
-	  if test -e $$test/skip -o -e $$test/skip_c; then \
-	    echo -n "_"; \
-	    echo "$$test: skipped" >>$(BUILD_DIR)/run_tests.results; \
-	  else \
-	    make c -e -C >$$test/out.txt $$test 2>/dev/null && (echo -n "." && echo "$$test: ok" >>$(BUILD_DIR)/run_tests.results) || (echo -n "#"; echo "$$test: failed" >>$(BUILD_DIR)/run_tests.results); \
-	  fi; \
-	done
-	echo -n " `cat $(BUILD_DIR)/run_tests.results | grep ok$$      | wc -l`/`echo $(TESTS) | wc -w` tests passed"; \
-	echo -n " `cat $(BUILD_DIR)/run_tests.results | grep skipped$$ | wc -l` skipped"; \
-	echo    " `cat $(BUILD_DIR)/run_tests.results | grep failed$$  | wc -l` failed"; \
-	cat $(BUILD_DIR)/run_tests.results | grep failed$$
+	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c
 
 .PHONY: clean
 clean:
