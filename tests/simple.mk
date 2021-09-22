@@ -33,7 +33,7 @@
 FUZION = ../../bin/fz
 FILE = $(NAME).fz
 
-all:
+int:
 	../check_simple_example.sh $(FUZION) $(FILE) || exit 1
 
 c:

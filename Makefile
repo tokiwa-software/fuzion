@@ -449,7 +449,7 @@ run_tests: run_tests_int run_tests_c
 .PHONY .SILENT: run_tests_int
 run_tests_int: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
 	echo -n "testing interpreter: "
-	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) all
+	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
 .PHONY .SILENT: run_tests_c

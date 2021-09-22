@@ -30,7 +30,7 @@
 
 FUZION = ../../bin/fz
 
-all:
+int:
 	$(FUZION) $(NAME) 2>err.txt
 
 c:
