@@ -897,6 +897,22 @@ public class SourceFile extends ANY
     return _bytes[i];
   }
 
+   /**
+   * Get bytes of codepoint starting at the given position
+   *
+   * @param pos an index in the file
+   *
+   * @return the byte[] at given index
+   */
+  public byte[] bytesAt(int pos) {
+    var codePointSize = codePointSize(pos);
+    byte[] result = new byte[codePointSize];
+    for (int i = 0; i < codePointSize; i++) {
+      result[i] = byteAt(pos+i);
+    }
+    return result;
+  }
+
 }
 
 /* end of file */
