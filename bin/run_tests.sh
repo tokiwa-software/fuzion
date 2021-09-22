@@ -37,7 +37,7 @@ for test in $TESTS; do
   if test -n "$VERBOSE"; then
     echo -en "\nrun $test: "
   fi
-  if test -e $test/skip -o -e $test/skip_int; then
+  if test -e $test/skip -o -e $test/skip_$TARGET; then
     echo -n "_"
     echo "$test: skipped" >>$BUILD_DIR/run_tests.results
   else
