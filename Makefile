@@ -235,7 +235,7 @@ javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA)
 
 $(FUZION_EBNF): $(SRC)/dev/flang/parser/Parser.java
 	mkdir -p $(@D)
-	which pcregrep && pcregrep -M "^[a-zA-Z0-9]+[ ]*:(\n|.)*?;" $^ >$@ || echo "*** need pcregrep tool installed" >$@
+	./bin/ebnf.sh > $@
 
 $(JAVA_FILE_TOOLS_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_TOOLS_VERSION_IN)
 	mkdir -p $(@D)

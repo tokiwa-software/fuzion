@@ -400,7 +400,7 @@ visiList    : e=visi ( COMMA visiList
   /**
    * Parse visi
    *
-  visi      : COLON qual
+visi        : COLON qual
             | qual
             ;
    */
@@ -1134,6 +1134,7 @@ callList    : call ( COMMA callList
 call        : name ( actualGens actualArgs callTail
                    | dot ( NUM_LITERAL callTail
                          | call
+                         )
                    )
             ;
    */
@@ -1176,7 +1177,7 @@ indexCall   : ( LBRACKET exprList RBRACKET
                 ( ":=" exprInLine
                 |
                 )
-              )+
+              )
             ;
    */
   Call indexCall(Expr target)
@@ -1336,7 +1337,7 @@ typeList    : type ( COMMA typeList
    * Parse actualArgs
    *
 actualArgs  : actualsList
-            | LPAREN exprLst RPAREN
+            | LPAREN exprList RPAREN
             | LPAREN RPAREN
             ;
    */
@@ -1590,10 +1591,9 @@ exprInLine  : expr             # within one line
   /**
    * An expr() that, if it is a block, is permitted to start at minIndent.
    *
-exprAtMinIndent
-              : block
-              | exprInLine
-            ;
+exprAtMinIndent : block
+                | exprInLine
+                ;
    */
   Expr exprAtMinIndent()
   {
@@ -1781,7 +1781,7 @@ term        : simpleterm ( indexCall
             ;
 simpleterm  : bracketTerm
             | fun
-            | string
+            | stringTerm
             | NUM_LITERAL
             | "old" term
             | match
@@ -1847,8 +1847,9 @@ simpleterm  : bracketTerm
    * Parse stringTerm
    *
 stringTerm  : STRING
-            | STRING$ ident stringTerm
-            | STRING{ expr  stringTerm
+            # NYI string interpolation
+            # | STRING$ ident stringTerm
+            # | STRING{ expr  stringTerm
             ;
   */
   Expr stringTerm(Expr leftString)
@@ -2084,6 +2085,10 @@ casesBars   : caze maybecomma ( '|' casesBars
 caseNoBars  : caze maybecomma ( casesNoBars
                               |
                               )
+            ;
+# NYI: grammar not correct yet.
+casesNoBars : caseNoBars caseNoBars
+            | caseNoBars
             ;
 maybecomma  : comma
             |
@@ -2542,7 +2547,7 @@ indexVar    : visibility
               |      contract implFldIter
               )
             ;
-implFldIter : "in" exprInLine
+implFldIter : "in" exprInLine;
 nextValue   : COMMA exprAtMinIndent
             |
             ;
@@ -2630,7 +2635,7 @@ cond        : exprInLine
   /**
    * Parse ifstmnt
    *
-ifstmt      : "if" exprInLine thenPart elseBlockOpt
+ifstmnt      : "if" exprInLine thenPart elseBlockOpt
             ;
    */
   If ifstmnt()
@@ -2679,10 +2684,10 @@ thenPart    : "then" block
   /**
    * Parse elseBlockOpt
    *
-elseBlockOpt: elseBLock
+elseBlockOpt: elseBlock
             |
             ;
-elseBlock   : "else" ( ifstmt
+elseBlock   : "else" ( ifstmnt
                      | block
                      )
             ;
@@ -2794,11 +2799,11 @@ assign      : "set" name ":=" exprInLine
 destructure : destructr
             | destructrDcl
             | destructrSet
-            | destructrOld
-            | destructrDclOld
             ;
 destructr   : "(" argNames ")"       ":=" exprInLine
+            ;
 destructrDcl: formArgs               ":=" exprInLine
+            ;
 destructrSet: "set" "(" argNames ")" ":=" exprInLine
             ;
    */
@@ -2878,11 +2883,10 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
   /**
    * Parse call or anonymous feature or this
    *
-callOrFeatOrThis
-            : anonymous
-            : qualThis
-            | call
-            ;
+callOrFeatOrThis  : anonymous
+                  | qualThis
+                  | call
+                  ;
    */
   Expr callOrFeatOrThis()
   {
@@ -3142,11 +3146,11 @@ implRout    : block
   /**
    * Parse implFldOrRout
    *
-impl        : implRout
-            | implFldInit
-            | implFldUndef
-            |
-            ;
+implFldOrRout   : implRout
+                | implFldInit
+                | implFldUndef
+                |
+                ;
    */
   Impl implFldOrRout(boolean hasType)
   {
@@ -3519,9 +3523,6 @@ dot         : "."
 
   /**
    * Parse "(" if it is found
-   *
-LPAREN      : "("
-            ;
    *
    * @return true iff a "(" was found and skipped.
    */
