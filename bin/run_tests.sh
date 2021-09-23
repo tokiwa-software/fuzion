@@ -48,5 +48,5 @@ fi
 done
 echo -n " `cat $BUILD_DIR/run_tests.results | grep ok$      | wc -l`/`echo $TESTS | wc -w` tests passed,"
 echo -n " `cat $BUILD_DIR/run_tests.results | grep skipped$ | wc -l` skipped,"
-echo    " `cat $BUILD_DIR/run_tests.results | grep failed$  | wc -l` failed"
-cat $BUILD_DIR/run_tests.results | grep failed$
+echo    " `cat $BUILD_DIR/run_tests.results | grep failed$  | wc -l` failed."
+cat $BUILD_DIR/run_tests.results | grep failed$ || echo -n
