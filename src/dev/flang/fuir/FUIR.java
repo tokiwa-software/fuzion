@@ -770,6 +770,15 @@ hw25 is
   if (count == 3) say "PASS" else say "FAIL"
         */
 
+        var pf = p.calledFeature();
+        var or = cc._inner.get(pf.outerRef_);
+        if (or != null)
+          {
+            toStack(code, p.target); // NYI: target is evaluated twice here!
+            code.add(new Current(cc.feature().pos(), cc._type));
+            code.add(or);  // field clazz means assignment to field
+          }
+
         toStack(code, p);
         toStack(code, p.target);
         check
@@ -777,7 +786,7 @@ hw25 is
         for (var i = 0; i < p._actuals.size(); i++)
           {
             var a = p._actuals.get(i);
-            var f = p.calledFeature().arguments.get(i);
+            var f = pf.arguments.get(i);
             toStack(code, a);
             code.add(new Current(cc.feature().pos(), cc._type));
             // Field clazz means assign value to that field

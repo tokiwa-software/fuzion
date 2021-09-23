@@ -709,6 +709,10 @@ public class C extends ANY
       {
         value = value.castTo(_types.clazz(rt));
       }
+    if (_fuir.clazzFieldIsAdrOfValue(f))
+      {
+        value = value.adrOf();
+      }
     return (af == null)
       ? CStmnt.lineComment("unit type assignment to "+ _fuir.clazzAsString(f) + " target: " + _fuir.clazzAsString(tt) + " is a NOP")
       : CStmnt.seq(CStmnt.lineComment("assignment to "+ _fuir.clazzAsString(f) + " target: " + _fuir.clazzAsString(tt) + ":"),
