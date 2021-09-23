@@ -98,6 +98,7 @@ public class FUIR extends ANY
     Unbox,
     Call,
     Current,
+    Comment,
     Const,
     Match,
     Tag,
@@ -1075,6 +1076,10 @@ hw25 is
       {
         result = ExprKind.Pop;
       }
+    else if (e instanceof String)
+      {
+        result = ExprKind.Comment;
+      }
     else if (e instanceof Assign ||
              e instanceof Clazz    )  /* Clazz represents the field we assign a value to */
       {
@@ -1211,6 +1216,26 @@ hw25 is
     var u = (Unbox) _codeIds.get(c).get(ix);
     Clazz vc = (Clazz) outerClazz.getRuntimeData(u._refAndValClazzId+1);
     return _clazzIds.get(vc);
+  }
+
+
+  /**
+   * Get the code for a comment expression.  This is used for debugging.
+   *
+   * @param cl index of clazz containing the comment
+   *
+   * @param c code block containing the comment
+   *
+   * @param ix index of the comment
+   */
+  public String comment(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Comment);
+
+    return (String) _codeIds.get(c).get(ix);
   }
 
 

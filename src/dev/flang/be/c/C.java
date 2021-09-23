@@ -509,6 +509,11 @@ public class C extends ANY
           o = CStmnt.seq(ol);
           break;
         }
+      case Comment:
+        {
+          o = CStmnt.lineComment(_fuir.comment(cl, c, i));
+          break;
+        }
       case Current:
         {
           push(stack, cl, current(cl));
