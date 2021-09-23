@@ -320,7 +320,7 @@ public class C extends ANY
     var isCall = _fuir.codeAt(c, i) == FUIR.ExprKind.Call;
     var cc0 = _fuir.accessedClazz  (cl, c, i);
     var tc = _fuir.accessTargetClazz(cl, c, i);
-    var rt = _fuir.clazzResultClazz(cc0); // only needed if iCall
+    var rt = _fuir.clazzResultClazz(cc0); // only needed if isCall
 
     if (_fuir.accessIsDynamic(cl, c, i))
       {
