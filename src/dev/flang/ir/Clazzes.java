@@ -703,7 +703,7 @@ public class Clazzes extends ANY
           }
         outerClazz.setRuntimeData(c.sid_ + 0, innerClazz);
         outerClazz.setRuntimeData(c.sid_ + 1, tclazz    );
-        if (innerClazz.feature().isField()) // NYI: workaround to create temp clazz created by clazzForField, remove one clazzForField is removed
+        if (innerClazz.feature().isField()) // NYI: workaround to create temp clazz created by clazzForField, remove once clazzForField is removed
           {
             Clazz fclazz = tclazz.clazzForField(innerClazz.feature());
           }
