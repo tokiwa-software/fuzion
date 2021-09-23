@@ -737,7 +737,7 @@ public class FUIR extends ANY
 
   /**
    * add the code of feature ff to code.  In case ff has inherits calls, also
-   * include the code of the inhreted features.
+   * include the code of the inherited features.
    *
    * @param code a list that code should be added to.
    *
