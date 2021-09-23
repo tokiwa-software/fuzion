@@ -1291,7 +1291,8 @@ hw25 is
       (ix >= 0,
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Call   ||
-       codeAt(c, ix) == ExprKind.Assign    );
+       codeAt(c, ix) == ExprKind.Assign    ,
+       accessIsDynamic(cl, c, ix));
 
     var outerClazz = _clazzIds.get(cl);
     var s =  _codeIds.get(c).get(ix);
