@@ -368,7 +368,7 @@ public class C extends ANY
                           {
                             rv = rv.castTo(_types.clazz(rt));
                           }
-                        as = res.assign(rv);
+                        as = assign(res, rv, rt);
                       }
                   }
                 acc = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
@@ -473,8 +473,7 @@ public class C extends ANY
                              CStmnt.decl(_types.clazz(rc), t),
                              t.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType(_names.struct(rc))))),
                              t.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(rc)),
-                             _types.hasData(vc) ? t.deref().field(_names.FIELDS_IN_REF_CLAZZ).assign(val)
-                                                : CStmnt.EMPTY);
+                             assign(t.deref().field(_names.FIELDS_IN_REF_CLAZZ), val, vc));
               push(stack, rc, t);
             }
           break;
@@ -595,10 +594,10 @@ public class C extends ANY
                 {
                   var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
                   var f      = accessField(cl, current(cl), field);
-                  var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz))
-                                                        : uniyon.field(new CIdent(_names.CHOICE_ENTRY_NAME + tags[0]));
-                  sl.add(!_types.hasData(fclazz) ? CStmnt.lineComment("valueluess assignment to " + f.code())
-                                                 : f.assign(entry));
+                  var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
+                               _types.hasData(fclazz)   ? uniyon.field(new CIdent(_names.CHOICE_ENTRY_NAME + tags[0]))
+                                                        : CExpr.UNIT;
+                  sl.add(assign(f, entry, fclazz));
                 }
               sl.add(createCode(cl, (Stack<CExpr>) stack.clone(), _fuir.matchCaseCode(c, i, mc)));
               sl.add(CStmnt.BREAK);
@@ -652,8 +651,7 @@ public class C extends ANY
           o = CStmnt.seq(CStmnt.lineComment("Tag a value to be of choice type " + _fuir.clazzAsString(newcl) + " static value type " + _fuir.clazzAsString(valuecl)),
                          CStmnt.decl(_types.clazz(newcl), res),
                          _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? CStmnt.EMPTY : tag.assign(CExpr.int32const(tagNum)),
-                         _types.hasData(valuecl) ? entry.assign(value)
-                                                 : CStmnt.lineComment("valueluess assignment to " + entry.code()));
+                         assign(entry, value, valuecl));
           push(stack, newcl, res);
           break;
         }
@@ -674,6 +672,22 @@ public class C extends ANY
         }
       }
     return o;
+  }
+
+
+  /**
+   * Create code to assign a value of given type to a field. In case value is of
+   * unit type, this will produce no code, i.e., any possible side-effect of
+   * target and value will be lost.
+   */
+  CStmnt assign(CExpr target, CExpr value, int type)
+  {
+    if (PRECONDITIONS) require
+      (_types.hasData(type) == (value != CExpr.UNIT));
+
+    return _types.hasData(type)
+      ? target.assign(value)
+      : CStmnt.lineComment("unit type assignment to " + target.code());
   }
 
 
@@ -716,10 +730,7 @@ public class C extends ANY
       {
         value = value.adrOf();
       }
-    return !_types.hasData(rt)
-      ? CStmnt.lineComment("unit type assignment to "+ _fuir.clazzAsString(f) + " target: " + _fuir.clazzAsString(tt) + " is a NOP")
-      : CStmnt.seq(CStmnt.lineComment("assignment to "+ _fuir.clazzAsString(f) + " target: " + _fuir.clazzAsString(tt) + ":"),
-                   af.assign(value));
+    return assign(af, value, rt);
   }
 
 
@@ -990,7 +1001,7 @@ public class C extends ANY
             var target = _types.isScalar(vcl)
               ? cur
               : cur.field(_names.fieldName(af));
-            l.add(target.assign(new CIdent("arg" + i)));
+            l.add(assign(target, new CIdent("arg" + i), at));
           }
       }
     if (pre)
