@@ -729,8 +729,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                     this._type != Types.t_ADDRESS /* NYI: better something like this.isInstantiated() */
                     )
                   {
-                    var innerClazz = lookup(f, Call.NO_GENERICS, f.isUsedAt());
-                    _inner.put(f, innerClazz);
+                    lookup(f, Call.NO_GENERICS, f.isUsedAt());
                   }
               }
           }
@@ -859,6 +858,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
                     innerClazz.called(p);
                     innerClazz.instantiated(p);
                   }
+              }
+            if (actualGenerics.isEmpty())
+              {
+                _inner.put(f, innerClazz);
               }
             check
               (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == af);
