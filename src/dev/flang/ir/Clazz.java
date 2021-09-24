@@ -1431,7 +1431,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (_argumentFields != null);
 
-    return Arrays.stream(argumentFields()).anyMatch(a -> a.resultClazz().isVoidType());
+    return this == Clazzes.c_void.getIfCreated() || Arrays.stream(argumentFields()).anyMatch(a -> a.resultClazz().isVoidType());
   }
 
 
