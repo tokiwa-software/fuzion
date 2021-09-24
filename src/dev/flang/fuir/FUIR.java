@@ -100,6 +100,7 @@ public class FUIR extends ANY
     Current,
     Comment,
     Const,
+    Dup,
     Match,
     Tag,
     Pop,
@@ -775,11 +776,14 @@ hw25 is
         if (or != null)
           {
             toStack(code, p.target); // NYI: target is evaluated twice here!
+            code.add(ExprKind.Dup);
             code.add(new Current(cc.feature().pos(), cc._type));
             code.add(or);  // field clazz means assignment to field
           }
-
-        toStack(code, p.target);
+        else
+          {
+            toStack(code, p.target);
+          }
         check
           (p._actuals.size() == p.calledFeature().arguments.size());
         for (var i = 0; i < p._actuals.size(); i++)
@@ -1083,6 +1087,10 @@ hw25 is
     if (e == WIPE_STACK) // Take care: must be first since WIPE_STACK is NumLiteral (for now)
       {
         result = ExprKind.Pop;
+      }
+    else if (e instanceof ExprKind ek)
+      {
+        result = ek;
       }
     else if (e instanceof String)
       {

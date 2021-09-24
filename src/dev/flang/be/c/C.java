@@ -661,6 +661,13 @@ public class C extends ANY
           push(stack, newcl, res);
           break;
         }
+      case Dup:
+        {
+          var v = stack.pop();
+          stack.push(v);
+          stack.push(v);
+          break;
+        }
       case Pop:
         { // Handled within Call
           break;
