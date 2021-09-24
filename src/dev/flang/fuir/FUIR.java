@@ -167,15 +167,6 @@ public class FUIR extends ANY
   }
 
 
-  /**
-   * Dummy Expr for Pop.  This is needed only temporily as long as we use
-   * the AST instances instead of proper bytecodes.
-   *
-   * NYI: remove once bytecode instructions are here.
-   */
-  static final Expr WIPE_STACK = new NumLiteral(42);
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -777,7 +768,7 @@ hw25 is
           {
             toStack(code, p.target); // NYI: target is evaluated twice here!
             code.add(ExprKind.Dup);
-            code.add(new Current(cc.feature().pos(), cc._type));
+            code.add(ExprKind.Current);
             code.add(or);  // field clazz means assignment to field
           }
         else
@@ -791,7 +782,7 @@ hw25 is
             var a = p._actuals.get(i);
             var f = pf.arguments.get(i);
             toStack(code, a);
-            code.add(new Current(cc.feature().pos(), cc._type));
+            code.add(ExprKind.Current);
             // Field clazz means assign value to that field
             code.add((Clazz) cc.getRuntimeData(p.parentCallArgFieldIds_ + i));
           }
@@ -981,7 +972,7 @@ hw25 is
       }
     else if (s instanceof Current)
       {
-        l.add(s);
+        l.add(ExprKind.Current);
       }
     else if (s instanceof If i)
       {
@@ -1020,7 +1011,7 @@ hw25 is
         l.add(c);
         if (dumpResult)
           {
-            l.add(WIPE_STACK);
+            l.add(ExprKind.Pop);
           }
       }
     else if (s instanceof Match m)
@@ -1085,11 +1076,7 @@ hw25 is
 
     ExprKind result;
     var e = _codeIds.get(c).get(ix);
-    if (e == WIPE_STACK) // Take care: must be first since WIPE_STACK is NumLiteral (for now)
-      {
-        result = ExprKind.Pop;
-      }
-    else if (e instanceof ExprKind ek)
+    if (e instanceof ExprKind ek)
       {
         result = ek;
       }
@@ -1113,10 +1100,6 @@ hw25 is
     else if (e instanceof Call)
       {
         result = ExprKind.Call;
-      }
-    else if (e instanceof Current)
-      {
-        result = ExprKind.Current;
       }
     else if (e instanceof If    ||
              e instanceof Match    )
