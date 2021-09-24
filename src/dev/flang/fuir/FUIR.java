@@ -779,7 +779,6 @@ hw25 is
             code.add(or);  // field clazz means assignment to field
           }
 
-        toStack(code, p);
         toStack(code, p.target);
         check
           (p._actuals.size() == p.calledFeature().arguments.size());
