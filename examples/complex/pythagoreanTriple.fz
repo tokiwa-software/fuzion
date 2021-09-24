@@ -30,32 +30,26 @@
 # inspired by 3Blue1Brown https://www.youtube.com/watch?v=QJYmyhnaaek
 #
 # For any complex number v with v.real/v.imag integers, v.abs² is also an
-# integer.  Since v² has absolute v².real and v².imag, and v².abs = v.abs²,
-# we find a pythagorean triple (v².real, v².imag, v².abs) for every such v.
+# integer.  Since v².abs² = v².real² + v².imag², and v².abs = v.abs²,
+# we find a pythagorean triple (v².real, v².imag, v.abs²) for every such v.
 #
 pythagoreanTriple is
 
-  max := 100
+  cₘₐₓ := 100    # max length of hypothenuse
 
   # iterate over all interesting real/imag pairs while c<max
-  for real in 1..max do
+  for real in 1..cₘₐₓ do
     for
       # imag >= real is not interesting, v².real or v².imag would be negative
       # so we end imag at real-1
       imag in 1..real-1
-      t := triple (complex real imag)
-      a := t.a
-      b := t.b
-      c := t.c
-    while c < max
-      if real.gcd imag = 1 # filter duplicates
-        say "{a}² + {b}² = {c}² = {a*a} + {b*b} = {c*c}"
 
-  # for complex number v, get the pythagorean triple when squaring v
-  #
-  triple(v complex<i32>) is
-    v² := v * v
-    f := v².real.gcd v².imag  # 1 or 2 (if real+imag is even)
-    a := v².real / f
-    b := v².imag / f
-    c := v.abs² / f
+      v := complex real imag
+      v² := v * v
+      f := v².real.gcd v².imag  # 1 or 2 (if real+imag is even)
+      a := v².real / f
+      b := v².imag / f
+      c := v .abs² / f
+    while c < cₘₐₓ
+      if real.gcd imag = 1  # filter duplicates
+        say "{a}² + {b}² = {c}² = {a*a} + {b*b} = {c*c}"
