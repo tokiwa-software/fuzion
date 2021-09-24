@@ -826,7 +826,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (f != null,
        this != Clazzes.c_void.get());
 
-    var innerClazz = _inner.get(f);
+    var innerClazz = actualGenerics.isEmpty() ? _inner.get(f) : null;
     if (innerClazz == null)
       {
         Feature af = findRedefinition(f);
