@@ -225,20 +225,18 @@ public class C extends ANY
   void push(Stack<CExpr> stack, int cl, CExpr val)
   {
     if (PRECONDITIONS) require
-      (!_types.hasData(cl) || val != null,
+      (!_types.hasData(cl)                               || val != null && val != CExpr.UNIT,
+        _types.hasData(cl) ||  _fuir.clazzIsVoidType(cl) ||                val == CExpr.UNIT,
+                              !_fuir.clazzIsVoidType(cl) || val == null,
        !containsVoid(stack));
 
-    if (_types.hasData(cl))
+    if (_types.hasData(cl) || _fuir.clazzIsVoidType(cl))
       {
         stack.push(val);
       }
-    else if (_fuir.clazzIsVoidType(cl))
-      {
-        stack.push(null);
-      }
 
     if (POSTCONDITIONS) ensure
-      (!_types.hasData(cl)        || stack.get(stack.size()-1) == val,
+      (!_types.hasData(cl) || stack.get(stack.size()-1) == val,
        !_fuir.clazzIsVoidType(cl) || containsVoid(stack));
   }
 
@@ -259,8 +257,7 @@ public class C extends ANY
       (!_types.hasData(cl) || stack.size() > 0,
        !containsVoid(stack));
 
-    return _types.hasData(cl) ? stack.pop()
-                              : null;
+    return _types.hasData(cl) ? stack.pop() : CExpr.UNIT;
   }
 
 
@@ -423,7 +420,7 @@ public class C extends ANY
       }
     if (isCall && (res != null || _fuir.clazzIsVoidType(rt) && !containsVoid(stack)))
       {
-        var rres = _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
+        var rres = _types.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
         push(stack, rt, rres);
       }
     return result;
@@ -476,8 +473,8 @@ public class C extends ANY
                              CStmnt.decl(_types.clazz(rc), t),
                              t.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType(_names.struct(rc))))),
                              t.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(rc)),
-                             val == null ? CStmnt.EMPTY
-                             : t.deref().field(_names.FIELDS_IN_REF_CLAZZ).assign(val));
+                             _types.hasData(vc) ? t.deref().field(_names.FIELDS_IN_REF_CLAZZ).assign(val)
+                                                : CStmnt.EMPTY);
               push(stack, rc, t);
             }
           break;
@@ -638,7 +635,7 @@ public class C extends ANY
           if (_fuir.clazzIsUnitType(valuecl) && _fuir.clazzIsChoiceOfOnlyRefs(newcl))
             {// replace unit-type values by 0, 1, 2, 3,... cast to ref Object
               check
-                (value == null); // value must be a unit type
+                (value == CExpr.UNIT);
               if (tagNum >= CConstants.PAGE_SIZE)
                 {
                   Errors.error("Number of tags for choice type exceeds page size.",
@@ -655,9 +652,8 @@ public class C extends ANY
           o = CStmnt.seq(CStmnt.lineComment("Tag a value to be of choice type " + _fuir.clazzAsString(newcl) + " static value type " + _fuir.clazzAsString(valuecl)),
                          CStmnt.decl(_types.clazz(newcl), res),
                          _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? CStmnt.EMPTY : tag.assign(CExpr.int32const(tagNum)),
-                         value == null
-                         ? CStmnt.lineComment("valueluess assignment to " + entry.code())
-                         : entry.assign(value));
+                         _types.hasData(valuecl) ? entry.assign(value)
+                                                 : CStmnt.lineComment("valueluess assignment to " + entry.code()));
           push(stack, newcl, res);
           break;
         }
@@ -720,7 +716,7 @@ public class C extends ANY
       {
         value = value.adrOf();
       }
-    return (af == null)
+    return !_types.hasData(rt)
       ? CStmnt.lineComment("unit type assignment to "+ _fuir.clazzAsString(f) + " target: " + _fuir.clazzAsString(tt) + " is a NOP")
       : CStmnt.seq(CStmnt.lineComment("assignment to "+ _fuir.clazzAsString(f) + " target: " + _fuir.clazzAsString(tt) + ":"),
                    af.assign(value));
@@ -750,7 +746,7 @@ public class C extends ANY
       }
     return (_types.isScalar(vocc) && _fuir.clazzIsRef(tc) ? t.deref().field(_names.FIELDS_IN_REF_CLAZZ) :
             _types.isScalar(vocc)                         ? t                                           :
-            _types.hasData(rt)                            ? accessField(tc, t, f)                       : null);
+            _types.hasData(rt)                            ? accessField(tc, t, f)                       : CExpr.UNIT);
   }
 
 
@@ -787,7 +783,7 @@ public class C extends ANY
               result = call;
               if (!pre)
                 {
-                  CExpr res = null;
+                  CExpr res = _fuir.clazzIsVoidType(rt) ? null : CExpr.UNIT;
                   if (_types.hasData(rt))
                     {
                       var tmp = _names.newTemp();
@@ -844,7 +840,7 @@ public class C extends ANY
     else if (tc != -1)
       { // ref to outer instance, passed by reference
         var or = _fuir.clazzOuterRef(cc);   // NYI: special handling of outer refs should not be part of BE, should be moved to FUIR
-        var a = pop(stack, tc);
+        var a = tc == _fuir.clazzUniverse() ? _names.UNIVERSE : pop(stack, tc);
         if (or != -1)
           {
             var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
@@ -1057,9 +1053,10 @@ public class C extends ANY
    */
   CExpr current(int cl)
   {
-    return _fuir.clazzIsRef(cl)
-      ? _names.CURRENT
-      : _names.CURRENT.deref();
+    return
+      !_types.hasData(cl) ? CExpr.UNIT :
+      _fuir.clazzIsRef(cl) ? _names.CURRENT
+                           : _names.CURRENT.deref();
   }
 
 

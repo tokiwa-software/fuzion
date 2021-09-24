@@ -52,6 +52,17 @@ abstract class CExpr extends CStmnt
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * Dummy value to be used for unit type values.  This cannot be used to create
+   * code since C does not have a unit type.
+   */
+  static CExpr UNIT = new CExpr()
+    {
+      void code(CString sb) { sb.append("/* UNIT VALUE */");  }
+      int precedence() { return 0; }
+    };
+
+
   /*----------------------------  producers  ----------------------------*/
 
 
