@@ -897,9 +897,10 @@ hw25 is
       {
       case Abstract : return false;
       case Choice   : return false;
-      case Intrinsic: return true;
+      case Intrinsic: return !cc.isAbsurd();
       case Routine  :
-      case Field    : return cc.isInstantiated() && cc != Clazzes.conststring.getIfCreated();
+      case Field    :
+        return cc.isInstantiated() && cc != Clazzes.conststring.getIfCreated() && !cc.isAbsurd();
       default: throw new Error("unhandled case: " + clazzKind(cc));
       }
   }
