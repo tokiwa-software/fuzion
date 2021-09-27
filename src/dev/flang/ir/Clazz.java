@@ -450,13 +450,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * private helper for registerAsHeir().  Make sure this clazz is added to the
-   * set of heirs of parent ann all of parent's parents.
+   * set of heirs of parent and all of parent's parents.
    */
   private void registerAsHeir(Clazz parent)
   {
     if (parent._heirs == null)
       {
         parent._heirs = new TreeSet<>();
+        parent._heirs.add(parent);
       }
     parent._heirs.add(this);
     for (Call p: parent.feature().inherits)
@@ -478,6 +479,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (isRef());
 
+    if (_heirs == null)
+      {
+        _heirs = new TreeSet<>();
+        _heirs.add(this);
+      }
     return _heirs;
   }
 
