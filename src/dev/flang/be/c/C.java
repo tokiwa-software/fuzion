@@ -410,7 +410,7 @@ public class C extends ANY
       }
     else
       {
-        result = CStmnt.seq(CExpr.fprintfstderr("*** %s:%d no code generated for static call to %s within %s\n",
+        result = CStmnt.seq(CExpr.fprintfstderr("*** %s:%d no code generated for static access to %s within %s\n",
                                                 CIdent.FILE,
                                                 CIdent.LINE,
                                                 CExpr.string(_fuir.clazzAsString(cc0)),
