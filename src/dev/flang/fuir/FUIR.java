@@ -93,6 +93,7 @@ public class FUIR extends ANY
 
   public enum ExprKind
   {
+    AdrOf,
     Assign,
     Box,
     Unbox,
@@ -102,6 +103,7 @@ public class FUIR extends ANY
     Const,
     Dup,
     Match,
+    Outer,
     Tag,
     Pop,
   }
@@ -767,6 +769,11 @@ hw25 is
         if (or != null)
           {
             toStack(code, p.target); // NYI: target is evaluated twice here!
+            if (!or.resultClazz().isRef() &&
+                !or.resultClazz().feature().isBuiltInPrimitive())
+              {
+                code.add(ExprKind.AdrOf);
+              }
             code.add(ExprKind.Dup);
             code.add(ExprKind.Current);
             code.add(or);  // field clazz means assignment to field
@@ -793,6 +800,33 @@ hw25 is
 
 
   /**
+   * Code for a routine or precondition prolog.
+   *
+   * This addss code to initialize outer reference, must be done at the
+   * beginning of every routine and precondition.
+   *
+   * @param code the code to add the initialization to.
+   *
+   * @param cc the routine we are creating code for.
+   */
+  private List<Object> prolog(Clazz cc)
+  {
+    List<Object> code = new List<>();
+    var vcc = cc.asValue();
+    var or = vcc.outerRef();
+    var cco = cc._outer;
+    if (or != null && !cco.isUnitType())
+      {
+        code.add(ExprKind.Outer);
+        code.add(ExprKind.Current);
+        code.add(or);
+      }
+    return code;
+  }
+
+
+
+  /**
    * Get access to the code of a clazz of kind Routine
    *
    * @param cl a clazz id
@@ -806,7 +840,7 @@ hw25 is
 
     var cc = _clazzIds.get(cl);
     var ff = cc.feature();
-    List<Object> code = new List<>();
+    var code = prolog(cc);
     addCode(cc, code, ff);
     return _codeIds.add(code);
   }
@@ -836,10 +870,11 @@ hw25 is
        clazzKind(cl) == ClazzKind.Abstract     ,
        ix >= 0);
 
-    var ff = _clazzIds.get(cl).feature();
-    var cc = ff.contract;
-    var cond = (cc != null && ck == ContractKind.Pre  ? cc.req :
-                cc != null && ck == ContractKind.Post ? cc.ens : null);
+    var cc = _clazzIds.get(cl);
+    var ff = cc.feature();
+    var ccontract = ff.contract;
+    var cond = (ccontract != null && ck == ContractKind.Pre  ? ccontract.req :
+                ccontract != null && ck == ContractKind.Post ? ccontract.ens : null);
     // NYI: PERFORMANCE: Always iterating the conditions results in performance
     // quadratic in the number of conditions.  This could be improved by
     // filtering BoolConst.TRUE once and reusing the resulting cond.
@@ -853,8 +888,16 @@ hw25 is
           }
         i++;
       }
-    List<Object> code = cond != null && i < cond.size() ? toStack(cond.get(i).cond) : null;
-    return code != null ? _codeIds.add(code) : -1;
+    if (cond != null && i < cond.size())
+      {
+        var code = prolog(cc);
+        toStack(code, cond.get(i).cond);
+        return _codeIds.add(code);
+      }
+    else
+      {
+        return -1;
+      }
   }
 
 
@@ -891,7 +934,7 @@ hw25 is
       case Intrinsic: return !cc.isAbsurd();
       case Routine  :
       case Field    :
-        return cc.isInstantiated() && cc != Clazzes.conststring.getIfCreated() && !cc.isAbsurd();
+        return (cc.isInstantiated() || cc.feature().isOuterRef()) && cc != Clazzes.conststring.getIfCreated() && !cc.isAbsurd();
       default: throw new Error("unhandled case: " + clazzKind(cc));
       }
   }
@@ -1364,7 +1407,8 @@ hw25 is
     var s = _codeIds.get(c).get(ix);
     var res =
       (s instanceof Assign ass ) ? ((Clazz) outerClazz.getRuntimeData(ass.tid_)).isRef() : // NYI: This should be the same as assignedField._outer
-      (s instanceof Clazz  arg ) ? outerClazz.isRef() : // assignment to arg field in inherits call, so outer clazz is current instance
+      (s instanceof Clazz  arg ) ? outerClazz.isRef() && !arg.feature().isOuterRef() : // assignment to arg field in inherits call (dynamic if outerlClazz is ref)
+                                                                                       // or to outer ref field (not dynamic)
       (s instanceof Call   call) ? call.isDynamic() && ((Clazz) outerClazz.getRuntimeData(call.sid_ + 1)).isRef() :
       new Object() { { if (true) throw new Error("acccessIsDynamic found unexpected Stmnt."); } } == null /* Java is ugly... */;
 

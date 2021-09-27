@@ -448,6 +448,11 @@ public class C extends ANY
     CStmnt o = CStmnt.EMPTY;
     switch (s)
       {
+      case AdrOf:
+        {
+          stack.push(stack.pop().adrOf());
+          break;
+        }
       case Assign:
         {
           if (_fuir.accessedClazz(cl, c, i) != -1)  // field we are assigning to may be unused, i.e., -1
@@ -513,6 +518,11 @@ public class C extends ANY
       case Current:
         {
           push(stack, cl, current(cl));
+          break;
+        }
+      case Outer:
+        {
+          push(stack, cl, _names.OUTER);
           break;
         }
       case Const:
@@ -725,10 +735,6 @@ public class C extends ANY
     if (_fuir.clazzIsRef(rt))
       {
         value = value.castTo(_types.clazz(rt));
-      }
-    if (_fuir.clazzFieldIsAdrOfValue(f))
-      {
-        value = value.adrOf();
       }
     return assign(af, value, rt);
   }
@@ -985,12 +991,6 @@ public class C extends ANY
     var cur = _fuir.clazzIsRef(cl) ? _names.CURRENT.deref().field(_names.FIELDS_IN_REF_CLAZZ)
                                    : _names.CURRENT.deref();
     var vcl = _fuir.clazzAsValue(cl);
-    var or = _fuir.clazzOuterRef(vcl);
-    if (or != -1)
-      {
-        l.add(cur.field(_names.fieldName(or)).assign(_names.OUTER));
-      }
-
     var ac = _fuir.clazzArgCount(vcl);
     for (int i = 0; i < ac; i++)
       {
