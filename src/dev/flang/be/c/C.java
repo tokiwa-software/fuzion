@@ -478,7 +478,7 @@ public class C extends ANY
                              CStmnt.decl(_types.clazz(rc), t),
                              t.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType(_names.struct(rc))))),
                              t.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(rc)),
-                             assign(t.deref().field(_names.FIELDS_IN_REF_CLAZZ), val, vc));
+                             assign(fields(t, rc), val, vc));
               push(stack, rc, t);
             }
           break;
@@ -490,7 +490,7 @@ public class C extends ANY
           if (_fuir.clazzIsRef(orc) && !_fuir.clazzIsRef(vc))
             {
               var refval = pop(stack, orc);
-              push(stack, vc, refval.deref().field(_names.FIELDS_IN_REF_CLAZZ));
+              push(stack, vc, fields(refval, orc));
             }
           break;
         }
@@ -559,11 +559,7 @@ public class C extends ANY
       case Match:
         {
           var subjClazz = _fuir.matchStaticSubject(cl, c, i);
-          var sub       = pop(stack, subjClazz);
-          if (_fuir.clazzIsRef(subjClazz))
-            {
-              sub = sub.deref().field(CNames.FIELDS_IN_REF_CLAZZ);
-            }
+          var sub       = fields(pop(stack, subjClazz), subjClazz);
           var uniyon    = sub.field(_names.CHOICE_UNION_NAME);
           var hasTag    = !_fuir.clazzIsChoiceOfOnlyRefs(subjClazz);
           var refEntry  = uniyon.field(_names.CHOICE_REF_ENTRY_NAME);
@@ -707,7 +703,7 @@ public class C extends ANY
    */
   CStmnt constString(byte[] bytes, CIdent tmp)
   {
-    var sysArray = tmp.deref().field(_names.FIELDS_IN_REF_CLAZZ).field(new CIdent("fzF_0_internalArray"));
+    var sysArray = fields(tmp, _fuir.clazz_conststring()).field(new CIdent("fzF_0_internalArray"));
     return CStmnt.seq(CStmnt.decl("fzT__R1conststring *", tmp),
                       tmp.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("fzT__R1conststring")))),
                       tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(_fuir.clazz_conststring())),
@@ -761,9 +757,8 @@ public class C extends ANY
       {
         t = t.castTo(_types.clazz(occ));  // t is a ref with different static type, so cast it to the actual type
       }
-    return (_types.isScalar(vocc) && _fuir.clazzIsRef(tc) ? t.deref().field(_names.FIELDS_IN_REF_CLAZZ) :
-            _types.isScalar(vocc)                         ? t                                           :
-            _types.hasData(rt)                            ? accessField(tc, t, f)                       : CExpr.UNIT);
+    return (_types.isScalar(vocc) ? fields(t, tc)         :
+            _types.hasData(rt)    ? accessField(tc, t, f) : CExpr.UNIT);
   }
 
 
@@ -988,7 +983,7 @@ public class C extends ANY
     l.add(CStmnt.decl(t + "*", _names.CURRENT, CExpr.call("malloc", new List<>(CExpr.sizeOfType(t)))));
     l.add(_fuir.clazzIsRef(cl) ? _names.CURRENT.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(cl)) : CStmnt.EMPTY);
 
-    var cur = _fuir.clazzIsRef(cl) ? _names.CURRENT.deref().field(_names.FIELDS_IN_REF_CLAZZ)
+    var cur = _fuir.clazzIsRef(cl) ? fields(_names.CURRENT, cl)
                                    : _names.CURRENT.deref();
     var vcl = _fuir.clazzAsValue(cl);
     var ac = _fuir.clazzArgCount(vcl);
@@ -1086,11 +1081,25 @@ public class C extends ANY
       {
         outer = _names.UNIVERSE;
       }
-    if (_fuir.clazzIsRef(outercl))
-      {
-        outer = outer.deref().field(_names.FIELDS_IN_REF_CLAZZ);
-      }
+    outer = fields(outer, outercl);
     return outer.field(_names.fieldName(field));
+  }
+
+  /**
+   * For an instance value refOrVal get the struct that contains its fields.
+   *
+   * @param refOrValue C expression to access an instance
+   *
+   * @param type the type of the instance, may be a ref or value type
+   *
+   * @return C expression of the struct that contains a field. In case type is a
+   * references, refOrValue will be dereferenced and the fiields member will be
+   * accessed.
+   */
+  CExpr fields(CExpr refOrVal, int type)
+  {
+    return _fuir.clazzIsRef(type) ? refOrVal.deref().field(_names.FIELDS_IN_REF_CLAZZ)
+                                  : refOrVal;
   }
 
 }
