@@ -953,10 +953,9 @@ NUM_LITERAL : [0-9]+
 
 
   /**
-   * Check if the current token in _sourceFile at pos()..endPos() is a keyword.
+   * Check if the given string is a keyword.
    *
-   * @return the corresponding keyword token such as Token.t_public if this is
-   * the case, Token.t_ident otherwise.
+   * @return true iff s is a Fuzion keyword.
    */
   public static boolean isKeyword(String s)
   {
