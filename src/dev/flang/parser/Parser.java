@@ -259,7 +259,7 @@ field       : visibility
     int m = modifiers();
     List<List<String>> n = featNames();
     FormalGenerics g = formGens();
-    List<Feature> a = formArgs();
+    var a = (current() == Token.t_lparen) && fork().skipType() ? new List<Feature>() : formArgs();
     ReturnType r = returnType();
     var hasType = r != NoType.INSTANCE;
     List<Call> i = inherits();
@@ -315,6 +315,10 @@ field       : visibility
       case formal: return true;
       case actual: return false;
       default    : break;
+      }
+    if ((current() == Token.t_lparen) && fork().skipType())
+      {
+        return true;
       }
     switch (skipFormArgsNotActualArgs())
       {
@@ -1982,7 +1986,7 @@ fun         : "fun" function
    * Parse function
    *
 function    : formArgs
-              ( type | )
+              typeOpt
               inherits
               contract
               ( block
@@ -3250,7 +3254,8 @@ type        : onetype ( PIPE onetype ) *
     switch (current())
       {
       case t_fun:
-      case t_ref: return true;
+      case t_ref:
+      case t_lparen: return true;
       default: return isNamePrefix();
       }
   }
@@ -3295,12 +3300,17 @@ type        : onetype ( PIPE onetype ) *
    * Parse onetype
    *
 onetype     : "ref" simpletype
-            | "fun" funTypeArgs ( type
-                                |
-                                )
+            | "fun" funArgsOpt typeOpt
+            | simpletype "->" simpletype
+            | funArgs "->" simpletype
             | t=simpletype
             ;
-funTypeArgs : LPAREN a=typeList RPAREN
+funArgs     : LPAREN a=typeList RPAREN
+            ;
+funArgsOpt  : funArgs
+            |
+            ;
+typeOpt     : type
             |
             ;
    */
@@ -3308,7 +3318,12 @@ funTypeArgs : LPAREN a=typeList RPAREN
   {
     Type result;
     SourcePosition pos = posObject();
-    if (skip(Token.t_fun))
+    if (skip(Token.t_ref))
+      {
+        result = simpletype();
+        result.setRef();
+      }
+    else if (skip(Token.t_fun))
       {
         List<Type> a = Type.NONE;
         if (skipLParen())
@@ -3323,14 +3338,24 @@ funTypeArgs : LPAREN a=typeList RPAREN
           ? Type.funType(pos, type(), a)
           : Type.funType(pos, new Type("unit"), a);
       }
-    else if (skip(Token.t_ref))
+    else if (skip(Token.t_lparen))
       {
-        result = simpletype();
-        result.setRef();
+        List<Type> a = Type.NONE;
+        if (current() != Token.t_rparen)
+          {
+            a = typeList();
+          }
+        match(Token.t_rparen, "funTypeArgs");
+        matchOperator("->", "onetype");
+        result = Type.funType(pos, type(), a);
       }
     else
       {
         result = simpletype();
+        if (skip("->"))
+          {
+            result = Type.funType(pos, type(), new List<>(result));
+          }
       }
     return result;
   }
@@ -3345,7 +3370,11 @@ funTypeArgs : LPAREN a=typeList RPAREN
   boolean skipOneType()
   {
     boolean result;
-    if (skip(Token.t_fun))
+    if (skip(Token.t_ref))
+      {
+        result = skipSimpletype();
+      }
+    else if (skip(Token.t_fun))
       {
         result = true;
         if (skipLParen())
@@ -3354,17 +3383,20 @@ funTypeArgs : LPAREN a=typeList RPAREN
               {
                 skipTypeList();
               }
-            match(Token.t_rparen, "funTypeArgs");
+            result = skip(Token.t_rparen);
           }
-        if (isTypePrefix())
-          {
-            skipType();
-          }
+        result = result && !isTypePrefix() || skipType();
+      }
+    else if (skip(Token.t_lparen))
+      {
+        result = ((current() == Token.t_rparen) || skipTypeList()) &&
+          skip(Token.t_rparen) &&
+          skip("->") &&
+          skipType();
       }
     else
       {
-        skip(Token.t_ref);
-        result = skipSimpletype();
+        result = skipSimpletype() && (!skip("->") || skipSimpletype());
       }
     return result;
   }
