@@ -182,25 +182,27 @@ public class Interpreter extends ANY
           }
       }
 
-
-    ArrayList<Value> mainargs = new ArrayList<>();
-    mainargs.add(Instance.universe); // outer instance
-    // mainargs.add(null); // NYI: args
-    try
+    if (Errors.count() == 0)
       {
-        callable(false, _fuir.main(), Clazzes.universe.get()).call(mainargs);
-      }
-    catch (RuntimeException | Error e)
-      {
-        if (!(e instanceof StackOverflowError))
+        ArrayList<Value> mainargs = new ArrayList<>();
+        mainargs.add(Instance.universe); // outer instance
+        // mainargs.add(null); // NYI: args
+        try
           {
-            Errors.error("*** " + e + "\n" + callStack());
-            throw e;
+            callable(false, _fuir.main(), Clazzes.universe.get()).call(mainargs);
           }
-        Errors.fatal("*** " + e + "\n" + callStack());
+        catch (RuntimeException | Error e)
+          {
+            if (!(e instanceof StackOverflowError))
+              {
+                Errors.error("*** " + e + "\n" + callStack());
+                throw e;
+              }
+            Errors.fatal("*** " + e + "\n" + callStack());
+          }
+        check
+          (Errors.count() == 0);
       }
-    check
-      (Errors.count() == 0);
   }
 
 
