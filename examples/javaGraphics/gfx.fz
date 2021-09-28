@@ -104,7 +104,7 @@ is
 
     rotate (d i32) => G2D g tx ty rot+d
 
-    threeTimes(d Function<unit, G2D, java.awt.Color>) unit is
+    threeTimes(d (G2D, java.awt.Color) -> unit) unit is
       d  G2D.this              C1
       d (G2D.this.rotate -120) C2
       d (G2D.this.rotate -240) C3
