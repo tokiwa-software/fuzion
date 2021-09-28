@@ -868,6 +868,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
             if (actualGenerics.isEmpty())
               {
                 _inner.put(f, innerClazz);
+                if (f.isField())
+                  {
+                    clazzForField(f);
+                  }
               }
             check
               (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == af);
