@@ -109,6 +109,10 @@ public class FeErrors extends ANY
   {
     return type(l.toString());
   }
+  static String sn(List<String> names)
+  {
+    return ss(names.toString());
+  }
   static String code(String s) { return "'" + Terminal.PURPLE + s + Terminal.REGULAR_COLOR + "'"; }
   static String type(String s) { return "'" + Terminal.YELLOW + s + Terminal.REGULAR_COLOR + "'"; }
   static String expr(String s) { return "'" + Terminal.CYAN   + s + Terminal.REGULAR_COLOR + "'"; }
@@ -934,6 +938,45 @@ public class FeErrors extends ANY
           "Numeric literal: " + ss(constant) + "\n" +
           "Assigned to type: " + s(t) + "\n" +
           "Min representable value > 0: " + ss(min) + " or " + ss(minH));
+  }
+
+  static void wrongNumberOfArgumentsInLambda(SourcePosition pos, List<String> names, Type funType)
+  {
+    int req = funType._generics.size() - 1;
+    int delta = names.size() - req;
+    var ns = sn(names);
+    error(pos,
+          "Wrong number of arguments in lambda expression",
+          "Lambda expression has " + singularOrPlural(names.size(), "argument") + " while the target type expects " +
+          singularOrPlural(funType._generics.size()-1, "argument") + ".\n" +
+          "Arguments of lambda expression: " + ns + "\n" +
+          "Expected function type: " + funType + "\n" +
+          "To solve this, " +
+          (req == 0 ? "replace the list " + ns + " by " + ss("()") + "."
+                    : (delta < 0 ? "add "    + singularOrPlural(-delta, "argument") + " to the list "   + ns
+                                 : "remove " + singularOrPlural( delta, "argument") + " from the list " + ns) +
+                      " before the " + ss("->") + " of the lambda expression.")
+          );
+  }
+
+  static void expectedFunctionTypeForLambda(SourcePosition pos, Type t)
+  {
+    error(pos,
+          "Target type of a lambda expression must be " + s(Types.resolved.f_function) + ".",
+          "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_function) + "\n" +
+          "with argument count of the lambda expression equal to the number of generic parameters of the type.\n" +
+          "Target type: " + s(t) + "\n" +
+          "To solve this, assign the lambda expression to a field of function type, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
+  }
+
+  static void noTypeInferenceFromLambda(SourcePosition pos)
+  {
+    error(pos,
+          "No type information can be inferred from a lambda expression",
+          "A lambda expression can only be used if assigned to a field or argument of type "+ s(Types.resolved.f_function) + "\n" +
+          "with argument count of the lambda expression equal to the number of generic parameters of the type.  The type of the\n" +
+          "assigned field must be given explicitly.\n" +
+          "To solve this, declare an explicit type for the target field, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
   }
 
 }

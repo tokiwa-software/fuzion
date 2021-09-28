@@ -41,20 +41,20 @@ primes is
 
   primes2(n i32) is   // sieve using streams
     a := marray n+1, false
-    (2..n).forAll(fun (i i32)
+    (2..n).forAll (i ->
       {
         if !a[i]
           yak "$i "
-          (1..n).forWhile (fun (j i32) bool { a[i*j] := true; (i*j+i) <= n })
+          (1..n).forWhile (j -> a[i*j] := true; (i*j+i) <= n)
       })
   say "Primes using streams:"; primes2 1000; say
 
   primes3(n i32) is   // sieve using streams and filters
     a := marray n+1, false
-    (2..n).filter(fun (i i32) bool { !a[i] }).forAll(fun (i i32)
+    (2..n).filter(i -> !a[i]).forAll(i ->
       {
           yak "$i "
-          (1..n/i).forAll(fun (j i32) { a[i*j] := true; } );
+          (1..n/i).forAll (j -> a[i*j] := true);
          /* NYI: with more syntactic sugar, this could become:
 
           (1..n/i).forAll(j => a[i*j] := true);
@@ -65,16 +65,10 @@ primes is
   primes4(n i32) is  // sieve using pipes
     a := marray n+1, false
 
-    (2..n) |& (fun (i i32) => !a[i]) | fun (i i32)
+    (2..n) |& (i -> !a[i]) | i ->
       {
           yak "$i "
-          (1..n/i) | fun (j i32) { a[i*j] := true; }
+          (1..n/i) | j -> a[i*j] := true
       }
-/*
-    (2..n) |& (i => !a[i]) | i =>
-      {
-          yak "$i "
-          (1..n/i) | j => { a[i*j] := true; }
-      }
-      */
+
   say "Primes using pipes:"; primes4 1000; say

@@ -97,7 +97,22 @@ public class Function extends Expr
    * For a function defined inline, this is the wrapper that calls the inline
    * feature.
    */
-  final Feature _wrapper;
+  Feature _wrapper;
+
+
+  /**
+   * Fields for a lambda of the form
+   *
+   *   (x,y) pre y != 0 -> x*y
+   *
+   * In this case, _wrapper and call_ will be created during propagateExpectedType().
+   */
+  List<String> _names;  // names of the arguments: "x", "y"
+  List<Call> _inherits; // inherits calls, currently always empty
+  Contract _contract;   // contract of the lambda
+  Expr _expr;           // the right hand side of the '->'
+  boolean _ok = true;   // indicator set to false if anything went wrong
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -303,6 +318,37 @@ public class Function extends Expr
   }
 
 
+  /**
+   * Constructor for a lambda of the form
+   *
+   *   (x,y) pre y != 0 -> x*y
+   *
+   * @param pos the soucecode position, used for error messages.
+   *
+   * @param names the names of the arguments, "x", "y"
+   *
+   * @param i the inheritance clause, currently alway empty list
+   *
+   * @param c the contract
+   *
+   * @param e the code on the right hand side of '->'.
+   */
+  public Function(SourcePosition pos,
+                  List<String> names,
+                  List<Call> i,
+                  Contract c,
+                  Expr e)
+  {
+    super(pos);
+
+    _names = names;
+    _inherits = i;
+    _contract = c;
+    _expr = e;
+    _wrapper = null;
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -315,22 +361,122 @@ public class Function extends Expr
    */
   void loadCalledFeature(Resolution res, Feature thiz)
   {
-    this.call_.loadCalledFeature(res, thiz);
-    if (this.feature_ == null)
+    if (this.call_ != null)
       {
-        Feature f = this.call_.calledFeature();
-        check
-          (Errors.count() > 0 || f != null);
-
-        if (f != null)
+        this.call_.loadCalledFeature(res, thiz);
+        if (this.feature_ == null)
           {
-            if (f.returnType != RefType.INSTANCE && f.returnType.isConstructorType())
+            Feature f = this.call_.calledFeature();
+            check
+              (Errors.count() > 0 || f != null);
+
+            if (f != null)
               {
-                System.err.println("NYI: fun for returnType >>"+f.returnType+"<< not allowed");
-                System.exit(1);
+                if (f.returnType != RefType.INSTANCE && f.returnType.isConstructorType())
+                  {
+                    System.err.println("NYI: fun for returnType >>"+f.returnType+"<< not allowed");
+                    System.exit(1);
+                  }
               }
           }
       }
+  }
+
+
+  /**
+   * During type inference: Inform this expression that it is used in an
+   * environment that expects the given type.  In particular, if this
+   * expression's result is assigned to a field, this will be called with the
+   * type of the field.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   *
+   * @param t the expected type.
+   *
+   * @return either this or a new Expr that replaces thiz and produces the
+   * result. In particular, if the result is assigned to a temporary field, this
+   * will be replaced by the statement that reads the field.
+   */
+  public Expr propagateExpectedType(Resolution res, Feature outer, Type t)
+  {
+    if (call_ == null)
+      {
+        type_ = t;
+
+        if (_ok && t.featureOfType() != Types.resolved.f_function)
+          {
+            _ok = false;
+            if (t != Types.t_ERROR)
+              {
+                FeErrors.expectedFunctionTypeForLambda(pos, t);
+              }
+          }
+
+        /* We have an expression of the form
+         *
+         *   (o, i) -> o.hashCode + i
+         *
+         * so we replace it by
+         *
+         * --Fun<id>-- : Function<R,A1,A2,...>
+         * {
+         *   public redefine R call(A1 a1, A2 a2, ...)
+         *   {
+         *     result = o.hashCode + i;
+         *   }
+         * }
+         * [..]
+         *         --Fun<id>--()
+         * [..]
+         */
+        List<Feature> a = new List<>();
+        var gs = t._generics;
+        int i = 1;
+        for (var n : _names)
+          {
+            var arg = new Feature(pos() /* better n.pos() */,
+                                  Consts.VISIBILITY_LOCAL,
+                                  0,
+                                  i < gs.size() ? gs.get(i) : Types.t_ERROR,
+                                  n,
+                                  Contract.EMPTY_CONTRACT);
+            a.add(arg);
+            i++;
+          }
+        if (_ok && i != gs.size())
+          {
+            FeErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
+            _ok = false;
+          }
+        if (_ok)
+          {
+            Feature f = new Feature(pos, new FunctionReturnType(gs.get(0)), new List<String>("call"), a, _inherits, _contract,
+                                    new Impl(_expr.pos(), _expr, Impl.Kind.Routine));
+            this.feature_ = f;
+            f.modifiers |= Consts.MODIFIER_REDEFINE;
+
+            // inherits clause for wrapper feature: Function<R,A,B,C,...>
+            inheritsCall_ = new Call(pos, Types.FUNCTION_NAME, gs, Expr.NO_EXPRS);
+            List<Stmnt> statements = new List<Stmnt>(f);
+            String wrapperName = "#fun" + id++;
+            _wrapper = new Feature(pos,
+                                   Consts.VISIBILITY_INVISIBLE,
+                                   Consts.MODIFIER_FINAL,
+                                   RefType.INSTANCE,
+                                   new List<String>(wrapperName),
+                                   FormalGenerics.NONE,
+                                   NO_FEATURES,
+                                   new List<>(inheritsCall_),
+                                   new Contract(null,null,null),
+                                   new Impl(pos, new Block(pos, statements), Impl.Kind.Routine));
+            _wrapper.findDeclarations(outer);
+            call_ = new Call(pos, new Current(pos(), outer.thisType()), _wrapper).resolveTypes(res, outer);
+          }
+      }
+    return this;
   }
 
 
@@ -347,10 +493,13 @@ public class Function extends Expr
    */
   public Expr visit(FeatureVisitor v, Feature outer)
   {
-    var e = this.call_.visit(v, outer);
-    check
-      (e == this.call_); // NYI: This will fail e.g. if call_ is a call to bool.infix &&, need to handle explicitly
-    this.call_ = (Call) e;
+    if (this.call_ != null)
+      {
+        var e = this.call_.visit(v, outer);
+        check
+          (e == this.call_); // NYI: This will fail e.g. if call_ is a call to bool.infix &&, need to handle explicitly
+        this.call_ = (Call) e;
+      }
     return v.action(this, outer);
   }
 
@@ -428,7 +577,12 @@ public class Function extends Expr
    */
   public void resolveTypes(Resolution res, Feature outer)
   {
-    if (this.feature_ == null)
+    if (this.call_ == null)
+      {
+        // do not do anything yet, we are waiting for propagateExpectedType to
+        // tell us what we are.
+      }
+    else if (this.feature_ == null)
       {
         Feature fr = functionOrRoutine();
         List<Type> generics = generics(res);
@@ -458,6 +612,12 @@ public class Function extends Expr
    */
   public Type typeOrNull()
   {
+    if (call_ == null && _ok)
+      {
+        FeErrors.noTypeInferenceFromLambda(pos);
+        _ok = false;
+        type_ = Types.t_ERROR;
+      }
     return type_;
   }
 

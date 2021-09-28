@@ -858,7 +858,7 @@ argument    : visibility
                     result = skipArgNames() && skipType();
                     if (result)
                       {
-                        contract();  // NYI: should be skipContract
+                        contract();
                       }
                   }
                 while (result && skipComma());
@@ -1698,42 +1698,106 @@ opTail      : term
   /**
    * Parse klammer is either a single parenthesized expression or a tuple
    *
-klammer     : klammerexpr
+klammer     : klammerExpr
             | tuple
+            | klammerLambd
             ;
-klammerexpr : LPAREN expr RPAREN
+klammerExpr : LPAREN expr RPAREN
             ;
 tuple       : LPAREN RPAREN
             | LPAREN expr (COMMA expr)+ RPAREN
             ;
+klammerLambd: LPAREN argNamesOpt RPAREN lambda
+            ;
+argNamesOpt : argNames
+            |
+            ;
    */
   Expr klammer()
   {
-    return relaxLineAndSpaceLimit(() -> {
-        Expr result;
-        SourcePosition pos = posObject();
-        match(Token.t_lparen, "klammer");
-        if (skip(Token.t_rparen)) // an empty tuple
+    SourcePosition pos = posObject();
+    match(Token.t_lparen, "klammer");
+    var f = fork();
+    var tupleElements = relaxLineAndSpaceLimit(() -> {
+        List<Expr> elements = new List<>();
+        if (!skip(Token.t_rparen)) // not an empty tuple
           {
-            result = new Call(pos, null, "tuple");
-          }
-        else
-          {
-            result = expr(); // a klammerexpr
-            if (skipComma()) // a tuple
+            do
               {
-                List<Expr> elements = new List<>(result);
-                do
-                  {
-                    elements.add(expr());
-                  }
-                while (skipComma());
-                result = new Call(pos, null, "tuple", elements);
+                elements.add(expr());
               }
+            while (skipComma());
             match(Token.t_rparen, "term");
           }
-        return result;
+        return elements;
       });
+    return
+      isLambdaPrefix()          ? lambda(f.relaxLineAndSpaceLimit(() -> f.skip(Token.t_rparen) ? new List<>() : f.argNames())) :
+      tupleElements.size() == 1 ? tupleElements.get(0) // a klammerexpr, not a tuple
+                                : new Call(pos, null, "tuple", tupleElements);
+  }
+
+
+  /**
+   * Parse a simple lambda expression, i.e., one without parentheses around the
+   * arguments.
+   *
+lambda      : contract "->" block
+            ;
+   */
+  Expr lambda(List<String> n)
+  {
+    SourcePosition pos = posObject();
+    List<Call> i = new List<>(); // inherits() is not supported for lambda, do we need it?
+    Contract   c = contract();
+    matchOperator("->", "lambda");
+    return new Function(pos, n, i, c, (Expr) block(true));
+  }
+
+
+  /**
+   * Check if the current position starts a lambda.  Does not change the
+   * position of the parser.
+   *
+   * @return true iff the next token(s) start a plainLambda.
+   *
+   */
+  boolean isLambdaPrefix()
+  {
+    var f = this;
+    if (isContractPrefix()) // fork only if really needed
+      {
+        f = fork();
+        f.contract();
+      }
+    return f.isOperator("->");
+  }
+
+
+  /**
+   * Parse a simple lambda expression, i.e., one without parentheses around the
+   * arguments.
+   *
+plainLambda : argNames lambda
+            ;
+   */
+  Expr plainLambda()
+  {
+    return lambda(argNames());
+  }
+
+
+  /**
+   * Check if the current position starts a plainLambda.  Does not change the
+   * position of the parser.
+   *
+   * @return true iff the next token(s) start a plainLambda.
+   *
+   */
+  boolean isPlainLambdaPrefix()
+  {
+    var f = fork();
+    return f.skipArgNames() && f.isLambdaPrefix();
   }
 
 
@@ -2889,16 +2953,18 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
    *
 callOrFeatOrThis  : anonymous
                   | qualThis
+                  | plainLambda
                   | call
                   ;
    */
   Expr callOrFeatOrThis()
   {
     return
-      isAnonymousPrefix() ? anonymous() : // starts with value/ref/:/fun/name
-      isQualThisPrefix()  ? qualThis()  : // starts with name
-      isNamePrefix()      ? call(null)    // starts with name
-                          : null;
+      isAnonymousPrefix()   ? anonymous()   : // starts with value/ref/:/fun/name
+      isQualThisPrefix()    ? qualThis()    : // starts with name
+      isPlainLambdaPrefix() ? plainLambda() : // x,y,z post result = x*y*z -> x*y*z
+      isNamePrefix()        ? call(null)      // starts with name
+                            : null;
   }
 
 
