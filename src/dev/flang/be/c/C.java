@@ -550,7 +550,7 @@ public class C extends ANY
             {
               Errors.error("Unsupported constant in C backend.",
                            "Backend cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
-              yield null;
+              yield CExpr.dummy(_fuir.clazzAsString(constCl));
             }
             };
           push(stack, constCl, r);
