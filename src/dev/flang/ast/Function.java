@@ -284,7 +284,7 @@ public class Function extends Expr
       }
     // inherits clause for wrapper feature: Function<R,A,B,C,...>
     inheritsCall_ = new Call(pos,
-                             f.hasResult() ? "Function" : "Routine",
+                             Types.FUNCTION_NAME,
                              generics,
                              Expr.NO_EXPRS);
     List<Stmnt> statements = new List<Stmnt>(f);
