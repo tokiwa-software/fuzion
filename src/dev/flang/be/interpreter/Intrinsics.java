@@ -400,11 +400,8 @@ public class Intrinsics extends ANY
              n.equals("bool.infix &&") ||
              n.equals("bool.infix :")   )
       {
-        if (Errors.count() == 0)
-          {
-            Errors.error(f.pos, "intrinsic feature not supported by backend",
-                         "intrinsic '"+n+"' should be handled by front end");
-          }
+        Errors.fatal(f.pos, "intrinsic feature not supported by backend",
+                     "intrinsic '"+n+"' should be handled by front end");
         result = (args) -> Value.NO_VALUE;
       }
     else if (n.equals("i8.as_i32"       )) { result = (args) -> new i32Value (              (                           args.get(0).i8Value() )); }
@@ -601,7 +598,7 @@ public class Intrinsics extends ANY
       }
     else
       {
-        Errors.error(f.pos,
+        Errors.fatal(f.pos,
                      "Intrinsic feature not supported",
                      "Missing intrinsic feature: " + f.qualifiedName());
         result = (args) -> Value.NO_VALUE;
