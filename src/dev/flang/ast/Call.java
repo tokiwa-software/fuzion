@@ -801,7 +801,9 @@ public class Call extends Expr
    */
   public String toString()
   {
-    return (target == null || (target instanceof Universe)
+    return (target == null ||
+            (target instanceof Universe) ||
+            (target instanceof This t && t.toString().equals(Feature.UNIVERSE_NAME + ".this"))
             ? ""
             : target.toString() + ".")
       + (name != null ? name : calledFeature_.featureName().baseName())
