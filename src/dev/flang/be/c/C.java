@@ -744,6 +744,9 @@ public class C extends ANY
    * @param tc the static target clazz
    *
    * @param f the field
+   *
+   * @return the code to access field f, null if type is 'void', CExpr.UNIT if
+   * type is 'unit'.
    */
   CExpr accessField(Stack<CExpr> stack, int tc, int f)
   {
@@ -757,8 +760,9 @@ public class C extends ANY
       {
         t = t.castTo(_types.clazz(occ));  // t is a ref with different static type, so cast it to the actual type
       }
-    return (_types.isScalar(vocc) ? fields(t, tc)         :
-            _types.hasData(rt)    ? accessField(tc, t, f) : CExpr.UNIT);
+    return (_types.isScalar(vocc)     ? fields(t, tc)         :
+            _fuir.clazzIsVoidType(rt) ? null :
+            _types.hasData(rt)        ? accessField(tc, t, f) : CExpr.UNIT);
   }
 
 
