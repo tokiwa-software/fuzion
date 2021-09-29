@@ -801,7 +801,10 @@ public class Call extends Expr
    */
   public String toString()
   {
-    return (target == null ? "" : target.toString()+".") + (name != null ? name : calledFeature_.featureName().baseName())
+    return (target == null || (target instanceof Universe)
+            ? ""
+            : target.toString() + ".")
+      + (name != null ? name : calledFeature_.featureName().baseName())
       + (generics.isEmpty() ? "" : "<" + generics + ">")
       + (_actuals.isEmpty() ? "" : "(" + _actuals +")")
       + (_select < 0        ? "" : "." + _select);
