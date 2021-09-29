@@ -599,7 +599,7 @@ public class C extends ANY
               if (field != -1)
                 {
                   var fclazz = _fuir.clazzResultClazz(field);     // static clazz of assigned field
-                  var f      = accessField(cl, current(cl), field);
+                  var f      = field(cl, current(cl), field);
                   var entry  = _fuir.clazzIsRef(fclazz) ? ref.castTo(_types.clazz(fclazz)) :
                                _types.hasData(fclazz)   ? uniyon.field(new CIdent(_names.CHOICE_ENTRY_NAME + tags[0]))
                                                         : CExpr.UNIT;
@@ -762,7 +762,7 @@ public class C extends ANY
       }
     return (_types.isScalar(vocc)     ? fields(t, tc)         :
             _fuir.clazzIsVoidType(rt) ? null :
-            _types.hasData(rt)        ? accessField(tc, t, f) : CExpr.UNIT);
+            _types.hasData(rt)        ? field(tc, t, f) : CExpr.UNIT);
   }
 
 
@@ -1079,14 +1079,13 @@ public class C extends ANY
    *
    * @param field the field id of the accessed field
    */
-  CExpr accessField(int outercl, CExpr outer, int field)
+  CExpr field(int outercl, CExpr outer, int field)
   {
     if (outercl == _fuir.clazzUniverse())
       {
         outer = _names.UNIVERSE;
       }
-    outer = fields(outer, outercl);
-    return outer.field(_names.fieldName(field));
+    return fields(outer, outercl).field(_names.fieldName(field));
   }
 
   /**
