@@ -590,8 +590,6 @@ public class Intrinsics extends ANY
     else if (n.equals("f64.infix >="    )) { result = (args) -> new boolValue(                (args.get(0).f64Value() >= args.get(1).f64Value())); }
     else if (n.equals("f64.castTo_u64"  )) { result = (args) -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())); }
     else if (n.equals("f64.asString"    )) { result = (args) -> Interpreter.value(Double.toString       (                args.get(0).f64Value())); }
-    else if (n.equals("Object.infix !==")) { result = (args) -> new boolValue(args.get(0) !=  args.get(1)); }
-    else if (n.equals("Object.infix ===")) { result = (args) -> new boolValue(args.get(0) ==  args.get(1)); }
     else if (n.equals("Object.hashCode" )) { result = (args) -> new i32Value (args.get(0).toString().hashCode()); }
     else if (n.equals("Object.asString" )) { result = (args) -> Interpreter.value(args.get(0).toString());
       // NYI: This could be more useful by giving the object's class, an id, public fields, etc.
