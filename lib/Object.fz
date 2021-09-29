@@ -34,8 +34,3 @@ Object ref is
   hashCode i32 is intrinsic
   asString string is intrinsic
   prefix $ => Object.this.asString
-
-  # NYI: Currently, only intrinsic features are permitted in Object. The reason is
-  # that any feature in Object would also inherit from object, so the frame
-  # object of that feature would inherit its outer feature, which would cause
-  # problems in case of recursion, see tests/inheritance_negative2.fz
