@@ -6,6 +6,6 @@ assignment to field : '[35mbugOptionFalse.x.b.#stmtResult46[39m'
 expected formal type: '[33moption<bugOptionFalse.x.V>[39m'
 actual type found   : '[33mbool[39m'
 assignable to       : '[33mbool[39m'
-for value assigned  : '[36m#universe.false[39m'
+for value assigned  : '[36mfalse[39m'
 
 one error.
