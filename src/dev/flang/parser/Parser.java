@@ -1917,7 +1917,7 @@ simpleterm  : bracketTerm
 stringTerm  : STRING
             # NYI string interpolation
             # | STRING$ ident stringTerm
-            # | STRING{ expr  stringTerm
+            # | STRING{ block stringTerm
             ;
   */
   Expr stringTerm(Expr leftString)
@@ -1932,7 +1932,7 @@ stringTerm  : STRING
             next();
             if (isPartialString(t))
               {
-                result = stringTerm(concatString(posObject(), result, expr()));
+                result = stringTerm(concatString(posObject(), result, block(false)));
               }
           }
         else
