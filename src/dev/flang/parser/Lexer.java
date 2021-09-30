@@ -889,9 +889,7 @@ NUM_LITERAL : [0-9]+
             }
           case K_LETTER  :    // 'A'..'Z', 'a'..'z'
             {
-              while (kind(curCodePoint()) == K_LETTER  ||
-                     kind(curCodePoint()) == K_DIGIT   ||
-                     kind(curCodePoint()) == K_NUMERIC   )
+              while (partOfIdentifier(curCodePoint()))
                 {
                   nextCodePoint();
                 }
@@ -915,6 +913,24 @@ NUM_LITERAL : [0-9]+
           }
       }
     _curToken = token;
+  }
+
+
+  /**
+   * Check if the given code point may be part of an identifier.  This is true
+   * for letters, digits and numeric code points.
+   *
+   * @param cp a code point
+   *
+   * @return true iff cp may be part of an identifier, e.g., 'i', '3', '²', etc.
+   */
+  private boolean partOfIdentifier(int cp)
+  {
+    return switch (kind(cp))
+      {
+      case K_LETTER, K_DIGIT, K_NUMERIC -> true;
+      default -> false;
+      };
   }
 
 
