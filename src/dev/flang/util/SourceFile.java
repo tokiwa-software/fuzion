@@ -752,7 +752,7 @@ public class SourceFile extends ANY
    *
    * @param pos a byte position
    *
-   * @return the line number, 1..lines().length
+   * @return the line number, 1..lines().length.  return 0 for empty file.
    */
   public int lineNum(int pos)
   {
@@ -765,7 +765,8 @@ public class SourceFile extends ANY
       -l - 2; // l == -ip-1, where ip is the element behind the desired line index (ip == line + 1), so line == ip - 1 = -l - 2
 
     if (POSTCONDITIONS) ensure
-      (line >= 1,
+      (lines().length == 1 || line >= 1,
+       _bytes.length != 0 || line == 0,
        line <  lines().length);
 
     return line;
