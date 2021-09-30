@@ -2193,7 +2193,6 @@ HEX_TAIL    : "." HEX_DIGITS
          _pos == -1);
 
       int p = curCodePoint();
-      var finishBy = StringEnd.QUOTE;
       switch (_state)
         {
         case EXPR_EXPECTED:
