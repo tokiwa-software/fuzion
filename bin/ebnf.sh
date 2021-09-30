@@ -46,7 +46,7 @@ then
 fi
 
 NEW_LINE=$'\n'
-SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
 cd $SCRIPTPATH/..
 
 #
