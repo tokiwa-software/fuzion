@@ -908,7 +908,10 @@ NUM_LITERAL : [0-9]+
             }
           default:
             {
-              throw new Error("unexpected character kind: "+kind(p));
+              Errors.error(sourcePos(),
+                           "Unexpected unicode character \\u" + Integer.toHexString(0x1000000+p).substring(1).toUpperCase() + " found",
+                           null);
+              token = Token.t_error;
             }
           }
       }
