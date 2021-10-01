@@ -1679,7 +1679,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
             if (t.featureOfType().outer() == null || innerBase.feature().inheritsFrom(t.featureOfType().outer()))
               {
-                var res = innerBase == null ? Clazzes.create(t, null)
+                var res = innerBase == null || t == Types.t_UNDEFINED || t == Types.t_ERROR
+                  ? Clazzes.create(t, null)
                   : innerBase.lookup(t.featureOfType(), t._generics, null);
                 if (t.isRef())
                   {
