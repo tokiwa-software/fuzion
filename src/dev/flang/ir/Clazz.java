@@ -896,18 +896,23 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public Clazz clazzForField(Feature field)
   {
     check
-      (field.isField(),
-       feature().inheritsFrom(field.outer()));
+      (Errors.count() > 0 || field.isField(),
+       Errors.count() > 0 || feature().inheritsFrom(field.outer()));
 
     var result = clazzForField_.get(field);
     if (result == null)
       {
+        var fo = field.outer();
+        check
+          (Errors.count() > 0 || fo != null);
+
         result =
-          field.isOuterRef() && field.outer().isOuterRefAdrOfValue()     ? actualClazz(Types.t_ADDRESS) :
-          field.isOuterRef() && field.outer().isOuterRefCopyOfValue() ||
-          !field.isOuterRef() && field != field.outer().resultField() // NYI: use lookup/resultClazz for all fields
-                                                                         ? actualClazz(field.resultType())
-                                                                         : lookup(field, Call.NO_GENERICS, field.isUsedAt()).resultClazz();
+          fo == null ? Clazzes.error.get() :
+          field.isOuterRef() && fo.isOuterRefAdrOfValue()     ? actualClazz(Types.t_ADDRESS) :
+          field.isOuterRef() && fo.isOuterRefCopyOfValue() ||
+          !field.isOuterRef() && field != fo.resultField() // NYI: use lookup/resultClazz for all fields
+                                                           ? actualClazz(field.resultType())
+                                                           : lookup(field, Call.NO_GENERICS, field.isUsedAt()).resultClazz();
         clazzForField_.put(field, result);
       }
     return result;
