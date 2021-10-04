@@ -1132,7 +1132,7 @@ public class Call extends Expr
   private void resolveType(Resolution res, Type t, Feature outer)
   {
     boolean open = _select != -1;
-     if (open != t.isOpenGeneric())
+    if (open != t.isOpenGeneric())
       {
         if (_select == -1)
           {
