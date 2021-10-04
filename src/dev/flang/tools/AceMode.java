@@ -207,19 +207,20 @@ public class AceMode extends ANY
                 token: keywordMapper
               },
               {
-                token: "string",
-                regex: '"',
-                next: [{
-                  regex: /\\\\./,
-                  token: "escape.character"
-                },
-                {
-                  regex: '"',
-                  token: "string",
-                  next: "start"
-                },
-                {
-                  defaultToken: "string"
+                token: "string.quoted.double",
+                regex: /"|\\}/,
+                push: [{
+                    token: "string.quoted.double",
+                    regex: /"|\\{/,
+                    next: "pop"
+                }, {
+                    token: "constant.character.escape",
+                    regex: /\\\\./
+                }, {
+                    token: "variable.other",
+                    regex: /\\$[A-Za-z0-9_]+/
+                }, {
+                    defaultToken: "string.quoted.double"
                 }]
               },
               {
