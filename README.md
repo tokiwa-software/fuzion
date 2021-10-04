@@ -12,7 +12,7 @@ Please check [https://flang.dev](https://flang.dev) for language and implementat
 
 ## Requirements
 
-- OpenJDK 16, e.g., https://adoptopenjdk.net/releases.html?variant=openjdk16&jvmVariant=hotspot
+- OpenJDK 17, e.g., https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17%2B35/OpenJDK17-jdk_x64_linux_hotspot_17_35.tar.gz
 - clang-10 LLVM C compiler (on ubuntu: sudo apt-get install clang-10)
 - GNU make
 
