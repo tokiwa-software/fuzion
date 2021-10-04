@@ -248,11 +248,6 @@ O(n log n).
     res
 
 
-  # check if key k is present in the set of keys
-  #
-  has (k K) => psMap.this[k]??
-
-
   # get the lowest key in this map
   #
   min option<K> is
