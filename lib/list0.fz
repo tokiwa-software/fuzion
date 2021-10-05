@@ -113,12 +113,6 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
           head => f c.head
           tail => c.tail.map f
 
-  # fmap lifts a function from A to B to a function from list<A> to list<B>
-  #
-  # NYI: This should be declared outside of list<A>, it should not require an
-  # instance to be called on.
-  fmap<B> (f A -> B) list<A> -> list<B> is l -> l.map<B> f
-
 
   # fold the elements of this list using the given monoid.
   #
