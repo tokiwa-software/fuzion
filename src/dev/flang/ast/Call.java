@@ -1240,48 +1240,35 @@ public class Call extends Expr
           (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
         Type t = frml.resultTypeIfPresent(res, NO_GENERICS);
-        if (t.isGenericArgument() && t.genericArgument().feature() == calledFeature_)
+        if (t.isGenericArgument() &&
+            t.genericArgument().feature() == calledFeature_ &&
+            t.genericArgument().isOpen())
           {
-            Generic g = t.genericArgument();
-            if (g.isOpen())
-              {
-                inferredOpen = new List<Type>();
-                while (aargs.hasNext() && inferredOpen != null)
-                  {
-                    count++;
-                    Expr actual = resolveTypeForNextActual(aargs, res, outer);
-                    Type actualType = actual.typeOrNull();
-                    if (actualType == null)
-                      {
-                        actualType = Types.t_ERROR;
-                        Errors.error(pos,
-                                     "Failed to infer open generic argument type from actual argument.",
-                                     "Type of " + Errors.ordinal(count) + " actual argument could not be inferred at " + actual.pos.show());
-                      }
-                    inferredOpen.add(actualType);
-                  }
-              }
-            else if (aargs.hasNext())
+            inferredOpen = new List<Type>();
+            while (aargs.hasNext() && inferredOpen != null)
               {
                 count++;
                 Expr actual = resolveTypeForNextActual(aargs, res, outer);
                 Type actualType = actual.typeOrNull();
-                if (actualType != null)
+                if (actualType == null)
                   {
-                    int i = g.index();
-                    if (found[i] == null || actualType.isAssignableFromOrContainsError(found[i]))
-                      {
-                        found[i] = actualType;
-                      }
-                    conflict[i] = conflict[i] || !found[i].isAssignableFromOrContainsError(actualType);
-                    foundAt [i] = (foundAt[i] == null ? "" : foundAt[i]) + actualType + " found at " + actual.pos.show() + "\n";
+                    actualType = Types.t_ERROR;
+                    Errors.error(pos,
+                                 "Failed to infer open generic argument type from actual argument.",
+                                 "Type of " + Errors.ordinal(count) + " actual argument could not be inferred at " + actual.pos.show());
                   }
+                inferredOpen.add(actualType);
               }
           }
         else if (aargs.hasNext())
           {
-            aargs.next();
             count++;
+            Expr actual = resolveTypeForNextActual(aargs, res, outer);
+            Type actualType = actual.typeOrNull();
+            if (actualType != null)
+              {
+                inferGeneric(t, actualType, actual.pos, found, conflict, foundAt);
+              }
           }
       }
     generics = new List<Type>();
@@ -1321,6 +1308,59 @@ public class Call extends Expr
                      "Expected generic parameters: " + calledFeature_.generics + "\n"+
                      "Type inference failed for generic " + (missing.size() > 1 ? "arguments" : "argument") + " " + missing + "\n");
       }
+  }
+
+
+  /**
+   * Perform type inference for generics used in formalType that are instantiated by actualType.
+   *
+   * @param formalType the (possibly generic) formal type
+   *
+   * @param actualType the actual type
+   *
+   * @param pos source code position of the expression actualType was derived from
+   *
+   * @param found set of generics that could be inferred. Will receive any newly
+   * inferred generics
+   *
+   * @param conflict set of generics that caused conflicts
+   *
+   * @param foundAt the position of the expressions from which actual generics
+   * were taken.
+   */
+  private void inferGeneric(Type formalType, Type actualType, SourcePosition pos, Type[] found, boolean[] conflict, String[] foundAt)
+  {
+    if (formalType.isGenericArgument())
+      {
+        var g = formalType.genericArgument();
+        if (g.feature() == calledFeature_)
+          {
+            var i = g.index();
+            if (found[i] == null || actualType.isAssignableFromOrContainsError(found[i]))
+              {
+                found[i] = actualType;
+              }
+            conflict[i] = conflict[i] || !found[i].isAssignableFromOrContainsError(actualType);
+            foundAt [i] = (foundAt[i] == null ? "" : foundAt[i]) + actualType + " found at " + pos.show() + "\n";
+          }
+      }
+    else if (formalType.featureOfType() == actualType.featureOfType())
+      {
+        for (int i=0; i < formalType._generics.size(); i++)
+          {
+            if (i < actualType._generics.size())
+              {
+                inferGeneric(formalType._generics.get(i),
+                             actualType._generics.get(i),
+                             pos, found, conflict, foundAt);
+              }
+          }
+      }
+    // NYI: If formalType is a parent of actualType, we could infer the actual
+    // generics from the inheritance call
+    //
+    // NYI: If formalType is a choice like 'numOption<T>', we could infer 'T'
+    // from a non-nil actual such as 'i32'.
   }
 
 
