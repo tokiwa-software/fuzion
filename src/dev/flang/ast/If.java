@@ -213,6 +213,13 @@ public class If extends Expr
             result = result.union(it.next().type());
           }
       }
+    if (result == Types.t_UNDEFINED)
+      {
+        new IncompatibleResultsOnBranches(pos,
+                                          "Incompatible types in branches of if statement",
+                                          branches());
+        result = Types.t_ERROR;
+      }
     return result;
   }
 
@@ -228,13 +235,6 @@ public class If extends Expr
     if (_type == null)
       {
         _type = typeFromIfOrElse();
-      }
-    if (_type == Types.t_UNDEFINED)
-      {
-        new IncompatibleResultsOnBranches(pos,
-                                          "Incompatible types in branches of if statement",
-                                          branches());
-        _type = Types.t_ERROR;
       }
     return _type;
   }

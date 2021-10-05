@@ -196,6 +196,18 @@ public class Match extends Expr
         Type t = c.code.type();
         result = result == null ? t : result.union(t);
       }
+    if (result == Types.t_UNDEFINED)
+      {
+        new IncompatibleResultsOnBranches(pos,
+                                          "Incompatible types in cases of match statement",
+                                          new Iterator<Expr>()
+                                          {
+                                            Iterator<Case> it = cases.iterator();
+                                            public boolean hasNext() { return it.hasNext(); }
+                                            public Expr next() { return it.next().code; }
+                                          });
+        result = Types.t_ERROR;
+      }
     return result;
   }
 
@@ -211,18 +223,6 @@ public class Match extends Expr
     if (type_ == null)
       {
         type_ = typeFromCases();
-      }
-    if (type_ == Types.t_UNDEFINED)
-      {
-        new IncompatibleResultsOnBranches(pos,
-                                          "Incompatible types in cases of match statement",
-                                          new Iterator<Expr>()
-                                          {
-                                            Iterator<Case> it = cases.iterator();
-                                            public boolean hasNext() { return it.hasNext(); }
-                                            public Expr next() { return it.next().code; }
-                                          });
-        return Types.t_ERROR;
       }
     return type_;
   }
