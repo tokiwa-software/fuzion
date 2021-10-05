@@ -87,7 +87,7 @@ is
       # of array.
       h1 := 0;
 
-      na := array<T> a.length, fun (i i32) =>
+      na := array<T> a.length (fun (i i32) =>
         # index in current pair of heaps
         hi := i & (heapSize*2-1)
         # reset h1 in case we start new pair of heaps
@@ -111,6 +111,7 @@ is
         else
           # otherwise, return element from second heap
           a[i2]
+        )
 
       # continue sorting with doubled heap size
       sort na, 2*heapSize

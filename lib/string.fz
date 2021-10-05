@@ -46,7 +46,7 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # concatenate string with string representation of another object
   infix + (other Object) string is
-    ma := marray<Object> 2, string.this
+    ma := marray<Object> 2 string.this
     ma[1] := other
     strings.fromArray ma
 
@@ -199,7 +199,7 @@ string ref : hasHash<string>, ordered<string>, strings is
       c := s.next
       negate := c = minusChar
       d := if (negate || c = plusChar) zeroChar else c
-      parseInteger<T> base, negate, base.zero, d, s
+      parseInteger<T> base negate base.zero d s
     else
       parseError "empty string"
 
@@ -247,7 +247,7 @@ string ref : hasHash<string>, ordered<string>, strings is
           v := if (neg) hi -? t
                else     hi +? t
           if s.hasNext
-            parseInteger<T> base, neg, v, s.next, s
+            parseInteger<T> base neg v s.next s
           else
             v ? nil => parseError "numerical overflow"
               | u T => u
@@ -363,7 +363,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   # check if this string starts with given prefix
   #
   startsWith(prefx string) =>
-    searchableList<u8>.startsWith utf8.asList, prefx.utf8.asList
+    searchableList<u8>.startsWith utf8.asList prefx.utf8.asList
 
 
   # check if this string ends with given suffix
@@ -372,13 +372,13 @@ string ref : hasHash<string>, ordered<string>, strings is
     l  := byteLength
     sl := suffix.byteLength
     end := utf8.drop l-sl
-    searchableList<u8>.startsWith end, suffix.utf8.asList
+    searchableList<u8>.startsWith end suffix.utf8.asList
 
 
   # find (utf8-byte-) index of 'substring' witin this string.
   #
   find(substring string) =>
-    searchableList<u8>.find utf8.asList, substring.utf8.asList
+    searchableList<u8>.find utf8.asList substring.utf8.asList
 
 
   # replace all occurances of f within l by r
@@ -394,7 +394,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   # count number of occurances of given 'substring' in this string
   #
   count (substring string) =>
-    searchableList<u8>.countMatches utf8.asList, substring.utf8.asList
+    searchableList<u8>.countMatches utf8.asList substring.utf8.asList
 
 
   # is c an ASCII white-space character?  Used by split.

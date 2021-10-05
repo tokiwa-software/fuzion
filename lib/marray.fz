@@ -88,7 +88,7 @@ is
   # create immutable array from this
   #
   as_array =>
-    array<T> length, fun (i i32) => marray.this[i]
+    array<T> length (fun (i i32) => marray.this[i])
 
   redef asStream => as_array.asStream
 
@@ -96,7 +96,7 @@ is
   # map the array to a new array applying function f to all elements
   #
   map<B>(f fun(T) B) array<B> is
-    array<B> marray.this.length, fun (i i32) => f marray.this[i]
+    array<B> marray.this.length (fun (i i32) => f marray.this[i])
 
 
   # fold the elements of this array using the given monoid.

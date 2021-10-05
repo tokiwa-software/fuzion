@@ -25,5 +25,5 @@
 
 sys is
   out is
-    print  (s Object) => stdout.print  (s)
-    println(s Object) => stdout.println(s)
+    print  (s Object) => stdout.print   s
+    println(s Object) => stdout.println s

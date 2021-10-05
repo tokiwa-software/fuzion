@@ -44,4 +44,4 @@ is
   for x in 0..length-1 do
     data[x] := init
 
-  marray<T> length, data, unit
+  marray length data unit
