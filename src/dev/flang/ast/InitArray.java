@@ -93,7 +93,7 @@ public class InitArray extends Expr
 
 
   /**
-   * typeOrNull returns the type of this expression or Null if the type is still
+   * typeOrNull returns the type of this expression or null if the type is still
    * unknown, i.e., before or during type resolution.
    *
    * @return this Expr's type or null if not known.
