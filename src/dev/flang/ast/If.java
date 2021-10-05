@@ -210,7 +210,8 @@ public class If extends Expr
         Iterator<Expr> it = branches();
         while (it.hasNext())
           {
-            result = result.union(it.next().type());
+            var t = it.next().typeOrNull();
+            result = result == null || t == null ? null : result.union(t);
           }
       }
     if (result == Types.t_UNDEFINED)

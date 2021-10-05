@@ -2144,7 +2144,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
     if (returnType.isConstructorType())
       {
         var res = impl._code;
-        var rt = res.typeOrNull();
+        var rt = res.type();
         if (!Types.resolved.t_unit.isAssignableFrom(rt))
           {
             FeErrors.constructorResultMustBeUnit(impl._code);

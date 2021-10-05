@@ -190,11 +190,11 @@ public class Match extends Expr
    */
   private Type typeFromCases()
   {
-    Type result = null;
+    Type result = Types.resolved.t_void;
     for (Case c: cases)
       {
-        Type t = c.code.type();
-        result = result == null ? t : result.union(t);
+        Type t = c.code.typeOrNull();
+        result = result == null || t == null ? null : result.union(t);
       }
     if (result == Types.t_UNDEFINED)
       {

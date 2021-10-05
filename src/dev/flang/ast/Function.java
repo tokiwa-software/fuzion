@@ -610,15 +610,27 @@ public class Function extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public Type type()
   {
-    if (call_ == null && _ok)
+    var result = typeOrNull();
+    if (result == null)
       {
         FeErrors.noTypeInferenceFromLambda(pos);
-        _ok = false;
-        type_ = Types.t_ERROR;
+        result = Types.t_ERROR;
       }
-    return type_;
+    return result;
+  }
+
+
+  /**
+   * typeOrNull returns the type of this expression or null if the type is still
+   * unknown, i.e., before or during type resolution.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  public Type typeOrNull()
+  {
+    return _ok ? type_ : null;
   }
 
 

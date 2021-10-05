@@ -378,7 +378,7 @@ public class NumLiteral extends Expr
    */
   public BigInteger intValue()
   {
-    return intValue(findConstantType(typeOrNull()));
+    return intValue(findConstantType(type()));
   }
 
 
@@ -571,7 +571,7 @@ public class NumLiteral extends Expr
   public float f32Value()
   {
     if (PRECONDITIONS) require
-      (typeOrNull() == Types.resolved.t_f32);
+      (type() == Types.resolved.t_f32);
 
     return ByteBuffer.wrap(data()).order(ByteOrder.LITTLE_ENDIAN).getFloat();
   }
@@ -582,7 +582,7 @@ public class NumLiteral extends Expr
   public double f64Value()
   {
     if (PRECONDITIONS) require
-      (typeOrNull() == Types.resolved.t_f64);
+      (type() == Types.resolved.t_f64);
 
     return ByteBuffer.wrap(data()).order(ByteOrder.LITTLE_ENDIAN).getDouble();
   }

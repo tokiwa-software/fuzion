@@ -879,7 +879,7 @@ public class Clazzes extends ANY
 
     else if (e instanceof If i)
       {
-        result = outerClazz.actualClazz(i.typeOrNull());
+        result = outerClazz.actualClazz(i.type());
       }
 
     else if (e instanceof BoolConst b)
@@ -889,7 +889,7 @@ public class Clazzes extends ANY
 
     else if (e instanceof NumLiteral i)
       {
-        result = outerClazz.actualClazz(i.typeOrNull());
+        result = outerClazz.actualClazz(i.type());
       }
 
     else if (e instanceof Match m)
