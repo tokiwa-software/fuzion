@@ -29,7 +29,7 @@
 # an identity element. Examples are (integers/infix +/0), (float/infix *,1),
 # (string/concat/""), etc.
 #
-# NYI: move to universe.fz
+#
 Monoid<T> ref
 
 /* NYI: quantor intrinsics not supported yet:

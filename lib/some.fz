@@ -25,6 +25,5 @@
 
 # some is a standard wrapper for values of type T
 #
-# NYI: move to universe.fz
-
+#
 some<T>(val T) is

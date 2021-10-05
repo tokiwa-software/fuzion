@@ -33,6 +33,5 @@
 # you will get a variable of type >>FALSE<<, it will not be possible to assign
 # >>TRUE<< to it.  You can use >>false<< as an alternative to get type >>bool<<.
 #
-# NYI: move to universe.fz
-
+#
 FALSE is

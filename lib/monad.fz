@@ -33,7 +33,7 @@
 # Don't be scared, in Java terms: A monad is a means to compose functions
 # applied to generic types.
 #
-# NYI: move to universe.fz
+#
 monad<A, MA: monad<A, MA>> is
 
 

@@ -71,7 +71,7 @@
 # any code for features receiving arguments of void type or for code following
 # a feature call that returns void.
 #
-# NYI: move to universe.fz
+#
 void(absurd void) is absurd
 
 # NYI: possible alternative definitions base on choice types

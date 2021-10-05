@@ -26,7 +26,7 @@
 # quantors provides forAll and exists-quantors for use in contracts qualified
 # for analysis.
 #
-# NYI: move to universe.fz
+#
 quantors is
 
   # forAll quantors for use in analysis parts of contracts

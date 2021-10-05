@@ -23,9 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# boolean values "false" as a constant of type >>bool<<.
+# boolean value "true" as a constant of type >>bool<<.
 #
-# NYI: move to universe.fz
-
-# NYI: Make this a const field as soon as initializing fields in universe works
+#
 true bool is TRUE

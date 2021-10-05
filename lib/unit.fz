@@ -80,7 +80,7 @@
 # typically will not generate any code for returning or assiging a value of unit
 # type, so these are very efficient as well.
 #
-# NYI: move to universe.fz
+#
 unit is
 
 # NYI: possible alternative definitions based on tuple types

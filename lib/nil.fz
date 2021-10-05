@@ -28,5 +28,5 @@
 # This is a unit type that is preferred to represent instances that are
 # not present, e.g, in an option.
 #
-# NYI: move to universe.fz
+#
 nil is
