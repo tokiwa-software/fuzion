@@ -124,13 +124,13 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
         ref : Cons<B, list<B>>
         // Cons<B, list<B>> with    # NYI: better syntax for anonymous feature
           head => f c.head
-          tail => c.tail.map<B> f
+          tail => c.tail.map f
 
   # fmap lifts a function from A to B to a function from list<A> to list<B>
   #
   # NYI: This should be declared outside of list<A>, it should not require an
   # instance to be called on.
-  fmap<B> (f fun(A) B) => fun (l list<A>) => l.map<B> f
+  fmap<B> (f fun(A) B) => fun (l list<A>) => l.map f
 
 
   # fold the elements of this list using the given monoid.

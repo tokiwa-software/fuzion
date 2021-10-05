@@ -29,4 +29,4 @@
 #
 # This feature creates an empty instance of psSet.
 #
-psSet<K : ordered<K>> => psSet<K> psMap<K,unit>
+psSet<K : ordered<K>> => psSet psMap<K,unit>

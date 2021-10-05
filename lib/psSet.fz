@@ -61,7 +61,7 @@ is
     if has k
       psSet.this
     else
-      psSet<K> (psm.add k unit)
+      psSet (psm.add k unit)
 
 
   # create a sorted array from the elements of this set
@@ -86,7 +86,7 @@ is
 
   # union of two psSets
   #
-  infix ⋃ (other psSet<K>) => psSet<K> (psm ⋃ other.psm)
+  infix ⋃ (other psSet<K>) => psSet (psm ⋃ other.psm)
 
 
   # add all elements of the given List to this set
@@ -120,7 +120,7 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 
   # an empty psSet
   #
-  empty psSet<K> is psSet<K>
+  empty => psSet<K>
 
 
   # monoid of psSet with infix ⋃ operation.
@@ -128,4 +128,4 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
   union : Monoid<psSet<K>> is
     redef infix ∙ (a, b psSet<K>) => a ⋃ b
     redef infix == (a, b psSet<K>) => (a ⋃ b).size = a.size  # NYI: a bit expensive
-    redef e psSet<K> is empty
+    redef e => empty

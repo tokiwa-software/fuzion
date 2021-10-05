@@ -34,4 +34,4 @@ array<T>(length i32, init fun (i32) T) array<T> is
   for x in indices do
     internal[x] := init x
 
-  array<T> internal
+  array internal

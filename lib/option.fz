@@ -67,7 +67,7 @@ is
   #
   # NYI: Should maybe have generic parameter <B> and result in option<B>
   #
-  redef infix >>= (f fun (T) option<T>) => option.this.bind<T>(f)
+  redef infix >>= (f fun (T) option<T>) => option.this.bind f
 
 
   # monadic operator

@@ -146,7 +146,7 @@ O(n log n).
     #
     join (ole i32, dest i32, sz i32) psMap<K, V> is
       if (size & sz) = 0
-        psMap<K,V> ndata nsize dest+sz
+        psMap ndata nsize dest+sz
       else
         tmp := array<tuple<K,V>> sz (fun(i i32) => ndata[dest+i])
         for
@@ -236,7 +236,7 @@ O(n log n).
 
     if size /= 0
       join fill-1 1 0 0
-    array<K> r
+    array r
 
 
   # get a stream of all key/value pairs in this map

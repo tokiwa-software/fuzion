@@ -103,7 +103,7 @@ is
     retrieve (at i32) option<V> is
       match contents[at]
         nil     => nil
-        t tuple<K,V> =>
+        t tuple =>
           (ek, v) := t
           if ek = k
             v

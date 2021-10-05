@@ -50,7 +50,7 @@ quantors is
   forAll10<A,A,A,A,A,A,A,A,A,A>(f Function<bool, A, A, A, A, A, A, A, A, A, A>) bool is intrinsic
 
   # short-hand forAll using '∀' symbol
-  prefix ∀ <A>(f Function<bool, A>) => forAll<A>(f)
+  prefix ∀ <A>(f Function<bool, A>) => forAll f
 
   # exists quantors for use in analysis parts of contracts
   #
@@ -73,7 +73,7 @@ quantors is
   exists10<A,A,A,A,A,A,A,A,A,A>(f Function<bool, A, A, A, A, A, A, A, A, A, A>) bool is intrinsic
 
   # short-hand exists using '∃' symbol
-  prefix ∃ <A>(f Function<bool, A>) => exists<A>(f)
+  prefix ∃ <A>(f Function<bool, A>) => exists f
 
   /*
     NYI: eventually, the following declaration should become possible:

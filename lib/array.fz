@@ -146,4 +146,4 @@ array<T>(internalArray sys.array<T>) : List<T> is
 
 
   # sort this array using total order defined by lessOrEqual
-  sort(lessOrEqual fun(T, T) bool) => sortedArray<T> array.this, lessOrEqual
+  sort(lessOrEqual fun(T, T) bool) => sortedArray array.this lessOrEqual
