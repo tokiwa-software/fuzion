@@ -30,7 +30,7 @@
 # two index parameters.
 #
 array2<T>(length0, length1 i32,
-          init2 fun (i32, i32) T)
+          init2 (i32, i32) -> T)
  : array<T> (sys.array<T> length0*length1)
   pre
     safety: length0 >= 0,

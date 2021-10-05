@@ -37,4 +37,4 @@ sortedArray<T: ordered<T>>
   ) sortedArray<T>
 
 is
-  sortedArray<T> from (fun (a, b T) => a <= b)
+  sortedArray<T> from (a,b -> a <= b)

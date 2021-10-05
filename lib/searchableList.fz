@@ -91,7 +91,7 @@ is
   # get the number of matches of l2 within l1
   #
   countMatchesOverlapping (l1, l2 list<A>) i32 is
-    (l1.tails & fun (l list<A>) => startsWith l, l2).count
+    (l1.tails & (l -> startsWith l l2)).count
 
 
   # get the number of non-overlapping matches of l2 within l1

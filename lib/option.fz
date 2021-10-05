@@ -59,7 +59,7 @@ is
   # take an option<string> and you would like to add a filename suffix to
   # this string if it is present. Then you can do this as follows:
   #
-  #   addTxt(o option<string>) => o >>= fun (s string) option<string> is s + ".txt"
+  #   addTxt(o option<string>) => o >>= s -> option<string> is s + ".txt"
   #
   # NYI: With better type inference and syntactic sugar, this should be
   #
@@ -67,25 +67,25 @@ is
   #
   # NYI: Should maybe have generic parameter <B> and result in option<B>
   #
-  redef infix >>= (f fun (T) option<T>) => option.this.bind f
+  redef infix >>= (f T -> option<T>) => option.this.bind f
 
 
   # monadic operator
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  bind <B> (f fun (T) option<B>) option<B> is
+  bind <B> (f T -> option<B>) option<B> is
     option.this ? v T => f v
                 | nil => nil
 
 
   # synonyme for infix >>=
-  andThen (f fun (T) option<T>) => option.this >>= f
+  andThen (f T -> option<T>) => option.this >>= f
 
 
   # map this option using f, i.e., map nil to nil and any value v to f v
   #
-  map <B> (f fun (T) B) option<B> is
+  map <B> (f T -> B) option<B> is
     option.this ? v T => f v
                 | nil => nil
 

@@ -25,7 +25,7 @@
 
 # array -- one-dimensional immutable array
 #
-array<T>(length i32, init fun (i32) T) array<T> is
+array<T>(length i32, init i32 -> T) array<T> is
 
 # private:
   indices => 0..length-1

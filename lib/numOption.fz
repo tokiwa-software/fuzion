@@ -69,20 +69,20 @@ is
 
 
   # monadic operator
-  redef infix >>= (f fun (T) numOption<T>) => numOption.this.bind<T>(f)
+  redef infix >>= (f T -> numOption<T>) => numOption.this.bind<T>(f)
 
 
   # monadic operator
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  bind <B> (f fun (T) numOption<B>) numOption<B> is
+  bind <B> (f T -> numOption<B>) numOption<B> is
     numOption.this ? v T => f(v)
                    | nil => nil
 
 
   # monadic operator for bool result, false for nil
-  infix >>? (f fun (T) bool) =>
+  infix >>? (f T -> bool) =>
     numOption.this ? v T => f(v)
                    | nil => false
 
@@ -123,8 +123,7 @@ is
                    | nil => nil
 
   abs numOption<T> is
-    numOption.this >>= fun (v T) numOption<T> { if v.sign >= 0 v else -?v }
-//    numOption.this >>= fun (v T) => if v.sign >= 0 v else -?v     // NYI: check: causes crash! (precondition failure)
+    numOption.this >>= v -> if v.sign >= 0 v else -?v
 
   redef asString string is
     numOption.this ? v T => v.asString

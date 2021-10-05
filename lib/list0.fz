@@ -76,7 +76,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
 
   # call f in order on all elements of this list
   #
-  redef forAll (f fun (A)) unit is
+  redef forAll (f A -> unit) unit is
     list.this ? nil    =>
               | c Cons => f c.head; c.tail.forAll f
 
@@ -117,7 +117,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the list.
   #
-  map<B>(f fun(A) B) list<B> is
+  map<B>(f A -> B) list<B> is
     match list.this
       _ nil  => nil
       c Cons =>
@@ -130,7 +130,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   #
   # NYI: This should be declared outside of list<A>, it should not require an
   # instance to be called on.
-  fmap<B> (f fun(A) B) => fun (l list<A>) => l.map f
+  fmap<B> (f A -> B) list<A> -> list<B> is l -> l.map<B> f
 
 
   # fold the elements of this list using the given monoid.
@@ -183,7 +183,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   # representations of its contents.
   #
   redef asString string is
-    "[{map<string>(fun (x A) => x.asString).fold (strings.concat ",")}]"
+    "[{map<string>(x -> x.asString).fold (strings.concat ",")}]"
 
 
   # List concatenation, O(count)
@@ -232,7 +232,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
 
   # Lazily take the first elements of a list for which predicate 'p' holds.
   #
-  redef takeWhile (p fun(A) bool) list<A>
+  redef takeWhile (p A -> bool) list<A>
   is
     match list.this
       _ nil  => nil
@@ -248,7 +248,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
 
   # Lazily drop the first elements of a list for which predicate 'p' holds.
   #
-  redef dropWhile (p fun(A) bool) list<A>
+  redef dropWhile (p A -> bool) list<A>
   is
     match list.this
       _ nil  => nil

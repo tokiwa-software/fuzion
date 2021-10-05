@@ -45,7 +45,7 @@ is
     infix <= (other entry) => ks[i] <= ks[other.i]
     key => ks[i]
     val => vs[i]
-  sortedEntries := sortedArray<entry>((0..ks.length-1).mapList<entry>(fun (i i32) => entry i).asArray)
+  sortedEntries := sortedArray<entry> ((0..ks.length-1).mapList<entry> (i -> entry i)).asArray
 
   # number of entries in this map
   #
@@ -57,10 +57,10 @@ is
   # performance is O(log size).
   #
   index [] (k K) option<V> is
-    sortedEntries.find(fun(e entry) => ks[e.i] <> k)
-                 .map<V> (fun(i i32) => sortedEntries[i].val)
+    sortedEntries.find (e -> ks[e.i] <> k)
+                 .map<V> (i -> sortedEntries[i].val)
 
 
   # get a stream of all key/value pairs in this map
   #
-  items List<tuple<K,V>> is sortedEntries.map<tuple<K,V>> (fun (e entry) => (e.key, e.val))
+  items List<tuple<K,V>> is sortedEntries.map<tuple<K,V>> (e -> (e.key, e.val))

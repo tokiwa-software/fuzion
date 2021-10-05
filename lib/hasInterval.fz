@@ -53,7 +53,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
     size T is if lower <= upper then upper - lower + one else zero
 
     # apply function f to all elements in this interval
-    redef forAll(f fun (T)) unit is
+    redef forAll(f T -> unit) unit is
       for
         x := lower, x + one
       while x <= upper

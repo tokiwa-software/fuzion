@@ -59,24 +59,24 @@ List<T> ref is
   # count the number of elements in this List.  Note that this typically
   # runs forever if executed on an endless list
   #
-  count => mapList<i32>(fun (_ T) => 1).fold i32.sum
+  count => (mapList<i32> (_ -> 1)).fold i32.sum
 
 
   # collect the contents of this List into an array
   #
   asArray array<T> is
     s := asStream
-    array<T> count, fun (i i32) => s.next
+    array<T> count i->s.next
 
 
   # create a stream and call 'forAll f' on it
   #
-  forAll(f fun (T)) unit is asStream.forAll f
+  forAll(f T -> unit) unit is asStream.forAll f
 
 
   # create a stream and have it consumed by f, infix operator synonyme of forAll.
   #
-  infix | (f fun (T)) => forAll f
+  infix | (f T -> unit) => forAll f
 
 
   # create a stream, infix operator synonyme for asStream
@@ -86,24 +86,24 @@ List<T> ref is
 
   # create a new stream and apply 'f' to each element 'e' as long as 'f e'
   #
-  forWhile(f fun (T) bool) unit is asStream.forWhile f
+  forWhile(f T -> bool) unit is asStream.forWhile f
 
 
   # create a new stream that contains the first elements of this stream for
   # which 'f e' is false
   #
-  before(f fun (T) bool) stream<T> is asStream.before f
+  before(f T -> bool) stream<T> is asStream.before f
 
 
   # create a new stream and filter its elements using predicate f
   #
-  filter   (f fun (T) bool) stream<T> is asStream.filter f
+  filter   (f T -> bool) stream<T> is asStream.filter f
 
 
   # create a new stream and filter its elements using predicate f, infix operator
   # synonyme of filter.
   #
-  infix |& (f fun (T) bool) => filter f
+  infix |& (f T -> bool) => filter f
 
 
   # create a new stream and filter its elements using predicate f, infix operator
@@ -111,17 +111,17 @@ List<T> ref is
   #
   # NYI: What is better, 'infix |&' or 'infix &', or something else?
   #
-  infix & (f fun (T) bool) => filter f
+  infix & (f T -> bool) => filter f
 
 
   # create a stream and check if predicate f holds for all elements produced
   #
-  infix ∀ (f fun (T) bool) bool is asStream ∀ f
+  infix ∀ (f T -> bool) bool is asStream ∀ f
 
 
   # create a stream and check if predicate f holds for at least one element produced
   #
-  infix ∃ (f fun (T) bool) bool is asStream ∃ f
+  infix ∃ (f T -> bool) bool is asStream ∃ f
 
 
   # create a list that consists only of the first n elements of this

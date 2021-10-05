@@ -51,23 +51,23 @@ stream<T> ref is
 
   # apply f to all elements in this stream
   #
-  forAll(f fun (T)) unit is while hasNext do f(next)
+  forAll(f T -> unit) unit is while hasNext do f(next)
 
 
   # apply f to all elements in this stream, infix operator synonyme of forAll.
   #
-  infix | (f fun (T)) unit is while hasNext do f(next)
+  infix | (f T -> unit) unit is while hasNext do f(next)
 
 
   # apply 'f' to each element 'e' as long as 'f e'
   #
-  forWhile(f fun (T) bool) unit is while hasNext && f(next)
+  forWhile(f T -> bool) unit is while hasNext && f(next)
 
 
   # create a new stream that contains the first elements of this stream for
   # which 'f e' is false
   #
-  before(f fun (T) bool) ref : stream<T> is
+  before(f T -> bool) ref : stream<T> is
     nextCache := stream.this.next  # NYI should be option<T> and set to None if !stream.this.hasNext
     redef hasNext => !f(nextCache)
     redef next T is
@@ -78,7 +78,7 @@ stream<T> ref is
 
   # create new stream from all elements for which predicate f is true
   #
-  filter(f fun (T) bool) ref : stream<T> is
+  filter(f T -> bool) ref : stream<T> is
     cache T := ?  # NYI: should be option<T>
     cacheOk := false
     next2
@@ -97,7 +97,7 @@ stream<T> ref is
   # create a new stream from all elements for which predicate f is true, infix
   # operator synonyme of filter.
   #
-  infix |& (f fun (T) bool) stream<T> is filter(f)
+  infix |& (f T -> bool) stream<T> is filter(f)
 
 
   # create a new stream from all elements for which predicate f is true, infix
@@ -105,19 +105,19 @@ stream<T> ref is
   #
   # NYI: What is better, 'infix |&' or 'infix &', or something else?
   #
-  infix & (f fun (T) bool) => filter f
+  infix & (f T -> bool) => filter f
 
 
   # check if predicate f holds for all elements produced by this stream
   #
-  infix ∀ (f fun (T) bool) bool is
+  infix ∀ (f T -> bool) bool is
     while hasNext: f next   # hasNext implies f next
     until !hasNext
 
 
   # check if predicate f holds for at least one element produced by this stream
   #
-  infix ∃ (f fun (T) bool) bool is
+  infix ∃ (f T -> bool) bool is
     while hasNext
     until f next
 
@@ -149,7 +149,7 @@ stream<T> ref is
   # print the elements of this stream
   #
   print unit is
-    forAll(fun (x T) is
+    forAll (x ->
       yak x
       if hasNext then yak ", ")
 
@@ -157,9 +157,9 @@ stream<T> ref is
   # count the elements of this stream
   #
   count i32 is
-    # NYI: check if this works: map<i32>(fun f(x T) => 1).fold i32.sum
+    # NYI: check if this works: map<i32>(x -> 1).fold i32.sum
     res := 0
-    forAll(fun (x T) is set res := res + 1)
+    forAll (x -> set res := res + 1)
     res
 
 
@@ -207,10 +207,10 @@ stream<T> ref is
   # create a string from the elements of this stream
   #
   redef asString ref string is
-    # NYI: check if this works: map<string>(fun (x T) => x.asString).fold strings.concat ", "
+    # NYI: check if this works: map<string>(x-> x.asString).fold strings.concat ", "
     #
     res := ""
-    forAll(fun (x T) is set res := res + x.asString; if hasNext then set res := res + ", ")
+    forAll (x -> set res := res + x.asString; if hasNext then set res := res + ", ")
     res
 
 
@@ -219,7 +219,7 @@ stream<T> ref is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the stream.
   #
-  map<B>(f fun(T) B) stream<B> is
+  map<B>(f T -> B) stream<B> is
     ref : stream<B>
       {
         hasNext => stream.this.hasNext
@@ -230,7 +230,7 @@ stream<T> ref is
   # NYI: This currently does not work with the C backend since generics resolution
   # for stream.this.next confuses the type from the outer feature (T) with the type
   # from the inherited feature (B).
-  map_broken <B>(f fun(T) B) : stream<B> is
+  map_broken <B>(f T -> B) : stream<B> is
     hasNext => stream.this.hasNext
     next B is f stream.this.next
 

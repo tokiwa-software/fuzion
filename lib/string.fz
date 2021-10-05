@@ -356,7 +356,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   is
     codepointsArray
       .slice(from, to)
-      .map<string>(fun (c codepoint) string is c)  # NYI: this should maybe not be needed since codepoint is a string
+      .map<string> (c -> c)  # NYI: this should maybe not be needed since codepoint is a string
       .fold strings.concat
 
 
@@ -417,13 +417,13 @@ string ref : hasHash<string>, ordered<string>, strings is
   # The result is a, possibly empty, list of separate non-empty strings.
   #
   split list<string> is
-    l := utf8.asList.dropWhile (fun (c u8) => isAsciiWhiteSpace c)
+    l := utf8.asList.dropWhile (c -> isAsciiWhiteSpace c)
     if l.isEmpty
       nil
     else
       ref : Cons<string, list<string>> {
-        head =>  strings.fromBytes (l.takeWhile (fun (c u8) => !isAsciiWhiteSpace c))
-        tail => (strings.fromBytes (l.dropWhile (fun (c u8) => !isAsciiWhiteSpace c))).split
+        head =>  strings.fromBytes (l.takeWhile (c -> !isAsciiWhiteSpace c))
+        tail => (strings.fromBytes (l.dropWhile (c -> !isAsciiWhiteSpace c))).split
         # NYI using the inherited 'fromBytes' as in
         #
         #   head =>  fromBytes l.takeWhile fun (c i32) => !isAsciiWhiteSpace c

@@ -41,7 +41,7 @@ monad<A, MA: monad<A, MA>> is
   #
   # Apply f to elements of type A and re-wrap them in this monad.
   #
-  infix >>= (f fun (A) MA) MA is abstract
+  infix >>= (f A -> MA) MA is abstract
 
 
   # monadic operator to another monad
@@ -52,7 +52,7 @@ monad<A, MA: monad<A, MA>> is
   # allowed for features with generic arguments. Is there a way
   # we could allow this anyway?
   #
-  infix >>=~ <B, MB> (f fun (A) MB) MB is abstract
+  infix >>=~ <B, MB> (f A -> MB) MB is abstract
 
 
   # join operator
@@ -73,4 +73,4 @@ monad<A, MA: monad<A, MA>> is
 
   # NYI: fmap:
   #
-  # fmap<B> (f fun (A) B) is monad.this >>= fun (x A) B is return f x
+  # fmap<B> (f A -> B) is monad.this >>= fun (x A) B is return f x
