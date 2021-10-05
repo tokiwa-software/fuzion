@@ -1462,7 +1462,12 @@ public class Call extends Expr
                 count++;
               }
           }
+
+        // NYI: Need to check why this is needed, it does not make sense to
+        // propagate the target's type to target. But if removed,
+        // tests/reg_issue16_chainedBool/ fails with C backend:
         target = target.propagateExpectedType(res, outer, target.typeOrNull());
+
       }
   }
 
