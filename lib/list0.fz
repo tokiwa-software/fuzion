@@ -83,33 +83,20 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
 
   # get the head of this list, panic if list is empty
   #
-  # NYI: Remove, this is just for experiments
-  #
   forceHead
     pre
       debug: !isEmpty
-    => list.this ? nil    => panic
+    => list.this ? nil    => fuzion.std.panic "list.forceHead called on empty list"
                  | c Cons => c.head
 
 
   # get the tail of this list, panic if list is empty
   #
-  # NYI: Remove, this is just for experiments
-  #
   forceTail
     pre
       debug: !isEmpty
-    => list.this ? nil    => panic
+    => list.this ? nil    => fuzion.std.panic "list.forceTail called on empty list"
                  | c Cons => c.tail
-
-
-  # terminate with "*** panic"
-  #
-  # NYI: Remove, this is just for experiments
-  #
-  panic void is
-    say "*** panic"
-    fuzion.std.exit 1
 
 
   # map the list to a new list applying function f to all elements
