@@ -62,6 +62,6 @@ codepoints is
   utf16Surrogate => u32 0xd800 .. 0xdfff
 
 
-  # values guaranteed guaranteed never to be a legal unicode character
+  # values guaranteed never to be a legal unicode character
   #
   notACharacter => u32 0xfffe .. 0xffff

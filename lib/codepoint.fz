@@ -47,3 +47,8 @@ is
                                                         (u32 0x80 |  val        & 0x3f).low8bits ]
     else
       fuzion.std.panic "failed to encode code point {codepoint.this}"
+
+
+  # is this an ASCII code encoded in one byte
+  #
+  isAscii => ascii.contains val
