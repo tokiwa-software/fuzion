@@ -111,7 +111,6 @@ public class Function extends Expr
   List<Call> _inherits; // inherits calls, currently always empty
   Contract _contract;   // contract of the lambda
   Expr _expr;           // the right hand side of the '->'
-  boolean _ok = true;   // indicator set to false if anything went wrong
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -404,15 +403,10 @@ public class Function extends Expr
   {
     if (call_ == null)
       {
-        type_ = t;
-
-        if (_ok && t.featureOfType() != Types.resolved.f_function)
+        if (t != Types.t_ERROR && t.featureOfType() != Types.resolved.f_function)
           {
-            _ok = false;
-            if (t != Types.t_ERROR)
-              {
-                FeErrors.expectedFunctionTypeForLambda(pos, t);
-              }
+            FeErrors.expectedFunctionTypeForLambda(pos, t);
+            t = Types.t_ERROR;
           }
 
         /* We have an expression of the form
@@ -446,12 +440,12 @@ public class Function extends Expr
             a.add(arg);
             i++;
           }
-        if (_ok && i != gs.size())
+        if (t != Types.t_ERROR && i != gs.size())
           {
             FeErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
-            _ok = false;
+            t = Types.t_ERROR;
           }
-        if (_ok)
+        if (t != Types.t_ERROR)
           {
             Feature f = new Feature(pos, new FunctionReturnType(gs.get(0)), new List<String>("call"), a, _inherits, _contract,
                                     new Impl(_expr.pos(), _expr, Impl.Kind.Routine));
@@ -475,6 +469,7 @@ public class Function extends Expr
             _wrapper.findDeclarations(outer);
             call_ = new Call(pos, new Current(pos(), outer.thisType()), _wrapper).resolveTypes(res, outer);
           }
+        type_ = t;
       }
     return this;
   }
@@ -630,7 +625,7 @@ public class Function extends Expr
    */
   public Type typeOrNull()
   {
-    return _ok ? type_ : null;
+    return type_;
   }
 
 
