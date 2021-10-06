@@ -25,79 +25,43 @@
 
 # searchableList -- a list whose elements inherit from hasEquals
 #
-searchableList<A: hasEquals<A>>
-/* : list<A> -- NYI: we might allow inherting from a choice to get a choice
-                     with more restrictions on the type arguments
-
-  also, if we could add a compile time check for the type of the actual generic
-  such as
-
-    pre
-      A : hasEquals
-
-  Then, the inner features of searchableList could move to list.fz.
-
-*/
+# In contrast to searchablelist, this uses ref type 'list' and not choice
+# type 'list', so it is more flexible.
+#
+#
+searchableList<A: hasEquals<A>>(from List<A>) : List<A>
 is
 
-  # does l1 start with l2?
+  # create a list from this List.
   #
-  startsWith (l1, l2 list<A>) bool is
-    match l2
-      nil     => true
-      c2 Cons =>
-        match l1
-          nil     => false
-          c1 Cons => c1.head = c2.head && startsWith c1.tail, c2.tail # tail recursion
+  redef asList => from.asList
 
 
-  # get the index of l2 within l1 or nil if it does not exist
+  # does this list start with l?
   #
-  find (l1, l2 list<A>) option<i32> is
-    if startsWith l1, l2
-      0
-    else
-      match l1
-        nil     => nil
-        c1 Cons =>
-          match find c1.tail, l2
-            nil   => nil
-            n i32 => n + 1
+  startsWith (l List<A>) =>
+    (searchablelist asList).startsWith l.asList
 
 
-  # replace all occurances of f within l by r
+  # get the index of l within this list or nil if it does not exist
   #
-  replace (l, f, r list<A>) =>
-
-    # tail recursive helper
-    #
-    replace (
-        # the head part of l with f already replaced by r
-        h,
-
-        # the tail that still needs to be searched for f
-        t list<A>
-
-      ) list<A>
-    is
-      match find t, f
-        nil   => h ++ t
-        n i32 =>
-          replace h++(t.take n)++r, t.drop n+f.count
-
-    replace nil, l
+  find (l List<A>) =>
+    (searchablelist asList).find l.asList
 
 
-  # get the number of matches of l2 within l1
+  # replace all occurances of f by r
   #
-  countMatchesOverlapping (l1, l2 list<A>) i32 is
-    (l1.tails & (l -> startsWith l l2)).count
+  replace (f, r List<A>) =>
+    (searchablelist asList).replace f.asList r.asList
 
 
-  # get the number of non-overlapping matches of l2 within l1
+  # get the number of matches of l
   #
-  countMatches (l1, l2 list<A>) i32 is
-    match l1
-      nil     => 0
-      c1 Cons => (if (startsWith l1, l2) 1 + countMatches l1.drop(l2.count), l2
-                  else                       countMatches c1.tail          , l2)
+  countMatchesOverlapping (l List<A>) =>
+    (searchablelist asList).countMatchesOverlapping l.asList
+
+
+  # get the number of non-overlapping matches of l within this
+  #
+  countMatches (l List<A>) =>
+    (searchablelist asList).countMatches l.asList
