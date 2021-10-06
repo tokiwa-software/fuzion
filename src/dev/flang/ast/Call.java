@@ -1267,7 +1267,7 @@ public class Call extends Expr
             Type actualType = actual.typeOrNull();
             if (actualType != null)
               {
-                inferGeneric(t, actualType, actual.pos, found, conflict, foundAt);
+                inferGeneric(res, t, actualType, actual.pos, found, conflict, foundAt);
               }
           }
       }
@@ -1314,6 +1314,8 @@ public class Call extends Expr
   /**
    * Perform type inference for generics used in formalType that are instantiated by actualType.
    *
+   * @param res the resolution instance.
+   *
    * @param formalType the (possibly generic) formal type
    *
    * @param actualType the actual type
@@ -1328,13 +1330,13 @@ public class Call extends Expr
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
    */
-  private void inferGeneric(Type formalType, Type actualType, SourcePosition pos, Type[] found, boolean[] conflict, String[] foundAt)
+  private void inferGeneric(Resolution res, Type formalType, Type actualType, SourcePosition pos, Type[] found, boolean[] conflict, String[] foundAt)
   {
     if (formalType.isGenericArgument())
       {
         var g = formalType.genericArgument();
         if (g.feature() == calledFeature_)
-          {
+          { // we found a use of a generic type, so record it:
             var i = g.index();
             if (found[i] == null || actualType.isAssignableFromOrContainsError(found[i]))
               {
@@ -1344,32 +1346,44 @@ public class Call extends Expr
             foundAt [i] = (foundAt[i] == null ? "" : foundAt[i]) + actualType + " found at " + pos.show() + "\n";
           }
       }
-    else if (formalType.featureOfType() == actualType.featureOfType())
+    else
       {
-        for (int i=0; i < formalType._generics.size(); i++)
+        var fft = formalType.featureOfType();
+        fft.resolveTypes(res);
+        var aft = actualType.isGenericArgument() ? null : actualType.featureOfType();
+        if (fft == aft)
           {
-            if (i < actualType._generics.size())
+            for (int i=0; i < formalType._generics.size(); i++)
               {
-                inferGeneric(formalType._generics.get(i),
-                             actualType._generics.get(i),
-                             pos, found, conflict, foundAt);
+                if (i < actualType._generics.size())
+                  {
+                    inferGeneric(res,
+                                 formalType._generics.get(i),
+                                 actualType._generics.get(i),
+                                 pos, found, conflict, foundAt);
+                  }
+              }
+          }
+        else if (formalType.isChoice())
+          {
+            for (var ct : formalType.choiceGenerics())
+              {
+                inferGeneric(res, ct, actualType, pos, found, conflict, foundAt);
+              }
+          }
+        else if (aft != null)
+          {
+            for (Call p: aft.inherits)
+              {
+                var pt = p.typeOrNull();
+                if (pt != null)
+                  {
+                    var apt = actualType.actualType(pt);
+                    inferGeneric(res, formalType, apt, pos, found, conflict, foundAt);
+                  }
               }
           }
       }
-    else if (actualType.featureOfType() != null)
-      {
-        for (Call p: actualType.featureOfType().inherits)
-          {
-            var pt = p.typeOrNull();
-            if (pt != null)
-              {
-                var apt = actualType.actualType(pt);
-                inferGeneric(formalType, apt, pos, found, conflict, foundAt);
-              }
-          }
-      }
-    // NYI: If formalType is a choice like 'numOption<T>', we could infer 'T'
-    // from a non-nil actual such as 'i32'.
   }
 
 
