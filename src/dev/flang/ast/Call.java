@@ -1356,9 +1356,18 @@ public class Call extends Expr
               }
           }
       }
-    // NYI: If formalType is a parent of actualType, we could infer the actual
-    // generics from the inheritance call
-    //
+    else if (actualType.featureOfType() != null)
+      {
+        for (Call p: actualType.featureOfType().inherits)
+          {
+            var pt = p.typeOrNull();
+            if (pt != null)
+              {
+                var apt = actualType.actualType(pt);
+                inferGeneric(formalType, apt, pos, found, conflict, foundAt);
+              }
+          }
+      }
     // NYI: If formalType is a choice like 'numOption<T>', we could infer 'T'
     // from a non-nil actual such as 'i32'.
   }
