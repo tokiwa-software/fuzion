@@ -124,10 +124,10 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # parse this string as a signed 32-bit integer value
   #
-  parseI32       outcome<i32> is parseI32 10
-  parseI32Binary outcome<i32> is parseI32 2
-  parseI32Octal  outcome<i32> is parseI32 8
-  parseI32Hex    outcome<i32> is parseI32 16
+  parseI32       => parseI32 10
+  parseI32Binary => parseI32 2
+  parseI32Octal  => parseI32 8
+  parseI32Hex    => parseI32 16
   parseI32 (base i32) outcome<i32>
     pre 1 < base <= 36
   is
@@ -136,10 +136,10 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # parse this string as an unsigned 32-bit integer value
   #
-  parseU32       outcome<u32> is parseU32 10
-  parseU32Binary outcome<u32> is parseU32 2
-  parseU32Octal  outcome<u32> is parseU32 8
-  parseU32Hex    outcome<u32> is parseU32 16
+  parseU32       => parseU32 10
+  parseU32Binary => parseU32 2
+  parseU32Octal  => parseU32 8
+  parseU32Hex    => parseU32 16
   parseU32 (base u32) outcome<u32>
     pre u32 1 < base <= 36
   is
@@ -148,10 +148,10 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # parse this string as a signed 64-bit integer value
   #
-  parseI64       outcome<i64> is parseI64 10
-  parseI64Binary outcome<i64> is parseI64 2
-  parseI64Octal  outcome<i64> is parseI64 8
-  parseI64Hex    outcome<i64> is parseI64 16
+  parseI64       => parseI64 10
+  parseI64Binary => parseI64 2
+  parseI64Octal  => parseI64 8
+  parseI64Hex    => parseI64 16
   parseI64 (base i64) outcome<i64>
     pre i64 1 < base <= 36
   is
@@ -160,10 +160,10 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # parse this string as an unsigned 64-bit integer value
   #
-  parseU64       outcome<u64> is parseU64 10
-  parseU64Binary outcome<u64> is parseU64 2
-  parseU64Octal  outcome<u64> is parseU64 8
-  parseU64Hex    outcome<u64> is parseU64 16
+  parseU64       => parseU64 10
+  parseU64Binary => parseU64 2
+  parseU64Octal  => parseU64 8
+  parseU64Hex    => parseU64 16
   parseU64 (base u64) outcome<u64>
     pre u64 1 < base <= 36
   is
@@ -172,10 +172,10 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # parse this string as an int value of arbitrary size
   #
-  parseInt       outcome<int> is parseInt int(10)
-  parseIntBinary outcome<int> is parseInt int(2)
-  parseIntOctal  outcome<int> is parseInt int(8)
-  parseIntHex    outcome<int> is parseInt int(16)
+  parseInt       => parseInt int(10)
+  parseIntBinary => parseInt int(2)
+  parseIntOctal  => parseInt int(8)
+  parseIntHex    => parseInt int(16)
   parseInt (base int) outcome<int>
     pre (int 1) < base <= int 36
   is
