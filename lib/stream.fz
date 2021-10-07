@@ -209,9 +209,7 @@ stream<T> ref is
   redef asString ref string is
     # NYI: check if this works: map<string>(x-> x.asString).fold strings.concat ", "
     #
-    res := ""
-    forAll (x -> set res := res + x.asString; if hasNext then set res := res + ", ")
-    res
+    stream.this.asString ", "
 
 
   # create a string representation of this list including all the string
