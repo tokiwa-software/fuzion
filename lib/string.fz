@@ -347,7 +347,7 @@ string ref : hasHash<string>, ordered<string>, strings is
         fuzion.std.panic "string.codepointStream: missing case for $b1"
 
 
-  # create substring of this string consisting of codepoints from (indlusive) .. to (exclusive).
+  # create substring of this string consisting of codepoints from (inclusive) .. to (exclusive).
   #
   substring(from, to i32) string
     pre
