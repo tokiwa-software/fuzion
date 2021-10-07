@@ -214,6 +214,12 @@ stream<T> ref is
     res
 
 
+  # create a string representation of this list including all the string
+  # representations of its contents, separated by 'sep'.
+  #
+  asString (sep string) => asList.asString sep
+
+
   # map the stream to a new stream applying function f to all elements
   #
   # This performs a lazy mapping, f is called only when the elements
