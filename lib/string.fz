@@ -360,6 +360,15 @@ string ref : hasHash<string>, ordered<string>, strings is
       .fold strings.concat
 
 
+  # create substring of this string consisting of codepoints from (indlusive) .. codepontLength (exclusive).
+  #
+  substring(from i32) string
+    pre
+      debug: 0 <= from <= codepointLength
+  is
+    substring from codepointLength
+
+
   # check if this string starts with given prefix
   #
   startsWith(prefx string) =>
