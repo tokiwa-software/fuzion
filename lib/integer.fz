@@ -75,7 +75,7 @@ integer<T : integer<T>> : numeric<T> is
       b.gcd(thiz % b)  # tail recursion
 
   # create a fraction
-  infix /-/ (other T) => fraction(thiz, other)
+  infix /-/ (other T) => fraction thiz other
 
   # create a fraction via unicode fraction slash \u2044 '⁄ '
   infix ⁄ (other T) => integer.this /-/ other
@@ -183,7 +183,7 @@ integer<T : integer<T>> : numeric<T> is
 
   # creeate binary representation with given number of digits.
   #
-  bin(len i32) => integer.this.asString len, 2
+  bin(len i32) => integer.this.asString len 2
 
 
   # creeate octal representation
@@ -193,7 +193,7 @@ integer<T : integer<T>> : numeric<T> is
 
   # creeate octal representation with given number of digits.
   #
-  oct(len i32) => integer.this.asString len, 8
+  oct(len i32) => integer.this.asString len 8
 
 
   # creeate decimal representation
@@ -203,7 +203,7 @@ integer<T : integer<T>> : numeric<T> is
 
   # creeate decimal representation with given number of digits.
   #
-  dec(len i32) => integer.this.asString len, 10
+  dec(len i32) => integer.this.asString len 10
 
 
   # creeate hexadecimal representation
@@ -213,4 +213,4 @@ integer<T : integer<T>> : numeric<T> is
 
   # creeate hexadecimal representation with given number of digits.
   #
-  hex(len i32) => integer.this.asString len, 16
+  hex(len i32) => integer.this.asString len 16
