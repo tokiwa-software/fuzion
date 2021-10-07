@@ -441,7 +441,7 @@ qual        : name ( dot qual
   /**
    * Parse name
    *
-name        : IDENT
+name        : IDENT                            # all parts of name must be in same line
             | opName
             | "ternary" QUESTION COLON
             | "index" LBRACKET ( ".." RBRACKET
@@ -460,6 +460,7 @@ name        : IDENT
     int pos = pos();
     if (isNamePrefix())
       {
+        var oldLine = sameLine(line());
         switch (current())
           {
           case t_ident  : result = identifier(); next(); break;
@@ -522,6 +523,7 @@ name        : IDENT
             }
           default: check(false);
           }
+        sameLine(oldLine);
       }
     else
       {
@@ -1145,6 +1147,7 @@ call        : name ( actualGens actualArgs callTail
   Call call(Expr target)
   {
     SourcePosition pos = posObject();
+    var line = line();
     String n = name();
     Call result;
     if (skipDot())
@@ -1166,7 +1169,7 @@ call        : name ( actualGens actualArgs callTail
         // we must check isActualGens() to distinguish the less operator in 'a < b'
         // from the actual generics in 'a<b>'.
         List<Type> g = (!isActualGens()) ? Call.NO_GENERICS : actualGens();
-        List<Expr> l = actualArgs();
+        List<Expr> l = actualArgs(line);
         result = new Call(pos, target, n, g, l);
         result = callTail(result);
       }
@@ -1340,12 +1343,14 @@ typeList    : type ( COMMA typeList
   /**
    * Parse actualArgs
    *
-actualArgs  : actualsList
+   * @param line the line containing the name of the called feature
+   *
+actualArgs  : actualsList               # must be in same line as name of called feature
             | LPAREN exprList RPAREN
             | LPAREN RPAREN
             ;
    */
-  List<Expr> actualArgs()
+  List<Expr> actualArgs(int line)
   {
     List<Expr> result = relaxLineAndSpaceLimit(() -> {
         List<Expr> res = null;
@@ -1370,7 +1375,9 @@ actualArgs  : actualsList
         //    stdout.println
         //      "Hallo, World!"
         //
+        var oldLine = sameLine(line);
         result = actualsList();
+        sameLine(oldLine);
       }
     return result;
   }
