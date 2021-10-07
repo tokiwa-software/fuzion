@@ -57,8 +57,6 @@ EBNF_PARSER=$(pcregrep -M "^[a-zA-Z0-9_]+[ ]*:(\n|.)*?( ;)" ./src/dev/flang/pars
 EBNF="grammar Fuzion;${NEW_LINE}${NEW_LINE}"
 # combine parser and lexer
 EBNF="${EBNF}${EBNF_LEXER}${NEW_LINE}${EBNF_PARSER}"
-# remove comments
-EBNF=$(sed 's/ [-#//].*//g' <<< "$EBNF")
 # replace " by '
 EBNF=$(sed 's/"/\x27/g' <<< "$EBNF")
 
