@@ -196,6 +196,16 @@ integer<T : integer<T>> : numeric<T> is
   oct(len i32) => integer.this.asString len, 8
 
 
+  # creeate decimal representation
+  #
+  dec => integer.this.asString 10
+
+
+  # creeate decimal representation with given number of digits.
+  #
+  dec(len i32) => integer.this.asString len, 10
+
+
   # creeate hexadecimal representation
   #
   hex => integer.this.asString 16
