@@ -91,6 +91,48 @@ public class Interpreter extends ANY
 
 
   /**
+   * Helper for callStack() to show one single frame
+   *
+   * @param frame the clazz of the entry to show
+   *
+   * @param call the call of the entry to show
+   */
+  private static void showFrame(StringBuilder sb, Clazz frame, Call call)
+  {
+    if (frame != null)
+      {
+        sb.append(frame).append(": ");
+      }
+    sb.append(call.pos.show()).append("\n");
+  }
+
+  /**
+   * Helper for callStack() to show a repeated frame
+   *
+   * @param sb used to append the output
+   *
+   * @param repeat how often was the previous entry repeated? >= 0 where 0 means
+   * it was not repeated, just appeared once, 1 means it was repeated once, so
+   * appeared twice, etc.
+   *
+   * @param frame the clazz of the previous entry
+   *
+   * @param call the call of the pevious entry
+   */
+  private static void showRepeat(StringBuilder sb, int repeat, Clazz frame, Call call)
+  {
+    if (repeat > 1)
+      {
+        sb.append("...  repeated ").append(repeat).append(" times  ...\n\n");
+      }
+    else if (repeat > 0)
+      {
+        showFrame(sb, frame, call);
+      }
+  }
+
+
+  /**
    * Current call stack as a string for debugging output.
    */
   public static String callStack()
@@ -109,25 +151,14 @@ public class Interpreter extends ANY
           }
         else
           {
-            if (repeat > 0)
-              {
-                sb.append("...  repeated ").append(repeat).append(" times  ...\n\n");
-                repeat = 0;
-              }
-            if (frame != null)
-              {
-                sb.append(frame).append(": ");
-              }
-            sb.append(call.pos.show()).append("\n");
+            showRepeat(sb, repeat, lastFrame, lastCall);
+            repeat = 0;
+            showFrame(sb, frame, call);
             lastFrame = frame;
             lastCall = call;
           }
       }
-    if (repeat > 0)
-      {
-        sb.append("  ...  repeated ").append(repeat).append(" times  ...\n\n");
-        repeat = 0;
-      }
+    showRepeat(sb, repeat, lastFrame, lastCall);
     return sb.toString();
   }
 
