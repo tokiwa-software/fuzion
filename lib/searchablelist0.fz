@@ -82,7 +82,7 @@ is
           t list<A> # the tail that still needs to be searched for f
          ) list<A>
     is
-      match find f
+      match (searchablelist t).find f
         nil   => h ++ t
         n i32 => repl h++(t.take n)++r (t.drop n+f.count)
 
