@@ -481,7 +481,7 @@ public class Interpreter extends ANY
         Value val = execute(b._value, staticClazz, cur);
         Clazz vc = (Clazz) staticClazz.getRuntimeData(b._valAndRefClazzId);
         Clazz rc = (Clazz) staticClazz.getRuntimeData(b._valAndRefClazzId + 1);
-        if (vc.isRef())
+        if (vc.isRef() || !rc.isRef())
           { // vc's type is a generic argument or outer type whose actual type
             // does not need boxing
             check

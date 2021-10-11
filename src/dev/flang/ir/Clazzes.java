@@ -627,7 +627,54 @@ public class Clazzes extends ANY
   public static void findClazzes(Box b, Clazz outerClazz)
   {
     Clazz vc = clazz(b._value, outerClazz);
-    Clazz rc = vc.asRef();
+    Clazz rc = vc;
+    var s = b._stmnt;
+    Clazz fc = null;
+    if (s instanceof Call c)
+      {
+        var tclazz = clazz(c.target, outerClazz);
+        if (tclazz != c_void.get())
+          {
+            var inner = tclazz.lookup(c.calledFeature(),
+                                      outerClazz.actualGenerics(c.generics),
+                                      c.pos());
+
+            var tc = inner;
+            var afs = inner.argumentFields();
+            // NYI: The following if is somewhat arbitrary, needs a better
+            // condition. If removed, tests/reg_issue29_arrayOfUnitType
+            // failes. The better condition should filter out unused arguments,
+            // while unused is something like 'of unit type'.
+            if (b._arg < afs.length)
+              {
+                fc = afs[b._arg];
+              }
+          }
+      }
+    else if (s instanceof Assign a)
+      {
+        var f = a._assignedField;
+        if (isUsed(f, outerClazz))
+          {
+            Clazz sClazz = clazz(a._target, outerClazz);
+            fc = sClazz.asValue().lookup(f, Call.NO_GENERICS, a.pos());
+          }
+      }
+    else
+      {
+        throw new Error("unexpected box target statement: " + s.getClass());
+      }
+    if (fc != null)
+      {
+        var ft = fc.resultClazz();
+        if (ft.isRef() ||
+            (ft._type.isChoice() &&
+             !ft._type.isAssignableFrom(vc._type) &&
+             ft._type.isAssignableFrom(vc._type.asRef())))
+          {
+            rc = vc.asRef();
+          }
+      }
     if (b._valAndRefClazzId < 0)
       {
         b._valAndRefClazzId = outerClazz.feature().getRuntimeClazzIds(2);

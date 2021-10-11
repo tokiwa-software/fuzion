@@ -291,30 +291,72 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
+   * Get the formal type of the usage of an expression (see box).
+   *
+   * @param s the target statement this expression is used by.
+   *
+   * @param arg in case s is a call, the index of the actual argument this
+   * expression is assigned to.
+   *
+   * @return the formal type required by the user of this expression.
+   */
+  Type getFormalType(Stmnt s, int arg)
+  {
+    if (PRECONDITIONS) require
+      (s instanceof Call || s instanceof Assign || s instanceof InitArray);
+
+    if (s instanceof Call c)
+      {
+        return c.resolvedFormalArgumentTypes[arg];
+      }
+    else if (s instanceof Assign a)
+      {
+        return a._assignedField.resultType();
+      }
+    else if (s instanceof InitArray i)
+      {
+        return i.elementType();
+      }
+    throw new Error("unexpected target of boxing: "+s.getClass());
+  }
+
+
+  /**
    * Check if this value might need boxing, unboxing or tagging and wrap this
    * into Box()/Tag() if this is the case.
    *
-   * @param frmlT the formal type this is assigned to.
+   * @param s the target statment this expression is used by.
+   *
+   * @param arg in case s is a call, the index of the actual argument this
+   * expression is assigned to.
    *
    * @return this or an instance of Box wrapping this.
    */
-  Expr box(Type frmlT)
+  Expr box(Stmnt s, int arg)
   {
-    Expr result = this;
-    var t = type();
+    if (PRECONDITIONS) require
+      (s instanceof Call || s instanceof Assign || s instanceof InitArray);
 
-    if ((!t.isRef() || isCallToOuterRef()) && t != Types.resolved.t_void &&
-        (frmlT.isRef() ||
-         (frmlT.isChoice() &&
-          !frmlT.isAssignableFrom(t) &&
-          frmlT.isAssignableFrom(t.asRef()))))
+    var result = this;
+    var t = type();
+    var frmlT = getFormalType(s, arg);
+
+    if (t != Types.resolved.t_void)
       {
-        result = new Box(result);
-        t = result.type();
-      }
-    if (frmlT.isChoice() && t != frmlT && frmlT.isAssignableFrom(t))
-      {
-        result = new Tag(result, frmlT);
+        if ((!t.isRef() || isCallToOuterRef()) && t != Types.resolved.t_void &&
+            (frmlT.isRef() ||
+             (frmlT.isChoice() &&
+              !frmlT.isAssignableFrom(t) &&
+              frmlT.isAssignableFrom(t.asRef()))) ||
+            frmlT.isGenericArgument())
+          {
+            result = new Box(result, s, arg);
+            t = result.type();
+          }
+        if (frmlT.isChoice() && t != frmlT && frmlT.isAssignableFrom(t))
+          {
+            result = new Tag(result, frmlT);
+          }
       }
     return result;
   }

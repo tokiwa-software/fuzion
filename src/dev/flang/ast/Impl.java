@@ -393,8 +393,9 @@ public class Impl extends ANY
         Assign ass = new Assign(res,
                                 endPos,
                                 resultField,
-                                this._code.box(resultField.resultType()),
+                                this._code,
                                 outer);
+        ass._value = this._code.box(ass, 0);  // NYI: move to constructor of Assign?
         this._code = new Block (this._code.pos,
                                 endPos,
                                 new List<Stmnt>(ass));

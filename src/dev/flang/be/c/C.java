@@ -465,7 +465,7 @@ public class C extends ANY
         {
           var vc = _fuir.boxValueClazz(cl, c, i);
           var rc = _fuir.boxResultClazz(cl, c, i);
-          if (_fuir.clazzIsRef(vc))
+          if (_fuir.clazzIsRef(vc) || !_fuir.clazzIsRef(rc))
             { // vc's type is a generic argument whose actual type does not need
               // boxing
               o = CStmnt.lineComment("Box " + _fuir.clazzAsString(vc) + " is NOP, clazz is already a ref");

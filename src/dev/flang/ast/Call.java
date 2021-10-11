@@ -1513,8 +1513,7 @@ public class Call extends Expr
             while (i.hasNext())
               {
                 Expr actl = i.next();
-                Type frmlT = resolvedFormalArgumentTypes[count];
-                i.set(actl.box(frmlT));
+                i.set(actl.box(this, count));
                 count++;
               }
           }

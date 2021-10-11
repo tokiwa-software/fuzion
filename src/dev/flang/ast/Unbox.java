@@ -138,8 +138,9 @@ public class Unbox extends Expr
    *
    * @return this or an instance of Box wrapping this.
    */
-  Expr box(Type frmlT)
+  Expr box(Stmnt s, int arg)
   {
+    var frmlT = getFormalType(s, arg);
     var t = type();
     if (t != Types.resolved.t_void &&
         ((!frmlT.isRef() ||
@@ -150,7 +151,7 @@ public class Unbox extends Expr
         this._needed = true;
         this.type_ = frmlT;
       }
-    return super.box(frmlT);
+    return super.box(s, arg);
   }
 
 

@@ -188,7 +188,7 @@ public class InitArray extends Expr
    *
    * @param if type() is Array<T>; the element type T. Types.t_ERROR otherwise.
    */
-  private Type elementType()
+  Type elementType()
   {
     return elementType(type());
   }
@@ -224,12 +224,11 @@ public class InitArray extends Expr
    */
   public void box(Feature outer)
   {
-    var elementType = elementType();
     var li = _elements.listIterator();
     while (li.hasNext())
       {
         var e = li.next();
-        li.set(e.box(elementType));
+        li.set(e.box(this, 0));
       }
   }
 
