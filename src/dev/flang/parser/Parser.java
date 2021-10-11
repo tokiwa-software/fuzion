@@ -1169,7 +1169,7 @@ call        : name ( actualGens actualArgs callTail
         // we must check isActualGens() to distinguish the less operator in 'a < b'
         // from the actual generics in 'a<b>'.
         List<Type> g = (!isActualGens()) ? Call.NO_GENERICS : actualGens();
-        List<Expr> l = actualArgs(line);
+        var l = actualArgs(line);
         result = new Call(pos, target, n, g, l);
         result = callTail(result);
       }
@@ -1370,14 +1370,7 @@ actualArgs  : actualsList               # must be in same line as name of called
       });
     if (result == null)
       {
-        // NYI: We could also allow the arguments to be indented in a new line such as
-        //
-        //    stdout.println
-        //      "Hallo, World!"
-        //
-        var oldLine = sameLine(line);
-        result = actualsList();
-        sameLine(oldLine);
+        result = actualsList(line);
       }
     return result;
   }
@@ -1386,54 +1379,60 @@ actualArgs  : actualsList               # must be in same line as name of called
   /**
    * Does the current symbol end a list of space separated actual arguments to a
    * call.
+   *
+   * @param in the indentation used for the actuals, null if none.
+   *
+   * @return true if the next symbold ends actual arguments or in!=null and the
+   * next symbol is not properly indented.
    */
-  boolean endsActuals()
+  boolean endsActuals(Indentation in)
   {
-    var t = current();
-    switch (t)
+    var t = in != null ? currentNoLimit() : current();
+    var result =  switch (t)
       {
-      case t_semicolon       :
-      case t_comma           :
-      case t_rparen          :
-      case t_rcrochet        :
-      case t_lbrace          :
-      case t_rbrace          :
-      case t_is              :
-      case t_pre             :
-      case t_post            :
-      case t_inv             :
-      case t_require         :
-      case t_ensure          :
-      case t_invariant       :
-      case t_if              :
-      case t_then            :
-      case t_else            :
-      case t_for             :
-      case t_do              :
-      case t_while           :
-      case t_until           :
-      case t_stringBD        :
-      case t_stringBQ        :
-      case t_stringBB        :
-      case t_indentationLimit:
-      case t_lineLimit       :
-      case t_spaceLimit      :
-      case t_eof             : return true;
-      case t_op              :
-        // !ignoredTokenBefore(): We have an operator '-' like this 'f-xyz', 'f-
-        // xyz', i.e, stuck to the called function, we do not parse it as part
-        // of the args.
-        //
-        // ignoredTokenBefore(): An operator '-' like this 'f a b - xyz', so the
-        // arg list ends with 'b' and '-' will be parsed as an infix operator on
-        // 'f a b' and 'xyz'.
-        return !ignoredTokenBefore() || ignoredTokenAfter();
-      default                :
-        // No more actuals if we have a string continuation as in "value $x is
-        // ok" for the string after '$x' or in "bla{f a b}blub" for the string
-        // after 'f a b'.
-        return isContinuedString(t);
-      }
+      case t_semicolon       ,
+           t_comma           ,
+           t_rparen          ,
+           t_rcrochet        ,
+           t_lbrace          ,
+           t_rbrace          ,
+           t_is              ,
+           t_pre             ,
+           t_post            ,
+           t_inv             ,
+           t_require         ,
+           t_ensure          ,
+           t_invariant       ,
+           t_if              ,
+           t_then            ,
+           t_else            ,
+           t_for             ,
+           t_do              ,
+           t_while           ,
+           t_until           ,
+           t_stringBD        ,
+           t_stringBQ        ,
+           t_stringBB        ,
+           t_indentationLimit,
+           t_lineLimit       ,
+           t_spaceLimit      ,
+           t_eof             -> true;
+
+      // !ignoredTokenBefore(): We have an operator '-' like this 'f-xyz', 'f-
+      // xyz', i.e, stuck to the called function, we do not parse it as part
+      // of the args.
+      //
+      // ignoredTokenBefore(): An operator '-' like this 'f a b - xyz', so the
+      // arg list ends with 'b' and '-' will be parsed as an infix operator on
+      // 'f a b' and 'xyz'.
+      case t_op            -> !ignoredTokenBefore() || ignoredTokenAfter();
+
+      // No more actuals if we have a string continuation as in "value $x is
+      // ok" for the string after '$x' or in "bla{f a b}blub" for the string
+      // after 'f a b'.
+      default              -> isContinuedString(t);
+      };
+    return result || (in!=null) && !in.ok();
   }
 
 
@@ -1459,6 +1458,8 @@ exprList    : expr ( COMMA exprList
   /**
    * Parse
    *
+   * @param line the line containing the name of the called feature
+   *
 actualsList : exprUntilSp actualsLst
             | exprUntilSp actualsLstC
             |
@@ -1470,10 +1471,17 @@ actualsLstC : COMMA expr actualsLstC
             |
             ;
    */
-  List<Expr> actualsList()
+  List<Expr> actualsList(int line)
   {
+    Indentation in = null;
+    if (line() != line && current() != Token.t_lineLimit)
+      {
+        line = -1;
+        in = new Indentation();
+      }
+    var oldLine = sameLine(line);
     List<Expr> result = Call.NO_PARENTHESES;
-    if (ignoredTokenBefore() && !endsActuals())
+    if (ignoredTokenBefore() && !endsActuals(in))
       {
         result = new List<>(exprUntilSpace());
         var hasComma = current() == Token.t_comma;
@@ -1487,13 +1495,18 @@ actualsLstC : COMMA expr actualsLstC
         else
           {
             var p = -1;
-            while (!endsActuals() &&
+            while (!endsActuals(in) &&
                    p != pos() /* make sure we do not get stuck on a syntax error */)
               {
                 p = pos();
                 result.add(exprUntilSpace());
               }
           }
+      }
+    sameLine(oldLine);
+    if (in != null)
+      {
+        in.end();
       }
     return result;
   }
@@ -1731,7 +1744,7 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
                 elements.add(expr());
               }
             while (skipComma());
-            match(Token.t_rparen, "term");
+            match(Token.t_rparen, "klammer");
           }
         return elements;
       });
@@ -2575,9 +2588,9 @@ loop        : loopProlog loopBody loopEpilog
             |            loopBody
             | loopProlog          loopEpilog
             ;
-loopProlog  : "for" indexVars "variant" exprInLine
-            | "for" indexVars
-            |                 "variant" exprInLine
+loopProlog  : indexVars "variant" exprInLine
+            | indexVars
+            |           "variant" exprInLine
             ;
 loopBody    : "while" exprAtMinIndent      block
             | "while" exprAtMinIndent "do" block
@@ -2593,7 +2606,7 @@ loopEpilog  : "until" exprAtMinIndent thenPart elseBlockOpt
         SourcePosition pos = posObject();
         List<Feature> indexVars  = new List<>();
         List<Feature> nextValues = new List<>();
-        var hasFor   = skip(      Token.t_for    ); if (hasFor) { indexVars(indexVars, nextValues); }
+        var hasFor   = current() == Token.t_for; if (hasFor) { indexVars(indexVars, nextValues); }
         var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()      : null;
                                                     var i   = hasFor || v != null ? invariant(true)   : null;
         var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprAtMinIndent() : null;
@@ -2615,17 +2628,20 @@ loopEpilog  : "until" exprAtMinIndent thenPart elseBlockOpt
   /**
    * Parse IndexVars
    *
-indexVars   : indexVar (semi indexVars)
+indexVars   : "for" indexVar (semi indexVars)
             |
             ;
    */
   void indexVars(List<Feature> indexVars, List<Feature> nextValues)
   {
-    while (isIndexVarPrefix())
+    match(Token.t_for, "indexVars");
+    var in = new Indentation();
+    while (isIndexVarPrefix() && in.ok())
       {
         indexVar(indexVars, nextValues);
         semi();
       }
+    in.end();
   }
 
 
@@ -2706,10 +2722,13 @@ nextValue   : COMMA exprAtMinIndent
    */
   boolean isIndexVarPrefix()
   {
-    return
+    var mi = minIndent(-1);
+    var result =
       isNonEmptyVisibilityPrefix() ||
       isModifiersPrefix() ||
       isNamePrefix();
+    minIndent(mi);
+    return result;
   }
 
 
