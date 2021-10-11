@@ -35,7 +35,7 @@
 # In case file $2.skip exists, do not run the example
 #
 
-SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
 CURDIR=$($SCRIPTPATH/_cur_dir.sh)
 
 RC=0

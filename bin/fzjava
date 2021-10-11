@@ -38,7 +38,7 @@
 #                          override stack size)
 
 FUZION_CMD=$0
-FUZION_BIN=`dirname "$0"`
+FUZION_BIN="$(dirname "$(readlink -f "$0")")"
 
 : ${FUZION_HOME="$FUZION_BIN/.."}
 : ${FUZION_JAVA=java}
