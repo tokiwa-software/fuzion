@@ -314,14 +314,13 @@ public class FrontEnd extends ANY
   static {
 
     CURRENT_DIRECTORY = Path.of(".");
+    if(!System.getProperties().containsKey("fuzion.home"))
+      {
+        System.err.println("property fuzion.home not set.");
+        System.exit(1);
+      }
 
-    // find fuzion home via classes directory:
-    String p = new File(FrontEnd.class.getProtectionDomain().getCodeSource().getLocation().getPath())
-      .getAbsolutePath()
-      // NYI properly decode all special characters in paths
-      .replace("%20", " ");
-
-    FUZION_HOME = Path.of(p).getParent();
+    FUZION_HOME = Path.of(System.getProperty("fuzion.home"));
 
     SOURCE_PATHS = new Path[] { FUZION_HOME.resolve("lib"), CURRENT_DIRECTORY };
   }
