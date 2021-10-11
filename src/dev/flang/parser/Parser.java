@@ -1541,7 +1541,7 @@ bracketTerm : block
   /**
    * An Expr that ends in white space unless enclosed in { }, [ ], or ( ).
    *
-exprUntilSp : expr         # no white space except enclosed in { }, [ ], or ( ).
+exprUntilSp : expr         // no white space except enclosed in { }, [ ], or ( ).
             ;
 
    */
@@ -1558,8 +1558,8 @@ exprUntilSp : expr         # no white space except enclosed in { }, [ ], or ( ).
    * An expr that does not exceed a single line unless it is enclosed by { } or
    * ( ).
    *
-exprInLine  : expr             # within one line
-            | bracketTerm      # stretching over one or several lines
+exprInLine  : expr             // within one line
+            | bracketTerm      // stretching over one or several lines
             ;
    */
   Expr exprInLine()
@@ -1954,9 +1954,9 @@ simpleterm  : bracketTerm
    * Parse stringTerm
    *
 stringTerm  : STRING
-            # NYI string interpolation
-            # | STRING$ ident stringTerm
-            # | STRING{ block stringTerm
+            // NYI string interpolation
+            // | STRING$ ident stringTerm
+            // | STRING{ block stringTerm
             ;
   */
   Expr stringTerm(Expr leftString)
@@ -2285,8 +2285,8 @@ caseStar    : STAR       caseBlock
   /**
    * Parse caseBlock
    *
-caseBlock   : ARROW          -- if followed by '|'
-            | ARROW block    -- if block does not start with '|'
+caseBlock   : ARROW          // if followed by '|'
+            | ARROW block    // if block does not start with '|'
             ;
    */
   Block caseBlock()
