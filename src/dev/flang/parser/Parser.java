@@ -441,7 +441,7 @@ qual        : name ( dot qual
   /**
    * Parse name
    *
-name        : IDENT                            # all parts of name must be in same line
+name        : IDENT                            // all parts of name must be in same line
             | opName
             | "ternary" QUESTION COLON
             | "index" LBRACKET ( ".." RBRACKET
@@ -1345,7 +1345,7 @@ typeList    : type ( COMMA typeList
    *
    * @param line the line containing the name of the called feature
    *
-actualArgs  : actualsList               # must be in same line as name of called feature
+actualArgs  : actualsList               // must be in same line as name of called feature
             | LPAREN exprList RPAREN
             | LPAREN RPAREN
             ;
