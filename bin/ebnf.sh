@@ -63,12 +63,15 @@ EBNF=$(sed 's/"/\x27/g' <<< "$EBNF")
 echo "$EBNF"
 
 # test grammar with antlr4
-mkdir -p /tmp/fuzion_grammar
-echo "$EBNF" > /tmp/fuzion_grammar/Fuzion.g4
+TMP=$(mktemp -d)
+mkdir -p $TMP/fuzion_grammar
+echo "$EBNF" > $TMP/fuzion_grammar/Fuzion.g4
 # NYI add option -Werror
-antlr4 -long-messages -o /tmp/fuzion_grammar /tmp/fuzion_grammar/Fuzion.g4
+antlr4 -long-messages -o $TMP/fuzion_grammar $TMP/fuzion_grammar/Fuzion.g4
+antlr4_rc=$?
+rm -rf $TMP
 
-if [ ! $? -eq 0 ]; then
+if [ ! $antlr4_rc -eq 0 ]; then
   echo "antlr4 failed parsing grammar"
   exit 1
 fi
