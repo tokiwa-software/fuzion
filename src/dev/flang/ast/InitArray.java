@@ -188,7 +188,7 @@ public class InitArray extends Expr
    *
    * @param if type() is Array<T>; the element type T. Types.t_ERROR otherwise.
    */
-  Type elementType()
+  public Type elementType()
   {
     return elementType(type());
   }

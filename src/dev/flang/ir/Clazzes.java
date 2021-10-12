@@ -629,7 +629,7 @@ public class Clazzes extends ANY
     Clazz vc = clazz(b._value, outerClazz);
     Clazz rc = vc;
     var s = b._stmnt;
-    Clazz fc = null;
+    Clazz ft = null;
     if (s instanceof Call c)
       {
         var tclazz = clazz(c.target, outerClazz);
@@ -647,7 +647,7 @@ public class Clazzes extends ANY
             // while unused is something like 'of unit type'.
             if (b._arg < afs.length)
               {
-                fc = afs[b._arg];
+                ft = afs[b._arg].resultClazz();
               }
           }
       }
@@ -657,16 +657,19 @@ public class Clazzes extends ANY
         if (isUsed(f, outerClazz))
           {
             Clazz sClazz = clazz(a._target, outerClazz);
-            fc = sClazz.asValue().lookup(f, Call.NO_GENERICS, a.pos());
+            ft = sClazz.asValue().lookup(f, Call.NO_GENERICS, a.pos()).resultClazz();
           }
+      }
+    else if (s instanceof InitArray i)
+      {
+        ft = outerClazz.actualClazz(i.elementType());
       }
     else
       {
         throw new Error("unexpected box target statement: " + s.getClass());
       }
-    if (fc != null)
+    if (ft != null)
       {
-        var ft = fc.resultClazz();
         if (ft.isRef() ||
             (ft._type.isChoice() &&
              !ft._type.isAssignableFrom(vc._type) &&
