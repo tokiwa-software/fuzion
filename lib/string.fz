@@ -308,9 +308,9 @@ string ref : hasHash<string>, ordered<string>, strings is
               if (b3 & 0xc0) != 0x80
                 error "Bad UTF8 encoding found: cannot decode $b1, $b2, $b3, expected two continuation bytes in the range 0x80..0xbf."
               else if b1 <= 0xef       # 0x0800..0xffff encoded in 3 bytes
-                res := ((b1 & 0x0f) << 12) |
-                       ((b2 & 0x3f) <<  6) |
-                       ((b3 & 0x3f)      )
+                res := (((b1 & 0x0f) << 12) |
+                        ((b2 & 0x3f) <<  6) |
+                        ((b3 & 0x3f)      )   )
                 if res ∉ codepoints.utf8EncodedInThreeBytes
                   error "Bad UTF8 encoding found: $b1, $b2, $b2: codepoint $res uses overlong 3-byte encoding, allowed for range {codepoints.utf8EncodedInTwoBytes}."
                 else if res ∈ codepoints.utf16Surrogate
