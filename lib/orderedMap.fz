@@ -71,10 +71,8 @@ is
   add(k K, v V) orderedMap<K,V> is
     match index[](k)
       nil =>
-        ka := marray<K> 1 k
-        kks := ks++ka
         (orderedMap
-          (kks).asArray
+          (ks++[k]).asArray
           (vs++(marray<V> 1 v)).asArray)
       V =>
         va := array<V> size (i -> if ks[i]=k then v else vs[i])
