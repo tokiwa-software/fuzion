@@ -44,7 +44,7 @@ import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.Feature; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.Impl; // NYI: remove dependency
-import dev.flang.ast.InitArray; // NYI: remove dependency
+import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Match; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
@@ -1083,7 +1083,7 @@ hw25 is
       {
         l.add(s);
       }
-    else if (s instanceof InitArray)
+    else if (s instanceof InlineArray)
       {
         l.add(s);
       }
@@ -1156,7 +1156,7 @@ hw25 is
     else if (e instanceof BoolConst ||
              e instanceof NumLiteral  ||
              e instanceof StrConst  ||
-             e instanceof InitArray   )
+             e instanceof InlineArray   )
       {
         result = ExprKind.Const;
       }
@@ -1512,9 +1512,9 @@ hw25 is
     else if (t == Types.resolved.t_f32   ) { clazz = Clazzes.f32        .getIfCreated(); }
     else if (t == Types.resolved.t_f64   ) { clazz = Clazzes.f64        .getIfCreated(); }
     else if (t == Types.resolved.t_string) { clazz = Clazzes.conststring.getIfCreated(); } // NYI: a slight inconsistency here, need to change AST
-    else if (ic instanceof InitArray)
+    else if (ic instanceof InlineArray)
       {
-        throw new Error("NYI: FUIR support for InitArray still missing");
+        throw new Error("NYI: FUIR support for InlineArray still missing");
       }
     else { throw new Error("Unexpected type for ExprKind.Const: " + t); }
     return _clazzIds.get(clazz);
@@ -1537,9 +1537,9 @@ hw25 is
     if      (ic instanceof BoolConst     ) { return new byte[] { ((BoolConst) ic).b ? (byte) 1 : (byte) 0 }; }
     else if (ic instanceof NumLiteral    ) { return ((NumLiteral) ic).data(); }
     else if (t == Types.resolved.t_string) { return ((StrConst) ic).str.getBytes(StandardCharsets.UTF_8); }
-    else if (ic instanceof InitArray)
+    else if (ic instanceof InlineArray)
       {
-        throw new Error("NYI: FUIR support for InitArray still missing");
+        throw new Error("NYI: FUIR support for InlineArray still missing");
       }
     throw new Error("Unexpected constant type " + t + ", expected bool, i32, u32, i64, u64, or string");
   }

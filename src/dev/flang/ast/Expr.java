@@ -303,7 +303,7 @@ public abstract class Expr extends ANY implements Stmnt
   Type getFormalType(Stmnt s, int arg)
   {
     if (PRECONDITIONS) require
-      (s instanceof Call || s instanceof Assign || s instanceof InitArray);
+      (s instanceof Call || s instanceof Assign || s instanceof InlineArray);
 
     if (s instanceof Call c)
       {
@@ -313,7 +313,7 @@ public abstract class Expr extends ANY implements Stmnt
       {
         return a._assignedField.resultType();
       }
-    else if (s instanceof InitArray i)
+    else if (s instanceof InlineArray i)
       {
         return i.elementType();
       }
@@ -335,7 +335,7 @@ public abstract class Expr extends ANY implements Stmnt
   Expr box(Stmnt s, int arg)
   {
     if (PRECONDITIONS) require
-      (s instanceof Call || s instanceof Assign || s instanceof InitArray);
+      (s instanceof Call || s instanceof Assign || s instanceof InlineArray);
 
     var result = this;
     var t = type();

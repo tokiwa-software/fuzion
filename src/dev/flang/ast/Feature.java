@@ -1806,7 +1806,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
         visit(new FeatureVisitor() {
             public void  action(Assign    a, Feature outer) { a.box(outer);           }
             public Call  action(Call      c, Feature outer) { c.box(outer); return c; }
-            public Expr  action(InitArray i, Feature outer) { i.box(outer); return i; }
+            public Expr  action(InlineArray i, Feature outer) { i.box(outer); return i; }
           });
 
         state_ = State.BOXED;
@@ -2176,7 +2176,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
             public void  action(Assign    a, Feature outer) { a.checkTypes();                }
             public Call  action(Call      c, Feature outer) { c.checkTypes(outer); return c; }
             public void  action(If        i, Feature outer) { i.checkTypes();                }
-            public Expr  action(InitArray i, Feature outer) { i.checkTypes();      return i; }
+            public Expr  action(InlineArray i, Feature outer) { i.checkTypes();      return i; }
           });
         checkTypes();
 
@@ -2259,7 +2259,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
         visit(new FeatureVisitor() {
             public Stmnt action(Feature   f, Feature outer) { return new Nop(pos);                         }
             public Expr  action(Function  f, Feature outer) { return f.resolveSyntacticSugar2(res, outer); }
-            public Expr  action(InitArray i, Feature outer) { return i.resolveSyntacticSugar2(res, outer); }
+            public Expr  action(InlineArray i, Feature outer) { return i.resolveSyntacticSugar2(res, outer); }
             public void  action(Impl      i, Feature outer) {        i.resolveSyntacticSugar2(res, outer); }
           });
 

@@ -56,7 +56,7 @@ import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead
 import dev.flang.ast.Feature; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.InitArray; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.InlineArray; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.NumLiteral; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Match; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -581,7 +581,7 @@ public class Interpreter extends ANY
         throw new Error("NYI: Expr.execute() for " + s.getClass() + " " +s);
       }
 
-    else if (s instanceof InitArray i)
+    else if (s instanceof InlineArray i)
       {
         Clazz ac  = staticClazz.getRuntimeClazz(i._arrayClazzId + 0);
         Clazz sac = staticClazz.getRuntimeClazz(i._arrayClazzId + 1);

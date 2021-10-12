@@ -1517,7 +1517,7 @@ actualsLstC : COMMA expr actualsLstC
    *
 bracketTerm : block
             | klammer
-            | initArray
+            | inlineArray
             ;
    */
   Expr bracketTerm(boolean mayBeAtMinIndent)
@@ -1532,7 +1532,7 @@ bracketTerm : block
       {
       case t_lbrace  : return block(mayBeAtMinIndent);
       case t_lparen  : return klammer();
-      case t_lcrochet: return initArray();
+      case t_lcrochet: return inlineArray();
       default: throw new Error("Unexpected case: "+c);
       }
   }
@@ -1841,17 +1841,17 @@ plainLambda : argNames lambda
 
 
   /**
-   * Parse initArray
+   * Parse inlineArray
    *
-initArray   : LBRACKET expr (COMMA expr)+ RBRACKET
+inlineArray : LBRACKET expr (COMMA expr)+ RBRACKET
             | LBRACKET expr (SEMI  expr)+ RBRACKET
             ;
    */
-  Expr initArray()
+  Expr inlineArray()
   {
     return relaxLineAndSpaceLimit(() -> {
         SourcePosition pos = posObject();
-        match(Token.t_lcrochet, "initArray");
+        match(Token.t_lcrochet, "inlineArray");
         List<Expr> elements = new List<>();
         if (!skip(Token.t_rcrochet)) // not empty array
           {
@@ -1870,9 +1870,9 @@ initArray   : LBRACKET expr (COMMA expr)+ RBRACKET
                     reportedMixed = true;
                   }
               }
-            match(Token.t_rcrochet, "initArray");
+            match(Token.t_rcrochet, "inlineArray");
           }
-        return new InitArray(pos, elements);
+        return new InlineArray(pos, elements);
       });
   }
 

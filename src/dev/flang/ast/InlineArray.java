@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class InitArray
+ * Source of class InlineArray
  *
  *---------------------------------------------------------------------*/
 
@@ -32,12 +32,12 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * InitArray represents syntactic sugar for array initialization: '[1, 2, 3]' or
+ * InlineArray represents syntactic sugar for array initialization: '[1, 2, 3]' or
  * '[point x, y; point sin alpha, cos alpha]'.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class InitArray extends Expr
+public class InlineArray extends Expr
 {
 
 
@@ -82,7 +82,7 @@ public class InitArray extends Expr
    *
    * @param elements the elements of this array
    */
-  public InitArray(SourcePosition pos, List<Expr> elements)
+  public InlineArray(SourcePosition pos, List<Expr> elements)
   {
     super(pos);
     this._elements = elements;
@@ -284,7 +284,7 @@ public class InitArray extends Expr
         var sysArrayCall = new Call(pos(), sys , "array", eT, lengthArgs).resolveTypes(res, outer);
         var sysT         = new Type(pos(), "sys", Type.NONE, null);
         var sysArrayT    = new Type(pos(), "array", eT, sysT);
-        var sysArrayName = "#initArraySys" + (_id_++);
+        var sysArrayName = "#inlineArraySys" + (_id_++);
         var sysArrayVar  = new Feature(pos, Consts.VISIBILITY_LOCAL, sysArrayT, sysArrayName, null, outer);
         sysArrayVar.findDeclarations(outer);
         res.resolveDeclarations(sysArrayVar);
