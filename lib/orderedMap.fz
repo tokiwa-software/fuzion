@@ -64,3 +64,30 @@ is
   # get a stream of all key/value pairs in this map
   #
   items List<tuple<K,V>> is sortedEntries.map<tuple<K,V>> (e -> (e.key, e.val))
+
+
+  # add mapping from k to v
+  #
+  add(k K, v V) orderedMap<K,V> is
+    match index[](k)
+      nil =>
+        ka := marray<K> 1 k
+        kks := ks++ka
+        (orderedMap
+          (kks).asArray
+          (vs++(marray<V> 1 v)).asArray)
+      V =>
+        va := array<V> size (i -> if ks[i]=k then v else vs[i])
+        (orderedMap ks va)
+
+
+  # create a string containing all mappings
+  #
+  redef asString =>
+    for
+      r := "", r + c + n
+      i in ks.indices
+      n := "({ks[i]} => {vs[i]})"
+      c := "", ", "
+    else
+      r
