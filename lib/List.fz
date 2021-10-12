@@ -62,6 +62,14 @@ List<T> ref is
   count => (mapList<i32> (_ -> 1)).fold i32.sum
 
 
+  # get the head of this list, panic if list is empty
+  #
+  first
+    pre
+      debug: !isEmpty
+    => asList.forceHead
+
+
   # collect the contents of this List into an array
   #
   asArray array<T> is
