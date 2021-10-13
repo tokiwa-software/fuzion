@@ -351,8 +351,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   #
   substring(from, to i32) string
     pre
-#     debug: 0 <= from <= to <= codepointLength        -- NYI: this does not work yet
-      debug: 0 <= from <= to && to <= codepointLength
+      debug: 0 <= from <= to <= codepointLength
   is
     codepointsArray
       .slice(from, to)
