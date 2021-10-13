@@ -99,6 +99,27 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
                  | c Cons => c.tail
 
 
+  # get the head of this list, panic if list is empty
+  #
+  redef first
+    pre
+      debug: !isEmpty
+    => forceHead
+
+
+  # get the last element of this list, panic if list is empty
+  #
+  # This may take time in O(count), in particular, it may not terminate
+  # for an infinite list.
+  #
+  redef last A
+    pre
+      debug: !isEmpty
+  is
+    forceTail ? nil    => first
+              | c Cons => forceTail.last
+
+
   # map the list to a new list applying function f to all elements
   #
   # This performs a lazy mapping, f is called only when the elements

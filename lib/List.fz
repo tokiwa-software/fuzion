@@ -70,6 +70,17 @@ List<T> ref is
     => asList.forceHead
 
 
+  # get the last element of this list, panic if list is empty
+  #
+  # This may take time in O(count), in particular, it may not terminate
+  # for an infinite list.
+  #
+  last
+    pre
+      debug: !isEmpty
+   => asList.last
+
+
   # collect the contents of this List into an array
   #
   asArray array<T> is
