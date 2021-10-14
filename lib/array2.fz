@@ -58,3 +58,17 @@ is
       safety: 0 <= i2 < length1
   is
     array2.this[i1 * length1 + i2]
+
+
+  # create a string representation of this array including all the string
+  # representations of its contents, separated by ',' and enclosed in '['
+  # and ']'.  Arrays in inner dimensions are grouped using '[' and ']'.
+  #
+  redef asString =>
+    "[{for
+         s := "", s + c + (asList i*length1 (i+1)*length1)
+         i in indices0
+         c := "", ","
+       else
+         s
+      }]"

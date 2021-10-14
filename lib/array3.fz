@@ -60,10 +60,33 @@ is
       for i3 in 0..length2-1 do
         internalArray[(i1 * length1 + i2) * length2 + i3] := init3 i1, i2, i3
 
-  index [ ] (i1, i2, i3 i32) T
+  index [ ] (i0, i1, i2 i32) T
     pre
-      safety: 0 <= i1 < length0,
-      safety: 0 <= i2 < length1,
-      safety: 0 <= i3 < length2
+      safety: 0 <= i0 < length0,
+      safety: 0 <= i1 < length1,
+      safety: 0 <= i2 < length2
   is
-    array3.this[(i1 * length1 + i2) * length2 + i3]
+    array3.this[(i0 * length1 + i1) * length2 + i2]
+
+
+  # create a string representation of this array including all the string
+  # representations of its contents, separated by ',' and enclosed in '['
+  # and ']'.  Arrays in inner dimensions are grouped using '[' and ']'.
+  #
+  redef asString =>
+    "[{for
+         s := "", s + c + u
+         i0 in indices0
+         c := "", ","
+         u := "[{for
+                   s2 := "", s2 + c2 + (asList from to)
+                   i1 in indices1
+                   c2 := "", ","
+                   from := ((i0 * length1 + i1) * length2)
+                   to := from + length2
+                 else
+                   s2
+                }]"
+       else
+         s
+      }]"
