@@ -139,6 +139,9 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
   low32bits  u32 is intrinsic
   castTo_i64 i64 is intrinsic
 
+  # conversion to float
+  as_f64 f64 is intrinsic
+
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from hasInterval is abstract, fz should not complain about this conflict.
   redef max u64 is 0x_ffff_ffff_ffff_ffff
