@@ -1,0 +1,43 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature matrices
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# matrices -- unit type defining features related to matrix
+#
+# matrices is a unit type defining features related to matrix but not
+# requiring an instance.
+#
+matrices<E : numeric<E>> : numerics<matrix<E>> is
+
+  redef name => "matrix"
+
+  # NYI: There is currently no easy way to get hold of an instance of the unit
+  # type corresponding to E.
+  #
+  #   redef zero => matrix E.zero E.zero
+  #   redef one  => matrix E.one  E.zero
+  #
+  # dummy implementations:
+  redef zero => fuzion.std.panic "NYI: matrices.zero not implemented, needs to instantiate type arg E"
+  redef one  => fuzion.std.panic "NYI: matrices.one not implemented, needs to instantiate type arg E"
