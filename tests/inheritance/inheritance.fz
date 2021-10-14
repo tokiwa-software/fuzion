@@ -35,20 +35,20 @@ inheritance is
   A ref is
     ident i32 := id
     say "A's body$ident"
-    x is abstract
+    x unit is abstract
   B ref : A is
     say "B's body$ident"
-    redefine x is say "B.x"
-    xb is say "B.xb"
+    redefine x unit is say "B.x"
+    xb unit is say "B.xb"
   C ref : A is
-    redefine x is say "C.x"
-    xc is say "C.xc"
+    redefine x unit is say "C.x"
+    xc unit is say "C.xc"
   D ref : B, C is
-    redefine x is say "D.x"
+    redefine x unit is say "D.x"
   E ref : D is
-    redefine x  is say "E.x"
-    redefine xb is say "E.xb"
-    redefine xc is say "E.xc"
+    redefine x  unit is say "E.x"
+    redefine xb unit is say "E.xb"
+    redefine xc unit is say "E.xc"
   bi B := B
   ci inheritance.C := C
   aa inheritance.A := bi
@@ -299,7 +299,7 @@ inheritance is
       x => say "A.x: FAILED."; set exitCode := 1
     B ref : A is
       a
-      redefine x is say "B.x: PASSED."
+      redefine x unit is say "B.x: PASSED."
     B
     unit
   check_dyn_binding_when_inheriting_value
