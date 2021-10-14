@@ -61,3 +61,14 @@ map<K, V> is
     res : List<V> is
       redef asStream => items.asStream.map<V> (fun(t tuple<K,V>) => { (_,v) := t; v })
     res
+
+
+  # create a string containing all mappings
+  #
+  redef asString =>
+    for
+      r := "", r + c + "($k => {index[] k})"
+      k in keys
+      c := "", ", "
+    else
+      r
