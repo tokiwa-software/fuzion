@@ -187,23 +187,6 @@ stream<T> ref : List<T> is
       a.as_array
 
 
-  # create a stream that consists only of the first n elements of this
-  # stream, fewer if this stream has fewer elements
-  #
-  redef take (n i32) ref : stream<T> is
-    remaining := n
-    hasNext => remaining > 0 && stream.this.hasNext
-    next => set remaining := remaining - 1; stream.this.next
-
-
-  # drop n elements of this stream, then continue with the remaining stream
-  #
-  redef drop (n i32) =>
-    for i in 0..n-1 while hasNext
-    do next
-    stream.this
-
-
   # create a stream that consists of all be the elements if this stream followed
   # by all the elements of s
   #

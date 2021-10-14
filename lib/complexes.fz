@@ -43,5 +43,5 @@ complexes<E : numeric<E>> : numerics<complex<E>> is
   #   redef one  => complex E.one  E.zero
   #
   # dummy implementations:
-  redef zero => fuzion.std.panic "NYI: complexes.zero not implemented, needs to instantiate type arg E"
-  redef one  => fuzion.std.panic "NYI: complexes.one not implemented, needs to instantiate type arg E"
+  # redef zero => fuzion.std.panic "NYI: complexes.zero not implemented, needs to instantiate type arg E"
+  # redef one  => fuzion.std.panic "NYI: complexes.one not implemented, needs to instantiate type arg E"
