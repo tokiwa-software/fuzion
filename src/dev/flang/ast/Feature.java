@@ -2126,18 +2126,14 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
               }
           }
 
-        if (  returnType != NoType.INSTANCE &&   returnType != ValueType.INSTANCE &&   returnType != RefType.INSTANCE ||
-            r.returnType != NoType.INSTANCE && r.returnType != ValueType.INSTANCE && r.returnType != RefType.INSTANCE      )
+        Type t1 = handDownNonOpen(resultType(), r.outer());
+        Type t2 = r.resultType();
+        if ((t1.isChoice()
+             ? t1 != t2  // we (currently) do not tag the result in a redefined feature, see testRedefine
+             : !t1.isAssignableFrom(t2)) &&
+            t2 != Types.resolved.t_void)
           {
-            Type t1 = handDownNonOpen(resultType(), r.outer());
-            Type t2 = r.resultType();
-            if ((t1.isChoice()
-                 ? t1 != t2  // we (currently) do not tag the result in a redefined feature, see testRedefine
-                 : !t1.isAssignableFrom(t2)) &&
-                t2 != Types.resolved.t_void)
-              {
-                FeErrors.resultTypeMismatchInRedefinition(this, r);
-              }
+            FeErrors.resultTypeMismatchInRedefinition(this, r);
           }
       }
 
