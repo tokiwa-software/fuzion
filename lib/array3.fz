@@ -79,7 +79,7 @@ is
          i0 in indices0
          c := "", ","
          u := "[{for
-                   s2 := "", s2 + c2 + (asList from to)
+                   s2 := "", s2 + c2 + (slice from to)
                    i1 in indices1
                    c2 := "", ","
                    from := ((i0 * length1 + i1) * length2)

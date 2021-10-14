@@ -66,7 +66,7 @@ is
   #
   redef asString =>
     "[{for
-         s := "", s + c + (asList i*length1 (i+1)*length1)
+         s := "", s + c + (slice i*length1 (i+1)*length1)
          i in indices0
          c := "", ","
        else

@@ -112,10 +112,13 @@ array<T>(internalArray sys.array<T>) : List<T> is
     tail => asList i+1
 
 
-  # create a list from this array's elements at index 'from' (included)
+  # create a slice from this array's elements at index 'from' (included)
   # up to 'to' (excluded).
   #
-  asList(from, to i32) list<T>
+  # NYI: array.slice should better return an array containing a slice of
+  # internalArray.
+  #
+  redef slice(from, to i32) list<T>
     pre
       debug: from >= 0
   is
@@ -133,7 +136,7 @@ array<T>(internalArray sys.array<T>) : List<T> is
       debug: 0 <= i < to <= length
   is
     head => array.this[i]
-    tail => asList i+1 to
+    tail => slice i+1 to
 
 
   # map the array to a new array applying function f to all elements
