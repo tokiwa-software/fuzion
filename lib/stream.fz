@@ -42,7 +42,7 @@ stream<T> ref : List<T> is
             tail =>
               if !memoizedTail.exists
                 set memoizedTail := some fromStream
-              memoizedTail.unwrap.val
+              memoizedTail.get.val
           }
       else
         nil

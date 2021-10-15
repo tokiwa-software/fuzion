@@ -244,7 +244,7 @@ O(n log n).
   redef items List<tuple<K,V>> is
     res : List<tuple<K,V>> is
       redef asStream =>
-        (asKeyArray.map<tuple<K,V>> (k -> (k, psMap.this[k].unwrap))).asStream
+        (asKeyArray.map<tuple<K,V>> (k -> (k, psMap.this[k].get))).asStream
     res
 
 

@@ -104,9 +104,17 @@ is
   # this can only be called in cases where it is known for sure that this option
   # is not nil.  A runtime error will be created otherwise.
   #
-  unwrap
+  get
     pre
       safety: option.this??
     =>
       option.this ? v T => v
-                  | nil => fuzion.std.panic "option.unwrap called on nil"
+                  | nil => fuzion.std.panic "option.get called on nil"
+
+
+  # unwraps an option if it exists, returns default value otherwise.
+  #
+  get(default T)
+    =>
+      option.this ? v T => v
+                  | nil => default
