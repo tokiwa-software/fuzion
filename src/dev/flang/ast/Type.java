@@ -1602,7 +1602,8 @@ public class Type extends ANY implements Comparable<Type>
        result == Types.t_ERROR     ||
        this == Types.resolved.t_void && result == that ||
        that == Types.resolved.t_void && result == this ||
-       result.isAssignableFrom(this) && result.isAssignableFrom(that));
+       (result.isAssignableFrom(this) || result.isAssignableFrom(this.asRef()) &&
+        result.isAssignableFrom(that) || result.isAssignableFrom(that.asRef())    ));
 
     return result;
   }
