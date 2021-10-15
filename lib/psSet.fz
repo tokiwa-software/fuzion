@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature psMap
+#  Source code of Fuzion standard library feature psSet
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
@@ -35,7 +35,9 @@
 # O(m*n log² n) for adding an element m times.
 #
 psSet<K : ordered<K>>
-  (psm psMap<K,unit>)
+  (psm psMap<K,unit>,
+   dummy unit    # just to distinguish this from routine psSet(vs List<K>)
+  )
   : Set<K>, List<K>
 is
 
@@ -61,7 +63,7 @@ is
     if has k
       psSet.this
     else
-      psSet (psm.add k unit)
+      psSet (psm.add k unit) unit
 
 
   # create a sorted array from the elements of this set
@@ -86,7 +88,7 @@ is
 
   # union of two psSets
   #
-  infix ⋃ (other psSet<K>) => psSet (psm ⋃ other.psm)
+  infix ⋃ (other psSet<K>) => psSet (psm ⋃ other.psm) unit
 
 
   # add all elements of the given List to this set

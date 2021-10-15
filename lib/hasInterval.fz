@@ -91,6 +91,20 @@ hasInterval<T: hasInterval<T>> : integer<T> is
         redef next T is res := x.val; set x := x +? step; res
 
 
+      # list representation of values in this interval
+      #
+      redef asList list<T> is
+        cons (head T) :  Cons<T, list<T>> is
+          tail list<T> is
+            (lower+?step ? nil    => nil
+                         | next T => (next..upper:step).asList.asList)
+        if (step > zero && lower <= upper ||
+            step < zero && lower >= upper    )
+          cons lower
+        else
+          nil
+
+
       # does this range contain the given value?
       #
       contains (e T) => lower <= e <= upper && ((e - lower) %% step)

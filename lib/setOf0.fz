@@ -17,27 +17,14 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature Set
+#  Source code of Fuzion standard library feature setOf
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# Set -- an abstract set of values V
+# setOf -- routine to initialize an empty set of ordered elements
 #
-Set<T: hasEquals<T>> ref is
-
-  # number of entries in this set.  May be undefined, i.e., a range of
-  # floating point numbers or an infinite set.
-  #
-  sizeOption option<i32> is nil
-
-
-  # does this set contain the given value?
-  #
-  contains (e T) bool is abstract
-
-
-  # list representation of values in this set
-  #
-  asList list<T> is abstract
+# This feature creates an instance of a Set.
+#
+setOf<K : ordered<K>> Set<K> is psSet<K>
