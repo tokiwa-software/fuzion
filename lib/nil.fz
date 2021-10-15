@@ -30,3 +30,8 @@
 #
 #
 nil is
+
+
+  # convert this to a string.
+  #
+  redef asString string is "--nil--"
