@@ -25,7 +25,7 @@
 
 # map -- an abstract map from keys K to values V
 #
-map<K, V> is
+map<K, V> ref is
 
   # number of entries in this map
   #
