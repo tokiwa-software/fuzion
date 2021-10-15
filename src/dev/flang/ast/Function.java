@@ -172,7 +172,7 @@ public class Function extends Expr
    *
    * @param pos the soucecode position, used for error messages.
    *
-   * @param t the return type or null for a routine
+   * @param r the return type or null for a routine
    *
    * @param a the arguments list
    *
@@ -208,7 +208,7 @@ public class Function extends Expr
    *
    * @param pos the soucecode position, used for error messages.
    *
-   * @param t the return type or null for a routine
+   * @param r the return type or null for a routine
    *
    * @param a the arguments list
    *
@@ -216,7 +216,7 @@ public class Function extends Expr
    *
    * @param c the contract
    *
-   * @param b the code
+   * @param e the code
    */
   public Function(SourcePosition pos,
                   ReturnType r,
@@ -249,7 +249,7 @@ public class Function extends Expr
    *
    * @param pos the soucecode position, used for error messages.
    *
-   * @param t the return type or null for a routine
+   * @param r the return type or null for a routine
    *
    * @param a the arguments list
    *
