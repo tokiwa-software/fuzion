@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# psMap -- routine to initialize a partially sorted map form two Lists
+# psMap -- routine to initialize a partially sorted map from two Lists
 #
 # See psMap.fz for details.
 #
