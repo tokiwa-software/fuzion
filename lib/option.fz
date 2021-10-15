@@ -91,12 +91,12 @@ is
 
   # converts option to a string
   #
-  # returns the result of T.asString for an option containing an instance
-  # of T, alternatively returns "--nil--" for an option that is nil.
+  # returns the result of $T for an option containing an instance
+  # of T, alternatively returns $nil for an option that is nil.
   #
   redef asString string is
-    option.this ? v T => v.asString
-                | nil => "--nil--"
+    option.this ? v T => $v
+                | nil => $nil
 
 
   # unwraps an option that is known to contain a value
