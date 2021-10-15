@@ -52,3 +52,15 @@ Lists is
     # identity element
     #
     e => empty<T>
+
+
+  # determine the index of element x within list l.  0 if x is at the head
+  # of the list, 1 if it comes directly after head, etc. nil if x is not
+  # in the list.
+  #
+  indexIn<A: hasEquals<A>>(l List<A>, x A) => (searchableList<A> l).indexOf x
+
+
+  # get the index of x within this list or nil if it does not exist
+  #
+  find<A: hasEquals<A>>(l List<A>, x List<A>) => (searchableList<A> l).find x
