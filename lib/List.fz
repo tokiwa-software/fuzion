@@ -234,3 +234,9 @@ List<T> ref is
      debug: at >= 0
    =>
     take at ++ [v] ++ drop at
+
+
+  # create a new list from the result of applying 'f' to the
+  # elements of this list and 'b' in order.
+  #
+  zip<U,V>(b List<U>, f (T,U)->V) => asList.zip0 b.asList f

@@ -308,3 +308,16 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
       res := cur.forceHead
       set cur := cur.forceTail
       res
+
+
+  # create a new list from the result of applying 'f' to the
+  # elements of this list and 'b' in order.
+  #
+  zip0<U,V>(b list<U>, f (A,U)->V) list<V> is
+    list.this ? c1 Cons => b ? c2 Cons =>
+                                 zipCons : Cons<V, list<V>> is
+                                   head => f c1.head c2.head
+                                   tail => c1.tail.zip0<U,V> c2.tail f
+                                 zipCons
+                             | nil    => nil
+              | nil    => nil
