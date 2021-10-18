@@ -413,12 +413,13 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    *
    * @param pos the soucecode position, used for error messages.
    *
-   * @param t the result type
+   * @param r the result type
    *
-   * @param s the signature, containin g the generic parameters, the
-   * arguments, the throws clause, the inherits list and the contract.
+   * @param i the inherits calls
    *
-   * @param p the implementation (feature body etc).
+   * @param c the contract
+   *
+   * @param b the implementation block
    */
   public Feature(SourcePosition pos,
                  ReturnType r,
@@ -450,8 +451,6 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    * @param t the result type
    *
    * @param qname the name of this feature
-   *
-   * @param c the contract
    *
    * @param outer the declaring feature that will be set as an outer feature of
    * the newly created feature via a call to findDeclarations.
@@ -583,7 +582,9 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    *
    * @param pos the soucecode position, used for error messages.
    *
-   * @param t the result type
+   * @param r the result type
+   *
+   * @param qname the name of this feature
    *
    * @param a the arguments
    *
@@ -623,14 +624,17 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    *
    * @param m the modifiers
    *
-   * @param t the result type
+   * @param r the result type
    *
    * @param qname the name of this feature
    *
    * @param g the generic parameters
    *
-   * @param s the signature, containin g the generic parameters, the
-   * arguments, the throws clause, the inherits list and the contract.
+   * @param a the arguments
+   *
+   * @param i the inherits calls
+   *
+   * @param c the contract
    *
    * @param p the implementation (feature body etc).
    */
