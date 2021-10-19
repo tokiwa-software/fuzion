@@ -1565,7 +1565,8 @@ public class Call extends Expr
                   (actlT == Types.intern(actlT));
 
                 Type frmlT = resolvedFormalArgumentTypes[count];
-                if (frmlT != null && !frmlT.isAssignableFromOrContainsError(actlT))
+                if (frmlT != null && (!frmlT.isAssignableFromOrContainsError(actlT) ||
+                                      (actl.isCallToOuterRef() || actl instanceof Current) && !actlT.isRef() && !actlT.isChoice()))
                   {
                     FeErrors.incompatibleArgumentTypeInCall(calledFeature_, count, frmlT, actlT, actl);
                   }

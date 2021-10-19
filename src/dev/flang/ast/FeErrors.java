@@ -188,7 +188,7 @@ public class FeErrors extends ANY
           "Incompatible types " + where,
           detail +
           "expected formal type: " + s(frmlT) + "\n" +
-          "actual type found   : " + s(actlT) + "\n" +
+          "actual type found   : " + s(actlT) + (!actlT.isRef() && (value.isCallToOuterRef() || value instanceof Current) ? " or any subtype" : "") + "\n" +
           assignableToSB + (assignableToSB.length() > 0 ? "\n" : "") +
           "for value assigned  : " + s(value) + "\n");
   }

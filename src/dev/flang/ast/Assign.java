@@ -319,7 +319,8 @@ public class Assign extends ANY implements Stmnt
           (Errors.count() > 0 || (frmlT != Types.t_ERROR &&
                                 actlT != Types.t_ERROR    ));
 
-        if (!frmlT.isAssignableFromOrContainsError(actlT))
+        if (!frmlT.isAssignableFromOrContainsError(actlT) ||
+            (_value.isCallToOuterRef() || _value instanceof Current) && !actlT.isRef() && !actlT.isChoice())
           {
             FeErrors.incompatibleTypeInAssignment(_pos, f, frmlT, actlT, _value);
           }

@@ -156,6 +156,15 @@ public class Unbox extends Expr
 
 
   /**
+   * Is this Expr a call to an outer ref?
+   */
+  public boolean isCallToOuterRef()
+  {
+    return adr_.isCallToOuterRef();
+  }
+
+
+  /**
    * toString
    *
    * @return

@@ -256,7 +256,8 @@ public class InlineArray extends Expr
           (Errors.count() > 0 || (elementType != Types.t_ERROR &&
                                   actlT != Types.t_ERROR    ));
 
-        if (!elementType.isAssignableFromOrContainsError(actlT))
+        if (!elementType.isAssignableFromOrContainsError(actlT) ||
+            (e.isCallToOuterRef() || e instanceof Current) && !actlT.isRef() && !actlT.isChoice())
           {
             FeErrors.incompatibleTypeInArrayInitialization(e.pos(), type_, elementType, actlT, e);
           }
