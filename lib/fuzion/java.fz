@@ -90,7 +90,7 @@ public fuzion.java is
 
   # Java's 'java.lang.String' type
   #
-  public JavaString(private redef javaRef Object) : string, JavaObject javaRef
+  public JavaString(private redef javaRef Object) ref : string, JavaObject javaRef
   is
     utf8 => (javaStringToString JavaString.this).utf8
 

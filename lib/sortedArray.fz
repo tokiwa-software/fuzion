@@ -40,7 +40,7 @@ sortedArray<T>
 
   # orginal, unsorted array
   #
-  from array<T>,
+  from ref array<T>,  # NYI: 'ref' due to lack of 'like this'
 
   # predicate defining total order on T.
   #
@@ -65,7 +65,7 @@ is
   sort
     (
     # array with sub-heaps of heapSize sorted
-    a array<T>,
+    a ref array<T>,  # NYI: 'ref' due to lack of 'like this'
 
     # the current heap size, 1 on initial call, must be power of 2
     heapSize i32
@@ -78,7 +78,7 @@ is
   is
     # check if the array is fully sorted
     if heapSize >= a.length
-      a
+      a.asArray  # NYI: convert 'ref'-array due to lack of 'like this' back to non-'ref' array
     else
       # h1 is the mutable index within the current first heap, this is updated
       # by the function passed to the array constructor.

@@ -35,7 +35,7 @@
 # O(m*n log² n) for adding an element m times.
 #
 psSet<K : ordered<K>>
-  (psm psMap<K,unit>,
+  (psm ref psMap<K,unit>,  # NYI: 'ref' due to lack of 'like this'
    dummy unit    # just to distinguish this from routine psSet(vs List<K>)
   )
   : Set<K>
@@ -59,7 +59,7 @@ is
 
   # add new element k to this set.
   #
-  add (k K) =>
+  add (k K) ref psSet<K> is  # NYI: 'ref' due to lack of 'like this'
     if has k
       psSet.this
     else
@@ -88,18 +88,18 @@ is
 
   # union of two psSets
   #
-  infix ⋃ (other psSet<K>) => psSet (psm ⋃ other.psm) unit
+  infix ⋃ (other ref psSet<K>) => psSet (psm ⋃ other.psm) unit  # NYI: 'ref' due to lack of 'like this'
 
 
   # add all elements of the given List to this set
   #
-  addAll (s List<K>) psSet<K> is
+  addAll (s List<K>) ref psSet<K> is  # NYI: 'ref' due to lack of 'like this'
     addAllFromStream s.asStream
 
 
   # add all elements of the given stream to this set
   #
-  addAllFromStream (s stream<K>) psSet<K> is
+  addAllFromStream (s stream<K>) ref psSet<K> is  # NYI: 'ref' due to lack of 'like this'
     if s.hasNext
       add(s.next).addAllFromStream s
     else

@@ -99,7 +99,7 @@ is
   sin240 := -866
 
 
-  G2D (g java.awt.Graphics, tx, ty, rot0 i32) is
+  G2D (g java.awt.Graphics, tx, ty, rot0 i32) ref is  # NYI: 'ref' due to lack of 'like this'
     rot := if rot0 >= 0 rot0 % 360 else rot0 % 360 + 360
 
     rotate (d i32) => G2D g tx ty rot+d
