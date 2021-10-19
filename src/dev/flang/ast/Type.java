@@ -1575,6 +1575,28 @@ public class Type extends ANY implements Comparable<Type>
 
 
   /**
+   * Check if given value can be assigned to this static type.  In addition to
+   * isAssignableFromOrContainsError, this checks if 'expr' is not '<xyz>.this'
+   * (Current or an outer ref) that might be a value type that is a heir of this
+   * type.
+   *
+   * @param expr the expression to be assigned to a variable of this type.
+   *
+   * @return true iff the assignment is ok.
+   */
+  public boolean isAssignableFrom(Expr expr)
+  {
+    var actlT = expr.type();
+
+    check
+      (actlT == Types.intern(actlT));
+
+    return isAssignableFromOrContainsError(actlT) &&
+      (!expr.isCallToOuterRef() && !(expr instanceof Current) || actlT.isRef() || actlT.isChoice());
+  }
+
+
+  /**
    * Find a type that is assignable from values of two types, this and t. If no
    * such type exists, return Types.resovled.t_unit.
    *

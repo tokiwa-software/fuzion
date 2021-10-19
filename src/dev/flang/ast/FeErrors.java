@@ -162,18 +162,16 @@ public class FeErrors extends ANY
    *
    * @param frmlT the expected formal type
    *
-   * @param actlT the actual type
-   *
-   * @param value the value whose type is actlT.
+   * @param value the value to be assigned.
    */
   static void incompatibleType(SourcePosition pos,
                                String where,
                                String detail,
                                Type frmlT,
-                               Type actlT,
                                Expr value)
   {
     var assignableTo = new TreeSet<String>();
+    Type actlT = value.type();
     frmlT.isAssignableFrom(actlT, assignableTo);
     var assignableToSB = new StringBuilder();
     for (var ts : assignableTo)
@@ -204,21 +202,17 @@ public class FeErrors extends ANY
    *
    * @param frmlT the expected formal type
    *
-   * @param actlT the actual type
-   *
    * @param value the value assigned to assignedField.
    */
   static void incompatibleTypeInAssignment(SourcePosition pos,
                                            Feature field,
                                            Type frmlT,
-                                           Type actlT,
                                            Expr value)
   {
     incompatibleType(pos,
                      "in assignment",
                      "assignment to field : " + s(field) + "\n",
                      frmlT,
-                     actlT,
                      value);
   }
 
@@ -234,14 +228,11 @@ public class FeErrors extends ANY
    *
    * @param frmlT the expected formal type
    *
-   * @param actlT the actual type
-   *
-   * @param value the value whose type is actlT.
+   * @param value the value to be assigned.
    */
   static void incompatibleArgumentTypeInCall(Feature calledFeature,
                                              int count,
                                              Type frmlT,
-                                             Type actlT,
                                              Expr value)
   {
     Iterator<Feature> frmls = calledFeature.arguments.iterator();
@@ -257,7 +248,6 @@ public class FeErrors extends ANY
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbn(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
                      frmlT,
-                     actlT,
                      value);
   }
 
@@ -268,25 +258,21 @@ public class FeErrors extends ANY
    *
    * @param pos the source code position of the assignment.
    *
-   * @param arrayTpye the type of the array that is initialized
+   * @param arrayType the type of the array that is initialized
    *
    * @param frmlT the expected formal type
    *
-   * @param actlT the actual type
-   *
-   * @param value the value assigned to assignedField.
+   * @param value the value assigned to arrayType's elements.
    */
   static void incompatibleTypeInArrayInitialization(SourcePosition pos,
                                                     Type arrayType,
                                                     Type frmlT,
-                                                    Type actlT,
                                                     Expr value)
   {
     incompatibleType(pos,
                      "in array initialization",
                      "array type          : " + s(arrayType) + "\n",
                      frmlT,
-                     actlT,
                      value);
   }
 

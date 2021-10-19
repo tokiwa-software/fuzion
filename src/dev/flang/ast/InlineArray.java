@@ -245,21 +245,14 @@ public class InlineArray extends Expr
 
     var elementType = elementType();
 
+    check
+      (Errors.count() > 0 || elementType != Types.t_ERROR);
+
     for (var e : _elements)
       {
-        Type actlT = e.type();
-
-        check
-          (actlT == Types.intern(actlT));
-
-        check
-          (Errors.count() > 0 || (elementType != Types.t_ERROR &&
-                                  actlT != Types.t_ERROR    ));
-
-        if (!elementType.isAssignableFromOrContainsError(actlT) ||
-            (e.isCallToOuterRef() || e instanceof Current) && !actlT.isRef() && !actlT.isChoice())
+        if (!elementType.isAssignableFrom(e))
           {
-            FeErrors.incompatibleTypeInArrayInitialization(e.pos(), type_, elementType, actlT, e);
+            FeErrors.incompatibleTypeInArrayInitialization(e.pos(), type_, elementType, e);
           }
       }
   }

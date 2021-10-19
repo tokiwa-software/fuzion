@@ -310,19 +310,12 @@ public class Assign extends ANY implements Stmnt
       {
         Type frmlT = f.resultType();
 
-        Type actlT = _value.type();
-
         check
-          (actlT == Types.intern(actlT));
+          (Errors.count() > 0 || frmlT != Types.t_ERROR);
 
-        check
-          (Errors.count() > 0 || (frmlT != Types.t_ERROR &&
-                                actlT != Types.t_ERROR    ));
-
-        if (!frmlT.isAssignableFromOrContainsError(actlT) ||
-            (_value.isCallToOuterRef() || _value instanceof Current) && !actlT.isRef() && !actlT.isChoice())
+        if (!frmlT.isAssignableFrom(_value))
           {
-            FeErrors.incompatibleTypeInAssignment(_pos, f, frmlT, actlT, _value);
+            FeErrors.incompatibleTypeInAssignment(_pos, f, frmlT, _value);
           }
 
         check

@@ -1559,16 +1559,10 @@ public class Call extends Expr
             int count = 0;
             for (Expr actl : _actuals)
               {
-                Type actlT = actl.type();
-
-                check
-                  (actlT == Types.intern(actlT));
-
                 Type frmlT = resolvedFormalArgumentTypes[count];
-                if (frmlT != null && (!frmlT.isAssignableFromOrContainsError(actlT) ||
-                                      (actl.isCallToOuterRef() || actl instanceof Current) && !actlT.isRef() && !actlT.isChoice()))
+                if (frmlT != null /* NYI: make sure this is never null */ && !frmlT.isAssignableFrom(actl))
                   {
-                    FeErrors.incompatibleArgumentTypeInCall(calledFeature_, count, frmlT, actlT, actl);
+                    FeErrors.incompatibleArgumentTypeInCall(calledFeature_, count, frmlT, actl);
                   }
                 count++;
               }
