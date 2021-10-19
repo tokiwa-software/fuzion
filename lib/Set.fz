@@ -25,7 +25,7 @@
 
 # Set -- an abstract set of values V
 #
-Set<T: hasEquals<T>> ref is
+Set<T: hasEquals<T>> ref : List<T> is
 
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
@@ -40,4 +40,4 @@ Set<T: hasEquals<T>> ref is
 
   # list representation of values in this set
   #
-  asList list<T> is abstract
+  redef asList list<T> is abstract

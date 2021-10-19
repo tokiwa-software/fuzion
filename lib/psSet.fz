@@ -38,7 +38,7 @@ psSet<K : ordered<K>>
   (psm psMap<K,unit>,
    dummy unit    # just to distinguish this from routine psSet(vs List<K>)
   )
-  : Set<K>, List<K>
+  : Set<K>
 is
 
 
