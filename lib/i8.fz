@@ -36,12 +36,12 @@ i8(val i8) : wrappingInteger<i8>, hasInterval<i8>, i8s is
   redef wrappedOnNeg => isMin
 
   # would addtion thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i8) => i8.this > zero && max -° i8.this < other
-  redef underflowOnAdd(other i8) => i8.this < zero && min -° i8.this > other
+  redef overflowOnAdd (other i8) => thiz > zero && max -° thiz < other
+  redef underflowOnAdd(other i8) => thiz < zero && min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i8) => i8.this > zero && i8.this -° max > other
-  redef underflowOnSub(other i8) => i8.this < zero && i8.this -° min < other
+  redef overflowOnSub (other i8) => thiz > zero && thiz -° max > other
+  redef underflowOnSub(other i8) => thiz < zero && thiz -° min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
   redef overflowOnMul (other i8) => as_i32 *° other.as_i32 > max.as_i32
@@ -92,27 +92,27 @@ i8(val i8) : wrappingInteger<i8>, hasInterval<i8>, i8s is
 
   as_u8 u8
     pre
-      debug: i8.this >= zero
+      debug: thiz >= zero
     is
       castTo_u8
   as_u16 u16
     pre
-      debug: i8.this >= zero
+      debug: thiz >= zero
     is
       castTo_u16
   as_u32 u32
     pre
-      debug: i8.this >= zero
+      debug: thiz >= zero
     is
       castTo_u32
   as_u64 u64
     pre
-      debug: i8.this >= zero
+      debug: thiz >= zero
     is
       castTo_u64
   as_u128 u128
     pre
-      debug: i8.this >= zero
+      debug: thiz >= zero
     is
       castTo_u128
 

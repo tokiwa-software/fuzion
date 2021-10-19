@@ -36,15 +36,15 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
   redef wrappedOnNeg => !isZero
 
   # would addtion thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u128) => max -° u128.this < other
+  redef overflowOnAdd (other u128) => max -° thiz < other
   redef underflowOnAdd(other u128) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
   redef overflowOnSub (other u128) => false
-  redef underflowOnSub(other u128) => u128.this < other
+  redef underflowOnSub(other u128) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other u128) => if (other = zero) false else (u128.this *° other / other) != u128.this
+  redef overflowOnMul (other u128) => if (other = zero) false else (thiz *° other / other) != thiz
   redef underflowOnMul(other u128) => false
 
   # neg, add, sub, mul with wrap-around semantics
@@ -93,12 +93,12 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
 
   # private division and remainder with crash in case of div-by-zero
   private div (other u128) u128 is
-    if u128.this < other
+    if thiz < other
       zero
     else
       ob := other.highestOneBit.trailingZeros
       for
-        rem := u128.this, rem - s
+        rem := thiz, rem - s
         bit := rem.highestOneBit >> ob.as_u128, bit >> one
         d := other << bit.trailingZeros.as_u128, d >> one
         s := if (rem < d) zero else d
@@ -106,11 +106,11 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
         res := p, res + p
       until bit = zero
         check
-          debug: res *° other + rem = u128.this
+          debug: res *° other + rem = thiz
         res
 
   private mod (other u128) u128 is
-    u128.this - div(other) *° other
+    thiz - div(other) *° other
 
   # bitwise and, or and xor operations
   redef infix &  (other u128) u128 is u128(hi & other.hi, lo & other.lo)
@@ -127,7 +127,7 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
     else if n > 0
       u128(hi >> n, (lo >> n) | (hi << (u64 64 - n)))
     else
-      u128.this
+      thiz
 
   redef infix << (other u128) u128 is
     n := other.as_u64  # NYI: other should be of type u32
@@ -138,67 +138,67 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
     else if n > 0
       u128((hi << n) | (lo >> (u64 64 - n)), lo << n)
     else
-      u128.this
+      thiz
 
   # comparison
   redef infix == (other u128) bool is hi == other.hi && lo == other.lo
-  redef infix != (other u128) bool is !(u128.this == other)
+  redef infix != (other u128) bool is !(thiz == other)
   redef infix <  (other u128) bool is hi < other.hi || hi = other.hi && lo <  other.lo
   redef infix <= (other u128) bool is hi < other.hi || hi = other.hi && lo <= other.lo
   redef infix >  (other u128) bool is hi > other.hi || hi = other.hi && lo >  other.lo
   redef infix >= (other u128) bool is hi > other.hi || hi = other.hi && lo >= other.lo
 
   redef infix =  (other u128) bool is hi = other.hi && lo = other.lo
-  redef infix /= (other u128) bool is !(u128.this = other)
+  redef infix /= (other u128) bool is !(thiz = other)
 
   as_i8 i8
     pre
-      u128.this <= i8.max.as_u128
+      thiz <= i8.max.as_u128
     is
       lo.as_i8
   as_i16 i16
     pre
-      u128.this <= i16.max.as_u128
+      thiz <= i16.max.as_u128
     is
       lo.as_i16
   as_i32 i32
     pre
-      u128.this <= i32.max.as_u128
+      thiz <= i32.max.as_u128
     is
       lo.as_i32
   as_i64 i64
     pre
-      u128.this <= i64.max.as_u128
+      thiz <= i64.max.as_u128
     post
-      analysis: result.as_u128 = u128.this
+      analysis: result.as_u128 = thiz
     is
       lo.as_i64
   as_u8 u8
     pre
-      u128.this <= u8.max.as_u128
+      thiz <= u8.max.as_u128
     post
-      analysis: result.as_u128 = u128.this
+      analysis: result.as_u128 = thiz
     is
       lo.as_u8
   as_u16 u16
     pre
-      u128.this <= u16.max.as_u128
+      thiz <= u16.max.as_u128
     post
-      analysis: result.as_u128 = u128.this
+      analysis: result.as_u128 = thiz
     is
       lo.as_u16
   as_u32 u32
     pre
-      u128.this <= u32.max.as_u128
+      thiz <= u32.max.as_u128
     post
-      analysis: result.as_u128 = u128.this
+      analysis: result.as_u128 = thiz
     is
       lo.as_u32
   as_u64 u64
     pre
-      u128.this <= u64.max.as_u128
+      thiz <= u64.max.as_u128
     post
-      analysis: result.as_u128 = u128.this
+      analysis: result.as_u128 = thiz
     is
       lo
 

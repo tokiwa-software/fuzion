@@ -36,12 +36,12 @@ u32(val u32) : wrappingInteger<u32>, hasInterval<u32>, u32s is
   redef wrappedOnNeg => !isZero
 
   # would addtion thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u32) => max -° u32.this < other
+  redef overflowOnAdd (other u32) => max -° thiz < other
   redef underflowOnAdd(other u32) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
   redef overflowOnSub (other u32) => false
-  redef underflowOnSub(other u32) => u32.this < other
+  redef underflowOnSub(other u32) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
   redef overflowOnMul (other u32) => as_i64 *° other.as_i64 > max.as_i64
@@ -86,34 +86,34 @@ u32(val u32) : wrappingInteger<u32>, hasInterval<u32>, u32s is
 
   as_i8 i8
     pre
-      debug: u32.this <= i8.max.as_u32
+      debug: thiz <= i8.max.as_u32
     is
       castTo_i32.as_i8
   as_i16 i16
     pre
-      debug: u32.this <= i16.max.as_u32
+      debug: thiz <= i16.max.as_u32
     is
       castTo_i32.as_i16
   as_i32 i32
     pre
-      debug: u32.this <= i32.max.as_u32
+      debug: thiz <= i32.max.as_u32
     is
       castTo_i32
   as_i64 i64 is intrinsic
 # as_i128 i128 is as_i64.as_i128
   as_u8 u8
     pre
-      debug: u32.this <= u8.max.as_u32
+      debug: thiz <= u8.max.as_u32
     is
       castTo_i32.as_u8
   as_u16 u16
     pre
-      debug: u32.this <= u16.max.as_u32
+      debug: thiz <= u16.max.as_u32
     is
       castTo_i32.as_u16
   as_u64 u64
     is
-      u32.this.as_i64.as_u64
+      thiz.as_i64.as_u64
   as_u128 u128
     is
       u128 0, as_u64

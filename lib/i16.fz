@@ -36,12 +36,12 @@ i16(val i16) : wrappingInteger<i16>, hasInterval<i16>, i16s is
   redef wrappedOnNeg => isMin
 
   # would addtion thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i16) => i16.this > zero && max -° i16.this < other
-  redef underflowOnAdd(other i16) => i16.this < zero && min -° i16.this > other
+  redef overflowOnAdd (other i16) => thiz > zero && max -° thiz < other
+  redef underflowOnAdd(other i16) => thiz < zero && min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i16) => i16.this > zero && i16.this -° max > other
-  redef underflowOnSub(other i16) => i16.this < zero && i16.this -° min < other
+  redef overflowOnSub (other i16) => thiz > zero && thiz -° max > other
+  redef underflowOnSub(other i16) => thiz < zero && thiz -° min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
   redef overflowOnMul (other i16) => as_i32 *° other.as_i32 > max.as_i32
@@ -87,37 +87,37 @@ i16(val i16) : wrappingInteger<i16>, hasInterval<i16>, i16s is
   # conversion to u32, i64 and u64, with range check
   as_i8 i8
     pre
-      i16.this >= i8.min.as_i16,
-      i16.this <= i8.max.as_i16
+      thiz >= i8.min.as_i16,
+      thiz <= i8.max.as_i16
     is
       low8bits.castTo_i8
   as_i32 i32 is intrinsic
-  as_i64  => i16.this.as_i32.as_i64
-# as_i128 => i16.this.as_i32.as_i128
+  as_i64  => thiz.as_i32.as_i64
+# as_i128 => thiz.as_i32.as_i128
 
   as_u8 u8
     pre
-      debug: i16.this >= zero && i16.this <= u8.max.as_i16
+      debug: thiz >= zero && thiz <= u8.max.as_i16
     is
       low8bits
   as_u16 u16
     pre
-      debug: i16.this >= zero && i16.this <= u8.max.as_i16
+      debug: thiz >= zero && thiz <= u8.max.as_i16
     is
       castTo_u16
   as_u32 u32
     pre
-      debug: i16.this >= zero
+      debug: thiz >= zero
     is
       castTo_u32
   as_u64 u64
     pre
-      debug: i16.this >= zero
+      debug: thiz >= zero
     is
       castTo_u64
   as_u128 u128
     pre
-      debug: i16.this >= zero
+      debug: thiz >= zero
     is
       castTo_u128
 

@@ -36,12 +36,12 @@ u8(val u8) : wrappingInteger<u8>, hasInterval<u8>, u8s is
   redef wrappedOnNeg => !isZero
 
   # would addtion thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other u8) => max -° u8.this < other
+  redef overflowOnAdd (other u8) => max -° thiz < other
   redef underflowOnAdd(other u8) => false
 
   # would subtraction thiz - other cause an overflow or underflow?
   redef overflowOnSub (other u8) => false
-  redef underflowOnSub(other u8) => u8.this < other
+  redef underflowOnSub(other u8) => thiz < other
 
   # would multiplication thiz * other cause an overflow or underflow?
   redef overflowOnMul (other u8) => as_i32 *° other.as_i32 > max.as_i32
@@ -86,7 +86,7 @@ u8(val u8) : wrappingInteger<u8>, hasInterval<u8>, u8s is
 
   as_i8 i8
     pre
-      debug: u8.this <= i8.max.as_u8
+      debug: thiz <= i8.max.as_u8
     is
       castTo_i8
   as_i16 => as_i32.as_i16

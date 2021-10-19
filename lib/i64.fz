@@ -36,16 +36,16 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
   redef wrappedOnNeg => isMin
 
   # would addtion thiz + other cause an overflow or underflow?
-  redef overflowOnAdd (other i64) => i64.this > 0 && max -° i64.this < other
-  redef underflowOnAdd(other i64) => i64.this < 0 && min -° i64.this > other
+  redef overflowOnAdd (other i64) => thiz > 0 && max -° thiz < other
+  redef underflowOnAdd(other i64) => thiz < 0 && min -° thiz > other
 
   # would subtraction thiz - other cause an overflow or underflow?
-  redef overflowOnSub (other i64) => i64.this > 0 && i64.this -° max > other
-  redef underflowOnSub(other i64) => i64.this < 0 && i64.this -° min < other
+  redef overflowOnSub (other i64) => thiz > 0 && thiz -° max > other
+  redef underflowOnSub(other i64) => thiz < 0 && thiz -° min < other
 
   # would multiplication thiz * other cause an overflow or underflow?
-  redef overflowOnMul (other i64) => if sign *° other.sign <= 0 false else (i64.this *° other / other) != i64.this
-  redef underflowOnMul(other i64) => if sign *° other.sign >= 0 false else (i64.this *° other / other) != i64.this
+  redef overflowOnMul (other i64) => if sign *° other.sign <= 0 false else (thiz *° other / other) != thiz
+  redef underflowOnMul(other i64) => if sign *° other.sign >= 0 false else (thiz *° other / other) != thiz
 
   # neg, add, sub, mul with wrap-around semantics
   redef prefix -° i64 is intrinsic
@@ -86,30 +86,30 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
 
   as_i32 i32
     pre
-      i64.this >= i32.min.as_i64,
-      i64.this <= i32.max.as_i64
+      thiz >= i32.min.as_i64,
+      thiz <= i32.max.as_i64
     is
       low32bits.castTo_i32
   as_u32 u32
     pre
-      i64.this >= 0
-#      i64.this <= u32.max.as_i64
+      thiz >= 0
+#      thiz <= u32.max.as_i64
 #    post
-#      analysis:  result.as_i64 == i64.this
+#      analysis:  result.as_i64 == thiz
     is
       low32bits
   as_u64 u64
     pre
-      i64.this >= 0
+      thiz >= 0
 #    post
-#      analysis:  result.as_i64 == i64.this
+#      analysis:  result.as_i64 == thiz
     is
       castTo_u64
   as_u128 u128
     pre
-      i64.this >= 0
+      thiz >= 0
     post
-      analysis:  result.as_i64 == i64.this
+      analysis:  result.as_i64 == thiz
     is
       u128 0, castTo_u64
 
