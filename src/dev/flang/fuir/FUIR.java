@@ -769,14 +769,17 @@ hw25 is
         if (or != null)
           {
             toStack(code, p.target); // NYI: target is evaluated twice here!
-            if (!or.resultClazz().isRef() &&
-                !or.resultClazz().feature().isBuiltInPrimitive())
+            if (!or.resultClazz().isUnitType())
               {
-                code.add(ExprKind.AdrOf);
+                if (!or.resultClazz().isRef() &&
+                    !or.resultClazz().feature().isBuiltInPrimitive())
+                    {
+                      code.add(ExprKind.AdrOf);
+                    }
+                code.add(ExprKind.Dup);
+                code.add(ExprKind.Current);
+                code.add(or);  // field clazz means assignment to field
               }
-            code.add(ExprKind.Dup);
-            code.add(ExprKind.Current);
-            code.add(or);  // field clazz means assignment to field
           }
         else
           {
