@@ -77,15 +77,6 @@ public class FUIR extends IR
   /*----------------------------  constants  ----------------------------*/
 
 
-  public enum ClazzKind
-  {
-    Routine,
-    Field,
-    Intrinsic,
-    Abstract,
-    Choice
-  }
-
   public enum ContractKind
   {
     Pre,
@@ -372,17 +363,17 @@ public class FUIR extends IR
   }
 
 
-  public ClazzKind clazzKind(int cl)
+  public FeatureKind clazzKind(int cl)
   {
     return clazzKind(_clazzIds.get(cl));
   }
 
 
-  ClazzKind clazzKind(Clazz cc)
+  FeatureKind clazzKind(Clazz cc)
   {
     if (cc.isChoice())
       {
-        return ClazzKind.Choice;
+        return FeatureKind.Choice;
       }
     else
       {
@@ -390,13 +381,13 @@ public class FUIR extends IR
         switch (ff.impl.kind_)
           {
           case Routine    :
-          case RoutineDef : return ClazzKind.Routine;
+          case RoutineDef : return FeatureKind.Routine;
           case Field      :
           case FieldDef   :
           case FieldActual:
-          case FieldInit  : return ClazzKind.Field;
-          case Intrinsic  : return ClazzKind.Intrinsic;
-          case Abstract   : return ClazzKind.Abstract;
+          case FieldInit  : return FeatureKind.Field;
+          case Intrinsic  : return FeatureKind.Intrinsic;
+          case Abstract   : return FeatureKind.Abstract;
           default: throw new Error ("Unexpected feature impl kind: "+ff.impl.kind_);
           }
       }
@@ -426,7 +417,7 @@ public class FUIR extends IR
   public String clazzIntrinsicName(int cl)
   {
     if (PRECONDITIONS) require
-      (clazzKind(cl) == ClazzKind.Intrinsic);
+      (clazzKind(cl) == FeatureKind.Intrinsic);
 
     var cc = _clazzIds.get(cl);
     return cc.feature().qualifiedName();
@@ -804,7 +795,7 @@ hw25 is
   public int clazzCode(int cl)
   {
     if (PRECONDITIONS) require
-      (clazzKind(cl) == ClazzKind.Routine);
+      (clazzKind(cl) == FeatureKind.Routine);
 
     var cc = _clazzIds.get(cl);
     var ff = cc.feature();
@@ -832,10 +823,10 @@ hw25 is
   public int clazzContract(int cl, ContractKind ck, int ix)
   {
     if (PRECONDITIONS) require
-      (clazzKind(cl) == ClazzKind.Routine   ||
-       clazzKind(cl) == ClazzKind.Field     ||
-       clazzKind(cl) == ClazzKind.Intrinsic ||
-       clazzKind(cl) == ClazzKind.Abstract     ,
+      (clazzKind(cl) == FeatureKind.Routine   ||
+       clazzKind(cl) == FeatureKind.Field     ||
+       clazzKind(cl) == FeatureKind.Intrinsic ||
+       clazzKind(cl) == FeatureKind.Abstract     ,
        ix >= 0);
 
     var cc = _clazzIds.get(cl);

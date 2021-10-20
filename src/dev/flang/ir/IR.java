@@ -83,6 +83,20 @@ public class IR extends ANY
    */
   protected static final int FEATURE_BASE = 0x50000000;
 
+
+  /**
+   * The basic types of features in Fuzion:
+   */
+  public enum FeatureKind
+  {
+    Routine,
+    Field,
+    Intrinsic,
+    Abstract,
+    Choice
+  }
+
+
   public enum ExprKind
   {
     AdrOf,

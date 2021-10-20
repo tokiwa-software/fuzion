@@ -50,19 +50,6 @@ public class MIR extends IR
   /*----------------------------  constants  ----------------------------*/
 
 
-  /**
-   * The basic types of features in Fuzion:
-   */
-  public enum FeatureKind
-  {
-    Routine,
-    Field,
-    Intrinsic,
-    Abstract,
-    Choice
-  }
-
-
   /*----------------------------  variables  ----------------------------*/
 
 

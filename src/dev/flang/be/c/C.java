@@ -783,7 +783,7 @@ public class C extends ANY
   {
     CStmnt result = CStmnt.EMPTY;
     var rt = _fuir.clazzResultClazz(cc);
-    switch (pre ? FUIR.ClazzKind.Routine : _fuir.clazzKind(cc))
+    switch (pre ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
       {
       case Abstract :
         Errors.error("Call to abstract feature encountered.",
@@ -953,8 +953,8 @@ public class C extends ANY
           case Intrinsic:
             {
               l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"));
-              var o = ck == FUIR.ClazzKind.Routine ? codeForRoutine(cl, false)
-                                                   : new Intrinsics().code(this, cl);
+              var o = ck == FUIR.FeatureKind.Routine ? codeForRoutine(cl, false)
+                                                     : new Intrinsics().code(this, cl);
               l.add(cFunctionDecl(cl, false, o));
             }
           }
@@ -979,7 +979,7 @@ public class C extends ANY
   CStmnt codeForRoutine(int cl, boolean pre)
   {
     if (PRECONDITIONS) require
-      (_fuir.clazzKind(cl) == FUIR.ClazzKind.Routine || pre);
+      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine || pre);
 
     _names._tempVarId = 0;  // reset counter for unique temp variables for function results
     var l = new List<CStmnt>();
