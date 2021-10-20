@@ -105,6 +105,7 @@ JAVA_FILES_PARSER = \
 JAVA_FILES_IR = \
           $(SRC)/dev/flang/ir/Clazz.java \
           $(SRC)/dev/flang/ir/Clazzes.java \
+          $(SRC)/dev/flang/ir/IR.java \
           $(SRC)/dev/flang/ir/IrErrors.java \
 
 JAVA_FILES_MIR = \

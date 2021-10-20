@@ -28,15 +28,19 @@ package dev.flang.mir;
 
 import dev.flang.ast.Feature;  // NYI: Remove dependency!
 
+import dev.flang.ir.IR;
+
 import dev.flang.util.ANY;
+import dev.flang.util.Map2Int;
+import dev.flang.util.MapComparable2Int;
 
 
 /**
- * The MIR contains the module-intermediate representation of Fuzion features.
+ * The MIR contains the module-intermediate representation of a Fuzion module.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class MIR extends ANY
+public class MIR extends IR
 {
 
 
@@ -49,21 +53,75 @@ public class MIR extends ANY
   final Feature _main;
 
 
+  /**
+   * integer ids for features in this module
+   */
+  final Map2Int<Feature> _featureIds = new MapComparable2Int(FEATURE_BASE);
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   public MIR(Feature main)
   {
     _main = main;
+    addFeatures();
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
 
 
+  /**
+   * The main Feature.
+   */
   public Feature main()
   {
     return _main;
+  }
+
+
+  /**
+   * Create the mapping from Features to integers exists.
+   */
+  private void addFeatures()
+  {
+    if (_featureIds.size() == 0)
+      {
+        var u = main().universe();
+        addFeatures(u);
+      }
+  }
+
+
+  /**
+   * Helper to addFeatures() to add feature f and all features declared within f.
+   */
+  private void addFeatures(Feature f)
+  {
+    _featureIds.add(f);
+    for (var i : f.declaredFeatures().values())
+      {
+        addFeatures(i);
+      }
+  }
+
+
+  /**
+   * The first feature in this module.
+   */
+  public int firstFeature()
+  {
+    return FEATURE_BASE;
+  }
+
+
+  /**
+   * The last feature in this module.
+   */
+  public int lastFeature()
+  {
+    return FEATURE_BASE + _featureIds.size() - 1;
   }
 
 }

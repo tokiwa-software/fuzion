@@ -57,6 +57,7 @@ import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.ir.Clazz;
 import dev.flang.ir.Clazzes;
+import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -71,16 +72,12 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FUIR extends ANY
+public class FUIR extends IR
 {
 
 
   /*----------------------------  constants  ----------------------------*/
 
-
-  private static final int CLAZZ_BASE   = 0x10000000;
-
-  private static final int CODE_BASE = 0x30000000;
 
   public enum ClazzKind
   {

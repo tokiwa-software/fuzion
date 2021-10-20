@@ -20,51 +20,52 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class AIR
+ * Source of class IR
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.air;
-
-import dev.flang.ir.Clazz;
-import dev.flang.ir.IR;
+package dev.flang.ir;
 
 import dev.flang.util.ANY;
 
 
 /**
- * The AIR contains the intermediate representation of a fuzion applications.
+ * IR provides the common super class for the Fuzion intermediate representation.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class AIR extends IR
+public class IR extends ANY
 {
 
 
-  /*----------------------------  variables  ----------------------------*/
+  /*----------------------------  constants  ----------------------------*/
 
 
   /**
-   * The main feature
+   * For clazzes represented by integers, this gives the base added to the
+   * integers to detect wrong values quickly.
    */
-  final Clazz _main;
+  protected static final int CLAZZ_BASE   = 0x10000000;
+
+  /**
+   * For FUIR code represented by integers, this gives the base added to the
+   * integers to detect wrong values quickly.
+   */
+  protected static final int CODE_BASE    = 0x30000000;
+
+  /**
+   * For Features represented by integers, this gives the base added to the
+   * integers to detect wrong values quickly.
+   */
+  protected static final int FEATURE_BASE = 0x50000000;
+
 
 
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public AIR(Clazz main)
+  public IR()
   {
-    _main = main;
-  }
-
-
-  /*-----------------------------  methods  -----------------------------*/
-
-
-  public Clazz main()
-  {
-    return _main;
   }
 
 }

@@ -167,30 +167,43 @@ public class FrontEnd extends ANY
       {
         Errors.showAndExit();
       }
-    if (d != null && Errors.count() == 0)
+
+    return createMIR(d);
+  }
+
+
+
+  /**
+   * Create MIR based on given main feature.
+   */
+  MIR createMIR(Feature main)
+  {
+    if (main != null && Errors.count() == 0)
       {
-        if (d.arguments.size() != 0)
+        if (main.arguments.size() != 0)
           {
-            FeErrors.mainFeatureMustNotHaveArguments(d);
+            FeErrors.mainFeatureMustNotHaveArguments(main);
           }
-        if (d.isField())
+        if (main.isField())
           {
-            FeErrors.mainFeatureMustNotBeField(d);
+            FeErrors.mainFeatureMustNotBeField(main);
           }
-        if (d.impl == Impl.ABSTRACT)
+        if (main.impl == Impl.ABSTRACT)
           {
-            FeErrors.mainFeatureMustNotBeAbstract(d);
+            FeErrors.mainFeatureMustNotBeAbstract(main);
           }
-        if (d.impl == Impl.INTRINSIC)
+        if (main.impl == Impl.INTRINSIC)
           {
-            FeErrors.mainFeatureMustNotBeIntrinsic(d);
+            FeErrors.mainFeatureMustNotBeIntrinsic(main);
           }
-        if (!d.generics.list.isEmpty())
+        if (!main.generics.list.isEmpty())
           {
-            FeErrors.mainFeatureMustNotHaveTypeArguments(d);
+            FeErrors.mainFeatureMustNotHaveTypeArguments(main);
           }
       }
-    return new MIR(d);
+    var result = new MIR(main);
+    checkModule(result);
+    return result;
   }
 
 
@@ -360,6 +373,29 @@ public class FrontEnd extends ANY
         }
       return _subDirs.get(name);
     }
+  }
+
+
+  /**
+   * Check the correctness of this modules. In particular, check that all fields
+   * are initialized before they are read.
+   */
+  void checkModule(MIR module)
+  {
+    for (var f = module.firstFeature(); f <= module.lastFeature(); f++)
+      {
+        checkFeature(module, f);
+      }
+  }
+
+
+  /**
+   * Check the correctness of given feature in given module. In particular,
+   * check that all fields are initialized before they are read.
+   */
+  void checkFeature(MIR module, int f)
+  {
+    // NYI
   }
 
 
