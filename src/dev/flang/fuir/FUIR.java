@@ -766,24 +766,17 @@ hw25 is
 
         var pf = p.calledFeature();
         var or = cc._inner.get(pf.outerRef_);
-        if (or != null)
+        toStack(code, p.target);
+        if (or != null && !or.resultClazz().isUnitType())
           {
-            toStack(code, p.target); // NYI: target is evaluated twice here!
-            if (!or.resultClazz().isUnitType())
+            if (!or.resultClazz().isRef() &&
+                !or.resultClazz().feature().isBuiltInPrimitive())
               {
-                if (!or.resultClazz().isRef() &&
-                    !or.resultClazz().feature().isBuiltInPrimitive())
-                    {
-                      code.add(ExprKind.AdrOf);
-                    }
-                code.add(ExprKind.Dup);
-                code.add(ExprKind.Current);
-                code.add(or);  // field clazz means assignment to field
+                code.add(ExprKind.AdrOf);
               }
-          }
-        else
-          {
-            toStack(code, p.target);
+            code.add(ExprKind.Dup);
+            code.add(ExprKind.Current);
+            code.add(or);  // field clazz means assignment to field
           }
         check
           (p._actuals.size() == p.calledFeature().arguments.size());
