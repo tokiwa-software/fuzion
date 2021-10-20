@@ -2976,9 +2976,13 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
           if (fn.equalsExceptId(name))  /* an exact match, so use it: */
             {
               check
-                (Errors.count() > 0 || !match);
-              found = new List<>(ff);
-              match = true;
+                (Errors.count() > 0 || !match || fn.argCount() == 0);
+              if (!match)
+                {
+                  found = new List<>();
+                  match = true;
+                }
+              found.add(ff);
             }
           else if (!match && isCandidate.test(ff))
             { /* no exact match, but we have a candidate to check later: */
