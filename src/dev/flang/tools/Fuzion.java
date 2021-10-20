@@ -472,7 +472,7 @@ class Fuzion extends Tool
         long feTime = System.currentTimeMillis();
         var air = new MiddleEnd(options, mir).air();
         long meTime = System.currentTimeMillis();
-        var fuir = new Optimizer(options, air).fuir(_backend != Backend.interpreter);
+        var fuir = new Optimizer(options, air).fuir();
         long irTime = System.currentTimeMillis();
         switch (_backend)
           {

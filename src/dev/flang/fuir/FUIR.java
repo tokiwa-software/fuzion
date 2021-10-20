@@ -185,13 +185,10 @@ public class FUIR extends ANY
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public FUIR(Clazz main, boolean findClazzes)
+  public FUIR(Clazz main)
   {
     _main = main;
-    if (findClazzes)
-      {
-        Clazzes.findAllClasses(main());
-      }
+    Clazzes.findAllClasses(main());
   }
 
 

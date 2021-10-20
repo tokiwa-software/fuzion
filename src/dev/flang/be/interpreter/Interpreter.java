@@ -183,7 +183,6 @@ public class Interpreter extends ANY
   public Interpreter(FUIR fuir)
   {
     _fuir = fuir;
-    Clazzes.findAllClasses(_fuir.main());
     Errors.showAndExit();
     Clazzes.showStatistics();
   }
