@@ -6,7 +6,7 @@ The Fuzion language implementation is free software: you can redistribute it
 and/or modify it under the terms of the GNU General Public License as published
 by the Free Software Foundation, version 3 of the License.
 
-The Fuzion language implementation is distributed in the hope that it will be
+The Fuzion language imbooplementation is distributed in the hope that it will be
 useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
 License for more details.
@@ -38,7 +38,6 @@ import dev.flang.ast.Block; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Call; // NYI: remove dependency
-import dev.flang.ast.Check; // NYI: remove dependency
 import dev.flang.ast.Current; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.Feature; // NYI: remove dependency
@@ -53,7 +52,6 @@ import dev.flang.ast.StrConst; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Types; // NYI: remove dependency
 import dev.flang.ast.Unbox; // NYI: remove dependency
-import dev.flang.ast.Universe; // NYI: remove dependency
 
 import dev.flang.ir.Clazz;
 import dev.flang.ir.Clazzes;
@@ -86,23 +84,6 @@ public class FUIR extends IR
     Intrinsic,
     Abstract,
     Choice
-  }
-
-  public enum ExprKind
-  {
-    AdrOf,
-    Assign,
-    Box,
-    Unbox,
-    Call,
-    Current,
-    Comment,
-    Const,
-    Dup,
-    Match,
-    Outer,
-    Tag,
-    Pop,
   }
 
   public enum ContractKind
@@ -176,7 +157,6 @@ public class FUIR extends IR
 
 
   final Map2Int<Clazz> _clazzIds = new MapComparable2Int(CLAZZ_BASE);
-  final Map2Int<List<Object>> _codeIds = new Map2Int(CODE_BASE);
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -792,10 +772,8 @@ hw25 is
   /**
    * Code for a routine or precondition prolog.
    *
-   * This addss code to initialize outer reference, must be done at the
+   * This adds code to initialize outer reference, must be done at the
    * beginning of every routine and precondition.
-   *
-   * @param code the code to add the initialization to.
    *
    * @param cc the routine we are creating code for.
    */
@@ -955,152 +933,9 @@ hw25 is
   }
 
 
-  /*--------------------------  stack handling  -------------------------*/
-
-
-  List<Object> toStack(Stmnt s)
-  {
-    List<Object> result = new List<>();
-    toStack(result, s);
-    return result;
-  }
-  void toStack(List<Object> l, Stmnt s) { toStack(l, s, false); }
-  void toStack(List<Object> l, Stmnt s, boolean dumpResult)
-  {
-    if (PRECONDITIONS) require
-      (l != null,
-       s != null);
-
-    if (s instanceof Assign a)
-      {
-        toStack(l, a._value);
-        toStack(l, a._target);
-        l.add(a);
-      }
-    else if (s instanceof Unbox u)
-      {
-        toStack(l, u.adr_);
-        if (u._needed)
-          {
-            l.add(u);
-          }
-      }
-    else if (s instanceof Box b)
-      {
-        toStack(l, b._value);
-        l.add(b);
-      }
-    else if (s instanceof Block b)
-      {
-        // for (var st : b.statements_)
-        for (int i=0; i<b.statements_.size(); i++)
-          {
-            var st = b.statements_.get(i);
-            toStack(l, st, dumpResult || i < b.statements_.size()-1);
-          }
-      }
-    else if (s instanceof BoolConst)
-      {
-        l.add(s);
-      }
-    else if (s instanceof Current)
-      {
-        l.add(ExprKind.Current);
-      }
-    else if (s instanceof If i)
-      {
-        // if is converted to If, blockId, elseBlockId
-        toStack(l, i.cond);
-        l.add(i);
-        List<Object> block = toStack(i.block);
-        l.add(new NumLiteral(_codeIds.add(block)));
-        Stmnt elseBlock;
-        if (i.elseBlock != null)
-          {
-            elseBlock = i.elseBlock;
-          }
-        else if (i.elseIf != null)
-          {
-            elseBlock = i.elseIf;
-          }
-        else
-          {
-            elseBlock = new Block(i.pos(), new List<>());
-          }
-        List<Object> elseBlockCode = toStack(elseBlock);
-        l.add(new NumLiteral(_codeIds.add(elseBlockCode)));
-      }
-    else if (s instanceof NumLiteral)
-      {
-        l.add(s);
-      }
-    else if (s instanceof Call c)
-      {
-        toStack(l, c.target);
-        for (var a : c._actuals)
-          {
-            toStack(l, a);
-          }
-        l.add(c);
-        if (dumpResult)
-          {
-            l.add(ExprKind.Pop);
-          }
-      }
-    else if (s instanceof Match m)
-      {
-        toStack(l, m.subject);
-        l.add(m);
-        for (var c : m.cases)
-          {
-            var caseCode = toStack(c.code);
-            l.add(new NumLiteral(_codeIds.add(caseCode)));
-          }
-      }
-    else if (s instanceof Tag t)
-      {
-        toStack(l, t._value);
-        l.add(t);
-      }
-    else if (s instanceof Nop)
-      {
-      }
-    else if (s instanceof Universe)
-      {
-        var un = (Universe) s;
-      }
-    else if (s instanceof StrConst)
-      {
-        l.add(s);
-      }
-    else if (s instanceof InlineArray)
-      {
-        l.add(s);
-      }
-    else if (s instanceof Check c)
-      {
-        // NYI: Check not supported yet
-        //
-        // l.add(s);
-      }
-    else
-      {
-        System.err.println("Missing handling of "+s.getClass()+" in FUIR.toStack");
-      }
-  }
-
-
   /*--------------------------  accessing code  -------------------------*/
 
 
-  public boolean withinCode(int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0);
-
-    var code = _codeIds.get(c);
-    return ix < code.size();
-  }
 
   public ExprKind codeAt(int c, int ix)
   {
@@ -1109,65 +944,20 @@ hw25 is
 
     ExprKind result;
     var e = _codeIds.get(c).get(ix);
-    if (e instanceof ExprKind ek)
-      {
-        result = ek;
-      }
-    else if (e instanceof String)
-      {
-        result = ExprKind.Comment;
-      }
-    else if (e instanceof Assign ||
-             e instanceof Clazz    )  /* Clazz represents the field we assign a value to */
+    if (e instanceof Clazz    )  /* Clazz represents the field we assign a value to */
       {
         result = ExprKind.Assign;
       }
-    else if (e instanceof Box)
-      {
-        result = ExprKind.Box;
-      }
-    else if (e instanceof Unbox)
-      {
-        result = ExprKind.Unbox;
-      }
-    else if (e instanceof Call)
-      {
-        result = ExprKind.Call;
-      }
-    else if (e instanceof If    ||
-             e instanceof Match    )
-      {
-        result = ExprKind.Match;
-      }
-    else if (e instanceof Tag)
-      {
-        result = ExprKind.Tag;
-      }
-    else if (e instanceof BoolConst ||
-             e instanceof NumLiteral  ||
-             e instanceof StrConst  ||
-             e instanceof InlineArray   )
-      {
-        result = ExprKind.Const;
-      }
     else
+      {
+        result = super.codeAt(c, ix);
+      }
+    if (result == null)
       {
         Errors.fatal((e instanceof Stmnt s) ? s.pos() :
                      (e instanceof Clazz z) ? z._type.pos : null,
                      "Stmnt not supported in FUIR.codeAt", "Statement class: " + e.getClass());
         result = ExprKind.Current; // keep javac from complaining.
-      }
-    return result;
-  }
-
-
-  public int codeSizeAt(int c, int ix)
-  {
-    int result = 1;
-    var s = codeAt(c, ix);
-    if (s == FUIR.ExprKind.Match)
-      {
-        result = result + matchCaseCount(c, ix);
       }
     return result;
   }
@@ -1559,32 +1349,6 @@ hw25 is
       ? cc.getRuntimeClazz(((If) s).runtimeClazzId_)
       : cc.getRuntimeClazz(((Match) s).runtimeClazzId_);
     return _clazzIds.get(ss);
-  }
-
-
-  /**
-   * For a match statement, get the number of cases
-   *
-   * @param c code block containing the match
-   *
-   * @param ix index of the match
-   *
-   * @return the number of cases
-   */
-  public int matchCaseCount(int c, int ix)
-  {
-    if (PRECONDITIONS) require
-      (ix >= 0,
-       withinCode(c, ix),
-       codeAt(c, ix) == ExprKind.Match);
-
-    var s = _codeIds.get(c).get(ix);
-    int result = 2; // two cases for If
-    if (s instanceof Match m)
-      {
-        result = m.cases.size();
-      }
-    return result;
   }
 
 

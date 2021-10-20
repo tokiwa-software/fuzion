@@ -395,7 +395,34 @@ public class FrontEnd extends ANY
    */
   void checkFeature(MIR module, int f)
   {
-    // NYI
+    switch (module.featureKind(f))
+      {
+      case Routine:
+        var c = module.featureCode(f);
+        for (int i = 0; module.withinCode(c, i); i = i + module.codeSizeAt(c, i))
+          {
+            var s = module.codeAt(c, i);
+            switch (s)
+              {
+              case Assign:
+                if (false) System.out.println("Assign!");
+                break;
+              case Current:
+                if (false) System.out.println("Current!");
+                break;
+              case Call:
+                if (false) System.out.println("Call!");
+                break;
+              default:
+                if (false) System.out.println("unknown: "+s);
+                break;
+              }
+          }
+        // NYI
+        break;
+      default:
+        break;
+      }
   }
 
 
