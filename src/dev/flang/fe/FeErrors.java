@@ -91,9 +91,9 @@ public class FeErrors extends AstErrors
     mainFeatureMustNot(m, "have generic arguments");
   }
 
-  static void fieldNotInitialized(MIR module, SourcePosition pos, int af)
+  static void fieldNotInitialized(MIR mir, SourcePosition pos, int af)
   {
-    var afn = sqn(module.featureAsString(af));
+    var afn = sqn(mir.featureAsString(af));
     error(pos, "Field may not have been initialized",
           "Some execution paths to the use of field " + afn + " must "+
           "assign a value to this field. \n"+
