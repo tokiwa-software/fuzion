@@ -37,6 +37,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import dev.flang.ast.Block;
 import dev.flang.ast.FeErrors;
@@ -382,9 +383,12 @@ public class FrontEnd extends ANY
    */
   void checkModule(MIR module)
   {
-    for (var f = module.firstFeature(); f <= module.lastFeature(); f++)
+    if (Errors.count() == 0)
       {
-        checkFeature(module, f);
+        for (var f = module.firstFeature(); f <= module.lastFeature(); f++)
+          {
+            checkFeature(module, f);
+          }
       }
   }
 
@@ -399,22 +403,66 @@ public class FrontEnd extends ANY
       {
       case Routine:
         var c = module.featureCode(f);
+        var lastWasCurrent = false;
+        var show = module.featureAsString(f).equals("uninitialized");
+        var initialized = new TreeSet<Integer>();
+        for (int i = 0; i < module.featureArgCount(f); i++)
+          {
+            initialized.add(module.featureArg(f, i));
+          }
+        var declaredInF_NYI = new TreeSet<Integer>();
+        for (int i = 0; i < module.featureDeclaredCount(f); i++)
+          {
+            var df = module.featureDeclared(f, i);
+            if (module.featureKind(df) == MIR.FeatureKind.Field)
+              {
+                declaredInF_NYI.add(df);
+              }
+          }
+        var giveUpDueToControlFlowNYI = false;
         for (int i = 0; module.withinCode(c, i); i = i + module.codeSizeAt(c, i))
           {
             var s = module.codeAt(c, i);
             switch (s)
               {
               case Assign:
-                if (false) System.out.println("Assign!");
+                if (lastWasCurrent)
+                  {
+                    var af = module.accessedFeature(f, c, i);
+                    initialized.add(af);
+                  }
+                lastWasCurrent = false;
                 break;
               case Current:
-                if (false) System.out.println("Current!");
+                lastWasCurrent = true;
                 break;
               case Call:
-                if (false) System.out.println("Call!");
+                if (lastWasCurrent)
+                  {
+                    var af = module.accessedFeature(f, c, i);
+                    if (module.featureKind(af) == MIR.FeatureKind.Field &&
+                        declaredInF_NYI.contains(af) &&
+                        !initialized.contains(af) &&
+                        !module.fieldIsOuterRef(af) &&
+                        !giveUpDueToControlFlowNYI)
+                      {
+                          Errors.error(module.codeAtPos(c,i),"Field may not have been initialized",
+                                       "Some execution paths to the use of field "+module.featureAsString(af)+" must "+
+                                       "assign a value to this field. \n"+
+                                       "Uninitialized field: "+module.featureAsString(af)+"\n"+
+                                       "Used in call: "+"NYI: call as string"+"\n"+
+                                       "To solve this, make sure a value is assigned to the field before it is used and "+
+                                       "there are no calls to features that end up reading this field before it is "+
+                                       "initialized.\n");
+                      }
+                  }
+                lastWasCurrent = false;
+                break;
+              case Match:
+                giveUpDueToControlFlowNYI = true;
                 break;
               default:
-                if (false) System.out.println("unknown: "+s);
+                lastWasCurrent = false;
                 break;
               }
           }

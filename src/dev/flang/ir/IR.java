@@ -51,6 +51,7 @@ import dev.flang.ast.Universe; // NYI: remove dependency
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.Map2Int;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -374,6 +375,21 @@ public class IR extends ANY
         result = null;
       }
     return result;
+  }
+
+
+  /**
+   * Get the source code position of statement #ix in given code block.
+   *
+   * @param c code block index
+   *
+   * @param ix index of statement within c
+   *
+   * @return the source code position of statement #ix in block c.
+   */
+  public SourcePosition codeAtPos(int c, int ix)
+  {
+    return ((Expr)_codeIds.get(c).get(ix)).pos();
   }
 
 

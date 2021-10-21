@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.mir;
 
+import dev.flang.ast.Assign;  // NYI: Remove dependency!
 import dev.flang.ast.Call;  // NYI: Remove dependency!
 import dev.flang.ast.Feature;  // NYI: Remove dependency!
 
@@ -248,6 +249,14 @@ hw25 is
     return _codeIds.add(code);
   }
 
+
+  /**
+   * Determine the kind of a given feature.
+   *
+   * @param f a feature index
+   *
+   * @return the kind of that feature, FeatureKind.Choice, Routine, Field, etc.
+   */
   public FeatureKind featureKind(int f)
   {
     var ff = _featureIds.get(f);
@@ -264,6 +273,144 @@ hw25 is
         };
   }
 
+
+  /**
+   * Get a string representatin of a a given feature, for debugging only
+   *
+   * @param f a feature index
+   *
+   * @return a string identifying f.
+   */
+  public String featureAsString(int f)
+  {
+    return f == -1
+      ? "-- no feature --"
+      : _featureIds.get(f).qualifiedName();
+  }
+
+
+  /**
+   * Get the accessed feature for a non dynamic access or the static clazz of a
+   * dynamic access.
+   *
+   * @param f index of feature containing the access
+   *
+   * @param c code block containing the access
+   *
+   * @param ix index of the access
+   *
+   * @return the feature that has to be accessed or -1 if the access is an
+   * assignment to a field that is unused, so the assignment is not needed.
+   */
+  public int accessedFeature(int f, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Call   ||
+       codeAt(c, ix) == ExprKind.Assign    );
+
+    var ff = _featureIds.get(f);
+    var s = _codeIds.get(c).get(ix);
+    Feature af =
+      (s instanceof Call   call) ? call.calledFeature() :
+      (s instanceof Assign a   ) ? a._assignedField :
+      (Feature) (Object) new Object() { { if (true) throw new Error("acccessedFeature found unexpected Stmnt."); } } /* Java is ugly... */;
+
+    return af == null ? -1 : _featureIds.get(af);
+  }
+
+
+  /**
+   * Get the number of arguments of a given feature.
+   *
+   * @param f a feature index
+   *
+   * @return the number of declared arguments f expects. Arguments of open
+   * generic type are counted as one argument.
+   */
+  public int featureArgCount(int f)
+  {
+    var ff = _featureIds.get(f);
+    return ff.arguments.size();
+  }
+
+
+  /**
+   * Get argument of a given feature.
+   *
+   * @param f a feature index
+   *
+   * @param i argument index
+   *
+   * @return the argument #i
+   */
+  public int featureArg(int f, int i)
+  {
+    if (PRECONDITIONS) require
+      (0 <= i && i < featureArgCount(f));
+
+    var ff = _featureIds.get(f);
+    var af = ff.arguments.get(i);
+    return _featureIds.get(af);
+  }
+
+
+  /**
+   * Get number of declared features within a given feature.
+   *
+   * @param f a feature index
+   *
+   * @return the number of features declared in feature f
+   */
+  public int featureDeclaredCount(int f)
+  {
+    var ff = _featureIds.get(f);
+    return ff.declaredFeatures().size();
+  }
+
+
+  /**
+   * Get feature declared within a given feature.
+   *
+   * @param f a feature index
+   *
+   * @param i index of declared feature
+   *
+   * @return the declared feature #i
+   */
+  public int featureDeclared(int f, int i)
+  {
+    if (PRECONDITIONS) require
+      (0 <= i && i < featureDeclaredCount(f));
+
+    var ff = _featureIds.get(f);
+    // NYI: Quadratic performance in case we iterate over all declared features.
+    for (var df : ff.declaredFeatures().values())
+      {
+        if (i == 0)
+          return _featureIds.get(df);
+        i--;
+      }
+    throw new Error("declared feature not found");
+  }
+
+
+  /**
+   * Is the given field a reference to an outer feature?
+   *
+   * @param f a field
+   *
+   * @return true for automatically generated references to outer instance
+   */
+  public boolean fieldIsOuterRef(int f)
+  {
+    if (PRECONDITIONS) require
+      (featureKind(f) == FeatureKind.Field);
+
+    var ff = _featureIds.get(f);
+    return ff.isOuterRef();
+  }
 
 }
 
