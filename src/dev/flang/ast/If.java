@@ -273,7 +273,7 @@ public class If extends Expr
     Type t = cond.type();
     if (!Types.resolved.t_bool.isAssignableFrom(t))
       {
-        FeErrors.ifConditionMustBeBool(cond.pos, t);
+        AstErrors.ifConditionMustBeBool(cond.pos, t);
       }
   }
 

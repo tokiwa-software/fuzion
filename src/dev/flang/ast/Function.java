@@ -405,7 +405,7 @@ public class Function extends Expr
       {
         if (t != Types.t_ERROR && t.featureOfType() != Types.resolved.f_function)
           {
-            FeErrors.expectedFunctionTypeForLambda(pos, t);
+            AstErrors.expectedFunctionTypeForLambda(pos, t);
             t = Types.t_ERROR;
           }
 
@@ -442,7 +442,7 @@ public class Function extends Expr
           }
         if (t != Types.t_ERROR && i != gs.size())
           {
-            FeErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
+            AstErrors.wrongNumberOfArgumentsInLambda(pos(), _names, t);
             t = Types.t_ERROR;
           }
         if (t != Types.t_ERROR)
@@ -610,7 +610,7 @@ public class Function extends Expr
     var result = typeOrNull();
     if (result == null)
       {
-        FeErrors.noTypeInferenceFromLambda(pos);
+        AstErrors.noTypeInferenceFromLambda(pos);
         result = Types.t_ERROR;
       }
     return result;

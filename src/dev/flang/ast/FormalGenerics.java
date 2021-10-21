@@ -210,7 +210,7 @@ public class FormalGenerics extends ANY
     if (!sizeMatches(actualGenerics))
       {
         result = false;
-        FeErrors.wrongNumberOfGenericArguments(this,
+        AstErrors.wrongNumberOfGenericArguments(this,
                                                actualGenerics,
                                                pos,
                                                detail1,

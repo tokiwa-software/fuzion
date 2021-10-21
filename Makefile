@@ -51,6 +51,7 @@ JAVA_FILES_UTIL_UNICODE = \
 
 JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Assign.java \
+          $(SRC)/dev/flang/ast/AstErrors.java \
           $(SRC)/dev/flang/ast/Block.java \
           $(SRC)/dev/flang/ast/BoolConst.java \
           $(SRC)/dev/flang/ast/Box.java \
@@ -63,7 +64,6 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Current.java \
           $(SRC)/dev/flang/ast/Destructure.java \
           $(SRC)/dev/flang/ast/Expr.java \
-          $(SRC)/dev/flang/ast/FeErrors.java \
           $(SRC)/dev/flang/ast/Feature.java \
           $(SRC)/dev/flang/ast/FeatureName.java \
           $(SRC)/dev/flang/ast/FeatureVisitor.java \
@@ -112,6 +112,7 @@ JAVA_FILES_MIR = \
           $(SRC)/dev/flang/mir/MIR.java \
 
 JAVA_FILES_FE = \
+          $(SRC)/dev/flang/fe/FeErrors.java \
           $(SRC)/dev/flang/fe/FrontEnd.java \
           $(SRC)/dev/flang/fe/FrontEndOptions.java \
 

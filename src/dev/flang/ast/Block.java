@@ -387,7 +387,7 @@ public class Block extends Expr
       }
     else if (r.resultType() != Types.resolved.t_unit)
       {
-        FeErrors.blockMustEndWithExpression(closingBracePos_, r.resultType());
+        AstErrors.blockMustEndWithExpression(closingBracePos_, r.resultType());
       }
     return this;
   }

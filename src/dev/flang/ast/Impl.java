@@ -215,7 +215,7 @@ public class Impl extends ANY
         //
         if (rt == NoType.INSTANCE)
           {
-            FeErrors.missingResultTypeForField(f);
+            AstErrors.missingResultTypeForField(f);
             rt = new FunctionReturnType(Types.t_ERROR);
           }
         else if (!(rt instanceof FunctionReturnType))
@@ -254,7 +254,7 @@ public class Impl extends ANY
         // requires a type
         if (rt == NoType.INSTANCE)
           {
-            FeErrors.missingResultTypeForField(f);
+            AstErrors.missingResultTypeForField(f);
             rt = new FunctionReturnType(Types.t_ERROR);
           }
         else if (!(rt instanceof FunctionReturnType))

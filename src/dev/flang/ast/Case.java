@@ -281,7 +281,7 @@ public class Case extends ANY
             matches.add(cg);
             if (matched[i] != null)
               {
-                FeErrors.repeatedMatch(pos, matched[i], t, cgs);
+                AstErrors.repeatedMatch(pos, matched[i], t, cgs);
               }
             matched[i] = pos;
           }
@@ -298,13 +298,13 @@ public class Case extends ANY
               }
             else
               {
-                FeErrors.matchCaseDoesNotMatchAny(pos, original_t, cgs);
+                AstErrors.matchCaseDoesNotMatchAny(pos, original_t, cgs);
                 t = Types.t_ERROR;
               }
           }
         else
           {
-            FeErrors.matchCaseMatchesSeveral(pos, original_t, cgs, matches);
+            AstErrors.matchCaseMatchesSeveral(pos, original_t, cgs, matches);
           }
       }
     return t;

@@ -145,12 +145,12 @@ public class Match extends Expr
     var st = subject.type();
     if (st.isGenericArgument())
       {
-        FeErrors.matchSubjectMustNotBeTypeParameter(subject.pos(), st);
+        AstErrors.matchSubjectMustNotBeTypeParameter(subject.pos(), st);
       }
     st.featureOfType().resolveTypes(res);
     if (!st.isChoice())
       {
-        FeErrors.matchSubjectMustBeChoice(subject.pos(), st);
+        AstErrors.matchSubjectMustBeChoice(subject.pos(), st);
       }
     var cgs = st.choiceGenerics();
     check
@@ -178,7 +178,7 @@ public class Match extends Expr
           }
         if (!missingMatches.isEmpty() && ok)
           {
-            FeErrors.missingMatches(pos, cgs, missingMatches);
+            AstErrors.missingMatches(pos, cgs, missingMatches);
           }
       }
   }

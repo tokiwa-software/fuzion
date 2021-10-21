@@ -835,7 +835,7 @@ public class Type extends ANY implements Comparable<Type>
           {
             if (outer().isGenericArgument())
               {
-                FeErrors.formalGenericAsOuterType(pos, this);
+                AstErrors.formalGenericAsOuterType(pos, this);
               }
           }
         else
@@ -850,7 +850,7 @@ public class Type extends ANY implements Comparable<Type>
 
             if ((generic != null) && !_generics.isEmpty())
               {
-                FeErrors.formalGenericWithGenericArgs(pos, this, generic);
+                AstErrors.formalGenericWithGenericArgs(pos, this, generic);
               }
           }
       }
@@ -968,7 +968,7 @@ public class Type extends ANY implements Comparable<Type>
                   }
                 if (type_fs.size() > 1)
                   {
-                    FeErrors.ambiguousType(this, type_fs);
+                    AstErrors.ambiguousType(this, type_fs);
                     feature = Types.f_ERROR;
                   }
                 o = o.outer();
@@ -980,7 +980,7 @@ public class Type extends ANY implements Comparable<Type>
                 feature = Types.f_ERROR;
                 if (name != Types.ERROR_NAME)
                   {
-                    FeErrors.typeNotFound(this, outerfeat, nontype_fs);
+                    AstErrors.typeNotFound(this, outerfeat, nontype_fs);
                   }
               }
           }
@@ -1023,7 +1023,7 @@ public class Type extends ANY implements Comparable<Type>
       {
         if (isRef())
           {
-            FeErrors.refToChoice(pos);
+            AstErrors.refToChoice(pos);
           }
 
         int i1 = 0;
@@ -1044,7 +1044,7 @@ public class Type extends ANY implements Comparable<Type>
                         t1 != Types.t_ERROR &&
                         t2 != Types.t_ERROR)
                       {
-                        FeErrors.genericsMustBeDisjoint(pos, t1, t2);
+                        AstErrors.genericsMustBeDisjoint(pos, t1, t2);
                       }
                   }
                 i2++;
@@ -1150,7 +1150,7 @@ public class Type extends ANY implements Comparable<Type>
 
     if (isOpenGeneric())
       {
-        FeErrors.illegalUseOfOpenFormalGeneric(pos, generic);
+        AstErrors.illegalUseOfOpenFormalGeneric(pos, generic);
         result = false;
       }
     return result;

@@ -745,7 +745,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
       }
     if (!isResultField() && qname.getLast().equals(RESULT_NAME))
       {
-        FeErrors.declarationOfResultFeature(pos);
+        AstErrors.declarationOfResultFeature(pos);
       }
   }
 
@@ -813,7 +813,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
               }
             if (error)
               {
-                FeErrors.duplicateFeatureDeclaration(f.pos, f, existing);
+                AstErrors.duplicateFeatureDeclaration(f.pos, f, existing);
               }
           }
       }
@@ -1152,7 +1152,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
       { // declaring field with initial value in different file than outer
         // feature.  We would have to add this to the statements of the outer
         // feature.  But if there are several such fields, in what order?
-        FeErrors.initialValueNotAllowed(this);
+        AstErrors.initialValueNotAllowed(this);
       }
 
     this.state_ = State.LOADED;
@@ -2105,7 +2105,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
         Type[] ra = r.argTypes();
         if (ta.length != ra.length)
           {
-            FeErrors.argumentLengthsMismatch(this, ta.length, r, ra.length);
+            AstErrors.argumentLengthsMismatch(this, ta.length, r, ra.length);
           }
         else
           {
@@ -2124,7 +2124,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
 
                     Feature actualArg   = r.arguments.get(i);
                     Feature originalArg =   arguments.get(ai);
-                    FeErrors.argumentTypeMismatchInRedefinition(this, originalArg,
+                    AstErrors.argumentTypeMismatchInRedefinition(this, originalArg,
                                                                 r,    actualArg);
                   }
               }
@@ -2137,7 +2137,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
              : !t1.isAssignableFrom(t2)) &&
             t2 != Types.resolved.t_void)
           {
-            FeErrors.resultTypeMismatchInRedefinition(this, r);
+            AstErrors.resultTypeMismatchInRedefinition(this, r);
           }
       }
 
@@ -2147,7 +2147,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
         var rt = res.type();
         if (!Types.resolved.t_unit.isAssignableFrom(rt))
           {
-            FeErrors.constructorResultMustBeUnit(impl._code);
+            AstErrors.constructorResultMustBeUnit(impl._code);
           }
       }
   }
@@ -2379,13 +2379,13 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
               {
                 if (set.isEmpty())
                   {
-                    FeErrors.internallyReferencedFeatureNotFound(pos, qname, f, nam);
+                    AstErrors.internallyReferencedFeatureNotFound(pos, qname, f, nam);
                   }
                 else
                   { // NYI: This might happen if the user adds additional features
                     // with different argCounts. qname should contain argCount to
                     // avoid this
-                    FeErrors.internallyReferencedFeatureNotUnique(pos, qname + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
+                    AstErrors.internallyReferencedFeatureNotUnique(pos, qname + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
                   }
                 err = true;
               }
@@ -2801,7 +2801,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
         else if (existing == f && f.generics != FormalGenerics.NONE ||
                  existing != f && declaredFeatures().get(fn) == null)
           { // NYI: Should be ok if existing or f is abstract.
-            FeErrors.repeatedInheritanceCannotBeResolved(pos, this, fn, existing, f);
+            AstErrors.repeatedInheritanceCannotBeResolved(pos, this, fn, existing, f);
           }
       }
     declaredOrInheritedFeatures_.put(fn, f);
@@ -2825,7 +2825,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
           {
             if ((f.modifiers & Consts.MODIFIER_REDEFINE) != 0)
               {
-                FeErrors.redefineModifierDoesNotRedefine(f);
+                AstErrors.redefineModifierDoesNotRedefine(f);
               }
           }
         else if (existing.outer() == this)
@@ -2833,15 +2833,15 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
             // This cannot happen, this case was already handled in addDeclaredInnerFeature:
             check
               (false);
-            FeErrors.duplicateFeatureDeclaration(f.pos, this, existing);
+            AstErrors.duplicateFeatureDeclaration(f.pos, this, existing);
           }
         else if (existing.generics != FormalGenerics.NONE)
           {
-            FeErrors.cannotRedefineGeneric(f.pos, this, existing);
+            AstErrors.cannotRedefineGeneric(f.pos, this, existing);
           }
         else if ((f.modifiers & Consts.MODIFIER_REDEFINE) == 0 && existing.impl != Impl.ABSTRACT)
           {
-            FeErrors.redefineModifierMissing(f.pos, this, existing);
+            AstErrors.redefineModifierMissing(f.pos, this, existing);
           }
         else
           {
@@ -2995,7 +2995,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
         case 1 -> found.get(0);
         default ->
         {
-          FeErrors.ambiguousCallTargets(pos, name, found);
+          AstErrors.ambiguousCallTargets(pos, name, found);
           yield Types.f_ERROR;
         }
         };

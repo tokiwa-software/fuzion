@@ -219,7 +219,7 @@ public class Generic extends ANY
         _constraint = _constraint.resolve(outer);
         if (_constraint.isGenericArgument())
           {
-            FeErrors.constraintMustNotBeGenericArgument(this);
+            AstErrors.constraintMustNotBeGenericArgument(this);
           }
       }
   }

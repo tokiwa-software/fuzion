@@ -316,7 +316,7 @@ public class This extends Expr
             list.add(o.qualifiedName());
             o = o.outer();
           }
-        FeErrors.outerFeatureNotFoundInThis(this, feat, qname.toString(), list);
+        AstErrors.outerFeatureNotFoundInThis(this, feat, qname.toString(), list);
       }
 
     return d;

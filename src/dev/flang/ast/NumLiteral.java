@@ -485,7 +485,7 @@ public class NumLiteral extends Expr
             var d = bmax.toString();
             var max = d.charAt(0) + "." + d.substring(1,ndigits) + "E" + (d.length()-1);
             var maxH = "0x1P" + (eBias + ct._mBits - 1);
-            FeErrors.floatConstantTooLarge(pos(),
+            AstErrors.floatConstantTooLarge(pos(),
                                            _originalString,
                                            type_,
                                            max, maxH);
@@ -505,7 +505,7 @@ public class NumLiteral extends Expr
                 var exp = b5min.length() - b10min.length();
                 var min = b5min.charAt(0) + "." + b5min.charAt(1) + "E" + exp;
                 var minH = "0x1P" + minE2;
-                FeErrors.floatConstantTooSmall(pos(),
+                AstErrors.floatConstantTooSmall(pos(),
                                                _originalString,
                                                type_,
                                                min, minH);
@@ -606,13 +606,13 @@ public class NumLiteral extends Expr
         var i = intValue(ct);
         if (i == null)
           {
-            FeErrors.nonWholeNumberUsedAsIntegerConstant(pos(),
+            AstErrors.nonWholeNumberUsedAsIntegerConstant(pos(),
                                                          _originalString,
                                                          type_);
           }
         else if (!ct.canHold(i))
           {
-            FeErrors.integerConstantOutOfLegalRange(pos(),
+            AstErrors.integerConstantOutOfLegalRange(pos(),
                                                     _originalString,
                                                     type_,
                                                     toString(ct._min),

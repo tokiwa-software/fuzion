@@ -40,7 +40,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.ast.Block;
-import dev.flang.ast.FeErrors;
 import dev.flang.ast.Feature;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
@@ -446,14 +445,7 @@ public class FrontEnd extends ANY
                         !module.fieldIsOuterRef(af) &&
                         !giveUpDueToControlFlowNYI)
                       {
-                          Errors.error(module.codeAtPos(c,i),"Field may not have been initialized",
-                                       "Some execution paths to the use of field "+module.featureAsString(af)+" must "+
-                                       "assign a value to this field. \n"+
-                                       "Uninitialized field: "+module.featureAsString(af)+"\n"+
-                                       "Used in call: "+"NYI: call as string"+"\n"+
-                                       "To solve this, make sure a value is assigned to the field before it is used and "+
-                                       "there are no calls to features that end up reading this field before it is "+
-                                       "initialized.\n");
+                        FeErrors.fieldNotInitialized(module, module.codeAtPos(c, i), af);
                       }
                   }
                 lastWasCurrent = false;

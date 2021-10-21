@@ -252,7 +252,7 @@ public class InlineArray extends Expr
       {
         if (!elementType.isAssignableFrom(e))
           {
-            FeErrors.incompatibleTypeInArrayInitialization(e.pos(), type_, elementType, e);
+            AstErrors.incompatibleTypeInArrayInitialization(e.pos(), type_, elementType, e);
           }
       }
   }

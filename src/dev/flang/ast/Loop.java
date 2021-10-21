@@ -287,7 +287,7 @@ public class Loop extends ANY
     _rawLoopName = loopName;
     if (!iterates() && whileCond == null && _elseBlock0 != null)
       {
-        FeErrors.loopElseBlockRequiresWhileOrIterator(pos, _elseBlock0);
+        AstErrors.loopElseBlockRequiresWhileOrIterator(pos, _elseBlock0);
       }
 
     var hasImplicitResult = defaultSuccessAndElseBlocks(whileCond, untilCond, succPos);
@@ -586,7 +586,7 @@ public class Loop extends ANY
                                          /* inherits */    new List<Call>(),
                                          /* contract */    null,
                                          /* impl */        new Impl(f.pos, asStream, Impl.Kind.FieldDef));
-            stream._isIndexVarUpdatedByLoop = true;  // hack to prevent error FeErrors.initialValueNotAllowed(this)
+            stream._isIndexVarUpdatedByLoop = true;  // hack to prevent error AstErrors.initialValueNotAllowed(this)
             _prologSuccessBlock.add(stream);
             Call hasNext1 = new Call(f.pos, new Call(f.pos, streamName), "hasNext" );
             Call hasNext2 = new Call(f.pos, new Call(f.pos, streamName), "hasNext" );

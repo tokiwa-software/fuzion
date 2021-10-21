@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class FeErrors
+ * Source of class AstErrors
  *
  *---------------------------------------------------------------------*/
 
@@ -43,7 +43,7 @@ import dev.flang.util.Terminal;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class FeErrors extends ANY
+public class AstErrors extends ANY
 {
 
   /*-----------------------------  methods  -----------------------------*/
@@ -53,7 +53,7 @@ public class FeErrors extends ANY
    * Handy functions to convert common types to strings in error messages. Will
    * set a color and enclose the string in single quotes.
    */
-  static String s(Feature f)
+  public static String s(Feature f)
   {
     return sqn(f.qualifiedName());
   }
@@ -73,7 +73,7 @@ public class FeErrors extends ANY
   {
     return code(s);
   }
-  static String sqn(String s) // feature qualified name
+  public static String sqn(String s) // feature qualified name
   {
     return code(s);
   }
@@ -735,51 +735,6 @@ public class FeErrors extends ANY
                                   (hasAbstract && hasReturnType ? "and " : "") +
                                   (hasReturnType ? "remove the return type (or replace it by " + skw("ref") +") of " : "") + "one of these features")
                                ) + ".");
-  }
-
-  public static void mainFeatureMustNotHaveArguments(Feature m)
-  {
-    error(m.pos,
-          "Main feature must not have arguments",
-          "Main feature has " + argumentsString(m.arguments.size()) + m.arguments.size()+", but should have no arguments to be used as main feature in an application\n" +
-          "To solve this, remove the arguments from feature " + s(m) + "\n");
-  }
-
-  public static void mainFeatureMustNotHaveTypeArguments(Feature m)
-  {
-    var g = m.generics.list;
-    error(m.pos,
-          "Main feature must not have type arguments",
-          "Main feature has " + singularOrPlural(g.size(),"type argument") + " " + g + ", but should have no arguments to be used as main feature in an application\n" +
-          "To solve this, remove the arguments from feature " + s(m) + "\n");
-  }
-
-  static void mainFeatureMustNot(Feature m, String what)
-  {
-    error(m.pos,
-          "Main feature must not " +  what,
-          "Main feature must be a non-abstract non-intrinsic routine\n" +
-          "To solve this, use a non-abstract, non-intrinsic, non-generic routine as the main feature of your application.\n");
-  }
-
-  public static void mainFeatureMustNotBeField(Feature m)
-  {
-    mainFeatureMustNot(m, "be a field");
-  }
-
-  public static void mainFeatureMustNotBeAbstract(Feature m)
-  {
-    mainFeatureMustNot(m, "be abstract");
-  }
-
-  public static void mainFeatureMustNotBeIntrinsic(Feature m)
-  {
-    mainFeatureMustNot(m, "be intrinsic");
-  }
-
-  static void mainFeatureMustNotHaveGenericArguments(Feature m)
-  {
-    mainFeatureMustNot(m, "have generic arguments");
   }
 
   static void initialValueNotAllowed(Feature f)
