@@ -30,7 +30,7 @@ functions is
       say "here 1x0---------------"
       r1 i32 := f.call "hallo" 3
       say "here 2x0---------------"
-      r2 i32 := ?
+      r2 i32 := 42
       //r2 := f "welt" 5
       say "here 3x0---------------"
       say "$r1  $r2"
