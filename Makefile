@@ -112,6 +112,7 @@ JAVA_FILES_MIR = \
           $(SRC)/dev/flang/mir/MIR.java \
 
 JAVA_FILES_FE = \
+          $(SRC)/dev/flang/fe/DFA.java \
           $(SRC)/dev/flang/fe/FeErrors.java \
           $(SRC)/dev/flang/fe/FrontEnd.java \
           $(SRC)/dev/flang/fe/FrontEndOptions.java \

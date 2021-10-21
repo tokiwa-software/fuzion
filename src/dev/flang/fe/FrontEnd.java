@@ -202,7 +202,10 @@ public class FrontEnd extends ANY
           }
       }
     var result = new MIR(main);
-    checkModule(result);
+    if (Errors.count() == 0)
+      {
+        new DFA(result).check();
+      }
     return result;
   }
 
@@ -374,97 +377,6 @@ public class FrontEnd extends ANY
       return _subDirs.get(name);
     }
   }
-
-
-  /**
-   * Check the correctness of this modules. In particular, check that all fields
-   * are initialized before they are read.
-   */
-  void checkModule(MIR module)
-  {
-    if (Errors.count() == 0)
-      {
-        for (var f = module.firstFeature(); f <= module.lastFeature(); f++)
-          {
-            checkFeature(module, f);
-          }
-      }
-  }
-
-
-  /**
-   * Check the correctness of given feature in given module. In particular,
-   * check that all fields are initialized before they are read.
-   */
-  void checkFeature(MIR module, int f)
-  {
-    switch (module.featureKind(f))
-      {
-      case Routine:
-        var c = module.featureCode(f);
-        var lastWasCurrent = false;
-        var show = module.featureAsString(f).equals("uninitialized");
-        var initialized = new TreeSet<Integer>();
-        for (int i = 0; i < module.featureArgCount(f); i++)
-          {
-            initialized.add(module.featureArg(f, i));
-          }
-        var declaredInF_NYI = new TreeSet<Integer>();
-        for (int i = 0; i < module.featureDeclaredCount(f); i++)
-          {
-            var df = module.featureDeclared(f, i);
-            if (module.featureKind(df) == MIR.FeatureKind.Field)
-              {
-                declaredInF_NYI.add(df);
-              }
-          }
-        var giveUpDueToControlFlowNYI = false;
-        for (int i = 0; module.withinCode(c, i); i = i + module.codeSizeAt(c, i))
-          {
-            var s = module.codeAt(c, i);
-            switch (s)
-              {
-              case Assign:
-                if (lastWasCurrent)
-                  {
-                    var af = module.accessedFeature(f, c, i);
-                    initialized.add(af);
-                  }
-                lastWasCurrent = false;
-                break;
-              case Current:
-                lastWasCurrent = true;
-                break;
-              case Call:
-                if (lastWasCurrent)
-                  {
-                    var af = module.accessedFeature(f, c, i);
-                    if (module.featureKind(af) == MIR.FeatureKind.Field &&
-                        declaredInF_NYI.contains(af) &&
-                        !initialized.contains(af) &&
-                        !module.fieldIsOuterRef(af) &&
-                        !giveUpDueToControlFlowNYI)
-                      {
-                        FeErrors.fieldNotInitialized(module, module.codeAtPos(c, i), af);
-                      }
-                  }
-                lastWasCurrent = false;
-                break;
-              case Match:
-                giveUpDueToControlFlowNYI = true;
-                break;
-              default:
-                lastWasCurrent = false;
-                break;
-              }
-          }
-        // NYI
-        break;
-      default:
-        break;
-      }
-  }
-
 
 }
 
