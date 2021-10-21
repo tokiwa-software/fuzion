@@ -71,13 +71,19 @@ public class FrontEndOptions extends FuzionOptions
   final String _main;
 
 
+  /**
+   * Path to the Fuzion home directory, never null.
+   */
+  final Path _fuzionHome;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Costructor initializing fields as given.
    */
-  public FrontEndOptions(int verbose, List<String> modules, int fuzionDebugLevel, boolean fuzionSafety, boolean readStdin, String main)
+  public FrontEndOptions(int verbose, Path fuzionHome, List<String> modules, int fuzionDebugLevel, boolean fuzionSafety, boolean readStdin, String main)
   {
     super(verbose,
           fuzionDebugLevel,
@@ -85,10 +91,12 @@ public class FrontEndOptions extends FuzionOptions
 
     if (PRECONDITIONS) require
                          (verbose >= 0,
+                          fuzionHome != null,
                           readStdin || main != null,
                           !readStdin || main == null,
                           modules != null);
 
+    _fuzionHome = fuzionHome;
     _readStdin = readStdin;
     Path inputFile = null;
     if (main != null)

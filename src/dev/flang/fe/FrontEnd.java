@@ -91,14 +91,15 @@ public class FrontEnd extends ANY
   public FrontEnd(FrontEndOptions options)
   {
     _options = options;
-    _sourceDirs = new Dir[SOURCE_PATHS.length + options._modules.size()];
-    for (int i = 0; i < SOURCE_PATHS.length; i++)
+    var sourcePaths = new Path[] { options._fuzionHome.resolve("lib"), Path.of(".") };
+    _sourceDirs = new Dir[sourcePaths.length + options._modules.size()];
+    for (int i = 0; i < sourcePaths.length; i++)
       {
-        _sourceDirs[i] = new Dir(SOURCE_PATHS[i]);
+        _sourceDirs[i] = new Dir(sourcePaths[i]);
       }
     for (int i = 0; i < options._modules.size(); i++)
       {
-        _sourceDirs[SOURCE_PATHS.length + i] = new Dir(FUZION_HOME.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
+        _sourceDirs[sourcePaths.length + i] = new Dir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
       }
   }
 
@@ -216,7 +217,7 @@ public class FrontEnd extends ANY
    */
   Feature loadUniverse()
   {
-    Feature result = parseFile(FUZION_HOME.resolve("sys").resolve("universe.fz"));
+    Feature result = parseFile(_options._fuzionHome.resolve("sys").resolve("universe.fz"));
     result.findDeclarations(null);
     new Resolution(_options, result, (r, f) -> loadInnerFeatures(r, f));
     return result;
@@ -322,28 +323,11 @@ public class FrontEnd extends ANY
   }
 
 
-
   /* NYI: Cleanup: move this directory handling to dev.flang.util.Dir or similar: */
-  private static final Path FUZION_HOME;
-  private static final Path CURRENT_DIRECTORY;
-  private static final Path[] SOURCE_PATHS;
-  static {
 
-    CURRENT_DIRECTORY = Path.of(".");
-    if(!System.getProperties().containsKey("fuzion.home"))
-      {
-        System.err.println("property fuzion.home not set.");
-        System.exit(1);
-      }
-
-    FUZION_HOME = Path.of(System.getProperty("fuzion.home"));
-
-    SOURCE_PATHS = new Path[] { FUZION_HOME.resolve("lib"), CURRENT_DIRECTORY };
-  }
 
   /**
-   * Class to cache all the sub-dirs within SOURCE_PATHS for loading inner
-   * features.
+   * Class to cache all the sub-dirs for loading inner features.
    */
   static class Dir
   {

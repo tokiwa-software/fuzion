@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools;
 
+import java.nio.file.Path;
+
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -56,6 +58,14 @@ class Fuzion extends Tool
 {
 
   /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Names of Java properties accepted by fz command:
+   */
+  static final String FUZION_HOME_PROPERTY = "fuzion.home";
+  static final String FUZION_SAFETY_PROPERTY = "fuzion.safety";
+
 
   static String _binaryName_ = null;
 
@@ -154,6 +164,19 @@ class Fuzion extends Tool
 
 
   /**
+   * Value of property with name FUZION_HOME_PROPERTY.  Used only to initialize
+   * _fuzionHome.
+   */
+  private String _fuzionHomeProperty = System.getProperty(FUZION_HOME_PROPERTY);
+
+
+  /**
+   * Home directory of the Fuzion installation.
+   */
+  Path _fuzionHome = _fuzionHomeProperty != null ? Path.of(_fuzionHomeProperty) : null;
+
+
+  /**
    * Flag to enable intrinsic functions such as fuzion.java.callVirtual. These are
    * not allowed if run in a web playground.
    */
@@ -175,7 +198,7 @@ class Fuzion extends Tool
   /**
    * Default result of safety:
    */
-  boolean _safety = Boolean.valueOf(System.getProperty("fuzion.safety", "true"));
+  boolean _safety = Boolean.valueOf(System.getProperty(FUZION_SAFETY_PROPERTY, "true"));
 
 
   /**
@@ -235,7 +258,8 @@ class Fuzion extends Tool
    */
   protected String STANDARD_OPTIONS(boolean xtra)
   {
-    return super.STANDARD_OPTIONS(xtra);
+    return super.STANDARD_OPTIONS(xtra) +
+      (xtra ? "[-XfuzionHome=<path>] " : "");
   }
 
 
@@ -421,6 +445,7 @@ class Fuzion extends Tool
                   }
                 _backend = _allBackends_.get(a);
               }
+            else if (a.startsWith("-XfuzionHome="     )) { _fuzionHome             = parsePath(a);              }
             else if (a.startsWith("-modules="         )) { _modules.addAll(parseStringListArg(a));              }
             else if (a.matches("-debug(=\\d+|)"       )) { _debugLevel             = parsePositiveIntArg(a, 1); }
             else if (a.startsWith("-safety="          )) { _safety                 = parseOnOffArg(a);          }
@@ -454,9 +479,14 @@ class Fuzion extends Tool
       {
         _backend = Backend.interpreter;
       }
+    if (_fuzionHome == null)
+      {
+        fatal("neither property '" + FUZION_HOME_PROPERTY + "' is set nor argument '-XfuzionHome=<path>' is given");
+      }
     return () ->
       {
         var options = new FrontEndOptions(_verbose,
+                                          _fuzionHome,
                                           _modules,
                                           _debugLevel,
                                           _safety,

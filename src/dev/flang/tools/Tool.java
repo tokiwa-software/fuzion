@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools;
 
+import java.nio.file.Path;
+
 import java.util.TreeSet;
 import java.util.Set;
 
@@ -346,6 +348,38 @@ public abstract class Tool extends ANY
           }
       }
     return result;
+  }
+
+
+  /**
+   * Parse argument of the form "-xyz=<string>"
+   *
+   * @param a the argument
+   *
+   * @return the string after the first "=" in a, may be empty, may not be null
+   */
+  protected String parseString(String a)
+  {
+    if (PRECONDITIONS) require
+      (a.indexOf("=") >= 0);
+
+    return a.substring(a.indexOf("=")+1);
+  }
+
+
+  /**
+   * Parse argument of the form "-xyz=<path>"
+   *
+   * @param a the argument
+   *
+   * @return the path after the first "=" in a.
+   */
+  protected Path parsePath(String a)
+  {
+    if (PRECONDITIONS) require
+      (a.indexOf("=") >= 0);
+
+    return Path.of(parseString(a));
   }
 
 
