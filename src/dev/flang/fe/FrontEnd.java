@@ -142,8 +142,7 @@ public class FrontEnd extends ANY
   public MIR createMIR()
   {
     /* create the universe */
-    _universe = true ? Feature.createUniverse()
-                    : loadUniverse();
+    _universe = Feature.createUniverse();
     var main = _options._main;
     if (_options._readStdin)
       {
@@ -211,18 +210,6 @@ public class FrontEnd extends ANY
     return result;
   }
 
-
-
-  /**
-   * NYI: Under development: load universe from sys/universe.fz.
-   */
-  Feature loadUniverse()
-  {
-    Feature result = parseFile(_options._fuzionHome.resolve("sys").resolve("universe.fz"));
-    result.findDeclarations(null);
-    new Resolution(_options, result, (r, f) -> loadInnerFeatures(r, f));
-    return result;
-  }
 
 
   /**
