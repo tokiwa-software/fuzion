@@ -85,17 +85,25 @@ public class SourceModule extends Module
   private Feature _universe;
 
 
+  /**
+   * If a main feature is defined for this module, this gives its name. Should
+   * be null if a specific _inputFile defines the main feature.
+   */
+  private String _defaultMain;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Create SourceModule for given options and sourceDirs.
    */
-  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile)
+  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile, String defaultMain)
   {
     _options = options;
     _sourceDirs = sourceDirs;
     _inputFile = inputFile;
+    _defaultMain = defaultMain;
   }
 
 
@@ -142,7 +150,7 @@ public class SourceModule extends Module
 
     var main = (_inputFile != null)
       ? parseStdIn(new Parser(_inputFile))
-      : _options._main;
+      : _defaultMain;
 
     _universe.findDeclarations(null);
     var res = new Resolution(_options, _universe, (r, f) -> loadInnerFeatures(r, f));
@@ -233,7 +241,7 @@ public class SourceModule extends Module
   /**
    * Check if p denotes a file that should be read implicitly as source code,
    * i.e., its name ends with ".fz", it is a readable file and it is not the
-   * same as _options._inputFile (which will be read explicitly).
+   * same as _inputFile (which will be read explicitly).
    */
   boolean isValidSourceFile(Path p)
   {
@@ -241,7 +249,7 @@ public class SourceModule extends Module
       {
         return p.getFileName().toString().endsWith(".fz") &&
           Files.isReadable(p) &&
-          (_inputFile == null || !Files.isSameFile(_inputFile, p));
+          (_inputFile == null || _inputFile == SourceFile.STDIN || !Files.isSameFile(_inputFile, p));
       }
     catch (IOException e)
       {
@@ -282,7 +290,7 @@ public class SourceModule extends Module
           }
         catch (IOException | UncheckedIOException e)
           {
-            Errors.warning("Problem when listing source directory '" + root + "': " + e);
+            Errors.warning("Problem when listing source directory '" + root._dir + "': " + e);
           }
       }
   }
