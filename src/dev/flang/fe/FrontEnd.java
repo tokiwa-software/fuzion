@@ -50,6 +50,7 @@ import dev.flang.parser.Parser;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.SourceDir;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
@@ -82,7 +83,7 @@ public class FrontEnd extends ANY
   /**
    * All the directories we are reading Fuzion sources form.
    */
-  private final Dir[] _sourceDirs;
+  private final SourceDir[] _sourceDirs;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -92,14 +93,14 @@ public class FrontEnd extends ANY
   {
     _options = options;
     var sourcePaths = new Path[] { options._fuzionHome.resolve("lib"), Path.of(".") };
-    _sourceDirs = new Dir[sourcePaths.length + options._modules.size()];
+    _sourceDirs = new SourceDir[sourcePaths.length + options._modules.size()];
     for (int i = 0; i < sourcePaths.length; i++)
       {
-        _sourceDirs[i] = new Dir(sourcePaths[i]);
+        _sourceDirs[i] = new SourceDir(sourcePaths[i]);
       }
     for (int i = 0; i < options._modules.size(); i++)
       {
-        _sourceDirs[sourcePaths.length + i] = new Dir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
+        _sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
       }
   }
 
@@ -235,7 +236,7 @@ public class FrontEnd extends ANY
    * @return a path from root, via the base names of f's outer features to a
    * directory wtih f's base name, null if this does not exist.
    */
-  private Dir dirExists(Dir root, Feature f) throws IOException, UncheckedIOException
+  private SourceDir dirExists(SourceDir root, Feature f) throws IOException, UncheckedIOException
   {
     var o = f.outer();
     if (o == null)
@@ -276,7 +277,7 @@ public class FrontEnd extends ANY
    */
   private void loadInnerFeatures(Resolution res, Feature f)
   {
-    for (Dir root : _sourceDirs)
+    for (var root : _sourceDirs)
       {
         try
           {
@@ -320,46 +321,6 @@ public class FrontEnd extends ANY
   {
     _options.verbosePrintln(2, " - " + fname);
     return new Parser(fname).unit();
-  }
-
-
-  /* NYI: Cleanup: move this directory handling to dev.flang.util.Dir or similar: */
-
-
-  /**
-   * Class to cache all the sub-dirs for loading inner features.
-   */
-  static class Dir
-  {
-    Path _dir;
-    TreeMap<String, Dir> _subDirs = null;
-
-    /*
-     * Create an entry for the given (sub-) directory
-     */
-    Dir(Path d)
-    {
-      _dir = d;
-    }
-
-    /**
-     * If this contains a sub-directory with given name, return it.
-     */
-    Dir dir(String name) throws IOException, UncheckedIOException
-    {
-      if (_subDirs == null)
-        { // on first call, create dir listing and cache it:
-          _subDirs = new TreeMap<>();
-          Files.list(_dir)
-            .forEach(p ->
-                     { if (Files.isDirectory(p))
-                         {
-                           _subDirs.put(p.getFileName().toString(), new Dir(p));
-                         }
-                     });
-        }
-      return _subDirs.get(name);
-    }
   }
 
 }
