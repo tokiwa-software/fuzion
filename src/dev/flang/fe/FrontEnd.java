@@ -32,6 +32,7 @@ import dev.flang.mir.MIR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.SourceDir;
+import dev.flang.util.SourceFile;
 
 
 /**
@@ -60,7 +61,23 @@ public class FrontEnd extends ANY
    */
   public FrontEnd(FrontEndOptions options)
   {
-    var sourcePaths = new Path[] { options._fuzionHome.resolve("lib"), Path.of(".") };
+    Path[] sourcePaths;
+    Path inputFile;
+    if (options._readStdin)
+      {
+        sourcePaths = new Path[] { options._fuzionHome.resolve("lib") };
+        inputFile = SourceFile.STDIN;
+      }
+    else if (options._inputFile != null)
+      {
+        sourcePaths = new Path[] { options._fuzionHome.resolve("lib") };
+        inputFile = options._inputFile;
+      }
+    else
+      {
+        sourcePaths = new Path[] { options._fuzionHome.resolve("lib"), Path.of(".") };
+        inputFile = null;
+      }
     var sourceDirs = new SourceDir[sourcePaths.length + options._modules.size()];
     for (int i = 0; i < sourcePaths.length; i++)
       {
@@ -70,7 +87,7 @@ public class FrontEnd extends ANY
       {
         sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
       }
-    _module = new SourceModule(options, sourceDirs);
+    _module = new SourceModule(options, sourceDirs, inputFile);
   }
 
 

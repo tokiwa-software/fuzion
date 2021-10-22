@@ -72,6 +72,13 @@ public class SourceModule extends Module
 
 
   /**
+   * If input comes from a specific file, this give the file.  May be
+   * SourceFile.STDIN.
+   */
+  private final Path _inputFile;
+
+
+  /**
    * The universe is the implicit root of all features that
    * themeselves do not have their own root.
    */
@@ -84,10 +91,11 @@ public class SourceModule extends Module
   /**
    * Create SourceModule for given options and sourceDirs.
    */
-  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs)
+  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile)
   {
     _options = options;
     _sourceDirs = sourceDirs;
+    _inputFile = inputFile;
   }
 
 
@@ -131,15 +139,11 @@ public class SourceModule extends Module
   {
     /* create the universe */
     _universe = Feature.createUniverse();
-    var main = _options._main;
-    if (_options._readStdin)
-      {
-        main = parseStdIn(new Parser(SourceFile.STDIN));
-      }
-    else if (_options._inputFile != null)
-      {
-        main = parseStdIn(new Parser(_options._inputFile));
-      }
+
+    var main = (_inputFile != null)
+      ? parseStdIn(new Parser(_inputFile))
+      : _options._main;
+
     _universe.findDeclarations(null);
     var res = new Resolution(_options, _universe, (r, f) -> loadInnerFeatures(r, f));
 
@@ -237,7 +241,7 @@ public class SourceModule extends Module
       {
         return p.getFileName().toString().endsWith(".fz") &&
           Files.isReadable(p) &&
-          (_options._inputFile == null || !Files.isSameFile(_options._inputFile, p));
+          (_inputFile == null || !Files.isSameFile(_inputFile, p));
       }
     catch (IOException e)
       {
