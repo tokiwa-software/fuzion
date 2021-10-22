@@ -117,6 +117,8 @@ JAVA_FILES_FE = \
           $(SRC)/dev/flang/fe/FeErrors.java \
           $(SRC)/dev/flang/fe/FrontEnd.java \
           $(SRC)/dev/flang/fe/FrontEndOptions.java \
+          $(SRC)/dev/flang/fe/Module.java \
+          $(SRC)/dev/flang/fe/SourceModule.java \
 
 JAVA_FILES_AIR = \
           $(SRC)/dev/flang/air/AIR.java \
