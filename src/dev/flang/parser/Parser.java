@@ -1885,7 +1885,7 @@ inlineArray : LBRACKET expr (COMMA expr)+ RBRACKET
                 s = current();
                 if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
                   {
-                    FeErrors.arrayInitCommaAndSemiMixed(pos, posObject(p1), posObject());
+                    AstErrors.arrayInitCommaAndSemiMixed(pos, posObject(p1), posObject());
                     reportedMixed = true;
                   }
               }

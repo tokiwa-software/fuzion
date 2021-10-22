@@ -35,12 +35,12 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.ast.Assign; // NYI: remove dependency!
+import dev.flang.ast.AstErrors; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Call; // NYI: remove dependency!
 import dev.flang.ast.Case; // NYI: remove dependency!
 import dev.flang.ast.Consts; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
-import dev.flang.ast.FeErrors; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
@@ -1541,7 +1541,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (isInstantiated() && abstractCalled_ != null)
       {
-        FeErrors.abstractFeatureNotImplemented(feature(), abstractCalled_, instantiationPos_);
+        AstErrors.abstractFeatureNotImplemented(feature(), abstractCalled_, instantiationPos_);
       }
   }
 
