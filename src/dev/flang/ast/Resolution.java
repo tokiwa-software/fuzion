@@ -193,11 +193,6 @@ public class Resolution extends ANY
    */
   final List<Feature> forFindingUsedFeatures = new List<>();
 
-  /**
-   * List of features scheduled for feature index resolution
-   */
-  final List<Feature> forFeatureIndex = new List<>();
-
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -361,19 +356,6 @@ public class Resolution extends ANY
 
 
   /**
-   * Add a feature to the set of features scheduled for feature index
-   * resolution
-   */
-  void scheduleForFeatureIndexResolution(Feature f)
-  {
-    if (PRECONDITIONS) require
-      (f.state() == Feature.State.FOUND_USED_FEATURES);
-
-    forFeatureIndex.add(f);
-  }
-
-
-  /**
    * Resolve all entries in the lists for resolution (forInheritance, etc.) up
    * to state RESOLVED_TYPES.
    */
@@ -482,11 +464,6 @@ public class Resolution extends ANY
         Types.resolved.markInternallyUsed(this);
         Feature f = forFindingUsedFeatures.removeFirst();
         f.findUsedFeatures(this);
-      }
-    else if (!forFeatureIndex.isEmpty())
-      {
-        Feature f = forFeatureIndex.removeFirst();
-        f.resolveFeatureIndex(this);
       }
     else
       {

@@ -89,8 +89,6 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
     CHECKED_TYPES2,
     FINDING_USED_FEATURES,
     FOUND_USED_FEATURES,
-    RESOLVING_FEATURE_INDEX,
-    RESOLVED_FEATURE_INDEX,
     RESOLVED,
     ERROR;
     public boolean atLeast(State s)
@@ -219,11 +217,6 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    * Has this feature been found to be called dynamically?
    */
   private boolean isCalledDynamically_ = false;
-
-  /**
-   * Index for dynamically bound calls to this feature.
-   */
-  private int featureIndex = -1;
 
 
   /**
@@ -2463,7 +2456,8 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
           });
 
         state_ = State.FOUND_USED_FEATURES;
-        res.scheduleForFeatureIndexResolution(this);
+
+        state_ = State.RESOLVED;
       }
 
     if (POSTCONDITIONS) ensure
@@ -2585,38 +2579,6 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   public boolean isCalledDynamically()
   {
     return isCalledDynamically_;
-  }
-
-
-  /*
-   * Feature index resolution: For all features except the universe, find a
-   * unique index within the sets of features declared in it's outer feature
-   * (i.e., all sibling will have unique indices).
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   */
-  void resolveFeatureIndex(Resolution res)
-  {
-    if (PRECONDITIONS) require
-      (state_.atLeast(State.FOUND_USED_FEATURES));
-
-    if (state_ == State.FOUND_USED_FEATURES)
-      {
-        state_ = State.RESOLVING_FEATURE_INDEX;
-
-        if (outer_ != null)
-          {
-            featureIndex = outer_.newFeatureIndex(this._featureName.baseName());
-          }
-
-        state_ = State.RESOLVED_FEATURE_INDEX;
-
-        state_ = State.RESOLVED; // NYI: remove
-      }
-
-    if (POSTCONDITIONS) ensure
-      (state_.atLeast(State.RESOLVED_FEATURE_INDEX));
   }
 
 
@@ -3668,69 +3630,6 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
 
     return result;
   }
-
-
-  /**
-   * featureIndex
-   *
-   * @return
-   */
-  public int featureIndex()
-  {
-    if (PRECONDITIONS) require
-      (state_.atLeast(State.RESOLVED_FEATURE_INDEX));
-
-    check
-      (featureIndex != -1,
-       outer() == null || featureIndex < outer().declaredFeatures().size());
-
-    return featureIndex;
-  }
-
-
-  /**
-   * Number of feature indices given away for inner features.
-   */
-  private int numFeatureIndices = 0;
-
-  /**
-   *
-   */
-  private String indices_for;
-
-  /**
-   * Obtain a new feature index for this.
-   */
-  public int newFeatureIndex(String name) {
-    indices_for = indices_for + "\n"+numFeatureIndices+": "+name;
-    if (Errors.count() == 0 && declaredOrInheritedFeatures().size() <= numFeatureIndices) {
-      System.out.println(""+declaredOrInheritedFeatures().size()+" >= "+numFeatureIndices+" for >>"+this._featureName.baseName()+"<<");
-      //      System.out.println("INNER: "+declaredOrInheritedFeatures());
-      System.out.println(indices_for);
-    }
-    if (PRECONDITIONS) require
-      (Errors.count() > 0 || declaredOrInheritedFeatures().size() > numFeatureIndices);
-
-    int result;
-    if (Errors.count() > 0 && numFeatureIndices >= declaredFeatures().size())
-      {
-        result = 0;
-      }
-    else
-      {
-        result = numFeatureIndices;
-        numFeatureIndices = result + 1;
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result >= 0,
-       result < numFeatureIndices,
-       result < declaredFeatures().size(),
-       numFeatureIndices <= declaredFeatures().size());
-
-    return result;
-  }
-
 
   /**
    * outerRefName
