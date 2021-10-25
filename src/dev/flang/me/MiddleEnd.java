@@ -35,6 +35,7 @@ import dev.flang.ir.Clazzes;
 
 import dev.flang.util.ANY;
 import dev.flang.util.FuzionOptions;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -65,7 +66,6 @@ public class MiddleEnd extends ANY
   {
     _options = options;
     _mir = mir;
-    Clazzes.init(options);
   }
 
 
@@ -81,6 +81,14 @@ public class MiddleEnd extends ANY
   private Clazz main()
   {
     var main = _mir.main();
+
+    var res = new dev.flang.ast.Resolution();  // NYI: Move markUsed code from AST to ME.
+    _mir.universe().markUsed(res, dev.flang.util.SourcePosition.builtIn);
+    main.markUsed(res, SourcePosition.builtIn);
+    res.resolve2();
+
+    Clazzes.init(_options);
+
     Clazz cl = main != null ? Clazzes.clazz(main.thisType()) : null;
     return cl;
   }

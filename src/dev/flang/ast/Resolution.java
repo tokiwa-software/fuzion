@@ -217,6 +217,19 @@ public class Resolution extends ANY
   }
 
 
+  /**
+   * Constructor used by Middle End.
+   *
+   * NYI: Remove, move markUsed code from AST to ME.
+   */
+  public Resolution()
+  {
+    this.universe = null;
+    this._options = null;
+    this.innerFeaturesLoader = null;
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 

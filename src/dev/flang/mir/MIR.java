@@ -58,6 +58,7 @@ public class MIR extends IR
    * The main feature
    */
   final Feature _main;
+  final Feature _universe;
 
 
   /**
@@ -69,8 +70,9 @@ public class MIR extends IR
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public MIR(Feature main)
+  public MIR(Feature universe, Feature main)
   {
+    _universe = universe;
     _main = main;
     addFeatures();
   }
@@ -129,6 +131,11 @@ public class MIR extends IR
   public int lastFeature()
   {
     return FEATURE_BASE + _featureIds.size() - 1;
+  }
+
+
+  public Feature universe() {
+    return _universe;
   }
 
 

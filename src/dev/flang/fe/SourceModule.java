@@ -93,12 +93,6 @@ public class SourceModule extends Module
 
 
   /**
-   * The resolution instance. NYI: Remove, this should be specific to the module.
-   */
-  private Resolution _resolution;
-
-
-  /**
    * Flag to forbid loading of source code for new features for this module once
    * MIR was created.
    */
@@ -176,20 +170,12 @@ public class SourceModule extends Module
       ? parseStdIn(new Parser(_inputFile))
       : _defaultMain;
 
-    Resolution res;
     if (_dependsOn.length > 0)
       {
-        res = ((SourceModule)_dependsOn[0])._resolution;
-        res.innerFeaturesLoader = (r, f) -> loadInnerFeatures(r, f);
         _universe.resetState();   // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
-        _universe.findDeclarations(null);
       }
-    else
-      {
-        _universe.findDeclarations(null);
-        res = new Resolution(_options, _universe, (r, f) -> loadInnerFeatures(r, f));
-      }
-    _resolution = res;
+    _universe.findDeclarations(null);
+    var res = new Resolution(_options, _universe, (r, f) -> loadInnerFeatures(r, f));
     _universe.scheduleForResolution(res);
     res.resolve();
   }
@@ -200,12 +186,9 @@ public class SourceModule extends Module
    */
   public MIR createMIR()
   {
-    var res = _resolution;
-    _universe.markUsed(res, SourcePosition.builtIn);
     Feature d = _main == null
       ? _universe
-      : _universe.markUsedAndGet(res, _main);
-    res.resolve2(); // NYI: This should become the middle end phase!
+      : _universe.get(_main);
 
     if (false)  // NYI: Eventually, we might want to stop here in case of errors. This is disabled just to check the robustness of the next steps
       {
@@ -246,11 +229,12 @@ public class SourceModule extends Module
             FeErrors.mainFeatureMustNotHaveTypeArguments(main);
           }
       }
-    var result = new MIR(main);
+    var result = new MIR(_universe, main);
     if (Errors.count() == 0)
       {
         new DFA(result).check();
       }
+
     return result;
   }
 
