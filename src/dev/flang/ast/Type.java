@@ -1630,22 +1630,6 @@ public class Type extends ANY implements Comparable<Type>
     return result;
   }
 
-
-  /**
-   * Mark all features used within this type as used.
-   */
-  void findUsedFeatures(Resolution res, SourcePosition pos)
-  {
-    if (!isGenericArgument())
-      {
-        featureOfType().markUsed(res, pos);
-        for (var t : _generics)
-          {
-            t.findUsedFeatures(res, pos);
-          }
-      }
-  }
-
 }
 
 /* end of file */

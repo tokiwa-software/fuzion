@@ -1654,30 +1654,6 @@ public class Call extends Expr
 
 
   /**
-   * Find used features, i.e., mark all features that are found to be the target of a call as used.
-   */
-  public void findUsedFeatures(Resolution res)
-  {
-    if (PRECONDITIONS) require
-      (Errors.count() > 0 || calledFeature_ != null);
-
-    var cf = calledFeature_;
-    if (cf != null)
-      {
-        cf.markUsed(res, isDynamic(), pos);
-        for (Type t : generics)
-          {
-            if (!t.isGenericArgument())
-              {
-                Feature f = t.featureOfType();
-                f.markUsed(res, t.pos);  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
-              }
-          }
-      }
-  }
-
-
-  /**
    * Does this call use dynamic binding. Dynamic binding is used if the called
    * feature uses dynamic binding and the target is not Current. In case the
    * target is current, this call will be specialized to avoid dynamic binding.

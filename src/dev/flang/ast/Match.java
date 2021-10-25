@@ -278,24 +278,6 @@ public class Match extends Expr
 
 
   /**
-   * Find used features, i.e., mark all features that are found to be the target of a call as used.
-   */
-  public void findUsedFeatures(Resolution res)
-  {
-    Feature sf = subject.type().featureOfType();
-    Feature ct = sf.choiceTag_;
-
-    check
-      (Errors.count() > 0 || ct != null);
-
-    if (ct != null)
-      {
-        ct.markUsed(res, pos);
-      }
-  }
-
-
-  /**
    * toString
    *
    * @return

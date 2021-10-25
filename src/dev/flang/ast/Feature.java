@@ -86,9 +86,6 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
     RESOLVING_SUGAR2,
     RESOLVED_SUGAR2,
     CHECKING_TYPES2,
-    CHECKED_TYPES2,
-    FINDING_USED_FEATURES,
-    FOUND_USED_FEATURES,
     RESOLVED,
     ERROR;
     public boolean atLeast(State s)
@@ -205,18 +202,18 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   /**
    * Check if this feature is used in a call.
    */
-  private boolean isUsed_ = false;
+  public boolean isUsed_ = false;
 
   /**
    * In case isUsed_ is true, this gives the source code position of the first
    * use.
    */
-  private SourcePosition isUsedAt_ = null;
+  public SourcePosition isUsedAt_ = null;
 
   /**
    * Has this feature been found to be called dynamically?
    */
-  private boolean isCalledDynamically_ = false;
+  public boolean isCalledDynamically_ = false;
 
 
   /**
@@ -242,7 +239,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    * does not include redifintions of redefinitions.  This set is collected
    * during RESOLVING_DECLARATIONS.
    */
-  private Set<Feature> redefinitions_ = new TreeSet<>();
+  public Set<Feature> redefinitions_ = new TreeSet<>();
 
 
   /**
@@ -318,7 +315,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    * For fields of open generic type: The results of select(res,i) and
    * select(i).
    */
-  ArrayList<Feature> _selectOpen;
+  private ArrayList<Feature> _selectOpen;
 
 
   /**
@@ -2189,7 +2186,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
         switch (state_)
           {
           case CHECKING_TYPES1: state_ = State.CHECKED_TYPES1; res.scheduleForSyntacticSugar2Resolution(this); break;
-          case CHECKING_TYPES2: state_ = State.CHECKED_TYPES2; /* end for front end! */                        break;
+          case CHECKING_TYPES2: state_ = State.RESOLVED; /* end for front end! */                        break;
           }
       }
 
@@ -2304,25 +2301,9 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    *
    * @return the found feature or null in case of an error.
    */
-  Feature get(String qname, int argcount)
+  public Feature get(String qname, int argcount)
   {
     return get(null, qname, false, argcount);
-  }
-
-
-  /**
-   * Mark features given by their qualified name as used.  This is a convenience
-   * method to mark features that cannot be detected as used automatically,
-   * e.g., because they are used internally or within intrinsic features.
-   *
-   * @param qname the qualified name of the feature relative to this.  If
-   * this.isUniverse(), qname is the fully qualifed name.
-   *
-   * @return the found feature or null in case of an error.
-   */
-  public Feature markUsedAndGet(Resolution res, String qname)
-  {
-    return get(res, qname, true);
   }
 
 
@@ -2374,10 +2355,6 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
               {
                 for (var f2 : set)
                   {
-                    if (markUsed)
-                      {
-                        f2.markUsed(res, SourcePosition.builtIn);
-                      }
                     f = f2;
                   }
               }
@@ -2402,161 +2379,12 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
 
 
   /**
-   * Find all features that are used, i.e., that are called or read. Fields that
-   * are only written to but never read are considered to be unused.
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   */
-  void findUsedFeatures(Resolution res)
-  {
-    /* NYI: This should be part of the middle end, not part of the front end! */
-    if (PRECONDITIONS) require
-      (state_.atLeast(State.CHECKED_TYPES2));
-
-    if (state_ == State.CHECKED_TYPES2)
-      {
-        state_ = State.FINDING_USED_FEATURES;
-
-        if (outer_ != null)
-          {
-            outer_.markUsed(res, pos);
-          }
-        for (Feature a : arguments)
-          {
-            a.markUsed(res, pos);
-            if (a.isOpenGenericField())
-              {
-                if (_selectOpen != null)
-                  {
-                    for (var s : _selectOpen)
-                      {
-                        s.markUsed(res, pos);
-                      }
-                  }
-              }
-          }
-        for (Call p: inherits)
-          {
-            p.calledFeature().markUsed(res, p.pos);
-          }
-        resultType().findUsedFeatures(res, pos);
-        if (choiceTag_ != null)
-          {
-            choiceTag_.markUsed(res, pos);
-          }
-
-        visit(new FeatureVisitor() {
-            // it does not seem to be necessary to mark all features in types as used:
-            // public Type  action(Type    t, Feature outer) { t.findUsedFeatures(res, pos); return t; }
-            public Call  action(Call    c, Feature outer) { c.findUsedFeatures(res); return c; }
-            public Stmnt action(Feature f, Feature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
-            public void  action(Match   m, Feature outer) { m.findUsedFeatures(res);           }
-            public void  action(Tag     t, Feature outer) { t._taggedType.findUsedFeatures(res, t.pos()); }
-          });
-
-        state_ = State.FOUND_USED_FEATURES;
-
-        state_ = State.RESOLVED;
-      }
-
-    if (POSTCONDITIONS) ensure
-      (state_.atLeast(State.FOUND_USED_FEATURES));
-  }
-
-
-  /**
-   * During FINDING_USED_FEATURES, this sets the flag that this feature is used.
-   *
-   * @param usedAt the position this feature was used at, for creating usefule
-   * error messages
-   */
-  public void markUsed(Resolution res, SourcePosition usedAt)
-  {
-    markUsed(res, false, usedAt);
-  }
-
-
-  /**
-   * During FINDING_USED_FEATURES, this sets the flag that this feature is used.
-   *
-   * @param dynamically true iff this feature is called dynamically, i.e., it
-   * has to be part of the dynamic binding data.
-   *
-   * @param usedAt the position this feature was used at, for creating usefule
-   * error messages
-   */
-  void markUsed(Resolution res, boolean dynamically, SourcePosition usedAt)
-  {
-    if (PRECONDITIONS) require
-      (state_.atLeast(State.CHECKED_TYPES2));
-
-    this.isCalledDynamically_ |= dynamically;
-    if (!this.isUsed_)
-      {
-        this.isUsed_ = true;
-        this.isUsedAt_ = usedAt;
-        if (state_ != State.ERROR)
-          {
-            res.scheduleForFindUsedFeatures(this);
-          }
-        if (resultField_ != null)
-          {
-            resultField_.markUsed(res, usedAt);
-          }
-        if (resultType_ != null)
-          {
-            if (!resultType_.isGenericArgument())
-              { // Since instances of choice types are never created explicity,
-                // they will be marked as used if they are used as a result type
-                // of a function or field.
-                Feature f = resultType_.featureOfType();
-                if (f.isChoice())
-                  {
-                    f.markUsed(res, usedAt);
-                  }
-              }
-          }
-        if (impl == Impl.INTRINSIC && outerRefOrNull() != null)
-          {
-            outerRefOrNull().markUsed(res, false, usedAt);
-          }
-        for (Feature f : redefinitions_)
-          {
-            f.markUsed(res, usedAt);
-          }
-        for (var a : arguments)
-          {
-            a.markUsed(res, usedAt);
-          }
-        if (isOpenGenericField())
-          {
-            for (var s :_selectOpen)
-              {
-                s.markUsed(res,  usedAt);
-              }
-          }
-      }
-  }
-
-  // For debugging to print unused features exactly once
-  //
-  //  static Set<String> allUnused = new TreeSet<>();
-
-
-  /**
    * Has this feature been found to be used?
    */
   public boolean isUsed()
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.CHECKED_TYPES2));
-
-    if (!isUsed_)
-      {
-        String qn = qualifiedName();
-        // if (!allUnused.contains(qn)) { System.out.println("UNUSED: "+qn); allUnused.add(qn); }
-      }
+      (state_.atLeast(State.RESOLVED));
 
     return isUsed_;
   }
@@ -2567,7 +2395,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   public SourcePosition isUsedAt()
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.CHECKED_TYPES2));
+      (state_.atLeast(State.RESOLVED));
 
     return isUsedAt_;
   }
@@ -3940,8 +3768,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
     if (PRECONDITIONS) require
       (isOpenGenericField(),
        i >= 0,
-       state_.atLeast(State.RESOLVED_TYPES),
-       !state_.atLeast(State.FINDING_USED_FEATURES));
+       state_.atLeast(State.RESOLVED_TYPES));
 
     if (_selectOpen == null)
       {

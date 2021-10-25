@@ -1143,7 +1143,7 @@ public class Clazzes extends ANY
    */
   public static boolean isUsed(Feature thiz, Clazz staticClazz)
   {
-    return thiz.state().atLeast(Feature.State.RESOLVED);
+    return thiz.isUsed();
   }
 
 

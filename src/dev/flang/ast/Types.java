@@ -220,39 +220,6 @@ public class Types extends ANY
       t_ERROR    .resolveArtificialType(f_ERROR);
     }
 
-
-    /**
-     * Flag used to detect repeated calls to markInternallyUsed.
-     */
-    private boolean _doneInternallyUsed = false;
-
-    /**
-     * Mark internally used features as used.
-     */
-    void markInternallyUsed(Resolution res) {
-      if (!_doneInternallyUsed)
-        {
-          _doneInternallyUsed = true;
-          var tag = FuzionConstants.CHOICE_TAG_NAME;
-          universe.get("i8" ,1).get("val").markUsed(res, SourcePosition.builtIn);
-          universe.get("i16",1).get("val").markUsed(res, SourcePosition.builtIn);
-          universe.get("i32",1).get("val").markUsed(res, SourcePosition.builtIn);
-          universe.get("i64",1).get("val").markUsed(res, SourcePosition.builtIn);
-          universe.get("u8" ,1).get("val").markUsed(res, SourcePosition.builtIn);
-          universe.get("u16",1).get("val").markUsed(res, SourcePosition.builtIn);
-          universe.get("u32",1).get("val").markUsed(res, SourcePosition.builtIn);
-          universe.get("u64",1).get("val").markUsed(res, SourcePosition.builtIn);
-          universe.get("bool").get(tag) .markUsed(res, SourcePosition.builtIn);
-          universe.get("conststring")   .markUsed(res, SourcePosition.builtIn);
-          universe.get("conststring").get("isEmpty").markUsed(res, SourcePosition.builtIn);  // NYI: check why this is not found automatically
-          f_sys_array_data              .markUsed(res, SourcePosition.builtIn);
-          f_sys_array_length            .markUsed(res, SourcePosition.builtIn);
-          universe.get("unit")          .markUsed(res, SourcePosition.builtIn);
-          universe.get("void")          .markUsed(res, SourcePosition.builtIn);
-        }
-    }
-
-
   }
 
   /*----------------------------  variables  ----------------------------*/

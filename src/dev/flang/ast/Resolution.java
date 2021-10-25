@@ -188,11 +188,6 @@ public class Resolution extends ANY
    */
   final List<Feature> forCheckTypes2 = new List<>();
 
-  /**
-   * List of features scheduled for feature index resolution
-   */
-  final List<Feature> forFindingUsedFeatures = new List<>();
-
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -209,19 +204,6 @@ public class Resolution extends ANY
     this.innerFeaturesLoader = ifl;
     universe.scheduleForResolution(this);
     resolve();
-  }
-
-
-  /**
-   * Constructor used by Middle End.
-   *
-   * NYI: Remove, move markUsed code from AST to ME.
-   */
-  public Resolution()
-  {
-    this.universe = null;
-    this._options = null;
-    this.innerFeaturesLoader = null;
   }
 
 
@@ -343,25 +325,12 @@ public class Resolution extends ANY
 
 
   /**
-   * Add a feature to the set of features scheduled for feature index
-   * resolution
-   */
-  void scheduleForFindUsedFeatures(Feature f)
-  {
-    if (PRECONDITIONS) require
-      (f.state() == Feature.State.CHECKED_TYPES2);
-
-    forFindingUsedFeatures.add(f);
-  }
-
-
-  /**
    * Resolve all entries in the lists for resolution (forInheritance, etc.) up
    * to state RESOLVED_TYPES.
    */
   void resolveTypes()
   {
-    while (resolveOne(false, false));
+    while (resolveOne(false));
   }
 
 
@@ -370,16 +339,7 @@ public class Resolution extends ANY
    */
   public void resolve()
   {
-    while (resolveOne(true, false));
-  }
-
-
-  /**
-   * Resolve all entries in the lists for resolution (forInheritance, etc.) and find used features.
-   */
-  public void resolve2()
-  {
-    while (resolveOne(true, true));
+    while (resolveOne(true));
   }
 
 
@@ -391,7 +351,7 @@ public class Resolution extends ANY
    *
    * @return true if one such entry was found.
    */
-  private boolean resolveOne(boolean moreThanTypes, boolean findUsedFeatures)
+  private boolean resolveOne(boolean moreThanTypes)
   {
     boolean result = true;
     if (!forInheritance.isEmpty())
@@ -454,16 +414,6 @@ public class Resolution extends ANY
         // correct input.  So if there were any errors, let's give up at this
         // point:
         result = false;
-      }
-    else if (!findUsedFeatures)
-      {
-        result = false;
-      }
-    else if (!forFindingUsedFeatures.isEmpty())
-      {
-        Types.resolved.markInternallyUsed(this);
-        Feature f = forFindingUsedFeatures.removeFirst();
-        f.findUsedFeatures(this);
       }
     else
       {
