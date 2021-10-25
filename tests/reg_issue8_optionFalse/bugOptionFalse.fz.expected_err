@@ -2,7 +2,7 @@
 [32m--CURDIR--/bugOptionFalse.fz:36:9:[39m [1;31merror 1[0m[1m: Incompatible types in assignment[0m
 [34m        false  # SHOULD FLAG AN ERROR!
 [33m--------^[0m
-assignment to field : '[35mbugOptionFalse.x.b.#stmtResult56[39m'
+assignment to field : '[35mbugOptionFalse.x.b.#stmtResult459[39m'
 expected formal type: '[33moption<bugOptionFalse.x.V>[39m'
 actual type found   : '[33mbool[39m'
 assignable to       : '[33mbool[39m'
