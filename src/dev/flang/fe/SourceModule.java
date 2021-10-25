@@ -92,14 +92,36 @@ public class SourceModule extends Module
   private String _defaultMain;
 
 
+  /**
+   * The resolution instance. NYI: Remove, this should be specific to the module.
+   */
+  private Resolution _resolution;
+
+
+  /**
+   * Flag to forbid loading of source code for new features for this module once
+   * MIR was created.
+   */
+  private boolean _closed = false;
+
+
+  /**
+   * In case this module defines a main feature, this is its fully qualified
+   * name.
+   */
+  String _main;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Create SourceModule for given options and sourceDirs.
    */
-  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile, String defaultMain)
+  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile, String defaultMain, Module[] dependsOn)
   {
+    super(dependsOn);
+
     _options = options;
     _sourceDirs = sourceDirs;
     _inputFile = inputFile;
@@ -143,32 +165,54 @@ public class SourceModule extends Module
   /**
    * Create the module intermediate representation for this module.
    */
-  public MIR createMIR()
+  void createMIR0()
   {
     /* create the universe */
-    _universe = Feature.createUniverse();
+    _universe = _dependsOn.length > 0 ? ((SourceModule)_dependsOn[0])._universe : Feature.createUniverse();
+    check
+      (_universe != null);
 
-    var main = (_inputFile != null)
+    _main = (_inputFile != null)
       ? parseStdIn(new Parser(_inputFile))
       : _defaultMain;
 
-    _universe.findDeclarations(null);
-    var res = new Resolution(_options, _universe, (r, f) -> loadInnerFeatures(r, f));
+    Resolution res;
+    if (_dependsOn.length > 0)
+      {
+        res = ((SourceModule)_dependsOn[0])._resolution;
+        res.innerFeaturesLoader = (r, f) -> loadInnerFeatures(r, f);
+        _universe.resetState();   // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
+        _universe.findDeclarations(null);
+      }
+    else
+      {
+        _universe.findDeclarations(null);
+        res = new Resolution(_options, _universe, (r, f) -> loadInnerFeatures(r, f));
+      }
+    _resolution = res;
+    _universe.scheduleForResolution(res);
+    res.resolve();
+  }
 
-    // NYI: middle end starts here:
 
+  /**
+   * Create the module intermediate representation for this module.
+   */
+  public MIR createMIR()
+  {
+    var res = _resolution;
     _universe.markUsed(res, SourcePosition.builtIn);
-    Feature d = main == null
+    Feature d = _main == null
       ? _universe
-      : _universe.markUsedAndGet(res, main);
-
-    res.resolve(); // NYI: This should become the middle end phase!
+      : _universe.markUsedAndGet(res, _main);
+    res.resolve2(); // NYI: This should become the middle end phase!
 
     if (false)  // NYI: Eventually, we might want to stop here in case of errors. This is disabled just to check the robustness of the next steps
       {
         Errors.showAndExit();
       }
 
+    _closed = true;
     return createMIR(d);
   }
 
@@ -264,33 +308,36 @@ public class SourceModule extends Module
    */
   private void loadInnerFeatures(Resolution res, Feature f)
   {
-    for (var root : _sourceDirs)
+    if (!_closed)
       {
-        try
+        for (var root : _sourceDirs)
           {
-            var d = dirExists(root, f);
-            if (d != null)
+            try
               {
-                Files.list(d._dir)
-                  .forEach(p ->
-                           {
-                             if (isValidSourceFile(p))
+                var d = dirExists(root, f);
+                if (d != null)
+                  {
+                    Files.list(d._dir)
+                      .forEach(p ->
                                {
-                                 Feature inner = parseFile(p);
-                                 check
-                                   (inner != null || Errors.count() > 0);
-                                 if (inner != null)
+                                 if (isValidSourceFile(p))
                                    {
-                                     inner.findDeclarations(f);
-                                     inner.scheduleForResolution(res);
+                                     Feature inner = parseFile(p);
+                                     check
+                                       (inner != null || Errors.count() > 0);
+                                     if (inner != null)
+                                       {
+                                         inner.findDeclarations(f);
+                                         inner.scheduleForResolution(res);
+                                       }
                                    }
-                               }
-                           });
+                               });
+                  }
               }
-          }
-        catch (IOException | UncheckedIOException e)
-          {
-            Errors.warning("Problem when listing source directory '" + root._dir + "': " + e);
+            catch (IOException | UncheckedIOException e)
+              {
+                Errors.warning("Problem when listing source directory '" + root._dir + "': " + e);
+              }
           }
       }
   }

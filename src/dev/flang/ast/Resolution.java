@@ -135,7 +135,7 @@ public class Resolution extends ANY
   /*----------------------------  variables  ----------------------------*/
 
 
-  final InnerFeaturesLoader innerFeaturesLoader; // =  (f) -> loadInnerFeatures(f);
+  public InnerFeaturesLoader innerFeaturesLoader; // =  (f) -> loadInnerFeatures(f);
 
 
   final FuzionOptions _options;
@@ -366,7 +366,7 @@ public class Resolution extends ANY
    */
   void resolveTypes()
   {
-    while (resolveOne(false));
+    while (resolveOne(false, false));
   }
 
 
@@ -375,7 +375,16 @@ public class Resolution extends ANY
    */
   public void resolve()
   {
-    while (resolveOne(true));
+    while (resolveOne(true, false));
+  }
+
+
+  /**
+   * Resolve all entries in the lists for resolution (forInheritance, etc.) and find used features.
+   */
+  public void resolve2()
+  {
+    while (resolveOne(true, true));
   }
 
 
@@ -387,7 +396,7 @@ public class Resolution extends ANY
    *
    * @return true if one such entry was found.
    */
-  private boolean resolveOne(boolean moreThanTypes)
+  private boolean resolveOne(boolean moreThanTypes, boolean findUsedFeatures)
   {
     boolean result = true;
     if (!forInheritance.isEmpty())
@@ -449,6 +458,10 @@ public class Resolution extends ANY
         // The following phases should not reveal any new errors and will assume
         // correct input.  So if there were any errors, let's give up at this
         // point:
+        result = false;
+      }
+    else if (!findUsedFeatures)
+      {
         result = false;
       }
     else if (!forFindingUsedFeatures.isEmpty())

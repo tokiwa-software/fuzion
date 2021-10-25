@@ -41,6 +41,27 @@ public abstract class Module extends ANY
 {
 
 
+  /*----------------------------  variables  ----------------------------*/
+
+
+  /**
+   * What modules does this module depend on?
+   */
+  Module[] _dependsOn;
+
+
+  /*--------------------------  constructors  ---------------------------*/
+
+
+  /**
+   * Create SourceModule for given options and sourceDirs.
+   */
+  Module(Module[] dependsOn)
+  {
+    _dependsOn = dependsOn;
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 

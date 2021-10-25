@@ -261,6 +261,7 @@ public class Errors extends ANY
           {
             showAndExit();
           }
+        //Thread.dumpStack();
       }
   }
 

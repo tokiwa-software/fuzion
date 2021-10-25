@@ -61,21 +61,23 @@ public class FrontEnd extends ANY
    */
   public FrontEnd(FrontEndOptions options)
   {
+    var stdlib = new SourceModule(options, new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) }, null, null, new Module[0]);
+    stdlib.createMIR0();
     Path[] sourcePaths;
     Path inputFile;
     if (options._readStdin)
       {
-        sourcePaths = new Path[] { options._fuzionHome.resolve("lib") };
+        sourcePaths = new Path[] { };
         inputFile = SourceFile.STDIN;
       }
     else if (options._inputFile != null)
       {
-        sourcePaths = new Path[] { options._fuzionHome.resolve("lib") };
+        sourcePaths = new Path[] { };
         inputFile = options._inputFile;
       }
     else
       {
-        sourcePaths = new Path[] { options._fuzionHome.resolve("lib"), Path.of(".") };
+        sourcePaths = new Path[] { Path.of(".") };
         inputFile = null;
       }
     var sourceDirs = new SourceDir[sourcePaths.length + options._modules.size()];
@@ -87,7 +89,9 @@ public class FrontEnd extends ANY
       {
         sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
       }
-    _module = new SourceModule(options, sourceDirs, inputFile, options._main);
+    var m = new SourceModule(options, sourceDirs, inputFile, options._main, new Module[] {stdlib});
+    m.createMIR0();
+    _module = m;
   }
 
 

@@ -700,6 +700,17 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
 
 
   /**
+   * NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
+   */
+  public void resetState()
+  {
+    if (PRECONDITIONS) require
+      (isUniverse());
+    state_ = Feature.State.LOADING;
+  }
+
+
+  /**
    * The soucecode position of this statment, used for error messages.
    */
   public SourcePosition pos()
@@ -821,7 +832,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
     if (this.state().atLeast(State.RESOLVED_DECLARATIONS))
       {
         check(Errors.count() > 0 || f.isAnonymousInnerFeature());
-        check(Errors.count() > 0 || !this.declaredOrInheritedFeatures_.containsKey(fn));
+        check(Errors.count() > 0 || !this.declaredOrInheritedFeatures_.containsKey(fn) || f.isChoiceTag());
         this.declaredOrInheritedFeatures_.put(fn, f);
         if (!f.isChoiceTag())  // NYI: somewhat ugly special handling of choice tags should not be needed
           {
@@ -1590,7 +1601,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
     for (Feature p : declaredOrInheritedFeatures_.values())
       {
         // choice type must not have any fields
-        if (p.isField() && !p.isOuterRef())
+        if (p.isField() && !p.isOuterRef() && !p.isChoiceTag())
           {
             Errors.error(pos,
                          "Choice must not contain any fields",
@@ -1749,7 +1760,9 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
         state_ = State.TYPES_INFERENCING;
 
         check
-          (resultType_ == null);
+          (resultType_ == null
+           || isUniverse() // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
+           );
 
         if (outer() != null)
           {
