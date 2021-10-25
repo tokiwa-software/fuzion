@@ -510,8 +510,7 @@ public class Call extends Expr
 
 
   /**
-   * Find all the candidates of features that might be called at this point as
-   * long as the argument count is ignored.
+   * Get the feature of the target of this call.
    *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
@@ -520,35 +519,33 @@ public class Call extends Expr
    * : c { }"), thiz is the outer feature of f.  For a expression in the
    * contracts or implementation of a feature f, thiz is f itself.
    *
-   * @return the map of FeatureName to Features of the found candidates. May be
-   * empty. ERROR_MAP in case an error occured and was reported already.
+   * @return the feature of the target of this call.
    */
   private Feature targetFeature(Resolution res, Feature thiz)
   {
     // are we searching for features called via thiz' inheritance calls?
-    boolean inh = thiz.state() == Feature.State.RESOLVING_INHERITANCE;
-    Feature targetFeature;
-    if (target != null)
+    if (thiz.state() == Feature.State.RESOLVING_INHERITANCE)
       {
-        target.loadCalledFeature(res, thiz);
-        if (inh)
+        if (target instanceof Call tc)
           {
-            targetFeature = target.calledFeature();  // NYI: What if target is not a call, but, e.g., an NumLiteral?
+            target.loadCalledFeature(res, thiz);
+            return tc.calledFeature();
           }
         else
           {
-            var tt = targetTypeOrConstraint();
-            targetFeature = tt.featureOfType();
+            return thiz.outer();   // For an inheritance call, we do not permit call to thiz' features,
+                                   // but only to the outer clazz' features:
           }
       }
-    else
-      { /* search for feature in thiz and outer classes */
-        // For an inheritance call, we do not permit call to thiz' features,
-        // but only to the outer clazz' features:
-        targetFeature = inh ? thiz.outer()
-                            : thiz;
+    else if (target != null)
+      {
+        target.loadCalledFeature(res, thiz);
+        return targetTypeOrConstraint().featureOfType();
       }
-    return targetFeature;
+    else
+      { // search for feature in thiz
+        return thiz;
+      }
   }
 
 

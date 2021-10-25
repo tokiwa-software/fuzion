@@ -113,20 +113,6 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * During resolution of inheritance, for a feature
-   *
-   *   f : target.g { }
-   *
-   * this is used to find target.type().featureOfType() without type resolution
-   * of target.
-   */
-  Feature calledFeature()
-  {
-    throw new Error("NYI: calledFeature() not implemented for "+getClass());
-  }
-
-
-  /**
    * type returns the type of this expression or Types.t_ERROR if the type is
    * still unknown, i.e., before or during type resolution.
    *
