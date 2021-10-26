@@ -140,67 +140,6 @@ public class SourceModule extends Module implements SrcModule
   /*-----------------------------  methods  -----------------------------*/
 
 
-  /*-----------------------  attachng data to AST  ----------------------*/
-
-
-  /**
-   * Add inner to the set of declared inner features of outer using the given
-   * feature name fn.
-   *
-   * Note that inner must be declared in this module, but outer may be defined
-   * in a different module.  E.g. #universe is declared in stdlib, while an
-   * inner feature 'main' may be declared in the application's module.
-   *
-   * @param outer the declaring feature
-   *
-   * @param fn the name of the declared feature
-   *
-   * @param inner the inner feature.
-   */
-  public void addDeclaredInnerFeature(Feature outer, FeatureName fn, Feature inner)
-  {
-    declaredFeatures(outer).put(fn, inner);
-  }
-
-
-  /**
-   * Get declared features for given outer Feature as seen by this module.
-   * Result is never null.
-   */
-  public SortedMap<FeatureName, Feature>declaredFeatures(Feature outer)
-  {
-    var s = declaredFeaturesOrNull(outer);
-    if (s == null)
-      {
-        s = new TreeMap<>();
-        _declaredFeatures.put(outer, s);
-        for (Module m : _dependsOn)
-          { // NYI: properly obtain set of declared features from m, do we need
-            // to take care for the order and dependencies between modules?
-            var md = m.declaredFeaturesOrNull(outer);
-            if (md != null)
-              {
-                for (var e : md.entrySet())
-                  {
-                    s.put(e.getKey(), e.getValue());
-                  }
-              }
-          }
-      }
-    return s;
-  }
-
-
-  /**
-   * Get declared features for given outer Feature as seen by this module.
-   * Result is null if outer has no declared features in this module.
-   */
-  public SortedMap<FeatureName, Feature>declaredFeaturesOrNull(Feature outer)
-  {
-    return _declaredFeatures.get(outer);
-  }
-
-
   /*---------------------------  main control  --------------------------*/
 
 
@@ -425,6 +364,67 @@ public class SourceModule extends Module implements SrcModule
   {
     _options.verbosePrintln(2, " - " + fname);
     return new Parser(fname).unit();
+  }
+
+
+  /*-----------------------  attachng data to AST  ----------------------*/
+
+
+  /**
+   * Add inner to the set of declared inner features of outer using the given
+   * feature name fn.
+   *
+   * Note that inner must be declared in this module, but outer may be defined
+   * in a different module.  E.g. #universe is declared in stdlib, while an
+   * inner feature 'main' may be declared in the application's module.
+   *
+   * @param outer the declaring feature
+   *
+   * @param fn the name of the declared feature
+   *
+   * @param inner the inner feature.
+   */
+  public void addDeclaredInnerFeature(Feature outer, FeatureName fn, Feature inner)
+  {
+    declaredFeatures(outer).put(fn, inner);
+  }
+
+
+  /**
+   * Get declared features for given outer Feature as seen by this module.
+   * Result is never null.
+   */
+  public SortedMap<FeatureName, Feature>declaredFeatures(Feature outer)
+  {
+    var s = declaredFeaturesOrNull(outer);
+    if (s == null)
+      {
+        s = new TreeMap<>();
+        _declaredFeatures.put(outer, s);
+        for (Module m : _dependsOn)
+          { // NYI: properly obtain set of declared features from m, do we need
+            // to take care for the order and dependencies between modules?
+            var md = m.declaredFeaturesOrNull(outer);
+            if (md != null)
+              {
+                for (var e : md.entrySet())
+                  {
+                    s.put(e.getKey(), e.getValue());
+                  }
+              }
+          }
+      }
+    return s;
+  }
+
+
+  /**
+   * Get declared features for given outer Feature as seen by this module.
+   * Result is null if outer has no declared features in this module.
+   */
+  public SortedMap<FeatureName, Feature>declaredFeaturesOrNull(Feature outer)
+  {
+    return _declaredFeatures.get(outer);
   }
 
 }
