@@ -243,7 +243,8 @@ public abstract class Expr extends ANY implements Stmnt
     var result = this;
     if (t != Types.resolved.t_void)
       {
-        Feature r = new Feature(pos,
+        Feature r = new Feature(res,
+                                pos,
                                 Consts.VISIBILITY_INVISIBLE,
                                 t,
                                 "#stmtResult" + (_id_++),

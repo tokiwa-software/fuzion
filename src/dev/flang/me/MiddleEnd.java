@@ -33,6 +33,7 @@ import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.Match; // NYI: remove dependency!
+import dev.flang.ast.Resolution; // NYI: remove dependency!
 import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Type; // NYI: remove dependency!
@@ -78,13 +79,17 @@ public class MiddleEnd extends ANY
   final List<Feature> _forFindingUsedFeatures = new List<>();
 
 
+  final Resolution _res;
+
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public MiddleEnd(FuzionOptions options, MIR mir)
+  public MiddleEnd(FuzionOptions options, MIR mir, Resolution res)
   {
     _options = options;
     _mir = mir;
+    _res = res;
+    Clazz._res = res; // NYI: Bad hack!
   }
 
 
@@ -124,21 +129,21 @@ public class MiddleEnd extends ANY
   void markInternallyUsed() {
     var tag = FuzionConstants.CHOICE_TAG_NAME;
     var universe = _mir.universe();
-    markUsed(universe.get("i8" ,1).get("val"), SourcePosition.builtIn);
-    markUsed(universe.get("i16",1).get("val"), SourcePosition.builtIn);
-    markUsed(universe.get("i32",1).get("val"), SourcePosition.builtIn);
-    markUsed(universe.get("i64",1).get("val"), SourcePosition.builtIn);
-    markUsed(universe.get("u8" ,1).get("val"), SourcePosition.builtIn);
-    markUsed(universe.get("u16",1).get("val"), SourcePosition.builtIn);
-    markUsed(universe.get("u32",1).get("val"), SourcePosition.builtIn);
-    markUsed(universe.get("u64",1).get("val"), SourcePosition.builtIn);
-    markUsed(universe.get("bool").get(tag) , SourcePosition.builtIn);
-    markUsed(universe.get("conststring")   , SourcePosition.builtIn);
-    markUsed(universe.get("conststring").get("isEmpty"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
+    markUsed(universe.get(_res, "i8" ,1).get(_res, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(_res, "i16",1).get(_res, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(_res, "i32",1).get(_res, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(_res, "i64",1).get(_res, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(_res, "u8" ,1).get(_res, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(_res, "u16",1).get(_res, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(_res, "u32",1).get(_res, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(_res, "u64",1).get(_res, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(_res, "bool").get(_res, tag) , SourcePosition.builtIn);
+    markUsed(universe.get(_res, "conststring")   , SourcePosition.builtIn);
+    markUsed(universe.get(_res, "conststring").get(_res, "isEmpty"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
     markUsed(Types.resolved.f_sys_array_data              , SourcePosition.builtIn);
     markUsed(Types.resolved.f_sys_array_length            , SourcePosition.builtIn);
-    markUsed(universe.get("unit")          , SourcePosition.builtIn);
-    markUsed(universe.get("void")          , SourcePosition.builtIn);
+    markUsed(universe.get(_res, "unit")          , SourcePosition.builtIn);
+    markUsed(universe.get(_res, "void")          , SourcePosition.builtIn);
   }
 
 

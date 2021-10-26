@@ -29,6 +29,7 @@ package dev.flang.mir;
 import dev.flang.ast.Assign;  // NYI: Remove dependency!
 import dev.flang.ast.Call;  // NYI: Remove dependency!
 import dev.flang.ast.Feature;  // NYI: Remove dependency!
+import dev.flang.ast.SrcModule;  // NYI: Remove dependency!
 
 import dev.flang.ir.IR;
 
@@ -60,6 +61,8 @@ public class MIR extends IR
   final Feature _main;
   final Feature _universe;
 
+  final SrcModule _mod;
+
 
   /**
    * integer ids for features in this module
@@ -70,10 +73,11 @@ public class MIR extends IR
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public MIR(Feature universe, Feature main)
+  public MIR(Feature universe, Feature main, SrcModule mod)
   {
     _universe = universe;
     _main = main;
+    _mod = mod;
     addFeatures();
   }
 
@@ -109,7 +113,7 @@ public class MIR extends IR
   private void addFeatures(Feature f)
   {
     _featureIds.add(f);
-    for (var i : f.declaredFeatures().values())
+    for (var i : _mod.declaredFeatures(f).values())
       {
         addFeatures(i);
       }
@@ -373,7 +377,7 @@ hw25 is
   public int featureDeclaredCount(int f)
   {
     var ff = _featureIds.get(f);
-    return ff.declaredFeatures().size();
+    return _mod.declaredFeatures(ff).size();
   }
 
 
@@ -393,7 +397,7 @@ hw25 is
 
     var ff = _featureIds.get(f);
     // NYI: Quadratic performance in case we iterate over all declared features.
-    for (var df : ff.declaredFeatures().values())
+    for (var df : _mod.declaredFeatures(ff).values())
       {
         if (i == 0)
           return _featureIds.get(df);

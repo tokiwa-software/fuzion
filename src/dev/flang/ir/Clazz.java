@@ -47,6 +47,7 @@ import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.Match; // NYI: remove dependency!
+import dev.flang.ast.Resolution; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
@@ -78,6 +79,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Empty array as a result for fields() if there are no fields.
    */
   static final Clazz[] NO_CLAZZES = new Clazz[0];
+
+
+  public static Resolution _res;
 
 
   /*-----------------------------  classes  -----------------------------*/
@@ -661,7 +665,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                        "To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.");
       }
 
-    createDynamicBinding();
+    createDynamicBinding(_res);
   }
 
 
@@ -715,7 +719,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Create dynamic binding data for this clazz in case it is a ref.
    */
-  private void createDynamicBinding()
+  private void createDynamicBinding(Resolution res)
   {
     if (isRef())
       {
@@ -725,7 +729,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         // feature after inheritance. For each parent for which the feature
         // is called, we need to set up a table in this tree that contains
         // the inherited feature or its redefinition.
-        for (Feature f: feature().allInnerAndInheritedFeatures())
+        for (Feature f: feature().allInnerAndInheritedFeatures(res))
           {
             // if (isInstantiated_) -- NYI: if not instantiated, we do not need to add f to dynamic binding, but we seem to need its side-effects
             if (isAddedToDynamicBinding(f))
@@ -1122,11 +1126,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Find all inner clazzes of this that are referenced when this is executed
    */
-  void findAllClassesWhenCalled()
+  void findAllClassesWhenCalled(Resolution res)
   {
     var f = feature();
     new FindClassesVisitor().visitAncestors(f);
-    for (Feature ff: f.allInnerAndInheritedFeatures())
+    for (Feature ff: f.allInnerAndInheritedFeatures(res))
       {
         if (Clazzes.isUsed(ff, this) &&
             this._type != Types.t_ADDRESS // NYI: would be better is isUSED would return false for ADDRESS
@@ -1927,7 +1931,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         else
           {
             var fields = new List<Clazz>();
-            for (var f: feature().allInnerAndInheritedFeatures())
+            for (var f: feature().allInnerAndInheritedFeatures(_res))
               {
                 if (f.isField() &&
                     Clazzes.isUsed(f, this) &&

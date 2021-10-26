@@ -498,9 +498,10 @@ class Fuzion extends Tool
           }
         long jvmStartTime = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime();
         long prepTime = System.currentTimeMillis();
-        var mir = new FrontEnd(options).createMIR();
+        var fe = new FrontEnd(options);
+        var mir = fe.createMIR();
         long feTime = System.currentTimeMillis();
-        var air = new MiddleEnd(options, mir).air();
+        var air = new MiddleEnd(options, mir, fe.res() /* NYI: remove */).air();
         long meTime = System.currentTimeMillis();
         var fuir = new Optimizer(options, air).fuir();
         long irTime = System.currentTimeMillis();

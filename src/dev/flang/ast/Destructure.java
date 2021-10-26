@@ -296,7 +296,8 @@ public class Destructure extends ANY implements Stmnt
           .forEach(n -> Errors.error(_pos,
                                      "Repeated entry in destructuring",
                                      "Variable " + n + " appears "+Collections.frequency(_names, n)+" times."));
-        Feature tmp = new Feature(_pos,
+        Feature tmp = new Feature(res,
+                                  _pos,
                                   Consts.VISIBILITY_PRIVATE,
                                   t,
                                   "#destructure" + id++,

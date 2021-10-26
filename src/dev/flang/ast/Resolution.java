@@ -143,6 +143,10 @@ public class Resolution extends ANY
 
   final Feature universe;
 
+
+  final SrcModule _module;
+
+
   /**
    * List of features scheduled for inheritance resolution
    */
@@ -197,13 +201,13 @@ public class Resolution extends ANY
    */
   public Resolution(FuzionOptions options,
                     Feature universe,
-                    InnerFeaturesLoader ifl)
+                    InnerFeaturesLoader ifl,
+                    SrcModule sm)
   {
     this.universe = universe;
     this._options = options;
     this.innerFeaturesLoader = ifl;
-    universe.scheduleForResolution(this);
-    resolve();
+    this._module = sm;
   }
 
 
@@ -368,7 +372,7 @@ public class Resolution extends ANY
       {
         if (Types.resolved == null)
           {
-            new Types.Resolved(universe);
+            new Types.Resolved(this, universe);
           }
 
         Feature f = forType.removeFirst();

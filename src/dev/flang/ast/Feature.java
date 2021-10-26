@@ -225,12 +225,6 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   /**
    *
    */
-  private SortedMap<FeatureName, Feature> declaredFeatures_ = new TreeMap<>();
-
-
-  /**
-   *
-   */
   private SortedMap<FeatureName, Feature> declaredOrInheritedFeatures_ = new TreeMap<>();
 
 
@@ -445,7 +439,8 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    * @param outer the declaring feature that will be set as an outer feature of
    * the newly created feature via a call to findDeclarations.
    */
-  Feature(SourcePosition pos,
+  Feature(Resolution res,
+          SourcePosition pos,
           Visi v,
           Type t,
           String qname,
@@ -457,7 +452,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
          t,
          qname,
          null);
-    findDeclarations(outer);
+    findDeclarations(res, outer);
   }
 
 
@@ -775,19 +770,20 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   }
 
 
-  private void addDeclaredInnerFeature(Feature f)
+  private void addDeclaredInnerFeature(Resolution res, Feature f)
   {
     if (PRECONDITIONS) require
       (state_.atLeast(State.LOADING));
 
     var fn = f.featureName();
-    var existing = declaredFeatures_.get(fn);
+    var df = res._module.declaredFeatures(this);
+    var existing = df.get(fn);
     if (existing != null)
       {
         if (f       .impl.kind_ == Impl.Kind.FieldDef &&
             existing.impl.kind_ == Impl.Kind.FieldDef    )
           {
-            var existingFields = FeatureName.getAll(declaredFeatures_, fn.baseName(), 0);
+            var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
             fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
             f._featureName = fn;
           }
@@ -797,7 +793,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
             if (f.isField() && existing.isField())
               {
                 error = false;
-                var existingFields = FeatureName.getAll(declaredFeatures_, fn.baseName(), 0);
+                var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
                 for (var e : existingFields.values())
                   {
                     // NYI: set error if e.declaredInBlock() == f.declaredInBlock()
@@ -818,7 +814,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
               }
           }
       }
-    this.declaredFeatures_.put(fn, f);
+    res._module.addDeclaredInnerFeature(this, fn, f);
     if (this.state().atLeast(State.RESOLVED_DECLARATIONS))
       {
         check(Errors.count() > 0 || f.isAnonymousInnerFeature());
@@ -826,7 +822,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
         this.declaredOrInheritedFeatures_.put(fn, f);
         if (!f.isChoiceTag())  // NYI: somewhat ugly special handling of choice tags should not be needed
           {
-            addToHeirs(fn, f);
+            addToHeirs(res, fn, f);
           }
       }
   }
@@ -843,13 +839,13 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    *
    * @param f the feature to be added.
    */
-  private void addToHeirs(FeatureName fn, Feature f)
+  private void addToHeirs(Resolution res, FeatureName fn, Feature f)
   {
     for (var h : _heirs)
       {
         var pos = SourcePosition.builtIn; // NYI: Would be nicer to use Call.pos for the inheritance call in h.inhertis
-        h.addInheritedFeature(pos, fn, f);
-        h.addToHeirs(fn, f);
+        h.addInheritedFeature(res, pos, fn, f);
+        h.addToHeirs(res, fn, f);
       }
   }
 
@@ -911,7 +907,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   /**
    * if hasResultField(), add a corresponding field to hold the result.
    */
-  private void addResultField()
+  private void addResultField(Resolution res)
   {
     if (PRECONDITIONS) require
       (state_ == State.FINDING_DECLARATIONS);
@@ -924,7 +920,8 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
 
         check
           (resultField_ == null);
-        resultField_ = new Feature(pos,
+        resultField_ = new Feature(res,
+                                   pos,
                                    Consts.VISIBILITY_PRIVATE,
                                    t,
                                    resultInternal() ? INTERNAL_RESULT_NAME
@@ -1113,7 +1110,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    * all found feature declarations, the outer feature will be set to
    * this value.
    */
-  public void findDeclarations(Feature outer)
+  public void findDeclarations(Resolution res, Feature outer)
   {
     if (PRECONDITIONS) require
       (state_ == State.LOADING,
@@ -1127,19 +1124,19 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
 
     if (outer != null)
       {
-        outer.addDeclaredInnerFeature(this);
-        addOuterRef();
+        outer.addDeclaredInnerFeature(res, this);
+        addOuterRef(res);
       }
     for (Feature a : arguments)
       {
-        a.findDeclarations(this);
+        a.findDeclarations(res, this);
       }
-    addResultField();
+    addResultField(res);
 
     visit(new FeatureVisitor()
       {
-        public Call      action(Call      c, Feature outer) { c.findDeclarations(outer); return c; }
-        public Feature   action(Feature   f, Feature outer) { f.findDeclarations(outer); return f; }
+        public Call      action(Call      c, Feature outer) { c.findDeclarations(res, outer); return c; }
+        public Feature   action(Feature   f, Feature outer) { f.findDeclarations(res, outer); return f; }
       });
 
     if (impl._initialValue != null &&
@@ -1683,7 +1680,8 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
         p.calledFeature().checkNoClosureAccesses(p.pos);
       }
 
-    choiceTag_ = new Feature(pos,
+    choiceTag_ = new Feature(res,
+                             pos,
                              Consts.VISIBILITY_PRIVATE,
                              Types.resolved.t_i32,
                              FuzionConstants.CHOICE_TAG_NAME,
@@ -2284,9 +2282,9 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    *
    * @return the found feature or null in case of an error.
    */
-  public /* NYI: public only due to one hacky use in be.interpreter.Interpreter */ Feature get(String qname)
+  public Feature get(Resolution res, String qname)
   {
-    return get(null, qname, false);
+    return get(res, qname, false);
   }
 
 
@@ -2301,9 +2299,9 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    *
    * @return the found feature or null in case of an error.
    */
-  public Feature get(String qname, int argcount)
+  public Feature get(Resolution res, String qname, int argcount)
   {
-    return get(null, qname, false, argcount);
+    return get(res, qname, false, argcount);
   }
 
 
@@ -2349,8 +2347,8 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
         if (!err)
           {
             var set = (argcount >= 0
-                       ? FeatureName.getAll(f.declaredFeatures(), nam, argcount)
-                       : FeatureName.getAll(f.declaredFeatures(), nam         )).values();
+                       ? FeatureName.getAll(f.declaredFeatures(res), nam, argcount)
+                       : FeatureName.getAll(f.declaredFeatures(res), nam         )).values();
             if (set.size() == 1)
               {
                 for (var f2 : set)
@@ -2517,12 +2515,12 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   }
 
 
-  public SortedMap<FeatureName, Feature> declaredFeatures()
+  public SortedMap<FeatureName, Feature> declaredFeatures(Resolution res)
   {
     if (PRECONDITIONS) require
       (state_.atLeast(State.LOADED));
 
-    return declaredFeatures_;
+    return res._module.declaredFeatures(this);
   }
 
 
@@ -2571,7 +2569,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
                   (cf != this);
 
                 var newfn = cf.handDown(f, fn, p, this);
-                addInheritedFeature(p.pos, newfn, f);
+                addInheritedFeature(res, p.pos, newfn, f);
               }
           }
       }
@@ -2589,7 +2587,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    *
    * @param f the feature to be added.
    */
-  private void addInheritedFeature(SourcePosition pos, FeatureName fn, Feature f)
+  private void addInheritedFeature(Resolution res, SourcePosition pos, FeatureName fn, Feature f)
   {
     var existing = declaredOrInheritedFeatures_.get(fn);
     if (existing != null)
@@ -2602,7 +2600,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
             f = existing;
           }
         else if (existing == f && f.generics != FormalGenerics.NONE ||
-                 existing != f && declaredFeatures().get(fn) == null)
+                 existing != f && declaredFeatures(res).get(fn) == null)
           { // NYI: Should be ok if existing or f is abstract.
             AstErrors.repeatedInheritanceCannotBeResolved(pos, this, fn, existing, f);
           }
@@ -2619,7 +2617,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    */
   private void findDeclaredFeatures(Resolution res)
   {
-    for (var e : declaredFeatures().entrySet())
+    for (var e : declaredFeatures(res).entrySet())
       {
         var fn = e.getKey();
         var f = e.getValue();
@@ -3436,14 +3434,14 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    *
    * @return
    */
-  public Collection<Feature> allInnerAndInheritedFeatures()
+  public Collection<Feature> allInnerAndInheritedFeatures(Resolution res)
   {
     if (PRECONDITIONS) require
       (state_.atLeast(State.RESOLVED));
 
     TreeSet<Feature> result = new TreeSet();
 
-    result.addAll(declaredFeatures_.values());
+    result.addAll(res._module.declaredFeatures(this).values());
     for (Call p : inherits)
       {
         Feature cf = p.calledFeature();
@@ -3452,7 +3450,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
 
         if (cf != null)
           {
-            result.addAll(cf.allInnerAndInheritedFeatures());
+            result.addAll(cf.allInnerAndInheritedFeatures(res));
           }
       }
 
@@ -3522,7 +3520,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   /**
    * Add implicit field to the outer feature of this.
    */
-  private void addOuterRef()
+  private void addOuterRef(Resolution res)
   {
     if (PRECONDITIONS) require
       (this.outer_ != null,
@@ -3533,7 +3531,8 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
       {
         Type outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
                                                    : o.thisType();
-        outerRef_ = new Feature(pos,
+        outerRef_ = new Feature(res,
+                                pos,
                                 Consts.VISIBILITY_PRIVATE,
                                 outerRefType,
                                 outerRefName(),
@@ -3778,7 +3777,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
     while (s <= i)
       {
         Feature f = new Feature(pos, visibility, modifiers, resultType().generic.select(s), "#" + _featureName.baseName() + "." + s, contract);
-        f.findDeclarations(outer());
+        f.findDeclarations(res, outer());
         f.scheduleForResolution(res);
         _selectOpen.add(f);
         s = _selectOpen.size();

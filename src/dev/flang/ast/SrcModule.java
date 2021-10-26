@@ -20,63 +20,46 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Module
+ * Source of interface SrcModule
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.fe;
-
-import dev.flang.ast.Feature;
-import dev.flang.ast.FeatureName;
-
-import dev.flang.mir.MIR;
-
-import dev.flang.util.ANY;
+package dev.flang.ast;
 
 import java.util.SortedMap;
 
 
 /**
- * A Module represents a Fuzion module independently of whether this is loaded
- * from source code, library from a .mir file or downloaded from the web.
+ * SrcModule provides callbacks from the AST to data structures in the current
+ * module, in particular to sets of features.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Module extends ANY
+public interface SrcModule
 {
 
-
-  /*----------------------------  variables  ----------------------------*/
+  /**
+   * Add inner to the set of declared inner features of outer using the given
+   * feature name fn.
+   *
+   * Note that inner must be declared in this module, but outer may be defined
+   * in a different module.  E.g. #universe is declared in stdlib, while an
+   * inner feature 'main' may be declared in the application's module.
+   *
+   * @param outer the declaring feature
+   *
+   * @param fn the name of the declared feature
+   *
+   * @param inner the inner feature.
+   */
+  void addDeclaredInnerFeature(Feature outer, FeatureName fn, Feature inner);
 
 
   /**
-   * What modules does this module depend on?
+   * Get declared features for given outer Feature as seen by this module.
+   * Result is never null.
    */
-  Module[] _dependsOn;
-
-
-  /*--------------------------  constructors  ---------------------------*/
-
-
-  /**
-   * Create SourceModule for given options and sourceDirs.
-   */
-  Module(Module[] dependsOn)
-  {
-    _dependsOn = dependsOn;
-  }
-
-
-  /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Create the module intermediate representation for this module.
-   */
-  public abstract MIR createMIR();
-
-
-  public abstract SortedMap<FeatureName, Feature>declaredFeaturesOrNull(Feature outer);
+  SortedMap<FeatureName, Feature>declaredFeatures(Feature outer);
 
 
 }

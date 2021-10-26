@@ -32,10 +32,15 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import dev.flang.ast.Block;
 import dev.flang.ast.Feature;
+import dev.flang.ast.FeatureName;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
+import dev.flang.ast.SrcModule;
 
 import dev.flang.mir.MIR;
 
@@ -52,7 +57,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class SourceModule extends Module
+public class SourceModule extends Module implements SrcModule
 {
 
 
@@ -106,6 +111,15 @@ public class SourceModule extends Module
   String _main;
 
 
+  /**
+   * Map from each outer features to a map of their inner features. The inner
+   * features are mapped from their FeatureName.
+   */
+  private SortedMap<Feature, SortedMap<FeatureName, Feature>> _declaredFeatures = new TreeMap<>();
+
+
+  Resolution _res;
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -127,6 +141,64 @@ public class SourceModule extends Module
 
 
   /**
+   * Add inner to the set of declared inner features of outer using the given
+   * feature name fn.
+   *
+   * Note that inner must be declared in this module, but outer may be defined
+   * in a different module.  E.g. #universe is declared in stdlib, while an
+   * inner feature 'main' may be declared in the application's module.
+   *
+   * @param outer the declaring feature
+   *
+   * @param fn the name of the declared feature
+   *
+   * @param inner the inner feature.
+   */
+  public void addDeclaredInnerFeature(Feature outer, FeatureName fn, Feature inner)
+  {
+    declaredFeatures(outer).put(fn, inner);
+  }
+
+
+  /**
+   * Get declared features for given outer Feature as seen by this module.
+   * Result is never null.
+   */
+  public SortedMap<FeatureName, Feature>declaredFeatures(Feature outer)
+  {
+    var s = declaredFeaturesOrNull(outer);
+    if (s == null)
+      {
+        s = new TreeMap<>();
+        _declaredFeatures.put(outer, s);
+        for (Module m : _dependsOn)
+          { // NYI: properly obtain set of declared features from m, do we need
+            // to take care for the order and dependencies between modules?
+            var md = m.declaredFeaturesOrNull(outer);
+            if (md != null)
+              {
+                for (var e : md.entrySet())
+                  {
+                    s.put(e.getKey(), e.getValue());
+                  }
+              }
+          }
+      }
+    return s;
+  }
+
+
+  /**
+   * Get declared features for given outer Feature as seen by this module.
+   * Result is null if outer has no declared features in this module.
+   */
+  public SortedMap<FeatureName, Feature>declaredFeaturesOrNull(Feature outer)
+  {
+    return _declaredFeatures.get(outer);
+  }
+
+
+  /**
    * Run the given parser to parse statements. This is used for processing stdin
    * or an explicit input file.  These require special treatment since it is
    * allowed to declare initializes fields in here.
@@ -136,6 +208,10 @@ public class SourceModule extends Module
   String parseStdIn(Parser p)
   {
     var stmnts = p.stmntsEof();
+    // NYI: Instead of adding this code to _universe.impl._code, better collect
+    // a module's contribution to the universe's code locally to the module and
+    // add this when creating AIR.  Then, we would not need to change the
+    // universe from stdlib here.
     ((Block) _universe.impl._code).statements_.addAll(stmnts);
     boolean first = true;
     String main = null;
@@ -162,7 +238,15 @@ public class SourceModule extends Module
   void createMIR0()
   {
     /* create the universe */
-    _universe = _dependsOn.length > 0 ? ((SourceModule)_dependsOn[0])._universe : Feature.createUniverse();
+    if (_dependsOn.length > 0)
+      {
+        _universe = ((SourceModule)_dependsOn[0])._universe;
+        _universe.resetState();   // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
+      }
+    else
+      {
+        _universe = Feature.createUniverse();
+      }
     check
       (_universe != null);
 
@@ -170,14 +254,10 @@ public class SourceModule extends Module
       ? parseStdIn(new Parser(_inputFile))
       : _defaultMain;
 
-    if (_dependsOn.length > 0)
-      {
-        _universe.resetState();   // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
-      }
-    _universe.findDeclarations(null);
-    var res = new Resolution(_options, _universe, (r, f) -> loadInnerFeatures(r, f));
-    _universe.scheduleForResolution(res);
-    res.resolve();
+    _res = new Resolution(_options, _universe, (r, f) -> loadInnerFeatures(r, f), this);
+    _universe.findDeclarations(_res, null);
+    _universe.scheduleForResolution(_res);
+    _res.resolve();
   }
 
 
@@ -188,7 +268,7 @@ public class SourceModule extends Module
   {
     Feature d = _main == null
       ? _universe
-      : _universe.get(_main);
+      : _universe.get(_res, _main);
 
     if (false)  // NYI: Eventually, we might want to stop here in case of errors. This is disabled just to check the robustness of the next steps
       {
@@ -229,7 +309,7 @@ public class SourceModule extends Module
             FeErrors.mainFeatureMustNotHaveTypeArguments(main);
           }
       }
-    var result = new MIR(_universe, main);
+    var result = new MIR(_universe, main, this);
     if (Errors.count() == 0)
       {
         new DFA(result).check();
@@ -311,7 +391,7 @@ public class SourceModule extends Module
                                        (inner != null || Errors.count() > 0);
                                      if (inner != null)
                                        {
-                                         inner.findDeclarations(f);
+                                         inner.findDeclarations(res, f);
                                          inner.scheduleForResolution(res);
                                        }
                                    }

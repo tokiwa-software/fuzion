@@ -466,7 +466,7 @@ public class Function extends Expr
                                    new List<>(inheritsCall_),
                                    new Contract(null,null,null),
                                    new Impl(pos, new Block(pos, statements), Impl.Kind.Routine));
-            _wrapper.findDeclarations(outer);
+            _wrapper.findDeclarations(res, outer);
             call_ = new Call(pos, new Current(pos(), outer.thisType()), _wrapper).resolveTypes(res, outer);
           }
         type_ = t;
@@ -711,7 +711,7 @@ public class Function extends Expr
                                            inherits,
                                            new Contract(null,null,null),
                                            new Impl(pos, new Block(pos, statements), Impl.Kind.Routine));
-            function.findDeclarations(call.target.type().featureOfType());
+            function.findDeclarations(res, call.target.type().featureOfType());
             result = new Call(pos,
                               call.target,
                               function)

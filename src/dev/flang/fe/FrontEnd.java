@@ -30,6 +30,8 @@ import java.nio.file.Path;
 
 import dev.flang.mir.MIR;
 
+import dev.flang.ast.Resolution;
+
 import dev.flang.util.ANY;
 import dev.flang.util.SourceDir;
 import dev.flang.util.SourceFile;
@@ -50,7 +52,7 @@ public class FrontEnd extends ANY
   /**
    * The module we are compiling.
    */
-  private final Module _module;
+  private final SourceModule _module;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -102,6 +104,13 @@ public class FrontEnd extends ANY
   {
     return _module.createMIR();
   }
+
+
+  public Resolution res()
+  {
+    return _module._res;
+  }
+
 
 }
 

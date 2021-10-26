@@ -470,7 +470,7 @@ public class Call extends Expr
    * all found feature declarations, the outer feature will be set to
    * this value.
    */
-  public void findDeclarations(Feature outer)
+  public void findDeclarations(Resolution res, Feature outer)
   {
     if (name == null)
       { /* this is an anonymous feature declaration */
@@ -479,7 +479,7 @@ public class Call extends Expr
 
         if (calledFeature_ != null)
           {
-            calledFeature_.findDeclarations(outer);
+            calledFeature_.findDeclarations(res, outer);
           }
       }
   }
@@ -611,7 +611,8 @@ public class Call extends Expr
         var b = cb._actuals.get(0);
         b.visit(rt, thiz);
         String tmpName = "#chainedBoolTemp" + (_chainedBoolTempId_++);
-        var tmp = new Feature(pos(),
+        var tmp = new Feature(res,
+                              pos(),
                               Consts.VISIBILITY_INVISIBLE,
                               b.type(),
                               tmpName,
