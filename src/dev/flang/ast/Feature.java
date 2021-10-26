@@ -217,12 +217,6 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
 
 
   /**
-   * Number of anonymous inner classes
-   */
-  private int numAnonymousInnerClasses_ = 0;
-
-
-  /**
    *
    */
   private SortedMap<FeatureName, Feature> declaredOrInheritedFeatures_ = new TreeMap<>();
