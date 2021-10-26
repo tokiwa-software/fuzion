@@ -737,7 +737,7 @@ public class AstErrors extends ANY
                                ) + ".");
   }
 
-  static void initialValueNotAllowed(Feature f)
+  public static void initialValueNotAllowed(Feature f)
   {
     error(f.pos,
           "Initial value not allowed for feature not embedded in outer feature",

@@ -58,7 +58,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   /*----------------------------  constants  ----------------------------*/
 
 
-  static final String UNIVERSE_NAME        = "#universe";
+  public static final String UNIVERSE_NAME        = "#universe";
   static final String OBJECT_NAME          = "Object";
   static final String RESULT_NAME          = "result";
   static final String INTERNAL_RESULT_NAME = "#result";
@@ -101,7 +101,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   /**
    * The state of this feature.
    */
-  private State state_ = State.LOADING;
+  public State state_ = State.LOADING;
 
 
   /**
@@ -196,7 +196,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   /**
    * Reference to this feature's root, i.e., its outer feature.
    */
-  protected Feature outer_ = null;
+  public Feature outer_ = null;
 
 
   /**
@@ -311,7 +311,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    * for-clause.  If so, assignments outside the loop prolog or nextIteration
    * parts are not allowed.
    */
-  boolean _isIndexVarUpdatedByLoop = false;
+  public boolean _isIndexVarUpdatedByLoop = false;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -446,7 +446,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
          t,
          qname,
          null);
-    findDeclarations(res, outer);
+    res._module.findDeclarations(this, outer);
   }
 
 
@@ -721,7 +721,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
    * Check that the fully qualified name matches the outer_ feature(s) using
    * checkNames(). If not, show a corresponding error.
    */
-  private void checkName()
+  public void checkName()
   {
     if (qname.size() > 1)
       {
@@ -764,7 +764,8 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   }
 
 
-  private void addDeclaredInnerFeature(Resolution res, Feature f)
+  // NYI: Move to SourceModule
+  public void addDeclaredInnerFeature(Resolution res, Feature f)
   {
     if (PRECONDITIONS) require
       (state_.atLeast(State.LOADING));
@@ -901,7 +902,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   /**
    * if hasResultField(), add a corresponding field to hold the result.
    */
-  private void addResultField(Resolution res)
+  public void addResultField(Resolution res)
   {
     if (PRECONDITIONS) require
       (state_ == State.FINDING_DECLARATIONS);
@@ -1096,66 +1097,6 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
 
 
   /**
-   * Find all the inner feature declarations within this feature and set
-   * this.outer_ and, recursively, the outer_ references of all inner features to
-   * the corresponding outer declaring feature.
-   *
-   * @param outer the root feature that declares this feature.  For
-   * all found feature declarations, the outer feature will be set to
-   * this value.
-   */
-  public void findDeclarations(Resolution res, Feature outer)
-  {
-    if (PRECONDITIONS) require
-      (state_ == State.LOADING,
-       ((outer == null) == (_featureName.baseName().equals(UNIVERSE_NAME))),
-       this.outer_ == null);
-
-    this.state_ = State.FINDING_DECLARATIONS;
-
-    this.outer_ = outer;
-    checkName();
-
-    if (outer != null)
-      {
-        outer.addDeclaredInnerFeature(res, this);
-        addOuterRef(res);
-      }
-    for (Feature a : arguments)
-      {
-        a.findDeclarations(res, this);
-      }
-    addResultField(res);
-
-    visit(new FeatureVisitor()
-      {
-        public Call      action(Call      c, Feature outer) { c.findDeclarations(res, outer); return c; }
-        public Feature   action(Feature   f, Feature outer) { f.findDeclarations(res, outer); return f; }
-      });
-
-    if (impl._initialValue != null &&
-        outer.pos._sourceFile != pos._sourceFile &&
-        (!outer.isUniverse() || !_legalPartOfUniverse) &&
-        !_isIndexVarUpdatedByLoop  /* required for loop in universe, e.g.
-                                    *
-                                    *   echo "for i in 1..10 do stdout.println(i)" | fz -
-                                    */
-        )
-      { // declaring field with initial value in different file than outer
-        // feature.  We would have to add this to the statements of the outer
-        // feature.  But if there are several such fields, in what order?
-        AstErrors.initialValueNotAllowed(this);
-      }
-
-    this.state_ = State.LOADED;
-
-    if (POSTCONDITIONS) ensure
-      (outer_ == outer,
-       state_ == State.LOADED);
-  }
-
-
-  /**
    * May this be a field declared directly in universe?
    */
   private boolean _legalPartOfUniverse = false;
@@ -1169,6 +1110,15 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   public void legalPartOfUniverse()
   {
     this._legalPartOfUniverse = true;
+  }
+
+
+  /**
+   * May this be a field declared directly in universe?
+   */
+  public boolean isLegalPartOfUniverse()
+  {
+    return _legalPartOfUniverse;
   }
 
 
@@ -3514,7 +3464,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
   /**
    * Add implicit field to the outer feature of this.
    */
-  private void addOuterRef(Resolution res)
+  public void addOuterRef(Resolution res)
   {
     if (PRECONDITIONS) require
       (this.outer_ != null,
@@ -3771,7 +3721,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
     while (s <= i)
       {
         Feature f = new Feature(pos, visibility, modifiers, resultType().generic.select(s), "#" + _featureName.baseName() + "." + s, contract);
-        f.findDeclarations(res, outer());
+        res._module.findDeclarations(f, outer());
         f.scheduleForResolution(res);
         _selectOpen.add(f);
         s = _selectOpen.size();

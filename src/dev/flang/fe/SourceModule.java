@@ -35,9 +35,12 @@ import java.nio.file.Path;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import dev.flang.ast.AstErrors;
 import dev.flang.ast.Block;
+import dev.flang.ast.Call;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
+import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
@@ -200,7 +203,7 @@ public class SourceModule extends Module implements SrcModule
       : _defaultMain;
 
     _res = new Resolution(_options, _universe, this);
-    _universe.findDeclarations(_res, null);
+    findDeclarations(_universe, null);
     _universe.scheduleForResolution(_res);
     _res.resolve();
   }
@@ -336,7 +339,7 @@ public class SourceModule extends Module implements SrcModule
                                        (inner != null || Errors.count() > 0);
                                      if (inner != null)
                                        {
-                                         inner.findDeclarations(_res, f);
+                                         findDeclarations(inner, f);
                                          inner.scheduleForResolution(_res);
                                        }
                                    }
@@ -365,6 +368,84 @@ public class SourceModule extends Module implements SrcModule
     _options.verbosePrintln(2, " - " + fname);
     return new Parser(fname).unit();
   }
+
+
+  /*---------------------  collecting data from AST  --------------------*/
+
+
+  /**
+   * Find all the inner feature declarations within this feature and set
+   * inner.outer_ and, recursively, the outer_ references of all inner features to
+   * the corresponding outer declaring feature.
+   *
+   * @param inner the feature whose inner features should be found.
+   *
+   * @param outer the root feature that declares this feature.  For
+   * all found feature declarations, the outer feature will be set to
+   * this value.
+   */
+  public void findDeclarations(Feature inner, Feature outer)
+  {
+    if (PRECONDITIONS) require
+      (inner.state_ == Feature.State.LOADING,
+       ((outer == null) == (inner.featureName().baseName().equals(Feature.UNIVERSE_NAME))),
+       inner.outer_ == null);
+
+    inner.state_ = Feature.State.FINDING_DECLARATIONS;
+
+    inner.outer_ = outer;
+    inner.checkName();
+
+    if (outer != null)
+      {
+        outer.addDeclaredInnerFeature(_res, inner);
+        inner.addOuterRef(_res);
+      }
+    for (Feature a : inner.arguments)
+      {
+        findDeclarations(a, inner);
+      }
+    inner.addResultField(_res);
+
+    inner.visit(new FeatureVisitor()
+      {
+        public Call      action(Call      c, Feature outer) {
+          if (c.name == null)
+            { /* this is an anonymous feature declaration */
+              check
+                (Errors.count() > 0  || c.calledFeature() != null);
+
+              if (c.calledFeature() != null)
+                {
+                  findDeclarations(c.calledFeature(), outer);
+                }
+            }
+          return c;
+        }
+        public Feature   action(Feature   f, Feature outer) { findDeclarations(f, outer); return f; }
+      });
+
+    if (inner.impl.initialValue() != null &&
+        outer.pos._sourceFile != inner.pos._sourceFile &&
+        (!outer.isUniverse() || !inner.isLegalPartOfUniverse()) &&
+        !inner._isIndexVarUpdatedByLoop  /* required for loop in universe, e.g.
+                                    *
+                                    *   echo "for i in 1..10 do stdout.println(i)" | fz -
+                                    */
+        )
+      { // declaring field with initial value in different file than outer
+        // feature.  We would have to add this to the statements of the outer
+        // feature.  But if there are several such fields, in what order?
+        AstErrors.initialValueNotAllowed(inner);
+      }
+
+    inner.state_ = Feature.State.LOADED;
+
+    if (POSTCONDITIONS) ensure
+      (inner.outer_ == outer,
+       inner.state_ == Feature.State.LOADED);
+  }
+
 
 
   /*-----------------------  attachng data to AST  ----------------------*/

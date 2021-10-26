@@ -464,28 +464,6 @@ public class Call extends Expr
 
 
   /**
-   * Find all the inner declarations within this call
-   *
-   * @param outer the root feature that contains this statement.  For
-   * all found feature declarations, the outer feature will be set to
-   * this value.
-   */
-  public void findDeclarations(Resolution res, Feature outer)
-  {
-    if (name == null)
-      { /* this is an anonymous feature declaration */
-        check
-          (Errors.count() > 0  || calledFeature_ != null);
-
-        if (calledFeature_ != null)
-          {
-            calledFeature_.findDeclarations(res, outer);
-          }
-      }
-  }
-
-
-  /**
    * Get the type of the target.  In case the target's type is a generic type
    * parameter, return its constraint.
    *

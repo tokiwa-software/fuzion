@@ -66,7 +66,20 @@ public interface SrcModule
    * During resolution, load all inner classes of this that are
    * defined in separate files.
    */
-  public void loadInnerFeatures(Feature f);
+  void loadInnerFeatures(Feature f);
+
+  /**
+   * Find all the inner feature declarations within this feature and set
+   * this.outer_ and, recursively, the outer_ references of all inner features to
+   * the corresponding outer declaring feature.
+   *
+   * @param inner the feature whose inner features should be found.
+   *
+   * @param outer the root feature that declares this feature.  For
+   * all found feature declarations, the outer feature will be set to
+   * this value.
+   */
+  void findDeclarations(Feature inner, Feature outer);
 
 
 }
