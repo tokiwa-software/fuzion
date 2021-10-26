@@ -127,15 +127,8 @@ import dev.flang.util.List;
 public class Resolution extends ANY
 {
 
-  public interface InnerFeaturesLoader
-  {
-    void loadInnerFeatures(Resolution res, Feature f);
-  }
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  public InnerFeaturesLoader innerFeaturesLoader; // =  (f) -> loadInnerFeatures(f);
 
 
   final FuzionOptions _options;
@@ -201,12 +194,10 @@ public class Resolution extends ANY
    */
   public Resolution(FuzionOptions options,
                     Feature universe,
-                    InnerFeaturesLoader ifl,
                     SrcModule sm)
   {
     this.universe = universe;
     this._options = options;
-    this.innerFeaturesLoader = ifl;
     this._module = sm;
   }
 

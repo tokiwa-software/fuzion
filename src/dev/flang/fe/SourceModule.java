@@ -260,7 +260,7 @@ public class SourceModule extends Module implements SrcModule
       ? parseStdIn(new Parser(_inputFile))
       : _defaultMain;
 
-    _res = new Resolution(_options, _universe, (r, f) -> loadInnerFeatures(r, f), this);
+    _res = new Resolution(_options, _universe, this);
     _universe.findDeclarations(_res, null);
     _universe.scheduleForResolution(_res);
     _res.resolve();
@@ -376,7 +376,7 @@ public class SourceModule extends Module implements SrcModule
    * During resolution, load all inner classes of this that are
    * defined in separate files.
    */
-  private void loadInnerFeatures(Resolution res, Feature f)
+  public void loadInnerFeatures(Feature f)
   {
     if (!_closed)
       {
@@ -397,8 +397,8 @@ public class SourceModule extends Module implements SrcModule
                                        (inner != null || Errors.count() > 0);
                                      if (inner != null)
                                        {
-                                         inner.findDeclarations(res, f);
-                                         inner.scheduleForResolution(res);
+                                         inner.findDeclarations(_res, f);
+                                         inner.scheduleForResolution(_res);
                                        }
                                    }
                                });

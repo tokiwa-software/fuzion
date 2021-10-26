@@ -2534,7 +2534,7 @@ public class Feature extends ANY implements Stmnt, Comparable<Feature>
 
     declaredOrInheritedFeatures_ = new TreeMap<>();
     findInheritedFeatures(res);
-    res.innerFeaturesLoader.loadInnerFeatures(res, this);
+    res._module.loadInnerFeatures(this);
     findDeclaredFeatures(res);
   }
 

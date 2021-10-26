@@ -62,6 +62,13 @@ public interface SrcModule
   SortedMap<FeatureName, Feature>declaredFeatures(Feature outer);
 
 
+  /**
+   * During resolution, load all inner classes of this that are
+   * defined in separate files.
+   */
+  public void loadInnerFeatures(Feature f);
+
+
 }
 
 /* end of file */
