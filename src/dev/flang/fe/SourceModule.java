@@ -140,6 +140,9 @@ public class SourceModule extends Module implements SrcModule
   /*-----------------------------  methods  -----------------------------*/
 
 
+  /*-----------------------  attachng data to AST  ----------------------*/
+
+
   /**
    * Add inner to the set of declared inner features of outer using the given
    * feature name fn.
@@ -196,6 +199,9 @@ public class SourceModule extends Module implements SrcModule
   {
     return _declaredFeatures.get(outer);
   }
+
+
+  /*---------------------------  main control  --------------------------*/
 
 
   /**
