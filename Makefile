@@ -51,6 +51,7 @@ JAVA_FILES_UTIL_UNICODE = \
           $(SRC)/dev/flang/util/unicode/ParseUnicodeData.java \
 
 JAVA_FILES_AST = \
+          $(SRC)/dev/flang/ast/AbstractFeature.java \
           $(SRC)/dev/flang/ast/Assign.java \
           $(SRC)/dev/flang/ast/AstErrors.java \
           $(SRC)/dev/flang/ast/Block.java \

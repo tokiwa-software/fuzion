@@ -47,11 +47,12 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Feature <description>
+ * Feature is part of the Fuzion abstract syntax tree and represents a single
+ * feature declaration.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Feature extends ANY implements Stmnt, Comparable<Feature>
+public class Feature extends AbstractFeature implements Stmnt, Comparable<Feature>
 {
 
 
