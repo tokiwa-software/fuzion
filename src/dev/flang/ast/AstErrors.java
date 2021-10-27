@@ -602,7 +602,7 @@ public class AstErrors extends ANY
           ((outer == null || outer.isUniverse()) ? "" : "Outer feature: " + s(outer) + "\n"));
   }
 
-  static void repeatedInheritanceCannotBeResolved(SourcePosition pos, Feature heir, FeatureName fn, Feature f1, Feature f2)
+  public static void repeatedInheritanceCannotBeResolved(SourcePosition pos, Feature heir, FeatureName fn, Feature f1, Feature f2)
   {
     error(pos,
           "Repeated inheritance of conflicting features",
@@ -612,7 +612,7 @@ public class AstErrors extends ANY
           "To solve this, you could add a redefintion of " + sbn(f1) + " to " + s(heir) + ".");
   }
 
-  static void duplicateFeatureDeclaration(SourcePosition pos, Feature f, Feature existing)
+  public static void duplicateFeatureDeclaration(SourcePosition pos, Feature f, Feature existing)
   {
     error(pos,
           "Duplicate feature declaration",
@@ -631,13 +631,13 @@ public class AstErrors extends ANY
           solution);
   }
 
-  static void cannotRedefineGeneric(SourcePosition pos, Feature f, Feature existing)
+  public static void cannotRedefineGeneric(SourcePosition pos, Feature f, Feature existing)
   {
     cannotRedefine(pos, f, existing, "Cannot redefine feature with generic arguments",
                    "To solve this, ask the Fuzion team to remove this restriction :-)."); // NYI: inheritance and generics
   }
 
-  static void redefineModifierMissing(SourcePosition pos, Feature f, Feature existing)
+  public static void redefineModifierMissing(SourcePosition pos, Feature f, Feature existing)
   {
     cannotRedefine(pos, f, existing, "Redefinition must be declared using modifier " + skw("redef") + "",
                    "To solve this, if you did not intent to redefine an inherited feature, " +
@@ -646,7 +646,7 @@ public class AstErrors extends ANY
                    "declaration of " + s(f) + ".");
   }
 
-  static void redefineModifierDoesNotRedefine(Feature f)
+  public static void redefineModifierDoesNotRedefine(Feature f)
   {
     error(f.pos,
           "Feature declared using modifier " + skw("redef") + " does not redefine another feature",

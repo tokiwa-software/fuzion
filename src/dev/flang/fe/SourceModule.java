@@ -32,15 +32,22 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import dev.flang.ast.AstErrors;
+import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.Call;
+import dev.flang.ast.Consts;
+import dev.flang.ast.Destructure;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
+import dev.flang.ast.FeaturesAndOuter;
 import dev.flang.ast.FeatureVisitor;
+import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
@@ -50,6 +57,7 @@ import dev.flang.mir.MIR;
 import dev.flang.parser.Parser;
 
 import dev.flang.util.Errors;
+import dev.flang.util.List;
 import dev.flang.util.SourceDir;
 import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
@@ -62,6 +70,34 @@ import dev.flang.util.SourcePosition;
  */
 public class SourceModule extends Module implements SrcModule
 {
+
+
+  /*-----------------------------  classes  -----------------------------*/
+
+
+  /**
+   * Data stored locally to a Feature.
+   */
+  static class FData
+  {
+
+    /**
+     * Features declared inside a feature. The inner features are mapped from
+     * their FeatureName.
+     */
+    SortedMap<FeatureName, Feature> _declaredFeatures;
+
+    /**
+     * Features declared inside a feature or inherited from its parents.
+     */
+    SortedMap<FeatureName, Feature> _declaredOrInheritedFeatures;
+
+    /**
+     * All features that have been found to inherit from this feature.  This set
+     * is collected during RESOLVING_DECLARATIONS.
+     */
+    public Set<Feature> _heirs = new TreeSet<>();
+  }
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -115,10 +151,9 @@ public class SourceModule extends Module implements SrcModule
 
 
   /**
-   * Map from each outer features to a map of their inner features. The inner
-   * features are mapped from their FeatureName.
+   * Map from features in this module or in modules it depends on to module-specific data  for this feature.
    */
-  private SortedMap<Feature, SortedMap<FeatureName, Feature>> _declaredFeatures = new TreeMap<>();
+  private SortedMap<Feature, FData> _data = new TreeMap<>();
 
 
   Resolution _res;
@@ -398,7 +433,7 @@ public class SourceModule extends Module implements SrcModule
 
     if (outer != null)
       {
-        outer.addDeclaredInnerFeature(_res, inner);
+        addDeclaredInnerFeature(outer, inner);
         inner.addOuterRef(_res);
       }
     for (Feature a : inner.arguments)
@@ -465,23 +500,43 @@ public class SourceModule extends Module implements SrcModule
    *
    * @param inner the inner feature.
    */
-  public void addDeclaredInnerFeature(Feature outer, FeatureName fn, Feature inner)
+  void addDeclaredInnerFeature(Feature outer, FeatureName fn, Feature inner)
   {
     declaredFeatures(outer).put(fn, inner);
   }
 
 
   /**
+   * Get or create the data record for given outer feature.
+   *
+   * @param outer the feature we need to get the data record from.
+   */
+  FData data(Feature outer)
+  {
+    var d = _data.get(outer);
+    if (d == null)
+      {
+        d = new FData();
+        _data.put(outer, d);
+      }
+    return d;
+  }
+
+
+  /**
    * Get declared features for given outer Feature as seen by this module.
    * Result is never null.
+   *
+   * @param outer the declaring feature
    */
   public SortedMap<FeatureName, Feature>declaredFeatures(Feature outer)
   {
-    var s = declaredFeaturesOrNull(outer);
+    var d = data(outer);
+    var s = d._declaredFeatures;
     if (s == null)
       {
         s = new TreeMap<>();
-        _declaredFeatures.put(outer, s);
+        d._declaredFeatures = s;
         for (Module m : _dependsOn)
           { // NYI: properly obtain set of declared features from m, do we need
             // to take care for the order and dependencies between modules?
@@ -502,10 +557,416 @@ public class SourceModule extends Module implements SrcModule
   /**
    * Get declared features for given outer Feature as seen by this module.
    * Result is null if outer has no declared features in this module.
+   *
+   * @param outer the declaring feature
    */
-  public SortedMap<FeatureName, Feature>declaredFeaturesOrNull(Feature outer)
+  SortedMap<FeatureName, Feature>declaredFeaturesOrNull(Feature outer)
   {
-    return _declaredFeatures.get(outer);
+    var d = _data.get(outer);
+    if (d != null)
+      {
+        return d._declaredFeatures;
+      }
+    return null;
+  }
+
+
+  /**
+   * Get declared amd inherited features for given outer Feature as seen by this
+   * module.  Result is never null.
+   *
+   * @param outer the declaring feature
+   */
+  public SortedMap<FeatureName, Feature> declaredOrInheritedFeatures(Feature outer)
+  {
+    if (PRECONDITIONS) require
+      (outer.state_.atLeast(Feature.State.RESOLVED_DECLARATIONS));
+
+    var d = data(outer);
+    var s = d._declaredOrInheritedFeatures;
+    if (s == null)
+      {
+        s = new TreeMap<>();
+        d._declaredOrInheritedFeatures= s;
+        for (Module m : _dependsOn)
+          { // NYI: properly obtain set of declared features from m, do we need
+            // to take care for the order and dependencies between modules?
+            var md = m.declaredOrInheritedFeaturesOrNull(outer);
+            if (md != null)
+              {
+                for (var e : md.entrySet())
+                  {
+                    s.put(e.getKey(), e.getValue());
+                  }
+              }
+          }
+      }
+    return s;
+  }
+
+
+  /**
+   * Get declared amd inherited features for given outer Feature as seen by this
+   * module.  Result may be null if this module does not contribute anything to
+   * outer.
+   *
+   * @param outer the declaring feature
+   */
+  SortedMap<FeatureName, Feature>declaredOrInheritedFeaturesOrNull(Feature outer)
+  {
+    var d = _data.get(outer);
+    if (d != null)
+      {
+        return d._declaredOrInheritedFeatures;
+      }
+    return null;
+  }
+
+
+  /**
+   * During phase RESOLVING_DECLARATIONS, determine the set of declared or
+   * inherited features for outer.
+   *
+   * @param outer the declaring feature
+   */
+  public void findDeclaredOrInheritedFeatures(Feature outer)
+  {
+    if (PRECONDITIONS) require
+      (outer.state_ == Feature.State.RESOLVING_DECLARATIONS);
+
+    data(outer)._declaredOrInheritedFeatures = new TreeMap<>();
+    findInheritedFeatures(outer);
+    loadInnerFeatures(outer);
+    findDeclaredFeatures(outer);
+  }
+
+
+  /**
+   * Find all inherited features and add them to declaredOrInheritedFeatures_.
+   * In case an existing feature was found, check if there is a conflict and if
+   * so, report an error message (repeated inheritance).
+   *
+   * @param outer the declaring feature
+   */
+  private void findInheritedFeatures(Feature outer)
+  {
+    for (Call p : outer.inherits)
+      {
+        Feature cf = p.calledFeature();
+        check
+          (Errors.count() > 0 || cf != null);
+
+        if (cf != null)
+          {
+            data(cf)._heirs.add(outer);
+            _res.resolveDeclarations(cf);
+            for (var fnf : declaredOrInheritedFeatures(cf).entrySet())
+              {
+                var fn = fnf.getKey();
+                var f = fnf.getValue();
+                check
+                  (cf != outer);
+
+                var newfn = cf.handDown(_res, f, fn, p, outer);
+                addInheritedFeature(outer, p.pos, newfn, f);
+              }
+          }
+      }
+  }
+
+
+  /**
+   * Helper method for findInheritedFeatures and addToHeirs to add a feature
+   * that this feature inherits.
+   *
+   * @param pos the source code position of the inherits call responsible for
+   * the inheritance.
+   *
+   * @param fn the name of the feature, after possible renaming during inheritance
+   *
+   * @param f the feature to be added.
+   */
+  private void addInheritedFeature(Feature outer, SourcePosition pos, FeatureName fn, Feature f)
+  {
+    var s = data(outer)._declaredOrInheritedFeatures;
+    var existing = s == null ? null : s.get(fn);
+    if (existing != null)
+      {
+        if (existing.redefinitions_.contains(f))
+          { // f redefined existing, so we are fine
+          }
+        else if (f.redefinitions_.contains(existing))
+          { // existing redefines f, so use existing
+            f = existing;
+          }
+        else if (existing == f && f.generics != FormalGenerics.NONE ||
+                 existing != f && declaredFeatures(outer).get(fn) == null)
+          { // NYI: Should be ok if existing or f is abstract.
+            AstErrors.repeatedInheritanceCannotBeResolved(outer.pos, outer, fn, existing, f);
+          }
+      }
+    s.put(fn, f);
+  }
+
+
+  /**
+   * Add all declared features to declaredOrInheritedFeatures_.  In case a
+   * declared feature exists in declaredOrInheritedFeatures_ (because it was
+   * inherited), check if the declared feature redefines the inherited
+   * feature. Otherwise, report an error message.
+   *
+   * @param outer the declaring feature
+   */
+  private void findDeclaredFeatures(Feature outer)
+  {
+    var s = declaredFeatures(outer);
+    for (var e : s.entrySet())
+      {
+        var fn = e.getKey();
+        var f = e.getValue();
+        var doi = data(outer)._declaredOrInheritedFeatures;
+        var existing = doi.get(fn);
+        if (existing == null)
+          {
+            if ((f.modifiers & Consts.MODIFIER_REDEFINE) != 0)
+              {
+                AstErrors.redefineModifierDoesNotRedefine(f);
+              }
+          }
+        else if (existing.outer() == outer)
+          {
+            // This cannot happen, this case was already handled in addDeclaredInnerFeature:
+            check
+              (false);
+            AstErrors.duplicateFeatureDeclaration(f.pos, outer, existing);
+          }
+        else if (existing.generics != FormalGenerics.NONE)
+          {
+            AstErrors.cannotRedefineGeneric(f.pos, outer, existing);
+          }
+        else if ((f.modifiers & Consts.MODIFIER_REDEFINE) == 0 && existing.impl != Impl.ABSTRACT)
+          {
+            AstErrors.redefineModifierMissing(f.pos, outer, existing);
+          }
+        else
+          {
+            existing.redefinitions_.add(f);
+          }
+        doi.put(fn, f);
+        f.scheduleForResolution(_res);
+      }
+  }
+
+
+  void addDeclaredInnerFeature(Feature outer, Feature f)
+  {
+    if (PRECONDITIONS) require
+      (outer.state().atLeast(Feature.State.LOADING));
+
+    var fn = f.featureName();
+    var df = declaredFeatures(outer);
+    var existing = df.get(fn);
+    if (existing != null)
+      {
+        if (f       .impl.kind_ == Impl.Kind.FieldDef &&
+            existing.impl.kind_ == Impl.Kind.FieldDef    )
+          {
+            var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
+            fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
+            f._featureName = fn;
+          }
+        else
+          {
+            boolean error = true;
+            if (f.isField() && existing.isField())
+              {
+                error = false;
+                var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
+                for (var e : existingFields.values())
+                  {
+                    // NYI: set error if e.declaredInBlock() == f.declaredInBlock()
+                    if (e.isDeclaredInMainBlock() && f.isDeclaredInMainBlock())
+                      {
+                        error = true;
+                      }
+                  }
+                if (!error)
+                  {
+                    fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
+                    f._featureName = fn;
+                  }
+              }
+            if (error)
+              {
+                AstErrors.duplicateFeatureDeclaration(f.pos, f, existing);
+              }
+          }
+      }
+    addDeclaredInnerFeature(outer, fn, f);
+    if (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+      {
+        check(Errors.count() > 0 || f.isAnonymousInnerFeature());
+        //        check(Errors.count() > 0 || !this.declaredOrInheritedFeatures_.containsKey(fn) || f.isChoiceTag());
+        declaredOrInheritedFeatures(outer).put(fn, f);
+        if (!f.isChoiceTag())  // NYI: somewhat ugly special handling of choice tags should not be needed
+          {
+            addToHeirs(outer, fn, f);
+          }
+      }
+  }
+
+
+  /**
+   * Add feature under given name to declaredOrInheritedFeatures_ of all direct
+   * and indirect heirs of this feature.
+   *
+   * This is used in addDeclaredInnerFeature to add features during syntactic
+   * sugar resolution after declaredOrInheritedFeatures_ has already been set.
+   *
+   * @param fn the name of the feature, after possible renaming during inheritance
+   *
+   * @param f the feature to be added.
+   */
+  private void addToHeirs(Feature outer, FeatureName fn, Feature f)
+  {
+    var d = _data.get(outer);
+    if (d != null)
+      {
+        for (var h : d._heirs)
+          {
+            var pos = SourcePosition.builtIn; // NYI: Would be nicer to use Call.pos for the inheritance call in h.inhertis
+            addInheritedFeature(h, pos, fn, f);
+            addToHeirs(h, fn, f);
+          }
+      }
+  }
+
+
+  /*--------------------------  feature lookup  -------------------------*/
+
+
+  /**
+   * Find feature with given name in outer.
+   *
+   * @param outer the declaring or inheriting feature
+   */
+  public Feature lookupFeature(Feature outer, FeatureName name)
+  {
+    if (PRECONDITIONS) require
+      (outer.state_.atLeast(Feature.State.RESOLVED_DECLARATIONS));
+
+    return declaredOrInheritedFeatures(outer).get(name);
+  }
+
+
+  /**
+   * Get all declared or inherited features with the given base name,
+   * independent of the number of arguments or the id.
+   *
+   * @param outer the declaring or inheriting feature
+   *
+   * @param name the name of the feature
+   */
+  public SortedMap<FeatureName, Feature> lookupFeatures(Feature outer, String name)
+  {
+    if (PRECONDITIONS) require
+      (outer.state_.atLeast(Feature.State.RESOLVED_DECLARATIONS));
+
+    return FeatureName.getAll(declaredOrInheritedFeatures(outer), name);
+  }
+
+
+  /**
+   * Get all declared or inherited features with the given base name and
+   * argument count, independent of the id.
+   *
+   * @param outer the declaring or inheriting feature
+   *
+   * @param name the name of the feature
+   *
+   * @param argCount the argument count
+   */
+  SortedMap<FeatureName, Feature> lookupFeatures(Feature outer, String name, int argCount)
+  {
+    if (PRECONDITIONS) require
+      (outer.state_.atLeast(Feature.State.RESOLVED_DECLARATIONS));
+
+    return FeatureName.getAll(declaredOrInheritedFeatures(outer), name, argCount);
+  }
+
+
+  /**
+   * Find set of candidate features in an unqualified access (call or
+   * assignment).  If several features match the name but have different
+   * argument counts, return all of them.
+   *
+   * @param outer the declaring or inheriting feature
+   *
+   * @param name the name of the feature
+   *
+   * @param call the call we are trying to resolve, or null when not resolving a
+   * call.
+   *
+   * @param assign the assign we are trying to resolve, or null when not resolving an
+   * assign
+   *
+   * @param destructure the destructure we are strying to resolve, or null when not
+   * resolving a destructure.
+   *
+   * @return in case we found features visible in the call's scope, the features
+   * together with the outer feature where they were found.
+   */
+  public FeaturesAndOuter lookupNoTarget(Feature outer, String name, Call call, Assign assign, Destructure destructure)
+  {
+    if (PRECONDITIONS) require
+      (outer.state_.atLeast(Feature.State.RESOLVED_DECLARATIONS));
+
+    var result = new FeaturesAndOuter();
+    Feature curOuter = outer;
+    Feature inner = null;
+    do
+      {
+        var fs = assign != null ? lookupFeatures(curOuter, name, 0)
+                                : lookupFeatures(curOuter, name);
+        if (fs.size() >= 1)
+          {
+            List<FeatureName> fields = new List<>();
+            for (var e : fs.entrySet())
+              {
+                var fn = e.getKey();
+                var f = e.getValue();
+                if (f.isField() && (f.outer()==null || f.outer().resultField() != f))
+                  {
+                    fields.add(fn);
+                  }
+              }
+            if (!fields.isEmpty())
+              {
+                var f = curOuter.findFieldDefInScope(name, call, assign, destructure, inner);
+                fs = new TreeMap<>(fs);
+                // if we found f in scope, remove all other entries, otherwise remove all entries within this since they are not in scope.
+                for (var fn : fields)
+                  {
+                    var fi = fs.get(fn);
+                    if (f != null || fi.outer() == outer && !fi.isArtificialField())
+                      {
+                        fs.remove(fn);
+                      }
+                  }
+                if (f != null)
+                  {
+                    fs.put(f.featureName(), f);
+                  }
+              }
+          }
+        result.features = fs;
+        result.outer = curOuter;
+        inner = curOuter;
+        curOuter = curOuter.outer();
+      }
+    while ((result.features.isEmpty()) && (curOuter != null));
+
+    return result;
   }
 
 }

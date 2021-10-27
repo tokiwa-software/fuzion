@@ -68,6 +68,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Feature.java \
           $(SRC)/dev/flang/ast/FeatureName.java \
           $(SRC)/dev/flang/ast/FeatureVisitor.java \
+          $(SRC)/dev/flang/ast/FeaturesAndOuter.java \
           $(SRC)/dev/flang/ast/FormalGenerics.java \
           $(SRC)/dev/flang/ast/Function.java \
           $(SRC)/dev/flang/ast/FunctionReturnType.java \

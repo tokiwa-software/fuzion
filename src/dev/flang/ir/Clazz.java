@@ -292,7 +292,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (!Clazzes.closed,
        Errors.count() > 0 || !actualType.isGenericArgument(),
        Errors.count() > 0 || actualType.isFreeFromFormalGenerics(),
-       actualType.featureOfType().outer() == null || outer.feature().inheritsFrom(actualType.featureOfType().outer()),
+       Errors.count() > 0 || actualType.featureOfType().outer() == null || outer.feature().inheritsFrom(actualType.featureOfType().outer()),
        Errors.count() > 0 || actualType.featureOfType().outer() != null || outer == null,
        Errors.count() > 0 || (actualType != Types.t_ERROR     &&
                               actualType != Types.t_UNDEFINED   ),
@@ -765,11 +765,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             for (var p: chain)
               {
-                fn = f.outer().handDown(f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
+                fn = f.outer().handDown(_res, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
               }
           }
       }
-    return feature().findDeclaredOrInheritedFeature(fn);
+    return _res._module.lookupFeature(feature(), fn);
   }
 
 

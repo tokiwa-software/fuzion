@@ -229,7 +229,7 @@ public class Assign extends ANY implements Stmnt
     var f = _assignedField;
     if (f == null)
       {
-        var fo = outer.findDeclaredInheritedOrOuterFeatures(_name, null, destructure == null ? this : null, destructure);
+        var fo = res._module.lookupNoTarget(outer, _name, null, destructure == null ? this : null, destructure);
         check
           (Errors.count() > 0 || fo.features.size() <= 1);
         f = fo.filter(_pos, FeatureName.get(_name, 0), __ -> false);
@@ -300,7 +300,7 @@ public class Assign extends ANY implements Stmnt
    *
    * @param outer the root feature that contains this statement.
    */
-  public void checkTypes()
+  public void checkTypes(Resolution res)
   {
     check
       (_assignedField != Types.f_ERROR || Errors.count() > 0);
@@ -319,7 +319,7 @@ public class Assign extends ANY implements Stmnt
           }
 
         check
-          (this._target.type().featureOfType().findDeclaredOrInheritedFeature(f.featureName()) == f || Errors.count() > 0);
+          (res._module.lookupFeature(this._target.type().featureOfType(), f.featureName()) == f || Errors.count() > 0);
       }
   }
 

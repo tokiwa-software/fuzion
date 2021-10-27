@@ -325,12 +325,12 @@ public class Type extends ANY implements Comparable<Type>
    *
    * @param n the name, such as "int", "bool".
    */
-  public static Type type(String n, Feature universe)
+  public static Type type(Resolution res, String n, Feature universe)
   {
     if (PRECONDITIONS) require
       (n.length() > 0);
 
-    return type(false, n, universe);
+    return type(res, false, n, universe);
   }
 
   /**
@@ -340,12 +340,12 @@ public class Type extends ANY implements Comparable<Type>
    *
    * @param n the name, such as "int", "bool".
    */
-  public static Type type(boolean ref, String n, Feature universe)
+  public static Type type(Resolution res, boolean ref, String n, Feature universe)
   {
     if (PRECONDITIONS) require
       (n.length() > 0);
 
-    return new Type(ref, n).resolve(universe);
+    return new Type(ref, n).resolve(res, universe);
   }
 
 
@@ -886,7 +886,7 @@ public class Type extends ANY implements Comparable<Type>
    * @param feat the outer feature that this type is declared in, used
    * for resolution of generic parameters etc.
    */
-  public Type resolve(Feature outerfeat)
+  public Type resolve(Resolution res, Feature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
@@ -899,12 +899,12 @@ public class Type extends ANY implements Comparable<Type>
       }
     if (!isGenericArgument())
       {
-        resolveFeature(outerfeat);
+        resolveFeature(res, outerfeat);
         if (feature == Types.f_ERROR)
           {
             return Types.t_ERROR;
           }
-        FormalGenerics.resolve(_generics, outerfeat);
+        FormalGenerics.resolve(res, _generics, outerfeat);
         if (!feature.generics.errorIfSizeOrTypeDoesNotMatch(_generics,
                                                             pos,
                                                             "type",
@@ -926,7 +926,7 @@ public class Type extends ANY implements Comparable<Type>
    * @param feat the outer feature that this type is declared in, used
    * for resolution of generic parameters etc.
    */
-  void resolveFeature(Feature outerfeat)
+  void resolveFeature(Resolution res, Feature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
@@ -938,7 +938,7 @@ public class Type extends ANY implements Comparable<Type>
         Feature o = outerfeat;
         if (outer_ != null)
           {
-            outer_ = outer_.resolve(outerfeat);
+            outer_ = outer_.resolve(res, outerfeat);
             if (outer_.isGenericArgument())
               { // an error message was generated already during findGenerics()
                 check
@@ -953,7 +953,7 @@ public class Type extends ANY implements Comparable<Type>
             var nontype_fs = new List<Feature>();
             do
               {
-                var fs = o.findDeclaredOrInheritedFeatures(name).values();
+                var fs = res._module.lookupFeatures(o, name).values();
                 for (var f : fs)
                   {
                     if (f.returnType.isConstructorType())

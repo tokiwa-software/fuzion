@@ -76,7 +76,23 @@ public abstract class Module extends ANY
   public abstract MIR createMIR();
 
 
-  public abstract SortedMap<FeatureName, Feature>declaredFeaturesOrNull(Feature outer);
+  /**
+   * Get declared features for given outer Feature as seen by this module.
+   * Result is null if outer has no declared features in this module.
+   *
+   * @param outer the declaring feature
+   */
+  abstract SortedMap<FeatureName, Feature>declaredFeaturesOrNull(Feature outer);
+
+
+  /**
+   * Get declared amd inherited features for given outer Feature as seen by this
+   * module.  Result may be null if this module does not contribute anything to
+   * outer.
+   *
+   * @param outer the declaring feature
+   */
+  abstract SortedMap<FeatureName, Feature>declaredOrInheritedFeaturesOrNull(Feature outer);
 
 
 }

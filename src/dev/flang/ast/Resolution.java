@@ -137,7 +137,7 @@ public class Resolution extends ANY
   final Feature universe;
 
 
-  final SrcModule _module;
+  public final SrcModule _module;
 
 
   /**
@@ -425,7 +425,7 @@ public class Resolution extends ANY
    *
    * @param f the feature to be resolved
    */
-  void resolveDeclarations(Feature f)
+  public void resolveDeclarations(Feature f)
   {
     f.scheduleForResolution(this);
     f.resolveInheritance(this);

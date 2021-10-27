@@ -38,22 +38,6 @@ import java.util.SortedMap;
 public interface SrcModule
 {
 
-  /**
-   * Add inner to the set of declared inner features of outer using the given
-   * feature name fn.
-   *
-   * Note that inner must be declared in this module, but outer may be defined
-   * in a different module.  E.g. #universe is declared in stdlib, while an
-   * inner feature 'main' may be declared in the application's module.
-   *
-   * @param outer the declaring feature
-   *
-   * @param fn the name of the declared feature
-   *
-   * @param inner the inner feature.
-   */
-  void addDeclaredInnerFeature(Feature outer, FeatureName fn, Feature inner);
-
 
   /**
    * Get declared features for given outer Feature as seen by this module.
@@ -81,6 +65,12 @@ public interface SrcModule
    */
   void findDeclarations(Feature inner, Feature outer);
 
+
+  SortedMap<FeatureName, Feature> declaredOrInheritedFeatures(Feature outer);
+  Feature lookupFeature(Feature outer, FeatureName name);
+  void findDeclaredOrInheritedFeatures(Feature outer);
+  SortedMap<FeatureName, Feature> lookupFeatures(Feature outer, String name);
+  FeaturesAndOuter lookupNoTarget(Feature thiz, String name, Call call, Assign assign, Destructure destructure);
 
 }
 

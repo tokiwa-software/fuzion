@@ -469,7 +469,7 @@ public class Call extends Expr
    *
    * @return the type of the target.
    */
-  private Type targetTypeOrConstraint()
+  private Type targetTypeOrConstraint(Resolution res)
   {
     if (PRECONDITIONS) require
                          (target != null);
@@ -478,7 +478,7 @@ public class Call extends Expr
     if (result.isGenericArgument())
       {
         var g = result.genericArgument();
-        result = g.constraint().resolve(g.feature());
+        result = g.constraint().resolve(res, g.feature());
       }
 
     if (POSTCONDITIONS) ensure
@@ -518,7 +518,7 @@ public class Call extends Expr
     else if (target != null)
       {
         target.loadCalledFeature(res, thiz);
-        return targetTypeOrConstraint().featureOfType();
+        return targetTypeOrConstraint(res).featureOfType();
       }
     else
       { // search for feature in thiz
@@ -541,24 +541,24 @@ public class Call extends Expr
    * @return the map of FeatureName to Features of the found candidates. May be
    * empty. ERROR_MAP in case an error occured and was reported already.
    */
-  private Feature.FeaturesAndOuter calledFeatureCandidates(Feature targetFeature, Resolution res, Feature thiz)
+  private FeaturesAndOuter calledFeatureCandidates(Feature targetFeature, Resolution res, Feature thiz)
   {
     if (PRECONDITIONS) require
       (targetFeature != null);
 
-    Feature.FeaturesAndOuter result;
+    FeaturesAndOuter result;
     // are we searching for features called via thiz' inheritance calls?
     SortedMap<FeatureName, Feature> fs = EMPTY_MAP;
     if (target != null)
       {
         res.resolveDeclarations(targetFeature);
-        result = new Feature.FeaturesAndOuter();
-        result.features = targetFeature.findDeclaredOrInheritedFeatures(name);
+        result = new FeaturesAndOuter();
+        result.features = res._module.lookupFeatures(targetFeature, name);
         result.outer = targetFeature;
       }
     else
       { /* search for feature in thiz and outer classes */
-        result = targetFeature.findDeclaredInheritedOrOuterFeatures(name, this, null, null);
+        result = res._module.lookupNoTarget(targetFeature, name, this, null, null);
         target = result.target(pos, res, thiz);
       }
     return result;
@@ -909,7 +909,7 @@ public class Call extends Expr
                           NO_GENERICS,
                           _actuals,
                           this /* this becomes target of "call" */,
-                          _type.featureOfType().findDeclaredOrInheritedFeature(FeatureName.get("call", _actuals.size())),
+                          res._module.lookupFeature(_type.featureOfType(), FeatureName.get("call", _actuals.size())),
                           funResultType)
           .resolveTypes(res, outer);
         _actuals = NO_PARENTHESES;
@@ -940,10 +940,10 @@ public class Call extends Expr
     Type frmlT = frml.resultType();
     check(frmlT == Types.intern(frmlT));
     Feature declF = calledFeature_.outer();
-    Feature heirF = targetTypeOrConstraint().featureOfType();
+    Feature heirF = targetTypeOrConstraint(res).featureOfType();
     if (declF != heirF)
       {
-        var a = calledFeature_.handDown(new Type[] { frmlT }, heirF);
+        var a = calledFeature_.handDown(res, new Type[] { frmlT }, heirF);
         if (a.length != 1)
           {
             // Check that the number or args can only change for the
@@ -1016,7 +1016,7 @@ public class Call extends Expr
               }
             else
               {
-                frmlT = targetTypeOrConstraint().actualType(frmlT);
+                frmlT = targetTypeOrConstraint(res).actualType(frmlT);
                 frmlT = frmlT.actualType(calledFeature_, generics);
                 frmlT = Types.intern(frmlT);
                 resolvedFormalArgumentTypes[argnum + i] = frmlT;
@@ -1129,7 +1129,7 @@ public class Call extends Expr
       }
     else
       {
-        Type tt = targetTypeOrConstraint();
+        Type tt = targetTypeOrConstraint(res);
         if (!open)
           {
             t = tt.actualType(t);
@@ -1164,7 +1164,7 @@ public class Call extends Expr
               }
             _select = -1;
           }
-        t = t.resolve(tt.featureOfType());
+        t = t.resolve(res, tt.featureOfType());
       }
     _type = t;
   }
@@ -1374,7 +1374,7 @@ public class Call extends Expr
   {
     Call result = this;
     loadCalledFeature(res, outer);
-    FormalGenerics.resolve(generics, outer);
+    FormalGenerics.resolve(res, generics, outer);
 
     check
       (Errors.count() > 0 || calledFeature_ != null);

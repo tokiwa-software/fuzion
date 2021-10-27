@@ -1044,7 +1044,7 @@ public class Clazzes extends ANY
       (!thiz.isOpenGeneric(),
        thiz.isFreeFromFormalGenericsInSource(),
        outerClazz != null || thiz.featureOfType().outer() == null,
-       thiz == Types.t_ERROR || !thiz.outerMostInSource() || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
+       Errors.count()>0 || thiz == Types.t_ERROR || !thiz.outerMostInSource() || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
 
     Clazz result;
 

@@ -121,7 +121,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
   /**
    * Get the unique element (baseName, argCount, id).
    */
-  static FeatureName get(String baseName, int argCount, int id)
+  public static FeatureName get(String baseName, int argCount, int id)
   {
     if (PRECONDITIONS) require
       (baseName != null,
@@ -158,7 +158,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
    * From a sorted map of FeatureName to some type T, get the submap of all the
    * FeatureNames with the given baseName.
    */
-  static <T> SortedMap<FeatureName, T> getAll(SortedMap<FeatureName, T> map, String baseName)
+  public static <T> SortedMap<FeatureName, T> getAll(SortedMap<FeatureName, T> map, String baseName)
   {
     return map.subMap(get0(baseName, 0, 0),
                       get0(baseName, Integer.MAX_VALUE, 0) /* exclusive */
@@ -170,7 +170,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
    * From a sorted map of FeatureName to some type T, get the submap of all the
    * FeatureNames with the given baseName/argCount.
    */
-  static <T> SortedMap<FeatureName, T> getAll(SortedMap<FeatureName, T> map, String baseName, int argCount)
+  public static <T> SortedMap<FeatureName, T> getAll(SortedMap<FeatureName, T> map, String baseName, int argCount)
   {
     return map.subMap(get0(baseName, argCount, 0),
                       get0(baseName, argCount, Integer.MAX_VALUE) /* exclusive */

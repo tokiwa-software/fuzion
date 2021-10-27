@@ -160,13 +160,13 @@ public class Match extends Expr
         ListIterator<Type> i = cgs.listIterator();
         while (i.hasNext())
           {
-            i.set(i.next().resolve(outer));
+            i.set(i.next().resolve(res, outer));
           }
         SourcePosition[] matched = new SourcePosition[cgs.size()];
         boolean ok = true;
         for (Case c: cases)
           {
-            ok &= c.resolveType(cgs, outer, matched);
+            ok &= c.resolveType(res, cgs, outer, matched);
           }
         var missingMatches = new List<Type>();
         for (var ix = 0; ix < cgs.size(); ix++)
