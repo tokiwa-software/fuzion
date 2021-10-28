@@ -367,7 +367,7 @@ public class JavaInterface extends ANY
   static Value call(String clName, String name, String sig, Object thiz, Value args, Clazz resultClazz)
   {
     if (PRECONDITIONS) require
-      ((clName != null) != (thiz != null));
+      (clName != null);
 
     Object res = null;
     Throwable err = null;
