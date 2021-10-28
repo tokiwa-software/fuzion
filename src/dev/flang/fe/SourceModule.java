@@ -439,9 +439,9 @@ public class SourceModule extends Module implements SrcModule
         addDeclaredInnerFeature(outer, inner);
         inner.addOuterRef(_res);
       }
-    for (Feature a : inner.arguments)
+    for (var a : inner.arguments())
       {
-        findDeclarations(a, inner);
+        findDeclarations((Feature) a, inner); // NYI: Cast!
       }
     inner.addResultField(_res);
 

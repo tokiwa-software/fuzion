@@ -177,21 +177,21 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * The formal generic arguments of this feature
    */
-  public FormalGenerics generics;
-  public FormalGenerics generics() { return generics; }
+  private FormalGenerics _generics;
+  public FormalGenerics generics() { return _generics; }
 
 
   /**
    * The formal arguments of this feature
    */
-  public List<Feature> arguments;
+  private List<Feature> _arguments;
   public List<AbstractFeature> arguments0;
   public List<AbstractFeature> arguments()
   {
     if (arguments0 == null)
       {
         arguments0 = new List<>();
-        arguments0.addAll(arguments);
+        arguments0.addAll(_arguments);
       }
     return arguments0;
   }
@@ -659,8 +659,8 @@ public class Feature extends AbstractFeature implements Stmnt
         n = "#_"+ underscoreId++;
       }
     this._qname     = qname;
-    this.generics   = g;
-    this.arguments  = a;
+    this._generics  = g;
+    this._arguments = a;
     this._featureName = FeatureName.get(n, a.size());
     this.inherits   = (i.isEmpty() &&
                        (p.kind_ != Impl.Kind.FieldActual) &&
@@ -675,7 +675,7 @@ public class Feature extends AbstractFeature implements Stmnt
     this.contract  = c;
     this.impl = p;
 
-    generics.setFeature(this);
+    g.setFeature(this);
   }
 
 
@@ -983,7 +983,7 @@ public class Feature extends AbstractFeature implements Stmnt
       }
     else if (this == Types.resolved.f_choice)
       {
-        result = generics.asActuals();
+        result = _generics.asActuals();
       }
     else
       {
@@ -1089,7 +1089,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public void visit(FeatureVisitor v)
   {
-    generics.visit(v, this);
+    _generics.visit(v, this);
     for (Call c: inherits)
       {
         Expr nc = c.visit(v, this);
@@ -1785,8 +1785,8 @@ public class Feature extends AbstractFeature implements Stmnt
   Type[] argTypes()
   {
     int argnum = 0;
-    var result = new Type[arguments.size()];
-    for (Feature frml : arguments)
+    var result = new Type[_arguments.size()];
+    for (Feature frml : _arguments)
       {
         check
           (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
@@ -1885,7 +1885,7 @@ public class Feature extends AbstractFeature implements Stmnt
           {
             if (g.isOpen())
               {
-                for (Feature a : arguments)
+                for (Feature a : _arguments)
                   {
                     Type t = a.returnType().functionReturnType();
                     if (!t.checkedForGeneric)
@@ -1914,7 +1914,7 @@ public class Feature extends AbstractFeature implements Stmnt
     var result = _featureName;
     if (hasOpenGenericsArgList())
       {
-        var argCount = arguments.size() + actualGenerics.size() - outer().generics().list.size();
+        var argCount = _arguments.size() + actualGenerics.size() - outer().generics().list.size();
         check
           (argCount >= 0);
         result =  FeatureName.get(result.baseName(),
@@ -2053,7 +2053,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (_state.atLeast(State.CHECKING_TYPES1));
 
-    int ean = arguments.size();
+    int ean = _arguments.size();
     for (Feature r : redefinitions_)
       {
         Type[] ta = handDown(res, argTypes(), r.outer());
@@ -2073,12 +2073,12 @@ public class Feature extends AbstractFeature implements Stmnt
                     // original arg list may be shorter if last arg is open generic:
                     check
                       (Errors.count() > 0 ||
-                       i < arguments.size() ||
-                       arguments.get(arguments.size()-1).resultType().isOpenGeneric());
-                    int ai = Math.min(arguments.size() - 1, i);
+                       i < _arguments.size() ||
+                       _arguments.get(_arguments.size()-1).resultType().isOpenGeneric());
+                    int ai = Math.min(_arguments.size() - 1, i);
 
-                    Feature actualArg   = r.arguments.get(i);
-                    Feature originalArg =   arguments.get(ai);
+                    Feature actualArg   = r._arguments.get(i);
+                    Feature originalArg =   _arguments.get(ai);
                     AstErrors.argumentTypeMismatchInRedefinition(this, originalArg,
                                                                 r,    actualArg);
                   }
@@ -2504,7 +2504,7 @@ public class Feature extends AbstractFeature implements Stmnt
     var stack = new Stack<Feature>();
 
     // start by making the arguments visible:
-    for (var f : arguments)
+    for (var f : _arguments)
       {
         if (f.featureName().baseName().equals(name))
           {
@@ -2686,8 +2686,8 @@ public class Feature extends AbstractFeature implements Stmnt
       Consts.modifierToString(_modifiers)+
       _returnType + " "+
       _featureName.baseName()+
-      generics+
-      (arguments.isEmpty() ? "" : "("+arguments+")")+
+      _generics+
+      (_arguments.isEmpty() ? "" : "("+_arguments+")")+
       (inherits.isEmpty() ? "" : " : "+inherits)+
       contract+
       impl.toString();
@@ -2903,7 +2903,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         result = this == Types.f_ERROR
           ? Types.t_ERROR
-          : new Type(_pos, _featureName.baseName(), generics.asActuals(), null, this, Type.RefOrVal.LikeUnderlyingFeature);
+          : new Type(_pos, _featureName.baseName(), _generics.asActuals(), null, this, Type.RefOrVal.LikeUnderlyingFeature);
         thisType_ = result;
       }
     if (_state.atLeast(State.RESOLVED_TYPES))
@@ -2968,7 +2968,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
   public FeatureName featureName()
   {
-    check(arguments.size() == _featureName.argCount());
+    check(_arguments.size() == _featureName.argCount());
     return _featureName;
   }
 
@@ -3355,7 +3355,7 @@ public class Feature extends AbstractFeature implements Stmnt
       (outer() != null);
 
     return
-      (generics == FormalGenerics.NONE);
+      (_generics == FormalGenerics.NONE);
   }
 
 
@@ -3467,7 +3467,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public Generic getGeneric(String name)
   {
-    Generic result = generics.get(name);
+    Generic result = _generics.get(name);
 
     if (POSTCONDITIONS) ensure
       ((result == null) || (result._name.equals(name) && (result.feature() == this)));
