@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.interpreter;
 
 import dev.flang.ast.Consts; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Feature; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Type; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -76,7 +75,7 @@ public class Intrinsics extends ANY
   public static Callable call(Clazz innerClazz)
   {
     if (PRECONDITIONS) require
-      (innerClazz.feature().impl == Impl.INTRINSIC);
+      (innerClazz.feature().implKind() == Impl.Kind.Intrinsic);
 
     Callable result;
     var f = innerClazz.feature();
@@ -400,7 +399,7 @@ public class Intrinsics extends ANY
              n.equals("bool.infix &&") ||
              n.equals("bool.infix :")   )
       {
-        Errors.fatal(f.pos, "intrinsic feature not supported by backend",
+        Errors.fatal(f.pos(), "intrinsic feature not supported by backend",
                      "intrinsic '"+n+"' should be handled by front end");
         result = (args) -> Value.NO_VALUE;
       }
@@ -600,7 +599,7 @@ public class Intrinsics extends ANY
       }
     else
       {
-        Errors.fatal(f.pos,
+        Errors.fatal(f.pos(),
                      "Intrinsic feature not supported",
                      "Missing intrinsic feature: " + f.qualifiedName());
         result = (args) -> Value.NO_VALUE;

@@ -425,14 +425,17 @@ public class Resolution extends ANY
    *
    * @param f the feature to be resolved
    */
-  public void resolveDeclarations(Feature f)
+  public void resolveDeclarations(AbstractFeature af)
   {
-    f.scheduleForResolution(this);
-    f.resolveInheritance(this);
-    f.resolveDeclarations(this);
+    if (af instanceof Feature f)
+      {
+        f.scheduleForResolution(this);
+        f.resolveInheritance(this);
+        f.resolveDeclarations(this);
+      }
 
     if (POSTCONDITIONS) ensure
-      (f.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (af.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
   }
 
 }

@@ -52,7 +52,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Feature extends AbstractFeature implements Stmnt, Comparable<Feature>
+public class Feature extends AbstractFeature implements Stmnt
 {
 
 
@@ -110,6 +110,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    * inheritance.
    */
   private boolean detectedCyclicInheritance = false;
+  boolean detectedCyclicInheritance() { return detectedCyclicInheritance; }
 
 
   /**
@@ -147,6 +148,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    * ValueType: for constructors of value types
    */
   public ReturnType returnType; // NYI: public field should not be written to
+  public ReturnType returnType() { return returnType; }
 
 
   /**
@@ -176,24 +178,37 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    * The formal generic arguments of this feature
    */
   public FormalGenerics generics;
+  public FormalGenerics generics() { return generics; }
 
 
   /**
    * The formal arguments of this feature
    */
   public List<Feature> arguments;
+  public List<AbstractFeature> arguments0;
+  public List<AbstractFeature> arguments()
+  {
+    if (arguments0 == null)
+      {
+        arguments0 = new List<>();
+        arguments0.addAll(arguments);
+      }
+    return arguments0;
+  }
 
 
   /**
    * The parents of this feature
    */
   public final List<Call> inherits;
+  public final List<Call> inherits() { return inherits; }
 
 
   /**
    * The contract of this feature
    */
   public Contract contract;
+  public Contract contract() { return contract; }
 
 
   /**
@@ -205,7 +220,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
   /**
    * Reference to this feature's root, i.e., its outer feature.
    */
-  public Feature outer_ = null;
+  public AbstractFeature outer_ = null;
 
 
   /**
@@ -293,6 +308,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    * holds for that classs.
    */
   public Feature choiceTag_ = null;
+  public Feature choiceTag() { return choiceTag_; }
 
 
   /**
@@ -308,6 +324,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    * parts are not allowed.
    */
   public boolean _isIndexVarUpdatedByLoop = false;
+  public boolean isIndexVarUpdatedByLoop() { return _isIndexVarUpdatedByLoop; }
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -695,21 +712,24 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
 
 
   /**
-   * Compare the fully qualified name of this feature with the names provided by
-   * the iterator, i.e., return true iff it returns "fuzion", "std", "out",
-   * etc. and this feature is fuzion.std.out.
+   * Compare the fully qualified name of feature t (not of 'this'!) with the
+   * names provided by the iterator, i.e., return true iff it returns "fuzion",
+   * "std", "out", etc. and this feature is fuzion.std.out.
+   *
+   * @param t the feature to check.
    *
    * @param it an iterator producing the elements of a fully qualified name
    *
    * @return true if this features's fully qualified names is a prefix of the
    * names produced by it.
    */
-  private boolean checkNames(Iterator<String> it)
+  private boolean checkNames(AbstractFeature t, Iterator<String> it)
   {
     return
-      (outer_ == null) || (outer_.checkNames(it) &&
-                           it.hasNext() &&
-                           it.next().equals(_featureName.baseName()));
+      t.isUniverse() ||
+      checkNames(t.outer(), it) &&
+      it.hasNext() &&
+      it.next().equals(t.featureName().baseName());
   }
 
 
@@ -722,7 +742,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
     if (qname.size() > 1)
       {
         Iterator<String> it = qname.iterator();
-        if (!checkNames(it) || it.hasNext())
+        if (!checkNames(this, it) || it.hasNext())
           {
             Errors.error(pos,
                          "Feature is declared in wrong environment",
@@ -736,27 +756,89 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
   }
 
 
-  public Feature outer()
+  /**
+   * Get the outer feature of this feature, or null if this is the universe.
+   *
+   * The outer is set during FIND_DECLARATIONS, so this cannot be called before
+   * the find declarations phase is done (i.e. we are in Satet.LOADED), or
+   * before outer_ was during the finding declarations phase.
+   */
+  public AbstractFeature outer()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.LOADED));
+      (state().atLeast(State.LOADED) ||
+       state().atLeast(State.FINDING_DECLARATIONS) && outer_ != null);
 
     return outer_;
   }
 
 
-  public Feature universe()
+  /**
+   * get a reference to the outermost feature.
+   */
+  public AbstractFeature universe()
   {
     if (PRECONDITIONS) require
       (state().atLeast(State.LOADED));
 
-    return (outer_ == null) ? this : outer_.universe();
+    AbstractFeature r = this;
+    while (!r.isUniverse())
+      {
+        r = r.outer();
+      }
+    return r;
   }
 
 
+  /**
+   * is this the outermost feature?
+   */
   public boolean isUniverse()
   {
     return false;
+  }
+
+  /**
+   * is this an abstract feature?
+   */
+  public boolean isAbstract()
+  {
+    return impl == Impl.ABSTRACT;
+  }
+
+  /**
+   * get the kind of this feature.
+   */
+  public Impl.Kind implKind()
+  {
+    return impl.kind_;
+  }
+
+  /**
+   * get the initial value of this feature.
+   */
+  public Expr initialValue()
+  {
+    // if (PRECONDITIONS) require
+    //  (switch (implKind()) { case FieldInit, FieldDef, FieldActual, FieldIter -> true; default -> false; });
+
+    return
+      switch (implKind())
+        {
+        case FieldInit, FieldDef, FieldActual, FieldIter -> impl._initialValue;
+        default -> null;
+        };
+  }
+
+  /**
+   * get the code of this feature.
+   */
+  public Expr code()
+  {
+    if (PRECONDITIONS) require
+      (switch (implKind()) { case Routine, RoutineDef -> true; default -> false; });
+
+    return impl._code;
   }
 
 
@@ -1049,8 +1131,8 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
   {
     return
       outer() != null &&
-      !outer().arguments.isEmpty() &&
-      outer().arguments.getLast() == this &&
+      !outer().arguments().isEmpty() &&
+      outer().arguments().getLast() == this &&
       t == returnType.functionReturnType();
   }
 
@@ -1078,10 +1160,10 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
   {
     if (PRECONDITIONS) require
       (p != null,
-       p.calledFeature().detectedCyclicInheritance,
+       p.calledFeature().detectedCyclicInheritance(),
        i != null);
 
-    Feature parent = p.calledFeature();
+    var parent = p.calledFeature();
     String inh = "    inherits " + parent.qualifiedName() + " at " + p.pos.show() + "\n";
     if (detectedCyclicInheritance)
       { // the cycle closes while returning from recursion in resolveInheritance, so show the error:
@@ -1139,13 +1221,13 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
             Call p = i.next();
             p.loadCalledFeature(res, this);
             p.isInheritanceCall_ = true;
-            Feature parent = p.calledFeature();
+            var parent = p.calledFeature();
             check
               (Errors.count() > 0 || parent != null);
             if (parent != null)
               {
                 parent.resolveInheritance(res);
-                if (parent.detectedCyclicInheritance)
+                if (parent.detectedCyclicInheritance())
                   {
                     cyclicInheritanceError(p, i);
                   }
@@ -1277,7 +1359,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
           {
             impl._initialValue.visit(new ResolveTypes(res),
                                      true /* NYI: impl_outerOfInitialValue not set yet */
-                                     ? outer().outer() :
+                                     ? (Feature) outer().outer()  /* NYI: Cast! */:
                                      impl._outerOfInitialValue);
           }
 
@@ -1355,8 +1437,9 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
   private List<Call> closureAccesses(Resolution res)
   {
     List<Call> result = new List<>();
-    for (Feature f : res._module.declaredOrInheritedFeatures(this).values())
+    for (AbstractFeature af : res._module.declaredOrInheritedFeatures(this).values())
       {
+        var f = (Feature) af; // NYI: Cast!
         f.visit(new FeatureVisitor()
           {
             public Call action(Call c, Feature outer)
@@ -1381,7 +1464,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    * @param errorPos the position this error should be reported at, this should
    * be the definition of the choice type.
    */
-  private void checkNoClosureAccesses(Resolution res, SourcePosition errorPos)
+  void checkNoClosureAccesses(Resolution res, SourcePosition errorPos)
   {
     List<Call> closureAccesses = closureAccesses(res);
     if (!closureAccesses.isEmpty())
@@ -1444,7 +1527,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
                      "A choice feature must be a value type since it is not constructed ");
       }
 
-    for (Feature p : res._module.declaredOrInheritedFeatures(this).values())
+    for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
       {
         // choice type must not have any fields
         if (p.isField() && !p.isOuterRef() && !p.isChoiceTag())
@@ -1452,7 +1535,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
             Errors.error(pos,
                          "Choice must not contain any fields",
                          "Field >>" + p.qualifiedName() + "<< is not permitted in choice.\n" +
-                         "Field declared at "+ p.pos.show());
+                         "Field declared at "+ p.pos().show());
           }
       }
     // choice type must not contain any code, but may contain inner features
@@ -1514,7 +1597,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
                 thisType_ = Types.t_ERROR;
                 eraseChoiceGenerics();
               }
-            Feature o = outer();
+            var o = outer();
             while (o != null)
               {
                 if (t == o.thisType())
@@ -1523,7 +1606,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
                                  "Choice cannot refer to an outer value type as one of the choice alternatives",
                                  "Embedding an outer value in a choice type would result in infinitely large type.\n" +
                                  "Fauly generic argument: "+t+" at "+t.pos.show());
-                    o.thisType_ = Types.t_ERROR;
+                    // o.thisType_ = Types.t_ERROR;  NYI: Do we need this?
                     eraseChoiceGenerics();
                   }
                 o = o.outer();
@@ -1573,7 +1656,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
     for (Call p : inherits)
       {
         // choice type is leaf
-        Feature cf = p.calledFeature();
+        var cf = p.calledFeature();
         check
           (Errors.count() > 0 || cf != null);
 
@@ -1611,9 +1694,9 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
            || isUniverse() // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
            );
 
-        if (outer() != null)
+        if (outer() instanceof Feature o)
           {
-            outer().typeInference(res);
+            o.typeInference(res);
           }
         choiceTypeCheckAndInternalFields(res);
 
@@ -1723,7 +1806,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    * first index down to the last inheritance call within this.  Empty list in
    * case this == ancestor, null in case this does not inherit from ancestor.
    */
-  private List<Call> tryFindInheritanceChain(Feature ancestor)
+  List<Call> tryFindInheritanceChain(AbstractFeature ancestor)
   {
     List<Call> result;
     if (this == ancestor)
@@ -1761,7 +1844,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    * first index down to the last inheritance call within this.  Empty list in
    * case this == ancestor, never null.
    */
-  public List<Call> findInheritanceChain(Feature ancestor)
+  public List<Call> findInheritanceChain(AbstractFeature ancestor)
   {
     if (PRECONDITIONS) require
       (ancestor != null);
@@ -1783,10 +1866,10 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
   public boolean hasOpenGenericsArgList()
   {
     boolean result = false;
-    Feature o = this;
+    AbstractFeature o = this;
     while (o != null && !result)
       {
-        for (var g : o.generics.list)
+        for (var g : o.generics().list)
           {
             if (g.isOpen())
               {
@@ -1814,12 +1897,12 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
   FeatureName effectiveName(List<Type> actualGenerics)
   {
     if (PRECONDITIONS) require
-      (outer().generics.sizeMatches(actualGenerics));
+      (outer().generics().sizeMatches(actualGenerics));
 
     var result = _featureName;
     if (hasOpenGenericsArgList())
       {
-        var argCount = arguments.size() + actualGenerics.size() - outer().generics.list.size();
+        var argCount = arguments.size() + actualGenerics.size() - outer().generics().list.size();
         check
           (argCount >= 0);
         result =  FeatureName.get(result.baseName(),
@@ -1851,7 +1934,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    *
    * @return the new feature name as seen within heir.
    */
-  public FeatureName handDown(Resolution res, Feature f, FeatureName fn, Call p, Feature heir)
+  public FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir)
   {
     if (PRECONDITIONS) require
       (res._module.declaredOrInheritedFeatures(this).get(fn) == f,
@@ -1878,7 +1961,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    *
    * @return interned type that represents t seen as it is seen from heir.
    */
-  Type handDownNonOpen(Resolution res, Type t, Feature heir)
+  Type handDownNonOpen(Resolution res, Type t, AbstractFeature heir)
   {
     if (PRECONDITIONS) require
       (!t.isOpenGeneric(),
@@ -1909,7 +1992,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    * @return the types from the argument array a has seen this within
    * heir. Their number might have changed due to open generics.
    */
-  Type[] handDown(Resolution res, Type[] a, Feature heir)  // NYI: This does not distinguish different inheritance chains yet
+  Type[] handDown(Resolution res, Type[] a, AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
   {
     if (PRECONDITIONS) require
       (heir != null,
@@ -2141,7 +2224,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    *
    * @return the found feature or null in case of an error.
    */
-  public Feature get(Resolution res, String qname)
+  public AbstractFeature get(Resolution res, String qname)
   {
     return get(res, qname, false);
   }
@@ -2158,7 +2241,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    *
    * @return the found feature or null in case of an error.
    */
-  public Feature get(Resolution res, String qname, int argcount)
+  public AbstractFeature get(Resolution res, String qname, int argcount)
   {
     return get(res, qname, false, argcount);
   }
@@ -2176,7 +2259,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    *
    * @return the found feature or null in case of an error.
    */
-  Feature get(Resolution res, String qname, boolean markUsed)
+  AbstractFeature get(Resolution res, String qname, boolean markUsed)
   {
     return get(res, qname, markUsed, -1);
   }
@@ -2196,9 +2279,9 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    *
    * @return the found feature or Types.f_ERROR in case of an error.
    */
-  Feature get(Resolution res, String qname, boolean markUsed, int argcount)
+  AbstractFeature get(Resolution res, String qname, boolean markUsed, int argcount)
   {
-    Feature f = this;
+    AbstractFeature f = this;
     var nams = qname.split("\\.");
     boolean err = false;
     for (var nam : nams)
@@ -2394,7 +2477,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    * @return in case we found a feature visible in the call's or assign's scope,
    * this is the feature.
    */
-  public Feature findFieldDefInScope(String name, Call call, Assign assign, Destructure destructure, Feature inner)
+  public Feature findFieldDefInScope(String name, Call call, Assign assign, Destructure destructure, AbstractFeature inner)
   {
     if (PRECONDITIONS) require
       (name != null,
@@ -2543,7 +2626,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
   {
     if (outer_ != null)
       {
-        for (var a : outer_.arguments)
+        for (var a : outer_.arguments())
           {
             if (this == a)
               {
@@ -2563,7 +2646,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
   {
     if (outer_ != null)
       {
-        var b = outer_.impl._code;
+        var b = outer_.code();
         if (b instanceof Block)
           {
             for (var s : ((Block)b).statements_)
@@ -2620,7 +2703,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
       }
     else if (outer() != null && this == outer().resultField())
       {
-        result = outer().resultTypeRaw();
+        result = (outer() instanceof Feature of) ? of.resultTypeRaw() : outer().resultType();
       }
     else if (impl.kind_ == Impl.Kind.FieldDef ||
              impl.kind_ == Impl.Kind.FieldActual)
@@ -2776,7 +2859,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
   {
     return
       (  outer_ != null)
-      && outer_.outer_ == null
+      && outer_.isUniverse()
       && (   "i8"  .equals(_featureName.baseName())
           || "i16" .equals(_featureName.baseName())
           || "i32" .equals(_featureName.baseName())
@@ -2850,10 +2933,24 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    */
   public String qualifiedName()
   {
-    Feature o = this.outer_;
-    return
-      (o        == null) ? UNIVERSE_NAME :
-      (o.outer_ == null) ? _featureName.baseName() : o.qualifiedName()+"."+_featureName.baseName();
+    var o = this.outer_;
+    if (o == null)
+      {
+        return UNIVERSE_NAME;
+      }
+    else if (state().atLeast(State.LOADED))
+      {
+        return o.isUniverse() ? _featureName.baseName() : o.qualifiedName()+"."+_featureName.baseName();
+      }
+    else if (state().atLeast(State.FINDING_DECLARATIONS) && o != null)
+      {
+        return o.isUniverse() ? _featureName.baseName() : o.qualifiedName()+"."+_featureName.baseName();
+      }
+    else
+      {
+        check(false);
+        return null;
+      }
   }
 
 
@@ -2866,24 +2963,24 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
   /**
    * Compare this to other for sorting Feature
    */
-  public int compareTo(Feature other)
+  public int compareTo(AbstractFeature other)
   {
     int result;
     if (this == other)
       {
         result = 0;
       }
-    else if ((this.outer_ == null) &&  (other.outer_ != null))
+    else if ((this.outer() == null) &&  (other.outer() != null))
       {
         result = -1;
       }
-    else if ((this.outer_ != null) &&  (other.outer_ == null))
+    else if ((this.outer() != null) &&  (other.outer() == null))
       {
         result = +1;
       }
     else
       {
-        result = (this.outer_ != null) ? this.outer_.compareTo(other.outer_)
+        result = (this.outer() != null) ? this.outer().compareTo(other.outer())
                                        : 0;
         if (result == 0)
           {
@@ -2931,17 +3028,17 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    *
    * @return
    */
-  public Collection<Feature> allInnerAndInheritedFeatures(Resolution res)
+  public Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res)
   {
     if (PRECONDITIONS) require
       (state_.atLeast(State.RESOLVED));
 
-    TreeSet<Feature> result = new TreeSet();
+    TreeSet<AbstractFeature> result = new TreeSet();
 
     result.addAll(res._module.declaredFeatures(this).values());
     for (Call p : inherits)
       {
-        Feature cf = p.calledFeature();
+        var cf = p.calledFeature();
         check
           (Errors.count() > 0 || cf != null);
 
@@ -3023,7 +3120,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
       (this.outer_ != null,
        state_ == State.FINDING_DECLARATIONS);
 
-    Feature o = this.outer_;
+    var o = this.outer_;
     if (impl._code != null || contract != null)
       {
         Type outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
@@ -3033,7 +3130,13 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
                                 Consts.VISIBILITY_PRIVATE,
                                 outerRefType,
                                 outerRefName(),
-                                this);
+                                this)
+          {
+            public boolean isOuterRef()
+            {
+              return true;
+            }
+          };
       }
   }
 
@@ -3042,17 +3145,18 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    * outerRef returns the field of this feature that refers to the
    * outer field.
    */
-  public Feature outerRef()
+  public AbstractFeature outerRef()
   {
     if (PRECONDITIONS) require
-      (outer() != null,
+      (isUniverse() || (this == Types.f_ERROR) || outer() != null,
+       (this == Types.f_ERROR) ||
        state_.atLeast(State.RESOLVED_DECLARATIONS) &&
-       (!state_.atLeast(State.CHECKING_TYPES2) || outerRef_ != null));
+       (!state_.atLeast(State.CHECKING_TYPES2) || outerRef_ != null || isField() || isUniverse()));
 
     Feature result = outerRef_;
 
     if (POSTCONDITIONS) ensure
-      (result != null);
+      (isField() || isUniverse() || (this == Types.f_ERROR) || result != null);
 
     return result;
   }
@@ -3063,9 +3167,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    */
   public boolean isOuterRef()
   {
-    return
-      outer_ != null &&
-      this == outer_.outerRef_;
+    return false;
   }
 
   /**
@@ -3073,7 +3175,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    *
    * @return the outer ref if it exists, null otherwise.
    */
-  public Feature outerRefOrNull()
+  public AbstractFeature outerRefOrNull()
   {
     if (PRECONDITIONS) require
       (state_.atLeast(State.RESOLVED_DECLARATIONS));
@@ -3112,7 +3214,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
   public int depth()
   {
     int result;
-    Feature o = outer();
+    var o = outer();
     result = (o == null)
       ? 0
       : o.depth()+1;
@@ -3188,7 +3290,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    *
    * @return true iff this is a heir of parent.
    */
-  public boolean inheritsFrom(Feature parent)
+  public boolean inheritsFrom(AbstractFeature parent)
   {
     if (PRECONDITIONS) require
       (state_.atLeast(State.LOADED),
@@ -3259,7 +3361,7 @@ public class Feature extends AbstractFeature implements Stmnt, Comparable<Featur
    *
    * @return the field that corresponds to the i-th actual generic argument.
    */
-  public Feature select(Resolution res, int i)
+  public AbstractFeature select(Resolution res, int i)
   {
     if (PRECONDITIONS) require
       (isOpenGenericField(),

@@ -232,7 +232,7 @@ public class Destructure extends ANY implements Stmnt
                          Feature outer,
                          List<Stmnt> stmnts,
                          Feature tmp,
-                         Feature f,
+                         AbstractFeature f,
                          Iterator<String> names,
                          int select,
                          Iterator<Feature> fields,
@@ -310,7 +310,7 @@ public class Destructure extends ANY implements Stmnt
         Iterator<String> names = _names.iterator();
         Iterator<Feature> fields = _fields == null ? null : _fields.iterator();
         List<String> fieldNames = new List<>();
-        for (Feature f : t.feature.arguments)
+        for (var f : t.feature.arguments())
           {
             // NYI: check if f is visible
             Type tf = f.resultTypeIfPresent(res, Type.NONE);
@@ -321,14 +321,14 @@ public class Destructure extends ANY implements Stmnt
                 int select = 0;
                 for (Type tfs : g.replaceOpen(t._generics))
                   {
-                    fieldNames.add(f._featureName.baseName() + "." + select);
+                    fieldNames.add(f.featureName().baseName() + "." + select);
                     addAssign(res, outer,stmnts, tmp, f, names, select, fields, tfs);
                     select++;
                   }
               }
             else
               {
-                fieldNames.add(f._featureName.baseName());
+                fieldNames.add(f.featureName().baseName());
                 addAssign(res, outer, stmnts, tmp, f, names, -1, fields, tf);
               }
           }

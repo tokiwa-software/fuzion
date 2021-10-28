@@ -66,7 +66,7 @@ public class Assign extends ANY implements Stmnt
    * Field that is assigned by this assign statement. initialized
    * during init() phase.
    */
-  public Feature _assignedField;
+  public AbstractFeature _assignedField;
 
 
   public Expr _target;
@@ -241,10 +241,10 @@ public class Assign extends ANY implements Stmnt
         _assignedField = f;
         _target        = fo.target(_pos, res, outer);
       }
-    if      (f == Types.f_ERROR        ) { check(Errors.count() > 0); /* ignore */ }
-    else if (!f.isField()              ) { AstErrors.assignmentToNonField    (this, f, outer); }
+    if      (f == Types.f_ERROR         ) { check(Errors.count() > 0); /* ignore */ }
+    else if (!f.isField()               ) { AstErrors.assignmentToNonField    (this, f, outer); }
     else if (!_indexVarAllowed &&
-             f._isIndexVarUpdatedByLoop) { AstErrors.assignmentToIndexVar    (this, f, outer); }
+             f.isIndexVarUpdatedByLoop()) { AstErrors.assignmentToIndexVar    (this, f, outer); }
     else if (f == f.outer().resultField())
       {
         f.outer().foundAssignmentToResult();
@@ -341,7 +341,7 @@ public class Assign extends ANY implements Stmnt
    */
   public String toString()
   {
-    return "set " + (_name == null ? _assignedField._featureName.baseName() : _name) + " := " + _value;
+    return "set " + (_name == null ? _assignedField.featureName().baseName() : _name) + " := " + _value;
   }
 
 }

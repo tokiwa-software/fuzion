@@ -43,7 +43,7 @@ public interface SrcModule
    * Get declared features for given outer Feature as seen by this module.
    * Result is never null.
    */
-  SortedMap<FeatureName, Feature>declaredFeatures(Feature outer);
+  SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer);
 
 
   /**
@@ -63,14 +63,14 @@ public interface SrcModule
    * all found feature declarations, the outer feature will be set to
    * this value.
    */
-  void findDeclarations(Feature inner, Feature outer);
+  void findDeclarations(Feature inner, AbstractFeature outer);
 
 
-  SortedMap<FeatureName, Feature> declaredOrInheritedFeatures(Feature outer);
-  Feature lookupFeature(Feature outer, FeatureName name);
+  SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer);
+  AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name);
   void findDeclaredOrInheritedFeatures(Feature outer);
-  SortedMap<FeatureName, Feature> lookupFeatures(Feature outer, String name);
-  FeaturesAndOuter lookupNoTarget(Feature thiz, String name, Call call, Assign assign, Destructure destructure);
+  SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name);
+  FeaturesAndOuter lookupNoTarget(AbstractFeature thiz, String name, Call call, Assign assign, Destructure destructure);
 
 }
 

@@ -148,7 +148,7 @@ public class Type extends ANY implements Comparable<Type>
   /**
    *
    */
-  Feature feature;
+  AbstractFeature feature;
 
 
   /**
@@ -241,7 +241,7 @@ public class Type extends ANY implements Comparable<Type>
    * @param ref true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
-  public Type(SourcePosition pos, String n, List<Type> g, Type o, Feature f, RefOrVal refOrVal)
+  public Type(SourcePosition pos, String n, List<Type> g, Type o, AbstractFeature f, RefOrVal refOrVal)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -512,7 +512,7 @@ public class Type extends ANY implements Comparable<Type>
              !isRef() &&  feature != null &&  feature.isThisRef()  ? "value "
                                                                    : "" )
           + (feature == null ? name
-                             : feature._featureName.baseName());
+             : feature.featureName().baseName());
       }
     else if (feature == null  || feature == Types.f_ERROR)
       {
@@ -542,7 +542,7 @@ public class Type extends ANY implements Comparable<Type>
   public List<Type> replaceGenerics(List<Type> genericsToReplace)
   {
     if (PRECONDITIONS) require
-      (featureOfType().generics.sizeMatches(_generics));
+      (featureOfType().generics().sizeMatches(_generics));
 
     return actualTypes(featureOfType(), genericsToReplace, _generics);
   }
@@ -605,7 +605,7 @@ public class Type extends ANY implements Comparable<Type>
        t != null,
        t.checkedForGeneric,
        Errors.count() > 0 || !t.isOpenGeneric(),
-       featureOfType().generics.sizeMatches(_generics));
+       featureOfType().generics().sizeMatches(_generics));
 
     Type result = t;
     if (result.dependsOnGenerics())
@@ -636,18 +636,18 @@ public class Type extends ANY implements Comparable<Type>
    * otherwise the type that results by replacing all formal generic parameters
    * of this in t by the corresponding type from actualGenerics.
    */
-  public Type actualType(Feature f, List<Type> actualGenerics)
+  public Type actualType(AbstractFeature f, List<Type> actualGenerics)
   {
     if (PRECONDITIONS) require
       (checkedForGeneric,
        Errors.count() > 0 ||
-       f.generics.sizeMatches(actualGenerics),
-       Errors.count() > 0 || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics);
+       f.generics().sizeMatches(actualGenerics),
+       Errors.count() > 0 || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics());
 
     Type result = this;
     if (f != null)
       {
-        for (Call i : f.inherits)
+        for (Call i : f.inherits())
           {
             result = result.actualType(i.calledFeature(),
                                        i.generics);
@@ -656,7 +656,7 @@ public class Type extends ANY implements Comparable<Type>
     if (result.isGenericArgument())
       {
         Generic g = result.genericArgument();
-        if (f != null && g.formalGenerics() == f.generics)  // t is replaced by corresponding actualGenerics entry
+        if (f != null && g.formalGenerics() == f.generics())  // t is replaced by corresponding actualGenerics entry
           {
             result = result.ensureNotOpen() ? g.replace(actualGenerics)
                                             : Types.t_ERROR;
@@ -695,16 +695,16 @@ public class Type extends ANY implements Comparable<Type>
    * @return a new list of types with all formal generic arguments from this
    * replaced by the corresponding actualGenerics entry.
    */
-  private static List<Type> actualTypes(Feature f, List<Type> genericsToReplace, List<Type> actualGenerics)
+  private static List<Type> actualTypes(AbstractFeature f, List<Type> genericsToReplace, List<Type> actualGenerics)
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 ||
-       f.generics.sizeMatches(actualGenerics));
+       f.generics().sizeMatches(actualGenerics));
 
     List<Type> result = genericsToReplace;
     if (f != null && !genericsToReplace.isEmpty())
       {
-        if (genericsToReplace == f.generics.asActuals())  /* shortcut for properly handling open generics list */
+        if (genericsToReplace == f.generics().asActuals())  /* shortcut for properly handling open generics list */
           {
             result = actualGenerics;
           }
@@ -824,7 +824,7 @@ public class Type extends ANY implements Comparable<Type>
    *
    * @param feat the root feature that contains this type.
    */
-  public void findGenerics(Feature outerfeat)
+  public void findGenerics(AbstractFeature outerfeat)
   {
     //    if (PRECONDITIONS) require
     //      (!outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
@@ -840,7 +840,7 @@ public class Type extends ANY implements Comparable<Type>
           }
         else
           {
-            Feature o = outerfeat;
+            var o = outerfeat;
             do
               {
                 generic = o.getGeneric(name);
@@ -865,7 +865,7 @@ public class Type extends ANY implements Comparable<Type>
   /**
    * resolve artificial types t_ERROR, etc.
    */
-  public void resolveArtificialType(Feature feat)
+  public void resolveArtificialType(AbstractFeature feat)
   {
     if (PRECONDITIONS) require
       (feature == null,
@@ -886,7 +886,7 @@ public class Type extends ANY implements Comparable<Type>
    * @param feat the outer feature that this type is declared in, used
    * for resolution of generic parameters etc.
    */
-  public Type resolve(Resolution res, Feature outerfeat)
+  public Type resolve(Resolution res, AbstractFeature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
@@ -905,10 +905,10 @@ public class Type extends ANY implements Comparable<Type>
             return Types.t_ERROR;
           }
         FormalGenerics.resolve(res, _generics, outerfeat);
-        if (!feature.generics.errorIfSizeOrTypeDoesNotMatch(_generics,
-                                                            pos,
-                                                            "type",
-                                                            "Type: " + toString() + "\n"))
+        if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
+                                                              pos,
+                                                              "type",
+                                                              "Type: " + toString() + "\n"))
           {
             return Types.t_ERROR;
           }
@@ -926,7 +926,7 @@ public class Type extends ANY implements Comparable<Type>
    * @param feat the outer feature that this type is declared in, used
    * for resolution of generic parameters etc.
    */
-  void resolveFeature(Resolution res, Feature outerfeat)
+  void resolveFeature(Resolution res, AbstractFeature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
@@ -935,7 +935,7 @@ public class Type extends ANY implements Comparable<Type>
 
     if (!isGenericArgument())
       {
-        Feature o = outerfeat;
+        var o = outerfeat;
         if (outer_ != null)
           {
             outer_ = outer_.resolve(res, outerfeat);
@@ -949,14 +949,14 @@ public class Type extends ANY implements Comparable<Type>
           }
         if (feature == null)
           {
-            var type_fs = new List<Feature>();
-            var nontype_fs = new List<Feature>();
+            var type_fs = new List<AbstractFeature>();
+            var nontype_fs = new List<AbstractFeature>();
             do
               {
                 var fs = res._module.lookupFeatures(o, name).values();
                 for (var f : fs)
                   {
-                    if (f.returnType.isConstructorType())
+                    if (f.returnType().isConstructorType())
                       {
                         type_fs.add(f);
                         feature = f;
@@ -1074,12 +1074,12 @@ public class Type extends ANY implements Comparable<Type>
    *
    * @return
    */
-  public Feature featureOfType()
+  public AbstractFeature featureOfType()
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 || !isGenericArgument());
 
-    Feature result = feature;
+    var result = feature;
 
     if (result == null)
       {
@@ -1250,7 +1250,7 @@ public class Type extends ANY implements Comparable<Type>
           {
             check
               (feature == null ||
-               name.equals(feature._featureName.baseName()) ||
+               name.equals(feature.featureName().baseName()) ||
                Types.INTERNAL_NAMES.contains(name) || (Errors.count() > 0),
                generic == null || name.equals(generic._name),
                (feature == null) ^ (generic == null) || (Errors.count() > 0));
@@ -1322,7 +1322,7 @@ public class Type extends ANY implements Comparable<Type>
           {
             if (feature != null && feature.state().atLeast(Feature.State.LOADED))
               {
-                Feature of = feature.outer();
+                var of = feature.outer();
                 if (of == null)
                   {
                     return null;
@@ -1440,7 +1440,7 @@ public class Type extends ANY implements Comparable<Type>
               (actual.feature != null || Errors.count() > 0);
             if (actual.feature != null)
               {
-                for (Call p: actual.feature.inherits)
+                for (Call p: actual.feature.inherits())
                   {
                     Type pt = Types.intern(actual.actualType(p.type()));
                     if (actual.isRef())
@@ -1515,7 +1515,7 @@ public class Type extends ANY implements Comparable<Type>
                   }
                 if (!result)
                   {
-                    for (Call p: actual.feature.inherits)
+                    for (Call p: actual.feature.inherits())
                       {
                         Type pt = Types.intern(actual.actualType(p.type()));
                         if (constraintAssignableFrom(pt))

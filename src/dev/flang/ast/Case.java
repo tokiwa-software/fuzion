@@ -267,7 +267,7 @@ public class Case extends ANY
     List<Type> matches = new List<Type>();
     int i = 0;
     t.resolveFeature(res, outer);
-    var inferGenerics = !t.isGenericArgument() && t._generics.isEmpty() && t.featureOfType().generics != FormalGenerics.NONE;
+    var inferGenerics = !t.isGenericArgument() && t._generics.isEmpty() && t.featureOfType().generics() != FormalGenerics.NONE;
     if (!inferGenerics)
       {
         t = t.resolve(res, outer);

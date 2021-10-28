@@ -26,9 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.mir;
 
+import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
 import dev.flang.ast.Assign;  // NYI: Remove dependency!
 import dev.flang.ast.Call;  // NYI: Remove dependency!
-import dev.flang.ast.Feature;  // NYI: Remove dependency!
 import dev.flang.ast.SrcModule;  // NYI: Remove dependency!
 
 import dev.flang.ir.IR;
@@ -58,8 +58,8 @@ public class MIR extends IR
   /**
    * The main feature
    */
-  final Feature _main;
-  final Feature _universe;
+  final AbstractFeature _main;
+  final AbstractFeature _universe;
 
   final SrcModule _mod;
 
@@ -67,13 +67,13 @@ public class MIR extends IR
   /**
    * integer ids for features in this module
    */
-  final Map2Int<Feature> _featureIds = new MapComparable2Int(FEATURE_BASE);
+  final Map2Int<AbstractFeature> _featureIds = new MapComparable2Int(FEATURE_BASE);
 
 
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public MIR(Feature universe, Feature main, SrcModule mod)
+  public MIR(AbstractFeature universe, AbstractFeature main, SrcModule mod)
   {
     _universe = universe;
     _main = main;
@@ -88,7 +88,7 @@ public class MIR extends IR
   /**
    * The main Feature.
    */
-  public Feature main()
+  public AbstractFeature main()
   {
     return _main;
   }
@@ -101,7 +101,7 @@ public class MIR extends IR
   {
     if (_featureIds.size() == 0)
       {
-        var u = main().universe();
+        var u = universe();
         addFeatures(u);
       }
   }
@@ -110,7 +110,7 @@ public class MIR extends IR
   /**
    * Helper to addFeatures() to add feature f and all features declared within f.
    */
-  private void addFeatures(Feature f)
+  private void addFeatures(AbstractFeature f)
   {
     _featureIds.add(f);
     for (var i : _mod.declaredFeatures(f).values())
@@ -138,7 +138,7 @@ public class MIR extends IR
   }
 
 
-  public Feature universe() {
+  public AbstractFeature universe() {
     return _universe;
   }
 
@@ -153,7 +153,7 @@ public class MIR extends IR
    *
    * @return the code
    */
-  private List<Object> prolog(Feature f)
+  private List<Object> prolog(AbstractFeature f)
   {
     List<Object> code = new List<>();
     // NYI: MIR.prolog
@@ -180,9 +180,9 @@ public class MIR extends IR
    *
    * @param ff a routine or constructor feature.
    */
-  private void addCode(Feature heir, List<Object> code, Feature ff)
+  private void addCode(AbstractFeature heir, List<Object> code, AbstractFeature ff)
   {
-    for (Call p: ff.inherits)
+    for (Call p: ff.inherits())
       {
         /*
 NYI: Any side-effects in p.target or p._actuals will be executed twice, once for
@@ -226,11 +226,11 @@ hw25 is
         */
 
         check
-          (p._actuals.size() == p.calledFeature().arguments.size());
+          (p._actuals.size() == p.calledFeature().arguments().size());
         for (var i = 0; i < p._actuals.size(); i++)
           {
             var a = p._actuals.get(i);
-            var f = pf.arguments.get(i);
+            var f = pf.arguments().get(i);
             toStack(code, a);
             code.add(ExprKind.Current);
             // Field clazz means assign value to that field
@@ -238,7 +238,7 @@ hw25 is
           }
         addCode(ff, code, p.calledFeature());
       }
-    toStack(code, ff.impl._code);
+    toStack(code, ff.code());
   }
 
 
@@ -274,13 +274,13 @@ hw25 is
 
     return ff.isChoice()
       ? FeatureKind.Choice
-      : switch (ff.impl.kind_)
+      : switch (ff.implKind())
         {
         case Routine, RoutineDef                     -> FeatureKind.Routine;
         case Field, FieldDef, FieldActual, FieldInit -> FeatureKind.Field;
         case Intrinsic                               -> FeatureKind.Intrinsic;
         case Abstract                                -> FeatureKind.Abstract;
-        default -> throw new Error ("Unexpected feature impl kind: "+ff.impl.kind_);
+        default -> throw new Error ("Unexpected feature impl kind: "+ff.implKind());
         };
   }
 
@@ -323,10 +323,10 @@ hw25 is
 
     var ff = _featureIds.get(f);
     var s = _codeIds.get(c).get(ix);
-    Feature af =
+    var af =
       (s instanceof Call   call) ? call.calledFeature() :
       (s instanceof Assign a   ) ? a._assignedField :
-      (Feature) (Object) new Object() { { if (true) throw new Error("acccessedFeature found unexpected Stmnt."); } } /* Java is ugly... */;
+      (AbstractFeature) (Object) new Object() { { if (true) throw new Error("acccessedFeature found unexpected Stmnt."); } } /* Java is ugly... */;
 
     return af == null ? -1 : _featureIds.get(af);
   }
@@ -343,7 +343,7 @@ hw25 is
   public int featureArgCount(int f)
   {
     var ff = _featureIds.get(f);
-    return ff.arguments.size();
+    return ff.arguments().size();
   }
 
 
@@ -362,7 +362,7 @@ hw25 is
       (0 <= i && i < featureArgCount(f));
 
     var ff = _featureIds.get(f);
-    var af = ff.arguments.get(i);
+    var af = ff.arguments().get(i);
     return _featureIds.get(af);
   }
 

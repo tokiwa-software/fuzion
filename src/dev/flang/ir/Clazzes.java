@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.Assign; // NYI: remove dependency!
 import dev.flang.ast.Block; // NYI: remove dependency!
 import dev.flang.ast.BoolConst; // NYI: remove dependency!
@@ -205,7 +206,7 @@ public class Clazzes extends ANY
    * found that a feature is called dynamically: Then this features needs to be
    * added to the dynamic binding data of heir classes of f.outer).
    */
-  private static TreeMap<Feature, List<Runnable>> _whenCalledDynamically_ = new TreeMap();
+  private static TreeMap<AbstractFeature, List<Runnable>> _whenCalledDynamically_ = new TreeMap();
   static TreeMap<Clazz, List<Runnable>> _whenCalled_ = new TreeMap();
 
 
@@ -213,7 +214,7 @@ public class Clazzes extends ANY
    * Set of features that are called dynamically. Populated during findClasses
    * phase.
    */
-  private static TreeSet<Feature> _calledDynamically_ = new TreeSet();
+  private static TreeSet<AbstractFeature> _calledDynamically_ = new TreeSet();
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -286,7 +287,7 @@ public class Clazzes extends ANY
                 // So instead of testing !o.isRef() we use
                 // !o._type.featureOfType().isThisRef().
                 !o._type.featureOfType().isThisRef() &&
-                o._type.featureOfType().impl != Impl.INTRINSIC)
+                o._type.featureOfType().implKind() != Impl.Kind.Intrinsic)
               {  // but a recursive chain of value types is not permitted
 
                 // NYI: recursive chain of value types should be detected during
@@ -425,7 +426,7 @@ public class Clazzes extends ANY
   /**
    * When it is detected that f is called dynamically, execute r.run().
    */
-  static void whenCalledDynamically(Feature f,
+  static void whenCalledDynamically(AbstractFeature f,
                                     Runnable r)
   {
     if (_calledDynamically_.contains(f))
@@ -479,7 +480,7 @@ public class Clazzes extends ANY
    * called dynamically, execute all the runnables registered for f by
    * whenCalledDynamically.
    */
-  static void calledDynamically(Feature f)
+  static void calledDynamically(AbstractFeature f)
   {
     if (!_calledDynamically_.contains(f))
       {
@@ -502,7 +503,7 @@ public class Clazzes extends ANY
   /**
    * Has f been found to be caled dynamically?
    */
-  static boolean isCalledDynamically(Feature f)
+  static boolean isCalledDynamically(AbstractFeature f)
   {
     return _calledDynamically_.contains(f);
   }
@@ -518,7 +519,7 @@ public class Clazzes extends ANY
         int fields = 0;
         int routines = 0;
         int clazzesForFields = 0;
-        Map<Feature, List<Clazz>> clazzesPerFeature = new TreeMap<>();
+        Map<AbstractFeature, List<Clazz>> clazzesPerFeature = new TreeMap<>();
         for (var cl : clazzes.keySet())
           {
             var f = cl.feature();
@@ -1141,7 +1142,7 @@ public class Clazzes extends ANY
   /**
    * Has this feature been found to be used within the given static clazz?
    */
-  public static boolean isUsed(Feature thiz, Clazz staticClazz)
+  public static boolean isUsed(AbstractFeature thiz, Clazz staticClazz)
   {
     return thiz.isUsed();
   }

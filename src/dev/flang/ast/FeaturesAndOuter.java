@@ -45,9 +45,9 @@ import dev.flang.util.SourcePosition;
 public class FeaturesAndOuter extends ANY
 {
 
-  public SortedMap<FeatureName, Feature> features;
+  public SortedMap<FeatureName, AbstractFeature> features;
 
-  public Feature outer;
+  public AbstractFeature outer;
 
 
   /**
@@ -60,13 +60,14 @@ public class FeaturesAndOuter extends ANY
    *
    * @param cur the feature that contains the access.
    */
-  Expr target(SourcePosition pos, Resolution res, Feature cur)
+  Expr target(SourcePosition pos, Resolution res, AbstractFeature cur)
   {
     var t = new This(pos, cur, outer);
     Expr result = t;
     if (cur.state() != Feature.State.RESOLVING_INHERITANCE)
       {
-        result = t.resolveTypes(res, cur);
+        var fcur = (Feature) cur; // NYI: cast to Feature!
+        result = t.resolveTypes(res, fcur);
       }
     return result;
   }
@@ -87,10 +88,10 @@ public class FeaturesAndOuter extends ANY
    * @param isCandidate predicate to decide if a feature is a candidate even
    * if its name is not an exact match.
    */
-  Feature filter(SourcePosition pos, FeatureName name, java.util.function.Predicate<Feature> isCandidate)
+  AbstractFeature filter(SourcePosition pos, FeatureName name, java.util.function.Predicate<AbstractFeature> isCandidate)
   {
     var match = false;
-    var found = new List<Feature>();
+    var found = new List<AbstractFeature>();
     for (var f : features.entrySet())
       {
         var ff = f.getValue();

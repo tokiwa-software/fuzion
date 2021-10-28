@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
-import dev.flang.ast.Feature;
+import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.FeatureName;
 
 import dev.flang.mir.MIR;
@@ -82,7 +82,7 @@ public abstract class Module extends ANY
    *
    * @param outer the declaring feature
    */
-  abstract SortedMap<FeatureName, Feature>declaredFeaturesOrNull(Feature outer);
+  abstract SortedMap<FeatureName, AbstractFeature>declaredFeaturesOrNull(AbstractFeature outer);
 
 
   /**
@@ -92,7 +92,7 @@ public abstract class Module extends ANY
    *
    * @param outer the declaring feature
    */
-  abstract SortedMap<FeatureName, Feature>declaredOrInheritedFeaturesOrNull(Feature outer);
+  abstract SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer);
 
 
 }

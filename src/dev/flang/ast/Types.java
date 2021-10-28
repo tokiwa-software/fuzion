@@ -144,26 +144,26 @@ public class Types extends ANY
      * since the union of void  with any other type is the other type.
      */
     public final Type t_void;
-    public final Feature f_void;
-    public final Feature f_choice;
-    public final Feature f_TRUE;
-    public final Feature f_FALSE;
-    public final Feature f_bool;
-    public final Feature f_bool_NOT;
-    public final Feature f_bool_AND;
-    public final Feature f_bool_OR;
-    public final Feature f_bool_IMPLIES;
-    public final Feature f_debug;
-    public final Feature f_debugLevel;
-    public final Feature f_function;
-    public final Feature f_function_call;
-    public final Feature f_safety;
-    public final Feature f_array;
-    public final Feature f_array_internalArray;
-    public final Feature f_sys;
-    public final Feature f_sys_array;
-    public final Feature f_sys_array_length;
-    public final Feature f_sys_array_data;
+    public final AbstractFeature f_void;
+    public final AbstractFeature f_choice;
+    public final AbstractFeature f_TRUE;
+    public final AbstractFeature f_FALSE;
+    public final AbstractFeature f_bool;
+    public final AbstractFeature f_bool_NOT;
+    public final AbstractFeature f_bool_AND;
+    public final AbstractFeature f_bool_OR;
+    public final AbstractFeature f_bool_IMPLIES;
+    public final AbstractFeature f_debug;
+    public final AbstractFeature f_debugLevel;
+    public final AbstractFeature f_function;
+    public final AbstractFeature f_function_call;
+    public final AbstractFeature f_safety;
+    public final AbstractFeature f_array;
+    public final AbstractFeature f_array_internalArray;
+    public final AbstractFeature f_sys;
+    public final AbstractFeature f_sys_array;
+    public final AbstractFeature f_sys_array_length;
+    public final AbstractFeature f_sys_array_data;
     Resolved(Resolution res, Feature universe)
     {
       this.universe = universe;

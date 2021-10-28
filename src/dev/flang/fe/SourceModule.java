@@ -32,11 +32,14 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
@@ -85,18 +88,18 @@ public class SourceModule extends Module implements SrcModule
      * Features declared inside a feature. The inner features are mapped from
      * their FeatureName.
      */
-    SortedMap<FeatureName, Feature> _declaredFeatures;
+    SortedMap<FeatureName, AbstractFeature> _declaredFeatures;
 
     /**
      * Features declared inside a feature or inherited from its parents.
      */
-    SortedMap<FeatureName, Feature> _declaredOrInheritedFeatures;
+    SortedMap<FeatureName, AbstractFeature> _declaredOrInheritedFeatures;
 
     /**
      * All features that have been found to inherit from this feature.  This set
      * is collected during RESOLVING_DECLARATIONS.
      */
-    public Set<Feature> _heirs = new TreeSet<>();
+    public Set<AbstractFeature> _heirs = new TreeSet<>();
   }
 
 
@@ -153,7 +156,7 @@ public class SourceModule extends Module implements SrcModule
   /**
    * Map from features in this module or in modules it depends on to module-specific data  for this feature.
    */
-  private SortedMap<Feature, FData> _data = new TreeMap<>();
+  private Map<AbstractFeature, FData> _data = new HashMap<>();
 
 
   Resolution _res;
@@ -249,7 +252,7 @@ public class SourceModule extends Module implements SrcModule
    */
   public MIR createMIR()
   {
-    Feature d = _main == null
+    var d = _main == null
       ? _universe
       : _universe.get(_res, _main);
 
@@ -267,11 +270,11 @@ public class SourceModule extends Module implements SrcModule
   /**
    * Create MIR based on given main feature.
    */
-  MIR createMIR(Feature main)
+  MIR createMIR(AbstractFeature main)
   {
     if (main != null && Errors.count() == 0)
       {
-        if (main.arguments.size() != 0)
+        if (main.arguments().size() != 0)
           {
             FeErrors.mainFeatureMustNotHaveArguments(main);
           }
@@ -279,15 +282,15 @@ public class SourceModule extends Module implements SrcModule
           {
             FeErrors.mainFeatureMustNotBeField(main);
           }
-        if (main.impl == Impl.ABSTRACT)
+        if (main.isAbstract())
           {
             FeErrors.mainFeatureMustNotBeAbstract(main);
           }
-        if (main.impl == Impl.INTRINSIC)
+        if (main.implKind() == Impl.Kind.Intrinsic)
           {
             FeErrors.mainFeatureMustNotBeIntrinsic(main);
           }
-        if (!main.generics.list.isEmpty())
+        if (!main.generics().list.isEmpty())
           {
             FeErrors.mainFeatureMustNotHaveTypeArguments(main);
           }
@@ -314,7 +317,7 @@ public class SourceModule extends Module implements SrcModule
    * @return a path from root, via the base names of f's outer features to a
    * directory wtih f's base name, null if this does not exist.
    */
-  private SourceDir dirExists(SourceDir root, Feature f) throws IOException, UncheckedIOException
+  private SourceDir dirExists(SourceDir root, AbstractFeature f) throws IOException, UncheckedIOException
   {
     var o = f.outer();
     if (o == null)
@@ -419,10 +422,10 @@ public class SourceModule extends Module implements SrcModule
    * all found feature declarations, the outer feature will be set to
    * this value.
    */
-  public void findDeclarations(Feature inner, Feature outer)
+  public void findDeclarations(Feature inner, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (inner.state_ == Feature.State.LOADING,
+      (inner.state() == Feature.State.LOADING,
        ((outer == null) == (inner.featureName().baseName().equals(Feature.UNIVERSE_NAME))),
        inner.outer_ == null);
 
@@ -450,9 +453,9 @@ public class SourceModule extends Module implements SrcModule
               check
                 (Errors.count() > 0  || c.calledFeature() != null);
 
-              if (c.calledFeature() != null)
+              if (c.calledFeature() instanceof Feature cf)
                 {
-                  findDeclarations(c.calledFeature(), outer);
+                  findDeclarations(cf, outer);
                 }
             }
           return c;
@@ -460,8 +463,8 @@ public class SourceModule extends Module implements SrcModule
         public Feature   action(Feature   f, Feature outer) { findDeclarations(f, outer); return f; }
       });
 
-    if (inner.impl.initialValue() != null &&
-        outer.pos._sourceFile != inner.pos._sourceFile &&
+    if (inner.initialValue() != null &&
+        outer.pos()._sourceFile != inner.pos()._sourceFile &&
         (!outer.isUniverse() || !inner.isLegalPartOfUniverse()) &&
         !inner._isIndexVarUpdatedByLoop  /* required for loop in universe, e.g.
                                     *
@@ -500,7 +503,7 @@ public class SourceModule extends Module implements SrcModule
    *
    * @param inner the inner feature.
    */
-  void addDeclaredInnerFeature(Feature outer, FeatureName fn, Feature inner)
+  void addDeclaredInnerFeature(AbstractFeature outer, FeatureName fn, Feature inner)
   {
     declaredFeatures(outer).put(fn, inner);
   }
@@ -511,7 +514,7 @@ public class SourceModule extends Module implements SrcModule
    *
    * @param outer the feature we need to get the data record from.
    */
-  FData data(Feature outer)
+  FData data(AbstractFeature outer)
   {
     var d = _data.get(outer);
     if (d == null)
@@ -529,7 +532,7 @@ public class SourceModule extends Module implements SrcModule
    *
    * @param outer the declaring feature
    */
-  public SortedMap<FeatureName, Feature>declaredFeatures(Feature outer)
+  public SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
   {
     var d = data(outer);
     var s = d._declaredFeatures;
@@ -560,7 +563,7 @@ public class SourceModule extends Module implements SrcModule
    *
    * @param outer the declaring feature
    */
-  SortedMap<FeatureName, Feature>declaredFeaturesOrNull(Feature outer)
+  SortedMap<FeatureName, AbstractFeature>declaredFeaturesOrNull(AbstractFeature outer)
   {
     var d = _data.get(outer);
     if (d != null)
@@ -577,10 +580,10 @@ public class SourceModule extends Module implements SrcModule
    *
    * @param outer the declaring feature
    */
-  public SortedMap<FeatureName, Feature> declaredOrInheritedFeatures(Feature outer)
+  public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (outer.state_.atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
     var d = data(outer);
     var s = d._declaredOrInheritedFeatures;
@@ -612,7 +615,7 @@ public class SourceModule extends Module implements SrcModule
    *
    * @param outer the declaring feature
    */
-  SortedMap<FeatureName, Feature>declaredOrInheritedFeaturesOrNull(Feature outer)
+  SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer)
   {
     var d = _data.get(outer);
     if (d != null)
@@ -652,7 +655,7 @@ public class SourceModule extends Module implements SrcModule
   {
     for (Call p : outer.inherits)
       {
-        Feature cf = p.calledFeature();
+        var cf = p.calledFeature();
         check
           (Errors.count() > 0 || cf != null);
 
@@ -668,7 +671,7 @@ public class SourceModule extends Module implements SrcModule
                   (cf != outer);
 
                 var newfn = cf.handDown(_res, f, fn, p, outer);
-                addInheritedFeature(outer, p.pos, newfn, f);
+                addInheritedFeature(outer, p.pos(), newfn, f);
               }
           }
       }
@@ -686,23 +689,23 @@ public class SourceModule extends Module implements SrcModule
    *
    * @param f the feature to be added.
    */
-  private void addInheritedFeature(Feature outer, SourcePosition pos, FeatureName fn, Feature f)
+  private void addInheritedFeature(AbstractFeature outer, SourcePosition pos, FeatureName fn, AbstractFeature f)
   {
     var s = data(outer)._declaredOrInheritedFeatures;
-    var existing = s == null ? null : s.get(fn);
+    var existing = (Feature) (s == null ? null : s.get(fn)); // NYI: Cast!
     if (existing != null)
       {
         if (existing.redefinitions_.contains(f))
           { // f redefined existing, so we are fine
           }
-        else if (f.redefinitions_.contains(existing))
+        else if (((Feature)f).redefinitions_.contains(existing)) // NYI: Cast!
           { // existing redefines f, so use existing
             f = existing;
           }
-        else if (existing == f && f.generics != FormalGenerics.NONE ||
+        else if (existing == f && f.generics() != FormalGenerics.NONE ||
                  existing != f && declaredFeatures(outer).get(fn) == null)
           { // NYI: Should be ok if existing or f is abstract.
-            AstErrors.repeatedInheritanceCannotBeResolved(outer.pos, outer, fn, existing, f);
+            AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, existing, f);
           }
       }
     s.put(fn, f);
@@ -728,7 +731,7 @@ public class SourceModule extends Module implements SrcModule
         var existing = doi.get(fn);
         if (existing == null)
           {
-            if ((f.modifiers & Consts.MODIFIER_REDEFINE) != 0)
+            if ((((Feature)f).modifiers & Consts.MODIFIER_REDEFINE) != 0) // NYI: Cast!
               {
                 AstErrors.redefineModifierDoesNotRedefine(f);
               }
@@ -738,27 +741,27 @@ public class SourceModule extends Module implements SrcModule
             // This cannot happen, this case was already handled in addDeclaredInnerFeature:
             check
               (false);
-            AstErrors.duplicateFeatureDeclaration(f.pos, outer, existing);
+            AstErrors.duplicateFeatureDeclaration(f.pos(), outer, existing);
           }
-        else if (existing.generics != FormalGenerics.NONE)
+        else if (existing.generics() != FormalGenerics.NONE)
           {
-            AstErrors.cannotRedefineGeneric(f.pos, outer, existing);
+            AstErrors.cannotRedefineGeneric(f.pos(), outer, existing);
           }
-        else if ((f.modifiers & Consts.MODIFIER_REDEFINE) == 0 && existing.impl != Impl.ABSTRACT)
+        else if ((((Feature)f).modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract()) // NYI: Cast!
           {
-            AstErrors.redefineModifierMissing(f.pos, outer, existing);
+            AstErrors.redefineModifierMissing(f.pos(), outer, existing);
           }
         else
           {
-            existing.redefinitions_.add(f);
+            ((Feature)existing).redefinitions_.add((Feature)f); // NYI: Casts!
           }
         doi.put(fn, f);
-        f.scheduleForResolution(_res);
+        ((Feature)f).scheduleForResolution(_res); // NYI: Cast!
       }
   }
 
 
-  void addDeclaredInnerFeature(Feature outer, Feature f)
+  void addDeclaredInnerFeature(AbstractFeature outer, Feature f)
   {
     if (PRECONDITIONS) require
       (outer.state().atLeast(Feature.State.LOADING));
@@ -768,8 +771,8 @@ public class SourceModule extends Module implements SrcModule
     var existing = df.get(fn);
     if (existing != null)
       {
-        if (f       .impl.kind_ == Impl.Kind.FieldDef &&
-            existing.impl.kind_ == Impl.Kind.FieldDef    )
+        if (f       .implKind() == Impl.Kind.FieldDef &&
+            existing.implKind() == Impl.Kind.FieldDef    )
           {
             var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
             fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
@@ -785,7 +788,7 @@ public class SourceModule extends Module implements SrcModule
                 for (var e : existingFields.values())
                   {
                     // NYI: set error if e.declaredInBlock() == f.declaredInBlock()
-                    if (e.isDeclaredInMainBlock() && f.isDeclaredInMainBlock())
+                    if (((Feature)e).isDeclaredInMainBlock() && f.isDeclaredInMainBlock()) // NYI: Cast!
                       {
                         error = true;
                       }
@@ -798,7 +801,7 @@ public class SourceModule extends Module implements SrcModule
               }
             if (error)
               {
-                AstErrors.duplicateFeatureDeclaration(f.pos, f, existing);
+                AstErrors.duplicateFeatureDeclaration(f.pos(), f, existing);
               }
           }
       }
@@ -827,7 +830,7 @@ public class SourceModule extends Module implements SrcModule
    *
    * @param f the feature to be added.
    */
-  private void addToHeirs(Feature outer, FeatureName fn, Feature f)
+  private void addToHeirs(AbstractFeature outer, FeatureName fn, Feature f)
   {
     var d = _data.get(outer);
     if (d != null)
@@ -850,10 +853,10 @@ public class SourceModule extends Module implements SrcModule
    *
    * @param outer the declaring or inheriting feature
    */
-  public Feature lookupFeature(Feature outer, FeatureName name)
+  public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
   {
     if (PRECONDITIONS) require
-      (outer.state_.atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
     return declaredOrInheritedFeatures(outer).get(name);
   }
@@ -867,10 +870,10 @@ public class SourceModule extends Module implements SrcModule
    *
    * @param name the name of the feature
    */
-  public SortedMap<FeatureName, Feature> lookupFeatures(Feature outer, String name)
+  public SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name)
   {
     if (PRECONDITIONS) require
-      (outer.state_.atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
     return FeatureName.getAll(declaredOrInheritedFeatures(outer), name);
   }
@@ -886,10 +889,10 @@ public class SourceModule extends Module implements SrcModule
    *
    * @param argCount the argument count
    */
-  SortedMap<FeatureName, Feature> lookupFeatures(Feature outer, String name, int argCount)
+  SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name, int argCount)
   {
     if (PRECONDITIONS) require
-      (outer.state_.atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
     return FeatureName.getAll(declaredOrInheritedFeatures(outer), name, argCount);
   }
@@ -916,14 +919,14 @@ public class SourceModule extends Module implements SrcModule
    * @return in case we found features visible in the call's scope, the features
    * together with the outer feature where they were found.
    */
-  public FeaturesAndOuter lookupNoTarget(Feature outer, String name, Call call, Assign assign, Destructure destructure)
+  public FeaturesAndOuter lookupNoTarget(AbstractFeature outer, String name, Call call, Assign assign, Destructure destructure)
   {
     if (PRECONDITIONS) require
-      (outer.state_.atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
     var result = new FeaturesAndOuter();
-    Feature curOuter = outer;
-    Feature inner = null;
+    var curOuter = outer;
+    AbstractFeature inner = null;
     do
       {
         var fs = assign != null ? lookupFeatures(curOuter, name, 0)
@@ -942,7 +945,9 @@ public class SourceModule extends Module implements SrcModule
               }
             if (!fields.isEmpty())
               {
-                var f = curOuter.findFieldDefInScope(name, call, assign, destructure, inner);
+                var f = curOuter instanceof Feature of /* NYI: AND cutOuter loaded by this module */
+                  ? of.findFieldDefInScope(name, call, assign, destructure, inner)
+                  : null;
                 fs = new TreeMap<>(fs);
                 // if we found f in scope, remove all other entries, otherwise remove all entries within this since they are not in scope.
                 for (var fn : fields)
@@ -967,6 +972,23 @@ public class SourceModule extends Module implements SrcModule
     while ((result.features.isEmpty()) && (curOuter != null));
 
     return result;
+  }
+
+
+  /**
+   * Create String representation for debugging.
+   */
+  public String toString()
+  {
+    var r = new StringBuilder();
+    r.append("SourceModule for paths: ");
+    var comma = "";
+    for (var s: _sourceDirs)
+      {
+        r.append(comma).append(s);
+        comma = ", ";
+      }
+    return r.toString();
   }
 
 }

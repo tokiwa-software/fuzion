@@ -273,7 +273,7 @@ public class FormalGenerics extends ANY
    *
    * @param generics the actual generic arguments that should be resolved
    */
-  public static void resolve(Resolution res, List<Type> generics, Feature outer)
+  public static void resolve(Resolution res, List<Type> generics, AbstractFeature outer)
   {
     if (!generics.isEmpty())
       {

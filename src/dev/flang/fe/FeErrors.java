@@ -26,8 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
-import dev.flang.ast.Feature;
 
 import dev.flang.mir.MIR;
 
@@ -46,47 +46,47 @@ public class FeErrors extends AstErrors
   /*-----------------------------  methods  -----------------------------*/
 
 
-  public static void mainFeatureMustNotHaveArguments(Feature m)
+  public static void mainFeatureMustNotHaveArguments(AbstractFeature m)
   {
-    error(m.pos,
+    error(m.pos(),
           "Main feature must not have arguments",
-          "Main feature has " + argumentsString(m.arguments.size()) + m.arguments.size()+", but should have no arguments to be used as main feature in an application\n" +
+          "Main feature has " + argumentsString(m.arguments().size()) + m.arguments().size()+", but should have no arguments to be used as main feature in an application\n" +
           "To solve this, remove the arguments from feature " + s(m) + "\n");
   }
 
-  public static void mainFeatureMustNotHaveTypeArguments(Feature m)
+  public static void mainFeatureMustNotHaveTypeArguments(AbstractFeature m)
   {
-    var g = m.generics.list;
-    error(m.pos,
+    var g = m.generics().list;
+    error(m.pos(),
           "Main feature must not have type arguments",
           "Main feature has " + singularOrPlural(g.size(),"type argument") + " " + g + ", but should have no arguments to be used as main feature in an application\n" +
           "To solve this, remove the arguments from feature " + s(m) + "\n");
   }
 
-  static void mainFeatureMustNot(Feature m, String what)
+  static void mainFeatureMustNot(AbstractFeature m, String what)
   {
-    error(m.pos,
+    error(m.pos(),
           "Main feature must not " +  what,
           "Main feature must be a non-abstract non-intrinsic routine\n" +
           "To solve this, use a non-abstract, non-intrinsic, non-generic routine as the main feature of your application.\n");
   }
 
-  public static void mainFeatureMustNotBeField(Feature m)
+  public static void mainFeatureMustNotBeField(AbstractFeature m)
   {
     mainFeatureMustNot(m, "be a field");
   }
 
-  public static void mainFeatureMustNotBeAbstract(Feature m)
+  public static void mainFeatureMustNotBeAbstract(AbstractFeature m)
   {
     mainFeatureMustNot(m, "be abstract");
   }
 
-  public static void mainFeatureMustNotBeIntrinsic(Feature m)
+  public static void mainFeatureMustNotBeIntrinsic(AbstractFeature m)
   {
     mainFeatureMustNot(m, "be intrinsic");
   }
 
-  static void mainFeatureMustNotHaveGenericArguments(Feature m)
+  static void mainFeatureMustNotHaveGenericArguments(AbstractFeature m)
   {
     mainFeatureMustNot(m, "have generic arguments");
   }
