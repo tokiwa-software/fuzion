@@ -429,7 +429,7 @@ public class SourceModule extends Module implements SrcModule
        ((outer == null) == (inner.featureName().baseName().equals(Feature.UNIVERSE_NAME))),
        inner.outer_ == null);
 
-    inner.state_ = Feature.State.FINDING_DECLARATIONS;
+    inner.setState(Feature.State.FINDING_DECLARATIONS);
 
     inner.outer_ = outer;
     inner.checkName();
@@ -477,11 +477,11 @@ public class SourceModule extends Module implements SrcModule
         AstErrors.initialValueNotAllowed(inner);
       }
 
-    inner.state_ = Feature.State.LOADED;
+    inner.setState(Feature.State.LOADED);
 
     if (POSTCONDITIONS) ensure
       (inner.outer_ == outer,
-       inner.state_ == Feature.State.LOADED);
+       inner.state() == Feature.State.LOADED);
   }
 
 
@@ -635,7 +635,7 @@ public class SourceModule extends Module implements SrcModule
   public void findDeclaredOrInheritedFeatures(Feature outer)
   {
     if (PRECONDITIONS) require
-      (outer.state_ == Feature.State.RESOLVING_DECLARATIONS);
+      (outer.state() == Feature.State.RESOLVING_DECLARATIONS);
 
     data(outer)._declaredOrInheritedFeatures = new TreeMap<>();
     findInheritedFeatures(outer);

@@ -102,7 +102,7 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * The state of this feature.
    */
-  public State state_ = State.LOADING;
+  private State _state = State.LOADING;
 
 
   /**
@@ -395,7 +395,7 @@ public class Feature extends AbstractFeature implements Stmnt
   Feature(boolean b)
   {
     this();
-    state_ = State.ERROR;
+    _state = State.ERROR;
   }
 
 
@@ -687,7 +687,19 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public State state()
   {
-    return state_;
+    return _state;
+  }
+
+
+  /**
+   * set the state to a new value
+   */
+  public void setState(State newState)
+  {
+    if (PRECONDITIONS) require
+      (newState.ordinal() == _state.ordinal() + 1);
+
+    this._state = newState;
   }
 
 
@@ -698,7 +710,7 @@ public class Feature extends AbstractFeature implements Stmnt
   {
     if (PRECONDITIONS) require
       (isUniverse());
-    state_ = Feature.State.LOADING;
+    _state = Feature.State.LOADING;
   }
 
 
@@ -902,7 +914,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public void addResultField(Resolution res)
   {
     if (PRECONDITIONS) require
-      (state_ == State.FINDING_DECLARATIONS);
+      (_state == State.FINDING_DECLARATIONS);
 
     if (hasResultField())
       {
@@ -961,7 +973,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public List<Type> choiceGenerics()
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.RESOLVING_TYPES));
+      (_state.atLeast(State.RESOLVING_TYPES));
 
     List<Type> result;
 
@@ -1008,7 +1020,7 @@ public class Feature extends AbstractFeature implements Stmnt
   private void eraseChoiceGenerics()
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.RESOLVING_TYPES),
+      (_state.atLeast(State.RESOLVING_TYPES),
        Errors.count() > 0);
 
     if (this == Types.resolved.f_choice)
@@ -1061,9 +1073,9 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (state().atLeast(State.LOADED));
 
-    if (state_ == State.LOADED)
+    if (_state == State.LOADED)
       {
-        state_ = State.RESOLVING;
+        _state = State.RESOLVING;
         res.add(this);
       }
   }
@@ -1202,15 +1214,15 @@ public class Feature extends AbstractFeature implements Stmnt
   void resolveInheritance(Resolution res)
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.LOADED));
+      (_state.atLeast(State.LOADED));
 
-    if (state_ == State.RESOLVING_INHERITANCE)
+    if (_state == State.RESOLVING_INHERITANCE)
       {
         detectedCyclicInheritance = true;
       }
-    else if (state_ == State.RESOLVING)
+    else if (_state == State.RESOLVING)
       {
-        state_ = State.RESOLVING_INHERITANCE;
+        _state = State.RESOLVING_INHERITANCE;
 
         check
           ((outer_ == null) || outer_.state().atLeast(State.RESOLVING));
@@ -1233,12 +1245,12 @@ public class Feature extends AbstractFeature implements Stmnt
                   }
               }
           }
-        state_ = State.RESOLVED_INHERITANCE;
+        _state = State.RESOLVED_INHERITANCE;
         res.scheduleForDeclarations(this);
       }
 
     if (POSTCONDITIONS) ensure
-      (detectedCyclicInheritance || state_.atLeast(State.RESOLVED_INHERITANCE));
+      (detectedCyclicInheritance || _state.atLeast(State.RESOLVED_INHERITANCE));
   }
 
   static FeatureVisitor findGenerics = new FeatureVisitor()
@@ -1260,22 +1272,22 @@ public class Feature extends AbstractFeature implements Stmnt
   void resolveDeclarations(Resolution res)
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.RESOLVED_INHERITANCE));
+      (_state.atLeast(State.RESOLVED_INHERITANCE));
 
-    if (state_ == State.RESOLVED_INHERITANCE)
+    if (_state == State.RESOLVED_INHERITANCE)
       {
-        state_ = State.RESOLVING_DECLARATIONS;
+        _state = State.RESOLVING_DECLARATIONS;
 
         check
-          (state_ == State.RESOLVING_DECLARATIONS);
+          (_state == State.RESOLVING_DECLARATIONS);
 
         this.returnType = impl.checkReturnType(this);
         res._module.findDeclaredOrInheritedFeatures(this);
 
         check
-          (state_.atLeast(State.RESOLVING_DECLARATIONS));
+          (_state.atLeast(State.RESOLVING_DECLARATIONS));
 
-        if (state_ == State.RESOLVING_DECLARATIONS)
+        if (_state == State.RESOLVING_DECLARATIONS)
           {
             /**
              * Find all the types used in this that refer to formal generic arguments of
@@ -1284,12 +1296,12 @@ public class Feature extends AbstractFeature implements Stmnt
             visit(findGenerics);
           }
 
-        state_ = State.RESOLVED_DECLARATIONS;
+        _state = State.RESOLVED_DECLARATIONS;
         res.scheduleForTypeResolution(this);
       }
 
     if (POSTCONDITIONS) ensure
-      (state_.atLeast(State.RESOLVED_DECLARATIONS));
+      (_state.atLeast(State.RESOLVED_DECLARATIONS));
   }
 
 
@@ -1318,7 +1330,7 @@ public class Feature extends AbstractFeature implements Stmnt
      */
     void visitActuals(Runnable r, Feature outer)
     {
-      if (outer.state_.atLeast(State.RESOLVED_TYPES))
+      if (outer._state.atLeast(State.RESOLVED_TYPES))
         {
           r.run();
         }
@@ -1342,11 +1354,11 @@ public class Feature extends AbstractFeature implements Stmnt
   void resolveTypes(Resolution res)
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.RESOLVED_DECLARATIONS));
+      (_state.atLeast(State.RESOLVED_DECLARATIONS));
 
-    if (state_ == State.RESOLVED_DECLARATIONS)
+    if (_state == State.RESOLVED_DECLARATIONS)
       {
-        state_ = State.RESOLVING_TYPES;
+        _state = State.RESOLVING_TYPES;
 
         visit(new ResolveTypes(res));
 
@@ -1363,7 +1375,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                      impl._outerOfInitialValue);
           }
 
-        state_ = State.RESOLVED_TYPES;
+        _state = State.RESOLVED_TYPES;
         while (!whenResolvedTypes.isEmpty())
           {
             whenResolvedTypes.removeFirst().run();
@@ -1372,7 +1384,7 @@ public class Feature extends AbstractFeature implements Stmnt
       }
 
     if (POSTCONDITIONS) ensure
-      (state_.atLeast(State.RESOLVED_TYPES));
+      (_state.atLeast(State.RESOLVED_TYPES));
   }
 
 
@@ -1389,7 +1401,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   void whenResolvedTypes(Runnable r)
   {
-    if (state_.atLeast(State.RESOLVED_TYPES))
+    if (_state.atLeast(State.RESOLVED_TYPES))
       {
         r.run();
       }
@@ -1410,23 +1422,23 @@ public class Feature extends AbstractFeature implements Stmnt
   void resolveSyntacticSugar1(Resolution res)
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.RESOLVED_TYPES));
+      (_state.atLeast(State.RESOLVED_TYPES));
 
-    if (state_ == State.RESOLVED_TYPES)
+    if (_state == State.RESOLVED_TYPES)
       {
-        state_ = State.RESOLVING_SUGAR1;
+        _state = State.RESOLVING_SUGAR1;
 
         visit(new FeatureVisitor()
           {
             public Expr action(Call c, Feature outer) { return c.resolveSyntacticSugar(res, outer); }
           });
 
-        state_ = State.RESOLVED_SUGAR1;
+        _state = State.RESOLVED_SUGAR1;
         res.scheduleForTypeInteference(this);
       }
 
     if (POSTCONDITIONS) ensure
-      (state_.atLeast(State.RESOLVED_SUGAR1));
+      (_state.atLeast(State.RESOLVED_SUGAR1));
   }
 
 
@@ -1683,11 +1695,11 @@ public class Feature extends AbstractFeature implements Stmnt
   void typeInference(Resolution res)
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.RESOLVED_TYPES));
+      (_state.atLeast(State.RESOLVED_TYPES));
 
-    if (state_ == State.RESOLVED_SUGAR1)
+    if (_state == State.RESOLVED_SUGAR1)
       {
-        state_ = State.TYPES_INFERENCING;
+        _state = State.TYPES_INFERENCING;
 
         check
           (resultType_ == null
@@ -1725,12 +1737,12 @@ public class Feature extends AbstractFeature implements Stmnt
             public void  action(If       i, Feature outer) { i.propagateExpectedType(res, outer); }
           });
 
-        state_ = State.TYPES_INFERENCED;
+        _state = State.TYPES_INFERENCED;
         res.scheduleForBoxing(this);
       }
 
     if (POSTCONDITIONS) ensure
-      (state_.atLeast(State.TYPES_INFERENCED));
+      (_state.atLeast(State.TYPES_INFERENCED));
   }
 
 
@@ -1744,11 +1756,11 @@ public class Feature extends AbstractFeature implements Stmnt
   void box(Resolution res)
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.TYPES_INFERENCED));
+      (_state.atLeast(State.TYPES_INFERENCED));
 
-    if (state_ == State.TYPES_INFERENCED)
+    if (_state == State.TYPES_INFERENCED)
       {
-        state_ = State.BOXING;
+        _state = State.BOXING;
 
         visit(new FeatureVisitor() {
             public void  action(Assign    a, Feature outer) { a.box(outer);           }
@@ -1756,12 +1768,12 @@ public class Feature extends AbstractFeature implements Stmnt
             public Expr  action(InlineArray i, Feature outer) { i.box(outer); return i; }
           });
 
-        state_ = State.BOXED;
+        _state = State.BOXED;
         res.scheduleForCheckTypes1(this);
       }
 
     if (POSTCONDITIONS) ensure
-      (state_.atLeast(State.BOXED));
+      (_state.atLeast(State.BOXED));
   }
 
 
@@ -1966,7 +1978,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (!t.isOpenGeneric(),
        heir != null,
-       state_.atLeast(State.CHECKING_TYPES1));
+       _state.atLeast(State.CHECKING_TYPES1));
 
     var a = handDown(res, new Type[] { t }, heir);
 
@@ -1996,7 +2008,7 @@ public class Feature extends AbstractFeature implements Stmnt
   {
     if (PRECONDITIONS) require
       (heir != null,
-       state_.atLeast(State.RESOLVED_TYPES));
+       _state.atLeast(State.RESOLVED_TYPES));
 
     if (heir != Types.f_ERROR)
       {
@@ -2039,7 +2051,7 @@ public class Feature extends AbstractFeature implements Stmnt
   private void checkTypes(Resolution res)
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.CHECKING_TYPES1));
+      (_state.atLeast(State.CHECKING_TYPES1));
 
     int ean = arguments.size();
     for (Feature r : redefinitions_)
@@ -2106,14 +2118,14 @@ public class Feature extends AbstractFeature implements Stmnt
   void checkTypes1and2(Resolution res)
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.BOXED));
+      (_state.atLeast(State.BOXED));
 
-    state_ =
-      (state_ == State.BOXED          ) ? State.CHECKING_TYPES1 :
-      (state_ == State.RESOLVED_SUGAR2) ? State.CHECKING_TYPES2 : state_;
+    _state =
+      (_state == State.BOXED          ) ? State.CHECKING_TYPES1 :
+      (_state == State.RESOLVED_SUGAR2) ? State.CHECKING_TYPES2 : _state;
 
-    if ((state_ == State.CHECKING_TYPES1) ||
-        (state_ == State.CHECKING_TYPES2)    )
+    if ((_state == State.CHECKING_TYPES1) ||
+        (_state == State.CHECKING_TYPES2)    )
       {
         visit(new FeatureVisitor() {
             public void  action(Assign    a, Feature outer) { a.checkTypes(res);             }
@@ -2123,15 +2135,15 @@ public class Feature extends AbstractFeature implements Stmnt
           });
         checkTypes(res);
 
-        switch (state_)
+        switch (_state)
           {
-          case CHECKING_TYPES1: state_ = State.CHECKED_TYPES1; res.scheduleForSyntacticSugar2Resolution(this); break;
-          case CHECKING_TYPES2: state_ = State.RESOLVED; /* end for front end! */                        break;
+          case CHECKING_TYPES1: _state = State.CHECKED_TYPES1; res.scheduleForSyntacticSugar2Resolution(this); break;
+          case CHECKING_TYPES2: _state = State.RESOLVED; /* end for front end! */                        break;
           }
       }
 
     if (POSTCONDITIONS) ensure
-      (state_.atLeast(State.CHECKED_TYPES1));
+      (_state.atLeast(State.CHECKED_TYPES1));
   }
 
 
@@ -2143,7 +2155,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public Feature resultField()
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.LOADED));
+      (_state.atLeast(State.LOADED));
 
     Feature result = resultField_;
 
@@ -2160,8 +2172,8 @@ public class Feature extends AbstractFeature implements Stmnt
   public void foundAssignmentToResult()
   {
     if (PRECONDITIONS) require
-      (state_ == State.RESOLVING_TYPES ||
-       state_ == State.RESOLVED_TYPES);
+      (_state == State.RESOLVING_TYPES ||
+       _state == State.RESOLVED_TYPES);
 
     hasAssignmentsToResult_ = true;
   }
@@ -2174,7 +2186,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean hasAssignmentsToResult()
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.RESOLVED_TYPES));
+      (_state.atLeast(State.RESOLVED_TYPES));
 
     return hasAssignmentsToResult_;
   }
@@ -2193,11 +2205,11 @@ public class Feature extends AbstractFeature implements Stmnt
   void resolveSyntacticSugar2(Resolution res)
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.CHECKED_TYPES1));
+      (_state.atLeast(State.CHECKED_TYPES1));
 
-    if (state_ == State.CHECKED_TYPES1)
+    if (_state == State.CHECKED_TYPES1)
       {
-        state_ = State.RESOLVING_SUGAR2;
+        _state = State.RESOLVING_SUGAR2;
 
         visit(new FeatureVisitor() {
             public Stmnt action(Feature   f, Feature outer) { return new Nop(_pos);                         }
@@ -2206,12 +2218,12 @@ public class Feature extends AbstractFeature implements Stmnt
             public void  action(Impl      i, Feature outer) {        i.resolveSyntacticSugar2(res, outer); }
           });
 
-        state_ = State.RESOLVED_SUGAR2;
+        _state = State.RESOLVED_SUGAR2;
         res.scheduleForCheckTypes2(this);
       }
 
     if (POSTCONDITIONS) ensure
-      (state_.atLeast(State.RESOLVED_SUGAR2));
+      (_state.atLeast(State.RESOLVED_SUGAR2));
   }
 
 
@@ -2324,7 +2336,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean isUsed()
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.RESOLVED));
+      (_state.atLeast(State.RESOLVED));
 
     return isUsed_;
   }
@@ -2335,7 +2347,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public SourcePosition isUsedAt()
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.RESOLVED));
+      (_state.atLeast(State.RESOLVED));
 
     return isUsedAt_;
   }
@@ -2363,7 +2375,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public Stmnt visit(FeatureVisitor v, Feature outer)
   {
     check
-      (!this.state_.atLeast(State.LOADED) || this.outer() == outer);
+      (!this._state.atLeast(State.LOADED) || this.outer() == outer);
 
     // impl.initialValue is code executed by outer, not by this. So we visit it
     // here, while impl.code is visited when impl.visit is called with this as
@@ -2776,7 +2788,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   Type resultTypeIfPresent(Resolution res, List<Type> generics)
   {
-    if (!state_.atLeast(State.RESOLVING_TYPES))
+    if (!_state.atLeast(State.RESOLVING_TYPES))
       {
         res.resolveDeclarations(this);
         resolveTypes(res);
@@ -2799,9 +2811,9 @@ public class Feature extends AbstractFeature implements Stmnt
   public Type resultType()
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || state_.atLeast(State.RESOLVED_TYPES));
+      (Errors.count() > 0 || _state.atLeast(State.RESOLVED_TYPES));
 
-    Type result = state_.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw() : null;
+    Type result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw() : null;
     if (result == null)
       {
         check
@@ -2884,7 +2896,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public Type thisType()
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.FINDING_DECLARATIONS));
+      (_state.atLeast(State.FINDING_DECLARATIONS));
 
     Type result = thisType_;
     if (result == null)
@@ -2894,7 +2906,7 @@ public class Feature extends AbstractFeature implements Stmnt
           : new Type(_pos, _featureName.baseName(), generics.asActuals(), null, this, Type.RefOrVal.LikeUnderlyingFeature);
         thisType_ = result;
       }
-    if (state_.atLeast(State.RESOLVED_TYPES))
+    if (_state.atLeast(State.RESOLVED_TYPES))
       {
         result = Types.intern(result);
       }
@@ -2905,7 +2917,7 @@ public class Feature extends AbstractFeature implements Stmnt
        // does not hold if feature is declared repeatedly
        Errors.count() > 0 || result.featureOfType() == this,
        true || // this condition is very expensive to check and obviously true:
-       !state_.atLeast(State.RESOLVED_TYPES) || result == Types.intern(result)
+       !_state.atLeast(State.RESOLVED_TYPES) || result == Types.intern(result)
        );
 
     return result;
@@ -3031,7 +3043,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res)
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.RESOLVED));
+      (_state.atLeast(State.RESOLVED));
 
     TreeSet<AbstractFeature> result = new TreeSet();
 
@@ -3118,7 +3130,7 @@ public class Feature extends AbstractFeature implements Stmnt
   {
     if (PRECONDITIONS) require
       (this.outer_ != null,
-       state_ == State.FINDING_DECLARATIONS);
+       _state == State.FINDING_DECLARATIONS);
 
     var o = this.outer_;
     if (impl._code != null || contract != null)
@@ -3150,8 +3162,8 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (isUniverse() || (this == Types.f_ERROR) || outer() != null,
        (this == Types.f_ERROR) ||
-       state_.atLeast(State.RESOLVED_DECLARATIONS) &&
-       (!state_.atLeast(State.CHECKING_TYPES2) || outerRef_ != null || isField() || isUniverse()));
+       _state.atLeast(State.RESOLVED_DECLARATIONS) &&
+       (!_state.atLeast(State.CHECKING_TYPES2) || outerRef_ != null || isField() || isUniverse()));
 
     Feature result = outerRef_;
 
@@ -3178,7 +3190,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public AbstractFeature outerRefOrNull()
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.RESOLVED_DECLARATIONS));
+      (_state.atLeast(State.RESOLVED_DECLARATIONS));
 
     return this.outer_ != null
       ? outerRef()
@@ -3293,7 +3305,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean inheritsFrom(AbstractFeature parent)
   {
     if (PRECONDITIONS) require
-      (state_.atLeast(State.LOADED),
+      (_state.atLeast(State.LOADED),
        parent != null && parent.state().atLeast(State.LOADED));
 
     if (this == parent)
@@ -3366,7 +3378,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (isOpenGenericField(),
        i >= 0,
-       state_.atLeast(State.RESOLVED_TYPES));
+       _state.atLeast(State.RESOLVED_TYPES));
 
     if (_selectOpen == null)
       {
@@ -3397,7 +3409,7 @@ public class Feature extends AbstractFeature implements Stmnt
   {
     if (PRECONDITIONS) require
       (isOpenGenericField(),
-       state_.atLeast(State.RESOLVED),
+       _state.atLeast(State.RESOLVED),
        i < selectSize());
 
     return _selectOpen.get(i);
@@ -3414,7 +3426,7 @@ public class Feature extends AbstractFeature implements Stmnt
   {
     if (PRECONDITIONS) require
       (isOpenGenericField(),
-       state_.atLeast(State.RESOLVED));
+       _state.atLeast(State.RESOLVED));
 
     return _selectOpen == null ? 0 : _selectOpen.size();
   }
