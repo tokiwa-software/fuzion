@@ -34,8 +34,8 @@ import java.lang.reflect.Modifier;
 
 import dev.flang.ast.Types;
 
-import dev.flang.ir.Clazz;
-import dev.flang.ir.Clazzes;
+import dev.flang.air.Clazz;
+import dev.flang.air.Clazzes;
 
 import dev.flang.util.ANY;
 

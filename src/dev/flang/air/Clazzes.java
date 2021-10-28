@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.ir;
+package dev.flang.air;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

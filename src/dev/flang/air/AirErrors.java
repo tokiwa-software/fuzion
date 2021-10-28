@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.ir;
+package dev.flang.air;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -32,11 +32,11 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * IrErrors handles errors in the IR
+ * AirErrors handles errors in the Application IR
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class IrErrors extends ANY
+public class AirErrors extends ANY
 {
 
   /*--------------------------  static fields  --------------------------*/

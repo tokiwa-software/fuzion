@@ -33,6 +33,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import dev.flang.air.Clazz;
+import dev.flang.air.Clazzes;
+
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency
 import dev.flang.ast.Assign; // NYI: remove dependency
 import dev.flang.ast.Block; // NYI: remove dependency
@@ -54,8 +57,6 @@ import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Types; // NYI: remove dependency
 import dev.flang.ast.Unbox; // NYI: remove dependency
 
-import dev.flang.ir.Clazz;
-import dev.flang.ir.Clazzes;
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;

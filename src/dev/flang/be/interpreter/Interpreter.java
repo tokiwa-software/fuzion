@@ -41,8 +41,8 @@ import dev.flang.util.List;
 
 import dev.flang.fuir.FUIR;
 
-import dev.flang.ir.Clazz;
-import dev.flang.ir.Clazzes;
+import dev.flang.air.Clazz;
+import dev.flang.air.Clazzes;
 
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Assign; // NYI: remove dependency! Use dev.flang.fuir instead.

@@ -26,7 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.air;
 
-import dev.flang.ir.Clazz;
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;

@@ -32,7 +32,7 @@ import java.util.TreeMap;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 
-import dev.flang.ir.Clazz;
+import dev.flang.air.Clazz;
 
 import dev.flang.util.ANY;
 

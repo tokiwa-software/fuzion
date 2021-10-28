@@ -107,10 +107,7 @@ JAVA_FILES_PARSER = \
           $(SRC)/dev/flang/parser/Parser.java \
 
 JAVA_FILES_IR = \
-          $(SRC)/dev/flang/ir/Clazz.java \
-          $(SRC)/dev/flang/ir/Clazzes.java \
           $(SRC)/dev/flang/ir/IR.java \
-          $(SRC)/dev/flang/ir/IrErrors.java \
 
 JAVA_FILES_MIR = \
           $(SRC)/dev/flang/mir/MIR.java \
@@ -125,6 +122,9 @@ JAVA_FILES_FE = \
 
 JAVA_FILES_AIR = \
           $(SRC)/dev/flang/air/AIR.java \
+          $(SRC)/dev/flang/air/AirErrors.java \
+          $(SRC)/dev/flang/air/Clazz.java \
+          $(SRC)/dev/flang/air/Clazzes.java \
 
 JAVA_FILES_ME = \
           $(SRC)/dev/flang/me/MiddleEnd.java \

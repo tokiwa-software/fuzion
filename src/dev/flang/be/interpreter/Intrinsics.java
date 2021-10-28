@@ -31,8 +31,8 @@ import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead
 import dev.flang.ast.Type; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
 
-import dev.flang.ir.Clazz;
-import dev.flang.ir.Clazzes;
+import dev.flang.air.Clazz;
+import dev.flang.air.Clazzes;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;

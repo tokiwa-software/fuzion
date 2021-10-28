@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.ir;
+package dev.flang.air;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -651,19 +651,19 @@ public class Clazz extends ANY implements Comparable<Clazz>
   void layoutAndHandleCycle()
   {
     List<SourcePosition> cycle = layout();
-    if (cycle != null && Errors.count() <= IrErrors.count)
+    if (cycle != null && Errors.count() <= AirErrors.count)
       {
         StringBuilder cycleString = new StringBuilder();
         for (SourcePosition p : cycle)
           {
             cycleString.append(p.show()).append("\n");
           }
-        IrErrors.error(this._type.pos,
-                       "Cyclic field nesting is not permitted",
-                       "Cyclic value field nesting would result in infinitely large objects.\n" +
-                       "Cycle of nesting found during clazz layout:\n" +
-                       cycleString + "\n" +
-                       "To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.");
+        AirErrors.error(this._type.pos,
+                        "Cyclic field nesting is not permitted",
+                        "Cyclic value field nesting would result in infinitely large objects.\n" +
+                        "Cycle of nesting found during clazz layout:\n" +
+                        cycleString + "\n" +
+                        "To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.");
       }
 
     createDynamicBinding(_res);

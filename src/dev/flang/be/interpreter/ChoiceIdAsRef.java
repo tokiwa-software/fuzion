@@ -28,7 +28,7 @@ package dev.flang.be.interpreter;
 
 import java.util.ArrayList;
 
-import dev.flang.ir.Clazz;
+import dev.flang.air.Clazz;
 
 
 /**
