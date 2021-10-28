@@ -334,9 +334,6 @@ public class JavaInterface extends ANY
    */
   static Object[] instanceToJavaObjects(Value v)
   {
-    if (PRECONDITIONS) require
-      (v.instance().clazz().feature() == Types.resolved.f_sys_array);
-
     var a = v.arrayData();
     var sz = a.length();
     var result = new Object[sz];
