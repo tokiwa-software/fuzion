@@ -413,7 +413,7 @@ public class SourceModule extends Module implements SrcModule
 
   /**
    * Find all the inner feature declarations within this feature and set
-   * inner.outer_ and, recursively, the outer_ references of all inner features to
+   * inner._outer and, recursively, the outer references of all inner features to
    * the corresponding outer declaring feature.
    *
    * @param inner the feature whose inner features should be found.
@@ -427,11 +427,12 @@ public class SourceModule extends Module implements SrcModule
     if (PRECONDITIONS) require
       (inner.state() == Feature.State.LOADING,
        ((outer == null) == (inner.featureName().baseName().equals(Feature.UNIVERSE_NAME))),
-       inner.outer_ == null);
+       !inner.outerSet());
+
+    inner.setOuter(outer);
 
     inner.setState(Feature.State.FINDING_DECLARATIONS);
 
-    inner.outer_ = outer;
     inner.checkName();
 
     if (outer != null)
@@ -480,7 +481,7 @@ public class SourceModule extends Module implements SrcModule
     inner.setState(Feature.State.LOADED);
 
     if (POSTCONDITIONS) ensure
-      (inner.outer_ == outer,
+      (inner.outer() == outer,
        inner.state() == Feature.State.LOADED);
   }
 

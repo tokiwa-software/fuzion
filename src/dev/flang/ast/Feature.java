@@ -229,7 +229,7 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * Reference to this feature's root, i.e., its outer feature.
    */
-  public AbstractFeature outer_ = null;
+  private AbstractFeature _outer = null;
 
 
   /**
@@ -382,7 +382,7 @@ public class Feature extends AbstractFeature implements Stmnt
     public boolean isUniverse()
     {
       check
-        (outer_ == null);
+        (this.outer() == null);
       return true;
     }
   }
@@ -755,7 +755,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Check that the fully qualified name matches the outer_ feature(s) using
+   * Check that the fully qualified name matches the _outer feature(s) using
    * checkNames(). If not, show a corresponding error.
    */
   public void checkName()
@@ -767,7 +767,7 @@ public class Feature extends AbstractFeature implements Stmnt
           {
             Errors.error(_pos,
                          "Feature is declared in wrong environment",
-                         "Feature " + _qname + " is declared in wrong environment " + outer_.qualifiedName());
+                         "Feature " + _qname + " is declared in wrong environment " + _outer.qualifiedName());
           }
       }
     if (!isResultField() && _qname.getLast().equals(RESULT_NAME))
@@ -782,15 +782,39 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * The outer is set during FIND_DECLARATIONS, so this cannot be called before
    * the find declarations phase is done (i.e. we are in Satet.LOADED), or
-   * before outer_ was during the finding declarations phase.
+   * before _outer was during the finding declarations phase.
    */
   public AbstractFeature outer()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.LOADED) ||
-       state().atLeast(State.FINDING_DECLARATIONS) && outer_ != null);
+      (state().atLeast(State.FINDING_DECLARATIONS));
 
-    return outer_;
+    return _outer;
+  }
+
+
+  /**
+   * Has the outer feature for this feature been set?  This is always the case
+   * after phase LOADING, so this may only be called during phase LOADING.
+   */
+  public boolean outerSet()
+  {
+    if (PRECONDITIONS) require
+      (state() == Feature.State.LOADING);
+
+    return _outer != null;
+  }
+
+  /**
+   * Set outer feature for this feature. Has to be done during phase LOADING.
+   */
+  public void setOuter(AbstractFeature outer)
+  {
+    if (PRECONDITIONS) require
+      (state() == Feature.State.LOADING,
+       !outerSet());
+
+    this._outer = outer;
   }
 
 
@@ -1234,7 +1258,7 @@ public class Feature extends AbstractFeature implements Stmnt
         _state = State.RESOLVING_INHERITANCE;
 
         check
-          ((outer_ == null) || outer_.state().atLeast(State.RESOLVING));
+          ((_outer == null) || _outer.state().atLeast(State.RESOLVING));
 
         ListIterator<Call> i = _inherits.listIterator();
         while (i.hasNext() && !_detectedCyclicInheritance)
@@ -2645,9 +2669,9 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   boolean isArgument()
   {
-    if (outer_ != null)
+    if (_outer != null)
       {
-        for (var a : outer_.arguments())
+        for (var a : _outer.arguments())
           {
             if (this == a)
               {
@@ -2665,9 +2689,9 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public boolean isDeclaredInMainBlock()
   {
-    if (outer_ != null)
+    if (_outer != null)
       {
-        var b = outer_.code();
+        var b = _outer.code();
         if (b instanceof Block)
           {
             for (var s : ((Block)b).statements_)
@@ -2879,8 +2903,8 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean isBuiltInPrimitive()
   {
     return
-      (  outer_ != null)
-      && outer_.isUniverse()
+      (  _outer != null)
+      && _outer.isUniverse()
       && (   "i8"  .equals(_featureName.baseName())
           || "i16" .equals(_featureName.baseName())
           || "i32" .equals(_featureName.baseName())
@@ -2954,7 +2978,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public String qualifiedName()
   {
-    var o = this.outer_;
+    var o = this._outer;
     if (o == null)
       {
         return UNIVERSE_NAME;
@@ -3100,7 +3124,7 @@ public class Feature extends AbstractFeature implements Stmnt
   private String outerRefName()
   {
     if (PRECONDITIONS) require
-      (outer_ != null);
+      (_outer != null);
 
     return "#^" + qualifiedName();
   }
@@ -3127,10 +3151,10 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean isOuterRefCopyOfValue()
   {
     if (PRECONDITIONS) require
-      (outer_ != null);
+      (_outer != null);
 
     // if outher is a small and immutable value type, we can copy it:
-    return this.outer_.isBuiltInPrimitive();  // NYI: We might copy user defined small types as well
+    return this._outer.isBuiltInPrimitive();  // NYI: We might copy user defined small types as well
   }
 
 
@@ -3146,9 +3170,9 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean isOuterRefAdrOfValue()
   {
     if (PRECONDITIONS) require
-      (outer_ != null);
+      (_outer != null);
 
-    return !this.outer_.isThisRef() && !isOuterRefCopyOfValue();
+    return !this._outer.isThisRef() && !isOuterRefCopyOfValue();
   }
 
 
@@ -3158,10 +3182,10 @@ public class Feature extends AbstractFeature implements Stmnt
   public void addOuterRef(Resolution res)
   {
     if (PRECONDITIONS) require
-      (this.outer_ != null,
+      (this._outer != null,
        _state == State.FINDING_DECLARATIONS);
 
-    var o = this.outer_;
+    var o = this._outer;
     if (_impl._code != null || _contract != null)
       {
         Type outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
@@ -3221,7 +3245,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVED_DECLARATIONS));
 
-    return this.outer_ != null
+    return this._outer != null
       ? outerRef()
       : null;
   }

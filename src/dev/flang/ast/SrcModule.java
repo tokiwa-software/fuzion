@@ -54,7 +54,7 @@ public interface SrcModule
 
   /**
    * Find all the inner feature declarations within this feature and set
-   * this.outer_ and, recursively, the outer_ references of all inner features to
+   * this._outer and, recursively, the outer references of all inner features to
    * the corresponding outer declaring feature.
    *
    * @param inner the feature whose inner features should be found.

@@ -120,24 +120,24 @@ public class Type extends ANY implements Comparable<Type>
    *   p { ... }
    * }
    *
-   * the outer_ of "r" is "p.q", and the outer of "q" is "p".
+   * the _outer of "r" is "p.q", and the outer of "q" is "p".
    *
    * However, if p is declared in a, after type resolution, the outer type of
    * "p" is "a" or maybe a heir of "a".
    */
-  Type outer_;
+  private Type _outer;
 
 
   /**
-   * Flag that indicates the end of the outer_ chain as it came from the source
-   * code, even though after type resolution, outer_ might be non-null and point
-   * to the actual outer_ type.
+   * Flag that indicates the end of the _outer chain as it came from the source
+   * code, even though after type resolution, _outer might be non-null and point
+   * to the actual _outer type.
    */
   boolean outerMostInSource_ = false;
 
 
   /**
-   * Cached result of outer(). Note the difference to outer_: outer_ is the
+   * Cached result of outer(). Note the difference to _outer: _outer is the
    * outer type shown in the source code, while outer()/outerCache_ is the
    * actual outer type taken from the type of the outer feature of this type's
    * feature.
@@ -250,7 +250,7 @@ public class Type extends ANY implements Comparable<Type>
     this.pos = pos;
     this.name  = n;
     this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
-    this.outer_ = o;
+    this._outer = o;
     this.feature = f;
     this.generic = null;
     this._refOrVal = refOrVal;
@@ -279,7 +279,7 @@ public class Type extends ANY implements Comparable<Type>
     this.pos = pos;
     this.name  = g._name;
     this._generics = NONE;
-    this.outer_ = null;
+    this._outer = null;
     this.feature = null;
     this.generic = g;
     this._refOrVal = RefOrVal.LikeUnderlyingFeature;
@@ -313,7 +313,7 @@ public class Type extends ANY implements Comparable<Type>
     this.pos               = SourcePosition.builtIn;
     this.name              = n;
     this._generics         = NONE;
-    this.outer_            = null;
+    this._outer            = null;
     this.feature           = null;
     this._refOrVal         = ref ? RefOrVal.Ref
                                  : RefOrVal.LikeUnderlyingFeature;
@@ -367,7 +367,7 @@ public class Type extends ANY implements Comparable<Type>
     this._refOrVal          = refOrVal;
     this.name               = original.name;
     this._generics           = original._generics;
-    this.outer_             = original.outer_;
+    this._outer             = original._outer;
     this.outerMostInSource_ = original.outerMostInSource_;
     this.feature            = original.feature;
     this.generic            = original.generic;
@@ -472,14 +472,14 @@ public class Type extends ANY implements Comparable<Type>
    */
   public void setOuter(Type t)
   {
-    if (this.outer_ == null)
+    if (this._outer == null)
       {
         check(_interned == null);
-        this.outer_ = t;
+        this._outer = t;
       }
     else
       {
-        this.outer_.setOuter(t);
+        this._outer.setOuter(t);
       }
   }
 
@@ -501,9 +501,9 @@ public class Type extends ANY implements Comparable<Type>
       {
         result = generic.feature().qualifiedName() + "." + name + (this.isRef() ? " (boxed)" : "");
       }
-    else if (outer_ != null)
+    else if (_outer != null)
       {
-        String outer = outer_.toString();
+        String outer = _outer.toString();
         result = ""
           + (outer == "" ||
              outer == Feature.UNIVERSE_NAME ? ""
@@ -741,13 +741,13 @@ public class Type extends ANY implements Comparable<Type>
   {
     if ((feature == null) && (generic == null))
       {
-        if (outer_ != null)
+        if (_outer != null)
           {
-            Type t = outer_.visit(v, outerfeat);
-            if (t != outer_)
+            Type t = _outer.visit(v, outerfeat);
+            if (t != _outer)
               {
                 check(_interned == null);
-                outer_ = outer_.visit(v, outerfeat);
+                _outer = _outer.visit(v, outerfeat);
               }
           }
       }
@@ -778,7 +778,7 @@ public class Type extends ANY implements Comparable<Type>
       (checkedForGeneric);
 
     boolean result =
-      outerMostInSource() || outer_.isFreeFromFormalGenericsInSource();
+      outerMostInSource() || _outer.isFreeFromFormalGenericsInSource();
     if (!this._generics.isEmpty())
       {
         for (Type t : this._generics)
@@ -936,16 +936,16 @@ public class Type extends ANY implements Comparable<Type>
     if (!isGenericArgument())
       {
         var o = outerfeat;
-        if (outer_ != null)
+        if (_outer != null)
           {
-            outer_ = outer_.resolve(res, outerfeat);
-            if (outer_.isGenericArgument())
+            _outer = _outer.resolve(res, outerfeat);
+            if (_outer.isGenericArgument())
               { // an error message was generated already during findGenerics()
                 check
                   (Errors.count() > 0);
                 feature = Types.f_ERROR;
               }
-            o = outer_.featureOfType();
+            o = _outer.featureOfType();
           }
         if (feature == null)
           {
@@ -1290,7 +1290,7 @@ public class Type extends ANY implements Comparable<Type>
    */
   public boolean outerMostInSource()
   {
-    return outerMostInSource_ || outer_ == null;
+    return outerMostInSource_ || _outer == null;
   }
 
 
@@ -1309,7 +1309,7 @@ public class Type extends ANY implements Comparable<Type>
 
   /**
    * outer type, after type resolution. This provides the whole chain of types
-   * until Types.resolved.universe.thisType(), while the outer_ field ends with
+   * until Types.resolved.universe.thisType(), while the _outer field ends with
    * the outermost type explicitly written in the source code.
    */
   public Type outer()
@@ -1317,7 +1317,7 @@ public class Type extends ANY implements Comparable<Type>
     Type result = outerCache_;
     if (result == null)
       {
-        result = outer_;
+        result = _outer;
         if (result == null)
           {
             if (feature != null && feature.state().atLeast(Feature.State.LOADED))
