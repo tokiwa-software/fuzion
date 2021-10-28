@@ -109,8 +109,8 @@ public class Feature extends AbstractFeature implements Stmnt
    * Set during RESOLVING_INHERITANCE in case this is part of a cyclic
    * inheritance.
    */
-  private boolean detectedCyclicInheritance = false;
-  boolean detectedCyclicInheritance() { return detectedCyclicInheritance; }
+  private boolean _detectedCyclicInheritance = false;
+  boolean detectedCyclicInheritance() { return _detectedCyclicInheritance; }
 
 
   /**
@@ -123,19 +123,19 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * The soucecode position of this feature's return type, if given explicitly.
    */
-  public final SourcePosition posOfReturnType_;
+  private final SourcePosition _posOfReturnType;
 
 
   /**
    * the visibility of this feature
    */
-  Visi visibility;
+  private Visi _visibility;
 
 
   /**
    * the modifiers of this feature
    */
-  public int modifiers;
+  public final int _modifiers;
 
 
   /**
@@ -646,11 +646,11 @@ public class Feature extends AbstractFeature implements Stmnt
        qname.size() >= 1,
        p != null);
 
-    this._pos       = pos;
-    this.visibility = v;
-    this.modifiers  = m;
-    this.returnType = r;
-    this.posOfReturnType_ = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnType().pos;
+    this._pos        = pos;
+    this._visibility = v;
+    this._modifiers  = m;
+    this.returnType  = r;
+    this._posOfReturnType = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnType().pos;
     String n = qname.getLast();
     if (n.equals("_"))
       {
@@ -1177,7 +1177,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
     var parent = p.calledFeature();
     String inh = "    inherits " + parent.qualifiedName() + " at " + p.pos.show() + "\n";
-    if (detectedCyclicInheritance)
+    if (_detectedCyclicInheritance)
       { // the cycle closes while returning from recursion in resolveInheritance, so show the error:
         StringBuilder cycle = new StringBuilder(inh);
         for (int c = 1; c <= cyclicInhData.size(); c++)
@@ -1192,7 +1192,7 @@ public class Feature extends AbstractFeature implements Stmnt
     else
       { // mark all member of the cycl
         cyclicInhData.add(": feature " + qualifiedName()+" at " + _pos.show() + "\n" + inh);
-        detectedCyclicInheritance = true;
+        _detectedCyclicInheritance = true;
       }
 
     // try to fix recursive inheritance to keep compiler from crashing
@@ -1218,7 +1218,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
     if (_state == State.RESOLVING_INHERITANCE)
       {
-        detectedCyclicInheritance = true;
+        _detectedCyclicInheritance = true;
       }
     else if (_state == State.RESOLVING)
       {
@@ -1228,7 +1228,7 @@ public class Feature extends AbstractFeature implements Stmnt
           ((outer_ == null) || outer_.state().atLeast(State.RESOLVING));
 
         ListIterator<Call> i = inherits.listIterator();
-        while (i.hasNext() && !detectedCyclicInheritance)
+        while (i.hasNext() && !_detectedCyclicInheritance)
           {
             Call p = i.next();
             p.loadCalledFeature(res, this);
@@ -1250,7 +1250,7 @@ public class Feature extends AbstractFeature implements Stmnt
       }
 
     if (POSTCONDITIONS) ensure
-      (detectedCyclicInheritance || _state.atLeast(State.RESOLVED_INHERITANCE));
+      (_detectedCyclicInheritance || _state.atLeast(State.RESOLVED_INHERITANCE));
   }
 
   static FeatureVisitor findGenerics = new FeatureVisitor()
@@ -1713,7 +1713,7 @@ public class Feature extends AbstractFeature implements Stmnt
         choiceTypeCheckAndInternalFields(res);
 
         resultType_ = resultType();
-        resultType_.checkChoice(posOfReturnType_);
+        resultType_.checkChoice(_posOfReturnType);
 
         /**
          * Perform type inference from outside to the inside, i.e., propage the
@@ -2682,8 +2682,8 @@ public class Feature extends AbstractFeature implements Stmnt
   public String toString()
   {
     return
-      visibility+" "+
-      Consts.modifierToString(modifiers)+
+      _visibility+" "+
+      Consts.modifierToString(_modifiers)+
       returnType + " "+
       _featureName.baseName()+
       generics+
@@ -3387,7 +3387,12 @@ public class Feature extends AbstractFeature implements Stmnt
     int s = _selectOpen.size();
     while (s <= i)
       {
-        Feature f = new Feature(_pos, visibility, modifiers, resultType().generic.select(s), "#" + _featureName.baseName() + "." + s, contract);
+        Feature f = new Feature(_pos,
+                                _visibility,
+                                _modifiers,
+                                resultType().generic.select(s),
+                                "#" + _featureName.baseName() + "." + s,
+                                contract);
         res._module.findDeclarations(f, outer());
         f.scheduleForResolution(res);
         _selectOpen.add(f);

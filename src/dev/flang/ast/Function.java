@@ -288,7 +288,6 @@ public class Function extends Expr
 
     Feature f = new Feature(pos, r, new List<String>("call"), a, i, c, p);
     this.feature_ = f;
-    f.modifiers |= Consts.MODIFIER_REDEFINE;
 
     List<Type> generics = new List<Type>();
     generics.add(f.hasResult() ? Types.t_UNDEFINED : new Type("unit"));
@@ -450,7 +449,6 @@ public class Function extends Expr
             Feature f = new Feature(pos, new FunctionReturnType(gs.get(0)), new List<String>("call"), a, _inherits, _contract,
                                     new Impl(_expr.pos(), _expr, Impl.Kind.Routine));
             this.feature_ = f;
-            f.modifiers |= Consts.MODIFIER_REDEFINE;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             inheritsCall_ = new Call(pos, Types.FUNCTION_NAME, gs, Expr.NO_EXPRS);

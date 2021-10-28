@@ -731,7 +731,7 @@ public class SourceModule extends Module implements SrcModule
         var existing = doi.get(fn);
         if (existing == null)
           {
-            if ((((Feature)f).modifiers & Consts.MODIFIER_REDEFINE) != 0) // NYI: Cast!
+            if ((((Feature)f)._modifiers & Consts.MODIFIER_REDEFINE) != 0) // NYI: Cast!
               {
                 AstErrors.redefineModifierDoesNotRedefine(f);
               }
@@ -747,7 +747,7 @@ public class SourceModule extends Module implements SrcModule
           {
             AstErrors.cannotRedefineGeneric(f.pos(), outer, existing);
           }
-        else if ((((Feature)f).modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract()) // NYI: Cast!
+        else if ((((Feature)f)._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract()) // NYI: Cast!
           {
             AstErrors.redefineModifierMissing(f.pos(), outer, existing);
           }
