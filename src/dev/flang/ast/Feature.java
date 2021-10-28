@@ -117,7 +117,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * The soucecode position of this feature declaration, used for error
    * messages.
    */
-  public final SourcePosition pos;
+  private final SourcePosition _pos;
 
 
   /**
@@ -646,7 +646,7 @@ public class Feature extends AbstractFeature implements Stmnt
        qname.size() >= 1,
        p != null);
 
-    this.pos        = pos;
+    this._pos       = pos;
     this.visibility = v;
     this.modifiers  = m;
     this.returnType = r;
@@ -669,7 +669,7 @@ public class Feature extends AbstractFeature implements Stmnt
                        (p.kind_ != Impl.Kind.Field      ) &&
                        (qname.size() != 1 || (!qname.getFirst().equals(OBJECT_NAME  ) &&
                                               !qname.getFirst().equals(UNIVERSE_NAME))))
-      ? new List<Call>(new Call(pos, OBJECT_NAME, Expr.NO_EXPRS))
+      ? new List<Call>(new Call(_pos, OBJECT_NAME, Expr.NO_EXPRS))
       : i;
 
     this.contract  = c;
@@ -707,7 +707,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public SourcePosition pos()
   {
-    return pos;
+    return _pos;
   }
 
 
@@ -744,14 +744,14 @@ public class Feature extends AbstractFeature implements Stmnt
         Iterator<String> it = qname.iterator();
         if (!checkNames(this, it) || it.hasNext())
           {
-            Errors.error(pos,
+            Errors.error(_pos,
                          "Feature is declared in wrong environment",
                          "Feature " + qname + " is declared in wrong environment " + outer_.qualifiedName());
           }
       }
     if (!isResultField() && qname.getLast().equals(RESULT_NAME))
       {
-        AstErrors.declarationOfResultFeature(pos);
+        AstErrors.declarationOfResultFeature(_pos);
       }
   }
 
@@ -913,7 +913,7 @@ public class Feature extends AbstractFeature implements Stmnt
         check
           (resultField_ == null);
         resultField_ = new Feature(res,
-                                   pos,
+                                   _pos,
                                    Consts.VISIBILITY_PRIVATE,
                                    t,
                                    resultInternal() ? INTERNAL_RESULT_NAME
@@ -1172,19 +1172,19 @@ public class Feature extends AbstractFeature implements Stmnt
           {
             cycle.append(( c + 1 < 10 ? " " : "") + (c + 1) + cyclicInhData.get(cyclicInhData.size() - c));
           }
-        Errors.error(pos,
+        Errors.error(_pos,
                      "Recursive inheritance in feature " + qualifiedName(),
                      cycle.toString());
         cyclicInhData.clear();
       }
     else
       { // mark all member of the cycl
-        cyclicInhData.add(": feature " + qualifiedName()+" at " + pos.show() + "\n" + inh);
+        cyclicInhData.add(": feature " + qualifiedName()+" at " + _pos.show() + "\n" + inh);
         detectedCyclicInheritance = true;
       }
 
     // try to fix recursive inheritance to keep compiler from crashing
-    i.set(new Call(pos, OBJECT_NAME, Expr.NO_EXPRS));
+    i.set(new Call(_pos, OBJECT_NAME, Expr.NO_EXPRS));
   }
 
 
@@ -1522,7 +1522,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
     if (isThisRef())
       {
-        Errors.error(pos,
+        Errors.error(_pos,
                      "choice feature must not be ref",
                      "A choice feature must be a value type since it is not constructed ");
       }
@@ -1532,7 +1532,7 @@ public class Feature extends AbstractFeature implements Stmnt
         // choice type must not have any fields
         if (p.isField() && !p.isOuterRef() && !p.isChoiceTag())
           {
-            Errors.error(pos,
+            Errors.error(_pos,
                          "Choice must not contain any fields",
                          "Field >>" + p.qualifiedName() + "<< is not permitted in choice.\n" +
                          "Field declared at "+ p.pos().show());
@@ -1546,14 +1546,14 @@ public class Feature extends AbstractFeature implements Stmnt
       case FieldActual:  // a field with implicit type taken from actual argument to call
       case Field:        // a field
         {
-          Errors.error(pos,
+          Errors.error(_pos,
                        "Choice feature must not be a field",
                        "A choice feature must be a normal feature with empty code section");
           break;
         }
       case RoutineDef:  // normal feature with code and implicit result type
         {
-          Errors.error(pos,
+          Errors.error(_pos,
                        "Choice feature must not be defined as a function",
                        "A choice feature must be a normal feature with empty code section");
           break;
@@ -1562,7 +1562,7 @@ public class Feature extends AbstractFeature implements Stmnt
         {
           if (!impl.containsOnlyDeclarations())
             {
-              Errors.error(pos,
+              Errors.error(_pos,
                            "Choice feature must not contain any code",
                            "A choice feature must be a normal feature with empty code section");
             }
@@ -1570,14 +1570,14 @@ public class Feature extends AbstractFeature implements Stmnt
         }
       case Abstract:
         { // not ok
-          Errors.error(pos,
+          Errors.error(_pos,
                        "Choice feature must not be abstract",
                        "A choice feature must be a normal feature with empty code section");
           break;
         }
       case Intrinsic:
         {
-          Errors.error(pos,
+          Errors.error(_pos,
                        "Choice feature must not be intrinsic",
                        "A choice feature must be a normal feature with empty code section");
           break;
@@ -1590,7 +1590,7 @@ public class Feature extends AbstractFeature implements Stmnt
           {
             if (t == thisType())
               {
-                Errors.error(pos,
+                Errors.error(_pos,
                              "Choice cannot refer to its own value type as one of the choice alternatives",
                              "Embedding a choice type in itself would result in an infinitely large type.\n" +
                              "Fauly generic argument: "+t+" at "+t.pos.show());
@@ -1602,7 +1602,7 @@ public class Feature extends AbstractFeature implements Stmnt
               {
                 if (t == o.thisType())
                   {
-                    Errors.error(pos,
+                    Errors.error(_pos,
                                  "Choice cannot refer to an outer value type as one of the choice alternatives",
                                  "Embedding an outer value in a choice type would result in infinitely large type.\n" +
                                  "Fauly generic argument: "+t+" at "+t.pos.show());
@@ -1614,16 +1614,16 @@ public class Feature extends AbstractFeature implements Stmnt
           }
       }
 
-    thisType().checkChoice(this.pos);
+    thisType().checkChoice(_pos);
 
-    checkNoClosureAccesses(res, pos);
+    checkNoClosureAccesses(res, _pos);
     for (Call p : inherits)
       {
         p.calledFeature().checkNoClosureAccesses(res, p.pos);
       }
 
     choiceTag_ = new Feature(res,
-                             pos,
+                             _pos,
                              Consts.VISIBILITY_PRIVATE,
                              Types.resolved.t_i32,
                              FuzionConstants.CHOICE_TAG_NAME,
@@ -2200,7 +2200,7 @@ public class Feature extends AbstractFeature implements Stmnt
         state_ = State.RESOLVING_SUGAR2;
 
         visit(new FeatureVisitor() {
-            public Stmnt action(Feature   f, Feature outer) { return new Nop(pos);                         }
+            public Stmnt action(Feature   f, Feature outer) { return new Nop(_pos);                         }
             public Expr  action(Function  f, Feature outer) { return f.resolveSyntacticSugar2(res, outer); }
             public Expr  action(InlineArray i, Feature outer) { return i.resolveSyntacticSugar2(res, outer); }
             public void  action(Impl      i, Feature outer) {        i.resolveSyntacticSugar2(res, outer); }
@@ -2302,13 +2302,13 @@ public class Feature extends AbstractFeature implements Stmnt
               {
                 if (set.isEmpty())
                   {
-                    AstErrors.internallyReferencedFeatureNotFound(pos, qname, f, nam);
+                    AstErrors.internallyReferencedFeatureNotFound(_pos, qname, f, nam);
                   }
                 else
                   { // NYI: This might happen if the user adds additional features
                     // with different argCounts. qname should contain argCount to
                     // avoid this
-                    AstErrors.internallyReferencedFeatureNotUnique(pos, qname + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
+                    AstErrors.internallyReferencedFeatureNotUnique(_pos, qname + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
                   }
                 err = true;
               }
@@ -2400,7 +2400,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         if ((returnType != NoType.INSTANCE))
           {
-            Errors.error(pos,
+            Errors.error(_pos,
                          "Field definition using := must not specify an explicit type",
                          "Definition of field: " + qualifiedName() + "\n" +
                          "Explicit type given: " + returnType + "\n" +
@@ -2411,7 +2411,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         if ((returnType != NoType.INSTANCE))
           {
-            Errors.error(pos,
+            Errors.error(_pos,
                          "Function definition using => must not specify an explicit type",
                          "Definition of function: " + qualifiedName() + "\n" +
                          "Explicit type given: " + returnType + "\n" +
@@ -2422,9 +2422,9 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         /* add assignment of initial value: */
         result = new Block
-          (pos, new List<>
+          (_pos, new List<>
            (this,
-            new Assign(res, pos, this, impl._initialValue, outer)
+            new Assign(res, _pos, this, impl._initialValue, outer)
             {
               public Assign visit(FeatureVisitor v, Feature outer)
               {
@@ -2843,7 +2843,7 @@ public class Feature extends AbstractFeature implements Stmnt
                      "Illegal forward or cyclic type inference",
                      "The definition of a field using \":=\", or of a feature or function\n" +
                      "using \"=>\" must not create cyclic type dependencies.\n"+
-                     "Referenced feature: " + qualifiedName() + " at " + pos.show());
+                     "Referenced feature: " + qualifiedName() + " at " + _pos.show());
         result = Types.t_ERROR;
       }
     return result;
@@ -2891,7 +2891,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         result = this == Types.f_ERROR
           ? Types.t_ERROR
-          : new Type(pos, _featureName.baseName(), generics.asActuals(), null, this, Type.RefOrVal.LikeUnderlyingFeature);
+          : new Type(_pos, _featureName.baseName(), generics.asActuals(), null, this, Type.RefOrVal.LikeUnderlyingFeature);
         thisType_ = result;
       }
     if (state_.atLeast(State.RESOLVED_TYPES))
@@ -3126,7 +3126,7 @@ public class Feature extends AbstractFeature implements Stmnt
         Type outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
                                                    : o.thisType();
         outerRef_ = new Feature(res,
-                                pos,
+                                _pos,
                                 Consts.VISIBILITY_PRIVATE,
                                 outerRefType,
                                 outerRefName(),
@@ -3375,7 +3375,7 @@ public class Feature extends AbstractFeature implements Stmnt
     int s = _selectOpen.size();
     while (s <= i)
       {
-        Feature f = new Feature(pos, visibility, modifiers, resultType().generic.select(s), "#" + _featureName.baseName() + "." + s, contract);
+        Feature f = new Feature(_pos, visibility, modifiers, resultType().generic.select(s), "#" + _featureName.baseName() + "." + s, contract);
         res._module.findDeclarations(f, outer());
         f.scheduleForResolution(res);
         _selectOpen.add(f);

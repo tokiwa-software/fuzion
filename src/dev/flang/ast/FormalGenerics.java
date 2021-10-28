@@ -329,7 +329,7 @@ public class FormalGenerics extends ANY
             // placeholder for the actual generics.
             for (Generic g : list)
               {
-                result.add(new Type(_feature.pos, g));
+                result.add(new Type(_feature.pos(), g));
               }
           }
         asActuals_ = result;

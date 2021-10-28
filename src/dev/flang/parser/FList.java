@@ -157,7 +157,7 @@ public class FList extends ANY implements Stmnt
     if (_list.size() != 1)
       {
         result = null;
-        Errors.error(_list.get(1).pos,
+        Errors.error(_list.get(1).pos(),
                      "Source file must define exactly one feature, not " + _list.size()+".",
                      "Additional features must be declared as inner features or in separate files.");
       }

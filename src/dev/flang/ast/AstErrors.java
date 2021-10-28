@@ -247,7 +247,7 @@ public class AstErrors extends ANY
         frml = frmls.next();
       }
     var f = ((c == count+1) && (frml != null)) ? frml : null;
-    incompatibleType(value.pos,
+    incompatibleType(value.pos(),
                      "when passing argument in a call",
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbn(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
@@ -376,21 +376,21 @@ public class AstErrors extends ANY
   static void argumentTypeMismatchInRedefinition(Feature originalFeature, Feature originalArg,
                                                  Feature redefinedFeature, Feature redefinedArg)
   {
-    error(redefinedArg.pos,
+    error(redefinedArg.pos(),
           "Wrong argument type in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
           "argument type is " + s(redefinedArg.resultType()) + ", argument type should be " + s(originalArg.resultType()) + " " +
-          "Original argument declared at " + originalArg.pos.show());
+          "Original argument declared at " + originalArg.pos().show());
   }
 
   static void resultTypeMismatchInRedefinition(Feature originalFeature,
                                                Feature redefinedFeature)
   {
-    error(redefinedFeature.pos,
+    error(redefinedFeature.pos(),
           "Wrong result type in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
           "result type is " + s(redefinedFeature.resultType()) + ", result type should be " + s(originalFeature.resultType()) + ". " +
-          "Original feature declared at " + originalFeature.pos.show());
+          "Original feature declared at " + originalFeature.pos().show());
   }
 
   static void constructorResultMustBeUnit(Expr res)
@@ -409,11 +409,11 @@ public class AstErrors extends ANY
   static void argumentLengthsMismatch(Feature originalFeature, int originalNumArgs,
                                       Feature redefinedFeature, int actualNumArgs)
   {
-    error(redefinedFeature.pos,
+    error(redefinedFeature.pos(),
           "Wrong number of arguments in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
           "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + " " +
-          "Original feature declared at " + originalFeature.pos.show());
+          "Original feature declared at " + originalFeature.pos().show());
   }
 
   public static void abstractFeatureNotImplemented(AbstractFeature featureThatDoesNotImplementAbstract,
@@ -743,7 +743,7 @@ public class AstErrors extends ANY
 
   public static void initialValueNotAllowed(Feature f)
   {
-    error(f.pos,
+    error(f.pos(),
           "Initial value not allowed for feature not embedded in outer feature",
           "Fuzion currently does not know when to execute this initializer, so it is forbidden.\n" +
           "To solve this, move the declaration inside another feature or ask the Fuzion team for help.");
@@ -756,7 +756,7 @@ public class AstErrors extends ANY
 
     if (!f.featureName().baseName().equals(ERROR_STRING))
       {
-        error(f.pos,
+        error(f.pos(),
               "Missing result type in field declaration with initializaton",
               "Field declared: " + s(f) + "");
       }

@@ -219,7 +219,7 @@ public class Impl extends ANY
           }
         else if (!(rt instanceof FunctionReturnType))
           {
-            Errors.error(f.pos,
+            Errors.error(f.pos(),
                          "Illegal result type >>" + rt + "<< in field declaration with initializaton using \"=\"",
                          "Field declared: " + f.qualifiedName());
             rt = new FunctionReturnType(Types.t_ERROR);
@@ -236,7 +236,7 @@ public class Impl extends ANY
         //
         if (rt != NoType.INSTANCE)
           {
-            Errors.error(f.pos,
+            Errors.error(f.pos(),
                          "Illegal result type >>" + rt + "<< in field definition using \":=\"",
                          "For field definition using \":=\", the type is determined automatically, " +
                          "it must not be given explicitly.\n" +
@@ -258,7 +258,7 @@ public class Impl extends ANY
           }
         else if (!(rt instanceof FunctionReturnType))
           {
-            Errors.error(f.pos,
+            Errors.error(f.pos(),
                          "Illegal result type >>" + rt + "<< in field declaration",
                          "Field declared: " + f.qualifiedName());
             rt = new FunctionReturnType(Types.t_ERROR);
@@ -274,7 +274,7 @@ public class Impl extends ANY
         //
         if (rt != NoType.INSTANCE)
           {
-            Errors.error(f.pos,
+            Errors.error(f.pos(),
                          "Illegal result type >>" + rt + "<< in feature definition using \"=>\"",
                          "For function definition using \"=>\", the type is determined automatically, " +
                          "it must not be given explicitly.\n" +
