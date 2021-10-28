@@ -377,7 +377,7 @@ public class Loop extends ANY
     var result = false;
     for (var f : _indexVars)
       {
-        result = result || f.impl.kind_ == Impl.Kind.FieldIter;
+        result = result || f.impl().kind_ == Impl.Kind.FieldIter;
       }
     return result;
   }
@@ -533,11 +533,11 @@ public class Loop extends ANY
         Feature f = ivi.next();
         Feature n = nvi.next();
         check
-          (f.impl.kind_ != Impl.Kind.FieldIter);
+          (f.impl().kind_ != Impl.Kind.FieldIter);
         var p = f.pos();
         var ia = new Call(p, f.featureName().baseName());
         var na = new Call(p, f.featureName().baseName());
-        var type = (f.impl.kind_ == Impl.Kind.FieldDef)
+        var type = (f.impl().kind_ == Impl.Kind.FieldDef)
           ? null        // index var with type inference from initial actual
           : _indexVars.get(i).returnType().functionReturnType();
         var arg = new Feature(p,
@@ -568,7 +568,7 @@ public class Loop extends ANY
       {
         Feature f = ivi.next();
         Feature n = nvi.next();
-        if (f.impl.kind_ == Impl.Kind.FieldIter)
+        if (f.impl().kind_ == Impl.Kind.FieldIter)
           {
             if (mustDeclareLoopElse)
               { // we declare loopElse function after all non-iterating index
@@ -579,7 +579,7 @@ public class Loop extends ANY
               }
             var streamName = _rawLoopName + "stream" + (iteratorCount++);
             var p = f.pos();
-            Call asStream = new Call(p, f.impl._initialValue, "asStream");
+            Call asStream = new Call(p, f.impl()._initialValue, "asStream");
             Feature stream = new Feature(p,
                                          Consts.VISIBILITY_INVISIBLE,
                                          /* modifiers */   0,
@@ -609,8 +609,8 @@ public class Loop extends ANY
             _nextItSuccessBlock.add(ifHasNext2);
             _prologSuccessBlock = prolog2;
             _nextItSuccessBlock = nextIt2;
-            f.impl = new Impl(f.impl.pos, next1, Impl.Kind.FieldDef);
-            n.impl = new Impl(n.impl.pos, next2, Impl.Kind.FieldDef);
+            f.setImpl(new Impl(f.impl().pos, next1, Impl.Kind.FieldDef));
+            n.setImpl(new Impl(n.impl().pos, next2, Impl.Kind.FieldDef));
           }
         _prologSuccessBlock.add(f);
         _nextItSuccessBlock.add(n);

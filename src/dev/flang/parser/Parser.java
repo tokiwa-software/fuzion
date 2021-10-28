@@ -2457,7 +2457,8 @@ stmnts      :
         boolean handleSurpriseIndentation()
         {
           var result = false;
-          if (!l.isEmpty() && l.getLast() instanceof Feature f && f.impl == Impl.FIELD)
+          // NYI: check if this case may still occur:
+          if (!l.isEmpty() && l.getLast() instanceof Feature f && f.impl() == Impl.FIELD)
             { // Let's be nice in the common case of a forgotten 'is'
               syntaxError(pos(), "'is' followed by routine code", "stmtns");
               block(true); // skip the code of the routine.

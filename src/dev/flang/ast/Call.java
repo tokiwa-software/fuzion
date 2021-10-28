@@ -1548,7 +1548,7 @@ public class Call extends Expr
             boolean ok = false;
             if (outer != null && outer.isChoice())
               {
-                for (Call p : outer.inherits)
+                for (Call p : outer.inherits())
                   {
                     ok = ok || p == this;
                   }

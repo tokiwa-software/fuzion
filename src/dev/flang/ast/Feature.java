@@ -200,21 +200,30 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * The parents of this feature
    */
-  public final List<Call> inherits;
-  public final List<Call> inherits() { return inherits; }
+  private final List<Call> _inherits;
+  public final List<Call> inherits() { return _inherits; }
 
 
   /**
    * The contract of this feature
    */
-  public Contract contract;
-  public Contract contract() { return contract; }
+  private final Contract _contract;
+  public Contract contract() { return _contract; }
 
 
   /**
    * The implementation of this feature
    */
-  public Impl impl;
+  private Impl _impl;
+  public Impl impl() { return _impl; }
+
+  /**
+   * Update the implementation of this feature, used in Loop.
+   */
+  void setImpl(Impl newImpl)
+  {
+    _impl = newImpl;
+  }
 
 
   /**
@@ -662,18 +671,18 @@ public class Feature extends AbstractFeature implements Stmnt
     this._generics  = g;
     this._arguments = a;
     this._featureName = FeatureName.get(n, a.size());
-    this.inherits   = (i.isEmpty() &&
-                       (p.kind_ != Impl.Kind.FieldActual) &&
-                       (p.kind_ != Impl.Kind.FieldDef   ) &&
-                       (p.kind_ != Impl.Kind.FieldInit  ) &&
-                       (p.kind_ != Impl.Kind.Field      ) &&
-                       (qname.size() != 1 || (!qname.getFirst().equals(OBJECT_NAME  ) &&
-                                              !qname.getFirst().equals(UNIVERSE_NAME))))
+    this._inherits   = (i.isEmpty() &&
+                        (p.kind_ != Impl.Kind.FieldActual) &&
+                        (p.kind_ != Impl.Kind.FieldDef   ) &&
+                        (p.kind_ != Impl.Kind.FieldInit  ) &&
+                        (p.kind_ != Impl.Kind.Field      ) &&
+                        (qname.size() != 1 || (!qname.getFirst().equals(OBJECT_NAME  ) &&
+                                               !qname.getFirst().equals(UNIVERSE_NAME))))
       ? new List<Call>(new Call(_pos, OBJECT_NAME, Expr.NO_EXPRS))
       : i;
 
-    this.contract  = c;
-    this.impl = p;
+    this._contract  = c;
+    this._impl = p;
 
     g.setFeature(this);
   }
@@ -815,7 +824,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public boolean isAbstract()
   {
-    return impl == Impl.ABSTRACT;
+    return _impl == Impl.ABSTRACT;
   }
 
   /**
@@ -823,7 +832,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public Impl.Kind implKind()
   {
-    return impl.kind_;
+    return _impl.kind_;
   }
 
   /**
@@ -837,7 +846,7 @@ public class Feature extends AbstractFeature implements Stmnt
     return
       switch (implKind())
         {
-        case FieldInit, FieldDef, FieldActual, FieldIter -> impl._initialValue;
+        case FieldInit, FieldDef, FieldActual, FieldIter -> _impl._initialValue;
         default -> null;
         };
   }
@@ -850,7 +859,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (switch (implKind()) { case Routine, RoutineDef -> true; default -> false; });
 
-    return impl._code;
+    return _impl._code;
   }
 
 
@@ -901,8 +910,8 @@ public class Feature extends AbstractFeature implements Stmnt
   boolean hasResultField()
   {
     return
-      (impl.kind_ == Impl.Kind.RoutineDef) ||
-      (impl.kind_ == Impl.Kind.Routine &&
+      (_impl.kind_ == Impl.Kind.RoutineDef) ||
+      (_impl.kind_ == Impl.Kind.Routine &&
        !_returnType.isConstructorType() &&
        _returnType != NoType.INSTANCE);
   }
@@ -918,7 +927,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
     if (hasResultField())
       {
-        Type t = impl.kind_ == Impl.Kind.Routine
+        Type t = _impl.kind_ == Impl.Kind.Routine
           ? _returnType.functionReturnType()
           : Types.t_UNDEFINED /* dummy type, will be replaced during TYPES_INFERENCING phase */;
 
@@ -947,7 +956,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public boolean resultInternal()
   {
-    return impl.kind_ == Impl.Kind.RoutineDef;
+    return _impl.kind_ == Impl.Kind.RoutineDef;
   }
 
 
@@ -989,7 +998,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         result = null;
         Call lastP = null;
-        for (Call p: inherits)
+        for (Call p: _inherits)
           {
             check
               (Errors.count() > 0 || p.calledFeature() != null);
@@ -1028,7 +1037,7 @@ public class Feature extends AbstractFeature implements Stmnt
       }
     else
       {
-        for (Call p: inherits)
+        for (Call p: _inherits)
           {
             check
               (Errors.count() > 0 || p.calledFeature() != null);
@@ -1090,17 +1099,17 @@ public class Feature extends AbstractFeature implements Stmnt
   public void visit(FeatureVisitor v)
   {
     _generics.visit(v, this);
-    for (Call c: inherits)
+    for (Call c: _inherits)
       {
         Expr nc = c.visit(v, this);
         check
           (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
-    if (contract != null)
+    if (_contract != null)
       {
-        contract.visit(v, this);
+        _contract.visit(v, this);
       }
-    impl.visit(v, this);
+    _impl.visit(v, this);
     _returnType.visit(v, this);
   }
 
@@ -1164,7 +1173,7 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @param p the inherits call from this that is part of a cycle
    *
-   * @param i the iterator over this.inherits that has produced p. This will be
+   * @param i the iterator over this.inherits() that has produced p. This will be
    * used to replace this entry to break the cycle (and hopefully avoid other
    * problems during compilation).
    */
@@ -1227,7 +1236,7 @@ public class Feature extends AbstractFeature implements Stmnt
         check
           ((outer_ == null) || outer_.state().atLeast(State.RESOLVING));
 
-        ListIterator<Call> i = inherits.listIterator();
+        ListIterator<Call> i = _inherits.listIterator();
         while (i.hasNext() && !_detectedCyclicInheritance)
           {
             Call p = i.next();
@@ -1281,7 +1290,7 @@ public class Feature extends AbstractFeature implements Stmnt
         check
           (_state == State.RESOLVING_DECLARATIONS);
 
-        this._returnType = impl.checkReturnType(this);
+        this._returnType = _impl.checkReturnType(this);
         res._module.findDeclaredOrInheritedFeatures(this);
 
         check
@@ -1367,12 +1376,12 @@ public class Feature extends AbstractFeature implements Stmnt
             thisType_ = thisType().resolve(res, this);
           }
 
-        if ((impl.kind_ == Impl.Kind.FieldActual) && (impl._initialValue.typeOrNull() == null))
+        if ((_impl.kind_ == Impl.Kind.FieldActual) && (_impl._initialValue.typeOrNull() == null))
           {
-            impl._initialValue.visit(new ResolveTypes(res),
+            _impl._initialValue.visit(new ResolveTypes(res),
                                      true /* NYI: impl_outerOfInitialValue not set yet */
                                      ? (Feature) outer().outer()  /* NYI: Cast! */:
-                                     impl._outerOfInitialValue);
+                                     _impl._outerOfInitialValue);
           }
 
         _state = State.RESOLVED_TYPES;
@@ -1501,7 +1510,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean containsOnlyDeclarations()
   {
     boolean result = true;
-    switch (impl.kind_)
+    switch (_impl.kind_)
       {
       case FieldInit:    // a field with initialization syntactic sugar
       case FieldDef:     // a field with implicit type
@@ -1551,7 +1560,7 @@ public class Feature extends AbstractFeature implements Stmnt
           }
       }
     // choice type must not contain any code, but may contain inner features
-    switch (impl.kind_)
+    switch (_impl.kind_)
       {
       case FieldInit:    // a field with initialization syntactic sugar
       case FieldDef:     // a field with implicit type
@@ -1572,7 +1581,7 @@ public class Feature extends AbstractFeature implements Stmnt
         }
       case Routine:      // normal feature with code
         {
-          if (!impl.containsOnlyDeclarations())
+          if (!_impl.containsOnlyDeclarations())
             {
               Errors.error(_pos,
                            "Choice feature must not contain any code",
@@ -1629,7 +1638,7 @@ public class Feature extends AbstractFeature implements Stmnt
     thisType().checkChoice(_pos);
 
     checkNoClosureAccesses(res, _pos);
-    for (Call p : inherits)
+    for (Call p : _inherits)
       {
         p.calledFeature().checkNoClosureAccesses(res, p.pos);
       }
@@ -1665,7 +1674,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   void choiceTypeCheckAndInternalFields(Resolution res)
   {
-    for (Call p : inherits)
+    for (Call p : _inherits)
       {
         // choice type is leaf
         var cf = p.calledFeature();
@@ -1828,7 +1837,7 @@ public class Feature extends AbstractFeature implements Stmnt
     else
       {
         result = null;
-        for (Call c : inherits)
+        for (Call c : _inherits)
           {
             result = c.calledFeature().tryFindInheritanceChain(ancestor);
             if (result != null)
@@ -2098,7 +2107,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
     if (_returnType.isConstructorType())
       {
-        var cod = impl._code;
+        var cod = _impl._code;
         var rt = cod.type();
         if (!Types.resolved.t_unit.isAssignableFrom(rt))
           {
@@ -2381,12 +2390,12 @@ public class Feature extends AbstractFeature implements Stmnt
     // here, while impl.code is visited when impl.visit is called with this as
     // outer argument.
     //
-    if (impl._initialValue != null &&
+    if (_impl._initialValue != null &&
         /* initial value has been replaced by explicit assignment during
          * RESOLVING_TYPES phase: */
         !outer.state().atLeast(State.RESOLVING_SUGAR1))
       {
-        impl._initialValue = impl._initialValue.visit(v, outer);
+        _impl._initialValue = _impl._initialValue.visit(v, outer);
       }
     return v.action(this, outer);
   }
@@ -2407,8 +2416,8 @@ public class Feature extends AbstractFeature implements Stmnt
     check
       (this.outer() == outer);
 
-    if (impl.kind_ == Impl.Kind.FieldDef    ||
-        impl.kind_ == Impl.Kind.FieldActual    )
+    if (_impl.kind_ == Impl.Kind.FieldDef    ||
+        _impl.kind_ == Impl.Kind.FieldActual    )
       {
         if ((_returnType != NoType.INSTANCE))
           {
@@ -2416,10 +2425,10 @@ public class Feature extends AbstractFeature implements Stmnt
                          "Field definition using := must not specify an explicit type",
                          "Definition of field: " + qualifiedName() + "\n" +
                          "Explicit type given: " + _returnType + "\n" +
-                         "Defining expression: " + impl._initialValue);
+                         "Defining expression: " + _impl._initialValue);
           }
       }
-    if (impl.kind_ == Impl.Kind.RoutineDef)
+    if (_impl.kind_ == Impl.Kind.RoutineDef)
       {
         if ((_returnType != NoType.INSTANCE))
           {
@@ -2427,16 +2436,16 @@ public class Feature extends AbstractFeature implements Stmnt
                          "Function definition using => must not specify an explicit type",
                          "Definition of function: " + qualifiedName() + "\n" +
                          "Explicit type given: " + _returnType + "\n" +
-                         "Defining expression: " + impl._code);
+                         "Defining expression: " + _impl._code);
           }
       }
-    if (impl._initialValue != null)
+    if (_impl._initialValue != null)
       {
         /* add assignment of initial value: */
         result = new Block
           (_pos, new List<>
            (this,
-            new Assign(res, _pos, this, impl._initialValue, outer)
+            new Assign(res, _pos, this, _impl._initialValue, outer)
             {
               public Assign visit(FeatureVisitor v, Feature outer)
               {
@@ -2605,26 +2614,26 @@ public class Feature extends AbstractFeature implements Stmnt
         }
       };
 
-    for (var c : contract.req)
+    for (var c : _contract.req)
       {
         c.cond.visit(fv, this);
       }
 
-    for (var c : contract.ens)
+    for (var c : _contract.ens)
       {
         c.cond.visit(fv, this);
       }
 
-    for (Call p: inherits)
+    for (Call p: _inherits)
       {
         p.visit(fv, this);
       }
 
     // then iterate the statements making fields visible as they are declared
     // and checking which one is visible when we reach call:
-    if (impl._code != null)
+    if (_impl._code != null)
       {
-        impl._code.visit(fv, this);
+        _impl._code.visit(fv, this);
       }
 
     return curres[1];
@@ -2688,9 +2697,9 @@ public class Feature extends AbstractFeature implements Stmnt
       _featureName.baseName()+
       _generics+
       (_arguments.isEmpty() ? "" : "("+_arguments+")")+
-      (inherits.isEmpty() ? "" : " : "+inherits)+
-      contract+
-      impl.toString();
+      (_inherits.isEmpty() ? "" : " : "+_inherits)+
+      _contract+
+      _impl.toString();
   }
 
 
@@ -2717,18 +2726,18 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         result = (outer() instanceof Feature of) ? of.resultTypeRaw() : outer().resultType();
       }
-    else if (impl.kind_ == Impl.Kind.FieldDef ||
-             impl.kind_ == Impl.Kind.FieldActual)
+    else if (_impl.kind_ == Impl.Kind.FieldDef ||
+             _impl.kind_ == Impl.Kind.FieldActual)
       {
         check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = impl._initialValue.typeOrNull();
+        result = _impl._initialValue.typeOrNull();
       }
-    else if (impl.kind_ == Impl.Kind.RoutineDef)
+    else if (_impl.kind_ == Impl.Kind.RoutineDef)
       {
         check
           (!state().atLeast(State.TYPES_INFERENCED));
-        result = impl._code.typeOrNull();
+        result = _impl._code.typeOrNull();
       }
     else if (_returnType.isConstructorType())
       {
@@ -2933,7 +2942,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   boolean hasThisType()
   {
-    return impl != Impl.INTRINSIC && impl != Impl.ABSTRACT
+    return _impl != Impl.INTRINSIC && _impl != Impl.ABSTRACT
       && !isField();
   }
 
@@ -3068,7 +3077,7 @@ public class Feature extends AbstractFeature implements Stmnt
     TreeSet<AbstractFeature> result = new TreeSet();
 
     result.addAll(res._module.declaredFeatures(this).values());
-    for (Call p : inherits)
+    for (Call p : _inherits)
       {
         var cf = p.calledFeature();
         check
@@ -3153,7 +3162,7 @@ public class Feature extends AbstractFeature implements Stmnt
        _state == State.FINDING_DECLARATIONS);
 
     var o = this.outer_;
-    if (impl._code != null || contract != null)
+    if (_impl._code != null || _contract != null)
       {
         Type outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
                                                    : o.thisType();
@@ -3226,7 +3235,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean isField()
   {
     boolean result = false;
-    switch (impl.kind_)
+    switch (_impl.kind_)
       {
       case FieldInit  :
       case FieldDef   :
@@ -3334,7 +3343,7 @@ public class Feature extends AbstractFeature implements Stmnt
       }
     else
       {
-        for (Call p : inherits)
+        for (Call p : _inherits)
           {
             if (p.calledFeature().inheritsFrom(parent))
               {
@@ -3412,7 +3421,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                 _modifiers,
                                 resultType().generic.select(s),
                                 "#" + _featureName.baseName() + "." + s,
-                                contract);
+                                _contract);
         res._module.findDeclarations(f, outer());
         f.scheduleForResolution(res);
         _selectOpen.add(f);

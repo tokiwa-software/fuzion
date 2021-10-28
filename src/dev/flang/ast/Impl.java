@@ -199,7 +199,7 @@ public class Impl extends ANY
   public ReturnType checkReturnType(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.impl == this);
+      (f.impl() == this);
 
     ReturnType rt = f.returnType();
 

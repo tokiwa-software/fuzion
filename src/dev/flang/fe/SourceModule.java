@@ -198,7 +198,7 @@ public class SourceModule extends Module implements SrcModule
     // a module's contribution to the universe's code locally to the module and
     // add this when creating AIR.  Then, we would not need to change the
     // universe from stdlib here.
-    ((Block) _universe.impl._code).statements_.addAll(stmnts);
+    ((Block) _universe.code()).statements_.addAll(stmnts);
     boolean first = true;
     String main = null;
     for (var s : stmnts)
@@ -653,7 +653,7 @@ public class SourceModule extends Module implements SrcModule
    */
   private void findInheritedFeatures(Feature outer)
   {
-    for (Call p : outer.inherits)
+    for (Call p : outer.inherits())
       {
         var cf = p.calledFeature();
         check
