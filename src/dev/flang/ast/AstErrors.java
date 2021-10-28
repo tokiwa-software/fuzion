@@ -416,27 +416,6 @@ public class AstErrors extends ANY
           "Original feature declared at " + originalFeature.pos().show());
   }
 
-  public static void abstractFeatureNotImplemented(AbstractFeature featureThatDoesNotImplementAbstract,
-                                                   Set<AbstractFeature> abstractFeature,
-                                                   SourcePosition instantiatedAt)
-  {
-    var abs = new StringBuilder();
-    var abstracts = new StringBuilder();
-    for (var af : abstractFeature)
-      {
-        abs.append(abs.length() == 0 ? "" : ", ").append(af.featureName().baseName());
-        abstracts.append((abstracts.length() == 0 ? "inherits or declares" : "and") + " abstract feature " +
-                         s(af) + " declared at " + af.pos().show() + "\n" +
-                         "which is called at " + af.isUsedAt().show() + "\n");
-      }
-    abstracts.append("without providing an implementation\n");
-    error(featureThatDoesNotImplementAbstract.pos(),
-          "Used abstract " + (abstractFeature.size() > 1 ? "features " + abs + " are" : "feature " + abs + " is") + " not implemented",
-          "Feature " + s(featureThatDoesNotImplementAbstract) + " " +
-          "instantiated at " + instantiatedAt.show() + "\n" +
-          abstracts);
-  }
-
   /* NYI: currently unused, need to check if a "while (23)" produces a useful error message
   static void whileConditionMustBeBool(SourcePosition pos, Type type)
   {

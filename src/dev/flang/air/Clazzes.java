@@ -77,6 +77,22 @@ public class Clazzes extends ANY
 
 
   /**
+   * All used features mapped to the first source code position their are used at.
+   *
+   * NYI: This should be moved to MiddleEnd.java and joined with clazzes, so we
+   * do not need a separate pass for finding used features.
+   */
+  private static final Map<AbstractFeature, SourcePosition> _usedFeatures_ = new TreeMap<>();
+
+
+  /**
+   * NYI: This is redundant with _calledDynamically_, so one of them has to go
+   * (preferably this one).
+   */
+  private static final Map<AbstractFeature, Boolean> _dynamicallyCalledFeatures0_ = new TreeMap<>();
+
+
+  /**
    * All clazzes found in the system.
    *
    * NYI: One of these maps is probably redundant!
@@ -817,7 +833,7 @@ public class Clazzes extends ANY
     if (c.field != null)
       {
         var fOrFc = isUsed(c.field, outerClazz)
-          ? outerClazz.lookup(c.field, Call.NO_GENERICS, c.field.isUsedAt())
+          ? outerClazz.lookup(c.field, Call.NO_GENERICS, isUsedAt(c.field))
           : outerClazz.actualClazz(c.field.resultType());
         outerClazz.setRuntimeClazz(i, fOrFc);
       }
@@ -1144,9 +1160,58 @@ public class Clazzes extends ANY
    */
   public static boolean isUsed(AbstractFeature thiz, Clazz staticClazz)
   {
-    return thiz.isUsed();
+    return isUsedAtAll(thiz);
   }
 
+  /**
+   * Has this feature been found to be used?
+   */
+  public static boolean isUsedAtAll(AbstractFeature thiz)
+  {
+    return _usedFeatures_.get(thiz) != null;
+  }
+
+
+  /**
+   * Has this feature been found to be used?
+   */
+  public static SourcePosition isUsedAt(AbstractFeature thiz)
+  {
+    return _usedFeatures_.get(thiz);
+  }
+
+
+  /**
+   * Add f to the set of used features, record at as the position of the first
+   * use.
+   */
+  public static void addUsedFeature(AbstractFeature f, SourcePosition at)
+  {
+    _usedFeatures_.put(f, at);
+  }
+
+
+  /**
+   * Has f been found to be called dynamically?
+   *
+   * NYI: remove, redundant with isCalledDynamically.
+   */
+  public static boolean isCalledDynamically0(AbstractFeature f)
+  {
+    return _dynamicallyCalledFeatures0_.getOrDefault(f, false);
+  }
+
+
+  /**
+   * Add f to the set of dynamically called features, record at as the position
+   * of the first use.
+   *
+   * NYI: remove, redundant with isCalledDynamically.
+   */
+  public static void setCalledDynamically0(AbstractFeature f)
+  {
+    _dynamicallyCalledFeatures0_.put(f, true);
+  }
 
 }
 

@@ -805,7 +805,7 @@ public class Interpreter extends ANY
     _callStackFrames.push(staticClazz);
 
     check
-      (thiz.isUsed());
+      (Clazzes.isUsedAtAll(thiz));
 
     setOuter(thiz, staticClazz, cur, args.get(0));
     int aix = 1;
@@ -1328,7 +1328,7 @@ public class Interpreter extends ANY
   public static void setOuter(AbstractFeature thiz, Clazz staticClazz, Instance cur, Value outer)
   {
     var or = thiz.outerRef();
-    if (or != null && or.isUsed())
+    if (or != null && Clazzes.isUsedAtAll(or))
       {
         setField(or, staticClazz, cur, outer);
       }

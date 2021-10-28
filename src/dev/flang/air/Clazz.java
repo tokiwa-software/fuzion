@@ -36,7 +36,6 @@ import java.util.TreeSet;
 
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.Assign; // NYI: remove dependency!
-import dev.flang.ast.AstErrors; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Call; // NYI: remove dependency!
 import dev.flang.ast.Case; // NYI: remove dependency!
@@ -639,7 +638,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       isRef() &&
       Clazzes.isUsed(f, this) &&
       (f.isField() ||
-       f.isCalledDynamically())
+       Clazzes.isCalledDynamically0(f))
       ;
   }
 
@@ -735,12 +734,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
             // if (isInstantiated_) -- NYI: if not instantiated, we do not need to add f to dynamic binding, but we seem to need its side-effects
             if (isAddedToDynamicBinding(f))
               {
-                if (f.isCalledDynamically() &&
-                    Clazzes.isCalledDynamically(f) &&
+                if (Clazzes.isCalledDynamically(f) &&
                     this._type != Types.t_ADDRESS /* NYI: better something like this.isInstantiated() */
                     )
                   {
-                    lookup(f, Call.NO_GENERICS, f.isUsedAt());
+                    lookup(f, Call.NO_GENERICS, Clazzes.isUsedAt(f));
                   }
               }
           }
@@ -917,7 +915,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           field.isOuterRef() && fo.isOuterRefCopyOfValue() ||
           !field.isOuterRef() && field != fo.resultField() // NYI: use lookup/resultClazz for all fields
                                                            ? actualClazz(field.resultType())
-                                                           : lookup(field, Call.NO_GENERICS, field.isUsedAt()).resultClazz();
+                                                           : lookup(field, Call.NO_GENERICS, Clazzes.isUsedAt(field)).resultClazz();
         clazzForField_.put(field, result);
       }
     return result;
@@ -1095,7 +1093,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               else
                 {
                   var cfa = cf.arguments().get(i);
-                  var ccc = lookup(cfa, Call.NO_GENERICS, f.isUsedAt());
+                  var ccc = lookup(cfa, Call.NO_GENERICS, Clazzes.isUsedAt(f));
                   if (c.parentCallArgFieldIds_ < 0)
                     {
                       c.parentCallArgFieldIds_ = Clazz.this.feature().getRuntimeClazzIds(n);
@@ -1138,7 +1136,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             && isAddedToDynamicBinding(ff))
           {
             Clazzes.whenCalledDynamically(ff,
-                                          () -> { var innerClazz = lookup(ff, Call.NO_GENERICS, ff.isUsedAt()); });
+                                          () -> { var innerClazz = lookup(ff, Call.NO_GENERICS, Clazzes.isUsedAt(ff)); });
           }
       }
   }
@@ -1546,7 +1544,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (isInstantiated() && abstractCalled_ != null)
       {
-        AstErrors.abstractFeatureNotImplemented(feature(), abstractCalled_, instantiationPos_);
+        AirErrors.abstractFeatureNotImplemented(feature(), abstractCalled_, instantiationPos_);
       }
   }
 
@@ -1745,7 +1743,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     var r = f.resultField();
     return r == null
       ? null
-      : lookup(r, Call.NO_GENERICS, r.isUsedAt());
+      : lookup(r, Call.NO_GENERICS, Clazzes.isUsedAt(r));
   }
 
 
@@ -1791,7 +1789,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                           var s = a.select(i);
                           if (Clazzes.isUsed(s, this))
                             {
-                              var sa = lookup(s, Call.NO_GENERICS, s.isUsedAt());
+                              var sa = lookup(s, Call.NO_GENERICS, Clazzes.isUsedAt(s));
                               if (sa.resultClazz()._type != Types.resolved.t_unit)  // NYI: Use a different, artificial type to mark unused open generic args!
                                 {
                                   args.add(sa);
@@ -1801,7 +1799,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                     }
                   else if (this != Clazzes.c_void.get())
                     {
-                      args.add(lookup(a, Call.NO_GENERICS, a.isUsedAt()));
+                      args.add(lookup(a, Call.NO_GENERICS, Clazzes.isUsedAt(a)));
                     }
                 }
             }
@@ -1871,9 +1869,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
       case RoutineDef :
         {
           var or = f.outerRefOrNull();
-          if (or != null && or.isUsed())
+          if (or != null && Clazzes.isUsedAtAll(or))
             {
-              result = lookup(or, Call.NO_GENERICS, or.isUsedAt());
+              result = lookup(or, Call.NO_GENERICS, Clazzes.isUsedAt(or));
             }
           break;
         }
@@ -1941,7 +1939,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                     f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
                     )
                   {
-                    fields.add(lookup(f, Call.NO_GENERICS, f.isUsedAt()));
+                    fields.add(lookup(f, Call.NO_GENERICS, Clazzes.isUsedAt(f)));
                   }
               }
             _fields = fields.toArray(new Clazz[fields.size()]);

@@ -233,23 +233,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Check if this feature is used in a call.
-   */
-  public boolean isUsed_ = false;
-
-  /**
-   * In case isUsed_ is true, this gives the source code position of the first
-   * use.
-   */
-  public SourcePosition isUsedAt_ = null;
-
-  /**
-   * Has this feature been found to be called dynamically?
-   */
-  public boolean isCalledDynamically_ = false;
-
-
-  /**
    * All features that have been found to directly redefine this feature. This
    * does not include redefintions of redefinitions.  This set is collected
    * during RESOLVING_DECLARATIONS.
@@ -2360,38 +2343,6 @@ public class Feature extends AbstractFeature implements Stmnt
           }
       }
     return err ? Types.f_ERROR : f;
-  }
-
-
-  /**
-   * Has this feature been found to be used?
-   */
-  public boolean isUsed()
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVED));
-
-    return isUsed_;
-  }
-
-  /**
-   * Has this feature been found to be used?
-   */
-  public SourcePosition isUsedAt()
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVED));
-
-    return isUsedAt_;
-  }
-
-
-  /**
-   * Has this feature been found to be called dynamically?
-   */
-  public boolean isCalledDynamically()
-  {
-    return isCalledDynamically_;
   }
 
 

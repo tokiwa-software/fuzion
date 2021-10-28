@@ -177,11 +177,13 @@ public class MiddleEnd extends ANY
   void markUsed(AbstractFeature af, boolean dynamically, SourcePosition usedAt)
   {
     var f = (Feature) af;  /* NYI: Cast! */
-    f.isCalledDynamically_ |= dynamically;  // NYI: cast!
-    if (!f.isUsed_)
+    if (dynamically)
       {
-        f.isUsed_ = true;
-        f.isUsedAt_ = usedAt;
+        Clazzes.setCalledDynamically0(af);
+      }
+    if (!Clazzes.isUsedAtAll(f))
+      {
+        Clazzes.addUsedFeature(f, usedAt);
         if (f.state() != Feature.State.ERROR)
           {
             scheduleForFindUsedFeatures(f);

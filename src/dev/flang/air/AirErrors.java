@@ -26,6 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.air;
 
+import java.util.Set;
+
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AstErrors;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.SourcePosition;
@@ -36,7 +41,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class AirErrors extends ANY
+public class AirErrors extends AstErrors
 {
 
   /*--------------------------  static fields  --------------------------*/
@@ -64,6 +69,27 @@ public class AirErrors extends ANY
     Errors.error(pos, msg, detail);
     int delta = Errors.count() - old;  // Errors detects duplicates, so the count might not have changed.
     count += delta;
+  }
+
+  public static void abstractFeatureNotImplemented(AbstractFeature featureThatDoesNotImplementAbstract,
+                                                   Set<AbstractFeature> abstractFeature,
+                                                   SourcePosition instantiatedAt)
+  {
+    var abs = new StringBuilder();
+    var abstracts = new StringBuilder();
+    for (var af : abstractFeature)
+      {
+        abs.append(abs.length() == 0 ? "" : ", ").append(af.featureName().baseName());
+        abstracts.append((abstracts.length() == 0 ? "inherits or declares" : "and") + " abstract feature " +
+                         s(af) + " declared at " + af.pos().show() + "\n" +
+                         "which is called at " + Clazzes.isUsedAt(af).show() + "\n");
+      }
+    abstracts.append("without providing an implementation\n");
+    error(featureThatDoesNotImplementAbstract.pos(),
+          "Used abstract " + (abstractFeature.size() > 1 ? "features " + abs + " are" : "feature " + abs + " is") + " not implemented",
+          "Feature " + s(featureThatDoesNotImplementAbstract) + " " +
+          "instantiated at " + instantiatedAt.show() + "\n" +
+          abstracts);
   }
 
 }
