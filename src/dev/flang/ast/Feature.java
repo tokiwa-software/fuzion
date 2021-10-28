@@ -156,7 +156,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * usually has just one entry equal to name. If it has several entries, this
    * gives the fully qualified name of this feature.
    */
-  List<String> qname;
+  private List<String> _qname;
 
 
   /**
@@ -171,7 +171,7 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * to have FeatureNames with different ids for these two x's.
    */
-  public FeatureName _featureName;
+  private FeatureName _featureName;
 
 
   /**
@@ -658,7 +658,7 @@ public class Feature extends AbstractFeature implements Stmnt
         // is declared in a Destructure statement.
         n = "#_"+ underscoreId++;
       }
-    this.qname      = qname;
+    this._qname     = qname;
     this.generics   = g;
     this.arguments  = a;
     this._featureName = FeatureName.get(n, a.size());
@@ -751,17 +751,17 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public void checkName()
   {
-    if (qname.size() > 1)
+    if (_qname.size() > 1)
       {
-        Iterator<String> it = qname.iterator();
+        Iterator<String> it = _qname.iterator();
         if (!checkNames(this, it) || it.hasNext())
           {
             Errors.error(_pos,
                          "Feature is declared in wrong environment",
-                         "Feature " + qname + " is declared in wrong environment " + outer_.qualifiedName());
+                         "Feature " + _qname + " is declared in wrong environment " + outer_.qualifiedName());
           }
       }
-    if (!isResultField() && qname.getLast().equals(RESULT_NAME))
+    if (!isResultField() && _qname.getLast().equals(RESULT_NAME))
       {
         AstErrors.declarationOfResultFeature(_pos);
       }
@@ -2971,6 +2971,26 @@ public class Feature extends AbstractFeature implements Stmnt
     check(arguments.size() == _featureName.argCount());
     return _featureName;
   }
+
+
+  /**
+   * Set the feature's name to a new value.  This can only be used to modify the
+   * feature name's id field, which is used to distinguish several fields with
+   * equal name as in
+   *
+   *   x := 42
+   *   x := x + 1
+   */
+  public void setFeatureName(FeatureName newFeatureName)
+  {
+    if (PRECONDITIONS) require
+      (_featureName.baseName() == newFeatureName.baseName(),
+       _featureName.argCount() == 0,
+       newFeatureName.argCount() == 0);
+
+    _featureName = newFeatureName;
+  }
+
 
   /**
    * Compare this to other for sorting Feature

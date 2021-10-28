@@ -434,9 +434,9 @@ public class Loop extends ANY
       { /* add last index var as implicit result */
         Feature lastIndexVar = _indexVars.getLast();
         var p = lastIndexVar.pos();
-        var readLastIndexVar0 = new Call(p, lastIndexVar._featureName.baseName());
-        var readLastIndexVar1 = new Call(p, lastIndexVar._featureName.baseName());
-        var readLastIndexVar2 = new Call(p, lastIndexVar._featureName.baseName());
+        var readLastIndexVar0 = new Call(p, lastIndexVar.featureName().baseName());
+        var readLastIndexVar1 = new Call(p, lastIndexVar.featureName().baseName());
+        var readLastIndexVar2 = new Call(p, lastIndexVar.featureName().baseName());
         _elseBlock0   = Block.fromExpr(readLastIndexVar0);
         _elseBlock1   = Block.fromExpr(readLastIndexVar1);
         _successBlock = Block.fromExpr(readLastIndexVar2);

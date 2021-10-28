@@ -199,7 +199,7 @@ public class Destructure extends ANY implements Stmnt
         names = new List<String>();
         for (Feature f : fields)
           {
-            names.add(f._featureName.baseName());
+            names.add(f.featureName().baseName());
           }
       }
     return new Destructure(pos, names, fields, def, v).expand();

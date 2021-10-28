@@ -776,7 +776,7 @@ public class SourceModule extends Module implements SrcModule
           {
             var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
             fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
-            f._featureName = fn;
+            f.setFeatureName(fn);
           }
         else
           {
@@ -796,7 +796,7 @@ public class SourceModule extends Module implements SrcModule
                 if (!error)
                   {
                     fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
-                    f._featureName = fn;
+                    f.setFeatureName(fn);
                   }
               }
             if (error)
