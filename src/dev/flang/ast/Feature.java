@@ -147,8 +147,8 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * ValueType: for constructors of value types
    */
-  public ReturnType returnType; // NYI: public field should not be written to
-  public ReturnType returnType() { return returnType; }
+  ReturnType _returnType;
+  public ReturnType returnType() { return _returnType; }
 
 
   /**
@@ -649,7 +649,7 @@ public class Feature extends AbstractFeature implements Stmnt
     this._pos        = pos;
     this._visibility = v;
     this._modifiers  = m;
-    this.returnType  = r;
+    this._returnType = r;
     this._posOfReturnType = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnType().pos;
     String n = qname.getLast();
     if (n.equals("_"))
@@ -903,8 +903,8 @@ public class Feature extends AbstractFeature implements Stmnt
     return
       (impl.kind_ == Impl.Kind.RoutineDef) ||
       (impl.kind_ == Impl.Kind.Routine &&
-       !returnType.isConstructorType() &&
-       returnType != NoType.INSTANCE);
+       !_returnType.isConstructorType() &&
+       _returnType != NoType.INSTANCE);
   }
 
 
@@ -919,7 +919,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (hasResultField())
       {
         Type t = impl.kind_ == Impl.Kind.Routine
-          ? returnType.functionReturnType()
+          ? _returnType.functionReturnType()
           : Types.t_UNDEFINED /* dummy type, will be replaced during TYPES_INFERENCING phase */;
 
         check
@@ -1101,7 +1101,7 @@ public class Feature extends AbstractFeature implements Stmnt
         contract.visit(v, this);
       }
     impl.visit(v, this);
-    returnType.visit(v, this);
+    _returnType.visit(v, this);
   }
 
 
@@ -1145,7 +1145,7 @@ public class Feature extends AbstractFeature implements Stmnt
       outer() != null &&
       !outer().arguments().isEmpty() &&
       outer().arguments().getLast() == this &&
-      t == returnType.functionReturnType();
+      t == _returnType.functionReturnType();
   }
 
 
@@ -1281,7 +1281,7 @@ public class Feature extends AbstractFeature implements Stmnt
         check
           (_state == State.RESOLVING_DECLARATIONS);
 
-        this.returnType = impl.checkReturnType(this);
+        this._returnType = impl.checkReturnType(this);
         res._module.findDeclaredOrInheritedFeatures(this);
 
         check
@@ -1887,7 +1887,7 @@ public class Feature extends AbstractFeature implements Stmnt
               {
                 for (Feature a : arguments)
                   {
-                    Type t = a.returnType.functionReturnType();
+                    Type t = a.returnType().functionReturnType();
                     if (!t.checkedForGeneric)
                       {
                         a.visit(findGenerics);
@@ -2096,7 +2096,7 @@ public class Feature extends AbstractFeature implements Stmnt
           }
       }
 
-    if (returnType.isConstructorType())
+    if (_returnType.isConstructorType())
       {
         var cod = impl._code;
         var rt = cod.type();
@@ -2410,23 +2410,23 @@ public class Feature extends AbstractFeature implements Stmnt
     if (impl.kind_ == Impl.Kind.FieldDef    ||
         impl.kind_ == Impl.Kind.FieldActual    )
       {
-        if ((returnType != NoType.INSTANCE))
+        if ((_returnType != NoType.INSTANCE))
           {
             Errors.error(_pos,
                          "Field definition using := must not specify an explicit type",
                          "Definition of field: " + qualifiedName() + "\n" +
-                         "Explicit type given: " + returnType + "\n" +
+                         "Explicit type given: " + _returnType + "\n" +
                          "Defining expression: " + impl._initialValue);
           }
       }
     if (impl.kind_ == Impl.Kind.RoutineDef)
       {
-        if ((returnType != NoType.INSTANCE))
+        if ((_returnType != NoType.INSTANCE))
           {
             Errors.error(_pos,
                          "Function definition using => must not specify an explicit type",
                          "Definition of function: " + qualifiedName() + "\n" +
-                         "Explicit type given: " + returnType + "\n" +
+                         "Explicit type given: " + _returnType + "\n" +
                          "Defining expression: " + impl._code);
           }
       }
@@ -2684,7 +2684,7 @@ public class Feature extends AbstractFeature implements Stmnt
     return
       _visibility+" "+
       Consts.modifierToString(_modifiers)+
-      returnType + " "+
+      _returnType + " "+
       _featureName.baseName()+
       generics+
       (arguments.isEmpty() ? "" : "("+arguments+")")+
@@ -2730,17 +2730,17 @@ public class Feature extends AbstractFeature implements Stmnt
           (!state().atLeast(State.TYPES_INFERENCED));
         result = impl._code.typeOrNull();
       }
-    else if (returnType.isConstructorType())
+    else if (_returnType.isConstructorType())
       {
         result = thisType();
       }
-    else if (returnType == NoType.INSTANCE)
+    else if (_returnType == NoType.INSTANCE)
       {
         result = Types.resolved.t_unit; // may be the result of intrinsic or abstract feature
       }
     else
       {
-        result = returnType.functionReturnType();
+        result = _returnType.functionReturnType();
       }
 
     return result;
@@ -3082,7 +3082,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public boolean isThisRef()
   {
-    return returnType == RefType.INSTANCE;
+    return _returnType == RefType.INSTANCE;
   }
 
 

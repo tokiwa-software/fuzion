@@ -190,7 +190,7 @@ public class Impl extends ANY
 
 
   /**
-   * Check if the return type of a feature f.returnType is allowed in
+   * Check if the return type of a feature f.returnType() is allowed in
    * conjunction with this feature implementation. Cause a compiler Error and
    * return a value return type if this is not the case.
    *
@@ -201,7 +201,7 @@ public class Impl extends ANY
     if (PRECONDITIONS) require
       (f.impl == this);
 
-    ReturnType rt = f.returnType;
+    ReturnType rt = f.returnType();
 
     switch (kind_)
       {

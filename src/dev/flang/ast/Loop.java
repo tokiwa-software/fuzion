@@ -539,7 +539,7 @@ public class Loop extends ANY
         var na = new Call(p, f.featureName().baseName());
         var type = (f.impl.kind_ == Impl.Kind.FieldDef)
           ? null        // index var with type inference from initial actual
-          : _indexVars.get(i).returnType.functionReturnType();
+          : _indexVars.get(i).returnType().functionReturnType();
         var arg = new Feature(p,
                               Consts.VISIBILITY_INVISIBLE,
                               type,

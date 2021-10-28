@@ -226,9 +226,9 @@ public class Case extends ANY
     boolean result = true;
     if (field != null)
       {
-        var t = field.returnType.functionReturnType();
+        var t = field.returnType().functionReturnType();
         var rt = resolveType(res, t, cgs, outer, matched);
-        field.returnType = new FunctionReturnType(rt);
+        field._returnType = new FunctionReturnType(rt);
         result &= rt != Types.t_ERROR;
       }
     if (types != null)
@@ -321,7 +321,7 @@ public class Case extends ANY
     var sb = new StringBuilder();
     if (field != null)
       {
-        sb.append(field.featureName().baseName() + " " + field.returnType);
+        sb.append(field.featureName().baseName() + " " + field.returnType());
       }
     else if (types == null)
       {
