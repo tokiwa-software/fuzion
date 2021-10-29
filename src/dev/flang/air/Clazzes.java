@@ -609,6 +609,74 @@ public class Clazzes extends ANY
 
 
   /**
+   * # if ids created by getRuntimeClazzId[s].
+   *
+   * NYI! This is static to create unique ids. It is sufficient to have unique ids for sets of clazzes used by the same statement.
+   */
+  private static int runtimeClazzIdCount_ = 0;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+
+
+  /**
+   * Obtain new unique ids for runtime clazz data stored in
+   * Clazz.setRuntimeClazz/getRuntimeClazz.
+   *
+   * @param count the number of ids to reserve
+   *
+   * @return the first of the ids result..result+count-1 ids reserved.
+   */
+  static int getRuntimeClazzIds(int count)
+  {
+    if (PRECONDITIONS) require
+      (runtimeClazzIdCount() <= Integer.MAX_VALUE - count);
+
+    int result = runtimeClazzIdCount_;
+    runtimeClazzIdCount_ = result + count;
+
+    if (POSTCONDITIONS) ensure
+                          (result >= 0,
+                           result < runtimeClazzIdCount());
+
+    return result;
+  }
+
+
+  /**
+   * Obtain a new unique id for runtime clazz data stored in
+   * Clazz.setRuntimeClazz/getRuntimeClazz.
+   *
+   * @return the id that was reserved.
+   */
+  private static int getRuntimeClazzId()
+  {
+    if (PRECONDITIONS) require
+      (runtimeClazzIdCount() < Integer.MAX_VALUE);
+
+    int result = getRuntimeClazzIds(1);
+
+    if (POSTCONDITIONS) ensure
+      (result >= 0,
+       result < runtimeClazzIdCount());
+
+    return result;
+  }
+
+  /**
+   * Total number of ids crated by getRuntimeClazzId[s].
+   *
+   * @return the id count.
+   */
+  static int runtimeClazzIdCount()
+  {
+    int result = runtimeClazzIdCount_;
+
+    if (POSTCONDITIONS) ensure
+      (result >= 0);
+
+    return result;
+  }
+
+
+  /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
   public static void findClazzes(Assign a, Clazz outerClazz)
@@ -623,7 +691,7 @@ public class Clazzes extends ANY
       {
         if (a.tid_ < 0)
           {
-            a.tid_ = outerClazz.feature().getRuntimeClazzIds(2);
+            a.tid_ = getRuntimeClazzIds(2);
           }
 
         Clazz sClazz = clazz(a._target, outerClazz);
@@ -697,7 +765,7 @@ public class Clazzes extends ANY
       }
     if (b._valAndRefClazzId < 0)
       {
-        b._valAndRefClazzId = outerClazz.feature().getRuntimeClazzIds(2);
+        b._valAndRefClazzId = getRuntimeClazzIds(2);
       }
     outerClazz.setRuntimeClazz(b._valAndRefClazzId    , vc);
     outerClazz.setRuntimeClazz(b._valAndRefClazzId + 1, rc);
@@ -717,7 +785,7 @@ public class Clazzes extends ANY
     Clazz vc = rc.asValue();
     if (u._refAndValClazzId < 0)
       {
-        u._refAndValClazzId = outerClazz.feature().getRuntimeClazzIds(2);
+        u._refAndValClazzId = getRuntimeClazzIds(2);
       }
     outerClazz.setRuntimeClazz(u._refAndValClazzId    , rc);
     outerClazz.setRuntimeClazz(u._refAndValClazzId + 1, vc);
@@ -766,7 +834,7 @@ public class Clazzes extends ANY
         var innerClazz = tclazz.lookup(cf, outerClazz.actualGenerics(c.generics), c.pos, c.isInheritanceCall_);
         if (c.sid_ < 0)
           {
-            c.sid_ = outerClazz.feature().getRuntimeClazzIds(2);
+            c.sid_ = getRuntimeClazzIds(2);
           }
         outerClazz.setRuntimeData(c.sid_ + 0, innerClazz);
         outerClazz.setRuntimeData(c.sid_ + 1, tclazz    );
@@ -810,7 +878,7 @@ public class Clazzes extends ANY
   {
     if (i.runtimeClazzId_ < 0)
       {
-        i.runtimeClazzId_ = outerClazz.feature().getRuntimeClazzIds(1);
+        i.runtimeClazzId_ = getRuntimeClazzIds(1);
       }
     outerClazz.setRuntimeClazz(i.runtimeClazzId_, clazz(i.cond, outerClazz));
   }
@@ -825,9 +893,9 @@ public class Clazzes extends ANY
     // we need to store in outerClazz.outer?
     if (c.runtimeClazzId_ < 0)
       {
-        c.runtimeClazzId_ = outerClazz.feature().getRuntimeClazzIds(c.field != null
-                                                                    ? 1
-                                                                    : c.types.size());
+        c.runtimeClazzId_ = getRuntimeClazzIds(c.field != null
+                                               ? 1
+                                               : c.types.size());
       }
     int i = c.runtimeClazzId_;
     if (c.field != null)
@@ -857,7 +925,7 @@ public class Clazzes extends ANY
       {
         // NYI: Check if this works for a match that is part of a inhertis clause, do
         // we need to store in outerClazz.outer?
-        m.runtimeClazzId_ = outerClazz.feature().getRuntimeClazzIds(1);
+        m.runtimeClazzId_ = getRuntimeClazzIds(1);
       }
     outerClazz.setRuntimeClazz(m.runtimeClazzId_, clazz(m.subject, outerClazz));
   }
@@ -872,7 +940,7 @@ public class Clazzes extends ANY
     Clazz tc = outerClazz.actualClazz(t._taggedType);
     if (t._valAndTaggedClazzId < 0)
       {
-        t._valAndTaggedClazzId = outerClazz.feature().getRuntimeClazzIds(2);
+        t._valAndTaggedClazzId = getRuntimeClazzIds(2);
       }
     outerClazz.setRuntimeClazz(t._valAndTaggedClazzId    , vc);
     outerClazz.setRuntimeClazz(t._valAndTaggedClazzId + 1, tc);
@@ -888,7 +956,7 @@ public class Clazzes extends ANY
     Clazz ac = clazz(i, outerClazz);
     if (i._arrayClazzId < 0)
       {
-        i._arrayClazzId = outerClazz.feature().getRuntimeClazzIds(2);
+        i._arrayClazzId = getRuntimeClazzIds(2);
       }
     Clazz sa = ac.lookup(Types.resolved.f_array_internalArray, Call.NO_GENERICS, i.pos()).resultClazz();
     sa.instantiated(i.pos());

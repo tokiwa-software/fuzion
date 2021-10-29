@@ -119,7 +119,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * Clazzes required during runtime. These are indexed by
-   * AbstractFeature.getRuntimeClazzId and used to quickly find the actual class
+   * Clazzes.getRuntimeClazzId and used to quickly find the actual class
    * depending on the actual generic parameters given in this class or its super
    * classes.
    */
@@ -1096,7 +1096,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                   var ccc = lookup(cfa, Call.NO_GENERICS, Clazzes.isUsedAt(f));
                   if (c.parentCallArgFieldIds_ < 0)
                     {
-                      c.parentCallArgFieldIds_ = Clazz.this.feature().getRuntimeClazzIds(n);
+                      c.parentCallArgFieldIds_ = Clazzes.getRuntimeClazzIds(n);
                     }
                   Clazz.this.setRuntimeData(c.parentCallArgFieldIds_+i, ccc);
                 }
@@ -1167,9 +1167,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (id >= 0,
-       id < feature().runtimeClazzIdCount());
+       id < Clazzes.runtimeClazzIdCount());
 
-    int cnt = feature().runtimeClazzIdCount();
+    int cnt = Clazzes.runtimeClazzIdCount();
     this._runtimeClazzes.ensureCapacity(cnt);
     while (this._runtimeClazzes.size() < cnt)
       {
@@ -1192,7 +1192,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public Object getRuntimeData(int id)
   {
     if (PRECONDITIONS) require
-      (id < feature().runtimeClazzIdCount(),
+      (id < Clazzes.runtimeClazzIdCount(),
        id >= 0);
 
     return this._runtimeClazzes.get(id);
@@ -1202,7 +1202,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * During findClazzes, store a clazz for a given id.
    *
-   * @param id the id obtained via AbstractFeature.getRuntimeClazzId()
+   * @param id the id obtained via Clazzes.getRuntimeClazzId()
    *
    * @param cl the clazz to be stored for this id.
    */
@@ -1210,7 +1210,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (id >= 0,
-       id < feature().runtimeClazzIdCount());
+       id < Clazzes.runtimeClazzIdCount());
 
     setRuntimeData(id, cl);
 
@@ -1229,7 +1229,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public Clazz getRuntimeClazz(int id)
   {
     if (PRECONDITIONS) require
-      (id < feature().runtimeClazzIdCount());
+      (id < Clazzes.runtimeClazzIdCount());
 
     return (Clazz) getRuntimeData(id);
   }

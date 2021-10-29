@@ -93,8 +93,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract Type[] argTypes();
 
   // following are used in IR/Clazzes middle end or later only:
-  public abstract int getRuntimeClazzIds(int count);  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-  public abstract int runtimeClazzIdCount();  // NYI: Used by dev.flang.be.interpreter, REMOVE!
   public abstract boolean isOuterRefCopyOfValue();
   public abstract AbstractFeature outerRefOrNull();
   public abstract void visit(FeatureVisitor v);

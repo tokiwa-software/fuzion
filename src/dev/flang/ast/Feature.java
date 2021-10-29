@@ -276,14 +276,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * # if ids created by getRuntimeClazzId[s].
-   *
-   * NYI! This is static to create unique ids. It is sufficient to have unique ids for sets of clazzes used by the same statement.
-   */
-  private static int runtimeClazzIdCount_ = 0;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-
-
-  /**
    * For choice feature (i.e., isChoice() holds): The tag field that holds in
    * i32 that identifies the index of the actual generic argument to choice that
    * is represented.
@@ -3175,67 +3167,6 @@ public class Feature extends AbstractFeature implements Stmnt
     result = (o == null)
       ? 0
       : o.depth()+1;
-    return result;
-  }
-
-
-  /**
-   * Obtain new unique ids for runtime clazz data stored in
-   * Clazz.setRuntimeClazz/getRuntimeClazz.
-   *
-   * @param count the number of ids to reserve
-   *
-   * @return the first of the ids result..result+count-1 ids reserved.
-   */
-  public int getRuntimeClazzIds(int count)  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-  {
-    if (PRECONDITIONS) require
-      (state() == State.RESOLVED,
-       runtimeClazzIdCount() <= Integer.MAX_VALUE - count);
-
-    int result = runtimeClazzIdCount_;
-    runtimeClazzIdCount_ = result + count;
-
-    if (POSTCONDITIONS) ensure
-      (result >= 0,
-       result < runtimeClazzIdCount());
-
-    return result;
-  }
-
-  /**
-   * Obtain a new unique id for runtime clazz data stored in
-   * Clazz.setRuntimeClazz/getRuntimeClazz.
-   *
-   * @return the id that was reserved.
-   */
-  public int getRuntimeClazzId()  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-  {
-    if (PRECONDITIONS) require
-      (state() == State.RESOLVED,
-       runtimeClazzIdCount() < Integer.MAX_VALUE);
-
-    int result = getRuntimeClazzIds(1);
-
-    if (POSTCONDITIONS) ensure
-      (result >= 0,
-       result < runtimeClazzIdCount());
-
-    return result;
-  }
-
-  /**
-   * Total number of ids crated by getRuntimeClazzId[s].
-   *
-   * @return the id count.
-   */
-  public int runtimeClazzIdCount()  // NYI: Used by dev.flang.be.interpreter, REMOVE!
-  {
-    int result = runtimeClazzIdCount_;
-
-    if (POSTCONDITIONS) ensure
-      (result >= 0);
-
     return result;
   }
 
