@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Set;
 import java.util.SortedMap;
 
 
@@ -72,6 +73,9 @@ public interface SrcModule
   SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name);
   FeaturesAndOuter lookupNoTarget(AbstractFeature thiz, String name, Call call, Assign assign, Destructure destructure);
   void checkTypes(Feature f);
+
+  // for middle end:
+  Set<AbstractFeature> redefinitions(AbstractFeature f);
 
 }
 

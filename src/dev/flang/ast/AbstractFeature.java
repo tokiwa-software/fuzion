@@ -90,6 +90,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract AbstractFeature outerRef();
   public abstract boolean isOuterRefAdrOfValue();
   public abstract AbstractFeature get(Resolution res, String qname);
+  public abstract Type[] argTypes();
 
   // following are used in IR/Clazzes middle end or later only:
   public abstract int getRuntimeClazzIds(int count);  // NYI: Used by dev.flang.be.interpreter, REMOVE!

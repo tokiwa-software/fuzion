@@ -373,8 +373,8 @@ public class AstErrors extends ANY
           "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
   }
 
-  public static void argumentTypeMismatchInRedefinition(Feature originalFeature, AbstractFeature originalArg,
-                                                        Feature redefinedFeature, AbstractFeature redefinedArg)
+  public static void argumentTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractFeature originalArg,
+                                                        AbstractFeature redefinedFeature, AbstractFeature redefinedArg)
   {
     error(redefinedArg.pos(),
           "Wrong argument type in redefined feature",
@@ -383,8 +383,8 @@ public class AstErrors extends ANY
           "Original argument declared at " + originalArg.pos().show());
   }
 
-  public static void resultTypeMismatchInRedefinition(Feature originalFeature,
-                                                      Feature redefinedFeature)
+  public static void resultTypeMismatchInRedefinition(AbstractFeature originalFeature,
+                                                      AbstractFeature redefinedFeature)
   {
     error(redefinedFeature.pos(),
           "Wrong result type in redefined feature",

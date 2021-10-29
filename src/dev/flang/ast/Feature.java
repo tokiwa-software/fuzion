@@ -233,14 +233,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * All features that have been found to directly redefine this feature. This
-   * does not include redefintions of redefinitions.  This set is collected
-   * during RESOLVING_DECLARATIONS.
-   */
-  public Set<Feature> redefinitions_ = new TreeSet<>();
-
-
-  /**
    * In case this is a function returning a result different than self or single
    * and not implemented as a field, this is the result variable. Created during
    * LOADING.

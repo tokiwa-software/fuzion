@@ -102,6 +102,15 @@ public class SourceModule extends Module implements SrcModule
      * is collected during RESOLVING_DECLARATIONS.
      */
     public Set<AbstractFeature> _heirs = new TreeSet<>();
+
+
+    /**
+     * All features that have been found to directly redefine this feature. This
+     * does not include redefintions of redefinitions.  This set is collected
+     * during RESOLVING_DECLARATIONS.
+     */
+    public Set<AbstractFeature> _redefinitions = null;
+
   }
 
 
@@ -578,7 +587,7 @@ public class SourceModule extends Module implements SrcModule
 
 
   /**
-   * Get declared amd inherited features for given outer Feature as seen by this
+   * Get declared and inherited features for given outer Feature as seen by this
    * module.  Result is never null.
    *
    * @param outer the declaring feature
@@ -612,7 +621,7 @@ public class SourceModule extends Module implements SrcModule
 
 
   /**
-   * Get declared amd inherited features for given outer Feature as seen by this
+   * Get declared and inherited features for given outer Feature as seen by this
    * module.  Result may be null if this module does not contribute anything to
    * outer.
    *
@@ -680,6 +689,54 @@ public class SourceModule extends Module implements SrcModule
       }
   }
 
+  /**
+   * Get direct redefininitions of given Feature as seen by this module.
+   * Result is never null.
+   *
+   * @param f the original feature
+   */
+  public Set<AbstractFeature>redefinitions(AbstractFeature f)
+  {
+    var d = data(f);
+    var r = d._redefinitions;
+    if (r == null)
+      {
+        r = new TreeSet<>();
+        d._redefinitions = r;
+        for (Module m : _dependsOn)
+          { // NYI: properly obtain set of declared features from m, do we need
+            // to take care for the order and dependencies between modules?
+            var mr = m.redefinitionsOrNull(f);
+            if (mr != null)
+              {
+                for (var e : mr)
+                  {
+                    r.add(e);
+                  }
+              }
+          }
+      }
+    return r;
+  }
+
+
+  /**
+   * Get redefinitions for given outer Feature as seen by this module.
+   * Result is null if f has no redefinitions in this module.
+   *
+   * @param f the original feature
+   */
+  Set<AbstractFeature>redefinitionsOrNull(AbstractFeature f)
+  {
+    var d = _data.get(f);
+    if (d != null)
+      {
+        return d._redefinitions;
+      }
+    return null;
+  }
+
+
 
   /**
    * Helper method for findInheritedFeatures and addToHeirs to add a feature
@@ -695,13 +752,13 @@ public class SourceModule extends Module implements SrcModule
   private void addInheritedFeature(AbstractFeature outer, SourcePosition pos, FeatureName fn, AbstractFeature f)
   {
     var s = data(outer)._declaredOrInheritedFeatures;
-    var existing = (Feature) (s == null ? null : s.get(fn)); // NYI: Cast!
+    var existing = s == null ? null : s.get(fn);
     if (existing != null)
       {
-        if (existing.redefinitions_.contains(f))
+        if (redefinitions(existing).contains(f))
           { // f redefined existing, so we are fine
           }
-        else if (((Feature)f).redefinitions_.contains(existing)) // NYI: Cast!
+        else if (redefinitions(f).contains(existing))
           { // existing redefines f, so use existing
             f = existing;
           }
@@ -756,7 +813,7 @@ public class SourceModule extends Module implements SrcModule
           }
         else
           {
-            ((Feature)existing).redefinitions_.add((Feature)f); // NYI: Casts!
+            redefinitions(existing).add(f);
           }
         doi.put(fn, f);
         ((Feature)f).scheduleForResolution(_res); // NYI: Cast!
@@ -992,7 +1049,7 @@ public class SourceModule extends Module implements SrcModule
   {
     var args = f.arguments();
     int ean = args.size();
-    for (Feature r : f.redefinitions_)
+    for (var r : redefinitions(f))
       {
         Type[] ta = f.handDown(_res, f.argTypes(), r.outer());
         Type[] ra = r.argTypes();

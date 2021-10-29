@@ -33,6 +33,7 @@ import dev.flang.mir.MIR;
 
 import dev.flang.util.ANY;
 
+import java.util.Set;
 import java.util.SortedMap;
 
 
@@ -93,6 +94,15 @@ public abstract class Module extends ANY
    * @param outer the declaring feature
    */
   abstract SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer);
+
+
+  /**
+   * Get direct redefininitions of given Feature as seen by this module.
+   * Result is null if f has no redefinitions in this module.
+   *
+   * @param f the original feature
+   */
+  abstract Set<AbstractFeature>redefinitionsOrNull(AbstractFeature f);
 
 
 }
