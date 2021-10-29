@@ -1794,11 +1794,11 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Determine the form argument types of this feature.
+   * Determine the formal argument types of this feature.
    *
    * @return a new array containing this feature's formal argument types.
    */
-  Type[] argTypes()
+  public Type[] argTypes()
   {
     int argnum = 0;
     var result = new Type[_arguments.size()];
@@ -1989,7 +1989,7 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return interned type that represents t seen as it is seen from heir.
    */
-  Type handDownNonOpen(Resolution res, Type t, AbstractFeature heir)
+  public Type handDownNonOpen(Resolution res, Type t, AbstractFeature heir)
   {
     if (PRECONDITIONS) require
       (!t.isOpenGeneric(),
@@ -2020,7 +2020,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * @return the types from the argument array a has seen this within
    * heir. Their number might have changed due to open generics.
    */
-  Type[] handDown(Resolution res, Type[] a, AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
+  public Type[] handDown(Resolution res, Type[] a, AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
   {
     if (PRECONDITIONS) require
       (heir != null,
@@ -2069,58 +2069,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (_state.atLeast(State.CHECKING_TYPES1));
 
-    int ean = _arguments.size();
-    for (Feature r : redefinitions_)
-      {
-        Type[] ta = handDown(res, argTypes(), r.outer());
-        Type[] ra = r.argTypes();
-        if (ta.length != ra.length)
-          {
-            AstErrors.argumentLengthsMismatch(this, ta.length, r, ra.length);
-          }
-        else
-          {
-            for (int i = 0; i < ta.length; i++)
-              {
-                Type t1 = ta[i];
-                Type t2 = ra[i];
-                if (t1 != t2 && !t1.containsError() && !t2.containsError())
-                  {
-                    // original arg list may be shorter if last arg is open generic:
-                    check
-                      (Errors.count() > 0 ||
-                       i < _arguments.size() ||
-                       _arguments.get(_arguments.size()-1).resultType().isOpenGeneric());
-                    int ai = Math.min(_arguments.size() - 1, i);
-
-                    Feature actualArg   = r._arguments.get(i);
-                    Feature originalArg =   _arguments.get(ai);
-                    AstErrors.argumentTypeMismatchInRedefinition(this, originalArg,
-                                                                r,    actualArg);
-                  }
-              }
-          }
-
-        Type t1 = handDownNonOpen(res, resultType(), r.outer());
-        Type t2 = r.resultType();
-        if ((t1.isChoice()
-             ? t1 != t2  // we (currently) do not tag the result in a redefined feature, see testRedefine
-             : !t1.isAssignableFrom(t2)) &&
-            t2 != Types.resolved.t_void)
-          {
-            AstErrors.resultTypeMismatchInRedefinition(this, r);
-          }
-      }
-
-    if (_returnType.isConstructorType())
-      {
-        var cod = _impl._code;
-        var rt = cod.type();
-        if (!Types.resolved.t_unit.isAssignableFrom(rt))
-          {
-            AstErrors.constructorResultMustBeUnit(cod);
-          }
-      }
+    res._module.checkTypes(this);
   }
 
 

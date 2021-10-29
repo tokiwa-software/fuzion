@@ -54,6 +54,8 @@ import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
+import dev.flang.ast.Type;
+import dev.flang.ast.Types;
 
 import dev.flang.mir.MIR;
 
@@ -974,6 +976,77 @@ public class SourceModule extends Module implements SrcModule
 
     return result;
   }
+
+
+  /*--------------------------  type checking  --------------------------*/
+
+
+  /**
+   * Check types of given Feature. This mainly checks that all redefinitions of
+   * f are compatible with f.
+   *
+   * NYI: Better perform the check the other way around: check that f matches
+   * the types of all features that f redefines.
+   */
+  public void checkTypes(Feature f)
+  {
+    var args = f.arguments();
+    int ean = args.size();
+    for (Feature r : f.redefinitions_)
+      {
+        Type[] ta = f.handDown(_res, f.argTypes(), r.outer());
+        Type[] ra = r.argTypes();
+        if (ta.length != ra.length)
+          {
+            AstErrors.argumentLengthsMismatch(f, ta.length, r, ra.length);
+          }
+        else
+          {
+            for (int i = 0; i < ta.length; i++)
+              {
+                Type t1 = ta[i];
+                Type t2 = ra[i];
+                if (t1 != t2 && !t1.containsError() && !t2.containsError())
+                  {
+                    // original arg list may be shorter if last arg is open generic:
+                    check
+                      (Errors.count() > 0 ||
+                       i < args.size() ||
+                       args.get(args.size()-1).resultType().isOpenGeneric());
+                    int ai = Math.min(args.size() - 1, i);
+
+                    var actualArg   = r.arguments().get(i);
+                    var originalArg =   args       .get(ai);
+                    AstErrors.argumentTypeMismatchInRedefinition(f, originalArg,
+                                                                 r,    actualArg);
+                  }
+              }
+          }
+
+        Type t1 = f.handDownNonOpen(_res, f.resultType(), r.outer());
+        Type t2 = r.resultType();
+        if ((t1.isChoice()
+             ? t1 != t2  // we (currently) do not tag the result in a redefined feature, see testRedefine
+             : !t1.isAssignableFrom(t2)) &&
+            t2 != Types.resolved.t_void)
+          {
+            AstErrors.resultTypeMismatchInRedefinition(f, r);
+          }
+      }
+
+    if (f.returnType().isConstructorType())
+      {
+        var cod = f.code();
+        var rt = cod.type();
+        if (!Types.resolved.t_unit.isAssignableFrom(rt))
+          {
+            AstErrors.constructorResultMustBeUnit(cod);
+          }
+      }
+  }
+
+
+  /*-------------------------------  misc  ------------------------------*/
 
 
   /**

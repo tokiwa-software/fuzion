@@ -373,8 +373,8 @@ public class AstErrors extends ANY
           "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
   }
 
-  static void argumentTypeMismatchInRedefinition(Feature originalFeature, Feature originalArg,
-                                                 Feature redefinedFeature, Feature redefinedArg)
+  public static void argumentTypeMismatchInRedefinition(Feature originalFeature, AbstractFeature originalArg,
+                                                        Feature redefinedFeature, AbstractFeature redefinedArg)
   {
     error(redefinedArg.pos(),
           "Wrong argument type in redefined feature",
@@ -383,8 +383,8 @@ public class AstErrors extends ANY
           "Original argument declared at " + originalArg.pos().show());
   }
 
-  static void resultTypeMismatchInRedefinition(Feature originalFeature,
-                                               Feature redefinedFeature)
+  public static void resultTypeMismatchInRedefinition(Feature originalFeature,
+                                                      Feature redefinedFeature)
   {
     error(redefinedFeature.pos(),
           "Wrong result type in redefined feature",
@@ -393,7 +393,7 @@ public class AstErrors extends ANY
           "Original feature declared at " + originalFeature.pos().show());
   }
 
-  static void constructorResultMustBeUnit(Expr res)
+  public static void constructorResultMustBeUnit(Expr res)
   {
     var rt = res.typeOrNull();
     var srt = rt == null ? "an unknown type" : s(rt);
@@ -406,8 +406,8 @@ public class AstErrors extends ANY
           "explicitly ignore the result of the last expression by an assignment " + st("_ := <expression>") + ".");
   }
 
-  static void argumentLengthsMismatch(Feature originalFeature, int originalNumArgs,
-                                      Feature redefinedFeature, int actualNumArgs)
+  public static void argumentLengthsMismatch(AbstractFeature originalFeature, int originalNumArgs,
+                                             AbstractFeature redefinedFeature, int actualNumArgs)
   {
     error(redefinedFeature.pos(),
           "Wrong number of arguments in redefined feature",

@@ -1534,7 +1534,7 @@ public class Type extends ANY implements Comparable<Type>
   /**
    * Check if this or any of its generic arguments is Types.t_ERROR.
    */
-  boolean containsError()
+  public boolean containsError()
   {
     boolean result = false;
     if (this == Types.t_ERROR)
