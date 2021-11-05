@@ -80,7 +80,7 @@ public abstract class FeatureVisitor extends ANY
   public Type    action      (Type        t, Feature outer) { return t; }
 
   /**
-   * Visotors that want a different treatment for visiting actual arguments of a
+   * Visitors that want a different treatment for visiting actual arguments of a
    * call can redefine this method.  This is used for type resolution to delay
    * resolution or actual arguments until the outer feature's type was resolved.
    */
