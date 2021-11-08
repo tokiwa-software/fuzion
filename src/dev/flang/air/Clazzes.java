@@ -303,7 +303,7 @@ public class Clazzes extends ANY
                 // So instead of testing !o.isRef() we use
                 // !o._type.featureOfType().isThisRef().
                 !o._type.featureOfType().isThisRef() &&
-                o._type.featureOfType().implKind() != Impl.Kind.Intrinsic)
+                !o._type.featureOfType().isIntrinsic())
               {  // but a recursive chain of value types is not permitted
 
                 // NYI: recursive chain of value types should be detected during

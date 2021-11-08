@@ -289,21 +289,17 @@ public class SourceModule extends Module implements SrcModule
           {
             FeErrors.mainFeatureMustNotHaveArguments(main);
           }
-        if (main.isField())
+        switch (main.kind())
           {
-            FeErrors.mainFeatureMustNotBeField(main);
-          }
-        if (main.isAbstract())
-          {
-            FeErrors.mainFeatureMustNotBeAbstract(main);
-          }
-        if (main.implKind() == Impl.Kind.Intrinsic)
-          {
-            FeErrors.mainFeatureMustNotBeIntrinsic(main);
-          }
-        if (!main.generics().list.isEmpty())
-          {
-            FeErrors.mainFeatureMustNotHaveTypeArguments(main);
+          case Field    : FeErrors.mainFeatureMustNotBeField    (main); break;
+          case Abstract : FeErrors.mainFeatureMustNotBeAbstract (main); break;
+          case Intrinsic: FeErrors.mainFeatureMustNotBeIntrinsic(main); break;
+          case Choice   : FeErrors.mainFeatureMustNotBeChoice   (main); break;
+          case Routine:
+            if (!main.generics().list.isEmpty())
+              {
+                FeErrors.mainFeatureMustNotHaveTypeArguments(main);
+              }
           }
       }
     var result = new MIR(_universe, main, this);
@@ -831,8 +827,8 @@ public class SourceModule extends Module implements SrcModule
     var existing = df.get(fn);
     if (existing != null)
       {
-        if (f       .implKind() == Impl.Kind.FieldDef &&
-            existing.implKind() == Impl.Kind.FieldDef    )
+        if (f                  .implKind() == Impl.Kind.FieldDef &&
+            ((Feature)existing).implKind() == Impl.Kind.FieldDef    ) // NYI: Cast!
           {
             var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
             fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
@@ -1091,7 +1087,7 @@ public class SourceModule extends Module implements SrcModule
           }
       }
 
-    if (f.returnType().isConstructorType())
+    if (f.returnType().isConstructorType() && f.isRoutine())
       {
         var cod = f.code();
         var rt = cod.type();

@@ -702,81 +702,88 @@ public class Interpreter extends ANY
     else
       {
         var f = innerClazz.feature();
-        if (f.isAbstract())
+        switch (f.kind())
           {
+          case Abstract:
             result = (args) -> { Errors.fatal("abstract feature " + f.qualifiedName() + " called on " + args.get(0) + " of clazz "+outerClazz + "\n" + callStack()); return Value.NO_VALUE; };
-          }
-        else if (f.isField())
-          {
-            // result = (args) -> getField(f, outerClazz, args.get(0));
-            //
-            // specialize for i32.val and bool.tag
-            var ocv = outerClazz.asValue();
-            if (builtInVal || ocv == Clazzes.bool.getIfCreated())
+            break;
+          case Field:
+            {
+              // result = (args) -> getField(f, outerClazz, args.get(0));
+              //
+              // specialize for i32.val and bool.tag
+              var ocv = outerClazz.asValue();
+              if (builtInVal || ocv == Clazzes.bool.getIfCreated())
+                {
+                  check
+                    (ocv != Clazzes.i8  .getIfCreated() || f.qualifiedName().equals("i8.val"),
+                     ocv != Clazzes.i16 .getIfCreated() || f.qualifiedName().equals("i16.val"),
+                     ocv != Clazzes.i32 .getIfCreated() || f.qualifiedName().equals("i32.val"),
+                     ocv != Clazzes.i64 .getIfCreated() || f.qualifiedName().equals("i64.val"),
+                     ocv != Clazzes.u8  .getIfCreated() || f.qualifiedName().equals("u8.val"),
+                     ocv != Clazzes.u16 .getIfCreated() || f.qualifiedName().equals("u16.val"),
+                     ocv != Clazzes.u32 .getIfCreated() || f.qualifiedName().equals("u32.val"),
+                     ocv != Clazzes.u64 .getIfCreated() || f.qualifiedName().equals("u64.val"),
+                     ocv != Clazzes.f32 .getIfCreated() || f.qualifiedName().equals("f32.val") &&
+                     ocv != Clazzes.f64 .getIfCreated() || f.qualifiedName().equals("f64.val"),
+                     ocv != Clazzes.bool.getIfCreated() || f.qualifiedName().equals("bool." + FuzionConstants.CHOICE_TAG_NAME));
+                  result = (args) -> args.get(0);
+                }
+              else
+                {
+                  Clazz fclazz = outerClazz.clazzForField(f);
+                  if (outerClazz.isRef())
+                    {
+                      result = (args) ->
+                        {
+                          LValue slot = fieldSlot(f, outerClazz, fclazz, args.get(0));
+                          return loadField(f, fclazz, slot);
+                        };
+                    }
+                  else if (true) // NYI: offset might not have been set yet, so for now, cache it dynamically at runtime
+                    {
+                      result = new Callable()
+                        {
+                          int off = -1;
+                          public Value call(ArrayList<Value> args)
+                          {
+                            if (off < 0)
+                              {
+                                off = Layout.get(outerClazz).offset(f);
+                              }
+                            var slot = args.get(0).at(fclazz, off);
+                            return loadField(f, fclazz, slot);
+                          }
+                        };
+                    }
+                  else
+                    {
+                      var off = Layout.get(outerClazz).offset(f);
+                      result = (args) ->
+                        {
+                          var slot = args.get(0).at(fclazz, off);
+                          return loadField(f, fclazz, slot);
+                        };
+                    }
+                }
+              break;
+            }
+          case Intrinsic:
+            result = Intrinsics.call(innerClazz);
+            break;
+          case Choice: // NYI: why choice here?
+          case Routine:
+            if (innerClazz == Clazzes.universe.get())
               {
-                check
-                  (ocv != Clazzes.i8  .getIfCreated() || f.qualifiedName().equals("i8.val"),
-                   ocv != Clazzes.i16 .getIfCreated() || f.qualifiedName().equals("i16.val"),
-                   ocv != Clazzes.i32 .getIfCreated() || f.qualifiedName().equals("i32.val"),
-                   ocv != Clazzes.i64 .getIfCreated() || f.qualifiedName().equals("i64.val"),
-                   ocv != Clazzes.u8  .getIfCreated() || f.qualifiedName().equals("u8.val"),
-                   ocv != Clazzes.u16 .getIfCreated() || f.qualifiedName().equals("u16.val"),
-                   ocv != Clazzes.u32 .getIfCreated() || f.qualifiedName().equals("u32.val"),
-                   ocv != Clazzes.u64 .getIfCreated() || f.qualifiedName().equals("u64.val"),
-                   ocv != Clazzes.f32 .getIfCreated() || f.qualifiedName().equals("f32.val") &&
-                   ocv != Clazzes.f64 .getIfCreated() || f.qualifiedName().equals("f64.val"),
-                   ocv != Clazzes.bool.getIfCreated() || f.qualifiedName().equals("bool." + FuzionConstants.CHOICE_TAG_NAME));
-                result = (args) -> args.get(0);
+                result = (args) -> callOnInstance(f, innerClazz, Instance.universe, args);
               }
             else
               {
-                Clazz fclazz = outerClazz.clazzForField(f);
-                if (outerClazz.isRef())
-                  {
-                    result = (args) ->
-                      {
-                        LValue slot = fieldSlot(f, outerClazz, fclazz, args.get(0));
-                        return loadField(f, fclazz, slot);
-                      };
-                  }
-                else if (true) // NYI: offset might not have been set yet, so for now, cache it dynamically at runtime
-                  {
-                    result = new Callable()
-                      {
-                        int off = -1;
-                        public Value call(ArrayList<Value> args)
-                        {
-                          if (off < 0)
-                            {
-                              off = Layout.get(outerClazz).offset(f);
-                            }
-                          var slot = args.get(0).at(fclazz, off);
-                          return loadField(f, fclazz, slot);
-                        }
-                      };
-                  }
-                else
-                  {
-                    var off = Layout.get(outerClazz).offset(f);
-                    result = (args) ->
-                      {
-                        var slot = args.get(0).at(fclazz, off);
-                        return loadField(f, fclazz, slot);
-                      };
-                  }
+                result = (args) -> callOnInstance(f, innerClazz, new Instance(innerClazz), args);
               }
-          }
-        else if (f.implKind() == Impl.Kind.Intrinsic)
-          {
-            result = Intrinsics.call(innerClazz);
-          }
-        else if (innerClazz == Clazzes.universe.get())
-          {
-            result = (args) -> callOnInstance(f, innerClazz, Instance.universe, args);
-          }
-        else
-          {
-            result = (args) -> callOnInstance(f, innerClazz, new Instance(innerClazz), args);
+            break;
+          default:
+            throw new Error("unhandled switch case: "+f.kind());
           }
       }
     return result;
@@ -796,8 +803,7 @@ public class Interpreter extends ANY
   public Value callOnInstance(AbstractFeature thiz, Clazz staticClazz, Instance cur, ArrayList<Value> args)
   {
     if (PRECONDITIONS) require
-      (!thiz.isField(),
-       thiz.implKind() != Impl.Kind.Intrinsic,
+      (thiz.isRoutine(),
        args.size() == thiz.arguments().size() + 1 || thiz.hasOpenGenericsArgList() /* e.g. in call tuple<i32>(42) */
        );
 
@@ -861,21 +867,29 @@ public class Interpreter extends ANY
           }
       }
 
-    if (thiz.implKind() == Impl.Kind.Abstract)
+    switch (thiz.kind())
       {
+      case Abstract:
         Errors.fatal(thiz.pos(),  // NYI: move to new class InterpreterErrors
                      "Abstract feature called",
                      "Feature called: " + thiz.qualifiedName() + "\n" +
                      "Target instance: " + cur);
-      }
-    if (thiz.implKind() == Impl.Kind.Intrinsic)
-      {
+        break;
+      case Intrinsic:
         Errors.fatal(thiz.pos(),  // NYI: move to new class InterpreterErrors
                      "Missing intrinsic feature called",
                      "Feature called: " + thiz.qualifiedName() + "\n" +
                      "Target instance: " + cur);
+        break;
+      case Routine:
+        execute(thiz.code(), staticClazz, cur);
+        break;
+      case Field:
+      case Choice:
+      default:
+        throw new Error("Call to unsupported Feature kind: "+thiz.kind());
       }
-    execute(thiz.code(), staticClazz, cur);
+
     for (var c : thiz.contract().ens)
       {
         var v = execute(c.cond, staticClazz, cur);

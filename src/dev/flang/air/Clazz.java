@@ -848,7 +848,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           }
         else
           {
-            if (af.isAbstract())
+            if (af.kind() == AbstractFeature.Kind.Abstract)
               {
                 if (abstractCalled_ == null)
                   {
@@ -1245,16 +1245,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Is this a choice-type, i.e., does it directly inherit from choice?
+   * Is this a routine-type, i.e., a function returning a result or a constructor?
    */
   public boolean isRoutine()
   {
-    switch (feature().implKind())
-      {
-      case Routine    :
-      case RoutineDef : return true;
-      default         : return false;
-      }
+    return feature().isRoutine();
   }
 
 
@@ -1398,7 +1393,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
           }
 
-        if (feature().implKind() == Impl.Kind.Intrinsic)
+        if (feature().isIntrinsic())
           { // value instances returned from intrinsics are recored to be
             // instantiated.  (ref instances are excluded since returning, e.g.,
             // a 'ref string' does not mean that we really have an instance of
@@ -1436,7 +1431,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isCalled()
   {
-    return (isCalled_ && isOuterInstantiated() || _isCalledDirectly) && feature().implKind() != Impl.Kind.Abstract &&
+    return (isCalled_ && isOuterInstantiated() || _isCalledDirectly) && !feature().isAbstract() &&
       (_argumentFields == null || /* this may happen when creating deterḿining isUnitType() on cyclic value type, will cause an error during layout() */
        !isAbsurd());
   }
@@ -1770,12 +1765,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     Clazz[] result = NO_CLAZZES;
     var f = feature();
-    switch (f.implKind())
+    switch (f.kind())
       {
       case Abstract  :
       case Intrinsic :
       case Routine   :
-      case RoutineDef:
         {
           var args = new ArrayList<Clazz>();
           for (var a : f.arguments())
@@ -1862,11 +1856,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     Clazz result = null;
     var f = feature();
-    switch (f.implKind())
+    switch (f.kind())
       {
       case Intrinsic  :
       case Routine    :
-      case RoutineDef :
         {
           var or = f.outerRefOrNull();
           if (or != null && Clazzes.isUsedAtAll(or))
@@ -1921,7 +1914,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (_fields == null)
       {
         if (isChoice() ||
-            feature().implKind() == Impl.Kind.Intrinsic
+            feature().isIntrinsic()
             /* NYI: would be good to add isRef() here and create _fields only for value types */
             )
           {

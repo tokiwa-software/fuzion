@@ -194,12 +194,13 @@ class Layout extends ANY
 
 
   /**
-   * Offset of field f within instnaces of _clazz.
+   * Offset of field f within instances of _clazz.
    */
   int offset(AbstractFeature f)
   {
     if (PRECONDITIONS) require
-      (_clazz.isRoutine() && sizeAvailable());
+      (_clazz.isRoutine() || _clazz.isChoice(),
+       sizeAvailable());
 
     return _offsets.get(f);
   }

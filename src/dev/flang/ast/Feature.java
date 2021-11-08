@@ -810,13 +810,24 @@ public class Feature extends AbstractFeature implements Stmnt
     return false;
   }
 
+
   /**
-   * is this an abstract feature?
+   * What is this Feature's kind?
+   *
+   * @return Routine, Field, Intrinsic, Abstract or Choice.
    */
-  public boolean isAbstract()
+  public Kind kind()
   {
-    return _impl == Impl.ABSTRACT;
+    return state().atLeast(State.RESOLVING_TYPES) && isChoiceAfterTypesResolved()
+      ? Kind.Choice
+      : switch (_impl.kind_) {
+          case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
+          case Routine, RoutineDef                                -> Kind.Routine;
+          case Abstract                                           -> Kind.Abstract;
+          case Intrinsic                                          -> Kind.Intrinsic;
+        };
   }
+
 
   /**
    * get the kind of this feature.
@@ -848,7 +859,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public Expr code()
   {
     if (PRECONDITIONS) require
-      (switch (implKind()) { case Routine, RoutineDef -> true; default -> false; });
+      (isRoutine());
 
     return _impl._code;
   }
@@ -1045,7 +1056,7 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * Is this a choice-type, i.e., does it directly inherit from choice?
    */
-  public boolean isChoice()
+  boolean isChoiceAfterTypesResolved()
   {
     return choiceGenerics() != null;
   }
@@ -3132,26 +3143,6 @@ public class Feature extends AbstractFeature implements Stmnt
     return this._outer != null
       ? outerRef()
       : null;
-  }
-
-
-  /**
-   * isField
-   *
-   * @return
-   */
-  public boolean isField()
-  {
-    boolean result = false;
-    switch (_impl.kind_)
-      {
-      case FieldInit  :
-      case FieldDef   :
-      case FieldActual:
-      case Field      : result = true; break;
-      default: break;
-      }
-    return result;
   }
 
 

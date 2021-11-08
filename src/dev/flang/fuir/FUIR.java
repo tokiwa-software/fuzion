@@ -373,26 +373,16 @@ public class FUIR extends IR
 
   FeatureKind clazzKind(Clazz cc)
   {
-    if (cc.isChoice())
+    var ff = cc.feature();
+    return switch (ff.kind())
       {
-        return FeatureKind.Choice;
-      }
-    else
-      {
-        var ff = cc.feature();
-        switch (ff.implKind())
-          {
-          case Routine    :
-          case RoutineDef : return FeatureKind.Routine;
-          case Field      :
-          case FieldDef   :
-          case FieldActual:
-          case FieldInit  : return FeatureKind.Field;
-          case Intrinsic  : return FeatureKind.Intrinsic;
-          case Abstract   : return FeatureKind.Abstract;
-          default: throw new Error ("Unexpected feature impl kind: "+ff.implKind());
-          }
-      }
+      case Routine    -> FeatureKind.Routine;
+      case Field      -> FeatureKind.Field;
+      case Intrinsic  -> FeatureKind.Intrinsic;
+      case Abstract   -> FeatureKind.Abstract;
+      case Choice     -> FeatureKind.Choice;
+      default         -> throw new Error ("Unexpected feature kind: "+ff.kind());
+      };
   }
 
   public String clazzBaseName(int cl)

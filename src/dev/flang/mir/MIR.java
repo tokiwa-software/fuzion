@@ -272,16 +272,15 @@ hw25 is
   {
     var ff = _featureIds.get(f);
 
-    return ff.isChoice()
-      ? FeatureKind.Choice
-      : switch (ff.implKind())
-        {
-        case Routine, RoutineDef                     -> FeatureKind.Routine;
-        case Field, FieldDef, FieldActual, FieldInit -> FeatureKind.Field;
-        case Intrinsic                               -> FeatureKind.Intrinsic;
-        case Abstract                                -> FeatureKind.Abstract;
-        default -> throw new Error ("Unexpected feature impl kind: "+ff.implKind());
-        };
+    return switch (ff.kind())
+      {
+      case Routine   -> FeatureKind.Routine;
+      case Field     -> FeatureKind.Field;
+      case Intrinsic -> FeatureKind.Intrinsic;
+      case Abstract  -> FeatureKind.Abstract;
+      case Choice    -> FeatureKind.Choice;
+      default        -> throw new Error ("Unexpected feature impl kind: " + ff.kind());
+      };
   }
 
 

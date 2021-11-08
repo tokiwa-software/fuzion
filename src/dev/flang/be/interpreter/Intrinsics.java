@@ -75,7 +75,7 @@ public class Intrinsics extends ANY
   public static Callable call(Clazz innerClazz)
   {
     if (PRECONDITIONS) require
-      (innerClazz.feature().implKind() == Impl.Kind.Intrinsic);
+      (innerClazz.feature().isIntrinsic());
 
     Callable result;
     var f = innerClazz.feature();

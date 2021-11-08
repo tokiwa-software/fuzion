@@ -86,6 +86,11 @@ public class FeErrors extends AstErrors
     mainFeatureMustNot(m, "be intrinsic");
   }
 
+  public static void mainFeatureMustNotBeChoice(AbstractFeature m)
+  {
+    mainFeatureMustNot(m, "be choice");
+  }
+
   static void mainFeatureMustNotHaveGenericArguments(AbstractFeature m)
   {
     mainFeatureMustNot(m, "have generic arguments");

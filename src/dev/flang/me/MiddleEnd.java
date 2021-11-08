@@ -205,7 +205,7 @@ public class MiddleEnd extends ANY
                   }
               }
           }
-        if (f.implKind() == Impl.Kind.Intrinsic && f.outerRefOrNull() != null)
+        if (f.isIntrinsic() && f.outerRefOrNull() != null)
           {
             markUsed(f.outerRefOrNull(), false, usedAt);
           }

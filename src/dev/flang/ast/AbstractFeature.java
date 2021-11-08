@@ -43,12 +43,35 @@ import dev.flang.util.SourcePosition;
 public abstract class AbstractFeature extends ANY implements Comparable<AbstractFeature>
 {
 
+  /**
+   * The basic types of features in Fuzion:
+   */
+  public enum Kind
+  {
+    Routine,
+    Field,
+    Intrinsic,
+    Abstract,
+    Choice
+  }
+
+  /* pre-implemented convenience functions: */
+  public boolean isRoutine() { return kind() == Kind.Routine; }
+  public boolean isField() { return kind() == Kind.Field; }
+  public boolean isAbstract() { return kind() == Kind.Abstract; }
+  public boolean isIntrinsic() { return kind() == Kind.Intrinsic; }
+  public boolean isChoice() { return kind() == Kind.Choice; }
+
+  /**
+   * What is this Feature's kind?
+   *
+   * @return Routine, Field, Intrinsic, Abstract or Choice.
+   */
+  public abstract Kind kind();
+
   public abstract boolean isUniverse();
-  public abstract boolean isField();
   public abstract boolean isOuterRef();
   public abstract boolean isThisRef();
-  public abstract boolean isAbstract();
-  public abstract boolean isChoice();
   abstract boolean isChoiceTag();
   abstract boolean isDynamic();
   abstract boolean isAnonymousInnerFeature();
@@ -96,13 +119,14 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract boolean isOuterRefCopyOfValue();
   public abstract AbstractFeature outerRefOrNull();
   public abstract void visit(FeatureVisitor v);
-  public abstract Impl.Kind implKind();
   public abstract boolean isOpenGenericField();
   public abstract int depth();
   public abstract int selectSize();
   public abstract Feature select(int i);
   public abstract Feature choiceTag();
-  public abstract Expr initialValue();
+
+  public abstract Impl.Kind implKind();  // NYI: remove, used only in Clazz.java for some obscure case
+  public abstract Expr initialValue();   // NYI: remove, used only in Clazz.java for some obscure case
 
   // following used in MIR or later
   public abstract Expr code();
