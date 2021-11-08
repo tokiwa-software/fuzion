@@ -232,18 +232,10 @@ public class SourceModule extends Module implements SrcModule
   /**
    * Create the module intermediate representation for this module.
    */
-  void createMIR0()
+  void createMIR0(Feature universe)
   {
     /* create the universe */
-    if (_dependsOn.length > 0)
-      {
-        _universe = ((SourceModule)_dependsOn[0])._universe;
-        _universe.resetState();   // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
-      }
-    else
-      {
-        _universe = Feature.createUniverse();
-      }
+    _universe = universe;
     check
       (_universe != null);
 

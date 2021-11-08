@@ -20,30 +20,33 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Module
+ * Source of class LibraryModule
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.fe;
 
-import dev.flang.ast.AbstractFeature;
-import dev.flang.ast.FeatureName;
-
-import dev.flang.mir.MIR;
-
-import dev.flang.util.ANY;
+import java.nio.file.Path;
 
 import java.util.Set;
 import java.util.SortedMap;
 
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.Feature;
+import dev.flang.ast.FeatureName;
+
+import dev.flang.mir.MIR;
+
+import dev.flang.util.SourceDir;
+
 
 /**
- * A Module represents a Fuzion module independently of whether this is loaded
- * from source code, library from a .mir file or downloaded from the web.
+ * A LibraryModule represents a Fuzion module loaded from a precompiled Fuzion
+ * module file .fum.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Module extends ANY
+public class LibraryModule extends Module
 {
 
 
@@ -51,9 +54,16 @@ public abstract class Module extends ANY
 
 
   /**
-   * What modules does this module depend on?
+   * Configuration
    */
-  Module[] _dependsOn;
+  public final FrontEndOptions _options;
+
+
+  /**
+   * NYI: For now, a LibraryModule is just a wrapper around a SourceModule.
+   * This will change once the source module can actually be saved to a file.
+   */
+  public final SourceModule _srcModule;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -62,9 +72,13 @@ public abstract class Module extends ANY
   /**
    * Create SourceModule for given options and sourceDirs.
    */
-  Module(Module[] dependsOn)
+  LibraryModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile, String defaultMain, Module[] dependsOn, Feature universe)
   {
-    _dependsOn = dependsOn;
+    super(dependsOn);
+
+    _options = options;
+    _srcModule = new SourceModule(options, sourceDirs, inputFile, defaultMain, dependsOn);
+    _srcModule.createMIR0(universe);
   }
 
 
@@ -74,7 +88,10 @@ public abstract class Module extends ANY
   /**
    * Create the module intermediate representation for this module.
    */
-  public abstract MIR createMIR();
+  public MIR createMIR()
+  {
+    return _srcModule.createMIR();
+  }
 
 
   /**
@@ -83,7 +100,10 @@ public abstract class Module extends ANY
    *
    * @param outer the declaring feature
    */
-  abstract SortedMap<FeatureName, AbstractFeature>declaredFeaturesOrNull(AbstractFeature outer);
+  SortedMap<FeatureName, AbstractFeature>declaredFeaturesOrNull(AbstractFeature outer)
+  {
+    return _srcModule.declaredFeaturesOrNull(outer);
+  }
 
 
   /**
@@ -93,7 +113,10 @@ public abstract class Module extends ANY
    *
    * @param outer the declaring feature
    */
-  abstract SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer);
+  SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer)
+  {
+    return _srcModule.declaredOrInheritedFeaturesOrNull(outer);
+  }
 
 
   /**
@@ -102,8 +125,22 @@ public abstract class Module extends ANY
    *
    * @param f the original feature
    */
-  abstract Set<AbstractFeature>redefinitionsOrNull(AbstractFeature f);
+  Set<AbstractFeature>redefinitionsOrNull(AbstractFeature f)
+  {
+    return _srcModule.redefinitionsOrNull(f);
+  }
 
+
+  /*-------------------------------  misc  ------------------------------*/
+
+
+  /**
+   * Create String representation for debugging.
+   */
+  public String toString()
+  {
+    return "LibraryModule for '" + _srcModule + "'";
+  }
 
 }
 

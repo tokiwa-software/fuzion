@@ -30,6 +30,7 @@ import java.nio.file.Path;
 
 import dev.flang.mir.MIR;
 
+import dev.flang.ast.Feature;
 import dev.flang.ast.Resolution;
 
 import dev.flang.util.ANY;
@@ -52,7 +53,7 @@ public class FrontEnd extends ANY
   /**
    * The module we are compiling.
    */
-  private final SourceModule _module;
+  private final Module _module;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -63,8 +64,8 @@ public class FrontEnd extends ANY
    */
   public FrontEnd(FrontEndOptions options)
   {
-    var stdlib = new SourceModule(options, new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) }, null, null, new Module[0]);
-    stdlib.createMIR0();
+    var universe = Feature.createUniverse();
+    var stdlib = new LibraryModule(options, new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) }, null, null, new Module[0], universe);
     Path[] sourcePaths;
     Path inputFile;
     if (options._readStdin)
@@ -92,7 +93,8 @@ public class FrontEnd extends ANY
         sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
       }
     var m = new SourceModule(options, sourceDirs, inputFile, options._main, new Module[] {stdlib});
-    m.createMIR0();
+    universe.resetState();   // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
+    m.createMIR0(universe);
     _module = m;
   }
 
@@ -108,7 +110,7 @@ public class FrontEnd extends ANY
 
   public Resolution res()
   {
-    return _module._res;
+    return ((SourceModule) _module)._res; // NYI: Cast!
   }
 
 
