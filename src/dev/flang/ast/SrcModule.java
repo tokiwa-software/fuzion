@@ -80,9 +80,6 @@ public interface SrcModule
    */
   void add(Feature f);
 
-  // for middle end:
-  Set<AbstractFeature> redefinitions(AbstractFeature f);
-
 }
 
 /* end of file */

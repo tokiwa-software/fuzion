@@ -58,6 +58,7 @@ import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 
 import dev.flang.mir.MIR;
+import dev.flang.mir.MirModule;
 
 import dev.flang.parser.Parser;
 
@@ -73,7 +74,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class SourceModule extends Module implements SrcModule
+public class SourceModule extends Module implements SrcModule, MirModule
 {
 
 
@@ -695,6 +696,7 @@ public class SourceModule extends Module implements SrcModule
           }
       }
   }
+
 
   /**
    * Get direct redefininitions of given Feature as seen by this module.

@@ -111,6 +111,7 @@ JAVA_FILES_IR = \
 
 JAVA_FILES_MIR = \
           $(SRC)/dev/flang/mir/MIR.java \
+          $(SRC)/dev/flang/mir/MirModule.java \
 
 JAVA_FILES_FE = \
           $(SRC)/dev/flang/fe/DFA.java \

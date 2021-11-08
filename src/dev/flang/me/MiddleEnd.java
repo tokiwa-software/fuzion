@@ -209,7 +209,7 @@ public class MiddleEnd extends ANY
           {
             markUsed(f.outerRefOrNull(), false, usedAt);
           }
-        for (AbstractFeature rf : _res._module.redefinitions(f))
+        for (AbstractFeature rf : _mir._module.redefinitions(f))
           {
             markUsed(rf, usedAt);
           }
