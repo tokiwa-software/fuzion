@@ -172,6 +172,13 @@ public class SourceModule extends Module implements SrcModule
 
   Resolution _res;
 
+
+  /**
+   * List of all features declared in this module.
+   */
+  List<Feature> _features = new List<>();
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -226,6 +233,18 @@ public class SourceModule extends Module implements SrcModule
         first = false;
       }
     return main;
+  }
+
+
+  /**
+   * Add given feature to the features declared in this SrcModule.
+   */
+  public void add(Feature f)
+  {
+    if (!f.isUniverse())
+      {
+        _features.add(f);
+      }
   }
 
 

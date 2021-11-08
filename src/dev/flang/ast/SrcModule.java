@@ -74,6 +74,12 @@ public interface SrcModule
   FeaturesAndOuter lookupNoTarget(AbstractFeature thiz, String name, Call call, Assign assign, Destructure destructure);
   void checkTypes(Feature f);
 
+
+  /**
+   * Add given feature to the features declared in this SrcModule.
+   */
+  void add(Feature f);
+
   // for middle end:
   Set<AbstractFeature> redefinitions(AbstractFeature f);
 

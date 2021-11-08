@@ -213,6 +213,7 @@ public class Resolution extends ANY
     if (PRECONDITIONS) require
       (f.state() == Feature.State.RESOLVING);
 
+    _module.add(f);
     forInheritance.add(f);
   }
 

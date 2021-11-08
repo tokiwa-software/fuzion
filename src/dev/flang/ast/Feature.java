@@ -2098,7 +2098,7 @@ public class Feature extends AbstractFeature implements Stmnt
         switch (_state)
           {
           case CHECKING_TYPES1: _state = State.CHECKED_TYPES1; res.scheduleForSyntacticSugar2Resolution(this); break;
-          case CHECKING_TYPES2: _state = State.RESOLVED; /* end for front end! */                        break;
+          case CHECKING_TYPES2: _state = State.RESOLVED; /* end for front end! */                              break;
           }
       }
 
