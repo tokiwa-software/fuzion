@@ -30,6 +30,8 @@ import java.nio.file.Path;
 
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Feature;
@@ -102,7 +104,36 @@ public class LibraryModule extends Module
    */
   SortedMap<FeatureName, AbstractFeature>declaredFeaturesOrNull(AbstractFeature outer)
   {
-    return _srcModule.declaredFeaturesOrNull(outer);
+    var sdf = _srcModule.declaredFeaturesOrNull(outer.astFeature());
+    return sdf == null ? null : libraryFeatures(sdf);
+  }
+
+
+  /**
+   * Helper method for declaredFeaturesOrNull and
+   * declaredOrInheritedFeaturesOrNull: Wrap ast.Feature into LibraryFeature.
+   */
+  private SortedMap<FeatureName, AbstractFeature> libraryFeatures(SortedMap<FeatureName, AbstractFeature> from)
+  {
+    SortedMap<FeatureName, AbstractFeature> result = new TreeMap<>();
+    for (var e : from.entrySet())
+      {
+        result.put(e.getKey(), libraryFeature(e.getValue()));
+      }
+    return result;
+  }
+
+
+  /**
+   * Wrap given Feature into a LibraryFeature unless it is a LibraryFeature
+   * already.  In case f was wrapped before, returns the original wrapper.
+   */
+  AbstractFeature libraryFeature(AbstractFeature f)
+  {
+    return
+      f instanceof LibraryFeature                               ? f                    :
+      f instanceof Feature astF && astF._libraryFeature != null ? astF._libraryFeature
+                                                                : new LibraryFeature(this, -1, f);
   }
 
 
@@ -115,7 +146,8 @@ public class LibraryModule extends Module
    */
   SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer)
   {
-    return _srcModule.declaredOrInheritedFeaturesOrNull(outer);
+    var sdif = _srcModule.declaredOrInheritedFeaturesOrNull(outer.astFeature());
+    return sdif == null ? null : libraryFeatures(sdif);
   }
 
 
@@ -127,7 +159,17 @@ public class LibraryModule extends Module
    */
   Set<AbstractFeature>redefinitionsOrNull(AbstractFeature f)
   {
-    return _srcModule.redefinitionsOrNull(f);
+    Set<AbstractFeature> result = null;
+    var rfs = _srcModule.redefinitionsOrNull(f.astFeature());
+    if (rfs != null)
+      {
+        result = new TreeSet<>();
+        for (var e : rfs)
+          {
+            result.add(libraryFeature(e));
+          }
+      }
+    return result;
   }
 
 

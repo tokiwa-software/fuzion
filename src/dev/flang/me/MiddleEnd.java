@@ -140,6 +140,7 @@ public class MiddleEnd extends ANY
     markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "bool").get(_res, tag) , SourcePosition.builtIn);
     markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "conststring")   , SourcePosition.builtIn);
     markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "conststring").get(_res, "isEmpty"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
+    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "conststring").get(_res, "asString"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
     markUsed(Types.resolved.f_sys_array_data              , SourcePosition.builtIn);
     markUsed(Types.resolved.f_sys_array_length            , SourcePosition.builtIn);
     markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "unit")          , SourcePosition.builtIn);
@@ -174,12 +175,11 @@ public class MiddleEnd extends ANY
    * @param usedAt the position this feature was used at, for creating usefule
    * error messages
    */
-  void markUsed(AbstractFeature af, boolean dynamically, SourcePosition usedAt)
+  void markUsed(AbstractFeature f, boolean dynamically, SourcePosition usedAt)
   {
-    var f = (Feature) af;  /* NYI: Cast! */
     if (dynamically)
       {
-        Clazzes.setCalledDynamically0(af);
+        Clazzes.setCalledDynamically0(f);
       }
     if (!Clazzes.isUsedAtAll(f))
       {

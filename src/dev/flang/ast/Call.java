@@ -897,7 +897,7 @@ public class Call extends Expr
     Call result = this;
     if (!forFun && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
         _type.isFunType() &&
-        calledFeature_ != Types.resolved.f_function && // exclude inherits call in function type
+        !calledFeature_.sameAs(Types.resolved.f_function) && // exclude inherits call in function type
         calledFeature_.arguments().size() == 0 &&
         hasParentheses())
       {
@@ -941,9 +941,9 @@ public class Call extends Expr
     check(frmlT == Types.intern(frmlT));
     var declF = calledFeature_.outer();
     var heirF = targetTypeOrConstraint(res).featureOfType();
-    if (declF != heirF)
+    if (!declF.sameAs(heirF))
       {
-        var a = calledFeature_.handDown(res, new Type[] { frmlT }, heirF);
+        var a = calledFeature_.handDown(res, new Type[] { frmlT }, heirF.astFeature());
         if (a.length != 1)
           {
             // Check that the number or args can only change for the
@@ -1007,7 +1007,7 @@ public class Call extends Expr
             if (frmlT.isOpenGeneric())
               { // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target:
                 Generic g = frmlT.genericArgument();
-                List<Type> frmlTs = g.replaceOpen(g.formalGenerics().feature() == calledFeature_
+                List<Type> frmlTs = g.replaceOpen(g.formalGenerics().feature().sameAs(calledFeature_)
                                                   ? generics
                                                   : target.type()._generics);
                 addToResolvedFormalArgumentTypes(res, argnum + i, frmlTs.toArray(new Type[frmlTs.size()]), frml);
@@ -1078,7 +1078,7 @@ public class Call extends Expr
           (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
         int argnum = count;  // effectively final copy of count
-        frml.whenResolvedTypes
+        ((Feature) frml).whenResolvedTypes    // NYI: Cast!
           (() ->
            {
              // first, replace generics according to inheritance:
@@ -1089,7 +1089,7 @@ public class Call extends Expr
         count++;
       }
     if (POSTCONDITIONS) ensure
-      (resolvedFormalArgumentTypes != null);
+                          (resolvedFormalArgumentTypes != null);
   }
 
 
@@ -1203,21 +1203,22 @@ public class Call extends Expr
    */
   private void inferGenericsFromArgs(Resolution res, Feature outer)
   {
-    int sz = calledFeature_.generics().list.size();
+    var cf = calledFeature_.astFeature();
+    int sz = cf.generics().list.size();
     Type   [] found         = new Type   [sz]; // The generics that could be inferred
     boolean[] conflict      = new boolean[sz]; // The generics that had conflicting types
     String [] foundAt       = new String [sz]; // detail message for conflicts giving types and their location
     List<Type> inferredOpen = null;  // if open generics could be inferred, these are the actual open generics
     ListIterator<Expr> aargs = _actuals.listIterator();
     int count = 1; // argument count, for error messages
-    for (var frml : calledFeature_.arguments())
+    for (var frml : cf.arguments())
       {
         check
           (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
         Type t = frml.resultTypeIfPresent(res, NO_GENERICS);
         if (t.isGenericArgument() &&
-            t.genericArgument().feature() == calledFeature_ &&
+            t.genericArgument().feature().sameAs(cf) &&
             t.genericArgument().isOpen())
           {
             inferredOpen = new List<Type>();
@@ -1249,7 +1250,7 @@ public class Call extends Expr
       }
     generics = new List<Type>();
     List<Generic> missing = new List<Generic>();
-    for (Generic g : calledFeature_.generics().list)
+    for (Generic g : cf.generics().list)
       {
         int i = g.index();
         Type t = found[i];
@@ -1280,8 +1281,8 @@ public class Call extends Expr
       {
         Errors.error(pos,
                      "Failed to infer actual generic parameters",
-                     "In call to " + calledFeature_.qualifiedName() + ", no actual generic parameters are given and inference of the generic parameters failed.\n" +
-                     "Expected generic parameters: " + calledFeature_.generics() + "\n"+
+                     "In call to " + cf.qualifiedName() + ", no actual generic parameters are given and inference of the generic parameters failed.\n" +
+                     "Expected generic parameters: " + cf.generics() + "\n"+
                      "Type inference failed for generic " + (missing.size() > 1 ? "arguments" : "argument") + " " + missing + "\n");
       }
   }
@@ -1311,7 +1312,7 @@ public class Call extends Expr
     if (formalType.isGenericArgument())
       {
         var g = formalType.genericArgument();
-        if (g.feature() == calledFeature_)
+        if (g.feature().sameAs(calledFeature_))
           { // we found a use of a generic type, so record it:
             var i = g.index();
             if (found[i] == null || actualType.isAssignableFromOrContainsError(found[i]))
@@ -1325,7 +1326,7 @@ public class Call extends Expr
     else
       {
         var fft = formalType.featureOfType();
-        fft.resolveTypes(res);
+        if (fft instanceof Feature ffft) { ffft.resolveTypes(res); } // NYI: Cast!
         var aft = actualType.isGenericArgument() ? null : actualType.featureOfType();
         if (fft == aft)
           {
@@ -1394,14 +1395,15 @@ public class Call extends Expr
                                                                     "call",
                                                                     "Called feature: "+calledFeature_.qualifiedName()+"\n"))
           {
+            var cf = (Feature) calledFeature_.astFeature(); // NYI: Cast!
             Type t = _isTailRecursive ? Types.resolved.t_void // a tail recursive call will not return and execute further
-                                      : calledFeature_.resultTypeIfPresent(res, generics);
+              : cf.resultTypeIfPresent(res, generics);
             if (t == null)
               {
-                calledFeature_.whenResolvedTypes
+                cf.whenResolvedTypes
                   (() ->
                    {
-                     Type t2 = calledFeature_.resultTypeForTypeInference(pos, res, generics);
+                     Type t2 = cf.resultTypeForTypeInference(pos, res, generics);
                      resolveType(res, t2, calledFeature_.outer());
                    });
               }
@@ -1410,10 +1412,10 @@ public class Call extends Expr
                 resolveType(res, t, calledFeature_.outer());
                 if (_isTailRecursive)
                   {
-                    calledFeature_.whenResolvedTypes
+                    cf.whenResolvedTypes
                       (() ->
                        {
-                         Type t2 = calledFeature_.resultTypeForTypeInference(pos, res, generics);
+                         Type t2 = cf.resultTypeForTypeInference(pos, res, generics);
                          resolveType(res, t2, calledFeature_.outer());
                        });
                   }
@@ -1618,15 +1620,16 @@ public class Call extends Expr
         //   a || b into if a true  else b
         //   a: b   into if a b     else true
         //   !a     into if a false else true
-        if      (calledFeature_ == Types.resolved.f_bool_AND    ) { result = newIf(target, _actuals.get(0), BoolConst.FALSE); }
-        else if (calledFeature_ == Types.resolved.f_bool_OR     ) { result = newIf(target, BoolConst.TRUE , _actuals.get(0)); }
-        else if (calledFeature_ == Types.resolved.f_bool_IMPLIES) { result = newIf(target, _actuals.get(0), BoolConst.TRUE ); }
-        else if (calledFeature_ == Types.resolved.f_bool_NOT    ) { result = newIf(target, BoolConst.FALSE, BoolConst.TRUE ); }
+        var cf = calledFeature_;
+        if      (cf.sameAs(Types.resolved.f_bool_AND    )) { result = newIf(target, _actuals.get(0), BoolConst.FALSE); }
+        else if (cf.sameAs(Types.resolved.f_bool_OR     )) { result = newIf(target, BoolConst.TRUE , _actuals.get(0)); }
+        else if (cf.sameAs(Types.resolved.f_bool_IMPLIES)) { result = newIf(target, _actuals.get(0), BoolConst.TRUE ); }
+        else if (cf.sameAs(Types.resolved.f_bool_NOT    )) { result = newIf(target, BoolConst.FALSE, BoolConst.TRUE ); }
 
         // intrinsic features for pre- and postconditions
-        else if (calledFeature_ == Types.resolved.f_safety      ) { result = BoolConst.get(res._options.fuzionSafety());      }
-        else if (calledFeature_ == Types.resolved.f_debug       ) { result = BoolConst.get(res._options.fuzionDebug());       }
-        else if (calledFeature_ == Types.resolved.f_debugLevel  ) { result = new NumLiteral (res._options.fuzionDebugLevel());  }
+        else if (cf.sameAs(Types.resolved.f_safety      )) { result = BoolConst.get(res._options.fuzionSafety());      }
+        else if (cf.sameAs(Types.resolved.f_debug       )) { result = BoolConst.get(res._options.fuzionDebug());       }
+        else if (cf.sameAs(Types.resolved.f_debugLevel  )) { result = new NumLiteral (res._options.fuzionDebugLevel());  }
       }
     return result;
   }

@@ -44,6 +44,25 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 {
 
   /**
+   * NYI: to be removed: Temporary mapping from Feature to corresponding
+   * libraryFeature (if it exists) and back to the ast.Feature.
+   *
+   * As long as the duality of ast.Feature/fe.LibraryFeature exists, a check for
+   * feature equality should be done using sameAs.
+   */
+  public AbstractFeature _libraryFeature = null;
+  public AbstractFeature libraryFeature()
+  {
+    return _libraryFeature == null ? this : _libraryFeature;
+  }
+  public AbstractFeature astFeature() { return this; }
+  public boolean sameAs(AbstractFeature other)
+  {
+    return astFeature() == other.astFeature();
+  }
+
+
+  /**
    * The basic types of features in Fuzion:
    */
   public enum Kind
@@ -72,14 +91,14 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract boolean isUniverse();
   public abstract boolean isOuterRef();
   public abstract boolean isThisRef();
-  abstract boolean isChoiceTag();
-  abstract boolean isDynamic();
-  abstract boolean isAnonymousInnerFeature();
-  abstract boolean isIndexVarUpdatedByLoop();
+  public abstract boolean isChoiceTag();
+  public abstract boolean isDynamic();
+  public abstract boolean isAnonymousInnerFeature();
+  protected abstract boolean isIndexVarUpdatedByLoop();
   public abstract boolean isBuiltInPrimitive();
   public abstract boolean hasResult();
   public abstract FeatureName featureName();
-  abstract FeatureName effectiveName(List<Type> actualGenerics);
+  public abstract FeatureName effectiveName(List<Type> actualGenerics);
   public abstract String qualifiedName();
   public abstract SourcePosition pos();
   public abstract ReturnType returnType();
@@ -87,28 +106,22 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract FormalGenerics generics();
   public abstract Generic getGeneric(String name);
   public abstract List<Call> inherits();
-  abstract boolean isLastArgType(Type t);
+  public abstract boolean isLastArgType(Type t);
   public abstract AbstractFeature outer();
   public abstract Feature.State state();
   public abstract Type thisType();
   public abstract boolean hasOpenGenericsArgList();
   public abstract List<AbstractFeature> arguments();
   public abstract FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir);
-  abstract Type[] handDown(Resolution res, Type[] a, AbstractFeature heir);
+  public abstract Type[] handDown(Resolution res, Type[] a, AbstractFeature heir);
   public abstract AbstractFeature select(Resolution res, int i);
-  abstract Type resultTypeIfPresent(Resolution res, List<Type> generics);
-  abstract void whenResolvedTypes(Runnable r);
-  abstract void resolveTypes(Resolution res);
+  protected abstract Type resultTypeIfPresent(Resolution res, List<Type> generics);
   public abstract Type resultType();
-  abstract Type resultTypeForTypeInference(SourcePosition rpos, Resolution res, List<Type> generics);
-  boolean detectedCyclicInheritance() { return false; }
-  abstract void checkNoClosureAccesses(Resolution res, SourcePosition errorPos);
-  abstract void resolveInheritance(Resolution res);
+  public abstract void checkNoClosureAccesses(Resolution res, SourcePosition errorPos);
   public abstract boolean inheritsFrom(AbstractFeature parent);
-  abstract List<Call> tryFindInheritanceChain(AbstractFeature ancestor);
+  public abstract List<Call> tryFindInheritanceChain(AbstractFeature ancestor);
   public abstract List<Call> findInheritanceChain(AbstractFeature ancestor);
   public abstract AbstractFeature resultField();
-  abstract void foundAssignmentToResult();
   public abstract Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res);
   public abstract AbstractFeature outerRef();
   public abstract boolean isOuterRefAdrOfValue();
@@ -136,6 +149,38 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   // in FUIR or later
   public abstract Contract contract();
+
+
+  /**
+   * Compare this to other for sorting Feature
+   */
+  public int compareTo(AbstractFeature other)
+  {
+    int result;
+    if (sameAs(other))
+      {
+        result = 0;
+      }
+    else if ((this.outer() == null) &&  (other.outer() != null))
+      {
+        result = -1;
+      }
+    else if ((this.outer() != null) &&  (other.outer() == null))
+      {
+        result = +1;
+      }
+    else
+      {
+        result = (this.outer() != null) ? this.outer().compareTo(other.outer())
+                                       : 0;
+        if (result == 0)
+          {
+            result = featureName().compareTo(other.featureName());
+          }
+      }
+    return result;
+  }
+
 
 }
 

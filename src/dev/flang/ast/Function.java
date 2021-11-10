@@ -549,11 +549,11 @@ public class Function extends Expr
     if (f != null)
       {
         generics.add(f.hasResult()
-                     ? f.resultTypeForTypeInference(pos, res, Type.NONE)
+                     ? ((Feature) f).resultTypeForTypeInference(pos, res, Type.NONE) // NYI: Cast!
                      : new Type("unit"));
         for (var a : f.arguments())
           {
-            a.resolveTypes(res);
+            ((Feature) a).resolveTypes(res); // NYI: Cast!
             generics.add(a.resultType());
           }
       }

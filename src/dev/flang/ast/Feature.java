@@ -943,7 +943,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                                     : RESULT_NAME,
                                    this)
           {
-            boolean isResultField() { return true; }
+            protected boolean isResultField() { return true; }
           };
       }
   }
@@ -1005,7 +1005,7 @@ public class Feature extends AbstractFeature implements Stmnt
             check
               (Errors.count() > 0 || p.calledFeature() != null);
 
-            if (p.calledFeature() == Types.resolved.f_choice)
+            if (p.calledFeature().sameAs(Types.resolved.f_choice))
               {
                 if (lastP != null)
                   {
@@ -1150,7 +1150,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * @return true iff this is the last argument of a feature and t is its return
    * type.
    */
-  boolean isLastArgType(Type t)
+  public boolean isLastArgType(Type t)
   {
     return
       outer() != null &&
@@ -1183,7 +1183,7 @@ public class Feature extends AbstractFeature implements Stmnt
   {
     if (PRECONDITIONS) require
       (p != null,
-       p.calledFeature().detectedCyclicInheritance(),
+       p.calledFeature() instanceof Feature fp && fp.detectedCyclicInheritance(),
        i != null);
 
     var parent = p.calledFeature();
@@ -1247,10 +1247,10 @@ public class Feature extends AbstractFeature implements Stmnt
             var parent = p.calledFeature();
             check
               (Errors.count() > 0 || parent != null);
-            if (parent != null)
+            if (parent instanceof Feature fp)
               {
-                parent.resolveInheritance(res);
-                if (parent.detectedCyclicInheritance())
+                fp.resolveInheritance(res);
+                if (fp.detectedCyclicInheritance())
                   {
                     cyclicInheritanceError(p, i);
                   }
@@ -1462,7 +1462,7 @@ public class Feature extends AbstractFeature implements Stmnt
     List<Call> result = new List<>();
     for (AbstractFeature af : res._module.declaredOrInheritedFeatures(this).values())
       {
-        var f = (Feature) af; // NYI: Cast!
+        var f = af.astFeature();
         f.visit(new FeatureVisitor()
           {
             public Call action(Call c, Feature outer)
@@ -1487,7 +1487,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * @param errorPos the position this error should be reported at, this should
    * be the definition of the choice type.
    */
-  void checkNoClosureAccesses(Resolution res, SourcePosition errorPos)
+  public void checkNoClosureAccesses(Resolution res, SourcePosition errorPos)
   {
     List<Call> closureAccesses = closureAccesses(res);
     if (!closureAccesses.isEmpty())
@@ -1683,7 +1683,7 @@ public class Feature extends AbstractFeature implements Stmnt
         check
           (Errors.count() > 0 || cf != null);
 
-        if (cf != null && cf.isChoice() && cf != Types.resolved.f_choice)
+        if (cf != null && cf.isChoice() && !cf.sameAs(Types.resolved.f_choice))
           {
             Errors.error(p.pos,
                          "Cannot inherit from choice feature",
@@ -1829,7 +1829,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * first index down to the last inheritance call within this.  Empty list in
    * case this == ancestor, null in case this does not inherit from ancestor.
    */
-  List<Call> tryFindInheritanceChain(AbstractFeature ancestor)
+  public List<Call> tryFindInheritanceChain(AbstractFeature ancestor)
   {
     List<Call> result;
     if (this == ancestor)
@@ -1917,7 +1917,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * Obtain the effective name of this feature when actualGenerics are the
    * actual generics of its outer() feature.
    */
-  FeatureName effectiveName(List<Type> actualGenerics)
+  public FeatureName effectiveName(List<Type> actualGenerics)
   {
     if (PRECONDITIONS) require
       (outer().generics().sizeMatches(actualGenerics));
@@ -1960,10 +1960,10 @@ public class Feature extends AbstractFeature implements Stmnt
   public FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir)
   {
     if (PRECONDITIONS) require
-      (res._module.declaredOrInheritedFeatures(this).get(fn) == f,
+      (res._module.declaredOrInheritedFeatures(this).get(fn).sameAs(f),
        this != heir);
 
-    if (f.outer() == p.calledFeature()) // NYI: currently does not support inheriting open generic over several levels
+    if (f.outer().sameAs(p.calledFeature())) // NYI: currently does not support inheriting open generic over several levels
       {
         fn = f.effectiveName(p.generics);
       }
@@ -2129,7 +2129,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * During type resolution, record that we found an assignment to
    * resultField().
    */
-  public void foundAssignmentToResult()
+  void foundAssignmentToResult()
   {
     if (PRECONDITIONS) require
       (_state == State.RESOLVING_TYPES ||
@@ -2714,7 +2714,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * @return the result type, Types.resulved.t_unit if none and null in case the
    * type must be inferenced and is not available yet.
    */
-  Type resultTypeIfPresent(Resolution res, List<Type> generics)
+  protected Type resultTypeIfPresent(Resolution res, List<Type> generics)
   {
     if (!_state.atLeast(State.RESOLVING_TYPES))
       {
@@ -2917,37 +2917,6 @@ public class Feature extends AbstractFeature implements Stmnt
        newFeatureName.argCount() == 0);
 
     _featureName = newFeatureName;
-  }
-
-
-  /**
-   * Compare this to other for sorting Feature
-   */
-  public int compareTo(AbstractFeature other)
-  {
-    int result;
-    if (this == other)
-      {
-        result = 0;
-      }
-    else if ((this.outer() == null) &&  (other.outer() != null))
-      {
-        result = -1;
-      }
-    else if ((this.outer() != null) &&  (other.outer() == null))
-      {
-        result = +1;
-      }
-    else
-      {
-        result = (this.outer() != null) ? this.outer().compareTo(other.outer())
-                                       : 0;
-        if (result == 0)
-          {
-            result = featureName().compareTo(other.featureName());
-          }
-      }
-    return result;
   }
 
 
@@ -3209,7 +3178,7 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * Are calls to this feature performed using dynamic binding?
    */
-  boolean isDynamic()
+  public boolean isDynamic()
   {
     if (PRECONDITIONS) require
       (this == Types.f_ERROR || outer() != null);

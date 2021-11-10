@@ -605,26 +605,38 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (PRECONDITIONS) require
       (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-    var d = data(outer);
-    var s = d._declaredOrInheritedFeatures;
-    if (s == null)
+    if (outer instanceof LibraryFeature olf)
       {
-        s = new TreeMap<>();
-        d._declaredOrInheritedFeatures= s;
-        for (Module m : _dependsOn)
-          { // NYI: properly obtain set of declared features from m, do we need
-            // to take care for the order and dependencies between modules?
-            var md = m.declaredOrInheritedFeaturesOrNull(outer);
-            if (md != null)
-              {
-                for (var e : md.entrySet())
+        var s = olf._libModule.declaredOrInheritedFeaturesOrNull(outer);
+        if (s == null)
+          {
+            s = new TreeMap<>();
+          }
+        return s;
+      }
+    else
+      {
+        var d = data(outer);
+        var s = d._declaredOrInheritedFeatures;
+        if (s == null)
+          {
+            s = new TreeMap<>();
+            d._declaredOrInheritedFeatures= s;
+            for (Module m : _dependsOn)
+              { // NYI: properly obtain set of declared features from m, do we need
+                // to take care for the order and dependencies between modules?
+                var md = m.declaredOrInheritedFeaturesOrNull(outer);
+                if (md != null)
                   {
-                    s.put(e.getKey(), e.getValue());
+                    for (var e : md.entrySet())
+                      {
+                        s.put(e.getKey(), e.getValue());
+                      }
                   }
               }
           }
+        return s;
       }
-    return s;
   }
 
 
@@ -675,7 +687,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     for (Call p : outer.inherits())
       {
-        var cf = p.calledFeature();
+        var cf = p.calledFeature().libraryFeature();
         check
           (Errors.count() > 0 || cf != null);
 
@@ -683,15 +695,35 @@ public class SourceModule extends Module implements SrcModule, MirModule
           {
             data(cf)._heirs.add(outer);
             _res.resolveDeclarations(cf);
-            for (var fnf : declaredOrInheritedFeatures(cf).entrySet())
+            if (cf instanceof LibraryFeature clf)
               {
-                var fn = fnf.getKey();
-                var f = fnf.getValue();
-                check
-                  (cf != outer);
+                var s = clf._libModule.declaredOrInheritedFeaturesOrNull(cf);
+                if (s != null)
+                  {
+                    for (var fnf : s.entrySet())
+                      {
+                        var fn = fnf.getKey();
+                        var f = fnf.getValue();
+                        check
+                          (cf != outer);
 
-                var newfn = cf.handDown(_res, f, fn, p, outer);
-                addInheritedFeature(outer, p.pos(), newfn, f);
+                        var newfn = cf.handDown(_res, f, fn, p, outer);
+                        addInheritedFeature(outer, p.pos(), newfn, f);
+                      }
+                  }
+              }
+            else
+              {
+                for (var fnf : declaredOrInheritedFeatures(cf).entrySet())
+                  {
+                    var fn = fnf.getKey();
+                    var f = fnf.getValue();
+                    check
+                      (cf != outer);
+
+                    var newfn = cf.handDown(_res, f, fn, p, outer);
+                    addInheritedFeature(outer, p.pos(), newfn, f);
+                  }
               }
           }
       }
@@ -706,6 +738,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   public Set<AbstractFeature>redefinitions(AbstractFeature f)
   {
+    f = f.libraryFeature();
     var d = data(f);
     var r = d._redefinitions;
     if (r == null)
@@ -800,8 +833,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
         var existing = doi.get(fn);
         if (existing == null)
           {
-            if ((((Feature)f)._modifiers & Consts.MODIFIER_REDEFINE) != 0) // NYI: Cast!
+            if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) != 0)
               {
+                System.out.println("doi is "+outer.qualifiedName()+" is "+doi);
                 AstErrors.redefineModifierDoesNotRedefine(f);
               }
           }
@@ -816,7 +850,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           {
             AstErrors.cannotRedefineGeneric(f.pos(), outer, existing);
           }
-        else if ((((Feature)f)._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract()) // NYI: Cast!
+        else if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
           {
             AstErrors.redefineModifierMissing(f.pos(), outer, existing);
           }
@@ -825,7 +859,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
             redefinitions(existing).add(f);
           }
         doi.put(fn, f);
-        ((Feature)f).scheduleForResolution(_res); // NYI: Cast!
+        if (f instanceof Feature ff)
+          {
+            ff.scheduleForResolution(_res);
+          }
       }
   }
 

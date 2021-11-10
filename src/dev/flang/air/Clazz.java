@@ -877,7 +877,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                   }
               }
             check
-              (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == af);
+              (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType().sameAs(af));
           }
       }
 
@@ -1075,7 +1075,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     public InlineArray action     (InlineArray  i, Feature outer) { Clazzes.findClazzes(i, Clazz.this); return i; }
     public void      action     (Match      m, Feature outer) { Clazzes.findClazzes(m, Clazz.this); }
     public void      action     (Tag        t, Feature outer) { Clazzes.findClazzes(t, Clazz.this); }
-    void visitAncestors(Feature f)
+    void visitAncestors(AbstractFeature f)
     {
       f.visit(this);
       for (Call c: f.inherits())
@@ -1107,7 +1107,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
           if (cf != null)
             {
-              visitAncestors((Feature) cf /* NYI: Cast! */);
+              visitAncestors(cf);
             }
         }
     }
@@ -1929,7 +1929,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                     Clazzes.isUsed(f, this) &&
                     this != Clazzes.c_void.get() &&
                     !f.resultType().isOpenGeneric() &&
-                    f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
+                    f.sameAs(findRedefinition(f))  // NYI: proper field redefinition handling missing, see tests/redef_args/*
                     )
                   {
                     fields.add(lookup(f, Call.NO_GENERICS, Clazzes.isUsedAt(f)));

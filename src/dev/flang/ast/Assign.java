@@ -247,7 +247,14 @@ public class Assign extends ANY implements Stmnt
              f.isIndexVarUpdatedByLoop()) { AstErrors.assignmentToIndexVar    (this, f, outer); }
     else if (f == f.outer().resultField())
       {
-        f.outer().foundAssignmentToResult();
+        if (f.outer() instanceof Feature fo)
+          {
+            fo.foundAssignmentToResult();
+          }
+        else
+          {
+            throw new Error("NYI: Assignement to result defined in library feature not handled well yet!");
+          }
       }
   }
 

@@ -147,7 +147,7 @@ public class Match extends Expr
       {
         AstErrors.matchSubjectMustNotBeTypeParameter(subject.pos(), st);
       }
-    st.featureOfType().resolveTypes(res);
+    if (st.featureOfType() instanceof Feature stf) { stf.resolveTypes(res); }
     if (!st.isChoice())
       {
         AstErrors.matchSubjectMustBeChoice(subject.pos(), st);

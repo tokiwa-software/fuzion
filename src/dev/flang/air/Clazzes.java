@@ -1236,7 +1236,7 @@ public class Clazzes extends ANY
    */
   public static boolean isUsedAtAll(AbstractFeature thiz)
   {
-    return _usedFeatures_.get(thiz) != null;
+    return _usedFeatures_.get(thiz.astFeature()) != null;
   }
 
 
@@ -1245,7 +1245,7 @@ public class Clazzes extends ANY
    */
   public static SourcePosition isUsedAt(AbstractFeature thiz)
   {
-    return _usedFeatures_.get(thiz);
+    return _usedFeatures_.get(thiz.astFeature());
   }
 
 
@@ -1255,7 +1255,7 @@ public class Clazzes extends ANY
    */
   public static void addUsedFeature(AbstractFeature f, SourcePosition at)
   {
-    _usedFeatures_.put(f, at);
+    _usedFeatures_.put(f.astFeature(), at);
   }
 
 

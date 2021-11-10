@@ -251,7 +251,7 @@ public class Type extends ANY implements Comparable<Type>
     this.name  = n;
     this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
     this._outer = o;
-    this.feature = f;
+    this.feature = (f == null) ? null : f.astFeature();
     this.generic = null;
     this._refOrVal = refOrVal;
     this.checkedForGeneric = f != null;
@@ -644,6 +644,7 @@ public class Type extends ANY implements Comparable<Type>
        f.generics().sizeMatches(actualGenerics),
        Errors.count() > 0 || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics());
 
+    f = f.astFeature();
     Type result = this;
     if (f != null)
       {
@@ -871,7 +872,7 @@ public class Type extends ANY implements Comparable<Type>
       (feature == null,
        Types.INTERNAL_NAMES.contains(name));
 
-    feature = feat;
+    feature = feat.astFeature();
 
     Type interned = Types.intern(this);
 
@@ -959,7 +960,7 @@ public class Type extends ANY implements Comparable<Type>
                     if (f.returnType().isConstructorType())
                       {
                         type_fs.add(f);
-                        feature = f;
+                        feature = f.astFeature();
                       }
                     else
                       {
