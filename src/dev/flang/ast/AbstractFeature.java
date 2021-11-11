@@ -152,7 +152,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract boolean isChoiceTag();
   public abstract boolean isDynamic();
   public abstract boolean isAnonymousInnerFeature();
-  protected abstract boolean isIndexVarUpdatedByLoop();
   public abstract boolean isBuiltInPrimitive();
   public abstract boolean hasResult();
   public abstract FeatureName featureName();

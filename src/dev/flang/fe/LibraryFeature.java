@@ -112,7 +112,6 @@ public class LibraryFeature extends AbstractFeature
   public boolean isChoiceTag() { return _from.isChoiceTag(); }
   public boolean isDynamic() { return _from.isDynamic(); }
   public boolean isAnonymousInnerFeature() { return _from.isAnonymousInnerFeature(); /* NYI: remove? */ }
-  protected boolean isIndexVarUpdatedByLoop() { throw new Error(); }
   public boolean isBuiltInPrimitive() { return _from.isBuiltInPrimitive(); }
   public boolean hasResult() { return _from.hasResult(); }
   public FeatureName featureName()

@@ -241,10 +241,11 @@ public class Assign extends ANY implements Stmnt
         _assignedField = f;
         _target        = fo.target(_pos, res, outer);
       }
-    if      (f == Types.f_ERROR         ) { check(Errors.count() > 0); /* ignore */ }
-    else if (!f.isField()               ) { AstErrors.assignmentToNonField    (this, f, outer); }
-    else if (!_indexVarAllowed &&
-             f.isIndexVarUpdatedByLoop()) { AstErrors.assignmentToIndexVar    (this, f, outer); }
+    if      (f == Types.f_ERROR          ) { check(Errors.count() > 0); /* ignore */ }
+    else if (!f.isField()                ) { AstErrors.assignmentToNonField    (this, f, outer); }
+    else if (!_indexVarAllowed       &&
+             f instanceof Feature ff &&
+             ff.isIndexVarUpdatedByLoop()) { AstErrors.assignmentToIndexVar    (this, f, outer); }
     else if (f == f.outer().resultField())
       {
         if (f.outer() instanceof Feature fo)

@@ -502,10 +502,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (inner.initialValue() != null &&
         outer.pos()._sourceFile != inner.pos()._sourceFile &&
         (!outer.isUniverse() || !inner.isLegalPartOfUniverse()) &&
-        !inner._isIndexVarUpdatedByLoop  /* required for loop in universe, e.g.
-                                    *
-                                    *   echo "for i in 1..10 do stdout.println(i)" | fz -
-                                    */
+        !inner.isIndexVarUpdatedByLoop() /* required for loop in universe, e.g.
+                                          *
+                                          *   echo "for i in 1..10 do stdout.println(i)" | fz -
+                                          */
         )
       { // declaring field with initial value in different file than outer
         // feature.  We would have to add this to the statements of the outer

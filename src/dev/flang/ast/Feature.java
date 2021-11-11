@@ -299,7 +299,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * for-clause.  If so, assignments outside the loop prolog or nextIteration
    * parts are not allowed.
    */
-  public boolean _isIndexVarUpdatedByLoop = false;
+  boolean _isIndexVarUpdatedByLoop = false;
   public boolean isIndexVarUpdatedByLoop() { return _isIndexVarUpdatedByLoop; }
 
 
