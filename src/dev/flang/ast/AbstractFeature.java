@@ -134,6 +134,19 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
+  /**
+   * Return the state of this feature.
+   *
+   * This is only relevant for ast.Feature to document the resolution state.
+   *
+   * NYI: Remove, replace by Resolution.state(Feature).
+   */
+  public Feature.State state()
+  {
+    return Feature.State.RESOLVED;
+  }
+
+
   public abstract boolean isOuterRef();
   public abstract boolean isThisRef();
   public abstract boolean isChoiceTag();
@@ -151,7 +164,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract List<Call> inherits();
   public abstract boolean isLastArgType(Type t);
   public abstract AbstractFeature outer();
-  public abstract Feature.State state();
   public abstract Type thisType();
   public abstract boolean hasOpenGenericsArgList();
   public abstract List<AbstractFeature> arguments();

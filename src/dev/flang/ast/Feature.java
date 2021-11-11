@@ -659,7 +659,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Return the state of this class.
+   * Return the state of this feature.
    */
   public State state()
   {

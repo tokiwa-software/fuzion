@@ -122,7 +122,6 @@ public class LibraryFeature extends AbstractFeature
   public List<Call> inherits() { return _from.inherits(); }
   public boolean isLastArgType(Type t) { return _from.isLastArgType(t); }
   public AbstractFeature outer() { return _from.outer(); }
-  public Feature.State state() { return _from.state(); }
   public Type thisType() { return _from.thisType(); }
   public boolean hasOpenGenericsArgList() { return _from.hasOpenGenericsArgList(); }
   public List<AbstractFeature> arguments() { return _from.arguments(); }
