@@ -186,7 +186,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /**
    * Create SourceModule for given options and sourceDirs.
    */
-  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile, String defaultMain, Module[] dependsOn)
+  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile, String defaultMain, Module[] dependsOn, Feature universe)
   {
     super(dependsOn);
 
@@ -194,6 +194,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
     _sourceDirs = sourceDirs;
     _inputFile = inputFile;
     _defaultMain = defaultMain;
+    _universe = universe;
+    if (universe.state().atLeast(Feature.State.RESOLVED))
+      {
+        universe.resetState();   // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
+      }
+    createASTandResolve();
   }
 
 
@@ -250,12 +256,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Create the module intermediate representation for this module.
+   * Create the absgtract syntax tree and resolve all features.
    */
-  void createMIR0(Feature universe)
+  void createASTandResolve()
   {
-    /* create the universe */
-    _universe = universe;
     check
       (_universe != null);
 

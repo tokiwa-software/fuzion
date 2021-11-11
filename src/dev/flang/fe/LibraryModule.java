@@ -79,8 +79,7 @@ public class LibraryModule extends Module
     super(dependsOn);
 
     _options = options;
-    _srcModule = new SourceModule(options, sourceDirs, inputFile, defaultMain, dependsOn);
-    _srcModule.createMIR0(universe);
+    _srcModule = new SourceModule(options, sourceDirs, inputFile, defaultMain, dependsOn, universe);
   }
 
 

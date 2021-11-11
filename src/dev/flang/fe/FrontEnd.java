@@ -92,10 +92,7 @@ public class FrontEnd extends ANY
       {
         sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
       }
-    var m = new SourceModule(options, sourceDirs, inputFile, options._main, new Module[] {stdlib});
-    universe.resetState();   // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
-    m.createMIR0(universe);
-    _module = m;
+    _module = new SourceModule(options, sourceDirs, inputFile, options._main, new Module[] {stdlib}, universe);
   }
 
 
