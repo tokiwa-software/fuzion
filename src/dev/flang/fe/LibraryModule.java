@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import java.nio.file.Path;
+import java.nio.ByteBuffer;
 
 import java.util.Set;
 import java.util.SortedMap;
@@ -68,6 +69,18 @@ public class LibraryModule extends Module
   public final SourceModule _srcModule;
 
 
+  /**
+   * The module binary data, contents of .mir file.
+   */
+  final ByteBuffer _data;
+
+
+  /**
+   * The module intermediate representation for this module.
+   */
+  final MIR _mir;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -80,6 +93,8 @@ public class LibraryModule extends Module
 
     _options = options;
     _srcModule = new SourceModule(options, sourceDirs, inputFile, defaultMain, dependsOn, universe);
+    _mir = _srcModule.createMIR();
+    _data = _mir._module.data();
   }
 
 
@@ -87,11 +102,20 @@ public class LibraryModule extends Module
 
 
   /**
+   * The module binary data, contents of .mir file.
+   */
+  public ByteBuffer data()
+  {
+    return _data;
+  }
+
+
+  /**
    * Create the module intermediate representation for this module.
    */
   public MIR createMIR()
   {
-    return _srcModule.createMIR();
+    return _mir;
   }
 
 
@@ -132,7 +156,7 @@ public class LibraryModule extends Module
     return
       f instanceof LibraryFeature                               ? f                    :
       f instanceof Feature astF && astF._libraryFeature != null ? astF._libraryFeature
-                                                                : new LibraryFeature(this, -1, f);
+                                                                : new LibraryFeature(this, _srcModule.data(f)._mirOffset, f);
   }
 
 

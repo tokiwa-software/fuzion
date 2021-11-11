@@ -26,8 +26,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+
+import java.nio.ByteBuffer;
+
+import java.nio.charset.StandardCharsets;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -111,6 +117,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
      * during RESOLVING_DECLARATIONS.
      */
     public Set<AbstractFeature> _redefinitions = null;
+
+
+    /**
+     * offset of this feature's data in .mir file.
+     */
+    int _mirOffset = -1;
 
   }
 
@@ -1150,6 +1162,95 @@ public class SourceModule extends Module implements SrcModule, MirModule
             AstErrors.constructorResultMustBeUnit(cod);
           }
       }
+  }
+
+
+  /*---------------------------  library file  --------------------------*/
+
+
+  /**
+   * Helper class that wraps ByteArrayOutputStream to make field count
+   * accessible.
+   */
+  static class BAOutputStream extends ByteArrayOutputStream
+  {
+    public int count() { return this.count; }
+  }
+
+  /**
+   * Helper class that wraps DataOutputStream to provide the current offset and
+   * create a ByteBuffer.
+   */
+  static class DOutputStream extends DataOutputStream
+  {
+    DOutputStream()
+    {
+      super(new BAOutputStream());
+    }
+    int offset()
+    {
+      return ((BAOutputStream)out).count();
+    }
+    ByteBuffer buffer()
+    {
+      return ByteBuffer.wrap(((BAOutputStream)out).toByteArray());
+    }
+  }
+
+
+  /**
+   * Create a ByteBuffer containing the .mir file binary data for this module.
+   */
+  public ByteBuffer data()
+  {
+    var o = new DOutputStream();
+    try
+      {
+        collectData(o, _universe);
+      }
+    catch (IOException io)
+      {
+        throw new Error(io);  // NYI: proper error handling
+      }
+    return o.buffer();
+  }
+
+
+  /**
+   * Collect the binary data for features declared within given feature.
+   */
+  void collectData(DOutputStream o, Feature f) throws IOException
+  {
+    var m = declaredFeaturesOrNull(f);
+    var sz = m == null ? 0 : m.size();
+    o.writeInt(sz);
+    if (sz > 0)
+      {
+        for (var df : m.values())
+          {
+            if (df instanceof Feature dff)
+              {
+                collectFeature(o,dff);
+              }
+          }
+      }
+  }
+
+
+  /**
+   * Collect the binary data for given feature.
+   */
+  void collectFeature(DOutputStream o, Feature f) throws IOException
+  {
+    var ix = o.offset();
+    var n = f.featureName();
+    var utf8Name = n.baseName().getBytes(StandardCharsets.UTF_8);
+    o.writeInt(utf8Name.length);
+    o.write(utf8Name);
+    o.writeInt(f.featureName().argCount());
+    o.writeInt(f.featureName()._id);
+    collectData(o,f);
+    data(f)._mirOffset = ix;
   }
 
 

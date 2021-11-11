@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.mir;
 
+import java.nio.ByteBuffer;
+
 import java.util.Set;
 import java.util.SortedMap;
 
@@ -41,6 +43,12 @@ import dev.flang.ast.FeatureName;  // NYI: Remove dependency!
  */
 public interface MirModule
 {
+
+  /**
+   * The binary data from this module's .mir file.
+   */
+  ByteBuffer data();
+
 
   /**
    * Get declared features for given outer Feature as seen by this module.

@@ -84,7 +84,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
    * To distinguish several fields that mask one another, this gives an id for
    * fields with the same name.
    */
-  private int _id;
+  public final int _id;
 
 
   /*--------------------------  constructors  ---------------------------*/

@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.mir;
 
+import java.nio.ByteBuffer;
+
 import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
 import dev.flang.ast.Assign;  // NYI: Remove dependency!
 import dev.flang.ast.Call;  // NYI: Remove dependency!

@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.nio.charset.StandardCharsets;
+
 import java.util.Collection;
 
 import dev.flang.ast.AbstractFeature;
@@ -113,7 +115,19 @@ public class LibraryFeature extends AbstractFeature
   protected boolean isIndexVarUpdatedByLoop() { throw new Error(); }
   public boolean isBuiltInPrimitive() { return _from.isBuiltInPrimitive(); }
   public boolean hasResult() { return _from.hasResult(); }
-  public FeatureName featureName() { return _from.featureName(); }
+  public FeatureName featureName()
+  {
+    var i = _index;
+    var d = _libModule.data();
+    var l  = d.getInt(i); i = i + 4; var bytes = new byte[l];
+    d.get(i, bytes);      i = i + l;
+    var ac = d.getInt(i); i = i + 4;
+    var id = d.getInt(i); i = i + 4;
+    var bn = new String(bytes, 0, l, StandardCharsets.UTF_8);
+    var result = FeatureName.get(bn, ac, id);
+    check(result == _from.featureName());
+    return FeatureName.get(bn, ac, id);
+  }
   public SourcePosition pos() { return _from.pos(); }
   public ReturnType returnType() { return _from.returnType(); }
   public List<Type> choiceGenerics() { return _from.choiceGenerics(); }
