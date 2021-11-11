@@ -1245,10 +1245,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var ix = o.offset();
     var n = f.featureName();
     var utf8Name = n.baseName().getBytes(StandardCharsets.UTF_8);
-    o.writeInt(utf8Name.length);
-    o.write(utf8Name);
-    o.writeInt(f.featureName().argCount());
-    o.writeInt(f.featureName()._id);
+    o.writeInt(utf8Name.length);             // NYI: use better integer encoding
+    o.write(utf8Name);                       // NYI: internal names (outer refs, statement results) are too long and waste memory
+    o.writeInt(f.featureName().argCount());  // NYI: use better integer encoding
+    o.writeInt(f.featureName()._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
     collectData(o,f);
     data(f)._mirOffset = ix;
   }
