@@ -44,6 +44,7 @@ import dev.flang.ast.Resolution;
 import dev.flang.ast.ReturnType;
 import dev.flang.ast.Type;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -123,7 +124,10 @@ public class LibraryFeature extends AbstractFeature
    */
   public Kind kind() { return _from.kind(); }
 
-  public boolean isOuterRef() { return _from.isOuterRef(); }
+  public boolean isOuterRef()
+  {
+    return featureName().baseName().startsWith(FuzionConstants.OUTER_REF_PREFIX);
+  }
   public boolean isThisRef() { return _from.isThisRef(); }
   public boolean isChoiceTag() { return _from.isChoiceTag(); }
   public boolean isDynamic() { return _from.isDynamic(); }
