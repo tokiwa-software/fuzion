@@ -80,6 +80,12 @@ public class LibraryFeature extends AbstractFeature
   public final AbstractFeature _from;
 
 
+  /**
+   * cached result of featureName()
+   */
+  private FeatureName _featureName;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -94,6 +100,16 @@ public class LibraryFeature extends AbstractFeature
     check
       (from._libraryFeature == null);
     from._libraryFeature = this;
+
+    var i = index;
+    var d = lib.data();
+    var l  = d.getInt(i); i = i + 4; var bytes = new byte[l];
+    d.get(i, bytes);      i = i + l;
+    var ac = d.getInt(i); i = i + 4;
+    var id = d.getInt(i); i = i + 4;
+    var bn = new String(bytes, 0, l, StandardCharsets.UTF_8);
+    _featureName = FeatureName.get(bn, ac, id);
+    check(_featureName == _from.featureName());
   }
 
 
@@ -116,16 +132,7 @@ public class LibraryFeature extends AbstractFeature
   public boolean hasResult() { return _from.hasResult(); }
   public FeatureName featureName()
   {
-    var i = _index;
-    var d = _libModule.data();
-    var l  = d.getInt(i); i = i + 4; var bytes = new byte[l];
-    d.get(i, bytes);      i = i + l;
-    var ac = d.getInt(i); i = i + 4;
-    var id = d.getInt(i); i = i + 4;
-    var bn = new String(bytes, 0, l, StandardCharsets.UTF_8);
-    var result = FeatureName.get(bn, ac, id);
-    check(result == _from.featureName());
-    return FeatureName.get(bn, ac, id);
+    return _featureName;
   }
   public SourcePosition pos() { return _from.pos(); }
   public ReturnType returnType() { return _from.returnType(); }
