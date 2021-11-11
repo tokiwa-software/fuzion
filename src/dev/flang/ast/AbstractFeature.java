@@ -81,6 +81,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public boolean isIntrinsic() { return kind() == Kind.Intrinsic; }
   public boolean isChoice() { return kind() == Kind.Choice; }
 
+
   /**
    * What is this Feature's kind?
    *
@@ -88,7 +89,16 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   public abstract Kind kind();
 
-  public abstract boolean isUniverse();
+
+  /**
+   * is this the outermost feature?
+   */
+  public boolean isUniverse()
+  {
+    return false;
+  }
+
+
   public abstract boolean isOuterRef();
   public abstract boolean isThisRef();
   public abstract boolean isChoiceTag();

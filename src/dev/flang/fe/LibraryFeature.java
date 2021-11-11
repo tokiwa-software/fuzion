@@ -105,7 +105,6 @@ public class LibraryFeature extends AbstractFeature
    */
   public Kind kind() { return _from.kind(); }
 
-  public boolean isUniverse() { return _from.isUniverse(); }
   public boolean isOuterRef() { return _from.isOuterRef(); }
   public boolean isThisRef() { return _from.isThisRef(); }
   public boolean isChoiceTag() { return _from.isChoiceTag(); }

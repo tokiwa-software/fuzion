@@ -803,15 +803,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * is this the outermost feature?
-   */
-  public boolean isUniverse()
-  {
-    return false;
-  }
-
-
-  /**
    * What is this Feature's kind?
    *
    * @return Routine, Field, Intrinsic, Abstract or Choice.
