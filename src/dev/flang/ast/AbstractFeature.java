@@ -99,6 +99,19 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
+  /**
+   * qualifiedName returns the qualified name of this feature
+   *
+   * @return the qualified name, e.g. "fuzion.std.out.println"
+   */
+  public String qualifiedName()
+  {
+    var n = featureName().baseName();
+    return isUniverse() || outer().isUniverse() ? n
+                                                : outer().qualifiedName() + "." + n;
+  }
+
+
   public abstract boolean isOuterRef();
   public abstract boolean isThisRef();
   public abstract boolean isChoiceTag();
@@ -109,7 +122,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract boolean hasResult();
   public abstract FeatureName featureName();
   public abstract FeatureName effectiveName(List<Type> actualGenerics);
-  public abstract String qualifiedName();
   public abstract SourcePosition pos();
   public abstract ReturnType returnType();
   public abstract List<Type> choiceGenerics();

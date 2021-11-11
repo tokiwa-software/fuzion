@@ -2857,34 +2857,6 @@ public class Feature extends AbstractFeature implements Stmnt
   }
 
 
-  /**
-   * qualifiedName returns the qualified name of this feature
-   *
-   * @return the qualified name, e.g. "fuzion.std.out.println"
-   */
-  public String qualifiedName()
-  {
-    var o = this._outer;
-    if (o == null)
-      {
-        return UNIVERSE_NAME;
-      }
-    else if (state().atLeast(State.LOADED))
-      {
-        return o.isUniverse() ? _featureName.baseName() : o.qualifiedName()+"."+_featureName.baseName();
-      }
-    else if (state().atLeast(State.FINDING_DECLARATIONS) && o != null)
-      {
-        return o.isUniverse() ? _featureName.baseName() : o.qualifiedName()+"."+_featureName.baseName();
-      }
-    else
-      {
-        check(false);
-        return null;
-      }
-  }
-
-
   public FeatureName featureName()
   {
     check(_arguments.size() == _featureName.argCount());
