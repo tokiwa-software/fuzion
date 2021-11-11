@@ -33,6 +33,7 @@ import java.util.Set;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -506,8 +507,8 @@ public class Type extends ANY implements Comparable<Type>
         String outer = _outer.toString();
         result = ""
           + (outer == "" ||
-             outer == Feature.UNIVERSE_NAME ? ""
-                                            : outer + ".")
+             outer == FuzionConstants.UNIVERSE_NAME ? ""
+                                                    : outer + ".")
           + ( isRef() && (feature == null || !feature.isThisRef()) ? "ref " :
              !isRef() &&  feature != null &&  feature.isThisRef()  ? "value "
                                                                    : "" )

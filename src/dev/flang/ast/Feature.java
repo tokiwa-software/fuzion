@@ -59,12 +59,6 @@ public class Feature extends AbstractFeature implements Stmnt
   /*----------------------------  constants  ----------------------------*/
 
 
-  public static final String UNIVERSE_NAME        = "#universe";
-  static final String OBJECT_NAME          = "Object";
-  static final String RESULT_NAME          = "result";
-  static final String INTERNAL_RESULT_NAME = "#result";
-
-
   public enum State {
     LOADING,
     FINDING_DECLARATIONS,
@@ -326,7 +320,7 @@ public class Feature extends AbstractFeature implements Stmnt
          Consts.VISIBILITY_PUBLIC,
          0,
          ValueType.INSTANCE,
-         new List<String>(UNIVERSE_NAME),
+         new List<String>(FuzionConstants.UNIVERSE_NAME),
          FormalGenerics.NONE,
          new List<Feature>(),
          new List<Call>(),
@@ -643,9 +637,9 @@ public class Feature extends AbstractFeature implements Stmnt
                         (p.kind_ != Impl.Kind.FieldDef   ) &&
                         (p.kind_ != Impl.Kind.FieldInit  ) &&
                         (p.kind_ != Impl.Kind.Field      ) &&
-                        (qname.size() != 1 || (!qname.getFirst().equals(OBJECT_NAME  ) &&
-                                               !qname.getFirst().equals(UNIVERSE_NAME))))
-      ? new List<Call>(new Call(_pos, OBJECT_NAME, Expr.NO_EXPRS))
+                        (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.OBJECT_NAME  ) &&
+                                               !qname.getFirst().equals(FuzionConstants.UNIVERSE_NAME))))
+      ? new List<Call>(new Call(_pos, FuzionConstants.OBJECT_NAME, Expr.NO_EXPRS))
       : i;
 
     this._contract  = c;
@@ -737,7 +731,7 @@ public class Feature extends AbstractFeature implements Stmnt
                          "Feature " + _qname + " is declared in wrong environment " + _outer.qualifiedName());
           }
       }
-    if (!isResultField() && _qname.getLast().equals(RESULT_NAME))
+    if (!isResultField() && _qname.getLast().equals(FuzionConstants.RESULT_NAME))
       {
         AstErrors.declarationOfResultFeature(_pos);
       }
@@ -930,8 +924,8 @@ public class Feature extends AbstractFeature implements Stmnt
                                    _pos,
                                    Consts.VISIBILITY_PRIVATE,
                                    t,
-                                   resultInternal() ? INTERNAL_RESULT_NAME
-                                                    : RESULT_NAME,
+                                   resultInternal() ? FuzionConstants.INTERNAL_RESULT_NAME
+                                                    : FuzionConstants.RESULT_NAME,
                                    this)
           {
             protected boolean isResultField() { return true; }
@@ -1198,7 +1192,7 @@ public class Feature extends AbstractFeature implements Stmnt
       }
 
     // try to fix recursive inheritance to keep compiler from crashing
-    i.set(new Call(_pos, OBJECT_NAME, Expr.NO_EXPRS));
+    i.set(new Call(_pos, FuzionConstants.OBJECT_NAME, Expr.NO_EXPRS));
   }
 
 
@@ -2931,7 +2925,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (_outer != null);
 
-    return "#^" + qualifiedName();
+    return FuzionConstants.OUTER_REF_PREFIX + qualifiedName();
   }
 
 

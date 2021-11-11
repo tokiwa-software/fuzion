@@ -36,6 +36,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -779,7 +780,7 @@ public class Call extends Expr
   {
     return (target == null ||
             (target instanceof Universe) ||
-            (target instanceof This t && t.toString().equals(Feature.UNIVERSE_NAME + ".this"))
+            (target instanceof This t && t.toString().equals(FuzionConstants.UNIVERSE_NAME + ".this"))
             ? ""
             : target.toString() + ".")
       + (name != null ? name : calledFeature_.featureName().baseName())

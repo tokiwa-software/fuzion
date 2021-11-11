@@ -69,6 +69,7 @@ import dev.flang.mir.MirModule;
 import dev.flang.parser.Parser;
 
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourceDir;
 import dev.flang.util.SourceFile;
@@ -461,7 +462,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     if (PRECONDITIONS) require
       (inner.state() == Feature.State.LOADING,
-       ((outer == null) == (inner.featureName().baseName().equals(Feature.UNIVERSE_NAME))),
+       ((outer == null) == (inner.featureName().baseName().equals(FuzionConstants.UNIVERSE_NAME))),
        !inner.outerSet());
 
     inner.setOuter(outer);

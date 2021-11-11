@@ -33,6 +33,7 @@ import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.Terminal;
@@ -141,17 +142,17 @@ public class AstErrors extends ANY
 
   /**
    * Create an error message for a declaration of a feature using
-   * Feature.RESULT_NAME.
+   * FuzionConstants.RESULT_NAME.
    *
    * @param pos the source code position
    */
   static void declarationOfResultFeature(SourcePosition pos)
   {
     error(pos,
-          "Feature declaration may not declare a feature with name " + sbn(Feature.RESULT_NAME) + "",
-          "" + sbn(Feature.RESULT_NAME) + " is an automatically declared field for a routine's result value.\n"+
-          "To solve this, if your intention was to return a result value, use " + ss("set " + Feature.RESULT_NAME + " := <value>") + ".\n"+
-          "Otherwise, you may chose a different name than " + sbn(Feature.RESULT_NAME) + " for your feature.");
+          "Feature declaration may not declare a feature with name " + sbn(FuzionConstants.RESULT_NAME) + "",
+          "" + sbn(FuzionConstants.RESULT_NAME) + " is an automatically declared field for a routine's result value.\n"+
+          "To solve this, if your intention was to return a result value, use " + ss("set " + FuzionConstants.RESULT_NAME + " := <value>") + ".\n"+
+          "Otherwise, you may chose a different name than " + sbn(FuzionConstants.RESULT_NAME) + " for your feature.");
   }
 
   /**
@@ -649,17 +650,17 @@ public class AstErrors extends ANY
   }
 
   /**
-   * If name is Feature.RESULT_NAME and argcount is 0, return text that suggests
+   * If name is FuzionConstants.RESULT_NAME and argcount is 0, return text that suggests
    * declaring a return type in the outer feature. Otherwise, return "".
    */
   static String solutionDeclareReturnTypeIfResult(String name, int argCount)
   {
     var solution = "";
-    if (name.equals(Feature.RESULT_NAME) &&
+    if (name.equals(FuzionConstants.RESULT_NAME) &&
         argCount == 0)
       {
         solution = "To solve this, make sure you declare a return type in the surrounding feature such that " +
-          "the " + sbn(Feature.RESULT_NAME) + " field will be declared automatically.";
+          "the " + sbn(FuzionConstants.RESULT_NAME) + " field will be declared automatically.";
       }
     return solution;
   }
