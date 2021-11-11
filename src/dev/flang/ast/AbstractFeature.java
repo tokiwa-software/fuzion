@@ -71,7 +71,18 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     Field,
     Intrinsic,
     Abstract,
-    Choice
+    Choice;
+
+    /**
+     * get the Kind that corresponds to the given ordinal number.
+     */
+    public static Kind from(int ordinal)
+    {
+      check
+        (values()[ordinal].ordinal() == ordinal);
+
+      return values()[ordinal];
+    }
   }
 
   /* pre-implemented convenience functions: */

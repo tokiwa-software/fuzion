@@ -1244,8 +1244,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
   void collectFeature(DOutputStream o, Feature f) throws IOException
   {
     var ix = o.offset();
+    var k = f.kind().ordinal();
     var n = f.featureName();
     var utf8Name = n.baseName().getBytes(StandardCharsets.UTF_8);
+    o.write(k);
     o.writeInt(utf8Name.length);             // NYI: use better integer encoding
     o.write(utf8Name);                       // NYI: internal names (outer refs, statement results) are too long and waste memory
     o.writeInt(f.featureName().argCount());  // NYI: use better integer encoding

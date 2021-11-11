@@ -82,9 +82,15 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * cached result of kind()
+   */
+  private final Feature.Kind _kind;
+
+
+  /**
    * cached result of featureName()
    */
-  private FeatureName _featureName;
+  private final FeatureName _featureName;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -104,6 +110,7 @@ public class LibraryFeature extends AbstractFeature
 
     var i = index;
     var d = lib.data();
+    var ko = d.get(i);    i = i + 1; _kind = AbstractFeature.Kind.from(ko);
     var l  = d.getInt(i); i = i + 4; var bytes = new byte[l];
     d.get(i, bytes);      i = i + l;
     var ac = d.getInt(i); i = i + 4;
@@ -122,7 +129,10 @@ public class LibraryFeature extends AbstractFeature
    *
    * @return Routine, Field, Intrinsic, Abstract or Choice.
    */
-  public Kind kind() { return _from.kind(); }
+  public Kind kind()
+  {
+    return _kind;
+  }
 
   public boolean isOuterRef()
   {
