@@ -112,6 +112,28 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
+  /**
+   * Obtain the effective name of this feature when actualGenerics are the
+   * actual generics of its outer() feature.
+   */
+  public FeatureName effectiveName(List<Type> actualGenerics)
+  {
+    if (PRECONDITIONS) require
+      (outer().generics().sizeMatches(actualGenerics));
+
+    var result = featureName();
+    if (hasOpenGenericsArgList())
+      {
+        var argCount = arguments().size() + actualGenerics.size() - outer().generics().list.size();
+        check
+          (argCount >= 0);
+        result =  FeatureName.get(result.baseName(),
+                                  argCount);
+      }
+    return result;
+  }
+
+
   public abstract boolean isOuterRef();
   public abstract boolean isThisRef();
   public abstract boolean isChoiceTag();
@@ -121,7 +143,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract boolean isBuiltInPrimitive();
   public abstract boolean hasResult();
   public abstract FeatureName featureName();
-  public abstract FeatureName effectiveName(List<Type> actualGenerics);
   public abstract SourcePosition pos();
   public abstract ReturnType returnType();
   public abstract List<Type> choiceGenerics();

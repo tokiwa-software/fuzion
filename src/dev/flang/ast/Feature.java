@@ -1905,28 +1905,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Obtain the effective name of this feature when actualGenerics are the
-   * actual generics of its outer() feature.
-   */
-  public FeatureName effectiveName(List<Type> actualGenerics)
-  {
-    if (PRECONDITIONS) require
-      (outer().generics().sizeMatches(actualGenerics));
-
-    var result = _featureName;
-    if (hasOpenGenericsArgList())
-      {
-        var argCount = _arguments.size() + actualGenerics.size() - outer().generics().list.size();
-        check
-          (argCount >= 0);
-        result =  FeatureName.get(result.baseName(),
-                                  argCount);
-      }
-    return result;
-  }
-
-
-  /**
    * For a feature with given FeatureName fn that is directly inherited from
    * this through inheritance call p to heir, this determines the actual
    * FeatureName as seen in the heir feature.

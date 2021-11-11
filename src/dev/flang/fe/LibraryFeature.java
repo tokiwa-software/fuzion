@@ -114,7 +114,6 @@ public class LibraryFeature extends AbstractFeature
   public boolean isBuiltInPrimitive() { return _from.isBuiltInPrimitive(); }
   public boolean hasResult() { return _from.hasResult(); }
   public FeatureName featureName() { return _from.featureName(); }
-  public FeatureName effectiveName(List<Type> actualGenerics) { return _from.effectiveName(actualGenerics); }
   public SourcePosition pos() { return _from.pos(); }
   public ReturnType returnType() { return _from.returnType(); }
   public List<Type> choiceGenerics() { return _from.choiceGenerics(); }
