@@ -550,8 +550,8 @@ public class Function extends Expr
 
     if (f != null)
       {
-        generics.add(f.hasResult()
-                     ? ((Feature) f).resultTypeForTypeInference(pos, res, Type.NONE) // NYI: Cast!
+        generics.add(f instanceof Feature ff && ff.hasResult()  // NYI: Cast!
+                     ? ff.resultTypeForTypeInference(pos, res, Type.NONE)
                      : new Type("unit"));
         for (var a : f.arguments())
           {

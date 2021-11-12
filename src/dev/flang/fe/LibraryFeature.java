@@ -155,7 +155,6 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
-  public boolean hasResult() { return _from.hasResult(); }
   public FeatureName featureName()
   {
     return _featureName;

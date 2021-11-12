@@ -958,7 +958,7 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return true iff this has a function result
    */
-  public boolean hasResult()
+  boolean hasResult()
   {
     return isField() || hasResultField();
   }
