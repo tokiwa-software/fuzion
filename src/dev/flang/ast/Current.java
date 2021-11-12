@@ -109,7 +109,7 @@ public class Current extends Expr
    */
   public String toString()
   {
-    return type_.featureOfType()._featureName.baseName() + ".this";
+    return type_.featureOfType().featureName().baseName() + ".this";
   }
 
 }

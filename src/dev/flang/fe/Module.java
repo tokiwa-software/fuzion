@@ -26,9 +26,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.FeatureName;
+
 import dev.flang.mir.MIR;
 
 import dev.flang.util.ANY;
+
+import java.util.Set;
+import java.util.SortedMap;
 
 
 /**
@@ -69,6 +75,34 @@ public abstract class Module extends ANY
    * Create the module intermediate representation for this module.
    */
   public abstract MIR createMIR();
+
+
+  /**
+   * Get declared features for given outer Feature as seen by this module.
+   * Result is null if outer has no declared features in this module.
+   *
+   * @param outer the declaring feature
+   */
+  abstract SortedMap<FeatureName, AbstractFeature>declaredFeaturesOrNull(AbstractFeature outer);
+
+
+  /**
+   * Get declared and inherited features for given outer Feature as seen by this
+   * module.  Result may be null if this module does not contribute anything to
+   * outer.
+   *
+   * @param outer the declaring feature
+   */
+  abstract SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer);
+
+
+  /**
+   * Get direct redefininitions of given Feature as seen by this module.
+   * Result is null if f has no redefinitions in this module.
+   *
+   * @param f the original feature
+   */
+  abstract Set<AbstractFeature>redefinitionsOrNull(AbstractFeature f);
 
 
 }

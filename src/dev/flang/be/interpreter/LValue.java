@@ -26,8 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
-import dev.flang.ir.Clazz;
-import dev.flang.ir.Clazzes;
+import dev.flang.air.Clazz;
+import dev.flang.air.Clazzes;
 
 
 /**

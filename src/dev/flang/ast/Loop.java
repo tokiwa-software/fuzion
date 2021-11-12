@@ -334,7 +334,8 @@ public class Loop extends ANY
       {
         block = Block.fromExpr(new If(whileCond.pos(), whileCond, block, _elseBlock0));
       }
-    Feature loop = new Feature(block.pos(),
+    var p = block.pos();
+    Feature loop = new Feature(p,
                                Consts.VISIBILITY_INVISIBLE,
                                Consts.MODIFIER_FINAL,
                                NoType.INSTANCE,
@@ -343,7 +344,7 @@ public class Loop extends ANY
                                formalArguments,
                                Function.NO_CALLS,
                                new Contract(null,null,null),
-                               new Impl(block.pos(), block, Impl.Kind.RoutineDef))
+                               new Impl(p, block, Impl.Kind.RoutineDef))
       {
         public boolean resultInternal() { return true; }
       };
@@ -376,7 +377,7 @@ public class Loop extends ANY
     var result = false;
     for (var f : _indexVars)
       {
-        result = result || f.impl.kind_ == Impl.Kind.FieldIter;
+        result = result || f.impl().kind_ == Impl.Kind.FieldIter;
       }
     return result;
   }
@@ -432,9 +433,10 @@ public class Loop extends ANY
     if (lastIndexVarAsImplicitResult())
       { /* add last index var as implicit result */
         Feature lastIndexVar = _indexVars.getLast();
-        var readLastIndexVar0 = new Call(lastIndexVar.pos, lastIndexVar._featureName.baseName());
-        var readLastIndexVar1 = new Call(lastIndexVar.pos, lastIndexVar._featureName.baseName());
-        var readLastIndexVar2 = new Call(lastIndexVar.pos, lastIndexVar._featureName.baseName());
+        var p = lastIndexVar.pos();
+        var readLastIndexVar0 = new Call(p, lastIndexVar.featureName().baseName());
+        var readLastIndexVar1 = new Call(p, lastIndexVar.featureName().baseName());
+        var readLastIndexVar2 = new Call(p, lastIndexVar.featureName().baseName());
         _elseBlock0   = Block.fromExpr(readLastIndexVar0);
         _elseBlock1   = Block.fromExpr(readLastIndexVar1);
         _successBlock = Block.fromExpr(readLastIndexVar2);
@@ -531,13 +533,14 @@ public class Loop extends ANY
         Feature f = ivi.next();
         Feature n = nvi.next();
         check
-          (f.impl.kind_ != Impl.Kind.FieldIter);
-        var ia = new Call(f.pos, f.featureName().baseName());
-        var na = new Call(f.pos, f.featureName().baseName());
-        var type = (f.impl.kind_ == Impl.Kind.FieldDef)
+          (f.impl().kind_ != Impl.Kind.FieldIter);
+        var p = f.pos();
+        var ia = new Call(p, f.featureName().baseName());
+        var na = new Call(p, f.featureName().baseName());
+        var type = (f.impl().kind_ == Impl.Kind.FieldDef)
           ? null        // index var with type inference from initial actual
-          : _indexVars.get(i).returnType.functionReturnType();
-        var arg = new Feature(f.pos,
+          : _indexVars.get(i).returnType().functionReturnType();
+        var arg = new Feature(p,
                               Consts.VISIBILITY_INVISIBLE,
                               type,
                               f.featureName().baseName(),
@@ -565,7 +568,7 @@ public class Loop extends ANY
       {
         Feature f = ivi.next();
         Feature n = nvi.next();
-        if (f.impl.kind_ == Impl.Kind.FieldIter)
+        if (f.impl().kind_ == Impl.Kind.FieldIter)
           {
             if (mustDeclareLoopElse)
               { // we declare loopElse function after all non-iterating index
@@ -575,8 +578,9 @@ public class Loop extends ANY
                 mustDeclareLoopElse = false;
               }
             var streamName = _rawLoopName + "stream" + (iteratorCount++);
-            Call asStream = new Call(f.pos, f.impl._initialValue, "asStream");
-            Feature stream = new Feature(f.pos,
+            var p = f.pos();
+            Call asStream = new Call(p, f.impl()._initialValue, "asStream");
+            Feature stream = new Feature(p,
                                          Consts.VISIBILITY_INVISIBLE,
                                          /* modifiers */   0,
                                          /* return type */ NoType.INSTANCE,
@@ -585,17 +589,17 @@ public class Loop extends ANY
                                          /* args */        new List<Feature>(),
                                          /* inherits */    new List<Call>(),
                                          /* contract */    null,
-                                         /* impl */        new Impl(f.pos, asStream, Impl.Kind.FieldDef));
+                                         /* impl */        new Impl(p, asStream, Impl.Kind.FieldDef));
             stream._isIndexVarUpdatedByLoop = true;  // hack to prevent error AstErrors.initialValueNotAllowed(this)
             _prologSuccessBlock.add(stream);
-            Call hasNext1 = new Call(f.pos, new Call(f.pos, streamName), "hasNext" );
-            Call hasNext2 = new Call(f.pos, new Call(f.pos, streamName), "hasNext" );
-            Call next1    = new Call(f.pos, new Call(f.pos, streamName), "next");
-            Call next2    = new Call(f.pos, new Call(f.pos, streamName), "next");
+            Call hasNext1 = new Call(p, new Call(p, streamName), "hasNext" );
+            Call hasNext2 = new Call(p, new Call(p, streamName), "hasNext" );
+            Call next1    = new Call(p, new Call(p, streamName), "next");
+            Call next2    = new Call(p, new Call(p, streamName), "next");
             List<Stmnt> prolog2 = new List<>();
             List<Stmnt> nextIt2 = new List<>();
-            If ifHasNext1 = new If(f.pos, hasNext1, new Block(f.pos, prolog2));
-            If ifHasNext2 = new If(f.pos, hasNext2, new Block(f.pos, nextIt2));
+            If ifHasNext1 = new If(p, hasNext1, new Block(p, prolog2));
+            If ifHasNext2 = new If(p, hasNext2, new Block(p, nextIt2));
             if (_loopElse != null)
               {
                 ifHasNext1.setElse(Block.fromExpr(callLoopElse(true )));
@@ -605,8 +609,8 @@ public class Loop extends ANY
             _nextItSuccessBlock.add(ifHasNext2);
             _prologSuccessBlock = prolog2;
             _nextItSuccessBlock = nextIt2;
-            f.impl = new Impl(f.impl.pos, next1, Impl.Kind.FieldDef);
-            n.impl = new Impl(n.impl.pos, next2, Impl.Kind.FieldDef);
+            f.setImpl(new Impl(f.impl().pos, next1, Impl.Kind.FieldDef));
+            n.setImpl(new Impl(n.impl().pos, next2, Impl.Kind.FieldDef));
           }
         _prologSuccessBlock.add(f);
         _nextItSuccessBlock.add(n);

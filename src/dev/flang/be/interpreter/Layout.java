@@ -29,10 +29,10 @@ package dev.flang.be.interpreter;
 import java.util.Map;
 import java.util.TreeMap;
 
-import dev.flang.ast.Feature;
+import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Types;
 
-import dev.flang.ir.Clazz;
+import dev.flang.air.Clazz;
 
 import dev.flang.util.ANY;
 
@@ -98,7 +98,7 @@ class Layout extends ANY
   /**
    * Offsets of the fields in instances of this clazz.
    */
-  Map<Feature, Integer> _offsets = new TreeMap<>();
+  Map<AbstractFeature, Integer> _offsets = new TreeMap<>();
 
 
   /*---------------------------  consructors  ---------------------------*/
@@ -196,10 +196,11 @@ class Layout extends ANY
   /**
    * Offset of field f within instances of _clazz.
    */
-  int offset(Feature f)
+  int offset(AbstractFeature f)
   {
     if (PRECONDITIONS) require
-      (_clazz.isRoutine() && sizeAvailable());
+      (_clazz.isRoutine() || _clazz.isChoice(),
+       sizeAvailable());
 
     return _offsets.get(f);
   }

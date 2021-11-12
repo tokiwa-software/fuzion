@@ -45,13 +45,6 @@ public class FunctionReturnType extends ReturnType
   Type type;
 
 
-  /**
-   * For a type declared as 'a.b.c.type', this gives the number of parts in the
-   * type, i.e., 4 in this example, 1 for 'i32'.
-   */
-  public final int depthInSource;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -63,21 +56,6 @@ public class FunctionReturnType extends ReturnType
   public FunctionReturnType(Type t)
   {
     type = t;
-    var ot = t;
-    if (t == Types.t_UNDEFINED)
-      {
-        depthInSource = -1;
-      }
-    else
-      {
-        var d = 0;
-        while (ot != null)
-          {
-            ot = ot.outer_;
-            d++;
-          }
-        depthInSource = d;
-      }
   }
 
 

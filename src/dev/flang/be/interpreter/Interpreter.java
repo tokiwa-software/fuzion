@@ -41,9 +41,10 @@ import dev.flang.util.List;
 
 import dev.flang.fuir.FUIR;
 
-import dev.flang.ir.Clazz;
-import dev.flang.ir.Clazzes;
+import dev.flang.air.Clazz;
+import dev.flang.air.Clazzes;
 
+import dev.flang.ast.AbstractFeature; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Assign; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Block; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.BoolConst; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -53,7 +54,6 @@ import dev.flang.ast.Case; // NYI: remove dependency! Use dev.flang.fuir instead
 import dev.flang.ast.Check; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Current; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Feature; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.InlineArray; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -103,7 +103,7 @@ public class Interpreter extends ANY
       {
         sb.append(frame).append(": ");
       }
-    sb.append(call.pos.show()).append("\n");
+    sb.append(call.pos().show()).append("\n");
   }
 
   /**
@@ -383,7 +383,7 @@ public class Interpreter extends ANY
         result = null;
         Clazz staticSubjectClazz = staticClazz.getRuntimeClazz(m.runtimeClazzId_);
         Value sub = execute(m.subject, staticClazz, cur);
-        Feature sf = staticSubjectClazz.feature();
+        var sf = staticSubjectClazz.feature();
         int tag;
         Value refVal = null;
         if (staticSubjectClazz.isChoiceOfOnlyRefs())
@@ -397,7 +397,7 @@ public class Interpreter extends ANY
           }
         else
           {
-            tag = getField(sf.choiceTag_, staticSubjectClazz, sub).i32Value();
+            tag = getField(sf.choiceTag(), staticSubjectClazz, sub).i32Value();
           }
         Clazz subjectClazz = tag < 0
           ? ((Instance) refVal).clazz()
@@ -494,7 +494,7 @@ public class Interpreter extends ANY
             // followed by several instances of Assign that copy the fields.
             var ri = new Instance(rc);
             result = ri;
-            for (Feature f : vc.clazzForField_.keySet())
+            for (var f : vc.clazzForField_.keySet())
               {
                 // Fields select()ed from fields of open generic type have type t_unit
                 // if the actual clazz does not have the number of actual open generic
@@ -687,7 +687,7 @@ public class Interpreter extends ANY
        outerClazz == Clazzes.ref_f32.getIfCreated() ||
        outerClazz == Clazzes.ref_f64.getIfCreated()) &&
       /* NYI: somewhat ugly way to access "val" field, should better have Clazzes.ref_i32_val.getIfCreate() etc. */
-      innerClazz.feature() == outerClazz.feature().get("val");
+      innerClazz.feature().sameAs(outerClazz.feature().get(outerClazz._res, "val"));
 
     if (dynamic && !builtInVal)
       {
@@ -702,81 +702,88 @@ public class Interpreter extends ANY
     else
       {
         var f = innerClazz.feature();
-        if (f.impl == Impl.ABSTRACT)
+        switch (f.kind())
           {
+          case Abstract:
             result = (args) -> { Errors.fatal("abstract feature " + f.qualifiedName() + " called on " + args.get(0) + " of clazz "+outerClazz + "\n" + callStack()); return Value.NO_VALUE; };
-          }
-        else if (f.isField())
-          {
-            // result = (args) -> getField(f, outerClazz, args.get(0));
-            //
-            // specialize for i32.val and bool.tag
-            var ocv = outerClazz.asValue();
-            if (builtInVal || ocv == Clazzes.bool.getIfCreated())
+            break;
+          case Field:
+            {
+              // result = (args) -> getField(f, outerClazz, args.get(0));
+              //
+              // specialize for i32.val and bool.tag
+              var ocv = outerClazz.asValue();
+              if (builtInVal || ocv == Clazzes.bool.getIfCreated())
+                {
+                  check
+                    (ocv != Clazzes.i8  .getIfCreated() || f.qualifiedName().equals("i8.val"),
+                     ocv != Clazzes.i16 .getIfCreated() || f.qualifiedName().equals("i16.val"),
+                     ocv != Clazzes.i32 .getIfCreated() || f.qualifiedName().equals("i32.val"),
+                     ocv != Clazzes.i64 .getIfCreated() || f.qualifiedName().equals("i64.val"),
+                     ocv != Clazzes.u8  .getIfCreated() || f.qualifiedName().equals("u8.val"),
+                     ocv != Clazzes.u16 .getIfCreated() || f.qualifiedName().equals("u16.val"),
+                     ocv != Clazzes.u32 .getIfCreated() || f.qualifiedName().equals("u32.val"),
+                     ocv != Clazzes.u64 .getIfCreated() || f.qualifiedName().equals("u64.val"),
+                     ocv != Clazzes.f32 .getIfCreated() || f.qualifiedName().equals("f32.val") &&
+                     ocv != Clazzes.f64 .getIfCreated() || f.qualifiedName().equals("f64.val"),
+                     ocv != Clazzes.bool.getIfCreated() || f.qualifiedName().equals("bool." + FuzionConstants.CHOICE_TAG_NAME));
+                  result = (args) -> args.get(0);
+                }
+              else
+                {
+                  Clazz fclazz = outerClazz.clazzForField(f);
+                  if (outerClazz.isRef())
+                    {
+                      result = (args) ->
+                        {
+                          LValue slot = fieldSlot(f, outerClazz, fclazz, args.get(0));
+                          return loadField(f, fclazz, slot);
+                        };
+                    }
+                  else if (true) // NYI: offset might not have been set yet, so for now, cache it dynamically at runtime
+                    {
+                      result = new Callable()
+                        {
+                          int off = -1;
+                          public Value call(ArrayList<Value> args)
+                          {
+                            if (off < 0)
+                              {
+                                off = Layout.get(outerClazz).offset(f);
+                              }
+                            var slot = args.get(0).at(fclazz, off);
+                            return loadField(f, fclazz, slot);
+                          }
+                        };
+                    }
+                  else
+                    {
+                      var off = Layout.get(outerClazz).offset(f);
+                      result = (args) ->
+                        {
+                          var slot = args.get(0).at(fclazz, off);
+                          return loadField(f, fclazz, slot);
+                        };
+                    }
+                }
+              break;
+            }
+          case Intrinsic:
+            result = Intrinsics.call(innerClazz);
+            break;
+          case Choice: // NYI: why choice here?
+          case Routine:
+            if (innerClazz == Clazzes.universe.get())
               {
-                check
-                  (ocv != Clazzes.i8  .getIfCreated() || f.qualifiedName().equals("i8.val"),
-                   ocv != Clazzes.i16 .getIfCreated() || f.qualifiedName().equals("i16.val"),
-                   ocv != Clazzes.i32 .getIfCreated() || f.qualifiedName().equals("i32.val"),
-                   ocv != Clazzes.i64 .getIfCreated() || f.qualifiedName().equals("i64.val"),
-                   ocv != Clazzes.u8  .getIfCreated() || f.qualifiedName().equals("u8.val"),
-                   ocv != Clazzes.u16 .getIfCreated() || f.qualifiedName().equals("u16.val"),
-                   ocv != Clazzes.u32 .getIfCreated() || f.qualifiedName().equals("u32.val"),
-                   ocv != Clazzes.u64 .getIfCreated() || f.qualifiedName().equals("u64.val"),
-                   ocv != Clazzes.f32 .getIfCreated() || f.qualifiedName().equals("f32.val") &&
-                   ocv != Clazzes.f64 .getIfCreated() || f.qualifiedName().equals("f64.val"),
-                   ocv != Clazzes.bool.getIfCreated() || f.qualifiedName().equals("bool." + FuzionConstants.CHOICE_TAG_NAME));
-                result = (args) -> args.get(0);
+                result = (args) -> callOnInstance(f, innerClazz, Instance.universe, args);
               }
             else
               {
-                Clazz fclazz = outerClazz.clazzForField(f);
-                if (outerClazz.isRef())
-                  {
-                    result = (args) ->
-                      {
-                        LValue slot = fieldSlot(f, outerClazz, fclazz, args.get(0));
-                        return loadField(f, fclazz, slot);
-                      };
-                  }
-                else if (true) // NYI: offset might not have been set yet, so for now, cache it dynamically at runtime
-                  {
-                    result = new Callable()
-                      {
-                        int off = -1;
-                        public Value call(ArrayList<Value> args)
-                        {
-                          if (off < 0)
-                            {
-                              off = Layout.get(outerClazz).offset(f);
-                            }
-                          var slot = args.get(0).at(fclazz, off);
-                          return loadField(f, fclazz, slot);
-                        }
-                      };
-                  }
-                else
-                  {
-                    var off = Layout.get(outerClazz).offset(f);
-                    result = (args) ->
-                      {
-                        var slot = args.get(0).at(fclazz, off);
-                        return loadField(f, fclazz, slot);
-                      };
-                  }
+                result = (args) -> callOnInstance(f, innerClazz, new Instance(innerClazz), args);
               }
-          }
-        else if (f.impl == Impl.INTRINSIC)
-          {
-            result = Intrinsics.call(innerClazz);
-          }
-        else if (innerClazz == Clazzes.universe.get())
-          {
-            result = (args) -> callOnInstance(f, innerClazz, Instance.universe, args);
-          }
-        else
-          {
-            result = (args) -> callOnInstance(f, innerClazz, new Instance(innerClazz), args);
+            break;
+          default:
+            throw new Error("unhandled switch case: "+f.kind());
           }
       }
     return result;
@@ -793,23 +800,22 @@ public class Interpreter extends ANY
    *
    * @return
    */
-  public Value callOnInstance(Feature thiz, Clazz staticClazz, Instance cur, ArrayList<Value> args)
+  public Value callOnInstance(AbstractFeature thiz, Clazz staticClazz, Instance cur, ArrayList<Value> args)
   {
     if (PRECONDITIONS) require
-      (!thiz.isField(),
-       thiz.impl != Impl.INTRINSIC,
-       args.size() == thiz.arguments.size() + 1 || thiz.hasOpenGenericsArgList() /* e.g. in call tuple<i32>(42) */
+      (thiz.isRoutine(),
+       args.size() == thiz.arguments().size() + 1 || thiz.hasOpenGenericsArgList() /* e.g. in call tuple<i32>(42) */
        );
 
     cur.checkStaticClazz(staticClazz);
     _callStackFrames.push(staticClazz);
 
     check
-      (thiz.isUsed());
+      (Clazzes.isUsedAtAll(thiz));
 
     setOuter(thiz, staticClazz, cur, args.get(0));
     int aix = 1;
-    for (Feature a : thiz.arguments)
+    for (var a : thiz.arguments())
       {
         if (a.isOpenGenericField())
           {
@@ -834,7 +840,7 @@ public class Interpreter extends ANY
           }
       }
 
-    for (Call p: thiz.inherits)
+    for (Call p: thiz.inherits())
       {
         // The new instance passed to the parent p is the same (==cur) as that
         // for this feature since the this inherits from p.
@@ -849,40 +855,47 @@ public class Interpreter extends ANY
     // binding, not here after dynamic binding.  Also, preconditions should be
     // taken from the static feature called ORed with the preconditions of all
     // features that feature redefines.
-    for (var c : thiz.contract.req)
+    for (var c : thiz.contract().req)
       {
         var v = execute(c.cond, staticClazz, cur);
         if (!v.boolValue())
           {
-            Errors.runTime(c.cond.pos,  // NYI: move to new class InterpreterErrors
+            Errors.runTime(c.cond.pos(),  // NYI: move to new class InterpreterErrors
                            "Precondition does not hold",
                            "For call to " + thiz.qualifiedName() + "\n" +
                            callStack());
           }
       }
 
-    Impl i = thiz.impl;
-    if (i == Impl.ABSTRACT)
+    switch (thiz.kind())
       {
-        Errors.fatal(thiz.pos,  // NYI: move to new class InterpreterErrors
+      case Abstract:
+        Errors.fatal(thiz.pos(),  // NYI: move to new class InterpreterErrors
                      "Abstract feature called",
                      "Feature called: " + thiz.qualifiedName() + "\n" +
                      "Target instance: " + cur);
-      }
-    if (i == Impl.INTRINSIC)
-      {
-        Errors.fatal(thiz.pos,  // NYI: move to new class InterpreterErrors
+        break;
+      case Intrinsic:
+        Errors.fatal(thiz.pos(),  // NYI: move to new class InterpreterErrors
                      "Missing intrinsic feature called",
                      "Feature called: " + thiz.qualifiedName() + "\n" +
                      "Target instance: " + cur);
+        break;
+      case Routine:
+        execute(thiz.code(), staticClazz, cur);
+        break;
+      case Field:
+      case Choice:
+      default:
+        throw new Error("Call to unsupported Feature kind: "+thiz.kind());
       }
-    execute(i._code, staticClazz, cur);
-    for (var c : thiz.contract.ens)
+
+    for (var c : thiz.contract().ens)
       {
         var v = execute(c.cond, staticClazz, cur);
         if (!v.boolValue())
           {
-            Errors.runTime(c.cond.pos,  // NYI: move to new class InterpreterErrors
+            Errors.runTime(c.cond.pos(),  // NYI: move to new class InterpreterErrors
                            "Postcondition does not hold",
                            "After call to " + thiz.qualifiedName() + "\n" +
                            callStack());
@@ -891,8 +904,8 @@ public class Interpreter extends ANY
     // NYI: Also check postconditions for all features this redefines!
     _callStackFrames.pop();
 
-    return thiz.returnType.isConstructorType() ? cur
-                                               : getField(thiz.resultField(), staticClazz, cur);
+    return thiz.returnType().isConstructorType() ? cur
+                                                 : getField(thiz.resultField(), staticClazz, cur);
   }
 
 
@@ -914,7 +927,7 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in choice.
    */
-  private static void setChoiceField(Feature thiz,
+  private static void setChoiceField(AbstractFeature thiz,
                                      Clazz choiceClazz,
                                      LValue choice,
                                      Type staticTypeOfValue,
@@ -940,7 +953,7 @@ public class Interpreter extends ANY
       }
     else
       { // store tag and value separately
-        setField(thiz.choiceTag_, choiceClazz, choice, new i32Value(tag));
+        setField(thiz.choiceTag(), choiceClazz, choice, new i32Value(tag));
       }
     check
       (vclazz._type.isAssignableFrom(staticTypeOfValue));
@@ -955,7 +968,7 @@ public class Interpreter extends ANY
    *
    * @param choice the value containing the choice.
    */
-  public static Value getChoiceRefVal(Feature thiz, Clazz choiceClazz, Value choice)
+  public static Value getChoiceRefVal(AbstractFeature thiz, Clazz choiceClazz, Value choice)
   {
     if (PRECONDITIONS) require
       (choiceClazz != null,
@@ -978,7 +991,7 @@ public class Interpreter extends ANY
    *
    * @param tag the tag value identifying the slot to be read.
    */
-  public static Value getChoiceVal(Feature thiz, Clazz choiceClazz, Value choice, int tag)
+  public static Value getChoiceVal(AbstractFeature thiz, Clazz choiceClazz, Value choice, int tag)
   {
     if (PRECONDITIONS) require
       (choiceClazz != null,
@@ -999,7 +1012,7 @@ public class Interpreter extends ANY
    *
    * @param v a value
    */
-  private static boolean valueTypeMatches(Feature thiz, Value v)
+  private static boolean valueTypeMatches(AbstractFeature thiz, Value v)
   {
     return
       v instanceof Instance                                            /* a normal ref type     */ ||
@@ -1029,7 +1042,7 @@ public class Interpreter extends ANY
    * normal refs, of type ChoiceIdAsRef, LValue or null for boxed choice tag or
    * ref to outer instance.
    */
-  private static Value loadRefField(Feature thiz, LValue slot)
+  private static Value loadRefField(AbstractFeature thiz, LValue slot)
   {
     if (PRECONDITIONS) require
       (slot != null);
@@ -1050,7 +1063,7 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in cur at offset
    */
-  private static void setRefField(Feature thiz,
+  private static void setRefField(AbstractFeature thiz,
                                   LValue slot,
                                   Value v)
   {
@@ -1072,7 +1085,7 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in cur at offset
    */
-  private static void setNonRefField(Feature thiz,
+  private static void setNonRefField(AbstractFeature thiz,
                                      Clazz fclazz,
                                      LValue slot,
                                      Value v)
@@ -1106,7 +1119,7 @@ public class Interpreter extends ANY
    *
    * @return an LValue that refers directly to the memory for the field.
    */
-  private static LValue fieldSlot(Feature thiz, Clazz staticClazz, Clazz fclazz, Value curValue)
+  private static LValue fieldSlot(AbstractFeature thiz, Clazz staticClazz, Clazz fclazz, Value curValue)
   {
     int off;
     var clazz = staticClazz;
@@ -1135,7 +1148,7 @@ public class Interpreter extends ANY
    * normal refs, of type ChoiceIdAsRef, LValue for non-reference fields or ref
    * to outer instance, LValue or null for boxed choice tag.
    */
-  private static Value loadField(Feature thiz, Clazz fclazz, LValue slot)
+  private static Value loadField(AbstractFeature thiz, Clazz fclazz, LValue slot)
   {
     check
       (fclazz != null,
@@ -1164,7 +1177,7 @@ public class Interpreter extends ANY
    * non-refs, Instance for normal refs, of type ChoiceIdAsRef, LValue or null
    * for boxed choice tag or ref to outer instance.
    */
-  public static Value getField(Feature thiz, Clazz staticClazz, Value curValue)
+  public static Value getField(AbstractFeature thiz, Clazz staticClazz, Value curValue)
   {
     if (PRECONDITIONS) require
       (thiz.isField(),
@@ -1274,7 +1287,7 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in slot
    */
-  private static void setFieldSlot(Feature thiz, Clazz fclazz, LValue slot, Value v)
+  private static void setFieldSlot(AbstractFeature thiz, Clazz fclazz, LValue slot, Value v)
   {
     if (PRECONDITIONS) require
       (fclazz != null,
@@ -1302,7 +1315,7 @@ public class Interpreter extends ANY
    *
    * @param v the value to be stored in the field
    */
-  public static void setField(Feature thiz, Clazz staticClazz, Value curValue, Value v)
+  public static void setField(AbstractFeature thiz, Clazz staticClazz, Value curValue, Value v)
   {
     if (PRECONDITIONS) require
       (thiz.isField(),
@@ -1320,16 +1333,16 @@ public class Interpreter extends ANY
 
   /**
    * If this has a reference to the frame of the outer feature and this
-   * reference has been marked to be used,then set it to the given value.
+   * reference has been marked to be used, then set it to the given value.
    *
    * @param cur the newly created instance whose outer ref is to be set
    *
    * @param outer the address or value of the outer feature
    */
-  public static void setOuter(Feature thiz, Clazz staticClazz, Instance cur, Value outer)
+  public static void setOuter(AbstractFeature thiz, Clazz staticClazz, Instance cur, Value outer)
   {
-    var or = thiz.outerRef_;
-    if (or != null && or.isUsed())
+    var or = thiz.outerRef();
+    if (or != null && Clazzes.isUsedAtAll(or))
       {
         setField(or, staticClazz, cur, outer);
       }

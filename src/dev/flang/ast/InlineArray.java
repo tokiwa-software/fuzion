@@ -280,7 +280,7 @@ public class InlineArray extends Expr
         var sysArrayT    = new Type(pos(), "array", eT, sysT);
         var sysArrayName = "#inlineArraySys" + (_id_++);
         var sysArrayVar  = new Feature(pos, Consts.VISIBILITY_LOCAL, sysArrayT, sysArrayName, null, outer);
-        sysArrayVar.findDeclarations(outer);
+        res._module.findDeclarations(sysArrayVar, outer);
         res.resolveDeclarations(sysArrayVar);
         res.resolveTypes();
         var sysArrayAssign = new Assign(res, pos(), sysArrayVar, sysArrayCall, outer);

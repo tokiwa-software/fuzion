@@ -127,21 +127,18 @@ import dev.flang.util.List;
 public class Resolution extends ANY
 {
 
-  public interface InnerFeaturesLoader
-  {
-    void loadInnerFeatures(Resolution res, Feature f);
-  }
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  public InnerFeaturesLoader innerFeaturesLoader; // =  (f) -> loadInnerFeatures(f);
 
 
   final FuzionOptions _options;
 
 
   final Feature universe;
+
+
+  public final SrcModule _module;
+
 
   /**
    * List of features scheduled for inheritance resolution
@@ -197,13 +194,11 @@ public class Resolution extends ANY
    */
   public Resolution(FuzionOptions options,
                     Feature universe,
-                    InnerFeaturesLoader ifl)
+                    SrcModule sm)
   {
     this.universe = universe;
     this._options = options;
-    this.innerFeaturesLoader = ifl;
-    universe.scheduleForResolution(this);
-    resolve();
+    this._module = sm;
   }
 
 
@@ -218,6 +213,7 @@ public class Resolution extends ANY
     if (PRECONDITIONS) require
       (f.state() == Feature.State.RESOLVING);
 
+    _module.add(f);
     forInheritance.add(f);
   }
 
@@ -368,7 +364,7 @@ public class Resolution extends ANY
       {
         if (Types.resolved == null)
           {
-            new Types.Resolved(universe);
+            new Types.Resolved(this, universe);
           }
 
         Feature f = forType.removeFirst();
@@ -430,14 +426,17 @@ public class Resolution extends ANY
    *
    * @param f the feature to be resolved
    */
-  void resolveDeclarations(Feature f)
+  public void resolveDeclarations(AbstractFeature af)
   {
-    f.scheduleForResolution(this);
-    f.resolveInheritance(this);
-    f.resolveDeclarations(this);
+    if (af instanceof Feature f)
+      {
+        f.scheduleForResolution(this);
+        f.resolveInheritance(this);
+        f.resolveDeclarations(this);
+      }
 
     if (POSTCONDITIONS) ensure
-      (f.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (af.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
   }
 
 }

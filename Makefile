@@ -51,6 +51,7 @@ JAVA_FILES_UTIL_UNICODE = \
           $(SRC)/dev/flang/util/unicode/ParseUnicodeData.java \
 
 JAVA_FILES_AST = \
+          $(SRC)/dev/flang/ast/AbstractFeature.java \
           $(SRC)/dev/flang/ast/Assign.java \
           $(SRC)/dev/flang/ast/AstErrors.java \
           $(SRC)/dev/flang/ast/Block.java \
@@ -68,6 +69,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Feature.java \
           $(SRC)/dev/flang/ast/FeatureName.java \
           $(SRC)/dev/flang/ast/FeatureVisitor.java \
+          $(SRC)/dev/flang/ast/FeaturesAndOuter.java \
           $(SRC)/dev/flang/ast/FormalGenerics.java \
           $(SRC)/dev/flang/ast/Function.java \
           $(SRC)/dev/flang/ast/FunctionReturnType.java \
@@ -85,6 +87,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/RefType.java \
           $(SRC)/dev/flang/ast/Resolution.java \
           $(SRC)/dev/flang/ast/ReturnType.java \
+          $(SRC)/dev/flang/ast/SrcModule.java \
           $(SRC)/dev/flang/ast/Stmnt.java \
           $(SRC)/dev/flang/ast/StrConst.java \
           $(SRC)/dev/flang/ast/Tag.java \
@@ -104,24 +107,27 @@ JAVA_FILES_PARSER = \
           $(SRC)/dev/flang/parser/Parser.java \
 
 JAVA_FILES_IR = \
-          $(SRC)/dev/flang/ir/Clazz.java \
-          $(SRC)/dev/flang/ir/Clazzes.java \
           $(SRC)/dev/flang/ir/IR.java \
-          $(SRC)/dev/flang/ir/IrErrors.java \
 
 JAVA_FILES_MIR = \
           $(SRC)/dev/flang/mir/MIR.java \
+          $(SRC)/dev/flang/mir/MirModule.java \
 
 JAVA_FILES_FE = \
           $(SRC)/dev/flang/fe/DFA.java \
           $(SRC)/dev/flang/fe/FeErrors.java \
           $(SRC)/dev/flang/fe/FrontEnd.java \
           $(SRC)/dev/flang/fe/FrontEndOptions.java \
+          $(SRC)/dev/flang/fe/LibraryFeature.java \
+          $(SRC)/dev/flang/fe/LibraryModule.java \
           $(SRC)/dev/flang/fe/Module.java \
           $(SRC)/dev/flang/fe/SourceModule.java \
 
 JAVA_FILES_AIR = \
           $(SRC)/dev/flang/air/AIR.java \
+          $(SRC)/dev/flang/air/AirErrors.java \
+          $(SRC)/dev/flang/air/Clazz.java \
+          $(SRC)/dev/flang/air/Clazzes.java \
 
 JAVA_FILES_ME = \
           $(SRC)/dev/flang/me/MiddleEnd.java \

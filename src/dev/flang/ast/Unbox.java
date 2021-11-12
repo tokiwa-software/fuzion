@@ -80,7 +80,7 @@ public class Unbox extends Expr
    *
    * @param t the result type
    */
-  public Unbox(SourcePosition pos, Expr adr, Type type, Feature outer)
+  public Unbox(SourcePosition pos, Expr adr, Type type, AbstractFeature outer)
   {
     super(pos);
 

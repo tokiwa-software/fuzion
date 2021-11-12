@@ -78,7 +78,7 @@ public class Function extends Expr
    *  int (Object o, int i) { result =* o.hashCode + i; }
    *
    */
-  Feature feature_;
+  AbstractFeature feature_;
 
 
   Type type_;
@@ -288,7 +288,6 @@ public class Function extends Expr
 
     Feature f = new Feature(pos, r, new List<String>("call"), a, i, c, p);
     this.feature_ = f;
-    f.modifiers |= Consts.MODIFIER_REDEFINE;
 
     List<Type> generics = new List<Type>();
     generics.add(f.hasResult() ? Types.t_UNDEFINED : new Type("unit"));
@@ -365,15 +364,15 @@ public class Function extends Expr
         this.call_.loadCalledFeature(res, thiz);
         if (this.feature_ == null)
           {
-            Feature f = this.call_.calledFeature();
+            var f = this.call_.calledFeature();
             check
               (Errors.count() > 0 || f != null);
 
             if (f != null)
               {
-                if (f.returnType != RefType.INSTANCE && f.returnType.isConstructorType())
+                if (f.returnType() != RefType.INSTANCE && f.returnType().isConstructorType())
                   {
-                    System.err.println("NYI: fun for returnType >>"+f.returnType+"<< not allowed");
+                    System.err.println("NYI: fun for returnType >>"+f.returnType()+"<< not allowed");
                     System.exit(1);
                   }
               }
@@ -450,7 +449,6 @@ public class Function extends Expr
             Feature f = new Feature(pos, new FunctionReturnType(gs.get(0)), new List<String>("call"), a, _inherits, _contract,
                                     new Impl(_expr.pos(), _expr, Impl.Kind.Routine));
             this.feature_ = f;
-            f.modifiers |= Consts.MODIFIER_REDEFINE;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             inheritsCall_ = new Call(pos, Types.FUNCTION_NAME, gs, Expr.NO_EXPRS);
@@ -466,7 +464,7 @@ public class Function extends Expr
                                    new List<>(inheritsCall_),
                                    new Contract(null,null,null),
                                    new Impl(pos, new Block(pos, statements), Impl.Kind.Routine));
-            _wrapper.findDeclarations(outer);
+            res._module.findDeclarations(_wrapper, outer);
             call_ = new Call(pos, new Current(pos(), outer.thisType()), _wrapper).resolveTypes(res, outer);
           }
         type_ = t;
@@ -511,20 +509,20 @@ public class Function extends Expr
       { /* NYI: Neeed? The following comment seems wrong: */
         // directly process generics in feature_'s arguments and return type,
         // while visit() skips the feature_.
-        Feature f = this.feature_;
-        for (Feature a : f.arguments)
+        var f = this.feature_;
+        for (var a : f.arguments())
           {
-            a.returnType.visit(v, outer);
+            a.returnType().visit(v, outer);
           }
-        f.returnType.visit(v, outer);
+        f.returnType().visit(v, outer);
       }
   }
 
 
-  private Feature functionOrRoutine()
+  private AbstractFeature functionOrRoutine()
   {
-    Feature f = this.feature_ == null ? this.call_.calledFeature()
-                                      : this.feature_;
+    var f = this.feature_ == null ? this.call_.calledFeature()
+                                  : this.feature_;
     check
       (Errors.count() > 0 || f != null);
 
@@ -543,19 +541,19 @@ public class Function extends Expr
   {
     List<Type> generics = new List<Type>();
 
-    Feature f = this.feature_ == null ? this.call_.calledFeature()
-                                      : this.feature_;
+    var f = this.feature_ == null ? this.call_.calledFeature()
+                                  : this.feature_;
     check
       (Errors.count() > 0 || f != null);
 
     if (f != null)
       {
         generics.add(f.hasResult()
-                     ? f.resultTypeForTypeInference(pos, res, Type.NONE)
+                     ? ((Feature) f).resultTypeForTypeInference(pos, res, Type.NONE) // NYI: Cast!
                      : new Type("unit"));
-        for (Feature a : f.arguments)
+        for (var a : f.arguments())
           {
-            a.resolveTypes(res);
+            ((Feature) a).resolveTypes(res); // NYI: Cast!
             generics.add(a.resultType());
           }
       }
@@ -579,10 +577,10 @@ public class Function extends Expr
       }
     else if (this.feature_ == null)
       {
-        Feature fr = functionOrRoutine();
+        var fr = functionOrRoutine();
         List<Type> generics = generics(res);
-        FormalGenerics.resolve(generics, outer);
-        type_ = fr != null ? new Type(pos, fr._featureName.baseName(), generics, null, fr, Type.RefOrVal.LikeUnderlyingFeature).resolve(outer)
+        FormalGenerics.resolve(res, generics, outer);
+        type_ = fr != null ? new Type(pos, fr.featureName().baseName(), generics, null, fr, Type.RefOrVal.LikeUnderlyingFeature).resolve(res, outer)
                            : Types.t_ERROR;
       }
     else
@@ -663,7 +661,7 @@ public class Function extends Expr
              */
             Call call = this.call_;
             call.forFun = false;  // the call is no longer for fun (i.e., ignored in Call.resolveTypes)
-            Feature calledFeature = call.calledFeature();
+            var calledFeature = call.calledFeature();
             /* NYI: "fun a.b" special cases: check what can go wrong with
              * calledTarget and flag an error. Possible errors aor special case
              * are
@@ -676,7 +674,7 @@ public class Function extends Expr
             List<Expr> actual_args = new List<Expr>();
             List<Feature> formal_args = new List<Feature>();
             int argnum = 1;
-            for (Feature f : calledFeature.arguments)
+            for (var f : calledFeature.arguments())
               {
                 String name = "a"+argnum;
                 actual_args.add(new Call(pos, null, name));
@@ -695,8 +693,8 @@ public class Function extends Expr
                                         new Impl(pos, callWithArgs, Impl.Kind.RoutineDef));
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
-            Feature fr = functionOrRoutine();
-            List<Call> inherits = new List<>(new Call(pos, fr._featureName.baseName(), type_._generics, Expr.NO_EXPRS));
+            var fr = functionOrRoutine();
+            List<Call> inherits = new List<>(new Call(pos, fr.featureName().baseName(), type_._generics, Expr.NO_EXPRS));
 
             List<Stmnt> statements = new List<Stmnt>(fcall);
 
@@ -711,7 +709,7 @@ public class Function extends Expr
                                            inherits,
                                            new Contract(null,null,null),
                                            new Impl(pos, new Block(pos, statements), Impl.Kind.Routine));
-            function.findDeclarations(call.target.type().featureOfType());
+            res._module.findDeclarations(function, call.target.type().featureOfType());
             result = new Call(pos,
                               call.target,
                               function)

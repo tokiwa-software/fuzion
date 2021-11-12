@@ -273,7 +273,7 @@ public class FormalGenerics extends ANY
    *
    * @param generics the actual generic arguments that should be resolved
    */
-  public static void resolve(List<Type> generics, Feature outer)
+  public static void resolve(Resolution res, List<Type> generics, AbstractFeature outer)
   {
     if (!generics.isEmpty())
       {
@@ -282,7 +282,7 @@ public class FormalGenerics extends ANY
             ListIterator<Type> i = generics.listIterator();
             while (i.hasNext())
               {
-                i.set(i.next().resolve(outer));
+                i.set(i.next().resolve(res, outer));
               }
           }
       }
@@ -329,7 +329,7 @@ public class FormalGenerics extends ANY
             // placeholder for the actual generics.
             for (Generic g : list)
               {
-                result.add(new Type(_feature.pos, g));
+                result.add(new Type(_feature.pos(), g));
               }
           }
         asActuals_ = result;

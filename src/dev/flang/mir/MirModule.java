@@ -20,51 +20,50 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class IrErrors
+ * Source of interface MirModule
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.ir;
+package dev.flang.mir;
 
-import dev.flang.util.ANY;
-import dev.flang.util.Errors;
-import dev.flang.util.SourcePosition;
+import java.nio.ByteBuffer;
+
+import java.util.Set;
+import java.util.SortedMap;
+
+import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
+import dev.flang.ast.FeatureName;  // NYI: Remove dependency!
 
 
 /**
- * IrErrors handles errors in the IR
+ * MirModule provides callbacks from the MIR to data structures in the current
+ * module, in particular to sets of features.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class IrErrors extends ANY
+public interface MirModule
 {
 
-  /*--------------------------  static fields  --------------------------*/
-
   /**
-   * Error count of only those errors that occured in the IR.
+   * The binary data from this module's .mir file.
    */
-  static int count = 0;
-
-
-  /*-----------------------------  methods  -----------------------------*/
+  ByteBuffer data();
 
 
   /**
-   * Record the given error found during compilation.
+   * Get declared features for given outer Feature as seen by this module.
+   * Result is never null.
    */
-  public static void error(SourcePosition pos, String msg, String detail)
-  {
-    if (PRECONDITIONS) require
-      (pos != null,
-       msg != null,
-       detail != null);
+  SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer);
 
-    int old = Errors.count();
-    Errors.error(pos, msg, detail);
-    int delta = Errors.count() - old;  // Errors detects duplicates, so the count might not have changed.
-    count += delta;
-  }
+
+  /**
+   * Get direct redefininitions of given Feature as seen by this module.
+   * Result is never null.
+   *
+   * @param f the original feature
+   */
+  Set<AbstractFeature> redefinitions(AbstractFeature f);
 
 }
 

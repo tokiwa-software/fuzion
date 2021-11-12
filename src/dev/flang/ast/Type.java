@@ -33,6 +33,7 @@ import java.util.Set;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -120,24 +121,24 @@ public class Type extends ANY implements Comparable<Type>
    *   p { ... }
    * }
    *
-   * the outer_ of "r" is "p.q", and the outer of "q" is "p".
+   * the _outer of "r" is "p.q", and the outer of "q" is "p".
    *
    * However, if p is declared in a, after type resolution, the outer type of
    * "p" is "a" or maybe a heir of "a".
    */
-  Type outer_;
+  private Type _outer;
 
 
   /**
-   * Flag that indicates the end of the outer_ chain as it came from the source
-   * code, even though after type resolution, outer_ might be non-null and point
-   * to the actual outer_ type.
+   * Flag that indicates the end of the _outer chain as it came from the source
+   * code, even though after type resolution, _outer might be non-null and point
+   * to the actual _outer type.
    */
   boolean outerMostInSource_ = false;
 
 
   /**
-   * Cached result of outer(). Note the difference to outer_: outer_ is the
+   * Cached result of outer(). Note the difference to _outer: _outer is the
    * outer type shown in the source code, while outer()/outerCache_ is the
    * actual outer type taken from the type of the outer feature of this type's
    * feature.
@@ -148,7 +149,7 @@ public class Type extends ANY implements Comparable<Type>
   /**
    *
    */
-  Feature feature;
+  AbstractFeature feature;
 
 
   /**
@@ -241,7 +242,7 @@ public class Type extends ANY implements Comparable<Type>
    * @param ref true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
-  public Type(SourcePosition pos, String n, List<Type> g, Type o, Feature f, RefOrVal refOrVal)
+  public Type(SourcePosition pos, String n, List<Type> g, Type o, AbstractFeature f, RefOrVal refOrVal)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -250,8 +251,8 @@ public class Type extends ANY implements Comparable<Type>
     this.pos = pos;
     this.name  = n;
     this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
-    this.outer_ = o;
-    this.feature = f;
+    this._outer = o;
+    this.feature = (f == null) ? null : f.astFeature();
     this.generic = null;
     this._refOrVal = refOrVal;
     this.checkedForGeneric = f != null;
@@ -279,7 +280,7 @@ public class Type extends ANY implements Comparable<Type>
     this.pos = pos;
     this.name  = g._name;
     this._generics = NONE;
-    this.outer_ = null;
+    this._outer = null;
     this.feature = null;
     this.generic = g;
     this._refOrVal = RefOrVal.LikeUnderlyingFeature;
@@ -313,7 +314,7 @@ public class Type extends ANY implements Comparable<Type>
     this.pos               = SourcePosition.builtIn;
     this.name              = n;
     this._generics         = NONE;
-    this.outer_            = null;
+    this._outer            = null;
     this.feature           = null;
     this._refOrVal         = ref ? RefOrVal.Ref
                                  : RefOrVal.LikeUnderlyingFeature;
@@ -325,12 +326,12 @@ public class Type extends ANY implements Comparable<Type>
    *
    * @param n the name, such as "int", "bool".
    */
-  public static Type type(String n, Feature universe)
+  public static Type type(Resolution res, String n, Feature universe)
   {
     if (PRECONDITIONS) require
       (n.length() > 0);
 
-    return type(false, n, universe);
+    return type(res, false, n, universe);
   }
 
   /**
@@ -340,12 +341,12 @@ public class Type extends ANY implements Comparable<Type>
    *
    * @param n the name, such as "int", "bool".
    */
-  public static Type type(boolean ref, String n, Feature universe)
+  public static Type type(Resolution res, boolean ref, String n, Feature universe)
   {
     if (PRECONDITIONS) require
       (n.length() > 0);
 
-    return new Type(ref, n).resolve(universe);
+    return new Type(ref, n).resolve(res, universe);
   }
 
 
@@ -367,7 +368,7 @@ public class Type extends ANY implements Comparable<Type>
     this._refOrVal          = refOrVal;
     this.name               = original.name;
     this._generics           = original._generics;
-    this.outer_             = original.outer_;
+    this._outer             = original._outer;
     this.outerMostInSource_ = original.outerMostInSource_;
     this.feature            = original.feature;
     this.generic            = original.generic;
@@ -472,14 +473,14 @@ public class Type extends ANY implements Comparable<Type>
    */
   public void setOuter(Type t)
   {
-    if (this.outer_ == null)
+    if (this._outer == null)
       {
         check(_interned == null);
-        this.outer_ = t;
+        this._outer = t;
       }
     else
       {
-        this.outer_.setOuter(t);
+        this._outer.setOuter(t);
       }
   }
 
@@ -501,18 +502,18 @@ public class Type extends ANY implements Comparable<Type>
       {
         result = generic.feature().qualifiedName() + "." + name + (this.isRef() ? " (boxed)" : "");
       }
-    else if (outer_ != null)
+    else if (_outer != null)
       {
-        String outer = outer_.toString();
+        String outer = _outer.toString();
         result = ""
           + (outer == "" ||
-             outer == Feature.UNIVERSE_NAME ? ""
-                                            : outer + ".")
+             outer == FuzionConstants.UNIVERSE_NAME ? ""
+                                                    : outer + ".")
           + ( isRef() && (feature == null || !feature.isThisRef()) ? "ref " :
              !isRef() &&  feature != null &&  feature.isThisRef()  ? "value "
                                                                    : "" )
           + (feature == null ? name
-                             : feature._featureName.baseName());
+             : feature.featureName().baseName());
       }
     else if (feature == null  || feature == Types.f_ERROR)
       {
@@ -542,7 +543,7 @@ public class Type extends ANY implements Comparable<Type>
   public List<Type> replaceGenerics(List<Type> genericsToReplace)
   {
     if (PRECONDITIONS) require
-      (featureOfType().generics.sizeMatches(_generics));
+      (featureOfType().generics().sizeMatches(_generics));
 
     return actualTypes(featureOfType(), genericsToReplace, _generics);
   }
@@ -605,7 +606,7 @@ public class Type extends ANY implements Comparable<Type>
        t != null,
        t.checkedForGeneric,
        Errors.count() > 0 || !t.isOpenGeneric(),
-       featureOfType().generics.sizeMatches(_generics));
+       featureOfType().generics().sizeMatches(_generics));
 
     Type result = t;
     if (result.dependsOnGenerics())
@@ -636,18 +637,19 @@ public class Type extends ANY implements Comparable<Type>
    * otherwise the type that results by replacing all formal generic parameters
    * of this in t by the corresponding type from actualGenerics.
    */
-  public Type actualType(Feature f, List<Type> actualGenerics)
+  public Type actualType(AbstractFeature f, List<Type> actualGenerics)
   {
     if (PRECONDITIONS) require
       (checkedForGeneric,
        Errors.count() > 0 ||
-       f.generics.sizeMatches(actualGenerics),
-       Errors.count() > 0 || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics);
+       f.generics().sizeMatches(actualGenerics),
+       Errors.count() > 0 || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics());
 
+    f = f.astFeature();
     Type result = this;
     if (f != null)
       {
-        for (Call i : f.inherits)
+        for (Call i : f.inherits())
           {
             result = result.actualType(i.calledFeature(),
                                        i.generics);
@@ -656,7 +658,7 @@ public class Type extends ANY implements Comparable<Type>
     if (result.isGenericArgument())
       {
         Generic g = result.genericArgument();
-        if (f != null && g.formalGenerics() == f.generics)  // t is replaced by corresponding actualGenerics entry
+        if (f != null && g.formalGenerics() == f.generics())  // t is replaced by corresponding actualGenerics entry
           {
             result = result.ensureNotOpen() ? g.replace(actualGenerics)
                                             : Types.t_ERROR;
@@ -695,16 +697,16 @@ public class Type extends ANY implements Comparable<Type>
    * @return a new list of types with all formal generic arguments from this
    * replaced by the corresponding actualGenerics entry.
    */
-  private static List<Type> actualTypes(Feature f, List<Type> genericsToReplace, List<Type> actualGenerics)
+  private static List<Type> actualTypes(AbstractFeature f, List<Type> genericsToReplace, List<Type> actualGenerics)
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 ||
-       f.generics.sizeMatches(actualGenerics));
+       f.generics().sizeMatches(actualGenerics));
 
     List<Type> result = genericsToReplace;
     if (f != null && !genericsToReplace.isEmpty())
       {
-        if (genericsToReplace == f.generics.asActuals())  /* shortcut for properly handling open generics list */
+        if (genericsToReplace == f.generics().asActuals())  /* shortcut for properly handling open generics list */
           {
             result = actualGenerics;
           }
@@ -741,13 +743,13 @@ public class Type extends ANY implements Comparable<Type>
   {
     if ((feature == null) && (generic == null))
       {
-        if (outer_ != null)
+        if (_outer != null)
           {
-            Type t = outer_.visit(v, outerfeat);
-            if (t != outer_)
+            Type t = _outer.visit(v, outerfeat);
+            if (t != _outer)
               {
                 check(_interned == null);
-                outer_ = outer_.visit(v, outerfeat);
+                _outer = _outer.visit(v, outerfeat);
               }
           }
       }
@@ -778,7 +780,7 @@ public class Type extends ANY implements Comparable<Type>
       (checkedForGeneric);
 
     boolean result =
-      outerMostInSource() || outer_.isFreeFromFormalGenericsInSource();
+      outerMostInSource() || _outer.isFreeFromFormalGenericsInSource();
     if (!this._generics.isEmpty())
       {
         for (Type t : this._generics)
@@ -824,7 +826,7 @@ public class Type extends ANY implements Comparable<Type>
    *
    * @param feat the root feature that contains this type.
    */
-  public void findGenerics(Feature outerfeat)
+  public void findGenerics(AbstractFeature outerfeat)
   {
     //    if (PRECONDITIONS) require
     //      (!outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
@@ -840,7 +842,7 @@ public class Type extends ANY implements Comparable<Type>
           }
         else
           {
-            Feature o = outerfeat;
+            var o = outerfeat;
             do
               {
                 generic = o.getGeneric(name);
@@ -865,13 +867,13 @@ public class Type extends ANY implements Comparable<Type>
   /**
    * resolve artificial types t_ERROR, etc.
    */
-  public void resolveArtificialType(Feature feat)
+  public void resolveArtificialType(AbstractFeature feat)
   {
     if (PRECONDITIONS) require
       (feature == null,
        Types.INTERNAL_NAMES.contains(name));
 
-    feature = feat;
+    feature = feat.astFeature();
 
     Type interned = Types.intern(this);
 
@@ -886,7 +888,7 @@ public class Type extends ANY implements Comparable<Type>
    * @param feat the outer feature that this type is declared in, used
    * for resolution of generic parameters etc.
    */
-  public Type resolve(Feature outerfeat)
+  public Type resolve(Resolution res, AbstractFeature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
@@ -899,16 +901,16 @@ public class Type extends ANY implements Comparable<Type>
       }
     if (!isGenericArgument())
       {
-        resolveFeature(outerfeat);
+        resolveFeature(res, outerfeat);
         if (feature == Types.f_ERROR)
           {
             return Types.t_ERROR;
           }
-        FormalGenerics.resolve(_generics, outerfeat);
-        if (!feature.generics.errorIfSizeOrTypeDoesNotMatch(_generics,
-                                                            pos,
-                                                            "type",
-                                                            "Type: " + toString() + "\n"))
+        FormalGenerics.resolve(res, _generics, outerfeat);
+        if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
+                                                              pos,
+                                                              "type",
+                                                              "Type: " + toString() + "\n"))
           {
             return Types.t_ERROR;
           }
@@ -926,7 +928,7 @@ public class Type extends ANY implements Comparable<Type>
    * @param feat the outer feature that this type is declared in, used
    * for resolution of generic parameters etc.
    */
-  void resolveFeature(Feature outerfeat)
+  void resolveFeature(Resolution res, AbstractFeature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
@@ -935,31 +937,31 @@ public class Type extends ANY implements Comparable<Type>
 
     if (!isGenericArgument())
       {
-        Feature o = outerfeat;
-        if (outer_ != null)
+        var o = outerfeat;
+        if (_outer != null)
           {
-            outer_ = outer_.resolve(outerfeat);
-            if (outer_.isGenericArgument())
+            _outer = _outer.resolve(res, outerfeat);
+            if (_outer.isGenericArgument())
               { // an error message was generated already during findGenerics()
                 check
                   (Errors.count() > 0);
                 feature = Types.f_ERROR;
               }
-            o = outer_.featureOfType();
+            o = _outer.featureOfType();
           }
         if (feature == null)
           {
-            var type_fs = new List<Feature>();
-            var nontype_fs = new List<Feature>();
+            var type_fs = new List<AbstractFeature>();
+            var nontype_fs = new List<AbstractFeature>();
             do
               {
-                var fs = o.findDeclaredOrInheritedFeatures(name).values();
+                var fs = res._module.lookupFeatures(o, name).values();
                 for (var f : fs)
                   {
-                    if (f.returnType.isConstructorType())
+                    if (f.returnType().isConstructorType())
                       {
                         type_fs.add(f);
-                        feature = f;
+                        feature = f.astFeature();
                       }
                     else
                       {
@@ -1074,12 +1076,12 @@ public class Type extends ANY implements Comparable<Type>
    *
    * @return
    */
-  public Feature featureOfType()
+  public AbstractFeature featureOfType()
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 || !isGenericArgument());
 
-    Feature result = feature;
+    var result = feature;
 
     if (result == null)
       {
@@ -1250,7 +1252,7 @@ public class Type extends ANY implements Comparable<Type>
           {
             check
               (feature == null ||
-               name.equals(feature._featureName.baseName()) ||
+               name.equals(feature.featureName().baseName()) ||
                Types.INTERNAL_NAMES.contains(name) || (Errors.count() > 0),
                generic == null || name.equals(generic._name),
                (feature == null) ^ (generic == null) || (Errors.count() > 0));
@@ -1290,7 +1292,7 @@ public class Type extends ANY implements Comparable<Type>
    */
   public boolean outerMostInSource()
   {
-    return outerMostInSource_ || outer_ == null;
+    return outerMostInSource_ || _outer == null;
   }
 
 
@@ -1309,7 +1311,7 @@ public class Type extends ANY implements Comparable<Type>
 
   /**
    * outer type, after type resolution. This provides the whole chain of types
-   * until Types.resolved.universe.thisType(), while the outer_ field ends with
+   * until Types.resolved.universe.thisType(), while the _outer field ends with
    * the outermost type explicitly written in the source code.
    */
   public Type outer()
@@ -1317,12 +1319,12 @@ public class Type extends ANY implements Comparable<Type>
     Type result = outerCache_;
     if (result == null)
       {
-        result = outer_;
+        result = _outer;
         if (result == null)
           {
             if (feature != null && feature.state().atLeast(Feature.State.LOADED))
               {
-                Feature of = feature.outer();
+                var of = feature.outer();
                 if (of == null)
                   {
                     return null;
@@ -1440,7 +1442,7 @@ public class Type extends ANY implements Comparable<Type>
               (actual.feature != null || Errors.count() > 0);
             if (actual.feature != null)
               {
-                for (Call p: actual.feature.inherits)
+                for (Call p: actual.feature.inherits())
                   {
                     Type pt = Types.intern(actual.actualType(p.type()));
                     if (actual.isRef())
@@ -1515,7 +1517,7 @@ public class Type extends ANY implements Comparable<Type>
                   }
                 if (!result)
                   {
-                    for (Call p: actual.feature.inherits)
+                    for (Call p: actual.feature.inherits())
                       {
                         Type pt = Types.intern(actual.actualType(p.type()));
                         if (constraintAssignableFrom(pt))
@@ -1534,7 +1536,7 @@ public class Type extends ANY implements Comparable<Type>
   /**
    * Check if this or any of its generic arguments is Types.t_ERROR.
    */
-  boolean containsError()
+  public boolean containsError()
   {
     boolean result = false;
     if (this == Types.t_ERROR)

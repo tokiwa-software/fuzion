@@ -33,6 +33,7 @@ import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import static dev.flang.util.Errors.*;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.Terminal;
@@ -53,17 +54,21 @@ public class AstErrors extends ANY
    * Handy functions to convert common types to strings in error messages. Will
    * set a color and enclose the string in single quotes.
    */
-  public static String s(Feature f)
+  public static String s(AbstractFeature f)
   {
     return sqn(f.qualifiedName());
+  }
+  public static String s(Feature f)
+  {
+    return s((AbstractFeature) f);
   }
   static String skw(String s) // keyword
   {
     return code(s);
   }
-  static String sbn(Feature f) // feature base name
+  static String sbn(AbstractFeature f) // feature base name
   {
-    return sbn(f._featureName.baseName());
+    return sbn(f.featureName().baseName());
   }
   static String sbn(FeatureName fn) // feature base name plus arg count and id string
   {
@@ -123,13 +128,13 @@ public class AstErrors extends ANY
    * Convert a list of features into a String of the feature's qualified names
    * followed by their position and separated by "and".
    */
-  static String featureList(List<Feature> fs)
+  static String featureList(List<AbstractFeature> fs)
   {
     StringBuilder sb = new StringBuilder();
     for (var f : fs)
       {
         sb.append(sb.length() > 0 ? "and " : "");
-        sb.append("" + s(f) + " defined at " + f.pos.show() + "\n");
+        sb.append("" + s(f) + " defined at " + f.pos().show() + "\n");
       }
     return sb.toString();
   }
@@ -137,17 +142,17 @@ public class AstErrors extends ANY
 
   /**
    * Create an error message for a declaration of a feature using
-   * Feature.RESULT_NAME.
+   * FuzionConstants.RESULT_NAME.
    *
    * @param pos the source code position
    */
   static void declarationOfResultFeature(SourcePosition pos)
   {
     error(pos,
-          "Feature declaration may not declare a feature with name " + sbn(Feature.RESULT_NAME) + "",
-          "" + sbn(Feature.RESULT_NAME) + " is an automatically declared field for a routine's result value.\n"+
-          "To solve this, if your intention was to return a result value, use " + ss("set " + Feature.RESULT_NAME + " := <value>") + ".\n"+
-          "Otherwise, you may chose a different name than " + sbn(Feature.RESULT_NAME) + " for your feature.");
+          "Feature declaration may not declare a feature with name " + sbn(FuzionConstants.RESULT_NAME) + "",
+          "" + sbn(FuzionConstants.RESULT_NAME) + " is an automatically declared field for a routine's result value.\n"+
+          "To solve this, if your intention was to return a result value, use " + ss("set " + FuzionConstants.RESULT_NAME + " := <value>") + ".\n"+
+          "Otherwise, you may chose a different name than " + sbn(FuzionConstants.RESULT_NAME) + " for your feature.");
   }
 
   /**
@@ -205,7 +210,7 @@ public class AstErrors extends ANY
    * @param value the value assigned to assignedField.
    */
   static void incompatibleTypeInAssignment(SourcePosition pos,
-                                           Feature field,
+                                           AbstractFeature field,
                                            Type frmlT,
                                            Expr value)
   {
@@ -230,20 +235,20 @@ public class AstErrors extends ANY
    *
    * @param value the value to be assigned.
    */
-  static void incompatibleArgumentTypeInCall(Feature calledFeature,
+  static void incompatibleArgumentTypeInCall(AbstractFeature calledFeature,
                                              int count,
                                              Type frmlT,
                                              Expr value)
   {
-    Iterator<Feature> frmls = calledFeature.arguments.iterator();
-    Feature frml = null;
+    var frmls = calledFeature.arguments().iterator();
+    AbstractFeature frml = null;
     int c;
     for (c = 0; c <= count && frmls.hasNext(); c++)
       {
         frml = frmls.next();
       }
     var f = ((c == count+1) && (frml != null)) ? frml : null;
-    incompatibleType(value.pos,
+    incompatibleType(value.pos(),
                      "when passing argument in a call",
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbn(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
@@ -295,7 +300,7 @@ public class AstErrors extends ANY
           solution);
   }
 
-  static void assignmentToNonField(Assign ass, Feature f, Feature outer)
+  static void assignmentToNonField(Assign ass, AbstractFeature f, Feature outer)
   {
     error(ass.pos(),
           "Target of assignment is not a field",
@@ -304,14 +309,14 @@ public class AstErrors extends ANY
           "For assignment: " + s(ass) + "\n");
   }
 
-  static void assignmentToIndexVar(Assign ass, Feature f, Feature outer)
+  static void assignmentToIndexVar(Assign ass, AbstractFeature f, Feature outer)
   {
     error(ass.pos(),
           "Target of assignment must not be a loop index variable",
           "Target of assignement: " + s(f) + "\n" +
           "Within feature: " + s(outer) + "\n" +
           "For assignment: " + s(ass) + "\n" +
-          "Was defined as loop index variable at " + f.pos.show());
+          "Was defined as loop index variable at " + f.pos().show());
   }
 
   static void wrongNumberOfActualArguments(Call call)
@@ -319,8 +324,8 @@ public class AstErrors extends ANY
     int fsz = call.resolvedFormalArgumentTypes.length;
     boolean ferror = false;
     StringBuilder fstr = new StringBuilder();
-    Iterator<Feature> fargs = call.calledFeature().arguments.iterator();
-    Feature farg = null;
+    var fargs = call.calledFeature().arguments().iterator();
+    AbstractFeature farg = null;
     for (Type t : call.resolvedFormalArgumentTypes)
       {
         ferror = t == Types.t_ERROR;
@@ -369,27 +374,27 @@ public class AstErrors extends ANY
           "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
   }
 
-  static void argumentTypeMismatchInRedefinition(Feature originalFeature, Feature originalArg,
-                                                 Feature redefinedFeature, Feature redefinedArg)
+  public static void argumentTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractFeature originalArg,
+                                                        AbstractFeature redefinedFeature, AbstractFeature redefinedArg)
   {
-    error(redefinedArg.pos,
+    error(redefinedArg.pos(),
           "Wrong argument type in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
           "argument type is " + s(redefinedArg.resultType()) + ", argument type should be " + s(originalArg.resultType()) + " " +
-          "Original argument declared at " + originalArg.pos.show());
+          "Original argument declared at " + originalArg.pos().show());
   }
 
-  static void resultTypeMismatchInRedefinition(Feature originalFeature,
-                                               Feature redefinedFeature)
+  public static void resultTypeMismatchInRedefinition(AbstractFeature originalFeature,
+                                                      AbstractFeature redefinedFeature)
   {
-    error(redefinedFeature.pos,
+    error(redefinedFeature.pos(),
           "Wrong result type in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
           "result type is " + s(redefinedFeature.resultType()) + ", result type should be " + s(originalFeature.resultType()) + ". " +
-          "Original feature declared at " + originalFeature.pos.show());
+          "Original feature declared at " + originalFeature.pos().show());
   }
 
-  static void constructorResultMustBeUnit(Expr res)
+  public static void constructorResultMustBeUnit(Expr res)
   {
     var rt = res.typeOrNull();
     var srt = rt == null ? "an unknown type" : s(rt);
@@ -402,35 +407,14 @@ public class AstErrors extends ANY
           "explicitly ignore the result of the last expression by an assignment " + st("_ := <expression>") + ".");
   }
 
-  static void argumentLengthsMismatch(Feature originalFeature, int originalNumArgs,
-                                      Feature redefinedFeature, int actualNumArgs)
+  public static void argumentLengthsMismatch(AbstractFeature originalFeature, int originalNumArgs,
+                                             AbstractFeature redefinedFeature, int actualNumArgs)
   {
-    error(redefinedFeature.pos,
+    error(redefinedFeature.pos(),
           "Wrong number of arguments in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
           "argument count is " + actualNumArgs + ", argument count should be " + originalNumArgs + " " +
-          "Original feature declared at " + originalFeature.pos.show());
-  }
-
-  public static void abstractFeatureNotImplemented(Feature featureThatDoesNotImplementAbstract,
-                                                   Set<Feature> abstractFeature,
-                                                   SourcePosition instantiatedAt)
-  {
-    var abs = new StringBuilder();
-    var abstracts = new StringBuilder();
-    for (Feature af : abstractFeature)
-      {
-        abs.append(abs.length() == 0 ? "" : ", ").append(af._featureName.baseName());
-        abstracts.append((abstracts.length() == 0 ? "inherits or declares" : "and") + " abstract feature " +
-                         s(af) + " declared at " + af.pos.show() + "\n" +
-                         "which is called at " + af.isUsedAt().show() + "\n");
-      }
-    abstracts.append("without providing an implementation\n");
-    error(featureThatDoesNotImplementAbstract.pos,
-          "Used abstract " + (abstractFeature.size() > 1 ? "features " + abs + " are" : "feature " + abs + " is") + " not implemented",
-          "Feature " + s(featureThatDoesNotImplementAbstract) + " " +
-          "instantiated at " + instantiatedAt.show() + "\n" +
-          abstracts);
+          "Original feature declared at " + originalFeature.pos().show());
   }
 
   /* NYI: currently unused, need to check if a "while (23)" produces a useful error message
@@ -569,7 +553,7 @@ public class AstErrors extends ANY
       : "Subject type is one of " + typeListAlternatives(choiceGenerics) + "\n";
   }
 
-  static void internallyReferencedFeatureNotUnique(SourcePosition pos, String qname, Collection<Feature> set)
+  static void internallyReferencedFeatureNotUnique(SourcePosition pos, String qname, Collection<AbstractFeature> set)
   {
     var sb = new StringBuilder();
     for (var f: set)
@@ -578,7 +562,7 @@ public class AstErrors extends ANY
           {
             sb.append("\nand ");
           }
-        sb.append("" + s(f) + " defined at " + f.pos.show());
+        sb.append("" + s(f) + " defined at " + f.pos().show());
       }
     error(pos,
           "Internally referenced feature not unique",
@@ -594,7 +578,7 @@ public class AstErrors extends ANY
    *
    * @param name name of the feature that caused a problem, e.g., "JavaObject"
    */
-  static void internallyReferencedFeatureNotFound(SourcePosition pos, String qname, Feature outer, String name)
+  static void internallyReferencedFeatureNotFound(SourcePosition pos, String qname, AbstractFeature outer, String name)
   {
     error(pos,
           "Internally referenced feature " + sqn(qname) + " not found",
@@ -602,42 +586,42 @@ public class AstErrors extends ANY
           ((outer == null || outer.isUniverse()) ? "" : "Outer feature: " + s(outer) + "\n"));
   }
 
-  static void repeatedInheritanceCannotBeResolved(SourcePosition pos, Feature heir, FeatureName fn, Feature f1, Feature f2)
+  public static void repeatedInheritanceCannotBeResolved(SourcePosition pos, AbstractFeature heir, FeatureName fn, AbstractFeature f1, AbstractFeature f2)
   {
     error(pos,
           "Repeated inheritance of conflicting features",
           "Feature " + s(heir) + " inherits feature " + sbn(fn) + " repeatedly: " +
-          "" + s(f1) + " defined at " + f1.pos.show() + "\n" + "and " +
-          "" + s(f2) + " defined at " + f2.pos.show() + "\n" +
+          "" + s(f1) + " defined at " + f1.pos().show() + "\n" + "and " +
+          "" + s(f2) + " defined at " + f2.pos().show() + "\n" +
           "To solve this, you could add a redefintion of " + sbn(f1) + " to " + s(heir) + ".");
   }
 
-  static void duplicateFeatureDeclaration(SourcePosition pos, Feature f, Feature existing)
+  public static void duplicateFeatureDeclaration(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
   {
     error(pos,
           "Duplicate feature declaration",
           "Feature that was declared repeatedly: " + s(f) + "\n" +
-          "originally declared at " + existing.pos.show() + "\n" +
+          "originally declared at " + existing.pos().show() + "\n" +
           "To solve this, consider renaming one of these two features or changing its number of arguments");
   }
 
-  static void cannotRedefine(SourcePosition pos, Feature f, Feature existing, String msg, String solution)
+  static void cannotRedefine(SourcePosition pos, AbstractFeature f, AbstractFeature existing, String msg, String solution)
   {
     error(pos,
           msg,
           "Feature that redefines existing feature: " + s(f) + "\n" +
           "original feature: " + s(existing) + "\n" +
-          "original feature defined in " + existing.pos.fileNameWithPosition()+ "\n" +
+          "original feature defined in " + existing.pos().fileNameWithPosition()+ "\n" +
           solution);
   }
 
-  static void cannotRedefineGeneric(SourcePosition pos, Feature f, Feature existing)
+  public static void cannotRedefineGeneric(SourcePosition pos, Feature f, AbstractFeature existing)
   {
     cannotRedefine(pos, f, existing, "Cannot redefine feature with generic arguments",
                    "To solve this, ask the Fuzion team to remove this restriction :-)."); // NYI: inheritance and generics
   }
 
-  static void redefineModifierMissing(SourcePosition pos, Feature f, Feature existing)
+  public static void redefineModifierMissing(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
   {
     cannotRedefine(pos, f, existing, "Redefinition must be declared using modifier " + skw("redef") + "",
                    "To solve this, if you did not intent to redefine an inherited feature, " +
@@ -646,9 +630,9 @@ public class AstErrors extends ANY
                    "declaration of " + s(f) + ".");
   }
 
-  static void redefineModifierDoesNotRedefine(Feature f)
+  public static void redefineModifierDoesNotRedefine(AbstractFeature f)
   {
-    error(f.pos,
+    error(f.pos(),
           "Feature declared using modifier " + skw("redef") + " does not redefine another feature",
           "Redefining feature: " + s(f) + "\n" +
           "To solve this, check spelling and argument count against the feature you want to redefine or " +
@@ -657,7 +641,7 @@ public class AstErrors extends ANY
 
   static void ambiguousCallTargets(SourcePosition pos,
                                    FeatureName fn,
-                                   List<Feature> targets)
+                                   List<AbstractFeature> targets)
   {
     error(pos,
           "Ambiguous call targets found for call to " + sbn(fn) + "",
@@ -666,24 +650,24 @@ public class AstErrors extends ANY
   }
 
   /**
-   * If name is Feature.RESULT_NAME and argcount is 0, return text that suggests
+   * If name is FuzionConstants.RESULT_NAME and argcount is 0, return text that suggests
    * declaring a return type in the outer feature. Otherwise, return "".
    */
   static String solutionDeclareReturnTypeIfResult(String name, int argCount)
   {
     var solution = "";
-    if (name.equals(Feature.RESULT_NAME) &&
+    if (name.equals(FuzionConstants.RESULT_NAME) &&
         argCount == 0)
       {
         solution = "To solve this, make sure you declare a return type in the surrounding feature such that " +
-          "the " + sbn(Feature.RESULT_NAME) + " field will be declared automatically.";
+          "the " + sbn(FuzionConstants.RESULT_NAME) + " field will be declared automatically.";
       }
     return solution;
   }
 
   static void calledFeatureNotFound(Call call,
                                     FeatureName calledName,
-                                    Feature targetFeature)
+                                    AbstractFeature targetFeature)
   {
     var solution = solutionDeclareReturnTypeIfResult(calledName.baseName(),
                                                      calledName.argCount());
@@ -696,7 +680,7 @@ public class AstErrors extends ANY
   }
 
   static void ambiguousType(Type t,
-                            List<Feature> possibilities)
+                            List<AbstractFeature> possibilities)
   {
     error(t.pos,
           "Ambiguous type",
@@ -708,16 +692,16 @@ public class AstErrors extends ANY
   }
 
   static void typeNotFound(Type t,
-                           Feature outerfeat,
-                           List<Feature> nontypes_found)
+                           AbstractFeature outerfeat,
+                           List<AbstractFeature> nontypes_found)
   {
     int n = nontypes_found.size();
     boolean hasAbstract = false;
     boolean hasReturnType = false;
     for (var f : nontypes_found)
       {
-        hasAbstract = f.impl == Impl.ABSTRACT;
-        hasReturnType = f.returnType != NoType.INSTANCE && !f.returnType.isConstructorType();
+        hasAbstract = f.isAbstract();
+        hasReturnType = f.returnType() != NoType.INSTANCE && !f.returnType().isConstructorType();
       }
     error(t.pos,
           "Type not found",
@@ -737,9 +721,9 @@ public class AstErrors extends ANY
                                ) + ".");
   }
 
-  static void initialValueNotAllowed(Feature f)
+  public static void initialValueNotAllowed(Feature f)
   {
-    error(f.pos,
+    error(f.pos(),
           "Initial value not allowed for feature not embedded in outer feature",
           "Fuzion currently does not know when to execute this initializer, so it is forbidden.\n" +
           "To solve this, move the declaration inside another feature or ask the Fuzion team for help.");
@@ -752,13 +736,13 @@ public class AstErrors extends ANY
 
     if (!f.featureName().baseName().equals(ERROR_STRING))
       {
-        error(f.pos,
+        error(f.pos(),
               "Missing result type in field declaration with initializaton",
               "Field declared: " + s(f) + "");
       }
   }
 
-  static void outerFeatureNotFoundInThis(This t, Feature feat, String qname, List<String> available)
+  static void outerFeatureNotFoundInThis(This t, AbstractFeature feat, String qname, List<String> available)
   {
     error(t.pos,
           "Could not find outer feature in " + skw(".this") + "-expression",

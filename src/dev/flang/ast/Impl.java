@@ -75,7 +75,6 @@ public class Impl extends ANY
    *
    */
   Expr _initialValue;
-  public Expr initialValue() { return _initialValue; }
 
 
   Feature _outerOfInitialValue = null;
@@ -191,7 +190,7 @@ public class Impl extends ANY
 
 
   /**
-   * Check if the return type of a feature f.returnType is allowed in
+   * Check if the return type of a feature f.returnType() is allowed in
    * conjunction with this feature implementation. Cause a compiler Error and
    * return a value return type if this is not the case.
    *
@@ -200,9 +199,9 @@ public class Impl extends ANY
   public ReturnType checkReturnType(Feature f)
   {
     if (PRECONDITIONS) require
-      (f.impl == this);
+      (f.impl() == this);
 
-    ReturnType rt = f.returnType;
+    ReturnType rt = f.returnType();
 
     switch (kind_)
       {
@@ -220,7 +219,7 @@ public class Impl extends ANY
           }
         else if (!(rt instanceof FunctionReturnType))
           {
-            Errors.error(f.pos,
+            Errors.error(f.pos(),
                          "Illegal result type >>" + rt + "<< in field declaration with initializaton using \"=\"",
                          "Field declared: " + f.qualifiedName());
             rt = new FunctionReturnType(Types.t_ERROR);
@@ -237,7 +236,7 @@ public class Impl extends ANY
         //
         if (rt != NoType.INSTANCE)
           {
-            Errors.error(f.pos,
+            Errors.error(f.pos(),
                          "Illegal result type >>" + rt + "<< in field definition using \":=\"",
                          "For field definition using \":=\", the type is determined automatically, " +
                          "it must not be given explicitly.\n" +
@@ -259,7 +258,7 @@ public class Impl extends ANY
           }
         else if (!(rt instanceof FunctionReturnType))
           {
-            Errors.error(f.pos,
+            Errors.error(f.pos(),
                          "Illegal result type >>" + rt + "<< in field declaration",
                          "Field declared: " + f.qualifiedName());
             rt = new FunctionReturnType(Types.t_ERROR);
@@ -275,7 +274,7 @@ public class Impl extends ANY
         //
         if (rt != NoType.INSTANCE)
           {
-            Errors.error(f.pos,
+            Errors.error(f.pos(),
                          "Illegal result type >>" + rt + "<< in feature definition using \"=>\"",
                          "For function definition using \"=>\", the type is determined automatically, " +
                          "it must not be given explicitly.\n" +

@@ -221,14 +221,14 @@ public class Case extends ANY
    * @return true iff all types could be resolved, false if any type resolution
    * failed and the type was set to Types.t_ERROR.
    */
-  boolean resolveType(List<Type> cgs, Feature outer, SourcePosition[] matched)
+  boolean resolveType(Resolution res, List<Type> cgs, Feature outer, SourcePosition[] matched)
   {
     boolean result = true;
     if (field != null)
       {
-        var t = field.returnType.functionReturnType();
-        var rt = resolveType(t, cgs, outer, matched);
-        field.returnType = new FunctionReturnType(rt);
+        var t = field.returnType().functionReturnType();
+        var rt = resolveType(res, t, cgs, outer, matched);
+        field._returnType = new FunctionReturnType(rt);
         result &= rt != Types.t_ERROR;
       }
     if (types != null)
@@ -237,7 +237,7 @@ public class Case extends ANY
         while (ti.hasNext())
           {
             var t = ti.next();
-            var rt = resolveType(t, cgs, outer, matched);
+            var rt = resolveType(res, t, cgs, outer, matched);
             ti.set(rt);
             result &= rt != Types.t_ERROR;
           }
@@ -261,16 +261,16 @@ public class Case extends ANY
    * that have already beend found.  This is updated and used to report an error
    * in case there are repeated matches.
    */
-  Type resolveType(Type t, List<Type> cgs, Feature outer, SourcePosition[] matched)
+  Type resolveType(Resolution res, Type t, List<Type> cgs, Feature outer, SourcePosition[] matched)
   {
     var original_t = t;
     List<Type> matches = new List<Type>();
     int i = 0;
-    t.resolveFeature(outer);
-    var inferGenerics = !t.isGenericArgument() && t._generics.isEmpty() && t.featureOfType().generics != FormalGenerics.NONE;
+    t.resolveFeature(res, outer);
+    var inferGenerics = !t.isGenericArgument() && t._generics.isEmpty() && t.featureOfType().generics() != FormalGenerics.NONE;
     if (!inferGenerics)
       {
-        t = t.resolve(outer);
+        t = t.resolve(res, outer);
       }
     for (var cg : cgs)
       {
@@ -321,7 +321,7 @@ public class Case extends ANY
     var sb = new StringBuilder();
     if (field != null)
       {
-        sb.append(field.featureName().baseName() + " " + field.returnType);
+        sb.append(field.featureName().baseName() + " " + field.returnType());
       }
     else if (types == null)
       {

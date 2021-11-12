@@ -30,6 +30,9 @@ import java.nio.file.Path;
 
 import dev.flang.mir.MIR;
 
+import dev.flang.ast.Feature;
+import dev.flang.ast.Resolution;
+
 import dev.flang.util.ANY;
 import dev.flang.util.SourceDir;
 import dev.flang.util.SourceFile;
@@ -61,8 +64,8 @@ public class FrontEnd extends ANY
    */
   public FrontEnd(FrontEndOptions options)
   {
-    var stdlib = new SourceModule(options, new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) }, null, null, new Module[0]);
-    stdlib.createMIR0();
+    var universe = Feature.createUniverse();
+    var stdlib = new LibraryModule(options, new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) }, null, null, new Module[0], universe);
     Path[] sourcePaths;
     Path inputFile;
     if (options._readStdin)
@@ -89,9 +92,7 @@ public class FrontEnd extends ANY
       {
         sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
       }
-    var m = new SourceModule(options, sourceDirs, inputFile, options._main, new Module[] {stdlib});
-    m.createMIR0();
-    _module = m;
+    _module = new SourceModule(options, sourceDirs, inputFile, options._main, new Module[] {stdlib}, universe);
   }
 
 
@@ -102,6 +103,13 @@ public class FrontEnd extends ANY
   {
     return _module.createMIR();
   }
+
+
+  public Resolution res()
+  {
+    return ((SourceModule) _module)._res; // NYI: Cast!
+  }
+
 
 }
 

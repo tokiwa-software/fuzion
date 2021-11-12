@@ -199,7 +199,7 @@ public class Destructure extends ANY implements Stmnt
         names = new List<String>();
         for (Feature f : fields)
           {
-            names.add(f._featureName.baseName());
+            names.add(f.featureName().baseName());
           }
       }
     return new Destructure(pos, names, fields, def, v).expand();
@@ -232,7 +232,7 @@ public class Destructure extends ANY implements Stmnt
                          Feature outer,
                          List<Stmnt> stmnts,
                          Feature tmp,
-                         Feature f,
+                         AbstractFeature f,
                          Iterator<String> names,
                          int select,
                          Iterator<Feature> fields,
@@ -247,7 +247,7 @@ public class Destructure extends ANY implements Stmnt
         Feature newF = fields.next();
         if (_isDefinition)
           {
-            newF.returnType = new FunctionReturnType(t);
+            newF._returnType = new FunctionReturnType(t);
           }
         assign = new Assign(res, _pos, newF, call_f, outer);
       }
@@ -296,7 +296,8 @@ public class Destructure extends ANY implements Stmnt
           .forEach(n -> Errors.error(_pos,
                                      "Repeated entry in destructuring",
                                      "Variable " + n + " appears "+Collections.frequency(_names, n)+" times."));
-        Feature tmp = new Feature(_pos,
+        Feature tmp = new Feature(res,
+                                  _pos,
                                   Consts.VISIBILITY_PRIVATE,
                                   t,
                                   "#destructure" + id++,
@@ -309,7 +310,7 @@ public class Destructure extends ANY implements Stmnt
         Iterator<String> names = _names.iterator();
         Iterator<Feature> fields = _fields == null ? null : _fields.iterator();
         List<String> fieldNames = new List<>();
-        for (Feature f : t.feature.arguments)
+        for (var f : t.feature.arguments())
           {
             // NYI: check if f is visible
             Type tf = f.resultTypeIfPresent(res, Type.NONE);
@@ -320,14 +321,14 @@ public class Destructure extends ANY implements Stmnt
                 int select = 0;
                 for (Type tfs : g.replaceOpen(t._generics))
                   {
-                    fieldNames.add(f._featureName.baseName() + "." + select);
+                    fieldNames.add(f.featureName().baseName() + "." + select);
                     addAssign(res, outer,stmnts, tmp, f, names, select, fields, tfs);
                     select++;
                   }
               }
             else
               {
-                fieldNames.add(f._featureName.baseName());
+                fieldNames.add(f.featureName().baseName());
                 addAssign(res, outer, stmnts, tmp, f, names, -1, fields, tf);
               }
           }
@@ -351,7 +352,7 @@ public class Destructure extends ANY implements Stmnt
         // to avoid subsequent errors:
         for (var f : _fields)
           {
-            f.returnType = new FunctionReturnType(Types.t_ERROR);
+            f._returnType = new FunctionReturnType(Types.t_ERROR);
           }
       }
     return new Block(_pos, stmnts);

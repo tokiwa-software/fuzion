@@ -41,6 +41,37 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Artificial name of universe feature.
+   */
+  public static final String UNIVERSE_NAME    = "#universe";
+
+  /**
+   * Prefix of artifically generated name of outer refs.
+   */
+  public static final String OUTER_REF_PREFIX = "#^";
+
+  /**
+   * Name of Object feature, i.e., the implicit parent feature of all other
+   * features.
+   */
+  public static final String OBJECT_NAME          = "Object";
+
+
+  /**
+   * Name of implicitly declared result field in case this field is used as the
+   * target of an assignment.
+   */
+  public static final String RESULT_NAME          = "result";
+
+
+  /**
+   * Artificial name of implicitly declared result field in case the assignment
+   * to result is implicitly from the last statement's value.
+   */
+  public static final String INTERNAL_RESULT_NAME = "#result";
+
+
+  /**
    * Artificial field added to instances of choice.fz if needed to
    * disambiguate different (value) types.
    */

@@ -29,11 +29,11 @@ package dev.flang.be.interpreter;
 import java.util.Map;
 import java.util.TreeMap;
 
-import dev.flang.ast.Feature; // NYI: remove dependency!
+import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 
-import dev.flang.ir.Clazz;
-import dev.flang.ir.Clazzes;
+import dev.flang.air.Clazz;
+import dev.flang.air.Clazzes;
 
 import dev.flang.util.ANY;
 
@@ -61,7 +61,7 @@ public class DynamicBinding extends ANY
    *
    * NYI: like _offsets, this should use a more efficient lookup table.
    */
-  Map<Feature, BackendCallable> _callables = new TreeMap<>();
+  Map<AbstractFeature, BackendCallable> _callables = new TreeMap<>();
 
 
   /**
@@ -69,7 +69,7 @@ public class DynamicBinding extends ANY
    *
    * NYI: like _offsets, this should use a more efficient lookup table.
    */
-  Map<Feature, Clazz> _inner = new TreeMap<>();
+  Map<AbstractFeature, Clazz> _inner = new TreeMap<>();
 
 
   /**
@@ -77,7 +77,7 @@ public class DynamicBinding extends ANY
    *
    * NYI: like _offsets, this should use a more efficient lookup table.
    */
-  Map<Feature, Clazz> _outer = new TreeMap<>();
+  Map<AbstractFeature, Clazz> _outer = new TreeMap<>();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -111,7 +111,7 @@ public class DynamicBinding extends ANY
    * @param callable backend data needed to perform a call to the actual
    * implementation of f in _clazz.
    */
-  public void add(Interpreter be, Feature f, Clazz inner, Clazz outer)
+  public void add(Interpreter be, AbstractFeature f, Clazz inner, Clazz outer)
   {
     if (PRECONDITIONS) require
       (f != null);
@@ -134,7 +134,7 @@ public class DynamicBinding extends ANY
    *
    * @return the backend data identifying the actual callable feature.
    */
-  public BackendCallable callable(Feature calledFeature)
+  public BackendCallable callable(AbstractFeature calledFeature)
   {
     return _callables.get(calledFeature);
   }
@@ -147,7 +147,7 @@ public class DynamicBinding extends ANY
    *
    * @return the innr class stored for calledFeature using add, null if none
    */
-  public Clazz inner(Feature calledFeature)
+  public Clazz inner(AbstractFeature calledFeature)
   {
     return _inner.get(calledFeature);
   }
@@ -160,7 +160,7 @@ public class DynamicBinding extends ANY
    *
    * @return the outer class stored for calledFeature using add, null if none
    */
-  public Clazz outer(Feature calledFeature)
+  public Clazz outer(AbstractFeature calledFeature)
   {
     return _outer.get(calledFeature);
   }

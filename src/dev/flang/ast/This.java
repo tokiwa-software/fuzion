@@ -55,12 +55,12 @@ public class This extends Expr
    * the current feature this is executed in, i.e. the outer feature of the
    * feature that uses this inherits clause.
    */
-  private Feature cur_ = null;
+  private AbstractFeature cur_ = null;
 
   /**
    * The feature the this expression refers to, i.e,. for a.b.this this is a.b.
    */
-  private Feature feature_;
+  private AbstractFeature feature_;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -96,7 +96,7 @@ public class This extends Expr
    *
    * @param f the outer feature whose instance we want to access.
    */
-  public This(SourcePosition pos, Feature cur, Feature f)
+  public This(SourcePosition pos, AbstractFeature cur, AbstractFeature f)
   {
     super(pos);
 
@@ -146,7 +146,7 @@ public class This extends Expr
    *
    * @param the type resolved expression to access f.this.
    */
-  public static Expr thiz(Resolution res, SourcePosition pos, Feature cur, Feature f)
+  public static Expr thiz(Resolution res, SourcePosition pos, Feature cur, AbstractFeature f)
   {
     return new This(pos, cur, f).resolveTypes(res, cur);
   }
@@ -214,7 +214,7 @@ public class This extends Expr
     if (qual_ != null)
       {
         int d = getThisDepth(outer);
-        Feature f = outer;
+        AbstractFeature f = outer;
         for (int i=0; i<d; i++)
           {
             f = f.outer();
@@ -230,7 +230,7 @@ public class This extends Expr
       }
 
     Expr getOuter = null;
-    Feature f = this.feature_;
+    var f = this.feature_;
     if (f.isUniverse())
       {
         getOuter = new Universe(pos);
@@ -241,12 +241,12 @@ public class This extends Expr
          * an inherits call, cur_ is outer.outer() since this call is done
          * before outer is set up.
          */
-        Feature cur = cur_ == null ? outer : cur_;
+        var cur = cur_ == null ? outer : cur_;
         getOuter = new Current(pos, cur.thisType());
         while (cur != f)
           {
-            Feature or = cur.outerRef();
-            Expr c = new Call(pos, or._featureName.baseName(), Call.NO_GENERICS, Expr.NO_EXPRS, getOuter, or, null)
+            var or = cur.outerRef();
+            Expr c = new Call(pos, or.featureName().baseName(), Call.NO_GENERICS, Expr.NO_EXPRS, getOuter, or, null)
               .resolveTypes(res, outer);
             if (cur.isOuterRefAdrOfValue())
               {
@@ -297,7 +297,7 @@ public class This extends Expr
    *
    * @return
    */
-  private int getThisDepth(Feature feat)
+  private int getThisDepth(AbstractFeature feat)
   {
     Iterator<String> it = qual_.iterator();
     int d = getDepth(0, feat, it.next(), it);
@@ -310,7 +310,7 @@ public class This extends Expr
               .append(name);
           }
         var list = new List<String>();
-        Feature o = feat;
+        var o = feat;
         while (o.outer() != null) // exclude universe
           {
             list.add(o.qualifiedName());
@@ -326,15 +326,15 @@ public class This extends Expr
   /**
    * recursive helper function for getThisDepth()
    */
-  private int getDepth(int d, Feature feat, String name, Iterator<String> it)
+  private int getDepth(int d, AbstractFeature feat, String name, Iterator<String> it)
   {
-    if (feat._featureName.baseName().equals(name))
+    if (feat.featureName().baseName().equals(name))
       {
         return d;
       }
     else
       {
-        Feature outer = feat.outer();
+        var outer = feat.outer();
         if (outer == null)
           {
             d = -1;
@@ -344,8 +344,8 @@ public class This extends Expr
             d = getDepth(d + 1, outer, name, it);
             if ((d >= 0) && it.hasNext())
               {
-                d = it.next().equals(feat._featureName.baseName()) ? d - 1
-                                                                   : -1;
+                d = it.next().equals(feat.featureName().baseName()) ? d - 1
+                                                                    : -1;
               }
           }
       }

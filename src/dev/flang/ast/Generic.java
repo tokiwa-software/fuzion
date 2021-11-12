@@ -216,7 +216,7 @@ public class Generic extends ANY
 
     if (_constraint != null)
       {
-        _constraint = _constraint.resolve(outer);
+        _constraint = _constraint.resolve(res, outer);
         if (_constraint.isGenericArgument())
           {
             AstErrors.constraintMustNotBeGenericArgument(this);

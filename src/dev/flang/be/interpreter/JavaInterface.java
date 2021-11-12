@@ -34,8 +34,8 @@ import java.lang.reflect.Modifier;
 
 import dev.flang.ast.Types;
 
-import dev.flang.ir.Clazz;
-import dev.flang.ir.Clazzes;
+import dev.flang.air.Clazz;
+import dev.flang.air.Clazzes;
 
 import dev.flang.util.ANY;
 
@@ -334,9 +334,6 @@ public class JavaInterface extends ANY
    */
   static Object[] instanceToJavaObjects(Value v)
   {
-    if (PRECONDITIONS) require
-      (v.instance().clazz().feature() == Types.resolved.f_sys_array);
-
     var a = v.arrayData();
     var sz = a.length();
     var result = new Object[sz];
@@ -367,7 +364,7 @@ public class JavaInterface extends ANY
   static Value call(String clName, String name, String sig, Object thiz, Value args, Clazz resultClazz)
   {
     if (PRECONDITIONS) require
-      ((clName != null) != (thiz != null));
+      (clName != null);
 
     Object res = null;
     Throwable err = null;

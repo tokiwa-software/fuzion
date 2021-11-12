@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.ir;
+package dev.flang.air;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.Assign; // NYI: remove dependency!
 import dev.flang.ast.Block; // NYI: remove dependency!
 import dev.flang.ast.BoolConst; // NYI: remove dependency!
@@ -73,6 +74,22 @@ public class Clazzes extends ANY
 
 
   /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * All used features mapped to the first source code position their are used at.
+   *
+   * NYI: This should be moved to MiddleEnd.java and joined with clazzes, so we
+   * do not need a separate pass for finding used features.
+   */
+  private static final Map<AbstractFeature, SourcePosition> _usedFeatures_ = new TreeMap<>();
+
+
+  /**
+   * NYI: This is redundant with _calledDynamically_, so one of them has to go
+   * (preferably this one).
+   */
+  private static final Map<AbstractFeature, Boolean> _dynamicallyCalledFeatures0_ = new TreeMap<>();
 
 
   /**
@@ -205,7 +222,7 @@ public class Clazzes extends ANY
    * found that a feature is called dynamically: Then this features needs to be
    * added to the dynamic binding data of heir classes of f.outer).
    */
-  private static TreeMap<Feature, List<Runnable>> _whenCalledDynamically_ = new TreeMap();
+  private static TreeMap<AbstractFeature, List<Runnable>> _whenCalledDynamically_ = new TreeMap();
   static TreeMap<Clazz, List<Runnable>> _whenCalled_ = new TreeMap();
 
 
@@ -213,7 +230,7 @@ public class Clazzes extends ANY
    * Set of features that are called dynamically. Populated during findClasses
    * phase.
    */
-  private static TreeSet<Feature> _calledDynamically_ = new TreeSet();
+  private static TreeSet<AbstractFeature> _calledDynamically_ = new TreeSet();
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -286,7 +303,7 @@ public class Clazzes extends ANY
                 // So instead of testing !o.isRef() we use
                 // !o._type.featureOfType().isThisRef().
                 !o._type.featureOfType().isThisRef() &&
-                o._type.featureOfType().impl != Impl.INTRINSIC)
+                !o._type.featureOfType().isIntrinsic())
               {  // but a recursive chain of value types is not permitted
 
                 // NYI: recursive chain of value types should be detected during
@@ -391,7 +408,7 @@ public class Clazzes extends ANY
         Clazz cl = clazzesToBeVisited.removeFirst();
 
         cl.findAllClasses();
-        cl.findAllClassesWhenCalled();
+        cl.findAllClassesWhenCalled(main._res);
         if (!cl.feature().isField())
           {
             toLayout.add(cl);
@@ -425,7 +442,7 @@ public class Clazzes extends ANY
   /**
    * When it is detected that f is called dynamically, execute r.run().
    */
-  static void whenCalledDynamically(Feature f,
+  static void whenCalledDynamically(AbstractFeature f,
                                     Runnable r)
   {
     if (_calledDynamically_.contains(f))
@@ -479,7 +496,7 @@ public class Clazzes extends ANY
    * called dynamically, execute all the runnables registered for f by
    * whenCalledDynamically.
    */
-  static void calledDynamically(Feature f)
+  static void calledDynamically(AbstractFeature f)
   {
     if (!_calledDynamically_.contains(f))
       {
@@ -502,7 +519,7 @@ public class Clazzes extends ANY
   /**
    * Has f been found to be caled dynamically?
    */
-  static boolean isCalledDynamically(Feature f)
+  static boolean isCalledDynamically(AbstractFeature f)
   {
     return _calledDynamically_.contains(f);
   }
@@ -518,7 +535,7 @@ public class Clazzes extends ANY
         int fields = 0;
         int routines = 0;
         int clazzesForFields = 0;
-        Map<Feature, List<Clazz>> clazzesPerFeature = new TreeMap<>();
+        Map<AbstractFeature, List<Clazz>> clazzesPerFeature = new TreeMap<>();
         for (var cl : clazzes.keySet())
           {
             var f = cl.feature();
@@ -592,6 +609,74 @@ public class Clazzes extends ANY
 
 
   /**
+   * # if ids created by getRuntimeClazzId[s].
+   *
+   * NYI! This is static to create unique ids. It is sufficient to have unique ids for sets of clazzes used by the same statement.
+   */
+  private static int runtimeClazzIdCount_ = 0;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+
+
+  /**
+   * Obtain new unique ids for runtime clazz data stored in
+   * Clazz.setRuntimeClazz/getRuntimeClazz.
+   *
+   * @param count the number of ids to reserve
+   *
+   * @return the first of the ids result..result+count-1 ids reserved.
+   */
+  static int getRuntimeClazzIds(int count)
+  {
+    if (PRECONDITIONS) require
+      (runtimeClazzIdCount() <= Integer.MAX_VALUE - count);
+
+    int result = runtimeClazzIdCount_;
+    runtimeClazzIdCount_ = result + count;
+
+    if (POSTCONDITIONS) ensure
+                          (result >= 0,
+                           result < runtimeClazzIdCount());
+
+    return result;
+  }
+
+
+  /**
+   * Obtain a new unique id for runtime clazz data stored in
+   * Clazz.setRuntimeClazz/getRuntimeClazz.
+   *
+   * @return the id that was reserved.
+   */
+  private static int getRuntimeClazzId()
+  {
+    if (PRECONDITIONS) require
+      (runtimeClazzIdCount() < Integer.MAX_VALUE);
+
+    int result = getRuntimeClazzIds(1);
+
+    if (POSTCONDITIONS) ensure
+      (result >= 0,
+       result < runtimeClazzIdCount());
+
+    return result;
+  }
+
+  /**
+   * Total number of ids crated by getRuntimeClazzId[s].
+   *
+   * @return the id count.
+   */
+  static int runtimeClazzIdCount()
+  {
+    int result = runtimeClazzIdCount_;
+
+    if (POSTCONDITIONS) ensure
+      (result >= 0);
+
+    return result;
+  }
+
+
+  /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
   public static void findClazzes(Assign a, Clazz outerClazz)
@@ -606,7 +691,7 @@ public class Clazzes extends ANY
       {
         if (a.tid_ < 0)
           {
-            a.tid_ = outerClazz.feature().getRuntimeClazzIds(2);
+            a.tid_ = getRuntimeClazzIds(2);
           }
 
         Clazz sClazz = clazz(a._target, outerClazz);
@@ -680,7 +765,7 @@ public class Clazzes extends ANY
       }
     if (b._valAndRefClazzId < 0)
       {
-        b._valAndRefClazzId = outerClazz.feature().getRuntimeClazzIds(2);
+        b._valAndRefClazzId = getRuntimeClazzIds(2);
       }
     outerClazz.setRuntimeClazz(b._valAndRefClazzId    , vc);
     outerClazz.setRuntimeClazz(b._valAndRefClazzId + 1, rc);
@@ -700,7 +785,7 @@ public class Clazzes extends ANY
     Clazz vc = rc.asValue();
     if (u._refAndValClazzId < 0)
       {
-        u._refAndValClazzId = outerClazz.feature().getRuntimeClazzIds(2);
+        u._refAndValClazzId = getRuntimeClazzIds(2);
       }
     outerClazz.setRuntimeClazz(u._refAndValClazzId    , rc);
     outerClazz.setRuntimeClazz(u._refAndValClazzId + 1, vc);
@@ -749,7 +834,7 @@ public class Clazzes extends ANY
         var innerClazz = tclazz.lookup(cf, outerClazz.actualGenerics(c.generics), c.pos, c.isInheritanceCall_);
         if (c.sid_ < 0)
           {
-            c.sid_ = outerClazz.feature().getRuntimeClazzIds(2);
+            c.sid_ = getRuntimeClazzIds(2);
           }
         outerClazz.setRuntimeData(c.sid_ + 0, innerClazz);
         outerClazz.setRuntimeData(c.sid_ + 1, tclazz    );
@@ -793,7 +878,7 @@ public class Clazzes extends ANY
   {
     if (i.runtimeClazzId_ < 0)
       {
-        i.runtimeClazzId_ = outerClazz.feature().getRuntimeClazzIds(1);
+        i.runtimeClazzId_ = getRuntimeClazzIds(1);
       }
     outerClazz.setRuntimeClazz(i.runtimeClazzId_, clazz(i.cond, outerClazz));
   }
@@ -808,15 +893,15 @@ public class Clazzes extends ANY
     // we need to store in outerClazz.outer?
     if (c.runtimeClazzId_ < 0)
       {
-        c.runtimeClazzId_ = outerClazz.feature().getRuntimeClazzIds(c.field != null
-                                                                    ? 1
-                                                                    : c.types.size());
+        c.runtimeClazzId_ = getRuntimeClazzIds(c.field != null
+                                               ? 1
+                                               : c.types.size());
       }
     int i = c.runtimeClazzId_;
     if (c.field != null)
       {
         var fOrFc = isUsed(c.field, outerClazz)
-          ? outerClazz.lookup(c.field, Call.NO_GENERICS, c.field.isUsedAt())
+          ? outerClazz.lookup(c.field, Call.NO_GENERICS, isUsedAt(c.field))
           : outerClazz.actualClazz(c.field.resultType());
         outerClazz.setRuntimeClazz(i, fOrFc);
       }
@@ -840,7 +925,7 @@ public class Clazzes extends ANY
       {
         // NYI: Check if this works for a match that is part of a inhertis clause, do
         // we need to store in outerClazz.outer?
-        m.runtimeClazzId_ = outerClazz.feature().getRuntimeClazzIds(1);
+        m.runtimeClazzId_ = getRuntimeClazzIds(1);
       }
     outerClazz.setRuntimeClazz(m.runtimeClazzId_, clazz(m.subject, outerClazz));
   }
@@ -855,7 +940,7 @@ public class Clazzes extends ANY
     Clazz tc = outerClazz.actualClazz(t._taggedType);
     if (t._valAndTaggedClazzId < 0)
       {
-        t._valAndTaggedClazzId = outerClazz.feature().getRuntimeClazzIds(2);
+        t._valAndTaggedClazzId = getRuntimeClazzIds(2);
       }
     outerClazz.setRuntimeClazz(t._valAndTaggedClazzId    , vc);
     outerClazz.setRuntimeClazz(t._valAndTaggedClazzId + 1, tc);
@@ -871,7 +956,7 @@ public class Clazzes extends ANY
     Clazz ac = clazz(i, outerClazz);
     if (i._arrayClazzId < 0)
       {
-        i._arrayClazzId = outerClazz.feature().getRuntimeClazzIds(2);
+        i._arrayClazzId = getRuntimeClazzIds(2);
       }
     Clazz sa = ac.lookup(Types.resolved.f_array_internalArray, Call.NO_GENERICS, i.pos()).resultClazz();
     sa.instantiated(i.pos());
@@ -1044,7 +1129,7 @@ public class Clazzes extends ANY
       (!thiz.isOpenGeneric(),
        thiz.isFreeFromFormalGenericsInSource(),
        outerClazz != null || thiz.featureOfType().outer() == null,
-       thiz == Types.t_ERROR || !thiz.outerMostInSource() || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
+       Errors.count()>0 || thiz == Types.t_ERROR || !thiz.outerMostInSource() || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
 
     Clazz result;
 
@@ -1141,11 +1226,60 @@ public class Clazzes extends ANY
   /**
    * Has this feature been found to be used within the given static clazz?
    */
-  public static boolean isUsed(Feature thiz, Clazz staticClazz)
+  public static boolean isUsed(AbstractFeature thiz, Clazz staticClazz)
   {
-    return thiz.isUsed();
+    return isUsedAtAll(thiz);
   }
 
+  /**
+   * Has this feature been found to be used?
+   */
+  public static boolean isUsedAtAll(AbstractFeature thiz)
+  {
+    return _usedFeatures_.get(thiz.astFeature()) != null;
+  }
+
+
+  /**
+   * Has this feature been found to be used?
+   */
+  public static SourcePosition isUsedAt(AbstractFeature thiz)
+  {
+    return _usedFeatures_.get(thiz.astFeature());
+  }
+
+
+  /**
+   * Add f to the set of used features, record at as the position of the first
+   * use.
+   */
+  public static void addUsedFeature(AbstractFeature f, SourcePosition at)
+  {
+    _usedFeatures_.put(f.astFeature(), at);
+  }
+
+
+  /**
+   * Has f been found to be called dynamically?
+   *
+   * NYI: remove, redundant with isCalledDynamically.
+   */
+  public static boolean isCalledDynamically0(AbstractFeature f)
+  {
+    return _dynamicallyCalledFeatures0_.getOrDefault(f, false);
+  }
+
+
+  /**
+   * Add f to the set of dynamically called features, record at as the position
+   * of the first use.
+   *
+   * NYI: remove, redundant with isCalledDynamically.
+   */
+  public static void setCalledDynamically0(AbstractFeature f)
+  {
+    _dynamicallyCalledFeatures0_.put(f, true);
+  }
 
 }
 

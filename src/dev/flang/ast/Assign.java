@@ -66,7 +66,7 @@ public class Assign extends ANY implements Stmnt
    * Field that is assigned by this assign statement. initialized
    * during init() phase.
    */
-  public Feature _assignedField;
+  public AbstractFeature _assignedField;
 
 
   public Expr _target;
@@ -229,7 +229,7 @@ public class Assign extends ANY implements Stmnt
     var f = _assignedField;
     if (f == null)
       {
-        var fo = outer.findDeclaredInheritedOrOuterFeatures(_name, null, destructure == null ? this : null, destructure);
+        var fo = res._module.lookupNoTarget(outer, _name, null, destructure == null ? this : null, destructure);
         check
           (Errors.count() > 0 || fo.features.size() <= 1);
         f = fo.filter(_pos, FeatureName.get(_name, 0), __ -> false);
@@ -241,13 +241,21 @@ public class Assign extends ANY implements Stmnt
         _assignedField = f;
         _target        = fo.target(_pos, res, outer);
       }
-    if      (f == Types.f_ERROR        ) { check(Errors.count() > 0); /* ignore */ }
-    else if (!f.isField()              ) { AstErrors.assignmentToNonField    (this, f, outer); }
-    else if (!_indexVarAllowed &&
-             f._isIndexVarUpdatedByLoop) { AstErrors.assignmentToIndexVar    (this, f, outer); }
+    if      (f == Types.f_ERROR          ) { check(Errors.count() > 0); /* ignore */ }
+    else if (!f.isField()                ) { AstErrors.assignmentToNonField    (this, f, outer); }
+    else if (!_indexVarAllowed       &&
+             f instanceof Feature ff &&
+             ff.isIndexVarUpdatedByLoop()) { AstErrors.assignmentToIndexVar    (this, f, outer); }
     else if (f == f.outer().resultField())
       {
-        f.outer().foundAssignmentToResult();
+        if (f.outer() instanceof Feature fo)
+          {
+            fo.foundAssignmentToResult();
+          }
+        else
+          {
+            throw new Error("NYI: Assignement to result defined in library feature not handled well yet!");
+          }
       }
   }
 
@@ -300,7 +308,7 @@ public class Assign extends ANY implements Stmnt
    *
    * @param outer the root feature that contains this statement.
    */
-  public void checkTypes()
+  public void checkTypes(Resolution res)
   {
     check
       (_assignedField != Types.f_ERROR || Errors.count() > 0);
@@ -319,7 +327,7 @@ public class Assign extends ANY implements Stmnt
           }
 
         check
-          (this._target.type().featureOfType().findDeclaredOrInheritedFeature(f.featureName()) == f || Errors.count() > 0);
+          (res._module.lookupFeature(this._target.type().featureOfType(), f.featureName()) == f || Errors.count() > 0);
       }
   }
 
@@ -341,7 +349,7 @@ public class Assign extends ANY implements Stmnt
    */
   public String toString()
   {
-    return "set " + (_name == null ? _assignedField._featureName.baseName() : _name) + " := " + _value;
+    return "set " + (_name == null ? _assignedField.featureName().baseName() : _name) + " := " + _value;
   }
 
 }
