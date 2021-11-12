@@ -620,7 +620,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
     if (outer instanceof LibraryFeature olf)
       {
@@ -887,7 +887,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   void addDeclaredInnerFeature(AbstractFeature outer, Feature f)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(Feature.State.LOADING));
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
     var fn = f.featureName();
     var df = declaredFeatures(outer);
@@ -929,7 +929,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
       }
     addDeclaredInnerFeature(outer, fn, f);
-    if (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+    if (outer instanceof Feature of && of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
       {
         check(Errors.count() > 0 || outer.isChoice() && f.isField() || !declaredOrInheritedFeatures(outer).containsKey(fn));
         declaredOrInheritedFeatures(outer).put(fn, f);
@@ -978,7 +978,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
     return declaredOrInheritedFeatures(outer).get(name);
   }
@@ -995,7 +995,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
     return FeatureName.getAll(declaredOrInheritedFeatures(outer), name);
   }
@@ -1014,7 +1014,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name, int argCount)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
     return FeatureName.getAll(declaredOrInheritedFeatures(outer), name, argCount);
   }
@@ -1044,7 +1044,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public FeaturesAndOuter lookupNoTarget(AbstractFeature outer, String name, Call call, Assign assign, Destructure destructure)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
     var result = new FeaturesAndOuter();
     var curOuter = outer;

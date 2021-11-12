@@ -153,7 +153,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * NYI: Remove, replace by Resolution.state(Feature).
    */
-  public Feature.State state()
+  Feature.State state()
   {
     return Feature.State.RESOLVED;
   }

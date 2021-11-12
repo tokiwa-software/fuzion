@@ -296,7 +296,7 @@ hw25 is
   {
     return f == -1
       ? "-- no feature --"
-      : _featureIds.get(f).qualifiedName() + " " + _featureIds.get(f).state();
+      : _featureIds.get(f).qualifiedName();
   }
 
 

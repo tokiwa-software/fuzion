@@ -184,7 +184,7 @@ public class MiddleEnd extends ANY
     if (!Clazzes.isUsedAtAll(f))
       {
         Clazzes.addUsedFeature(f, usedAt);
-        if (f.state() != Feature.State.ERROR)
+        if (!(f instanceof Feature ff) || ff.state() == Feature.State.RESOLVED)
           {
             scheduleForFindUsedFeatures(f);
           }

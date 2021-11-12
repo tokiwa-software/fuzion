@@ -341,8 +341,8 @@ public class Clazzes extends ANY
         if (result == newcl)
           {
             check
-              (Errors.count() > 0 || result.feature().state().atLeast(Feature.State.RESOLVED));
-            if (result.feature().state().atLeast(Feature.State.RESOLVED))
+              (Errors.count() > 0 || !(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED));
+            if (!(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED))
               {
                 clazzesToBeVisited.add(result);
               }

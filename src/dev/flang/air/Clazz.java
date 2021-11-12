@@ -363,7 +363,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     var or = feature().outerRef();
     return !feature().isConstructor()  // do not specialize a constructor
-      && or != null && or.state().atLeast(Feature.State.RESOLVED);
+      && or != null && (!(or instanceof Feature orf) || orf.state().atLeast(Feature.State.RESOLVED));
   }
 
 
