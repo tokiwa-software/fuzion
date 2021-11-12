@@ -152,7 +152,6 @@ public class LibraryFeature extends AbstractFeature
     return _featureName;
   }
   public SourcePosition pos() { return _from.pos(); }
-  public ReturnType returnType() { return _from.returnType(); }
   public List<Type> choiceGenerics() { return _from.choiceGenerics(); }
   public FormalGenerics generics() { return _from.generics(); }
   public Generic getGeneric(String name) { return _from.getGeneric(name); }

@@ -958,7 +958,7 @@ public class Type extends ANY implements Comparable<Type>
                 var fs = res._module.lookupFeatures(o, name).values();
                 for (var f : fs)
                   {
-                    if (f.returnType().isConstructorType())
+                    if (f.isConstructor() || f.isChoice())
                       {
                         type_fs.add(f);
                         feature = f.astFeature();

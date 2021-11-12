@@ -210,7 +210,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract boolean hasResult();
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();
-  public abstract ReturnType returnType();
   public abstract List<Type> choiceGenerics();
   public abstract FormalGenerics generics();
   public abstract Generic getGeneric(String name);

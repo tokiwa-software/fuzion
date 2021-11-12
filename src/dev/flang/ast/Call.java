@@ -1134,7 +1134,7 @@ public class Call extends Expr
         if (!open)
           {
             t = tt.actualType(t);
-            if (calledFeature_.returnType().isConstructorType() && t != Types.resolved.t_void)
+            if (calledFeature_.isConstructor() && t != Types.resolved.t_void)
               {  /* specialize t for the target type here */
                 t = new Type(t, t._generics, tt);
               }

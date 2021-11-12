@@ -370,9 +370,9 @@ public class Function extends Expr
 
             if (f != null)
               {
-                if (f.returnType() != RefType.INSTANCE && f.returnType().isConstructorType())
+                if (f.isConstructor())
                   {
-                    System.err.println("NYI: fun for returnType >>"+f.returnType()+"<< not allowed");
+                    System.err.println("NYI: fun for constructor type not allowed");
                     System.exit(1);
                   }
               }
@@ -512,9 +512,11 @@ public class Function extends Expr
         var f = this.feature_;
         for (var a : f.arguments())
           {
-            a.returnType().visit(v, outer);
+            var rt = ((Feature)a).returnType(); // NYI: Cast!
+            rt.visit(v, outer);
           }
-        f.returnType().visit(v, outer);
+        var rt = ((Feature)f).returnType(); // NYI: Cast!
+        rt.visit(v, outer);
       }
   }
 
