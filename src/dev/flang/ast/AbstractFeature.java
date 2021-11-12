@@ -185,6 +185,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public boolean isBuiltInPrimitive()
   {
     return !isUniverse()
+      && outer() != null
       && outer().isUniverse()
       && (   "i8"  .equals(featureName().baseName())
           || "i16" .equals(featureName().baseName())
