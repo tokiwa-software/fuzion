@@ -30,7 +30,7 @@ Please check [https://flang.dev](https://flang.dev) for language and implementat
 
 ## Build
 
-> Make sure java/javac commands from OpenJDK 16 and clang 10 binary are in $PATH.
+> Make sure java/javac commands from OpenJDK and clang binary are in $PATH.
 
     cd fuzion
     make
