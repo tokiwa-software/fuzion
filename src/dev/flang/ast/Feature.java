@@ -392,7 +392,7 @@ public class Feature extends AbstractFeature implements Stmnt
          Consts.VISIBILITY_INVISIBLE,
          0,
          r,
-         new List<String>("#anonymous"+uniqueAnonymousFeatureId),
+         new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + uniqueAnonymousFeatureId),
          FormalGenerics.NONE,
          new List<Feature>(),
          i,
@@ -860,7 +860,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean isAnonymousInnerFeature()
   {
     // NYI: better have a flag for this
-    return _featureName.baseName().startsWith("#");
+    return _featureName.baseName().startsWith(FuzionConstants.ANONYMOUS_FEATURE_PREFIX);
   }
 
 
@@ -2428,8 +2428,7 @@ public class Feature extends AbstractFeature implements Stmnt
             {
               // NYI: Special handling for anonymous inner features that currently do not appear as statements
               if (c.calledFeatureKnown() &&
-                  c.calledFeature().isAnonymousInnerFeature() &&
-                  c.calledFeature().featureName().baseName().startsWith("#anonymous") &&
+                  c.calledFeature() instanceof Feature cf && cf.isAnonymousInnerFeature() &&
                   c.calledFeature() == inner)
                 {
                   found();

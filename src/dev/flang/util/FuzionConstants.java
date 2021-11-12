@@ -81,6 +81,12 @@ public class FuzionConstants extends ANY
   public static final String CHOICE_TAG_NAME = "#tag";
 
 
+  /**
+   * Prefix for names of anonymous inner features.
+   */
+  public static final String ANONYMOUS_FEATURE_PREFIX = "#anonymous";
+
+
   /*-----------------  special values used in MIR file  -----------------*/
 
   /**
