@@ -931,7 +931,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
     addDeclaredInnerFeature(outer, fn, f);
     if (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
       {
-        check(Errors.count() > 0 || f.isAnonymousInnerFeature());
         check(Errors.count() > 0 || outer.isChoice() && f.isField() || !declaredOrInheritedFeatures(outer).containsKey(fn));
         declaredOrInheritedFeatures(outer).put(fn, f);
         if (!outer.isChoice() || !f.isField())  // A choice does not inherit any fields

@@ -155,7 +155,6 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
-  public boolean isAnonymousInnerFeature() { return _from.isAnonymousInnerFeature(); /* NYI: remove? */ }
   public boolean hasResult() { return _from.hasResult(); }
   public FeatureName featureName()
   {

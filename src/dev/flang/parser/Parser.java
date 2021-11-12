@@ -3049,7 +3049,7 @@ anonymous   : returnType
     List<Call> i = inherit();
     Contract   c = contract();
     Block      b = block(false);
-    var f = new Feature(pos, r, i, c, b);
+    var f = Feature.anonymous(pos, r, i, c, b);
     var ca = new Call(pos, f);
     return ca;
     // NYI: This would simplify the code (in Feature.findFieldDefInScope that

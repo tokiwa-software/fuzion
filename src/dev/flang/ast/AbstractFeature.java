@@ -228,7 +228,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract boolean isThisRef();
 
 
-  public abstract boolean isAnonymousInnerFeature();
   public abstract boolean hasResult();
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();

@@ -370,7 +370,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Constructor for an anonymous feature
+   * Create an anonymous feature
    *
    * @param pos the soucecode position, used for error messages.
    *
@@ -382,22 +382,28 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @param b the implementation block
    */
-  public Feature(SourcePosition pos,
-                 ReturnType r,
-                 List<Call> i,
-                 Contract c,
-                 Block b)
+  public static Feature anonymous(SourcePosition pos,
+                                  ReturnType r,
+                                  List<Call> i,
+                                  Contract c,
+                                  Block b)
   {
-    this(pos,
-         Consts.VISIBILITY_INVISIBLE,
-         0,
-         r,
-         new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),
-         FormalGenerics.NONE,
-         new List<Feature>(),
-         i,
-         c,
-         new Impl(b.pos, b, Impl.Kind.Routine));
+    return new Feature(pos,
+                       Consts.VISIBILITY_INVISIBLE,
+                       0,
+                       r,
+                       new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),
+                       FormalGenerics.NONE,
+                       new List<Feature>(),
+                       i,
+                       c,
+                       new Impl(b.pos, b, Impl.Kind.Routine))
+      {
+        boolean isAnonymousInnerFeature()
+        {
+          return true;
+        }
+      };
   }
 
 
@@ -857,10 +863,9 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return true iff this feature is anonymous.
    */
-  public boolean isAnonymousInnerFeature()
+  boolean isAnonymousInnerFeature()
   {
-    // NYI: better have a flag for this
-    return _featureName.baseName().startsWith(FuzionConstants.ANONYMOUS_FEATURE_PREFIX);
+    return false;
   }
 
 
