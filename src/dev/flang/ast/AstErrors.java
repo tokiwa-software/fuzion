@@ -701,7 +701,7 @@ public class AstErrors extends ANY
     for (var f : nontypes_found)
       {
         hasAbstract = f.isAbstract();
-        hasReturnType = !f.isConstructor();
+        hasReturnType =  (!(f instanceof Feature ff) || ff._returnType != NoType.INSTANCE) && !f.isConstructor();
       }
     error(t.pos,
           "Type not found",
