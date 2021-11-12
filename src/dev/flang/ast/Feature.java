@@ -3083,34 +3083,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Is this a non-genenric feature.
-   */
-  boolean isNonGeneric()
-  {
-    if (PRECONDITIONS) require
-      (outer() != null);
-
-    return
-      (_generics == FormalGenerics.NONE);
-  }
-
-
-  /**
-   * Are calls to this feature performed using dynamic binding?
-   */
-  public boolean isDynamic()
-  {
-    if (PRECONDITIONS) require
-      (this == Types.f_ERROR || outer() != null);
-
-    return
-      this != Types.f_ERROR &&
-      isNonGeneric() &&
-      !outer().isChoice();
-  }
-
-
-  /**
    * Is this a field of open generic type?
    */
   public boolean isOpenGenericField()
