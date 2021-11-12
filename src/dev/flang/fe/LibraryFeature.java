@@ -145,10 +145,15 @@ public class LibraryFeature extends AbstractFeature
       _kind == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
   }
 
+
+  /**
+   * Is this a constructor returning a reference result?
+   */
   public boolean isThisRef()
   {
     return _kind == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
   }
+
 
   public boolean isDynamic() { return _from.isDynamic(); }
   public boolean isAnonymousInnerFeature() { return _from.isAnonymousInnerFeature(); /* NYI: remove? */ }
