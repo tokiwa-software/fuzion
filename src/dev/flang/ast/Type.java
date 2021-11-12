@@ -895,7 +895,7 @@ public class Type extends ANY implements Comparable<Type>
        outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
        checkedForGeneric);
 
-    if (!outerfeat.isLastArgType(this))
+    if (!(outerfeat instanceof Feature of && of.isLastArgType(this)))
       {
         ensureNotOpen();
       }

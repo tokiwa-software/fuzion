@@ -234,7 +234,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract FormalGenerics generics();
   public abstract Generic getGeneric(String name);
   public abstract List<Call> inherits();
-  public abstract boolean isLastArgType(Type t);
   public abstract AbstractFeature outer();
   public abstract Type thisType();
   public abstract boolean hasOpenGenericsArgList();

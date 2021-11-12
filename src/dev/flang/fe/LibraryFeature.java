@@ -164,7 +164,6 @@ public class LibraryFeature extends AbstractFeature
   public FormalGenerics generics() { return _from.generics(); }
   public Generic getGeneric(String name) { return _from.getGeneric(name); }
   public List<Call> inherits() { return _from.inherits(); }
-  public boolean isLastArgType(Type t) { return _from.isLastArgType(t); }
   public AbstractFeature outer() { return _from.outer(); }
   public Type thisType() { return _from.thisType(); }
   public boolean hasOpenGenericsArgList() { return _from.hasOpenGenericsArgList(); }

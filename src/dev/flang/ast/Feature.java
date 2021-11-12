@@ -1136,7 +1136,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * @return true iff this is the last argument of a feature and t is its return
    * type.
    */
-  public boolean isLastArgType(Type t)
+  boolean isLastArgType(Type t)
   {
     return
       outer() != null &&
