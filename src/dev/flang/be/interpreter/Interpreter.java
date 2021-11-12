@@ -904,8 +904,8 @@ public class Interpreter extends ANY
     // NYI: Also check postconditions for all features this redefines!
     _callStackFrames.pop();
 
-    return thiz.returnType().isConstructorType() ? cur
-                                                 : getField(thiz.resultField(), staticClazz, cur);
+    return thiz.isConstructor() ? cur
+                                : getField(thiz.resultField(), staticClazz, cur);
   }
 
 

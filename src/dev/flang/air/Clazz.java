@@ -1618,7 +1618,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     var f = feature();
 
-    if (f.isUniverse() || f.returnType().isConstructorType())
+    if (f.isConstructor())
       {
         return this;
       }

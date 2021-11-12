@@ -1154,7 +1154,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
       }
 
-    if (f.returnType().isConstructorType() && f.isRoutine())
+    if (f.isConstructor())
       {
         var cod = f.code();
         var rt = cod.type();

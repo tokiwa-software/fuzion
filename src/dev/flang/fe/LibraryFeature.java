@@ -134,6 +134,14 @@ public class LibraryFeature extends AbstractFeature
     return _kind;
   }
 
+  /**
+   * Is this a routine that returns the current instance as its result?
+   */
+  public boolean isConstructor()
+  {
+    return isRoutine() && returnType().isConstructorType();
+  }
+
   public boolean isThisRef() { return _from.isThisRef(); }
   public boolean isDynamic() { return _from.isDynamic(); }
   public boolean isAnonymousInnerFeature() { return _from.isAnonymousInnerFeature(); /* NYI: remove? */ }

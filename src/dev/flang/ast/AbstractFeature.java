@@ -199,6 +199,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
           || "bool".equals(featureName().baseName()));
   }
 
+  /**
+   * Is this a routine that returns the current instance as its result?
+   */
+  public abstract boolean isConstructor();
 
   public abstract boolean isThisRef();
   public abstract boolean isDynamic();

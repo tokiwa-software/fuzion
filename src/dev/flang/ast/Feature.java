@@ -2906,6 +2906,15 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
+   * Is this a routine that returns the current instance as its result?
+   */
+  public boolean isConstructor()
+  {
+    return isRoutine() && _returnType.isConstructorType();
+  }
+
+
+  /**
    * Has the frame object of this feature a ref type?
    */
   public boolean isThisRef()
