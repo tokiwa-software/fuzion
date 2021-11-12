@@ -140,10 +140,16 @@ public class LibraryFeature extends AbstractFeature
    */
   public boolean isConstructor()
   {
-    return _kind == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR;
+    return
+      _kind == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE ||
+      _kind == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
   }
 
-  public boolean isThisRef() { return _from.isThisRef(); }
+  public boolean isThisRef()
+  {
+    return _kind == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
+  }
+
   public boolean isDynamic() { return _from.isDynamic(); }
   public boolean isAnonymousInnerFeature() { return _from.isAnonymousInnerFeature(); /* NYI: remove? */ }
   public boolean hasResult() { return _from.hasResult(); }
