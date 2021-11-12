@@ -291,6 +291,43 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * If outer is a value type, we can either store its address in the inner
+   * feature's data, or we can copy the value if it is small enough and
+   * immutable.
+   *
+   * @return true iff outerRef is the copy of an outer value type, false iff
+   * otuerRef is the address of an outer value type or a reference to an outer
+   * reference type.
+   */
+  public boolean isOuterRefCopyOfValue()
+  {
+    if (PRECONDITIONS) require
+      (outer() != null);
+
+    // if outher is a small and immutable value type, we can copy it:
+    return this.outer().isBuiltInPrimitive();  // NYI: We might copy user defined small types as well
+  }
+
+
+  /**
+   * If outer is a value type, we can either store its address in the inner
+   * feature's data, or we can copy the value if it is small enough and
+   * immutable.
+   *
+   * @return true iff outerRef is the address of an outer value type, false iff
+   * otuerRef is the address of an outer value type or a reference to an outer
+   * reference type.
+   */
+  public boolean isOuterRefAdrOfValue()
+  {
+    if (PRECONDITIONS) require
+      (outer() != null);
+
+    return !this.outer().isThisRef() && !isOuterRefCopyOfValue();
+  }
+
+
+  /**
    * Is this a routine that returns the current instance as its result?
    */
   public abstract boolean isConstructor();
@@ -335,12 +372,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract AbstractFeature resultField();
   public abstract Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res);
   public abstract AbstractFeature outerRef();
-  public abstract boolean isOuterRefAdrOfValue();
   public abstract AbstractFeature get(Resolution res, String qname);
   public abstract Type[] argTypes();
 
   // following are used in IR/Clazzes middle end or later only:
-  public abstract boolean isOuterRefCopyOfValue();
   public abstract AbstractFeature outerRefOrNull();
   public abstract void visit(FeatureVisitor v);
   public abstract boolean isOpenGenericField();

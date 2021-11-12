@@ -176,12 +176,10 @@ public class LibraryFeature extends AbstractFeature
   public AbstractFeature resultField() { return _from.resultField(); }
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res) { return _from.allInnerAndInheritedFeatures(res); }
   public AbstractFeature outerRef() { return _from.outerRef(); }
-  public boolean isOuterRefAdrOfValue() { return _from.isOuterRefAdrOfValue(); }
   public AbstractFeature get(Resolution res, String qname) { return _from.get(res, qname); }
   public Type[] argTypes() { return _from.argTypes(); }
 
   // following are used in IR/Clazzes middle end or later only:
-  public boolean isOuterRefCopyOfValue() { return _from.isOuterRefCopyOfValue(); }
   public AbstractFeature outerRefOrNull() { return _from.outerRefOrNull(); }
   public void visit(FeatureVisitor v) { _from.visit(v); }
   public boolean isOpenGenericField() { return _from.isOpenGenericField(); }

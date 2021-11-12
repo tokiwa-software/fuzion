@@ -2894,43 +2894,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * If outer is a value type, we can either store its address in the inner
-   * feature's data, or we can copy the value if it is small enough and
-   * immutable.
-   *
-   * @return true iff outerRef is the copy of an outer value type, false iff
-   * otuerRef is the address of an outer value type or a reference to an outer
-   * reference type.
-   */
-  public boolean isOuterRefCopyOfValue()
-  {
-    if (PRECONDITIONS) require
-      (_outer != null);
-
-    // if outher is a small and immutable value type, we can copy it:
-    return this._outer.isBuiltInPrimitive();  // NYI: We might copy user defined small types as well
-  }
-
-
-  /**
-   * If outer is a value type, we can either store its address in the inner
-   * feature's data, or we can copy the value if it is small enough and
-   * immutable.
-   *
-   * @return true iff outerRef is the address of an outer value type, false iff
-   * otuerRef is the address of an outer value type or a reference to an outer
-   * reference type.
-   */
-  public boolean isOuterRefAdrOfValue()
-  {
-    if (PRECONDITIONS) require
-      (_outer != null);
-
-    return !this._outer.isThisRef() && !isOuterRefCopyOfValue();
-  }
-
-
-  /**
    * Add implicit field to the outer feature of this.
    */
   public void addOuterRef(Resolution res)
