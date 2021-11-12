@@ -169,7 +169,6 @@ public class LibraryFeature extends AbstractFeature
   public List<AbstractFeature> arguments() { return _from.arguments(); }
   public FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir) { return _from.handDown(res, f, fn, p, heir); }
   public Type[] handDown(Resolution res, Type[] a, AbstractFeature heir) { return _from.handDown(res, a, heir); }
-  public AbstractFeature select(Resolution res, int i) { return _from.select(res, i); }
   public Type resultType() { return _from.resultType(); }
   public void checkNoClosureAccesses(Resolution res, SourcePosition errorPos) { _from.checkNoClosureAccesses(res, errorPos); }
   public boolean inheritsFrom(AbstractFeature parent) { return _from.inheritsFrom(parent); }

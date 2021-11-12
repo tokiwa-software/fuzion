@@ -235,6 +235,20 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     return resultType();
   }
 
+  /**
+   * For fields of open generic type, this creates actual fields for the actual
+   * generic argument.
+   *
+   * @param res Resolution instance use to resolve this for types.
+   *
+   * @param i the index of the actual generic argument
+   *
+   * @return the field that corresponds to the i-th actual generic argument.
+   */
+  AbstractFeature select(Resolution res, int i)
+  {
+    return select(i);
+  }
 
   /**
    * Check if this is a built in primitive.  For these, the type of an outer
@@ -298,7 +312,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract List<AbstractFeature> arguments();
   public abstract FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir);
   public abstract Type[] handDown(Resolution res, Type[] a, AbstractFeature heir);
-  public abstract AbstractFeature select(Resolution res, int i);
   public abstract Type resultType();
   public abstract void checkNoClosureAccesses(Resolution res, SourcePosition errorPos);
   public abstract boolean inheritsFrom(AbstractFeature parent);

@@ -3071,7 +3071,7 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return the field that corresponds to the i-th actual generic argument.
    */
-  public AbstractFeature select(Resolution res, int i)
+  AbstractFeature select(Resolution res, int i)
   {
     if (PRECONDITIONS) require
       (isOpenGenericField(),
