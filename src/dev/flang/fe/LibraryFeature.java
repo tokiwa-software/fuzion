@@ -84,7 +84,7 @@ public class LibraryFeature extends AbstractFeature
   /**
    * cached result of kind()
    */
-  private final Feature.Kind _kind;
+  private final int _kind;
 
 
   /**
@@ -110,7 +110,7 @@ public class LibraryFeature extends AbstractFeature
 
     var i = index;
     var d = lib.data();
-    var ko = d.get(i);    i = i + 1; _kind = AbstractFeature.Kind.from(ko);
+    var ko = d.get(i);    i = i + 1; _kind = ko;
     var l  = d.getInt(i); i = i + 4; var bytes = new byte[l];
     d.get(i, bytes);      i = i + l;
     var ac = d.getInt(i); i = i + 4;
@@ -131,7 +131,8 @@ public class LibraryFeature extends AbstractFeature
    */
   public Kind kind()
   {
-    return _kind;
+    return isConstructor() ? AbstractFeature.Kind.Routine
+                           : AbstractFeature.Kind.from(_kind);
   }
 
   /**
@@ -139,7 +140,7 @@ public class LibraryFeature extends AbstractFeature
    */
   public boolean isConstructor()
   {
-    return isRoutine() && returnType().isConstructorType();
+    return _kind == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR;
   }
 
   public boolean isThisRef() { return _from.isThisRef(); }

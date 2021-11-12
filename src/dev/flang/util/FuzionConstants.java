@@ -40,6 +40,9 @@ public class FuzionConstants extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
+  /*----------------------  special feature names  ----------------------*/
+
+
   /**
    * Artificial name of universe feature.
    */
@@ -76,6 +79,15 @@ public class FuzionConstants extends ANY
    * disambiguate different (value) types.
    */
   public static final String CHOICE_TAG_NAME = "#tag";
+
+
+  /*-----------------  special values used in MIR file  -----------------*/
+
+  /**
+   * feature kind value for constructor routines
+   */
+  public static int MIR_FILE_KIND_CONSTRUCTOR = 5;
+
 
 }
 

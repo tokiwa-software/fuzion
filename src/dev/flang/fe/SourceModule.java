@@ -1244,7 +1244,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
   void collectFeature(DOutputStream o, Feature f) throws IOException
   {
     var ix = o.offset();
-    var k = f.kind().ordinal();
+    var k = f.isConstructor() ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR : f.kind().ordinal();
+    check
+      (k >= 0,
+       f.isConstructor() || k < FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR);
     var n = f.featureName();
     var utf8Name = n.baseName().getBytes(StandardCharsets.UTF_8);
     o.write(k);
