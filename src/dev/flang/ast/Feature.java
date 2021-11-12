@@ -392,7 +392,7 @@ public class Feature extends AbstractFeature implements Stmnt
          Consts.VISIBILITY_INVISIBLE,
          0,
          r,
-         new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + uniqueAnonymousFeatureId),
+         new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),
          FormalGenerics.NONE,
          new List<Feature>(),
          i,
