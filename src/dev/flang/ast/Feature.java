@@ -901,11 +901,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   boolean hasResultField()
   {
-    return
-      (_impl.kind_ == Impl.Kind.RoutineDef) ||
-      (_impl.kind_ == Impl.Kind.Routine &&
-       !_returnType.isConstructorType() &&
-       _returnType != NoType.INSTANCE);
+    return isRoutine() && !isConstructor();
   }
 
 
@@ -2088,7 +2084,7 @@ public class Feature extends AbstractFeature implements Stmnt
     Feature result = resultField_;
 
     if (POSTCONDITIONS) ensure
-      (hasResultField() == (result != null));
+      (Errors.count() > 0 || hasResultField() == (result != null));
     return result;
   }
 
@@ -2914,7 +2910,9 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public boolean isConstructor()
   {
-    return isRoutine() && _returnType.isConstructorType();
+    return isRoutine() && _returnType.isConstructorType() ||
+      // special handling if this is called before resolveDeclarations:
+      !state().atLeast(State.RESOLVING_DECLARATIONS) && _impl.kind_ == Impl.Kind.Routine && _returnType == NoType.INSTANCE;
   }
 
 
