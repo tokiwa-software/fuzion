@@ -218,6 +218,25 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * In case this has not been resolved for types yet, do so. Next, try to
+   * determine the result type of this feature. If the type is not explicit, but
+   * needs to be inferenced, the result might still be null. Inferenced types
+   * become available once this is in state RESOLVED_TYPES.
+   *
+   * @param res Resolution instance use to resolve this for types.
+   *
+   * @param generics the generics argument to be passed to resultTypeRaw
+   *
+   * @return the result type, Types.resulved.t_unit if none and null in case the
+   * type must be inferenced and is not available yet.
+   */
+  Type resultTypeIfPresent(Resolution res, List<Type> generics)
+  {
+    return resultType();
+  }
+
+
+  /**
    * Check if this is a built in primitive.  For these, the type of an outer
    * reference for inner features is not a reference, but a copy of the value
    * itself since there are no inner features to modify the value.
@@ -280,7 +299,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir);
   public abstract Type[] handDown(Resolution res, Type[] a, AbstractFeature heir);
   public abstract AbstractFeature select(Resolution res, int i);
-  protected abstract Type resultTypeIfPresent(Resolution res, List<Type> generics);
   public abstract Type resultType();
   public abstract void checkNoClosureAccesses(Resolution res, SourcePosition errorPos);
   public abstract boolean inheritsFrom(AbstractFeature parent);

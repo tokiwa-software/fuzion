@@ -2645,7 +2645,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * @return the result type, Types.resulved.t_unit if none and null in case the
    * type must be inferenced and is not available yet.
    */
-  protected Type resultTypeIfPresent(Resolution res, List<Type> generics)
+  Type resultTypeIfPresent(Resolution res, List<Type> generics)
   {
     if (!_state.atLeast(State.RESOLVING_TYPES))
       {
