@@ -2754,30 +2754,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Check if this is a built in primitive.  For these, the type of an outer
-   * reference for inner features is not a reference, but a copy of the value
-   * itself since there are no inner features to modify the value.
-   */
-  public boolean isBuiltInPrimitive()
-  {
-    return
-      (  _outer != null)
-      && _outer.isUniverse()
-      && (   "i8"  .equals(_featureName.baseName())
-          || "i16" .equals(_featureName.baseName())
-          || "i32" .equals(_featureName.baseName())
-          || "i64" .equals(_featureName.baseName())
-          || "u8"  .equals(_featureName.baseName())
-          || "u16" .equals(_featureName.baseName())
-          || "u32" .equals(_featureName.baseName())
-          || "u64" .equals(_featureName.baseName())
-          || "f32" .equals(_featureName.baseName())
-          || "f64" .equals(_featureName.baseName())
-          || "bool".equals(_featureName.baseName()));
-  }
-
-
-  /**
    * thisType returns the type of this feature's frame object.  This can be
    * called even if !hasThisType() since thisClazz() is used also for abstract
    * or intrinsic feature to determine the resultClazz().

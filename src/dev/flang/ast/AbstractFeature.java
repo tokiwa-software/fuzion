@@ -176,10 +176,33 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     return featureName().baseName().startsWith(FuzionConstants.CHOICE_TAG_NAME);
   }
 
+
+  /**
+   * Check if this is a built in primitive.  For these, the type of an outer
+   * reference for inner features is not a reference, but a copy of the value
+   * itself since there are no inner features to modify the value.
+   */
+  public boolean isBuiltInPrimitive()
+  {
+    return !isUniverse()
+      && outer().isUniverse()
+      && (   "i8"  .equals(featureName().baseName())
+          || "i16" .equals(featureName().baseName())
+          || "i32" .equals(featureName().baseName())
+          || "i64" .equals(featureName().baseName())
+          || "u8"  .equals(featureName().baseName())
+          || "u16" .equals(featureName().baseName())
+          || "u32" .equals(featureName().baseName())
+          || "u64" .equals(featureName().baseName())
+          || "f32" .equals(featureName().baseName())
+          || "f64" .equals(featureName().baseName())
+          || "bool".equals(featureName().baseName()));
+  }
+
+
   public abstract boolean isThisRef();
   public abstract boolean isDynamic();
   public abstract boolean isAnonymousInnerFeature();
-  public abstract boolean isBuiltInPrimitive();
   public abstract boolean hasResult();
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();
