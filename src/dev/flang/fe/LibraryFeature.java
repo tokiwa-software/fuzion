@@ -166,7 +166,6 @@ public class LibraryFeature extends AbstractFeature
   public List<Call> inherits() { return _from.inherits(); }
   public AbstractFeature outer() { return _from.outer(); }
   public Type thisType() { return _from.thisType(); }
-  public boolean hasOpenGenericsArgList() { return _from.hasOpenGenericsArgList(); }
   public List<AbstractFeature> arguments() { return _from.arguments(); }
   public FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir) { return _from.handDown(res, f, fn, p, heir); }
   public Type[] handDown(Resolution res, Type[] a, AbstractFeature heir) { return _from.handDown(res, a, heir); }

@@ -1868,38 +1868,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Check if this features argument list contains arguments of open generic
-   * type. If this is the case, then the argCount of the feature name may change
-   * when inherited.
-   */
-  public boolean hasOpenGenericsArgList()
-  {
-    boolean result = false;
-    AbstractFeature o = this;
-    while (o != null && !result)
-      {
-        for (var g : o.generics().list)
-          {
-            if (g.isOpen())
-              {
-                for (Feature a : _arguments)
-                  {
-                    Type t = a.returnType().functionReturnType();
-                    if (!t.checkedForGeneric)
-                      {
-                        a.visit(findGenerics);
-                      }
-                    result = result || t.isGenericArgument() && t.genericArgument() == g;
-                  }
-              }
-          }
-        o = o.outer();
-      }
-    return result;
-  }
-
-
-  /**
    * For a feature with given FeatureName fn that is directly inherited from
    * this through inheritance call p to heir, this determines the actual
    * FeatureName as seen in the heir feature.

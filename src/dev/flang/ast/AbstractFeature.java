@@ -178,6 +178,46 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Check if this features argument list contains arguments of open generic
+   * type. If this is the case, then the argCount of the feature name may change
+   * when inherited.
+   */
+  public boolean hasOpenGenericsArgList()
+  {
+    boolean result = false;
+    AbstractFeature o = this;
+    while (o != null && !result)
+      {
+        for (var g : o.generics().list)
+          {
+            if (g.isOpen())
+              {
+                for (AbstractFeature a : arguments())
+                  {
+                    Type t;
+                    if (a instanceof Feature af)
+                      {
+                        t = af.returnType().functionReturnType();
+                        if (!t.checkedForGeneric)
+                          {
+                            af.visit(Feature.findGenerics);
+                          }
+                      }
+                    else
+                      {
+                        t = a.resultType();
+                      }
+                    result = result || t.isGenericArgument() && t.genericArgument() == g;
+                  }
+              }
+          }
+        o = o.outer();
+      }
+    return result;
+  }
+
+
+  /**
    * Check if this is a built in primitive.  For these, the type of an outer
    * reference for inner features is not a reference, but a copy of the value
    * itself since there are no inner features to modify the value.
@@ -236,7 +276,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract List<Call> inherits();
   public abstract AbstractFeature outer();
   public abstract Type thisType();
-  public abstract boolean hasOpenGenericsArgList();
   public abstract List<AbstractFeature> arguments();
   public abstract FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir);
   public abstract Type[] handDown(Resolution res, Type[] a, AbstractFeature heir);
