@@ -355,9 +355,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   // following used in MIR or later
   public abstract Expr code();
 
-  // in FE or later
-  public abstract boolean isArtificialField();
-
   // in FUIR or later
   public abstract Contract contract();
 

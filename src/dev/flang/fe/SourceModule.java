@@ -1075,7 +1075,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                 for (var fn : fields)
                   {
                     var fi = fs.get(fn);
-                    if (f != null || fi.outer() == outer && !fi.isArtificialField())
+                    if (f != null || fi.outer() == outer && (!(fi instanceof Feature fif) || !fif.isArtificialField()))
                       {
                         fs.remove(fn);
                       }

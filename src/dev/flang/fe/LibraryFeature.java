@@ -196,9 +196,6 @@ public class LibraryFeature extends AbstractFeature
   // following used in MIR or later
   public Expr code() { return _from.code(); }
 
-  // in FE or later
-  public boolean isArtificialField() { return _from.isArtificialField(); }
-
   // in FUIR or later
   public Contract contract() { return _from.contract(); }
 
