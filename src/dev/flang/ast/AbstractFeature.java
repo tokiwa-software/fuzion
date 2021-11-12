@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Collection;
 
 import dev.flang.util.ANY;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -157,10 +158,16 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     return Feature.State.RESOLVED;
   }
 
+  /**
+   * Is this a tag field created for a choice-type?
+   */
+  public boolean isChoiceTag()
+  {
+    return featureName().baseName().startsWith(FuzionConstants.CHOICE_TAG_NAME);
+  }
 
   public abstract boolean isOuterRef();
   public abstract boolean isThisRef();
-  public abstract boolean isChoiceTag();
   public abstract boolean isDynamic();
   public abstract boolean isAnonymousInnerFeature();
   public abstract boolean isBuiltInPrimitive();
