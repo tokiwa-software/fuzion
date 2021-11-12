@@ -161,7 +161,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   /**
    * Is this a tag field created for a choice-type?
    */
-  public boolean isChoiceTag()
+  boolean isChoiceTag()
   {
     return featureName().baseName().startsWith(FuzionConstants.CHOICE_TAG_NAME);
   }

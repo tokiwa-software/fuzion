@@ -1050,7 +1050,7 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * Is this a tag field created for a choice-type?
    */
-  public boolean isChoiceTag()
+  boolean isChoiceTag()
   {
     return false;
   }
@@ -1640,7 +1640,7 @@ public class Feature extends AbstractFeature implements Stmnt
         /**
          * Is this a tag field created for a choice-type?
          */
-        public boolean isChoiceTag()
+        boolean isChoiceTag()
         {
           return true;
         }

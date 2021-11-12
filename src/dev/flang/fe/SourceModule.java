@@ -932,9 +932,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
       {
         check(Errors.count() > 0 || f.isAnonymousInnerFeature());
-        //        check(Errors.count() > 0 || !this.declaredOrInheritedFeatures_.containsKey(fn) || f.isChoiceTag());
+        check(Errors.count() > 0 || outer.isChoice() && f.isField() || !declaredOrInheritedFeatures(outer).containsKey(fn));
         declaredOrInheritedFeatures(outer).put(fn, f);
-        if (!f.isChoiceTag())  // NYI: somewhat ugly special handling of choice tags should not be needed
+        if (!outer.isChoice() || !f.isField())  // A choice does not inherit any fields
           {
             addToHeirs(outer, fn, f);
           }
