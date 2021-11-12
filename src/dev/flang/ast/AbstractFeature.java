@@ -158,6 +158,16 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     return Feature.State.RESOLVED;
   }
 
+
+  /**
+   * Check if this is an outer ref field.
+   */
+  public boolean isOuterRef()
+  {
+    return featureName().baseName().startsWith(FuzionConstants.OUTER_REF_PREFIX);
+  }
+
+
   /**
    * Is this a tag field created for a choice-type?
    */
@@ -166,7 +176,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     return featureName().baseName().startsWith(FuzionConstants.CHOICE_TAG_NAME);
   }
 
-  public abstract boolean isOuterRef();
   public abstract boolean isThisRef();
   public abstract boolean isDynamic();
   public abstract boolean isAnonymousInnerFeature();

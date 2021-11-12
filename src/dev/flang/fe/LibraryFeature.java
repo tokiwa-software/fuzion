@@ -134,10 +134,6 @@ public class LibraryFeature extends AbstractFeature
     return _kind;
   }
 
-  public boolean isOuterRef()
-  {
-    return featureName().baseName().startsWith(FuzionConstants.OUTER_REF_PREFIX);
-  }
   public boolean isThisRef() { return _from.isThisRef(); }
   public boolean isDynamic() { return _from.isDynamic(); }
   public boolean isAnonymousInnerFeature() { return _from.isAnonymousInnerFeature(); /* NYI: remove? */ }
