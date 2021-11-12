@@ -235,6 +235,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     return resultType();
   }
 
+
   /**
    * For fields of open generic type, this creates actual fields for the actual
    * generic argument.
@@ -249,6 +250,21 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     return select(i);
   }
+
+
+  /**
+   * Check that this feature and all its declared or inherited features does not
+   * contain code that would access the outer features of this feature.  If such
+   * accesses exists, report an error that this not allowed.
+   *
+   * @param errorPos the position this error should be reported at, this should
+   * be the definition of the choice type.
+   */
+  void checkNoClosureAccesses(Resolution res, SourcePosition errorPos)
+  {
+    // NYI: Check if there is any chance a library feature used in a choice makes illegal closure accesses
+  }
+
 
   /**
    * Check if this is a built in primitive.  For these, the type of an outer
@@ -313,7 +329,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir);
   public abstract Type[] handDown(Resolution res, Type[] a, AbstractFeature heir);
   public abstract Type resultType();
-  public abstract void checkNoClosureAccesses(Resolution res, SourcePosition errorPos);
   public abstract boolean inheritsFrom(AbstractFeature parent);
   public abstract List<Call> tryFindInheritanceChain(AbstractFeature ancestor);
   public abstract List<Call> findInheritanceChain(AbstractFeature ancestor);

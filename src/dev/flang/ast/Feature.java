@@ -1473,7 +1473,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * @param errorPos the position this error should be reported at, this should
    * be the definition of the choice type.
    */
-  public void checkNoClosureAccesses(Resolution res, SourcePosition errorPos)
+  void checkNoClosureAccesses(Resolution res, SourcePosition errorPos)
   {
     List<Call> closureAccesses = closureAccesses(res);
     if (!closureAccesses.isEmpty())
