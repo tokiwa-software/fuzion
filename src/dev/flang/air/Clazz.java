@@ -58,6 +58,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -274,7 +275,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Cached result of isUnitType().
    */
-  private Type.YesNo _isUnitType = Type.YesNo.dontKnow;
+  private YesNo _isUnitType = YesNo.dontKnow;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -571,16 +572,16 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isUnitType()
   {
-    if (_isUnitType != Type.YesNo.dontKnow)
+    if (_isUnitType != YesNo.dontKnow)
       {
-        return _isUnitType == Type.YesNo.yes;
+        return _isUnitType == YesNo.yes;
       }
     // Tricky: To avoid endless recursion, we set _isUnitType to No. In case we
     // have a recursive type, isUnitType() will return false, so recursion will
     // stop and the result for the recursive type will be false.
     //
     // Object layout will later report an error for this case.
-    _isUnitType = Type.YesNo.no;
+    _isUnitType = YesNo.no;
 
     if (isRef() || feature().isBuiltInPrimitive() || isVoidType())
       {
@@ -610,7 +611,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
           }
       }
-    _isUnitType = Type.YesNo.yes;
+    _isUnitType = YesNo.yes;
     return true;
   }
 

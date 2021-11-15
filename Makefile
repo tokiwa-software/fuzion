@@ -46,6 +46,7 @@ JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/SourcePosition.java \
           $(SRC)/dev/flang/util/Terminal.java \
           $(SRC)/dev/flang/util/UnicodeData.java \
+          $(SRC)/dev/flang/util/YesNo.java \
 
 JAVA_FILES_UTIL_UNICODE = \
           $(SRC)/dev/flang/util/unicode/ParseUnicodeData.java \

@@ -36,6 +36,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -169,12 +170,6 @@ public class Type extends AbstractType implements Comparable<Type>
    */
   boolean checkedForGeneric = false;
 
-  public enum YesNo
-  {
-    yes,
-    no,
-    dontKnow
-  }
 
   /**
    * Cached result of dependsOnGenerics().
