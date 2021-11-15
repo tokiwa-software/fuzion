@@ -37,7 +37,7 @@ import dev.flang.util.SourcePosition;
 /**
  * AbstractFeature is represents a Fuzion feature in the front end.  This
  * feature might either be part of the abstract syntax tree or part of a binary
- * a module file.
+ * module file.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
