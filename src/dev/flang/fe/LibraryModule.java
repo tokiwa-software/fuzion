@@ -81,6 +81,12 @@ public class LibraryModule extends Module
   final MIR _mir;
 
 
+  /**
+   * Map from offset in _data to LibraryFeatures for features in this module.
+   */
+  TreeMap<Integer, LibraryFeature> _libraryFeatures = new TreeMap<>();
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -151,12 +157,33 @@ public class LibraryModule extends Module
    * Wrap given Feature into a LibraryFeature unless it is a LibraryFeature
    * already.  In case f was wrapped before, returns the original wrapper.
    */
-  AbstractFeature libraryFeature(AbstractFeature f)
+  LibraryFeature libraryFeature(AbstractFeature f)
   {
-    return
+    return (LibraryFeature) (
       f instanceof LibraryFeature                               ? f                    :
       f instanceof Feature astF && astF._libraryFeature != null ? astF._libraryFeature
-                                                                : new LibraryFeature(this, _srcModule.data(f)._mirOffset, f);
+                                                                : libraryFeature(_srcModule.data(f)._mirOffset, (Feature) f));
+  }
+
+
+  /**
+   * Get or create LibraryFeature at given offset
+   *
+   * @param offset the offset in data()
+   *
+   * @param from the original AST Feature. NYI: Remove!
+   *
+   * @return the LibraryFeature declared at offset in this module.
+   */
+  LibraryFeature libraryFeature(int offset, Feature from)
+  {
+    var result = _libraryFeatures.get(offset);
+    if (result == null)
+      {
+        result = new LibraryFeature(this, offset, from);
+        _libraryFeatures.put(offset, result);
+      }
+    return result;
   }
 
 

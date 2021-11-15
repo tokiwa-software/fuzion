@@ -38,6 +38,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -1206,7 +1207,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var o = new DOutputStream();
     try
       {
-        collectData(o, _universe);
+        o.write(FuzionConstants.MIR_FILE_MAGIC);
+        collectData(true, o, _universe);
       }
     catch (IOException io)
       {
@@ -1219,28 +1221,44 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /**
    * Collect the binary data for features declared within given feature.
    */
-  void collectData(DOutputStream o, Feature f) throws IOException
+  void collectData(boolean real, DOutputStream o, Feature f) throws IOException
   {
     var m = declaredFeaturesOrNull(f);
-    var sz = m == null ? 0 : m.size();
-    o.writeInt(sz);
-    if (sz > 0)
+    if (m == null)
       {
-        for (var df : m.values())
+        o.writeInt(0);
+      }
+    else
+      {
+        // NYI: Calling collectFeatures twice here results in performance that
+        // is quadratic in the nesting level of the features:
+
+        // determine the size
+        var dummy = new DOutputStream();
+        collectFeatures(false, dummy, m.values());
+        var sz = dummy.offset();
+        o.writeInt(sz);
+
+        // write the actual data
+        collectFeatures(real, o, m.values());
+      }
+  }
+
+  void collectFeatures(boolean real, DOutputStream o, Collection<AbstractFeature> fs) throws IOException
+  {
+    for (var df : fs)
+      {
+        if (df instanceof Feature dff)
           {
-            if (df instanceof Feature dff)
-              {
-                collectFeature(o,dff);
-              }
+            collectFeature(real, o, dff);
           }
       }
   }
 
-
   /**
    * Collect the binary data for given feature.
    */
-  void collectFeature(DOutputStream o, Feature f) throws IOException
+  void collectFeature(boolean real, DOutputStream o, Feature f) throws IOException
   {
     var ix = o.offset();
     var k =
@@ -1257,8 +1275,31 @@ public class SourceModule extends Module implements SrcModule, MirModule
     o.write(utf8Name);                       // NYI: internal names (outer refs, statement results) are too long and waste memory
     o.writeInt(f.featureName().argCount());  // NYI: use better integer encoding
     o.writeInt(f.featureName()._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
-    collectData(o,f);
-    data(f)._mirOffset = ix;
+    collectData(real, o, f);
+    if (real)
+      {
+        data(f)._mirOffset = ix;
+        _offsetToAstFeature.put(ix, f);
+      }
+  }
+
+
+  /**
+   * Map from offset in MIR file data to the AST Feature
+   *
+   * NYI: Remove once ASTFeatures are no longer needed.
+   */
+  TreeMap<Integer, Feature> _offsetToAstFeature = new TreeMap<>();
+
+
+  /**
+   * Get the AST Feature from offset in MIR file.
+   *
+   * NYI: Remove once ASTFeatures are no longer needed.
+   */
+  Feature featureFromOffset(int offset)
+  {
+    return _offsetToAstFeature.get(offset);
   }
 
 

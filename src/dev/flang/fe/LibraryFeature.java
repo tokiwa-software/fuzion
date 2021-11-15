@@ -93,6 +93,12 @@ public class LibraryFeature extends AbstractFeature
   private final FeatureName _featureName;
 
 
+  /**
+   * cached result of outer()
+   */
+  AbstractFeature _outer = null;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -155,6 +161,76 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
+  /**
+   * Find the outer feature of this festure.
+   */
+  public AbstractFeature outer()
+  {
+    var result = _outer;
+    if (result == null)
+      {
+        result = findOuter(_libModule._mir.universe(), FuzionConstants.MIR_FILE_FIRST_FEATURE_OFFSET);
+        _outer = result;
+      }
+
+    check
+      (result.astFeature() == _from.outer().astFeature());
+
+    return result.astFeature();
+  }
+
+
+  /**
+   * Helper method for outer() to find the outer feature of this festure
+   * starting with outer which is defined in _libModule.data() at offset 'at'.
+   *
+   * @param outer the 'current' outer feature that is declared at 'at'
+   *
+   * @param at the position of outer's inner feature declarations within
+   * _libModule.data()
+   *
+   * @return the outer feature found or null if outer is not an outer feature of
+   * this.
+   */
+  private AbstractFeature findOuter(AbstractFeature outer, int at)
+  {
+    if (PRECONDITIONS) require
+      (outer != null,
+       at >= 0,
+       at < _libModule.data().limit());
+
+    AbstractFeature result = null;
+    var d = _libModule.data();
+    var sz = d.getInt(at);
+    check
+      (at+4+sz <= d.limit());
+    var i = at+4;
+    if (i <= _index && _index < i+sz)
+      {
+        while (result == null)
+          {
+            if (i == _index)
+              {
+                result = outer;
+              }
+            else
+              {
+                var o = _libModule.libraryFeature(i, _libModule._srcModule.featureFromOffset(i));
+                check(o != null);
+                i = i + 1;
+                var l  = d.getInt(i); i = i + 4;
+                i = i + l;
+                i = i + 4;
+                i = i + 4;
+                result = findOuter(o, i);
+                var sz2 = d.getInt(i); i = i + 4 + sz2;
+              }
+          }
+      }
+    return result;
+  }
+
+
   public FeatureName featureName()
   {
     return _featureName;
@@ -164,7 +240,6 @@ public class LibraryFeature extends AbstractFeature
   public FormalGenerics generics() { return _from.generics(); }
   public Generic getGeneric(String name) { return _from.getGeneric(name); }
   public List<Call> inherits() { return _from.inherits(); }
-  public AbstractFeature outer() { return _from.outer(); }
   public Type thisType() { return _from.thisType(); }
   public List<AbstractFeature> arguments() { return _from.arguments(); }
   public FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir) { return _from.handDown(res, f, fn, p, heir); }
