@@ -84,6 +84,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * The soucecode position of this type, used for error messages.
    */
   public final SourcePosition pos;
+  public SourcePosition pos() { return pos; }
 
 
   /**
@@ -105,6 +106,7 @@ public class Type extends AbstractType implements Comparable<Type>
    *
    */
   public final List<Type> _generics;
+  public final List<Type> generics() { return _generics; }
 
 
   /**

@@ -26,9 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Consts; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Type; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
 
 import dev.flang.air.Clazz;
@@ -119,7 +119,7 @@ public class Intrinsics extends ANY
              n.equals("fuzion.java.getField0"      )    )
       {
         var statique = n.equals("fuzion.java.getStaticField0");
-        var actualGenerics = innerClazz._type._generics;
+        var actualGenerics = innerClazz._type.generics();
         if ((actualGenerics == null) || (actualGenerics.size() != 1))
           {
             System.err.println("fuzion.java.getStaticField called with wrong number of actual generic arguments");
@@ -148,7 +148,7 @@ public class Intrinsics extends ANY
         var virtual     = n.equals("fuzion.java.callV0");
         var statique    = n.equals("fuzion.java.callS0");
         var constructor = n.equals("fuzion.java.callC0");
-        var actualGenerics = innerClazz._type._generics;
+        var actualGenerics = innerClazz._type.generics();
         Clazz resultClazz = innerClazz.actualClazz(actualGenerics.getFirst());
         result = (args) ->
           {
@@ -608,7 +608,7 @@ public class Intrinsics extends ANY
   }
 
 
-  static Type elementType(Clazz arrayClazz)
+  static AbstractType elementType(Clazz arrayClazz)
   {
     // NYI: Properly determine generic argument type of array
     var arrayType = arrayClazz._type;
@@ -618,7 +618,7 @@ public class Intrinsics extends ANY
       }
     else
       {
-        return arrayType._generics.getFirst();
+        return arrayType.generics().getFirst();
       }
   }
 

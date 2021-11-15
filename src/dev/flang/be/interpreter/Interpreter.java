@@ -45,6 +45,7 @@ import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Assign; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Block; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.BoolConst; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -64,7 +65,6 @@ import dev.flang.ast.Old; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Stmnt; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.StrConst; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Tag; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Type; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Unbox; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Universe; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -930,7 +930,7 @@ public class Interpreter extends ANY
   private static void setChoiceField(AbstractFeature thiz,
                                      Clazz choiceClazz,
                                      LValue choice,
-                                     Type staticTypeOfValue,
+                                     AbstractType staticTypeOfValue,
                                      Value v)
   {
     if (PRECONDITIONS) require
@@ -956,7 +956,7 @@ public class Interpreter extends ANY
         setField(thiz.choiceTag(), choiceClazz, choice, new i32Value(tag));
       }
     check
-      (vclazz._type.isAssignableFrom(staticTypeOfValue));
+      (vclazz._type.isAssignableFrom(staticTypeOfValue.astType()));
     setFieldSlot(thiz, vclazz, valSlot, v);
   }
 

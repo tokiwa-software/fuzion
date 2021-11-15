@@ -389,9 +389,9 @@ public class FUIR extends IR
   {
     var cc = _clazzIds.get(cl);
     var res = cc.feature().featureName().baseName();
-    if (!cc._type._generics.isEmpty())
+    if (!cc._type.generics().isEmpty())
       {
-        res = res + cc._type._generics.toString("<",",",">");
+        res = res + cc._type.generics().toString("<",",",">");
       }
     return res;
   }
@@ -938,7 +938,7 @@ hw25 is
     if (result == null)
       {
         Errors.fatal((e instanceof Stmnt s) ? s.pos() :
-                     (e instanceof Clazz z) ? z._type.pos : null,
+                     (e instanceof Clazz z) ? z._type.pos() : null,
                      "Stmnt not supported in FUIR.codeAt", "Statement class: " + e.getClass());
         result = ExprKind.Current; // keep javac from complaining.
       }

@@ -34,6 +34,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
+import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Assign; // NYI: remove dependency!
 import dev.flang.ast.Block; // NYI: remove dependency!
 import dev.flang.ast.BoolConst; // NYI: remove dependency!
@@ -52,7 +53,6 @@ import dev.flang.ast.Match; // NYI: remove dependency!
 import dev.flang.ast.Old; // NYI: remove dependency!
 import dev.flang.ast.StrConst; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
-import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
 import dev.flang.ast.Universe; // NYI: remove dependency!
@@ -98,7 +98,7 @@ public class Clazzes extends ANY
    * NYI: One of these maps is probably redundant!
    */
   private static final Map<Clazz, Clazz> clazzes = new TreeMap<>();
-  private static final Map<Type, Clazz> _clazzesForTypes_ = new TreeMap<>();
+  private static final Map<AbstractType, Clazz> _clazzesForTypes_ = new TreeMap<>();
 
   /**
    * All clazzes found so far that have not been analyzed yet for clazzes that
@@ -109,7 +109,7 @@ public class Clazzes extends ANY
 
   static interface TypF
   {
-    Type get();
+    AbstractType get();
   }
   public static class OnDemandClazz
   {
@@ -279,10 +279,10 @@ public class Clazzes extends ANY
    * @return the existing or newly created Clazz that represents actualType
    * within outer.
    */
-  public static Clazz create(Type actualType, Clazz outer)
+  public static Clazz create(AbstractType actualType, Clazz outer)
   {
     if (PRECONDITIONS) require
-      (actualType == Types.intern(actualType),
+      (actualType.astType() == Types.intern(actualType.astType()),
        Errors.count() > 0 || !actualType.isGenericArgument(),
        Errors.count() > 0 || actualType.isFreeFromFormalGenerics());
 
@@ -309,17 +309,17 @@ public class Clazzes extends ANY
                 // NYI: recursive chain of value types should be detected during
                 // types checking phase!
                 StringBuilder chain = new StringBuilder();
-                chain.append("1: "+actualType+" at "+actualType.pos.show()+"\n");
+                chain.append("1: "+actualType+" at "+actualType.pos().show()+"\n");
                 int i = 2;
                 Clazz c = outer;
                 while (c._type != actualType)
                   {
-                    chain.append(""+i+": "+c._type+" at "+c._type.pos.show()+"\n");
+                    chain.append(""+i+": "+c._type+" at "+c._type.pos().show()+"\n");
                     c = c._outer;
                     i++;
                   }
-                chain.append(""+i+": "+c._type+" at "+c._type.pos.show()+"\n");
-                Errors.error(actualType.pos,
+                chain.append(""+i+": "+c._type+" at "+c._type.pos().show()+"\n");
+                Errors.error(actualType.pos(),
                              "Recursive value type is not allowed",
                              "Value type " + actualType + " equals type of outer feature.\n"+
                              "The chain of outer types that lead to this recursion is:\n"+
@@ -357,7 +357,7 @@ public class Clazzes extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || actualType.compareToIgnoreOuter(result._type) == 0,
+      (Errors.count() > 0 || actualType.compareToIgnoreOuter(result._type.astType()) == 0,
        outer == result._outer || true /* NYI: Check why this sometimes does not hold */);
 
     return result;
@@ -757,7 +757,7 @@ public class Clazzes extends ANY
       {
         if (ft.isRef() ||
             (ft._type.isChoice() &&
-             !ft._type.isAssignableFrom(vc._type) &&
+             !ft._type.isAssignableFrom(vc._type.astType()) &&
              ft._type.isAssignableFrom(vc._type.asRef())))
           {
             rc = vc.asRef();
@@ -907,7 +907,7 @@ public class Clazzes extends ANY
       }
     else
       {
-        for (Type caseType : c.types)
+        for (var caseType : c.types)
           {
             outerClazz.setRuntimeClazz(i, outerClazz.actualClazz(caseType));
             i++;
@@ -1083,7 +1083,7 @@ public class Clazzes extends ANY
    *
    * @return
    */
-  public static Clazz clazz(Type thiz)
+  public static Clazz clazz(AbstractType thiz)
   {
     if (PRECONDITIONS) require
       (!thiz.isOpenGeneric(),
@@ -1099,7 +1099,7 @@ public class Clazzes extends ANY
         outerClazz = null;
       }
 
-    Type t = Types.intern(thiz);
+    var t = Types.intern(thiz.astType());
     var result = _clazzesForTypes_.get(t);
     if (result == null)
       {
@@ -1123,7 +1123,7 @@ public class Clazzes extends ANY
    *
    * @return
    */
-  public static Clazz clazzWithSpecificOuter(Type thiz, Clazz outerClazz)
+  public static Clazz clazzWithSpecificOuter(AbstractType thiz, Clazz outerClazz)
   {
     if (PRECONDITIONS) require
       (!thiz.isOpenGeneric(),
@@ -1138,7 +1138,7 @@ public class Clazzes extends ANY
         outerClazz = clazzWithSpecificOuter(thiz.outer(), outerClazz._outer);
       }
 
-    Type t = Types.intern(thiz);
+    var t = Types.intern(thiz.astType());
     result = create(t, outerClazz);
 
     return result;
