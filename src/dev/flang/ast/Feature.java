@@ -1818,7 +1818,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public List<Call> tryFindInheritanceChain(AbstractFeature ancestor)
   {
     List<Call> result;
-    if (this == ancestor)
+    if (this.sameAs(ancestor))
       {
         result = new List<Call>();
       }
@@ -2997,7 +2997,7 @@ public class Feature extends AbstractFeature implements Stmnt
       (_state.atLeast(State.LOADED),
        parent != null && parent.state().atLeast(State.LOADED));
 
-    if (this == parent)
+    if (this.sameAs(parent))
       {
         return true;
       }

@@ -176,7 +176,7 @@ public class LibraryFeature extends AbstractFeature
     check
       (result.astFeature() == _from.outer().astFeature());
 
-    return result.astFeature();
+    return result;
   }
 
 
