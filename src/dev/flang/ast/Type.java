@@ -39,11 +39,12 @@ import dev.flang.util.SourcePosition;
 
 
 /**
- * Type <description>
+ * Type represents the abstract syntax tree of a Fuzion type parsed from source
+ * code.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Type extends ANY implements Comparable<Type>
+public class Type extends AbstractType implements Comparable<Type>
 {
 
   //  static int counter;  {counter++; if ((counter&(counter-1))==0) { System.out.println("######################"+counter+" "+this.getClass()); if(false)Thread.dumpStack(); } }
