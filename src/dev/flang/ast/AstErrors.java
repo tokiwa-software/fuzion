@@ -86,6 +86,10 @@ public class AstErrors extends ANY
   {
     return st(t.toString());
   }
+  static String s(ReturnType rt)
+  {
+    return st(rt.toString());
+  }
   static String st(String t)
   {
     return type(t);
@@ -905,6 +909,137 @@ public class AstErrors extends ANY
           "To solve this, declare an explicit type for the target field, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
   }
 
-}
+  static void declaredInWrongEnv(SourcePosition pos, List<String> qname, AbstractFeature outer)
+  {
+    error(pos,
+          "Feature is declared in wrong environment",
+          "Feature " + sn(qname) + " is declared in wrong environment " + s(outer));
+  }
 
+  static void repeatedInheritanceOfChoice(SourcePosition pos, SourcePosition lastP)
+  {
+    error(pos,
+          "Repeated inheritance of choice is not permitted",
+          "A choice feature must inherit directly from choice exactly once.\n" +
+          "Previous inheritance from choice at " + lastP);
+  }
+
+  static void cannotInheritFromChoice(SourcePosition pos)
+  {
+    error(pos,
+          "Cannot inherit from choice feature",
+          "Choice must be leaf.");
+
+  }
+
+  static void recursiveInheritance(SourcePosition pos, Feature f, String cycle)
+  {
+    error(pos,
+          "Recursive inheritance in feature " + s(f),
+          cycle);
+  }
+
+  static void choiceMustNotAccessSurroundingScope(SourcePosition pos, String accesses)
+  {
+    error(pos,
+          "Choice type must not access fields of surrounding scope.",
+          "A closure cannot be built for a choice type. Forbidden accesses occur at \n" +
+          accesses);
+  }
+
+  static void choiceMustNotBeRef(SourcePosition pos)
+  {
+    error(pos,
+          "choice feature must not be ref",
+          "A choice feature must be a value type since it is not constructed ");
+  }
+
+  static void choiceMustNotContainFields(SourcePosition pos, AbstractFeature f)
+  {
+    error(pos,
+          "Choice must not contain any fields",
+          "Field " + s(f) + " is not permitted in choice.\n" +
+          "Field declared at "+ f.pos().show());
+  }
+
+  static void choiceMustNotBeField(SourcePosition pos)
+  {
+    error(pos,
+          "Choice feature must not be a field",
+          "A choice feature must be a normal feature with empty code section");
+  }
+
+  static void choiceMustNotBeRoutine(SourcePosition pos)
+  {
+    error(pos,
+          "Choice feature must not be defined as a routine with a result",
+          "A choice feature must be a normal feature with empty code section");
+  }
+
+  static void choiceMustNotContainCode(SourcePosition pos)
+  {
+    error(pos,
+          "Choice feature must not contain any code",
+          "A choice feature must be a normal feature with empty code section");
+  }
+
+  static void choiceMustNotBeAbstract(SourcePosition pos)
+  {
+    error(pos,
+          "Choice feature must not be abstract",
+          "A choice feature must be a normal feature with empty code section");
+  }
+
+  static void choiceMustNotBeIntrinsic(SourcePosition pos)
+  {
+    error(pos,
+          "Choice feature must not be intrinsic",
+          "A choice feature must be a normal feature with empty code section");
+  }
+
+  static void choiceMustNotReferToOwnValueType(SourcePosition pos, AbstractType t)
+  {
+    error(pos,
+          "Choice cannot refer to its own value type as one of the choice alternatives",
+          "Embedding a choice type in itself would result in an infinitely large type.\n" +
+          "Faulty generic argument: " + s(t) + " at " + t.pos().show());
+  }
+
+  static void choiceMustNotReferToOuterValueType(SourcePosition pos, AbstractType t)
+  {
+    error(pos,
+          "Choice cannot refer to an outer value type as one of the choice alternatives",
+          "Embedding an outer value in a choice type would result in infinitely large type.\n" +
+          "Faulty generic argument: " + s(t) + " at " + t.pos().show());
+  }
+
+  static void fieldDefMustNotHaveType(SourcePosition pos, AbstractFeature f, ReturnType rt, Expr initialValue)
+  {
+    error(pos,
+          "Field definition using " + ss(":=")+ " must not specify an explicit type",
+          "Definition of field: " + s(f) + "\n" +
+          "Explicit type given: " + s(rt) + "\n" +
+          "Defining expression: " + s(initialValue));
+  }
+
+  static void routineDefMustNotHaveType(SourcePosition pos, AbstractFeature f, ReturnType rt, Expr code)
+  {
+    error(pos,
+          "Function definition using " + ss("=>") + " must not specify an explicit type",
+          "Definition of function: " + s(f) + "\n" +
+          "Explicit type given: " + s(rt) + "\n" +
+          "Defining expression: " + s(code));
+  }
+
+  static void forwardTypeInference(SourcePosition pos, AbstractFeature f, SourcePosition at)
+  {
+    // NYI: It would be nice to output the whole cycle here as part of the detail message
+    error(pos,
+          "Illegal forward or cyclic type inference",
+          "The definition of a field using " + ss(":=") + ", or of a feature or function\n" +
+          "using " + ss("=>") + " must not create cyclic type dependencies.\n"+
+          "Referenced feature: " + s(f) + " at " + at.show());
+  }
+
+}
 /* end of file */

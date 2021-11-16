@@ -732,9 +732,7 @@ public class Feature extends AbstractFeature implements Stmnt
         Iterator<String> it = _qname.iterator();
         if (!checkNames(this, it) || it.hasNext())
           {
-            Errors.error(_pos,
-                         "Feature is declared in wrong environment",
-                         "Feature " + _qname + " is declared in wrong environment " + _outer.qualifiedName());
+            AstErrors.declaredInWrongEnv(_pos, _qname, _outer);
           }
       }
     if (!isResultField() && _qname.getLast().equals(FuzionConstants.RESULT_NAME))
@@ -995,10 +993,7 @@ public class Feature extends AbstractFeature implements Stmnt
               {
                 if (lastP != null)
                   {
-                    Errors.error(p.pos,
-                                 "Repeated inheritance of choice is not permitted",
-                                 "A choice feature must inherit directly from choice exactly one time.\n" +
-                                 "Previous inheritance from choice at " + lastP.pos);
+                    AstErrors.repeatedInheritanceOfChoice(p.pos, lastP.pos);
                   }
                 lastP = p;
                 result = p.generics;
@@ -1181,9 +1176,7 @@ public class Feature extends AbstractFeature implements Stmnt
           {
             cycle.append(( c + 1 < 10 ? " " : "") + (c + 1) + cyclicInhData.get(cyclicInhData.size() - c));
           }
-        Errors.error(_pos,
-                     "Recursive inheritance in feature " + qualifiedName(),
-                     cycle.toString());
+        AstErrors.recursiveInheritance(_pos, this, cycle.toString());
         cyclicInhData.clear();
       }
     else
@@ -1484,10 +1477,7 @@ public class Feature extends AbstractFeature implements Stmnt
           {
             accesses.append(c.pos.show()).append("\n");
           }
-        Errors.error(errorPos,
-                     "Choice type must not access fields of surrounding scope.",
-                     "A closure cannot be built for a choice type. Forbidden accesses occur at \n" +
-                     accesses);
+        AstErrors.choiceMustNotAccessSurroundingScope(errorPos, accesses.toString());
       }
   }
 
@@ -1532,9 +1522,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
     if (isThisRef())
       {
-        Errors.error(_pos,
-                     "choice feature must not be ref",
-                     "A choice feature must be a value type since it is not constructed ");
+        AstErrors.choiceMustNotBeRef(_pos);
       }
 
     for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
@@ -1542,10 +1530,7 @@ public class Feature extends AbstractFeature implements Stmnt
         // choice type must not have any fields
         if (p.isField() && !p.isOuterRef() && !p.isChoiceTag())
           {
-            Errors.error(_pos,
-                         "Choice must not contain any fields",
-                         "Field >>" + p.qualifiedName() + "<< is not permitted in choice.\n" +
-                         "Field declared at "+ p.pos().show());
+            AstErrors.choiceMustNotContainFields(_pos,p);
           }
       }
     // choice type must not contain any code, but may contain inner features
@@ -1556,40 +1541,30 @@ public class Feature extends AbstractFeature implements Stmnt
       case FieldActual:  // a field with implicit type taken from actual argument to call
       case Field:        // a field
         {
-          Errors.error(_pos,
-                       "Choice feature must not be a field",
-                       "A choice feature must be a normal feature with empty code section");
+          AstErrors.choiceMustNotBeField(_pos);
           break;
         }
       case RoutineDef:  // normal feature with code and implicit result type
         {
-          Errors.error(_pos,
-                       "Choice feature must not be defined as a function",
-                       "A choice feature must be a normal feature with empty code section");
+          AstErrors.choiceMustNotBeRoutine(_pos);
           break;
         }
       case Routine:      // normal feature with code
         {
           if (!_impl.containsOnlyDeclarations())
             {
-              Errors.error(_pos,
-                           "Choice feature must not contain any code",
-                           "A choice feature must be a normal feature with empty code section");
+              AstErrors.choiceMustNotContainCode(_pos);
             }
           break;
         }
       case Abstract:
         { // not ok
-          Errors.error(_pos,
-                       "Choice feature must not be abstract",
-                       "A choice feature must be a normal feature with empty code section");
+          AstErrors.choiceMustNotBeAbstract(_pos);
           break;
         }
       case Intrinsic:
         {
-          Errors.error(_pos,
-                       "Choice feature must not be intrinsic",
-                       "A choice feature must be a normal feature with empty code section");
+          AstErrors.choiceMustNotBeIntrinsic(_pos);
           break;
         }
       }
@@ -1600,10 +1575,7 @@ public class Feature extends AbstractFeature implements Stmnt
           {
             if (t == thisType())
               {
-                Errors.error(_pos,
-                             "Choice cannot refer to its own value type as one of the choice alternatives",
-                             "Embedding a choice type in itself would result in an infinitely large type.\n" +
-                             "Faulty generic argument: "+t+" at "+t.pos().show());
+                AstErrors.choiceMustNotReferToOwnValueType(_pos, t);
                 thisType_ = Types.t_ERROR;
                 eraseChoiceGenerics();
               }
@@ -1612,10 +1584,7 @@ public class Feature extends AbstractFeature implements Stmnt
               {
                 if (t == o.thisType())
                   {
-                    Errors.error(_pos,
-                                 "Choice cannot refer to an outer value type as one of the choice alternatives",
-                                 "Embedding an outer value in a choice type would result in infinitely large type.\n" +
-                                 "Faulty generic argument: "+t+" at "+t.pos().show());
+                    AstErrors.choiceMustNotReferToOuterValueType(_pos, t);
                     // o.thisType_ = Types.t_ERROR;  NYI: Do we need this?
                     eraseChoiceGenerics();
                   }
@@ -1672,9 +1641,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
         if (cf != null && cf.isChoice() && !cf.sameAs(Types.resolved.f_choice))
           {
-            Errors.error(p.pos,
-                         "Cannot inherit from choice feature",
-                         "Choice must be leaf.");
+            AstErrors.cannotInheritFromChoice(p.pos);
           }
       }
     if (isChoice())
@@ -2276,22 +2243,14 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         if ((_returnType != NoType.INSTANCE))
           {
-            Errors.error(_pos,
-                         "Field definition using := must not specify an explicit type",
-                         "Definition of field: " + qualifiedName() + "\n" +
-                         "Explicit type given: " + _returnType + "\n" +
-                         "Defining expression: " + _impl._initialValue);
+            AstErrors.fieldDefMustNotHaveType(_pos, this, _returnType, _impl._initialValue);
           }
       }
     if (_impl.kind_ == Impl.Kind.RoutineDef)
       {
         if ((_returnType != NoType.INSTANCE))
           {
-            Errors.error(_pos,
-                         "Function definition using => must not specify an explicit type",
-                         "Definition of function: " + qualifiedName() + "\n" +
-                         "Explicit type given: " + _returnType + "\n" +
-                         "Defining expression: " + _impl._code);
+            AstErrors.routineDefMustNotHaveType(_pos, this, _returnType, _impl._code);
           }
       }
     if (_impl._initialValue != null)
@@ -2713,12 +2672,7 @@ public class Feature extends AbstractFeature implements Stmnt
     var result = resultTypeIfPresent(res, generics);
     if (result == null)
       {
-        // NYI: It would be nice to output the whole cycle here as part of the detail message
-        Errors.error(rpos,
-                     "Illegal forward or cyclic type inference",
-                     "The definition of a field using \":=\", or of a feature or function\n" +
-                     "using \"=>\" must not create cyclic type dependencies.\n"+
-                     "Referenced feature: " + qualifiedName() + " at " + _pos.show());
+        AstErrors.forwardTypeInference(rpos, this, _pos);
         result = Types.t_ERROR;
       }
     return result;
