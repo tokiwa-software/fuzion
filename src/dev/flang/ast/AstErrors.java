@@ -1144,5 +1144,36 @@ public class AstErrors extends ANY
           "actual type " + s(g) + "\n");
   }
 
+  static void destructuringForGeneric(SourcePosition pos, AbstractType t, List<String> names)
+  {
+    error(pos,
+          "Destructuring not possible for value whose type is a generic argument.",
+          "Type of expression is " + s(t) + "\n" +
+          "Cannot destructure value of generic argument type into (" + sn(names) + ")");
+  }
+
+  static void destructuringRepeatedEntry(SourcePosition pos, String n, int count)
+  {
+    error(pos,
+          "Repeated entry in destructuring",
+          "Variable " + ss(n) + " appears " + count + " times.");
+  }
+
+
+  static void destructuringMisMatch(SourcePosition pos, List<String> fieldNames, List<String> names)
+  {
+    int fn = fieldNames.size();
+    int nn = names.size();
+    error(pos,
+          "Destructuring mismatch between number of visible fields and number of target variables.",
+          "Found " + ((fn == 0) ? "no visible argument fields" :
+                      (fn == 1) ? "one visible argument field" :
+                      "" + fn + " visible argument fields"     ) + " " + sn(fieldNames) + "\n" +
+          (nn == 0 ? "while there are no destructuring variables" :
+           nn == 1 ? "while there is one destructuring variable: " + sn(names)
+           : "while there are " + nn + " destructuring variables: " + sn(names)) + ".\n"
+          );
+  }
+
 }
 /* end of file */

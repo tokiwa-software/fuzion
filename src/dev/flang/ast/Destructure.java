@@ -31,7 +31,6 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import dev.flang.util.ANY;
-import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -282,10 +281,7 @@ public class Destructure extends ANY implements Stmnt
     var t = _value.type();
     if (t.isGenericArgument())
       {
-        Errors.error(_pos,
-                     "Destructuring not possible for value whose type is a generic argument.",
-                     "Type of expression is " + t + "\n" +
-                     "Cannot destructure value of generic argument type into (" + _names + ")");
+        AstErrors.destructuringForGeneric(_pos, t, _names);
       }
     else if (t != Types.t_ERROR)
       {
@@ -293,9 +289,7 @@ public class Destructure extends ANY implements Stmnt
           .stream()
           .filter(n -> !n.equals("_"))
           .filter(n -> Collections.frequency(_names, n) > 1)
-          .forEach(n -> Errors.error(_pos,
-                                     "Repeated entry in destructuring",
-                                     "Variable " + n + " appears "+Collections.frequency(_names, n)+" times."));
+          .forEach(n -> AstErrors.destructuringRepeatedEntry(_pos, n, Collections.frequency(_names, n)));
         Feature tmp = new Feature(res,
                                   _pos,
                                   Consts.VISIBILITY_PRIVATE,
@@ -334,17 +328,7 @@ public class Destructure extends ANY implements Stmnt
           }
         if (fieldNames.size() != _names.size())
           {
-            int fn = fieldNames.size();
-            int nn = _names.size();
-            Errors.error(_pos,
-                         "Destructuring mismatch between number of visible fields and number of target variables.",
-                         "Found " + ((fn == 0) ? "no visible argument fields" :
-                                     (fn == 1) ? "one visible argument field" :
-                                     "" + fn + " visible argument fields"     ) + " " + fieldNames + "\n" +
-                         (nn == 0 ? "while there are no destructuring variables" :
-                          nn == 1 ? "while there is one destructuring variable: " + _names
-                                  : "while there are " + nn + " destructuring variables: " + _names) + ".\n"
-                         );
+            AstErrors.destructuringMisMatch(_pos, fieldNames, _names);
           }
       }
     else if (_fields != null && _isDefinition)
