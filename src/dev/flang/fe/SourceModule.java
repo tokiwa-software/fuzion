@@ -1114,8 +1114,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
     int ean = args.size();
     for (var r : redefinitions(f))
       {
-        Type[] ta = f.handDown(_res, f.argTypes(), r.outer());
-        Type[] ra = r.argTypes();
+        var ta = f.handDown(_res, f.argTypes(), r.outer());
+        var ra = r.argTypes();
         if (ta.length != ra.length)
           {
             AstErrors.argumentLengthsMismatch(f, ta.length, r, ra.length);
@@ -1124,9 +1124,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
           {
             for (int i = 0; i < ta.length; i++)
               {
-                Type t1 = ta[i];
-                Type t2 = ra[i];
-                if (t1 != t2 && !t1.containsError() && !t2.containsError())
+                var t1 = ta[i];
+                var t2 = ra[i];
+                if (t1 != t2 && !t1.astType().containsError() && !t2.astType().containsError())
                   {
                     // original arg list may be shorter if last arg is open generic:
                     check
@@ -1143,8 +1143,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
               }
           }
 
-        Type t1 = f.handDownNonOpen(_res, f.resultType(), r.outer());
-        Type t2 = r.resultType();
+        var t1 = f.handDownNonOpen(_res, f.resultType(), r.outer());
+        var t2 = r.resultType();
         if ((t1.isChoice()
              ? t1 != t2  // we (currently) do not tag the result in a redefined feature, see testRedefine
              : !t1.isAssignableFrom(t2)) &&

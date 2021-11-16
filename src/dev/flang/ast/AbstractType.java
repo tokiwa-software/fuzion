@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Set;
+
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -42,21 +44,32 @@ public abstract class AbstractType extends ANY
 
   public abstract AbstractFeature featureOfType();
   public abstract boolean isOpenGeneric();
-  public abstract Type actualType(Type t);
-  public abstract Type asRef();
-  public abstract Type asValue();
+  public abstract AbstractType actualType(AbstractType t);
+  public abstract AbstractType actualType(AbstractFeature f, List<AbstractType> actualGenerics);
+  public abstract AbstractType asRef();
+  public abstract AbstractType asValue();
   public abstract boolean isRef();
   public abstract boolean isChoice();
-  public abstract List<Type> replaceGenerics(List<Type> genenrics);
+  public abstract List<AbstractType> replaceGenerics(List<AbstractType> genenrics);
   public abstract SourcePosition pos();
-  public abstract List<Type> generics();
-  public abstract boolean isAssignableFrom(Type t);
+  public abstract List<AbstractType> generics();
+  public abstract boolean isAssignableFrom(AbstractType t);
+  public abstract boolean isAssignableFromOrContainsError(AbstractType t);
+  public abstract boolean isAssignableFrom(Expr expr);
+  abstract boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo);
   public abstract int compareToIgnoreOuter(Type other);
   public abstract boolean isFreeFromFormalGenerics();
   public abstract boolean isFreeFromFormalGenericsInSource();
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
   public abstract boolean outerMostInSource();
+  abstract boolean dependsOnGenerics();
+  abstract boolean containsError();
+  abstract Generic generic();
+  public abstract Generic genericArgument();
+  abstract List<AbstractType> choiceGenerics();
+  abstract boolean constraintAssignableFrom(AbstractType actual);
+  abstract boolean ensureNotOpen();
 
   public Type astType() { return (Type) this; }
 }

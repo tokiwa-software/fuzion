@@ -72,7 +72,7 @@ public class StrConst extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return Types.resolved.t_string;
   }

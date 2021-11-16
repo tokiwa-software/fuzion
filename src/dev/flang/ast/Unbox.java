@@ -53,7 +53,7 @@ public class Unbox extends Expr
   /**
    * The type of this, set during creation.
    */
-  private Type type_;
+  private AbstractType type_;
 
 
   /**
@@ -80,7 +80,7 @@ public class Unbox extends Expr
    *
    * @param t the result type
    */
-  public Unbox(SourcePosition pos, Expr adr, Type type, AbstractFeature outer)
+  public Unbox(SourcePosition pos, Expr adr, AbstractType type, AbstractFeature outer)
   {
     super(pos);
 
@@ -106,7 +106,7 @@ public class Unbox extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return type_;
   }

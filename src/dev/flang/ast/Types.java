@@ -231,32 +231,36 @@ public class Types extends ANY
   /**
    * Find the unique instance of t
    */
-  public static Type intern(Type t)
+  public static AbstractType intern(AbstractType at)
   {
     if (PRECONDITIONS) require
-      (t.isGenericArgument() || t.feature != null || Errors.count() > 0);
+      ((!(at instanceof Type t)) || t.isGenericArgument() || t.feature != null || Errors.count() > 0);
 
-    if (!t.isGenericArgument())
+    if (at instanceof Type t)
       {
-        t.outerInterned();
-      }
-    var tg = t._generics.listIterator();
-    while (tg.hasNext())
-      {
-        tg.set(intern(tg.next()));
-      }
-    Type existing = t._interned;
-    if (existing == null)
-      {
-        existing = types.get(t);
+        if (!t.isGenericArgument())
+          {
+            t.outerInterned();
+          }
+        var tg = t._generics.listIterator();
+        while (tg.hasNext())
+          {
+            tg.set(intern(tg.next()));
+          }
+        Type existing = t._interned;
         if (existing == null)
           {
-            types.put(t,t);
-            existing = t;
+            existing = types.get(t);
+            if (existing == null)
+              {
+                types.put(t,t);
+                existing = t;
+              }
+            t._interned = existing;
           }
-        t._interned = existing;
+        at = existing;
       }
-    return existing;
+    return at;
   }
 
 

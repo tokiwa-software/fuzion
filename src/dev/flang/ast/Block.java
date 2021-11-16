@@ -296,9 +296,9 @@ public class Block extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
-    Type result = Types.resolved.t_unit;
+    AbstractType result = Types.resolved.t_unit;
     Expr resExpr = resultExpression();
     if (resExpr != null)
       {
@@ -410,7 +410,7 @@ public class Block extends Expr
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, Type type)
+  public Expr propagateExpectedType(Resolution res, Feature outer, AbstractType type)
   {
     if (type == Types.resolved.t_unit && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return

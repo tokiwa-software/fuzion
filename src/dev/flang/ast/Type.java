@@ -58,7 +58,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * Call.NO_GENERICS which is used to distinguish "a.b<>()" (using Type.NONE)
    * from "a.b()" (using Call.NO_GENERICS).
    */
-  public static final List<Type> NONE = new List<Type>();
+  public static final List<AbstractType> NONE = new List<AbstractType>();
 
 
   /**
@@ -106,8 +106,8 @@ public class Type extends AbstractType implements Comparable<Type>
   /**
    *
    */
-  public final List<Type> _generics;
-  public final List<Type> generics() { return _generics; }
+  public final List<AbstractType> _generics;
+  public final List<AbstractType> generics() { return _generics; }
 
 
   /**
@@ -147,7 +147,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * actual outer type taken from the type of the outer feature of this type's
    * feature.
    */
-  Type outerCache_;
+  AbstractType outerCache_;
 
 
   /**
@@ -162,6 +162,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * generics is a pre-requisite to resolving types.
    */
   Generic generic;
+  Generic generic() { return generic; }
 
 
   /**
@@ -195,7 +196,7 @@ public class Type extends AbstractType implements Comparable<Type>
    *
    * @param o
    */
-  public Type(SourcePosition pos, String n, List<Type> g, Type o)
+  public Type(SourcePosition pos, String n, List<AbstractType> g, Type o)
   {
     this(pos, n,g,o,null, RefOrVal.LikeUnderlyingFeature);
   }
@@ -211,7 +212,7 @@ public class Type extends AbstractType implements Comparable<Type>
    *
    * @param o the actual outer type, or null, that replaces t.outer
    */
-  public Type(Type t, List<Type> g, Type o)
+  public Type(Type t, List<AbstractType> g, Type o)
   {
     this(t.pos, t.name, g, o, t.feature, t._refOrVal);
 
@@ -240,7 +241,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * @param ref true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
-  public Type(SourcePosition pos, String n, List<Type> g, Type o, AbstractFeature f, RefOrVal refOrVal)
+  public Type(SourcePosition pos, String n, List<AbstractType> g, Type o, AbstractFeature f, RefOrVal refOrVal)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -381,12 +382,12 @@ public class Type extends AbstractType implements Comparable<Type>
    * Create a Types.intern()ed reference variant of this type.  Return this
    * in case it is a reference already.
    */
-  public Type asRef()
+  public AbstractType asRef()
   {
     if (PRECONDITIONS) require
       (this == Types.intern(this));
 
-    var result = this;
+    AbstractType result = this;
     if (!isRef() && this != Types.t_ERROR)
       {
         result = Types.intern(new Type(this, RefOrVal.Ref));
@@ -399,12 +400,12 @@ public class Type extends AbstractType implements Comparable<Type>
    * Create a Types.intern()ed value variant of this type.  Return this
    * in case it is a value already.
    */
-  public Type asValue()
+  public AbstractType asValue()
   {
     if (PRECONDITIONS) require
       (this == Types.intern(this));
 
-    var result = this;
+    AbstractType result = this;
     if (isRef() && this != Types.t_ERROR)
       {
         result = Types.intern(new Type(this, RefOrVal.Value));
@@ -422,7 +423,7 @@ public class Type extends AbstractType implements Comparable<Type>
    *
    * @return a Type instance that represents this function
    */
-  public static Type funType(SourcePosition pos, Type returnType, List<Type> arguments)
+  public static Type funType(SourcePosition pos, Type returnType, List<AbstractType> arguments)
   {
     if (PRECONDITIONS) require
       (returnType != null,
@@ -431,7 +432,7 @@ public class Type extends AbstractType implements Comparable<Type>
     // This is called during parsing, so Types.resolved.f_function is not set yet.
     return new Type(pos,
                     Types.FUNCTION_NAME,
-                    new List<Type>(returnType, arguments),
+                    new List<AbstractType>(returnType, arguments),
                     null);
   }
 
@@ -538,7 +539,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * @return a new list of types with all formal generic arguments from
    * featureOfType() replaced by the corresponding generics entry of this type.
    */
-  public List<Type> replaceGenerics(List<Type> genericsToReplace)
+  public List<AbstractType> replaceGenerics(List<AbstractType> genericsToReplace)
   {
     if (PRECONDITIONS) require
       (featureOfType().generics().sizeMatches(_generics));
@@ -551,7 +552,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * Does this type (or its outer type) depend on generics. If not, actualType()
    * will not need to do anything on this.
    */
-  private boolean dependsOnGenerics()
+  boolean dependsOnGenerics()
   {
     YesNo result = dependsOnGenerics;
 
@@ -597,16 +598,16 @@ public class Type extends AbstractType implements Comparable<Type>
    * @return t with all generic arguments from this.featureOfType._generics
    * replaced by this._generics.
    */
-  public Type actualType(Type t)
+  public AbstractType actualType(AbstractType t)
   {
     if (PRECONDITIONS) require
       (checkedForGeneric,
        t != null,
-       t.checkedForGeneric,
+       !(t instanceof Type tt) || tt.checkedForGeneric,
        Errors.count() > 0 || !t.isOpenGeneric(),
        featureOfType().generics().sizeMatches(_generics));
 
-    Type result = t;
+    var result = t;
     if (result.dependsOnGenerics())
       {
         result = result.actualType(featureOfType(), _generics);
@@ -635,7 +636,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * otherwise the type that results by replacing all formal generic parameters
    * of this in t by the corresponding type from actualGenerics.
    */
-  public Type actualType(AbstractFeature f, List<Type> actualGenerics)
+  public AbstractType actualType(AbstractFeature f, List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
       (checkedForGeneric,
@@ -644,7 +645,7 @@ public class Type extends AbstractType implements Comparable<Type>
        Errors.count() > 0 || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics());
 
     f = f.astFeature();
-    Type result = this;
+    AbstractType result = this;
     if (f != null)
       {
         for (Call i : f.inherits())
@@ -664,9 +665,9 @@ public class Type extends AbstractType implements Comparable<Type>
       }
     else
       {
-        List<Type> g2 = actualTypes(f, result._generics, actualGenerics);
-        Type o2 = (result.outer() == null) ? null : result.outer().actualType(f, actualGenerics);
-        if (g2 != result._generics ||
+        var g2 = actualTypes(f, result.generics(), actualGenerics);
+        var o2 = (result.outer() == null) ? null : result.outer().actualType(f, actualGenerics);
+        if (g2 != result.generics() ||
             o2 != result.outer()    )
           {
             var hasError = o2 == Types.t_ERROR;
@@ -674,7 +675,7 @@ public class Type extends AbstractType implements Comparable<Type>
               {
                 hasError = hasError || (t == Types.t_ERROR);
               }
-            result = hasError ? Types.t_ERROR : new Type(result, g2, o2);
+            result = hasError ? Types.t_ERROR : new Type(result.astType(), g2, o2 == null ? null : o2.astType());
           }
       }
     return result;
@@ -695,13 +696,13 @@ public class Type extends AbstractType implements Comparable<Type>
    * @return a new list of types with all formal generic arguments from this
    * replaced by the corresponding actualGenerics entry.
    */
-  private static List<Type> actualTypes(AbstractFeature f, List<Type> genericsToReplace, List<Type> actualGenerics)
+  private static List<AbstractType> actualTypes(AbstractFeature f, List<AbstractType> genericsToReplace, List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 ||
        f.generics().sizeMatches(actualGenerics));
 
-    List<Type> result = genericsToReplace;
+    var result = genericsToReplace;
     if (f != null && !genericsToReplace.isEmpty())
       {
         if (genericsToReplace == f.generics().asActuals())  /* shortcut for properly handling open generics list */
@@ -711,14 +712,14 @@ public class Type extends AbstractType implements Comparable<Type>
         else
           {
             boolean changes = false;
-            for (Type t: genericsToReplace)
+            for (var t: genericsToReplace)
               {
                 changes = changes || t.actualType(f, actualGenerics) != t;
               }
             if (changes)
               {
-                result = new List<Type>();
-                for (Type t: genericsToReplace)
+                result = new List<>();
+                for (var t: genericsToReplace)
                   {
                     result.add(t.actualType(f, actualGenerics));
                   }
@@ -753,11 +754,11 @@ public class Type extends AbstractType implements Comparable<Type>
       }
     if (!_generics.isEmpty() && !(_generics instanceof FormalGenerics.AsActuals))
       {
-        ListIterator<Type> i = _generics.listIterator();
+        var i = _generics.listIterator();
         while (i.hasNext())
           {
             var gt = i.next();
-            var ng = gt.visit(v, outerfeat);
+            var ng = (gt instanceof Type gtt ? gtt.visit(v, outerfeat) : gt);
             check
               (gt == ng || _interned == null);
             i.set(ng);
@@ -781,7 +782,7 @@ public class Type extends AbstractType implements Comparable<Type>
       outerMostInSource() || _outer.isFreeFromFormalGenericsInSource();
     if (!this._generics.isEmpty())
       {
-        for (Type t : this._generics)
+        for (var t : this._generics)
           {
             result = result && t.isFreeFromFormalGenericsInSource();
           }
@@ -809,7 +810,7 @@ public class Type extends AbstractType implements Comparable<Type>
 
     if (!this._generics.isEmpty())
       {
-        for (Type t : this._generics)
+        for (var t : this._generics)
           {
             result = result && t.isFreeFromFormalGenerics();
           }
@@ -873,7 +874,7 @@ public class Type extends AbstractType implements Comparable<Type>
 
     feature = feat.astFeature();
 
-    Type interned = Types.intern(this);
+    var interned = Types.intern(this);
 
     check
       (interned == this);
@@ -913,7 +914,7 @@ public class Type extends AbstractType implements Comparable<Type>
             return Types.t_ERROR;
           }
       }
-    return Types.intern(this);
+    return Types.intern(this).astType();
   }
 
 
@@ -994,14 +995,14 @@ public class Type extends AbstractType implements Comparable<Type>
    * For a resolved type, check if it is a choice type and if so, return the
    * list of choices. Otherwise, return null.
    */
-  List<Type> choiceGenerics()
+  List<AbstractType> choiceGenerics()
   {
     if (PRECONDITIONS) require
       (isGenericArgument() || feature != null);  // type must be resolved
 
     if (!isGenericArgument())
       {
-        List<Type> g = feature.choiceGenerics();
+        var g = feature.choiceGenerics();
         if (g != null)
           {
             return replaceGenerics(g);
@@ -1027,11 +1028,11 @@ public class Type extends AbstractType implements Comparable<Type>
           }
 
         int i1 = 0;
-        for (Type t1 : g)
+        for (var t1 : g)
           {
             t1 = Types.intern(t1);
             int i2 = 0;
-            for (Type t2 : g)
+            for (var t2 : g)
               {
                 t2 = Types.intern(t2);
                 if (i1 < i2)
@@ -1039,8 +1040,8 @@ public class Type extends AbstractType implements Comparable<Type>
                     if ((t1 == t2 ||
                          !t1.isGenericArgument() &&
                          !t2.isGenericArgument() &&
-                         (t1.isAssignableFrom(t2) ||
-                          t2.isAssignableFrom(t1)    )) &&
+                         (t1.isAssignableFrom(t2.astType()) ||
+                          t2.isAssignableFrom(t1.astType())    )) &&
                         t1 != Types.t_ERROR &&
                         t2 != Types.t_ERROR)
                       {
@@ -1236,12 +1237,12 @@ public class Type extends AbstractType implements Comparable<Type>
               }
             else
               {
-                Iterator<Type> tg = _generics.iterator();
-                Iterator<Type> og = other._generics.iterator();
+                var tg = _generics.iterator();
+                var og = other._generics.iterator();
                 while (tg.hasNext() && result == 0)
                   {
-                    var tgt = Types.intern(tg.next());
-                    var ogt = Types.intern(og.next());
+                    var tgt = Types.intern(tg.next()).astType();
+                    var ogt = Types.intern(og.next()).astType();
                     result = tgt.compareTo(ogt);
                   }
               }
@@ -1270,7 +1271,7 @@ public class Type extends AbstractType implements Comparable<Type>
             result =
               (generic == null) && (other.generic == null) ?  0 :
               (generic == null) && (other.generic != null) ? -1 :
-              (generic != null) && (other.generic == null) ? +1 : generic.feature().compareTo(other.generic.feature());
+              (generic != null) && (other.generic == null) ? +1 : generic.feature().compareTo(other.generic().feature());
 
             if (result == 0)
               {
@@ -1299,12 +1300,12 @@ public class Type extends AbstractType implements Comparable<Type>
    */
   Type outerInterned()
   {
-    Type result = outer();
+    var result = outer();
     if (result != null)
       {
         result = Types.intern(result);
       }
-    return result;
+    return result != null ? result.astType() : null;
   }
 
   /**
@@ -1312,9 +1313,9 @@ public class Type extends AbstractType implements Comparable<Type>
    * until Types.resolved.universe.thisType(), while the _outer field ends with
    * the outermost type explicitly written in the source code.
    */
-  public Type outer()
+  public AbstractType outer()
   {
-    Type result = outerCache_;
+    var result = outerCache_;
     if (result == null)
       {
         result = _outer;
@@ -1363,7 +1364,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * @return true iff this is a choice and actual is assignable to one of the
    * generic arguments of this choice.
    */
-  private boolean isChoiceMatch(Type actual)
+  private boolean isChoiceMatch(AbstractType actual)
   {
     if (PRECONDITIONS) require
       (feature != null || Errors.count() > 0);
@@ -1371,10 +1372,10 @@ public class Type extends AbstractType implements Comparable<Type>
     boolean result = false;
     if (feature != null && !isRef())
       {
-        List<Type> g = feature.choiceGenerics();
+        var g = feature.choiceGenerics();
         if (g != null)
           {
-            for (Type t : actualTypes(feature, g, _generics))
+            for (var t : actualTypes(feature, g, _generics))
               {
                 if (Types.intern(t).isAssignableFrom(actual))
                   {
@@ -1394,7 +1395,7 @@ public class Type extends AbstractType implements Comparable<Type>
    *
    * @param actual the actual type.
    */
-  public boolean isAssignableFrom(Type actual)
+  public boolean isAssignableFrom(AbstractType actual)
   {
     return isAssignableFrom(actual, null);
   }
@@ -1410,13 +1411,13 @@ public class Type extends AbstractType implements Comparable<Type>
    * @param assignableTo in case we want to show all types actual is assignable
    * to in an error message, this collects the types converted to strings.
    */
-  boolean isAssignableFrom(Type actual, Set<String> assignableTo)
+  boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo)
   {
     if (PRECONDITIONS) require
       (Types.intern(this  ) == this,
        Types.intern(actual) == actual,
-       this  .feature != null || this  .isGenericArgument() || Errors.count() > 0,
-       actual.feature != null || actual.isGenericArgument() || Errors.count() > 0,
+       this  .isGenericArgument() || this  .feature         != null || Errors.count() > 0,
+       actual.isGenericArgument() || actual.featureOfType() != null || Errors.count() > 0,
        Errors.count() > 0 || this != Types.t_ERROR && actual != Types.t_ERROR);
 
     if (assignableTo != null)
@@ -1432,17 +1433,17 @@ public class Type extends AbstractType implements Comparable<Type>
       {
         if (actual.isGenericArgument())
           {
-            result = isAssignableFrom(actual.generic.constraint().asRef());
+            result = isAssignableFrom(actual.generic().constraint().asRef());
           }
         else
           {
             check
-              (actual.feature != null || Errors.count() > 0);
-            if (actual.feature != null)
+              (actual.featureOfType() != null || Errors.count() > 0);
+            if (actual.featureOfType() != null)
               {
-                for (Call p: actual.feature.inherits())
+                for (Call p: actual.featureOfType().inherits())
                   {
-                    Type pt = Types.intern(actual.actualType(p.type()));
+                    var pt = Types.intern(actual.actualType(p.type()));
                     if (actual.isRef())
                       {
                         pt = pt.asRef();
@@ -1469,13 +1470,13 @@ public class Type extends AbstractType implements Comparable<Type>
    *
    * @param actual the actual type.
    */
-  boolean constraintAssignableFrom(Type actual)
+  boolean constraintAssignableFrom(AbstractType actual)
   {
     if (PRECONDITIONS) require
       (Types.intern(this  ) == this,
        Types.intern(actual) == actual,
-       this  .feature != null || this  .isGenericArgument() || Errors.count() > 0,
-       actual.feature != null || actual.isGenericArgument() || Errors.count() > 0,
+       this  .isGenericArgument() || this  .feature         != null || Errors.count() > 0,
+       actual.isGenericArgument() || actual.featureOfType() != null || Errors.count() > 0,
        Errors.count() > 0 || this != Types.t_ERROR && actual != Types.t_ERROR);
 
     var result = containsError() ||
@@ -1486,17 +1487,17 @@ public class Type extends AbstractType implements Comparable<Type>
       {
         if (actual.isGenericArgument())
           {
-            result = constraintAssignableFrom(actual.generic.constraint());
+            result = constraintAssignableFrom(actual.generic().constraint());
           }
         else
           {
             check
-              (actual.feature != null || Errors.count() > 0);
-            if (actual.feature != null)
+              (actual.featureOfType() != null || Errors.count() > 0);
+            if (actual.featureOfType() != null)
               {
-                if (actual.feature == feature)
+                if (actual.featureOfType() == feature)
                   {
-                    if (actual._generics.size() == _generics.size()) // NYI: Check: What aboout open generics?
+                    if (actual.generics().size() == _generics.size()) // NYI: Check: What aboout open generics?
                       {
                         result = true;
                         // NYI: Should we check if the generics are assignable as well?
@@ -1515,9 +1516,9 @@ public class Type extends AbstractType implements Comparable<Type>
                   }
                 if (!result)
                   {
-                    for (Call p: actual.feature.inherits())
+                    for (Call p: actual.featureOfType().inherits())
                       {
-                        Type pt = Types.intern(actual.actualType(p.type()));
+                        var pt = Types.intern(actual.actualType(p.type()));
                         if (constraintAssignableFrom(pt))
                           {
                             result = true;
@@ -1543,7 +1544,7 @@ public class Type extends AbstractType implements Comparable<Type>
       }
     else if (!_generics.isEmpty())
       {
-        for (Type t: _generics)
+        for (var t: _generics)
           {
             result = result || t.containsError();
           }
@@ -1567,7 +1568,7 @@ public class Type extends AbstractType implements Comparable<Type>
    *
    * @param actual the actual type.
    */
-  public boolean isAssignableFromOrContainsError(Type actual)
+  public boolean isAssignableFromOrContainsError(AbstractType actual)
   {
     return
       containsError() || actual.containsError() || isAssignableFrom(actual);

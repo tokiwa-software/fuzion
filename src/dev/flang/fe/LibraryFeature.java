@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
 import dev.flang.ast.Call;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Expr;
@@ -42,7 +43,6 @@ import dev.flang.ast.Generic;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.ReturnType;
-import dev.flang.ast.Type;
 
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -236,15 +236,15 @@ public class LibraryFeature extends AbstractFeature
     return _featureName;
   }
   public SourcePosition pos() { return _from.pos(); }
-  public List<Type> choiceGenerics() { return _from.choiceGenerics(); }
+  public List<AbstractType> choiceGenerics() { return _from.choiceGenerics(); }
   public FormalGenerics generics() { return _from.generics(); }
   public Generic getGeneric(String name) { return _from.getGeneric(name); }
   public List<Call> inherits() { return _from.inherits(); }
-  public Type thisType() { return _from.thisType(); }
+  public AbstractType thisType() { return _from.thisType(); }
   public List<AbstractFeature> arguments() { return _from.arguments(); }
   public FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir) { return _from.handDown(res, f, fn, p, heir); }
-  public Type[] handDown(Resolution res, Type[] a, AbstractFeature heir) { return _from.handDown(res, a, heir); }
-  public Type resultType() { return _from.resultType(); }
+  public AbstractType[] handDown(Resolution res, AbstractType[] a, AbstractFeature heir) { return _from.handDown(res, a, heir); }
+  public AbstractType resultType() { return _from.resultType(); }
   public boolean inheritsFrom(AbstractFeature parent) { return _from.inheritsFrom(parent); }
   public List<Call> tryFindInheritanceChain(AbstractFeature ancestor) { return _from.tryFindInheritanceChain(ancestor); }
   public List<Call> findInheritanceChain(AbstractFeature ancestor) { return _from.findInheritanceChain(ancestor); }
@@ -252,7 +252,7 @@ public class LibraryFeature extends AbstractFeature
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res) { return _from.allInnerAndInheritedFeatures(res); }
   public AbstractFeature outerRef() { return _from.outerRef(); }
   public AbstractFeature get(Resolution res, String qname) { return _from.get(res, qname); }
-  public Type[] argTypes() { return _from.argTypes(); }
+  public AbstractType[] argTypes() { return _from.argTypes(); }
 
   // following are used in IR/Clazzes middle end or later only:
   public AbstractFeature outerRefOrNull() { return _from.outerRefOrNull(); }

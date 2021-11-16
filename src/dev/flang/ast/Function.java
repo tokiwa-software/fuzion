@@ -81,7 +81,7 @@ public class Function extends Expr
   AbstractFeature feature_;
 
 
-  Type type_;
+  AbstractType type_;
 
 
   /**
@@ -289,7 +289,7 @@ public class Function extends Expr
     Feature f = new Feature(pos, r, new List<String>("call"), a, i, c, p);
     this.feature_ = f;
 
-    List<Type> generics = new List<Type>();
+    List<AbstractType> generics = new List<>();
     generics.add(f.hasResult() ? Types.t_UNDEFINED : new Type("unit"));
     for (int j = 0; j < a.size(); j++)
       {
@@ -398,7 +398,7 @@ public class Function extends Expr
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, Type t)
+  public Expr propagateExpectedType(Resolution res, Feature outer, AbstractType t)
   {
     if (call_ == null)
       {
@@ -426,7 +426,7 @@ public class Function extends Expr
          * [..]
          */
         List<Feature> a = new List<>();
-        var gs = t._generics;
+        var gs = t.generics();
         int i = 1;
         for (var n : _names)
           {
@@ -446,7 +446,7 @@ public class Function extends Expr
           }
         if (t != Types.t_ERROR)
           {
-            Feature f = new Feature(pos, new FunctionReturnType(gs.get(0)), new List<String>("call"), a, _inherits, _contract,
+            Feature f = new Feature(pos, new FunctionReturnType(gs.get(0).astType()), new List<String>("call"), a, _inherits, _contract,
                                     new Impl(_expr.pos(), _expr, Impl.Kind.Routine));
             this.feature_ = f;
 
@@ -539,9 +539,9 @@ public class Function extends Expr
    * Produce the list of actual generic arguments to be passed to
    * functionOrRoutine.
    */
-  List<Type> generics(Resolution res)
+  List<AbstractType> generics(Resolution res)
   {
-    List<Type> generics = new List<Type>();
+    List<AbstractType> generics = new List<>();
 
     var f = this.feature_ == null ? this.call_.calledFeature()
                                   : this.feature_;
@@ -580,7 +580,7 @@ public class Function extends Expr
     else if (this.feature_ == null)
       {
         var fr = functionOrRoutine();
-        List<Type> generics = generics(res);
+        var generics = generics(res);
         FormalGenerics.resolve(res, generics, outer);
         type_ = fr != null ? new Type(pos, fr.featureName().baseName(), generics, null, fr, Type.RefOrVal.LikeUnderlyingFeature).resolve(res, outer)
                            : Types.t_ERROR;
@@ -605,7 +605,7 @@ public class Function extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type type()
+  public AbstractType type()
   {
     var result = typeOrNull();
     if (result == null)
@@ -623,7 +623,7 @@ public class Function extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return type_;
   }
@@ -696,7 +696,7 @@ public class Function extends Expr
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             var fr = functionOrRoutine();
-            List<Call> inherits = new List<>(new Call(pos, fr.featureName().baseName(), type_._generics, Expr.NO_EXPRS));
+            List<Call> inherits = new List<>(new Call(pos, fr.featureName().baseName(), type_.generics(), Expr.NO_EXPRS));
 
             List<Stmnt> statements = new List<Stmnt>(fcall);
 

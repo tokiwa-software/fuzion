@@ -65,7 +65,7 @@ public class If extends Expr
    */
   public If elseIf;
 
-  public Type _type;
+  public AbstractType _type;
 
 
   /**
@@ -197,9 +197,9 @@ public class If extends Expr
    * Helper routine for typeOrNull to determine the type of this if statement on
    * demand, i.e., as late as possible.
    */
-  private Type typeFromIfOrElse()
+  private AbstractType typeFromIfOrElse()
   {
-    Type result;
+    AbstractType result;
     if (hasUntakenElseBranch())
       {
         result = Types.resolved.t_unit;
@@ -211,7 +211,7 @@ public class If extends Expr
         while (it.hasNext())
           {
             var t = it.next().typeOrNull();
-            result = result == null || t == null ? null : result.union(t);
+            result = result == null || t == null ? null : result.astType().union(t.astType());
           }
       }
     if (result == Types.t_UNDEFINED)
@@ -231,7 +231,7 @@ public class If extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     if (_type == null)
       {
@@ -270,7 +270,7 @@ public class If extends Expr
    */
   public void checkTypes()
   {
-    Type t = cond.type();
+    var t = cond.type();
     if (!Types.resolved.t_bool.isAssignableFrom(t))
       {
         AstErrors.ifConditionMustBeBool(cond.pos, t);
@@ -375,7 +375,7 @@ public class If extends Expr
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, Type t)
+  public Expr propagateExpectedType(Resolution res, Feature outer, AbstractType t)
   {
     return addFieldForResult(res, outer, t);
   }

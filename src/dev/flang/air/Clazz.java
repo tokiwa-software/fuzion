@@ -50,7 +50,6 @@ import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.Match; // NYI: remove dependency!
 import dev.flang.ast.Resolution; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
-import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
 
@@ -509,7 +508,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         t = this._outer.actualType(t);
       }
-    return Types.intern(t.astType());
+    return Types.intern(t);
   }
 
 
@@ -537,7 +536,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * @return The list of actual generics after replacing the generics of this
    * class or its outer classes.
    */
-  public List<Type> actualGenerics(List<Type> generics)
+  public List<AbstractType> actualGenerics(List<AbstractType> generics)
   {
     generics = this._type.replaceGenerics(generics);
     if (this._outer != null)
@@ -794,7 +793,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * @return the inner clazz of the target in the call.
    */
   public /* NYI: make package private */ Clazz lookup(AbstractFeature f,
-                      List<Type> actualGenerics,
+                      List<AbstractType> actualGenerics,
                       SourcePosition p)
   {
     if (PRECONDITIONS) require
@@ -829,7 +828,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * @return the inner clazz of the target in the call.
    */
   Clazz lookup(AbstractFeature f,
-               List<Type> actualGenerics,
+               List<AbstractType> actualGenerics,
                SourcePosition p,
                boolean isInheritanceCall)
   {
@@ -1045,8 +1044,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (other != null,
        this .getClass() == Clazz.class,
        other.getClass() == Clazz.class,
-       this ._type == Types.intern(this ._type.astType()),
-       other._type == Types.intern(other._type.astType()));
+       this ._type == Types.intern(this ._type),
+       other._type == Types.intern(other._type));
 
     var result = this._type.compareToIgnoreOuter(other._type.astType());
     if (result == 0)
@@ -1329,7 +1328,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (isChoice(),
        staticTypeOfValue.isFreeFromFormalGenerics(),
-       staticTypeOfValue == Types.intern(staticTypeOfValue.astType()));
+       staticTypeOfValue == Types.intern(staticTypeOfValue));
 
     int result = -1;
     int index = 0;

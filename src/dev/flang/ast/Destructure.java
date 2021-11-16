@@ -236,7 +236,7 @@ public class Destructure extends ANY implements Stmnt
                          Iterator<String> names,
                          int select,
                          Iterator<Feature> fields,
-                         Type t)
+                         AbstractType t)
   {
     Expr thiz     = This.thiz(res, _pos, outer, outer);
     Call thiz_tmp = new Call(_pos, thiz    , tmp, -1    ).resolveTypes(res, outer);
@@ -247,7 +247,7 @@ public class Destructure extends ANY implements Stmnt
         Feature newF = fields.next();
         if (_isDefinition)
           {
-            newF._returnType = new FunctionReturnType(t);
+            newF._returnType = new FunctionReturnType(t.astType());
           }
         assign = new Assign(res, _pos, newF, call_f, outer);
       }
@@ -279,7 +279,7 @@ public class Destructure extends ANY implements Stmnt
     List<Stmnt> stmnts = new List<>();
     // NYI: This might fail in conjunction with type inference.  We should maybe
     // create the dcomposition code later, after resolveTypes is done.
-    Type t = _value.type();
+    var t = _value.type();
     if (t.isGenericArgument())
       {
         Errors.error(_pos,
@@ -310,16 +310,16 @@ public class Destructure extends ANY implements Stmnt
         Iterator<String> names = _names.iterator();
         Iterator<Feature> fields = _fields == null ? null : _fields.iterator();
         List<String> fieldNames = new List<>();
-        for (var f : t.feature.arguments())
+        for (var f : t.featureOfType().arguments())
           {
             // NYI: check if f is visible
-            Type tf = f.resultTypeIfPresent(res, Type.NONE);
+            var tf = f.resultTypeIfPresent(res, Type.NONE);
             if (tf != null && tf.isOpenGeneric())
               {
                 Generic g = tf.genericArgument();
-                List<Type> frmlTs = g.replaceOpen(t._generics);
+                var frmlTs = g.replaceOpen(t.generics());
                 int select = 0;
-                for (Type tfs : g.replaceOpen(t._generics))
+                for (var tfs : g.replaceOpen(t.generics()))
                   {
                     fieldNames.add(f.featureName().baseName() + "." + select);
                     addAssign(res, outer,stmnts, tmp, f, names, select, fields, tfs);

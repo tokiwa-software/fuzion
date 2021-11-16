@@ -51,7 +51,7 @@ public class Tag extends Expr
   /**
    * The desired tagged type, set during creation.
    */
-  public Type _taggedType;
+  public AbstractType _taggedType;
 
 
   /**
@@ -70,7 +70,7 @@ public class Tag extends Expr
    *
    * @param value the value instance
    */
-  public Tag(Expr value, Type taggedType)
+  public Tag(Expr value, AbstractType taggedType)
   {
     super(value.pos);
 
@@ -92,7 +92,7 @@ public class Tag extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return _taggedType;
   }

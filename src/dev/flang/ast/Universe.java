@@ -64,7 +64,7 @@ public class Universe extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return Types.resolved.universe.thisType();
   }

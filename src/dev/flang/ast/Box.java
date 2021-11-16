@@ -51,7 +51,7 @@ public class Box extends Expr
   /**
    * The type of this, set during creation.
    */
-  public Type _type;
+  public AbstractType _type;
 
 
   /**
@@ -114,7 +114,7 @@ public class Box extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return _type;
   }

@@ -320,16 +320,16 @@ public class Generic extends ANY
    *
    * @param actualGenerics the actual generics that replace this.
    */
-  public Type replace(List<Type> actualGenerics)
+  public AbstractType replace(List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
       (!isOpen(),
        Errors.count() > 0 || _formalGenerics.sizeMatches(actualGenerics));
 
-    Type result;
+    AbstractType result;
     if (_select >= 0)
       {
-        List<Type> openTypes = _selectFrom.replaceOpen(actualGenerics);
+        var openTypes = _selectFrom.replaceOpen(actualGenerics);
         result = _select < openTypes.size()
           ? openTypes.get(_select)
           : // This is not an error, we can run into this situation, e.g., for
@@ -343,7 +343,7 @@ public class Generic extends ANY
       {
         result = null;
         int i = index();
-        Iterator<Type> actuals = actualGenerics.iterator();
+        var actuals = actualGenerics.iterator();
         while (i > 0 && actuals.hasNext())
           {
             actuals.next();
@@ -370,14 +370,14 @@ public class Generic extends ANY
    * @return the part of actualGenerics that this is replaced by, May be an
    * empty list or an arbitrarily long list.
    */
-  public List<Type> replaceOpen(List<Type> actualGenerics)
+  public List<AbstractType> replaceOpen(List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
       (isOpen(),
        _formalGenerics.sizeMatches(actualGenerics));
 
-    Iterator<Generic> formals = _formalGenerics.list.iterator();
-    Iterator<Type>    actuals = actualGenerics.iterator();
+    var formals = _formalGenerics.list.iterator();
+    var actuals = actualGenerics.iterator();
 
     // fist, skip all formal/actual generics until we reached the last formal:
     Generic formal = formals.next();
@@ -392,7 +392,7 @@ public class Generic extends ANY
       (formal == this);
 
     // Now, return the tail of actuals:
-    return actuals.hasNext() ? new List<Type>(actuals)
+    return actuals.hasNext() ? new List<>(actuals)
                              : Type.NONE;
   }
 

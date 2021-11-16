@@ -29,6 +29,7 @@ package dev.flang.me;
 import dev.flang.air.AIR;
 
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
+import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Call; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
@@ -37,7 +38,6 @@ import dev.flang.ast.Match; // NYI: remove dependency!
 import dev.flang.ast.Resolution; // NYI: remove dependency!
 import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
-import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 
 import dev.flang.mir.MIR;
@@ -259,12 +259,12 @@ public class MiddleEnd extends ANY
   /**
    * Mark all features used within this type as used.
    */
-  void findUsedFeatures(Type t, SourcePosition pos)
+  void findUsedFeatures(AbstractType t, SourcePosition pos)
   {
     if (!t.isGenericArgument())
       {
         markUsed(t.featureOfType(), pos);
-        for (var tg : t._generics)
+        for (var tg : t.generics())
           {
             findUsedFeatures(tg, pos);
           }
@@ -284,12 +284,12 @@ public class MiddleEnd extends ANY
     if (cf != null)
       {
         markUsed(cf, c.isDynamic(), c.pos());
-        for (Type t : c.generics)
+        for (var t : c.generics)
           {
             if (!t.isGenericArgument())
               {
                 AbstractFeature f = t.featureOfType();
-                markUsed(f, t.pos);  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
+                markUsed(f, t.pos());  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
               }
           }
       }

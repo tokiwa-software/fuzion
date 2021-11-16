@@ -128,7 +128,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * Obtain the effective name of this feature when actualGenerics are the
    * actual generics of its outer() feature.
    */
-  public FeatureName effectiveName(List<Type> actualGenerics)
+  public FeatureName effectiveName(List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
       (outer().generics().sizeMatches(actualGenerics));
@@ -194,11 +194,11 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
               {
                 for (AbstractFeature a : arguments())
                   {
-                    Type t;
+                    AbstractType t;
                     if (a instanceof Feature af)
                       {
                         t = af.returnType().functionReturnType();
-                        if (!t.checkedForGeneric)
+                        if (t instanceof Type tt && !tt.checkedForGeneric)
                           {
                             af.visit(Feature.findGenerics);
                           }
@@ -230,7 +230,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * @return the result type, Types.resulved.t_unit if none and null in case the
    * type must be inferenced and is not available yet.
    */
-  Type resultTypeIfPresent(Resolution res, List<Type> generics)
+  AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
   {
     return resultType();
   }
@@ -356,16 +356,16 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();
-  public abstract List<Type> choiceGenerics();
+  public abstract List<AbstractType> choiceGenerics();
   public abstract FormalGenerics generics();
   public abstract Generic getGeneric(String name);
   public abstract List<Call> inherits();
   public abstract AbstractFeature outer();
-  public abstract Type thisType();
+  public abstract AbstractType thisType();
   public abstract List<AbstractFeature> arguments();
   public abstract FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir);
-  public abstract Type[] handDown(Resolution res, Type[] a, AbstractFeature heir);
-  public abstract Type resultType();
+  public abstract AbstractType[] handDown(Resolution res, AbstractType[] a, AbstractFeature heir);
+  public abstract AbstractType resultType();
   public abstract boolean inheritsFrom(AbstractFeature parent);
   public abstract List<Call> tryFindInheritanceChain(AbstractFeature ancestor);
   public abstract List<Call> findInheritanceChain(AbstractFeature ancestor);
@@ -373,7 +373,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res);
   public abstract AbstractFeature outerRef();
   public abstract AbstractFeature get(Resolution res, String qname);
-  public abstract Type[] argTypes();
+  public abstract AbstractType[] argTypes();
 
   // following are used in IR/Clazzes middle end or later only:
   public abstract AbstractFeature outerRefOrNull();

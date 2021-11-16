@@ -102,7 +102,7 @@ public class Old extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return e.typeOrNull();
   }

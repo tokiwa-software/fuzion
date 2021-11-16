@@ -316,7 +316,7 @@ public class Assign extends ANY implements Stmnt
     var f = _assignedField;
     if (f != Types.f_ERROR)
       {
-        Type frmlT = f.resultType();
+        var frmlT = f.resultType();
 
         check
           (Errors.count() > 0 || frmlT != Types.t_ERROR);

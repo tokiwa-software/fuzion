@@ -161,7 +161,7 @@ public class This extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return null;  // After type resolution, This is no longer part of the code.
   }

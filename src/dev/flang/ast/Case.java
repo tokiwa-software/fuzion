@@ -75,7 +75,7 @@ public class Case extends ANY
    * List of types to be matched against. null if we match against type or match
    * everything.
    */
-  public final List<Type> types;
+  public final List<AbstractType> types;
 
 
   /**
@@ -125,7 +125,7 @@ public class Case extends ANY
    * @param c code to be executed in case of a match
    */
   public Case(SourcePosition pos,
-              List<Type> l,
+              List<AbstractType> l,
               Block c)
   {
     this(pos, null, l, c);
@@ -159,7 +159,7 @@ public class Case extends ANY
    */
   private Case(SourcePosition p,
                Feature f,
-               List<Type> l,
+               List<AbstractType> l,
                Block c)
   {
     if (PRECONDITIONS) require
@@ -195,10 +195,10 @@ public class Case extends ANY
       }
     if (types != null)
       {
-        ListIterator<Type> i = types.listIterator();
+        var i = types.listIterator();
         while (i.hasNext())
           {
-            i.set(i.next().visit(v, outer));
+            i.set(i.next().astType().visit(v, outer));
           }
       }
     code = code.visit(v, outer);
@@ -221,7 +221,7 @@ public class Case extends ANY
    * @return true iff all types could be resolved, false if any type resolution
    * failed and the type was set to Types.t_ERROR.
    */
-  boolean resolveType(Resolution res, List<Type> cgs, Feature outer, SourcePosition[] matched)
+  boolean resolveType(Resolution res, List<AbstractType> cgs, Feature outer, SourcePosition[] matched)
   {
     boolean result = true;
     if (field != null)
@@ -233,7 +233,7 @@ public class Case extends ANY
       }
     if (types != null)
       {
-        ListIterator<Type> ti = types.listIterator();
+        var ti = types.listIterator();
         while (ti.hasNext())
           {
             var t = ti.next();
@@ -261,16 +261,16 @@ public class Case extends ANY
    * that have already beend found.  This is updated and used to report an error
    * in case there are repeated matches.
    */
-  Type resolveType(Resolution res, Type t, List<Type> cgs, Feature outer, SourcePosition[] matched)
+  Type resolveType(Resolution res, AbstractType t, List<AbstractType> cgs, Feature outer, SourcePosition[] matched)
   {
     var original_t = t;
-    List<Type> matches = new List<Type>();
+    List<AbstractType> matches = new List<>();
     int i = 0;
-    t.resolveFeature(res, outer);
-    var inferGenerics = !t.isGenericArgument() && t._generics.isEmpty() && t.featureOfType().generics() != FormalGenerics.NONE;
+    t.astType().resolveFeature(res, outer);
+    var inferGenerics = !t.isGenericArgument() && t.generics().isEmpty() && t.featureOfType().generics() != FormalGenerics.NONE;
     if (!inferGenerics)
       {
-        t = t.resolve(res, outer);
+        t = t.astType().resolve(res, outer);
       }
     for (var cg : cgs)
       {
@@ -307,7 +307,7 @@ public class Case extends ANY
             AstErrors.matchCaseMatchesSeveral(pos, original_t, cgs, matches);
           }
       }
-    return t;
+    return t.astType();
   }
 
 

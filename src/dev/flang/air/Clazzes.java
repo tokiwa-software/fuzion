@@ -282,7 +282,7 @@ public class Clazzes extends ANY
   public static Clazz create(AbstractType actualType, Clazz outer)
   {
     if (PRECONDITIONS) require
-      (actualType.astType() == Types.intern(actualType.astType()),
+      (actualType == Types.intern(actualType),
        Errors.count() > 0 || !actualType.isGenericArgument(),
        Errors.count() > 0 || actualType.isFreeFromFormalGenerics());
 
@@ -1099,7 +1099,7 @@ public class Clazzes extends ANY
         outerClazz = null;
       }
 
-    var t = Types.intern(thiz.astType());
+    var t = Types.intern(thiz);
     var result = _clazzesForTypes_.get(t);
     if (result == null)
       {
@@ -1138,7 +1138,7 @@ public class Clazzes extends ANY
         outerClazz = clazzWithSpecificOuter(thiz.outer(), outerClazz._outer);
       }
 
-    var t = Types.intern(thiz.astType());
+    var t = Types.intern(thiz);
     result = create(t, outerClazz);
 
     return result;

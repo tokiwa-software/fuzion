@@ -46,7 +46,7 @@ public class Current extends Expr
   /**
    * The type of this, set during resolveTypes.
    */
-  private Type type_ = null;
+  private AbstractType type_ = null;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -59,7 +59,7 @@ public class Current extends Expr
    *
    * @param t the result type
    */
-  public Current(SourcePosition pos, Type t)
+  public Current(SourcePosition pos, AbstractType t)
   {
     super(pos);
 
@@ -79,7 +79,7 @@ public class Current extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return type_;
   }
@@ -97,7 +97,7 @@ public class Current extends Expr
    */
   public Current visit(FeatureVisitor v, Feature outer)
   {
-    type_ = type_.visit(v, outer);
+    type_ = type_ instanceof Type tt ? tt.visit(v, outer) : type_;
     return this;
   }
 

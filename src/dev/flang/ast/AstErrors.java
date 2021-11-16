@@ -82,7 +82,7 @@ public class AstErrors extends ANY
   {
     return code(s);
   }
-  static String s(Type t)
+  static String s(AbstractType t)
   {
     return st(t.toString());
   }
@@ -110,7 +110,7 @@ public class AstErrors extends ANY
   {
     return code(f.qualifiedName() + fg);
   }
-  static String s(List<Type> l)
+  static String s(List<AbstractType> l)
   {
     return type(l.toString());
   }
@@ -172,11 +172,11 @@ public class AstErrors extends ANY
   static void incompatibleType(SourcePosition pos,
                                String where,
                                String detail,
-                               Type frmlT,
+                               AbstractType frmlT,
                                Expr value)
   {
     var assignableTo = new TreeSet<String>();
-    Type actlT = value.type();
+    var actlT = value.type();
     frmlT.isAssignableFrom(actlT, assignableTo);
     var assignableToSB = new StringBuilder();
     for (var ts : assignableTo)
@@ -211,7 +211,7 @@ public class AstErrors extends ANY
    */
   static void incompatibleTypeInAssignment(SourcePosition pos,
                                            AbstractFeature field,
-                                           Type frmlT,
+                                           AbstractType frmlT,
                                            Expr value)
   {
     incompatibleType(pos,
@@ -237,7 +237,7 @@ public class AstErrors extends ANY
    */
   static void incompatibleArgumentTypeInCall(AbstractFeature calledFeature,
                                              int count,
-                                             Type frmlT,
+                                             AbstractType frmlT,
                                              Expr value)
   {
     var frmls = calledFeature.arguments().iterator();
@@ -270,8 +270,8 @@ public class AstErrors extends ANY
    * @param value the value assigned to arrayType's elements.
    */
   static void incompatibleTypeInArrayInitialization(SourcePosition pos,
-                                                    Type arrayType,
-                                                    Type frmlT,
+                                                    AbstractType arrayType,
+                                                    AbstractType frmlT,
                                                     Expr value)
   {
     incompatibleType(pos,
@@ -326,7 +326,7 @@ public class AstErrors extends ANY
     StringBuilder fstr = new StringBuilder();
     var fargs = call.calledFeature().arguments().iterator();
     AbstractFeature farg = null;
-    for (Type t : call.resolvedFormalArgumentTypes)
+    for (var t : call.resolvedFormalArgumentTypes)
       {
         ferror = t == Types.t_ERROR;
         fstr.append(fstr.length
@@ -361,7 +361,7 @@ public class AstErrors extends ANY
    * information, like "Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n".
    */
   static void wrongNumberOfGenericArguments(FormalGenerics fg,
-                                            List<Type> actualGenerics,
+                                            List<AbstractType> actualGenerics,
                                             SourcePosition pos,
                                             String detail1,
                                             String detail2)
@@ -447,7 +447,7 @@ public class AstErrors extends ANY
   }
   */
 
-  static void ifConditionMustBeBool(SourcePosition pos, Type type)
+  static void ifConditionMustBeBool(SourcePosition pos, AbstractType type)
   {
     check
       (count() > 0 || type != Types.t_ERROR);
@@ -460,16 +460,16 @@ public class AstErrors extends ANY
       }
   }
 
-  static void matchSubjectMustNotBeTypeParameter(SourcePosition pos, Type t)
+  static void matchSubjectMustNotBeTypeParameter(SourcePosition pos, AbstractType t)
   {
     error(pos,
           "" + skw("match") + " subject type must not be a type parameter",
           "Matched type: " + s(t) + "\n" +
-          "which is a type parameter declared at " + t.generic._pos.show());
+          "which is a type parameter declared at " + t.generic()._pos.show());
 
   }
 
-  static void matchSubjectMustBeChoice(SourcePosition pos, Type t)
+  static void matchSubjectMustBeChoice(SourcePosition pos, AbstractType t)
   {
     error(pos,
           "" + skw("match") + " subject type must be a choice type",
@@ -477,7 +477,7 @@ public class AstErrors extends ANY
 
   }
 
-  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, Type t, List<Type> choiceGenerics)
+  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, AbstractType t, List<AbstractType> choiceGenerics)
   {
     error(pos,
           "" + skw("case") + " clause matches type that had been matched already",
@@ -487,7 +487,7 @@ public class AstErrors extends ANY
   }
 
 
-  static void matchCaseDoesNotMatchAny(SourcePosition pos, Type t, List<Type> choiceGenerics)
+  static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType t, List<AbstractType> choiceGenerics)
   {
     error(pos,
           "" + skw("case") + " clause in " + skw("match") + " statement does not match any type of the subject",
@@ -495,7 +495,7 @@ public class AstErrors extends ANY
           subjectTypes(choiceGenerics));
   }
 
-  static void matchCaseMatchesSeveral(SourcePosition pos, Type t, List<Type> choiceGenerics, List<Type> matches)
+  static void matchCaseMatchesSeveral(SourcePosition pos, AbstractType t, List<AbstractType> choiceGenerics, List<AbstractType> matches)
   {
     error(pos,
           "" + skw("case") + " clause in " + skw("match") + " statement matches several types of the subject",
@@ -504,7 +504,7 @@ public class AstErrors extends ANY
           "matches are " + typeListConjunction(matches));
   }
 
-  static void missingMatches(SourcePosition pos, List<Type> choiceGenerics, List<Type> missingMatches)
+  static void missingMatches(SourcePosition pos, List<AbstractType> choiceGenerics, List<AbstractType> missingMatches)
   {
     error(pos,
           "" + skw("match") + " statement does not cover all of the subject's types",
@@ -515,17 +515,17 @@ public class AstErrors extends ANY
   /**
    * Create list of the form "'i32', 'string' or 'bool'"
    */
-  private static String typeListAlternatives(List<Type> tl)  { return typeList(tl, "or" ); }
+  private static String typeListAlternatives(List<AbstractType> tl)  { return typeList(tl, "or" ); }
 
   /**
    * Create list of the form "'i32', 'string' and 'bool'"
    */
-  private static String typeListConjunction (List<Type> tl)  { return typeList(tl, "and"); }
+  private static String typeListConjunction (List<AbstractType> tl)  { return typeList(tl, "and"); }
 
   /**
    * Create list of the form "'i32', 'string' " + conj + " 'bool'"
    */
-  private static String typeList(List<Type> tl, String conj)
+  private static String typeList(List<AbstractType> tl, String conj)
   {
     StringBuilder mt = new StringBuilder();
     String comma = "", last = "";
@@ -546,7 +546,7 @@ public class AstErrors extends ANY
     return mt.toString();
   }
 
-  private static String subjectTypes(List<Type> choiceGenerics)
+  private static String subjectTypes(List<AbstractType> choiceGenerics)
   {
     return choiceGenerics.isEmpty()
       ? "Subject type is an empty choice type that cannot match any case\n"
@@ -751,7 +751,7 @@ public class AstErrors extends ANY
           "Outer features available: " + (available.size() == 0 ? "-- none! --" : available));
   }
 
-  static void blockMustEndWithExpression(SourcePosition pos, Type expectedType)
+  static void blockMustEndWithExpression(SourcePosition pos, AbstractType expectedType)
   {
     check
       (count() > 0  || expectedType != Types.t_ERROR);
@@ -810,7 +810,7 @@ public class AstErrors extends ANY
           "a choice is always a value type");
   }
 
-  static void genericsMustBeDisjoint(SourcePosition pos, Type t1, Type t2)
+  static void genericsMustBeDisjoint(SourcePosition pos, AbstractType t1, AbstractType t2)
   {
     error(pos,
           "Generics arguments to choice type must be disjoint types",
@@ -827,7 +827,7 @@ public class AstErrors extends ANY
           "Open formal argument: " + s(generic) + "");
   }
 
-  static void integerConstantOutOfLegalRange(SourcePosition pos, String constant, Type t, String from, String to)
+  static void integerConstantOutOfLegalRange(SourcePosition pos, String constant, AbstractType t, String from, String to)
   {
     error(pos,
           "Integer constant value outside of allowed range for target type",
@@ -837,7 +837,7 @@ public class AstErrors extends ANY
           "Acceptable range of values: " + ss(from) + " .. " + ss(to));
   }
 
-  static void nonWholeNumberUsedAsIntegerConstant(SourcePosition pos, String constant, Type t)
+  static void nonWholeNumberUsedAsIntegerConstant(SourcePosition pos, String constant, AbstractType t)
   {
     error(pos,
           "Numeric literal used for integer type is not a whole number",
@@ -846,7 +846,7 @@ public class AstErrors extends ANY
           "Assigned to type: " + s(t) + "\n");
   }
 
-  static void floatConstantTooLarge(SourcePosition pos, String constant, Type t, String max, String maxH)
+  static void floatConstantTooLarge(SourcePosition pos, String constant, AbstractType t, String max, String maxH)
   {
     error(pos,
           "Float constant value outside of allowed range for target type",
@@ -856,7 +856,7 @@ public class AstErrors extends ANY
           "Max allowed value: " + ss("-"+max) + " .. " + ss(max) + " or " + ss("-" + maxH) + " .. " + ss(maxH));
   }
 
-  static void floatConstantTooSmall(SourcePosition pos, String constant, Type t, String min, String minH)
+  static void floatConstantTooSmall(SourcePosition pos, String constant, AbstractType t, String min, String minH)
   {
     error(pos,
           "Float constant value too small, would underflow to 0",
@@ -866,15 +866,15 @@ public class AstErrors extends ANY
           "Min representable value > 0: " + ss(min) + " or " + ss(minH));
   }
 
-  static void wrongNumberOfArgumentsInLambda(SourcePosition pos, List<String> names, Type funType)
+  static void wrongNumberOfArgumentsInLambda(SourcePosition pos, List<String> names, AbstractType funType)
   {
-    int req = funType._generics.size() - 1;
+    int req = funType.generics().size() - 1;
     int delta = names.size() - req;
     var ns = sn(names);
     error(pos,
           "Wrong number of arguments in lambda expression",
           "Lambda expression has " + singularOrPlural(names.size(), "argument") + " while the target type expects " +
-          singularOrPlural(funType._generics.size()-1, "argument") + ".\n" +
+          singularOrPlural(funType.generics().size()-1, "argument") + ".\n" +
           "Arguments of lambda expression: " + ns + "\n" +
           "Expected function type: " + funType + "\n" +
           "To solve this, " +
@@ -885,7 +885,7 @@ public class AstErrors extends ANY
           );
   }
 
-  static void expectedFunctionTypeForLambda(SourcePosition pos, Type t)
+  static void expectedFunctionTypeForLambda(SourcePosition pos, AbstractType t)
   {
     error(pos,
           "Target type of a lambda expression must be " + s(Types.resolved.f_function) + ".",

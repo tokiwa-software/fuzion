@@ -206,7 +206,7 @@ public class NumLiteral extends Expr
    * The type of this constant.  This can be set by the user of this type
    * depending on what this is assigned to.
    */
-  private Type type_;
+  private AbstractType type_;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -347,7 +347,7 @@ public class NumLiteral extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     if (type_ == null)
       {
@@ -659,7 +659,7 @@ public class NumLiteral extends Expr
    *
    * @return the corresponding ConstantType or nul if none.
    */
-  ConstantType findConstantType(Type t)
+  ConstantType findConstantType(AbstractType t)
   {
     if      (t == Types.resolved.t_i8 ) { return ConstantType.ct_i8 ; }
     else if (t == Types.resolved.t_i16) { return ConstantType.ct_i16; }
@@ -692,7 +692,7 @@ public class NumLiteral extends Expr
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, Type t)
+  public Expr propagateExpectedType(Resolution res, Feature outer, AbstractType t)
   {
     if (type_ == null && findConstantType(t) != null)
       {

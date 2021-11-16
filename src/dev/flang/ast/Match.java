@@ -157,10 +157,10 @@ public class Match extends Expr
       (cgs != null || Errors.count() > 0);
     if (cgs != null)
       {
-        ListIterator<Type> i = cgs.listIterator();
+        var i = cgs.listIterator();
         while (i.hasNext())
           {
-            i.set(i.next().resolve(res, outer));
+            i.set(i.next().astType().resolve(res, outer));
           }
         SourcePosition[] matched = new SourcePosition[cgs.size()];
         boolean ok = true;
@@ -168,7 +168,7 @@ public class Match extends Expr
           {
             ok &= c.resolveType(res, cgs, outer, matched);
           }
-        var missingMatches = new List<Type>();
+        var missingMatches = new List<AbstractType>();
         for (var ix = 0; ix < cgs.size(); ix++)
           {
             if (matched[ix] == null && cgs.get(ix) != Types.t_ERROR)
@@ -193,8 +193,8 @@ public class Match extends Expr
     Type result = Types.resolved.t_void;
     for (Case c: cases)
       {
-        Type t = c.code.typeOrNull();
-        result = result == null || t == null ? null : result.union(t);
+        var t = c.code.typeOrNull();
+        result = result == null || t == null ? null : result.union(t.astType());
       }
     if (result == Types.t_UNDEFINED)
       {
@@ -218,7 +218,7 @@ public class Match extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     if (type_ == null)
       {
@@ -271,7 +271,7 @@ public class Match extends Expr
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, Type t)
+  public Expr propagateExpectedType(Resolution res, Feature outer, AbstractType t)
   {
     return addFieldForResult(res, outer, t);
   }

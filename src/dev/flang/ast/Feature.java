@@ -244,7 +244,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * For Features with !returnType.isConstructorType(), this will be set to the
    * result type during resolveTypes.
    */
-  private Type resultType_ = null;
+  private AbstractType resultType_ = null;
 
 
   /**
@@ -266,7 +266,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * set to the frame type during resolution.  This type uses the formal
    * generics as actual generics. For a generic feature, these must be replaced.
    */
-  private Type thisType_ = null;
+  private AbstractType thisType_ = null;
 
 
   /**
@@ -425,7 +425,7 @@ public class Feature extends AbstractFeature implements Stmnt
   Feature(Resolution res,
           SourcePosition pos,
           Visi v,
-          Type t,
+          AbstractType t,
           String qname,
           Feature outer)
   {
@@ -453,7 +453,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   Feature(SourcePosition pos,
           Visi v,
-          Type t,
+          AbstractType t,
           String qname)
   {
     this(pos,
@@ -482,7 +482,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   Feature(SourcePosition pos,
           Visi v,
-          Type t,
+          AbstractType t,
           String qname,
           Expr initialValue,
           Feature outerOfInitialValue)
@@ -490,7 +490,7 @@ public class Feature extends AbstractFeature implements Stmnt
     this(pos,
          v,
          0,
-         t == null ? NoType.INSTANCE : new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
+         t == null ? NoType.INSTANCE : new FunctionReturnType(t.astType()), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
          new List<String>(qname),
          FormalGenerics.NONE,
          new List<Feature>(),
@@ -522,14 +522,14 @@ public class Feature extends AbstractFeature implements Stmnt
   public Feature(SourcePosition pos,
                  Visi v,
                  int m,
-                 Type t,
+                 AbstractType t,
                  String n,
                  Contract c)
   {
     this(pos,
          v,
          m,
-         new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
+         new FunctionReturnType(t.astType()), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
          new List<String>(n),
          FormalGenerics.NONE,
          new List<Feature>(),
@@ -915,7 +915,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
     if (hasResultField())
       {
-        Type t = _impl.kind_ == Impl.Kind.Routine
+        var t = _impl.kind_ == Impl.Kind.Routine
           ? _returnType.functionReturnType()
           : Types.t_UNDEFINED /* dummy type, will be replaced during TYPES_INFERENCING phase */;
 
@@ -967,12 +967,12 @@ public class Feature extends AbstractFeature implements Stmnt
    * @return null if this is not a choice feature, the actual generic
    * parameters, i.e, the actual choice types, otherwise.
    */
-  public List<Type> choiceGenerics()
+  public List<AbstractType> choiceGenerics()
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVING_TYPES));
 
-    List<Type> result;
+    List<AbstractType> result;
 
     if (this == Types.f_ERROR)
       {
@@ -1032,7 +1032,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
             if (p.calledFeature() == Types.resolved.f_choice)
               {
-                p.generics = new List<Type>(Types.t_ERROR);
+                p.generics = new List<AbstractType>(Types.t_ERROR);
               }
           }
       }
@@ -1361,7 +1361,8 @@ public class Feature extends AbstractFeature implements Stmnt
 
         if (hasThisType())
           {
-            thisType_ = thisType().resolve(res, this);
+            var tt = thisType();
+            thisType_ = tt instanceof Type ttt ? ttt.resolve(res, this) : tt;
           }
 
         if ((_impl.kind_ == Impl.Kind.FieldActual) && (_impl._initialValue.typeOrNull() == null))
@@ -1593,7 +1594,7 @@ public class Feature extends AbstractFeature implements Stmnt
         }
       }
 
-    for (Type t : choiceGenerics())
+    for (var t : choiceGenerics())
       {
         if (!t.isRef())
           {
@@ -1602,7 +1603,7 @@ public class Feature extends AbstractFeature implements Stmnt
                 Errors.error(_pos,
                              "Choice cannot refer to its own value type as one of the choice alternatives",
                              "Embedding a choice type in itself would result in an infinitely large type.\n" +
-                             "Fauly generic argument: "+t+" at "+t.pos.show());
+                             "Fauly generic argument: "+t+" at "+t.pos().show());
                 thisType_ = Types.t_ERROR;
                 eraseChoiceGenerics();
               }
@@ -1614,7 +1615,7 @@ public class Feature extends AbstractFeature implements Stmnt
                     Errors.error(_pos,
                                  "Choice cannot refer to an outer value type as one of the choice alternatives",
                                  "Embedding an outer value in a choice type would result in infinitely large type.\n" +
-                                 "Fauly generic argument: "+t+" at "+t.pos.show());
+                                 "Fauly generic argument: "+t+" at "+t.pos().show());
                     // o.thisType_ = Types.t_ERROR;  NYI: Do we need this?
                     eraseChoiceGenerics();
                   }
@@ -1623,7 +1624,7 @@ public class Feature extends AbstractFeature implements Stmnt
           }
       }
 
-    thisType().checkChoice(_pos);
+    thisType().astType().checkChoice(_pos);
 
     checkNoClosureAccesses(res, _pos);
     for (Call p : _inherits)
@@ -1710,7 +1711,10 @@ public class Feature extends AbstractFeature implements Stmnt
         choiceTypeCheckAndInternalFields(res);
 
         resultType_ = resultType();
-        resultType_.checkChoice(_posOfReturnType);
+        if (resultType_ instanceof Type t)
+          {
+            t.checkChoice(_posOfReturnType);
+          }
 
         /**
          * Perform type inference from outside to the inside, i.e., propage the
@@ -1779,16 +1783,16 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return a new array containing this feature's formal argument types.
    */
-  public Type[] argTypes()
+  public AbstractType[] argTypes()
   {
     int argnum = 0;
-    var result = new Type[_arguments.size()];
+    var result = new AbstractType[_arguments.size()];
     for (Feature frml : _arguments)
       {
         check
           (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-        Type frmlT = frml.resultType();
+        var frmlT = frml.resultType();
         check(frmlT == Types.intern(frmlT));
         result[argnum] = frmlT;
         argnum++;
@@ -1916,14 +1920,14 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return interned type that represents t seen as it is seen from heir.
    */
-  public Type handDownNonOpen(Resolution res, Type t, AbstractFeature heir)
+  public AbstractType handDownNonOpen(Resolution res, AbstractType t, AbstractFeature heir)
   {
     if (PRECONDITIONS) require
       (!t.isOpenGeneric(),
        heir != null,
        _state.atLeast(State.CHECKING_TYPES1));
 
-    var a = handDown(res, new Type[] { t }, heir);
+    var a = handDown(res, new AbstractType[] { t }, heir);
 
     check
       (Errors.count() > 0 || a.length == 1);
@@ -1947,7 +1951,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * @return the types from the argument array a has seen this within
    * heir. Their number might have changed due to open generics.
    */
-  public Type[] handDown(Resolution res, Type[] a, AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
+  public AbstractType[] handDown(Resolution res, AbstractType[] a, AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
   {
     if (PRECONDITIONS) require
       (heir != null,
@@ -1959,16 +1963,16 @@ public class Feature extends AbstractFeature implements Stmnt
           {
             for (int i = 0; i < a.length; i++)
               {
-                Type ti = a[i];
+                var ti = a[i];
                 if (ti.isOpenGeneric())
                   {
-                    List<Type> frmlTs = ti.genericArgument().replaceOpen(c.generics);
+                    var frmlTs = ti.genericArgument().replaceOpen(c.generics);
                     a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
-                    for (Type tg : frmlTs)
+                    for (var tg : frmlTs)
                       {
                         check
                           (tg == Types.intern(tg));
-                        a[i] = tg;
+                        a[i] = tg.astType();
                         i++;
                       }
                     i = i - 1;
@@ -2561,9 +2565,9 @@ public class Feature extends AbstractFeature implements Stmnt
    * case the type is currently unknown (in particular, in case of a type
    * inference from a field declared later).
    */
-  private Type resultTypeRaw()
+  private AbstractType resultTypeRaw()
   {
-    Type result;
+    AbstractType result;
 
     check
       (state().atLeast(State.RESOLVING_TYPES));
@@ -2617,12 +2621,12 @@ public class Feature extends AbstractFeature implements Stmnt
    * case the type is currently unknown (in particular, in case of a type
    * inference to a field declared later).
    */
-  private Type resultTypeRaw(List<Type> actualGenerics)
+  private AbstractType resultTypeRaw(List<AbstractType> actualGenerics)
   {
     check
       (state().atLeast(State.RESOLVING_TYPES));
 
-    Type result = resultTypeRaw();
+    var result = resultTypeRaw();
     if (result != null)
       {
         result = result.actualType(this, actualGenerics);
@@ -2645,17 +2649,17 @@ public class Feature extends AbstractFeature implements Stmnt
    * @return the result type, Types.resulved.t_unit if none and null in case the
    * type must be inferenced and is not available yet.
    */
-  Type resultTypeIfPresent(Resolution res, List<Type> generics)
+  AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
   {
     if (!_state.atLeast(State.RESOLVING_TYPES))
       {
         res.resolveDeclarations(this);
         resolveTypes(res);
       }
-    Type result = resultTypeRaw(generics);
-    if (result != null)
+    var result = resultTypeRaw(generics);
+    if (result != null && result instanceof Type rt)
       {
-        result.findGenerics(outer());
+        rt.findGenerics(outer());
       }
     return result;
   }
@@ -2667,12 +2671,12 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return the result type, t_ERROR in case of an error. Never null.
    */
-  public Type resultType()
+  public AbstractType resultType()
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 || _state.atLeast(State.RESOLVED_TYPES));
 
-    Type result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw() : null;
+    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw() : null;
     if (result == null)
       {
         check
@@ -2704,9 +2708,9 @@ public class Feature extends AbstractFeature implements Stmnt
    * Types.t_ERROR in case the type could not be inferenced and error
    * was reported.
    */
-  Type resultTypeForTypeInference(SourcePosition rpos, Resolution res, List<Type> generics)
+  AbstractType resultTypeForTypeInference(SourcePosition rpos, Resolution res, List<AbstractType> generics)
   {
-    Type result = resultTypeIfPresent(res, generics);
+    var result = resultTypeIfPresent(res, generics);
     if (result == null)
       {
         // NYI: It would be nice to output the whole cycle here as part of the detail message
@@ -2728,12 +2732,12 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return this feature's frame object
    */
-  public Type thisType()
+  public AbstractType thisType()
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.FINDING_DECLARATIONS));
 
-    Type result = thisType_;
+    AbstractType result = thisType_;
     if (result == null)
       {
         result = this == Types.f_ERROR
@@ -2905,8 +2909,8 @@ public class Feature extends AbstractFeature implements Stmnt
     var o = this._outer;
     if (_impl._code != null || _contract != null)
       {
-        Type outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
-                                                   : o.thisType();
+        var outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
+                                                  : o.thisType();
         outerRef_ = new Feature(res,
                                 _pos,
                                 Consts.VISIBILITY_PRIVATE,
@@ -3051,7 +3055,7 @@ public class Feature extends AbstractFeature implements Stmnt
         Feature f = new Feature(_pos,
                                 _visibility,
                                 _modifiers,
-                                resultType().generic.select(s),
+                                resultType().generic().select(s),
                                 "#" + _featureName.baseName() + "." + s,
                                 _contract);
         res._module.findDeclarations(f, outer());

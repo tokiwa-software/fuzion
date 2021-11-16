@@ -1168,7 +1168,7 @@ call        : name ( actualGens actualArgs callTail
       {
         // we must check isActualGens() to distinguish the less operator in 'a < b'
         // from the actual generics in 'a<b>'.
-        List<Type> g = (!isActualGens()) ? Call.NO_GENERICS : actualGens();
+        var g = (!isActualGens()) ? Call.NO_GENERICS : actualGens();
         var l = actualArgs(line);
         result = new Call(pos, target, n, g, l);
         result = callTail(result);
@@ -1249,9 +1249,9 @@ actualGens  : "<" typeList ">"
             |
             ;
    */
-  List<Type> actualGens()
+  List<AbstractType> actualGens()
   {
-    List<Type> result = Call.NO_GENERICS;
+    var result = Call.NO_GENERICS;
     if (splitSkip("<"))
       {
         result = Type.NONE;
@@ -1312,9 +1312,9 @@ typeList    : type ( COMMA typeList
                    )
             ;
    */
-  List<Type> typeList()
+  List<AbstractType> typeList()
   {
-    List<Type> result = new List<>(type());
+    List<AbstractType> result = new List<>(type());
     while (skipComma())
       {
         result.add(type());
@@ -2293,7 +2293,7 @@ caseStar    : STAR       caseBlock
       }
     else
       {
-        List<Type> l = typeList();
+        var l = typeList();
         result = new Case(pos, l, caseBlock());
       }
     // NYI: Cleanup: new abstract class CaseCondition with three implementations: star, fieldDecl, typeList.
@@ -3363,7 +3363,7 @@ type        : onetype ( PIPE onetype ) *
     Type result = onetype();
     if (isOperator('|'))
       {
-        List<Type> l = new List<>(result);
+        List<AbstractType> l = new List<>(result);
         while (skip('|'))
           {
             l.add(onetype());
@@ -3456,7 +3456,7 @@ typeOpt     : type
       }
     else if (skip(Token.t_fun))
       {
-        List<Type> a = Type.NONE;
+        var a = Type.NONE;
         if (skipLParen())
           {
             if (current() != Token.t_rparen)
@@ -3471,7 +3471,7 @@ typeOpt     : type
       }
     else if (skip(Token.t_lparen))
       {
-        List<Type> a = Type.NONE;
+        var a = Type.NONE;
         if (current() != Token.t_rparen)
           {
             a = typeList();

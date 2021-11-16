@@ -118,9 +118,9 @@ public abstract class Expr extends ANY implements Stmnt
    *
    * @return this Expr's type or t_ERROR in case it is not known yet.
    */
-  public Type type()
+  public AbstractType type()
   {
-    Type result = typeOrNull();
+    var result = typeOrNull();
     if (result == null)
       {
         result = Types.t_ERROR;
@@ -140,7 +140,7 @@ public abstract class Expr extends ANY implements Stmnt
    *
    * @return this Expr's type or null if not known.
    */
-  public abstract Type typeOrNull();
+  public abstract AbstractType typeOrNull();
 
 
   /**
@@ -232,13 +232,13 @@ public abstract class Expr extends ANY implements Stmnt
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, Type t)
+  public Expr propagateExpectedType(Resolution res, Feature outer, AbstractType t)
   {
     return this;
   }
 
 
-  protected Expr addFieldForResult(Resolution res, Feature outer, Type t)
+  protected Expr addFieldForResult(Resolution res, Feature outer, AbstractType t)
   {
     var result = this;
     if (t != Types.resolved.t_void)
@@ -287,7 +287,7 @@ public abstract class Expr extends ANY implements Stmnt
    *
    * @return the formal type required by the user of this expression.
    */
-  Type getFormalType(Stmnt s, int arg)
+  AbstractType getFormalType(Stmnt s, int arg)
   {
     if (PRECONDITIONS) require
       (s instanceof Call || s instanceof Assign || s instanceof InlineArray);
@@ -333,14 +333,14 @@ public abstract class Expr extends ANY implements Stmnt
         if ((!t.isRef() || isCallToOuterRef()) && t != Types.resolved.t_void &&
             (frmlT.isRef() ||
              (frmlT.isChoice() &&
-              !frmlT.isAssignableFrom(t) &&
-              frmlT.isAssignableFrom(t.asRef()))) ||
+              !frmlT.isAssignableFrom(t.astType()) &&
+              frmlT.isAssignableFrom(t.asRef().astType()))) ||
             frmlT.isGenericArgument())
           {
             result = new Box(result, s, arg);
             t = result.type();
           }
-        if (frmlT.isChoice() && t != frmlT && frmlT.isAssignableFrom(t))
+        if (frmlT.isChoice() && t != frmlT && frmlT.isAssignableFrom(t.astType()))
           {
             result = new Tag(result, frmlT);
           }

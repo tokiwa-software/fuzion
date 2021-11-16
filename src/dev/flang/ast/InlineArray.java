@@ -63,7 +63,7 @@ public class InlineArray extends Expr
   /**
    * The type of this array.
    */
-  private Type type_;
+  private AbstractType type_;
 
 
   /**
@@ -98,7 +98,7 @@ public class InlineArray extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     if (type_ == null)
       {
@@ -108,7 +108,7 @@ public class InlineArray extends Expr
             var et = e.typeOrNull();
             t =
               t  == null ? null :
-              et == null ? null : t.union(et);
+              et == null ? null : t.union(et.astType());
           }
         type_ =
           t == null              ? null :
@@ -141,7 +141,7 @@ public class InlineArray extends Expr
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, Type t)
+  public Expr propagateExpectedType(Resolution res, Feature outer, AbstractType t)
   {
     if (type_ == null)
       {
@@ -166,15 +166,15 @@ public class InlineArray extends Expr
    *
    * @param if t is Array<T>; the element type T. Types.t_ERROR otherwise.
    */
-  private Type elementType(Type t)
+  private AbstractType elementType(AbstractType t)
   {
     if (PRECONDITIONS) require
       (t != null);
 
     if (t.featureOfType() == Types.resolved.f_array &&
-        t._generics.size() == 1)
+        t.generics().size() == 1)
       {
-        return t._generics.get(0);
+        return t.generics().get(0);
       }
     else
       {
@@ -188,7 +188,7 @@ public class InlineArray extends Expr
    *
    * @param if type() is Array<T>; the element type T. Types.t_ERROR otherwise.
    */
-  public Type elementType()
+  public AbstractType elementType()
   {
     return elementType(type());
   }
@@ -272,7 +272,7 @@ public class InlineArray extends Expr
     Expr result = this;
     if (true)  // NYI: This syntactic sugar should not be resolved if this array is a compile-time constant
       {
-        var eT           = new List<Type>(elementType());
+        var eT           = new List<AbstractType>(elementType());
         var lengthArgs   = new List<Expr>(new NumLiteral(_elements.size()));
         var sys          = new Call(pos(), null, "sys"                  ).resolveTypes(res, outer);
         var sysArrayCall = new Call(pos(), sys , "array", eT, lengthArgs).resolveTypes(res, outer);

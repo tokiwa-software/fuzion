@@ -168,7 +168,7 @@ public class FormalGenerics extends ANY
    * @return true iff the number of actual arguments fits with the number of
    * expected arguments.
    */
-  public boolean sizeMatches(List<Type> actualGenerics)
+  public boolean sizeMatches(List<AbstractType> actualGenerics)
   {
     if (asActuals_ == actualGenerics)
       {
@@ -201,7 +201,7 @@ public class FormalGenerics extends ANY
    *
    * @return true iff size and type of actualGenerics does match
    */
-  public boolean errorIfSizeOrTypeDoesNotMatch(List<Type> actualGenerics,
+  public boolean errorIfSizeOrTypeDoesNotMatch(List<AbstractType> actualGenerics,
                                                SourcePosition pos,
                                                String detail1,
                                                String detail2)
@@ -273,23 +273,24 @@ public class FormalGenerics extends ANY
    *
    * @param generics the actual generic arguments that should be resolved
    */
-  public static void resolve(Resolution res, List<Type> generics, AbstractFeature outer)
+  public static void resolve(Resolution res, List<AbstractType> generics, AbstractFeature outer)
   {
     if (!generics.isEmpty())
       {
         if (!(generics instanceof FormalGenerics.AsActuals))
           {
-            ListIterator<Type> i = generics.listIterator();
+            ListIterator<AbstractType> i = generics.listIterator();
             while (i.hasNext())
               {
-                i.set(i.next().resolve(res, outer));
+                var t = i.next();
+                i.set(t instanceof Type tt ? tt.resolve(res, outer) : t);
               }
           }
       }
   }
 
 
-  private List<Type> asActuals_ = null;
+  private List<AbstractType> asActuals_ = null;
 
 
   /**
@@ -297,9 +298,9 @@ public class FormalGenerics extends ANY
    * the generics list of formals used as actuals, e.g., in an outer reference,
    * such that it can be replaced 1:1 by the actual generic arguments.
    */
-  class AsActuals extends List<Type>
+  class AsActuals extends List<AbstractType>
   {
-    public boolean sizeMatches(List<Type> actualGenerics)
+    public boolean sizeMatches(List<AbstractType> actualGenerics)
     {
       return FormalGenerics.this.sizeMatches(actualGenerics);
     }
@@ -312,9 +313,9 @@ public class FormalGenerics extends ANY
    *
    * @return actual generics that match these formal generics.
    */
-  List<Type> asActuals()
+  List<AbstractType> asActuals()
   {
-    List<Type> result = asActuals_;
+    List<AbstractType> result = asActuals_;
     if (result == null)
       {
         if (this == FormalGenerics.NONE)
