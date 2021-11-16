@@ -120,14 +120,11 @@ public class LibraryFeature extends AbstractFeature
       (from._libraryFeature == null);
     from._libraryFeature = this;
 
-    var i = index;
-    var d = lib.data();
-    var ko = d.get(i);    i = i + 1; _kind = ko;
-    var l  = d.getInt(i); i = i + 4; var bytes = new byte[l];
-    d.get(i, bytes);      i = i + l;
-    var ac = d.getInt(i); i = i + 4;
-    var id = d.getInt(i); i = i + 4;
-    var bn = new String(bytes, 0, l, StandardCharsets.UTF_8);
+    _kind = lib.featureKind(index);
+    var bytes = lib.featureName(index);
+    var ac = lib.featureArgCount(index);
+    var id = lib.featureId(index);
+    var bn = new String(bytes, StandardCharsets.UTF_8);
     _featureName = FeatureName.get(bn, ac, id);
     check(_featureName == _from.featureName());
   }
@@ -222,12 +219,9 @@ public class LibraryFeature extends AbstractFeature
             else
               {
                 var o = _libModule.libraryFeature(i, _libModule._srcModule.featureFromOffset(i));
-                check(o != null);
-                i = i + 1;
-                var l  = d.getInt(i); i = i + 4;
-                i = i + l;
-                i = i + 4;
-                i = i + 4;
+                check
+                  (o != null);
+                i = _libModule.featureInnerPos(i);
                 result = findOuter(o, i);
                 var sz2 = d.getInt(i); i = i + 4 + sz2;
               }
