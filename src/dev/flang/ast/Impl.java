@@ -208,7 +208,7 @@ public class Impl extends ANY
       case FieldInit:
         // Field initialization of the form
         //
-        //   i int = 0;
+        //   i int := 0;
         //
         // needs a normal function return type:
         //
@@ -219,9 +219,7 @@ public class Impl extends ANY
           }
         else if (!(rt instanceof FunctionReturnType))
           {
-            Errors.error(f.pos(),
-                         "Illegal result type >>" + rt + "<< in field declaration with initializaton using \"=\"",
-                         "Field declared: " + f.qualifiedName());
+            AstErrors.illegalResultType(f, rt);
             rt = new FunctionReturnType(Types.t_ERROR);
           }
         break;
@@ -236,11 +234,7 @@ public class Impl extends ANY
         //
         if (rt != NoType.INSTANCE)
           {
-            Errors.error(f.pos(),
-                         "Illegal result type >>" + rt + "<< in field definition using \":=\"",
-                         "For field definition using \":=\", the type is determined automatically, " +
-                         "it must not be given explicitly.\n" +
-                         "Field declared: " + f.qualifiedName());
+            AstErrors.illegalResultTypeDef(f, rt);
             rt = NoType.INSTANCE;
           }
         break;
@@ -248,7 +242,7 @@ public class Impl extends ANY
       case Field:
         // A field declaration of the form
         //
-        //   f type;
+        //   f type := ?;
         //
         // requires a type
         if (rt == NoType.INSTANCE)
@@ -258,9 +252,7 @@ public class Impl extends ANY
           }
         else if (!(rt instanceof FunctionReturnType))
           {
-            Errors.error(f.pos(),
-                         "Illegal result type >>" + rt + "<< in field declaration",
-                         "Field declared: " + f.qualifiedName());
+            AstErrors.illegalResultTypeNoInit(f, rt);
             rt = new FunctionReturnType(Types.t_ERROR);
           }
         break;
@@ -274,11 +266,7 @@ public class Impl extends ANY
         //
         if (rt != NoType.INSTANCE)
           {
-            Errors.error(f.pos(),
-                         "Illegal result type >>" + rt + "<< in feature definition using \"=>\"",
-                         "For function definition using \"=>\", the type is determined automatically, " +
-                         "it must not be given explicitly.\n" +
-                         "Feature declared: " + f.qualifiedName());
+            AstErrors.illegalResultTypeRoutineDef(f, rt);
             rt = NoType.INSTANCE;
           }
         break;

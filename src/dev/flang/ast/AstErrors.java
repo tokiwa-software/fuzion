@@ -1175,5 +1175,37 @@ public class AstErrors extends ANY
           );
   }
 
+  static void illegalResultType(AbstractFeature f, ReturnType rt)
+  {
+    error(f.pos(),
+          "Illegal result type " + s(rt) + " in field declaration with initialization using " + ss(":="),
+          "Field declared: " + s(f));
+  }
+
+  static void illegalResultTypeDef(AbstractFeature f, ReturnType rt)
+  {
+    error(f.pos(),
+          "Illegal result type " + s(rt) + " in field definition using " + ss(":="),
+          "For field definition using " + ss(":=") + ", the type is determined automatically, " +
+          "it must not be given explicitly.\n" +
+          "Field declared: " + s(f));
+  }
+
+  static void illegalResultTypeNoInit(AbstractFeature f, ReturnType rt)
+  {
+    error(f.pos(),
+          "Illegal result type " + s(rt) + " in field declaration using " + ss(":= ?"),
+          "Field declared: " + s(f));
+  }
+
+  static void illegalResultTypeRoutineDef(AbstractFeature f, ReturnType rt)
+  {
+    error(f.pos(),
+          "Illegal result type " + s(rt) + " in feature definition using " + ss("=>"),
+          "For function definition using " + ss("=>") + ", the type is determined automatically, " +
+          "it must not be given explicitly.\n" +
+          "Feature declared: " + s(f));
+  }
+
 }
 /* end of file */
