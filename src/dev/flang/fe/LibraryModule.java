@@ -274,16 +274,23 @@ public class LibraryModule extends Module
   {
     return data().getInt(featureIdPos(at));
   }
-  int featureInnerPos(int at)
+  int featureInnerSizePos(int at)
   {
     var i = featureIdPos(at);
     return i + 4;
   }
+  int featureInnerSize(int at)
+  {
+    return data().getInt(featureInnerSizePos(at));
+  }
+  int featureInnerPos(int at)
+  {
+    var i = featureInnerSizePos(at);
+    return i + 4;
+  }
   int nextFeaturePos(int at)
   {
-    at = featureInnerPos(at);
-    var sz = data().getInt(at);
-    at = at + 4 + sz;
+    at = featureInnerPos(at) + featureInnerSize(at);
     return at;
   }
 

@@ -203,10 +203,9 @@ public class LibraryFeature extends AbstractFeature
        at < _libModule.data().limit());
 
     AbstractFeature result = null;
-    var d = _libModule.data();
-    var sz = d.getInt(at);
+    var sz = _libModule.data().getInt(at);
     check
-      (at+4+sz <= d.limit());
+      (at+4+sz <= _libModule.data().limit());
     var i = at+4;
     if (i <= _index && _index < i+sz)
       {
@@ -221,9 +220,9 @@ public class LibraryFeature extends AbstractFeature
                 var o = _libModule.libraryFeature(i, _libModule._srcModule.featureFromOffset(i));
                 check
                   (o != null);
-                i = _libModule.featureInnerPos(i);
-                result = findOuter(o, i);
-                var sz2 = d.getInt(i); i = i + 4 + sz2;
+                var inner = _libModule.featureInnerSizePos(i);
+                result = findOuter(o, inner);
+                i = _libModule.nextFeaturePos(i);
               }
           }
       }
@@ -238,7 +237,7 @@ public class LibraryFeature extends AbstractFeature
     if (_arguments == null)
       {
         _arguments = new List<AbstractFeature>();
-        var i = _libModule.featureInnerPos(_index) + 4;
+        var i = _libModule.featureInnerPos(_index);
         var n = _libModule.featureArgCount(_index);
         while (_arguments.size() < n)
           {
