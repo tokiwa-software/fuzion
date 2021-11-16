@@ -100,7 +100,16 @@ public class AstErrors extends ANY
   }
   static String slg(List<Generic> g)
   {
-    return st(g.toString());
+    var sl = new List<String>();
+    for (var e : g)
+      {
+        sl.add(s(e));
+      }
+    return sl.toString();
+  }
+  static String s(FormalGenerics fg)
+  {
+    return st(fg.toString());
   }
   static String s(Expr e)
   {
@@ -1108,8 +1117,8 @@ public class AstErrors extends ANY
     error(pos,
           "Failed to infer actual generic parameters",
           "In call to " + s(cf) + ", no actual generic parameters are given and inference of the generic parameters failed.\n" +
-          "Expected generic parameters: " + s(cf) + "\n"+
-          "Type inference failed for generic " + singularOrPlural(missing.size(), "argument") + " " + slg(missing) + "\n");
+          "Expected generic parameters: " + s(cf.generics()) + "\n"+
+          "Type inference failed for " + singularOrPlural(missing.size(), "generic argument") + " " + slg(missing) + "\n");
   }
 
   static void functionMustNotProvideActuals(SourcePosition pos, Call c, List<Expr> actuals)
