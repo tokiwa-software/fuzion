@@ -98,7 +98,15 @@ public class AstErrors extends ANY
   {
     return st(g.toString());
   }
+  static String slg(List<Generic> g)
+  {
+    return st(g.toString());
+  }
   static String s(Expr e)
+  {
+    return expr(e.toString());
+  }
+  static String sle(List<Expr> e)
   {
     return expr(e.toString());
   }
@@ -1039,6 +1047,101 @@ public class AstErrors extends ANY
           "The definition of a field using " + ss(":=") + ", or of a feature or function\n" +
           "using " + ss("=>") + " must not create cyclic type dependencies.\n"+
           "Referenced feature: " + s(f) + " at " + at.show());
+  }
+
+  static void illegalSelect(SourcePosition pos, String select, NumberFormatException e)
+  {
+    error(pos,
+          "Illegal select clause",
+          "Failed to parse integer " + ss(select) + ": " + e);
+  }
+
+  static void cannotAccessValueOfOpenGeneric(SourcePosition pos, AbstractFeature f, AbstractType t)
+  {
+    error(pos,
+          "Cannot access value of open generic type",
+          "When calling " + s(f) + " result type " + s(t) + " is open generic, " +
+          "which cannot be accessed directly.  You might try to access one specific generic parameter " +
+          "by adding '.0', '.1', etc.");
+  }
+
+  static void useOfSelectorRequiresCallWithOpenGeneric(SourcePosition pos, AbstractFeature f, String name, int select, AbstractType t)
+  {
+    error(pos,
+          "Use of selector requires call to feature with open generic type",
+          "In call to " + s(f) + "\n" +
+          "Selected variant " + ss(name + "." + select) + "\n" +
+          "Type of called feature: " + s(t));
+  }
+
+  static void selectorRange(SourcePosition pos, int sz, AbstractFeature f, String name, int select, List<AbstractType> types)
+  {
+    error(pos,
+          "" +
+          (sz > 1  ? "Selector must be in the range of 0.." + (sz - 1) + " for " + sz +" actual generic arguments" :
+           sz == 1 ? "Selector must be 0 for one actual generic argument"
+           : "Selector not permitted since no actual genenric arguments are")+
+          " given for the open generic type",
+          "In call to " + s(f) + "\n" +
+          "Selected variant " + ss(name + "." + select) + "\n" +
+          "Number of actual generic arguments: " + types.size() + "\n" +
+          "Actual generic arguments: " + (sz == 0 ? "none" : s(types)) + "\n");
+  }
+
+  static void failedToInferOpenGenericArg(SourcePosition pos, int count, Expr actual)
+  {
+    error(pos,
+          "Failed to infer open generic argument type from actual argument.",
+          "Type of " + ordinal(count) + " actual argument could not be inferred at " + actual.pos.show());
+  }
+
+  static void incompatibleTypesDuringTypeInference(SourcePosition pos, Generic g, String foundAt)
+  {
+    error(pos,
+          "Incompatible types found during type inference for generic arguments",
+          "Types inferred for " + ordinal(g.index()+1) + " generic argument " + s(g) + ":\n" +
+          foundAt);
+  }
+
+  static void faildToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<Generic> missing)
+  {
+    error(pos,
+          "Failed to infer actual generic parameters",
+          "In call to " + s(cf) + ", no actual generic parameters are given and inference of the generic parameters failed.\n" +
+          "Expected generic parameters: " + s(cf) + "\n"+
+          "Type inference failed for generic " + singularOrPlural(missing.size(), "argument") + " " + slg(missing) + "\n");
+  }
+
+  static void functionMustNotProvideActuals(SourcePosition pos, Call c, List<Expr> actuals)
+  {
+    error(pos,
+          "Function declaration of the form " + ss("fun a.b") + " must not provide any actual arguments to " + ss("b") + ", " + ss("b") + " is not called here",
+          "Call that followed " + ss("fun") + ": " + s(c) + "\n" +
+          "Actual arguments: " + sle(actuals) + "\n");
+  }
+
+  static void functionMustNotProvideParentheses(SourcePosition pos, Call c)
+  {
+    error(pos,
+          "Function declaration of the form " + ss("fun a.b") + " must not provide any parentheses " + ss("b()") + ", " + ss("b") +" is not called here",
+          "Call that followed " + ss("fun") + ": " + s(c) + "\n");
+  }
+
+  static void cannotCallChoice(SourcePosition pos, AbstractFeature cf)
+  {
+    error(pos,
+          "Cannot call choice feature",
+          "A choice feature is only used as a type, values are created by assignments only.\n"+
+          "Choice feature that is called: " + s(cf) + "\n" +
+          "Declared at " + cf.pos().show());
+  }
+
+  static void incompatibleActualGeneric(SourcePosition pos, Generic f, AbstractType g)
+  {
+    error(pos,
+          "Incompatible actual generic parameter",
+          "formal type " + s(f) + "\n"+
+          "actual type " + s(g) + "\n");
   }
 
 }

@@ -322,9 +322,7 @@ public class Call extends Expr
       }
     catch (NumberFormatException e)
       {
-        Errors.error(pos,
-                     "Illegal select clause",
-                     "Failed to parse integer '"  +select + "': " + e);
+        AstErrors.illegalSelect(pos, select, e);
       }
     this._select = s;
     this.generics = NO_GENERICS;
@@ -1113,18 +1111,11 @@ public class Call extends Expr
       {
         if (_select == -1)
           {
-            Errors.error(pos,
-                         "Cannot access value of open generic type",
-                         "When calling " + calledFeature_.qualifiedName() + " result type " + t + " is open generic, " +
-                         "which cannot be accessed directly.  You might try to access one specific generic parameter " +
-                         "by adding '.0', '.1', etc.");
+            AstErrors.cannotAccessValueOfOpenGeneric(pos, calledFeature_, t);
           }
         else
           {
-            Errors.error(pos, "Use of selector requires call to feature with open generic type",
-                         "In call to " + calledFeature_.qualifiedName() + "\n" +
-                         "Selected variant " + name + "." + _select + "\n" +
-                         "Type of called feature: " + t);
+            AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos, calledFeature_, name, _select, t);
           }
         t = Types.t_ERROR;
       }
@@ -1145,16 +1136,7 @@ public class Call extends Expr
             int sz = types.size();
             if (_select >= sz)
               {
-                Errors.error(pos,
-                             "" +
-                             (sz > 1  ? "Selector must be in the range of 0.." + (sz - 1) + " for " + sz +" actual generic arguments" :
-                              sz == 1 ? "Selector must be 0 for one actual generic argument"
-                              : "Selector not permitted since no actual genenric arguments are")+
-                             " given for the open generic type",
-                             "In call to " + calledFeature_.qualifiedName() + "\n" +
-                             "Selected variant " + name + "." + _select + "\n" +
-                             "Number of actual generic arguments: " + types.size() + "\n" +
-                             "Actual generic arguments: " + (sz == 0 ? "none" : types) + "\n");
+                AstErrors.selectorRange(pos, sz, calledFeature_, name, _select, types);
                 t = Types.t_ERROR;
                 calledFeature_ = Types.f_ERROR;
               }
@@ -1231,9 +1213,7 @@ public class Call extends Expr
                 if (actualType == null)
                   {
                     actualType = Types.t_ERROR;
-                    Errors.error(pos,
-                                 "Failed to infer open generic argument type from actual argument.",
-                                 "Type of " + Errors.ordinal(count) + " actual argument could not be inferred at " + actual.pos.show());
+                    AstErrors.failedToInferOpenGenericArg(pos, count, actual);
                   }
                 inferredOpen.add(actualType);
               }
@@ -1266,10 +1246,7 @@ public class Call extends Expr
           }
         else if (conflict[i])
           {
-            Errors.error(pos,
-                         "Incompatible types found during type inference for generic arguments",
-                         "Types inferred for " + Errors.ordinal(i+1) + " generic argument " + g + ":\n" +
-                         foundAt[i]);
+            AstErrors.incompatibleTypesDuringTypeInference(pos, g, foundAt[i]);
             t = Types.t_ERROR;
           }
 
@@ -1280,11 +1257,7 @@ public class Call extends Expr
       }
     if (!missing.isEmpty())
       {
-        Errors.error(pos,
-                     "Failed to infer actual generic parameters",
-                     "In call to " + cf.qualifiedName() + ", no actual generic parameters are given and inference of the generic parameters failed.\n" +
-                     "Expected generic parameters: " + cf.generics() + "\n"+
-                     "Type inference failed for generic " + (missing.size() > 1 ? "arguments" : "argument") + " " + missing + "\n");
+        AstErrors.faildToInferActualGeneric(pos,cf, missing);
       }
   }
 
@@ -1514,16 +1487,11 @@ public class Call extends Expr
         // call will be replaced during Function.resolveSyntacticSugar.
         if (_actuals.size() != 0)
           {
-            Errors.error(pos,
-                         "Function declaration of the form >>fun a.b<< must not provide any actual arguments to b, b is not called here",
-                         "Call that followed >>fun<<: " + this + "\n" +
-                         "Actual arguments: " + _actuals + "\n");
+            AstErrors.functionMustNotProvideActuals(pos, this, _actuals);
           }
-        if (hasParentheses())
+        else if (hasParentheses())
           {
-            Errors.error(pos,
-                         "Function declaration of the form >>fun a.b<< must not provide any parentheses b(), b is not called here",
-                         "Call that followed >>fun<<: " + this + "\n");
+            AstErrors.functionMustNotProvideParentheses(pos, this);
           }
       }
     else if (_type != Types.t_ERROR)
@@ -1558,11 +1526,7 @@ public class Call extends Expr
               }
             if (!ok)
               {
-                Errors.error(pos,
-                             "Cannot call choice feature",
-                             "A choice feature is only used as a type, values are created by assignments only.\n"+
-                             "Choice feature that is called: " + calledFeature_.qualifiedName() + "\n" +
-                             "Declared at " + calledFeature_.pos().show());
+                AstErrors.cannotCallChoice(pos, calledFeature_);
               }
           }
 
@@ -1576,10 +1540,7 @@ public class Call extends Expr
             var g = gi.next();
             if (!f.constraint().constraintAssignableFrom(g))
               {
-                Errors.error(pos,
-                             "Incompatible actual generic parameter",
-                             "formal type "+f+"\n"+
-                             "actual type "+g+"\n");
+                AstErrors.incompatibleActualGeneric(pos, f, g);
               }
           }
       }
