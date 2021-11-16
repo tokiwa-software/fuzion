@@ -223,6 +223,71 @@ public class LibraryModule extends Module
   }
 
 
+  /*---------------------  accessing mir file data  ---------------------*/
+
+
+  int featureKindPos(int at)
+  {
+    return at;
+  }
+  int featureKind(int at)
+  {
+    var ko = data().get(featureKindPos(at));
+    return ko;
+  }
+  int featureNamePos(int at)
+  {
+    var i = featureKindPos(at) + 1;
+    return i;
+  }
+  int featureNameLength(int at)
+  {
+    var i = featureNamePos(at);
+    var l = data().getInt(i);
+    return l;
+  }
+  byte[] featureName(int at)
+  {
+    var i = featureNamePos(at);
+    var d = data();
+    var l = d.getInt(i); i = i + 4;
+    var b = new byte[l];
+    d.get(i, b);
+    return b;
+  }
+  int featureArgCountPos(int at)
+  {
+    var i = featureNamePos(at);
+    var l = featureNameLength(at);
+    return i + 4 + l;
+  }
+  int featureArgCount(int at)
+  {
+    return data().getInt(featureArgCountPos(at));
+  }
+  int featureIdPos(int at)
+  {
+    var i = featureArgCountPos(at);
+    return i + 4;
+  }
+  int featureId(int at)
+  {
+    return data().getInt(featureIdPos(at));
+  }
+  int featureInnerPos(int at)
+  {
+    var i = featureIdPos(at);
+    return i + 4;
+  }
+  int nextFeaturePos(int at)
+  {
+    at = featureInnerPos(at);
+    var sz = data().getInt(at);
+    at = at + 4 + sz;
+    return at;
+  }
+
+
   /*-------------------------------  misc  ------------------------------*/
 
 

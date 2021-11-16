@@ -1054,7 +1054,7 @@ public class Call extends Expr
         resolvedFormalArgumentTypes[argnum + i] = a[i];
         if (frml.resultType().isOpenGeneric())
           {
-            frml.select(res, i); // make sure features for all actual generics types exist
+            frml.astFeature().select(res, i); // make sure features for all actual generics types exist
           }
       }
   }
@@ -1077,7 +1077,7 @@ public class Call extends Expr
           (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
         int argnum = count;  // effectively final copy of count
-        ((Feature) frml).whenResolvedTypes    // NYI: Cast!
+        frml.whenResolvedTypes
           (() ->
            {
              // first, replace generics according to inheritance:

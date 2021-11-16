@@ -267,6 +267,23 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Perform an action as soon as this feature has reached
+   * State.atLeast(State.RESOLVED_TYPES).  Perform the action immediately if
+   * this is already the case, otherwise record the action to perform it as soon
+   * as this is the case.
+   *
+   * This is used to solve cyclic dependencies in case features A and B use one
+   * another.
+   *
+   * @param r the action
+   */
+  void whenResolvedTypes(Runnable r)
+  {
+    r.run();
+  }
+
+
+  /**
    * Check if this is a built in primitive.  For these, the type of an outer
    * reference for inner features is not a reference, but a copy of the value
    * itself since there are no inner features to modify the value.

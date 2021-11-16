@@ -99,6 +99,12 @@ public class LibraryFeature extends AbstractFeature
   AbstractFeature _outer = null;
 
 
+  /**
+   * cached result of arguments()
+   */
+  List<AbstractFeature> _arguments = null;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -230,6 +236,25 @@ public class LibraryFeature extends AbstractFeature
     return result;
   }
 
+  /**
+   * The formal arguments of this feature
+   */
+  public List<AbstractFeature> arguments()
+  {
+    if (_arguments == null)
+      {
+        _arguments = new List<AbstractFeature>();
+        var i = _libModule.featureInnerPos(_index) + 4;
+        var n = _libModule.featureArgCount(_index);
+        while (_arguments.size() < n)
+          {
+            var a = _libModule.libraryFeature(i, (Feature) _from.arguments().get(_arguments.size()).astFeature());
+            _arguments.add(a);
+            i = _libModule.nextFeaturePos(i);
+          }
+      }
+    return _arguments;
+  }
 
   public FeatureName featureName()
   {
@@ -241,7 +266,6 @@ public class LibraryFeature extends AbstractFeature
   public Generic getGeneric(String name) { return _from.getGeneric(name); }
   public List<Call> inherits() { return _from.inherits(); }
   public AbstractType thisType() { return _from.thisType(); }
-  public List<AbstractFeature> arguments() { return _from.arguments(); }
   public FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir) { return _from.handDown(res, f, fn, p, heir); }
   public AbstractType[] handDown(Resolution res, AbstractType[] a, AbstractFeature heir) { return _from.handDown(res, a, heir); }
   public AbstractType resultType() { return _from.resultType(); }

@@ -1320,14 +1320,7 @@ public class Feature extends AbstractFeature implements Stmnt
      */
     void visitActuals(Runnable r, Feature outer)
     {
-      if (outer._state.atLeast(State.RESOLVED_TYPES))
-        {
-          r.run();
-        }
-      else
-        {
-          outer.whenResolvedTypes.add(r);
-        }
+      outer.whenResolvedTypes.add(r);
     }
   }
 

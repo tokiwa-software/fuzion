@@ -1230,21 +1230,38 @@ public class SourceModule extends Module implements SrcModule, MirModule
       }
     else
       {
+        // the first inner features written out will be the formal arguments,
+        // followed by all other inner features in (alphabetical?) order.
+        var innerFeatures = new List<AbstractFeature>();
+        var args = new TreeSet<AbstractFeature>();
+        for (var a : f.arguments())
+          {
+            innerFeatures.add(a);
+            args.add(a);
+          }
+        for (var i : m.values())
+          {
+            if (!args.contains(i))
+              {
+                innerFeatures.add(i);
+              }
+          }
+
         // NYI: Calling collectFeatures twice here results in performance that
         // is quadratic in the nesting level of the features:
 
         // determine the size
         var dummy = new DOutputStream();
-        collectFeatures(false, dummy, m.values());
+        collectFeatures(false, dummy, innerFeatures);
         var sz = dummy.offset();
         o.writeInt(sz);
 
         // write the actual data
-        collectFeatures(real, o, m.values());
+        collectFeatures(real, o, innerFeatures);
       }
   }
 
-  void collectFeatures(boolean real, DOutputStream o, Collection<AbstractFeature> fs) throws IOException
+  void collectFeatures(boolean real, DOutputStream o, List<AbstractFeature> fs) throws IOException
   {
     for (var df : fs)
       {
@@ -1275,6 +1292,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
     o.write(utf8Name);                       // NYI: internal names (outer refs, statement results) are too long and waste memory
     o.writeInt(f.featureName().argCount());  // NYI: use better integer encoding
     o.writeInt(f.featureName()._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
+    check
+      (f.arguments().size() == f.featureName().argCount());
     collectData(real, o, f);
     if (real)
       {
