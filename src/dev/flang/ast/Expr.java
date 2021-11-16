@@ -126,9 +126,7 @@ public abstract class Expr extends ANY implements Stmnt
         result = Types.t_ERROR;
         // NYI: This should try to find the reason for the missing type and
         // print the problem
-        Errors.error(pos,
-                     "Failed to infer type of expression.",
-                     "Expression with unknown type: " + this);
+        AstErrors.failedToInferType(this);
       }
     return result;
   }

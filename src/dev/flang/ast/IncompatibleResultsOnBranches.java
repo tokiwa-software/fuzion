@@ -84,22 +84,8 @@ public class IncompatibleResultsOnBranches extends ANY
       }
     check
       (types_.size() > 1);
-    StringBuilder typesMsg = new StringBuilder();
-    for (var t : types_)
-      {
-        List<SourcePosition> l = positions_.get(t);
-        typesMsg.append(( l.size() == 1 ? "block returns" : "blocks return") + " value of type " + t + " at ");
-        boolean first = true;
-        for (SourcePosition p : l)
-          {
-            typesMsg.append((first ? "" : "and at ")+ p.show() + "\n");
-            first = false;
-          }
-      }
-    Errors.error(pos,
-                 msg,
-                 "Incompatible result types in different branches:\n" +
-                 typesMsg);
+
+    AstErrors.incompatibleResultsOnBranches(pos, msg, types_, positions_);
   }
 
 

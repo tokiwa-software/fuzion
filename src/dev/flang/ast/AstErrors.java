@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -1216,5 +1217,32 @@ public class AstErrors extends ANY
           "Feature declared: " + s(f));
   }
 
+  static void failedToInferType(Expr e)
+  {
+    error(e.pos(),
+          "Failed to infer type of expression.",
+          "Expression with unknown type: " + s(e));
+  }
+
+  static void incompatibleResultsOnBranches(SourcePosition pos, String msg, List<AbstractType> types, Map<AbstractType, List<SourcePosition>> positions)
+  {
+    StringBuilder typesMsg = new StringBuilder();
+    for (var t : types)
+      {
+        var l = positions.get(t);
+        typesMsg.append(( l.size() == 1 ? "block returns" : "blocks return") + " value of type " + s(t) + " at ");
+        boolean first = true;
+        for (SourcePosition p : l)
+          {
+            typesMsg.append((first ? "" : "and at ") + p.show() + "\n");
+            first = false;
+          }
+      }
+    error(pos,
+          msg,
+          "Incompatible result types in different branches:\n" +
+          typesMsg);
+  }
 }
+
 /* end of file */
