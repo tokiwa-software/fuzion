@@ -282,13 +282,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * For fields of open generic type: The results of select(res,i) and
-   * select(i).
-   */
-  private ArrayList<Feature> _selectOpen;
-
-
-  /**
    * Is this a loop's index variable that is automatically updated by the loops
    * for-clause.  If so, assignments outside the loop prolog or nextIteration
    * parts are not allowed.
@@ -2972,80 +2965,6 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean isOpenGenericField()
   {
     return isField() && resultType().isOpenGeneric();
-  }
-
-
-  /**
-   * For fields of open generic type, this creates actual fields for the actual
-   * generic argument.
-   *
-   * @param res Resolution instance use to resolve this for types.
-   *
-   * @param i the index of the actual generic argument
-   *
-   * @return the field that corresponds to the i-th actual generic argument.
-   */
-  AbstractFeature select(Resolution res, int i)
-  {
-    if (PRECONDITIONS) require
-      (isOpenGenericField(),
-       i >= 0,
-       _state.atLeast(State.RESOLVED_TYPES));
-
-    if (_selectOpen == null)
-      {
-        _selectOpen = new ArrayList<>();
-      }
-    int s = _selectOpen.size();
-    while (s <= i)
-      {
-        Feature f = new Feature(_pos,
-                                _visibility,
-                                _modifiers,
-                                resultType().generic().select(s),
-                                "#" + _featureName.baseName() + "." + s,
-                                _contract);
-        res._module.findDeclarations(f, outer());
-        f.scheduleForResolution(res);
-        _selectOpen.add(f);
-        s = _selectOpen.size();
-      }
-    return _selectOpen.get(i);
-  }
-
-
-  /**
-   * For fields of open generic type, this returns the actual fields for the
-   * actual generic argument.
-   *
-   * @param i the index of the actual generic argument
-   *
-   * @return the field that corresponds to the i-th actual generic argument.
-   */
-  public Feature select(int i)
-  {
-    if (PRECONDITIONS) require
-      (isOpenGenericField(),
-       _state.atLeast(State.RESOLVED),
-       i < selectSize());
-
-    return _selectOpen.get(i);
-  }
-
-
-  /**
-   * For fields of open generic type, this returns the number of actual fields
-   * for the actual generic argument.
-   *
-   * @return the number of fields.
-   */
-  public int selectSize()
-  {
-    if (PRECONDITIONS) require
-      (isOpenGenericField(),
-       _state.atLeast(State.RESOLVED));
-
-    return _selectOpen == null ? 0 : _selectOpen.size();
   }
 
 

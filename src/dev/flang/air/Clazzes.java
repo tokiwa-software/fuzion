@@ -137,7 +137,7 @@ public class Clazzes extends ANY
             {
               var oldClosed = closed;
               closed = false;
-              _dummy = new Clazz(_t.get(), universe.get());
+              _dummy = new Clazz(_t.get(), -1, universe.get());
               closed = oldClosed;
             }
           _clazz = clazzes.get(_dummy);
@@ -222,15 +222,15 @@ public class Clazzes extends ANY
    * found that a feature is called dynamically: Then this features needs to be
    * added to the dynamic binding data of heir classes of f.outer).
    */
-  private static TreeMap<AbstractFeature, List<Runnable>> _whenCalledDynamically_ = new TreeMap();
-  static TreeMap<Clazz, List<Runnable>> _whenCalled_ = new TreeMap();
+  private static TreeMap<AbstractFeature, List<Runnable>> _whenCalledDynamically_ = new TreeMap<>();
+  static TreeMap<Clazz, List<Runnable>> _whenCalled_ = new TreeMap<>();
 
 
   /**
    * Set of features that are called dynamically. Populated during findClasses
    * phase.
    */
-  private static TreeSet<AbstractFeature> _calledDynamically_ = new TreeSet();
+  private static TreeSet<AbstractFeature> _calledDynamically_ = new TreeSet<>();
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -280,6 +280,27 @@ public class Clazzes extends ANY
    * within outer.
    */
   public static Clazz create(AbstractType actualType, Clazz outer)
+  {
+    return create(actualType, -1, outer);
+  }
+
+
+  /**
+   * Create a clazz for the given actual type and the given outer clazz.
+   * Clazzes created are recorded to be handed by findAllClasses.
+   *
+   * @param actualType the type of the clazz, must be free from generics
+   *
+   * @param select in case actualType is a field with open generic result, this
+   * choses the actual field from outer's actual generics. -1 otherwise.
+   *
+   * @param clazz the runtime clazz of the outer feature of
+   * actualType.featureOfType.
+   *
+   * @return the existing or newly created Clazz that represents actualType
+   * within outer.
+   */
+  public static Clazz create(AbstractType actualType, int select, Clazz outer)
   {
     if (PRECONDITIONS) require
       (actualType == Types.intern(actualType),
@@ -336,7 +357,7 @@ public class Clazzes extends ANY
         // but it might be overkill in some cases. We might rethink this and,
         // e.g. treat clazzes of inherited features with a reference outer clazz
         // the same.
-        var newcl =  new Clazz(actualType, outer);
+        var newcl =  new Clazz(actualType, select, outer);
         result = intern(newcl);
         if (result == newcl)
           {
@@ -831,17 +852,13 @@ public class Clazzes extends ANY
       }
     if (!cf.isChoice() && tclazz != c_void.get())
       {
-        var innerClazz = tclazz.lookup(cf, outerClazz.actualGenerics(c.generics), c.pos, c.isInheritanceCall_);
+        var innerClazz = tclazz.lookup(cf, c.select(), outerClazz.actualGenerics(c.generics), c.pos, c.isInheritanceCall_);
         if (c.sid_ < 0)
           {
             c.sid_ = getRuntimeClazzIds(2);
           }
         outerClazz.setRuntimeData(c.sid_ + 0, innerClazz);
         outerClazz.setRuntimeData(c.sid_ + 1, tclazz    );
-        if (innerClazz.feature().isField()) // NYI: workaround to create temp clazz created by clazzForField, remove once clazzForField is removed
-          {
-            Clazz fclazz = tclazz.clazzForField(innerClazz.feature());
-          }
 
         if (!dynamic)
           {
@@ -998,8 +1015,10 @@ public class Clazzes extends ANY
         if (tclazz != c_void.get())
           {
             var inner = tclazz.lookup(c.calledFeature(),
+                                      c.select(),
                                       outerClazz.actualGenerics(c.generics),
-                                      c.pos());
+                                      c.pos(),
+                                      false);
             result = inner.resultClazz();
           }
         else
@@ -1119,11 +1138,16 @@ public class Clazzes extends ANY
    * clazz that is inserted as the outer clazz for the outermost type that was
    * explicitly given in the source code.
    *
+   * @param thiz the type of the clazz, must be free from generics
+   *
+   * @param select in case thiz is a field with open generic result, this
+   * choses the actual field from outer's actual generics. -1 otherwise.
+   *
    * @param outerClazz the outer clazz
    *
-   * @return
+   * @return the corresponding Clazz.
    */
-  public static Clazz clazzWithSpecificOuter(AbstractType thiz, Clazz outerClazz)
+  public static Clazz clazzWithSpecificOuter(AbstractType thiz, int select, Clazz outerClazz)
   {
     if (PRECONDITIONS) require
       (!thiz.isOpenGeneric(),
@@ -1135,11 +1159,11 @@ public class Clazzes extends ANY
 
     if (!thiz.outerMostInSource())
       {
-        outerClazz = clazzWithSpecificOuter(thiz.outer(), outerClazz._outer);
+        outerClazz = clazzWithSpecificOuter(thiz.outer(), -1, outerClazz._outer);
       }
 
     var t = Types.intern(thiz);
-    result = create(t, outerClazz);
+    result = create(t, select, outerClazz);
 
     return result;
   }
@@ -1230,6 +1254,7 @@ public class Clazzes extends ANY
   {
     return isUsedAtAll(thiz);
   }
+
 
   /**
    * Has this feature been found to be used?

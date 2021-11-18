@@ -276,8 +276,6 @@ public class LibraryFeature extends AbstractFeature
   public void visit(FeatureVisitor v) { _from.visit(v); }
   public boolean isOpenGenericField() { return _from.isOpenGenericField(); }
   public int depth() { return _from.depth(); }
-  public int selectSize() { return _from.selectSize(); }
-  public Feature select(int i) { return _from.select(i); }
   public Feature choiceTag() { return _from.choiceTag(); }
 
   public Impl.Kind implKind() { return _from.implKind(); }      // NYI: remove, used only in Clazz.java for some obscure case

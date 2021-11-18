@@ -98,7 +98,8 @@ public class Call extends Expr
    * For a call a.b.4 with a select clause ".4" to pick a variant from a field
    * of an open generic type, this is the chosen variant.
    */
-  int _select;
+  final int _select;
+  public int select() { return _select; }
 
 
   /**
@@ -1052,10 +1053,6 @@ public class Call extends Expr
     for (int i = 0; i < a.length; i++)
       {
         resolvedFormalArgumentTypes[argnum + i] = a[i];
-        if (frml.resultType().isOpenGeneric())
-          {
-            frml.astFeature().select(res, i); // make sure features for all actual generics types exist
-          }
       }
   }
 
@@ -1106,50 +1103,41 @@ public class Call extends Expr
    */
   private void resolveType(Resolution res, AbstractType t, AbstractFeature outer)
   {
-    boolean open = _select != -1;
-    if (open != t.isOpenGeneric())
+    var tt = targetTypeOrConstraint(res);
+    if (_select < 0 && t.isOpenGeneric())
       {
-        if (_select == -1)
-          {
-            AstErrors.cannotAccessValueOfOpenGeneric(pos, calledFeature_, t);
-          }
-        else
-          {
-            AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos, calledFeature_, name, _select, t);
-          }
+        AstErrors.cannotAccessValueOfOpenGeneric(pos, calledFeature_, t);
         t = Types.t_ERROR;
+      }
+    else if (_select >= 0 && !t.isOpenGeneric())
+      {
+        AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos, calledFeature_, name, _select, t);
+        t = Types.t_ERROR;
+      }
+    else if (_select < 0)
+      {
+        t = tt.actualType(t);
+        if (calledFeature_.isConstructor() && t != Types.resolved.t_void)
+          {  /* specialize t for the target type here */
+            t = new Type(t.astType(), t.generics(), tt.astType());
+          }
       }
     else
       {
-        var tt = targetTypeOrConstraint(res);
-        if (!open)
+        var types = t.genericArgument().replaceOpen(tt.generics());
+        int sz = types.size();
+        if (_select >= sz)
           {
-            t = tt.actualType(t);
-            if (calledFeature_.isConstructor() && t != Types.resolved.t_void)
-              {  /* specialize t for the target type here */
-                t = new Type(t.astType(), t.generics(), tt.astType());
-              }
+            AstErrors.selectorRange(pos, sz, calledFeature_, name, _select, types);
+            calledFeature_ = Types.f_ERROR;
+            t = Types.t_ERROR;
           }
         else
           {
-            var types = t.genericArgument().replaceOpen(tt.generics());
-            int sz = types.size();
-            if (_select >= sz)
-              {
-                AstErrors.selectorRange(pos, sz, calledFeature_, name, _select, types);
-                t = Types.t_ERROR;
-                calledFeature_ = Types.f_ERROR;
-              }
-            else
-              {
-                t = types.get(_select);
-                calledFeature_ = calledFeature_.select(res, _select);
-              }
-            _select = -1;
+            t = types.get(_select);
           }
-        t = t.astType().resolve(res, tt.featureOfType());
       }
-    _type = t;
+    _type = t.astType().resolve(res, tt.featureOfType());
   }
 
 

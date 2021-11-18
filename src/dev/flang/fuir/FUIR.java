@@ -722,7 +722,7 @@ hw25 is
         */
 
         var pf = p.calledFeature();
-        var or = cc._inner.get(pf.outerRef());
+        var or = (Clazz) cc._inner.get(pf.outerRef());  // NYI: ugly cast
         toStack(code, p.target);
         if (or != null && !or.resultClazz().isUnitType())
           {
@@ -1128,7 +1128,7 @@ hw25 is
     var innerClazzes = new List<Clazz>();
     for (var clz : tclazz.heirs())
       {
-        var in = clz._inner.get(f);
+        var in = (Clazz) clz._inner.get(f);  // NYI: cast would fail for open generic field
         if (in != null && clazzNeedsCode(in))
           {
             innerClazzes.add(clz);

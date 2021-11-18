@@ -226,13 +226,6 @@ public class MiddleEnd extends ANY
     for (var fa : f.arguments())
       {
         markUsed(fa, f.pos());
-        if (fa.isOpenGenericField())
-          {
-            for (var i = 0; i<fa.selectSize(); i++)
-              {
-                markUsed(fa.select(i), f.pos());
-              }
-          }
       }
     for (var p: f.inherits())
       {

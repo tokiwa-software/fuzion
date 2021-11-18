@@ -237,22 +237,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * For fields of open generic type, this creates actual fields for the actual
-   * generic argument.
-   *
-   * @param res Resolution instance use to resolve this for types.
-   *
-   * @param i the index of the actual generic argument
-   *
-   * @return the field that corresponds to the i-th actual generic argument.
-   */
-  AbstractFeature select(Resolution res, int i)
-  {
-    return select(i);
-  }
-
-
-  /**
    * Check that this feature and all its declared or inherited features does not
    * contain code that would access the outer features of this feature.  If such
    * accesses exists, report an error that this not allowed.
@@ -397,8 +381,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract void visit(FeatureVisitor v);
   public abstract boolean isOpenGenericField();
   public abstract int depth();
-  public abstract int selectSize();
-  public abstract Feature select(int i);
   public abstract Feature choiceTag();
 
   public abstract Impl.Kind implKind();  // NYI: remove, used only in Clazz.java for some obscure case
