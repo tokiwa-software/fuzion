@@ -130,7 +130,7 @@ class Layout extends ANY
           {
             _offsets.put(tag, _size - Integer.MIN_VALUE);
             _offsets0.put(tag.feature(), _size - Integer.MIN_VALUE);
-            _size += get(tag.fieldClazz()).size();
+            _size += get(tag.resultClazz()).size();
           }
         int maxSz = 0;
         for (var cg : _clazz.choiceGenerics())
@@ -149,7 +149,12 @@ class Layout extends ANY
       {
         for (var f : _clazz.fields())
           {
-            var fc = f.fieldClazz(f._select);
+            var ff = f.feature();
+            // NYI: Ugly special handling, clean up:
+            var fc =
+              ff.isOuterRef() && ff.outer().isOuterRefAdrOfValue()  ? f.actualClazz(Types.t_ADDRESS) :
+              ff.isOuterRef() && ff.outer().isOuterRefCopyOfValue() ? f._outer.actualClazz(ff.resultType(), f._select)
+                                                                    : f.resultClazz();
             int fsz;
             if        (fc.isRef()) { fsz = 1;
             } else if (fc._type == Types.resolved.t_i8    ) { fsz = 1;

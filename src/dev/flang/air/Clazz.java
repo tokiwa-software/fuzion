@@ -672,7 +672,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         for (var f : fields())
           {
-            if (!f.fieldClazz(f._select).isUnitType())
+            if (!f.resultClazz().isUnitType())
               {
                 return false;
               }
@@ -1059,31 +1059,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
           }
       }
     return result;
-  }
-
-
-  /**
-   * Special handling for field results clazzes that differ for some outer ref
-   * fields.
-   *
-   * NYI: Try to remove this special handling.
-   */
-  public Clazz fieldClazz()
-  {
-    return fieldClazz(-1);
-  }
-  public Clazz fieldClazz(int select)
-  {
-    if (PRECONDITIONS) require
-      (feature().isField());
-
-    var field = feature();
-
-    return
-      field.isOuterRef() && field.outer().isOuterRefAdrOfValue()  ? actualClazz(Types.t_ADDRESS) :
-      field.isOuterRef() && field.outer().isOuterRefCopyOfValue() ||
-      !field.isOuterRef() && field != field.outer().resultField() ? _outer.actualClazz(field.resultType(), select)
-                                                                  : resultClazz();
   }
 
 
