@@ -718,15 +718,19 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   void layoutAndHandleCycle()
   {
-    List<SourcePosition> cycle = layout();
+    var cycle = layout();
     if (cycle != null && Errors.count() <= AirErrors.count)
       {
         StringBuilder cycleString = new StringBuilder();
+        var tp = _type.pos();
         for (SourcePosition p : cycle)
           {
-            cycleString.append(p.show()).append("\n");
+            if (!p.equals(tp))
+              {
+                cycleString.append(p.show()).append("\n");
+              }
           }
-        AirErrors.error(this._type.pos(),
+        AirErrors.error(tp,
                         "Cyclic field nesting is not permitted",
                         "Cyclic value field nesting would result in infinitely large objects.\n" +
                         "Cycle of nesting found during clazz layout:\n" +
@@ -745,12 +749,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * @return null in case of success, a list of source code positions that shows
    * the recursively nested value types otherwise.
    */
-  private List<SourcePosition> layout()
+  private TreeSet<SourcePosition> layout()
   {
-    List<SourcePosition> result = null;
+    TreeSet<SourcePosition> result = null;
     switch (layouting_)
       {
-      case During: result = new List<>(this._type.pos()); break;
+      case During: result = new TreeSet<>(); result.add(this._type.pos()); break;
       case Before:
         {
           layouting_ = LayoutStatus.During;
@@ -761,6 +765,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
                   if (result == null && !c.isRef())
                     {
                       result = c.layout();
+                      if (result != null)
+                        {
+                          result.add(_type.pos());
+                        }
                     }
                 }
             }
@@ -786,9 +794,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param select, In case f is open eneric, the current actual generic to use.
    */
-  private List<SourcePosition> addToLayout(Clazz fieldClazz)
+  private TreeSet<SourcePosition> addToLayout(Clazz fieldClazz)
   {
-    List<SourcePosition> result = null;
+    TreeSet<SourcePosition> result = null;
     if (!fieldClazz.isRef() &&
         !fieldClazz.feature().isBuiltInPrimitive() &&
         !fieldClazz.isVoidType())
