@@ -766,22 +766,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
             }
           for (var fc : fields())
             {
-              if (result == null)
+              if (result == null && !fc.feature().isOuterRef())
                 {
-                  var f = fc.feature();
-                  var ft = f.resultType();
-                  if (ft.isOpenGeneric())
-                    {
-                      var types = replaceOpen(ft);
-                      for (var i = 0; result == null && i < types.size(); i++)
-                        {
-                          result = addToLayout(f, i);
-                        }
-                    }
-                  else
-                    {
-                      result = addToLayout(f, -1);
-                    }
+                  result = addToLayout(fc.resultClazz());
                 }
             }
           layouting_ = LayoutStatus.After;
@@ -799,19 +786,17 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param select, In case f is open eneric, the current actual generic to use.
    */
-  private List<SourcePosition> addToLayout(AbstractFeature f, int select)
+  private List<SourcePosition> addToLayout(Clazz fieldClazz)
   {
     List<SourcePosition> result = null;
-    var fieldClazz = clazzForField(f, select);
-    if (result == null &&
-        !fieldClazz.isRef() &&
+    if (!fieldClazz.isRef() &&
         !fieldClazz.feature().isBuiltInPrimitive() &&
         !fieldClazz.isVoidType())
       {
         result = fieldClazz.layout();
         if (result != null)
           {
-            result.add(f.pos());
+            result.add(fieldClazz.feature().pos());
             result.add(this._type.pos());
           }
       }
@@ -1007,7 +992,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                   }
                 if (f.isField())
                   {
-                    clazzForField(f, select);
+                    clazzForFieldX(f, select);
                   }
               }
             check
@@ -1026,14 +1011,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Get the runtime clazz of a field in this clazz.
    *
-   * NYI: try to remove
+   * NYI: try to remove, used only in interpreter
    *
    * @param field a field
    *
    * @param select in case field has an open generic type, this selects the
    * actual field. -1 otherwise.
    */
-  public Clazz clazzForField(AbstractFeature field, int select)
+  public Clazz clazzForFieldX(AbstractFeature field, int select)
   {
     check
       (Errors.count() > 0 || field.isField(),

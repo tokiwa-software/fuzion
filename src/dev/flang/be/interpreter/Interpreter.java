@@ -734,7 +734,7 @@ public class Interpreter extends ANY
                 }
               else
                 {
-                  Clazz fclazz = outerClazz.clazzForField(f, innerClazz._select);
+                  Clazz fclazz = outerClazz.clazzForFieldX(f, innerClazz._select);
                   if (outerClazz.isRef())
                     {
                       result = (args) ->
@@ -1274,7 +1274,7 @@ public class Interpreter extends ANY
       }
     else
       {
-        Clazz  fclazz = staticClazz.clazzForField(thiz, -1);
+        Clazz  fclazz = staticClazz.clazzForFieldX(thiz, -1);
         LValue slot   = fieldSlot(thiz, -1, staticClazz, fclazz, curValue);
         result = loadField(thiz, fclazz, slot);
       }
@@ -1337,7 +1337,7 @@ public class Interpreter extends ANY
 
     if (Clazzes.isUsed(thiz, staticClazz))
       {
-        Clazz  fclazz = staticClazz.clazzForField(thiz, select);
+        Clazz  fclazz = staticClazz.clazzForFieldX(thiz, select);
         LValue slot   = fieldSlot(thiz, select, staticClazz, fclazz, curValue);
         setFieldSlot(thiz, fclazz, slot, v);
       }
