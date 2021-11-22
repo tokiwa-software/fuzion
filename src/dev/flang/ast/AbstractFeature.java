@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -459,6 +460,72 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
+  /**
+   * Find the chain of inheritance calls from this to its parent f.
+   *
+   * NYI: Repeated inheritance handling is still missing, there might be several
+   * different inheritance chains, need to check if they lead to the same result
+   * (wrt generic arguments) or renaminging/selection of the preferred
+   * implementation.
+   *
+   * @param ancestor the ancestor feature this inherits from
+   *
+   * @return The inheritance chain from the inheritance call to ancestor at the
+   * first index down to the last inheritance call within this.  Empty list in
+   * case this == ancestor, null in case this does not inherit from ancestor.
+   */
+  public List<Call> tryFindInheritanceChain(AbstractFeature ancestor)
+  {
+    List<Call> result;
+    if (this.sameAs(ancestor))
+      {
+        result = new List<Call>();
+      }
+    else
+      {
+        result = null;
+        for (Call c : inherits())
+          {
+            result = c.calledFeature().tryFindInheritanceChain(ancestor);
+            if (result != null)
+              {
+                result.add(c);
+                break;
+              }
+          }
+      }
+    return result;
+  }
+
+
+  /**
+   * Find the chain of inheritance calls from this to its parent f.
+   *
+   * NYI: Repeated inheritance handling is still missing, there might be several
+   * different inheritance chains, need to check if they lead to the same result
+   * (wrt generic arguments) or renaminging/selection of the preferred
+   * implementation.
+   *
+   * @param ancestor the ancestor feature this inherits from
+   *
+   * @return The inheritance chain from the inheritance call to ancestor at the
+   * first index down to the last inheritance call within this.  Empty list in
+   * case this == ancestor, never null.
+   */
+  public List<Call> findInheritanceChain(AbstractFeature ancestor)
+  {
+    if (PRECONDITIONS) require
+      (ancestor != null);
+
+    List<Call> result = tryFindInheritanceChain(ancestor);
+
+    if (POSTCONDITIONS) ensure
+      (this == Types.f_ERROR || ancestor == Types.f_ERROR || Errors.count() > 0 || result != null);
+
+    return result;
+  }
+
+
 
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();
@@ -471,8 +538,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract List<AbstractFeature> arguments();
   public abstract AbstractType resultType();
   public abstract boolean inheritsFrom(AbstractFeature parent);
-  public abstract List<Call> tryFindInheritanceChain(AbstractFeature ancestor);
-  public abstract List<Call> findInheritanceChain(AbstractFeature ancestor);
   public abstract AbstractFeature resultField();
   public abstract Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res);
   public abstract AbstractFeature outerRef();

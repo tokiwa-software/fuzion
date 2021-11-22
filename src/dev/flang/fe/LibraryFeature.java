@@ -291,8 +291,6 @@ public class LibraryFeature extends AbstractFeature
   public AbstractType thisType() { return _from.thisType(); }
   public AbstractType resultType() { return _from.resultType(); }
   public boolean inheritsFrom(AbstractFeature parent) { return _from.inheritsFrom(parent); }
-  public List<Call> tryFindInheritanceChain(AbstractFeature ancestor) { return _from.tryFindInheritanceChain(ancestor); }
-  public List<Call> findInheritanceChain(AbstractFeature ancestor) { return _from.findInheritanceChain(ancestor); }
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res) { return _from.allInnerAndInheritedFeatures(res); }
   public AbstractFeature outerRef() { return _from.outerRef(); }
   public AbstractFeature get(Resolution res, String qname) { return _from.get(res, qname); }
