@@ -2773,7 +2773,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVED));
 
-    TreeSet<AbstractFeature> result = new TreeSet();
+    TreeSet<AbstractFeature> result = new TreeSet<>();
 
     result.addAll(res._module.declaredFeatures(this).values());
     for (Call p : _inherits)

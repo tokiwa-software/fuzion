@@ -73,7 +73,7 @@ public class Call extends Expr
   /**
    * Empty map for general use.
    */
-  public static final SortedMap EMPTY_MAP = new TreeMap();
+  public static final SortedMap<FeatureName, Feature> EMPTY_MAP = new TreeMap<>();
 
 
   /*------------------------  static variables  -------------------------*/
