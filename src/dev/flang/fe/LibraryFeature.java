@@ -229,6 +229,7 @@ public class LibraryFeature extends AbstractFeature
     return result;
   }
 
+
   /**
    * The formal arguments of this feature
    */
@@ -249,6 +250,35 @@ public class LibraryFeature extends AbstractFeature
     return _arguments;
   }
 
+
+  /**
+   * The result field declared automatically in case hasResultField().
+   *
+   * @return the result or null if this does not have a result field.
+   */
+  public AbstractFeature resultField()
+  {
+    AbstractFeature result = null;
+    if (hasResultField())
+      {
+        var i = _libModule.featureInnerPos(_index);
+        var n = _libModule.featureArgCount(_index);
+        var c = 0;
+        while (c < n)
+          {
+            c++;
+            i = _libModule.nextFeaturePos(i);
+          }
+        result = _libModule.libraryFeature(i, (Feature) _from.resultField());
+      }
+
+    check
+      (hasResultField() == (result != null));
+
+    return result;
+  }
+
+
   public FeatureName featureName()
   {
     return _featureName;
@@ -265,7 +295,6 @@ public class LibraryFeature extends AbstractFeature
   public boolean inheritsFrom(AbstractFeature parent) { return _from.inheritsFrom(parent); }
   public List<Call> tryFindInheritanceChain(AbstractFeature ancestor) { return _from.tryFindInheritanceChain(ancestor); }
   public List<Call> findInheritanceChain(AbstractFeature ancestor) { return _from.findInheritanceChain(ancestor); }
-  public AbstractFeature resultField() { return _from.resultField(); }
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res) { return _from.allInnerAndInheritedFeatures(res); }
   public AbstractFeature outerRef() { return _from.outerRef(); }
   public AbstractFeature get(Resolution res, String qname) { return _from.get(res, qname); }

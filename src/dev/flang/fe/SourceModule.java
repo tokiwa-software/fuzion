@@ -1231,17 +1231,24 @@ public class SourceModule extends Module implements SrcModule, MirModule
     else
       {
         // the first inner features written out will be the formal arguments,
-        // followed by all other inner features in (alphabetical?) order.
+        // followed by the result field (iff f.hasResultField()), followed by
+        // all other inner features in (alphabetical?) order.
         var innerFeatures = new List<AbstractFeature>();
-        var args = new TreeSet<AbstractFeature>();
+        var added = new TreeSet<AbstractFeature>();
         for (var a : f.arguments())
           {
             innerFeatures.add(a);
-            args.add(a);
+            added.add(a);
+          }
+        if (f.hasResultField())
+          {
+            var r = f.resultField();
+            innerFeatures.add(r);
+            added.add(r);
           }
         for (var i : m.values())
           {
-            if (!args.contains(i))
+            if (!added.contains(i))
               {
                 innerFeatures.add(i);
               }

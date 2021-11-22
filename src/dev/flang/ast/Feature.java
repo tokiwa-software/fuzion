@@ -885,18 +885,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * true iff this feature as a result field. This is the case if the returnType
-   * is not a constructortype (self, value, single) and this is not a field.
-   *
-   * @return true iff this has a result field.
-   */
-  boolean hasResultField()
-  {
-    return isRoutine() && !isConstructor();
-  }
-
-
-  /**
    * if hasResultField(), add a corresponding field to hold the result.
    */
   public void addResultField(Resolution res)

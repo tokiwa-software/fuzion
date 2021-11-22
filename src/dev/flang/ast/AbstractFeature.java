@@ -355,6 +355,18 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract boolean isThisRef();
 
 
+  /**
+   * true iff this feature as a result field. This is the case if the returnType
+   * is not a constructortype (self, value, single) and this is not a field.
+   *
+   * @return true iff this has a result field.
+   */
+  public boolean hasResultField()
+  {
+    return isRoutine() && !isConstructor();
+  }
+
+
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();
   public abstract List<AbstractType> choiceGenerics();
