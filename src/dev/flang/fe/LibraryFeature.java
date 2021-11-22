@@ -289,8 +289,6 @@ public class LibraryFeature extends AbstractFeature
   public Generic getGeneric(String name) { return _from.getGeneric(name); }
   public List<Call> inherits() { return _from.inherits(); }
   public AbstractType thisType() { return _from.thisType(); }
-  public FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir) { return _from.handDown(res, f, fn, p, heir); }
-  public AbstractType[] handDown(Resolution res, AbstractType[] a, AbstractFeature heir) { return _from.handDown(res, a, heir); }
   public AbstractType resultType() { return _from.resultType(); }
   public boolean inheritsFrom(AbstractFeature parent) { return _from.inheritsFrom(parent); }
   public List<Call> tryFindInheritanceChain(AbstractFeature ancestor) { return _from.tryFindInheritanceChain(ancestor); }

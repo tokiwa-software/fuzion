@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -1813,43 +1812,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * For a feature with given FeatureName fn that is directly inherited from
-   * this through inheritance call p to heir, this determines the actual
-   * FeatureName as seen in the heir feature.
-   *
-   * The reasons for a feature name to change during inheritance are
-   *
-   * - actual generic arguments to open generic parameters change the argument
-   *   count.
-   *
-   * - explicit renaming during inheritance
-   *
-   * @param f a feature that is declared in or inherted by this feature
-   *
-   * @param fn a feature name within this feature
-   *
-   * @param p an inheritance call in heir inheriting from this
-   *
-   * @param the heir that contains the inheritance call p
-   *
-   * @return the new feature name as seen within heir.
-   */
-  public FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir)
-  {
-    if (PRECONDITIONS) require
-      (res._module.declaredOrInheritedFeatures(this).get(fn).sameAs(f),
-       this != heir);
-
-    if (f.outer().sameAs(p.calledFeature())) // NYI: currently does not support inheriting open generic over several levels
-      {
-        fn = f.effectiveName(p.generics);
-      }
-
-    return fn;
-  }
-
-
-  /**
    * Get the actual type from a type used in this feature after it was inherited
    * by heir.  During inheritance, formal generics may be replaced by actual
    * generics.
@@ -1874,60 +1836,6 @@ public class Feature extends AbstractFeature implements Stmnt
       (Errors.count() > 0 || a.length == 1);
 
     return a.length == 1 ? a[0] : Types.t_ERROR;
-  }
-
-
-  /**
-   * Determine the actual types of an array of types in this feature after it
-   * was inherited by heir. The types may change on the way due to formal
-   * generics being replaced by actual generic arguments on the way.
-   *
-   * Due to open generics, even the number of types may change through
-   * inheritance.
-   *
-   * @param a an array of types to be handed down
-   *
-   * @param heir a feature that inhertis from outer()
-   *
-   * @return the types from the argument array a has seen this within
-   * heir. Their number might have changed due to open generics.
-   */
-  public AbstractType[] handDown(Resolution res, AbstractType[] a, AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
-  {
-    if (PRECONDITIONS) require
-      (heir != null,
-       _state.atLeast(State.RESOLVED_TYPES));
-
-    if (heir != Types.f_ERROR)
-      {
-        for (Call c : heir.findInheritanceChain(outer()))
-          {
-            for (int i = 0; i < a.length; i++)
-              {
-                var ti = a[i];
-                if (ti.isOpenGeneric())
-                  {
-                    var frmlTs = ti.genericArgument().replaceOpen(c.generics);
-                    a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
-                    for (var tg : frmlTs)
-                      {
-                        check
-                          (tg == Types.intern(tg));
-                        a[i] = tg.astType();
-                        i++;
-                      }
-                    i = i - 1;
-                  }
-                else
-                  {
-                    FormalGenerics.resolve(res, c.generics, heir);
-                    ti = ti.actualType(c.calledFeature(), c.generics);
-                    a[i] = Types.intern(ti);
-                  }
-              }
-          }
-      }
-    return a;
   }
 
 
