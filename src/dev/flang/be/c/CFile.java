@@ -70,9 +70,9 @@ public class CFile extends ANY
 
 
   /**
-   * Create C code backend for given intermidiate code.
+   * Create C code backend for given intermediate code.
    *
-   * @param fuir the intermeidate code.
+   * @param fuir the intermediate code.
    *
    * @param opt options to control compilation.
    */

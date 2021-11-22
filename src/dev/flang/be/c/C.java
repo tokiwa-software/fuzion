@@ -115,11 +115,11 @@ public class C extends ANY
 
 
   /**
-   * Create C code backend for given intermidiate code.
+   * Create C code backend for given intermediate code.
    *
    * @param opt options to control compilation.
    *
-   * @param fuir the intermeidate code.
+   * @param fuir the intermediate code.
    */
   public C(COptions opt,
            FUIR fuir)
