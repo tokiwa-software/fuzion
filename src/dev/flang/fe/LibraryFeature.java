@@ -307,6 +307,28 @@ public class LibraryFeature extends AbstractFeature
     return result;
   }
 
+  /**
+   * For choice feature (i.e., isChoice() holds): The tag field that holds in
+   * i32 that identifies the index of the actual generic argument to choice that
+   * is represented.
+   *
+   * @return the choice tag or null if this !isChoice().
+   */
+  public AbstractFeature choiceTag()
+  {
+    AbstractFeature result = null;
+    if (isChoice())
+      {
+        var i = _libModule.featureInnerPos(_index);
+        result = _libModule.libraryFeature(i, (Feature) _from.choiceTag());
+      }
+
+    check
+      (isChoice() == (result != null));
+
+    return result;
+  }
+
 
   /**
    * Get inner feature with given name.
@@ -352,7 +374,6 @@ public class LibraryFeature extends AbstractFeature
   // following are used in IR/Clazzes middle end or later only:
   public void visit(FeatureVisitor v) { _from.visit(v); }
   public int depth() { return _from.depth(); }
-  public AbstractFeature choiceTag() { return _from.choiceTag(); }
 
   public Impl.Kind implKind() { return _from.implKind(); }      // NYI: remove, used only in Clazz.java for some obscure case
   public Expr initialValue() { return _from.initialValue(); }   // NYI: remove, used only in Clazz.java for some obscure case

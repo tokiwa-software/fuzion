@@ -1252,6 +1252,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
             innerFeatures.add(or);
             added.add(or);
           }
+        if (f.isChoice())
+          {
+            check
+              (Errors.count() > 0 || added.isEmpty()); // a choice has no arguments, no result and no outer ref.
+            var ct = f.choiceTag();
+            innerFeatures.add(ct);
+            added.add(ct);
+          }
         for (var i : m.values())
           {
             if (!added.contains(i))
