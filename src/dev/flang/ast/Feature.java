@@ -289,6 +289,13 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean isIndexVarUpdatedByLoop() { return _isIndexVarUpdatedByLoop; }
 
 
+  /**
+   * The source module this is defined in.  This is set when this is first
+   * scheduled for resolution.
+   */
+  SrcModule _module = null;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -679,6 +686,20 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (isUniverse());
     _state = Feature.State.LOADING;
+  }
+
+
+  /**
+   * Add this feature to the given ource module.  This is called when this is
+   * first scheduled for resolution.
+   */
+  void addTo(SrcModule m)
+  {
+    if (PRECONDITIONS) require
+      (_module == null || _module == m || isUniverse());
+
+    _module = m;
+    m.add(this);
   }
 
 
@@ -1915,9 +1936,9 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return the found feature or null in case of an error.
    */
-  public AbstractFeature get(Resolution res, String qname)
+  public AbstractFeature get(String qname)
   {
-    return get(res, qname, false);
+    return get(qname, false);
   }
 
 
@@ -1932,9 +1953,9 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return the found feature or null in case of an error.
    */
-  public AbstractFeature get(Resolution res, String qname, int argcount)
+  public AbstractFeature get(String qname, int argcount)
   {
-    return get(res, qname, false, argcount);
+    return get(qname, false, argcount);
   }
 
 
@@ -1950,9 +1971,9 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return the found feature or null in case of an error.
    */
-  AbstractFeature get(Resolution res, String qname, boolean markUsed)
+  AbstractFeature get(String qname, boolean markUsed)
   {
-    return get(res, qname, markUsed, -1);
+    return get(qname, markUsed, -1);
   }
 
 
@@ -1970,7 +1991,7 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return the found feature or Types.f_ERROR in case of an error.
    */
-  AbstractFeature get(Resolution res, String qname, boolean markUsed, int argcount)
+  AbstractFeature get(String qname, boolean markUsed, int argcount)
   {
     AbstractFeature f = this;
     var nams = qname.split("\\.");
@@ -1980,8 +2001,8 @@ public class Feature extends AbstractFeature implements Stmnt
         if (!err)
           {
             var set = (argcount >= 0
-                       ? FeatureName.getAll(res._module.declaredFeatures(f), nam, argcount)
-                       : FeatureName.getAll(res._module.declaredFeatures(f), nam         )).values();
+                       ? FeatureName.getAll(_module.declaredFeatures(f), nam, argcount)
+                       : FeatureName.getAll(_module.declaredFeatures(f), nam         )).values();
             if (set.size() == 1)
               {
                 for (var f2 : set)

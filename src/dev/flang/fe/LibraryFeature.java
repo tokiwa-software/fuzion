@@ -319,7 +319,7 @@ public class LibraryFeature extends AbstractFeature
   public AbstractType thisType() { return _from.thisType(); }
   public AbstractType resultType() { return _from.resultType(); }
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res) { return _from.allInnerAndInheritedFeatures(res); }
-  public AbstractFeature get(Resolution res, String qname) { return _from.get(res, qname); }
+  public AbstractFeature get(String qname) { return _from.get(qname); }
   public AbstractType[] argTypes() { return _from.argTypes(); }
 
   // following are used in IR/Clazzes middle end or later only:

@@ -80,8 +80,6 @@ public class MiddleEnd extends ANY
   final List<AbstractFeature> _forFindingUsedFeatures = new List<>();
 
 
-  final Resolution _res;
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -89,7 +87,6 @@ public class MiddleEnd extends ANY
   {
     _options = options;
     _mir = mir;
-    _res = res;
     Clazz._res = res; // NYI: Bad hack!
   }
 
@@ -129,22 +126,22 @@ public class MiddleEnd extends ANY
   void markInternallyUsed() {
     var tag = FuzionConstants.CHOICE_TAG_NAME;
     var universe = _mir.universe();
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "i8" ,1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "i16",1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "i32",1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "i64",1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "u8" ,1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "u16",1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "u32",1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "u64",1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "bool").get(_res, tag) , SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "conststring")   , SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "conststring").get(_res, "isEmpty"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "conststring").get(_res, "asString"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
+    markUsed(((Feature)universe /* NYI: Cast! */).get("i8" ,1).get("val"), SourcePosition.builtIn);
+    markUsed(((Feature)universe /* NYI: Cast! */).get("i16",1).get("val"), SourcePosition.builtIn);
+    markUsed(((Feature)universe /* NYI: Cast! */).get("i32",1).get("val"), SourcePosition.builtIn);
+    markUsed(((Feature)universe /* NYI: Cast! */).get("i64",1).get("val"), SourcePosition.builtIn);
+    markUsed(((Feature)universe /* NYI: Cast! */).get("u8" ,1).get("val"), SourcePosition.builtIn);
+    markUsed(((Feature)universe /* NYI: Cast! */).get("u16",1).get("val"), SourcePosition.builtIn);
+    markUsed(((Feature)universe /* NYI: Cast! */).get("u32",1).get("val"), SourcePosition.builtIn);
+    markUsed(((Feature)universe /* NYI: Cast! */).get("u64",1).get("val"), SourcePosition.builtIn);
+    markUsed(((Feature)universe /* NYI: Cast! */).get("bool").get(tag) , SourcePosition.builtIn);
+    markUsed(((Feature)universe /* NYI: Cast! */).get("conststring")   , SourcePosition.builtIn);
+    markUsed(((Feature)universe /* NYI: Cast! */).get("conststring").get("isEmpty"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
+    markUsed(((Feature)universe /* NYI: Cast! */).get("conststring").get("asString"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
     markUsed(Types.resolved.f_sys_array_data              , SourcePosition.builtIn);
     markUsed(Types.resolved.f_sys_array_length            , SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "unit")          , SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "void")          , SourcePosition.builtIn);
+    markUsed(((Feature)universe /* NYI: Cast! */).get("unit")          , SourcePosition.builtIn);
+    markUsed(((Feature)universe /* NYI: Cast! */).get("void")          , SourcePosition.builtIn);
   }
 
 

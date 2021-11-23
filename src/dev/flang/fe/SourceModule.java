@@ -295,7 +295,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     var d = _main == null
       ? _universe
-      : _universe.get(_res, _main);
+      : _universe.get(_main);
 
     if (false)  // NYI: Eventually, we might want to stop here in case of errors. This is disabled just to check the robustness of the next steps
       {

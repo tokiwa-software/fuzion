@@ -579,7 +579,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract AbstractFeature resultField();
   public abstract Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res);
   public abstract AbstractFeature outerRef();
-  public abstract AbstractFeature get(Resolution res, String qname);
+  public abstract AbstractFeature get(String qname);
   public abstract AbstractType[] argTypes();
 
   // following are used in IR/Clazzes middle end or later only:
