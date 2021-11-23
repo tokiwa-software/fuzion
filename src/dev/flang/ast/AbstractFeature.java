@@ -526,6 +526,14 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
+  /**
+   * Does this Feature have an outer ref field, i.e., is outerRef() != null?
+   */
+  public boolean hasOuterRef()
+  {
+    return !isField() && !isUniverse() && (this != Types.f_ERROR);
+  }
+
 
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();

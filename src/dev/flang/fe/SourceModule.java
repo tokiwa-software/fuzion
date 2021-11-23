@@ -1246,6 +1246,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
             innerFeatures.add(r);
             added.add(r);
           }
+        if (f.hasOuterRef())
+          {
+            var or = f.outerRef();
+            innerFeatures.add(or);
+            added.add(or);
+          }
         for (var i : m.values())
           {
             if (!added.contains(i))
@@ -1278,6 +1284,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
       }
   }
+
 
   /**
    * Collect the binary data for given feature.

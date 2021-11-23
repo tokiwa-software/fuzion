@@ -279,6 +279,34 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
+  /**
+   * The outer ref field field in case hasOuterRef().
+   *
+   * @return the outer ref or null if this does not have an outer ref.
+   */
+  public AbstractFeature outerRef()
+  {
+    AbstractFeature result = null;
+    if (hasOuterRef())
+      {
+        var i = _libModule.featureInnerPos(_index);
+        var n = _libModule.featureArgCount(_index) + (hasResultField() ? 1 : 0);
+        var c = 0;
+        while (c < n)
+          {
+            c++;
+            i = _libModule.nextFeaturePos(i);
+          }
+        result = _libModule.libraryFeature(i, (Feature) _from.outerRef());
+      }
+
+    check
+      (hasOuterRef() == (result != null));
+
+    return result;
+  }
+
+
   public FeatureName featureName()
   {
     return _featureName;
@@ -292,7 +320,6 @@ public class LibraryFeature extends AbstractFeature
   public AbstractType resultType() { return _from.resultType(); }
   public boolean inheritsFrom(AbstractFeature parent) { return _from.inheritsFrom(parent); }
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res) { return _from.allInnerAndInheritedFeatures(res); }
-  public AbstractFeature outerRef() { return _from.outerRef(); }
   public AbstractFeature get(Resolution res, String qname) { return _from.get(res, qname); }
   public AbstractType[] argTypes() { return _from.argTypes(); }
 
