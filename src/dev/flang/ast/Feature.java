@@ -1928,9 +1928,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Mark features given by their qualified name as used. This is a convenience
-   * method to mark features that cannot be detected as used automatically,
-   * e.g., because they are used internally or within intrinsic features.
+   * Get inner feature with given name.
    *
    * @param name the name of the feature within this.
    *
@@ -1943,9 +1941,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Mark features given by their qualified name as used. This is a convenience
-   * method to mark features that cannot be detected as used automatically,
-   * e.g., because they are used internally or within intrinsic features.
+   * Get inner feature with given name and argCount.
    *
    * @param name the name of the feature within this.
    *

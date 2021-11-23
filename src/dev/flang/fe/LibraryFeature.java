@@ -44,6 +44,7 @@ import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.ReturnType;
 
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -307,6 +308,33 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
+  /**
+   * Get inner feature with given name.
+   *
+   * @param name the name of the feature within this.
+   *
+   * @return the found feature or null in case of an error.
+   */
+  public AbstractFeature get(String name)
+  {
+    var sz = _libModule.featureInnerSize(_index);
+    var i = _libModule.featureInnerPos(_index);
+    var e = i + sz;
+    while  (i < e)
+      {
+        var r = _libModule.libraryFeature(i, _libModule._srcModule.featureFromOffset(i));
+        var rn = r.featureName();
+        if (rn.baseName().equals(name) && rn.argCount() == 0)
+          {
+            return r;
+          }
+        i = _libModule.nextFeaturePos(i);
+      }
+    Errors.fatal("Could not find feature '"+name+"' in "+this);
+    throw new Error("not reachable");
+  }
+
+
   public FeatureName featureName()
   {
     return _featureName;
@@ -319,7 +347,6 @@ public class LibraryFeature extends AbstractFeature
   public AbstractType thisType() { return _from.thisType(); }
   public AbstractType resultType() { return _from.resultType(); }
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res) { return _from.allInnerAndInheritedFeatures(res); }
-  public AbstractFeature get(String name) { return _from.get(name); }
   public AbstractType[] argTypes() { return _from.argTypes(); }
 
   // following are used in IR/Clazzes middle end or later only:
