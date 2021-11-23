@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -623,6 +624,36 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
+  /**
+   * allInnerAndInheritedFeatures returns a complete set of inner features, used
+   * by Clazz.layout and Clazz.hasState.
+   *
+   * @return
+   */
+  public Collection<AbstractFeature> allInnerAndInheritedFeatures(SrcModule mod)
+  {
+    if (PRECONDITIONS) require
+                         (state().atLeast(Feature.State.RESOLVED));
+
+    TreeSet<AbstractFeature> result = new TreeSet<>();
+
+    result.addAll(mod.declaredFeatures(this).values());
+    for (Call p : inherits())
+      {
+        var cf = p.calledFeature();
+        check
+          (Errors.count() > 0 || cf != null);
+
+        if (cf != null)
+          {
+            result.addAll(cf.allInnerAndInheritedFeatures(mod));
+          }
+      }
+
+    return result;
+  }
+
+
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();
   public abstract List<AbstractType> choiceGenerics();
@@ -634,7 +665,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract List<AbstractFeature> arguments();
   public abstract AbstractType resultType();
   public abstract AbstractFeature resultField();
-  public abstract Collection<AbstractFeature> allInnerAndInheritedFeatures(SrcModule mod);
   public abstract AbstractFeature outerRef();
   public abstract AbstractFeature get(String name);
 

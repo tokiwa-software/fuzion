@@ -2544,36 +2544,6 @@ public class Feature extends AbstractFeature implements Stmnt
       (definedInOwnFile);
   }
 
-
-  /**
-   * allInnerAndInheritedFeatures returns a complete set of inner features, used
-   * by Clazz.layout and Clazz.hasState.
-   *
-   * @return
-   */
-  public Collection<AbstractFeature> allInnerAndInheritedFeatures(SrcModule mod)
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVED));
-
-    TreeSet<AbstractFeature> result = new TreeSet<>();
-
-    result.addAll(mod.declaredFeatures(this).values());
-    for (Call p : _inherits)
-      {
-        var cf = p.calledFeature();
-        check
-          (Errors.count() > 0 || cf != null);
-
-        if (cf != null)
-          {
-            result.addAll(cf.allInnerAndInheritedFeatures(mod));
-          }
-      }
-
-    return result;
-  }
-
   /**
    * outerRefName
    *
