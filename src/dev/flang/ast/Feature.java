@@ -2698,22 +2698,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * depth
-   *
-   * @return
-   */
-  public int depth()
-  {
-    int result;
-    var o = outer();
-    result = (o == null)
-      ? 0
-      : o.depth()+1;
-    return result;
-  }
-
-
-  /**
    * Find formal generic argument of this feature with given name.
    *
    * @param name the name of a formal generic argument.

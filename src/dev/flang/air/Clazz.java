@@ -1724,6 +1724,19 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Determine the nesting level of a given feature f. The nesting level is 0
+   * for the universe, 1 for any feature declared in the universe, and
+   * depth(f.outer())+1 for all the rest.
+   */
+  private int depth(AbstractFeature f)
+  {
+    return f.isUniverse()
+      ? 0
+      : depth(f.outer()) + 1;
+  }
+
+
+  /**
    * Determine the clazz of the result of calling this clazz.
    *
    * @return the result clazz.
@@ -1788,7 +1801,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                type inference is used). We need proper tests for this and implement it for
                depthInSource > 1.
              */
-            int goBack = f.depth()-t.featureOfType().depth() + 1;
+            int goBack = depth(f) - depth(t.featureOfType()) + 1;
             var innerBase = this;
             while (goBack > 0)
               {

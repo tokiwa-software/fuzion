@@ -611,7 +611,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract AbstractType[] argTypes();
 
   // following are used in IR/Clazzes middle end or later only:
-  public abstract int depth();
   public abstract AbstractFeature choiceTag();
 
   public abstract Impl.Kind implKind();  // NYI: remove, used only in Clazz.java for some obscure case
