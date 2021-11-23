@@ -1730,7 +1730,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   private int depth(AbstractFeature f)
   {
-    return f.isUniverse()
+    check
+      (Errors.count() > 0 || f.isUniverse() || f.outer() != null);
+
+    return f.isUniverse() || (f.outer() == null)
       ? 0
       : depth(f.outer()) + 1;
   }
