@@ -1928,34 +1928,17 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Find an internally referenced feature within this based on its qualified
-   * name.
+   * Mark features given by their qualified name as used. This is a convenience
+   * method to mark features that cannot be detected as used automatically,
+   * e.g., because they are used internally or within intrinsic features.
    *
-   * @param qname the qualified name of the feature relative to this.  If
-   * this.isUniverse(), qname is the fully qualifed name.
-   *
-   * @return the found feature or null in case of an error.
-   */
-  public AbstractFeature get(String qname)
-  {
-    return get(qname, false);
-  }
-
-
-  /**
-   * Find an internally referenced feature within this based on its qualified
-   * name.
-   *
-   * @param qname the qualified name of the feature relative to this.  If
-   * this.isUniverse(), qname is the fully qualifed name.
-   *
-   * @param argcount the number of arguments, -1 if not specified.
+   * @param name the name of the feature within this.
    *
    * @return the found feature or null in case of an error.
    */
-  public AbstractFeature get(String qname, int argcount)
+  public AbstractFeature get(String name)
   {
-    return get(qname, false, argcount);
+    return get(name, -1);
   }
 
 
@@ -1964,69 +1947,37 @@ public class Feature extends AbstractFeature implements Stmnt
    * method to mark features that cannot be detected as used automatically,
    * e.g., because they are used internally or within intrinsic features.
    *
-   * @param qname the qualified name of the feature relative to this.  If
-   * this.isUniverse(), qname is the fully qualifed name.
-   *
-   * @param markUsed true iff the features on the way should be marked as used.
-   *
-   * @return the found feature or null in case of an error.
-   */
-  AbstractFeature get(String qname, boolean markUsed)
-  {
-    return get(qname, markUsed, -1);
-  }
-
-
-  /**
-   * Mark features given by their qualified name as used. This is a convenience
-   * method to mark features that cannot be detected as used automatically,
-   * e.g., because they are used internally or within intrinsic features.
-   *
-   * @param qname the qualified name of the feature relative to this.  If
-   * this.isUniverse(), qname is the fully qualifed name.
-   *
-   * @param markUsed true iff the features on the way should be marked as used.
+   * @param name the name of the feature within this.
    *
    * @param argcount the number of arguments, -1 if not specified.
    *
    * @return the found feature or Types.f_ERROR in case of an error.
    */
-  AbstractFeature get(String qname, boolean markUsed, int argcount)
+  public AbstractFeature get(String name, int argcount)
   {
-    AbstractFeature f = this;
-    var nams = qname.split("\\.");
-    boolean err = false;
-    for (var nam : nams)
+    AbstractFeature result = Types.f_ERROR;
+    var d = _module.declaredFeatures(this);
+    var set = (argcount >= 0
+               ? FeatureName.getAll(d, name, argcount)
+               : FeatureName.getAll(d, name          )).values();
+    if (set.size() == 1)
       {
-        if (!err)
+        for (var f2 : set)
           {
-            var set = (argcount >= 0
-                       ? FeatureName.getAll(_module.declaredFeatures(f), nam, argcount)
-                       : FeatureName.getAll(_module.declaredFeatures(f), nam         )).values();
-            if (set.size() == 1)
-              {
-                for (var f2 : set)
-                  {
-                    f = f2;
-                  }
-              }
-            else
-              {
-                if (set.isEmpty())
-                  {
-                    AstErrors.internallyReferencedFeatureNotFound(_pos, qname, f, nam);
-                  }
-                else
-                  { // NYI: This might happen if the user adds additional features
-                    // with different argCounts. qname should contain argCount to
-                    // avoid this
-                    AstErrors.internallyReferencedFeatureNotUnique(_pos, qname + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
-                  }
-                err = true;
-              }
+            result = f2;
           }
       }
-    return err ? Types.f_ERROR : f;
+    else if (set.isEmpty())
+      {
+        AstErrors.internallyReferencedFeatureNotFound(_pos, name, this, name);
+      }
+    else
+      { // NYI: This might happen if the user adds additional features
+        // with different argCounts. name should contain argCount to
+        // avoid this
+        AstErrors.internallyReferencedFeatureNotUnique(_pos, name + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
+      }
+    return result;
   }
 
 
