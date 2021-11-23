@@ -1436,7 +1436,7 @@ public class Feature extends AbstractFeature implements Stmnt
     List<Call> result = new List<>();
     for (AbstractFeature af : res._module.declaredOrInheritedFeatures(this).values())
       {
-        var f = af.astFeature();
+        var f = (Feature) af.astFeature();
         f.visit(new FeatureVisitor()
           {
             public Call action(Call c, Feature outer)

@@ -1191,7 +1191,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     public void      action     (Tag        t, Feature outer) { Clazzes.findClazzes(t, Clazz.this); }
     void visitAncestors(AbstractFeature f)
     {
-      f.visit(this);
+      f.visitCode(this);
       for (Call c: f.inherits())
         {
           AbstractFeature cf = c.calledFeature();

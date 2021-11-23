@@ -575,6 +575,25 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
+  public void visitCode(FeatureVisitor fv)
+  {
+    for (Call c: inherits())
+      {
+        var nc = c.visit(fv, (Feature) astFeature());
+        check
+          (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
+      }
+    if (contract() != null)
+      {
+        contract().visit(fv, (Feature) astFeature());
+      }
+    if (isRoutine())
+      {
+        code().visit(fv, (Feature) astFeature());
+      }
+  }
+
+
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();
   public abstract List<AbstractType> choiceGenerics();
@@ -592,7 +611,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract AbstractType[] argTypes();
 
   // following are used in IR/Clazzes middle end or later only:
-  public abstract void visit(FeatureVisitor v);
   public abstract int depth();
   public abstract AbstractFeature choiceTag();
 

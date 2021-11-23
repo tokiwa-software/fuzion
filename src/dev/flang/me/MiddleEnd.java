@@ -234,14 +234,15 @@ public class MiddleEnd extends ANY
         markUsed(f.choiceTag(), f.pos());
       }
 
-    f.visit(new FeatureVisitor() {
+    var fv = new FeatureVisitor() {
         // it does not seem to be necessary to mark all features in types as used:
         // public Type  action(Type    t, Feature outer) { t.findUsedFeatures(res, pos); return t; }
         public Call  action(Call    c, Feature outer) { findUsedFeatures(c); return c; }
         //        public Stmnt action(Feature f, Feature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
         public void  action(Match   m, Feature outer) { findUsedFeatures(m);           }
         public void  action(Tag     t, Feature outer) { findUsedFeatures(t._taggedType, t.pos()); }
-      });
+      };
+    f.visitCode(fv);
   }
 
 

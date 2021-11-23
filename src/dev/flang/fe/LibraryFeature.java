@@ -372,7 +372,6 @@ public class LibraryFeature extends AbstractFeature
   public AbstractType[] argTypes() { return _from.argTypes(); }
 
   // following are used in IR/Clazzes middle end or later only:
-  public void visit(FeatureVisitor v) { _from.visit(v); }
   public int depth() { return _from.depth(); }
 
   public Impl.Kind implKind() { return _from.implKind(); }      // NYI: remove, used only in Clazz.java for some obscure case
