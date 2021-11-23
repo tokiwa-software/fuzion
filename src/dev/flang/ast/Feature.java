@@ -2551,14 +2551,14 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return
    */
-  public Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res)
+  public Collection<AbstractFeature> allInnerAndInheritedFeatures(SrcModule mod)
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVED));
 
     TreeSet<AbstractFeature> result = new TreeSet<>();
 
-    result.addAll(res._module.declaredFeatures(this).values());
+    result.addAll(mod.declaredFeatures(this).values());
     for (Call p : _inherits)
       {
         var cf = p.calledFeature();
@@ -2567,7 +2567,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
         if (cf != null)
           {
-            result.addAll(cf.allInnerAndInheritedFeatures(res));
+            result.addAll(cf.allInnerAndInheritedFeatures(mod));
           }
       }
 

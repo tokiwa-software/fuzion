@@ -725,7 +725,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                         check
                           (cf != outer);
 
-                        var newfn = cf.handDown(_res, f, fn, p, outer);
+                        var newfn = cf.handDown(this, f, fn, p, outer);
                         addInheritedFeature(outer, p.pos(), newfn, f);
                       }
                   }
@@ -739,7 +739,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                     check
                       (cf != outer);
 
-                    var newfn = cf.handDown(_res, f, fn, p, outer);
+                    var newfn = cf.handDown(this, f, fn, p, outer);
                     addInheritedFeature(outer, p.pos(), newfn, f);
                   }
               }

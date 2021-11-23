@@ -429,7 +429,7 @@ public class Clazzes extends ANY
         Clazz cl = clazzesToBeVisited.removeFirst();
 
         cl.findAllClasses();
-        cl.findAllClassesWhenCalled(main._res);
+        cl.findAllClassesWhenCalled();
         if (!cl.feature().isField())
           {
             toLayout.add(cl);

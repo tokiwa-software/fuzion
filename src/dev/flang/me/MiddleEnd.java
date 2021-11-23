@@ -35,7 +35,7 @@ import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.Match; // NYI: remove dependency!
-import dev.flang.ast.Resolution; // NYI: remove dependency!
+import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
@@ -83,11 +83,11 @@ public class MiddleEnd extends ANY
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public MiddleEnd(FuzionOptions options, MIR mir, Resolution res)
+  public MiddleEnd(FuzionOptions options, MIR mir, SrcModule mod)
   {
     _options = options;
     _mir = mir;
-    Clazz._res = res; // NYI: Bad hack!
+    Clazz._module = mod; // NYI: Bad hack!
   }
 
 

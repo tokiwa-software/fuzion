@@ -48,7 +48,7 @@ import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.Match; // NYI: remove dependency!
-import dev.flang.ast.Resolution; // NYI: remove dependency!
+import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
@@ -82,7 +82,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   static final Clazz[] NO_CLAZZES = new Clazz[0];
 
 
-  public static Resolution _res;
+  public static SrcModule _module;
 
 
   /*-----------------------------  classes  -----------------------------*/
@@ -738,7 +738,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                         "To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.");
       }
 
-    createDynamicBinding(_res);
+    createDynamicBinding();
   }
 
 
@@ -815,7 +815,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Create dynamic binding data for this clazz in case it is a ref.
    */
-  private void createDynamicBinding(Resolution res)
+  private void createDynamicBinding()
   {
     if (isRef())
       {
@@ -825,7 +825,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         // feature after inheritance. For each parent for which the feature
         // is called, we need to set up a table in this tree that contains
         // the inherited feature or its redefinition.
-        for (AbstractFeature f: feature().allInnerAndInheritedFeatures(res))
+        for (AbstractFeature f: feature().allInnerAndInheritedFeatures(_module))
           {
             // if (isInstantiated_) -- NYI: if not instantiated, we do not need to add f to dynamic binding, but we seem to need its side-effects
             if (isAddedToDynamicBinding(f))
@@ -860,11 +860,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             for (var p: chain)
               {
-                fn = f.outer().handDown(_res, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
+                fn = f.outer().handDown(_module, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
               }
           }
       }
-    return _res._module.lookupFeature(feature(), fn);
+    return _module.lookupFeature(feature(), fn);
   }
 
 
@@ -1239,11 +1239,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Find all inner clazzes of this that are referenced when this is executed
    */
-  void findAllClassesWhenCalled(Resolution res)
+  void findAllClassesWhenCalled()
   {
     var f = feature();
     new FindClassesVisitor().visitAncestors((Feature) f); // NYI: Cast!
-    for (AbstractFeature ff: f.allInnerAndInheritedFeatures(res))
+    for (AbstractFeature ff: f.allInnerAndInheritedFeatures(_module))
       {
         if (Clazzes.isUsed(ff, this) &&
             this._type != Types.t_ADDRESS // NYI: would be better is isUSED would return false for ADDRESS
@@ -2070,7 +2070,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         else
           {
             var fields = new List<Clazz>();
-            for (var f: feature().allInnerAndInheritedFeatures(_res))
+            for (var f: feature().allInnerAndInheritedFeatures(_module))
               {
                 if (f.isField() &&
                     Clazzes.isUsed(f, this) &&

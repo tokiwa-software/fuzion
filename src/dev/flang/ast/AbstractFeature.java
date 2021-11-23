@@ -381,6 +381,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * - explicit renaming during inheritance
    *
+   * @param module the main SrcModule
+   *
    * @param f a feature that is declared in or inherted by this feature
    *
    * @param fn a feature name within this feature
@@ -391,10 +393,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @return the new feature name as seen within heir.
    */
-  public FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir)
+  public FeatureName handDown(SrcModule module, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir)
   {
     if (PRECONDITIONS) require
-      (res._module.declaredOrInheritedFeatures(this).get(fn).sameAs(f),
+      (module.declaredOrInheritedFeatures(this).get(fn).sameAs(f),
        this != heir);
 
     if (f.outer().sameAs(p.calledFeature())) // NYI: currently does not support inheriting open generic over several levels
@@ -632,7 +634,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract List<AbstractFeature> arguments();
   public abstract AbstractType resultType();
   public abstract AbstractFeature resultField();
-  public abstract Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res);
+  public abstract Collection<AbstractFeature> allInnerAndInheritedFeatures(SrcModule mod);
   public abstract AbstractFeature outerRef();
   public abstract AbstractFeature get(String name);
 
