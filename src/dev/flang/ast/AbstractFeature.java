@@ -566,6 +566,15 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
+  /**
+   * Is this a field of open generic type?
+   */
+  public boolean isOpenGenericField()
+  {
+    return isField() && resultType().isOpenGeneric();
+  }
+
+
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();
   public abstract List<AbstractType> choiceGenerics();
@@ -584,7 +593,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   // following are used in IR/Clazzes middle end or later only:
   public abstract void visit(FeatureVisitor v);
-  public abstract boolean isOpenGenericField();
   public abstract int depth();
   public abstract Feature choiceTag();
 

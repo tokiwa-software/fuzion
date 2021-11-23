@@ -2714,15 +2714,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Is this a field of open generic type?
-   */
-  public boolean isOpenGenericField()
-  {
-    return isField() && resultType().isOpenGeneric();
-  }
-
-
-  /**
    * Find formal generic argument of this feature with given name.
    *
    * @param name the name of a formal generic argument.
