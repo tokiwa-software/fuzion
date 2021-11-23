@@ -369,7 +369,6 @@ public class LibraryFeature extends AbstractFeature
   public AbstractType thisType() { return _from.thisType(); }
   public AbstractType resultType() { return _from.resultType(); }
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res) { return _from.allInnerAndInheritedFeatures(res); }
-  public AbstractType[] argTypes() { return _from.argTypes(); }
 
   // following are used in IR/Clazzes middle end or later only:
   public Impl.Kind implKind() { return _from.implKind(); }      // NYI: remove, used only in Clazz.java for some obscure case

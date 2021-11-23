@@ -594,6 +594,33 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
+  /**
+   * Determine the formal argument types of this feature.
+   *
+   * @return a new array containing this feature's formal argument types.
+   */
+  public AbstractType[] argTypes()
+  {
+    int argnum = 0;
+    var result = new AbstractType[arguments().size()];
+    for (var frml : arguments())
+      {
+        check
+          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+
+        var frmlT = frml.resultType();
+        check(frmlT == Types.intern(frmlT));
+        result[argnum] = frmlT;
+        argnum++;
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
+  }
+
+
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();
   public abstract List<AbstractType> choiceGenerics();
@@ -608,7 +635,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res);
   public abstract AbstractFeature outerRef();
   public abstract AbstractFeature get(String name);
-  public abstract AbstractType[] argTypes();
 
   // following are used in IR/Clazzes middle end or later only:
   public abstract AbstractFeature choiceTag();

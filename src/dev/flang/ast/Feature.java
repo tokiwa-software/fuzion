@@ -1740,33 +1740,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Determine the formal argument types of this feature.
-   *
-   * @return a new array containing this feature's formal argument types.
-   */
-  public AbstractType[] argTypes()
-  {
-    int argnum = 0;
-    var result = new AbstractType[_arguments.size()];
-    for (Feature frml : _arguments)
-      {
-        check
-          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
-
-        var frmlT = frml.resultType();
-        check(frmlT == Types.intern(frmlT));
-        result[argnum] = frmlT;
-        argnum++;
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
-  }
-
-
-  /**
    * Get the actual type from a type used in this feature after it was inherited
    * by heir.  During inheritance, formal generics may be replaced by actual
    * generics.
