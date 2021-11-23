@@ -527,6 +527,37 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Check if this is equal to or inherits from parent
+   *
+   * @param parent a loaded feature
+   *
+   * @return true iff this is a heir of parent.
+   */
+  public boolean inheritsFrom(AbstractFeature parent)
+  {
+    if (PRECONDITIONS) require
+                         (state().atLeast(Feature.State.LOADED),
+       parent != null && parent.state().atLeast(Feature.State.LOADED));
+
+    if (this.sameAs(parent))
+      {
+        return true;
+      }
+    else
+      {
+        for (Call p : inherits())
+          {
+            if (p.calledFeature().inheritsFrom(parent))
+              {
+                return true;
+              }
+          }
+      }
+    return false;
+  }
+
+
+  /**
    * Does this Feature have an outer ref field, i.e., is outerRef() != null?
    */
   public boolean hasOuterRef()
@@ -545,7 +576,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract AbstractType thisType();
   public abstract List<AbstractFeature> arguments();
   public abstract AbstractType resultType();
-  public abstract boolean inheritsFrom(AbstractFeature parent);
   public abstract AbstractFeature resultField();
   public abstract Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res);
   public abstract AbstractFeature outerRef();

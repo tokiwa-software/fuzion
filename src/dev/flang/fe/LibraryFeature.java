@@ -318,7 +318,6 @@ public class LibraryFeature extends AbstractFeature
   public List<Call> inherits() { return _from.inherits(); }
   public AbstractType thisType() { return _from.thisType(); }
   public AbstractType resultType() { return _from.resultType(); }
-  public boolean inheritsFrom(AbstractFeature parent) { return _from.inheritsFrom(parent); }
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res) { return _from.allInnerAndInheritedFeatures(res); }
   public AbstractFeature get(Resolution res, String qname) { return _from.get(res, qname); }
   public AbstractType[] argTypes() { return _from.argTypes(); }

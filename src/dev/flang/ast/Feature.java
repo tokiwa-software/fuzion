@@ -2746,37 +2746,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Check if this is equal to or inherits from parent
-   *
-   * @param parent a loaded feature
-   *
-   * @return true iff this is a heir of parent.
-   */
-  public boolean inheritsFrom(AbstractFeature parent)
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.LOADED),
-       parent != null && parent.state().atLeast(State.LOADED));
-
-    if (this.sameAs(parent))
-      {
-        return true;
-      }
-    else
-      {
-        for (Call p : _inherits)
-          {
-            if (p.calledFeature().inheritsFrom(parent))
-              {
-                return true;
-              }
-          }
-      }
-    return false;
-  }
-
-
-  /**
    * Is this a field of open generic type?
    */
   public boolean isOpenGenericField()
