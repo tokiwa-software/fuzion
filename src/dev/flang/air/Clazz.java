@@ -1688,7 +1688,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       ((outer != null) != (target != null));
 
-    if (f.outerRefOrNull() == cf)
+    if (f.outerRef() == cf)
       { // a "normal" outer ref for the outer clazz surrounding this instance or
         // (if in recursion) an inherited outer ref referring to the target of
         // the inherits call
@@ -1969,7 +1969,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       case Intrinsic  :
       case Routine    :
         {
-          var or = f.outerRefOrNull();
+          var or = f.outerRef();
           if (or != null && Clazzes.isUsedAtAll(or))
             {
               result = lookup(or, Call.NO_GENERICS, Clazzes.isUsedAt(or));

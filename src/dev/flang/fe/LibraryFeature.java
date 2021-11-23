@@ -297,7 +297,6 @@ public class LibraryFeature extends AbstractFeature
   public AbstractType[] argTypes() { return _from.argTypes(); }
 
   // following are used in IR/Clazzes middle end or later only:
-  public AbstractFeature outerRefOrNull() { return _from.outerRefOrNull(); }
   public void visit(FeatureVisitor v) { _from.visit(v); }
   public boolean isOpenGenericField() { return _from.isOpenGenericField(); }
   public int depth() { return _from.depth(); }

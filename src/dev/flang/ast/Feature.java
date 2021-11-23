@@ -1420,7 +1420,7 @@ public class Feature extends AbstractFeature implements Stmnt
           {
             public Call action(Call c, Feature outer)
             {
-              if (c.calledFeature() == outerRefOrNull())
+              if (c.calledFeature() == outerRef())
                 {
                   result.add(c);
                 }
@@ -2700,6 +2700,8 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * outerRef returns the field of this feature that refers to the
    * outer field.
+   *
+   * @return the outer ref if it exists, null otherwise.
    */
   public AbstractFeature outerRef()
   {
@@ -2724,21 +2726,6 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean isOuterRef()
   {
     return false;
-  }
-
-  /**
-   * Check if this has an outerRef and return it if this is the case
-   *
-   * @return the outer ref if it exists, null otherwise.
-   */
-  public AbstractFeature outerRefOrNull()
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVED_DECLARATIONS));
-
-    return this._outer != null
-      ? outerRef()
-      : null;
   }
 
 
