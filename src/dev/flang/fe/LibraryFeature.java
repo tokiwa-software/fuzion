@@ -352,7 +352,7 @@ public class LibraryFeature extends AbstractFeature
   // following are used in IR/Clazzes middle end or later only:
   public void visit(FeatureVisitor v) { _from.visit(v); }
   public int depth() { return _from.depth(); }
-  public Feature choiceTag() { return _from.choiceTag(); }
+  public AbstractFeature choiceTag() { return _from.choiceTag(); }
 
   public Impl.Kind implKind() { return _from.implKind(); }      // NYI: remove, used only in Clazz.java for some obscure case
   public Expr initialValue() { return _from.initialValue(); }   // NYI: remove, used only in Clazz.java for some obscure case

@@ -594,7 +594,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   // following are used in IR/Clazzes middle end or later only:
   public abstract void visit(FeatureVisitor v);
   public abstract int depth();
-  public abstract Feature choiceTag();
+  public abstract AbstractFeature choiceTag();
 
   public abstract Impl.Kind implKind();  // NYI: remove, used only in Clazz.java for some obscure case
   public abstract Expr initialValue();   // NYI: remove, used only in Clazz.java for some obscure case

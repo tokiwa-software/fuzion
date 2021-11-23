@@ -277,7 +277,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * holds for that classs.
    */
   public Feature choiceTag_ = null;
-  public Feature choiceTag() { return choiceTag_; }
+  public AbstractFeature choiceTag() { return choiceTag_; }
 
 
   /**
