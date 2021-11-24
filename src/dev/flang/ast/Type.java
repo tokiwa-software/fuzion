@@ -70,7 +70,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * Is this type explicitly a reference or a value type, or whatever the
    * underlying feature is?
    */
-  enum RefOrVal
+  public enum RefOrVal
   {
     Ref,
     Value,
@@ -162,7 +162,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * generics is a pre-requisite to resolving types.
    */
   Generic generic;
-  Generic generic() { return generic; }
+  public Generic generic() { return generic; }
 
 
   /**
@@ -175,7 +175,7 @@ public class Type extends AbstractType implements Comparable<Type>
   /**
    * Cached result of dependsOnGenerics().
    */
-  YesNo dependsOnGenerics = YesNo.dontKnow;
+  public YesNo dependsOnGenerics = YesNo.dontKnow;
 
 
   /**
@@ -552,7 +552,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * Does this type (or its outer type) depend on generics. If not, actualType()
    * will not need to do anything on this.
    */
-  boolean dependsOnGenerics()
+  public boolean dependsOnGenerics()
   {
     YesNo result = dependsOnGenerics;
 
@@ -995,7 +995,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * For a resolved type, check if it is a choice type and if so, return the
    * list of choices. Otherwise, return null.
    */
-  List<AbstractType> choiceGenerics()
+  public List<AbstractType> choiceGenerics()
   {
     if (PRECONDITIONS) require
       (isGenericArgument() || feature != null);  // type must be resolved
@@ -1411,7 +1411,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * @param assignableTo in case we want to show all types actual is assignable
    * to in an error message, this collects the types converted to strings.
    */
-  boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo)
+  public boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo)
   {
     if (PRECONDITIONS) require
       (Types.intern(this  ) == this,
@@ -1470,7 +1470,7 @@ public class Type extends AbstractType implements Comparable<Type>
    *
    * @param actual the actual type.
    */
-  boolean constraintAssignableFrom(AbstractType actual)
+  public boolean constraintAssignableFrom(AbstractType actual)
   {
     if (PRECONDITIONS) require
       (Types.intern(this  ) == this,

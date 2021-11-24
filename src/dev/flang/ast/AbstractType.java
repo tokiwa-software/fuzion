@@ -50,26 +50,26 @@ public abstract class AbstractType extends ANY
   public abstract AbstractType asValue();
   public abstract boolean isRef();
   public abstract boolean isChoice();
-  public abstract List<AbstractType> replaceGenerics(List<AbstractType> genenrics);
+  public abstract List<AbstractType> replaceGenerics(List<AbstractType> generics);
   public abstract SourcePosition pos();
   public abstract List<AbstractType> generics();
   public abstract boolean isAssignableFrom(AbstractType t);
   public abstract boolean isAssignableFromOrContainsError(AbstractType t);
   public abstract boolean isAssignableFrom(Expr expr);
-  abstract boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo);
+  public abstract boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo);
   public abstract int compareToIgnoreOuter(Type other);
   public abstract boolean isFreeFromFormalGenerics();
   public abstract boolean isFreeFromFormalGenericsInSource();
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
   public abstract boolean outerMostInSource();
-  abstract boolean dependsOnGenerics();
-  abstract boolean containsError();
-  abstract Generic generic();
+  public abstract boolean dependsOnGenerics();
+  public abstract boolean containsError();
+  public abstract Generic generic();
   public abstract Generic genericArgument();
-  abstract List<AbstractType> choiceGenerics();
-  abstract boolean constraintAssignableFrom(AbstractType actual);
-  abstract boolean ensureNotOpen();
+  public abstract List<AbstractType> choiceGenerics();
+  public abstract boolean constraintAssignableFrom(AbstractType actual);
+  public abstract boolean ensureNotOpen();
 
   public Type astType() { return (Type) this; }
 }

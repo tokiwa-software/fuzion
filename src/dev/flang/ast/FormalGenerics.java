@@ -313,7 +313,7 @@ public class FormalGenerics extends ANY
    *
    * @return actual generics that match these formal generics.
    */
-  List<AbstractType> asActuals()
+  public List<AbstractType> asActuals()
   {
     List<AbstractType> result = asActuals_;
     if (result == null)
