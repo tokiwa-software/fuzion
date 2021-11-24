@@ -68,7 +68,7 @@ public class FormalGenerics extends ANY
   /**
    * true iff this is an open list that with an arbitrary number of actual
    * formal generic arguments.  This means that the last formal generic can be
-   * repeate 0.. times, the actual arguments must hence have at least
+   * repeated 0.. times, the actual arguments must hence have at least
    * list.size()-1 elements.
    */
   final boolean isOpen;
@@ -101,7 +101,7 @@ public class FormalGenerics extends ANY
    * @param open true iff the list is open, i.e., followed by an ellipsis.
    */
   public FormalGenerics(List<Generic> l,
-                 boolean open)
+                        boolean open)
   {
     if (PRECONDITIONS) require
       (l.size() > 0);
