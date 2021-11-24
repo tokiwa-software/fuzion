@@ -121,7 +121,7 @@ public class LibraryFeature extends AbstractFeature
       (from._libraryFeature == null);
     from._libraryFeature = this;
 
-    _kind = lib.featureKind(index);
+    _kind = lib.featureKind(index) & FuzionConstants.MIR_FILE_KIND_MASK;
     var bytes = lib.featureName(index);
     var ac = lib.featureArgCount(index);
     var id = lib.featureId(index);

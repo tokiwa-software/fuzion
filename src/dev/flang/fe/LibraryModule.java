@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.ByteBuffer;
 
@@ -40,6 +41,7 @@ import dev.flang.ast.FeatureName;
 
 import dev.flang.mir.MIR;
 
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourceDir;
 
 
@@ -276,8 +278,20 @@ public class LibraryModule extends Module
   }
   int featureInnerSizePos(int at)
   {
-    var i = featureIdPos(at);
-    return i + 4;
+    var i = featureIdPos(at) + 4;
+    if ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0)
+      {
+        var d = data();
+        var n = d.getInt(i);
+        i = i + 4 + 1;
+        while (n > 0)
+          {
+            var l = d.getInt(i);
+            i = i + 4 + l;
+            n--;
+          }
+      }
+    return i;
   }
   int featureInnerSize(int at)
   {
@@ -290,8 +304,8 @@ public class LibraryModule extends Module
   }
   int nextFeaturePos(int at)
   {
-    at = featureInnerPos(at) + featureInnerSize(at);
-    return at;
+    var next = featureInnerPos(at) + featureInnerSize(at);
+    return next;
   }
 
 

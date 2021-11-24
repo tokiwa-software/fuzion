@@ -1220,6 +1220,21 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
   /**
    * Collect the binary data for features declared within given feature.
+   *
+   * Data format for inner features:
+   *
+   *   +-------------------------------------------------------------------------------+
+   *   | Inner Features                                                                |
+   *   +--------+--------+-------------+-----------------------------------------------+
+   *   | cond.  | repeat | type        | what                                          |
+   *   +--------+--------+-------------+-----------------------------------------------+
+   *   | true   | 1      | int         | sizeof(inner Features) isz                    |
+   *   +        +--------+-------------+-----------------------------------------------+
+   *   |        | n      | Feature     | inner Features                                |
+   *   +--------+--------+-------------+-----------------------------------------------+
+   *
+   * The count n is not stored explicitly, the list of inner Features ends after
+   * isz bytes.
    */
   void collectData(boolean real, DOutputStream o, Feature f) throws IOException
   {
@@ -1296,6 +1311,54 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
   /**
    * Collect the binary data for given feature.
+   *
+   * Data format for a feature:
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | Feature                                                                         |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | Name          | name                                          |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | int           | arg count                                     |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | int           | name id                                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | T=1    | 1      | TypeArgs      | optional type arguments                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | TypeArgs                                                                        |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | num type ags n                                |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | bool          | isOpen                                        |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | n      | TypeArg       | type arguments                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | TypeArg                                                                         |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Name          | type arg name                                 |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | Name                                                                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | name length l                                 |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | l      | byte          | name as utf8 bytes                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
    */
   void collectFeature(boolean real, DOutputStream o, Feature f) throws IOException
   {
@@ -1307,6 +1370,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
     check
       (k >= 0,
        f.isConstructor() || k < FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
+    check
+      (Errors.count() > 0 || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
+    if (f.generics() != FormalGenerics.NONE)
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS;
+      }
     var n = f.featureName();
     var utf8Name = n.baseName().getBytes(StandardCharsets.UTF_8);
     o.write(k);
@@ -1314,6 +1383,19 @@ public class SourceModule extends Module implements SrcModule, MirModule
     o.write(utf8Name);                       // NYI: internal names (outer refs, statement results) are too long and waste memory
     o.writeInt(f.featureName().argCount());  // NYI: use better integer encoding
     o.writeInt(f.featureName()._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
+    if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0)
+      {
+        check
+          (f.generics().list.size() > 0);
+        o.writeInt(f.generics().list.size());
+        o.write(f.generics().isOpen() ? 1 : 0);
+        for (var g : f.generics().list)
+          {
+            var gUtf8Name = g.name().getBytes(StandardCharsets.UTF_8);
+            o.writeInt(gUtf8Name.length);
+            o.write(gUtf8Name);
+          }
+      }
     check
       (f.arguments().size() == f.featureName().argCount());
     collectData(real, o, f);

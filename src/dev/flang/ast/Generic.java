@@ -305,6 +305,15 @@ public class Generic extends ANY
 
 
   /**
+   * Return the name of this formal generic.
+   */
+  public String name()
+  {
+    return _name;
+  }
+
+
+  /**
    * Return the index of this formal generic within formalGenerics().list.
    *
    * @return the index such that formalGenerics.get(result)) this

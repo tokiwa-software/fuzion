@@ -102,6 +102,16 @@ public class FuzionConstants extends ANY
   public static int MIR_FILE_KIND_CONSTRUCTOR_VALUE = 5;
   public static int MIR_FILE_KIND_CONSTRUCTOR_REF   = 6;
 
+  /**
+   * The bits of feature kind that are not flags
+   */
+  public static int MIR_FILE_KIND_MASK    = 0x7;
+
+
+  /**
+   * Flag OR'ed to kind for routines with generic type parameters.
+   */
+  public static int MIR_FILE_KIND_HAS_TYPE_PAREMETERS = 8;
 
   /*-----------------  special values used in AIR file  -----------------*/
 
