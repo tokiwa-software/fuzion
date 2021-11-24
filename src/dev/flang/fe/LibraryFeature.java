@@ -398,6 +398,28 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
+  /**
+   * resultType returns the result type of this feature using.
+   *
+   * @return the result type. Never null.
+   */
+  public AbstractType resultType()
+  {
+    if (isConstructor())
+      {
+        return thisType();
+      }
+    else if (isChoice())
+      {
+        return Types.resolved.t_void;
+      }
+    else
+      {
+        return _from.resultType(); // NYI: read type from _libModule
+      }
+  }
+
+
   public FeatureName featureName()
   {
     return _featureName;
@@ -407,7 +429,6 @@ public class LibraryFeature extends AbstractFeature
   public FormalGenerics generics() { return _from.generics(); }
   public Generic getGeneric(String name) { return _from.getGeneric(name); }
   public List<Call> inherits() { return _from.inherits(); }
-  public AbstractType resultType() { return _from.resultType(); }
 
   // following are used in IR/Clazzes middle end or later only:
   public Impl.Kind implKind() { return _from.implKind(); }      // NYI: remove, used only in Clazz.java for some obscure case
