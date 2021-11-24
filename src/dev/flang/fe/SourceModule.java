@@ -47,6 +47,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
@@ -1208,7 +1209,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     try
       {
         o.write(FuzionConstants.MIR_FILE_MAGIC);
-        collectData(true, o, _universe);
+        collectInnerFeatures(true, o, _universe);
       }
     catch (IOException io)
       {
@@ -1224,7 +1225,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * Data format for inner features:
    *
    *   +-------------------------------------------------------------------------------+
-   *   | Inner Features                                                                |
+   *   | InnerFeatures                                                                 |
    *   +--------+--------+-------------+-----------------------------------------------+
    *   | cond.  | repeat | type        | what                                          |
    *   +--------+--------+-------------+-----------------------------------------------+
@@ -1236,7 +1237,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * The count n is not stored explicitly, the list of inner Features ends after
    * isz bytes.
    */
-  void collectData(boolean real, DOutputStream o, Feature f) throws IOException
+  void collectInnerFeatures(boolean real, DOutputStream o, Feature f) throws IOException
   {
     var m = declaredFeaturesOrNull(f);
     if (m == null)
@@ -1329,6 +1330,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | T=1    | 1      | TypeArgs      | optional type arguments                       |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | hasRT  | 1      | Type          | optional result type,                         |
+   *   |        |        |               | hasRT = !isConstructor && !isChoice           |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   |        | 1      | InnerFeatures | inner features of this feature                |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *
    *   +---------------------------------------------------------------------------------+
    *   | TypeArgs                                                                        |
@@ -1398,12 +1404,32 @@ public class SourceModule extends Module implements SrcModule, MirModule
       }
     check
       (f.arguments().size() == f.featureName().argCount());
-    collectData(real, o, f);
+    if (!f.isConstructor() && !f.isChoice())
+      {
+        collectType(real, o, f.resultType());
+      }
+    collectInnerFeatures(real, o, f);
     if (real)
       {
         data(f)._mirOffset = ix;
         _offsetToAstFeature.put(ix, f);
       }
+  }
+
+
+  /**
+   * Collect the binary data for given type.
+   *
+   * Data format for a type:
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | Type                                                                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+  void collectType(boolean real, DOutputStream o, AbstractType t) throws IOException
+  {
   }
 
 
