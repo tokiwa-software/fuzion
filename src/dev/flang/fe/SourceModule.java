@@ -31,8 +31,6 @@ import java.io.UncheckedIOException;
 
 import java.nio.ByteBuffer;
 
-import java.nio.charset.StandardCharsets;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -1313,16 +1311,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | Name          | type arg name                                 |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *
-   *   +---------------------------------------------------------------------------------+
-   *   | Name                                                                            |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | int           | name length l                                 |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | l      | byte          | name as utf8 bytes                            |
-   *   +--------+--------+---------------+-----------------------------------------------+
    */
   void collectFeature(boolean real, DataOut o, Feature f)
   {
@@ -1341,12 +1329,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS;
       }
     var n = f.featureName();
-    var utf8Name = n.baseName().getBytes(StandardCharsets.UTF_8);
     o.write(k);
-    o.writeInt(utf8Name.length);             // NYI: use better integer encoding
-    o.write(utf8Name);                       // NYI: internal names (outer refs, statement results) are too long and waste memory
-    o.writeInt(f.featureName().argCount());  // NYI: use better integer encoding
-    o.writeInt(f.featureName()._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
+    o.writeName(n.baseName());  // NYI: internal names (outer refs, statement results) are too long and waste memory
+    o.writeInt (n.argCount());  // NYI: use better integer encoding
+    o.writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
     if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0)
       {
         check
@@ -1355,9 +1341,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         o.write(f.generics().isOpen() ? 1 : 0);
         for (var g : f.generics().list)
           {
-            var gUtf8Name = g.name().getBytes(StandardCharsets.UTF_8);
-            o.writeInt(gUtf8Name.length);
-            o.write(gUtf8Name);
+            o.writeName(g.name());
           }
       }
     check

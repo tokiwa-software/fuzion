@@ -28,6 +28,8 @@ package dev.flang.util;
 
 import java.nio.ByteBuffer;
 
+import java.nio.charset.StandardCharsets;
+
 import java.util.Arrays;
 
 
@@ -125,6 +127,27 @@ public class DataOut extends ANY
         _data[p+i] = a[i];
       }
     _pos = p + l;
+  }
+
+
+  /**
+   * Write a UTF8 string.
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | Name                                                                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | name length l                                 |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | l      | byte          | name as utf8 bytes                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+  public void writeName(String n)
+  {
+    var utf8Name = n.getBytes(StandardCharsets.UTF_8);
+    writeInt(utf8Name.length);
+    write(utf8Name);
   }
 
 
