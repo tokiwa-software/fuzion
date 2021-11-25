@@ -26,8 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
@@ -38,6 +36,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -1171,31 +1170,75 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Helper class that wraps ByteArrayOutputStream to make field count
-   * accessible.
+   * Helper class to write data to a byte[], perform fixups and create a ByteBuffer.
    */
-  static class BAOutputStream extends ByteArrayOutputStream
+  static class DataOut
   {
-    public int count() { return this.count; }
-  }
-
-  /**
-   * Helper class that wraps DataOutputStream to provide the current offset and
-   * create a ByteBuffer.
-   */
-  static class DOutputStream extends DataOutputStream
-  {
-    DOutputStream()
+    int _pos = 0;
+    byte[] data = new byte[1024];
+    DataOut()
     {
-      super(new BAOutputStream());
     }
     int offset()
     {
-      return ((BAOutputStream)out).count();
+      return _pos;
+    }
+    void write(int b)
+    {
+      if (PRECONDITIONS) require
+        (0 <= b, b <= 0xFF);
+
+      if (data.length == _pos)
+        {
+          data = Arrays.copyOf(data, 2*data.length);
+        }
+      var p = _pos;
+      data[p] = (byte) b;
+      _pos = p + 1;
+    }
+    void writeInt(int i)
+    {
+      write((i >> 24) & 0xFF);
+      write((i >> 16) & 0xFF);
+      write((i >>  8) & 0xFF);
+      write((i      ) & 0xFF);
+    }
+    void write(byte[] a)
+    {
+      var l = a.length;
+      while (data.length <= _pos + l)
+        {
+          data = Arrays.copyOf(data, 2*data.length);
+        }
+      var p = _pos;
+      for (var i = 0; i<l; i++)
+        {
+          data[p+i] = a[i];
+        }
+      _pos = p + l;
+
+    }
+    void writeAt(int at, int b)
+    {
+      if (PRECONDITIONS) require
+        (0 <= at, at + 1 <= offset(),
+         0 <= b, b <= 0xFF);
+
+      data[at] = (byte) b;
+    }
+    void writeIntAt(int at, int i)
+    {
+      if (PRECONDITIONS) require
+        (0 <= at, at + 4 <= offset());
+
+      writeAt(at + 0, (i >> 24) & 0xFF);
+      writeAt(at + 1, (i >> 16) & 0xFF);
+      writeAt(at + 2, (i >>  8) & 0xFF);
+      writeAt(at + 3, (i      ) & 0xFF);
     }
     ByteBuffer buffer()
     {
-      return ByteBuffer.wrap(((BAOutputStream)out).toByteArray());
+      return ByteBuffer.wrap(data, 0, _pos);
     }
   }
 
@@ -1205,16 +1248,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   public ByteBuffer data()
   {
-    var o = new DOutputStream();
-    try
-      {
-        o.write(FuzionConstants.MIR_FILE_MAGIC);
-        collectInnerFeatures(true, o, _universe);
-      }
-    catch (IOException io)
-      {
-        throw new Error(io);  // NYI: proper error handling
-      }
+    var o = new DataOut();
+    o.write(FuzionConstants.MIR_FILE_MAGIC);
+    collectInnerFeatures(true, o, _universe);
     return o.buffer();
   }
 
@@ -1237,7 +1273,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * The count n is not stored explicitly, the list of inner Features ends after
    * isz bytes.
    */
-  void collectInnerFeatures(boolean real, DOutputStream o, Feature f) throws IOException
+  void collectInnerFeatures(boolean real, DataOut o, Feature f)
   {
     var m = declaredFeaturesOrNull(f);
     if (m == null)
@@ -1284,21 +1320,17 @@ public class SourceModule extends Module implements SrcModule, MirModule
               }
           }
 
-        // NYI: Calling collectFeatures twice here results in performance that
-        // is quadratic in the nesting level of the features:
-
-        // determine the size
-        var dummy = new DOutputStream();
-        collectFeatures(false, dummy, innerFeatures);
-        var sz = dummy.offset();
-        o.writeInt(sz);
+        var szPos = o.offset();
+        o.writeInt(0);
+        var innerPos = o.offset();
 
         // write the actual data
         collectFeatures(real, o, innerFeatures);
+        o.writeIntAt(szPos, o.offset() - innerPos);
       }
   }
 
-  void collectFeatures(boolean real, DOutputStream o, List<AbstractFeature> fs) throws IOException
+  void collectFeatures(boolean real, DataOut o, List<AbstractFeature> fs)
   {
     for (var df : fs)
       {
@@ -1366,7 +1398,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *   |        | l      | byte          | name as utf8 bytes                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-  void collectFeature(boolean real, DOutputStream o, Feature f) throws IOException
+  void collectFeature(boolean real, DataOut o, Feature f)
   {
     var ix = o.offset();
     var k =
@@ -1427,9 +1459,27 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | the kind of this type tk                      |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | tk==-1 | 1      | int           | index of generic argument                     |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | tk>=0  | 1      | int           | index of feature of type                      |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | tk     | Type          | actual generics                               |
+   *   +--------+--------+---------------+-----------------------------------------------+
    */
-  void collectType(boolean real, DOutputStream o, AbstractType t) throws IOException
+  void collectType(boolean real, DataOut o, AbstractType t)
   {
+    if (t.isGenericArgument())
+      {
+        // write index of TypeArg
+      }
+    else
+      {
+        // write index of feature
+        check
+          (t.featureOfType() != null);
+      }
   }
 
 
