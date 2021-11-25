@@ -105,7 +105,7 @@ public class LibraryType extends AbstractType
     this._at = -1;
     this._pos = pos;
     this._feature = feature;
-    this._generics = null;
+    this._generics = Type.NONE;
     this._from = from.astType();
   }
 
@@ -166,18 +166,27 @@ public class LibraryType extends AbstractType
     return _feature;
   }
 
+  public boolean isGenericArgument()
+  {
+    return _feature == null;
+  }
+
+  public List<AbstractType> generics()
+  {
+    return _generics;
+  }
+
+
   public AbstractType actualType(AbstractType t) { return _from.actualType(t); }
   public AbstractType actualType(AbstractFeature f, List<AbstractType> actualGenerics) { return _from.actualType(f, actualGenerics); }
   public AbstractType asRef() { return _from.asRef(); }
   public AbstractType asValue() { return _from.asValue(); }
   public boolean isRef() { return _from.isRef(); }
   public List<AbstractType> replaceGenerics(List<AbstractType> generics) { return _from.replaceGenerics(generics); }
-  public List<AbstractType> generics() { return _from.generics(); }
   public boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo) { return _from.isAssignableFrom(actual, assignableTo); }
   public int compareToIgnoreOuter(Type other) { return _from.compareToIgnoreOuter(other); }
   public boolean isFreeFromFormalGenerics() { return _from.isFreeFromFormalGenerics(); }
   public boolean isFreeFromFormalGenericsInSource() { return _from.isFreeFromFormalGenericsInSource(); }
-  public boolean isGenericArgument() { return _from.isGenericArgument(); }
   public AbstractType outer() { return _from.outer(); }
   public boolean outerMostInSource() { return _from.outerMostInSource(); }
   public boolean dependsOnGenerics() { return _from.dependsOnGenerics(); }
