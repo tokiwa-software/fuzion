@@ -770,29 +770,6 @@ public class Type extends AbstractType implements Comparable<Type>
 
 
   /**
-   * True iff this is not generic and neither its outer type nor actual generics
-   * are generic up to the point this type is shown in the source (i.e., the
-   * surrounding feature that contains this type declaration may be generic).
-   */
-  public boolean isFreeFromFormalGenericsInSource()
-  {
-    check
-      (checkedForGeneric);
-
-    boolean result =
-      outerMostInSource() || _outer.isFreeFromFormalGenericsInSource();
-    if (!this._generics.isEmpty())
-      {
-        for (var t : this._generics)
-          {
-            result = result && t.isFreeFromFormalGenericsInSource();
-          }
-      }
-    return result;
-  }
-
-
-  /**
    * True iff this is not generic nad neither its outer type nor actual generics
    * are generic.
    *

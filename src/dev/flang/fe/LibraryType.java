@@ -186,7 +186,6 @@ public class LibraryType extends AbstractType
   public boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo) { return _from.isAssignableFrom(actual, assignableTo); }
   public int compareToIgnoreOuter(Type other) { return _from.compareToIgnoreOuter(other); }
   public boolean isFreeFromFormalGenerics() { return _from.isFreeFromFormalGenerics(); }
-  public boolean isFreeFromFormalGenericsInSource() { return _from.isFreeFromFormalGenericsInSource(); }
   public AbstractType outer() { return _from.outer(); }
   public boolean outerMostInSource() { return _from.outerMostInSource(); }
   public boolean dependsOnGenerics() { return _from.dependsOnGenerics(); }

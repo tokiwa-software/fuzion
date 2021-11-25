@@ -1151,7 +1151,7 @@ public class Clazzes extends ANY
   {
     if (PRECONDITIONS) require
       (!thiz.isOpenGeneric(),
-       thiz.isFreeFromFormalGenericsInSource(),
+       thiz.isFreeFromFormalGenerics(),
        outerClazz != null || thiz.featureOfType().outer() == null,
        Errors.count()>0 || thiz == Types.t_ERROR || !thiz.outerMostInSource() || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
 

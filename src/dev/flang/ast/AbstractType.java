@@ -179,7 +179,6 @@ public abstract class AbstractType extends ANY
   public abstract boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo);
   public abstract int compareToIgnoreOuter(Type other);
   public abstract boolean isFreeFromFormalGenerics();
-  public abstract boolean isFreeFromFormalGenericsInSource();
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
   public abstract boolean outerMostInSource();
