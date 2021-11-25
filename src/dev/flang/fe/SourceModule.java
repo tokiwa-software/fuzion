@@ -36,7 +36,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,6 +68,7 @@ import dev.flang.mir.MirModule;
 
 import dev.flang.parser.Parser;
 
+import dev.flang.util.DataOut;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -1167,80 +1167,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /*---------------------------  library file  --------------------------*/
-
-
-  /**
-   * Helper class to write data to a byte[], perform fixups and create a ByteBuffer.
-   */
-  static class DataOut
-  {
-    int _pos = 0;
-    byte[] data = new byte[1024];
-    DataOut()
-    {
-    }
-    int offset()
-    {
-      return _pos;
-    }
-    void write(int b)
-    {
-      if (PRECONDITIONS) require
-        (0 <= b, b <= 0xFF);
-
-      if (data.length == _pos)
-        {
-          data = Arrays.copyOf(data, 2*data.length);
-        }
-      var p = _pos;
-      data[p] = (byte) b;
-      _pos = p + 1;
-    }
-    void writeInt(int i)
-    {
-      write((i >> 24) & 0xFF);
-      write((i >> 16) & 0xFF);
-      write((i >>  8) & 0xFF);
-      write((i      ) & 0xFF);
-    }
-    void write(byte[] a)
-    {
-      var l = a.length;
-      while (data.length <= _pos + l)
-        {
-          data = Arrays.copyOf(data, 2*data.length);
-        }
-      var p = _pos;
-      for (var i = 0; i<l; i++)
-        {
-          data[p+i] = a[i];
-        }
-      _pos = p + l;
-
-    }
-    void writeAt(int at, int b)
-    {
-      if (PRECONDITIONS) require
-        (0 <= at, at + 1 <= offset(),
-         0 <= b, b <= 0xFF);
-
-      data[at] = (byte) b;
-    }
-    void writeIntAt(int at, int i)
-    {
-      if (PRECONDITIONS) require
-        (0 <= at, at + 4 <= offset());
-
-      writeAt(at + 0, (i >> 24) & 0xFF);
-      writeAt(at + 1, (i >> 16) & 0xFF);
-      writeAt(at + 2, (i >>  8) & 0xFF);
-      writeAt(at + 3, (i      ) & 0xFF);
-    }
-    ByteBuffer buffer()
-    {
-      return ByteBuffer.wrap(data, 0, _pos);
-    }
-  }
 
 
   /**
