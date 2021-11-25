@@ -1118,27 +1118,6 @@ public class Type extends AbstractType implements Comparable<Type>
 
 
   /**
-   * Check if this.isOpenGeneric(). If so, create a compile-time error.
-   *
-   * @return true iff !isOpenGeneric()
-   */
-  public boolean ensureNotOpen()
-  {
-    boolean result = true;
-
-    if (PRECONDITIONS) require
-      (checkedForGeneric);
-
-    if (isOpenGeneric())
-      {
-        AstErrors.illegalUseOfOpenFormalGeneric(pos, generic);
-        result = false;
-      }
-    return result;
-  }
-
-
-  /**
    * isFunType checks if this is a function type, e.g., "fun (int x,y) String".
    *
    * @return true iff this is a fun type

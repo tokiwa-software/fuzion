@@ -194,7 +194,6 @@ public class LibraryType extends AbstractType
   public Generic genericArgument() { return _from.genericArgument(); }
   public List<AbstractType> choiceGenerics() { return _from.choiceGenerics(); }
   public boolean constraintAssignableFrom(AbstractType actual) { return _from.constraintAssignableFrom(actual); }
-  public boolean ensureNotOpen() { return _from.ensureNotOpen(); }
 
   public Type astType() { return _from; }
 

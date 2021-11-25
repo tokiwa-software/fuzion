@@ -74,6 +74,27 @@ public abstract class AbstractType extends ANY
   }
 
 
+  /**
+   * Check if this.isOpenGeneric(). If so, create a compile-time error.
+   *
+   * @return true iff !isOpenGeneric()
+   */
+  public boolean ensureNotOpen()
+  {
+    boolean result = true;
+
+    if (PRECONDITIONS) require
+      (checkedForGeneric());
+
+    if (isOpenGeneric())
+      {
+        AstErrors.illegalUseOfOpenFormalGeneric(pos(), generic());
+        result = false;
+      }
+    return result;
+  }
+
+
 
   /**
    * Check if this is a choice type.
@@ -167,7 +188,6 @@ public abstract class AbstractType extends ANY
   public abstract Generic genericArgument();
   public abstract List<AbstractType> choiceGenerics();
   public abstract boolean constraintAssignableFrom(AbstractType actual);
-  public abstract boolean ensureNotOpen();
 
   public Type astType() { return (Type) this; }
 }
