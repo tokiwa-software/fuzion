@@ -42,8 +42,39 @@ import dev.flang.util.SourcePosition;
 public abstract class AbstractType extends ANY
 {
 
+
+  /**
+   * This is used only during early phases of the front end before types where
+   * checked if they are or contains generics.
+   */
+  boolean checkedForGeneric()
+  {
+    return true;
+  }
+
+
+  /**
+   * is this a formal generic argument that is open, i.e., the last argument in
+   * a formal generic arguments list and followed by ... as A in
+   * Funtion<R,A...>.
+   *
+   * This type needs very special treatment, it is allowed only as an argument
+   * type of the last argument in an abstract feature declaration.  When
+   * replacing generics by actual generics arguments, this gets replaced by a
+   * (possibly empty) list of actual types.
+   *
+   * @return true iff this is an open generic
+   */
+  public boolean isOpenGeneric()
+  {
+    if (PRECONDITIONS) require
+      (checkedForGeneric());
+
+    return isGenericArgument() && genericArgument().isOpen();
+  }
+
+
   public abstract AbstractFeature featureOfType();
-  public abstract boolean isOpenGeneric();
   public abstract AbstractType actualType(AbstractType t);
   public abstract AbstractType actualType(AbstractFeature f, List<AbstractType> actualGenerics);
   public abstract AbstractType asRef();

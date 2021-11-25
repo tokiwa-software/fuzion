@@ -170,6 +170,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * replaceGeneric or resolve is called.
    */
   boolean checkedForGeneric = false;
+  boolean checkedForGeneric() { return checkedForGeneric; }
 
 
   /**
@@ -1113,27 +1114,6 @@ public class Type extends AbstractType implements Comparable<Type>
       (result != null);
 
     return result;
-  }
-
-
-  /**
-   * is this a formal generic argument that is open, i.e., the last argument in
-   * a formal generic arguments list and followed by ... as A in
-   * Funtion<R,A...>.
-   *
-   * This type needs very special treatment, it is allowed only as an argument
-   * type of the last argument in an abstract feature declaration.  When
-   * replacing generics by actual generics arguments, this gets replaced by a
-   * (possibly empty) list of actual types.
-   *
-   * @return true iff this is an open generic
-   */
-  public boolean isOpenGeneric()
-  {
-    if (PRECONDITIONS) require
-      (checkedForGeneric);
-
-    return isGenericArgument() && genericArgument().isOpen();
   }
 
 
