@@ -291,6 +291,13 @@ public class LibraryModule extends Module
             n--;
           }
       }
+    var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
+    if (k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF   &&
+        k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE &&
+        k != AbstractFeature.Kind.Choice.ordinal())
+      {
+        i = nextTypePos(i);
+      }
     return i;
   }
   int featureInnerSize(int at)
@@ -306,6 +313,26 @@ public class LibraryModule extends Module
   {
     var next = featureInnerPos(at) + featureInnerSize(at);
     return next;
+  }
+  int nextTypePos(int at)
+  {
+    var k = data().getInt(at);
+    at = at + 4;
+    if (k == -1)
+      {
+        return at + 4;
+      }
+    else
+      {
+        int f = data().getInt(at);
+        at = at + 4;
+        int n = k;
+        for (var i = 0; i<n; i++)
+          {
+            at = nextTypePos(at);
+          }
+        return at;
+      }
   }
 
 

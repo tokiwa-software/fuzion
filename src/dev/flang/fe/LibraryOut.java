@@ -26,12 +26,17 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TreeSet;
+import java.util.TreeMap;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FormalGenerics;
+import dev.flang.ast.Generic;
 
 import dev.flang.util.DataOut;
 import dev.flang.util.Errors;
@@ -70,6 +75,7 @@ class LibraryOut extends DataOut
     _sourceModule = sm;
     write(FuzionConstants.MIR_FILE_MAGIC);
     innerFeatures(sm._universe);
+    fixUps();
   }
 
 
@@ -224,6 +230,7 @@ class LibraryOut extends DataOut
    */
   void feature(Feature f)
   {
+    _offsetsForFeature.put(f, offset());
     var ix = offset();
     var k =
       !f.isConstructor() ? f.kind().ordinal() :
@@ -251,6 +258,7 @@ class LibraryOut extends DataOut
         write(f.generics().isOpen() ? 1 : 0);
         for (var g : f.generics().list)
           {
+            _offsetsForGeneric.put(g, offset());
             writeName(g.name());
           }
       }
@@ -288,16 +296,115 @@ class LibraryOut extends DataOut
   {
     if (t.isGenericArgument())
       {
-        // write index of TypeArg
+        writeInt(-1);
+        writeOffset(t.generic());
       }
     else
       {
-        // write index of feature
-        check
-          (t.featureOfType() != null);
+        writeInt(t.generics().size());
+        writeOffset(t.featureOfType());
+        for (var gt : t.generics())
+          {
+            type(gt);
+          }
       }
   }
 
+
+  /*--------------------------  fixup handling  -------------------------*/
+
+
+  /**
+   * Generics that are referenced before being defined and hence need a fixup:
+   */
+  ArrayList<Generic> _fixUpsG = new ArrayList<>();
+
+
+  /**
+   * Positions of fixups for generics
+   */
+  ArrayList<Integer> _fixUpsGAt = new ArrayList<>();
+
+
+  /**
+   * Generic offsets in this file
+   */
+  Map<Generic, Integer> _offsetsForGeneric = new HashMap<>();
+
+
+  /**
+   * Features that are referenced before being defined and hence need a fixup:
+   */
+  ArrayList<AbstractFeature> _fixUpsF = new ArrayList<>();
+
+
+  /**
+   * Positions of fixups for features
+   */
+  ArrayList<Integer> _fixUpsFAt = new ArrayList<>();
+
+
+  /**
+   * Feature offsets in this file
+   */
+  Map<AbstractFeature, Integer> _offsetsForFeature = new TreeMap<>();
+
+
+  /**
+   * Write offset of given generic, create fixup if not known yet.
+   */
+  void writeOffset(Generic g)
+  {
+    var o = _offsetsForGeneric.get(g);
+    var v = o == null ? -1 : (int) o;
+    if (o == null)
+      {
+        _fixUpsG.add(g);
+        _fixUpsGAt.add(offset());
+      }
+    writeInt(v);
+  }
+
+  /**
+   * Write offset of given feature, create fixup if not known yet.
+   */
+  void writeOffset(AbstractFeature f)
+  {
+    var o = _offsetsForFeature.get(f);
+    var v = o == null ? -1 : (int) o;
+    if (o == null)
+      {
+        _fixUpsF.add(f);
+        _fixUpsFAt.add(offset());
+      }
+    writeInt(v);
+  }
+
+
+  /**
+   * Perform fixups
+   */
+  private void fixUps()
+  {
+    for (var i = 0; i<_fixUpsG.size(); i++)
+      {
+        var g  = _fixUpsG  .get(i);
+        var at = _fixUpsGAt.get(i);
+        var o = _offsetsForGeneric.get(g);
+        check
+          (o != null);
+        writeIntAt(at, o);
+      }
+    for (var i = 0; i<_fixUpsF.size(); i++)
+      {
+        var g  = _fixUpsF  .get(i);
+        var at = _fixUpsFAt.get(i);
+        var o = _offsetsForFeature.get(g);
+        check
+          (o != null);
+        writeIntAt(at, o);
+      }
+  }
 
 }
 
