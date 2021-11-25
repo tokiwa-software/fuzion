@@ -1174,7 +1174,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     var o = new DataOut();
     o.write(FuzionConstants.MIR_FILE_MAGIC);
-    collectInnerFeatures(true, o, _universe);
+    collectInnerFeatures(o, _universe);
     return o.buffer();
   }
 
@@ -1197,7 +1197,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * The count n is not stored explicitly, the list of inner Features ends after
    * isz bytes.
    */
-  void collectInnerFeatures(boolean real, DataOut o, Feature f)
+  void collectInnerFeatures(DataOut o, Feature f)
   {
     var m = declaredFeaturesOrNull(f);
     if (m == null)
@@ -1249,18 +1249,18 @@ public class SourceModule extends Module implements SrcModule, MirModule
         var innerPos = o.offset();
 
         // write the actual data
-        collectFeatures(real, o, innerFeatures);
+        collectFeatures(o, innerFeatures);
         o.writeIntAt(szPos, o.offset() - innerPos);
       }
   }
 
-  void collectFeatures(boolean real, DataOut o, List<AbstractFeature> fs)
+  void collectFeatures(DataOut o, List<AbstractFeature> fs)
   {
     for (var df : fs)
       {
         if (df instanceof Feature dff)
           {
-            collectFeature(real, o, dff);
+            collectFeature(o, dff);
           }
       }
   }
@@ -1312,7 +1312,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *   | true   | 1      | Name          | type arg name                                 |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-  void collectFeature(boolean real, DataOut o, Feature f)
+  void collectFeature(DataOut o, Feature f)
   {
     var ix = o.offset();
     var k =
@@ -1348,14 +1348,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
       (f.arguments().size() == f.featureName().argCount());
     if (!f.isConstructor() && !f.isChoice())
       {
-        collectType(real, o, f.resultType());
+        collectType(o, f.resultType());
       }
-    collectInnerFeatures(real, o, f);
-    if (real)
-      {
-        data(f)._mirOffset = ix;
-        _offsetToAstFeature.put(ix, f);
-      }
+    collectInnerFeatures(o, f);
+    data(f)._mirOffset = ix;
+    _offsetToAstFeature.put(ix, f);
   }
 
 
@@ -1378,7 +1375,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *   |        | tk     | Type          | actual generics                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-  void collectType(boolean real, DataOut o, AbstractType t)
+  void collectType(DataOut o, AbstractType t)
   {
     if (t.isGenericArgument())
       {
