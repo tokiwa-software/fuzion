@@ -171,12 +171,8 @@ public class LibraryType extends AbstractType
   public AbstractType asRef() { return _from.asRef(); }
   public AbstractType asValue() { return _from.asValue(); }
   public boolean isRef() { return _from.isRef(); }
-  public boolean isChoice() { return _from.isChoice(); }
   public List<AbstractType> replaceGenerics(List<AbstractType> generics) { return _from.replaceGenerics(generics); }
   public List<AbstractType> generics() { return _from.generics(); }
-  public boolean isAssignableFrom(AbstractType t) { return _from.isAssignableFrom(t); }
-  public boolean isAssignableFromOrContainsError(AbstractType t) { return _from.isAssignableFromOrContainsError(t); }
-  public boolean isAssignableFrom(Expr expr) { return _from.isAssignableFrom(expr); }
   public boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo) { return _from.isAssignableFrom(actual, assignableTo); }
   public int compareToIgnoreOuter(Type other) { return _from.compareToIgnoreOuter(other); }
   public boolean isFreeFromFormalGenerics() { return _from.isFreeFromFormalGenerics(); }
@@ -185,7 +181,6 @@ public class LibraryType extends AbstractType
   public AbstractType outer() { return _from.outer(); }
   public boolean outerMostInSource() { return _from.outerMostInSource(); }
   public boolean dependsOnGenerics() { return _from.dependsOnGenerics(); }
-  public boolean containsError() { return _from.containsError(); }
   public Generic generic() { return _from.generic(); }
   public Generic genericArgument() { return _from.genericArgument(); }
   public List<AbstractType> choiceGenerics() { return _from.choiceGenerics(); }

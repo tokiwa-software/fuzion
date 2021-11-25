@@ -74,19 +74,87 @@ public abstract class AbstractType extends ANY
   }
 
 
+
+  /**
+   * Check if this is a choice type.
+   */
+  public boolean isChoice()
+  {
+    return !isGenericArgument() && featureOfType().isChoice();
+  }
+
+
+  /**
+   * Check if this or any of its generic arguments is Types.t_ERROR.
+   */
+  public boolean containsError()
+  {
+    return false;
+  }
+
+
+  /**
+   * Check if a value of static type actual can be assigned to a field of static
+   * type this.  This performs static type checking, i.e., the types may still
+   * be or depend on generic parameters.
+   *
+   * @param actual the actual type.
+   */
+  public boolean isAssignableFrom(AbstractType actual)
+  {
+    return isAssignableFrom(actual, null);
+  }
+
+
+  /**
+   * Check if a value of static type actual can be assigned to a field of static
+   * type this.  This performs static type checking, i.e., the types may still
+   * be or depend on generic parameters.
+   *
+   * In case any of the types involved are or contain t_ERROR, this returns
+   * true. This is convenient to avoid the creation of follow-up errors in this
+   * case.
+   *
+   * @param actual the actual type.
+   */
+  public boolean isAssignableFromOrContainsError(AbstractType actual)
+  {
+    return
+      containsError() || actual.containsError() || isAssignableFrom(actual);
+  }
+
+
+  /**
+   * Check if given value can be assigned to this static type.  In addition to
+   * isAssignableFromOrContainsError, this checks if 'expr' is not '<xyz>.this'
+   * (Current or an outer ref) that might be a value type that is a heir of this
+   * type.
+   *
+   * @param expr the expression to be assigned to a variable of this type.
+   *
+   * @return true iff the assignment is ok.
+   */
+  public boolean isAssignableFrom(Expr expr)
+  {
+    var actlT = expr.type();
+
+    check
+      (actlT == Types.intern(actlT));
+
+    return isAssignableFromOrContainsError(actlT) &&
+      (!expr.isCallToOuterRef() && !(expr instanceof Current) || actlT.isRef() || actlT.isChoice());
+  }
+
+
   public abstract AbstractFeature featureOfType();
   public abstract AbstractType actualType(AbstractType t);
   public abstract AbstractType actualType(AbstractFeature f, List<AbstractType> actualGenerics);
   public abstract AbstractType asRef();
   public abstract AbstractType asValue();
   public abstract boolean isRef();
-  public abstract boolean isChoice();
   public abstract List<AbstractType> replaceGenerics(List<AbstractType> generics);
   public abstract SourcePosition pos();
   public abstract List<AbstractType> generics();
-  public abstract boolean isAssignableFrom(AbstractType t);
-  public abstract boolean isAssignableFromOrContainsError(AbstractType t);
-  public abstract boolean isAssignableFrom(Expr expr);
   public abstract boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo);
   public abstract int compareToIgnoreOuter(Type other);
   public abstract boolean isFreeFromFormalGenerics();
@@ -95,7 +163,6 @@ public abstract class AbstractType extends ANY
   public abstract AbstractType outer();
   public abstract boolean outerMostInSource();
   public abstract boolean dependsOnGenerics();
-  public abstract boolean containsError();
   public abstract Generic generic();
   public abstract Generic genericArgument();
   public abstract List<AbstractType> choiceGenerics();

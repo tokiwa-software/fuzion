@@ -1329,15 +1329,6 @@ public class Type extends AbstractType implements Comparable<Type>
 
 
   /**
-   * Check if this is a choice type.
-   */
-  public boolean isChoice()
-  {
-    return feature != null && feature.choiceGenerics() != null;
-  }
-
-
-  /**
    * Helper for isAssignableFrom: check if this is a choice type and actual is
    * assignable to one of the generic arguments to this choice.
    *
@@ -1365,19 +1356,6 @@ public class Type extends AbstractType implements Comparable<Type>
           }
       }
     return result;
-  }
-
-
-  /**
-   * Check if a value of static type actual can be assigned to a field of static
-   * type this.  This performs static type checking, i.e., the types may still
-   * be or depend on generic parameters.
-   *
-   * @param actual the actual type.
-   */
-  public boolean isAssignableFrom(AbstractType actual)
-  {
-    return isAssignableFrom(actual, null);
   }
 
 
@@ -1534,46 +1512,6 @@ public class Type extends AbstractType implements Comparable<Type>
       (!result || Errors.count() > 0);
 
     return result;
-  }
-
-
-  /**
-   * Check if a value of static type actual can be assigned to a field of static
-   * type this.  This performs static type checking, i.e., the types may still
-   * be or depend on generic parameters.
-   *
-   * In case any of the types involved are or contain t_ERROR, this returns
-   * true. This is convenient to avoid the creation of follow-up errors in this
-   * case.
-   *
-   * @param actual the actual type.
-   */
-  public boolean isAssignableFromOrContainsError(AbstractType actual)
-  {
-    return
-      containsError() || actual.containsError() || isAssignableFrom(actual);
-  }
-
-
-  /**
-   * Check if given value can be assigned to this static type.  In addition to
-   * isAssignableFromOrContainsError, this checks if 'expr' is not '<xyz>.this'
-   * (Current or an outer ref) that might be a value type that is a heir of this
-   * type.
-   *
-   * @param expr the expression to be assigned to a variable of this type.
-   *
-   * @return true iff the assignment is ok.
-   */
-  public boolean isAssignableFrom(Expr expr)
-  {
-    var actlT = expr.type();
-
-    check
-      (actlT == Types.intern(actlT));
-
-    return isAssignableFromOrContainsError(actlT) &&
-      (!expr.isCallToOuterRef() && !(expr instanceof Current) || actlT.isRef() || actlT.isChoice());
   }
 
 
