@@ -66,7 +66,6 @@ import dev.flang.mir.MirModule;
 
 import dev.flang.parser.Parser;
 
-import dev.flang.util.DataOut;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
