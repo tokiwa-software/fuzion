@@ -276,7 +276,7 @@ public class LibraryModule extends Module
   {
     return data().getInt(featureIdPos(at));
   }
-  int featureInnerSizePos(int at)
+  int featureResultTypePos(int at)
   {
     var i = featureIdPos(at) + 4;
     if ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0)
@@ -291,10 +291,20 @@ public class LibraryModule extends Module
             n--;
           }
       }
+    return i;
+  }
+  boolean featureHasResultType(int at)
+  {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
-    if (k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF   &&
-        k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE &&
-        k != AbstractFeature.Kind.Choice.ordinal())
+    return
+      (k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF   &&
+       k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE &&
+       k != AbstractFeature.Kind.Choice.ordinal());
+  }
+  int featureInnerSizePos(int at)
+  {
+    var i = featureResultTypePos(at);
+    if (featureHasResultType(at))
       {
         i = nextTypePos(i);
       }
@@ -333,6 +343,47 @@ public class LibraryModule extends Module
           }
         return at;
       }
+  }
+
+
+  int typeKind(int at)
+  {
+    return data().getInt(at);
+  }
+  int typeGenericPos(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) == -1);
+
+    return at+4;
+  }
+  int typeGeneric(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) == -1);
+
+    return data().getInt(typeGenericPos(at));
+  }
+  int typeFeaturePos(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) >= 0);
+
+    return at+4;
+  }
+  int typeFeature(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) >= 0);
+
+    return data().getInt(typeFeaturePos(at));
+  }
+  int typeActualGenericsPos(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) >= 0);
+
+    return typeFeaturePos(at) + 4;
   }
 
 

@@ -415,7 +415,8 @@ public class LibraryFeature extends AbstractFeature
       }
     else
       {
-        return _from.resultType(); // NYI: read type from _libModule
+        var from = _from.resultType();
+        return new LibraryType(_libModule, from.pos(), _libModule.featureResultTypePos(_index), from);
       }
   }
 

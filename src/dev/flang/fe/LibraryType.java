@@ -31,6 +31,7 @@ import java.util.Set;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
+import dev.flang.ast.Feature;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Type;
 
@@ -59,6 +60,12 @@ public class LibraryType extends AbstractType
 
 
   /**
+   * Position in _libModule that declares this type. Maybe -1 for
+   * _feature.thisType().
+   */
+  public final int _at;
+
+  /**
    * The soucecode position of this type, used for error messages.
    */
   public final SourcePosition _pos;
@@ -69,6 +76,14 @@ public class LibraryType extends AbstractType
    * based on.
    */
   AbstractFeature _feature;
+
+
+  /**
+   * For a type that is not a generic argument, this is the list of actual
+   * generics.
+   */
+  List<AbstractType> _generics;
+
 
   /**
    * NYI: For now, this is just a wrapper around an AST type. This should be
@@ -87,11 +102,56 @@ public class LibraryType extends AbstractType
   LibraryType(LibraryModule mod, SourcePosition pos, AbstractFeature feature, AbstractType from)
   {
     this._libModule = mod;
+    this._at = -1;
     this._pos = pos;
     this._feature = feature;
+    this._generics = null;
     this._from = from.astType();
   }
 
+
+  /**
+   * Constructor for a plain Type from a given feature that does not have any
+   * actual generics.
+   */
+  LibraryType(LibraryModule mod, SourcePosition pos, int at, AbstractType from)
+  {
+    this._libModule = mod;
+    this._at = at;
+    this._pos = pos;
+    var k = mod.typeKind(at);
+    AbstractFeature feature;
+    List<AbstractType> generics;
+    if (k < 0)
+      {
+        // generic argument
+        feature = null;
+        generics = null;
+      }
+    else
+      {
+        feature = mod.libraryFeature(mod.typeFeature(at), (Feature) from.featureOfType().astFeature());
+        if (k > 0)
+          {
+            var i = mod.typeActualGenericsPos(at);
+            generics = new List<AbstractType>();
+            var gi = 0;
+            while (gi < k)
+              {
+                generics.add(new LibraryType(mod, pos, i, from.generics().get(gi)));
+                i = mod.nextTypePos(i);
+                gi++;
+              }
+          }
+        else
+          {
+            generics = Type.NONE;
+          }
+      }
+    this._feature = feature;
+    this._generics = generics;
+    this._from = from.astType();
+  }
 
   /*-----------------------------  methods  -----------------------------*/
 
