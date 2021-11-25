@@ -153,7 +153,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * The universe is the implicit root of all features that
    * themeselves do not have their own root.
    */
-  private Feature _universe;
+  final Feature _universe;
 
 
   /**
@@ -1172,221 +1172,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   public ByteBuffer data()
   {
-    var o = new DataOut();
-    o.write(FuzionConstants.MIR_FILE_MAGIC);
-    collectInnerFeatures(o, _universe);
-    return o.buffer();
-  }
-
-
-  /**
-   * Collect the binary data for features declared within given feature.
-   *
-   * Data format for inner features:
-   *
-   *   +-------------------------------------------------------------------------------+
-   *   | InnerFeatures                                                                 |
-   *   +--------+--------+-------------+-----------------------------------------------+
-   *   | cond.  | repeat | type        | what                                          |
-   *   +--------+--------+-------------+-----------------------------------------------+
-   *   | true   | 1      | int         | sizeof(inner Features) isz                    |
-   *   +        +--------+-------------+-----------------------------------------------+
-   *   |        | n      | Feature     | inner Features                                |
-   *   +--------+--------+-------------+-----------------------------------------------+
-   *
-   * The count n is not stored explicitly, the list of inner Features ends after
-   * isz bytes.
-   */
-  void collectInnerFeatures(DataOut o, Feature f)
-  {
-    var m = declaredFeaturesOrNull(f);
-    if (m == null)
-      {
-        o.writeInt(0);
-      }
-    else
-      {
-        // the first inner features written out will be the formal arguments,
-        // followed by the result field (iff f.hasResultField()), followed by
-        // all other inner features in (alphabetical?) order.
-        var innerFeatures = new List<AbstractFeature>();
-        var added = new TreeSet<AbstractFeature>();
-        for (var a : f.arguments())
-          {
-            innerFeatures.add(a);
-            added.add(a);
-          }
-        if (f.hasResultField())
-          {
-            var r = f.resultField();
-            innerFeatures.add(r);
-            added.add(r);
-          }
-        if (f.hasOuterRef())
-          {
-            var or = f.outerRef();
-            innerFeatures.add(or);
-            added.add(or);
-          }
-        if (f.isChoice())
-          {
-            check
-              (Errors.count() > 0 || added.isEmpty()); // a choice has no arguments, no result and no outer ref.
-            var ct = f.choiceTag();
-            innerFeatures.add(ct);
-            added.add(ct);
-          }
-        for (var i : m.values())
-          {
-            if (!added.contains(i))
-              {
-                innerFeatures.add(i);
-              }
-          }
-
-        var szPos = o.offset();
-        o.writeInt(0);
-        var innerPos = o.offset();
-
-        // write the actual data
-        collectFeatures(o, innerFeatures);
-        o.writeIntAt(szPos, o.offset() - innerPos);
-      }
-  }
-
-  void collectFeatures(DataOut o, List<AbstractFeature> fs)
-  {
-    for (var df : fs)
-      {
-        if (df instanceof Feature dff)
-          {
-            collectFeature(o, dff);
-          }
-      }
-  }
-
-
-  /**
-   * Collect the binary data for given feature.
-   *
-   * Data format for a feature:
-   *
-   *   +---------------------------------------------------------------------------------+
-   *   | Feature                                                                         |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters |
-   *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | Name          | name                                          |
-   *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | int           | arg count                                     |
-   *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | int           | name id                                       |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | T=1    | 1      | TypeArgs      | optional type arguments                       |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | hasRT  | 1      | Type          | optional result type,                         |
-   *   |        |        |               | hasRT = !isConstructor && !isChoice           |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   |        | 1      | InnerFeatures | inner features of this feature                |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *
-   *   +---------------------------------------------------------------------------------+
-   *   | TypeArgs                                                                        |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | int           | num type ags n                                |
-   *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | bool          | isOpen                                        |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | n      | TypeArg       | type arguments                                |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *
-   *   +---------------------------------------------------------------------------------+
-   *   | TypeArg                                                                         |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Name          | type arg name                                 |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  void collectFeature(DataOut o, Feature f)
-  {
-    var ix = o.offset();
-    var k =
-      !f.isConstructor() ? f.kind().ordinal() :
-      f.isThisRef()      ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
-                         : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE;
-    check
-      (k >= 0,
-       f.isConstructor() || k < FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
-    check
-      (Errors.count() > 0 || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
-    if (f.generics() != FormalGenerics.NONE)
-      {
-        k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS;
-      }
-    var n = f.featureName();
-    o.write(k);
-    o.writeName(n.baseName());  // NYI: internal names (outer refs, statement results) are too long and waste memory
-    o.writeInt (n.argCount());  // NYI: use better integer encoding
-    o.writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
-    if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0)
-      {
-        check
-          (f.generics().list.size() > 0);
-        o.writeInt(f.generics().list.size());
-        o.write(f.generics().isOpen() ? 1 : 0);
-        for (var g : f.generics().list)
-          {
-            o.writeName(g.name());
-          }
-      }
-    check
-      (f.arguments().size() == f.featureName().argCount());
-    if (!f.isConstructor() && !f.isChoice())
-      {
-        collectType(o, f.resultType());
-      }
-    collectInnerFeatures(o, f);
-    data(f)._mirOffset = ix;
-    _offsetToAstFeature.put(ix, f);
-  }
-
-
-  /**
-   * Collect the binary data for given type.
-   *
-   * Data format for a type:
-   *
-   *   +---------------------------------------------------------------------------------+
-   *   | Type                                                                            |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | int           | the kind of this type tk                      |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | tk==-1 | 1      | int           | index of generic argument                     |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | tk>=0  | 1      | int           | index of feature of type                      |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | tk     | Type          | actual generics                               |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-  void collectType(DataOut o, AbstractType t)
-  {
-    if (t.isGenericArgument())
-      {
-        // write index of TypeArg
-      }
-    else
-      {
-        // write index of feature
-        check
-          (t.featureOfType() != null);
-      }
+    return new LibraryOut(this).buffer();
   }
 
 
@@ -1396,6 +1182,18 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * NYI: Remove once ASTFeatures are no longer needed.
    */
   TreeMap<Integer, Feature> _offsetToAstFeature = new TreeMap<>();
+
+
+  /**
+   * Record offset ix for feature f.
+   *
+   * NYI: Remove once ASTFeatures are no longer needed.
+   */
+  void registerOffset(Feature f, int ix)
+  {
+    data(f)._mirOffset = ix;
+    _offsetToAstFeature.put(ix, f);
+  }
 
 
   /**
