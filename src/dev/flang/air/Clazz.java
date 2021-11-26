@@ -1168,12 +1168,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
-  public boolean dependsOnGenerics()  //  NYI: Only used in caching for Type.clazz, which should be removed
-  {
-    return !this._type.generics().isEmpty() || (this._outer != null && this._outer.dependsOnGenerics());
-  }
-
-
   /**
    * Visitor to find all runtime classes.
    */
