@@ -186,7 +186,6 @@ public class LibraryType extends AbstractType
   public int compareToIgnoreOuter(Type other) { return _from.compareToIgnoreOuter(other); }
   public AbstractType outer() { return _from.outer(); }
   public Generic genericArgument() { return _from.genericArgument(); }
-  public boolean constraintAssignableFrom(AbstractType actual) { return _from.constraintAssignableFrom(actual); }
 
   public Type astType() { return _from; }
 
