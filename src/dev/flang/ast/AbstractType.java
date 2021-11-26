@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Set;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -95,13 +96,33 @@ public abstract class AbstractType extends ANY
   }
 
 
-
   /**
    * Check if this is a choice type.
    */
   public boolean isChoice()
   {
     return !isGenericArgument() && featureOfType().isChoice();
+  }
+
+
+  /**
+   * For a resolved type, check if it is a choice type and if so, return the
+   * list of choices. Otherwise, return null.
+   */
+  public List<AbstractType> choiceGenerics()
+  {
+    if (PRECONDITIONS) require
+      (isGenericArgument() || !(this instanceof Type tt) || tt.feature != null);  // type must be resolved
+
+    if (!isGenericArgument())
+      {
+        var g = featureOfType().choiceGenerics();
+        if (g != null)
+          {
+            return replaceGenerics(g);
+          }
+      }
+    return null;
   }
 
 
@@ -167,13 +188,78 @@ public abstract class AbstractType extends ANY
   }
 
 
+  /**
+   * Replace generic types used in given List of types by the actual generic arguments
+   * given as actualGenerics.
+   *
+   * @param f the feature the generics belong to.
+   *
+   * @param genericsToReplace a list of possibly generic types
+   *
+   * @param actualGenerics the actual generics to feat that shold replace the
+   * formal generics found in genericsToReplace.
+   *
+   * @return a new list of types with all formal generic arguments from this
+   * replaced by the corresponding actualGenerics entry.
+   */
+  static List<AbstractType> actualTypes(AbstractFeature f, List<AbstractType> genericsToReplace, List<AbstractType> actualGenerics)
+  {
+    if (PRECONDITIONS) require
+      (Errors.count() > 0 ||
+       f.generics().sizeMatches(actualGenerics));
+
+    var result = genericsToReplace;
+    if (f != null && !genericsToReplace.isEmpty())
+      {
+        if (genericsToReplace == f.generics().asActuals())  /* shortcut for properly handling open generics list */
+          {
+            result = actualGenerics;
+          }
+        else
+          {
+            boolean changes = false;
+            for (var t: genericsToReplace)
+              {
+                changes = changes || t.actualType(f, actualGenerics) != t;
+              }
+            if (changes)
+              {
+                result = new List<>();
+                for (var t: genericsToReplace)
+                  {
+                    result.add(t.actualType(f, actualGenerics));
+                  }
+              }
+          }
+      }
+    return result;
+  }
+
+
+  /**
+   * Replace formal generics from this type's feature in given list by the
+   * actual generic arguments of this type.
+   *
+   * @param genericsToReplace a list of possibly generic types
+   *
+   * @return a new list of types with all formal generic arguments from
+   * featureOfType() replaced by the corresponding generics entry of this type.
+   */
+  public List<AbstractType> replaceGenerics(List<AbstractType> genericsToReplace)
+  {
+    if (PRECONDITIONS) require
+      (featureOfType().generics().sizeMatches(generics()));
+
+    return actualTypes(featureOfType(), genericsToReplace, generics());
+  }
+
+
   public abstract AbstractFeature featureOfType();
   public abstract AbstractType actualType(AbstractType t);
   public abstract AbstractType actualType(AbstractFeature f, List<AbstractType> actualGenerics);
   public abstract AbstractType asRef();
   public abstract AbstractType asValue();
   public abstract boolean isRef();
-  public abstract List<AbstractType> replaceGenerics(List<AbstractType> generics);
   public abstract SourcePosition pos();
   public abstract List<AbstractType> generics();
   public abstract boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo);
@@ -183,7 +269,6 @@ public abstract class AbstractType extends ANY
   public abstract boolean dependsOnGenerics();
   public abstract Generic generic();
   public abstract Generic genericArgument();
-  public abstract List<AbstractType> choiceGenerics();
   public abstract boolean constraintAssignableFrom(AbstractType actual);
 
   public Type astType() { return (Type) this; }

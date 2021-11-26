@@ -522,24 +522,6 @@ public class Type extends AbstractType implements Comparable<Type>
 
 
   /**
-   * Replace formal generics from this type's feature in given list by the
-   * actual generic arguments of this type.
-   *
-   * @param genericsToReplace a list of possibly generic types
-   *
-   * @return a new list of types with all formal generic arguments from
-   * featureOfType() replaced by the corresponding generics entry of this type.
-   */
-  public List<AbstractType> replaceGenerics(List<AbstractType> genericsToReplace)
-  {
-    if (PRECONDITIONS) require
-      (featureOfType().generics().sizeMatches(_generics));
-
-    return actualTypes(featureOfType(), genericsToReplace, _generics);
-  }
-
-
-  /**
    * Does this type (or its outer type) depend on generics. If not, actualType()
    * will not need to do anything on this.
    */
@@ -667,54 +649,6 @@ public class Type extends AbstractType implements Comparable<Type>
                 hasError = hasError || (t == Types.t_ERROR);
               }
             result = hasError ? Types.t_ERROR : new Type(result.astType(), g2, o2 == null ? null : o2.astType());
-          }
-      }
-    return result;
-  }
-
-
-  /**
-   * Replace generic types used in given List of types by the actual generic arguments
-   * given as actualGenerics.
-   *
-   * @param f the feature the generics belong to.
-   *
-   * @param genericsToReplace a list of possibly generic types
-   *
-   * @param actualGenerics the actual generics to feat that shold replace the
-   * formal generics found in genericsToReplace.
-   *
-   * @return a new list of types with all formal generic arguments from this
-   * replaced by the corresponding actualGenerics entry.
-   */
-  private static List<AbstractType> actualTypes(AbstractFeature f, List<AbstractType> genericsToReplace, List<AbstractType> actualGenerics)
-  {
-    if (PRECONDITIONS) require
-      (Errors.count() > 0 ||
-       f.generics().sizeMatches(actualGenerics));
-
-    var result = genericsToReplace;
-    if (f != null && !genericsToReplace.isEmpty())
-      {
-        if (genericsToReplace == f.generics().asActuals())  /* shortcut for properly handling open generics list */
-          {
-            result = actualGenerics;
-          }
-        else
-          {
-            boolean changes = false;
-            for (var t: genericsToReplace)
-              {
-                changes = changes || t.actualType(f, actualGenerics) != t;
-              }
-            if (changes)
-              {
-                result = new List<>();
-                for (var t: genericsToReplace)
-                  {
-                    result.add(t.actualType(f, actualGenerics));
-                  }
-              }
           }
       }
     return result;
@@ -928,27 +862,6 @@ public class Type extends AbstractType implements Comparable<Type>
       }
     if (POSTCONDITIONS) ensure
       (isGenericArgument() || feature != null);
-  }
-
-
-  /**
-   * For a resolved type, check if it is a choice type and if so, return the
-   * list of choices. Otherwise, return null.
-   */
-  public List<AbstractType> choiceGenerics()
-  {
-    if (PRECONDITIONS) require
-      (isGenericArgument() || feature != null);  // type must be resolved
-
-    if (!isGenericArgument())
-      {
-        var g = feature.choiceGenerics();
-        if (g != null)
-          {
-            return replaceGenerics(g);
-          }
-      }
-    return null;
   }
 
 
