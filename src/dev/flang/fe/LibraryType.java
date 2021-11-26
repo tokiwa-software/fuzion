@@ -177,7 +177,6 @@ public class LibraryType extends AbstractType
   }
 
 
-  public AbstractType actualType(AbstractFeature f, List<AbstractType> actualGenerics) { return _from.actualType(f, actualGenerics); }
   public AbstractType asRef() { return _from.asRef(); }
   public AbstractType asValue() { return _from.asValue(); }
   public boolean isRef() { return _from.isRef(); }

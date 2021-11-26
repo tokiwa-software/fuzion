@@ -512,64 +512,6 @@ public class Type extends AbstractType implements Comparable<Type>
     return result;
   }
 
-  /**
-   * Check if type t depends on a formal generic parameter of this. If so,
-   * replace t by the corresponding actual generic parameter from the list
-   * provided.
-   *
-   * @param f the feature actualGenerics belong to.
-   *
-   * @param actualGenerics the actual generic parameters
-   *
-   * @return t iff t does not depend on a formal generic parameter of this,
-   * otherwise the type that results by replacing all formal generic parameters
-   * of this in t by the corresponding type from actualGenerics.
-   */
-  public AbstractType actualType(AbstractFeature f, List<AbstractType> actualGenerics)
-  {
-    if (PRECONDITIONS) require
-      (checkedForGeneric,
-       Errors.count() > 0 ||
-       f.generics().sizeMatches(actualGenerics),
-       Errors.count() > 0 || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics());
-
-    f = f.astFeature();
-    AbstractType result = this;
-    if (f != null)
-      {
-        for (Call i : f.inherits())
-          {
-            result = result.actualType(i.calledFeature(),
-                                       i.generics);
-          }
-      }
-    if (result.isGenericArgument())
-      {
-        Generic g = result.genericArgument();
-        if (f != null && g.formalGenerics() == f.generics())  // t is replaced by corresponding actualGenerics entry
-          {
-            result = result.ensureNotOpen() ? g.replace(actualGenerics)
-                                            : Types.t_ERROR;
-          }
-      }
-    else
-      {
-        var g2 = actualTypes(f, result.generics(), actualGenerics);
-        var o2 = (result.outer() == null) ? null : result.outer().actualType(f, actualGenerics);
-        if (g2 != result.generics() ||
-            o2 != result.outer()    )
-          {
-            var hasError = o2 == Types.t_ERROR;
-            for (var t : g2)
-              {
-                hasError = hasError || (t == Types.t_ERROR);
-              }
-            result = hasError ? Types.t_ERROR : new Type(result.astType(), g2, o2 == null ? null : o2.astType());
-          }
-      }
-    return result;
-  }
-
 
   /**
    * visit all the features, expressions, statements within this feature.
