@@ -38,6 +38,7 @@ import java.util.TreeSet;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
+import dev.flang.ast.Generic;
 
 import dev.flang.mir.MIR;
 
@@ -225,6 +226,81 @@ public class LibraryModule extends Module
   }
 
 
+  /**
+   * Find the Generic instance defined at offset in this file.
+   *
+   * @param offset the offset of the Generic
+   */
+  Generic genericArgument(int offset)
+  {
+    return findGenericArgument(offset, _mir.universe(), FuzionConstants.MIR_FILE_FIRST_FEATURE_OFFSET);
+  }
+
+
+  /**
+   * Helper for genericArgument to find the Generic instance defined at offset
+   * in the InnerFeatures starting at position 'at' in this file.
+   *
+   * @param offset the offset of the Generic
+   *
+   * @param f the outer feature
+   *
+   * @param at the start of the InnerFeatures to search
+   */
+  private Generic findGenericArgument(int offset, AbstractFeature f, int at)
+  {
+    if (PRECONDITIONS) require
+      (f != null,
+       at <= offset,
+       offset < data().limit(),
+       at >= 0,
+       at < data().limit());
+
+    Generic result = null;
+    var sz = data().getInt(at);
+    check
+      (at+4+sz <= data().limit());
+    var i = at+4;
+    if (i <= offset && offset < i+sz)
+      {
+        while (result == null)
+          {
+            var o = libraryFeature(i, _srcModule.featureFromOffset(i));
+            if (((featureKind(i) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0) &&
+                offset > i &&
+                offset <= featureResultTypePos(i))
+              {
+                var n = featureTypeArgsCount(i);
+                var j = featureTypeArgsListPos(i);
+                var ix = 0;
+                while (result == null && ix < n)
+                  {
+                    if (j == offset)
+                      {
+                        result = o.generics().list.get(ix);
+                      }
+                    j = nextTypeArg(j);
+                    ix++;
+                  }
+              }
+            else
+              {
+                check
+                  (o != null);
+                var inner = featureInnerSizePos(i);
+                if (inner <= offset && offset <= nextFeaturePos(i))
+                  {
+                    result = findGenericArgument(offset, o, inner);
+                  }
+              }
+            i = nextFeaturePos(i);
+            check(result != null || i <= offset);
+          }
+      }
+    return result;
+  }
+
+
   /*---------------------  accessing mir file data  ---------------------*/
 
 
@@ -272,22 +348,57 @@ public class LibraryModule extends Module
     var i = featureArgCountPos(at);
     return i + 4;
   }
+  int featureIdPosAfter(int at)
+  {
+    return featureIdPos(at) + 4;
+  }
   int featureId(int at)
   {
     return data().getInt(featureIdPos(at));
   }
+  int featureTypeArgsCountPos(int at)
+  {
+    if (PRECONDITIONS) require
+      ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0);
+
+    return featureIdPosAfter(at);
+  }
+  int featureTypeArgsCount(int at)
+  {
+    if (PRECONDITIONS) require
+      ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0);
+
+    return data().getInt(featureTypeArgsCountPos(at));
+  }
+  int featureTypeArgsOpenPos(int at)
+  {
+    if (PRECONDITIONS) require
+      ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0);
+
+    return featureTypeArgsCountPos(at) + 4;
+  }
+  boolean featureTypeArgsOpen(int at)
+  {
+    if (PRECONDITIONS) require
+      ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0);
+
+    return data().get(featureTypeArgsOpenPos(at)) != 0;
+  }
+  int featureTypeArgsListPos(int at)   // works also if list is empty
+  {
+    return featureTypeArgsOpenPos(at) + 1;
+  }
   int featureResultTypePos(int at)
   {
-    var i = featureIdPos(at) + 4;
+    var i = featureIdPosAfter(at);
     if ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0)
       {
         var d = data();
-        var n = d.getInt(i);
-        i = i + 4 + 1;
+        var n = featureTypeArgsCount(at);
+        i = featureTypeArgsListPos(at);
         while (n > 0)
           {
-            var l = d.getInt(i);
-            i = i + 4 + l;
+            i = nextTypeArg(i);
             n--;
           }
       }
@@ -324,6 +435,36 @@ public class LibraryModule extends Module
     var next = featureInnerPos(at) + featureInnerSize(at);
     return next;
   }
+
+  String typeArgName(int at)
+  {
+    return name(at);
+  }
+  int nextTypeArg(int at)
+  {
+    return nextName(at);
+  }
+
+  String name(int at)
+  {
+    var i = at;
+    var d = data();
+    var l = d.getInt(i);
+    i = i + 4;
+    var b = new byte[l];
+    d.get(i, b);
+    return new String(b, StandardCharsets.UTF_8);
+  }
+  int nextName(int at)
+  {
+    var i = at;
+    var d = data();
+    var l = d.getInt(i);
+    i = i + 4 + l;
+    return i;
+  }
+
+
   int nextTypePos(int at)
   {
     var k = data().getInt(at);

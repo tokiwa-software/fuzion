@@ -85,6 +85,8 @@ public class LibraryType extends AbstractType
   List<AbstractType> _generics;
 
 
+  Generic _generic;
+
   /**
    * NYI: For now, this is just a wrapper around an AST type. This should be
    * removed once all data is obtained from _libModule;
@@ -122,14 +124,17 @@ public class LibraryType extends AbstractType
     var k = mod.typeKind(at);
     AbstractFeature feature;
     List<AbstractType> generics;
+    Generic generic;
     if (k < 0)
       {
         // generic argument
         feature = null;
         generics = null;
+        generic = mod.genericArgument(mod.typeGeneric(at));
       }
     else
       {
+        generic = null;
         feature = mod.libraryFeature(mod.typeFeature(at), (Feature) from.featureOfType().astFeature());
         if (k > 0)
           {
@@ -150,6 +155,7 @@ public class LibraryType extends AbstractType
       }
     this._feature = feature;
     this._generics = generics;
+    this._generic = generic;
     this._from = from.astType();
   }
 
@@ -177,13 +183,32 @@ public class LibraryType extends AbstractType
   }
 
 
+  /**
+   * genericArgument gives the Generic instance of a type defined by a generic
+   * argument.
+   *
+   * @return the Generic instance, never null.
+   */
+  public Generic genericArgument()
+  {
+    if (PRECONDITIONS) require
+      (isGenericArgument());
+
+    Generic result = _generic;
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
+  }
+
+
   public AbstractType asRef() { return _from.asRef(); }
   public AbstractType asValue() { return _from.asValue(); }
   public boolean isRef() { return _from.isRef(); }
   public boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo) { return _from.isAssignableFrom(actual, assignableTo); }
   public int compareToIgnoreOuter(Type other) { return _from.compareToIgnoreOuter(other); }
   public AbstractType outer() { return _from.outer(); }
-  public Generic genericArgument() { return _from.genericArgument(); }
 
   public Type astType() { return _from; }
 
