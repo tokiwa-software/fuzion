@@ -555,6 +555,8 @@ public class LibraryModule extends Module
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | bool          | isRef                                         |
+   *   |        +--------+---------------+-----------------------------------------------+
    *   |        | tk     | Type          | actual generics                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
@@ -591,25 +593,38 @@ public class LibraryModule extends Module
 
     return data().getInt(typeFeaturePos(at));
   }
-  int typeActualGenericsPos(int at)
+  int typeIsRefPos(int at)
   {
     if (PRECONDITIONS) require
       (typeKind(at) >= 0);
 
     return typeFeaturePos(at) + 4;
   }
+  boolean typeIsRef(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) >= 0);
+
+    if (true) return false;
+    return data().get(typeIsRefPos(at)) != 0;
+  }
+  int typeActualGenericsPos(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) >= 0);
+
+    return typeIsRefPos(at) + 1;
+  }
   int typeNextPos(int at)
   {
     var k = data().getInt(at);
-    at = at + 4;
     if (k == -1)
       {
-        return at + 4;
+        return typeGenericPos(at) + 4;
       }
     else
       {
-        int f = data().getInt(at);
-        at = at + 4;
+        at = typeActualGenericsPos(at);
         int n = k;
         for (var i = 0; i<n; i++)
           {

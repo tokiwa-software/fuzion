@@ -98,6 +98,15 @@ public class GenericType extends LibraryType
     return _generic;
   }
 
+  /**
+   * A parametric type is not considered a ref type even it the actual type
+   * might very well be a ref.
+   */
+  public boolean isRef()
+  {
+    return false;
+  }
+
 }
 
 /* end of file */

@@ -58,6 +58,12 @@ public class NormalType extends LibraryType
 
 
   /**
+   * Is this explicitly a ref type even if _feature is a value type?
+   */
+  boolean _makeRef;
+
+
+  /**
    * For a type that is not a generic argument, this is the list of actual
    * generics.
    */
@@ -71,11 +77,12 @@ public class NormalType extends LibraryType
    * Constructor for a plain Type from a given feature that does not have any
    * actual generics.
    */
-  NormalType(LibraryModule mod, int at, SourcePosition pos, AbstractFeature feature, List<AbstractType> generics, AbstractType from)
+  NormalType(LibraryModule mod, int at, SourcePosition pos, AbstractFeature feature, boolean makeRef, List<AbstractType> generics, AbstractType from)
   {
     super(mod, at, pos, from);
 
     this._feature = feature;
+    this._makeRef = makeRef;
     this._generics = generics;
   }
 
@@ -101,6 +108,15 @@ public class NormalType extends LibraryType
   public Generic genericArgument()
   {
     throw new Error("genericArgument() is not defined for NormalType");
+  }
+
+
+  /**
+   * A normal type may be an explicit ref type.
+   */
+  public boolean isRef()
+  {
+    return _makeRef || _feature.isThisRef();
   }
 
 }

@@ -255,7 +255,7 @@ class LibraryOut extends DataOut
         check
           (f.generics().list.size() > 0);
         writeInt(f.generics().list.size());
-        write(f.generics().isOpen() ? 1 : 0);
+        writeBool(f.generics().isOpen());
         for (var g : f.generics().list)
           {
             _offsetsForGeneric.put(g, offset());
@@ -289,6 +289,8 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | bool          | isRef                                         |
+   *   |        +--------+---------------+-----------------------------------------------+
    *   |        | tk     | Type          | actual generics                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
@@ -296,13 +298,19 @@ class LibraryOut extends DataOut
   {
     if (t.isGenericArgument())
       {
+        check
+          (!t.isRef());
         writeInt(-1);
         writeOffset(t.genericArgument());
       }
     else
       {
+        boolean makeRef = t.isRef() && !t.featureOfType().isThisRef();
+        check // there is no explicit value type at this phase:
+          (makeRef || t.isRef() == t.featureOfType().isThisRef());
         writeInt(t.generics().size());
         writeOffset(t.featureOfType());
+        writeBool(makeRef);
         for (var gt : t.generics())
           {
             type(gt);

@@ -91,6 +91,7 @@ public abstract class LibraryType extends AbstractType
     else
       {
         var feature = mod.libraryFeature(mod.typeFeature(at), (Feature) from.featureOfType().astFeature());
+        var makeRef = mod.typeIsRef(at);
         var generics = Type.NONE;
         if (k > 0)
           {
@@ -108,7 +109,7 @@ public abstract class LibraryType extends AbstractType
           {
             generics = Type.NONE;
           }
-        return new NormalType(mod, at, pos, feature, generics, from);
+        return new NormalType(mod, at, pos, feature, makeRef, generics, from);
       }
   }
 
@@ -139,7 +140,6 @@ public abstract class LibraryType extends AbstractType
 
   public AbstractType asRef() { return _from.asRef(); }
   public AbstractType asValue() { return _from.asValue(); }
-  public boolean isRef() { return _from.isRef(); }
   public boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo) { return _from.isAssignableFrom(actual, assignableTo); }
   public int compareToIgnoreOuter(Type other) { return _from.compareToIgnoreOuter(other); }
   public AbstractType outer() { return _from.outer(); }
