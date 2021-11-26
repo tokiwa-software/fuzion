@@ -32,6 +32,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -42,6 +43,18 @@ import dev.flang.util.SourcePosition;
  */
 public abstract class AbstractType extends ANY
 {
+
+
+  /*----------------------------  variables  ----------------------------*/
+
+
+  /**
+   * Cached result of dependsOnGenerics().
+   */
+  public YesNo _dependsOnGenerics = YesNo.dontKnow;
+
+
+  /*-----------------------------  methods  -----------------------------*/
 
 
   /**
@@ -254,6 +267,47 @@ public abstract class AbstractType extends ANY
   }
 
 
+  /**
+   * Does this type (or its outer type) depend on generics. If not, actualType()
+   * will not need to do anything on this.
+   */
+  public boolean dependsOnGenerics()
+  {
+
+    if (PRECONDITIONS) require
+      (checkedForGeneric());
+
+    YesNo result = _dependsOnGenerics;
+    if (result == YesNo.dontKnow)
+      {
+        if (isGenericArgument())
+          {
+            result = YesNo.yes;
+          }
+        else
+          {
+            result = YesNo.no;
+            if (generics() != Type.NONE)
+              {
+                for (var t: generics())
+                  {
+                    if (t.dependsOnGenerics())
+                      {
+                        result = YesNo.yes;
+                      }
+                  }
+              }
+            if (outer() != null && outer().dependsOnGenerics())
+              {
+                result = YesNo.yes;
+              }
+          }
+        _dependsOnGenerics = result;
+      }
+    return result == YesNo.yes;
+  }
+
+
   public abstract AbstractFeature featureOfType();
   public abstract AbstractType actualType(AbstractType t);
   public abstract AbstractType actualType(AbstractFeature f, List<AbstractType> actualGenerics);
@@ -266,7 +320,6 @@ public abstract class AbstractType extends ANY
   public abstract int compareToIgnoreOuter(Type other);
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
-  public abstract boolean dependsOnGenerics();
   public abstract Generic generic();
   public abstract Generic genericArgument();
   public abstract boolean constraintAssignableFrom(AbstractType actual);

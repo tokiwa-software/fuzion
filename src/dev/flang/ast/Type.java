@@ -36,7 +36,6 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
-import dev.flang.util.YesNo;
 
 
 /**
@@ -163,12 +162,6 @@ public class Type extends AbstractType implements Comparable<Type>
    */
   boolean checkedForGeneric = false;
   boolean checkedForGeneric() { return checkedForGeneric; }
-
-
-  /**
-   * Cached result of dependsOnGenerics().
-   */
-  public YesNo dependsOnGenerics = YesNo.dontKnow;
 
 
   /**
@@ -518,47 +511,6 @@ public class Type extends AbstractType implements Comparable<Type>
         result = result + "<" + _generics + ">";
       }
     return result;
-  }
-
-
-  /**
-   * Does this type (or its outer type) depend on generics. If not, actualType()
-   * will not need to do anything on this.
-   */
-  public boolean dependsOnGenerics()
-  {
-    YesNo result = dependsOnGenerics;
-
-    if (PRECONDITIONS) require
-      (checkedForGeneric);
-
-    if (result == YesNo.dontKnow)
-      {
-        if (isGenericArgument())
-          {
-            result = YesNo.yes;
-          }
-        else
-          {
-            result = YesNo.no;
-            if (_generics != NONE)
-              {
-                for (var t: _generics)
-                  {
-                    if (t.dependsOnGenerics())
-                      {
-                        result = YesNo.yes;
-                      }
-                  }
-              }
-            if (outer() != null && outer().dependsOnGenerics())
-              {
-                result = YesNo.yes;
-              }
-          }
-        dependsOnGenerics = result;
-      }
-    return dependsOnGenerics == YesNo.yes;
   }
 
 
