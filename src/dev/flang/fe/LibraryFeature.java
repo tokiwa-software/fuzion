@@ -381,7 +381,7 @@ public class LibraryFeature extends AbstractFeature
         // NYI: Remove creation of ast.Type here:
         result = new Type(pos(), featureName().baseName(), generics().asActuals(), null, this, Type.RefOrVal.LikeUnderlyingFeature);
 
-        result = new LibraryType(_libModule, pos(), this, result);
+        result = new NormalType(_libModule, -1, pos(), this, Type.NONE, result);
         _thisType = result;
       }
 
@@ -416,7 +416,7 @@ public class LibraryFeature extends AbstractFeature
     else
       {
         var from = _from.resultType();
-        return new LibraryType(_libModule, from.pos(), _libModule.featureResultTypePos(_index), from);
+        return LibraryType.create(_libModule, _libModule.featureResultTypePos(_index), from.pos(), from);
       }
   }
 

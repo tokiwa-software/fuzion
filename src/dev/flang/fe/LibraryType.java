@@ -46,7 +46,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class LibraryType extends AbstractType
+public abstract class LibraryType extends AbstractType
 {
 
 
@@ -72,70 +72,26 @@ public class LibraryType extends AbstractType
 
 
   /**
-   * For a type that is not a generic argument, this is the feature the type is
-   * based on.
-   */
-  AbstractFeature _feature;
-
-
-  /**
-   * For a type that is not a generic argument, this is the list of actual
-   * generics.
-   */
-  List<AbstractType> _generics;
-
-
-  Generic _generic;
-
-  /**
    * NYI: For now, this is just a wrapper around an AST type. This should be
    * removed once all data is obtained from _libModule;
    */
   private final Type _from;
 
 
-  /*--------------------------  constructors  ---------------------------*/
+  /*-------------------------  static methods  --------------------------*/
 
 
-  /**
-   * Constructor for a plain Type from a given feature that does not have any
-   * actual generics.
-   */
-  LibraryType(LibraryModule mod, SourcePosition pos, AbstractFeature feature, AbstractType from)
+  static LibraryType create(LibraryModule mod, int at, SourcePosition pos, AbstractType from)
   {
-    this._libModule = mod;
-    this._at = -1;
-    this._pos = pos;
-    this._feature = feature;
-    this._generics = Type.NONE;
-    this._from = from.astType();
-  }
-
-
-  /**
-   * Constructor for a plain Type from a given feature that does not have any
-   * actual generics.
-   */
-  LibraryType(LibraryModule mod, SourcePosition pos, int at, AbstractType from)
-  {
-    this._libModule = mod;
-    this._at = at;
-    this._pos = pos;
     var k = mod.typeKind(at);
-    AbstractFeature feature;
-    List<AbstractType> generics;
-    Generic generic;
     if (k < 0)
       {
-        // generic argument
-        feature = null;
-        generics = null;
-        generic = mod.genericArgument(mod.typeGeneric(at));
+        return new GenericType(mod, at, pos, mod.genericArgument(mod.typeGeneric(at)), from);
       }
     else
       {
-        generic = null;
-        feature = mod.libraryFeature(mod.typeFeature(at), (Feature) from.featureOfType().astFeature());
+        var feature = mod.libraryFeature(mod.typeFeature(at), (Feature) from.featureOfType().astFeature());
+        var generics = Type.NONE;
         if (k > 0)
           {
             var i = mod.typeActualGenericsPos(at);
@@ -143,7 +99,7 @@ public class LibraryType extends AbstractType
             var gi = 0;
             while (gi < k)
               {
-                generics.add(new LibraryType(mod, pos, i, from.generics().get(gi)));
+                generics.add(create(mod, i, pos, from.generics().get(gi)));
                 i = mod.typeNextPos(i);
                 gi++;
               }
@@ -152,12 +108,25 @@ public class LibraryType extends AbstractType
           {
             generics = Type.NONE;
           }
+        return new NormalType(mod, at, pos, feature, generics, from);
       }
-    this._feature = feature;
-    this._generics = generics;
-    this._generic = generic;
+  }
+
+
+  /*--------------------------  constructors  ---------------------------*/
+
+
+  /**
+   * Constructor to set common fields.
+   */
+  LibraryType(LibraryModule mod, int at, SourcePosition pos, AbstractType from /* NYI: to be removed */)
+  {
+    this._libModule = mod;
+    this._at = at;
+    this._pos = pos;
     this._from = from.astType();
   }
+
 
   /*-----------------------------  methods  -----------------------------*/
 
@@ -165,41 +134,6 @@ public class LibraryType extends AbstractType
   public SourcePosition pos()
   {
     return _pos;
-  }
-
-  public AbstractFeature featureOfType()
-  {
-    return _feature;
-  }
-
-  public boolean isGenericArgument()
-  {
-    return _feature == null;
-  }
-
-  public List<AbstractType> generics()
-  {
-    return _generics;
-  }
-
-
-  /**
-   * genericArgument gives the Generic instance of a type defined by a generic
-   * argument.
-   *
-   * @return the Generic instance, never null.
-   */
-  public Generic genericArgument()
-  {
-    if (PRECONDITIONS) require
-      (isGenericArgument());
-
-    Generic result = _generic;
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
   }
 
 
