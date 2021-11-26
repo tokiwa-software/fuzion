@@ -297,7 +297,7 @@ class LibraryOut extends DataOut
     if (t.isGenericArgument())
       {
         writeInt(-1);
-        writeOffset(t.generic());
+        writeOffset(t.genericArgument());
       }
     else
       {

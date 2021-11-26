@@ -487,7 +487,7 @@ public class AstErrors extends ANY
     error(pos,
           "" + skw("match") + " subject type must not be a type parameter",
           "Matched type: " + s(t) + "\n" +
-          "which is a type parameter declared at " + t.generic()._pos.show());
+          "which is a type parameter declared at " + t.genericArgument()._pos.show());
 
   }
 

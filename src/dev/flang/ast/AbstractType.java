@@ -102,7 +102,7 @@ public abstract class AbstractType extends ANY
 
     if (isOpenGeneric())
       {
-        AstErrors.illegalUseOfOpenFormalGeneric(pos(), generic());
+        AstErrors.illegalUseOfOpenFormalGeneric(pos(), genericArgument());
         result = false;
       }
     return result;
@@ -320,7 +320,6 @@ public abstract class AbstractType extends ANY
   public abstract int compareToIgnoreOuter(Type other);
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
-  public abstract Generic generic();
   public abstract Generic genericArgument();
   public abstract boolean constraintAssignableFrom(AbstractType actual);
 

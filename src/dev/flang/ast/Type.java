@@ -153,7 +153,6 @@ public class Type extends AbstractType implements Comparable<Type>
    * generics is a pre-requisite to resolving types.
    */
   Generic generic;
-  public Generic generic() { return generic; }
 
 
   /**
@@ -1026,7 +1025,7 @@ public class Type extends AbstractType implements Comparable<Type>
             result =
               (generic == null) && (other.generic == null) ?  0 :
               (generic == null) && (other.generic != null) ? -1 :
-              (generic != null) && (other.generic == null) ? +1 : generic.feature().compareTo(other.generic().feature());
+              (generic != null) && (other.generic == null) ? +1 : generic.feature().compareTo(other.genericArgument().feature());
 
             if (result == 0)
               {
@@ -1157,7 +1156,7 @@ public class Type extends AbstractType implements Comparable<Type>
       {
         if (actual.isGenericArgument())
           {
-            result = isAssignableFrom(actual.generic().constraint().asRef());
+            result = isAssignableFrom(actual.genericArgument().constraint().asRef());
           }
         else
           {
@@ -1211,7 +1210,7 @@ public class Type extends AbstractType implements Comparable<Type>
       {
         if (actual.isGenericArgument())
           {
-            result = constraintAssignableFrom(actual.generic().constraint());
+            result = constraintAssignableFrom(actual.genericArgument().constraint());
           }
         else
           {
