@@ -140,7 +140,6 @@ public abstract class LibraryType extends AbstractType
 
   public AbstractType asRef() { return _from.asRef(); }
   public AbstractType asValue() { return _from.asValue(); }
-  public boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo) { return _from.isAssignableFrom(actual, assignableTo); }
   public int compareToIgnoreOuter(Type other) { return _from.compareToIgnoreOuter(other); }
   public AbstractType outer() { return _from.outer(); }
 

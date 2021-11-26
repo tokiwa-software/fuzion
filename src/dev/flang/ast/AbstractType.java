@@ -202,6 +202,100 @@ public abstract class AbstractType extends ANY
 
 
   /**
+   * Check if a value of static type actual can be assigned to a field of static
+   * type this.  This performs static type checking, i.e., the types may still
+   * be or depend on generic parameters.
+   *
+   * @param actual the actual type.
+   *
+   * @param assignableTo in case we want to show all types actual is assignable
+   * to in an error message, this collects the types converted to strings.
+   */
+  public boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo)
+  {
+    if (PRECONDITIONS) require
+      (Types.intern(this  ) == this,
+       Types.intern(actual) == actual,
+       this  .isGenericArgument() || this  .featureOfType() != null || Errors.count() > 0,
+       actual.isGenericArgument() || actual.featureOfType() != null || Errors.count() > 0,
+       Errors.count() > 0 || this != Types.t_ERROR && actual != Types.t_ERROR);
+
+    if (assignableTo != null)
+      {
+        assignableTo.add(actual.toString());
+      }
+    var result =
+      this   == actual                ||
+      actual == Types.resolved.t_void ||
+      this   == Types.t_ERROR         ||
+      actual == Types.t_ERROR;
+    if (!result && !isGenericArgument() && isRef() && actual.isRef())
+      {
+        if (actual.isGenericArgument())
+          {
+            result = isAssignableFrom(actual.genericArgument().constraint().asRef());
+          }
+        else
+          {
+            check
+              (actual.featureOfType() != null || Errors.count() > 0);
+            if (actual.featureOfType() != null)
+              {
+                for (Call p: actual.featureOfType().inherits())
+                  {
+                    var pt = Types.intern(actual.actualType(p.type()));
+                    if (actual.isRef())
+                      {
+                        pt = pt.asRef();
+                      }
+                    if (isAssignableFrom(pt, assignableTo))
+                      {
+                        result = true;
+                      }
+                  }
+              }
+          }
+      }
+    if (!result && isChoice())
+      {
+        result = isChoiceMatch(actual);
+      }
+    return result;
+  }
+
+
+  /**
+   * Helper for isAssignableFrom: check if this is a choice type and actual is
+   * assignable to one of the generic arguments to this choice.
+   *
+   * @return true iff this is a choice and actual is assignable to one of the
+   * generic arguments of this choice.
+   */
+  private boolean isChoiceMatch(AbstractType actual)
+  {
+    if (PRECONDITIONS) require
+      (!isGenericArgument() && featureOfType() != null || Errors.count() > 0);
+
+    boolean result = false;
+    if (!isGenericArgument() && !isRef())
+      {
+        var g = featureOfType().choiceGenerics();
+        if (g != null)
+          {
+            for (var t : actualTypes(featureOfType(), g, generics()))
+              {
+                if (Types.intern(t).isAssignableFrom(actual))
+                  {
+                    result = true;
+                  }
+              }
+          }
+      }
+    return result;
+  }
+
+
+  /**
    * Check if a type parameter actual can be assigned to a type parameter with
    * constraint this.
    *
@@ -476,7 +570,6 @@ public abstract class AbstractType extends ANY
   public abstract boolean isRef();
   public abstract SourcePosition pos();
   public abstract List<AbstractType> generics();
-  public abstract boolean isAssignableFrom(AbstractType actual, Set<String> assignableTo);
   public abstract int compareToIgnoreOuter(Type other);
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
