@@ -376,8 +376,41 @@ public abstract class AbstractType extends ANY
   }
 
 
+  /**
+   * Replace generic types used in given type t by the actual generic arguments
+   * given in this.
+   *
+   * @param t a possibly generic type, must not be an open generic.
+   *
+   * @return t with all generic arguments from this.featureOfType._generics
+   * replaced by this._generics.
+   */
+  public AbstractType actualType(AbstractType t)
+  {
+    if (PRECONDITIONS) require
+      (checkedForGeneric(),
+       t != null,
+       t.checkedForGeneric(),
+       Errors.count() > 0 || !t.isOpenGeneric(),
+       featureOfType().generics().sizeMatches(generics()));
+
+    var result = t;
+    if (result.dependsOnGenerics())
+      {
+        result = result.actualType(featureOfType(), generics());
+        if (outer() != null)
+          {
+            result = outer().actualType(result);
+          }
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+    return result;
+  }
+
+
   public abstract AbstractFeature featureOfType();
-  public abstract AbstractType actualType(AbstractType t);
   public abstract AbstractType actualType(AbstractFeature f, List<AbstractType> actualGenerics);
   public abstract AbstractType asRef();
   public abstract AbstractType asValue();

@@ -512,41 +512,6 @@ public class Type extends AbstractType implements Comparable<Type>
     return result;
   }
 
-
-  /**
-   * Replace generic types used in given type t by the actual generic arguments
-   * given in this.
-   *
-   * @param t a possibly generic type, must not be an open generic.
-   *
-   * @return t with all generic arguments from this.featureOfType._generics
-   * replaced by this._generics.
-   */
-  public AbstractType actualType(AbstractType t)
-  {
-    if (PRECONDITIONS) require
-      (checkedForGeneric,
-       t != null,
-       !(t instanceof Type tt) || tt.checkedForGeneric,
-       Errors.count() > 0 || !t.isOpenGeneric(),
-       featureOfType().generics().sizeMatches(_generics));
-
-    var result = t;
-    if (result.dependsOnGenerics())
-      {
-        result = result.actualType(featureOfType(), _generics);
-        if (outer() != null)
-          {
-            result = outer().actualType(result);
-          }
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-    return result;
-  }
-
-
   /**
    * Check if type t depends on a formal generic parameter of this. If so,
    * replace t by the corresponding actual generic parameter from the list
