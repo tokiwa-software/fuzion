@@ -134,14 +134,6 @@ public class Type extends AbstractType implements Comparable<Type>
 
 
   /**
-   * Flag that indicates the end of the _outer chain as it came from the source
-   * code, even though after type resolution, _outer might be non-null and point
-   * to the actual _outer type.
-   */
-  boolean outerMostInSource_ = false;
-
-
-  /**
    * Cached result of outer(). Note the difference to _outer: _outer is the
    * outer type shown in the source code, while outer()/outerCache_ is the
    * actual outer type taken from the type of the outer feature of this type's
@@ -222,7 +214,6 @@ public class Type extends AbstractType implements Comparable<Type>
        !(t._generics instanceof FormalGenerics.AsActuals) || ((FormalGenerics.AsActuals)t._generics).sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
-    outerMostInSource_ = t.outerMostInSource();
     checkedForGeneric = t.checkedForGeneric;
   }
 
@@ -369,7 +360,6 @@ public class Type extends AbstractType implements Comparable<Type>
     this.name               = original.name;
     this._generics           = original._generics;
     this._outer             = original._outer;
-    this.outerMostInSource_ = original.outerMostInSource_;
     this.feature            = original.feature;
     this.generic            = original.generic;
     this.checkedForGeneric  = original.checkedForGeneric;
@@ -1122,21 +1112,13 @@ public class Type extends AbstractType implements Comparable<Type>
 
     int result = compareToIgnoreOuter(other);
     if (result == 0 && generic == null)
-      { // NYI: outerMostInSource is ignored for interned Types, maybe we should
-        // create new types where outerMostInSource is always false?
-        if (false && outerMostInSource() != other.outerMostInSource())
-          {
-            result = outerMostInSource() ? -1 : +1;
-          }
-        else
-          {
-            var to = this .outerInterned();
-            var oo = other.outerInterned();
-            result =
-              (to == null && oo == null) ?  0 :
-              (to == null && oo != null) ? -1 :
-              (to != null && oo == null) ? +1 : to.compareTo(oo);
-          }
+      {
+        var to = this .outerInterned();
+        var oo = other.outerInterned();
+        result =
+          (to == null && oo == null) ?  0 :
+          (to == null && oo != null) ? -1 :
+          (to != null && oo == null) ? +1 : to.compareTo(oo);
       }
     return result;
   }
@@ -1219,15 +1201,6 @@ public class Type extends AbstractType implements Comparable<Type>
           }
       }
     return result;
-  }
-
-
-  /**
-   * Is this type the outermost part of a type declared in source code?
-   */
-  public boolean outerMostInSource()
-  {
-    return outerMostInSource_ || _outer == null;
   }
 
 

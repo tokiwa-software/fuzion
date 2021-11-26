@@ -187,7 +187,6 @@ public class LibraryType extends AbstractType
   public int compareToIgnoreOuter(Type other) { return _from.compareToIgnoreOuter(other); }
   public boolean isFreeFromFormalGenerics() { return _from.isFreeFromFormalGenerics(); }
   public AbstractType outer() { return _from.outer(); }
-  public boolean outerMostInSource() { return _from.outerMostInSource(); }
   public boolean dependsOnGenerics() { return _from.dependsOnGenerics(); }
   public Generic generic() { return _from.generic(); }
   public Generic genericArgument() { return _from.genericArgument(); }

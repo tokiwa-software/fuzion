@@ -1153,17 +1153,10 @@ public class Clazzes extends ANY
       (!thiz.isOpenGeneric(),
        thiz.isFreeFromFormalGenerics(),
        outerClazz != null || thiz.featureOfType().outer() == null,
-       Errors.count()>0 || thiz == Types.t_ERROR || !thiz.outerMostInSource() || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
-
-    Clazz result;
-
-    if (!thiz.outerMostInSource())
-      {
-        outerClazz = clazzWithSpecificOuter(thiz.outer(), -1, outerClazz._outer);
-      }
+       Errors.count()>0 || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
 
     var t = Types.intern(thiz);
-    result = create(t, select, outerClazz);
+    var result = create(t, select, outerClazz);
 
     return result;
   }

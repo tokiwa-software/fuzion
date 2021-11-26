@@ -181,7 +181,6 @@ public abstract class AbstractType extends ANY
   public abstract boolean isFreeFromFormalGenerics();
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
-  public abstract boolean outerMostInSource();
   public abstract boolean dependsOnGenerics();
   public abstract Generic generic();
   public abstract Generic genericArgument();
