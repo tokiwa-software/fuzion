@@ -307,8 +307,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (!Clazzes.closed,
-       Errors.count() > 0 || !actualType.isGenericArgument(),
-       Errors.count() > 0 || actualType.isFreeFromFormalGenerics(),
+       Errors.count() > 0 || !actualType.dependsOnGenerics(),
        Errors.count() > 0 || actualType.featureOfType().outer() == null || outer.feature().inheritsFrom(actualType.featureOfType().outer()),
        Errors.count() > 0 || actualType.featureOfType().outer() != null || outer == null,
        Errors.count() > 0 || (actualType != Types.t_ERROR     &&
@@ -1440,7 +1439,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (isChoice(),
-       staticTypeOfValue.isFreeFromFormalGenerics(),
+       !staticTypeOfValue.dependsOnGenerics(),
        staticTypeOfValue == Types.intern(staticTypeOfValue));
 
     int result = -1;
@@ -1760,7 +1759,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         var ft = f.resultType();
         var t = _outer.actualType(ft, _select);
-        if (t.isFreeFromFormalGenerics() && !t.isGenericArgument())
+        if (!t.dependsOnGenerics())
           {
             /* We have this situation:
 

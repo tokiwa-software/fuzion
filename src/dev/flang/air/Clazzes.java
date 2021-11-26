@@ -304,8 +304,7 @@ public class Clazzes extends ANY
   {
     if (PRECONDITIONS) require
       (actualType == Types.intern(actualType),
-       Errors.count() > 0 || !actualType.isGenericArgument(),
-       Errors.count() > 0 || actualType.isFreeFromFormalGenerics());
+       Errors.count() > 0 || !actualType.dependsOnGenerics());
 
     Clazz result = null;
     Clazz o = outer;
@@ -1105,8 +1104,7 @@ public class Clazzes extends ANY
   public static Clazz clazz(AbstractType thiz)
   {
     if (PRECONDITIONS) require
-      (!thiz.isOpenGeneric(),
-       Errors.count() > 0 || thiz.isFreeFromFormalGenerics());
+      (Errors.count() > 0 || !thiz.dependsOnGenerics());
 
     Clazz outerClazz;
     if (thiz.outer() != null)
@@ -1150,8 +1148,7 @@ public class Clazzes extends ANY
   public static Clazz clazzWithSpecificOuter(AbstractType thiz, int select, Clazz outerClazz)
   {
     if (PRECONDITIONS) require
-      (!thiz.isOpenGeneric(),
-       thiz.isFreeFromFormalGenerics(),
+      (!thiz.dependsOnGenerics(),
        outerClazz != null || thiz.featureOfType().outer() == null,
        Errors.count()>0 || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
 
