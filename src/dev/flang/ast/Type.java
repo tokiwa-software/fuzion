@@ -809,9 +809,10 @@ public class Type extends AbstractType implements Comparable<Type>
 
 
   /**
-   * genericArgument
+   * genericArgument gives the Generic instance of a type defined by a generic
+   * argument.
    *
-   * @return
+   * @return the Generic instance, never null.
    */
   public Generic genericArgument()
   {
