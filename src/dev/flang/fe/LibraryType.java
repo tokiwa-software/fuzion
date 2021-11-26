@@ -144,7 +144,7 @@ public class LibraryType extends AbstractType
             while (gi < k)
               {
                 generics.add(new LibraryType(mod, pos, i, from.generics().get(gi)));
-                i = mod.nextTypePos(i);
+                i = mod.typeNextPos(i);
                 gi++;
               }
           }

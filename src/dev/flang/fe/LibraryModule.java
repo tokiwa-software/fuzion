@@ -270,8 +270,9 @@ public class LibraryModule extends Module
                 offset > i &&
                 offset <= featureResultTypePos(i))
               {
-                var n = featureTypeArgsCount(i);
-                var j = featureTypeArgsListPos(i);
+                var tai = featureTypeArgsPos(i);
+                var n = typeArgsCount(tai);
+                var j = typeArgsListPos(tai);
                 var ix = 0;
                 while (result == null && ix < n)
                   {
@@ -279,7 +280,7 @@ public class LibraryModule extends Module
                       {
                         result = o.generics().list.get(ix);
                       }
-                    j = nextTypeArg(j);
+                    j = typeArgNextPos(j);
                     ix++;
                   }
               }
@@ -288,12 +289,12 @@ public class LibraryModule extends Module
                 check
                   (o != null);
                 var inner = featureInnerSizePos(i);
-                if (inner <= offset && offset <= nextFeaturePos(i))
+                if (inner <= offset && offset <= featureNextPos(i))
                   {
                     result = findGenericArgument(offset, o, inner);
                   }
               }
-            i = nextFeaturePos(i);
+            i = featureNextPos(i);
             check(result != null || i <= offset);
           }
       }
@@ -303,6 +304,42 @@ public class LibraryModule extends Module
 
   /*---------------------  accessing mir file data  ---------------------*/
 
+
+  /*
+   * For each section 'sec' in the data file, where the section defines one or
+   * several 'field's, there will be the following methods:
+   *
+   * secFieldPos(int at)     Position of 'field' in 'sec' starting 'at'
+   *
+   * secField(int at)        Contents of 'field' in 'sec' starting 'at'
+   *
+   * secFieldNextPos(int at) Position behind 'field' in 'sec' starting 'at' (optional)
+   *
+   * secNextPos(int at)      Position right after 'sec' starting 'at'
+   */
+
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Feature                                                                         |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | Name          | name                                          |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | int           | arg count                                     |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | int           | name id                                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | T=1    | 1      | TypeArgs      | optional type arguments                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | hasRT  | 1      | Type          | optional result type,                         |
+   *   |        |        |               | hasRT = !isConstructor && !isChoice           |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   |        | 1      | InnerFeatures | inner features of this feature                |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
 
   int featureKindPos(int at)
   {
@@ -348,7 +385,7 @@ public class LibraryModule extends Module
     var i = featureArgCountPos(at);
     return i + 4;
   }
-  int featureIdPosAfter(int at)
+  int featureIdNextPos(int at)
   {
     return featureIdPos(at) + 4;
   }
@@ -356,53 +393,23 @@ public class LibraryModule extends Module
   {
     return data().getInt(featureIdPos(at));
   }
-  int featureTypeArgsCountPos(int at)
+  int featureTypeArgsPos(int at)
   {
     if (PRECONDITIONS) require
       ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0);
 
-    return featureIdPosAfter(at);
-  }
-  int featureTypeArgsCount(int at)
-  {
-    if (PRECONDITIONS) require
-      ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0);
-
-    return data().getInt(featureTypeArgsCountPos(at));
-  }
-  int featureTypeArgsOpenPos(int at)
-  {
-    if (PRECONDITIONS) require
-      ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0);
-
-    return featureTypeArgsCountPos(at) + 4;
-  }
-  boolean featureTypeArgsOpen(int at)
-  {
-    if (PRECONDITIONS) require
-      ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0);
-
-    return data().get(featureTypeArgsOpenPos(at)) != 0;
-  }
-  int featureTypeArgsListPos(int at)   // works also if list is empty
-  {
-    return featureTypeArgsOpenPos(at) + 1;
+    return featureIdNextPos(at);
   }
   int featureResultTypePos(int at)
   {
-    var i = featureIdPosAfter(at);
     if ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0)
       {
-        var d = data();
-        var n = featureTypeArgsCount(at);
-        i = featureTypeArgsListPos(at);
-        while (n > 0)
-          {
-            i = nextTypeArg(i);
-            n--;
-          }
+        return typeArgsNextPos(featureTypeArgsPos(at));
       }
-    return i;
+    else
+      {
+        return featureIdNextPos(at);
+      }
   }
   boolean featureHasResultType(int at)
   {
@@ -417,7 +424,7 @@ public class LibraryModule extends Module
     var i = featureResultTypePos(at);
     if (featureHasResultType(at))
       {
-        i = nextTypePos(i);
+        i = typeNextPos(i);
       }
     return i;
   }
@@ -430,20 +437,91 @@ public class LibraryModule extends Module
     var i = featureInnerSizePos(at);
     return i + 4;
   }
-  int nextFeaturePos(int at)
+  int featureNextPos(int at)
   {
-    var next = featureInnerPos(at) + featureInnerSize(at);
-    return next;
+    return featureInnerPos(at) + featureInnerSize(at);
   }
+
+
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | TypeArgs                                                                        |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | num type ags n                                |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | bool          | isOpen                                        |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | n      | TypeArg       | type arguments                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+
+  int typeArgsCountPos(int at)
+  {
+    return at;
+  }
+  int typeArgsCount(int at)
+  {
+    return data().getInt(typeArgsCountPos(at));
+  }
+  int typeArgsOpenPos(int at)
+  {
+    return typeArgsCountPos(at) + 4;
+  }
+  boolean typeArgsOpen(int at)
+  {
+    return data().get(typeArgsOpenPos(at)) != 0;
+  }
+  int typeArgsListPos(int at)   // works also if list is empty
+  {
+    return typeArgsOpenPos(at) + 1;
+  }
+  int typeArgsNextPos(int at)
+  {
+    var d = data();
+    var n = typeArgsCount(at);
+    var i = typeArgsListPos(at);
+    while (n > 0)
+      {
+        i = typeArgNextPos(i);
+        n--;
+      }
+    return i;
+  }
+
+
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | TypeArg                                                                         |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Name          | type arg name                                 |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
 
   String typeArgName(int at)
   {
     return name(at);
   }
-  int nextTypeArg(int at)
+  int typeArgNextPos(int at)
   {
-    return nextName(at);
+    return nameNextPos(at);
   }
+
+
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Name                                                                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | name length l                                 |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | l      | byte          | name as utf8 bytes                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
 
   String name(int at)
   {
@@ -455,7 +533,7 @@ public class LibraryModule extends Module
     d.get(i, b);
     return new String(b, StandardCharsets.UTF_8);
   }
-  int nextName(int at)
+  int nameNextPos(int at)
   {
     var i = at;
     var d = data();
@@ -465,27 +543,21 @@ public class LibraryModule extends Module
   }
 
 
-  int nextTypePos(int at)
-  {
-    var k = data().getInt(at);
-    at = at + 4;
-    if (k == -1)
-      {
-        return at + 4;
-      }
-    else
-      {
-        int f = data().getInt(at);
-        at = at + 4;
-        int n = k;
-        for (var i = 0; i<n; i++)
-          {
-            at = nextTypePos(at);
-          }
-        return at;
-      }
-  }
-
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Type                                                                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | the kind of this type tk                      |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | tk==-1 | 1      | int           | index of generic argument                     |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | tk>=0  | 1      | int           | index of feature of type                      |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | tk     | Type          | actual generics                               |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
 
   int typeKind(int at)
   {
@@ -525,6 +597,26 @@ public class LibraryModule extends Module
       (typeKind(at) >= 0);
 
     return typeFeaturePos(at) + 4;
+  }
+  int typeNextPos(int at)
+  {
+    var k = data().getInt(at);
+    at = at + 4;
+    if (k == -1)
+      {
+        return at + 4;
+      }
+    else
+      {
+        int f = data().getInt(at);
+        at = at + 4;
+        int n = k;
+        for (var i = 0; i<n; i++)
+          {
+            at = typeNextPos(at);
+          }
+        return at;
+      }
   }
 
 
