@@ -84,6 +84,13 @@ public abstract class LibraryType extends AbstractType
   static LibraryType create(LibraryModule mod, int at, SourcePosition pos, AbstractType from)
   {
     var k = mod.typeKind(at);
+    if (k == -2)
+      {
+        at = mod.typeIndex(at);
+        k = mod.typeKind(at);
+        check
+          (k == -1 || k >= 0);
+      }
     if (k < 0)
       {
         return new GenericType(mod, at, pos, mod.genericArgument(mod.typeGeneric(at)), from);

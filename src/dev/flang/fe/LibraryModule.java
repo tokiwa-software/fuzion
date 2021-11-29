@@ -551,6 +551,8 @@ public class LibraryModule extends Module
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | the kind of this type tk                      |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | tk==-2 | 1      | int           | index of type                                 |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-1 | 1      | int           | index of generic argument                     |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
@@ -564,6 +566,20 @@ public class LibraryModule extends Module
   int typeKind(int at)
   {
     return data().getInt(at);
+  }
+  int typeIndexPos(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) == -2);
+
+    return at+4;
+  }
+  int typeIndex(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) == -2);
+
+    return data().getInt(typeIndexPos(at));
   }
   int typeGenericPos(int at)
   {
@@ -618,7 +634,11 @@ public class LibraryModule extends Module
   int typeNextPos(int at)
   {
     var k = data().getInt(at);
-    if (k == -1)
+    if (k == -2)
+      {
+        return typeIndexPos(at) + 4;
+      }
+    else if (k == -1)
       {
         return typeGenericPos(at) + 4;
       }
