@@ -37,6 +37,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Generic;
+import dev.flang.ast.Types;
 
 import dev.flang.util.DataOut;
 import dev.flang.util.Errors;
@@ -285,6 +286,8 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | the kind of this type tk                      |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | tk==-3 | 1      | unit          | type of universe                              |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-2 | 1      | int           | index of type                                 |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-1 | 1      | int           | index of generic argument                     |
@@ -294,6 +297,8 @@ class LibraryOut extends DataOut
    *   |        | 1      | bool          | isRef                                         |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | tk     | Type          | actual generics                               |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | Type          | outer type                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
   void type(AbstractType t)
@@ -303,6 +308,10 @@ class LibraryOut extends DataOut
       {
         writeInt(-2);     // NYI: optimization: maybe write just one integer, e.g., -index-2
         writeInt(off);
+      }
+    else if (t == Types.resolved.universe.thisType())
+      {
+        writeInt(-3);
       }
     else
       {
@@ -326,6 +335,7 @@ class LibraryOut extends DataOut
               {
                 type(gt);
               }
+            type(t.outer());
           }
       }
   }

@@ -107,6 +107,11 @@ public class GenericType extends LibraryType
     return false;
   }
 
+  public AbstractType outer()
+  {
+    throw new Error("GenericType.outer() not defined");
+  }
+
 }
 
 /* end of file */

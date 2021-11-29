@@ -41,6 +41,7 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Type;
+import dev.flang.ast.Types;
 
 import dev.flang.mir.MIR;
 
@@ -316,13 +317,17 @@ public class LibraryModule extends Module
   /**
    * Read Type at given position.
    */
-  LibraryType type(int at, SourcePosition pos, AbstractType from)
+  AbstractType type(int at, SourcePosition pos, AbstractType from)
   {
-    var result = _libraryTypes.get(at);
+    AbstractType result = _libraryTypes.get(at);
     if (result == null)
       {
         var k = typeKind(at);
-        if (k == -2)
+        if (k == -3)
+          {
+            return Types.resolved.universe.thisType();
+          }
+        else if (k == -2)
           {
             var at2 = typeIndex(at);
             var k2 = typeKind(at2);
@@ -333,9 +338,10 @@ public class LibraryModule extends Module
           }
         else
           {
+            LibraryType res;
             if (k < 0)
               {
-                result = new GenericType(this, at, pos, genericArgument(typeGeneric(at)), from);
+                res = new GenericType(this, at, pos, genericArgument(typeGeneric(at)), from);
               }
             else
               {
@@ -358,9 +364,11 @@ public class LibraryModule extends Module
                   {
                     generics = Type.NONE;
                   }
-                result = new NormalType(this, at, pos, feature, makeRef, generics, from);
+                var outer = type(typeOuterPos(at), from.outer().pos(), from.outer());
+                res = new NormalType(this, at, pos, feature, makeRef, generics, outer, from);
               }
-            _libraryTypes.put(at, result);
+            _libraryTypes.put(at, res);
+            result = res;
           }
       }
     return result;
@@ -616,6 +624,8 @@ public class LibraryModule extends Module
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | the kind of this type tk                      |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | tk==-3 | 1      | unit          | type of universe                              |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-2 | 1      | int           | index of type                                 |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-1 | 1      | int           | index of generic argument                     |
@@ -625,12 +635,21 @@ public class LibraryModule extends Module
    *   |        | 1      | bool          | isRef                                         |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | tk     | Type          | actual generics                               |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | Type          | outer type                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
 
   int typeKind(int at)
   {
     return data().getInt(at);
+  }
+  int typeUniversePos(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) == -3);
+
+    return at+4;
   }
   int typeIndexPos(int at)
   {
@@ -696,10 +715,28 @@ public class LibraryModule extends Module
 
     return typeIsRefPos(at) + 1;
   }
+  int typeOuterPos(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) >= 0);
+
+    var k = typeKind(at);
+    at = typeActualGenericsPos(at);
+    int n = k;
+    for (var i = 0; i<n; i++)
+      {
+        at = typeNextPos(at);
+      }
+    return at;
+  }
   int typeNextPos(int at)
   {
-    var k = data().getInt(at);
-    if (k == -2)
+    var k = typeKind(at);
+    if (k == -3)
+      {
+        return typeUniversePos(at) + 0;
+      }
+    else if (k == -2)
       {
         return typeIndexPos(at) + 4;
       }
@@ -709,13 +746,8 @@ public class LibraryModule extends Module
       }
     else
       {
-        at = typeActualGenericsPos(at);
-        int n = k;
-        for (var i = 0; i<n; i++)
-          {
-            at = typeNextPos(at);
-          }
-        return at;
+        at = typeOuterPos(at);
+        return typeNextPos(at);
       }
   }
 

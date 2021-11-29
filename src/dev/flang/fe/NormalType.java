@@ -70,6 +70,9 @@ public class NormalType extends LibraryType
   List<AbstractType> _generics;
 
 
+  AbstractType _outer;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -77,13 +80,21 @@ public class NormalType extends LibraryType
    * Constructor for a plain Type from a given feature that does not have any
    * actual generics.
    */
-  NormalType(LibraryModule mod, int at, SourcePosition pos, AbstractFeature feature, boolean makeRef, List<AbstractType> generics, AbstractType from)
+  NormalType(LibraryModule mod,
+             int at,
+             SourcePosition pos,
+             AbstractFeature feature,
+             boolean makeRef,
+             List<AbstractType> generics,
+             AbstractType outer,
+             AbstractType from)
   {
     super(mod, at, pos, from);
 
     this._feature = feature;
     this._makeRef = makeRef;
     this._generics = generics;
+    this._outer = outer;
   }
 
 
@@ -117,6 +128,11 @@ public class NormalType extends LibraryType
   public boolean isRef()
   {
     return _makeRef || _feature.isThisRef();
+  }
+
+  public AbstractType outer()
+  {
+    return _outer;
   }
 
 }
