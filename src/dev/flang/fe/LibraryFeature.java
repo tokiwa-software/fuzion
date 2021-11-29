@@ -416,7 +416,7 @@ public class LibraryFeature extends AbstractFeature
     else
       {
         var from = _from.resultType();
-        return LibraryType.create(_libModule, _libModule.featureResultTypePos(_index), from.pos(), from);
+        return _libModule.type(_libModule.featureResultTypePos(_index), from.pos(), from);
       }
   }
 

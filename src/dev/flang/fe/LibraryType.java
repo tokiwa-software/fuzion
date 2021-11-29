@@ -78,49 +78,6 @@ public abstract class LibraryType extends AbstractType
   private final Type _from;
 
 
-  /*-------------------------  static methods  --------------------------*/
-
-
-  static LibraryType create(LibraryModule mod, int at, SourcePosition pos, AbstractType from)
-  {
-    var k = mod.typeKind(at);
-    if (k == -2)
-      {
-        at = mod.typeIndex(at);
-        k = mod.typeKind(at);
-        check
-          (k == -1 || k >= 0);
-      }
-    if (k < 0)
-      {
-        return new GenericType(mod, at, pos, mod.genericArgument(mod.typeGeneric(at)), from);
-      }
-    else
-      {
-        var feature = mod.libraryFeature(mod.typeFeature(at), (Feature) from.featureOfType().astFeature());
-        var makeRef = mod.typeIsRef(at);
-        var generics = Type.NONE;
-        if (k > 0)
-          {
-            var i = mod.typeActualGenericsPos(at);
-            generics = new List<AbstractType>();
-            var gi = 0;
-            while (gi < k)
-              {
-                generics.add(create(mod, i, pos, from.generics().get(gi)));
-                i = mod.typeNextPos(i);
-                gi++;
-              }
-          }
-        else
-          {
-            generics = Type.NONE;
-          }
-        return new NormalType(mod, at, pos, feature, makeRef, generics, from);
-      }
-  }
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 

@@ -36,14 +36,18 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.Generic;
+import dev.flang.ast.Type;
 
 import dev.flang.mir.MIR;
 
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
 import dev.flang.util.SourceDir;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -299,6 +303,50 @@ public class LibraryModule extends Module
           }
       }
     return result;
+  }
+
+
+
+  /**
+   * Read Type at given position.
+   */
+  LibraryType type(int at, SourcePosition pos, AbstractType from)
+  {
+    var k = typeKind(at);
+    if (k == -2)
+      {
+        at = typeIndex(at);
+        k = typeKind(at);
+        check
+          (k == -1 || k >= 0);
+      }
+    if (k < 0)
+      {
+        return new GenericType(this, at, pos, genericArgument(typeGeneric(at)), from);
+      }
+    else
+      {
+        var feature = libraryFeature(typeFeature(at), (Feature) from.featureOfType().astFeature());
+        var makeRef = typeIsRef(at);
+        var generics = Type.NONE;
+        if (k > 0)
+          {
+            var i = typeActualGenericsPos(at);
+            generics = new List<AbstractType>();
+            var gi = 0;
+            while (gi < k)
+              {
+                generics.add(type(i, pos, from.generics().get(gi)));
+                i = typeNextPos(i);
+                gi++;
+              }
+          }
+        else
+          {
+            generics = Type.NONE;
+          }
+        return new NormalType(this, at, pos, feature, makeRef, generics, from);
+      }
   }
 
 
