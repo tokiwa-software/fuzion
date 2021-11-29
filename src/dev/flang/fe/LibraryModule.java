@@ -94,6 +94,12 @@ public class LibraryModule extends Module
   TreeMap<Integer, LibraryFeature> _libraryFeatures = new TreeMap<>();
 
 
+  /**
+   * Map from offset in _data to LibraryType for types in this module.
+   */
+  TreeMap<Integer, LibraryType> _libraryTypes = new TreeMap<>();
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -312,41 +318,52 @@ public class LibraryModule extends Module
    */
   LibraryType type(int at, SourcePosition pos, AbstractType from)
   {
-    var k = typeKind(at);
-    if (k == -2)
+    var result = _libraryTypes.get(at);
+    if (result == null)
       {
-        at = typeIndex(at);
-        k = typeKind(at);
-        check
-          (k == -1 || k >= 0);
-      }
-    if (k < 0)
-      {
-        return new GenericType(this, at, pos, genericArgument(typeGeneric(at)), from);
-      }
-    else
-      {
-        var feature = libraryFeature(typeFeature(at), (Feature) from.featureOfType().astFeature());
-        var makeRef = typeIsRef(at);
-        var generics = Type.NONE;
-        if (k > 0)
+        var k = typeKind(at);
+        if (k == -2)
           {
-            var i = typeActualGenericsPos(at);
-            generics = new List<AbstractType>();
-            var gi = 0;
-            while (gi < k)
-              {
-                generics.add(type(i, pos, from.generics().get(gi)));
-                i = typeNextPos(i);
-                gi++;
-              }
+            var at2 = typeIndex(at);
+            var k2 = typeKind(at2);
+            check
+              (k2 == -1 || k2 >= 0);
+            result = type(at2, pos, from);
+            // we do not cache references to types, so don't add this to _libraryTypes for at.
           }
         else
           {
-            generics = Type.NONE;
+            if (k < 0)
+              {
+                result = new GenericType(this, at, pos, genericArgument(typeGeneric(at)), from);
+              }
+            else
+              {
+                var feature = libraryFeature(typeFeature(at), (Feature) from.featureOfType().astFeature());
+                var makeRef = typeIsRef(at);
+                var generics = Type.NONE;
+                if (k > 0)
+                  {
+                    var i = typeActualGenericsPos(at);
+                    generics = new List<AbstractType>();
+                    var gi = 0;
+                    while (gi < k)
+                      {
+                        generics.add(type(i, pos, from.generics().get(gi)));
+                        i = typeNextPos(i);
+                        gi++;
+                      }
+                  }
+                else
+                  {
+                    generics = Type.NONE;
+                  }
+                result = new NormalType(this, at, pos, feature, makeRef, generics, from);
+              }
+            _libraryTypes.put(at, result);
           }
-        return new NormalType(this, at, pos, feature, makeRef, generics, from);
       }
+    return result;
   }
 
 
