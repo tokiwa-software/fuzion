@@ -58,6 +58,31 @@ public abstract class AbstractType extends ANY
 
 
   /**
+   * setOuter
+   *
+   * @param t
+   */
+  void setOuter(Type t)
+  {
+    throw new Error("AbstractType.setOuter() should only be called on dev.flang.ast.Type");
+  }
+
+
+  /**
+   * Find all the types used in this that refer to formal generic arguments of
+   * this or any of this' outer classes.
+   *
+   * This is only needed for ast.Type, for fe.LibraryType
+   * this is a NOP.
+   *
+   * @param feat the root feature that contains this type.
+   */
+  void findGenerics(AbstractFeature outerfeat)
+  {
+  }
+
+
+  /**
    * resolve this type. This is only needed for ast.Type, for fe.LibraryType
    * this is a NOP.
    *
@@ -636,7 +661,7 @@ public abstract class AbstractType extends ANY
       }
   }
 
-  public Type visit(FeatureVisitor v, Feature outerfeat)
+  public AbstractType visit(FeatureVisitor v, Feature outerfeat)
   {
     throw new Error("AbstractType.visit not implemented by "+getClass());
   }

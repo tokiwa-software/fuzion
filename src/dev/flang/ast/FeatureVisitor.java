@@ -73,11 +73,11 @@ public abstract class FeatureVisitor extends ANY
   public void    action      (Generic     g, Feature outer) { }
   public void    action      (If          i, Feature outer) { }
   public void    action      (Impl        i, Feature outer) { }
-  public Expr    action      (InlineArray   i, Feature outer) { return i; }
+  public Expr    action      (InlineArray i, Feature outer) { return i; }
   public void    action      (Match       m, Feature outer) { }
   public void    action      (Tag         b, Feature outer) { }
   public Expr    action      (This        t, Feature outer) { return t; }
-  public Type    action      (Type        t, Feature outer) { return t; }
+  public AbstractType action (AbstractType t,Feature outer) { return t; }
 
   /**
    * Visotors that want a different treatment for visiting actual arguments of a

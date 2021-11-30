@@ -1246,9 +1246,9 @@ public class Feature extends AbstractFeature implements Stmnt
 
   static FeatureVisitor findGenerics = new FeatureVisitor()
     {
-      public Function action(Function f, Feature outer) { f.findGenerics(this, outer); return f; }
-      public This     action(This     t, Feature outer) { t.findGenerics(      outer); return t; }
-      public Type     action(Type     t, Feature outer) { t.findGenerics(      outer); return t; }
+      public Function     action(Function     f, Feature outer) { f.findGenerics(this, outer); return f; }
+      public This         action(This         t, Feature outer) { t.findGenerics(      outer); return t; }
+      public AbstractType action(AbstractType t, Feature outer) { t.findGenerics(      outer); return t; }
     };
 
   /*
@@ -1311,7 +1311,7 @@ public class Feature extends AbstractFeature implements Stmnt
     public void     action(Generic     g, Feature outer) {        g.resolveTypes(res, outer); }
     public void     action(Match       m, Feature outer) {        m.resolveTypes(res, outer); }
     public Expr     action(This        t, Feature outer) { return t.resolveTypes(res, outer); }
-    public Type     action(Type        t, Feature outer) { return (Type) t.resolve(res, outer); }
+    public AbstractType action(AbstractType t, Feature outer) { return t.resolve(res, outer); }
 
     /**
      * visitActuals delays type resolution for actual arguments within a feature

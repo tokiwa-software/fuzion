@@ -129,7 +129,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * However, if p is declared in a, after type resolution, the outer type of
    * "p" is "a" or maybe a heir of "a".
    */
-  private Type _outer;
+  private AbstractType _outer;
 
 
   /**
@@ -453,7 +453,7 @@ public class Type extends AbstractType implements Comparable<Type>
    *
    * @param t
    */
-  public void setOuter(Type t)
+  void setOuter(Type t)
   {
     if (this._outer == null)
       {
@@ -521,13 +521,13 @@ public class Type extends AbstractType implements Comparable<Type>
    *
    * @param outer the feature surrounding this expression.
    */
-  public Type visit(FeatureVisitor v, Feature outerfeat)
+  public AbstractType visit(FeatureVisitor v, Feature outerfeat)
   {
     if ((feature == null) && (generic == null))
       {
         if (_outer != null)
           {
-            Type t = _outer.visit(v, outerfeat);
+            var t = _outer.visit(v, outerfeat);
             if (t != _outer)
               {
                 check(_interned == null);
@@ -557,7 +557,7 @@ public class Type extends AbstractType implements Comparable<Type>
    *
    * @param feat the root feature that contains this type.
    */
-  public void findGenerics(AbstractFeature outerfeat)
+  void findGenerics(AbstractFeature outerfeat)
   {
     //    if (PRECONDITIONS) require
     //      (!outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
