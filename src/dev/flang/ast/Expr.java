@@ -331,14 +331,14 @@ public abstract class Expr extends ANY implements Stmnt
         if ((!t.isRef() || isCallToOuterRef()) && t != Types.resolved.t_void &&
             (frmlT.isRef() ||
              (frmlT.isChoice() &&
-              !frmlT.isAssignableFrom(t.astType()) &&
-              frmlT.isAssignableFrom(t.asRef().astType()))) ||
+              !frmlT.isAssignableFrom(t) &&
+              frmlT.isAssignableFrom(t.asRef()))) ||
             frmlT.isGenericArgument())
           {
             result = new Box(result, s, arg);
             t = result.type();
           }
-        if (frmlT.isChoice() && t != frmlT && frmlT.isAssignableFrom(t.astType()))
+        if (frmlT.isChoice() && t != frmlT && frmlT.isAssignableFrom(t))
           {
             result = new Tag(result, frmlT);
           }

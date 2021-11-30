@@ -391,7 +391,7 @@ public class LibraryFeature extends AbstractFeature
        // does not hold if feature is declared repeatedly
        Errors.count() > 0 || result.featureOfType().sameAs(this),
        true || // this condition is very expensive to check and obviously true:
-       result.astType() == Types.intern(result.astType())
+       result == Types.intern(result)
        );
 
     return result;

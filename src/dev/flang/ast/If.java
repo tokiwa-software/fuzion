@@ -211,7 +211,7 @@ public class If extends Expr
         while (it.hasNext())
           {
             var t = it.next().typeOrNull();
-            result = result == null || t == null ? null : result.astType().union(t.astType());
+            result = result == null || t == null ? null : result.union(t);
           }
       }
     if (result == Types.t_UNDEFINED)

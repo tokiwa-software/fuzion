@@ -194,7 +194,7 @@ public class Match extends Expr
     for (Case c: cases)
       {
         var t = c.code.typeOrNull();
-        result = result == null || t == null ? null : result.union(t.astType());
+        result = result == null || t == null ? null : result.union(t);
       }
     if (result == Types.t_UNDEFINED)
       {

@@ -548,7 +548,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         t = 0 <= select && select < types.size() ? types.get(select) : Types.t_ERROR;
       }
 
-    t = this._type.actualType(t.astType());
+    t = this._type.actualType(t);
     if (this._outer != null)
       {
         t = this._outer.actualType(t);
@@ -1100,7 +1100,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isAssignableFrom(Clazz other)
   {
-    return (this==other) || isRef() && this._type.isAssignableFrom(other._type.astType());
+    return (this==other) || isRef() && this._type.isAssignableFrom(other._type);
   }
 
 
@@ -1126,7 +1126,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               { // NYI: If outer is normalized for refs as descibed in the
                 // constructor, there should be no need for special handling of
                 // ref types here.
-                result = to._type.compareToIgnoreOuter(oo._type.astType());
+                result = to._type.compareToIgnoreOuter(oo._type);
                 if (result == 0)
                   {
                     result = to.compareOuter(oo);
@@ -1159,7 +1159,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
     var result =
       this._select < other._select ? -1 :
-      this._select > other._select ? +1 : this._type.compareToIgnoreOuter(other._type.astType());
+      this._select > other._select ? +1 : this._type.compareToIgnoreOuter(other._type);
     if (result == 0)
       {
         result = compareOuter(other);
@@ -1440,7 +1440,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     int index = 0;
     for (Clazz g : choiceGenerics_)
       {
-        if (g._type.isAssignableFrom(staticTypeOfValue.astType()))
+        if (g._type.isAssignableFrom(staticTypeOfValue))
           {
             check
               (result < 0);

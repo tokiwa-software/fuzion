@@ -198,7 +198,7 @@ public class Case extends ANY
         var i = types.listIterator();
         while (i.hasNext())
           {
-            i.set(i.next().astType().visit(v, outer));
+            i.set(i.next().visit(v, outer));
           }
       }
     code = code.visit(v, outer);
@@ -307,7 +307,7 @@ public class Case extends ANY
             AstErrors.matchCaseMatchesSeveral(pos, original_t, cgs, matches);
           }
       }
-    return t.astType();
+    return t;
   }
 
 

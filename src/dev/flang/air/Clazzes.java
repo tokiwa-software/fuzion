@@ -377,7 +377,7 @@ public class Clazzes extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (Errors.count() > 0 || actualType.compareToIgnoreOuter(result._type.astType()) == 0,
+      (Errors.count() > 0 || actualType.compareToIgnoreOuter(result._type) == 0,
        outer == result._outer || true /* NYI: Check why this sometimes does not hold */);
 
     return result;
@@ -777,7 +777,7 @@ public class Clazzes extends ANY
       {
         if (ft.isRef() ||
             (ft._type.isChoice() &&
-             !ft._type.isAssignableFrom(vc._type.astType()) &&
+             !ft._type.isAssignableFrom(vc._type) &&
              ft._type.isAssignableFrom(vc._type.asRef())))
           {
             rc = vc.asRef();

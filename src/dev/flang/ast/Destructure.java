@@ -246,7 +246,7 @@ public class Destructure extends ANY implements Stmnt
         Feature newF = fields.next();
         if (_isDefinition)
           {
-            newF._returnType = new FunctionReturnType(t.astType());
+            newF._returnType = new FunctionReturnType(t);
           }
         assign = new Assign(res, _pos, newF, call_f, outer);
       }

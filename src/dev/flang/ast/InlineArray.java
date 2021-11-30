@@ -108,7 +108,7 @@ public class InlineArray extends Expr
             var et = e.typeOrNull();
             t =
               t  == null ? null :
-              et == null ? null : t.union(et.astType());
+              et == null ? null : t.union(et);
           }
         type_ =
           t == null              ? null :

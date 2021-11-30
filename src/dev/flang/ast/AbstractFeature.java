@@ -445,7 +445,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                       {
                         check
                           (tg == Types.intern(tg));
-                        a[i] = tg.astType();
+                        a[i] = tg;
                         i++;
                       }
                     i = i - 1;

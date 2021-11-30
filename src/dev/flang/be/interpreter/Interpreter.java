@@ -961,7 +961,7 @@ public class Interpreter extends ANY
         setField(thiz.choiceTag(), -1, choiceClazz, choice, new i32Value(tag));
       }
     check
-      (vclazz._type.isAssignableFrom(staticTypeOfValue.astType()));
+      (vclazz._type.isAssignableFrom(staticTypeOfValue));
     setFieldSlot(thiz, vclazz, valSlot, v);
   }
 

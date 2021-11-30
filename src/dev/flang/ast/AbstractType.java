@@ -542,6 +542,7 @@ public abstract class AbstractType extends ANY
        Errors.count() > 0 || !t.isOpenGeneric(),
        featureOfType().generics().sizeMatches(generics()));
 
+    t = t.astType();
     var result = t;
     if (result.dependsOnGenerics())
       {

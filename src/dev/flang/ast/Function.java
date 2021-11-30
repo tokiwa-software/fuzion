@@ -446,7 +446,7 @@ public class Function extends Expr
           }
         if (t != Types.t_ERROR)
           {
-            Feature f = new Feature(pos, new FunctionReturnType(gs.get(0).astType()), new List<String>("call"), a, _inherits, _contract,
+            Feature f = new Feature(pos, new FunctionReturnType(gs.get(0)), new List<String>("call"), a, _inherits, _contract,
                                     new Impl(_expr.pos(), _expr, Impl.Kind.Routine));
             this.feature_ = f;
 

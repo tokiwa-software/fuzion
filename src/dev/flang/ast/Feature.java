@@ -489,7 +489,7 @@ public class Feature extends AbstractFeature implements Stmnt
     this(pos,
          v,
          0,
-         t == null ? NoType.INSTANCE : new FunctionReturnType(t.astType()), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
+         t == null ? NoType.INSTANCE : new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
          new List<String>(qname),
          FormalGenerics.NONE,
          new List<Feature>(),
@@ -528,7 +528,7 @@ public class Feature extends AbstractFeature implements Stmnt
     this(pos,
          v,
          m,
-         new FunctionReturnType(t.astType()), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
+         new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
          new List<String>(n),
          FormalGenerics.NONE,
          new List<Feature>(),
@@ -1587,7 +1587,7 @@ public class Feature extends AbstractFeature implements Stmnt
           }
       }
 
-    thisType().astType().checkChoice(_pos);
+    thisType().checkChoice(_pos);
 
     checkNoClosureAccesses(res, _pos);
     for (Call p : _inherits)

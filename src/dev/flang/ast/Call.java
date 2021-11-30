@@ -851,7 +851,7 @@ public class Call extends Expr
         var i = generics.listIterator();
         while (i.hasNext())
           {
-            i.set(i.next().astType().visit(v, outer));
+            i.set(i.next().visit(v, outer));
           }
       }
     ListIterator<Expr> i = _actuals.listIterator(); // _actuals can change during resolveTypes, so create iterator early

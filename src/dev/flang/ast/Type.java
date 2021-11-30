@@ -678,7 +678,7 @@ public class Type extends AbstractType implements Comparable<Type>
             return Types.t_ERROR;
           }
       }
-    return (Type) Types.intern(this).astType();
+    return (Type) Types.intern(this);
   }
 
 
@@ -854,7 +854,7 @@ public class Type extends AbstractType implements Comparable<Type>
       {
         result = Types.intern(result);
       }
-    return result != null ? result.astType() : null;
+    return result;
   }
 
   /**
