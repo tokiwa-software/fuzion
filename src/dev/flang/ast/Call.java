@@ -896,7 +896,7 @@ public class Call extends Expr
   {
     Call result = this;
     if (!forFun && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
-        _type.astType().isFunType() &&
+        _type.isFunType() &&
         !calledFeature_.sameAs(Types.resolved.f_function) && // exclude inherits call in function type
         calledFeature_.arguments().size() == 0 &&
         hasParentheses())
@@ -1119,7 +1119,7 @@ public class Call extends Expr
         t = tt.actualType(t);
         if (calledFeature_.isConstructor() && t != Types.resolved.t_void)
           {  /* specialize t for the target type here */
-            t = new Type(t.astType(), t.generics(), tt.astType());
+            t = new Type((Type) t.astType(), t.generics(), (Type) tt.astType());
           }
       }
     else
@@ -1137,7 +1137,7 @@ public class Call extends Expr
             t = types.get(_select);
           }
       }
-    _type = t.astType().resolve(res, tt.featureOfType());
+    _type = t.resolve(res, tt.featureOfType());
   }
 
 

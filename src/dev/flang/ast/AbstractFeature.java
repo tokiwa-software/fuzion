@@ -201,7 +201,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                     if (a instanceof Feature af)
                       {
                         t = af.returnType().functionReturnType();
-                        if (t instanceof Type tt && !tt.checkedForGeneric)
+                        if (!t.checkedForGeneric())
                           {
                             af.visit(Feature.findGenerics);
                           }

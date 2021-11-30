@@ -283,7 +283,7 @@ public class FormalGenerics extends ANY
             while (i.hasNext())
               {
                 var t = i.next();
-                i.set(t instanceof Type tt ? tt.resolve(res, outer) : t);
+                i.set(t.resolve(res, outer));
               }
           }
       }

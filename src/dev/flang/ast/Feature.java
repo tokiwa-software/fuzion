@@ -625,7 +625,7 @@ public class Feature extends AbstractFeature implements Stmnt
     this._visibility = v;
     this._modifiers  = m;
     this._returnType = r;
-    this._posOfReturnType = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnType().pos;
+    this._posOfReturnType = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnType().pos();
     String n = qname.getLast();
     if (n.equals("_"))
       {
@@ -1311,7 +1311,7 @@ public class Feature extends AbstractFeature implements Stmnt
     public void     action(Generic     g, Feature outer) {        g.resolveTypes(res, outer); }
     public void     action(Match       m, Feature outer) {        m.resolveTypes(res, outer); }
     public Expr     action(This        t, Feature outer) { return t.resolveTypes(res, outer); }
-    public Type     action(Type        t, Feature outer) { return t.resolve(res, outer); }
+    public Type     action(Type        t, Feature outer) { return (Type) t.resolve(res, outer); }
 
     /**
      * visitActuals delays type resolution for actual arguments within a feature
@@ -1349,7 +1349,7 @@ public class Feature extends AbstractFeature implements Stmnt
         if (hasThisType())
           {
             var tt = thisType();
-            thisType_ = tt instanceof Type ttt ? ttt.resolve(res, this) : tt;
+            thisType_ = tt.resolve(res, this);
           }
 
         if ((_impl.kind_ == Impl.Kind.FieldActual) && (_impl._initialValue.typeOrNull() == null))

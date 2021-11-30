@@ -102,7 +102,7 @@ public class InlineArray extends Expr
   {
     if (type_ == null)
       {
-        var t = Types.resolved.t_void;
+        AbstractType t = Types.resolved.t_void;
         for (var e : _elements)
           {
             var et = e.typeOrNull();

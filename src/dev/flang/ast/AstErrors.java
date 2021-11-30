@@ -792,7 +792,7 @@ public class AstErrors extends ANY
     error(g._pos,
           "Constraint for generic argument must not be generic type parameter",
           "Affected generic argument: " + st(g._name) + "\n" +
-          "_constraint: " + s(g.constraint()) + " declared at " + g.constraint().generic._pos);
+          "_constraint: " + s(g.constraint()) + " declared at " + g.constraint().genericArgument()._pos);
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)

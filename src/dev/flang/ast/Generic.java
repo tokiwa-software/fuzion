@@ -69,7 +69,7 @@ public class Generic extends ANY
    * the constraint on this generic paremter, null for the implicit Object
    * constraint.
    */
-  private Type _constraint;
+  private AbstractType _constraint;
 
 
   /**
@@ -289,13 +289,13 @@ public class Generic extends ANY
    *
    * @return
    */
-  public Type constraint()
+  public AbstractType constraint()
   {
     if (PRECONDITIONS) require
       (feature().state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-    Type result = (_constraint == null) ? Types.resolved.t_object
-                                        : _constraint;
+    var result = (_constraint == null) ? Types.resolved.t_object
+                                       : _constraint;
 
     if (POSTCONDITIONS) ensure
       (result != null);

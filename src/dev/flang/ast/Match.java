@@ -69,7 +69,7 @@ public class Match extends Expr
   /**
    * Static type of this match or null if none. Set during resolveTypes().
    */
-  public Type type_;
+  public AbstractType type_;
 
 
   /**
@@ -160,7 +160,7 @@ public class Match extends Expr
         var i = cgs.listIterator();
         while (i.hasNext())
           {
-            i.set(i.next().astType().resolve(res, outer));
+            i.set(i.next().resolve(res, outer));
           }
         SourcePosition[] matched = new SourcePosition[cgs.size()];
         boolean ok = true;
@@ -188,9 +188,9 @@ public class Match extends Expr
    * Helper routine for typeOrNull to determine the type of this match statement
    * on demand, i.e., as late as possible.
    */
-  private Type typeFromCases()
+  private AbstractType typeFromCases()
   {
-    Type result = Types.resolved.t_void;
+    AbstractType result = Types.resolved.t_void;
     for (Case c: cases)
       {
         var t = c.code.typeOrNull();

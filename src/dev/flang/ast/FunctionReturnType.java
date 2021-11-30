@@ -42,7 +42,7 @@ public class FunctionReturnType extends ReturnType
   /**
    * The parsed type.
    */
-  Type type;
+  AbstractType type;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -53,7 +53,7 @@ public class FunctionReturnType extends ReturnType
    *
    * @param t the parsed type
    */
-  public FunctionReturnType(Type t)
+  public FunctionReturnType(AbstractType t)
   {
     type = t;
   }
@@ -79,7 +79,7 @@ public class FunctionReturnType extends ReturnType
    *
    * @return the function return type.
    */
-  public Type functionReturnType()
+  public AbstractType functionReturnType()
   {
     return type;
   }

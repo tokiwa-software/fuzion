@@ -68,7 +68,7 @@ public abstract class ReturnType extends ANY
    *
    * @return the function result type.
    */
-  public Type functionReturnType()
+  public AbstractType functionReturnType()
   {
     if (PRECONDITIONS) require
       (!isConstructorType());

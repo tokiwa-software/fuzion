@@ -619,7 +619,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * @param feat the outer feature that this type is declared in, used
    * for resolution of generic parameters etc.
    */
-  public Type resolve(Resolution res, AbstractFeature outerfeat)
+  Type resolve(Resolution res, AbstractFeature outerfeat)
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
@@ -646,7 +646,7 @@ public class Type extends AbstractType implements Comparable<Type>
             return Types.t_ERROR;
           }
       }
-    return Types.intern(this).astType();
+    return (Type) Types.intern(this).astType();
   }
 
 
@@ -724,50 +724,6 @@ public class Type extends AbstractType implements Comparable<Type>
 
 
   /**
-   * Check that in case this is a choice type, it is valid, i.e., it is a value
-   * type and the generic arguments to the choice are different.  Create compile
-   * time errore in case this is not the case.
-   */
-  void checkChoice(SourcePosition pos)
-  {
-    var g = choiceGenerics();
-    if (g != null)
-      {
-        if (isRef())
-          {
-            AstErrors.refToChoice(pos);
-          }
-
-        int i1 = 0;
-        for (var t1 : g)
-          {
-            t1 = Types.intern(t1);
-            int i2 = 0;
-            for (var t2 : g)
-              {
-                t2 = Types.intern(t2);
-                if (i1 < i2)
-                  {
-                    if ((t1 == t2 ||
-                         !t1.isGenericArgument() &&
-                         !t2.isGenericArgument() &&
-                         (t1.isAssignableFrom(t2.astType()) ||
-                          t2.isAssignableFrom(t1.astType())    )) &&
-                        t1 != Types.t_ERROR &&
-                        t2 != Types.t_ERROR)
-                      {
-                        AstErrors.genericsMustBeDisjoint(pos, t1, t2);
-                      }
-                  }
-                i2++;
-              }
-            i1++;
-          }
-      }
-  }
-
-
-  /**
    * isGenericArgument
    *
    * @return
@@ -829,18 +785,6 @@ public class Type extends AbstractType implements Comparable<Type>
 
 
   /**
-   * isFunType checks if this is a function type, e.g., "fun (int x,y) String".
-   *
-   * @return true iff this is a fun type
-   */
-  public boolean isFunType()
-  {
-    return
-      feature == Types.resolved.f_function;
-  }
-
-
-  /**
    * Compare this to other for creating unique types.
    */
   public int compareTo(Type other)
@@ -857,8 +801,8 @@ public class Type extends AbstractType implements Comparable<Type>
     int result = compareToIgnoreOuter(other);
     if (result == 0 && generic == null)
       {
-        var to = this .outerInterned();
-        var oo = other.outerInterned();
+        var to = (Type) this .outerInterned();
+        var oo = (Type) other.outerInterned();
         result =
           (to == null && oo == null) ?  0 :
           (to == null && oo != null) ? -1 :
@@ -872,12 +816,12 @@ public class Type extends AbstractType implements Comparable<Type>
    * Compare this to other ignoring the outer type. This is used for created in
    * clazzes when the outer clazz is known.
    */
-  public int compareToIgnoreOuter(Type other)
+  public int compareToIgnoreOuter(AbstractType other)
   {
     if (PRECONDITIONS) require
       (checkedForGeneric,
        other != null,
-       other.checkedForGeneric,
+       other.checkedForGeneric(),
        getClass() == Type.class,
        other.getClass() == Type.class,
                      isGenericArgument() == (              feature == null),
@@ -888,24 +832,27 @@ public class Type extends AbstractType implements Comparable<Type>
     if (this != other)
       {
         result =
-          (feature == null) && (other.feature == null) ?  0 :
-          (feature == null) && (other.feature != null) ? -1 :
-          (feature != null) && (other.feature == null) ? +1 : feature.compareTo(other.feature);
-        if (result == 0)
+          isGenericArgument() &&  other.isGenericArgument() ?  0 :
+          isGenericArgument() && !other.isGenericArgument() ? -1 :
+          !isGenericArgument() && other.isGenericArgument() ? +1 : featureOfType().compareTo(other.featureOfType());
+        if (!isGenericArgument())
           {
-            if (_generics.size() != other._generics.size())  // this may happen for open generics lists
+            if (result == 0)
               {
-                result = _generics.size() < other._generics.size() ? -1 : +1;
-              }
-            else
-              {
-                var tg = _generics.iterator();
-                var og = other._generics.iterator();
-                while (tg.hasNext() && result == 0)
+                if (generics().size() != other.generics().size())  // this may happen for open generics lists
                   {
-                    var tgt = Types.intern(tg.next()).astType();
-                    var ogt = Types.intern(og.next()).astType();
-                    result = tgt.compareTo(ogt);
+                    result = generics().size() < other.generics().size() ? -1 : +1;
+                  }
+                else
+                  {
+                    var tg = generics().iterator();
+                    var og = other.generics().iterator();
+                    while (tg.hasNext() && result == 0)
+                      {
+                        var tgt = (Type) Types.intern(tg.next()).astType();
+                        var ogt = (Type) Types.intern(og.next()).astType();
+                        result = tgt.compareTo(ogt);
+                      }
                   }
               }
           }
@@ -918,7 +865,8 @@ public class Type extends AbstractType implements Comparable<Type>
                generic == null || name.equals(generic._name),
                (feature == null) ^ (generic == null) || (Errors.count() > 0));
 
-            result = name.compareTo(other.name);
+            var oname = other instanceof Type ot ? ot.name : other.featureOfType().featureName().baseName();
+            result = name.compareTo(oname);
           }
         if (result == 0)
           {
@@ -927,19 +875,22 @@ public class Type extends AbstractType implements Comparable<Type>
                 result = isRef() ? -1 : 1;
               }
           }
-        if (result == 0)
+        if (isGenericArgument())
           {
-            // NYI: generics should not be stored globally, but locally to generic.feature
-            result =
-              (generic == null) && (other.generic == null) ?  0 :
-              (generic == null) && (other.generic != null) ? -1 :
-              (generic != null) && (other.generic == null) ? +1 : generic.feature().compareTo(other.genericArgument().feature());
-
             if (result == 0)
               {
-                if (generic != null)
+                // NYI: generics should not be stored globally, but locally to generic.feature
+                result =
+                  (generic == null) && !other.isGenericArgument() ?  0 :
+                  (generic == null) &&  other.isGenericArgument() ? -1 :
+                  (generic != null) && !other.isGenericArgument() ? +1 : generic.feature().compareTo(other.genericArgument().feature());
+
+                if (result == 0)
                   {
-                    result = generic._name.compareTo(other.generic._name); // NYI: compare generic, not generic.name!
+                    if (generic != null)
+                      {
+                        result = generic._name.compareTo(other.genericArgument()._name); // NYI: compare generic, not generic.name!
+                      }
                   }
               }
           }
@@ -951,7 +902,7 @@ public class Type extends AbstractType implements Comparable<Type>
   /**
    * Get an interned version of outer() or null if none.
    */
-  Type outerInterned()
+  AbstractType outerInterned()
   {
     var result = outer();
     if (result != null)
@@ -1021,41 +972,6 @@ public class Type extends AbstractType implements Comparable<Type>
 
     ensure
       (!result || Errors.count() > 0);
-
-    return result;
-  }
-
-
-  /**
-   * Find a type that is assignable from values of two types, this and t. If no
-   * such type exists, return Types.resovled.t_unit.
-   *
-   * @param that another type or null
-   *
-   * @return a type that is assignable both from this and that, or null if none
-   * exists.
-   */
-  Type union(Type that)
-  {
-    Type result =
-      this == Types.t_ERROR               ? Types.t_ERROR     :
-      that == Types.t_ERROR               ? Types.t_ERROR     :
-      this == Types.t_UNDEFINED           ? Types.t_UNDEFINED :
-      that == Types.t_UNDEFINED           ? Types.t_UNDEFINED :
-      this == Types.resolved.t_void       ? that              :
-      that == Types.resolved.t_void       ? this              :
-      this.isAssignableFrom(that)         ? this :
-      that.isAssignableFrom(this)         ? that :
-      this.isAssignableFrom(that.asRef()) ? this :
-      that.isAssignableFrom(this.asRef()) ? that : Types.t_UNDEFINED;
-
-    if (POSTCONDITIONS) ensure
-      (result == Types.t_UNDEFINED ||
-       result == Types.t_ERROR     ||
-       this == Types.resolved.t_void && result == that ||
-       that == Types.resolved.t_void && result == this ||
-       (result.isAssignableFrom(this) || result.isAssignableFrom(this.asRef()) &&
-        result.isAssignableFrom(that) || result.isAssignableFrom(that.asRef())    ));
 
     return result;
   }
