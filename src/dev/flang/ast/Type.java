@@ -97,9 +97,15 @@ public class Type extends AbstractType implements Comparable<Type>
 
 
   /**
-   *
+   * the name of this type.  For a type 'map<string,i32>.entry', this is just
+   * the base name 'entry'. For a type parameter 'A', this is 'A'. For an
+   * artificial type, this is one of Types.INTERNAL_NAMES (e.g., '--ADDRESS--).
    */
   public final String name;
+  String name()
+  {
+    return name;
+  }
 
 
   /**
@@ -833,93 +839,6 @@ public class Type extends AbstractType implements Comparable<Type>
           (to == null && oo == null) ?  0 :
           (to == null && oo != null) ? -1 :
           (to != null && oo == null) ? +1 : to.compareTo(oo);
-      }
-    return result;
-  }
-
-
-  /**
-   * Compare this to other ignoring the outer type. This is used for created in
-   * clazzes when the outer clazz is known.
-   */
-  public int compareToIgnoreOuter(AbstractType other)
-  {
-    if (PRECONDITIONS) require
-      (checkedForGeneric,
-       other != null,
-       other.checkedForGeneric(),
-       getClass() == Type.class,
-       other.getClass() == Type.class,
-                     isGenericArgument() == (              feature == null),
-       ((Type)other).isGenericArgument() == (((Type)other).feature == null));
-
-    int result = 0;
-
-    if (this != other)
-      {
-        result =
-          isGenericArgument() &&  other.isGenericArgument() ?  0 :
-          isGenericArgument() && !other.isGenericArgument() ? -1 :
-          !isGenericArgument() && other.isGenericArgument() ? +1 : featureOfType().compareTo(other.featureOfType());
-        if (!isGenericArgument())
-          {
-            if (result == 0)
-              {
-                if (generics().size() != other.generics().size())  // this may happen for open generics lists
-                  {
-                    result = generics().size() < other.generics().size() ? -1 : +1;
-                  }
-                else
-                  {
-                    var tg = generics().iterator();
-                    var og = other.generics().iterator();
-                    while (tg.hasNext() && result == 0)
-                      {
-                        var tgt = (Type) Types.intern(tg.next()).astType();
-                        var ogt = (Type) Types.intern(og.next()).astType();
-                        result = tgt.compareTo(ogt);
-                      }
-                  }
-              }
-          }
-        if (result == 0)
-          {
-            check
-              (feature == null ||
-               name.equals(feature.featureName().baseName()) ||
-               Types.INTERNAL_NAMES.contains(name) || (Errors.count() > 0),
-               generic == null || name.equals(generic._name),
-               (feature == null) ^ (generic == null) || (Errors.count() > 0));
-
-            var oname = other instanceof Type ot ? ot.name : other.featureOfType().featureName().baseName();
-            result = name.compareTo(oname);
-          }
-        if (result == 0)
-          {
-            if (isRef() ^ other.isRef())
-              {
-                result = isRef() ? -1 : 1;
-              }
-          }
-        if (isGenericArgument())
-          {
-            if (result == 0)
-              {
-                // NYI: generics should not be stored globally, but locally to generic.feature
-                result =
-                  (generic == null) && !other.isGenericArgument() ?  0 :
-                  (generic == null) &&  other.isGenericArgument() ? -1 :
-                  (generic != null) && !other.isGenericArgument() ? +1 : generic.feature().compareTo(other.genericArgument().feature());
-
-                if (result == 0)
-                  {
-                    if (generic != null)
-                      {
-                        result = generic._name.compareTo(other.genericArgument()._name); // NYI: compare generic, not generic.name!
-                      }
-                  }
-              }
-          }
       }
     return result;
   }

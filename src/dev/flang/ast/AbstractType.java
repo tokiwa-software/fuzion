@@ -715,13 +715,84 @@ public abstract class AbstractType extends ANY
   }
 
 
+  /**
+   * Compare this to other ignoring the outer type. This is used for created in
+   * clazzes when the outer clazz is known.
+   */
+  public int compareToIgnoreOuter(AbstractType other)
+  {
+    if (PRECONDITIONS) require
+      (checkedForGeneric(),
+       other != null,
+       other.checkedForGeneric());
+
+    int result = 0;
+
+    if (this != other)
+      {
+        result =
+          isGenericArgument() &&  other.isGenericArgument() ?  0 :
+          isGenericArgument() && !other.isGenericArgument() ? -1 :
+          !isGenericArgument() && other.isGenericArgument() ? +1 : featureOfType().compareTo(other.featureOfType());
+        if (!isGenericArgument())
+          {
+            if (result == 0)
+              {
+                if (generics().size() != other.generics().size())  // this may happen for open generics lists
+                  {
+                    result = generics().size() < other.generics().size() ? -1 : +1;
+                  }
+                else
+                  {
+                    var tg = generics().iterator();
+                    var og = other.generics().iterator();
+                    while (tg.hasNext() && result == 0)
+                      {
+                        var tgt = (Type) Types.intern(tg.next()).astType();
+                        var ogt = (Type) Types.intern(og.next()).astType();
+                        result = tgt.compareTo(ogt);
+                      }
+                  }
+              }
+          }
+        if (result == 0)
+          {
+            result = name().compareTo(other.name());
+          }
+        if (result == 0)
+          {
+            if (isRef() ^ other.isRef())
+              {
+                result = isRef() ? -1 : 1;
+              }
+          }
+        if (isGenericArgument())
+          {
+            if (result == 0)
+              {
+                result = genericArgument().feature().compareTo(other.genericArgument().feature());
+                if (result == 0)
+                  {
+                    result = genericArgument()._name.compareTo(other.genericArgument()._name); // NYI: compare generic, not generic.name!
+                  }
+              }
+          }
+      }
+    return result;
+  }
+
+  String name()
+  {
+    return isGenericArgument() ? genericArgument().name() : featureOfType().featureName().baseName();
+  }
+
+
   public abstract AbstractFeature featureOfType();
   public abstract AbstractType asRef();
   public abstract AbstractType asValue();
   public abstract boolean isRef();
   public abstract SourcePosition pos();
   public abstract List<AbstractType> generics();
-  public abstract int compareToIgnoreOuter(AbstractType other);
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
   public abstract Generic genericArgument();

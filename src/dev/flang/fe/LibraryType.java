@@ -102,8 +102,6 @@ public abstract class LibraryType extends AbstractType
   }
 
 
-  public int compareToIgnoreOuter(AbstractType other) { return _from.compareToIgnoreOuter(other); }
-
   public AbstractType astType() { return _from; }
 
 }
