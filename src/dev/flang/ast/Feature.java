@@ -1303,15 +1303,15 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         res = r;
       }
-    public void     action(Assign      a, Feature outer) {        a.resolveTypes(res, outer); }
-    public Call     action(Call        c, Feature outer) { return c.resolveTypes(res, outer); }
-    public Stmnt    action(Destructure d, Feature outer) { return d.resolveTypes(res, outer); }
-    public Stmnt    action(Feature     f, Feature outer) { return f.resolveTypes(res, outer); }
-    public Function action(Function    f, Feature outer) {        f.resolveTypes(res, outer); return f; }
-    public void     action(Generic     g, Feature outer) {        g.resolveTypes(res, outer); }
-    public void     action(Match       m, Feature outer) {        m.resolveTypes(res, outer); }
-    public Expr     action(This        t, Feature outer) { return t.resolveTypes(res, outer); }
-    public AbstractType action(AbstractType t, Feature outer) { return t.resolve(res, outer); }
+    public void         action(Assign       a, Feature outer) {        a.resolveTypes(res, outer); }
+    public Call         action(Call         c, Feature outer) { return c.resolveTypes(res, outer); }
+    public Stmnt        action(Destructure  d, Feature outer) { return d.resolveTypes(res, outer); }
+    public Stmnt        action(Feature      f, Feature outer) { return f.resolveTypes(res, outer); }
+    public Function     action(Function     f, Feature outer) {        f.resolveTypes(res, outer); return f; }
+    public void         action(Generic      g, Feature outer) {        g.resolveTypes(res, outer); }
+    public void         action(Match        m, Feature outer) {        m.resolveTypes(res, outer); }
+    public Expr         action(This         t, Feature outer) { return t.resolveTypes(res, outer); }
+    public AbstractType action(AbstractType t, Feature outer) { return t.resolve     (res, outer); }
 
     /**
      * visitActuals delays type resolution for actual arguments within a feature
