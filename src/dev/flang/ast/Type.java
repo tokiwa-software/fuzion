@@ -197,16 +197,42 @@ public class Type extends AbstractType implements Comparable<Type>
    *
    * @param o the actual outer type, or null, that replaces t.outer
    */
-  public Type(Type t, List<AbstractType> g, Type o)
+  public Type(Type t, List<AbstractType> g, AbstractType o)
   {
-    this(t.pos, t.name, g, o, t.feature, t._refOrVal);
+    this(t.pos(), t.name, g, o, t.feature, t._refOrVal);
 
     if (PRECONDITIONS) require
-      ( (t._generics instanceof FormalGenerics.AsActuals) || t._generics.size() == g.size(),
-       !(t._generics instanceof FormalGenerics.AsActuals) || ((FormalGenerics.AsActuals)t._generics).sizeMatches(g),
+      ( (t.generics() instanceof FormalGenerics.AsActuals) || t.generics().size() == g.size(),
+       !(t.generics() instanceof FormalGenerics.AsActuals) || ((FormalGenerics.AsActuals)t.generics()).sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
-    checkedForGeneric = t.checkedForGeneric;
+    checkedForGeneric = t.checkedForGeneric();
+  }
+
+
+  /**
+   * Constructor to create a type from an existing type after formal generics
+   * have been replaced in the generics arguments and in the outer type.
+   *
+   * @param t the original type
+   *
+   * @param g the actual generic arguments that replace t.generics
+   *
+   * @param o the actual outer type, or null, that replaces t.outer
+   */
+  public Type(AbstractType t, List<AbstractType> g, AbstractType o)
+  {
+    this(t.pos(), t.featureOfType().featureName().baseName(), g, o, t.featureOfType(),
+         t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
+         t.isRef() ? RefOrVal.Ref
+                   : RefOrVal.Value);
+
+    if (PRECONDITIONS) require
+      ( (t.generics() instanceof FormalGenerics.AsActuals) || t.generics().size() == g.size(),
+       !(t.generics() instanceof FormalGenerics.AsActuals) || ((FormalGenerics.AsActuals)t.generics()).sizeMatches(g),
+        t == Types.t_ERROR || (t.outer() == null) == (o == null));
+
+    checkedForGeneric = t.checkedForGeneric();
   }
 
 
@@ -225,7 +251,7 @@ public class Type extends AbstractType implements Comparable<Type>
    * @param ref true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
-  public Type(SourcePosition pos, String n, List<AbstractType> g, Type o, AbstractFeature f, RefOrVal refOrVal)
+  public Type(SourcePosition pos, String n, List<AbstractType> g, AbstractType o, AbstractFeature f, RefOrVal refOrVal)
   {
     if (PRECONDITIONS) require
       (pos != null,

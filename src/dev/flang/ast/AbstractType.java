@@ -611,7 +611,7 @@ public abstract class AbstractType extends ANY
               {
                 hasError = hasError || (t == Types.t_ERROR);
               }
-            result = hasError ? Types.t_ERROR : new Type((Type) result.astType(), g2, o2 == null ? null : (Type) o2.astType());
+            result = hasError ? Types.t_ERROR : new Type((Type) result.astType(), g2, o2);
           }
       }
     return result.astType(); // NYI: remove .astType(), needed only because isAssignableFrom is not correct yet.

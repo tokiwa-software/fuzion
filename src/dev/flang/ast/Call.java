@@ -1116,10 +1116,11 @@ public class Call extends Expr
       }
     else if (_select < 0)
       {
+        t = t.resolve(res, tt.featureOfType());
         t = tt.actualType(t);
         if (calledFeature_.isConstructor() && t != Types.resolved.t_void)
           {  /* specialize t for the target type here */
-            t = new Type((Type) t.astType(), t.generics(), (Type) tt.astType());
+            t = new Type(t, t.generics(), tt);
           }
       }
     else
