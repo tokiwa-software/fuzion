@@ -44,7 +44,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Type extends AbstractType implements Comparable<Type>
+public class Type extends AbstractType
 {
 
   //  static int counter;  {counter++; if ((counter&(counter-1))==0) { System.out.println("######################"+counter+" "+this.getClass()); if(false)Thread.dumpStack(); } }
@@ -815,47 +815,6 @@ public class Type extends AbstractType implements Comparable<Type>
     return result;
   }
 
-
-  /**
-   * Compare this to other for creating unique types.
-   */
-  public int compareTo(Type other)
-  {
-    if (PRECONDITIONS) require
-      (checkedForGeneric,
-       other != null,
-       other.checkedForGeneric,
-       getClass() == Type.class,
-       other.getClass() == Type.class,
-                     isGenericArgument() == (              feature == null),
-       ((Type)other).isGenericArgument() == (((Type)other).feature == null));
-
-    int result = compareToIgnoreOuter(other);
-    if (result == 0 && generic == null)
-      {
-        var to = (Type) this .outerInterned();
-        var oo = (Type) other.outerInterned();
-        result =
-          (to == null && oo == null) ?  0 :
-          (to == null && oo != null) ? -1 :
-          (to != null && oo == null) ? +1 : to.compareTo(oo);
-      }
-    return result;
-  }
-
-
-  /**
-   * Get an interned version of outer() or null if none.
-   */
-  AbstractType outerInterned()
-  {
-    var result = outer();
-    if (result != null)
-      {
-        result = Types.intern(result);
-      }
-    return result;
-  }
 
   /**
    * outer type, after type resolution. This provides the whole chain of types

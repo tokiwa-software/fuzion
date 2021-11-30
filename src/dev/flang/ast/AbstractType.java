@@ -41,7 +41,7 @@ import dev.flang.util.YesNo;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractType extends ANY
+public abstract class AbstractType extends ANY implements Comparable<AbstractType>
 {
 
 
@@ -647,8 +647,8 @@ public abstract class AbstractType extends ANY
                     if ((t1 == t2 ||
                          !t1.isGenericArgument() &&
                          !t2.isGenericArgument() &&
-                         (t1.isAssignableFrom(t2.astType()) ||
-                          t2.isAssignableFrom(t1.astType())    )) &&
+                         (t1.isAssignableFrom(t2) ||
+                          t2.isAssignableFrom(t1)    )) &&
                         t1 != Types.t_ERROR &&
                         t2 != Types.t_ERROR)
                       {
@@ -717,6 +717,30 @@ public abstract class AbstractType extends ANY
 
 
   /**
+   * Compare this to other for creating unique types.
+   */
+  public int compareTo(AbstractType other)
+  {
+    if (PRECONDITIONS) require
+      (checkedForGeneric(),
+       other != null,
+       other.checkedForGeneric());
+
+    int result = compareToIgnoreOuter(other);
+    if (result == 0 && !isGenericArgument())
+      {
+        var to = this .outer();
+        var oo = other.outer();
+        result =
+          (to == null && oo == null) ?  0 :
+          (to == null && oo != null) ? -1 :
+          (to != null && oo == null) ? +1 : Types.intern(to).compareTo(Types.intern(oo));
+      }
+    return result;
+  }
+
+
+  /**
    * Compare this to other ignoring the outer type. This is used for created in
    * clazzes when the outer clazz is known.
    */
@@ -749,8 +773,8 @@ public abstract class AbstractType extends ANY
                     var og = other.generics().iterator();
                     while (tg.hasNext() && result == 0)
                       {
-                        var tgt = (Type) Types.intern(tg.next()).astType();
-                        var ogt = (Type) Types.intern(og.next()).astType();
+                        var tgt = tg.next();
+                        var ogt = og.next();
                         result = tgt.compareTo(ogt);
                       }
                   }

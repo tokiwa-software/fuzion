@@ -240,7 +240,7 @@ public class Types extends ANY
       {
         if (!t.isGenericArgument())
           {
-            t.outerInterned();
+            Types.intern(t.outer());
           }
         var tg = t._generics.listIterator();
         while (tg.hasNext())
