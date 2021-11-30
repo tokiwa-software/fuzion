@@ -73,6 +73,12 @@ public class NormalType extends LibraryType
   AbstractType _outer;
 
 
+  /**
+   * Cached result of asRef()
+   */
+  AbstractType _asRef = null;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -134,6 +140,24 @@ public class NormalType extends LibraryType
   {
     return _outer;
   }
+
+
+  public AbstractType asRef()
+  {
+    var result = _asRef;
+    if (result == null)
+      {
+        result = isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, true, _generics, _outer, _from.asRef());
+        _asRef = result;
+      }
+    return result;
+  }
+
+  public AbstractType asValue()
+  {
+    throw new Error("GenericType.asValue() not defined");
+  }
+
 
 }
 

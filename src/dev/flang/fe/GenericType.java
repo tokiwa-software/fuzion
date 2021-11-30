@@ -112,6 +112,16 @@ public class GenericType extends LibraryType
     throw new Error("GenericType.outer() not defined");
   }
 
+  public AbstractType asRef()
+  {
+    throw new Error("GenericType.asRef() not defined");
+  }
+  public AbstractType asValue()
+  {
+    throw new Error("GenericType.asValue() not defined");
+  }
+
+
 }
 
 /* end of file */
