@@ -542,7 +542,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        Errors.count() > 0 || !t.isOpenGeneric(),
        featureOfType().generics().sizeMatches(generics()));
 
-    t = t.astType();
     var result = t;
     if (result.dependsOnGenerics())
       {
@@ -604,8 +603,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         var g2 = actualTypes(f, result.generics(), actualGenerics);
         var o2 = (result.outer() == null) ? null : result.outer().actualType(f, actualGenerics);
         if (g2 != result.generics() ||
-            o2 != result.outer()    ||
-            o2 != null && o2.astType() != result.outer().astType() /* NYI: remove this line as soon as astType is gone */ )
+            o2 != result.outer()       )
           {
             var hasError = o2 == Types.t_ERROR;
             for (var t : g2)
