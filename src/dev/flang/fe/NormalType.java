@@ -107,6 +107,27 @@ public class NormalType extends LibraryType
   /*-----------------------------  methods  -----------------------------*/
 
 
+  /**
+   * For a type that is not a type parameter, create a new variant using given
+   * actual generics and outer type.
+   *
+   * @param g2 the new actual generics to be used
+   *
+   * @param o2 the new outer type to be used (which may also differ in its
+   * actual generics).
+   *
+   * @return a new type with same featureOfType(), but using g2/o2 as generics
+   * and outer type.
+   */
+  public AbstractType actualType(List<AbstractType> g2, AbstractType o2)
+  {
+    if (PRECONDITIONS) require
+      (!isGenericArgument());
+
+    return new NormalType(_libModule, _at, _pos, _feature, false, g2, o2, _from.actualType(g2, o2));
+  }
+
+
   public AbstractFeature featureOfType()
   {
     return _feature;

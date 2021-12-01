@@ -610,10 +610,31 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               {
                 hasError = hasError || (t == Types.t_ERROR);
               }
-            result = hasError ? Types.t_ERROR : new Type((Type) result.astType(), g2, o2);
+            result = hasError ? Types.t_ERROR : actualType(g2, o2);
           }
       }
     return result.astType(); // NYI: remove .astType(), needed only because isAssignableFrom is not correct yet.
+  }
+
+
+  /**
+   * For a type that is not a type parameter, create a new variant using given
+   * actual generics and outer type.
+   *
+   * @param g2 the new actual generics to be used
+   *
+   * @param o2 the new outer type to be used (which may also differ in its
+   * actual generics).
+   *
+   * @return a new type with same featureOfType(), but using g2/o2 as generics
+   * and outer type.
+   */
+  public AbstractType actualType(List<AbstractType> g2, AbstractType o2)
+  {
+    if (PRECONDITIONS) require
+      (!isGenericArgument());
+
+    throw new Error("actualType not supported for "+getClass());
   }
 
 
