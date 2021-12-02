@@ -1083,7 +1083,8 @@ public class Clazzes extends ANY
           {
             throw new Error("" + e.getClass() + " should no longer exist at runtime");
           }
-        return error.get(); // dummy class
+
+        result = error.get(); // dummy class
       }
 
     if (POSTCONDITIONS) ensure
