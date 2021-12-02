@@ -32,6 +32,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Feature;
 import dev.flang.ast.Generic;
+import dev.flang.ast.Type;
 
 import dev.flang.util.List;
 
@@ -176,7 +177,33 @@ public class NormalType extends LibraryType
 
   public AbstractType asValue()
   {
-    throw new Error("GenericType.asValue() not defined");
+    throw new Error("NormalType.asValue() not defined");
+  }
+
+
+  /**
+   * toString
+   *
+   * @return
+   */
+  public String toString()
+  {
+    String result = "";
+
+    if (outer() != null && !outer().featureOfType().isUniverse())
+      {
+        result = outer() + ".";
+      }
+    if (isRef() != featureOfType().isThisRef())
+      {
+        result = result + (isRef() ? "ref " : "value ");
+      }
+    result = result + (featureOfType().featureName().baseName());
+    if (generics() != Type.NONE)
+      {
+        result = result + "<" + generics() + ">";
+      }
+    return result + " (" + _libModule._name + ")";
   }
 
 
