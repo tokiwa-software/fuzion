@@ -78,6 +78,12 @@ public class LibraryModule extends Module
 
 
   /**
+   * The module name, used for debug output.
+   */
+  final String _name;
+
+
+  /**
    * The module binary data, contents of .mir file.
    */
   final ByteBuffer _data;
@@ -105,14 +111,15 @@ public class LibraryModule extends Module
 
 
   /**
-   * Create SourceModule for given options and sourceDirs.
+   * Create LibraryModule for given options and sourceDirs.
    */
-  LibraryModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile, String defaultMain, Module[] dependsOn, Feature universe)
+  LibraryModule(FrontEndOptions options, String name, SourceDir[] sourceDirs, Path inputFile, String defaultMain, Module[] dependsOn, Feature universe)
   {
     super(dependsOn);
 
     _options = options;
     _srcModule = new SourceModule(options, sourceDirs, inputFile, defaultMain, dependsOn, universe);
+    _name = name;
     _mir = _srcModule.createMIR();
     _data = _mir._module.data();
   }

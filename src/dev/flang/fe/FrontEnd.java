@@ -65,7 +65,7 @@ public class FrontEnd extends ANY
   public FrontEnd(FrontEndOptions options)
   {
     var universe = Feature.createUniverse();
-    var stdlib = new LibraryModule(options, new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) }, null, null, new Module[0], universe);
+    var stdlib = new LibraryModule(options, "stdlib", new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) }, null, null, new Module[0], universe);
     Path[] sourcePaths;
     Path inputFile;
     if (options._readStdin)
