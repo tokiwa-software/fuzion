@@ -610,7 +610,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               {
                 hasError = hasError || (t == Types.t_ERROR);
               }
-            result = hasError ? Types.t_ERROR : actualType(g2, o2);
+            result = hasError ? Types.t_ERROR : result.actualType(g2, o2);
           }
       }
     return result.astType(); // NYI: remove .astType(), needed only because isAssignableFrom is not correct yet.
