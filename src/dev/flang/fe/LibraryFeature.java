@@ -337,7 +337,7 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * Get inner feature with given name.
+   * Get inner feature with given name, ignoring the argument count.
    *
    * @param name the name of the feature within this.
    *
@@ -345,6 +345,7 @@ public class LibraryFeature extends AbstractFeature
    */
   public AbstractFeature get(String name)
   {
+    AbstractFeature result = null;
     var sz = _libModule.featureInnerSize(_index);
     var i = _libModule.featureInnerPos(_index);
     var e = i + sz;
@@ -352,14 +353,24 @@ public class LibraryFeature extends AbstractFeature
       {
         var r = _libModule.libraryFeature(i, _libModule._srcModule.featureFromOffset(i));
         var rn = r.featureName();
-        if (rn.baseName().equals(name) && rn.argCount() == 0)
+        if (rn.baseName().equals(name))
           {
-            return r;
+            if (result == null)
+              {
+                result = r;
+              }
+            else
+              {
+                Errors.fatal("Ambiguous inner feature '" + name + "': found '" + result.featureName() + "' and '" + r.featureName() + "'.");
+              }
           }
         i = _libModule.featureNextPos(i);
       }
-    Errors.fatal("Could not find feature '"+name+"' in "+this);
-    throw new Error("not reachable");
+    if (result == null)
+      {
+        Errors.fatal("Could not find feature '"+name+"' in '" + qualifiedName() + "'.");
+      }
+    return result;
   }
 
 
