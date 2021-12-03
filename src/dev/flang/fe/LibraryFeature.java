@@ -437,20 +437,20 @@ public class LibraryFeature extends AbstractFeature
     return _featureName;
   }
   public SourcePosition pos() { return _from.pos(); }
-  public List<AbstractType> choiceGenerics() { return _from.choiceGenerics(); }
-  public FormalGenerics generics() { return _from.generics(); }
-  public Generic getGeneric(String name) { return _from.getGeneric(name); }
-  public List<Call> inherits() { return _from.inherits(); }
+  public List<AbstractType> choiceGenerics() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.choiceGenerics(); } }
+  public FormalGenerics generics() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.generics(); } }
+  public Generic getGeneric(String name) { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.getGeneric(name); } }
+  public List<Call> inherits() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.inherits(); } }
 
   // following are used in IR/Clazzes middle end or later only:
-  public Impl.Kind implKind() { return _from.implKind(); }      // NYI: remove, used only in Clazz.java for some obscure case
-  public Expr initialValue() { return _from.initialValue(); }   // NYI: remove, used only in Clazz.java for some obscure case
+  public Impl.Kind implKind() { if (_libModule.USE_FUM) { check(false); return _from.implKind(); } else { return _from.implKind(); } }      // NYI: remove, used only in Clazz.java for some obscure case
+  public Expr initialValue() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.initialValue(); } }   // NYI: remove, used only in Clazz.java for some obscure case
 
   // following used in MIR or later
-  public Expr code() { return _from.code(); }
+  public Expr code() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.code(); } }
 
   // in FUIR or later
-  public Contract contract() { return _from.contract(); }
+  public Contract contract() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.contract(); } }
 
   public AbstractFeature astFeature() { return _libModule.USE_FUM ? this : _from; }
 
