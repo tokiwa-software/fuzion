@@ -452,7 +452,7 @@ public class LibraryFeature extends AbstractFeature
   // in FUIR or later
   public Contract contract() { return _from.contract(); }
 
-  public AbstractFeature astFeature() { return _from; }
+  public AbstractFeature astFeature() { return _libModule.USE_FUM ? this : _from; }
 
 }
 

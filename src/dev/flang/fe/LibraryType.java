@@ -102,7 +102,7 @@ public abstract class LibraryType extends AbstractType
   }
 
 
-  public AbstractType astType() { return _from; }
+  public AbstractType astType() { return _libModule.USE_FUM ? this : _from; }
 
 }
 

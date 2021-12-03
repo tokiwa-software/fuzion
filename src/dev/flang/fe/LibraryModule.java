@@ -61,6 +61,16 @@ public class LibraryModule extends Module
 {
 
 
+  /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Temporary solution to switch to .fum file data completely.
+   *
+   * NYI: Remove when we have switched to .fum file!
+   */
+  boolean USE_FUM = "true".equals(System.getenv("USE_FUM"));
+
   /*----------------------------  variables  ----------------------------*/
 
 
