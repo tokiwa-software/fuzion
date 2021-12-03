@@ -1235,7 +1235,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   void findAllClassesWhenCalled()
   {
     var f = feature();
-    new FindClassesVisitor().visitAncestors((Feature) f); // NYI: Cast!
+    new FindClassesVisitor().visitAncestors(f);
     for (AbstractFeature ff: f.allInnerAndInheritedFeatures(_module))
       {
         if (Clazzes.isUsed(ff, this) &&
