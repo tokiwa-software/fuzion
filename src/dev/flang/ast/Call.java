@@ -662,7 +662,7 @@ public class Call extends Expr
   {
     Call result = null;
     if (Types.resolved != null &&
-        targetFeature(res, thiz) == Types.resolved.f_bool &&
+        targetFeature(res, thiz).sameAs(Types.resolved.f_bool) &&
         isInfixOperator() &&
         target instanceof Call tc &&
         tc.isInfixOperator())

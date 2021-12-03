@@ -1681,7 +1681,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       ((outer != null) != (target != null));
 
-    if (f.outerRef() == cf)
+    if (f.outerRef().sameAs(cf))
       { // a "normal" outer ref for the outer clazz surrounding this instance or
         // (if in recursion) an inherited outer ref referring to the target of
         // the inherits call
