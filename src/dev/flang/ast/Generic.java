@@ -275,7 +275,7 @@ public class Generic extends ANY
    *
    * @return
    */
-  public Feature feature()
+  public AbstractFeature feature()
   {
     if (PRECONDITIONS) require
       (_formalGenerics != null);

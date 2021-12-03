@@ -77,7 +77,7 @@ public class FormalGenerics extends ANY
   /**
    * The Feature that contains this formal generics declaration.
    */
-  private Feature _feature = null;
+  private AbstractFeature _feature = null;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -121,7 +121,7 @@ public class FormalGenerics extends ANY
   /**
    * Stores a reference to the surrounding feature in this  FormalGenerics instance.
    */
-  void setFeature(Feature feature)
+  void setFeature(AbstractFeature feature)
   {
     if (PRECONDITIONS) require
       (this._feature == null);
@@ -142,7 +142,7 @@ public class FormalGenerics extends ANY
    *
    * @return
    */
-  public Feature feature()
+  public AbstractFeature feature()
   {
     return _feature;
   }

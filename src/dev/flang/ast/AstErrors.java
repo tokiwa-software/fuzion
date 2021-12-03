@@ -128,7 +128,7 @@ public class AstErrors extends ANY
   {
     return expr(s);
   }
-  static String s(Feature f, FormalGenerics fg)
+  static String s(AbstractFeature f, FormalGenerics fg)
   {
     return code(f.qualifiedName() + fg);
   }
