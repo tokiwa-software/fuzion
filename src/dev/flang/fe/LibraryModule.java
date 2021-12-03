@@ -69,7 +69,7 @@ public class LibraryModule extends Module
    *
    * NYI: Remove when we have switched to .fum file!
    */
-  boolean USE_FUM = "true".equals(System.getenv("USE_FUM"));
+  static boolean USE_FUM = "true".equals(System.getenv("USE_FUM"));
 
   /*----------------------------  variables  ----------------------------*/
 

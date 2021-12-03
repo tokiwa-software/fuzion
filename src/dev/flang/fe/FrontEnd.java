@@ -32,6 +32,7 @@ import dev.flang.mir.MIR;
 
 import dev.flang.ast.Feature;
 import dev.flang.ast.Resolution;
+import dev.flang.ast.Types;
 
 import dev.flang.util.ANY;
 import dev.flang.util.SourceDir;
@@ -65,6 +66,7 @@ public class FrontEnd extends ANY
   public FrontEnd(FrontEndOptions options)
   {
     var universe = Feature.createUniverse();
+    Types.reset();
     var stdlib = new LibraryModule(options, "stdlib", new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) }, null, null, new Module[0], universe);
     Path[] sourcePaths;
     Path inputFile;
@@ -91,6 +93,10 @@ public class FrontEnd extends ANY
     for (int i = 0; i < options._modules.size(); i++)
       {
         sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
+      }
+    if (LibraryModule.USE_FUM)
+      {
+        Types.reset();
       }
     _module = new SourceModule(options, sourceDirs, inputFile, options._main, new Module[] {stdlib}, universe);
   }

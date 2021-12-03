@@ -52,7 +52,7 @@ public class Types extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  private static final Map<Type, Type> types = new TreeMap<>();
+  private static Map<Type, Type> types;
 
   /**
    * Name of abstract features for function types:
@@ -94,14 +94,14 @@ public class Types extends ANY
                                  ERROR_NAME)));
 
   /* artificial type for the address of a value type, used for outer refs to value instances */
-  public static Type t_ADDRESS = new Type(ADDRESS_NAME);
+  public static Type t_ADDRESS;
 
   /* artificial type for Expr that does not have a well defined type such as the
    * union of two distinct types */
-  public static Type t_UNDEFINED = new Type(UNDEFINED_NAME);
+  public static Type t_UNDEFINED;
 
   /* artificial type for Expr with unknown type due to compilation error */
-  public static Type t_ERROR = new Type(ERROR_NAME);
+  public static Type t_ERROR;
 
   /* artificial feature used when feature is not known due to compilation error */
   public static Feature f_ERROR = new Feature(true);
@@ -226,6 +226,19 @@ public class Types extends ANY
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Reset static fields such as the intern()ed types.
+   */
+  public static void reset()
+  {
+    types = new TreeMap<>();
+    resolved = null;
+    t_ADDRESS   = new Type(ADDRESS_NAME  );
+    t_UNDEFINED = new Type(UNDEFINED_NAME);
+    t_ERROR     = new Type(ERROR_NAME    );
+  }
 
 
   /**
