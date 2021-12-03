@@ -1358,7 +1358,7 @@ public class Call extends Expr
                                                                     "call",
                                                                     "Called feature: "+calledFeature_.qualifiedName()+"\n"))
           {
-            var cf = (Feature) calledFeature_.astFeature(); // NYI: Cast!
+            var cf = calledFeature_.astFeature();
             var t = _isTailRecursive ? Types.resolved.t_void // a tail recursive call will not return and execute further
                                      : cf.resultTypeIfPresent(res, generics);
             if (t == null)

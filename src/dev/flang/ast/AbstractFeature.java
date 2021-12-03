@@ -237,6 +237,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     return resultType();
   }
+  AbstractType resultTypeForTypeInference(SourcePosition rpos, Resolution res, List<AbstractType> generics)
+  {
+    return resultTypeIfPresent(res, generics);
+  }
 
 
   /**
