@@ -97,6 +97,12 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * cached result of generics():
+   */
+  private FormalGenerics _generics;
+
+
+  /**
    * cached result of outer()
    */
   AbstractFeature _outer = null;
@@ -432,30 +438,54 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
+  /**
+   * The formal generic arguments of this feature
+   */
+  public FormalGenerics generics()
+  {
+    var result = _generics;
+    if (result == null)
+      {
+        if ((_libModule.featureKind(_index) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) == 0)
+          {
+            result = FormalGenerics.NONE;
+          }
+        else if (_libModule.USE_FUM)
+          {
+            var tai = _libModule.featureTypeArgsPos(_index);
+            var list = new List<Generic>();
+            var n = _libModule.typeArgsCount(tai);
+            var isOpen = _libModule.typeArgsOpen(tai);
+            var tali = _libModule.typeArgsListPos(tai);
+            var i = 0;
+            while (i > n)
+              {
+                var gn = _libModule.typeArgName(tali);
+                var gp = pos(); // NYI: pos of generic
+                var g = new Generic(gp, i, gn);
+                // NYI: Missing generic constraint!
+                list.add(g);
+                tali = _libModule.typeArgNextPos(tali);
+                i++;
+              }
+            result = new FormalGenerics(list, isOpen, this);
+          }
+        else
+          {
+            result = _from.generics();
+          }
+        _generics = result;
+      }
+    return result;
+  }
+
+
   public FeatureName featureName()
   {
     return _featureName;
   }
   public SourcePosition pos() { return _from.pos(); }
   public List<AbstractType> choiceGenerics() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.choiceGenerics(); } }
-  public FormalGenerics generics()
-  {
-    if ((_libModule.featureKind(_index) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) == 0)
-      {
-        return FormalGenerics.NONE;
-      }
-    else
-      {
-        if (_libModule.USE_FUM)
-          {
-            check(false); return null;
-          }
-        else
-          {
-            return _from.generics();
-          }
-      }
-  }
   public Generic getGeneric(String name) { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.getGeneric(name); } }
   public List<Call> inherits() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.inherits(); } }
 

@@ -115,6 +115,26 @@ public class FormalGenerics extends ANY
   }
 
 
+  /**
+   * Constructor for a FormalGenerics instance
+   *
+   * @param l the list of formal generics. May not be empty.
+   *
+   * @param open true iff the list is open, i.e., followed by an ellipsis.
+   */
+  public FormalGenerics(List<Generic> l,
+                        boolean open,
+                        AbstractFeature f)
+  {
+    this(l, open);
+
+    if (PRECONDITIONS) require
+      (l.size() > 0);
+
+    setFeature(f);
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
