@@ -486,7 +486,6 @@ public class LibraryFeature extends AbstractFeature
     return _featureName;
   }
   public SourcePosition pos() { return _from.pos(); }
-  public Generic getGeneric(String name) { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.getGeneric(name); } }
   public List<Call> inherits() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.inherits(); } }
 
   // following are used in IR/Clazzes middle end or later only:

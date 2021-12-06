@@ -2593,26 +2593,6 @@ public class Feature extends AbstractFeature implements Stmnt
     return false;
   }
 
-
-  /**
-   * Find formal generic argument of this feature with given name.
-   *
-   * @param name the name of a formal generic argument.
-   *
-   * @return null if name is not the name of a formal generic argument
-   * of this. Otherwise, a reference to the formal generic argument.
-   */
-  public Generic getGeneric(String name)
-  {
-    Generic result = _generics.get(name);
-
-    if (POSTCONDITIONS) ensure
-      ((result == null) || (result._name.equals(name) && (result.feature() == this)));
-    // result == null ==> for all g in generics: !g.name.equals(name)
-
-    return result;
-  }
-
 }
 
 /* end of file */

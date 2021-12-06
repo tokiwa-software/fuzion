@@ -267,6 +267,26 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Find formal generic argument of this feature with given name.
+   *
+   * @param name the name of a formal generic argument.
+   *
+   * @return null if name is not the name of a formal generic argument
+   * of this. Otherwise, a reference to the formal generic argument.
+   */
+  public Generic getGeneric(String name)
+  {
+    Generic result = generics().get(name);
+
+    if (POSTCONDITIONS) ensure
+      ((result == null) || (result._name.equals(name) && (result.feature().sameAs(this))));
+    // result == null ==> for all g in generics: !g.name.equals(name)
+
+    return result;
+  }
+
+
+  /**
    * In case this has not been resolved for types yet, do so. Next, try to
    * determine the result type of this feature. If the type is not explicit, but
    * needs to be inferenced, the result might still be null. Inferenced types
@@ -707,7 +727,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();
   public abstract FormalGenerics generics();
-  public abstract Generic getGeneric(String name);
   public abstract List<Call> inherits();
   public abstract AbstractFeature outer();
   public abstract AbstractType thisType();
