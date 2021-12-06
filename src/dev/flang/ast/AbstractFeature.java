@@ -181,6 +181,52 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Is this a choice feature, i.e., does it directly inherit from choice? If
+   * so, return the actual generic parameters passed to the choice.
+   *
+   * @return null if this is not a choice feature, the actual generic
+   * parameters, i.e, the actual choice types, otherwise.
+   */
+  public List<AbstractType> choiceGenerics()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(Feature.State.RESOLVING_TYPES));
+
+    List<AbstractType> result;
+
+    if (this == Types.f_ERROR)
+      {
+        result = null;
+      }
+    else if (this == Types.resolved.f_choice)
+      {
+        result = generics().asActuals();
+      }
+    else
+      {
+        result = null;
+        Call lastP = null;
+        for (Call p: inherits())
+          {
+            check
+              (Errors.count() > 0 || p.calledFeature() != null);
+
+            if (p.calledFeature().sameAs(Types.resolved.f_choice))
+              {
+                if (lastP != null)
+                  {
+                    AstErrors.repeatedInheritanceOfChoice(p.pos, lastP.pos);
+                  }
+                lastP = p;
+                result = p.generics;
+              }
+          }
+      }
+    return result;
+  }
+
+
+  /**
    * Check if this features argument list contains arguments of open generic
    * type. If this is the case, then the argCount of the feature name may change
    * when inherited.
@@ -660,7 +706,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();
-  public abstract List<AbstractType> choiceGenerics();
   public abstract FormalGenerics generics();
   public abstract Generic getGeneric(String name);
   public abstract List<Call> inherits();
