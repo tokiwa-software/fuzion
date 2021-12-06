@@ -461,8 +461,9 @@ public class LibraryFeature extends AbstractFeature
             while (i > n)
               {
                 var gn = _libModule.typeArgName(tali);
-                var gp = pos(); // NYI: pos of generic
-                var g = new Generic(gp, i, gn);
+                var gp = _from.generics().list.get(i)._pos; // NYI: pos of generic
+                var gc = _libModule.typeArgConstraint(tali, gp, _from.generics().list.get(i).constraint());
+                var g = new Generic(gp, i, gn, gc);
                 // NYI: Missing generic constraint!
                 list.add(g);
                 tali = _libModule.typeArgNextPos(tali);

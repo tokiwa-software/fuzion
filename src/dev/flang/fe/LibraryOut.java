@@ -227,6 +227,8 @@ class LibraryOut extends DataOut
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | Name          | type arg name                                 |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | Type          | constraint                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
   void feature(Feature f)
@@ -261,6 +263,7 @@ class LibraryOut extends DataOut
           {
             _offsetsForGeneric.put(g, offset());
             writeName(g.name());
+            type(g.constraint());
           }
       }
     check

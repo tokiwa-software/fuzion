@@ -588,16 +588,30 @@ public class LibraryModule extends Module
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | Name          | type arg name                                 |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | Type          | constraint                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
 
+  int typeArgNamePos(int at)
+  {
+    return at;
+  }
   String typeArgName(int at)
   {
-    return name(at);
+    return name(typeArgNamePos(at));
+  }
+  int typeArgConstraintPos(int at)
+  {
+    return nameNextPos(typeArgNamePos(at));
+  }
+  AbstractType typeArgConstraint(int at, SourcePosition pos, AbstractType from)
+  {
+    return type(typeArgConstraintPos(at), pos, from);
   }
   int typeArgNextPos(int at)
   {
-    return nameNextPos(at);
+    return typeNextPos(typeArgConstraintPos(at));
   }
 
 

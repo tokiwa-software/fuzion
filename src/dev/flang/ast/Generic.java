@@ -139,7 +139,7 @@ public class Generic extends ANY
    * @param constraint the constraint on the generic paremter, null for the
    * implicit Object constraint.
    */
-  public Generic(SourcePosition pos, int index, String name, Type constraint)
+  public Generic(SourcePosition pos, int index, String name, AbstractType constraint)
   {
     if (PRECONDITIONS) require
       (pos != null,
