@@ -28,7 +28,6 @@ package dev.flang.fuir;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.charset.StandardCharsets;
 
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -42,6 +41,7 @@ import dev.flang.ast.Block; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Call; // NYI: remove dependency
+import dev.flang.ast.Constant; // NYI: remove dependency
 import dev.flang.ast.Current; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.Feature; // NYI: remove dependency
@@ -1296,15 +1296,12 @@ hw25 is
        codeAt(c, ix) == ExprKind.Const);
 
     var ic = _codeIds.get(c).get(ix);
-    var t = ((Expr) ic).type();
-    if      (ic instanceof BoolConst     ) { return new byte[] { ((BoolConst) ic).b ? (byte) 1 : (byte) 0 }; }
-    else if (ic instanceof NumLiteral    ) { return ((NumLiteral) ic).data(); }
-    else if (t == Types.resolved.t_string) { return ((StrConst) ic).str.getBytes(StandardCharsets.UTF_8); }
+    if      (ic instanceof Constant co) { return co.data(); }
     else if (ic instanceof InlineArray)
       {
         throw new Error("NYI: FUIR support for InlineArray still missing");
       }
-    throw new Error("Unexpected constant type " + t + ", expected bool, i32, u32, i64, u64, or string");
+    throw new Error("Unexpected constant type " + ((Expr) ic).type() + ", expected bool, i32, u32, i64, u64, or string");
   }
 
 
