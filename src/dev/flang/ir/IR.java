@@ -112,7 +112,19 @@ public class IR extends ANY
     Match,
     Outer,
     Tag,
-    Pop,
+    Pop;
+
+    /**
+     * get the Kind that corresponds to the given ordinal number.
+     */
+    public static ExprKind from(int ordinal)
+    {
+      check
+        (values()[ordinal].ordinal() == ordinal);
+
+      return values()[ordinal];
+    }
+
   }
 
 

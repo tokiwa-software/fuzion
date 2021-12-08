@@ -26,8 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
-import java.nio.charset.StandardCharsets;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,10 +36,10 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
-import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Check;
+import dev.flang.ast.Constant;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -51,8 +49,6 @@ import dev.flang.ast.If;
 import dev.flang.ast.InlineArray;
 import dev.flang.ast.Match;
 import dev.flang.ast.Nop;
-import dev.flang.ast.NumLiteral;
-import dev.flang.ast.StrConst;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
@@ -481,12 +477,27 @@ class LibraryOut extends DataOut
             i++;
           }
       }
-    else if (s instanceof BoolConst b)
+    else if (s instanceof Constant c)
       {
+
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Constant                                                                        |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Type          | type of the constant                          |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | length        | data length of the constant                   |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | length | byte          | data of the constant                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
         write(IR.ExprKind.Const.ordinal());
-        type(Types.resolved.t_bool);
-        writeInt(1);
-        write(b.b ? 1 : 0);
+        type(c.type());
+        var d = c.data();
+        writeInt(d.length);
+        write(d);
       }
     else if (s instanceof Current)
       {
@@ -510,16 +521,18 @@ class LibraryOut extends DataOut
             code(new Block(i.pos(), new List<>()));
           }
       }
-    else if (s instanceof NumLiteral n)
-      {
-        write(IR.ExprKind.Const.ordinal());
-        type(n.type());
-        var d = n.data();
-        writeInt(d.length);
-        write(d);
-      }
     else if (s instanceof Call c)
       {
+
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Call                                                                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | called feature index                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
         code(c.target);
         for (var a : c._actuals)
           {
@@ -534,12 +547,32 @@ class LibraryOut extends DataOut
       }
     else if (s instanceof Match m)
       {
+
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Match                                                                           |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | number of cases                               |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | n      | Case          | cases                                         |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | Case                                                                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Code          | code for case                                 |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
         code(m.subject);
+        write(IR.ExprKind.Match.ordinal());
         for (var c : m.cases)
           {
             code(c.code);
           }
-        write(IR.ExprKind.Match.ordinal());
       }
     else if (s instanceof Tag t)
       {
@@ -555,14 +588,6 @@ class LibraryOut extends DataOut
         // target implicitly.
         //
         // write(IR.ExprKind.Universe.ordinal());
-      }
-    else if (s instanceof StrConst sc)
-      {
-        write(IR.ExprKind.Const.ordinal());
-        type(sc.type());
-        var d = sc.str.getBytes(StandardCharsets.UTF_8);
-        writeInt(d.length);
-        write(d);
       }
     else if (s instanceof InlineArray)
       {
