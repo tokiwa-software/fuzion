@@ -90,41 +90,41 @@ public class FuzionConstants extends ANY
   /*-----------------  special values used in MIR file  -----------------*/
 
 
-  public static int MIR_FILE_MAGIC0 = 0xF710BEAD;  // FuZIOn BEAD, a module .fum
-  public static byte[] MIR_FILE_MAGIC = int2Bytes(MIR_FILE_MAGIC0);
+  public static final int MIR_FILE_MAGIC0 = 0xF710BEAD;  // FuZIOn BEAD, a module .fum
+  public static final byte[] MIR_FILE_MAGIC = int2Bytes(MIR_FILE_MAGIC0);
 
 
-  public static int MIR_FILE_FIRST_FEATURE_OFFSET = 4;
+  public static final int MIR_FILE_FIRST_FEATURE_OFFSET = 4;
 
   /**
    * feature kind value for constructor routines
    */
-  public static int MIR_FILE_KIND_CONSTRUCTOR_VALUE = 5;
-  public static int MIR_FILE_KIND_CONSTRUCTOR_REF   = 6;
+  public static final int MIR_FILE_KIND_CONSTRUCTOR_VALUE = 5;
+  public static final int MIR_FILE_KIND_CONSTRUCTOR_REF   = 6;
 
   /**
    * The bits of feature kind that are not flags
    */
-  public static int MIR_FILE_KIND_MASK    = 0x7;
+  public static final int MIR_FILE_KIND_MASK    = 0x7;
 
 
   /**
    * Flag OR'ed to kind for routines with generic type parameters.
    */
-  public static int MIR_FILE_KIND_HAS_TYPE_PAREMETERS = 8;
+  public static final int MIR_FILE_KIND_HAS_TYPE_PAREMETERS = 8;
 
   /*-----------------  special values used in AIR file  -----------------*/
 
 
-  public static int AIR_FILE_MAGIC0 = 0xF710C0DE;  // FuZIOn CODE, application code .fapp
-  public static byte[] AIR_FILE_MAGIC = int2Bytes(AIR_FILE_MAGIC0);
+  public static final int AIR_FILE_MAGIC0 = 0xF710C0DE;  // FuZIOn CODE, application code .fapp
+  public static final byte[] AIR_FILE_MAGIC = int2Bytes(AIR_FILE_MAGIC0);
 
 
   /*-----------------  special values used in FUIR file  -----------------*/
 
 
-  public static int FUIR_FILE_MAGIC0 = 0xF710DEED;  // FuZIOn DEED, fuzion IR, .fuir
-  public static byte[] FUIR_FILE_MAGIC = int2Bytes(FUIR_FILE_MAGIC0);
+  public static final int FUIR_FILE_MAGIC0 = 0xF710DEED;  // FuZIOn DEED, fuzion IR, .fuir
+  public static final byte[] FUIR_FILE_MAGIC = int2Bytes(FUIR_FILE_MAGIC0);
 
 
   /*-------------------------  static methods  --------------------------*/
