@@ -65,6 +65,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Check.java \
           $(SRC)/dev/flang/ast/Cond.java \
           $(SRC)/dev/flang/ast/Consts.java \
+          $(SRC)/dev/flang/ast/Constant.java \
           $(SRC)/dev/flang/ast/Contract.java \
           $(SRC)/dev/flang/ast/Current.java \
           $(SRC)/dev/flang/ast/Destructure.java \
