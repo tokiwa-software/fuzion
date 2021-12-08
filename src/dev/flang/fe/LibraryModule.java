@@ -427,6 +427,9 @@ public class LibraryModule extends Module
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | isRou- | 1      | Code          | Feature code                                  |
+   *   | tine   |        |               |                                               |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   |        | 1      | InnerFeatures | inner features of this feature                |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
@@ -535,12 +538,21 @@ public class LibraryModule extends Module
        k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE &&
        k != AbstractFeature.Kind.Choice.ordinal());
   }
-  int featureInnerSizePos(int at)
+  int featureCodePos(int at)
   {
     var i = featureResultTypePos(at);
     if (featureHasResultType(at))
       {
         i = typeNextPos(i);
+      }
+    return i;
+  }
+  int featureInnerSizePos(int at)
+  {
+    var i = featureCodePos(at);
+    if (featureIsRoutine(at))
+      {
+        i = codeNextPos(i);
       }
     return i;
   }
@@ -806,6 +818,44 @@ public class LibraryModule extends Module
         at = typeOuterPos(at);
         return typeNextPos(at);
       }
+  }
+
+
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Code                                                                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | sizeof(Expressions)                           |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | Expressions   | the actual code                               |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | Expressions                                                                     |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | n      | Expression    | the single expressions                        |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | Expression                                                                      |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | byte          | ExprKind k                                    |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | k==Add | 1      | Assign        | assignment                                    |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | k==Con | 1      | Constant      | constant                                      |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+  int codeNextPos(int at)
+  {
+    var sz = data().getInt(at);
+    return at + 4 + sz;
   }
 
 

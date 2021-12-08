@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.nio.charset.StandardCharsets;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,10 +36,30 @@ import java.util.TreeMap;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.Assign;
+import dev.flang.ast.Block;
+import dev.flang.ast.BoolConst;
+import dev.flang.ast.Box;
+import dev.flang.ast.Call;
+import dev.flang.ast.Check;
+import dev.flang.ast.Current;
+import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Generic;
+import dev.flang.ast.If;
+import dev.flang.ast.InlineArray;
+import dev.flang.ast.Match;
+import dev.flang.ast.Nop;
+import dev.flang.ast.NumLiteral;
+import dev.flang.ast.StrConst;
+import dev.flang.ast.Stmnt;
+import dev.flang.ast.Tag;
 import dev.flang.ast.Types;
+import dev.flang.ast.Unbox;
+import dev.flang.ast.Universe;
+
+import dev.flang.ir.IR;
 
 import dev.flang.util.DataOut;
 import dev.flang.util.Errors;
@@ -93,7 +115,7 @@ class LibraryOut extends DataOut
    *   +--------+--------+-------------+-----------------------------------------------+
    *   | cond.  | repeat | type        | what                                          |
    *   +--------+--------+-------------+-----------------------------------------------+
-   *   | true   | 1      | int         | sizeof(inner Features) isz                    |
+   *   | true   | 1      | int         | sizeof(inner Features)                        |
    *   +        +--------+-------------+-----------------------------------------------+
    *   |        | 1      | Features    | inner Features                                |
    *   +--------+--------+-------------+-----------------------------------------------+
@@ -206,6 +228,9 @@ class LibraryOut extends DataOut
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | isRou- | 1      | Code          | Feature code                                  |
+   *   | tine   |        |               |                                               |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   |        | 1      | InnerFeatures | inner features of this feature                |
    *   +--------+--------+---------------+-----------------------------------------------+
    *
@@ -271,6 +296,10 @@ class LibraryOut extends DataOut
     if (!f.isConstructor() && !f.isChoice())
       {
         type(f.resultType());
+      }
+    if (f.isRoutine())
+      {
+        code(f.code());
       }
     innerFeatures(f);
     _sourceModule.registerOffset(f, ix);
@@ -340,6 +369,214 @@ class LibraryOut extends DataOut
               }
             type(t.outer());
           }
+      }
+  }
+
+
+  /**
+   * Collect the binary data for given Code.
+   *
+   * Data format for a Code:
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | Code                                                                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | sizeof(Expressions)                           |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | Expressions   | the actual code                               |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | Expressions                                                                     |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | n      | Expression    | the single expressions                        |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | Expression                                                                      |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | byte          | ExprKind k                                    |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | k==Add | 1      | Assign        | assignment                                    |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | k==Con | 1      | Constant      | constant                                      |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+  void code(Expr code)
+  {
+    var szPos = offset();
+    writeInt(0);
+    var codePos = offset();
+
+    // write the actual code data
+    expressions(code, false);
+    writeIntAt(szPos, offset() - codePos);
+  }
+
+
+  /**
+   * Collect the binary data for given Expressions.
+   *
+   * Data format for Expressions:
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | Expressions                                                                     |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | n      | Expression    | the single expressions                        |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | Expression                                                                      |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | byte          | ExprKind k                                    |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | k==Add | 1      | Assign        | assignment                                    |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | k==Con | 1      | Constant      | constant                                      |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   * @param s the statement to write
+   *
+   * @param dumpResult true to add a 'Pop' to ignore the result produced by s.
+   */
+  void expressions(Stmnt s, boolean dumpResult)
+  {
+    if (s instanceof Assign a)
+      {
+        code(a._value);
+        code(a._target);
+        write(IR.ExprKind.Assign.ordinal());
+      }
+    else if (s instanceof Unbox u)
+      {
+        code(u.adr_);
+        if (u._needed)
+          {
+            write(IR.ExprKind.Unbox.ordinal());
+          }
+      }
+    else if (s instanceof Box b)
+      {
+        code(b._value);
+        write(IR.ExprKind.Box.ordinal());
+      }
+    else if (s instanceof Block b)
+      {
+        int i = 0;
+        for (var st : b.statements_)
+          {
+            var last = i == b.statements_.size();
+            var dump = !last || dumpResult;
+            expressions(st, dump);
+            i++;
+          }
+      }
+    else if (s instanceof BoolConst b)
+      {
+        write(IR.ExprKind.Const.ordinal());
+        type(Types.resolved.t_bool);
+        writeInt(1);
+        write(b.b ? 1 : 0);
+      }
+    else if (s instanceof Current)
+      {
+        write(IR.ExprKind.Current.ordinal());
+      }
+    else if (s instanceof If i)
+      {
+        code(i.cond);
+        write(IR.ExprKind.Match.ordinal());
+        code(i.block);
+        if (i.elseBlock != null)
+          {
+            code(i.elseBlock);
+          }
+        else if (i.elseIf != null)
+          {
+            code(i.elseIf);
+          }
+        else
+          {
+            code(new Block(i.pos(), new List<>()));
+          }
+      }
+    else if (s instanceof NumLiteral n)
+      {
+        write(IR.ExprKind.Const.ordinal());
+        type(n.type());
+        var d = n.data();
+        writeInt(d.length);
+        write(d);
+      }
+    else if (s instanceof Call c)
+      {
+        code(c.target);
+        for (var a : c._actuals)
+          {
+            code(a);
+          }
+        write(IR.ExprKind.Call.ordinal());
+        writeOffset(c.calledFeature());
+        if (dumpResult)
+          {
+            write(IR.ExprKind.Pop.ordinal());
+          }
+      }
+    else if (s instanceof Match m)
+      {
+        code(m.subject);
+        for (var c : m.cases)
+          {
+            code(c.code);
+          }
+        write(IR.ExprKind.Match.ordinal());
+      }
+    else if (s instanceof Tag t)
+      {
+        code(t._value);
+        write(IR.ExprKind.Tag.ordinal());
+      }
+    else if (s instanceof Nop)
+      {
+      }
+    else if (s instanceof Universe)
+      {
+        // Universe is ignored, a call with target clazz universe will get its
+        // target implicitly.
+        //
+        // write(IR.ExprKind.Universe.ordinal());
+      }
+    else if (s instanceof StrConst sc)
+      {
+        write(IR.ExprKind.Const.ordinal());
+        type(sc.type());
+        var d = sc.str.getBytes(StandardCharsets.UTF_8);
+        writeInt(d.length);
+        write(d);
+      }
+    else if (s instanceof InlineArray)
+      {
+        throw new Error("Cannot write Library code for "+s.getClass());
+      }
+    else if (s instanceof Check c)
+      {
+        // NYI: Check not supported yet
+        //
+        // l.add(s);
+      }
+    else
+      {
+        System.err.println("Missing handling of "+s.getClass()+" in LibraryOut.expressions");
       }
   }
 
