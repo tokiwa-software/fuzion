@@ -153,8 +153,7 @@ public class LibraryFeature extends AbstractFeature
    */
   public Kind kind()
   {
-    return isConstructor() ? AbstractFeature.Kind.Routine
-                           : AbstractFeature.Kind.from(_kind);
+    return _libModule.featureKindEnum(_index);
   }
 
   /**
@@ -162,9 +161,7 @@ public class LibraryFeature extends AbstractFeature
    */
   public boolean isConstructor()
   {
-    return
-      _kind == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE ||
-      _kind == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
+    return _libModule.featureIsConstructor(_index);
   }
 
 
@@ -173,7 +170,7 @@ public class LibraryFeature extends AbstractFeature
    */
   public boolean isThisRef()
   {
-    return _kind == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
+    return _libModule.featureIsThisRef(_index);
   }
 
 

@@ -440,6 +440,32 @@ public class LibraryModule extends Module
     var ko = data().get(featureKindPos(at));
     return ko;
   }
+  AbstractFeature.Kind featureKindEnum(int at)
+  {
+    var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
+    return featureIsConstructor(at)
+      ? AbstractFeature.Kind.Routine
+      : AbstractFeature.Kind.from(k);
+  }
+  boolean featureIsConstructor(int at)
+  {
+    var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
+    return switch (k)
+      {
+        case FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE,
+             FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF -> true;
+        default                                            -> false;
+      };
+  }
+  boolean featureIsRoutine(int at)
+  {
+    return featureKindEnum(at) == AbstractFeature.Kind.Routine;
+  }
+  boolean featureIsThisRef(int at)
+  {
+    var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
+    return k == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
+  }
   int featureNamePos(int at)
   {
     var i = featureKindPos(at) + 1;
