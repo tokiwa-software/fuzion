@@ -32,6 +32,7 @@ import java.util.Collection;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.Block;
 import dev.flang.ast.Call;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Expr;
@@ -523,6 +524,21 @@ public class LibraryFeature extends AbstractFeature
     var e = eat;
     while (e < eat+sz)
       {
+        var k = _libModule.expressionKind(e);
+        Expr ex = null;
+        switch (k)
+          {
+          case Assign: break;
+          case Unbox: break;
+          case Box: break;
+          case Const: break;
+          case Current: break;
+          case Match: break;
+          case Call: break;
+          case Pop: break;
+          case Tag: break;
+          default: throw new Error("Unexpected expression kind: " + k);
+          }
         e = _libModule.expressionNextPos(e);
       }
     return null;
