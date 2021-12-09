@@ -490,7 +490,43 @@ public class LibraryFeature extends AbstractFeature
   public Expr initialValue() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.initialValue(); } }   // NYI: remove, used only in Clazz.java for some obscure case
 
   // following used in MIR or later
-  public Expr code() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.code(); } }
+  public Expr code()
+  {
+    if (PRECONDITIONS) require
+      (isRoutine());
+    if (true)
+      {
+        var c = _libModule.featureCodePos(_index);
+        var result = code(c);
+        if (result != null)
+          {
+            return result;
+          }
+      }
+    if (_libModule.USE_FUM)
+      {
+        check(false); return null;
+      }
+    else
+      {
+        return _from.code();
+      }
+  }
+
+  /**
+   * Convert code at given offset in _libModule to an ast.Expr
+   */
+  Expr code(int at)
+  {
+    var sz = _libModule.codeSize(at);
+    var eat = _libModule.codeExpressionsPos(at);
+    var e = eat;
+    while (e < eat+sz)
+      {
+        e = _libModule.expressionNextPos(e);
+      }
+    return null;
+  }
 
   // in FUIR or later
   public Contract contract() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.contract(); } }
