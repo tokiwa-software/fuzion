@@ -29,6 +29,7 @@ package dev.flang.fe;
 import java.nio.charset.StandardCharsets;
 
 import java.util.Collection;
+import java.util.Stack;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
@@ -519,6 +520,19 @@ public class LibraryFeature extends AbstractFeature
    */
   Expr code(int at)
   {
+    var s = new Stack<Expr>();
+    code(at, s);
+    check
+      (s.size() == 0);
+    return null;
+  }
+
+
+  /**
+   * Convert code at given offset in _libModule to an ast.Expr
+   */
+  void code(int at, Stack<Expr> s)
+  {
     var sz = _libModule.codeSize(at);
     var eat = _libModule.codeExpressionsPos(at);
     var e = eat;
@@ -528,20 +542,93 @@ public class LibraryFeature extends AbstractFeature
         Expr ex = null;
         switch (k)
           {
-          case Assign: break;
-          case Unbox: break;
-          case Box: break;
-          case Const: break;
-          case Current: break;
-          case Match: break;
-          case Call: break;
-          case Pop: break;
-          case Tag: break;
+          case Assign:
+            {
+              var aat = e + 1;
+              var field = _libModule.assignField(aat);
+              var f = _libModule.libraryFeature(field, null);
+              var target = s.pop();
+              var val = s.pop();
+              break;
+            }
+          case Unbox:
+            {
+              var val = s.pop();
+              // NYI: type
+              s.push(null);
+              break;
+            }
+          case Box:
+            {
+              var val = s.pop();
+              // NYI: type
+              s.push(null);
+              break;
+            }
+          case Const:
+            {
+              // NYI: type
+              // NYI: value
+              s.push(null);
+              break;
+            }
+          case Current:
+            {
+              // NYI: type
+              s.push(null);
+              break;
+            }
+          case Match:
+            {
+              var mat = e + 1;
+              var subj = s.pop();
+              var n = _libModule.matchNumberOfCases(mat);
+              var cat = _libModule.matchCasesPos(mat);
+              for (var i = 0; i < n; i++)
+                {
+                  code(cat);
+                  cat = _libModule.matchCaseNextPos(cat);
+                }
+              break;
+            }
+          case Call:
+            {
+              var cat = e + 1;
+              var feat = _libModule.callCalledFeature(cat);
+              var f = _libModule.libraryFeature(feat, null);
+              var na = _libModule.callNumArgs(cat);
+              for (var i = 0; i < na; i++)
+                {
+                  s.pop();
+                }
+              if (!f.outer().isUniverse())
+                {
+                  var target = s.pop();
+                }
+              s.push(null);
+              break;
+            }
+          case Pop:
+            {
+              s.pop();
+              break;
+            }
+          case Tag:
+            {
+              var val = s.pop();
+              // NYI: tag
+              s.push(null);
+              break;
+            }
+          case Unit:
+            {
+              s.push(null);
+              break;
+            }
           default: throw new Error("Unexpected expression kind: " + k);
           }
         e = _libModule.expressionNextPos(e);
       }
-    return null;
   }
 
   // in FUIR or later

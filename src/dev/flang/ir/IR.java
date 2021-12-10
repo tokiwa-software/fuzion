@@ -112,7 +112,8 @@ public class IR extends ANY
     Match,
     Outer,
     Tag,
-    Pop;
+    Pop,
+    Unit;
 
     /**
      * get the Kind that corresponds to the given ordinal number.
