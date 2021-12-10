@@ -539,13 +539,13 @@ public class LibraryFeature extends AbstractFeature
     while (e < eat+sz)
       {
         var k = _libModule.expressionKind(e);
+        var iat = e + 1;
         Expr ex = null;
         switch (k)
           {
           case Assign:
             {
-              var aat = e + 1;
-              var field = _libModule.assignField(aat);
+              var field = _libModule.assignField(iat);
               var f = _libModule.libraryFeature(field, null);
               var target = s.pop();
               var val = s.pop();
@@ -580,10 +580,9 @@ public class LibraryFeature extends AbstractFeature
             }
           case Match:
             {
-              var mat = e + 1;
               var subj = s.pop();
-              var n = _libModule.matchNumberOfCases(mat);
-              var cat = _libModule.matchCasesPos(mat);
+              var n = _libModule.matchNumberOfCases(iat);
+              var cat = _libModule.matchCasesPos(iat);
               for (var i = 0; i < n; i++)
                 {
                   code(cat);
@@ -593,10 +592,9 @@ public class LibraryFeature extends AbstractFeature
             }
           case Call:
             {
-              var cat = e + 1;
-              var feat = _libModule.callCalledFeature(cat);
+              var feat = _libModule.callCalledFeature(iat);
               var f = _libModule.libraryFeature(feat, null);
-              var na = _libModule.callNumArgs(cat);
+              var na = _libModule.callNumArgs(iat);
               for (var i = 0; i < na; i++)
                 {
                   s.pop();
