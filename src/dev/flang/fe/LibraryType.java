@@ -89,7 +89,7 @@ public abstract class LibraryType extends AbstractType
     this._libModule = mod;
     this._at = at;
     this._pos = pos;
-    this._from = from.astType();
+    this._from = from == null ? this : from.astType();
   }
 
 

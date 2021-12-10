@@ -34,6 +34,7 @@ import java.util.Stack;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Block;
+import dev.flang.ast.BoolConst;
 import dev.flang.ast.Call;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Expr;
@@ -45,6 +46,8 @@ import dev.flang.ast.Generic;
 import dev.flang.ast.Impl;
 import dev.flang.ast.ReturnType;
 import dev.flang.ast.SrcModule;
+import dev.flang.ast.Stmnt;
+import dev.flang.ast.StrConst;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 
@@ -567,9 +570,22 @@ public class LibraryFeature extends AbstractFeature
             }
           case Const:
             {
-              // NYI: type
-              // NYI: value
-              s.push(null);
+              var t = _libModule.constType(iat);
+              var d = _libModule.constData(iat);
+              Expr r;
+              if (t == Types.resolved.t_bool)
+                {
+                  r = d[0] == 0 ? BoolConst. FALSE : BoolConst.TRUE;
+                }
+              else if (t == Types.resolved.t_string)
+                {
+                  r = new StrConst(pos(), new String(d, StandardCharsets.UTF_8));
+                }
+              else
+                { // NYI: Numeric
+                  r = null;
+                }
+              s.push(r);
               break;
             }
           case Current:

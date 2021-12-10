@@ -73,6 +73,14 @@ public class LibraryModule extends Module
    */
   static boolean USE_FUM = "true".equals(System.getenv("USE_FUM"));
 
+
+  /**
+   * As long as source position is not part of the .fum/MIR file, use this
+   * constant as a place holder.
+   */
+  static SourcePosition DUMMY_POS = SourcePosition.builtIn;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -364,7 +372,7 @@ public class LibraryModule extends Module
               }
             else
               {
-                var feature = libraryFeature(typeFeature(at), (Feature) from.featureOfType().astFeature());
+                var feature = libraryFeature(typeFeature(at), from == null ? null : (Feature) from.featureOfType().astFeature());
                 var makeRef = typeIsRef(at);
                 var generics = Type.NONE;
                 if (k > 0)
@@ -383,7 +391,7 @@ public class LibraryModule extends Module
                   {
                     generics = Type.NONE;
                   }
-                var outer = type(typeOuterPos(at), from.outer().pos(), from.outer());
+                var outer = type(typeOuterPos(at), from == null ? DUMMY_POS : from.outer().pos(), from == null ? null : from.outer());
                 res = new NormalType(this, at, pos, feature, makeRef, generics, outer, from);
               }
             _libraryTypes.put(at, res);
@@ -958,6 +966,13 @@ public class LibraryModule extends Module
       (expressionKind(at-1) == IR.ExprKind.Const);
 
     return at;
+  }
+  AbstractType constType(int at)
+  {
+    if (PRECONDITIONS) require
+      (expressionKind(at-1) == IR.ExprKind.Const);
+
+    return type(constTypePos(at), DUMMY_POS, null);
   }
   int constLengthPos(int at)
   {
