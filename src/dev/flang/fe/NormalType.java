@@ -125,7 +125,7 @@ public class NormalType extends LibraryType
     if (PRECONDITIONS) require
       (!isGenericArgument());
 
-    return new NormalType(_libModule, _at, _pos, _feature, false, g2, o2, _from.actualType(g2, o2));
+    return new NormalType(_libModule, _at, _pos, _feature, false, g2, o2, _from instanceof dev.flang.ast.Type ?_from.actualType(g2, o2) : null);
   }
 
 

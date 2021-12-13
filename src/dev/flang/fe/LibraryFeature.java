@@ -608,18 +608,8 @@ public class LibraryFeature extends AbstractFeature
             }
           case Call:
             {
-              var feat = _libModule.callCalledFeature(iat);
-              var f = _libModule.libraryFeature(feat, null);
-              var na = _libModule.callNumArgs(iat);
-              for (var i = 0; i < na; i++)
-                {
-                  s.pop();
-                }
-              if (!f.outer().isUniverse())
-                {
-                  var target = s.pop();
-                }
-              s.push(null);
+              var r = new LibraryCall(_libModule, iat, s);
+              s.push(r);
               break;
             }
           case Pop:

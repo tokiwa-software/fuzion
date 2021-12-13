@@ -382,7 +382,7 @@ public class LibraryModule extends Module
                     var gi = 0;
                     while (gi < k)
                       {
-                        generics.add(type(i, pos, from.generics().get(gi)));
+                        generics.add(type(i, pos, from == null ? null : from.generics().get(gi)));
                         i = typeNextPos(i);
                         gi++;
                       }
