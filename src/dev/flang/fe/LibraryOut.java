@@ -583,6 +583,8 @@ class LibraryOut extends DataOut
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | called feature f index                        |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | Type          | result type (NYI: remove, redundant!)s        |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasOpen| 1      | int           | num actual args (TBD: this is redundant,      |
    *   | ArgList|        |               | should be possible to determine)              |
@@ -596,6 +598,7 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    */
         writeOffset(c.calledFeature());
+        type(c.type());
         int n;
         var cf = c.calledFeature();
         if (cf.hasOpenGenericsArgList())

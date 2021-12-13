@@ -1046,6 +1046,8 @@ public class LibraryModule extends Module
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | called feature f index                        |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | Type          | result type (NYI: remove, redundant!)s        |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasOpen| 1      | int           | num actual args (TBD: this is redundant,      |
    *   | ArgList|        |               | should be possible to determine)              |
@@ -1072,12 +1074,27 @@ public class LibraryModule extends Module
 
     return data().getInt(callCalledFeaturePos(at));
   }
-  int callNumArgsPos(int at)
+  int callTypePos(int at)
   {
     if (PRECONDITIONS) require
       (expressionKind(at-1) == IR.ExprKind.Call);
 
     return callCalledFeaturePos(at) + 4;
+  }
+  AbstractType callType(int at)
+  {
+    if (PRECONDITIONS) require
+      (expressionKind(at-1) == IR.ExprKind.Call);
+
+    return type(callTypePos(at), DUMMY_POS, null);
+  }
+  int callNumArgsPos(int at)
+  {
+    if (PRECONDITIONS) require
+      (expressionKind(at-1) == IR.ExprKind.Call);
+
+    var p = callTypePos(at);
+    return typeNextPos(p);
   }
   int callNumArgsRaw(int at)
   {
