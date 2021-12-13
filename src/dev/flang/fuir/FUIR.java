@@ -696,10 +696,10 @@ public class FUIR extends IR
    */
   private void addCode(Clazz cc, List<Object> code, AbstractFeature ff)
   {
-    for (Call p: ff.inherits())
+    for (var p: ff.inherits())
       {
         /*
-NYI: Any side-effects in p.target or p._actuals will be executed twice, once for
+NYI: Any side-effects in p.target() or p.actuals() will be executed twice, once for
      the precondition and once for the inlinded call! See this example:
 
 hw25 is
@@ -723,7 +723,7 @@ hw25 is
 
         var pf = p.calledFeature();
         var or = (Clazz) cc._inner.get(pf.outerRef());  // NYI: ugly cast
-        toStack(code, p.target);
+        toStack(code, p.target());
         if (or != null && !or.resultClazz().isUnitType())
           {
             if (!or.resultClazz().isRef() &&
@@ -736,10 +736,10 @@ hw25 is
             code.add(or);  // field clazz means assignment to field
           }
         check
-          (p._actuals.size() == p.calledFeature().arguments().size());
-        for (var i = 0; i < p._actuals.size(); i++)
+          (p.actuals().size() == p.calledFeature().arguments().size());
+        for (var i = 0; i < p.actuals().size(); i++)
           {
-            var a = p._actuals.get(i);
+            var a = p.actuals().get(i);
             var f = pf.arguments().get(i);
             toStack(code, a);
             code.add(ExprKind.Current);

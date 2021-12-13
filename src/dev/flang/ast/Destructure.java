@@ -185,7 +185,7 @@ public class Destructure extends ANY implements Stmnt
                                        new List<String>(name),
                                        FormalGenerics.NONE,
                                        new List<Feature>(),
-                                       new List<Call>(),
+                                       new List<>(),
                                        new Contract(null, null, null),
                                        Impl.FIELD));
               }

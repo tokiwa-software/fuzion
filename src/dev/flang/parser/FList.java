@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.parser;
 
-import dev.flang.ast.Call;
+import dev.flang.ast.AbstractCall;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureVisitor;
@@ -95,7 +95,7 @@ public class FList extends ANY implements Stmnt
                List<List<String>> qnames,
                FormalGenerics g,
                List<Feature> a,
-               List<Call> i,
+               List<AbstractCall> i,
                Contract c,
                Impl p) {
     for (List<String> n : qnames)

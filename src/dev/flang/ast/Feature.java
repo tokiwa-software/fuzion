@@ -193,8 +193,8 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * The parents of this feature
    */
-  private final List<Call> _inherits;
-  public final List<Call> inherits() { return _inherits; }
+  private final List<AbstractCall> _inherits;
+  public final List<AbstractCall> inherits() { return _inherits; }
 
 
   /**
@@ -322,7 +322,7 @@ public class Feature extends AbstractFeature implements Stmnt
          new List<String>(FuzionConstants.UNIVERSE_NAME),
          FormalGenerics.NONE,
          new List<Feature>(),
-         new List<Call>(),
+         new List<>(),
          Contract.EMPTY_CONTRACT,
          new Impl(SourcePosition.builtIn,
                   new Block(SourcePosition.builtIn,
@@ -383,7 +383,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public static Feature anonymous(SourcePosition pos,
                                   ReturnType r,
-                                  List<Call> i,
+                                  List<AbstractCall> i,
                                   Contract c,
                                   Block b)
   {
@@ -493,7 +493,7 @@ public class Feature extends AbstractFeature implements Stmnt
          new List<String>(qname),
          FormalGenerics.NONE,
          new List<Feature>(),
-         new List<Call>(),
+         new List<>(),
          null,
          initialValue == null ? Impl.FIELD
                               : new Impl(pos, initialValue, outerOfInitialValue));
@@ -532,7 +532,7 @@ public class Feature extends AbstractFeature implements Stmnt
          new List<String>(n),
          FormalGenerics.NONE,
          new List<Feature>(),
-         new List<Call>(),
+         new List<>(),
          c,
          Impl.FIELD);
   }
@@ -565,7 +565,7 @@ public class Feature extends AbstractFeature implements Stmnt
           ReturnType r,
           List<String> qname,
           List<Feature> a,
-          List<Call> i,
+          List<AbstractCall> i,
           Contract c,
           Impl     p)
   {
@@ -612,7 +612,7 @@ public class Feature extends AbstractFeature implements Stmnt
                  List<String> qname,
                  FormalGenerics g,
                  List<Feature> a,
-                 List<Call> i,
+                 List<AbstractCall> i,
                  Contract c,
                  Impl p)
   {
@@ -644,7 +644,7 @@ public class Feature extends AbstractFeature implements Stmnt
                         (p.kind_ != Impl.Kind.Field      ) &&
                         (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.OBJECT_NAME  ) &&
                                                !qname.getFirst().equals(FuzionConstants.UNIVERSE_NAME))))
-      ? new List<Call>(new Call(_pos, FuzionConstants.OBJECT_NAME, Expr.NO_EXPRS))
+      ? new List<>(new Call(_pos, FuzionConstants.OBJECT_NAME, Expr.NO_EXPRS))
       : i;
 
     this._contract  = c;
@@ -975,14 +975,17 @@ public class Feature extends AbstractFeature implements Stmnt
       }
     else
       {
-        for (Call p: _inherits)
+        for (var p: _inherits)
           {
             check
               (Errors.count() > 0 || p.calledFeature() != null);
 
             if (p.calledFeature() == Types.resolved.f_choice)
               {
-                p.generics = new List<AbstractType>(Types.t_ERROR);
+                if (p instanceof Call cp)
+                  {
+                    cp.generics = new List<AbstractType>(Types.t_ERROR);
+                  }
               }
           }
       }
@@ -1037,7 +1040,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public void visit(FeatureVisitor v)
   {
     _generics.visit(v, this);
-    for (Call c: _inherits)
+    for (var c: _inherits)
       {
         Expr nc = c.visit(v, this);
         check
@@ -1115,7 +1118,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * used to replace this entry to break the cycle (and hopefully avoid other
    * problems during compilation).
    */
-  private void cyclicInheritanceError(Call p, ListIterator<Call> i)
+  private void cyclicInheritanceError(AbstractCall p, ListIterator<AbstractCall> i)
   {
     if (PRECONDITIONS) require
       (p != null,
@@ -1172,12 +1175,15 @@ public class Feature extends AbstractFeature implements Stmnt
         check
           ((_outer == null) || _outer.state().atLeast(State.RESOLVING));
 
-        ListIterator<Call> i = _inherits.listIterator();
+        var i = _inherits.listIterator();
         while (i.hasNext() && !_detectedCyclicInheritance)
           {
-            Call p = i.next();
+            var p = i.next();
             p.loadCalledFeature(res, this);
-            p.isInheritanceCall_ = true;
+            if (p instanceof Call cp)
+              {
+                cp.isInheritanceCall_ = true;
+              }
             var parent = p.calledFeature();
             check
               (Errors.count() > 0 || parent != null);
@@ -1544,7 +1550,7 @@ public class Feature extends AbstractFeature implements Stmnt
     thisType().checkChoice(_pos);
 
     checkNoClosureAccesses(res, _pos);
-    for (Call p : _inherits)
+    for (var p : _inherits)
       {
         p.calledFeature().checkNoClosureAccesses(res, p.pos);
       }
@@ -1580,7 +1586,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   void choiceTypeCheckAndInternalFields(Resolution res)
   {
-    for (Call p : _inherits)
+    for (var p : _inherits)
       {
         // choice type is leaf
         var cf = p.calledFeature();
@@ -2148,7 +2154,7 @@ public class Feature extends AbstractFeature implements Stmnt
         c.cond.visit(fv, this);
       }
 
-    for (Call p: _inherits)
+    for (var p: _inherits)
       {
         p.visit(fv, this);
       }

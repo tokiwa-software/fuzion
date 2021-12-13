@@ -183,10 +183,10 @@ public class MIR extends IR
    */
   private void addCode(AbstractFeature heir, List<Object> code, AbstractFeature ff)
   {
-    for (Call p: ff.inherits())
+    for (var p: ff.inherits())
       {
         /*
-NYI: Any side-effects in p.target or p._actuals will be executed twice, once for
+NYI: Any side-effects in p.target or p.actuals() will be executed twice, once for
      the precondition and once for the inlinded call! See this example:
 
 hw25 is
@@ -208,7 +208,7 @@ hw25 is
   if (count == 3) say "PASS" else say "FAIL"
         */
 
-        toStack(code, p.target);
+        toStack(code, p.target());
         var pf = p.calledFeature();
         /* NYI: initialize outer ref
 
@@ -227,10 +227,10 @@ hw25 is
         */
 
         check
-          (p._actuals.size() == p.calledFeature().arguments().size());
-        for (var i = 0; i < p._actuals.size(); i++)
+          (p.actuals().size() == p.calledFeature().arguments().size());
+        for (var i = 0; i < p.actuals().size(); i++)
           {
-            var a = p._actuals.get(i);
+            var a = p.actuals().get(i);
             var f = pf.arguments().get(i);
             toStack(code, a);
             code.add(ExprKind.Current);

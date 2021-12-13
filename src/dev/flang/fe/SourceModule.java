@@ -700,7 +700,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   private void findInheritedFeatures(Feature outer)
   {
-    for (Call p : outer.inherits())
+    for (var p : outer.inherits())
       {
         var cf = p.calledFeature().libraryFeature();
         check

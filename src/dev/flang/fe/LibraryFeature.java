@@ -31,11 +31,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Stack;
 
+import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Block;
 import dev.flang.ast.BoolConst;
-import dev.flang.ast.Call;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -488,7 +488,7 @@ public class LibraryFeature extends AbstractFeature
     return _featureName;
   }
   public SourcePosition pos() { return _from.pos(); }
-  public List<Call> inherits() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.inherits(); } }
+  public List<AbstractCall> inherits() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.inherits(); } }
 
   // following are used in IR/Clazzes middle end or later only:
   public Impl.Kind implKind() { if (_libModule.USE_FUM) { check(false); return _from.implKind(); } else { return _from.implKind(); } }      // NYI: remove, used only in Clazz.java for some obscure case

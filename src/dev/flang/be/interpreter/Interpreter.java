@@ -44,6 +44,7 @@ import dev.flang.fuir.FUIR;
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
+import dev.flang.ast.AbstractCall; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Assign; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -618,14 +619,14 @@ public class Interpreter extends ANY
    *
    * @return the evaluated arguments
    */
-  public ArrayList<Value> executeArgs(Call c,
+  public ArrayList<Value> executeArgs(AbstractCall c,
                                       Clazz staticClazz,
                                       Value cur)
   {
-    Value targt = execute(c.target, staticClazz, cur);
+    Value targt = execute(c.target(), staticClazz, cur);
     ArrayList<Value> args = new ArrayList<>();
     args.add(targt);
-    for (Expr e: c._actuals)
+    for (Expr e: c.actuals())
       {
         args.add(execute(e, staticClazz, cur));
       }
@@ -845,7 +846,7 @@ public class Interpreter extends ANY
           }
       }
 
-    for (Call p: thiz.inherits())
+    for (var p: thiz.inherits())
       {
         // The new instance passed to the parent p is the same (==cur) as that
         // for this feature since the this inherits from p.

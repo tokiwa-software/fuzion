@@ -295,7 +295,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               (actual.featureOfType() != null || Errors.count() > 0);
             if (actual.featureOfType() != null)
               {
-                for (Call p: actual.featureOfType().inherits())
+                for (var p: actual.featureOfType().inherits())
                   {
                     var pt = Types.intern(actual.actualType(p.type()));
                     if (actual.isRef())
@@ -401,7 +401,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                   }
                 if (!result)
                   {
-                    for (Call p: actual.featureOfType().inherits())
+                    for (var p: actual.featureOfType().inherits())
                       {
                         var pt = Types.intern(actual.actualType(p.type()));
                         if (constraintAssignableFrom(pt))
@@ -583,10 +583,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     AbstractType result = this;
     if (f != null)
       {
-        for (Call i : f.inherits())
+        for (var i : f.inherits())
           {
             result = result.actualType(i.calledFeature(),
-                                       i.generics);
+                                       i.generics());
           }
       }
     if (result.isGenericArgument())

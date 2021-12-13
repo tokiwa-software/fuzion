@@ -205,8 +205,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     else
       {
         result = null;
-        Call lastP = null;
-        for (Call p: inherits())
+        AbstractCall lastP = null;
+        for (var p: inherits())
           {
             check
               (Errors.count() > 0 || p.calledFeature() != null);
@@ -218,7 +218,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                     AstErrors.repeatedInheritanceOfChoice(p.pos, lastP.pos);
                   }
                 lastP = p;
-                result = p.generics;
+                result = p.generics();
               }
           }
       }
@@ -464,7 +464,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @return the new feature name as seen within heir.
    */
-  public FeatureName handDown(SrcModule module, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir)
+  public FeatureName handDown(SrcModule module, AbstractFeature f, FeatureName fn, AbstractCall p, AbstractFeature heir)
   {
     if (PRECONDITIONS) require
       (module.declaredOrInheritedFeatures(this).get(fn).sameAs(f),
@@ -472,7 +472,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
     if (f.outer().sameAs(p.calledFeature())) // NYI: currently does not support inheriting open generic over several levels
       {
-        fn = f.effectiveName(p.generics);
+        fn = f.effectiveName(p.generics());
       }
 
     return fn;
@@ -502,14 +502,14 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
     if (heir != Types.f_ERROR)
       {
-        for (Call c : heir.findInheritanceChain(outer()))
+        for (AbstractCall c : heir.findInheritanceChain(outer()))
           {
             for (int i = 0; i < a.length; i++)
               {
                 var ti = a[i];
                 if (ti.isOpenGeneric())
                   {
-                    var frmlTs = ti.genericArgument().replaceOpen(c.generics);
+                    var frmlTs = ti.genericArgument().replaceOpen(c.generics());
                     a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
                     for (var tg : frmlTs)
                       {
@@ -522,8 +522,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                   }
                 else
                   {
-                    FormalGenerics.resolve(res, c.generics, heir);
-                    ti = ti.actualType(c.calledFeature(), c.generics);
+                    FormalGenerics.resolve(res, c.generics(), heir);
+                    ti = ti.actualType(c.calledFeature(), c.generics());
                     a[i] = Types.intern(ti);
                   }
               }
@@ -547,17 +547,17 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * first index down to the last inheritance call within this.  Empty list in
    * case this == ancestor, null in case this does not inherit from ancestor.
    */
-  public List<Call> tryFindInheritanceChain(AbstractFeature ancestor)
+  public List<AbstractCall> tryFindInheritanceChain(AbstractFeature ancestor)
   {
-    List<Call> result;
+    List<AbstractCall> result;
     if (this.sameAs(ancestor))
       {
-        result = new List<Call>();
+        result = new List<>();
       }
     else
       {
         result = null;
-        for (Call c : inherits())
+        for (var c : inherits())
           {
             result = c.calledFeature().tryFindInheritanceChain(ancestor);
             if (result != null)
@@ -585,12 +585,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * first index down to the last inheritance call within this.  Empty list in
    * case this == ancestor, never null.
    */
-  public List<Call> findInheritanceChain(AbstractFeature ancestor)
+  public List<AbstractCall> findInheritanceChain(AbstractFeature ancestor)
   {
     if (PRECONDITIONS) require
       (ancestor != null);
 
-    List<Call> result = tryFindInheritanceChain(ancestor);
+    List<AbstractCall> result = tryFindInheritanceChain(ancestor);
 
     if (POSTCONDITIONS) ensure
       (this == Types.f_ERROR || ancestor == Types.f_ERROR || Errors.count() > 0 || result != null);
@@ -618,7 +618,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       }
     else
       {
-        for (Call p : inherits())
+        for (var p : inherits())
           {
             if (p.calledFeature().inheritsFrom(parent))
               {
@@ -650,7 +650,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   public void visitCode(FeatureVisitor fv)
   {
-    for (Call c: inherits())
+    for (var c: inherits())
       {
         var nc = c.visit(fv, (Feature) astFeature());
         check
@@ -708,7 +708,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     TreeSet<AbstractFeature> result = new TreeSet<>();
 
     result.addAll(mod.declaredFeatures(this).values());
-    for (Call p : inherits())
+    for (var p : inherits())
       {
         var cf = p.calledFeature();
         check
@@ -727,7 +727,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();
   public abstract FormalGenerics generics();
-  public abstract List<Call> inherits();
+  public abstract List<AbstractCall> inherits();
   public abstract AbstractFeature outer();
   public abstract AbstractType thisType();
   public abstract List<AbstractFeature> arguments();

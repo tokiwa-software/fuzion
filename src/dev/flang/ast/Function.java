@@ -44,7 +44,7 @@ public class Function extends Expr
 
 
   static final List<Feature> NO_FEATURES = new List<Feature>();
-  static final List<Call> NO_CALLS = new List<Call>();
+  static final List<AbstractCall> NO_CALLS = new List<>();
 
 
   /*-------------------------  static variables -------------------------*/
@@ -108,7 +108,7 @@ public class Function extends Expr
    * In this case, _wrapper and call_ will be created during propagateExpectedType().
    */
   List<String> _names;  // names of the arguments: "x", "y"
-  List<Call> _inherits; // inherits calls, currently always empty
+  List<AbstractCall> _inherits; // inherits calls, currently always empty
   Contract _contract;   // contract of the lambda
   Expr _expr;           // the right hand side of the '->'
 
@@ -185,7 +185,7 @@ public class Function extends Expr
   public Function(SourcePosition pos,
                   ReturnType r,
                   List<Feature> a,
-                  List<Call> i,
+                  List<AbstractCall> i,
                   Contract c,
                   Block b)
   {
@@ -221,7 +221,7 @@ public class Function extends Expr
   public Function(SourcePosition pos,
                   ReturnType r,
                   List<Feature> a,
-                  List<Call> i,
+                  List<AbstractCall> i,
                   Contract c,
                   Expr e)
   {
@@ -262,7 +262,7 @@ public class Function extends Expr
   private Function(SourcePosition pos,
                    ReturnType r,
                    List<Feature> a,
-                   List<Call> i,
+                   List<AbstractCall> i,
                    Contract c,
                    Impl p)
   {
@@ -333,7 +333,7 @@ public class Function extends Expr
    */
   public Function(SourcePosition pos,
                   List<String> names,
-                  List<Call> i,
+                  List<AbstractCall> i,
                   Contract c,
                   Expr e)
   {
@@ -696,7 +696,7 @@ public class Function extends Expr
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             var fr = functionOrRoutine();
-            List<Call> inherits = new List<>(new Call(pos, fr.featureName().baseName(), type_.generics(), Expr.NO_EXPRS));
+            List<AbstractCall> inherits = new List<>(new Call(pos, fr.featureName().baseName(), type_.generics(), Expr.NO_EXPRS));
 
             List<Stmnt> statements = new List<Stmnt>(fcall);
 

@@ -481,7 +481,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         parent._heirs.add(parent);
       }
     parent._heirs.add(this);
-    for (Call p: parent.feature().inherits())
+    for (var p: parent.feature().inherits())
       {
         var pc = parent.actualClazz(p.type().asRef());
         registerAsHeir(pc);
@@ -1185,13 +1185,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
     void visitAncestors(AbstractFeature f)
     {
       f.visitCode(this);
-      for (Call c: f.inherits())
+      for (var c: f.inherits())
         {
           AbstractFeature cf = c.calledFeature();
-          var n = c._actuals.size();
+          var n = c.actuals().size();
           for (var i = 0; i < n; i++)
             {
-              var a = c._actuals.get(i);
+              var a = c.actuals().get(i);
               if (i >= cf.arguments().size())
                 {
                   check
@@ -1696,9 +1696,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        for (Call p : f.inherits())
+        for (var p : f.inherits())
           {
-            result = inheritedOuterRefClazz(null, p.target, cf, p.calledFeature(), result);
+            result = inheritedOuterRefClazz(null, p.target(), cf, p.calledFeature(), result);
           }
       }
     return result;
