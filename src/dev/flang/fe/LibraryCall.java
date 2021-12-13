@@ -63,6 +63,7 @@ public class LibraryCall extends AbstractCall
   private final int _index;
 
 
+  private final AbstractType _type;
   private final Expr _target;
   private final List<Expr> _actuals;
   private final List<AbstractType> _generics;
@@ -80,6 +81,7 @@ public class LibraryCall extends AbstractCall
     super(LibraryModule.DUMMY_POS);
     _libModule = lib;
     _index = index;
+    _type = _libModule.USE_FUM ? lib.callType(index) : null;
     var na = _libModule.callNumArgs(index);
     var actuals = new List<Expr>();
     for (var i = 0; i < na; i++)
@@ -132,7 +134,10 @@ public class LibraryCall extends AbstractCall
   }
   public boolean isDynamic() { throw new Error("NYI"); }
   public boolean isInheritanceCall()  { throw new Error("NYI"); }
-  public AbstractType typeOrNull() { throw new Error("NYI"); }
+  public AbstractType typeOrNull()
+  {
+    return _type;
+  }
 
 }
 
