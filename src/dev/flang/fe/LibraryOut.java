@@ -559,7 +559,6 @@ class LibraryOut extends DataOut
             expressions(a);
           }
         write(IR.ExprKind.Call.ordinal());
-            if (offset() == 23941) Thread.dumpStack();
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Call                                                                            |
