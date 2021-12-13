@@ -501,7 +501,30 @@ public class LibraryFeature extends AbstractFeature
     return _featureName;
   }
   public SourcePosition pos() { return _from.pos(); }
-  public List<AbstractCall> inherits() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.inherits(); } }
+  List<AbstractCall> _inherits = null;
+  public List<AbstractCall> inherits()
+  {
+    if (_inherits == null)
+      {
+        _inherits = new List<>();
+        var n = _libModule.featureInheritsCount(_index);
+        var ip = _libModule.featureInheritsPos(_index);
+        for (var i = 0; i < n; i++)
+          {
+            var p = (AbstractCall) code1(ip);
+            _inherits.add(p);
+            ip = _libModule.codeNextPos(ip);
+          }
+      }
+    if (_libModule.USE_FUM)
+      {
+        return _inherits;
+      }
+    else
+      {
+        return _from.inherits();
+      }
+  }
 
   // following are used in IR/Clazzes middle end or later only:
   public Impl.Kind implKind() { if (_libModule.USE_FUM) { check(false); return _from.implKind(); } else { return _from.implKind(); } }      // NYI: remove, used only in Clazz.java for some obscure case
@@ -529,6 +552,18 @@ public class LibraryFeature extends AbstractFeature
       {
         return _from.code();
       }
+  }
+
+  /**
+   * Convert code at given offset in _libModule to an ast.Expr
+   */
+  Expr code1(int at)
+  {
+    var s = new Stack<Expr>();
+    code(at, s);
+    check
+      (s.size() == 1);
+    return s.pop();
   }
 
   /**
