@@ -442,7 +442,7 @@ abstract class CExpr extends CStmnt
    *
    * See Chapter 6.5 in http://www.open-std.org/jtc1/sc22/wg14/www/docs/n2596.pdf for detail:
    *
-   *  0 for prim-expr: identifier, constant, string-literal, '(' expresion ')' and generic-selection
+   *  0 for prim-expr: identifier, constant, string-literal, '(' expression ')' and generic-selection
    *
    *  1 for postfix-expr: prim-expr | postfix-expr ('[' expr ']'| '(' arglist ')'| '.'| '->'| '++'| '--'
    *           | '(' type-name ')' '{' initializer-list [','] '}'

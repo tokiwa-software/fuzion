@@ -34,7 +34,7 @@ import dev.flang.util.ANY;
 
 /**
  * This is used to perform some action on a feature and all the statements,
- * expresions, types, etc. within this feature
+ * expressions, types, etc. within this feature
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
