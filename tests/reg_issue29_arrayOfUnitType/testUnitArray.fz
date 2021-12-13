@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Regression test for #29: https://github.com/fridis/fuzion/issues/29
+# Regression test for #29: https://github.com/tokiwa-software/fuzion/issues/29
 #
 # A simple test that creates and prints an array of unit type elements.
 #

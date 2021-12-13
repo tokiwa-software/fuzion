@@ -8,7 +8,7 @@ Please check [https://flang.dev](https://flang.dev) for language and implementat
 ## Clone
 > Note that the current directory must not contain any spaces.
 
-    git clone https://github.com/fridis/fuzion
+    git clone https://github.com/tokiwa-software/fuzion
 
 ## Requirements
 
