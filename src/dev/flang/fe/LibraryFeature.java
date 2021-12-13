@@ -457,21 +457,34 @@ public class LibraryFeature extends AbstractFeature
             var tai = _libModule.featureTypeArgsPos(_index);
             var list = new List<Generic>();
             var n = _libModule.typeArgsCount(tai);
-            var isOpen = _libModule.typeArgsOpen(tai);
-            var tali = _libModule.typeArgsListPos(tai);
-            var i = 0;
-            while (i > n)
+            if (n > 0)
               {
-                var gn = _libModule.typeArgName(tali);
-                var gp = _from.generics().list.get(i)._pos; // NYI: pos of generic
-                var gc = _libModule.typeArgConstraint(tali, gp, _from.generics().list.get(i).constraint());
-                var g = new Generic(gp, i, gn, gc);
-                // NYI: Missing generic constraint!
-                list.add(g);
-                tali = _libModule.typeArgNextPos(tali);
-                i++;
+                var isOpen = _libModule.typeArgsOpen(tai);
+                var tali = _libModule.typeArgsListPos(tai);
+                var i = 0;
+                while (i < n)
+                  {
+                    var gn = _libModule.typeArgName(tali);
+                    var gp = _from.generics().list.get(i)._pos; // NYI: pos of generic
+                    var tali0 = tali;
+                    var i0 = i;
+                    var g = new Generic(gp, i, gn, null)
+                      {
+                        public AbstractType constraint()
+                        {
+                          return _libModule.typeArgConstraint(tali0, gp, _from instanceof LibraryFeature ? null : _from.generics().list.get(i0).constraint());
+                        }
+                      };
+                    list.add(g);
+                    tali = _libModule.typeArgNextPos(tali);
+                    i++;
+                  }
+                result = new FormalGenerics(list, isOpen, this);
               }
-            result = new FormalGenerics(list, isOpen, this);
+            else
+              {
+                result = FormalGenerics.NONE;
+              }
           }
         else
           {
