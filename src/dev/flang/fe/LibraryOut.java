@@ -224,6 +224,12 @@ class LibraryOut extends DataOut
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | inherits count i                              |
+   *   | NYI!   |        |               |                                               |
+   *   | !isFiel+--------+---------------+-----------------------------------------------+
+   *   | d? !isI| i      | Code          | inherits calls                                |
+   *   | ntrinsc|        |               |                                               |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   | isRou- | 1      | Code          | Feature code                                  |
    *   | tine   |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -292,6 +298,13 @@ class LibraryOut extends DataOut
     if (!f.isConstructor() && !f.isChoice())
       {
         type(f.resultType());
+      }
+    // NYI: Suppress output of inherits for fields, intrinsics, etc.?
+    var i = f.inherits();
+    writeInt(i.size());
+    for (var p : i)
+      {
+        code(p, false);
       }
     if (f.isRoutine())
       {
@@ -406,12 +419,16 @@ class LibraryOut extends DataOut
    */
   void code(Expr code)
   {
+    code(code, true);
+  }
+  void code(Expr code, boolean dumpResult)
+  {
     var szPos = offset();
     writeInt(0);
     var codePos = offset();
 
     // write the actual code data
-    expressions(code, true);
+    expressions(code, dumpResult);
     writeIntAt(szPos, offset() - codePos);
   }
 

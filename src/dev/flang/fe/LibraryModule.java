@@ -437,6 +437,12 @@ public class LibraryModule extends Module
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | inherits count i                              |
+   *   | NYI!   |        |               |                                               |
+   *   | !isFiel+--------+---------------+-----------------------------------------------+
+   *   | d? !isI| i      | Code          | inherits calls                                |
+   *   | ntrinsc|        |               |                                               |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   | isRou- | 1      | Code          | Feature code                                  |
    *   | tine   |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -548,12 +554,31 @@ public class LibraryModule extends Module
        k != FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE &&
        k != AbstractFeature.Kind.Choice.ordinal());
   }
-  int featureCodePos(int at)
+  int featureInheritsCountPos(int at)
   {
     var i = featureResultTypePos(at);
     if (featureHasResultType(at))
       {
         i = typeNextPos(i);
+      }
+    return i;
+  }
+  int featureInheritsCount(int at)
+  {
+    return data().getInt(featureInheritsCountPos(at));
+  }
+  int featureInheritsPos(int at)
+  {
+    return featureInheritsCountPos(at) + 4;
+  }
+  int featureCodePos(int at)
+  {
+    var i = featureInheritsPos(at);
+    var ic = featureInheritsCount(at);
+    while (ic > 0)
+      {
+        i = codeNextPos(i);
+        ic--;
       }
     return i;
   }
