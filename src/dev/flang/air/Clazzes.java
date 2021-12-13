@@ -33,13 +33,13 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Assign; // NYI: remove dependency!
 import dev.flang.ast.Block; // NYI: remove dependency!
 import dev.flang.ast.BoolConst; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
-import dev.flang.ast.Call; // NYI: remove dependency!
 import dev.flang.ast.Case; // NYI: remove dependency!
 import dev.flang.ast.Current; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
@@ -417,10 +417,10 @@ public class Clazzes extends ANY
       {
         c.get().instantiated(SourcePosition.builtIn);
       }
-    constStringBytesArray = conststring.get().lookup(Types.resolved.f_array_internalArray, Call.NO_GENERICS, SourcePosition.builtIn).resultClazz();
+    constStringBytesArray = conststring.get().lookup(Types.resolved.f_array_internalArray, AbstractCall.NO_GENERICS, SourcePosition.builtIn).resultClazz();
     constStringBytesArray.instantiated(SourcePosition.builtIn);
-    constStringBytesArray.lookup(Types.resolved.f_sys_array_data  , Call.NO_GENERICS, SourcePosition.builtIn);
-    constStringBytesArray.lookup(Types.resolved.f_sys_array_length, Call.NO_GENERICS, SourcePosition.builtIn);
+    constStringBytesArray.lookup(Types.resolved.f_sys_array_data  , AbstractCall.NO_GENERICS, SourcePosition.builtIn);
+    constStringBytesArray.lookup(Types.resolved.f_sys_array_length, AbstractCall.NO_GENERICS, SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
       {
@@ -719,7 +719,7 @@ public class Clazzes extends ANY
         if (isUsed(a._assignedField, sClazz))
           {
             var vc = sClazz.asValue();
-            var fc = vc.lookup(a._assignedField, Call.NO_GENERICS, a.pos());
+            var fc = vc.lookup(a._assignedField, AbstractCall.NO_GENERICS, a.pos());
             outerClazz.setRuntimeClazz(a.tid_ + 1, fc);
           }
       }
@@ -735,13 +735,13 @@ public class Clazzes extends ANY
     Clazz rc = vc;
     var s = b._stmnt;
     Clazz ft = null;
-    if (s instanceof Call c)
+    if (s instanceof AbstractCall c)
       {
-        var tclazz = clazz(c.target, outerClazz);
+        var tclazz = clazz(c.target(), outerClazz);
         if (tclazz != c_void.get())
           {
             var inner = tclazz.lookup(c.calledFeature(),
-                                      outerClazz.actualGenerics(c.generics),
+                                      outerClazz.actualGenerics(c.generics()),
                                       c.pos());
 
             var tc = inner;
@@ -762,7 +762,7 @@ public class Clazzes extends ANY
         if (isUsed(f, outerClazz))
           {
             Clazz sClazz = clazz(a._target, outerClazz);
-            ft = sClazz.asValue().lookup(f, Call.NO_GENERICS, a.pos()).resultClazz();
+            ft = sClazz.asValue().lookup(f, AbstractCall.NO_GENERICS, a.pos()).resultClazz();
           }
       }
     else if (s instanceof InlineArray i)
@@ -832,18 +832,18 @@ public class Clazzes extends ANY
    * and will be used both as frame clazz for d<i32,p> and as the context for
    * call to e<z>.
    */
-  public static void findClazzes(Call c, Clazz outerClazz)
+  public static void findClazzes(AbstractCall c, Clazz outerClazz)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || c.calledFeature_ != null && c.target != null);
+      (Errors.count() > 0 || c.calledFeature() != null && c.target() != null);
 
-    if (c.calledFeature_ == null  || c.target == null)
+    if (c.calledFeature() == null  || c.target() == null)
       {
         return;  // previous errors, give up
       }
 
-    var tclazz  = clazz(c.target, outerClazz);
-    var cf      = c.calledFeature_;
+    var tclazz  = clazz(c.target(), outerClazz);
+    var cf      = c.calledFeature();
     var dynamic = c.isDynamic() && tclazz.isRef();
     if (dynamic)
       {
@@ -851,7 +851,7 @@ public class Clazzes extends ANY
       }
     if (!cf.isChoice() && tclazz != c_void.get())
       {
-        var innerClazz = tclazz.lookup(cf, c.select(), outerClazz.actualGenerics(c.generics), c.pos, c.isInheritanceCall_);
+        var innerClazz = tclazz.lookup(cf, c.select(), outerClazz.actualGenerics(c.generics()), c.pos, c.isInheritanceCall());
         if (c.sid_ < 0)
           {
             c.sid_ = getRuntimeClazzIds(2);
@@ -866,7 +866,7 @@ public class Clazzes extends ANY
                        {
                          var ic = innerClazz.isCalled();
                          innerClazz._isCalledDirectly = true;  // NYI: Check why this is needed
-                         if (!c.isInheritanceCall_)
+                         if (!c.isInheritanceCall())
                            {
                              innerClazz.instantiated(c.pos());
                            }
@@ -917,7 +917,7 @@ public class Clazzes extends ANY
     if (c.field != null)
       {
         var fOrFc = isUsed(c.field, outerClazz)
-          ? outerClazz.lookup(c.field, Call.NO_GENERICS, isUsedAt(c.field))
+          ? outerClazz.lookup(c.field, AbstractCall.NO_GENERICS, isUsedAt(c.field))
           : outerClazz.actualClazz(c.field.resultType());
         outerClazz.setRuntimeClazz(i, fOrFc);
       }
@@ -974,7 +974,7 @@ public class Clazzes extends ANY
       {
         i._arrayClazzId = getRuntimeClazzIds(2);
       }
-    Clazz sa = ac.lookup(Types.resolved.f_array_internalArray, Call.NO_GENERICS, i.pos()).resultClazz();
+    Clazz sa = ac.lookup(Types.resolved.f_array_internalArray, AbstractCall.NO_GENERICS, i.pos()).resultClazz();
     sa.instantiated(i.pos());
     outerClazz.setRuntimeClazz(i._arrayClazzId    , ac);
     outerClazz.setRuntimeClazz(i._arrayClazzId + 1, sa);
@@ -1008,14 +1008,14 @@ public class Clazzes extends ANY
         result = outerClazz.actualClazz(b._type);
       }
 
-    else if (e instanceof Call c)
+    else if (e instanceof AbstractCall c)
       {
-        var tclazz = clazz(c.target, outerClazz);
+        var tclazz = clazz(c.target(), outerClazz);
         if (tclazz != c_void.get())
           {
             var inner = tclazz.lookup(c.calledFeature(),
                                       c.select(),
-                                      outerClazz.actualGenerics(c.generics),
+                                      outerClazz.actualGenerics(c.generics()),
                                       c.pos(),
                                       false);
             result = inner.resultClazz();

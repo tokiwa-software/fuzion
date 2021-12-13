@@ -63,14 +63,6 @@ public class Call extends AbstractCall
 
 
   /**
-   * Special value for an empty generics list to distinguish a call without
-   * generics ("a.b(x,y)") from a call with an empty actual generics list
-   * ("a.b<>(x,y)").
-   */
-  public static final List<AbstractType> NO_GENERICS = new List<>();
-
-
-  /**
    * Empty map for general use.
    */
   public static final SortedMap<FeatureName, Feature> EMPTY_MAP = new TreeMap<>();
@@ -161,10 +153,7 @@ public class Call extends AbstractCall
    * call.
    */
   public boolean isInheritanceCall_ = false;
-
-
-  // NYI: Move sid_ to target?
-  public int sid_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+  public boolean isInheritanceCall() { return isInheritanceCall_; }
 
 
   /**

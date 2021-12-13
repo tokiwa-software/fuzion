@@ -51,7 +51,6 @@ import dev.flang.ast.Assign; // NYI: remove dependency! Use dev.flang.fuir inste
 import dev.flang.ast.Block; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.BoolConst; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Box; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Call; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Case; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Check; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Current; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -87,7 +86,7 @@ public class Interpreter extends ANY
   /**
    * Current call stack, for debugging output
    */
-  public static Stack<Call> _callStack = new Stack<>();
+  public static Stack<AbstractCall> _callStack = new Stack<>();
   public static Stack<Clazz> _callStackFrames = new Stack<>();
 
 
@@ -98,7 +97,7 @@ public class Interpreter extends ANY
    *
    * @param call the call of the entry to show
    */
-  private static void showFrame(StringBuilder sb, Clazz frame, Call call)
+  private static void showFrame(StringBuilder sb, Clazz frame, AbstractCall call)
   {
     if (frame != null)
       {
@@ -120,7 +119,7 @@ public class Interpreter extends ANY
    *
    * @param call the call of the pevious entry
    */
-  private static void showRepeat(StringBuilder sb, int repeat, Clazz frame, Call call)
+  private static void showRepeat(StringBuilder sb, int repeat, Clazz frame, AbstractCall call)
   {
     if (repeat > 1)
       {
@@ -140,12 +139,12 @@ public class Interpreter extends ANY
   {
     StringBuilder sb = new StringBuilder("Call stack:\n");
     Clazz lastFrame = null;
-    Call lastCall = null;
+    AbstractCall lastCall = null;
     int repeat = 0;
     for (var i = _callStack.size()-1; i >= 0; i--)
       {
         Clazz frame = i<_callStackFrames.size() ? _callStackFrames.get(i) : null;
-        Call call = _callStack.get(i);
+        var call = _callStack.get(i);
         if (frame == lastFrame && call == lastCall)
           {
             repeat++;
@@ -282,10 +281,10 @@ public class Interpreter extends ANY
   public Value execute(Stmnt s, Clazz staticClazz, Value cur)
   {
     Value result;
-    if (s instanceof Call c)
+    if (s instanceof AbstractCall c)
       {
         if (PRECONDITIONS) require
-          (!c.isInheritanceCall_,  // inheritance calls are handled in Fature.callOnInstance
+          (!c.isInheritanceCall(),  // inheritance calls are handled in Fature.callOnInstance
            c.sid_ >= 0);
 
         ArrayList<Value> args = executeArgs(c, staticClazz, cur);

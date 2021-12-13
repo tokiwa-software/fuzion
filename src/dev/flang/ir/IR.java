@@ -26,11 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ir;
 
+import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.Assign; // NYI: remove dependency
 import dev.flang.ast.Block; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
-import dev.flang.ast.Call; // NYI: remove dependency
 import dev.flang.ast.Check; // NYI: remove dependency
 import dev.flang.ast.Current; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
@@ -252,10 +252,10 @@ public class IR extends ANY
       {
         l.add(s);
       }
-    else if (s instanceof Call c)
+    else if (s instanceof AbstractCall c)
       {
-        toStack(l, c.target);
-        for (var a : c._actuals)
+        toStack(l, c.target());
+        for (var a : c.actuals())
           {
             toStack(l, a);
           }
@@ -363,7 +363,7 @@ public class IR extends ANY
       {
         result = ExprKind.Unbox;
       }
-    else if (e instanceof Call)
+    else if (e instanceof AbstractCall)
       {
         result = ExprKind.Call;
       }
