@@ -134,9 +134,12 @@ public class LibraryFeature extends AbstractFeature
     _libModule = lib;
     _index = index;
     _from = from;
-    check
-      (from._libraryFeature == null);
-    from._libraryFeature = this;
+    if (from != null)
+      {
+        check
+          (from._libraryFeature == null);
+        from._libraryFeature = this;
+      }
 
     _kind = lib.featureKind(index) & FuzionConstants.MIR_FILE_KIND_MASK;
     var bytes = lib.featureName(index);
@@ -144,7 +147,10 @@ public class LibraryFeature extends AbstractFeature
     var id = lib.featureId(index);
     var bn = new String(bytes, StandardCharsets.UTF_8);
     _featureName = FeatureName.get(bn, ac, id);
-    check(_featureName == _from.featureName());
+    if (from != null)
+      {
+        check(_featureName == _from.featureName());
+      }
   }
 
 
@@ -192,7 +198,7 @@ public class LibraryFeature extends AbstractFeature
       }
 
     check
-      (result.astFeature() == _from.outer().astFeature());
+      (_libModule.USE_FUM || result.astFeature() == _from.outer().astFeature());
 
     return result;
   }
@@ -257,7 +263,7 @@ public class LibraryFeature extends AbstractFeature
         var n = _libModule.featureArgCount(_index);
         while (_arguments.size() < n)
           {
-            var a = _libModule.libraryFeature(i, (Feature) _from.arguments().get(_arguments.size()).astFeature());
+            var a = _libModule.libraryFeature(i, LibraryModule.USE_FUM ? null : (Feature) _from.arguments().get(_arguments.size()).astFeature());
             _arguments.add(a);
             i = _libModule.featureNextPos(i);
           }
@@ -434,8 +440,9 @@ public class LibraryFeature extends AbstractFeature
       }
     else
       {
-        var from = _from.resultType();
-        return _libModule.type(_libModule.featureResultTypePos(_index), from.pos(), from);
+        var from = _from != null ? _from.resultType() : null;
+        var fromPos = from != null ? from.pos() : LibraryModule.DUMMY_POS;
+        return _libModule.type(_libModule.featureResultTypePos(_index), fromPos, from);
       }
   }
 
@@ -465,7 +472,7 @@ public class LibraryFeature extends AbstractFeature
                 while (i < n)
                   {
                     var gn = _libModule.typeArgName(tali);
-                    var gp = _from.generics().list.get(i)._pos; // NYI: pos of generic
+                    var gp = LibraryModule.USE_FUM ? LibraryModule.DUMMY_POS : _from.generics().list.get(i)._pos; // NYI: pos of generic
                     var tali0 = tali;
                     var i0 = i;
                     var g = new Generic(gp, i, gn, null)
@@ -539,7 +546,7 @@ public class LibraryFeature extends AbstractFeature
       {
         var c = _libModule.featureCodePos(_index);
         var result = code(c);
-        if (result != null)
+        if (_libModule.USE_FUM && result != null)
           {
             return result;
           }
