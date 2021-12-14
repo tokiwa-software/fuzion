@@ -562,6 +562,7 @@ public class LibraryFeature extends AbstractFeature
       }
   }
 
+
   /**
    * Convert code at given offset in _libModule to an ast.Expr
    */
@@ -574,24 +575,26 @@ public class LibraryFeature extends AbstractFeature
     return s.pop();
   }
 
+
   /**
    * Convert code at given offset in _libModule to an ast.Expr
    */
   Expr code(int at)
   {
     var s = new Stack<Expr>();
-    code(at, s);
+    var result = code(at, s);
     check
       (s.size() == 0);
-    return null;
+    return result;
   }
 
 
   /**
    * Convert code at given offset in _libModule to an ast.Expr
    */
-  void code(int at, Stack<Expr> s)
+  Block code(int at, Stack<Expr> s)
   {
+    var l = new List<Stmnt>();
     var sz = _libModule.codeSize(at);
     var eat = _libModule.codeExpressionsPos(at);
     var e = eat;
@@ -600,6 +603,7 @@ public class LibraryFeature extends AbstractFeature
         var k = _libModule.expressionKind(e);
         var iat = e + 1;
         Expr ex = null;
+        Stmnt c;
         switch (k)
           {
           case Assign:
@@ -608,12 +612,14 @@ public class LibraryFeature extends AbstractFeature
               var f = _libModule.libraryFeature(field, null);
               var target = s.pop();
               var val = s.pop();
+              c = null;
               break;
             }
           case Unbox:
             {
               var val = s.pop();
               // NYI: type
+              c = null;
               s.push(null);
               break;
             }
@@ -621,6 +627,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var val = s.pop();
               // NYI: type
+              c = null;
               s.push(null);
               break;
             }
@@ -641,12 +648,15 @@ public class LibraryFeature extends AbstractFeature
                 { // NYI: Numeric
                   r = null;
                 }
+              c = null;
               s.push(r);
               break;
             }
           case Current:
             {
+              // NYI: type
               var r = new Current(LibraryModule.DUMMY_POS, thisType());
+              c = null;
               s.push(r);
               break;
             }
@@ -660,36 +670,46 @@ public class LibraryFeature extends AbstractFeature
                   code(cat);
                   cat = _libModule.matchCaseNextPos(cat);
                 }
+              c = null;
               break;
             }
           case Call:
             {
               var r = new LibraryCall(_libModule, iat, s);
+              c = null;
               s.push(r);
               break;
             }
           case Pop:
             {
-              s.pop();
+              c = s.pop();
               break;
             }
           case Tag:
             {
               var val = s.pop();
               // NYI: tag
+              c = null;
               s.push(null);
               break;
             }
           case Unit:
             {
+              c = null;
               s.push(null);
               break;
             }
           default: throw new Error("Unexpected expression kind: " + k);
           }
+        if (c != null)
+          {
+            l.add(c);
+          }
         e = _libModule.expressionNextPos(e);
       }
+    return new Block(LibraryModule.DUMMY_POS, l);
   }
+
 
   // in FUIR or later
   public Contract contract()
