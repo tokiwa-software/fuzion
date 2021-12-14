@@ -37,6 +37,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.Block;
 import dev.flang.ast.BoolConst;
 import dev.flang.ast.Contract;
+import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
@@ -645,8 +646,8 @@ public class LibraryFeature extends AbstractFeature
             }
           case Current:
             {
-              // NYI: type
-              s.push(null);
+              var r = new Current(LibraryModule.DUMMY_POS, thisType());
+              s.push(r);
               break;
             }
           case Match:
