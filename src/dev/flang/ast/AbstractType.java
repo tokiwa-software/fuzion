@@ -279,9 +279,9 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         assignableTo.add(actual.toString());
       }
     var result =
-      this   == actual                ||
-      actual == Types.resolved.t_void ||
-      this   == Types.t_ERROR         ||
+      this  .compareTo(actual               ) == 0 ||
+      actual.compareTo(Types.resolved.t_void) == 0 ||
+      this   == Types.t_ERROR                      ||
       actual == Types.t_ERROR;
     if (!result && !isGenericArgument() && isRef() && actual.isRef())
       {
