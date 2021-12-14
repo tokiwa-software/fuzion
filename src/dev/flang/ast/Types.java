@@ -109,32 +109,32 @@ public class Types extends ANY
   public static class Resolved
   {
     public final Feature universe;
-    public final Type t_i8  ;
-    public final Type t_i16 ;
-    public final Type t_i32 ;
-    public final Type t_i64 ;
-    public final Type t_u8  ;
-    public final Type t_u16 ;
-    public final Type t_u32 ;
-    public final Type t_u64 ;
-    public final Type t_f32 ;
-    public final Type t_f64 ;
-    public final Type t_ref_i8  ;
-    public final Type t_ref_i16 ;
-    public final Type t_ref_i32 ;
-    public final Type t_ref_i64 ;
-    public final Type t_ref_u8  ;
-    public final Type t_ref_u16 ;
-    public final Type t_ref_u32 ;
-    public final Type t_ref_u64 ;
-    public final Type t_ref_f32 ;
-    public final Type t_ref_f64 ;
-    public final Type t_bool;
-    public final Type t_object;
-    public final Type t_sys;
-    public final Type t_string;
-    public final Type t_conststring;
-    public final Type t_unit;
+    public final AbstractType t_i8  ;
+    public final AbstractType t_i16 ;
+    public final AbstractType t_i32 ;
+    public final AbstractType t_i64 ;
+    public final AbstractType t_u8  ;
+    public final AbstractType t_u16 ;
+    public final AbstractType t_u32 ;
+    public final AbstractType t_u64 ;
+    public final AbstractType t_f32 ;
+    public final AbstractType t_f64 ;
+    public final AbstractType t_ref_i8  ;
+    public final AbstractType t_ref_i16 ;
+    public final AbstractType t_ref_i32 ;
+    public final AbstractType t_ref_i64 ;
+    public final AbstractType t_ref_u8  ;
+    public final AbstractType t_ref_u16 ;
+    public final AbstractType t_ref_u32 ;
+    public final AbstractType t_ref_u64 ;
+    public final AbstractType t_ref_f32 ;
+    public final AbstractType t_ref_f64 ;
+    public final AbstractType t_bool;
+    public final AbstractType t_object;
+    public final AbstractType t_sys;
+    public final AbstractType t_string;
+    public final AbstractType t_conststring;
+    public final AbstractType t_unit;
 
     /* void will be used as the initial result type of tail recursive calls of
      * the form
@@ -143,7 +143,7 @@ public class Types extends ANY
      *
      * since the union of void  with any other type is the other type.
      */
-    public final Type t_void;
+    public final AbstractType t_void;
     public final AbstractFeature f_void;
     public final AbstractFeature f_choice;
     public final AbstractFeature f_TRUE;
@@ -164,36 +164,40 @@ public class Types extends ANY
     public final AbstractFeature f_sys_array;
     public final AbstractFeature f_sys_array_length;
     public final AbstractFeature f_sys_array_data;
-    Resolved(Resolution res, Feature universe)
+    public static interface CreateType
+    {
+      AbstractType type(String name, boolean isRef);
+    }
+    public Resolved(CreateType ct, Feature universe)
     {
       this.universe = universe;
-      t_i8            = Type.type(res,      "i8"          , universe);
-      t_i16           = Type.type(res,      "i16"         , universe);
-      t_i32           = Type.type(res,      "i32"         , universe);
-      t_i64           = Type.type(res,      "i64"         , universe);
-      t_u8            = Type.type(res,      "u8"          , universe);
-      t_u16           = Type.type(res,      "u16"         , universe);
-      t_u32           = Type.type(res,      "u32"         , universe);
-      t_u64           = Type.type(res,      "u64"         , universe);
-      t_f32           = Type.type(res,      "f32"         , universe);
-      t_f64           = Type.type(res,      "f64"         , universe);
-      t_ref_i8        = Type.type(res,true, "i8"          , universe);
-      t_ref_i16       = Type.type(res,true, "i16"         , universe);
-      t_ref_i32       = Type.type(res,true, "i32"         , universe);
-      t_ref_i64       = Type.type(res,true, "i64"         , universe);
-      t_ref_u8        = Type.type(res,true, "u8"          , universe);
-      t_ref_u16       = Type.type(res,true, "u16"         , universe);
-      t_ref_u32       = Type.type(res,true, "u32"         , universe);
-      t_ref_u64       = Type.type(res,true, "u64"         , universe);
-      t_ref_f32       = Type.type(res,true, "f32"         , universe);
-      t_ref_f64       = Type.type(res,true, "f64"         , universe);
-      t_bool          = Type.type(res,      "bool"        , universe);
-      t_sys           = Type.type(res,      "sys"         , universe);
-      t_string        = Type.type(res,      "string"      , universe);
-      t_conststring   = Type.type(res,      "conststring" , universe);
-      t_object        = Type.type(res,      "Object"      , universe);
-      t_unit          = Type.type(res,      "unit"        , universe);
-      t_void          = Type.type(res,      "void"        , universe);
+      t_i8            = ct.type("i8"          , false);
+      t_i16           = ct.type("i16"         , false);
+      t_i32           = ct.type("i32"         , false);
+      t_i64           = ct.type("i64"         , false);
+      t_u8            = ct.type("u8"          , false);
+      t_u16           = ct.type("u16"         , false);
+      t_u32           = ct.type("u32"         , false);
+      t_u64           = ct.type("u64"         , false);
+      t_f32           = ct.type("f32"         , false);
+      t_f64           = ct.type("f64"         , false);
+      t_ref_i8        = ct.type("i8"          , true );
+      t_ref_i16       = ct.type("i16"         , true );
+      t_ref_i32       = ct.type("i32"         , true );
+      t_ref_i64       = ct.type("i64"         , true );
+      t_ref_u8        = ct.type("u8"          , true );
+      t_ref_u16       = ct.type("u16"         , true );
+      t_ref_u32       = ct.type("u32"         , true );
+      t_ref_u64       = ct.type("u64"         , true );
+      t_ref_f32       = ct.type("f32"         , true );
+      t_ref_f64       = ct.type("f64"         , true );
+      t_bool          = ct.type("bool"        , false);
+      t_sys           = ct.type("sys"         , false);
+      t_string        = ct.type("string"      , false);
+      t_conststring   = ct.type("conststring" , false);
+      t_object        = ct.type("Object"      , false);
+      t_unit          = ct.type("unit"        , false);
+      t_void          = ct.type("void"        , false);
       f_void          = universe.get("void");
       f_choice        = universe.get("choice");
       f_TRUE          = universe.get("TRUE");
@@ -219,7 +223,10 @@ public class Types extends ANY
       t_UNDEFINED.resolveArtificialType(universe);
       t_ERROR    .resolveArtificialType(f_ERROR);
     }
-
+    Resolved(Resolution res, Feature universe)
+    {
+      this((name, ref) -> Type.type(res, ref, name, universe), universe);
+    }
   }
 
   /*----------------------------  variables  ----------------------------*/
