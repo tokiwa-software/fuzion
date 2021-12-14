@@ -33,6 +33,7 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
+import dev.flang.ast.Universe;
 
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -106,7 +107,11 @@ public class LibraryCall extends AbstractCall
     Expr target = null;
     var feat = lib.callCalledFeature(index);
     var f = lib.libraryFeature(feat, null);
-    if (!f.outer().isUniverse())
+    if (f.outer().isUniverse())
+      {
+        target = new Universe(pos());
+      }
+    else
       {
         target = s.pop();
       }
