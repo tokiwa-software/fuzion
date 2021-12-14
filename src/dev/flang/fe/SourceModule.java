@@ -206,6 +206,21 @@ public class SourceModule extends Module implements SrcModule, MirModule
     _inputFile = inputFile;
     _defaultMain = defaultMain;
     _universe = universe;
+
+    if (LibraryModule.USE_FUM && dependsOn.length > 0)
+      {
+        Types.reset();
+        var stdlib = (LibraryModule) dependsOn[0];
+        new Types.Resolved((name, ref) -> new NormalType(stdlib,
+                                                         -1,
+                                                         SourcePosition.builtIn,
+                                                         lookupFeatureForType(SourcePosition.builtIn, name, universe, universe),
+                                                         ref,
+                                                         Type.NONE,
+                                                         universe.thisType(),
+                                                         null),
+                           universe);
+      }
     if (universe.state().atLeast(Feature.State.RESOLVED))
       {
         universe.resetState();   // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module

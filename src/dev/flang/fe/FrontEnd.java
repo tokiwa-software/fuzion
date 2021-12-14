@@ -94,10 +94,6 @@ public class FrontEnd extends ANY
       {
         sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
       }
-    if (LibraryModule.USE_FUM)
-      {
-        Types.reset();
-      }
     _module = new SourceModule(options, sourceDirs, inputFile, options._main, new Module[] {stdlib}, universe);
   }
 
