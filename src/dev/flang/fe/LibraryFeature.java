@@ -692,7 +692,20 @@ public class LibraryFeature extends AbstractFeature
   }
 
   // in FUIR or later
-  public Contract contract() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.contract(); } }
+  public Contract contract()
+  {
+    if (_libModule.USE_FUM)
+      {
+        if (true)
+          // NYI: return a dummy contract until contracts are saved to the module file
+          return new dev.flang.ast.Contract(null, null, null);
+        check(false); return null;
+      }
+    else
+      {
+        return _from.contract();
+      }
+  }
 
   public AbstractFeature astFeature() { return _libModule.USE_FUM ? this : _from; }
 
