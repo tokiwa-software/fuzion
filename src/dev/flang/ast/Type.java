@@ -735,40 +735,7 @@ public class Type extends AbstractType
           }
         if (feature == null)
           {
-            var type_fs = new List<AbstractFeature>();
-            var nontype_fs = new List<AbstractFeature>();
-            do
-              {
-                var fs = res._module.lookupFeatures(o, name).values();
-                for (var f : fs)
-                  {
-                    if (f.isConstructor() || f.isChoice())
-                      {
-                        type_fs.add(f);
-                        feature = f.astFeature();
-                      }
-                    else
-                      {
-                        nontype_fs.add(f);
-                      }
-                  }
-                if (type_fs.size() > 1)
-                  {
-                    AstErrors.ambiguousType(this, type_fs);
-                    feature = Types.f_ERROR;
-                  }
-                o = o.outer();
-              }
-            while (feature == null && o != null);
-
-            if (feature == null)
-              {
-                feature = Types.f_ERROR;
-                if (name != Types.ERROR_NAME)
-                  {
-                    AstErrors.typeNotFound(this, outerfeat, nontype_fs);
-                  }
-              }
+            feature = res._module.lookupFeatureForType(pos(), name, o, outerfeat);
           }
       }
     if (POSTCONDITIONS) ensure

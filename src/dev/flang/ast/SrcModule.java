@@ -29,6 +29,8 @@ package dev.flang.ast;
 import java.util.Set;
 import java.util.SortedMap;
 
+import dev.flang.util.SourcePosition;
+
 
 /**
  * SrcModule provides callbacks from the AST to data structures in the current
@@ -73,6 +75,7 @@ public interface SrcModule
   SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name);
   FeaturesAndOuter lookupNoTarget(AbstractFeature thiz, String name, Call call, Assign assign, Destructure destructure);
   void checkTypes(Feature f);
+  AbstractFeature lookupFeatureForType(SourcePosition pos, String name, AbstractFeature o, AbstractFeature outerfeat);
 
 
   /**

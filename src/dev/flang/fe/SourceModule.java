@@ -1095,6 +1095,65 @@ public class SourceModule extends Module implements SrcModule, MirModule
   }
 
 
+  /**
+   * Lookup the feature that is referenced in a non-generic type.  There might
+   * be several features with the given name and different argumentn counts.
+   * Then, only the feature that is a constructor defines the type.
+   *
+   * If there are several such constructors, the type is ambiguous and an error
+   * will be produced.
+   *
+   * Also, if there is no such type, an error will be produced.
+   *
+   * @param pos the position of the type.
+   *
+   * @param name the name of the type
+   *
+   * @param o the outer feature of the type
+   *
+   * @param outerfeat the outer feature that contains (uses) the type.
+   */
+  public AbstractFeature lookupFeatureForType(SourcePosition pos, String name, AbstractFeature o, AbstractFeature outerfeat)
+  {
+    AbstractFeature result = null;
+    var type_fs = new List<AbstractFeature>();
+    var nontype_fs = new List<AbstractFeature>();
+    do
+      {
+        var fs = lookupFeatures(o, name).values();
+        for (var f : fs)
+          {
+            if (f.isConstructor() || f.isChoice())
+              {
+                type_fs.add(f);
+                result = f.astFeature();
+              }
+            else
+              {
+                nontype_fs.add(f);
+              }
+          }
+        if (type_fs.size() > 1)
+          {
+            AstErrors.ambiguousType(pos, name, type_fs);
+            result = Types.f_ERROR;
+          }
+        o = o.outer();
+      }
+    while (result == null && o != null);
+
+    if (result == null)
+      {
+        result = Types.f_ERROR;
+        if (name != Types.ERROR_NAME)
+          {
+            AstErrors.typeNotFound(pos, name, outerfeat, nontype_fs);
+          }
+      }
+    return result;
+  }
+
+
   /*--------------------------  type checking  --------------------------*/
 
 

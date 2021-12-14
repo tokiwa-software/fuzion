@@ -82,7 +82,7 @@ public class Types extends ANY
    * Dummy name used for error type t_ERROR which is used in case of compilation
    * time errors.
    */
-  static final String ERROR_NAME = Errors.ERROR_STRING;
+  public static final String ERROR_NAME = Errors.ERROR_STRING;
 
 
   /**
