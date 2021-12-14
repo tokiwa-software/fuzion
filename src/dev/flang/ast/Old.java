@@ -73,7 +73,7 @@ public class Old extends Expr
    *
    * @param thiz the class that contains this expression.
    */
-  void loadCalledFeature(Resolution res, Feature thiz)
+  void loadCalledFeature(Resolution res, AbstractFeature thiz)
   {
     e.loadCalledFeature(res, thiz);
   }
@@ -89,7 +89,7 @@ public class Old extends Expr
    *
    * @return this.
    */
-  public Old visit(FeatureVisitor v, Feature outer)
+  public Old visit(FeatureVisitor v, AbstractFeature outer)
   {
     e = e.visit(v, outer);
     return this;

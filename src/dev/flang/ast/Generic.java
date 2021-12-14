@@ -191,7 +191,7 @@ public class Generic extends ANY
    *
    * @param outer the feature surrounding this expression.
    */
-  public void visit(FeatureVisitor v, Feature outer)
+  public void visit(FeatureVisitor v, AbstractFeature outer)
   {
     if (_constraint != null)
       {
@@ -209,7 +209,7 @@ public class Generic extends ANY
    *
    * @param outer the root feature that contains this statement.
    */
-  public void resolveTypes(Resolution res, Feature outer)
+  public void resolveTypes(Resolution res, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
       (outer == feature());

@@ -100,7 +100,7 @@ public abstract class AbstractCall extends Expr
   public abstract int select();
   public abstract boolean isDynamic();
   public abstract boolean isInheritanceCall();
-  public Expr visit(FeatureVisitor v, Feature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     System.err.println("Called "+this.getClass()+".visit");
     return this;

@@ -681,7 +681,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
       }
   }
 
-  public AbstractType visit(FeatureVisitor v, Feature outerfeat)
+  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {
     throw new Error("AbstractType.visit not implemented by "+getClass());
   }

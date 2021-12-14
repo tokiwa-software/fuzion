@@ -82,7 +82,7 @@ public class Nop extends ANY implements Stmnt
    *
    * @return this
    */
-  public Nop visit(FeatureVisitor v, Feature outer)
+  public Nop visit(FeatureVisitor v, AbstractFeature outer)
   {
     return this;
   }

@@ -204,7 +204,7 @@ public class Block extends Expr
    *
    * @return this.
    */
-  public Block visit(FeatureVisitor v, Feature outer)
+  public Block visit(FeatureVisitor v, AbstractFeature outer)
   {
     v.actionBefore(this, outer);
     ListIterator<Stmnt> i = statements_.listIterator();
@@ -316,7 +316,7 @@ public class Block extends Expr
    *
    * @param outer the class that contains this expression.
    */
-  void loadCalledFeature(Resolution res, Feature outer)
+  void loadCalledFeature(Resolution res, AbstractFeature outer)
   {
     Expr resExpr = resultExpression();
     if (resExpr != null)
@@ -378,7 +378,7 @@ public class Block extends Expr
    *
    * @param r the field this should be assigned to.
    */
-  Block assignToField(Resolution res, Feature outer, Feature r)
+  Block assignToField(Resolution res, AbstractFeature outer, Feature r)
   {
     Expr resExpr = removeResultExpression();
     if (resExpr != null)
@@ -410,7 +410,7 @@ public class Block extends Expr
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, AbstractType type)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType type)
   {
     if (type == Types.resolved.t_unit && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return

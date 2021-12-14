@@ -104,7 +104,7 @@ public class Contract
    *
    * @param outer the feature surrounding this expression.
    */
-  public void visit(FeatureVisitor v, Feature outer)
+  public void visit(FeatureVisitor v, AbstractFeature outer)
   {
     if (req != null) { for (Cond c: req) { c.visit(v, outer); } }
     if (ens != null) { for (Cond c: ens) { c.visit(v, outer); } }

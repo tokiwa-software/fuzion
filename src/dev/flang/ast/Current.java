@@ -95,7 +95,7 @@ public class Current extends Expr
    *
    * @return this.
    */
-  public Current visit(FeatureVisitor v, Feature outer)
+  public Current visit(FeatureVisitor v, AbstractFeature outer)
   {
     type_ = type_ instanceof Type tt ? tt.visit(v, outer) : type_;
     return this;

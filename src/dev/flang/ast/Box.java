@@ -130,7 +130,7 @@ public class Box extends Expr
    *
    * @return this.
    */
-  public Box visit(FeatureVisitor v, Feature outer)
+  public Box visit(FeatureVisitor v, AbstractFeature outer)
   {
     _value = _value.visit(v, outer);
     v.action(this, outer);

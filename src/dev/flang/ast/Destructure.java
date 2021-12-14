@@ -215,7 +215,7 @@ public class Destructure extends ANY implements Stmnt
    *
    * @return this
    */
-  public Stmnt visit(FeatureVisitor v, Feature outer)
+  public Stmnt visit(FeatureVisitor v, AbstractFeature outer)
   {
     _value = _value.visit(v, outer);
     return v.action(this, outer);
@@ -228,7 +228,7 @@ public class Destructure extends ANY implements Stmnt
    + NYI: Document
    */
   private void addAssign(Resolution res,
-                         Feature outer,
+                         AbstractFeature outer,
                          List<Stmnt> stmnts,
                          Feature tmp,
                          AbstractFeature f,
@@ -273,7 +273,7 @@ public class Destructure extends ANY implements Stmnt
    *
    * @param outer the root feature that contains this statement.
    */
-  public Stmnt resolveTypes(Resolution res, Feature outer)
+  public Stmnt resolveTypes(Resolution res, AbstractFeature outer)
   {
     List<Stmnt> stmnts = new List<>();
     // NYI: This might fail in conjunction with type inference.  We should maybe

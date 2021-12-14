@@ -72,7 +72,7 @@ public class Cond
    *
    * @param outer the feature surrounding this expression.
    */
-  public void visit(FeatureVisitor v, Feature outer)
+  public void visit(FeatureVisitor v, AbstractFeature outer)
   {
     cond = cond.visit(v, outer);
     v.action(this, outer);
@@ -88,7 +88,7 @@ public class Cond
    *
    * @param outer the feature that contains this expression
    */
-  public void propagateExpectedType(Resolution res, Feature outer)
+  public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
     cond = cond.propagateExpectedType(res, outer, Types.resolved.t_bool);
   }

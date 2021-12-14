@@ -311,7 +311,7 @@ public class AstErrors extends ANY
           "different separator used at " + p2.show());
   }
 
-  static void assignmentTargetNotFound(Assign ass, Feature outer)
+  static void assignmentTargetNotFound(Assign ass, AbstractFeature outer)
   {
     var solution = solutionDeclareReturnTypeIfResult(ass._name, 0);
     error(ass.pos(),
@@ -322,7 +322,7 @@ public class AstErrors extends ANY
           solution);
   }
 
-  static void assignmentToNonField(Assign ass, AbstractFeature f, Feature outer)
+  static void assignmentToNonField(Assign ass, AbstractFeature f, AbstractFeature outer)
   {
     error(ass.pos(),
           "Target of assignment is not a field",
@@ -331,7 +331,7 @@ public class AstErrors extends ANY
           "For assignment: " + s(ass) + "\n");
   }
 
-  static void assignmentToIndexVar(Assign ass, AbstractFeature f, Feature outer)
+  static void assignmentToIndexVar(Assign ass, AbstractFeature f, AbstractFeature outer)
   {
     error(ass.pos(),
           "Target of assignment must not be a loop index variable",

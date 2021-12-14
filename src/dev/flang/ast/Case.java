@@ -186,7 +186,7 @@ public class Case extends ANY
    *
    * @param outer the feature surrounding this expression.
    */
-  public void visit(FeatureVisitor v, Feature outer)
+  public void visit(FeatureVisitor v, AbstractFeature outer)
   {
     v.actionBefore(this, outer);
     if (field != null)
@@ -221,7 +221,7 @@ public class Case extends ANY
    * @return true iff all types could be resolved, false if any type resolution
    * failed and the type was set to Types.t_ERROR.
    */
-  boolean resolveType(Resolution res, List<AbstractType> cgs, Feature outer, SourcePosition[] matched)
+  boolean resolveType(Resolution res, List<AbstractType> cgs, AbstractFeature outer, SourcePosition[] matched)
   {
     boolean result = true;
     if (field != null)
@@ -261,7 +261,7 @@ public class Case extends ANY
    * that have already beend found.  This is updated and used to report an error
    * in case there are repeated matches.
    */
-  AbstractType resolveType(Resolution res, AbstractType t, List<AbstractType> cgs, Feature outer, SourcePosition[] matched)
+  AbstractType resolveType(Resolution res, AbstractType t, List<AbstractType> cgs, AbstractFeature outer, SourcePosition[] matched)
   {
     var original_t = t;
     List<AbstractType> matches = new List<>();

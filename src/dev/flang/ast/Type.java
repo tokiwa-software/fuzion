@@ -574,7 +574,7 @@ public class Type extends AbstractType
    *
    * @param outer the feature surrounding this expression.
    */
-  public AbstractType visit(FeatureVisitor v, Feature outerfeat)
+  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
   {
     if ((feature == null) && (generic == null))
       {

@@ -426,7 +426,7 @@ public class Feature extends AbstractFeature implements Stmnt
           Visi v,
           AbstractType t,
           String qname,
-          Feature outer)
+          AbstractFeature outer)
   {
     this(pos,
          v,
@@ -484,7 +484,7 @@ public class Feature extends AbstractFeature implements Stmnt
           AbstractType t,
           String qname,
           Expr initialValue,
-          Feature outerOfInitialValue)
+          AbstractFeature outerOfInitialValue)
   {
     this(pos,
          v,
@@ -1206,9 +1206,9 @@ public class Feature extends AbstractFeature implements Stmnt
 
   static FeatureVisitor findGenerics = new FeatureVisitor()
     {
-      public Function     action(Function     f, Feature outer) { f.findGenerics(this, outer); return f; }
-      public This         action(This         t, Feature outer) { t.findGenerics(      outer); return t; }
-      public AbstractType action(AbstractType t, Feature outer) { t.findGenerics(      outer); return t; }
+      public Function     action(Function     f, AbstractFeature outer) { f.findGenerics(this, outer); return f; }
+      public This         action(This         t, AbstractFeature outer) { t.findGenerics(      outer); return t; }
+      public AbstractType action(AbstractType t, AbstractFeature outer) { t.findGenerics(      outer); return t; }
     };
 
   /*
@@ -1263,15 +1263,15 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         res = r;
       }
-    public void         action(Assign       a, Feature outer) {        a.resolveTypes(res, outer); }
-    public Call         action(Call         c, Feature outer) { return c.resolveTypes(res, outer); }
-    public Stmnt        action(Destructure  d, Feature outer) { return d.resolveTypes(res, outer); }
-    public Stmnt        action(Feature      f, Feature outer) { return f.resolveTypes(res, outer); }
-    public Function     action(Function     f, Feature outer) {        f.resolveTypes(res, outer); return f; }
-    public void         action(Generic      g, Feature outer) {        g.resolveTypes(res, outer); }
-    public void         action(Match        m, Feature outer) {        m.resolveTypes(res, outer); }
-    public Expr         action(This         t, Feature outer) { return t.resolveTypes(res, outer); }
-    public AbstractType action(AbstractType t, Feature outer) { return t.resolve     (res, outer); }
+    public void         action(Assign       a, AbstractFeature outer) {        a.resolveTypes(res, outer); }
+    public Call         action(Call         c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
+    public Stmnt        action(Destructure  d, AbstractFeature outer) { return d.resolveTypes(res, outer); }
+    public Stmnt        action(Feature      f, AbstractFeature outer) { return f.resolveTypes(res, outer); }
+    public Function     action(Function     f, AbstractFeature outer) {        f.resolveTypes(res, outer); return f; }
+    public void         action(Generic      g, AbstractFeature outer) {        g.resolveTypes(res, outer); }
+    public void         action(Match        m, AbstractFeature outer) {        m.resolveTypes(res, outer); }
+    public Expr         action(This         t, AbstractFeature outer) { return t.resolveTypes(res, outer); }
+    public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve     (res, outer); }
 
     /**
      * visitActuals delays type resolution for actual arguments within a feature
@@ -1279,9 +1279,9 @@ public class Feature extends AbstractFeature implements Stmnt
      * type does not depend on the actual arguments, but the actual arguments
      * might depend directly or indirectly on the feature's type.
      */
-    void visitActuals(Runnable r, Feature outer)
+    void visitActuals(Runnable r, AbstractFeature outer)
     {
-      outer.whenResolvedTypes.add(r);
+      outer.whenResolvedTypes(r);
     }
   }
 
@@ -1375,7 +1375,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
         visit(new FeatureVisitor()
           {
-            public Expr action(Call c, Feature outer) { return c.resolveSyntacticSugar(res, outer); }
+            public Expr action(Call c, AbstractFeature outer) { return c.resolveSyntacticSugar(res, outer); }
           });
 
         _state = State.RESOLVED_SUGAR1;
@@ -1399,7 +1399,7 @@ public class Feature extends AbstractFeature implements Stmnt
         var f = (Feature) af.astFeature();
         f.visit(new FeatureVisitor()
           {
-            public Call action(Call c, Feature outer)
+            public Call action(Call c, AbstractFeature outer)
             {
               if (c.calledFeature() == outerRef())
                 {
@@ -1652,11 +1652,11 @@ public class Feature extends AbstractFeature implements Stmnt
          * that i32 will be the type for "a".
          */
         visit(new FeatureVisitor() {
-            public void  action(Assign   a, Feature outer) { a.propagateExpectedType(res, outer); }
-            public Call  action(Call     c, Feature outer) { c.propagateExpectedType(res, outer); return c; }
-            public void  action(Cond     c, Feature outer) { c.propagateExpectedType(res, outer); }
-            public void  action(Impl     i, Feature outer) { i.propagateExpectedType(res, outer); }
-            public void  action(If       i, Feature outer) { i.propagateExpectedType(res, outer); }
+            public void  action(Assign   a, AbstractFeature outer) { a.propagateExpectedType(res, outer); }
+            public Call  action(Call     c, AbstractFeature outer) { c.propagateExpectedType(res, outer); return c; }
+            public void  action(Cond     c, AbstractFeature outer) { c.propagateExpectedType(res, outer); }
+            public void  action(Impl     i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
+            public void  action(If       i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
           });
 
         _state = State.TYPES_INFERENCED;
@@ -1685,9 +1685,9 @@ public class Feature extends AbstractFeature implements Stmnt
         _state = State.BOXING;
 
         visit(new FeatureVisitor() {
-            public void  action(Assign    a, Feature outer) { a.box(outer);           }
-            public Call  action(Call      c, Feature outer) { c.box(outer); return c; }
-            public Expr  action(InlineArray i, Feature outer) { i.box(outer); return i; }
+            public void  action(Assign    a, AbstractFeature outer) { a.box(outer);           }
+            public Call  action(Call      c, AbstractFeature outer) { c.box(outer); return c; }
+            public Expr  action(InlineArray i, AbstractFeature outer) { i.box(outer); return i; }
           });
 
         _state = State.BOXED;
@@ -1761,10 +1761,10 @@ public class Feature extends AbstractFeature implements Stmnt
         (_state == State.CHECKING_TYPES2)    )
       {
         visit(new FeatureVisitor() {
-            public void  action(Assign    a, Feature outer) { a.checkTypes(res);             }
-            public Call  action(Call      c, Feature outer) { c.checkTypes(outer); return c; }
-            public void  action(If        i, Feature outer) { i.checkTypes();                }
-            public Expr  action(InlineArray i, Feature outer) { i.checkTypes();      return i; }
+            public void  action(Assign    a, AbstractFeature outer) { a.checkTypes(res);             }
+            public Call  action(Call      c, AbstractFeature outer) { c.checkTypes(outer); return c; }
+            public void  action(If        i, AbstractFeature outer) { i.checkTypes();                }
+            public Expr  action(InlineArray i, AbstractFeature outer) { i.checkTypes();      return i; }
           });
         checkTypes(res);
 
@@ -1845,10 +1845,10 @@ public class Feature extends AbstractFeature implements Stmnt
         _state = State.RESOLVING_SUGAR2;
 
         visit(new FeatureVisitor() {
-            public Stmnt action(Feature   f, Feature outer) { return new Nop(_pos);                         }
-            public Expr  action(Function  f, Feature outer) { return f.resolveSyntacticSugar2(res, outer); }
-            public Expr  action(InlineArray i, Feature outer) { return i.resolveSyntacticSugar2(res, outer); }
-            public void  action(Impl      i, Feature outer) {        i.resolveSyntacticSugar2(res, outer); }
+            public Stmnt action(Feature   f, AbstractFeature outer) { return new Nop(_pos);                         }
+            public Expr  action(Function  f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res, outer); }
+            public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
+            public void  action(Impl      i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, outer); }
           });
 
         _state = State.RESOLVED_SUGAR2;
@@ -1920,7 +1920,7 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return this.
    */
-  public Stmnt visit(FeatureVisitor v, Feature outer)
+  public Stmnt visit(FeatureVisitor v, AbstractFeature outer)
   {
     check
       (!this._state.atLeast(State.LOADED) || this.outer() == outer);
@@ -1948,7 +1948,7 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @param outer the root feature that contains this statement.
    */
-  public Stmnt resolveTypes(Resolution res, Feature outer)
+  public Stmnt resolveTypes(Resolution res, AbstractFeature outer)
   {
     Stmnt result = this;
 
@@ -1978,7 +1978,7 @@ public class Feature extends AbstractFeature implements Stmnt
            (this,
             new Assign(res, _pos, this, _impl._initialValue, outer)
             {
-              public Assign visit(FeatureVisitor v, Feature outer)
+              public Assign visit(FeatureVisitor v, AbstractFeature outer)
               {
                 /* During findFieldDefInScope, we check field uses in impl, but
                  * we have to avoid doing this again in this assignment since a declaration
@@ -2067,7 +2067,7 @@ public class Feature extends AbstractFeature implements Stmnt
           curres[1] = curres[0];
         }
 
-        public Call action(Call c, Feature outer)
+        public Call action(Call c, AbstractFeature outer)
         {
           if (c == call)
             { // Found the call, so we got the result!
@@ -2085,14 +2085,14 @@ public class Feature extends AbstractFeature implements Stmnt
             }
           return c;
         }
-        public void action(Assign a, Feature outer)
+        public void action(Assign a, AbstractFeature outer)
         {
           if (a == assign)
             { // Found the assign, so we got the result!
               found();
             }
         }
-        public Stmnt action(Destructure d, Feature outer)
+        public Stmnt action(Destructure d, AbstractFeature outer)
         {
           if (d == destructure)
             { // Found the assign, so we got the result!
@@ -2100,29 +2100,29 @@ public class Feature extends AbstractFeature implements Stmnt
             }
           return d;
         }
-        public void actionBefore(Block b, Feature outer)
+        public void actionBefore(Block b, AbstractFeature outer)
         {
           if (b._newScope)
             {
               stack.push(curres[0]);
             }
         }
-        public void  actionAfter(Block b, Feature outer)
+        public void  actionAfter(Block b, AbstractFeature outer)
         {
           if (b._newScope)
             {
               curres[0] = stack.pop();
             }
         }
-        public void actionBefore(Case c, Feature outer)
+        public void actionBefore(Case c, AbstractFeature outer)
         {
           stack.push(curres[0]);
         }
-        public void  actionAfter(Case c, Feature outer)
+        public void  actionAfter(Case c, AbstractFeature outer)
         {
           curres[0] = stack.pop();
         }
-        public Stmnt action(Feature f, Feature outer)
+        public Stmnt action(Feature f, AbstractFeature outer)
         {
           if (f.isField() && f.featureName().baseName().equals(name))
             {
@@ -2134,7 +2134,7 @@ public class Feature extends AbstractFeature implements Stmnt
             }
           return f;
         }
-        public Expr action(Function  f, Feature outer)
+        public Expr action(Function  f, AbstractFeature outer)
         {
           if (inner != null && f._wrapper == inner)
             {

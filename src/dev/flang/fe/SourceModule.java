@@ -497,7 +497,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
     inner.visit(new FeatureVisitor()
       {
-        public Call      action(Call      c, Feature outer) {
+        public Call      action(Call      c, AbstractFeature outer) {
           if (c.name == null)
             { /* this is an anonymous feature declaration */
               check
@@ -510,7 +510,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             }
           return c;
         }
-        public Feature   action(Feature   f, Feature outer) { findDeclarations(f, outer); return f; }
+        public Feature   action(Feature   f, AbstractFeature outer) { findDeclarations(f, outer); return f; }
       });
 
     if (inner.initialValue() != null &&

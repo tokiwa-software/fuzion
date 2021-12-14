@@ -58,7 +58,7 @@ public interface Stmnt
    * @return this or an alternative Stmnt if the action performed during the
    * visit replaces this by the alternative.
    */
-  public Stmnt visit(FeatureVisitor v, Feature outer);
+  public Stmnt visit(FeatureVisitor v, AbstractFeature outer);
 
 
   /**

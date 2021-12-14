@@ -357,7 +357,7 @@ public class Function extends Expr
    *
    * @param thiz the class that contains this expression.
    */
-  void loadCalledFeature(Resolution res, Feature thiz)
+  void loadCalledFeature(Resolution res, AbstractFeature thiz)
   {
     if (this.call_ != null)
       {
@@ -398,7 +398,7 @@ public class Function extends Expr
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
     if (call_ == null)
       {
@@ -484,7 +484,7 @@ public class Function extends Expr
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
-  public Expr visit(FeatureVisitor v, Feature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     if (this.call_ != null)
       {
@@ -503,7 +503,7 @@ public class Function extends Expr
    *
    * @param outer the root feature that contains this statement.
    */
-  public void findGenerics(FeatureVisitor v, Feature outer)
+  public void findGenerics(FeatureVisitor v, AbstractFeature outer)
   {
     if (this.feature_ != null)
       { /* NYI: Neeed? The following comment seems wrong: */
@@ -570,7 +570,7 @@ public class Function extends Expr
    *
    * @param outer the root feature that contains this statement.
    */
-  public void resolveTypes(Resolution res, Feature outer)
+  public void resolveTypes(Resolution res, AbstractFeature outer)
   {
     if (this.call_ == null)
       {
@@ -638,7 +638,7 @@ public class Function extends Expr
    *
    * @param outer the root feature that contains this statement.
    */
-  public Expr resolveSyntacticSugar2(Resolution res, Feature outer)
+  public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
     Expr result = this;
     if (Errors.count() == 0)  // avoid null pointer hdlg in case calledFeature not found etc.

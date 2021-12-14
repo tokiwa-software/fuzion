@@ -249,7 +249,7 @@ public class FormalGenerics extends ANY
    *
    * @param outer the feature surrounding this expression.
    */
-  public void visit(FeatureVisitor v, Feature outer)
+  public void visit(FeatureVisitor v, AbstractFeature outer)
   {
     for (Generic gen : list)
       {

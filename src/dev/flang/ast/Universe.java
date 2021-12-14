@@ -80,7 +80,7 @@ public class Universe extends Expr
    *
    * @return this.
    */
-  public Universe visit(FeatureVisitor v, Feature outer)
+  public Universe visit(FeatureVisitor v, AbstractFeature outer)
   {
     return this;
   }

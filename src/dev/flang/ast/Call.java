@@ -485,7 +485,7 @@ public class Call extends AbstractCall
    *
    * @return the feature of the target of this call.
    */
-  private AbstractFeature targetFeature(Resolution res, Feature thiz)
+  private AbstractFeature targetFeature(Resolution res, AbstractFeature thiz)
   {
     // are we searching for features called via thiz' inheritance calls?
     if (thiz.state() == Feature.State.RESOLVING_INHERITANCE)
@@ -527,7 +527,7 @@ public class Call extends AbstractCall
    * @return the map of FeatureName to Features of the found candidates. May be
    * empty. ERROR_MAP in case an error occured and was reported already.
    */
-  private FeaturesAndOuter calledFeatureCandidates(AbstractFeature targetFeature, Resolution res, Feature thiz)
+  private FeaturesAndOuter calledFeatureCandidates(AbstractFeature targetFeature, Resolution res, AbstractFeature thiz)
   {
     if (PRECONDITIONS) require
       (targetFeature != null);
@@ -566,7 +566,7 @@ public class Call extends AbstractCall
    *
    *   a < {tmp := b; tmp} && tmp <= c
    */
-  private void findChainedBooleans(Resolution res, Feature thiz)
+  private void findChainedBooleans(Resolution res, AbstractFeature thiz)
   {
     var cb = chainedBoolTarget(res, thiz);
     if (cb != null && _actuals.size() == 1)
@@ -644,7 +644,7 @@ public class Call extends AbstractCall
    * @return the term whose RHS would have to be stored in a temp variable for a
    * chained boolean call.
    */
-  private Call chainedBoolTarget(Resolution res, Feature thiz)
+  private Call chainedBoolTarget(Resolution res, AbstractFeature thiz)
   {
     Call result = null;
     if (Types.resolved != null &&
@@ -679,7 +679,7 @@ public class Call extends AbstractCall
    * NYI: Check if it might make more sense for thiz to be the declared feature
    * instead of the outer feature when processing an inherits clause.
    */
-  void loadCalledFeature(Resolution res, Feature thiz)
+  void loadCalledFeature(Resolution res, AbstractFeature thiz)
   {
     if (PRECONDITIONS) require
       (thiz.state() == Feature.State.RESOLVING_INHERITANCE
@@ -830,7 +830,7 @@ public class Call extends AbstractCall
    *
    * @return this.
    */
-  public Expr visit(FeatureVisitor v, Feature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     if (!generics.isEmpty())
       {
@@ -878,7 +878,7 @@ public class Call extends AbstractCall
    * @param result this in case this was not an immediate call, otherwise qthe
    * resulting cll to Function/Routine.call.
    */
-  private Call resolveImmediateFunctionCall(Resolution res, Feature outer)
+  private Call resolveImmediateFunctionCall(Resolution res, AbstractFeature outer)
   {
     Call result = this;
     if (!forFun && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
@@ -1139,7 +1139,7 @@ public class Call extends AbstractCall
    *
    * @param outer the root feature that contains this statement
    */
-  private Expr resolveTypeForNextActual(ListIterator<Expr> aargs, Resolution res, Feature outer)
+  private Expr resolveTypeForNextActual(ListIterator<Expr> aargs, Resolution res, AbstractFeature outer)
   {
     Expr actual = aargs.next();
     actual = actual.visit(new Feature.ResolveTypes(res), outer);
@@ -1159,7 +1159,7 @@ public class Call extends AbstractCall
    *
    * @param outer the root feature that contains this statement.
    */
-  private void inferGenericsFromArgs(Resolution res, Feature outer)
+  private void inferGenericsFromArgs(Resolution res, AbstractFeature outer)
   {
     var cf = calledFeature_.astFeature();
     int sz = cf.generics().list.size();
@@ -1320,7 +1320,7 @@ public class Call extends AbstractCall
    *
    * @param outer the root feature that contains this statement.
    */
-  public Call resolveTypes(Resolution res, Feature outer)
+  public Call resolveTypes(Resolution res, AbstractFeature outer)
   {
     Call result = this;
     loadCalledFeature(res, outer);
@@ -1395,7 +1395,7 @@ public class Call extends AbstractCall
    *
    * @param outer the feature that contains this expression
    */
-  public void propagateExpectedType(Resolution res, Feature outer)
+  public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
     if (!forFun && _type != Types.t_ERROR)
       {
@@ -1428,7 +1428,7 @@ public class Call extends AbstractCall
    *
    * @param outer the feature that contains this expression
    */
-  public void box(Feature outer)
+  public void box(AbstractFeature outer)
   {
     if (!forFun && _type != Types.t_ERROR)
       {
@@ -1454,7 +1454,7 @@ public class Call extends AbstractCall
    *
    * @param outer the root feature that contains this statement.
    */
-  public void checkTypes(Feature outer)
+  public void checkTypes(AbstractFeature outer)
   {
     if (forFun)
       { // this is a call to "b" within an expression of the form "fun a.b". In
@@ -1546,7 +1546,7 @@ public class Call extends AbstractCall
    *
    * @return a new Expr to replace this call or this if it remains unchanged.
    */
-  Expr resolveSyntacticSugar(Resolution res, Feature outer)
+  Expr resolveSyntacticSugar(Resolution res, AbstractFeature outer)
   {
     Expr result = this;
     //    if (true) return result;

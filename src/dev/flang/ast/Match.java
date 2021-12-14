@@ -121,7 +121,7 @@ public class Match extends Expr
    *
    * @return this.
    */
-  public Match visit(FeatureVisitor v, Feature outer)
+  public Match visit(FeatureVisitor v, AbstractFeature outer)
   {
     subject = subject.visit(v, outer);
     v.action(this, outer);
@@ -140,7 +140,7 @@ public class Match extends Expr
    *
    * @param outer the root feature that contains this statement.
    */
-  public void resolveTypes(Resolution res, Feature outer)
+  public void resolveTypes(Resolution res, AbstractFeature outer)
   {
     var st = subject.type();
     if (st.isGenericArgument())
@@ -244,7 +244,7 @@ public class Match extends Expr
    * @return the Stmnt this Expr is to be replaced with, typically an Assign
    * that performs the assignment to r.
    */
-  Match assignToField(Resolution res, Feature outer, Feature r)
+  Match assignToField(Resolution res, AbstractFeature outer, Feature r)
   {
     for (Case c: cases)
       {
@@ -271,7 +271,7 @@ public class Match extends Expr
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
     return addFieldForResult(res, outer, t);
   }

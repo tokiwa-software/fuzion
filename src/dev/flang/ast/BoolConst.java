@@ -113,7 +113,7 @@ public class BoolConst extends Constant
    *
    * @return this.
    */
-  public BoolConst visit(FeatureVisitor v, Feature outer)
+  public BoolConst visit(FeatureVisitor v, AbstractFeature outer)
   {
     // nothing to be done for a constant
     return this;

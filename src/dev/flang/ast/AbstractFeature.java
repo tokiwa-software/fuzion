@@ -658,7 +658,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       }
     if (contract() != null)
       {
-        contract().visit(fv, (Feature) astFeature());
+        contract().visit(fv, this);
       }
     if (isRoutine())
       {

@@ -288,7 +288,7 @@ public class If extends Expr
    *
    * @return this.
    */
-  public If visit(FeatureVisitor v, Feature outer)
+  public If visit(FeatureVisitor v, AbstractFeature outer)
   {
     cond = cond.visit(v, outer);
     block = block.visit(v, outer);
@@ -321,7 +321,7 @@ public class If extends Expr
    * @return the Stmnt this Expr is to be replaced with, typically an Assign
    * that performs the assignment to r.
    */
-  If assignToField(Resolution res, Feature outer, Feature r)
+  If assignToField(Resolution res, AbstractFeature outer, Feature r)
   {
     block = block.assignToField(res, outer, r);
     if (elseBlock != null)
@@ -349,7 +349,7 @@ public class If extends Expr
    *
    * @param t the expected type.
    */
-  public void propagateExpectedType(Resolution res, Feature outer)
+  public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
     if (cond != null)
       {
@@ -375,7 +375,7 @@ public class If extends Expr
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
     return addFieldForResult(res, outer, t);
   }

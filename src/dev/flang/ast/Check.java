@@ -91,7 +91,7 @@ public class Check implements Stmnt
    *
    * @return this.
    */
-  public Check visit(FeatureVisitor v, Feature outer)
+  public Check visit(FeatureVisitor v, AbstractFeature outer)
   {
     cond.visit(v, outer);
     return this;

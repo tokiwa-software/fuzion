@@ -108,7 +108,7 @@ public class Tag extends Expr
    *
    * @return this.
    */
-  public Tag visit(FeatureVisitor v, Feature outer)
+  public Tag visit(FeatureVisitor v, AbstractFeature outer)
   {
     _value = _value.visit(v, outer);
     v.action(this, outer);

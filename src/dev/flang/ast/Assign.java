@@ -119,7 +119,7 @@ public class Assign extends ANY implements Stmnt
    *
    * @param outer the root feature that contains this statement.
    */
-  public Assign(SourcePosition pos, Feature f, Expr v, Feature outer)
+  public Assign(SourcePosition pos, Feature f, Expr v, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
       (outer.state().atLeast(Feature.State.RESOLVED_TYPES),
@@ -148,7 +148,7 @@ public class Assign extends ANY implements Stmnt
    *
    * @param outer the root feature that contains this statement.
    */
-  public Assign(Resolution res, SourcePosition pos, Feature f, Expr v, Feature outer)
+  public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
       (outer.state() == Feature.State.RESOLVING_TYPES   ||
@@ -190,7 +190,7 @@ public class Assign extends ANY implements Stmnt
    *
    * @return this
    */
-  public Assign visit(FeatureVisitor v, Feature outer)
+  public Assign visit(FeatureVisitor v, AbstractFeature outer)
   {
     _value = _value.visit(v, outer);
     if (_target != null)
@@ -209,7 +209,7 @@ public class Assign extends ANY implements Stmnt
    *
    * @param outer the root feature that contains this statement.
    */
-  public void resolveTypes(Resolution res, Feature outer)
+  public void resolveTypes(Resolution res, AbstractFeature outer)
   {
     resolveTypes(res, outer, null);
   }
@@ -224,7 +224,7 @@ public class Assign extends ANY implements Stmnt
    * @param destructure if this is called for an assignment that is created to
    * replace a Destructure, this refers to the Destructure statement.
    */
-  void resolveTypes(Resolution res, Feature outer, Destructure destructure)
+  void resolveTypes(Resolution res, AbstractFeature outer, Destructure destructure)
   {
     var f = _assignedField;
     if (f == null)
@@ -273,7 +273,7 @@ public class Assign extends ANY implements Stmnt
    *
    * @param t the expected type.
    */
-  public void propagateExpectedType(Resolution res, Feature outer)
+  public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
     check
       (_assignedField != Types.f_ERROR || Errors.count() > 0);
@@ -291,7 +291,7 @@ public class Assign extends ANY implements Stmnt
    *
    * @param outer the feature that contains this expression
    */
-  public void box(Feature outer)
+  public void box(AbstractFeature outer)
   {
     check
       (_assignedField != Types.f_ERROR || Errors.count() > 0);

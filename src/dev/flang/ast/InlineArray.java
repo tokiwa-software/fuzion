@@ -141,7 +141,7 @@ public class InlineArray extends Expr
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
     if (type_ == null)
       {
@@ -204,7 +204,7 @@ public class InlineArray extends Expr
    *
    * @return this.
    */
-  public Expr visit(FeatureVisitor v, Feature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var li = _elements.listIterator();
     while (li.hasNext())
@@ -222,7 +222,7 @@ public class InlineArray extends Expr
    *
    * @param outer the feature that contains this expression
    */
-  public void box(Feature outer)
+  public void box(AbstractFeature outer)
   {
     var li = _elements.listIterator();
     while (li.hasNext())
@@ -267,7 +267,7 @@ public class InlineArray extends Expr
    *
    * @param outer the root feature that contains this statement.
    */
-  public Expr resolveSyntacticSugar2(Resolution res, Feature outer)
+  public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
     Expr result = this;
     if (true)  // NYI: This syntactic sugar should not be resolved if this array is a compile-time constant

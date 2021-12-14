@@ -146,7 +146,7 @@ public class This extends Expr
    *
    * @param the type resolved expression to access f.this.
    */
-  public static Expr thiz(Resolution res, SourcePosition pos, Feature cur, AbstractFeature f)
+  public static Expr thiz(Resolution res, SourcePosition pos, AbstractFeature cur, AbstractFeature f)
   {
     return new This(pos, cur, f).resolveTypes(res, cur);
   }
@@ -178,7 +178,7 @@ public class This extends Expr
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
-  public Expr visit(FeatureVisitor v, Feature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     return v.action(this, outer);
   }
@@ -190,7 +190,7 @@ public class This extends Expr
    *
    * @param outer the root feature that contains this statement.
    */
-  public void findGenerics(Feature outer)
+  public void findGenerics(AbstractFeature outer)
   {
     // NYI: Check if qual starts with the name of a formal generic in outer or
     // outer.outer..., flag an error if this is the case.
@@ -208,7 +208,7 @@ public class This extends Expr
    * @return a call to the outer references to access the value represented by
    * this.
    */
-  public Expr resolveTypes(Resolution res, Feature outer)
+  public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
     Type type;
     if (qual_ != null)

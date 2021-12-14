@@ -88,7 +88,7 @@ public abstract class ReturnType extends ANY
    *
    * @param outer the feature surrounding this expression.
    */
-  public abstract void visit(FeatureVisitor v, Feature outer);
+  public abstract void visit(FeatureVisitor v, AbstractFeature outer);
 
 
 }

@@ -90,7 +90,7 @@ public class StrConst extends Constant
    *
    * @return this.
    */
-  public StrConst visit(FeatureVisitor v, Feature outer)
+  public StrConst visit(FeatureVisitor v, AbstractFeature outer)
   {
     // nothing to be done for a constant
     return this;

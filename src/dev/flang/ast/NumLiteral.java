@@ -692,7 +692,7 @@ public class NumLiteral extends Constant
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, AbstractType t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
     if (type_ == null && findConstantType(t) != null)
       {
@@ -713,7 +713,7 @@ public class NumLiteral extends Constant
    *
    * @return this.
    */
-  public NumLiteral visit(FeatureVisitor v, Feature outer)
+  public NumLiteral visit(FeatureVisitor v, AbstractFeature outer)
   {
     // nothing to be done for a constant
     return this;

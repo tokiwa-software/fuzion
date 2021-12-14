@@ -122,7 +122,7 @@ public class Unbox extends Expr
    *
    * @return this.
    */
-  public Unbox visit(FeatureVisitor v, Feature outer)
+  public Unbox visit(FeatureVisitor v, AbstractFeature outer)
   {
     adr_ = adr_.visit(v, outer);
     v.action(this, outer);
