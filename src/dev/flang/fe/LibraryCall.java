@@ -139,6 +139,27 @@ public class LibraryCall extends AbstractCall
     return _type;
   }
 
+
+  /**
+   * toString
+   *
+   * @return
+   */
+  public String toString()
+  {
+    var t = target();
+    return (t == null //||
+             //t instanceof Universe
+            ? ""
+            : t.toString() + ".")
+      + calledFeature().featureName().baseName()
+      + (generics().isEmpty() ? "" : "<" + generics() + ">")
+      + (actuals().isEmpty() ? "" : "(" + actuals() +")")
+      //+ (select() < 0        ? "" : "." + select())
+      ;
+  }
+
+
 }
 
 /* end of file */
