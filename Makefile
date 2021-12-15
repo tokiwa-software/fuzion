@@ -237,6 +237,8 @@ MOD_JAVA_XML          = $(BUILD_DIR)/modules/java.xml/__marker_for_make__
 MOD_JAVA_DATATRANSFER = $(BUILD_DIR)/modules/java.datatransfer/__marker_for_make__
 MOD_JAVA_DESKTOP      = $(BUILD_DIR)/modules/java.desktop/__marker_for_make__
 
+VERSION = $(shell cat $(FZ_SRC)/version.txt)
+
 ALL = \
 	$(BUILD_DIR)/bin/fz \
 	$(BUILD_DIR)/bin/fzjava \
@@ -261,7 +263,7 @@ $(FUZION_EBNF): $(SRC)/dev/flang/parser/Parser.java
 $(JAVA_FILE_TOOLS_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_TOOLS_VERSION_IN)
 	mkdir -p $(@D)
 	cat $(JAVA_FILE_TOOLS_VERSION_IN) \
-          | sed "s^@@VERSION@@^`cat $(FZ_SRC)/version.txt`^g" \
+          | sed "s^@@VERSION@@^$(VERSION)^g" \
           | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); echo -n \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" \
           | sed "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g"  \
           | sed "s^@@BUILTBY@@^`echo -n $(USER)@; hostname`^g" >$@
@@ -483,3 +485,8 @@ run_tests_c: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
 clean:
 	rm -rf $(BUILD_DIR)
 	find $(FZ_SRC) -name "*~" -exec rm {} \;
+
+.PHONY: release
+release: clean all
+	rm -f fuzion_$(VERSION).tar.gz
+	tar cfz fuzion_$(VERSION).tar.gz -C build .
