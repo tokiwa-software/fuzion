@@ -508,7 +508,7 @@ public class LibraryFeature extends AbstractFeature
   {
     return _featureName;
   }
-  public SourcePosition pos() { return _from.pos(); }
+  public SourcePosition pos() { return _from == null ? LibraryModule.DUMMY_POS : _from.pos(); }
   List<AbstractCall> _inherits = null;
   public List<AbstractCall> inherits()
   {
