@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Regression test for issue #7: https://github.com/fridis/fuzion/issues/7
+# Regression test for issue #7: https://github.com/tokiwa-software/fuzion/issues/7
 #
 # A simple negative test using incompatible actual type argument
 #

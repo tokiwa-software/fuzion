@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Regression test for #26: https://github.com/fridis/fuzion/issues/26
+# Regression test for #26: https://github.com/tokiwa-software/fuzion/issues/26
 #
 # A simple test that redefines a feature to return void
 #

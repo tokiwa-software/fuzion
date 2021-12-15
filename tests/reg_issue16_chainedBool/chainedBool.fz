@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Regression test for #16: https://github.com/fridis/fuzion/issues/16
+# Regression test for #16: https://github.com/tokiwa-software/fuzion/issues/16
 #
 # A simple negative test for chaining boolean operations
 #

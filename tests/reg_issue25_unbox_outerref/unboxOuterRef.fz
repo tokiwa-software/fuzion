@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Regression test for #25: https://github.com/fridis/fuzion/issues/25
+# Regression test for #25: https://github.com/tokiwa-software/fuzion/issues/25
 #
 # A simple negative test for using an outer ref to a ref instance as a value
 #
