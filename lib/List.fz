@@ -165,12 +165,12 @@ List<T> ref is
 
   # Lazily take the first elements of a list for which predicate 'p' holds.
   #
-  takeWhile (p fun(T) bool) => asList.takeWhile p
+  takeWhile (p T -> bool) => asList.takeWhile p
 
 
   # Lazily drop the first elements of a list for which predicate 'p' holds.
   #
-  dropWhile (p fun(T) bool) => asList.dropWhile p
+  dropWhile (p T -> bool) => asList.dropWhile p
 
 
   # create a List that consists of all the elements of this List followed
@@ -217,7 +217,7 @@ List<T> ref is
   # NYI: As long as covariance for result type is not permitted we cannot
   # call this 'map' since this would clash with, e.g., 'array.map'
   #
-  mapList<B>(f fun(T) B) => asList.map f
+  mapList<B>(f T -> B) => asList.map f
 
 
   # fold the elements of this List using the given monoid.

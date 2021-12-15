@@ -429,7 +429,7 @@ string ref : hasHash<string>, ordered<string>, strings is
     if l.isEmpty
       nil
     else
-      ref : Cons<string, list<string>> {
+      ref : Cons<string, list<string>>
         head =>  strings.fromBytes (l.takeWhile (c -> !isAsciiWhiteSpace c))
         tail => (strings.fromBytes (l.dropWhile (c -> !isAsciiWhiteSpace c))).split
         # NYI using the inherited 'fromBytes' as in
@@ -438,7 +438,6 @@ string ref : hasHash<string>, ordered<string>, strings is
         #
         # currerntly creates an error (recursive value type), this needs to be fixed (or,
         # at least, understood better).
-       }
 
 
   # remove leading and traling white space from this string
