@@ -854,6 +854,7 @@ public class Call extends AbstractCall
       {
         target = target.visit(v, outer);
       }
+    v.action((AbstractCall) this);
     return v.action(this, outer);
   }
 

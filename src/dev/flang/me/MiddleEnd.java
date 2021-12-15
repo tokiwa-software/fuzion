@@ -28,6 +28,7 @@ package dev.flang.me;
 
 import dev.flang.air.AIR;
 
+import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Call; // NYI: remove dependency!
@@ -237,10 +238,11 @@ public class MiddleEnd extends ANY
     var fv = new FeatureVisitor() {
         // it does not seem to be necessary to mark all features in types as used:
         // public Type  action(Type    t, AbstractFeature outer) { t.findUsedFeatures(res, pos); return t; }
-        public Call  action(Call    c, AbstractFeature outer) { findUsedFeatures(c); return c; }
+        public void action(AbstractCall c, AbstractFeature outer) { findUsedFeatures(c); }
+        public Call action(Call c, AbstractFeature outer) { findUsedFeatures(c); return c; }
         //        public Stmnt action(Feature f, AbstractFeature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
-        public void  action(Match   m, AbstractFeature outer) { findUsedFeatures(m);           }
-        public void  action(Tag     t, AbstractFeature outer) { findUsedFeatures(t._taggedType, t.pos()); }
+        public void action(Match   m, AbstractFeature outer) { findUsedFeatures(m);           }
+        public void action(Tag     t, AbstractFeature outer) { findUsedFeatures(t._taggedType, t.pos()); }
       };
     f.visitCode(fv);
   }
@@ -266,16 +268,16 @@ public class MiddleEnd extends ANY
   /**
    * Find used features, i.e., mark all features that are found to be the target of a call as used.
    */
-  void findUsedFeatures(Call c)
+  void findUsedFeatures(AbstractCall c)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || c.calledFeature_ != null);
+      (Errors.count() > 0 || c.calledFeature() != null);
 
     var cf = c.calledFeature();
     if (cf != null)
       {
         markUsed(cf, c.isDynamic(), c.pos());
-        for (var t : c.generics)
+        for (var t : c.generics())
           {
             if (!t.isGenericArgument())
               {

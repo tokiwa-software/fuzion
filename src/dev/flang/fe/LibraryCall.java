@@ -33,6 +33,7 @@ import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
+import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Universe;
 
 import dev.flang.util.List;
@@ -121,6 +122,40 @@ public class LibraryCall extends AbstractCall
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * visit all the features, expressions, statements within this feature.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited objects.
+   *
+   * @param outer the feature surrounding this expression.
+   *
+   * @return this.
+   */
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  {
+    var i = generics().listIterator();
+    while (i.hasNext())
+      {
+        i.set(i.next().visit(v, outer));
+      }
+    var j = actuals().listIterator(); // _actuals can change during resolveTypes, so create iterator early
+    while (j.hasNext())
+      {
+        j.set(j.next().visit(v, outer));
+      };
+    if (target() != null)
+      {
+        var t = target().visit(v, outer);
+        check
+          (target() == t);
+      }
+    v.action(this);
+    return this;
+  }
+
 
 
   public List<AbstractType> generics() { return _generics; }
