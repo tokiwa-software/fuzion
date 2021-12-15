@@ -59,9 +59,12 @@ public class NormalType extends LibraryType
 
 
   /**
-   * Is this explicitly a ref type even if _feature is a value type?
+   * Is this an explicit reference or value type?  Ref/Value to make this a
+   * reference/value type independent of the type of the underlying feature
+   * defining a ref type or not, false to keep the underlying feature's
+   * ref/value status.
    */
-  boolean _makeRef;
+  Type.RefOrVal _refOrVal;
 
 
   /**
@@ -78,6 +81,7 @@ public class NormalType extends LibraryType
    * Cached result of asRef()
    */
   AbstractType _asRef = null;
+  AbstractType _asValue = null;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -91,7 +95,7 @@ public class NormalType extends LibraryType
              int at,
              SourcePosition pos,
              AbstractFeature feature,
-             boolean makeRef,
+             Type.RefOrVal refOrVal,
              List<AbstractType> generics,
              AbstractType outer,
              AbstractType from)
@@ -99,7 +103,7 @@ public class NormalType extends LibraryType
     super(mod, at, pos, from);
 
     this._feature = feature;
-    this._makeRef = makeRef;
+    this._refOrVal = refOrVal;
     this._generics = generics;
     this._outer = outer;
   }
@@ -125,7 +129,7 @@ public class NormalType extends LibraryType
     if (PRECONDITIONS) require
       (!isGenericArgument());
 
-    return new NormalType(_libModule, _at, _pos, _feature, false, g2, o2, _from instanceof dev.flang.ast.Type ?_from.actualType(g2, o2) : null);
+    return new NormalType(_libModule, _at, _pos, _feature, Type.RefOrVal.LikeUnderlyingFeature, g2, o2, _from instanceof dev.flang.ast.Type ?_from.actualType(g2, o2) : null);
   }
 
 
@@ -155,7 +159,12 @@ public class NormalType extends LibraryType
    */
   public boolean isRef()
   {
-    return _makeRef || _feature.isThisRef();
+    return switch (_refOrVal)
+      {
+      case Ref -> true;
+      case Value -> false;
+      default -> _feature.isThisRef();
+      };
   }
 
   public AbstractType outer()
@@ -170,7 +179,7 @@ public class NormalType extends LibraryType
     if (result == null)
       {
         var fromRef =  _from instanceof NormalType ? null : _from.asRef();
-        result = isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, true, _generics, _outer, fromRef);
+        result = isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, Type.RefOrVal.Ref, _generics, _outer, fromRef);
         _asRef = result;
       }
     return result;
@@ -178,7 +187,14 @@ public class NormalType extends LibraryType
 
   public AbstractType asValue()
   {
-    throw new Error("NormalType.asValue() not defined");
+    var result = _asValue;
+    if (result == null)
+      {
+        var fromValue =  _from instanceof NormalType ? null : _from.asValue();
+        result = !isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, Type.RefOrVal.Value, _generics, _outer, fromValue);
+        _asValue = result;
+      }
+    return result;
   }
 
 

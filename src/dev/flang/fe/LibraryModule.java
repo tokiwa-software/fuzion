@@ -392,7 +392,7 @@ public class LibraryModule extends Module
                     generics = Type.NONE;
                   }
                 var outer = type(typeOuterPos(at), from == null ? DUMMY_POS : from.outer().pos(), from == null ? null : from.outer());
-                res = new NormalType(this, at, pos, feature, makeRef, generics, outer, from);
+                res = new NormalType(this, at, pos, feature, makeRef ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature, generics, outer, from);
               }
             _libraryTypes.put(at, res);
             result = res;

@@ -215,7 +215,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                                                          -1,
                                                          SourcePosition.builtIn,
                                                          lookupFeatureForType(SourcePosition.builtIn, name, universe, universe),
-                                                         ref,
+                                                         ref ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature,
                                                          Type.NONE,
                                                          universe.thisType(),
                                                          null),
