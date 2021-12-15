@@ -636,13 +636,14 @@ public class LibraryFeature extends AbstractFeature
               var t = _libModule.constType(iat);
               var d = _libModule.constData(iat);
               Expr r;
-              if (t == Types.resolved.t_bool)
+              if (t.compareTo(Types.resolved.t_bool) == 0)
                 {
                   r = d[0] == 0 ? BoolConst. FALSE : BoolConst.TRUE;
                 }
-              else if (t == Types.resolved.t_string)
+              else if (t.compareTo(Types.resolved.t_string) == 0)
                 {
-                  r = new StrConst(pos(), new String(d, StandardCharsets.UTF_8));
+                  var str = new String(d, StandardCharsets.UTF_8);
+                  r = new StrConst(pos(), str, false);
                 }
               else
                 { // NYI: Numeric
