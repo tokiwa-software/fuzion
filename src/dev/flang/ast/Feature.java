@@ -1685,8 +1685,8 @@ public class Feature extends AbstractFeature implements Stmnt
         _state = State.BOXING;
 
         visit(new FeatureVisitor() {
-            public void  action(Assign    a, AbstractFeature outer) { a.box(outer);           }
-            public Call  action(Call      c, AbstractFeature outer) { c.box(outer); return c; }
+            public void  action(Assign      a, AbstractFeature outer) { a.box(outer);           }
+            public Call  action(Call        c, AbstractFeature outer) { c.box(outer); return c; }
             public Expr  action(InlineArray i, AbstractFeature outer) { i.box(outer); return i; }
           });
 
@@ -1761,9 +1761,9 @@ public class Feature extends AbstractFeature implements Stmnt
         (_state == State.CHECKING_TYPES2)    )
       {
         visit(new FeatureVisitor() {
-            public void  action(Assign    a, AbstractFeature outer) { a.checkTypes(res);             }
-            public Call  action(Call      c, AbstractFeature outer) { c.checkTypes(outer); return c; }
-            public void  action(If        i, AbstractFeature outer) { i.checkTypes();                }
+            public void  action(Assign      a, AbstractFeature outer) { a.checkTypes(res);             }
+            public Call  action(Call        c, AbstractFeature outer) { c.checkTypes(outer); return c; }
+            public void  action(If          i, AbstractFeature outer) { i.checkTypes();                }
             public Expr  action(InlineArray i, AbstractFeature outer) { i.checkTypes();      return i; }
           });
         checkTypes(res);
