@@ -652,7 +652,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     for (var c: inherits())
       {
-        var nc = c.visit(fv, (Feature) astFeature());
+        var nc = c.visit(fv, astFeature());
         check
           (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
@@ -662,7 +662,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       }
     if (isRoutine())
       {
-        code().visit(fv, (Feature) astFeature());
+        code().visit(fv, astFeature());
       }
   }
 
