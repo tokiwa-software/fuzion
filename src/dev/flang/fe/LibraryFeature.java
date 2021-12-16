@@ -229,10 +229,10 @@ public class LibraryFeature extends AbstractFeature
        at < _libModule.data().limit());
 
     AbstractFeature result = null;
-    var sz = _libModule.data().getInt(at);
+    var sz = _libModule.innerFeaturesSize(at);
     check
       (at+4+sz <= _libModule.data().limit());
-    var i = at+4;
+    var i = _libModule.innerFeaturesFeaturesPos(at);
     if (i <= _index && _index < i+sz)
       {
         while (result == null)
@@ -246,13 +246,23 @@ public class LibraryFeature extends AbstractFeature
                 var o = _libModule.libraryFeature(i, _libModule._srcModule.featureFromOffset(i));
                 check
                   (o != null);
-                var inner = _libModule.featureInnerSizePos(i);
+                var inner = _libModule.featureInnerFeaturesPos(i);
                 result = findOuter(o, inner);
                 i = _libModule.featureNextPos(i);
               }
           }
       }
     return result;
+  }
+
+
+  /**
+   * The features declared within this feature.
+   */
+  List<AbstractFeature> declaredFeatures()
+  {
+    var i = _libModule.featureInnerFeaturesPos(_index);
+    return _libModule.innerFeatures(i);
   }
 
 
@@ -264,13 +274,26 @@ public class LibraryFeature extends AbstractFeature
     if (_arguments == null)
       {
         _arguments = new List<AbstractFeature>();
-        var i = _libModule.featureInnerPos(_index);
-        var n = _libModule.featureArgCount(_index);
-        while (_arguments.size() < n)
+        if (LibraryModule.USE_FUM)
           {
-            var a = _libModule.libraryFeature(i, LibraryModule.USE_FUM ? null : (Feature) _from.arguments().get(_arguments.size()).astFeature());
-            _arguments.add(a);
-            i = _libModule.featureNextPos(i);
+            var i = _libModule.innerFeatures(_libModule.featureInnerFeaturesPos(_index));
+            var n = _libModule.featureArgCount(_index);
+            while (_arguments.size() < n)
+              {
+                var a = i.get(_arguments.size());
+                _arguments.add(a);
+              }
+          }
+        else
+          {
+            var i = _libModule.featureInnerPos(_index);
+            var n = _libModule.featureArgCount(_index);
+            while (_arguments.size() < n)
+              {
+                var a = _libModule.libraryFeature(i, (Feature) _from.arguments().get(_arguments.size()).astFeature());
+                _arguments.add(a);
+                i = _libModule.featureNextPos(i);
+              }
           }
       }
     return _arguments;
@@ -287,15 +310,24 @@ public class LibraryFeature extends AbstractFeature
     AbstractFeature result = null;
     if (hasResultField())
       {
-        var i = _libModule.featureInnerPos(_index);
-        var n = _libModule.featureArgCount(_index);
-        var c = 0;
-        while (c < n)
+        if (LibraryModule.USE_FUM)
           {
-            c++;
-            i = _libModule.featureNextPos(i);
+            var i = _libModule.innerFeatures(_libModule.featureInnerFeaturesPos(_index));
+            var n = _libModule.featureArgCount(_index);
+            result = i.get(n);
           }
-        result = _libModule.libraryFeature(i, (Feature) _from.resultField());
+        else
+          {
+            var i = _libModule.featureInnerPos(_index);
+            var n = _libModule.featureArgCount(_index);
+            var c = 0;
+            while (c < n)
+              {
+                c++;
+                i = _libModule.featureNextPos(i);
+              }
+            result = _libModule.libraryFeature(i, (Feature) _from.resultField());
+          }
       }
 
     check
@@ -315,15 +347,24 @@ public class LibraryFeature extends AbstractFeature
     AbstractFeature result = null;
     if (hasOuterRef())
       {
-        var i = _libModule.featureInnerPos(_index);
-        var n = _libModule.featureArgCount(_index) + (hasResultField() ? 1 : 0);
-        var c = 0;
-        while (c < n)
+        if (LibraryModule.USE_FUM)
           {
-            c++;
-            i = _libModule.featureNextPos(i);
+            var i = _libModule.innerFeatures(_libModule.featureInnerFeaturesPos(_index));
+            var n = _libModule.featureArgCount(_index) + (hasResultField() ? 1 : 0);
+            result = i.get(n);
           }
-        result = _libModule.libraryFeature(i, (Feature) _from.outerRef());
+        else
+          {
+            var i = _libModule.featureInnerPos(_index);
+            var n = _libModule.featureArgCount(_index) + (hasResultField() ? 1 : 0);
+            var c = 0;
+            while (c < n)
+              {
+                c++;
+                i = _libModule.featureNextPos(i);
+              }
+            result = _libModule.libraryFeature(i, (Feature) _from.outerRef());
+          }
       }
 
     check
@@ -331,6 +372,7 @@ public class LibraryFeature extends AbstractFeature
 
     return result;
   }
+
 
   /**
    * For choice feature (i.e., isChoice() holds): The tag field that holds in
@@ -344,8 +386,16 @@ public class LibraryFeature extends AbstractFeature
     AbstractFeature result = null;
     if (isChoice())
       {
-        var i = _libModule.featureInnerPos(_index);
-        result = _libModule.libraryFeature(i, (Feature) _from.choiceTag());
+        if (LibraryModule.USE_FUM)
+          {
+            var i = _libModule.innerFeatures(_libModule.featureInnerFeaturesPos(_index));
+            result = i.get(0);
+          }
+        else
+          {
+            var i = _libModule.featureInnerPos(_index);
+            result = _libModule.libraryFeature(i, (Feature) _from.choiceTag());
+          }
       }
 
     check
@@ -365,25 +415,47 @@ public class LibraryFeature extends AbstractFeature
   public AbstractFeature get(String name)
   {
     AbstractFeature result = null;
-    var sz = _libModule.featureInnerSize(_index);
-    var i = _libModule.featureInnerPos(_index);
-    var e = i + sz;
-    while  (i < e)
+    if (LibraryModule.USE_FUM)
       {
-        var r = _libModule.libraryFeature(i, _libModule._srcModule.featureFromOffset(i));
-        var rn = r.featureName();
-        if (rn.baseName().equals(name))
+        var i = _libModule.innerFeatures(_libModule.featureInnerFeaturesPos(_index));
+        for (var r : i)
           {
-            if (result == null)
+            var rn = r.featureName();
+            if (rn.baseName().equals(name))
               {
-                result = r;
-              }
-            else
-              {
+                if (result == null)
+                  {
+                    result = r;
+                  }
+                else
+                  {
                 Errors.fatal("Ambiguous inner feature '" + name + "': found '" + result.featureName() + "' and '" + r.featureName() + "'.");
+                  }
               }
           }
-        i = _libModule.featureNextPos(i);
+      }
+    else
+      {
+        var sz = _libModule.featureInnerSize(_index);
+        var i = _libModule.featureInnerPos(_index);
+        var e = i + sz;
+        while  (i < e)
+          {
+            var r = _libModule.libraryFeature(i, _libModule._srcModule.featureFromOffset(i));
+            var rn = r.featureName();
+            if (rn.baseName().equals(name))
+              {
+                if (result == null)
+                  {
+                    result = r;
+                  }
+                else
+                  {
+                    Errors.fatal("Ambiguous inner feature '" + name + "': found '" + result.featureName() + "' and '" + r.featureName() + "'.");
+                  }
+              }
+            i = _libModule.featureNextPos(i);
+          }
       }
     if (result == null)
       {

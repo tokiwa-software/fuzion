@@ -228,6 +228,34 @@ public class LibraryModule extends Module
   }
 
 
+
+  /**
+   * The features declared within universe by this module
+   */
+  List<AbstractFeature> features()
+  {
+    return innerFeatures(startPos());
+  }
+
+
+  /**
+   * The features declared at given InnerFeatures block.
+   *
+   * @param at the index of an InnerFeatures block.
+   */
+  List<AbstractFeature> innerFeatures(int at)
+  {
+    var result = new List<AbstractFeature>();
+    var is = innerFeaturesSize(at);
+    var ip = innerFeaturesFeaturesPos(at);
+    for (var i = ip; i < ip+is; i = featureNextPos(i))
+      {
+        result.add(libraryFeature(i, null));
+      }
+    return result;
+  }
+
+
   /**
    * Get declared and inherited features for given outer Feature as seen by this
    * module.  Result may be null if this module does not contribute anything to
@@ -237,8 +265,33 @@ public class LibraryModule extends Module
    */
   SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer)
   {
-    var sdif = _srcModule.declaredOrInheritedFeaturesOrNull(outer.astFeature());
-    return sdif == null ? null : libraryFeatures(sdif);
+    if (USE_FUM)
+      {
+        var res = new TreeMap<FeatureName, AbstractFeature>();
+        if (outer instanceof LibraryFeature olf)
+          {
+            var declared = olf.declaredFeatures();
+            for (var d : declared)
+              {
+                res.put(d.featureName(), d);
+              }
+            // NYI: Missing inherited features
+          }
+        else if (outer.isUniverse())
+          {
+            var declared = features();
+            for (var d : declared)
+              {
+                res.put(d.featureName(), d);
+              }
+          }
+        return res;
+      }
+    else
+      {
+        var sdif = _srcModule.declaredOrInheritedFeaturesOrNull(outer.astFeature());
+        return sdif == null ? null : libraryFeatures(sdif);
+      }
   }
 
 
@@ -326,7 +379,7 @@ public class LibraryModule extends Module
               {
                 check
                   (o != null);
-                var inner = featureInnerSizePos(i);
+                var inner = featureInnerFeaturesPos(i);
                 if (inner <= offset && offset <= featureNextPos(i))
                   {
                     result = findGenericArgument(offset, o, inner);
@@ -417,6 +470,62 @@ public class LibraryModule extends Module
    *
    * secNextPos(int at)      Position right after 'sec' starting 'at'
    */
+
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Module File s                                                                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | byte[]        | MIR_FILE_MAGIC                                |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | InnerFeatures | inner Features                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+
+  int startPos()
+  {
+    return FuzionConstants.MIR_FILE_MAGIC.length;
+  }
+
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | InnerFeatures                                                                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | sizeof(inner Features)                        |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | Features      | inner Features                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | Features                                                                        |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | n      | Feature       | (inner) Features                              |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   */
+
+  int innerFeaturesSizePos(int at)
+  {
+    return at;
+  }
+  int innerFeaturesSize(int at)
+  {
+    return data().getInt(innerFeaturesSizePos(at));
+  }
+  int innerFeaturesFeaturesPos(int at)
+  {
+    return at + 4;
+  }
+  int innerFeaturesNextPos(int at)
+  {
+    return innerFeaturesFeaturesPos(at) + innerFeaturesSize(at);
+  }
+
 
   /*
    *   +---------------------------------------------------------------------------------+
@@ -582,7 +691,7 @@ public class LibraryModule extends Module
       }
     return i;
   }
-  int featureInnerSizePos(int at)
+  int featureInnerFeaturesPos(int at)
   {
     var i = featureCodePos(at);
     if (featureIsRoutine(at))
@@ -591,18 +700,24 @@ public class LibraryModule extends Module
       }
     return i;
   }
+  int featureInnerSizePos(int at)
+  {
+    if (USE_FUM) throw new Error("NYI: REMOVE!");
+    return innerFeaturesSizePos(featureInnerFeaturesPos(at));
+  }
   int featureInnerSize(int at)
   {
-    return data().getInt(featureInnerSizePos(at));
+    if (USE_FUM) throw new Error("NYI: REMOVE!");
+    return innerFeaturesSize(featureInnerFeaturesPos(at));
   }
   int featureInnerPos(int at)
   {
-    var i = featureInnerSizePos(at);
-    return i + 4;
+    if (USE_FUM) throw new Error("NYI: REMOVE!");
+    return innerFeaturesFeaturesPos(featureInnerFeaturesPos(at));
   }
   int featureNextPos(int at)
   {
-    return featureInnerPos(at) + featureInnerSize(at);
+    return innerFeaturesNextPos(featureInnerFeaturesPos(at));
   }
 
 
