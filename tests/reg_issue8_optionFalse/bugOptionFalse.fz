@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Regression test for issue #8: https://github.com/fridis/fuzion/issues/8
+# Regression test for issue #8: https://github.com/tokiwa-software/fuzion/issues/8
 #
 # A simple negative test returing 'false' as 'option<V>'
 #

@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Regression test for #27: https://github.com/fridis/fuzion/issues/27
+# Regression test for #27: https://github.com/tokiwa-software/fuzion/issues/27
 #
 # A simple test that creates a call to a target that is never instantiated
 #
