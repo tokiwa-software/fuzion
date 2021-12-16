@@ -34,8 +34,10 @@ import java.util.Stack;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.BoolConst;
+import dev.flang.ast.Box;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
@@ -45,10 +47,12 @@ import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Impl;
+import dev.flang.ast.NumLiteral;
 import dev.flang.ast.ReturnType;
 import dev.flang.ast.SrcModule;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.StrConst;
+import dev.flang.ast.Tag;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 
@@ -612,13 +616,14 @@ public class LibraryFeature extends AbstractFeature
               var f = _libModule.libraryFeature(field, null);
               var target = s.pop();
               var val = s.pop();
-              c = null;
+              c = new Assign(LibraryModule.DUMMY_POS, f, target, val);
               break;
             }
           case Unbox:
             {
               var val = s.pop();
               // NYI: type
+              if (_libModule.USE_FUM) System.out.println("NYI: Unbox");
               c = null;
               s.push(null);
               break;
@@ -628,7 +633,7 @@ public class LibraryFeature extends AbstractFeature
               var val = s.pop();
               // NYI: type
               c = null;
-              s.push(null);
+              s.push(new Box(val));
               break;
             }
           case Const:
@@ -647,7 +652,7 @@ public class LibraryFeature extends AbstractFeature
                 }
               else
                 { // NYI: Numeric
-                  r = null;
+                  r = new NumLiteral(4711); // NYI!
                 }
               c = null;
               s.push(r);
@@ -655,7 +660,6 @@ public class LibraryFeature extends AbstractFeature
             }
           case Current:
             {
-              // NYI: type
               var r = new Current(LibraryModule.DUMMY_POS, thisType());
               c = null;
               s.push(r);
@@ -671,6 +675,7 @@ public class LibraryFeature extends AbstractFeature
                   code(cat);
                   cat = _libModule.matchCaseNextPos(cat);
                 }
+              if (_libModule.USE_FUM) System.out.println("NYI: Match");
               c = null;
               break;
             }
@@ -690,14 +695,15 @@ public class LibraryFeature extends AbstractFeature
             {
               var val = s.pop();
               // NYI: tag
+              var taggedType = Types.resolved.t_unit; // NYI!
               c = null;
-              s.push(null);
+              s.push(new Tag(val, taggedType));
               break;
             }
           case Unit:
             {
               c = null;
-              s.push(null);
+              s.push(new Block(LibraryModule.DUMMY_POS, new List<>()));
               break;
             }
           default: throw new Error("Unexpected expression kind: " + k);

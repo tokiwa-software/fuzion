@@ -34,6 +34,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureVisitor;
+import dev.flang.ast.Types;
 import dev.flang.ast.Universe;
 
 import dev.flang.util.List;
@@ -83,7 +84,7 @@ public class LibraryCall extends AbstractCall
     super(LibraryModule.DUMMY_POS);
     _libModule = lib;
     _index = index;
-    _type = _libModule.USE_FUM ? lib.callType(index) : null;
+    _type = _libModule.USE_FUM ? lib.callType(index) : Types.t_ERROR;
     var na = _libModule.callNumArgs(index);
     var actuals = new List<Expr>();
     for (var i = 0; i < na; i++)
