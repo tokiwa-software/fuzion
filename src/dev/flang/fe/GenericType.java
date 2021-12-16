@@ -30,6 +30,7 @@ import java.util.Set;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Generic;
 
 import dev.flang.util.List;
@@ -69,6 +70,18 @@ public class GenericType extends LibraryType
   }
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Dummy visit() for types.
+   *
+   * NYI: This is called during me.MiddleEnd.findUsedFeatures(). It should be
+   * replaced by a different mechanism not using FaetureVisitor.
+   */
+  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
+  {
+    return this;
+  }
 
 
   public AbstractFeature featureOfType()
