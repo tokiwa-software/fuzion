@@ -198,7 +198,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         result = null;
       }
-    else if (this == Types.resolved.f_choice)
+    else if (this.compareTo(Types.resolved.f_choice) == 0)
       {
         result = generics().asActuals();
       }
