@@ -32,6 +32,7 @@ import java.util.Stack;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Types;
@@ -173,7 +174,10 @@ public class LibraryCall extends AbstractCall
         return -1;
       }
   }
-  public boolean isDynamic() { throw new Error("NYI"); }
+  public boolean isDynamic()
+  {
+    return calledFeature().isDynamic() && !(target() instanceof Current);
+  }
   public boolean isInheritanceCall()  { throw new Error("NYI"); }
   public AbstractType typeOrNull()
   {
