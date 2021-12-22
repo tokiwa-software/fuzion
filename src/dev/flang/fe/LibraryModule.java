@@ -37,8 +37,10 @@ import java.util.TreeSet;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.AstErrors;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
+import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
@@ -47,6 +49,7 @@ import dev.flang.ir.IR;
 
 import dev.flang.mir.MIR;
 
+import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourceDir;
@@ -177,6 +180,11 @@ public class LibraryModule extends Module
     var sdf = _srcModule.declaredFeaturesOrNull(outer.astFeature());
     return sdf == null ? null : libraryFeatures(sdf);
   }
+  SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
+  {
+    var sdf = _srcModule.declaredFeaturesOrNull(outer.astFeature());
+    return sdf == null ? new TreeMap<>() : libraryFeatures(sdf);
+  }
 
 
   /**
@@ -228,13 +236,26 @@ public class LibraryModule extends Module
   }
 
 
-
   /**
    * The features declared within universe by this module
    */
   List<AbstractFeature> features()
   {
     return innerFeatures(startPos());
+  }
+
+
+  /**
+   * The features declared within universe by this module
+   */
+  SortedMap<FeatureName, AbstractFeature> featuresMap()
+  {
+    var res = new TreeMap<FeatureName, AbstractFeature>();
+    for (var f : features())
+      {
+        res.put(f.featureName(), f);
+      }
+    return res;
   }
 
 
@@ -275,7 +296,7 @@ public class LibraryModule extends Module
               {
                 res.put(d.featureName(), d);
               }
-            // NYI: Missing inherited features
+            findInheritedFeatures(res, outer);
           }
         else if (outer.isUniverse())
           {
@@ -292,6 +313,100 @@ public class LibraryModule extends Module
         var sdif = _srcModule.declaredOrInheritedFeaturesOrNull(outer.astFeature());
         return sdif == null ? null : libraryFeatures(sdif);
       }
+  }
+
+  /**
+   * Find all inherited features and add them to declaredOrInheritedFeatures_.
+   * In case an existing feature was found, check if there is a conflict and if
+   * so, report an error message (repeated inheritance).
+   *
+   * NYI: This is somewhat redundant with SourceModule.findInheritedFeatures,
+   * maybe join these two as Module.findInheritedFeatures?
+   *
+   * @param outer the declaring feature
+   */
+  private void findInheritedFeatures(SortedMap<FeatureName, AbstractFeature> set, AbstractFeature outer)
+  {
+    for (var p : outer.inherits())
+      {
+        var cf = p.calledFeature().libraryFeature();
+        check
+          (Errors.count() > 0 || cf != null);
+
+        if (cf != null)
+          {
+            //data(cf)._heirs.add(outer);
+            //_res.resolveDeclarations(cf);
+            if (cf instanceof LibraryFeature clf)
+              {
+                var s = clf._libModule.declaredOrInheritedFeaturesOrNull(cf);
+                if (s != null)
+                  {
+                    for (var fnf : s.entrySet())
+                      {
+                        var fn = fnf.getKey();
+                        var f = fnf.getValue();
+                        check
+                          (cf != outer);
+
+                        var newfn = cf.handDown(null /*this*/, f, fn, p, outer);
+                        addInheritedFeature(set, outer, p.pos(), newfn, f);
+                      }
+                  }
+              }
+            else
+              {
+                for (var fnf : declaredOrInheritedFeatures(cf).entrySet())
+                  {
+                    var fn = fnf.getKey();
+                    var f = fnf.getValue();
+                    check
+                      (cf != outer);
+
+                    var newfn = cf.handDown(null /*this*/, f, fn, p, outer);
+                    addInheritedFeature(set, outer, p.pos(), newfn, f);
+                  }
+              }
+          }
+      }
+  }
+
+
+
+  /**
+   * Helper method for findInheritedFeatures and addToHeirs to add a feature
+   * that this feature inherits.
+   *
+   * NYI: This is somewhat redundant with SourceModule.addInheritedFeature,
+   * maybe join these two as Module.addInheritedFeature?
+   *
+   * @param pos the source code position of the inherits call responsible for
+   * the inheritance.
+   *
+   * @param fn the name of the feature, after possible renaming during inheritance
+   *
+   * @param f the feature to be added.
+   */
+  private void addInheritedFeature(SortedMap<FeatureName, AbstractFeature> set, AbstractFeature outer, SourcePosition pos, FeatureName fn, AbstractFeature f)
+  {
+    var s = set;
+    var existing = s == null ? null : s.get(fn);
+    if (existing != null)
+      {
+        if (existing.outer().inheritsFrom(f.outer()))  // NYI: better check existing.redefines(f)
+          {
+            f = existing;
+          }
+        else if (f.outer().inheritsFrom(existing.outer()))  // NYI: better check f.redefines(existing)
+          {
+          }
+        else if (existing == f && f.generics() != FormalGenerics.NONE ||
+                 existing != f && declaredFeatures(outer).get(fn) == null)
+          {
+            AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, existing, f);
+          }
+      }
+    s.put(fn, f);
   }
 
 
@@ -314,6 +429,30 @@ public class LibraryModule extends Module
           }
       }
     return result;
+  }
+
+
+  /**
+   * Get direct redefininitions of given Feature as seen by this module.
+   * Result is null if f has no redefinitions in this module.
+   *
+   * @param f the original feature
+   */
+  Set<AbstractFeature>redefinitions(AbstractFeature f)
+  {
+    if (USE_FUM)
+      {
+        return new TreeSet<>(); // NYI: remove!
+      }
+    else
+      {
+        var result = redefinitionsOrNull(f.astFeature());
+        if (result == null)
+          {
+            result = new TreeSet<>();
+          }
+        return result;
+      }
   }
 
 
