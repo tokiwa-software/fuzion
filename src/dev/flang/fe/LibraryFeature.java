@@ -612,7 +612,7 @@ public class LibraryFeature extends AbstractFeature
   }
 
   // following are used in IR/Clazzes middle end or later only:
-  public Impl.Kind implKind() { if (_libModule.USE_FUM) { check(false); return _from.implKind(); } else { return _from.implKind(); } }      // NYI: remove, used only in Clazz.java for some obscure case
+  public Impl.Kind implKind() { if (_libModule.USE_FUM) { if (true) return Impl.Kind.Routine; /* NYI! */ check(false); return _from.implKind(); } else { return _from.implKind(); } }      // NYI: remove, used only in Clazz.java for some obscure case
   public Expr initialValue() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.initialValue(); } }   // NYI: remove, used only in Clazz.java for some obscure case
 
   // following used in MIR or later
