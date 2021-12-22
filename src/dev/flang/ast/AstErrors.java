@@ -575,7 +575,7 @@ public class AstErrors extends ANY
       : "Subject type is one of " + typeListAlternatives(choiceGenerics) + "\n";
   }
 
-  static void internallyReferencedFeatureNotUnique(SourcePosition pos, String qname, Collection<AbstractFeature> set)
+  public static void internallyReferencedFeatureNotUnique(SourcePosition pos, String qname, Collection<AbstractFeature> set)
   {
     var sb = new StringBuilder();
     for (var f: set)

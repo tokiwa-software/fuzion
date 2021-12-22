@@ -334,10 +334,19 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * Class for the Universe Feature.
    */
-  static class Universe extends Feature
+  public static class Universe extends Feature
   {
-    Universe()
+    public Universe()
     {
+    }
+    public Universe(SrcModule m)
+    {
+      setState(Feature.State.RESOLVED);
+      _module = m;
+    }
+    public void setModule(SrcModule m)
+    {
+      _module = m;
     }
     public boolean isUniverse()
     {
@@ -672,7 +681,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public void setState(State newState)
   {
     if (PRECONDITIONS) require
-      (newState.ordinal() == _state.ordinal() + 1);
+      (newState.ordinal() == _state.ordinal() + 1 || newState == State.RESOLVED);
 
     this._state = newState;
   }

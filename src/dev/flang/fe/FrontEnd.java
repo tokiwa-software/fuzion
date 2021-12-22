@@ -30,11 +30,15 @@ import java.nio.file.Path;
 
 import dev.flang.mir.MIR;
 
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AstErrors;
 import dev.flang.ast.Feature;
+import dev.flang.ast.FeatureName;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.Types;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.SourceDir;
 import dev.flang.util.SourceFile;
 
@@ -56,6 +60,8 @@ public class FrontEnd extends ANY
    */
   private final Module _module;
 
+  private LibraryModule _stdlib = null;
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -66,8 +72,50 @@ public class FrontEnd extends ANY
   public FrontEnd(FrontEndOptions options)
   {
     var universe = Feature.createUniverse();
+    if (LibraryModule.USE_FUM)
+      {
+        universe = new Feature.Universe()
+          {
+            public AbstractFeature get(String name)
+            {
+              return get(name, -1);
+            }
+            public AbstractFeature get(String name, int argcount)
+            {
+              if (_stdlib == null)
+                {
+                  return super.get(name, argcount);
+                }
+              // NYI: Code dupliction with LibraryFeature.get and ast.Feature.get()
+              AbstractFeature result = Types.f_ERROR;
+              var d = _stdlib.featuresMap();
+              var set = (argcount >= 0
+                         ? FeatureName.getAll(d, name, argcount)
+                         : FeatureName.getAll(d, name          )).values();
+              if (set.size() == 1)
+                {
+                  for (var f2 : set)
+                    {
+                      result = f2;
+                    }
+                }
+              else if (set.isEmpty())
+                {
+                  return super.get(name, argcount);
+                }
+              else
+                {
+                  AstErrors.internallyReferencedFeatureNotUnique(LibraryModule.DUMMY_POS, name + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
+                }
+              return result;
+            }
+          };
+      }
+
     Types.reset();
-    var stdlib = new LibraryModule(options, "stdlib", new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) }, null, null, new Module[0], universe);
+    _stdlib = new LibraryModule(options, "stdlib", new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) }, null, null, new Module[0], universe);
+    _stdlib._srcModule.data(universe)._declaredOrInheritedFeatures = null;
+
     Path[] sourcePaths;
     Path inputFile;
     if (options._readStdin)
@@ -94,7 +142,11 @@ public class FrontEnd extends ANY
       {
         sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
       }
-    _module = new SourceModule(options, sourceDirs, inputFile, options._main, new Module[] {stdlib}, universe);
+    _module = new SourceModule(options, sourceDirs, inputFile, options._main, new Module[] {_stdlib}, universe);
+    if (LibraryModule.USE_FUM)
+      {
+        ((Feature.Universe)universe).setModule((dev.flang.ast.SrcModule) _module);
+      }
   }
 
 
