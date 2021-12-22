@@ -596,6 +596,7 @@ public class LibraryFeature extends AbstractFeature
         for (var i = 0; i < n; i++)
           {
             var p = (AbstractCall) code1(ip);
+            ((LibraryCall) p)._isInheritanceCall = true;
             _inherits.add(p);
             ip = _libModule.codeNextPos(ip);
           }

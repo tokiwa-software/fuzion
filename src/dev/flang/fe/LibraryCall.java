@@ -178,7 +178,11 @@ public class LibraryCall extends AbstractCall
   {
     return calledFeature().isDynamic() && !(target() instanceof Current);
   }
-  public boolean isInheritanceCall()  { throw new Error("NYI"); }
+  boolean _isInheritanceCall = false;
+  public boolean isInheritanceCall()
+  {
+    return _isInheritanceCall;
+  }
   public AbstractType typeOrNull()
   {
     return _type;
