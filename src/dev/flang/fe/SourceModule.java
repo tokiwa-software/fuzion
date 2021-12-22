@@ -82,50 +82,6 @@ import dev.flang.util.SourcePosition;
 public class SourceModule extends Module implements SrcModule, MirModule
 {
 
-
-  /*-----------------------------  classes  -----------------------------*/
-
-
-  /**
-   * Data stored locally to a Feature.
-   */
-  static class FData
-  {
-
-    /**
-     * Features declared inside a feature. The inner features are mapped from
-     * their FeatureName.
-     */
-    SortedMap<FeatureName, AbstractFeature> _declaredFeatures;
-
-    /**
-     * Features declared inside a feature or inherited from its parents.
-     */
-    SortedMap<FeatureName, AbstractFeature> _declaredOrInheritedFeatures;
-
-    /**
-     * All features that have been found to inherit from this feature.  This set
-     * is collected during RESOLVING_DECLARATIONS.
-     */
-    public Set<AbstractFeature> _heirs = new TreeSet<>();
-
-
-    /**
-     * All features that have been found to directly redefine this feature. This
-     * does not include redefintions of redefinitions.  This set is collected
-     * during RESOLVING_DECLARATIONS.
-     */
-    public Set<AbstractFeature> _redefinitions = null;
-
-
-    /**
-     * offset of this feature's data in .mir file.
-     */
-    int _mirOffset = -1;
-
-  }
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -174,13 +130,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * name.
    */
   String _main;
-
-
-  /**
-   * Map from features in this module or in modules it depends on to module-specific data  for this feature.
-   */
-  private Map<AbstractFeature, FData> _data = new HashMap<>();
-
 
   Resolution _res;
 
@@ -560,23 +509,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Get or create the data record for given outer feature.
-   *
-   * @param outer the feature we need to get the data record from.
-   */
-  FData data(AbstractFeature outer)
-  {
-    var d = _data.get(outer);
-    if (d == null)
-      {
-        d = new FData();
-        _data.put(outer, d);
-      }
-    return d;
-  }
-
-
-  /**
    * Get declared features for given outer Feature as seen by this module.
    * Result is never null.
    *
@@ -626,52 +558,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
   /**
    * Get declared and inherited features for given outer Feature as seen by this
-   * module.  Result is never null.
-   *
-   * @param outer the declaring feature
-   */
-  public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
-  {
-    if (PRECONDITIONS) require
-      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
-
-    if (outer instanceof LibraryFeature olf)
-      {
-        var s = olf._libModule.declaredOrInheritedFeaturesOrNull(outer);
-        if (s == null)
-          {
-            s = new TreeMap<>();
-          }
-        return s;
-      }
-    else
-      {
-        var d = data(outer);
-        var s = d._declaredOrInheritedFeatures;
-        if (s == null)
-          {
-            s = new TreeMap<>();
-            d._declaredOrInheritedFeatures= s;
-            for (Module m : _dependsOn)
-              { // NYI: properly obtain set of declared features from m, do we need
-                // to take care for the order and dependencies between modules?
-                var md = m.declaredOrInheritedFeaturesOrNull(outer);
-                if (md != null)
-                  {
-                    for (var e : md.entrySet())
-                      {
-                        s.put(e.getKey(), e.getValue());
-                      }
-                  }
-              }
-          }
-        return s;
-      }
-  }
-
-
-  /**
-   * Get declared and inherited features for given outer Feature as seen by this
    * module.  Result may be null if this module does not contribute anything to
    * outer.
    *
@@ -699,7 +585,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (PRECONDITIONS) require
       (outer.state() == Feature.State.RESOLVING_DECLARATIONS);
 
-    data(outer)._declaredOrInheritedFeatures = new TreeMap<>();
+    if (data(outer)._declaredOrInheritedFeatures == null)
+      data(outer)._declaredOrInheritedFeatures = new TreeMap<>();
     findInheritedFeatures(outer);
     loadInnerFeatures(outer);
     findDeclaredFeatures(outer);
@@ -865,7 +752,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
           {
             if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) != 0)
               {
-                System.out.println("doi is "+outer.qualifiedName()+" is "+doi);
                 AstErrors.redefineModifierDoesNotRedefine(f);
               }
           }
