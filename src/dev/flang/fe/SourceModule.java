@@ -755,6 +755,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
                 AstErrors.redefineModifierDoesNotRedefine(f);
               }
           }
+        else if (existing == f)
+          {
+          }
         else if (existing.outer() == outer)
           {
             // This cannot happen, this case was already handled in addDeclaredInnerFeature:
