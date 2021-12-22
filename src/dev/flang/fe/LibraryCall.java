@@ -166,11 +166,11 @@ public class LibraryCall extends AbstractCall
   public int select() {
     if (type().isOpenGeneric())
       {
-        return -1;
+        throw new Error("NYI: select when calling "+calledFeature().qualifiedName()+" type is "+type()+" "+type().getClass());
       }
     else
       {
-        throw new Error("NYI");
+        return -1;
       }
   }
   public boolean isDynamic() { throw new Error("NYI"); }
