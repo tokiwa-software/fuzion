@@ -753,7 +753,7 @@ public class LibraryFeature extends AbstractFeature
                   code(cat);
                   cat = _libModule.matchCaseNextPos(cat);
                 }
-              if (_libModule.USE_FUM) System.out.println("NYI: Match");
+              if (_libModule.USE_FUM) System.out.println("NYI: Match in "+qualifiedName());
               c = null;
               break;
             }
