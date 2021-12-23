@@ -55,6 +55,7 @@ import dev.flang.ast.StrConst;
 import dev.flang.ast.Tag;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
+import dev.flang.ast.Unbox;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -695,16 +696,13 @@ public class LibraryFeature extends AbstractFeature
           case Unbox:
             {
               var val = s.pop();
-              // NYI: type
-              if (_libModule.USE_FUM) System.out.println("NYI: Unbox");
               c = null;
-              s.push(null);
+              s.push(new Unbox(val.pos(), val, _libModule.unboxType(iat), outer()));
               break;
             }
           case Box:
             {
               var val = s.pop();
-              // NYI: type
               c = null;
               s.push(new Box(val));
               break;

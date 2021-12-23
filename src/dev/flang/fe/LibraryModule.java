@@ -1157,6 +1157,8 @@ public class LibraryModule extends Module
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Add | 1      | Assign        | assignment                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | k==Unb | 1      | Unbox         | unbox expression                              |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Con | 1      | Constant      | constant                                      |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
@@ -1179,7 +1181,7 @@ public class LibraryModule extends Module
     return switch (k)
       {
       case Assign  -> assignNextPos(eAt);
-      case Unbox   -> eAt;
+      case Unbox   -> unboxNextPos (eAt);
       case Box     -> eAt;
       case Const   -> constNextPos(eAt);
       case Current -> eAt;
@@ -1224,6 +1226,37 @@ public class LibraryModule extends Module
     return assignFieldPos(at) + 4;
   }
 
+
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Unbox                                                                           |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Type          | result type                                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+  int unboxTypePos(int at)
+  {
+    if (PRECONDITIONS) require
+      (expressionKind(at-1) == IR.ExprKind.Unbox);
+
+    return at;
+  }
+  AbstractType unboxType(int at)
+  {
+    if (PRECONDITIONS) require
+      (expressionKind(at-1) == IR.ExprKind.Unbox);
+
+    return type(unboxTypePos(at), DUMMY_POS, null);
+  }
+  int unboxNextPos(int at)
+  {
+    if (PRECONDITIONS) require
+      (expressionKind(at-1) == IR.ExprKind.Unbox);
+
+    return typeNextPos(unboxTypePos(at));
+  }
 
 
   /*
