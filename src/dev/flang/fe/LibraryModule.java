@@ -177,13 +177,36 @@ public class LibraryModule extends Module
    */
   SortedMap<FeatureName, AbstractFeature>declaredFeaturesOrNull(AbstractFeature outer)
   {
-    var sdf = _srcModule.declaredFeaturesOrNull(outer.astFeature());
-    return sdf == null ? null : libraryFeatures(sdf);
+    if (USE_FUM)
+      {
+        return declaredFeatures(outer);
+      }
+    else
+      {
+        var sdf = _srcModule.declaredFeaturesOrNull(outer.astFeature());
+        return sdf == null ? null : libraryFeatures(sdf);
+      }
   }
   SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
   {
-    var sdf = _srcModule.declaredFeaturesOrNull(outer.astFeature());
-    return sdf == null ? new TreeMap<>() : libraryFeatures(sdf);
+    if (USE_FUM)
+      {
+        var result = new TreeMap<FeatureName, AbstractFeature>();
+        if (outer instanceof LibraryFeature lf && lf._libModule == this)
+          {
+            var l = lf.declaredFeatures();
+            for (var d : l)
+              {
+                result.put(d.featureName(), d);
+              }
+          }
+        return result;
+      }
+    else
+      {
+        var sdf = _srcModule.declaredFeaturesOrNull(outer.astFeature());
+        return sdf == null ? new TreeMap<>() : libraryFeatures(sdf);
+      }
   }
 
 
