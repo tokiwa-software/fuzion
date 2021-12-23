@@ -157,17 +157,17 @@ class Layout extends ANY
                                                                     : f.resultClazz();
             int fsz;
             if        (fc.isRef()) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_i8    ) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_i16   ) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_i32   ) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_i64   ) { fsz = 2;
-            } else if (fc._type == Types.resolved.t_u8    ) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_u16   ) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_u32   ) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_u64   ) { fsz = 2;
-            } else if (fc._type == Types.resolved.t_f32   ) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_f64   ) { fsz = 2;
-            } else if (fc._type == Types.resolved.t_void  ) { fsz = 0;
+            } else if (fc._type.compareTo(Types.resolved.t_i8    ) == 0) { fsz = 1;
+            } else if (fc._type.compareTo(Types.resolved.t_i16   ) == 0) { fsz = 1;
+            } else if (fc._type.compareTo(Types.resolved.t_i32   ) == 0) { fsz = 1;
+            } else if (fc._type.compareTo(Types.resolved.t_i64   ) == 0) { fsz = 2;
+            } else if (fc._type.compareTo(Types.resolved.t_u8    ) == 0) { fsz = 1;
+            } else if (fc._type.compareTo(Types.resolved.t_u16   ) == 0) { fsz = 1;
+            } else if (fc._type.compareTo(Types.resolved.t_u32   ) == 0) { fsz = 1;
+            } else if (fc._type.compareTo(Types.resolved.t_u64   ) == 0) { fsz = 2;
+            } else if (fc._type.compareTo(Types.resolved.t_f32   ) == 0) { fsz = 1;
+            } else if (fc._type.compareTo(Types.resolved.t_f64   ) == 0) { fsz = 2;
+            } else if (fc._type.compareTo(Types.resolved.t_void  ) == 0) { fsz = 0;
             } else {
               fsz = get(fc).size();
             }
