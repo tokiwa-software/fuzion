@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.ByteBuffer;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -38,6 +39,7 @@ import java.util.TreeSet;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
+import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
 import dev.flang.ast.FormalGenerics;
@@ -128,6 +130,17 @@ public class LibraryModule extends Module
    * Map from offset in _data to LibraryType for types in this module.
    */
   TreeMap<Integer, LibraryType> _libraryTypes = new TreeMap<>();
+
+
+  /**
+   * Cache for 'normal' code created from given index
+   */
+  Map<Integer, Expr> _code = new TreeMap<>();
+
+  /**
+   * Cache for inheritance call code created from given index
+   */
+  Map<Integer, Expr> _code1 = new TreeMap<>();
 
 
   /*--------------------------  constructors  ---------------------------*/

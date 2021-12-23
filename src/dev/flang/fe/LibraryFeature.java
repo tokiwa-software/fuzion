@@ -646,11 +646,17 @@ public class LibraryFeature extends AbstractFeature
    */
   Expr code1(int at)
   {
-    var s = new Stack<Expr>();
-    code(at, s);
-    check
-      (s.size() == 1);
-    return s.pop();
+    var res = _libModule._code1.get(at);
+    if (res == null)
+      {
+        var s = new Stack<Expr>();
+        code(at, s);
+        check
+          (s.size() == 1);
+        res = s.pop();
+        _libModule._code1.put(at, res);
+      }
+    return res;
   }
 
 
@@ -659,11 +665,16 @@ public class LibraryFeature extends AbstractFeature
    */
   Expr code(int at)
   {
-    var s = new Stack<Expr>();
-    var result = code(at, s);
-    check
-      (s.size() == 0);
-    return result;
+    var res = _libModule._code.get(at);
+    if (res == null)
+      {
+        var s = new Stack<Expr>();
+        res = code(at, s);
+        check
+          (s.size() == 0);
+        _libModule._code.put(at, res);
+      }
+    return res;
   }
 
 
