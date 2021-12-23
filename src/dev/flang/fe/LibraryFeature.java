@@ -697,7 +697,14 @@ public class LibraryFeature extends AbstractFeature
             {
               var val = s.pop();
               c = null;
-              s.push(new Unbox(val.pos(), val, _libModule.unboxType(iat), outer()));
+              if (val.type().isRef())
+                {
+                  val = new Unbox(val.pos(), val, _libModule.unboxType(iat), outer());
+                }
+              else
+                { // NYI: Why does this case exist?
+                }
+              s.push(val);
               break;
             }
           case Box:
