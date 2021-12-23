@@ -32,6 +32,7 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Generic;
+import dev.flang.ast.Type;
 
 import dev.flang.util.List;
 
@@ -55,7 +56,30 @@ public class GenericType extends LibraryType
   Generic _generic;
 
 
+  /**
+   * Is this an explicit reference or value type?  Ref/Value to make this a
+   * reference/value type independent of the type of the underlying feature
+   * defining a ref type or not, false to keep the underlying feature's
+   * ref/value status.
+   */
+  Type.RefOrVal _refOrVal;
+
+
   /*--------------------------  constructors  ---------------------------*/
+
+
+  /**
+   * Constructor for a plain Type from a given feature that does not have any
+   * actual generics.
+   */
+  GenericType(LibraryModule mod, int at, SourcePosition pos, Generic generic, AbstractType from, Type.RefOrVal rov)
+  {
+    super(mod, at, pos, from);
+
+    this._generic = generic;
+    this._refOrVal = Type.RefOrVal.LikeUnderlyingFeature;
+    this._refOrVal = rov;
+  }
 
 
   /**
@@ -64,9 +88,7 @@ public class GenericType extends LibraryType
    */
   GenericType(LibraryModule mod, int at, SourcePosition pos, Generic generic, AbstractType from)
   {
-    super(mod, at, pos, from);
-
-    this._generic = generic;
+    this(mod, at, pos, generic, from, Type.RefOrVal.LikeUnderlyingFeature);
   }
 
   /*-----------------------------  methods  -----------------------------*/
@@ -117,7 +139,12 @@ public class GenericType extends LibraryType
    */
   public boolean isRef()
   {
-    return false;
+    return switch (_refOrVal)
+      {
+      case Ref -> true;
+      case Value -> false;
+      case LikeUnderlyingFeature -> false;
+      };
   }
 
   public AbstractType outer()
@@ -127,7 +154,11 @@ public class GenericType extends LibraryType
 
   public AbstractType asRef()
   {
-    throw new Error("GenericType.asRef() not defined");
+    return switch (_refOrVal)
+      {
+      case Ref -> this;
+      default -> new GenericType(_libModule, _at, _pos, _generic, _from, Type.RefOrVal.Ref);
+      };
   }
   public AbstractType asValue()
   {
