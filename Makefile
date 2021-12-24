@@ -55,6 +55,7 @@ JAVA_FILES_UTIL_UNICODE = \
 JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/AbstractCall.java \
           $(SRC)/dev/flang/ast/AbstractFeature.java \
+          $(SRC)/dev/flang/ast/AbstractMatch.java \
           $(SRC)/dev/flang/ast/AbstractType.java \
           $(SRC)/dev/flang/ast/Assign.java \
           $(SRC)/dev/flang/ast/AstErrors.java \

@@ -35,6 +35,7 @@ import java.util.TreeSet;
 
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
+import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Assign; // NYI: remove dependency!
 import dev.flang.ast.Block; // NYI: remove dependency!
@@ -49,7 +50,6 @@ import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.NumLiteral; // NYI: remove dependency!
-import dev.flang.ast.Match; // NYI: remove dependency!
 import dev.flang.ast.Old; // NYI: remove dependency!
 import dev.flang.ast.StrConst; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
@@ -935,7 +935,7 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(Match m, Clazz outerClazz)
+  public static void findClazzes(AbstractMatch m, Clazz outerClazz)
   {
     if (m.runtimeClazzId_ < 0)
       {
@@ -943,7 +943,7 @@ public class Clazzes extends ANY
         // we need to store in outerClazz.outer?
         m.runtimeClazzId_ = getRuntimeClazzIds(1);
       }
-    outerClazz.setRuntimeClazz(m.runtimeClazzId_, clazz(m.subject, outerClazz));
+    outerClazz.setRuntimeClazz(m.runtimeClazzId_, clazz(m.subject(), outerClazz));
   }
 
 
@@ -1045,9 +1045,9 @@ public class Clazzes extends ANY
         result = outerClazz.actualClazz(i.type());
       }
 
-    else if (e instanceof Match m)
+    else if (e instanceof AbstractMatch m)
       {
-        result = outerClazz.actualClazz(m.type_);
+        result = outerClazz.actualClazz(m.type());
       }
 
     else if (e instanceof Old o)

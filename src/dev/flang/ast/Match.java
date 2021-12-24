@@ -45,7 +45,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Match extends Expr
+public class Match extends AbstractMatch
 {
 
 
@@ -58,25 +58,21 @@ public class Match extends Expr
   /**
    * The subject under investigation here.
    */
-  public Expr subject;
+  Expr _subject;
+  public Expr subject() { return _subject; }
+
 
   /**
    * The list of cases in this match expression
    */
-  public final List<Case> cases;
+  final List<Case> _cases;
+  public List<Case> cases() { return _cases; }
 
 
   /**
    * Static type of this match or null if none. Set during resolveTypes().
    */
-  public AbstractType type_;
-
-
-  /**
-   * Id to store the match's subject's clazz in the static outer clazz at
-   * runtime.
-   */
-  public int runtimeClazzId_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+  public AbstractType _type;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -103,8 +99,8 @@ public class Match extends Expr
        c != null,
        !c.isEmpty());
 
-    subject = e;
-    cases = c;
+    _subject = e;
+    _cases = c;
   }
 
 
@@ -123,9 +119,9 @@ public class Match extends Expr
    */
   public Match visit(FeatureVisitor v, AbstractFeature outer)
   {
-    subject = subject.visit(v, outer);
+    _subject = _subject.visit(v, outer);
     v.action(this, outer);
-    for (Case c: cases)
+    for (Case c: cases())
       {
         c.visit(v, outer);
       }
@@ -142,15 +138,15 @@ public class Match extends Expr
    */
   public void resolveTypes(Resolution res, AbstractFeature outer)
   {
-    var st = subject.type();
+    var st = _subject.type();
     if (st.isGenericArgument())
       {
-        AstErrors.matchSubjectMustNotBeTypeParameter(subject.pos(), st);
+        AstErrors.matchSubjectMustNotBeTypeParameter(_subject.pos(), st);
       }
     if (st.featureOfType() instanceof Feature stf) { stf.resolveTypes(res); }
     if (!st.isChoice())
       {
-        AstErrors.matchSubjectMustBeChoice(subject.pos(), st);
+        AstErrors.matchSubjectMustBeChoice(_subject.pos(), st);
       }
     var cgs = st.choiceGenerics();
     check
@@ -164,7 +160,7 @@ public class Match extends Expr
           }
         SourcePosition[] matched = new SourcePosition[cgs.size()];
         boolean ok = true;
-        for (Case c: cases)
+        for (Case c: cases())
           {
             ok &= c.resolveType(res, cgs, outer, matched);
           }
@@ -191,7 +187,7 @@ public class Match extends Expr
   private AbstractType typeFromCases()
   {
     AbstractType result = Types.resolved.t_void;
-    for (Case c: cases)
+    for (Case c: cases())
       {
         var t = c.code.typeOrNull();
         result = result == null || t == null ? null : result.union(t);
@@ -202,7 +198,7 @@ public class Match extends Expr
                                           "Incompatible types in cases of match statement",
                                           new Iterator<Expr>()
                                           {
-                                            Iterator<Case> it = cases.iterator();
+                                            Iterator<Case> it = cases().iterator();
                                             public boolean hasNext() { return it.hasNext(); }
                                             public Expr next() { return it.next().code; }
                                           });
@@ -220,11 +216,11 @@ public class Match extends Expr
    */
   public AbstractType typeOrNull()
   {
-    if (type_ == null)
+    if (_type == null)
       {
-        type_ = typeFromCases();
+        _type = typeFromCases();
       }
-    return type_;
+    return _type;
   }
 
 
@@ -246,7 +242,7 @@ public class Match extends Expr
    */
   Match assignToField(Resolution res, AbstractFeature outer, Feature r)
   {
-    for (Case c: cases)
+    for (Case c: cases())
       {
         c.code = c.code.assignToField(res, outer, r);
       }
@@ -284,8 +280,8 @@ public class Match extends Expr
    */
   public String toString()
   {
-    var sb = new StringBuilder("match " + subject + "\n");
-    for (var c : cases)
+    var sb = new StringBuilder("match " + subject() + "\n");
+    for (var c : cases())
       {
         sb.append(c.toString()).append("\n");
       }

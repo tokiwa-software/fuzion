@@ -33,6 +33,7 @@ import java.util.TreeSet;
 import java.util.TreeMap;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
@@ -47,7 +48,6 @@ import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Generic;
 import dev.flang.ast.If;
 import dev.flang.ast.InlineArray;
-import dev.flang.ast.Match;
 import dev.flang.ast.Nop;
 import dev.flang.ast.Stmnt;
 import dev.flang.ast.Tag;
@@ -650,9 +650,9 @@ class LibraryOut extends DataOut
             write(IR.ExprKind.Pop.ordinal());
           }
       }
-    else if (s instanceof Match m)
+    else if (s instanceof AbstractMatch m)
       {
-        expressions(m.subject);
+        expressions(m.subject());
         write(IR.ExprKind.Match.ordinal());
   /*
    *   +---------------------------------------------------------------------------------+
@@ -673,8 +673,9 @@ class LibraryOut extends DataOut
    *   | true   | 1      | Code          | code for case                                 |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-        writeInt(m.cases.size());
-        for (var c : m.cases)
+        var cs = m.cases();
+        writeInt(cs.size());
+        for (var c : cs)
           {
             code(c.code);
           }

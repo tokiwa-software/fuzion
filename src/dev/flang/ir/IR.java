@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ir;
 
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
+import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.Assign; // NYI: remove dependency
 import dev.flang.ast.Block; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
@@ -39,7 +40,6 @@ import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.Impl; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
-import dev.flang.ast.Match; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
 import dev.flang.ast.Stmnt; // NYI: remove dependency
 import dev.flang.ast.StrConst; // NYI: remove dependency
@@ -265,11 +265,11 @@ public class IR extends ANY
             l.add(ExprKind.Pop);
           }
       }
-    else if (s instanceof Match m)
+    else if (s instanceof AbstractMatch m)
       {
-        toStack(l, m.subject);
+        toStack(l, m.subject());
         l.add(m);
-        for (var c : m.cases)
+        for (var c : m.cases())
           {
             var caseCode = toStack(c.code);
             l.add(new NumLiteral(_codeIds.add(caseCode)));
@@ -367,8 +367,8 @@ public class IR extends ANY
       {
         result = ExprKind.Call;
       }
-    else if (e instanceof If    ||
-             e instanceof Match    )
+    else if (e instanceof If            ||
+             e instanceof AbstractMatch    )
       {
         result = ExprKind.Match;
       }
@@ -376,9 +376,9 @@ public class IR extends ANY
       {
         result = ExprKind.Tag;
       }
-    else if (e instanceof BoolConst ||
+    else if (e instanceof BoolConst   ||
              e instanceof NumLiteral  ||
-             e instanceof StrConst  ||
+             e instanceof StrConst    ||
              e instanceof InlineArray   )
       {
         result = ExprKind.Const;
@@ -439,9 +439,9 @@ public class IR extends ANY
 
     var s = _codeIds.get(c).get(ix);
     int result = 2; // two cases for If
-    if (s instanceof Match m)
+    if (s instanceof AbstractMatch m)
       {
-        result = m.cases.size();
+        result = m.cases().size();
       }
     return result;
   }

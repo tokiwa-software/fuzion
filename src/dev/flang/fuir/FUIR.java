@@ -37,6 +37,7 @@ import dev.flang.air.Clazzes;
 
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency
+import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.Assign; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
@@ -45,7 +46,6 @@ import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
-import dev.flang.ast.Match; // NYI: remove dependency
 import dev.flang.ast.Stmnt; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Types; // NYI: remove dependency
@@ -1320,8 +1320,8 @@ hw25 is
     var cc = _clazzIds.get(cl);
     var s = _codeIds.get(c).get(ix);
     Clazz ss = s instanceof If
-      ? cc.getRuntimeClazz(((If) s).runtimeClazzId_)
-      : cc.getRuntimeClazz(((Match) s).runtimeClazzId_);
+      ? cc.getRuntimeClazz(((If)            s).runtimeClazzId_)
+      : cc.getRuntimeClazz(((AbstractMatch) s).runtimeClazzId_);
     return _clazzIds.get(ss);
   }
 
@@ -1351,9 +1351,9 @@ hw25 is
     var cc = _clazzIds.get(cl);
     var s = _codeIds.get(c).get(ix);
     int result = -1; // no field for If
-    if (s instanceof Match m)
+    if (s instanceof AbstractMatch m)
       {
-        var mc = m.cases.get(cix);
+        var mc = m.cases().get(cix);
         var f = mc.field;
         var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc.runtimeClazzId_) : null;
         result = fc != null ? _clazzIds.get(fc) : -1;
@@ -1392,9 +1392,9 @@ hw25 is
       }
     else
       {
-        var match = (Match) s;
+        var match = (AbstractMatch) s;
         var ss = cc.getRuntimeClazz(match.runtimeClazzId_);
-        var mc = match.cases.get(cix);
+        var mc = match.cases().get(cix);
         var f = mc.field;
         var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc.runtimeClazzId_) : null;
         int nt = f != null ? 1 : mc.types.size();

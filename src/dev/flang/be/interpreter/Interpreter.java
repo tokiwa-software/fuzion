@@ -50,6 +50,7 @@ import dev.flang.air.Clazzes;
 
 import dev.flang.ast.AbstractCall; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.AbstractMatch; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Assign; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Block; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -62,7 +63,6 @@ import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.InlineArray; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Match; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Old; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Stmnt; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -386,11 +386,11 @@ public class Interpreter extends ANY
           }
       }
 
-    else if (s instanceof Match m)
+    else if (s instanceof AbstractMatch m)
       {
         result = null;
         Clazz staticSubjectClazz = staticClazz.getRuntimeClazz(m.runtimeClazzId_);
-        Value sub = execute(m.subject, staticClazz, cur);
+        Value sub = execute(m.subject(), staticClazz, cur);
         var sf = staticSubjectClazz.feature();
         int tag;
         Value refVal = null;
@@ -411,7 +411,7 @@ public class Interpreter extends ANY
           ? ((Instance) refVal).clazz()
           : staticSubjectClazz.getChoiceClazz(tag);
 
-        Iterator<Case> it = m.cases.iterator();
+        Iterator<Case> it = m.cases().iterator();
         boolean matches = false;
         do
           {
@@ -447,7 +447,7 @@ public class Interpreter extends ANY
         if (!matches)
           {
             var permitted = new List<Clazz>();
-            for (var c : m.cases)
+            for (var c : m.cases())
               {
                 if (c.field != null)
                   {

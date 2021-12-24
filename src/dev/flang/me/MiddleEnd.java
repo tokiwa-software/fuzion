@@ -293,7 +293,7 @@ public class MiddleEnd extends ANY
    */
   void findUsedFeatures(Match m)
   {
-    AbstractFeature sf = m.subject.type().featureOfType();
+    AbstractFeature sf = m.subject().type().featureOfType();
     AbstractFeature ct = sf.choiceTag();
 
     check
