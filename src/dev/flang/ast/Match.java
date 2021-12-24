@@ -69,12 +69,6 @@ public class Match extends AbstractMatch
   public List<AbstractCase> cases() { return _cases; }
 
 
-  /**
-   * Static type of this match or null if none. Set during resolveTypes().
-   */
-  public AbstractType _type;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -123,7 +117,7 @@ public class Match extends AbstractMatch
     v.action(this, outer);
     for (var c: cases())
       {
-        ((Case) c).visit(v, outer);
+        c.visit(v, outer);
       }
     return this;
   }
@@ -177,50 +171,6 @@ public class Match extends AbstractMatch
             AstErrors.missingMatches(pos, cgs, missingMatches);
           }
       }
-  }
-
-
-  /**
-   * Helper routine for typeOrNull to determine the type of this match statement
-   * on demand, i.e., as late as possible.
-   */
-  private AbstractType typeFromCases()
-  {
-    AbstractType result = Types.resolved.t_void;
-    for (var c: cases())
-      {
-        var t = c.code().typeOrNull();
-        result = result == null || t == null ? null : result.union(t);
-      }
-    if (result == Types.t_UNDEFINED)
-      {
-        new IncompatibleResultsOnBranches(pos,
-                                          "Incompatible types in cases of match statement",
-                                          new Iterator<Expr>()
-                                          {
-                                            Iterator<AbstractCase> it = cases().iterator();
-                                            public boolean hasNext() { return it.hasNext(); }
-                                            public Expr next() { return it.next().code(); }
-                                          });
-        result = Types.t_ERROR;
-      }
-    return result;
-  }
-
-
-  /**
-   * typeOrNull returns the type of this expression or null if the type is still
-   * unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or null if not known.
-   */
-  public AbstractType typeOrNull()
-  {
-    if (_type == null)
-      {
-        _type = typeFromCases();
-      }
-    return _type;
   }
 
 

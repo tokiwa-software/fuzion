@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Iterator;
+
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -44,6 +46,12 @@ public abstract class AbstractMatch extends Expr
 
 
   /*----------------------------  variables  ----------------------------*/
+
+
+  /**
+   * Static type of this match or null if none. Set during resolveTypes().
+   */
+  AbstractType _type;
 
 
   /**
@@ -80,6 +88,74 @@ public abstract class AbstractMatch extends Expr
    * The list of cases in this match expression
    */
   public abstract List<AbstractCase> cases();
+
+
+  /**
+   * visit all the features, expressions, statements within this feature.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited objects.
+   *
+   * @param outer the feature surrounding this expression.
+   *
+   * @return this.
+   */
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  {
+    var ns = subject().visit(v, outer);
+    check
+      (subject() == ns);
+
+    for (var c: cases())
+      {
+        c.visit(v, outer);
+      }
+    return this;
+  }
+
+
+  /**
+   * Helper routine for typeOrNull to determine the type of this match statement
+   * on demand, i.e., as late as possible.
+   */
+  private AbstractType typeFromCases()
+  {
+    AbstractType result = Types.resolved.t_void;
+    for (var c: cases())
+      {
+        var t = c.code().typeOrNull();
+        result = result == null || t == null ? null : result.union(t);
+      }
+    if (result == Types.t_UNDEFINED)
+      {
+        new IncompatibleResultsOnBranches(pos,
+                                          "Incompatible types in cases of match statement",
+                                          new Iterator<Expr>()
+                                          {
+                                            Iterator<AbstractCase> it = cases().iterator();
+                                            public boolean hasNext() { return it.hasNext(); }
+                                            public Expr next() { return it.next().code(); }
+                                          });
+        result = Types.t_ERROR;
+      }
+    return result;
+  }
+
+
+  /**
+   * typeOrNull returns the type of this expression or null if the type is still
+   * unknown, i.e., before or during type resolution.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  public AbstractType typeOrNull()
+  {
+    if (_type == null)
+      {
+        _type = typeFromCases();
+      }
+    return _type;
+  }
 
 
 }

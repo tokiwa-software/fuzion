@@ -32,7 +32,9 @@ import java.util.Collection;
 import java.util.Stack;
 
 import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
@@ -745,12 +747,39 @@ public class LibraryFeature extends AbstractFeature
               var subj = s.pop();
               var n = _libModule.matchNumberOfCases(iat);
               var cat = _libModule.matchCasesPos(iat);
+              var cases = new List<AbstractCase>();
               for (var i = 0; i < n; i++)
                 {
-                  code(cat);
-                  cat = _libModule.matchCaseNextPos(cat);
+                  var cn = _libModule.caseNumTypes(cat);
+                  var cf = (cn == -1) ? _libModule.libraryFeature(_libModule.caseField(cat), null) : null;
+                  List<AbstractType> ts = null;
+                  if (cn != -1)
+                    {
+                      ts = new List<>();
+                      var tat = _libModule.caseTypePos(cat);
+                      for (var ci = 0; ci < cn; ci++)
+                        {
+                          ts.add(_libModule.type(tat, LibraryModule.DUMMY_POS, null));
+                          tat = _libModule.typeNextPos(tat);
+                        }
+                    }
+                  var cc = code(_libModule.caseCodePos(cat));
+                  var fts = ts;
+                  var lc = new AbstractCase(LibraryModule.DUMMY_POS)
+                    {
+                      public SourcePosition pos() { return LibraryModule.DUMMY_POS; }
+                      public AbstractFeature field() { return cf; }
+                      public List<AbstractType> types() { return fts; }
+                      public Block code() { return (Block) cc; }
+                    };
+                  cases.add(lc);
+                  cat = _libModule.caseNextPos(cat);
                 }
-              if (_libModule.USE_FUM) System.out.println("NYI: Match in "+qualifiedName());
+              c = new AbstractMatch(LibraryModule.DUMMY_POS)
+                {
+                  public Expr subject() { return subj; }
+                  public List<AbstractCase> cases() { return cases; }
+                };
               break;
             }
           case Call:

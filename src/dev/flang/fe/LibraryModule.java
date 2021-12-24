@@ -1497,14 +1497,6 @@ public class LibraryModule extends Module
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | n      | Case          | cases                                         |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *
-   *   +---------------------------------------------------------------------------------+
-   *   | Case                                                                            |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Code          | code for case                                 |
-   *   +--------+--------+---------------+-----------------------------------------------+
    */
   int matchNumberOfCasesPos(int at)
   {
@@ -1527,10 +1519,6 @@ public class LibraryModule extends Module
 
     return matchNumberOfCasesPos(at) + 4;
   }
-  int matchCaseNextPos(int at)
-  {
-    return codeNextPos(at);
-  }
   int matchNextPos(int at)
   {
     if (PRECONDITIONS) require
@@ -1540,10 +1528,76 @@ public class LibraryModule extends Module
     at = matchCasesPos(at);
     for (var i = 0; i < n; i++)
       {
-        at = matchCaseNextPos(at);
+        at = caseNextPos(at);
       }
     return at;
   }
+
+
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Case                                                                            |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | num types n                                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | n = -1 | 1      | int           | case field index                              |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | n >  0 | n      | Type          | case type                                     |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Code          | code for case                                 |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+  int caseNumTypesPos(int at)
+  {
+    return at;
+  }
+  int caseNumTypes(int at)
+  {
+    return data().getInt(caseNumTypesPos(at));
+  }
+  int caseFieldPos(int at)
+  {
+    return at + 4;
+  }
+  int caseField(int at)
+  {
+    if (PRECONDITIONS) require
+      (caseNumTypes(at) == -1);
+
+    return data().getInt(caseFieldPos(at));
+  }
+  int caseTypePos(int at)
+  {
+    return at + 4;
+  }
+  int caseCodePos(int at)
+  {
+    int result;
+    var n = caseNumTypes(at);
+    if (n == -1)
+      {
+        result = caseFieldPos(at) + 4;
+      }
+    else
+      {
+        check
+          (n > 0);
+        result = caseTypePos(at);
+        while (n > 0)
+          {
+            result = typeNextPos(result);
+            n--;
+          }
+      }
+    return result;
+  }
+  int caseNextPos(int at)
+  {
+    return codeNextPos(caseCodePos(at));
+  }
+
 
   /*-------------------------------  misc  ------------------------------*/
 

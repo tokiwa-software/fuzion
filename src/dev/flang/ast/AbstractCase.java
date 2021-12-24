@@ -110,6 +110,36 @@ public abstract class AbstractCase extends ANY
    */
   public abstract Block code();
 
+
+  /**
+   * visit all the features, expressions, statements within this feature.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited objects.
+   *
+   * @param outer the feature surrounding this expression.
+   */
+  public void visit(FeatureVisitor v, AbstractFeature outer)
+  {
+    v.actionBefore(this);
+    if (field() instanceof Feature f)
+      {
+        f.visit(v, outer);
+      }
+    if (types() != null)
+      {
+        var i = types().listIterator();
+        while (i.hasNext())
+          {
+            i.set(i.next().visit(v, outer));
+          }
+      }
+    var nc = code().visit(v, outer);
+    check
+      (nc == code());
+    v.actionAfter(this);
+  }
+
 }
 
 /* end of file */
