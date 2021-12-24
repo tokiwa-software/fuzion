@@ -38,6 +38,7 @@ import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
+import dev.flang.ast.Constant;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
@@ -726,19 +727,12 @@ public class LibraryFeature extends AbstractFeature
             {
               var t = _libModule.constType(iat);
               var d = _libModule.constData(iat);
-              if (t.compareTo(Types.resolved.t_bool) == 0)
+              x = new Constant(LibraryModule.DUMMY_POS)
                 {
-                  x = d[0] == 0 ? BoolConst. FALSE : BoolConst.TRUE;
-                }
-              else if (t.compareTo(Types.resolved.t_string) == 0)
-                {
-                  var str = new String(d, StandardCharsets.UTF_8);
-                  x = new StrConst(pos(), str, false);
-                }
-              else
-                { // NYI: Numeric
-                  x = new NumLiteral(4711); // NYI!
-                }
+                  public AbstractType typeOrNull() { return t; }
+                  public byte[] data() { return d; }
+                  public Expr visit(FeatureVisitor v, AbstractFeature af) { return this; };
+                };
               break;
             }
           case Current:
