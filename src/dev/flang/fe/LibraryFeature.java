@@ -692,7 +692,8 @@ public class LibraryFeature extends AbstractFeature
         var k = _libModule.expressionKind(e);
         var iat = e + 1;
         Expr ex = null;
-        Stmnt c;
+        Stmnt c = null;
+        Expr x = null;
         switch (k)
           {
           case Assign:
@@ -706,52 +707,43 @@ public class LibraryFeature extends AbstractFeature
             }
           case Unbox:
             {
-              var val = s.pop();
-              c = null;
-              if (val.type().isRef())
+              x = s.pop();
+              if (x.type().isRef())
                 {
-                  val = new Unbox(val.pos(), val, _libModule.unboxType(iat), outer());
+                  x = new Unbox(x.pos(), x, _libModule.unboxType(iat), outer());
                 }
               else
                 { // NYI: Why does this case exist?
                 }
-              s.push(val);
               break;
             }
           case Box:
             {
-              var val = s.pop();
-              c = null;
-              s.push(new Box(val));
+              x = new Box(s.pop());
               break;
             }
           case Const:
             {
               var t = _libModule.constType(iat);
               var d = _libModule.constData(iat);
-              Expr r;
               if (t.compareTo(Types.resolved.t_bool) == 0)
                 {
-                  r = d[0] == 0 ? BoolConst. FALSE : BoolConst.TRUE;
+                  x = d[0] == 0 ? BoolConst. FALSE : BoolConst.TRUE;
                 }
               else if (t.compareTo(Types.resolved.t_string) == 0)
                 {
                   var str = new String(d, StandardCharsets.UTF_8);
-                  r = new StrConst(pos(), str, false);
+                  x = new StrConst(pos(), str, false);
                 }
               else
                 { // NYI: Numeric
-                  r = new NumLiteral(4711); // NYI!
+                  x = new NumLiteral(4711); // NYI!
                 }
-              c = null;
-              s.push(r);
               break;
             }
           case Current:
             {
-              var r = new Current(LibraryModule.DUMMY_POS, thisType());
-              c = null;
-              s.push(r);
+              x = new Current(LibraryModule.DUMMY_POS, thisType());
               break;
             }
           case Match:
@@ -765,14 +757,11 @@ public class LibraryFeature extends AbstractFeature
                   cat = _libModule.matchCaseNextPos(cat);
                 }
               if (_libModule.USE_FUM) System.out.println("NYI: Match in "+qualifiedName());
-              c = null;
               break;
             }
           case Call:
             {
-              var r = new LibraryCall(_libModule, iat, s);
-              c = null;
-              s.push(r);
+              x = new LibraryCall(_libModule, iat, s);
               break;
             }
           case Pop:
@@ -784,20 +773,31 @@ public class LibraryFeature extends AbstractFeature
             {
               var val = s.pop();
               // NYI: tag
+              if (_libModule.USE_FUM) System.out.println("NYI: Tag in "+qualifiedName());
               var taggedType = Types.resolved.t_unit; // NYI!
-              c = null;
-              s.push(new Tag(val, taggedType));
+              x = new Tag(val, taggedType);
               break;
             }
           case Unit:
             {
-              c = null;
-              s.push(new Block(LibraryModule.DUMMY_POS, new List<>()));
+              x = new Block(LibraryModule.DUMMY_POS, new List<>());
               break;
             }
           default: throw new Error("Unexpected expression kind: " + k);
           }
-        if (c != null)
+        if (x != null)
+          {
+            check
+              (c == null);
+            if (!l.isEmpty())
+              {
+                l.add(x);
+                x = new Block(LibraryModule.DUMMY_POS, l);
+                l = new List<>();
+              }
+            s.push(x);
+          }
+        else if (c != null)
           {
             l.add(c);
           }
