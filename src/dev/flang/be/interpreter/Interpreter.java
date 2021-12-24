@@ -26,9 +26,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
@@ -49,21 +53,19 @@ import dev.flang.ast.AbstractFeature; // NYI: remove dependency! Use dev.flang.f
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Assign; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Block; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.BoolConst; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Box; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Case; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Check; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.Constant; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Current; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.InlineArray; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.NumLiteral; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Match; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Old; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Stmnt; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.StrConst; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Tag; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Unbox; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -162,7 +164,7 @@ public class Interpreter extends ANY
     return sb.toString();
   }
 
-  static Map<String, Value> _cachedStrings_ = new TreeMap<>();
+  static Map<Constant, Value> _cachedConsts_ = new HashMap<>();
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -330,25 +332,28 @@ public class Interpreter extends ANY
         result = Value.NO_VALUE;
       }
 
-    else if (s instanceof BoolConst b)
+    else if (s instanceof Constant i)
       {
-        result = new boolValue(b.b);
-      }
-
-    else if (s instanceof NumLiteral i)
-      {
-        var t = i.type();
-        if      (t == Types.resolved.t_i8 ) { result = new i8Value (i.intValue().intValue()); }
-        else if (t == Types.resolved.t_i16) { result = new i16Value(i.intValue().intValue()); }
-        else if (t == Types.resolved.t_i32) { result = new i32Value(i.intValue().intValue()); }
-        else if (t == Types.resolved.t_i64) { result = new i64Value(i.intValue().longValue()); }
-        else if (t == Types.resolved.t_u8 ) { result = new u8Value (i.intValue().intValue()); }
-        else if (t == Types.resolved.t_u16) { result = new u16Value(i.intValue().intValue()); }
-        else if (t == Types.resolved.t_u32) { result = new u32Value(i.intValue().intValue()); }
-        else if (t == Types.resolved.t_u64) { result = new u64Value(i.intValue().longValue()); }
-        else if (t == Types.resolved.t_f32) { result = new f32Value(i.f32Value()); }
-        else if (t == Types.resolved.t_f64) { result = new f64Value(i.f64Value()); }
-        else                                { result = Value.NO_VALUE; check(false); }
+        result = _cachedConsts_.get(i);
+        if (result == null)
+          {
+            var t = i.type();
+            var d = i.data();
+            if      (t.compareTo(Types.resolved.t_bool  ) == 0) { result = new boolValue(d[0] != 0                                                           ); }
+            else if (t.compareTo(Types.resolved.t_i8    ) == 0) { result = new i8Value  (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get      ()       ); }
+            else if (t.compareTo(Types.resolved.t_i16   ) == 0) { result = new i16Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort ()       ); }
+            else if (t.compareTo(Types.resolved.t_i32   ) == 0) { result = new i32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt   ()       ); }
+            else if (t.compareTo(Types.resolved.t_i64   ) == 0) { result = new i64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong  ()       ); }
+            else if (t.compareTo(Types.resolved.t_u8    ) == 0) { result = new u8Value  (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get      () & 0xff); }
+            else if (t.compareTo(Types.resolved.t_u16   ) == 0) { result = new u16Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getChar  ()       ); }
+            else if (t.compareTo(Types.resolved.t_u32   ) == 0) { result = new u32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt   ()       ); }
+            else if (t.compareTo(Types.resolved.t_u64   ) == 0) { result = new u64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong  ()       ); }
+            else if (t.compareTo(Types.resolved.t_f32   ) == 0) { result = new f32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat ()       ); }
+            else if (t.compareTo(Types.resolved.t_f64   ) == 0) { result = new f64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble()       ); }
+            else if (t.compareTo(Types.resolved.t_string) == 0) { result = value(new String(d, StandardCharsets.UTF_8));                                        }
+            else                                                { result = Value.NO_VALUE; check(false); }
+            _cachedConsts_.put(i, result);
+          }
       }
 
     else if (s instanceof Block b)
@@ -543,17 +548,6 @@ public class Interpreter extends ANY
                       }
                   }
               }
-          }
-      }
-
-    else if (s instanceof StrConst t)
-      {
-        var str = t.str;
-        result = _cachedStrings_.get(str);
-        if (result == null)
-          {
-            result = value(t.str);
-            _cachedStrings_.put(str, result);
           }
       }
 
