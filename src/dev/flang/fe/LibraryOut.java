@@ -677,7 +677,7 @@ class LibraryOut extends DataOut
         writeInt(cs.size());
         for (var c : cs)
           {
-            code(c.code);
+            code(c.code());
           }
       }
     else if (s instanceof Tag t)

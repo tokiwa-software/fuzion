@@ -65,8 +65,8 @@ public class Match extends AbstractMatch
   /**
    * The list of cases in this match expression
    */
-  final List<Case> _cases;
-  public List<Case> cases() { return _cases; }
+  final List<AbstractCase> _cases;
+  public List<AbstractCase> cases() { return _cases; }
 
 
   /**
@@ -90,7 +90,7 @@ public class Match extends AbstractMatch
    */
   public Match(SourcePosition pos,
                Expr e,
-               List<Case> c)
+               List<AbstractCase> c)
   {
     super(pos);
 
@@ -121,9 +121,9 @@ public class Match extends AbstractMatch
   {
     _subject = _subject.visit(v, outer);
     v.action(this, outer);
-    for (Case c: cases())
+    for (var c: cases())
       {
-        c.visit(v, outer);
+        ((Case) c).visit(v, outer);
       }
     return this;
   }
@@ -160,9 +160,9 @@ public class Match extends AbstractMatch
           }
         SourcePosition[] matched = new SourcePosition[cgs.size()];
         boolean ok = true;
-        for (Case c: cases())
+        for (var c: cases())
           {
-            ok &= c.resolveType(res, cgs, outer, matched);
+            ok &= ((Case) c).resolveType(res, cgs, outer, matched);
           }
         var missingMatches = new List<AbstractType>();
         for (var ix = 0; ix < cgs.size(); ix++)
@@ -187,9 +187,9 @@ public class Match extends AbstractMatch
   private AbstractType typeFromCases()
   {
     AbstractType result = Types.resolved.t_void;
-    for (Case c: cases())
+    for (var c: cases())
       {
-        var t = c.code.typeOrNull();
+        var t = c.code().typeOrNull();
         result = result == null || t == null ? null : result.union(t);
       }
     if (result == Types.t_UNDEFINED)
@@ -198,9 +198,9 @@ public class Match extends AbstractMatch
                                           "Incompatible types in cases of match statement",
                                           new Iterator<Expr>()
                                           {
-                                            Iterator<Case> it = cases().iterator();
+                                            Iterator<AbstractCase> it = cases().iterator();
                                             public boolean hasNext() { return it.hasNext(); }
-                                            public Expr next() { return it.next().code; }
+                                            public Expr next() { return it.next().code(); }
                                           });
         result = Types.t_ERROR;
       }
@@ -242,9 +242,10 @@ public class Match extends AbstractMatch
    */
   Match assignToField(Resolution res, AbstractFeature outer, Feature r)
   {
-    for (Case c: cases())
+    for (var ac: cases())
       {
-        c.code = c.code.assignToField(res, outer, r);
+        var c = (Case) ac;
+        c._code = c._code.assignToField(res, outer, r);
       }
     return this;
   }

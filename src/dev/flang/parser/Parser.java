@@ -2187,7 +2187,7 @@ match       : "match" exprInLine BRACEL cases BRACER
         match(Token.t_match, "match");
         Expr e = exprInLine();
         boolean gotLBrace = skip(true, Token.t_lbrace);
-        List<Case> c = cases(true);
+        var c = cases(true);
         if (gotLBrace)
           {
             match(true, Token.t_rbrace, "block");
@@ -2220,9 +2220,9 @@ maybecomma  : comma
             |
             ;
    */
-  List<Case> cases(boolean indent)
+  List<AbstractCase> cases(boolean indent)
   {
-    List<Case> result = new List<>();
+    List<AbstractCase> result = new List<>();
     var in = indent ? new Indentation() : (Indentation) null;
     var sl = -1;
     var usesBars = false;

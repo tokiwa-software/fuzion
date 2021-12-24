@@ -2123,11 +2123,11 @@ public class Feature extends AbstractFeature implements Stmnt
               curres[0] = stack.pop();
             }
         }
-        public void actionBefore(Case c, AbstractFeature outer)
+        public void actionBefore(AbstractCase c)
         {
           stack.push(curres[0]);
         }
-        public void  actionAfter(Case c, AbstractFeature outer)
+        public void  actionAfter(AbstractCase c)
         {
           curres[0] = stack.pop();
         }

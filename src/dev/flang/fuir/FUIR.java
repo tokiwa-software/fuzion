@@ -1354,7 +1354,7 @@ hw25 is
     if (s instanceof AbstractMatch m)
       {
         var mc = m.cases().get(cix);
-        var f = mc.field;
+        var f = mc.field();
         var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc.runtimeClazzId_) : null;
         result = fc != null ? _clazzIds.get(fc) : -1;
       }
@@ -1395,9 +1395,9 @@ hw25 is
         var match = (AbstractMatch) s;
         var ss = cc.getRuntimeClazz(match.runtimeClazzId_);
         var mc = match.cases().get(cix);
-        var f = mc.field;
+        var f = mc.field();
         var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc.runtimeClazzId_) : null;
-        int nt = f != null ? 1 : mc.types.size();
+        int nt = f != null ? 1 : mc.types().size();
         var resultL = new List<Integer>();
         int tag = 0;
         for (var cg : ss.choiceGenerics())

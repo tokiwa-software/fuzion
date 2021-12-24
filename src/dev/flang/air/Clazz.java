@@ -35,12 +35,12 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
+import dev.flang.ast.AbstractCase; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Assign; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Call; // NYI: remove dependency!
-import dev.flang.ast.Case; // NYI: remove dependency!
 import dev.flang.ast.Consts; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
@@ -1177,7 +1177,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     public void        action     (Unbox        u, AbstractFeature outer) { Clazzes.findClazzes(u, Clazz.this); }
     public void        action     (Assign       a, AbstractFeature outer) { Clazzes.findClazzes(a, Clazz.this); }
     public void        action     (Box          b, AbstractFeature outer) { Clazzes.findClazzes(b, Clazz.this); }
-    public void        actionAfter(Case         c, AbstractFeature outer) { Clazzes.findClazzes(c, Clazz.this); }
+    public void        actionAfter(AbstractCase c                       ) { Clazzes.findClazzes(c, Clazz.this); }
     public void        action     (AbstractCall c                       ) { Clazzes.findClazzes(c, Clazz.this); }
     public void        action     (If           i, AbstractFeature outer) { Clazzes.findClazzes(i, Clazz.this); }
     public InlineArray action     (InlineArray  i, AbstractFeature outer) { Clazzes.findClazzes(i, Clazz.this); return i; }

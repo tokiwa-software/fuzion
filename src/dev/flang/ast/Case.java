@@ -49,7 +49,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Case extends ANY
+public class Case extends AbstractCase
 {
 
 
@@ -60,28 +60,25 @@ public class Case extends ANY
 
 
   /**
-   * The soucecode position of this case, used for error messages.
-   */
-  public final SourcePosition pos;
-
-
-  /**
    * Field with type from this.type created in case fieldName != null.
    */
-  public final Feature field;
+  final Feature _field;
+  public AbstractFeature field() { return _field; }
 
 
   /**
    * List of types to be matched against. null if we match against type or match
    * everything.
    */
-  public final List<AbstractType> types;
+  final List<AbstractType> _types;
+  public List<AbstractType> types() { return _types; }
 
 
   /**
    * code to be executed in case of a match
    */
-  public Block code;
+  public Block _code;
+  public Block code() { return _code; }
 
 
   /**
@@ -162,16 +159,17 @@ public class Case extends ANY
                List<AbstractType> l,
                Block c)
   {
+    super(p);
+
     if (PRECONDITIONS) require
       (p != null,
        (l == null) || (f == null),  // if l is non-null, t is null
        c != null                    // code is never null
        );
 
-    pos   = p;
-    field = f;
-    types = l;
-    code  = c;
+    _field = f;
+    _types = l;
+    _code  = c;
   }
 
 
@@ -188,21 +186,21 @@ public class Case extends ANY
    */
   public void visit(FeatureVisitor v, AbstractFeature outer)
   {
-    v.actionBefore(this, outer);
-    if (field != null)
+    v.actionBefore(this);
+    if (_field != null)
       {
-        field.visit(v, outer);
+        _field.visit(v, outer);
       }
-    if (types != null)
+    if (_types != null)
       {
-        var i = types.listIterator();
+        var i = _types.listIterator();
         while (i.hasNext())
           {
             i.set(i.next().visit(v, outer));
           }
       }
-    code = code.visit(v, outer);
-    v.actionAfter(this, outer);
+    _code = _code.visit(v, outer);
+    v.actionAfter(this);
   }
 
 
@@ -224,16 +222,16 @@ public class Case extends ANY
   boolean resolveType(Resolution res, List<AbstractType> cgs, AbstractFeature outer, SourcePosition[] matched)
   {
     boolean result = true;
-    if (field != null)
+    if (_field != null)
       {
-        var t = field.returnType().functionReturnType();
+        var t = _field.returnType().functionReturnType();
         var rt = resolveType(res, t, cgs, outer, matched);
-        field._returnType = new FunctionReturnType(rt);
+        _field._returnType = new FunctionReturnType(rt);
         result &= rt != Types.t_ERROR;
       }
-    if (types != null)
+    if (_types != null)
       {
-        var ti = types.listIterator();
+        var ti = _types.listIterator();
         while (ti.hasNext())
           {
             var t = ti.next();
@@ -281,9 +279,9 @@ public class Case extends ANY
             matches.add(cg);
             if (matched[i] != null)
               {
-                AstErrors.repeatedMatch(pos, matched[i], t, cgs);
+                AstErrors.repeatedMatch(pos(), matched[i], t, cgs);
               }
-            matched[i] = pos;
+            matched[i] = pos();
           }
         i++;
       }
@@ -298,13 +296,13 @@ public class Case extends ANY
               }
             else
               {
-                AstErrors.matchCaseDoesNotMatchAny(pos, original_t, cgs);
+                AstErrors.matchCaseDoesNotMatchAny(pos(), original_t, cgs);
                 t = Types.t_ERROR;
               }
           }
         else
           {
-            AstErrors.matchCaseMatchesSeveral(pos, original_t, cgs, matches);
+            AstErrors.matchCaseMatchesSeveral(pos(), original_t, cgs, matches);
           }
       }
     return t;
@@ -319,25 +317,25 @@ public class Case extends ANY
   public String toString()
   {
     var sb = new StringBuilder();
-    if (field != null)
+    if (_field != null)
       {
-        sb.append(field.featureName().baseName() + " " + field.returnType());
+        sb.append(_field.featureName().baseName() + " " + _field.returnType());
       }
-    else if (types == null)
+    else if (_types == null)
       {
         sb.append("*");
       }
     else
       {
         boolean first = true;
-        for (var t : types)
+        for (var t : _types)
           {
             sb.append(first ? "" : ", ");
             sb.append(t.toString());
             first = false;
           }
       }
-    sb.append(" => ").append(code);
+    sb.append(" => ").append(code());
 
     return sb.toString();
   }

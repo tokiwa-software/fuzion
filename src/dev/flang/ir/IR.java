@@ -271,7 +271,7 @@ public class IR extends ANY
         l.add(m);
         for (var c : m.cases())
           {
-            var caseCode = toStack(c.code);
+            var caseCode = toStack(c.code());
             l.add(new NumLiteral(_codeIds.add(caseCode)));
           }
       }

@@ -20,26 +20,33 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class AbstractMatch
+ * Source of class AbstractCase
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.ast;
 
+import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 
 /**
- * AbstractMatch represents a complete match expression, e.g.,
+ * AbstractCase represents one case in a match expression, e.g.,
  *
- *   x ? A,B => { a; },
- *       C c => { c.x; },
- *       *   => { q; }
+ *   A,B => { a; }
+ *
+ * or
+ *
+ *   C c => { c.x; },
+ *
+ * or
+ *
+ *   *   => { q; }
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractMatch extends Expr
+public abstract class AbstractCase extends ANY
 {
 
 
@@ -47,8 +54,14 @@ public abstract class AbstractMatch extends Expr
 
 
   /**
-   * Id to store the match's subject's clazz in the static outer clazz at
-   * runtime.
+   * The soucecode position of this case, used for error messages.
+   */
+  final SourcePosition _pos;
+
+
+  /**
+   * Counter for a unique id for this case statement. This is used to store data
+   * in the runtime clazz for this case.
    */
   public int runtimeClazzId_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
@@ -57,13 +70,13 @@ public abstract class AbstractMatch extends Expr
 
 
   /**
-   * Constructor for a AbstractMatch
+   * Constructor for an AbstractCase that assigns
    *
    * @param pos the soucecode position, used for error messages.
    */
-  public AbstractMatch(SourcePosition pos)
+  public AbstractCase(SourcePosition pos)
   {
-    super(pos);
+    _pos = pos;
   }
 
 
@@ -71,16 +84,31 @@ public abstract class AbstractMatch extends Expr
 
 
   /**
-   * The subject under investigation here.
+   * The soucecode position of this case, used for error messages.
    */
-  public abstract Expr subject();
+  public SourcePosition pos()
+  {
+    return _pos;
+  }
 
 
   /**
-   * The list of cases in this match expression
+   * Field with type from this.type created in case fieldName != null.
    */
-  public abstract List<AbstractCase> cases();
+  public abstract AbstractFeature field();
 
+
+  /**
+   * List of types to be matched against. null if we match against type or match
+   * everything.
+   */
+  public abstract List<AbstractType> types();
+
+
+  /**
+   * code to be executed in case of a match
+   */
+  public abstract Block code();
 
 }
 
