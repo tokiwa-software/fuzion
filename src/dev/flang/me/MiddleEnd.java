@@ -30,12 +30,12 @@ import dev.flang.air.AIR;
 
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
+import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Call; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
-import dev.flang.ast.Match; // NYI: remove dependency!
 import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
@@ -240,7 +240,7 @@ public class MiddleEnd extends ANY
         // public Type  action(Type    t, AbstractFeature outer) { t.findUsedFeatures(res, pos); return t; }
         public void action(AbstractCall c               ) { findUsedFeatures(c); }
         //        public Stmnt action(Feature f, AbstractFeature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
-        public void action(Match   m, AbstractFeature outer) { findUsedFeatures(m);           }
+        public void action(AbstractMatch m              ) { findUsedFeatures(m);           }
         public void action(Tag     t, AbstractFeature outer) { findUsedFeatures(t._taggedType, t.pos()); }
       };
     f.visitCode(fv);
@@ -291,7 +291,7 @@ public class MiddleEnd extends ANY
   /**
    * Find used features, i.e., mark all features that are found to be the target of a call as used.
    */
-  void findUsedFeatures(Match m)
+  void findUsedFeatures(AbstractMatch m)
   {
     AbstractFeature sf = m.subject().type().featureOfType();
     AbstractFeature ct = sf.choiceTag();
