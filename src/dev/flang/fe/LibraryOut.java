@@ -243,6 +243,10 @@ class LibraryOut extends DataOut
    *   | d? !isI| i      | Code          | inherits calls                                |
    *   | ntrinsc|        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | redefines count r                             |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | r      | int           | feature offset of redefined feature           |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   | isRou- | 1      | Code          | Feature code                                  |
    *   | tine   |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -318,6 +322,12 @@ class LibraryOut extends DataOut
     for (var p : i)
       {
         code(p, false);
+      }
+    var r = f.redefines();
+    writeInt(r.size());
+    for(var rf : r)
+      {
+        writeOffset(rf);
       }
     if (f.isRoutine())
       {

@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
@@ -852,13 +853,28 @@ public class LibraryFeature extends AbstractFeature
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */
+  private Set<AbstractFeature> _redefines;
   public Set<AbstractFeature> redefines()
   {
     if (LibraryModule.USE_FUM)
       {
-        throw new Error("LibraryFeature.redefines not implemented");
+        if (_redefines == null)
+          {
+            _redefines = new TreeSet<>();
+            var n = _libModule.featureRedefinesCount(_index);
+            var ip = _libModule.featureRedefinesPos(_index);
+            for (var i = 0; i < n; i++)
+              {
+                var r = _libModule.libraryFeature(_libModule.featureRedefine(_index, i), null);
+                _redefines.add(r);
+              }
+          }
+        return _redefines;
       }
-    return astFeature().redefines();
+    else
+      {
+        return astFeature().redefines();
+      }
   }
 
 

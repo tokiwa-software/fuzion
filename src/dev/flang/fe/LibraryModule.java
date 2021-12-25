@@ -685,6 +685,10 @@ public class LibraryModule extends Module
    *   | d? !isI| i      | Code          | inherits calls                                |
    *   | ntrinsc|        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | redefines count r                             |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | r      | int           | feature offset of redefined feature           |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   | isRou- | 1      | Code          | Feature code                                  |
    *   | tine   |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -813,7 +817,7 @@ public class LibraryModule extends Module
   {
     return featureInheritsCountPos(at) + 4;
   }
-  int featureCodePos(int at)
+  int featureRedefinesCountPos(int at)
   {
     var i = featureInheritsPos(at);
     var ic = featureInheritsCount(at);
@@ -823,6 +827,26 @@ public class LibraryModule extends Module
         ic--;
       }
     return i;
+  }
+  int featureRedefinesCount(int at)
+  {
+    return data().getInt(featureRedefinesCountPos(at));
+  }
+  int featureRedefinesPos(int at)
+  {
+    return featureRedefinesCountPos(at) + 4;
+  }
+  int featureRedefine(int at, int i)
+  {
+    if (PRECONDITIONS) require
+      (i >= 0,
+       i < featureRedefinesPos(at));
+
+    return data().getInt(featureRedefinesPos(at) + 4 * i);
+  }
+  int featureCodePos(int at)
+  {
+    return featureRedefinesPos(at) + 4 * featureRedefinesCount(at);
   }
   int featureInnerFeaturesPos(int at)
   {
