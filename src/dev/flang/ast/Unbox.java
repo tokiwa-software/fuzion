@@ -80,9 +80,32 @@ public class Unbox extends Expr
    *
    * @param t the result type
    */
-  public Unbox(SourcePosition pos, Expr adr, AbstractType type, AbstractFeature outer)
+  public Unbox(SourcePosition pos, Expr adr, AbstractType type)
   {
     super(pos);
+
+    if (PRECONDITIONS) require
+      (pos != null,
+       adr != null,
+       adr.type().isRef(),
+       !type.featureOfType().isThisRef()
+       );
+
+    this.adr_ = adr;
+    this.type_ = Types.intern(type); // outer.thisType().resolve(outer);
+  }
+
+
+  /**
+   * Constructor
+   *
+   * @param pos the soucecode position, used for error messages.
+   *
+   * @param t the result type
+   */
+  public Unbox(SourcePosition pos, Expr adr, AbstractType type, AbstractFeature outer)
+  {
+    this(pos, adr, type);
 
     if (PRECONDITIONS) require
       (pos != null,
@@ -91,9 +114,6 @@ public class Unbox extends Expr
        Errors.count() > 0 || type.featureOfType() == outer,
        !type.featureOfType().isThisRef()
        );
-
-    this.adr_ = adr;
-    this.type_ = Types.intern(type); // outer.thisType().resolve(outer);
   }
 
 

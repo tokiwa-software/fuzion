@@ -715,7 +715,7 @@ public class LibraryFeature extends AbstractFeature
               x = s.pop();
               if (x.type().isRef() || x.type() == Types.t_ADDRESS)
                 {
-                  x = new Unbox(x.pos(), x, _libModule.unboxType(iat), outer());
+                  x = new Unbox(x.pos(), x, _libModule.unboxType(iat));
                 }
               else
                 { // NYI: Why does this case exist?
