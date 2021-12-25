@@ -648,17 +648,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Get directly redefined features of given feature.
-   *
-   * @param f the redefining feature
-   */
-  public Set<AbstractFeature>redefines(AbstractFeature f)
-  {
-    return f.astFeature().redefines();
-  }
-
-
-  /**
    * Helper method for findInheritedFeatures and addToHeirs to add a feature
    * that this feature inherits.
    *
@@ -675,10 +664,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var existing = s == null ? null : s.get(fn);
     if (existing != null)
       {
-        if (redefines(f).contains(existing))
+        if (f.redefines().contains(existing))
           { // f redefined existing, so we are fine
           }
-        else if (redefines(existing).contains(f))
+        else if (existing.redefines().contains(f))
           { // existing redefines f, so use existing
             f = existing;
           }
@@ -736,7 +725,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
         else
           {
-            redefines(f).add(existing);
+            f.redefines().add(existing);
           }
         doi.put(fn, f);
         if (f instanceof Feature ff)
@@ -1033,7 +1022,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     var args = f.arguments();
     int ean = args.size();
-    for (var o : redefines(f))
+    for (var o : f.redefines())
       {
         var ta = o.handDown(_res, o.argTypes(), f.outer());
         var ra = f.argTypes();
