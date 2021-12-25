@@ -520,9 +520,7 @@ class LibraryOut extends DataOut
     else if (s instanceof Unbox u)
       {
         expressions(u.adr_);
-        if (u._needed)
-          {
-            write(IR.ExprKind.Unbox.ordinal());
+        write(IR.ExprKind.Unbox.ordinal());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Unbox                                                                           |
@@ -532,8 +530,7 @@ class LibraryOut extends DataOut
    *   | true   | 1      | Type          | result type                                   |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-            type(u.type());
-          }
+        type(u.type());
       }
     else if (s instanceof Box b)
       {
