@@ -712,7 +712,7 @@ public class LibraryFeature extends AbstractFeature
           case Unbox:
             {
               x = s.pop();
-              if (x.type().isRef())
+              if (x.type().isRef() || x.type() == Types.t_ADDRESS)
                 {
                   x = new Unbox(x.pos(), x, _libModule.unboxType(iat), outer());
                 }
