@@ -1709,34 +1709,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Get the actual type from a type used in this feature after it was inherited
-   * by heir.  During inheritance, formal generics may be replaced by actual
-   * generics.
-   *
-   * @param t a type used in this feature, must not be an open generic type
-   * (which can be replaced by several types during inheritance).
-   *
-   * @param heir a heir of this, might be equal to this.
-   *
-   * @return interned type that represents t seen as it is seen from heir.
-   */
-  public AbstractType handDownNonOpen(Resolution res, AbstractType t, AbstractFeature heir)
-  {
-    if (PRECONDITIONS) require
-      (!t.isOpenGeneric(),
-       heir != null,
-       _state.atLeast(State.CHECKING_TYPES1));
-
-    var a = handDown(res, new AbstractType[] { t }, heir);
-
-    check
-      (Errors.count() > 0 || a.length == 1);
-
-    return a.length == 1 ? a[0] : Types.t_ERROR;
-  }
-
-
-  /**
    * Perform type checking, in particular, verify that all redefinitions of this
    * have the argument types.  Create compile time erros if this is not the
    * case.
