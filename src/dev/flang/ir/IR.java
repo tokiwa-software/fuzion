@@ -30,9 +30,9 @@ import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.Assign; // NYI: remove dependency
 import dev.flang.ast.Block; // NYI: remove dependency
-import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Check; // NYI: remove dependency
+import dev.flang.ast.Constant; // NYI: remove dependency
 import dev.flang.ast.Current; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.Feature; // NYI: remove dependency
@@ -42,7 +42,6 @@ import dev.flang.ast.InlineArray; // NYI: remove dependency
 import dev.flang.ast.NumLiteral; // NYI: remove dependency
 import dev.flang.ast.Nop; // NYI: remove dependency
 import dev.flang.ast.Stmnt; // NYI: remove dependency
-import dev.flang.ast.StrConst; // NYI: remove dependency
 import dev.flang.ast.Tag; // NYI: remove dependency
 import dev.flang.ast.Types; // NYI: remove dependency
 import dev.flang.ast.Unbox; // NYI: remove dependency
@@ -217,7 +216,7 @@ public class IR extends ANY
             toStack(l, st, dumpResult || i < b.statements_.size()-1);
           }
       }
-    else if (s instanceof BoolConst)
+    else if (s instanceof Constant)
       {
         l.add(s);
       }
@@ -247,10 +246,6 @@ public class IR extends ANY
           }
         List<Object> elseBlockCode = toStack(elseBlock);
         l.add(new NumLiteral(_codeIds.add(elseBlockCode)));
-      }
-    else if (s instanceof NumLiteral)
-      {
-        l.add(s);
       }
     else if (s instanceof AbstractCall c)
       {
@@ -286,10 +281,6 @@ public class IR extends ANY
     else if (s instanceof Universe)
       {
         var un = (Universe) s;
-      }
-    else if (s instanceof StrConst)
-      {
-        l.add(s);
       }
     else if (s instanceof InlineArray)
       {
@@ -376,9 +367,7 @@ public class IR extends ANY
       {
         result = ExprKind.Tag;
       }
-    else if (e instanceof BoolConst   ||
-             e instanceof NumLiteral  ||
-             e instanceof StrConst    ||
+    else if (e instanceof Constant    ||
              e instanceof InlineArray   )
       {
         result = ExprKind.Const;
