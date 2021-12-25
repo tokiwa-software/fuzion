@@ -447,52 +447,6 @@ public class LibraryModule extends Module
 
 
   /**
-   * Get direct redefininitions of given Feature as seen by this module.
-   * Result is null if f has no redefinitions in this module.
-   *
-   * @param f the original feature
-   */
-  Set<AbstractFeature>redefinitionsOrNull(AbstractFeature f)
-  {
-    Set<AbstractFeature> result = null;
-    var rfs = _srcModule.redefinitionsOrNull(f.astFeature());
-    if (rfs != null)
-      {
-        result = new TreeSet<>();
-        for (var e : rfs)
-          {
-            result.add(libraryFeature(e));
-          }
-      }
-    return result;
-  }
-
-
-  /**
-   * Get direct redefininitions of given Feature as seen by this module.
-   * Result is null if f has no redefinitions in this module.
-   *
-   * @param f the original feature
-   */
-  Set<AbstractFeature>redefinitions(AbstractFeature f)
-  {
-    if (USE_FUM)
-      {
-        return new TreeSet<>(); // NYI: remove!
-      }
-    else
-      {
-        var result = redefinitionsOrNull(f.astFeature());
-        if (result == null)
-          {
-            result = new TreeSet<>();
-          }
-        return result;
-      }
-  }
-
-
-  /**
    * Find the Generic instance defined at offset in this file.
    *
    * @param offset the offset of the Generic

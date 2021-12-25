@@ -154,17 +154,6 @@ public abstract class Module extends ANY
 
 
   /**
-   * Get direct redefininitions of given Feature as seen by this module.
-   * Result is null if f has no redefinitions in this module.
-   *
-   * @param f the original feature
-   */
-  abstract Set<AbstractFeature>redefinitionsOrNull(AbstractFeature f);
-
-
-
-
-  /**
    * Get or create the data record for given outer feature.
    *
    * @param outer the feature we need to get the data record from.

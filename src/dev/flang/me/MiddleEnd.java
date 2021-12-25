@@ -26,6 +26,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.me;
 
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import dev.flang.air.AIR;
 
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
@@ -79,6 +83,13 @@ public class MiddleEnd extends ANY
    * List of features scheduled for feature index resolution
    */
   final List<AbstractFeature> _forFindingUsedFeatures = new List<>();
+
+
+  /**
+   * Redefinitions collected for used features. This contains the results of
+   * redefinitions().
+   */
+  private TreeMap<AbstractFeature, Set<AbstractFeature>> _redefinitions = new TreeMap<>();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -165,6 +176,25 @@ public class MiddleEnd extends ANY
 
 
   /**
+   * Get direct redefininitions of given Feature.  This set is filled
+   * dynamically with all used features that are found.
+   *
+   * Result is never null.
+   *
+   * @param f the original feature
+   */
+  Set<AbstractFeature>redefinitions(AbstractFeature f)
+  {
+    var r = _redefinitions.get(f);
+    if (r == null)
+      {
+        r = new TreeSet<>();
+        _redefinitions.put(f,r);
+      }
+    return r;
+  }
+
+  /**
    * During FINDING_USED_FEATURES, this sets the flag that this feature is used.
    *
    * @param dynamically true iff this feature is called dynamically, i.e., it
@@ -207,7 +237,19 @@ public class MiddleEnd extends ANY
           {
             markUsed(f.outerRef(), false, usedAt);
           }
-        for (AbstractFeature rf : _mir._module.redefinitions(f))
+
+        for (var df : _mir._module.declaredFeatures(f).values())
+          {
+            for (AbstractFeature of : df.astFeature().redefines())
+              {
+                if (Clazzes.isUsedAtAll(of))
+                  {
+                    markUsed(df, usedAt);
+                  }
+                redefinitions(of).add(df);
+              }
+          }
+        for (AbstractFeature rf : redefinitions(f))
           {
             markUsed(rf, usedAt);
           }
