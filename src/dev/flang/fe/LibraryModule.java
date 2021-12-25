@@ -1197,6 +1197,12 @@ public class LibraryModule extends Module
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Con | 1      | Constant      | constant                                      |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | k==Cal | 1      | Call          | feature call                                  |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | k==Mat | 1      | Match         | match statement                               |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | k==Tag | 1      | Tag           | tag expression                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
    */
   int expressionKindPos(int at)
   {
@@ -1223,7 +1229,7 @@ public class LibraryModule extends Module
       case Current -> eAt;
       case Match   -> matchNextPos(eAt);
       case Call    -> callNextPos (eAt);
-      case Tag     -> eAt;
+      case Tag     -> tagNextPos  (eAt);
       case Pop     -> eAt;
       case Unit    -> eAt;
       default      -> throw new Error("unexpected expression kind "+k+" at "+at+" in "+this);
@@ -1596,6 +1602,29 @@ public class LibraryModule extends Module
   int caseNextPos(int at)
   {
     return codeNextPos(caseCodePos(at));
+  }
+
+
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Tag                                                                             |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Type          | resulting tagged union type                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+  int tagTypePos(int at)
+  {
+    return at;
+  }
+  AbstractType tagType(int at)
+  {
+    return type(tagTypePos(at), DUMMY_POS, null);
+  }
+  int tagNextPos(int at)
+  {
+    return typeNextPos(tagTypePos(at));
   }
 
 

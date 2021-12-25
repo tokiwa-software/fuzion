@@ -795,9 +795,7 @@ public class LibraryFeature extends AbstractFeature
           case Tag:
             {
               var val = s.pop();
-              // NYI: tag
-              if (_libModule.USE_FUM) System.out.println("NYI: Tag in "+qualifiedName());
-              var taggedType = Types.resolved.t_unit; // NYI!
+              var taggedType = _libModule.tagType(iat);
               x = new Tag(val, taggedType);
               break;
             }
