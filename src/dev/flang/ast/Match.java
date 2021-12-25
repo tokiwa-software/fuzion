@@ -114,6 +114,7 @@ public class Match extends AbstractMatch
   public Match visit(FeatureVisitor v, AbstractFeature outer)
   {
     _subject = _subject.visit(v, outer);
+    v.action(this);
     v.action(this, outer);
     for (var c: cases())
       {

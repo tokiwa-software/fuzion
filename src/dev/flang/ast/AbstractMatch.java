@@ -106,6 +106,7 @@ public abstract class AbstractMatch extends Expr
     check
       (subject() == ns);
 
+    v.action(this);
     for (var c: cases())
       {
         c.visit(v, outer);

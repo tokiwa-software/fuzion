@@ -37,6 +37,7 @@ import java.util.TreeSet;
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractCase; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
+import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Assign; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
@@ -48,7 +49,6 @@ import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
-import dev.flang.ast.Match; // NYI: remove dependency!
 import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
@@ -1181,7 +1181,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     public void        action     (AbstractCall c                       ) { Clazzes.findClazzes(c, Clazz.this); }
     public void        action     (If           i, AbstractFeature outer) { Clazzes.findClazzes(i, Clazz.this); }
     public InlineArray action     (InlineArray  i, AbstractFeature outer) { Clazzes.findClazzes(i, Clazz.this); return i; }
-    public void        action     (Match        m, AbstractFeature outer) { Clazzes.findClazzes(m, Clazz.this); }
+    public void        action     (AbstractMatch m                      ) { Clazzes.findClazzes(m, Clazz.this); }
     public void        action     (Tag          t, AbstractFeature outer) { Clazzes.findClazzes(t, Clazz.this); }
     void visitAncestors(AbstractFeature f)
     {
