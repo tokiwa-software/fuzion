@@ -55,15 +55,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
    * LibraryFeature, this will be loaded from the library module file.
    */
-  private Set<AbstractFeature> _redefines = null;
-  public Set<AbstractFeature> redefines()
-  {
-    if (_redefines == null)
-      {
-        _redefines = new TreeSet<>();
-      }
-    return _redefines;
-  }
+  public abstract Set<AbstractFeature> redefines();
 
 
   /**

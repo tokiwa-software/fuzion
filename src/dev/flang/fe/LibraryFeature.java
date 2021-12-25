@@ -29,6 +29,7 @@ package dev.flang.fe;
 import java.nio.charset.StandardCharsets;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.Stack;
 
 import dev.flang.ast.AbstractCall;
@@ -843,6 +844,23 @@ public class LibraryFeature extends AbstractFeature
         return _from.contract();
       }
   }
+
+
+  /**
+   * All features that have been found to be directly redefined by this feature.
+   * This does not include redefintions of redefinitions.  Four Features loaded
+   * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
+   * LibraryFeature, this will be loaded from the library module file.
+   */
+  public Set<AbstractFeature> redefines()
+  {
+    if (LibraryModule.USE_FUM)
+      {
+        throw new Error("LibraryFeature.redefines not implemented");
+      }
+    return astFeature().redefines();
+  }
+
 
   public AbstractFeature astFeature() { return _libModule.USE_FUM ? this : _from; }
 

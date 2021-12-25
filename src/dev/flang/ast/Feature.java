@@ -290,6 +290,23 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
+   * All features that have been found to be directly redefined by this feature.
+   * This does not include redefintions of redefinitions.  Four Features loaded
+   * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
+   * LibraryFeature, this will be loaded from the library module file.
+   */
+  private Set<AbstractFeature> _redefines = null;
+  public Set<AbstractFeature> redefines()
+  {
+    if (_redefines == null)
+      {
+        _redefines = new TreeSet<>();
+      }
+    return _redefines;
+  }
+
+
+  /**
    * The source module this is defined in.  This is set when this is first
    * scheduled for resolution.
    */
