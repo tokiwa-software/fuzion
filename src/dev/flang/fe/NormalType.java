@@ -34,6 +34,7 @@ import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Type;
+import dev.flang.ast.Types;
 
 import dev.flang.util.List;
 
@@ -191,7 +192,7 @@ public class NormalType extends LibraryType
     var result = _asRef;
     if (result == null)
       {
-        var fromRef =  _from instanceof NormalType ? null : _from.asRef();
+        var fromRef =  _from instanceof NormalType ? null : Types.intern(_from).asRef();
         result = isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, Type.RefOrVal.Ref, _generics, _outer, fromRef);
         _asRef = result;
       }
@@ -203,7 +204,7 @@ public class NormalType extends LibraryType
     var result = _asValue;
     if (result == null)
       {
-        var fromValue =  _from instanceof NormalType ? null : _from.asValue();
+        var fromValue =  _from instanceof NormalType ? null : Types.intern(_from).asValue();
         result = !isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, Type.RefOrVal.Value, _generics, _outer, fromValue);
         _asValue = result;
       }
