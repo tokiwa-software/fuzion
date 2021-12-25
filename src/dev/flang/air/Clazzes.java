@@ -40,8 +40,8 @@ import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Assign; // NYI: remove dependency!
 import dev.flang.ast.Block; // NYI: remove dependency!
-import dev.flang.ast.BoolConst; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
+import dev.flang.ast.Constant; // NYI: remove dependency!
 import dev.flang.ast.Current; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
@@ -49,7 +49,6 @@ import dev.flang.ast.FunctionReturnType; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
-import dev.flang.ast.NumLiteral; // NYI: remove dependency!
 import dev.flang.ast.Old; // NYI: remove dependency!
 import dev.flang.ast.StrConst; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
@@ -1035,16 +1034,6 @@ public class Clazzes extends ANY
         result = outerClazz.actualClazz(i.type());
       }
 
-    else if (e instanceof BoolConst b)
-      {
-        result = bool.get();
-      }
-
-    else if (e instanceof NumLiteral i)
-      {
-        result = outerClazz.actualClazz(i.type());
-      }
-
     else if (e instanceof AbstractMatch m)
       {
         result = outerClazz.actualClazz(m.type());
@@ -1062,9 +1051,12 @@ public class Clazzes extends ANY
 
     else if (e instanceof StrConst s)
       {
-        i32.get();
-        object.get();
         result = conststring.get();
+      }
+
+    else if (e instanceof Constant c)
+      {
+        result = outerClazz.actualClazz(c.type());
       }
 
     else if (e instanceof Tag t)
