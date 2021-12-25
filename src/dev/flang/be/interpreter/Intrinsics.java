@@ -612,7 +612,7 @@ public class Intrinsics extends ANY
   {
     // NYI: Properly determine generic argument type of array
     var arrayType = arrayClazz._type;
-    if (arrayType == Types.resolved.t_conststring /* NYI: Hack */)
+    if (arrayType.compareTo(Types.resolved.t_conststring) == 0 /* NYI: Hack */)
       {
         return Types.resolved.t_i32;
       }
@@ -627,16 +627,16 @@ public class Intrinsics extends ANY
   {
     // NYI: Properly determine generic argument type of array
     var elementType = elementType(arrayClazz);
-    if      (elementType == Types.resolved.t_i8  ) { return new ArrayData(new byte   [sz]); }
-    else if (elementType == Types.resolved.t_i16 ) { return new ArrayData(new short  [sz]); }
-    else if (elementType == Types.resolved.t_i32 ) { return new ArrayData(new int    [sz]); }
-    else if (elementType == Types.resolved.t_i64 ) { return new ArrayData(new long   [sz]); }
-    else if (elementType == Types.resolved.t_u8  ) { return new ArrayData(new byte   [sz]); }
-    else if (elementType == Types.resolved.t_u16 ) { return new ArrayData(new char   [sz]); }
-    else if (elementType == Types.resolved.t_u32 ) { return new ArrayData(new int    [sz]); }
-    else if (elementType == Types.resolved.t_u64 ) { return new ArrayData(new long   [sz]); }
-    else if (elementType == Types.resolved.t_bool) { return new ArrayData(new boolean[sz]); }
-    else                                           { return new ArrayData(new Value  [sz]); }
+    if      (elementType.compareTo(Types.resolved.t_i8  ) == 0) { return new ArrayData(new byte   [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_i16 ) == 0) { return new ArrayData(new short  [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_i32 ) == 0) { return new ArrayData(new int    [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_i64 ) == 0) { return new ArrayData(new long   [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_u8  ) == 0) { return new ArrayData(new byte   [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_u16 ) == 0) { return new ArrayData(new char   [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_u32 ) == 0) { return new ArrayData(new int    [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_u64 ) == 0) { return new ArrayData(new long   [sz]); }
+    else if (elementType.compareTo(Types.resolved.t_bool) == 0) { return new ArrayData(new boolean[sz]); }
+    else                                                        { return new ArrayData(new Value  [sz]); }
   }
 
   static void sysArraySetEl(ArrayData ad,
@@ -647,16 +647,16 @@ public class Intrinsics extends ANY
     // NYI: Properly determine generic argument type of array
     var elementType = elementType(arrayClazz);
     ad.checkIndex(x);
-    if      (elementType == Types.resolved.t_i8  ) { ((byte   [])ad._array)[x] = (byte   ) v.i8Value();   }
-    else if (elementType == Types.resolved.t_i16 ) { ((short  [])ad._array)[x] = (short  ) v.i16Value();  }
-    else if (elementType == Types.resolved.t_i32 ) { ((int    [])ad._array)[x] =           v.i32Value();  }
-    else if (elementType == Types.resolved.t_i64 ) { ((long   [])ad._array)[x] =           v.i64Value();  }
-    else if (elementType == Types.resolved.t_u8  ) { ((byte   [])ad._array)[x] = (byte   ) v.u8Value();   }
-    else if (elementType == Types.resolved.t_u16 ) { ((char   [])ad._array)[x] = (char   ) v.u16Value();  }
-    else if (elementType == Types.resolved.t_u32 ) { ((int    [])ad._array)[x] =           v.u32Value();  }
-    else if (elementType == Types.resolved.t_u64 ) { ((long   [])ad._array)[x] =           v.u64Value();  }
-    else if (elementType == Types.resolved.t_bool) { ((boolean[])ad._array)[x] =           v.boolValue(); }
-    else                                           { ((Value  [])ad._array)[x] =           v;             }
+    if      (elementType.compareTo(Types.resolved.t_i8  ) == 0) { ((byte   [])ad._array)[x] = (byte   ) v.i8Value();   }
+    else if (elementType.compareTo(Types.resolved.t_i16 ) == 0) { ((short  [])ad._array)[x] = (short  ) v.i16Value();  }
+    else if (elementType.compareTo(Types.resolved.t_i32 ) == 0) { ((int    [])ad._array)[x] =           v.i32Value();  }
+    else if (elementType.compareTo(Types.resolved.t_i64 ) == 0) { ((long   [])ad._array)[x] =           v.i64Value();  }
+    else if (elementType.compareTo(Types.resolved.t_u8  ) == 0) { ((byte   [])ad._array)[x] = (byte   ) v.u8Value();   }
+    else if (elementType.compareTo(Types.resolved.t_u16 ) == 0) { ((char   [])ad._array)[x] = (char   ) v.u16Value();  }
+    else if (elementType.compareTo(Types.resolved.t_u32 ) == 0) { ((int    [])ad._array)[x] =           v.u32Value();  }
+    else if (elementType.compareTo(Types.resolved.t_u64 ) == 0) { ((long   [])ad._array)[x] =           v.u64Value();  }
+    else if (elementType.compareTo(Types.resolved.t_bool) == 0) { ((boolean[])ad._array)[x] =           v.boolValue(); }
+    else                                                        { ((Value  [])ad._array)[x] =           v;             }
   }
 
 
@@ -667,16 +667,16 @@ public class Intrinsics extends ANY
     // NYI: Properly determine generic argument type of array
     var elementType = elementType(arrayClazz);
     ad.checkIndex(x);
-    if      (elementType == Types.resolved.t_i8  ) { return new i8Value  (((byte   [])ad._array)[x]       ); }
-    else if (elementType == Types.resolved.t_i16 ) { return new i16Value (((short  [])ad._array)[x]       ); }
-    else if (elementType == Types.resolved.t_i32 ) { return new i32Value (((int    [])ad._array)[x]       ); }
-    else if (elementType == Types.resolved.t_i64 ) { return new i64Value (((long   [])ad._array)[x]       ); }
-    else if (elementType == Types.resolved.t_u8  ) { return new u8Value  (((byte   [])ad._array)[x] & 0xff); }
-    else if (elementType == Types.resolved.t_u16 ) { return new u16Value (((char   [])ad._array)[x]       ); }
-    else if (elementType == Types.resolved.t_u32 ) { return new u32Value (((int    [])ad._array)[x]       ); }
-    else if (elementType == Types.resolved.t_u64 ) { return new u64Value (((long   [])ad._array)[x]       ); }
-    else if (elementType == Types.resolved.t_bool) { return new boolValue(((boolean[])ad._array)[x]       ); }
-    else                                           { return              ((Value   [])ad._array)[x]        ; }
+    if      (elementType.compareTo(Types.resolved.t_i8  ) == 0) { return new i8Value  (((byte   [])ad._array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_i16 ) == 0) { return new i16Value (((short  [])ad._array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_i32 ) == 0) { return new i32Value (((int    [])ad._array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_i64 ) == 0) { return new i64Value (((long   [])ad._array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_u8  ) == 0) { return new u8Value  (((byte   [])ad._array)[x] & 0xff); }
+    else if (elementType.compareTo(Types.resolved.t_u16 ) == 0) { return new u16Value (((char   [])ad._array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_u32 ) == 0) { return new u32Value (((int    [])ad._array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_u64 ) == 0) { return new u64Value (((long   [])ad._array)[x]       ); }
+    else if (elementType.compareTo(Types.resolved.t_bool) == 0) { return new boolValue(((boolean[])ad._array)[x]       ); }
+    else                                                        { return              ((Value   [])ad._array)[x]        ; }
   }
 
 }
