@@ -532,7 +532,11 @@ public class LibraryModule extends Module
     if (result == null)
       {
         var k = typeKind(at);
-        if (k == -3)
+        if (k == -4)
+          {
+            return Types.t_ADDRESS;
+          }
+        else if (k == -3)
           {
             return Types.resolved.universe.thisType();
           }
@@ -972,6 +976,8 @@ public class LibraryModule extends Module
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | the kind of this type tk                      |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | tk==-4 | 1      | unit          | ADDRESS                                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-3 | 1      | unit          | type of universe                              |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-2 | 1      | int           | index of type                                 |
@@ -991,6 +997,13 @@ public class LibraryModule extends Module
   int typeKind(int at)
   {
     return data().getInt(at);
+  }
+  int typeAddressPos(int at)
+  {
+    if (PRECONDITIONS) require
+      (typeKind(at) == -4);
+
+    return at+4;
   }
   int typeUniversePos(int at)
   {
@@ -1080,7 +1093,11 @@ public class LibraryModule extends Module
   int typeNextPos(int at)
   {
     var k = typeKind(at);
-    if (k == -3)
+    if (k == -4)
+      {
+        return typeAddressPos(at) + 0;
+      }
+    else if (k == -3)
       {
         return typeUniversePos(at) + 0;
       }
