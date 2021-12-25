@@ -146,6 +146,8 @@ public class MiddleEnd extends ANY
     markUsed(((Feature)universe /* NYI: Cast! */).get("u16",1).get("val"), SourcePosition.builtIn);
     markUsed(((Feature)universe /* NYI: Cast! */).get("u32",1).get("val"), SourcePosition.builtIn);
     markUsed(((Feature)universe /* NYI: Cast! */).get("u64",1).get("val"), SourcePosition.builtIn);
+    markUsed(((Feature)universe /* NYI: Cast! */).get("f32",1).get("val"), SourcePosition.builtIn);
+    markUsed(((Feature)universe /* NYI: Cast! */).get("f64",1).get("val"), SourcePosition.builtIn);
     markUsed(((Feature)universe /* NYI: Cast! */).get("bool").get(tag) , SourcePosition.builtIn);
     markUsed(((Feature)universe /* NYI: Cast! */).get("conststring")   , SourcePosition.builtIn);
     markUsed(((Feature)universe /* NYI: Cast! */).get("conststring").get("isEmpty"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
