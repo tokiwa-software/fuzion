@@ -770,7 +770,8 @@ public class Clazzes extends ANY
       }
     else
       {
-        throw new Error("unexpected box target statement: " + s.getClass());
+        if (!dev.flang.fe.LibraryModule.USE_FUM)
+          throw new Error("unexpected box target statement: " + s.getClass());
       }
     if (ft != null)
       {
