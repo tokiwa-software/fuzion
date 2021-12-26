@@ -235,6 +235,7 @@ JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
+MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_JAVA_BASE         = $(BUILD_DIR)/modules/java.base/__marker_for_make__
 MOD_JAVA_XML          = $(BUILD_DIR)/modules/java.xml/__marker_for_make__
 MOD_JAVA_DATATRANSFER = $(BUILD_DIR)/modules/java.datatransfer/__marker_for_make__
@@ -245,6 +246,7 @@ VERSION = $(shell cat $(FZ_SRC)/version.txt)
 ALL = \
 	$(BUILD_DIR)/bin/fz \
 	$(BUILD_DIR)/bin/fzjava \
+	$(MOD_BASE) \
 	$(MOD_JAVA_BASE) \
 	$(MOD_JAVA_XML) \
 	$(MOD_JAVA_DATATRANSFER) \
@@ -385,6 +387,10 @@ $(BUILD_DIR)/bin/fz: $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/bin/fz $@
 	chmod +x $@
+
+$(MOD_BASE): $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz
+	mkdir -p $(@D)
+	$(BUILD_DIR)/bin/fz -XsaveBaseLib=$@
 
 $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)

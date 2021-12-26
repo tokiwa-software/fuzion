@@ -26,6 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.io.IOException;
+
+import java.nio.channels.Channels;
+
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import dev.flang.mir.MIR;
@@ -73,6 +78,10 @@ public class FrontEnd extends ANY
   {
     var universe = Feature.createUniverse();
     Types.reset();
+    if (options._saveBaseLib != null)
+      {
+        LibraryModule.USE_FUM = true;
+      }
     if (LibraryModule.USE_FUM)
       {
         universe = new Feature.Universe()
@@ -116,6 +125,22 @@ public class FrontEnd extends ANY
         var srcModule = new SourceModule(options, sourceDirs, null, null, new Module[0], universe);
         var mir = srcModule.createMIR();
         var data = mir._module.data();
+        var p = options._saveBaseLib;
+        if (p != null)
+          {
+            System.out.println(" + " + p);
+            try (var os = Files.newOutputStream(p))
+              {
+                Channels.newChannel(os).write(data);
+              }
+            catch (IOException io)
+              {
+                Errors.error("FrontEnd I/O error when writing module file",
+                             "While trying to write file '"+ p + "' received '" + io + "'");
+              }
+            _module = null;
+            return;
+          }
         // yippieh: At this point, we forget srcModule and continue with data only:
         _stdlib = new LibraryModule(options, "stdlib", data, new Module[0], universe);
       }

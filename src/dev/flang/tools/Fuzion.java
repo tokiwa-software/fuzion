@@ -177,6 +177,12 @@ class Fuzion extends Tool
 
 
   /**
+   * Should we save the base library?
+   */
+  Path _saveBaseLib = null;
+
+
+  /**
    * Flag to enable intrinsic functions such as fuzion.java.callVirtual. These are
    * not allowed if run in a web playground.
    */
@@ -259,7 +265,7 @@ class Fuzion extends Tool
   protected String STANDARD_OPTIONS(boolean xtra)
   {
     return super.STANDARD_OPTIONS(xtra) +
-      (xtra ? "[-XfuzionHome=<path>] " : "");
+      (xtra ? "[-XfuzionHome=<path>] [-XsaveBaseLib=<path>] " : "");
   }
 
 
@@ -446,6 +452,7 @@ class Fuzion extends Tool
                 _backend = _allBackends_.get(a);
               }
             else if (a.startsWith("-XfuzionHome="     )) { _fuzionHome             = parsePath(a);              }
+            else if (a.startsWith("-XsaveBaseLib="    )) { _saveBaseLib            = parsePath(a);              }
             else if (a.startsWith("-modules="         )) { _modules.addAll(parseStringListArg(a));              }
             else if (a.matches("-debug(=\\d+|)"       )) { _debugLevel             = parsePositiveIntArg(a, 1); }
             else if (a.startsWith("-safety="          )) { _safety                 = parseOnOffArg(a);          }
@@ -467,9 +474,17 @@ class Fuzion extends Tool
               }
           }
       }
-    if (_main == null && !_readStdin)
+    if (_main == null && !_readStdin && _saveBaseLib == null)
       {
         fatal("missing main feature name in command line args");
+      }
+    if (_saveBaseLib != null && _main != null)
+      {
+        fatal("no main feature '" + _main + "' may be given if -XsaveBaseLib is set");
+      }
+    if (_saveBaseLib != null && _readStdin)
+      {
+        fatal("no '-' to read from stdin may be given if -XsaveBaseLib is set");
       }
     if (_main != null && _readStdin)
       {
@@ -487,6 +502,7 @@ class Fuzion extends Tool
       {
         var options = new FrontEndOptions(_verbose,
                                           _fuzionHome,
+                                          _saveBaseLib,
                                           _modules,
                                           _debugLevel,
                                           _safety,
@@ -499,32 +515,40 @@ class Fuzion extends Tool
         long jvmStartTime = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime();
         long prepTime = System.currentTimeMillis();
         var fe = new FrontEnd(options);
-        var mir = fe.createMIR();
-        long feTime = System.currentTimeMillis();
-        var air = new MiddleEnd(options, mir, fe.res()._module /* NYI: remove */).air();
-        long meTime = System.currentTimeMillis();
-        var fuir = new Optimizer(options, air).fuir();
-        long irTime = System.currentTimeMillis();
-        switch (_backend)
+        if (_saveBaseLib == null)
           {
-          case interpreter:
-            {
-              Intrinsics.ENABLE_UNSAFE_INTRINSICS = _enableUnsafeIntrinsics;  // NYI: Add to Fuzion IR or BE Config
-              var in = new Interpreter(fuir);
-              irTime = System.currentTimeMillis();
-              in.run(); break;
-            }
-          case c          : new C(new COptions(options, _binaryName_), fuir).compile(); break;
-          default         : Errors.fatal("backend '" + _backend + "' not supported yet"); break;
-          }
-        long beTime = System.currentTimeMillis();
+            var mir = fe.createMIR();
+            long feTime = System.currentTimeMillis();
+            var air = new MiddleEnd(options, mir, fe.res()._module /* NYI: remove */).air();
+            long meTime = System.currentTimeMillis();
+            var fuir = new Optimizer(options, air).fuir();
+            long irTime = System.currentTimeMillis();
+            switch (_backend)
+              {
+              case interpreter:
+                {
+                  Intrinsics.ENABLE_UNSAFE_INTRINSICS = _enableUnsafeIntrinsics;  // NYI: Add to Fuzion IR or BE Config
+                  var in = new Interpreter(fuir);
+                  irTime = System.currentTimeMillis();
+                  in.run(); break;
+                }
+              case c          : new C(new COptions(options, _binaryName_), fuir).compile(); break;
+              default         : Errors.fatal("backend '" + _backend + "' not supported yet"); break;
+              }
+            long beTime = System.currentTimeMillis();
 
-        beTime -= irTime;
-        irTime -= meTime;
-        meTime -= feTime;
-        feTime -= prepTime;
-        prepTime -= jvmStartTime;
-        options.verbosePrintln(1, "Elapsed time for phases: prep "+prepTime+"ms, fe "+feTime+"ms, me "+meTime+"ms, ir "+irTime+"ms, be "+beTime+"ms");
+            beTime -= irTime;
+            irTime -= meTime;
+            meTime -= feTime;
+            feTime -= prepTime;
+            prepTime -= jvmStartTime;
+            options.verbosePrintln(1, "Elapsed time for phases: prep "+prepTime+"ms, fe "+feTime+"ms, me "+meTime+"ms, ir "+irTime+"ms, be "+beTime+"ms");
+          }
+        else
+          {
+            long feTime = System.currentTimeMillis();
+            options.verbosePrintln(1, "Elapsed time for phases: prep "+prepTime+"ms, fe "+feTime+"ms");
+          }
       };
   }
 
