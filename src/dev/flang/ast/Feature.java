@@ -1417,22 +1417,16 @@ public class Feature extends AbstractFeature implements Stmnt
    * Find list of all accesses to this feature's closure by any of its inner
    * features.
    */
-  private List<Call> closureAccesses(Resolution res)
+  private List<AbstractCall> closureAccesses(Resolution res)
   {
-    List<Call> result = new List<>();
+    List<AbstractCall> result = new List<>();
     for (AbstractFeature af : res._module.declaredOrInheritedFeatures(this).values())
       {
-        var f = (Feature) af.astFeature();
-        f.visit(new FeatureVisitor()
-          {
-            public Call action(Call c, AbstractFeature outer)
-            {
-              if (c.calledFeature() == outerRef())
-                {
-                  result.add(c);
-                }
-              return c;
-            }
+        af.visitStatements(s -> {
+            if (s instanceof AbstractCall c && c.calledFeature() == outerRef())
+              {
+                result.add(c);
+              }
           });
       }
     return result;
@@ -1449,11 +1443,11 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   void checkNoClosureAccesses(Resolution res, SourcePosition errorPos)
   {
-    List<Call> closureAccesses = closureAccesses(res);
+    var closureAccesses = closureAccesses(res);
     if (!closureAccesses.isEmpty())
       {
         StringBuilder accesses = new StringBuilder();
-        for (Call c: closureAccesses)
+        for (var c: closureAccesses)
           {
             accesses.append(c.pos.show()).append("\n");
           }
