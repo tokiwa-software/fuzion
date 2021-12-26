@@ -707,6 +707,28 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Call v.action(s) on all statements s within this feature.
+   *
+   * @param v the action to be performed on the statements.
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    for (var c: inherits())
+      {
+        c.visitStatements(v);
+      }
+    if (contract() != null)
+      {
+        contract().visitStatements(v);
+      }
+    if (isRoutine())
+      {
+        astFeature().code().visitStatements(v);
+      }
+  }
+
+
+  /**
    * Determine the formal argument types of this feature.
    *
    * @return a new array containing this feature's formal argument types.

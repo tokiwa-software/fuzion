@@ -80,7 +80,7 @@ public class Old extends Expr
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the statements within this Old.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -93,6 +93,19 @@ public class Old extends Expr
   {
     e = e.visit(v, outer);
     return this;
+  }
+
+
+  /**
+   * visit all the statements within this Old.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    super.visitStatements(v);
+    e.visitStatements(v);
   }
 
 

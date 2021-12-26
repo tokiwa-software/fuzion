@@ -113,6 +113,20 @@ public class Contract
 
 
   /**
+   * visit all the statements within this Contract.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    if (req != null) { for (Cond c: req) { c.visitStatements(v); } }
+    if (ens != null) { for (Cond c: ens) { c.visitStatements(v); } }
+    if (inv != null) { for (Cond c: inv) { c.visitStatements(v); } }
+  }
+
+
+  /**
    * toString
    *
    * @return

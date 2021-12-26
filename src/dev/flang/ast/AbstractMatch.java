@@ -116,6 +116,22 @@ public abstract class AbstractMatch extends Expr
 
 
   /**
+   * visit all the statements within this Match.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    super.visitStatements(v);
+    for (var c: cases())
+      {
+        c.visitStatements(v);
+      }
+  }
+
+
+  /**
    * Helper routine for typeOrNull to determine the type of this match statement
    * on demand, i.e., as late as possible.
    */

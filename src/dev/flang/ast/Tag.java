@@ -117,6 +117,19 @@ public class Tag extends Expr
 
 
   /**
+   * visit all the statements within this Tag.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    super.visitStatements(v);
+    _value.visitStatements(v);
+  }
+
+
+  /**
    * toString
    *
    * @return

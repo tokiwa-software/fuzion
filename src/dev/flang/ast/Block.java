@@ -219,6 +219,22 @@ public class Block extends Expr
 
 
   /**
+   * visit all the statements within this Block.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    super.visitStatements(v);
+    for (var s : statements_)
+      {
+        s.visitStatements(v);
+      }
+  }
+
+
+  /**
    * resultExpressionIndex returns the index of the last non-NOP statement of
    * this block if it is an expression, -1 if the block is empty or the last
    * non-NOP statement is not an Expr.

@@ -140,6 +140,18 @@ public abstract class AbstractCase extends ANY
     v.actionAfter(this);
   }
 
+
+  /**
+   * visit all the statements within this Case.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    code().visitStatements(v);
+  }
+
 }
 
 /* end of file */

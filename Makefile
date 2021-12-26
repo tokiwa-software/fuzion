@@ -95,6 +95,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Resolution.java \
           $(SRC)/dev/flang/ast/ReturnType.java \
           $(SRC)/dev/flang/ast/SrcModule.java \
+          $(SRC)/dev/flang/ast/StatementVisitor.java \
           $(SRC)/dev/flang/ast/Stmnt.java \
           $(SRC)/dev/flang/ast/StrConst.java \
           $(SRC)/dev/flang/ast/Tag.java \

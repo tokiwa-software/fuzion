@@ -151,6 +151,19 @@ public class Unbox extends Expr
 
 
   /**
+   * visit all the statements within this Unbox.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    super.visitStatements(v);
+    adr_.visitStatements(v);
+  }
+
+
+  /**
    * Check if this value might need boxing, unboxing or tagging and wrap this
    * into Box()/Tag() if this is the case.
    *

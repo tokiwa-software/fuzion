@@ -80,6 +80,18 @@ public class Cond
 
 
   /**
+   * visit all the statements within this Cond.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    cond.visitStatements(v);
+  }
+
+
+  /**
    * During type inference: Inform the condition that it is used in an
    * environment that expects a bool type.
    *

@@ -97,6 +97,20 @@ public class Check implements Stmnt
     return this;
   }
 
+
+  /**
+   * visit all the statements within this Check.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    Stmnt.super.visitStatements(v);
+    cond.visitStatements(v);
+  }
+
+
   /**
    * Does this statement consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.

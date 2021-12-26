@@ -225,6 +225,20 @@ public class Assign extends ANY implements Stmnt
 
 
   /**
+   * visit all the statements within this Assign.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    Stmnt.super.visitStatements(v);
+    _value.visitStatements(v);
+    _target.visitStatements(v);
+  }
+
+
+  /**
    * determine the static type of all expressions and declared features in this feature
    *
    * @param res the resolution instance.
