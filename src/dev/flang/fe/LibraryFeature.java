@@ -565,7 +565,8 @@ public class LibraryFeature extends AbstractFeature
                       {
                         public AbstractType constraint()
                         {
-                          return _libModule.typeArgConstraint(tali0, gp, (_from == null || _from instanceof LibraryFeature) ? null : _from.generics().list.get(i0).constraint());
+                          var fgc = LibraryModule.USE_FUM ? null : _from.generics().list.get(i0).constraint();
+                          return _libModule.typeArgConstraint(tali0, gp, fgc);
                         }
                       };
                     list.add(g);
