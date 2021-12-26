@@ -72,6 +72,7 @@ public class FrontEnd extends ANY
   public FrontEnd(FrontEndOptions options)
   {
     var universe = Feature.createUniverse();
+    Types.reset();
     if (LibraryModule.USE_FUM)
       {
         universe = new Feature.Universe()
@@ -110,11 +111,19 @@ public class FrontEnd extends ANY
               return result;
             }
           };
-      }
 
-    Types.reset();
-    _stdlib = new LibraryModule(options, "stdlib", new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) }, null, null, new Module[0], universe);
-    _stdlib._srcModule.data(universe)._declaredOrInheritedFeatures = null;
+        var sourceDirs = new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) };
+        var srcModule = new SourceModule(options, sourceDirs, null, null, new Module[0], universe);
+        var mir = srcModule.createMIR();
+        var data = mir._module.data();
+        // yippieh: At this point, we forget srcModule and continue with data only:
+        _stdlib = new LibraryModule(options, "stdlib", data, new Module[0], universe);
+      }
+    else
+      {
+        _stdlib = new LibraryModule(options, "stdlib", new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) }, null, null, new Module[0], universe);
+        _stdlib._srcModule.data(universe)._declaredOrInheritedFeatures = null;
+      }
 
     Path[] sourcePaths;
     Path inputFile;

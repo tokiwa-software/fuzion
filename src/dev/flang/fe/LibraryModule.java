@@ -168,6 +168,21 @@ public class LibraryModule extends Module
   }
 
 
+  /**
+   * Create LibraryModule for given options and sourceDirs.
+   */
+  LibraryModule(FrontEndOptions options, String name, ByteBuffer data, Module[] dependsOn, Feature universe)
+  {
+    super(dependsOn);
+
+    _options = options;
+    _srcModule = null;
+    _name = name;
+    _mir = null;
+    _data = data;
+    _universe = universe;
+  }
+
   /*-----------------------------  methods  -----------------------------*/
 
 
