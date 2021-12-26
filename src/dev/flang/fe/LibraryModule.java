@@ -143,6 +143,12 @@ public class LibraryModule extends Module
   Map<Integer, Expr> _code1 = new TreeMap<>();
 
 
+  /**
+   * The universe
+   */
+  final Feature _universe;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -158,10 +164,20 @@ public class LibraryModule extends Module
     _name = name;
     _mir = _srcModule.createMIR();
     _data = _mir._module.data();
+    _universe = universe;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * The universe
+   */
+  Feature universe()
+  {
+    return _universe;
+  }
 
 
   /**
@@ -453,7 +469,7 @@ public class LibraryModule extends Module
    */
   Generic genericArgument(int offset)
   {
-    return findGenericArgument(offset, _mir.universe(), FuzionConstants.MIR_FILE_FIRST_FEATURE_OFFSET);
+    return findGenericArgument(offset, universe(), FuzionConstants.MIR_FILE_FIRST_FEATURE_OFFSET);
   }
 
 
