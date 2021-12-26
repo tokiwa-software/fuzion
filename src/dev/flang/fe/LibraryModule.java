@@ -501,7 +501,7 @@ public class LibraryModule extends Module
       {
         while (result == null)
           {
-            var o = libraryFeature(i, _srcModule.featureFromOffset(i));
+            var o = libraryFeature(i, USE_FUM ? null : _srcModule.featureFromOffset(i));
             if (((featureKind(i) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0) &&
                 offset > i &&
                 offset <= featureResultTypePos(i))

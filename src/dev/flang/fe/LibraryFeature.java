@@ -252,7 +252,8 @@ public class LibraryFeature extends AbstractFeature
               }
             else
               {
-                var o = _libModule.libraryFeature(i, _libModule._srcModule.featureFromOffset(i));
+                var o = _libModule.libraryFeature(i, LibraryModule.USE_FUM ? null
+                                                                           : _libModule._srcModule.featureFromOffset(i));
                 check
                   (o != null);
                 var inner = _libModule.featureInnerFeaturesPos(i);
