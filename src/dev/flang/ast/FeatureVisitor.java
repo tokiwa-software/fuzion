@@ -100,3 +100,5 @@ public abstract class FeatureVisitor extends ANY
   boolean visitAssignFromFieldImpl() { return true; }
 
 }
+
+/* end of file */
