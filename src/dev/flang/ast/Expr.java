@@ -326,7 +326,7 @@ public abstract class Expr extends ANY implements Stmnt
     var t = type();
     var frmlT = getFormalType(s, arg);
 
-    if (t != Types.resolved.t_void)
+    if (t.compareTo(Types.resolved.t_void) != 0)
       {
         if ((!t.isRef() || isCallToOuterRef()) &&
             (frmlT.isRef() ||
@@ -338,7 +338,7 @@ public abstract class Expr extends ANY implements Stmnt
             result = new Box(result, s, arg);
             t = result.type();
           }
-        if (frmlT.isChoice() && t != frmlT && frmlT.isAssignableFrom(t))
+        if (frmlT.isChoice() && t.compareTo(frmlT) != 0 && frmlT.isAssignableFrom(t))
           {
             result = new Tag(result, frmlT);
           }
