@@ -2233,7 +2233,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * case the type is currently unknown (in particular, in case of a type
    * inference from a field declared later).
    */
-  private AbstractType resultTypeRaw()
+  AbstractType resultTypeRaw()
   {
     AbstractType result;
 
@@ -2279,62 +2279,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * resultTypeRaw returns the result type of this feature with given
-   * actual generics applied.
-   *
-   * @param generics the actual generic arguments to create the type, or null if
-   * generics should not be replaced.
-   *
-   * @return this feature's result type using the given actual generics, null in
-   * case the type is currently unknown (in particular, in case of a type
-   * inference to a field declared later).
-   */
-  private AbstractType resultTypeRaw(List<AbstractType> actualGenerics)
-  {
-    check
-      (state().atLeast(State.RESOLVING_TYPES));
-
-    var result = resultTypeRaw();
-    if (result != null)
-      {
-        result = result.actualType(this, actualGenerics);
-      }
-
-    return result;
-  }
-
-
-  /**
-   * In case this has not been resolved for types yet, do so. Next, try to
-   * determine the result type of this feature. If the type is not explicit, but
-   * needs to be inferenced, the result might still be null. Inferenced types
-   * become available once this is in state RESOLVED_TYPES.
-   *
-   * @param res Resolution instance use to resolve this for types.
-   *
-   * @param generics the generics argument to be passed to resultTypeRaw
-   *
-   * @return the result type, Types.resulved.t_unit if none and null in case the
-   * type must be inferenced and is not available yet.
-   */
-  AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
-  {
-    if (!_state.atLeast(State.RESOLVING_TYPES))
-      {
-        res.resolveDeclarations(this);
-        resolveTypes(res);
-      }
-    var result = resultTypeRaw(generics);
-    if (result != null && result instanceof Type rt)
-      {
-        rt.findGenerics(outer());
-      }
-    return result;
-  }
-
-
-  /**
-   * After type resolution, resultType returns the result type of this
+   * After type resolution, resultyType returns the result type of this
    * feature using the formal generic argument.
    *
    * @return the result type, t_ERROR in case of an error. Never null.
@@ -2356,34 +2301,6 @@ public class Feature extends AbstractFeature implements Stmnt
     if (POSTCONDITIONS) ensure
       (result != null);
 
-    return result;
-  }
-
-
-  /**
-   * In case this has not been resolved for types yet, do so. Next, try to
-   * determine the result type of this feature. If the type is not explicit, but
-   * needs to be inferred, but it could not be inferred, cause a runtime
-   * error since we apparently have a cyclic dependencies for type inference.
-   *
-   * @param rpos the source code position to be used for error reporting
-   *
-   * @param res Resolution instance use to resolve this for types.
-   *
-   * @param generics the actual generic arguments to be applied to the type
-   *
-   * @return the result type, Types.resulved.t_unit if none and
-   * Types.t_ERROR in case the type could not be inferenced and error
-   * was reported.
-   */
-  AbstractType resultTypeForTypeInference(SourcePosition rpos, Resolution res, List<AbstractType> generics)
-  {
-    var result = resultTypeIfPresent(res, generics);
-    if (result == null)
-      {
-        AstErrors.forwardTypeInference(rpos, this, _pos);
-        result = Types.t_ERROR;
-      }
     return result;
   }
 

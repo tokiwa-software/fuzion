@@ -298,6 +298,60 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * resultTypeRaw returns the result type of this feature using the
+   * formal generic argument.
+   *
+   * @return this feature's result type using the formal generics, null in
+   * case the type is currently unknown (in particular, in case of a type
+   * inference from a field declared later).
+   */
+  AbstractType resultTypeRaw()
+  {
+    return resultType();
+  }
+
+
+  /**
+   * resultTypeRaw returns the result type of this feature with given
+   * actual generics applied.
+   *
+   * @param generics the actual generic arguments to create the type, or null if
+   * generics should not be replaced.
+   *
+   * @return this feature's result type using the given actual generics, null in
+   * case the type is currently unknown (in particular, in case of a type
+   * inference to a field declared later).
+   */
+  AbstractType resultTypeRaw(List<AbstractType> actualGenerics)
+  {
+    check
+      (state().atLeast(Feature.State.RESOLVING_TYPES));
+
+    var result = resultTypeRaw();
+    if (result != null)
+      {
+        result = result.actualType(this, actualGenerics);
+      }
+
+    return result;
+  }
+
+
+  /**
+   * Type resolution for a feature f: For all expressions and statements in f's
+   * inheritance clause, contract, and implementation, determine the static type
+   * of the expression. Were needed, perform type inference. Schedule f for
+   * syntactic sugar resolution.
+   *
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
+   */
+  void resolveTypes(Resolution res)
+  {
+  }
+
+
+  /**
    * In case this has not been resolved for types yet, do so. Next, try to
    * determine the result type of this feature. If the type is not explicit, but
    * needs to be inferenced, the result might still be null. Inferenced types
@@ -312,11 +366,45 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
   {
-    return resultType();
+    if (!state().atLeast(Feature.State.RESOLVING_TYPES))
+      {
+        res.resolveDeclarations(this);
+        resolveTypes(res);
+      }
+    var result = resultTypeRaw(generics);
+    if (result != null && result instanceof Type rt)
+      {
+        rt.findGenerics(outer());
+      }
+    return result;
   }
+
+
+  /**
+   * In case this has not been resolved for types yet, do so. Next, try to
+   * determine the result type of this feature. If the type is not explicit, but
+   * needs to be inferred, but it could not be inferred, cause a runtime
+   * error since we apparently have a cyclic dependencies for type inference.
+   *
+   * @param rpos the source code position to be used for error reporting
+   *
+   * @param res Resolution instance use to resolve this for types.
+   *
+   * @param generics the actual generic arguments to be applied to the type
+   *
+   * @return the result type, Types.resulved.t_unit if none and
+   * Types.t_ERROR in case the type could not be inferenced and error
+   * was reported.
+   */
   AbstractType resultTypeForTypeInference(SourcePosition rpos, Resolution res, List<AbstractType> generics)
   {
-    return resultTypeIfPresent(res, generics);
+    var result = resultTypeIfPresent(res, generics);
+    if (result == null)
+      {
+        AstErrors.forwardTypeInference(rpos, this, pos());
+        result = Types.t_ERROR;
+      }
+    return result;
   }
 
 
