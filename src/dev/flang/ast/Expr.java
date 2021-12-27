@@ -328,7 +328,7 @@ public abstract class Expr extends ANY implements Stmnt
 
     if (t != Types.resolved.t_void)
       {
-        if ((!t.isRef() || isCallToOuterRef()) && t != Types.resolved.t_void &&
+        if ((!t.isRef() || isCallToOuterRef()) &&
             (frmlT.isRef() ||
              (frmlT.isChoice() &&
               !frmlT.isAssignableFrom(t) &&
