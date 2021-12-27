@@ -1164,9 +1164,9 @@ public class Call extends AbstractCall
   {
     var cf = calledFeature_.astFeature();
     int sz = cf.generics().list.size();
-    Type   [] found         = new Type   [sz]; // The generics that could be inferred
-    boolean[] conflict      = new boolean[sz]; // The generics that had conflicting types
-    String [] foundAt       = new String [sz]; // detail message for conflicts giving types and their location
+    AbstractType[] found    = new AbstractType[sz]; // The generics that could be inferred
+    boolean[]      conflict = new boolean[sz]; // The generics that had conflicting types
+    String []      foundAt  = new String [sz]; // detail message for conflicts giving types and their location
     List<AbstractType> inferredOpen = null;  // if open generics could be inferred, these are the actual open generics
     ListIterator<Expr> aargs = _actuals.listIterator();
     int count = 1; // argument count, for error messages
@@ -1210,7 +1210,7 @@ public class Call extends AbstractCall
     for (Generic g : cf.generics().list)
       {
         int i = g.index();
-        Type t = found[i];
+        var t = found[i];
         if (g.isOpen() && inferredOpen != null)
           {
             generics.addAll(inferredOpen);
