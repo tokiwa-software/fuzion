@@ -239,7 +239,7 @@ public abstract class Expr extends ANY implements Stmnt
   protected Expr addFieldForResult(Resolution res, AbstractFeature outer, AbstractType t)
   {
     var result = this;
-    if (t != Types.resolved.t_void)
+    if (t.compareTo(Types.resolved.t_void) != 0)
       {
         Feature r = new Feature(res,
                                 pos,
@@ -362,7 +362,7 @@ public abstract class Expr extends ANY implements Stmnt
   boolean getCompileTimeConstBool()
   {
     if (PRECONDITIONS) require
-      (isCompileTimeConst() && type() == Types.resolved.t_bool);
+      (isCompileTimeConst() && type().compareTo(Types.resolved.t_bool) == 0);
 
     throw new Error();
   }
@@ -374,7 +374,7 @@ public abstract class Expr extends ANY implements Stmnt
   int getCompileTimeConstI32()
   {
     if (PRECONDITIONS) require
-      (isCompileTimeConst() && type() == Types.resolved.t_i32);
+      (isCompileTimeConst() && type().compareTo(Types.resolved.t_i32) == 0);
 
     throw new Error();
   }

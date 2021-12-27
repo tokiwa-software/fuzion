@@ -446,7 +446,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private Clazz normalize2(AbstractType t)
   {
     var f = t.featureOfType();
-    if (f == Types.resolved.universe)
+    if (f.isUniverse())
       {
         return Clazzes.universe.get();
       }
@@ -694,7 +694,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isVoidType()
   {
-    return _type == Types.resolved.t_void;
+    return _type.compareTo(Types.resolved.t_void) == 0;
   }
 
 

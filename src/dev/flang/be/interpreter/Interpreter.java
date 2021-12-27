@@ -506,7 +506,7 @@ public class Interpreter extends ANY
                 // Fields select()ed from fields of open generic type have type t_unit
                 // if the actual clazz does not have the number of actual open generic
                 // parameters.
-                if (vc.actualType(f.resultType()) != Types.resolved.t_unit)
+                if (vc.actualType(f.resultType()).compareTo(Types.resolved.t_unit) != 0)
                   {
                     Value v = getField(f, vc, val);
                     // NYI: Check that this works well for internal fields such as choice tags.
@@ -1295,13 +1295,13 @@ public class Interpreter extends ANY
     if (PRECONDITIONS) require
       (fclazz != null,
        slot != null,
-       v != null || thiz.isChoice() || fclazz._type == Types.resolved.t_unit);
+       v != null || thiz.isChoice() || fclazz._type.compareTo(Types.resolved.t_unit) == 0);
 
     if (fclazz.isRef())
       {
         setRefField   (thiz,        slot, v);
       }
-    else if (fclazz._type != Types.resolved.t_unit)  // NYI: remove these assignments in earlier phase
+    else if (fclazz._type.compareTo(Types.resolved.t_unit) != 0)  // NYI: remove these assignments in earlier phase
       {
         setNonRefField(thiz, fclazz, slot, v);
       }

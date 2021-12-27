@@ -401,7 +401,7 @@ public class Block extends Expr
       {
         statements_.add(resExpr.assignToField(res, outer, r));
       }
-    else if (r.resultType() != Types.resolved.t_unit)
+    else if (r.resultType().compareTo(Types.resolved.t_unit) != 0)
       {
         AstErrors.blockMustEndWithExpression(closingBracePos_, r.resultType());
       }
@@ -428,7 +428,7 @@ public class Block extends Expr
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType type)
   {
-    if (type == Types.resolved.t_unit && hasImplicitResult())
+    if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return
         // something else:
         statements_.add(new Block(pos, new List<>()));

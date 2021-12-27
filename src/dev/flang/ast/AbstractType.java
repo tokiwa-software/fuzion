@@ -364,10 +364,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        actual.isGenericArgument() || actual.featureOfType() != null || Errors.count() > 0,
        Errors.count() > 0 || this != Types.t_ERROR && actual != Types.t_ERROR);
 
-    var result = containsError() ||
-      actual.containsError()     ||
-      this   == actual           ||
-      actual == Types.resolved.t_void;
+    var result = containsError()                   ||
+      actual.containsError()                       ||
+      this  .compareTo(actual               ) == 0 ||
+      actual.compareTo(Types.resolved.t_void) == 0;
     if (!result && !isGenericArgument())
       {
         if (actual.isGenericArgument())
@@ -712,22 +712,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   AbstractType union(AbstractType that)
   {
     AbstractType result =
-      this == Types.t_ERROR               ? Types.t_ERROR     :
-      that == Types.t_ERROR               ? Types.t_ERROR     :
-      this == Types.t_UNDEFINED           ? Types.t_UNDEFINED :
-      that == Types.t_UNDEFINED           ? Types.t_UNDEFINED :
-      this == Types.resolved.t_void       ? that              :
-      that == Types.resolved.t_void       ? this              :
-      this.isAssignableFrom(that)         ? this :
-      that.isAssignableFrom(this)         ? that :
-      this.isAssignableFrom(that.asRef()) ? this :
-      that.isAssignableFrom(this.asRef()) ? that : Types.t_UNDEFINED;
+      this == Types.t_ERROR                      ? Types.t_ERROR     :
+      that == Types.t_ERROR                      ? Types.t_ERROR     :
+      this == Types.t_UNDEFINED                  ? Types.t_UNDEFINED :
+      that == Types.t_UNDEFINED                  ? Types.t_UNDEFINED :
+      this.compareTo(Types.resolved.t_void) == 0 ? that              :
+      that.compareTo(Types.resolved.t_void) == 0 ? this              :
+      this.isAssignableFrom(that)                ? this :
+      that.isAssignableFrom(this)                ? that :
+      this.isAssignableFrom(that.asRef())        ? this :
+      that.isAssignableFrom(this.asRef())        ? that : Types.t_UNDEFINED;
 
     if (POSTCONDITIONS) ensure
       (result == Types.t_UNDEFINED ||
        result == Types.t_ERROR     ||
-       this == Types.resolved.t_void && result == that ||
-       that == Types.resolved.t_void && result == this ||
+       this.compareTo(Types.resolved.t_void) == 0 && result == that ||
+       that.compareTo(Types.resolved.t_void) == 0 && result == this ||
        (result.isAssignableFrom(this) || result.isAssignableFrom(this.asRef()) &&
         result.isAssignableFrom(that) || result.isAssignableFrom(that.asRef())    ));
 

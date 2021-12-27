@@ -175,7 +175,7 @@ public class Unbox extends Expr
   {
     var frmlT = getFormalType(s, arg);
     var t = type();
-    if (t != Types.resolved.t_void &&
+    if (t.compareTo(Types.resolved.t_void) != 0 &&
         ((!frmlT.isRef() ||
           (frmlT.isChoice() &&
            !frmlT.isAssignableFrom(t) &&

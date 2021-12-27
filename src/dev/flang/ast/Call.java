@@ -1105,7 +1105,7 @@ public class Call extends AbstractCall
       {
         t = t.resolve(res, tt.featureOfType());
         t = tt.actualType(t);
-        if (calledFeature_.isConstructor() && t != Types.resolved.t_void)
+        if (calledFeature_.isConstructor() && t.compareTo(Types.resolved.t_void) != 0)
           {  /* specialize t for the target type here */
             t = new Type(t, t.generics(), tt);
           }
