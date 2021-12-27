@@ -1072,7 +1072,7 @@ public class Call extends AbstractCall
         count++;
       }
     if (POSTCONDITIONS) ensure
-                          (resolvedFormalArgumentTypes != null);
+      (resolvedFormalArgumentTypes != null);
   }
 
 
