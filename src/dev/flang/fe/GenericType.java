@@ -33,7 +33,9 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Type;
+import dev.flang.ast.Types;
 
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 
 import dev.flang.util.SourcePosition;
@@ -108,7 +110,10 @@ public class GenericType extends LibraryType
 
   public AbstractFeature featureOfType()
   {
-    throw new Error("GenericType.featureOfType() not defined");
+    check
+      (Errors.count() > 0);
+
+    return Types.f_ERROR;
   }
 
   public boolean isGenericArgument()
@@ -118,7 +123,10 @@ public class GenericType extends LibraryType
 
   public List<AbstractType> generics()
   {
-    throw new Error("GenericType.generics() not defined");
+    check
+      (Errors.count() > 0);
+
+    return Type.NONE;
   }
 
 
@@ -149,7 +157,8 @@ public class GenericType extends LibraryType
 
   public AbstractType outer()
   {
-    throw new Error("GenericType.outer() not defined");
+    check(Errors.count() > 0);
+    return null;
   }
 
   public AbstractType asRef()
@@ -165,6 +174,10 @@ public class GenericType extends LibraryType
     throw new Error("GenericType.asValue() not defined");
   }
 
+  public String toString()
+  {
+    return genericArgument().feature().qualifiedName() + "." + genericArgument().name() + (this.isRef() ? " (boxed)" : "");
+  }
 
 }
 
