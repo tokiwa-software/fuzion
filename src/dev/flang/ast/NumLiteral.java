@@ -571,7 +571,7 @@ public class NumLiteral extends Constant
   public float f32Value()
   {
     if (PRECONDITIONS) require
-      (type() == Types.resolved.t_f32);
+      (type().compareTo(Types.resolved.t_f32) == 0);
 
     return ByteBuffer.wrap(data()).order(ByteOrder.LITTLE_ENDIAN).getFloat();
   }
@@ -582,7 +582,7 @@ public class NumLiteral extends Constant
   public double f64Value()
   {
     if (PRECONDITIONS) require
-      (type() == Types.resolved.t_f64);
+      (type().compareTo(Types.resolved.t_f64) == 0);
 
     return ByteBuffer.wrap(data()).order(ByteOrder.LITTLE_ENDIAN).getDouble();
   }
@@ -661,16 +661,16 @@ public class NumLiteral extends Constant
    */
   ConstantType findConstantType(AbstractType t)
   {
-    if      (t == Types.resolved.t_i8 ) { return ConstantType.ct_i8 ; }
-    else if (t == Types.resolved.t_i16) { return ConstantType.ct_i16; }
-    else if (t == Types.resolved.t_i32) { return ConstantType.ct_i32; }
-    else if (t == Types.resolved.t_i64) { return ConstantType.ct_i64; }
-    else if (t == Types.resolved.t_u8 ) { return ConstantType.ct_u8 ; }
-    else if (t == Types.resolved.t_u16) { return ConstantType.ct_u16; }
-    else if (t == Types.resolved.t_u32) { return ConstantType.ct_u32; }
-    else if (t == Types.resolved.t_u64) { return ConstantType.ct_u64; }
-    else if (t == Types.resolved.t_f32) { return ConstantType.ct_f32; }
-    else if (t == Types.resolved.t_f64) { return ConstantType.ct_f64; }
+    if      (t.compareTo(Types.resolved.t_i8 ) == 0) { return ConstantType.ct_i8 ; }
+    else if (t.compareTo(Types.resolved.t_i16) == 0) { return ConstantType.ct_i16; }
+    else if (t.compareTo(Types.resolved.t_i32) == 0) { return ConstantType.ct_i32; }
+    else if (t.compareTo(Types.resolved.t_i64) == 0) { return ConstantType.ct_i64; }
+    else if (t.compareTo(Types.resolved.t_u8 ) == 0) { return ConstantType.ct_u8 ; }
+    else if (t.compareTo(Types.resolved.t_u16) == 0) { return ConstantType.ct_u16; }
+    else if (t.compareTo(Types.resolved.t_u32) == 0) { return ConstantType.ct_u32; }
+    else if (t.compareTo(Types.resolved.t_u64) == 0) { return ConstantType.ct_u64; }
+    else if (t.compareTo(Types.resolved.t_f32) == 0) { return ConstantType.ct_f32; }
+    else if (t.compareTo(Types.resolved.t_f64) == 0) { return ConstantType.ct_f64; }
     else                                { return null;             }
   }
 
