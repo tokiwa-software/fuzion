@@ -389,6 +389,9 @@ public class Interpreter extends ANY
       {
         result = null;
         Clazz staticSubjectClazz = staticClazz.getRuntimeClazz(m.runtimeClazzId_);
+        staticSubjectClazz = staticSubjectClazz.asValue(); /* asValue since subject in , e.g., 'match (bool.this)' may be 'ref bool'
+                                                            * NYI: might be better to store asValue directly at getRuntimeClazz(m.runtimeClazzId_)
+                                                            */
         Value sub = execute(m.subject(), staticClazz, cur);
         var sf = staticSubjectClazz.feature();
         int tag;

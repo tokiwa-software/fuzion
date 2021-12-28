@@ -943,7 +943,9 @@ public class Clazzes extends ANY
         // we need to store in outerClazz.outer?
         m.runtimeClazzId_ = getRuntimeClazzIds(1);
       }
-    outerClazz.setRuntimeClazz(m.runtimeClazzId_, clazz(m.subject(), outerClazz));
+    var subjClazz = clazz(m.subject(), outerClazz);
+    var subjClazzValue = subjClazz.asValue(); // this is used in the be/interpreter
+    outerClazz.setRuntimeClazz(m.runtimeClazzId_, subjClazz);
   }
 
 
