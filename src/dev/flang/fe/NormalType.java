@@ -234,7 +234,7 @@ public class NormalType extends LibraryType
       {
         result = result + "<" + generics() + ">";
       }
-    return result + " (" + _libModule._name + ")";
+    return result;
   }
 
 
