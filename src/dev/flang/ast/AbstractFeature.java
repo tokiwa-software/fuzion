@@ -783,10 +783,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         check
           (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
-    if (contract() != null)
-      {
-        contract().visit(fv, this);
-      }
+    contract().visit(fv, this);
     if (isRoutine())
       {
         code().visit(fv, astFeature());
@@ -805,10 +802,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         c.visitStatements(v);
       }
-    if (contract() != null)
-      {
-        contract().visitStatements(v);
-      }
+    contract().visitStatements(v);
     if (isRoutine())
       {
         astFeature().code().visitStatements(v);
@@ -927,7 +921,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       }
     return result;
   }
-
 
 }
 
