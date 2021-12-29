@@ -1121,7 +1121,6 @@ public class LibraryModule extends Module
     if (PRECONDITIONS) require
       (typeKind(at) >= 0);
 
-    if (true) return false;  // NYI: WHy?
     return data().get(typeIsRefPos(at)) != 0;
   }
   int typeActualGenericsPos(int at)
