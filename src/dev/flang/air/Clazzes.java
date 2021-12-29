@@ -45,9 +45,7 @@ import dev.flang.ast.Constant; // NYI: remove dependency!
 import dev.flang.ast.Current; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
-import dev.flang.ast.FunctionReturnType; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
-import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.Old; // NYI: remove dependency!
 import dev.flang.ast.Stmnt; // NYI: remove dependency!
