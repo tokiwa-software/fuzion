@@ -72,6 +72,7 @@ public class LibraryCall extends AbstractCall
   private final List<Expr> _actuals;
   private final List<AbstractType> _generics;
   private final AbstractFeature _calledFeature;
+  private final int _select;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -120,6 +121,7 @@ public class LibraryCall extends AbstractCall
       }
     _target = target;
     _calledFeature = f;
+    _select = f.resultType().isOpenGeneric() ? lib.callSelect(index) : -1;
   }
 
 
@@ -164,16 +166,7 @@ public class LibraryCall extends AbstractCall
   public AbstractFeature calledFeature() { return _calledFeature; }
   public Expr target() { return _target; }
   public List<Expr> actuals() { return _actuals; }
-  public int select() {
-    if (type().isOpenGeneric())
-      {
-        throw new Error("NYI: select when calling "+calledFeature().qualifiedName()+" type is "+type()+" "+type().getClass());
-      }
-    else
-      {
-        return -1;
-      }
-  }
+  public int select() { return _select; }
   public boolean isDynamic()
   {
     return calledFeature().isDynamic() && !(target() instanceof Current);

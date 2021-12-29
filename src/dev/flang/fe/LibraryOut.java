@@ -641,8 +641,14 @@ class LibraryOut extends DataOut
    *   | rics.is|        |               |                                               |
    *   | Open   |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   |        | n      | Type          | actual generics. if !hasOpen, n is            |
+   *   | true   | n      | Type          | actual generics. if !hasOpen, n is            |
    *   |        |        |               | f.generics().list.size()                      |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cf.resu| 1      | int           | select                                        |
+   *   | ltType(|        |               |                                               |
+   *   | ).isOpe|        |               |                                               |
+   *   | nGeneri|        |               |                                               |
+   *   | c()    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
         writeOffset(c.calledFeature());
@@ -667,6 +673,12 @@ class LibraryOut extends DataOut
         for (int i = 0; i < n; i++)
           {
             type(c.generics.get(i));
+          }
+        check
+          (cf.resultType().isOpenGeneric() == (c.select() >= 0));
+        if (cf.resultType().isOpenGeneric())
+          {
+            writeInt(c.select());
           }
         if (dumpResult)
           {

@@ -1411,8 +1411,14 @@ public class LibraryModule extends Module
    *   | rics.is|        |               |                                               |
    *   | Open   |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   |        | n      | Type          | type parameters. if !hasOpen, n is            |
+   *   | true   | n      | Type          | actual generics. if !hasOpen, n is            |
    *   |        |        |               | f.generics().list.size()                      |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cf.resu| 1      | int           | select                                        |
+   *   | ltType(|        |               |                                               |
+   *   | ).isOpe|        |               |                                               |
+   *   | nGeneri|        |               |                                               |
+   *   | c()    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
   int callCalledFeaturePos(int at)
@@ -1503,7 +1509,7 @@ public class LibraryModule extends Module
     return callNumTypeParametersPos(at) +
       (libraryFeature(callCalledFeature(at), null).generics().isOpen() ? 4 : 0);
   }
-  int callNextPos(int at)
+  int callSelectPos(int at)
   {
     if (PRECONDITIONS) require
       (expressionKind(at-1) == IR.ExprKind.Call);
@@ -1516,6 +1522,24 @@ public class LibraryModule extends Module
       }
 
     return tat;
+  }
+  int callSelect(int at)
+  {
+    if (PRECONDITIONS) require
+      (expressionKind(at-1) == IR.ExprKind.Call,
+       libraryFeature(callCalledFeature(at), null).resultType().isOpenGeneric());
+
+    return data().getInt(callSelectPos(at));
+  }
+  int callNextPos(int at)
+  {
+    if (PRECONDITIONS) require
+      (expressionKind(at-1) == IR.ExprKind.Call);
+
+    var sat = callSelectPos(at);
+    var nat = sat + (libraryFeature(callCalledFeature(at), null).resultType().isOpenGeneric() ? 4 : 0);
+
+    return nat;
   }
 
 
