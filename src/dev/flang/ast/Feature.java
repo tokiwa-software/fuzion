@@ -673,7 +673,7 @@ public class Feature extends AbstractFeature implements Stmnt
       ? new List<>(new Call(_pos, FuzionConstants.OBJECT_NAME, Expr.NO_EXPRS))
       : i;
 
-    this._contract  = c;
+    this._contract = c == null ? Contract.EMPTY_CONTRACT : c;
     this._impl = p;
 
     g.setFeature(this);
@@ -1072,10 +1072,7 @@ public class Feature extends AbstractFeature implements Stmnt
         check
           (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
-    if (_contract != null)
-      {
-        _contract.visit(v, this);
-      }
+    _contract.visit(v, this);
     _impl.visit(v, this);
     _returnType.visit(v, this);
   }
@@ -2457,7 +2454,7 @@ public class Feature extends AbstractFeature implements Stmnt
        _state == State.FINDING_DECLARATIONS);
 
     var o = this._outer;
-    if (_impl._code != null || _contract != null)
+    if (_impl._code != null || _contract != Contract.EMPTY_CONTRACT)
       {
         var outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
                                                   : o.thisType();
