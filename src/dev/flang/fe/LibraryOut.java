@@ -538,9 +538,12 @@ class LibraryOut extends DataOut
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | Type          | result type                                   |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | bool          | needed flag (NYI: What is this? remove?)      |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
         type(u.type());
+        write(u._needed ? 1 : 0);
       }
     else if (s instanceof Box b)
       {

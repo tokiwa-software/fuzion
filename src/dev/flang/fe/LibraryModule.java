@@ -1301,6 +1301,8 @@ public class LibraryModule extends Module
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | Type          | result type                                   |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | bool          | needed flag (NYI: What is this? remove?)      |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
   int unboxTypePos(int at)
@@ -1317,12 +1319,26 @@ public class LibraryModule extends Module
 
     return type(unboxTypePos(at), DUMMY_POS, null);
   }
-  int unboxNextPos(int at)
+  int unboxNeededPos(int at)
   {
     if (PRECONDITIONS) require
       (expressionKind(at-1) == IR.ExprKind.Unbox);
 
     return typeNextPos(unboxTypePos(at));
+  }
+  boolean unboxNeeded(int at)
+  {
+    if (PRECONDITIONS) require
+      (expressionKind(at-1) == IR.ExprKind.Unbox);
+
+    return data().get(unboxNeededPos(at)) != 0;
+  }
+  int unboxNextPos(int at)
+  {
+    if (PRECONDITIONS) require
+      (expressionKind(at-1) == IR.ExprKind.Unbox);
+
+    return unboxNeededPos(at) + 1;
   }
 
 
