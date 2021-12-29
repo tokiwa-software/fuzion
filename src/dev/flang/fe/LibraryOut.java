@@ -243,6 +243,18 @@ class LibraryOut extends DataOut
    *   | d? !isI| i      | Code          | inherits calls                                |
    *   | ntrinsc|        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | precondition count pre_n                      |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | pre_n  | Code          | precondition code                             |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | int           | postcondition count post_n                    |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | post_n | Code          | postcondition code                            |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | int           | invariant count inv_n                         |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | inv_n  | Code          | invariant code                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | redefines count r                             |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | r      | int           | feature offset of redefined feature           |
@@ -322,6 +334,21 @@ class LibraryOut extends DataOut
     for (var p : i)
       {
         code(p, false);
+      }
+    writeInt(f.contract().req.size());
+    for (var c : f.contract().req)
+      {
+        code(c.cond, false);
+      }
+    writeInt(f.contract().ens.size());
+    for (var c : f.contract().ens)
+      {
+        code(c.cond, false);
+      }
+    writeInt(f.contract().inv.size());
+    for (var c : f.contract().inv)
+      {
+        code(c.cond, false);
       }
     var r = f.redefines();
     writeInt(r.size());

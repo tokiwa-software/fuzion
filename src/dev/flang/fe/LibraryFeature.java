@@ -42,6 +42,7 @@ import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
+import dev.flang.ast.Cond;
 import dev.flang.ast.Constant;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Current;
@@ -116,6 +117,12 @@ public class LibraryFeature extends AbstractFeature
    * cached result of generics():
    */
   private FormalGenerics _generics;
+
+
+  /**
+   * cached result of contract()
+   */
+  Contract _contract;
 
 
   /**
@@ -838,15 +845,43 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
-  // in FUIR or later
+  /**
+   * Read a list a n conditions at given position in _libModule.
+   */
+  private List<Cond> condList(int n, int at)
+  {
+    var result = new List<Cond>();
+    for (var i = 0; i < n; i++)
+      {
+        var x = code1(at);
+        result.add(new Cond(x));
+        at = _libModule.codeNextPos(at);
+      }
+    return result;
+  }
+
+
   public Contract contract()
   {
     if (_libModule.USE_FUM)
       {
-        if (true)
-          // NYI: return a dummy contract until contracts are saved to the module file
-          return new dev.flang.ast.Contract(null, null, null);
-        check(false); return null;
+        if (_contract == null)
+          {
+            var pre_n  = _libModule.featurePreCondCount (_index);
+            var post_n = _libModule.featurePostCondCount(_index);
+            var inv_n  = _libModule.featureInvCondCount (_index);
+            if (pre_n == 0 && post_n == 0 && inv_n == 0)
+              {
+                _contract = Contract.EMPTY_CONTRACT;
+              }
+            else
+              {
+                _contract = new Contract(condList(pre_n , _libModule.featurePreCondPos (_index)),
+                                         condList(post_n, _libModule.featurePostCondPos(_index)),
+                                         condList(inv_n , _libModule.featureInvCondPos (_index)));
+              }
+          }
+        return _contract;
       }
     else
       {

@@ -716,6 +716,18 @@ public class LibraryModule extends Module
    *   | d? !isI| i      | Code          | inherits calls                                |
    *   | ntrinsc|        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | precondition count pre_n                      |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | pre_n  | Code          | precondition code                             |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | int           | postcondition count post_n                    |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | post_n | Code          | postcondition code                            |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | int           | invariant count inv_n                         |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | inv_n  | Code          | invariant code                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | redefines count r                             |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | r      | int           | feature offset of redefined feature           |
@@ -848,10 +860,71 @@ public class LibraryModule extends Module
   {
     return featureInheritsCountPos(at) + 4;
   }
-  int featureRedefinesCountPos(int at)
+
+  int featurePreCondCountPos(int at)
   {
     var i = featureInheritsPos(at);
     var ic = featureInheritsCount(at);
+    while (ic > 0)
+      {
+        i = codeNextPos(i);
+        ic--;
+      }
+    return i;
+  }
+  int featurePreCondCount(int at)
+  {
+    return data().getInt(featurePreCondCountPos(at));
+  }
+  int featurePreCondPos(int at)
+  {
+    return featurePreCondCountPos(at) + 4;
+  }
+
+  int featurePostCondCountPos(int at)
+  {
+    var i = featurePreCondPos(at);
+    var ic = featurePreCondCount(at);
+    while (ic > 0)
+      {
+        i = codeNextPos(i);
+        ic--;
+      }
+    return i;
+  }
+  int featurePostCondCount(int at)
+  {
+    return data().getInt(featurePostCondCountPos(at));
+  }
+  int featurePostCondPos(int at)
+  {
+    return featurePostCondCountPos(at) + 4;
+  }
+
+  int featureInvCondCountPos(int at)
+  {
+    var i = featurePostCondPos(at);
+    var ic = featurePostCondCount(at);
+    while (ic > 0)
+      {
+        i = codeNextPos(i);
+        ic--;
+      }
+    return i;
+  }
+  int featureInvCondCount(int at)
+  {
+    return data().getInt(featureInvCondCountPos(at));
+  }
+  int featureInvCondPos(int at)
+  {
+    return featureInvCondCountPos(at) + 4;
+  }
+
+  int featureRedefinesCountPos(int at)
+  {
+    var i = featureInvCondPos(at);
+    var ic = featureInvCondCount(at);
     while (ic > 0)
       {
         i = codeNextPos(i);
