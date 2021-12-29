@@ -1441,7 +1441,7 @@ public class Call extends AbstractCall
             while (i.hasNext())
               {
                 Expr actl = i.next();
-                i.set(actl.box(this, count));
+                i.set(actl.box(resolvedFormalArgumentTypes[count]));
                 count++;
               }
           }

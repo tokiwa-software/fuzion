@@ -276,37 +276,6 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * Get the formal type of the usage of an expression (see box).
-   *
-   * @param s the target statement this expression is used by.
-   *
-   * @param arg in case s is a call, the index of the actual argument this
-   * expression is assigned to.
-   *
-   * @return the formal type required by the user of this expression.
-   */
-  AbstractType getFormalType(Stmnt s, int arg)
-  {
-    if (PRECONDITIONS) require
-      (s instanceof Call || s instanceof Assign || s instanceof InlineArray);
-
-    if (s instanceof Call c)
-      {
-        return c.resolvedFormalArgumentTypes[arg];
-      }
-    else if (s instanceof Assign a)
-      {
-        return a._assignedField.resultType();
-      }
-    else if (s instanceof InlineArray i)
-      {
-        return i.elementType();
-      }
-    throw new Error("unexpected target of boxing: "+s.getClass());
-  }
-
-
-  /**
    * Check if this value might need boxing, unboxing or tagging and wrap this
    * into Box()/Tag() if this is the case.
    *
@@ -317,14 +286,10 @@ public abstract class Expr extends ANY implements Stmnt
    *
    * @return this or an instance of Box wrapping this.
    */
-  Expr box(Stmnt s, int arg)
+  Expr box(AbstractType frmlT)
   {
-    if (PRECONDITIONS) require
-      (s instanceof Call || s instanceof Assign || s instanceof InlineArray);
-
     var result = this;
     var t = type();
-    var frmlT = getFormalType(s, arg);
 
     if (t.compareTo(Types.resolved.t_void) != 0)
       {
@@ -335,7 +300,7 @@ public abstract class Expr extends ANY implements Stmnt
               frmlT.isAssignableFrom(t.asRef()))) ||
             frmlT.isGenericArgument())
           {
-            result = new Box(result, s, arg);
+            result = new Box(result, frmlT);
             t = result.type();
           }
         if (frmlT.isChoice() && t.compareTo(frmlT) != 0 && frmlT.isAssignableFrom(t))

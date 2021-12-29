@@ -324,7 +324,7 @@ public class Interpreter extends ANY
 
     else if (s instanceof Assign a)
       {
-        Value v    = execute(a._value   , staticClazz, cur);
+        Value v    = execute(a._value , staticClazz, cur);
         Value thiz = execute(a._target, staticClazz, cur);
         Clazz sClazz = staticClazz.getRuntimeClazz(a.tid_ + 0);
         setField(a._assignedField, -1, sClazz, thiz, v);
@@ -488,9 +488,10 @@ public class Interpreter extends ANY
     else if (s instanceof Box b)
       {
         Value val = execute(b._value, staticClazz, cur);
-        Clazz vc = (Clazz) staticClazz.getRuntimeData(b._valAndRefClazzId);
-        Clazz rc = (Clazz) staticClazz.getRuntimeData(b._valAndRefClazzId + 1);
-        if (vc.isRef() || !rc.isRef())
+        var id = b._valAndRefClazzId;
+        Clazz vc = id < 0 ? null : (Clazz) staticClazz.getRuntimeData(id);
+        Clazz rc = id < 0 ? null : (Clazz) staticClazz.getRuntimeData(id + 1);
+        if (id < 0 || vc.isRef() || !rc.isRef())
           { // vc's type is a generic argument or outer type whose actual type
             // does not need boxing
             check

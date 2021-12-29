@@ -244,7 +244,7 @@ public class InlineArray extends Expr
     while (li.hasNext())
       {
         var e = li.next();
-        li.set(e.box(this, 0));
+        li.set(e.box(elementType()));
       }
   }
 

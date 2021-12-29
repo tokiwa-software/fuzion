@@ -50,6 +50,7 @@ import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.Old; // NYI: remove dependency!
+import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.StrConst; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
@@ -720,78 +721,59 @@ public class Clazzes extends ANY
             var vc = sClazz.asValue();
             var fc = vc.lookup(a._assignedField, AbstractCall.NO_GENERICS, a.pos());
             outerClazz.setRuntimeClazz(a.tid_ + 1, fc);
+            propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz);
           }
       }
   }
 
 
   /**
-   * Find all static clazzes for this Box and store them in outerClazz.
+   * propagate the expected clazz of an expression.  This is used to find the
+   * result type of Box() expressions that are a NOP if the expected type is a
+   * value type or the boxed type is already a ref type, while it performs
+   * boxing if a value type is used as a ref.
+   *
+   * @param e the expression we are propagating the expected clazz into
+   *
+   * @param ec the expected result clazz of e
+   *
+   * @param outerClazz the current clazz
    */
-  public static void findClazzes(Box b, Clazz outerClazz)
+  static void propagateExpectedClazz(Expr e, Clazz ec, Clazz outerClazz)
   {
-    Clazz vc = clazz(b._value, outerClazz);
-    Clazz rc = vc;
-    var s = b._stmnt;
-    Clazz ft = null;
-    if (s instanceof AbstractCall c)
+    if (e instanceof Box b)
       {
-        var tclazz = clazz(c.target(), outerClazz);
-        if (tclazz != c_void.get())
-          {
-            var inner = tclazz.lookup(c.calledFeature(),
-                                      outerClazz.actualGenerics(c.generics()),
-                                      c.pos());
-
-            var tc = inner;
-            var afs = inner.argumentFields();
-            // NYI: The following if is somewhat arbitrary, needs a better
-            // condition. If removed, tests/reg_issue29_arrayOfUnitType
-            // failes. The better condition should filter out unused arguments,
-            // while unused is something like 'of unit type'.
-            if (b._arg < afs.length)
-              {
-                ft = afs[b._arg].resultClazz();
-              }
-          }
-      }
-    else if (s instanceof Assign a)
-      {
-        var f = a._assignedField;
-        if (isUsed(f, outerClazz))
-          {
-            Clazz sClazz = clazz(a._target, outerClazz);
-            ft = sClazz.asValue().lookup(f, AbstractCall.NO_GENERICS, a.pos()).resultClazz();
-          }
-      }
-    else if (s instanceof InlineArray i)
-      {
-        ft = outerClazz.actualClazz(i.elementType());
-      }
-    else
-      {
-        if (!dev.flang.fe.LibraryModule.USE_FUM)
-          throw new Error("unexpected box target statement: " + s.getClass());
-      }
-    if (ft != null)
-      {
-        if (ft.isRef() ||
-            (ft._type.isChoice() &&
-             !ft._type.isAssignableFrom(vc._type) &&
-             ft._type.isAssignableFrom(vc._type.asRef())))
+        Clazz vc = clazz(b._value, outerClazz);
+        Clazz rc = vc;
+        if (ec.isRef() ||
+            (ec._type.isChoice() &&
+             !ec._type.isAssignableFrom(vc._type) &&
+             ec._type.isAssignableFrom(vc._type.asRef())))
           {
             rc = vc.asRef();
           }
+        if (b._valAndRefClazzId < 0)
+          {
+            b._valAndRefClazzId = getRuntimeClazzIds(2);
+          }
+        outerClazz.setRuntimeClazz(b._valAndRefClazzId    , vc);
+        outerClazz.setRuntimeClazz(b._valAndRefClazzId + 1, rc);
+        if (vc != rc)
+          {
+            rc.instantiated(b.pos());
+          }
       }
-    if (b._valAndRefClazzId < 0)
+    else if (e instanceof Block b)
       {
-        b._valAndRefClazzId = getRuntimeClazzIds(2);
+        var s = b.statements_;
+        if (!s.isEmpty() && s.get(s.size()-1) instanceof Expr e0)
+          {
+            propagateExpectedClazz(e0, ec, outerClazz);
+          }
       }
-    outerClazz.setRuntimeClazz(b._valAndRefClazzId    , vc);
-    outerClazz.setRuntimeClazz(b._valAndRefClazzId + 1, rc);
-    if (vc != rc)
+    else if (e instanceof Tag t)
       {
-        rc.instantiated(b.pos());
+        propagateExpectedClazz(t._value, ec, outerClazz);
       }
   }
 
@@ -882,6 +864,17 @@ public class Clazzes extends ANY
                                }
                            }
                        });
+          }
+
+        var afs = innerClazz.argumentFields();
+        var i = 0;
+        for (var a : c.actuals())
+          {
+            if (i < afs.length)  // NYI: check boxing for open generic argument lists
+              {
+                propagateExpectedClazz(a, afs[i].resultClazz(), outerClazz);
+              }
+            i++;
           }
       }
   }
@@ -981,6 +974,11 @@ public class Clazzes extends ANY
     outerClazz.setRuntimeClazz(i._arrayClazzId    , ac);
     outerClazz.setRuntimeClazz(i._arrayClazzId + 1, sa);
     ac.instantiated(i.pos());
+    var ec = outerClazz.actualClazz(i.elementType());
+    for (var e : i._elements)
+      {
+        propagateExpectedClazz(e, ec, outerClazz);
+      }
   }
 
 

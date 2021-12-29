@@ -295,12 +295,12 @@ public class Block extends Expr
    *
    * @return this or an instance of Box wrapping this.
    */
-  Expr box(Stmnt s, int arg)
+  Expr box(AbstractType frmlT)
   {
     var r = removeResultExpression();
     if (r != null)
       {
-        statements_.add(r.box(s, arg));
+        statements_.add(r.box(frmlT));
       }
     return this;
   }

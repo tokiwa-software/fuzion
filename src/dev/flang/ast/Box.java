@@ -62,19 +62,6 @@ public class Box extends Expr
   public int _valAndRefClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
 
-  /**
-   * Stmnt that is the target of the boxed value
-   */
-  public final Stmnt _stmnt;
-
-
-  /**
-   * In case _stmnt is Call, ihis is the index of the actual argument that is
-   * the target of the boxed value
-   */
-  public final int _arg;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -88,7 +75,7 @@ public class Box extends Expr
    * @param arg in case s is Call, this is the index of the actual argument
    * that is the target of the boxed value
    */
-  public Box(Expr value, Stmnt s, int arg)
+  public Box(Expr value, AbstractType frmlT)
   {
     super(value.pos);
 
@@ -99,9 +86,7 @@ public class Box extends Expr
 
     this._value = value;
     var t = value.type();
-    this._type = getFormalType(s,arg).isGenericArgument() ? t : t.asRef();
-    this._stmnt = s;
-    this._arg = arg;
+    this._type = frmlT.isGenericArgument() ? t : t.asRef();
   }
 
 
@@ -122,8 +107,6 @@ public class Box extends Expr
     this._value = value;
     var t = value.type();
     this._type = t.asRef();
-    this._stmnt = null;
-    this._arg = -1;
   }
 
 
@@ -155,7 +138,6 @@ public class Box extends Expr
   public Box visit(FeatureVisitor v, AbstractFeature outer)
   {
     _value = _value.visit(v, outer);
-    v.action(this, outer);
     return this;
   }
 

@@ -334,7 +334,7 @@ public class Assign extends ANY implements Stmnt
 
     if (_assignedField != Types.f_ERROR)
       {
-        _value = _value.box(this, 0);
+        _value = _value.box(_assignedField.resultType());
       }
   }
 
