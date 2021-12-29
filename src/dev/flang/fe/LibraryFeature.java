@@ -584,6 +584,10 @@ public class LibraryFeature extends AbstractFeature
                           var fgc = LibraryModule.USE_FUM ? null : _from.generics().list.get(i0).constraint();
                           return _libModule.typeArgConstraint(tali0, gp, fgc);
                         }
+                        public String toString()
+                        {
+                          return gn;
+                        }
                       };
                     list.add(g);
                     tali = _libModule.typeArgNextPos(tali);
@@ -751,6 +755,7 @@ public class LibraryFeature extends AbstractFeature
                   public AbstractType typeOrNull() { return t; }
                   public byte[] data() { return d; }
                   public Expr visit(FeatureVisitor v, AbstractFeature af) { return this; };
+                  public String toString() { return "LibraryFeature.Constant of type "+type(); }
                 };
               break;
             }
@@ -788,6 +793,7 @@ public class LibraryFeature extends AbstractFeature
                       public AbstractFeature field() { return cf; }
                       public List<AbstractType> types() { return fts; }
                       public Block code() { return (Block) cc; }
+                      public String toString() { return "LibraryFeature.AbstractCase"; }
                     };
                   cases.add(lc);
                   cat = _libModule.caseNextPos(cat);
@@ -796,6 +802,7 @@ public class LibraryFeature extends AbstractFeature
                 {
                   public Expr subject() { return subj; }
                   public List<AbstractCase> cases() { return cases; }
+                  public String toString() { return "LibraryFeature.AbstractMatch"; }
                 };
               break;
             }
