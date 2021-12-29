@@ -142,6 +142,11 @@ public class LibraryModule extends Module
    */
   Map<Integer, Expr> _code1 = new TreeMap<>();
 
+  /**
+   * Cache for innerFeatures created from given index
+   */
+  Map<Integer, List<AbstractFeature>> _innerFeatures = new TreeMap<>();
+
 
   /**
    * The universe
@@ -333,12 +338,17 @@ public class LibraryModule extends Module
    */
   List<AbstractFeature> innerFeatures(int at)
   {
-    var result = new List<AbstractFeature>();
-    var is = innerFeaturesSize(at);
-    var ip = innerFeaturesFeaturesPos(at);
-    for (var i = ip; i < ip+is; i = featureNextPos(i))
+    var result = _innerFeatures.get(at);
+    if (result == null)
       {
-        result.add(libraryFeature(i, null));
+        result = new List<AbstractFeature>();
+        var is = innerFeaturesSize(at);
+        var ip = innerFeaturesFeaturesPos(at);
+        for (var i = ip; i < ip+is; i = featureNextPos(i))
+          {
+            result.add(libraryFeature(i, null));
+          }
+        _innerFeatures.put(at, result);
       }
     return result;
   }
