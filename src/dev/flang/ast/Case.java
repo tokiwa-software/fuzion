@@ -273,7 +273,7 @@ public class Case extends AbstractCase
     for (var cg : cgs)
       {
         if (inferGenerics  && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
-            !inferGenerics && t == cg                                 /* match exactly */ )
+            !inferGenerics && t.compareTo(cg) == 0                    /* match exactly */ )
           {
             t = cg;
             matches.add(cg);
