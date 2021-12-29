@@ -49,7 +49,7 @@ public class Contract
   /**
    * Empty contract
    */
-  static final Contract EMPTY_CONTRACT = new Contract(NO_COND, NO_COND, NO_COND);
+  public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, NO_COND, NO_COND);
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -106,9 +106,12 @@ public class Contract
    */
   public void visit(FeatureVisitor v, AbstractFeature outer)
   {
-    if (req != null) { for (Cond c: req) { c.visit(v, outer); } }
-    if (ens != null) { for (Cond c: ens) { c.visit(v, outer); } }
-    if (inv != null) { for (Cond c: inv) { c.visit(v, outer); } }
+    if (this != EMPTY_CONTRACT)
+      {
+        for (Cond c: req) { c.visit(v, outer); }
+        for (Cond c: ens) { c.visit(v, outer); }
+        for (Cond c: inv) { c.visit(v, outer); }
+      }
   }
 
 
@@ -120,9 +123,12 @@ public class Contract
    */
   public void visitStatements(StatementVisitor v)
   {
-    if (req != null) { for (Cond c: req) { c.visitStatements(v); } }
-    if (ens != null) { for (Cond c: ens) { c.visitStatements(v); } }
-    if (inv != null) { for (Cond c: inv) { c.visitStatements(v); } }
+    if (this != EMPTY_CONTRACT)
+      {
+        for (Cond c: req) { c.visitStatements(v); }
+        for (Cond c: ens) { c.visitStatements(v); }
+        for (Cond c: inv) { c.visitStatements(v); }
+      }
   }
 
 
