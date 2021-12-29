@@ -51,7 +51,6 @@ import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.Old; // NYI: remove dependency!
 import dev.flang.ast.Stmnt; // NYI: remove dependency!
-import dev.flang.ast.StrConst; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
@@ -1050,14 +1049,18 @@ public class Clazzes extends ANY
         result = universe.get();
       }
 
-    else if (e instanceof StrConst s)
-      {
-        result = conststring.get();
-      }
-
     else if (e instanceof Constant c)
       {
         result = outerClazz.actualClazz(c.type());
+        if (result == string.get())
+          { /* this is a bit tricky: in the front end, the type of a string
+             * constant is 'string'.  However, for the back end, the type is
+             * 'consstring' such that the backend can create an instance of
+             * 'constString' and see the correct type (and create proper type
+             * conversion code to 'string' if this is needed).
+             */
+            result = conststring.get();
+          }
       }
 
     else if (e instanceof Tag t)
