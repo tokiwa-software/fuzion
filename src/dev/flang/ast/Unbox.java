@@ -87,7 +87,7 @@ public class Unbox extends Expr
     if (PRECONDITIONS) require
       (pos != null,
        adr != null,
-       adr.type().isRef(),
+       adr.type().isRef() || adr instanceof AbstractCall c && c.calledFeature().isOuterRef(),
        !type.featureOfType().isThisRef()
        );
 
