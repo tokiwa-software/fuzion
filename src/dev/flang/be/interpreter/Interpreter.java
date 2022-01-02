@@ -41,6 +41,7 @@ import java.util.TreeMap;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 
 import dev.flang.fuir.FUIR;
@@ -82,6 +83,13 @@ public class Interpreter extends ANY
 
 
   /*-----------------------------  statics  -----------------------------*/
+
+
+  /**
+   * User specified options. In particular, debugLevel and safety is needed by
+   * the backend.
+   */
+  static FuzionOptions _options_;
 
 
   /**
@@ -181,8 +189,9 @@ public class Interpreter extends ANY
   /**
    * Create an interpreter to execute the given intermediate code.
    */
-  public Interpreter(FUIR fuir)
+  public Interpreter(FuzionOptions options, FUIR fuir)
   {
+    _options_ = options;
     _fuir = fuir;
     Errors.showAndExit();
     Clazzes.showStatistics();

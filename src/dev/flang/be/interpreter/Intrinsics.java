@@ -391,10 +391,19 @@ public class Intrinsics extends ANY
             return Value.EMPTY_VALUE;
           };
       }
-    else if (n.equals("debug"        ) ||
-             n.equals("debugLevel"   ) ||
-             n.equals("safety"       ) ||
-             n.equals("bool.prefix !") ||
+    else if (n.equals("safety"      ))
+      {
+        result = (args) -> new boolValue(Interpreter._options_.fuzionSafety());
+      }
+    else if (n.equals("debug"       ))
+      {
+        result = (args) -> new boolValue(Interpreter._options_.fuzionDebug());
+      }
+    else if (n.equals("debugLevel"  ))
+      {
+        result = (args) -> new i32Value(Interpreter._options_.fuzionDebugLevel());
+      }
+    else if (n.equals("bool.prefix !") ||
              n.equals("bool.infix ||") ||
              n.equals("bool.infix &&") ||
              n.equals("bool.infix :")   )

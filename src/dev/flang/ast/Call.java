@@ -1563,11 +1563,6 @@ public class Call extends AbstractCall
         else if (cf.sameAs(Types.resolved.f_bool_OR     )) { result = newIf(target, BoolConst.TRUE , _actuals.get(0)); }
         else if (cf.sameAs(Types.resolved.f_bool_IMPLIES)) { result = newIf(target, _actuals.get(0), BoolConst.TRUE ); }
         else if (cf.sameAs(Types.resolved.f_bool_NOT    )) { result = newIf(target, BoolConst.FALSE, BoolConst.TRUE ); }
-
-        // intrinsic features for pre- and postconditions
-        else if (cf.sameAs(Types.resolved.f_safety      )) { result = BoolConst.get(res._options.fuzionSafety());      }
-        else if (cf.sameAs(Types.resolved.f_debug       )) { result = BoolConst.get(res._options.fuzionDebug());       }
-        else if (cf.sameAs(Types.resolved.f_debugLevel  )) { result = new NumLiteral (res._options.fuzionDebugLevel());  }
       }
     return result;
   }

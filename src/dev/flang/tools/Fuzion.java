@@ -528,7 +528,7 @@ class Fuzion extends Tool
               case interpreter:
                 {
                   Intrinsics.ENABLE_UNSAFE_INTRINSICS = _enableUnsafeIntrinsics;  // NYI: Add to Fuzion IR or BE Config
-                  var in = new Interpreter(fuir);
+                  var in = new Interpreter(options, fuir);
                   irTime = System.currentTimeMillis();
                   in.run(); break;
                 }
