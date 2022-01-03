@@ -1740,7 +1740,7 @@ Call
    | hasOpenArgList
               | 1      | int           | num actual args (TBD: this is redundant,
                                          should be possible to determine)
-   | cf.generics.isOpen
+   | f.generics.isOpen
               | 1      | int           | num actual generics n
    | true     | n      | Type          | actual generics. if !hasOpen, n is
                                          f.generics().list.size()
@@ -1761,7 +1761,7 @@ Call
    *   | hasOpen| 1      | int           | num actual args (TBD: this is redundant,      |
    *   | ArgList|        |               | should be possible to determine)              |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cf.gene| 1      | int           | num actual generics n                         |
+   *   | f.gene | 1      | int           | num actual generics n                         |
    *   | rics.is|        |               |                                               |
    *   | Open   |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1898,6 +1898,20 @@ Call
 
 
   /*
+--asciidoc--
+
+Match
+^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+.2+| true     | 1      | int           | number of cases
+   |          | n      | Case          | cases
+|====
+
+--asciidoc--
    *   +---------------------------------------------------------------------------------+
    *   | Match                                                                           |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1945,6 +1959,22 @@ Call
 
 
   /*
+--asciidoc--
+
+Case
+^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+   | true     | 1      | int           | num types n
+   | n = -1   | 1      | int           | case field index
+   | n >  0   | n      | Type          | case type
+   | true     | 1      | Code          | code for case
+|====
+
+--asciidoc--
    *   +---------------------------------------------------------------------------------+
    *   | Case                                                                            |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -2010,6 +2040,20 @@ Call
 
 
   /*
+
+--asciidoc--
+
+Case
+^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+   | true     | 1      | Type          | resulting tagged union type
+|====
+
+--asciidoc--
    *   +---------------------------------------------------------------------------------+
    *   | Tag                                                                             |
    *   +--------+--------+---------------+-----------------------------------------------+
