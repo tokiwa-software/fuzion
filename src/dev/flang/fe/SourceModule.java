@@ -1036,7 +1036,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
               {
                 var t1 = ta[i];
                 var t2 = ra[i];
-                if (t1 != t2 && !t1.containsError() && !t2.containsError())
+                if (t1.compareTo(t2) != 0 && !t1.containsError() && !t2.containsError())
                   {
                     // original arg list may be shorter if last arg is open generic:
                     check
