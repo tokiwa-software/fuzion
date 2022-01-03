@@ -646,8 +646,31 @@ public class LibraryModule extends Module
    */
 
   /*
+--asciidoc--
+
+File Formats
+------------
+
+Module File Format
+~~~~~~~~~~~~~~~~~~
+
+Module File
+^^^^^^^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+.2+|true      | 1      | byte[]        | MIR_FILE_MAGIC
+
+              | 1      | InnerFeatures | inner Features
+|====
+
+--asciidoc--
+
+
    *   +---------------------------------------------------------------------------------+
-   *   | Module File s                                                                   |
+   *   | Module File                                                                     |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -663,6 +686,32 @@ public class LibraryModule extends Module
   }
 
   /*
+--asciidoc--
+
+InnerFeatures
+^^^^^^^^^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+.2+| true     | 1      | int           | sizeof(inner Features)
+
+   |          | 1      | Features      | inner Features
+|====
+
+Features
+^^^^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+   | true     | n      | Feature       | (inner) Features
+|====
+
+--asciidoc--
+
    *   +---------------------------------------------------------------------------------+
    *   | InnerFeatures                                                                   |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -702,6 +751,38 @@ public class LibraryModule extends Module
 
 
   /*
+--asciidoc--
+
+Feature
+^^^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+.4+| true  .4+| 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters
+                       | Name          | name
+                       | int           | arg count
+                       | int           | name id
+   | T=1      | 1      | TypeArgs      | optional type arguments
+   | hasRT    | 1      | Type          | optional result type,
+                                       hasRT = !isConstructor && !isChoice
+.2+| true NYI! !isField? !isIntrinsc
+              | 1      | int           | inherits count i
+              | i      | Code          | inherits calls
+.6+| true     | 1      | int           | precondition count pre_n
+              | pre_n  | Code          | precondition code
+              | 1      | int           | postcondition count post_n
+              | post_n | Code          | postcondition code
+              | 1      | int           | invariant count inv_n
+              | inv_n  | Code          | invariant code
+.2+| true     | 1      | int           | redefines count r
+              | r      | int           | feature offset of redefined feature
+   | isRoutine| 1      | Code          | Feature code
+   | true     | 1      | InnerFeatures | inner features of this feature
+|====
+
+--asciidoc--
+
    *   +---------------------------------------------------------------------------------+
    *   | Feature                                                                         |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -993,6 +1074,23 @@ public class LibraryModule extends Module
 
 
   /*
+
+--asciidoc--
+
+TypeArgs
+^^^^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+.3+| true     | 1      | int           | num type ags n
+              |        | bool          | isOpen
+              | n      | TypeArg       | type arguments
+|====
+
+--asciidoc--
+
    *   +---------------------------------------------------------------------------------+
    *   | TypeArgs                                                                        |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1041,6 +1139,20 @@ public class LibraryModule extends Module
 
 
   /*
+--asciidoc--
+
+TypeArg
+^^^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+.2+| true  .2+| 1      | Name          | type arg name
+                       | Type          | constraint
+|====
+
+--asciidoc--
    *   +---------------------------------------------------------------------------------+
    *   | TypeArg                                                                         |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1075,6 +1187,20 @@ public class LibraryModule extends Module
 
 
   /*
+--asciidoc--
+
+Name
+^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+.2+| true     | 1      | int           | name length l
+              | l      | byte          | name as utf8 bytes
+|====
+
+--asciidoc--
    *   +---------------------------------------------------------------------------------+
    *   | Name                                                                            |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1107,6 +1233,27 @@ public class LibraryModule extends Module
 
 
   /*
+--asciidoc--
+
+Type
+^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+   | true     | 1      | int           | the kind of this type tk
+   | tk==-4   | 1      | unit          | ADDRESS
+   | tk==-3   | 1      | unit          | type of universe
+   | tk==-2   | 1      | int           | index of type
+   | tk==-1   | 1      | int           | index of generic argument
+.4+| tk>=0    | 1      | int           | index of feature of type
+              | 1      | bool          | isRef
+              | tk     | Type          | actual generics
+              | 1      | Type          | outer type
+|====
+
+--asciidoc--
    *   +---------------------------------------------------------------------------------+
    *   | Type                                                                            |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1255,6 +1402,31 @@ public class LibraryModule extends Module
 
 
   /*
+--asciidoc--
+
+Code
+^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+.2+| true     | 1      | int           | sizeof(Expressions)
+              | 1      | Expressions   | the actual code
+|====
+
+
+Expressions
+^^^^^^^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+   | true     n      | Expression    | the single expressions
+|====
+
+--asciidoc--
    *   +---------------------------------------------------------------------------------+
    *   | Code                                                                            |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1292,6 +1464,25 @@ public class LibraryModule extends Module
   }
 
   /*
+--asciidoc--
+
+Expression
+^^^^^^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+   | true     | 1      | byte          | ExprKind k
+   | k==Add   | 1      | Assign        | assignment
+   | k==Unb   | 1      | Unbox         | unbox expression
+   | k==Con   | 1      | Constant      | constant
+   | k==Cal   | 1      | Call          | feature call
+   | k==Mat   | 1      | Match         | match statement
+   | k==Tag   | 1      | Tag           | tag expression
+|====
+
+--asciidoc--
    *   +---------------------------------------------------------------------------------+
    *   | Expression                                                                      |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1346,6 +1537,19 @@ public class LibraryModule extends Module
 
 
   /*
+--asciidoc--
+
+Assign
+^^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+   | true     | 1      | int           | assigned field index
+|====
+
+--asciidoc--
    *   +---------------------------------------------------------------------------------+
    *   | Assign                                                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1378,6 +1582,20 @@ public class LibraryModule extends Module
 
 
   /*
+--asciidoc--
+
+Unbox
+^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+.2+| true     | 1      | Type          | result type
+              | 1      | bool          | needed flag (NYI: What is this? remove?)
+|====
+
+--asciidoc--
    *   +---------------------------------------------------------------------------------+
    *   | Unbox                                                                           |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1426,6 +1644,21 @@ public class LibraryModule extends Module
 
 
   /*
+--asciidoc--
+
+Constant
+^^^^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+.3+| true  .2+| 1      | Type          | type of the constant
+                       | length        | data length of the constant
+              | length | byte          | data of the constant
+|====
+
+--asciidoc--
    *   +---------------------------------------------------------------------------------+
    *   | Constant                                                                        |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1493,6 +1726,29 @@ public class LibraryModule extends Module
 
 
   /*
+--asciidoc--
+
+Call
+^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+.2+| true     | 1      | int           | called feature f index
+              | 1      | Type          | result type (NYI: remove, redundant!)s
+   | hasOpenArgList
+              | 1      | int           | num actual args (TBD: this is redundant,
+                                         should be possible to determine)
+   | cf.generics.isOpen
+              | 1      | int           | num actual generics n
+   | true     | n      | Type          | actual generics. if !hasOpen, n is
+                                         f.generics().list.size()
+   | cf.resultType().isOpenGeneric()
+              | 1      | int           | select
+|====
+
+--asciidoc--
    *   +---------------------------------------------------------------------------------+
    *   | Call                                                                            |
    *   +--------+--------+---------------+-----------------------------------------------+

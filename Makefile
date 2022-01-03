@@ -254,6 +254,9 @@ ALL = \
 	$(BUILD_DIR)/tests \
 	$(BUILD_DIR)/examples
 
+DOCUMENTATION = \
+	$(BUILD_DIR)/doc/fumfile.html     # fum file format documentation created with asciidoc
+
 .PHONY: all
 all: $(ALL)
 
@@ -460,6 +463,13 @@ $(BUILD_DIR)/UnicodeData.java.generated: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR
 
 $(BUILD_DIR)/UnicodeData.java: $(BUILD_DIR)/UnicodeData.java.generated $(SRC)/dev/flang/util/UnicodeData.java.in
 	sed -e '/@@@ generated code start @@@/r build/UnicodeData.java.generated' $(SRC)/dev/flang/util/UnicodeData.java.in >$@
+
+.phony: doc
+doc: $(DOCUMENTATION)
+
+$(BUILD_DIR)/doc/fumfile.html: $(SRC)/dev/flang/fe/LibraryModule.java
+	mkdir -p $(@D)
+	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" | asciidoc - >$@
 
 # phony target to regenerate UnicodeData.java using the latest UnicodeData.txt.
 # This must be phony since $(SRC)/dev/flang/util/UnicodeData.java would
