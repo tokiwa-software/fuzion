@@ -90,12 +90,6 @@ public class LibraryModule extends Module
 
 
   /**
-   * Configuration
-   */
-  public final FrontEndOptions _options;
-
-
-  /**
    * NYI: For now, a LibraryModule is just a wrapper around a SourceModule.
    * This will change once the source module can actually be saved to a file.
    */
@@ -164,7 +158,6 @@ public class LibraryModule extends Module
   {
     super(dependsOn);
 
-    _options = options;
     _srcModule = new SourceModule(options, sourceDirs, inputFile, defaultMain, dependsOn, universe);
     _name = name;
     _mir = _srcModule.createMIR();
@@ -176,11 +169,10 @@ public class LibraryModule extends Module
   /**
    * Create LibraryModule for given options and sourceDirs.
    */
-  LibraryModule(FrontEndOptions options, String name, ByteBuffer data, Module[] dependsOn, Feature universe)
+  LibraryModule(String name, ByteBuffer data, Module[] dependsOn, Feature universe)
   {
     super(dependsOn);
 
-    _options = options;
     _srcModule = null;
     _name = name;
     _mir = null;
