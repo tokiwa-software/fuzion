@@ -721,21 +721,16 @@ public class Type extends AbstractType
 
     if (!isGenericArgument())
       {
-        var o = outerfeat;
+        var of = outerfeat;
         if (_outer != null)
           {
             _outer = _outer.resolve(res, outerfeat);
-            if (_outer.isGenericArgument())
-              { // an error message was generated already during findGenerics()
-                check
-                  (Errors.count() > 0);
-                feature = Types.f_ERROR;
-              }
-            o = _outer.featureOfType();
+            var ot = _outer.isGenericArgument() ?_outer.genericArgument().constraint() : _outer;
+            of = ot.featureOfType();
           }
         if (feature == null)
           {
-            feature = res._module.lookupFeatureForType(pos(), name, o, outerfeat);
+            feature = res._module.lookupFeatureForType(pos(), name, of, outerfeat);
           }
       }
     if (POSTCONDITIONS) ensure

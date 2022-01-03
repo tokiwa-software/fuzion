@@ -538,15 +538,22 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        t != null,
        t.checkedForGeneric(),
        Errors.count() > 0 || !t.isOpenGeneric(),
-       featureOfType().generics().sizeMatches(generics()));
+       isGenericArgument() || featureOfType().generics().sizeMatches(generics()));
 
     var result = t;
     if (result.dependsOnGenerics())
       {
-        result = result.actualType(featureOfType(), generics());
-        if (outer() != null)
+        if (isGenericArgument())
           {
-            result = outer().actualType(result);
+            result = genericArgument().constraint().actualType(t);
+          }
+        else
+          {
+            result = result.actualType(featureOfType(), generics());
+            if (outer() != null)
+              {
+                result = outer().actualType(result);
+              }
           }
       }
 

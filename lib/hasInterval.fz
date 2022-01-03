@@ -136,7 +136,6 @@ hasInterval<T: hasInterval<T>> : integer<T> is
 
   # the open interval from this to the maximum T value
   postfix .. () infix .. is
-    # hasInterval.this..max   # NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
-    thiz..max
+    hasInterval.this..max
 
   # postfix .. : infix .. (max) is  # NYI: check: this should have the same effect using a sub-class

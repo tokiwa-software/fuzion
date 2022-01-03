@@ -1104,10 +1104,10 @@ public class Call extends AbstractCall
     else if (_select < 0)
       {
         t = t.resolve(res, tt.featureOfType());
-        t = tt.actualType(t);
+        t = tt.isGenericArgument() ? t : tt.actualType(t);
         if (calledFeature_.isConstructor() && t.compareTo(Types.resolved.t_void) != 0)
           {  /* specialize t for the target type here */
-            t = new Type(t, t.generics(), tt);
+            t = new Type(t, t.generics(), target.type());
           }
       }
     else
