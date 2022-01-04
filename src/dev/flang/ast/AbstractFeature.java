@@ -95,6 +95,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public AbstractFeature astFeature() { return this; } // NYI remove
 
 
+  /**
+   * Reserved fields to be used by dev.flang.air to find used features and to
+   * mark features that are called dynamically.
+   */
+  public SourcePosition _usedAt;
+  public boolean _calledDynamically;
 
   /*-----------------------------  methods  -----------------------------*/
 
@@ -856,11 +862,13 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @return
    */
+  Collection<AbstractFeature> _allInnerAndInheritedFeatures;
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(SrcModule mod)
   {
     if (PRECONDITIONS) require
                          (state().atLeast(Feature.State.RESOLVED));
 
+    if (_allInnerAndInheritedFeatures != null) { return _allInnerAndInheritedFeatures;  }
     TreeSet<AbstractFeature> result = new TreeSet<>();
 
     result.addAll(mod.declaredFeatures(this).values());
@@ -875,7 +883,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             result.addAll(cf.allInnerAndInheritedFeatures(mod));
           }
       }
-
+    _allInnerAndInheritedFeatures = result;
     return result;
   }
 

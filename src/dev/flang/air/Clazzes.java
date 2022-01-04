@@ -74,22 +74,6 @@ public class Clazzes extends ANY
 
 
   /**
-   * All used features mapped to the first source code position their are used at.
-   *
-   * NYI: This should be moved to MiddleEnd.java and joined with clazzes, so we
-   * do not need a separate pass for finding used features.
-   */
-  private static final Map<AbstractFeature, SourcePosition> _usedFeatures_ = new TreeMap<>();
-
-
-  /**
-   * NYI: This is redundant with _calledDynamically_, so one of them has to go
-   * (preferably this one).
-   */
-  private static final Map<AbstractFeature, Boolean> _dynamicallyCalledFeatures0_ = new TreeMap<>();
-
-
-  /**
    * All clazzes found in the system.
    *
    * NYI: One of these maps is probably redundant!
@@ -1246,7 +1230,7 @@ public class Clazzes extends ANY
    */
   public static boolean isUsedAtAll(AbstractFeature thiz)
   {
-    return _usedFeatures_.get(thiz.astFeature()) != null;
+    return thiz.astFeature()._usedAt != null;
   }
 
 
@@ -1255,7 +1239,7 @@ public class Clazzes extends ANY
    */
   public static SourcePosition isUsedAt(AbstractFeature thiz)
   {
-    return _usedFeatures_.get(thiz.astFeature());
+    return thiz.astFeature()._usedAt;
   }
 
 
@@ -1265,7 +1249,7 @@ public class Clazzes extends ANY
    */
   public static void addUsedFeature(AbstractFeature f, SourcePosition at)
   {
-    _usedFeatures_.put(f.astFeature(), at);
+    f._usedAt = at;
   }
 
 
@@ -1276,7 +1260,7 @@ public class Clazzes extends ANY
    */
   public static boolean isCalledDynamically0(AbstractFeature f)
   {
-    return _dynamicallyCalledFeatures0_.getOrDefault(f, false);
+    return f._calledDynamically;
   }
 
 
@@ -1288,7 +1272,7 @@ public class Clazzes extends ANY
    */
   public static void setCalledDynamically0(AbstractFeature f)
   {
-    _dynamicallyCalledFeatures0_.put(f, true);
+    f._calledDynamically = true;
   }
 
 }
