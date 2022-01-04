@@ -107,13 +107,6 @@ public class SourceFile extends ANY
   public static Path STDIN = Path.of("-");
 
 
-  /**
-   * Special value for fileName argument of constructor for internal file not
-   * read from file system.
-   */
-  public static Path BUILT_IN = Path.of("--builtin--");
-
-
   /*-----------------------------  statics  -----------------------------*/
 
 
@@ -194,9 +187,8 @@ public class SourceFile extends ANY
     byte[] sf;
     try
       {
-        sf = fileName == BUILT_IN ? new byte[0]              :
-             fileName == STDIN    ? System.in.readAllBytes()
-                                  : Files    .readAllBytes(fileName);
+        sf = fileName == STDIN ? System.in.readAllBytes()
+                               : Files    .readAllBytes(fileName);
       }
     catch (IOException e)
       {

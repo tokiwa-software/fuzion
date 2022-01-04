@@ -882,7 +882,7 @@ public class LibraryFeature extends AbstractFeature
   {
     if (pos < 0)
       {
-        return LibraryModule.DUMMY_POS;
+        return SourcePosition.notAvailable;
       }
     else if (pos == 0)
       {
