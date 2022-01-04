@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.nio.file.Path;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -810,6 +812,25 @@ class LibraryOut extends DataOut
 
 
   /**
+   * Determine the filename from a source file.
+   *
+   * This replaced absolute paths that start with fuzionHome by a path relative
+   * to $FUZION.
+   */
+  private String fileName(SourceFile sf)
+  {
+    var fhp = _sourceModule._options._fuzionHome;
+    var sfp = sf._fileName;
+    if (sfp.startsWith(fhp))
+      {
+        var sfr = fhp.relativize(sfp);
+        sfp = FuzionConstants.SYMBOLIC_FUZION_HOME.resolve(sfr);
+      }
+    return sfp.toString();
+  }
+
+
+  /**
    * Write source code position
    *
    * @param lastPos the previous position that was written already
@@ -836,7 +857,7 @@ class LibraryOut extends DataOut
             _fixUpsSourcePositions.add(newPos);
             _fixUpsSourcePositionsAt.add(offset());
             var sf = newPos._sourceFile;
-            _sourceFiles.put(sf._fileName.toString(), sf);
+            _sourceFiles.put(fileName(sf), sf);
           }
         writeInt(0);
       }
@@ -880,7 +901,7 @@ class LibraryOut extends DataOut
     for (var e : _sourceFiles.entrySet())
       {
         var sf = e.getValue();
-        var n = sf._fileName.toString();
+        var n = fileName(sf);
         writeName(n);
         writeInt(sf.byteLength());
         _sourceFilePositions.put(n, offset());
@@ -1011,7 +1032,7 @@ class LibraryOut extends DataOut
         var p  = _fixUpsSourcePositions  .get(i);
         var at = _fixUpsSourcePositionsAt.get(i);
         var sf = p._sourceFile;
-        var n = sf._fileName.toString();
+        var n = fileName(sf);
         var o = _sourceFilePositions.get(n) + p.bytePos();
         check
           (o > 0);
