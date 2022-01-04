@@ -95,6 +95,24 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>
   }
 
 
+  /**
+   * Create source position for given source file and byte position.
+   *
+   * @param sourceFile the source file
+   *
+   * @param bytePos the byte position within sourceFile
+   */
+  public SourcePosition(SourceFile sourceFile, int bytePos)
+  {
+    if (PRECONDITIONS) require
+      (sourceFile != null);
+
+    this._sourceFile = sourceFile;
+    this._line = sourceFile.lineNum(bytePos);
+    this._column = bytePos - sourceFile.lineStartPos(_line);
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -179,6 +197,15 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>
        ? "<built-in>:"
        : fileName() + ":" + _line + ":" + _column + ":") +
       Terminal.REGULAR_COLOR;
+  }
+
+
+  /**
+   * Byte position within _sourceFile
+   */
+  public int bytePos()
+  {
+    return _sourceFile.lineStartPos(_line) + _column - 1;
   }
 
 

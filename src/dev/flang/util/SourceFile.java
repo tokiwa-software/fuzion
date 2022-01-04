@@ -169,12 +169,28 @@ public class SourceFile extends ANY
    * Load UTF-8 encoded source code from given file and reset the position to
    * the beginning of this file.
    */
-  public SourceFile(Path fileName)
+  public SourceFile(Path fileName, byte[] sf)
   {
     if (PRECONDITIONS) require
       (fileName != null);
 
     _fileName = fileName;
+    _bytes = sf;
+    _pos = 0;
+    _cur = BAD_CODEPOINT;
+    _size = 0;
+  }
+
+
+  /**
+   * Load UTF-8 encoded source code from given file and reset the position to
+   * the beginning of this file.
+   */
+  public SourceFile(Path fileName)
+  {
+    if (PRECONDITIONS) require
+      (fileName != null);
+
     byte[] sf;
     try
       {
@@ -189,6 +205,8 @@ public class SourceFile extends ANY
                      "");
         sf = new byte[0];
       }
+
+    _fileName = fileName;
     _bytes = sf;
     _pos = 0;
     _cur = BAD_CODEPOINT;

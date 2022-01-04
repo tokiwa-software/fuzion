@@ -27,7 +27,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 import java.util.Stack;
@@ -62,6 +64,7 @@ import dev.flang.ast.Unbox;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
+import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 
@@ -137,6 +140,13 @@ public class LibraryFeature extends AbstractFeature
    */
   private AbstractType _thisType;
 
+
+  /**
+   * Source code files, created on demand
+   */
+  private final ArrayList<SourceFile> _sourceFiles;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -164,6 +174,12 @@ public class LibraryFeature extends AbstractFeature
     var id = lib.featureId(index);
     var bn = new String(bytes, StandardCharsets.UTF_8);
     _featureName = FeatureName.get(bn, ac, id);
+    var sfc = lib.sourceFilesCount();
+    _sourceFiles = new ArrayList<>(lib.sourceFilesCount());
+    for (int i = 0; i < sfc; i++)
+      {
+        _sourceFiles.add(null);
+      }
     if (from != null)
       {
         check(_featureName == _from.featureName());
@@ -675,7 +691,7 @@ public class LibraryFeature extends AbstractFeature
     if (res == null)
       {
         var s = new Stack<Expr>();
-        code(at, s);
+        code(at, s, -1);
         check
           (s.size() == 1);
         res = s.pop();
@@ -694,7 +710,7 @@ public class LibraryFeature extends AbstractFeature
     if (res == null)
       {
         var s = new Stack<Expr>();
-        res = code(at, s);
+        res = code(at, s, -1);
         check
           (s.size() == 0);
         _libModule._code.put(at, res);
@@ -705,8 +721,14 @@ public class LibraryFeature extends AbstractFeature
 
   /**
    * Convert code at given offset in _libModule to an ast.Expr
+   *
+   * @param at position of this code section
+   *
+   * @param s the stack of expressions
+   *
+   * @param pos the current source code position from earlier code, -1 if none.
    */
-  Block code(int at, Stack<Expr> s)
+  Block code(int at, Stack<Expr> s, int pos)
   {
     var l = new List<Stmnt>();
     var sz = _libModule.codeSize(at);
@@ -716,6 +738,7 @@ public class LibraryFeature extends AbstractFeature
       {
         var k = _libModule.expressionKind(e);
         var iat = _libModule.expressionExprPos(e);
+        pos = _libModule.expressionHasPosition(e) ? _libModule.expressionPosition(e) : pos;
         Expr ex = null;
         Stmnt c = null;
         Expr x = null;
@@ -727,7 +750,7 @@ public class LibraryFeature extends AbstractFeature
               var f = _libModule.libraryFeature(field, null);
               var target = s.pop();
               var val = s.pop();
-              c = new Assign(LibraryModule.DUMMY_POS, f, target, val);
+              c = new Assign(pos(pos), f, target, val);
               break;
             }
           case Unbox:
@@ -746,7 +769,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var t = _libModule.constType(iat);
               var d = _libModule.constData(iat);
-              x = new Constant(LibraryModule.DUMMY_POS)
+              x = new Constant(pos(pos))
                 {
                   public AbstractType typeOrNull() { return t; }
                   public byte[] data() { return d; }
@@ -757,7 +780,7 @@ public class LibraryFeature extends AbstractFeature
             }
           case Current:
             {
-              x = new Current(LibraryModule.DUMMY_POS, thisType());
+              x = new Current(pos(pos), thisType());
               break;
             }
           case Match:
@@ -783,9 +806,9 @@ public class LibraryFeature extends AbstractFeature
                     }
                   var cc = code(_libModule.caseCodePos(cat));
                   var fts = ts;
-                  var lc = new AbstractCase(LibraryModule.DUMMY_POS)
+                  var lc = new AbstractCase(null)
                     {
-                      public SourcePosition pos() { return LibraryModule.DUMMY_POS; }
+                      public SourcePosition pos() { return LibraryModule.DUMMY_POS; /* NYI: Need proper position */ }
                       public AbstractFeature field() { return cf; }
                       public List<AbstractType> types() { return fts; }
                       public Block code() { return (Block) cc; }
@@ -794,7 +817,7 @@ public class LibraryFeature extends AbstractFeature
                   cases.add(lc);
                   cat = _libModule.caseNextPos(cat);
                 }
-              c = new AbstractMatch(LibraryModule.DUMMY_POS)
+              c = new AbstractMatch(pos(pos))
                 {
                   public Expr subject() { return subj; }
                   public List<AbstractCase> cases() { return cases; }
@@ -804,7 +827,7 @@ public class LibraryFeature extends AbstractFeature
             }
           case Call:
             {
-              x = new LibraryCall(_libModule, iat, s);
+              x = new LibraryCall(_libModule, iat, s, pos(pos));
               break;
             }
           case Pop:
@@ -821,7 +844,7 @@ public class LibraryFeature extends AbstractFeature
             }
           case Unit:
             {
-              x = new Block(LibraryModule.DUMMY_POS, new List<>());
+              x = new Block(pos(pos), new List<>());
               break;
             }
           default: throw new Error("Unexpected expression kind: " + k);
@@ -833,7 +856,7 @@ public class LibraryFeature extends AbstractFeature
             if (!l.isEmpty())
               {
                 l.add(x);
-                x = new Block(LibraryModule.DUMMY_POS, l);
+                x = new Block(pos(pos), l);
                 l = new List<>();
               }
             s.push(x);
@@ -844,7 +867,51 @@ public class LibraryFeature extends AbstractFeature
           }
         e = _libModule.expressionNextPos(e);
       }
-    return new Block(LibraryModule.DUMMY_POS, l);
+    return new Block(pos(pos), l);
+  }
+
+
+  /**
+   * Create a Source position instance for the given position in this library file.
+   *
+   * @param pos the position, may be -1 for undefined or 0 for
+   * SourcePosition.builtIn, otherwise a valid index into a source file in this
+   * module.
+   */
+  private SourcePosition pos(int pos)
+  {
+    if (pos < 0)
+      {
+        return LibraryModule.DUMMY_POS;
+      }
+    else if (pos == 0)
+      {
+        return SourcePosition.builtIn;
+      }
+    else
+      {
+        var at = _libModule.sourceFilesFirstSourceFilePos();
+        check
+          (pos > at);
+        var i = 0;
+        while (pos > _libModule.sourceFileNextPos(at))
+          {
+            at = _libModule.sourceFileNextPos(at);
+            i++;
+            check
+              (i < _libModule.sourceFilesCount());
+          }
+        var sf = _sourceFiles.get(i);
+        if (sf == null)
+          {
+            var bb = _libModule.sourceFileBytes(at);
+            var ba = new byte[bb.limit()]; // NYI: Would be better if SoureFile could use bb directly.
+            bb.get(0, ba);
+            sf = new SourceFile(Path.of(_libModule.sourceFileName(at)), ba);
+            _sourceFiles.set(i, sf);
+          }
+        return new SourcePosition(sf, pos - _libModule.sourceFileBytesPos(at));
+      }
   }
 
 

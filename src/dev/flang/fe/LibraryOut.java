@@ -513,7 +513,8 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | byte          | ExprKind k in bits 0..6,  hasPos in bit 7     |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | hasPos | 1      | Pos           | source code position                          |
+   *   | hasPos | 1      | int           | source position: index in this file's         |
+   *   |        |        |               | SourceFiles section, 0 for builtIn pos        |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Add | 1      | Assign        | assignment                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -830,9 +831,14 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    */
         write(k.ordinal() | 0x80);
+        if (!newPos.isBuiltIn())
+          {
+            _fixUpsSourcePositions.add(newPos);
+            _fixUpsSourcePositionsAt.add(offset());
+            var sf = newPos._sourceFile;
+            _sourceFiles.put(sf._fileName.toString(), sf);
+          }
         writeInt(0);
-        var sf = newPos._sourceFile;
-        _sourceFiles.put(sf._fileName.toString(), sf);
       }
     else
       {
@@ -874,8 +880,10 @@ class LibraryOut extends DataOut
     for (var e : _sourceFiles.entrySet())
       {
         var sf = e.getValue();
-        writeName(sf._fileName.toString());
+        var n = sf._fileName.toString();
+        writeName(n);
         writeInt(sf.byteLength());
+        _sourceFilePositions.put(n, offset());
         write(sf.bytes());
       }
   }
@@ -924,6 +932,24 @@ class LibraryOut extends DataOut
    * Type offsets in this file
    */
   Map<AbstractType, Integer> _offsetsForType = new TreeMap<>();
+
+
+  /**
+   * SourcePositions that need fixup.
+   */
+  ArrayList<SourcePosition> _fixUpsSourcePositions = new ArrayList<>();
+
+
+  /**
+   * offsets of SourcePositions that need fixup.
+   */
+  ArrayList<Integer> _fixUpsSourcePositionsAt = new ArrayList<>();
+
+
+  /**
+   * source file position offsets in this file.
+   */
+  Map<String, Integer> _sourceFilePositions = new TreeMap<>();
 
 
   /**
@@ -978,6 +1004,17 @@ class LibraryOut extends DataOut
         var o = _offsetsForFeature.get(g);
         check
           (o != null);
+        writeIntAt(at, o);
+      }
+    for (var i = 0; i<_fixUpsSourcePositions.size(); i++)
+      {
+        var p  = _fixUpsSourcePositions  .get(i);
+        var at = _fixUpsSourcePositionsAt.get(i);
+        var sf = p._sourceFile;
+        var n = sf._fileName.toString();
+        var o = _sourceFilePositions.get(n) + p.bytePos();
+        check
+          (o > 0);
         writeIntAt(at, o);
       }
   }

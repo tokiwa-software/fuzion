@@ -1478,7 +1478,8 @@ Expression
 |====
    |cond.     | repeat | type          | what
 
-   | true     | 1      | byte          | ExprKind k
+   | true     | 1      | byte          | ExprKind k in bits 0..6,  hasPos in bit 7
+   | hasPos   | 1      | int           | source position: index in this file's SourceFiles section, 0 for builtIn pos
    | k==Add   | 1      | Assign        | assignment
    | k==Unb   | 1      | Unbox         | unbox expression
    | k==Con   | 1      | Constant      | constant
@@ -1495,7 +1496,8 @@ Expression
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | byte          | ExprKind k in bits 0..6,  hasPos in bit 7     |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | hasPos | 1      | Pos           | source code position                          |
+   *   | hasPos | 1      | int           | source position: index in this file's         |
+   *   |        |        |               | SourceFiles section, 0 for builtIn pos        |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Add | 1      | Assign        | assignment                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -1529,6 +1531,13 @@ Expression
   int expressionPositionPos(int at)
   {
     return expressionKindPos(at) + 1;
+  }
+  int expressionPosition(int at)
+  {
+    if (PRECONDITIONS) require
+      (expressionHasPosition(at));
+
+    return data().getInt(expressionPositionPos(at));
   }
   int expressionExprPos(int at)
   {

@@ -81,9 +81,9 @@ public class LibraryCall extends AbstractCall
   /**
    * Create LibraryCall
    */
-  LibraryCall(LibraryModule lib, int index, Stack<Expr> s)
+  LibraryCall(LibraryModule lib, int index, Stack<Expr> s, SourcePosition pos)
   {
-    super(LibraryModule.DUMMY_POS);
+    super(pos);
     _libModule = lib;
     _index = index;
     _type = _libModule.USE_FUM ? lib.callType(index) : Types.t_ERROR;
