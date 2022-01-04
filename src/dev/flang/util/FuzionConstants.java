@@ -94,6 +94,7 @@ public class FuzionConstants extends ANY
 
   public static final int MIR_FILE_MAGIC0 = 0xF710BEAD;  // FuZIOn BEAD, a module .fum
   public static final byte[] MIR_FILE_MAGIC = int2Bytes(MIR_FILE_MAGIC0);
+  public static final String MIR_FILE_MAGIC_EXPLANATION = "Module file magic: 'FuZIOn BEAD'";
 
 
   public static final int MIR_FILE_FIRST_FEATURE_OFFSET = 4;

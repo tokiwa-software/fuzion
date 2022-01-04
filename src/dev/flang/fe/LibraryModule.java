@@ -2250,7 +2250,7 @@ SourceFile
   public String dump()
   {
     var hd = new HexDump(_data);
-    hd.mark(0, "MAGIC");
+    hd.mark(0, FuzionConstants.MIR_FILE_MAGIC_EXPLANATION);
     hd.mark(startPos(), "InnerFeatures");
     dump(hd, features());
     hd.mark(sourceFilesPos(), "SourceFiles");
