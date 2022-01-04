@@ -186,18 +186,38 @@ public class HexDump
         out.append(' ');
       }
     out.append("  ");
-    while (detail.length() > _maxDetail)
+    var di = 0; // current index in detail
+    var dl = 0; // # of chars printed to detail message in current line
+    while (di < detail.length())
       {
-        out.append(detail.substring(0, _maxDetail))
-          .append('\n');
-        detail = detail.substring(_maxDetail);
-        var nadr = Integer.numberOfTrailingZeros(Integer.highestOneBit(_data.limit()))/4+1;
-        for (var i = 0; i < nadr + 1 + 3 * _bytesPerLine + 2 + _bytesPerLine + 2; i++)
+        var c = detail.charAt(di);
+        di++;
+        if (c == '\033' && di < detail.length()-1) // skip escape sequence
           {
-            out.append(' ');
+            do
+              {
+                out.append(c);
+                c = detail.charAt(di);
+                di++;
+              }
+            while (c != 'm' && c != 'K' && c != 'H' && c != 'f' && c != 'J' && di < detail.length()-1);
+            out.append(c);
+            c = detail.charAt(di);
+            di++;
+          }
+        out.append(c);
+        dl++;
+        if (di < detail.length() && dl >= _maxDetail)
+          {
+            out.append('\n');
+            var nadr = Integer.numberOfTrailingZeros(Integer.highestOneBit(_data.limit()))/4+1;
+            for (var i = 0; i < nadr + 1 + 3 * _bytesPerLine + 2 + _bytesPerLine + 2; i++)
+              {
+                out.append(' ');
+              }
+            dl = 0;
           }
       }
-    out.append(detail);
     out.append('\n');
   }
 
