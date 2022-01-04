@@ -715,7 +715,7 @@ public class LibraryFeature extends AbstractFeature
     while (e < eat+sz)
       {
         var k = _libModule.expressionKind(e);
-        var iat = e + 1;
+        var iat = _libModule.expressionExprPos(e);
         Expr ex = null;
         Stmnt c = null;
         Expr x = null;

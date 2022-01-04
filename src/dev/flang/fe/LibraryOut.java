@@ -61,6 +61,8 @@ import dev.flang.util.DataOut;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
+import dev.flang.util.SourceFile;
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -79,6 +81,12 @@ class LibraryOut extends DataOut
    * The underlying module we are saving as a library.
    */
   private final SourceModule _sourceModule;
+
+
+  /**
+   * The source code files in this module, indexed by their position.
+   */
+  private TreeMap<String, SourceFile> _sourceFiles = new TreeMap<>();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -102,11 +110,14 @@ class LibraryOut extends DataOut
    *   | true   | 1      | byte[]        | MIR_FILE_MAGIC                                |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | InnerFeatures | inner Features                                |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | SourceFiles   | source code files                             |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
 
     write(FuzionConstants.MIR_FILE_MAGIC);
     innerFeatures(sm._universe);
+    sourceFiles();
     fixUps();
   }
 
@@ -124,13 +135,13 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | int           | sizeof(inner Features)                        |
+   *   | true   | 1      | int           | sizeof(inner Features) == size                |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | Features      | inner Features                                |
    *   +--------+--------+---------------+-----------------------------------------------+
    *
    * The count n is not stored explicitly, the list of inner Features ends after
-   * isz bytes.
+   * size bytes.
    */
   void innerFeatures(Feature f)
   {
@@ -453,25 +464,6 @@ class LibraryOut extends DataOut
    *   |        | 1      | Expressions   | the actual code                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *
-   *   +---------------------------------------------------------------------------------+
-   *   | Expressions                                                                     |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | n      | Expression    | the single expressions                        |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *
-   *   +---------------------------------------------------------------------------------+
-   *   | Expression                                                                      |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | ExprKind k                                    |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Add | 1      | Assign        | assignment                                    |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | k==Con | 1      | Constant      | constant                                      |
-   *   +--------+--------+---------------+-----------------------------------------------+
    */
   void code(Expr code)
   {
@@ -484,20 +476,10 @@ class LibraryOut extends DataOut
     var codePos = offset();
 
     // write the actual code data
-    expressions(code, dumpResult);
+    expressions(code, dumpResult, null);
     writeIntAt(szPos, offset() - codePos);
   }
 
-
-  /**
-   * Collect the binary data for given Expressions.
-   *
-   * @param s the statement to write
-   */
-  void expressions(Stmnt s)
-  {
-    expressions(s, false);
-  }
 
   /**
    * Collect the binary data for given Expressions.
@@ -512,12 +494,26 @@ class LibraryOut extends DataOut
    *   | true   | n      | Expression    | the single expressions                        |
    *   +--------+--------+---------------+-----------------------------------------------+
    *
+   * @param s the statement to write
+   */
+  SourcePosition expressions(Stmnt s, SourcePosition lastPos)
+  {
+    return expressions(s, false, lastPos);
+  }
+
+  /**
+   * Collect the binary data for given Expressions.
+   *
+   * Data format for Expression:
+   *
    *   +---------------------------------------------------------------------------------+
    *   | Expression                                                                      |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | ExprKind k                                    |
+   *   | true   | 1      | byte          | ExprKind k in bits 0..6,  hasPos in bit 7     |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | hasPos | 1      | Pos           | source code position                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Add | 1      | Assign        | assignment                                    |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -536,13 +532,13 @@ class LibraryOut extends DataOut
    *
    * @param dumpResult true to add a 'Pop' to ignore the result produced by s.
    */
-  void expressions(Stmnt s, boolean dumpResult)
+  SourcePosition expressions(Stmnt s, boolean dumpResult, SourcePosition lastPos)
   {
     if (s instanceof Assign a)
       {
-        expressions(a._value);
-        expressions(a._target);
-        write(IR.ExprKind.Assign.ordinal());
+        lastPos = expressions(a._value, lastPos);
+        lastPos = expressions(a._target, lastPos);
+        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Assign);
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Assign                                                                          |
@@ -556,8 +552,8 @@ class LibraryOut extends DataOut
       }
     else if (s instanceof Unbox u)
       {
-        expressions(u.adr_);
-        write(IR.ExprKind.Unbox.ordinal());
+        lastPos = expressions(u.adr_, lastPos);
+        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Unbox);
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Unbox                                                                           |
@@ -574,8 +570,8 @@ class LibraryOut extends DataOut
       }
     else if (s instanceof Box b)
       {
-        expressions(b._value);
-        write(IR.ExprKind.Box.ordinal());
+        lastPos = expressions(b._value, lastPos);
+        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Box);
       }
     else if (s instanceof Block b)
       {
@@ -585,11 +581,11 @@ class LibraryOut extends DataOut
             i++;
             if (i < b.statements_.size())
               {
-                expressions(st, true);
+                lastPos = expressions(st, true, lastPos);
               }
             else
               {
-                expressions(st, dumpResult);
+                lastPos = expressions(st, dumpResult, lastPos);
                 dumpResult = dumpResult || st instanceof Expr;
               }
           }
@@ -600,7 +596,7 @@ class LibraryOut extends DataOut
       }
     else if (s instanceof Constant c)
       {
-        write(IR.ExprKind.Const.ordinal());
+        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Const);
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Constant                                                                        |
@@ -621,12 +617,12 @@ class LibraryOut extends DataOut
       }
     else if (s instanceof Current)
       {
-        write(IR.ExprKind.Current.ordinal());
+        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Current);
       }
     else if (s instanceof If i)
       {
-        expressions(i.cond);
-        write(IR.ExprKind.Match.ordinal());
+        lastPos = expressions(i.cond, lastPos);
+        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Match);
         writeInt(2);
         writeInt(1);
         type(Types.resolved.f_TRUE.resultType());
@@ -648,12 +644,12 @@ class LibraryOut extends DataOut
       }
     else if (s instanceof Call c)
       {
-        expressions(c.target);
+        lastPos = expressions(c.target, lastPos);
         for (var a : c._actuals)
           {
-            expressions(a);
+            lastPos = expressions(a, lastPos);
           }
-        write(IR.ExprKind.Call.ordinal());
+        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Call);
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Call                                                                            |
@@ -717,8 +713,8 @@ class LibraryOut extends DataOut
       }
     else if (s instanceof AbstractMatch m)
       {
-        expressions(m.subject());
-        write(IR.ExprKind.Match.ordinal());
+        lastPos = expressions(m.subject(), lastPos);
+        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Match);
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Match                                                                           |
@@ -771,8 +767,8 @@ class LibraryOut extends DataOut
       }
     else if (s instanceof Tag t)
       {
-        expressions(t._value);
-        write(IR.ExprKind.Tag.ordinal());
+        lastPos = expressions(t._value, lastPos);
+        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Tag);
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Tag                                                                             |
@@ -807,6 +803,80 @@ class LibraryOut extends DataOut
     else
       {
         System.err.println("Missing handling of "+s.getClass()+" in LibraryOut.expressions");
+      }
+    return lastPos;
+  }
+
+
+  /**
+   * Write source code position
+   *
+   * @param lastPos the previous position that was written already
+   *
+   * @param newPos the new position that is to be written if it differs from
+   * lastPos
+   */
+  SourcePosition writePos(SourcePosition lastPos, SourcePosition newPos, IR.ExprKind k)
+  {
+    if (/*(k.ordinal() != 4 && k.ordinal() != 7 && k.ordinal() != 9) && */(lastPos == null || lastPos.compareTo(newPos) != 0))
+      {
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Pos                                                                             |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | position                                      |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+        write(k.ordinal() | 0x80);
+        writeInt(0);
+        var sf = newPos._sourceFile;
+        _sourceFiles.put(sf._fileName.toString(), sf);
+      }
+    else
+      {
+        write(k.ordinal());
+      }
+    return newPos;
+  }
+
+
+  /**
+   * Collect the binary data for source files used in this module
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | SourceFiles                                                                     |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | count n                                       |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | n      | SourceFile    | source file                                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | SourceFile                                                                      |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Name          | file name                                     |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | int           | size s                                        |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | s      | byte          | source file data                              |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   */
+  void sourceFiles()
+  {
+    writeInt(_sourceFiles.size());
+    for (var e : _sourceFiles.entrySet())
+      {
+        var sf = e.getValue();
+        writeName(sf._fileName.toString());
+        writeInt(sf.byteLength());
+        write(sf.bytes());
       }
   }
 

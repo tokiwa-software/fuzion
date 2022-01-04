@@ -898,7 +898,19 @@ public class SourceFile extends ANY
     return _bytes[i];
   }
 
-   /**
+
+  /**
+   * Get the raw bytes of this file
+   *
+   * @return the byte array
+   */
+  public byte[] bytes()
+  {
+    return _bytes;
+  }
+
+
+  /**
    * Get bytes of codepoint starting at the given position
    *
    * @param pos an index in the file
