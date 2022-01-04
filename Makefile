@@ -37,6 +37,7 @@ JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/Errors.java \
           $(SRC)/dev/flang/util/FuzionOptions.java \
           $(SRC)/dev/flang/util/FuzionConstants.java \
+          $(SRC)/dev/flang/util/HexDump.java \
           $(SRC)/dev/flang/util/Intervals.java \
           $(SRC)/dev/flang/util/List.java \
           $(SRC)/dev/flang/util/Map2Int.java \

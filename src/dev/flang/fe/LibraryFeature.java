@@ -87,7 +87,7 @@ public class LibraryFeature extends AbstractFeature
   /**
    * index of this feature within _libModule.
    */
-  private final int _index;
+  final int _index;
 
 
   /**

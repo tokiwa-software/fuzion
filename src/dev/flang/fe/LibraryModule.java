@@ -53,6 +53,7 @@ import dev.flang.mir.MIR;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HexDump;
 import dev.flang.util.List;
 import dev.flang.util.SourceDir;
 import dev.flang.util.SourcePosition;
@@ -84,6 +85,13 @@ public class LibraryModule extends Module
    * constant as a place holder.
    */
   static SourcePosition DUMMY_POS = SourcePosition.builtIn;
+
+
+  /**
+   * NYI: Instead of using env var, create a new tool "fzdump" or similar to
+   * dump intermediate files.
+   */
+  static final boolean DUMP = "true".equals(System.getenv("FUZION_DUMP_MODULE_FILE"));
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -178,6 +186,7 @@ public class LibraryModule extends Module
     _mir = null;
     _data = data;
     _universe = universe;
+    if (DUMP) System.out.println(dump());
   }
 
   /*-----------------------------  methods  -----------------------------*/
@@ -2069,6 +2078,43 @@ Case
 
 
   /*-------------------------------  misc  ------------------------------*/
+
+
+  /**
+   * Create annotated hex dump of this module file.
+   */
+  public String dump()
+  {
+    var hd = new HexDump(_data);
+    hd.mark(0, "MAGIC");
+    hd.mark(startPos(), "InnerFeatures");
+    dump(hd, features());
+    return hd.toString();
+  }
+
+
+  /**
+   * Helper for dump to recursivle annotate hex dump for features
+   *
+   * @param hd the hex dump instance
+   *
+   * @param fs the features to annotate.
+   */
+  private void dump(HexDump hd, List<AbstractFeature> fs)
+  {
+    for (var f: fs)
+      {
+        var lf = (LibraryFeature) f;
+        var li = lf._index;
+        hd.mark(li, featureKindEnum(li).toString());
+        hd.mark(featureNamePos(li), f.qualifiedName());
+        if (featureIsRoutine(li))
+          {
+            hd.mark(featureCodePos(li), "code");
+          }
+        dump(hd, innerFeatures(featureInnerFeaturesPos(li)));
+      }
+  }
 
 
   /**
