@@ -90,13 +90,6 @@ public class LibraryModule extends Module
 
 
   /**
-   * NYI: For now, a LibraryModule is just a wrapper around a SourceModule.
-   * This will change once the source module can actually be saved to a file.
-   */
-  public final SourceModule _srcModule;
-
-
-  /**
    * The module name, used for debug output.
    */
   final String _name;
@@ -154,26 +147,10 @@ public class LibraryModule extends Module
   /**
    * Create LibraryModule for given options and sourceDirs.
    */
-  LibraryModule(FrontEndOptions options, String name, SourceDir[] sourceDirs, Path inputFile, String defaultMain, Module[] dependsOn, Feature universe)
-  {
-    super(dependsOn);
-
-    _srcModule = new SourceModule(options, sourceDirs, inputFile, defaultMain, dependsOn, universe);
-    _name = name;
-    _mir = _srcModule.createMIR();
-    _data = _mir._module.data();
-    _universe = universe;
-  }
-
-
-  /**
-   * Create LibraryModule for given options and sourceDirs.
-   */
   LibraryModule(String name, ByteBuffer data, Module[] dependsOn, Feature universe)
   {
     super(dependsOn);
 
-    _srcModule = null;
     _name = name;
     _mir = null;
     _data = data;
@@ -2264,7 +2241,7 @@ SourceFile
    */
   public String toString()
   {
-    return "LibraryModule for '" + _srcModule + "'";
+    return "LibraryModule for '" + _name + "'";
   }
 
 }
