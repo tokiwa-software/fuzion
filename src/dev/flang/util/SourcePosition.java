@@ -43,7 +43,7 @@ import java.nio.file.Path;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class SourcePosition extends ANY implements Comparable<SourcePosition>
+public class SourcePosition extends ANY implements Comparable<SourcePosition>, HasSourcePosition
 {
 
   /*----------------------------  variables  ----------------------------*/
@@ -139,6 +139,16 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Create and return the actual source code position held by this instance.
+   */
+  public SourcePosition pos()
+  {
+    /* this not only has a position, it _is_ a position! */
+    return this;
+  }
 
 
   /**

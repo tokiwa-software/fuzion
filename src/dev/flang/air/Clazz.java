@@ -56,6 +56,7 @@ import dev.flang.ast.Unbox; // NYI: remove dependency!
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.YesNo;
@@ -183,7 +184,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * If instances of this class are created, this gives a source code position
    * that does create such an instance.  To be used in error messages.
    */
-  SourcePosition instantiationPos_ = null;
+  HasSourcePosition instantiationPos_ = null;
 
 
   /**
@@ -891,7 +892,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public /* NYI: make package private */ Clazz lookup(AbstractFeature f,
                       List<AbstractType> actualGenerics,
-                      SourcePosition p)
+                      HasSourcePosition p)
   {
     if (PRECONDITIONS) require
       (f != null,
@@ -930,7 +931,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   Clazz lookup(AbstractFeature f,
                int select,
                List<AbstractType> actualGenerics,
-               SourcePosition p,
+               HasSourcePosition p,
                boolean isInheritanceCall)
   {
     if (PRECONDITIONS) require
@@ -1479,7 +1480,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * @param at gives the position in the source code that causes this instantiation.  p can be
    * null, which means that this should not be marked as called.
    */
-  void called(SourcePosition at)
+  void called(HasSourcePosition at)
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 || !isChoice());
@@ -1522,7 +1523,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param at gives the position in the source code that causes this instantiation.
    */
-  void instantiated(SourcePosition at)
+  void instantiated(HasSourcePosition at)
   {
     if (PRECONDITIONS) require
       (at != null);

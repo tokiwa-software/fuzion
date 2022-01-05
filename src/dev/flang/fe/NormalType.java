@@ -38,7 +38,7 @@ import dev.flang.ast.Types;
 
 import dev.flang.util.List;
 
-import dev.flang.util.SourcePosition;
+import dev.flang.util.HasSourcePosition;
 
 
 /**
@@ -95,7 +95,7 @@ public class NormalType extends LibraryType
    */
   NormalType(LibraryModule mod,
              int at,
-             SourcePosition pos,
+             HasSourcePosition pos,
              AbstractFeature feature,
              Type.RefOrVal refOrVal,
              List<AbstractType> generics,

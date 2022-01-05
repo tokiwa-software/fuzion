@@ -140,6 +140,12 @@ public class LibraryFeature extends AbstractFeature
   private final ArrayList<SourceFile> _sourceFiles;
 
 
+  /**
+   * Cached result of pos()
+   */
+  private SourcePosition _pos = null;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -407,7 +413,7 @@ public class LibraryFeature extends AbstractFeature
       {
         var o = outer();
         var ot = o == null ? null : o.thisType();
-        result = new NormalType(_libModule, -1, pos(), this, Type.RefOrVal.LikeUnderlyingFeature, generics().asActuals(), ot);
+        result = new NormalType(_libModule, -1, this, this, Type.RefOrVal.LikeUnderlyingFeature, generics().asActuals(), ot);
         _thisType = result;
       }
 
@@ -507,12 +513,17 @@ public class LibraryFeature extends AbstractFeature
     return _featureName;
   }
 
+
   /**
    * Source code position where this feature was declared.
    */
   public SourcePosition pos()
   {
-    return pos(_libModule.featurePosition(_index));
+    if (_pos == null)
+      {
+        _pos = pos(_libModule.featurePosition(_index));
+      }
+    return _pos;
   }
 
 

@@ -37,6 +37,7 @@ import dev.flang.ast.Type;
 
 import dev.flang.util.List;
 
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
 
 
@@ -68,7 +69,7 @@ public abstract class LibraryType extends AbstractType
   /**
    * The soucecode position of this type, used for error messages.
    */
-  public final SourcePosition _pos;
+  public final HasSourcePosition _pos;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -77,7 +78,7 @@ public abstract class LibraryType extends AbstractType
   /**
    * Constructor to set common fields.
    */
-  LibraryType(LibraryModule mod, int at, SourcePosition pos)
+  LibraryType(LibraryModule mod, int at, HasSourcePosition pos)
   {
     this._libModule = mod;
     this._at = at;
@@ -90,7 +91,7 @@ public abstract class LibraryType extends AbstractType
 
   public SourcePosition pos()
   {
-    return _pos;
+    return _pos.pos();
   }
 
 }

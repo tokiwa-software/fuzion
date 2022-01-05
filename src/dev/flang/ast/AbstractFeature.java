@@ -34,6 +34,7 @@ import java.util.TreeSet;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -45,7 +46,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractFeature extends ANY implements Comparable<AbstractFeature>
+public abstract class AbstractFeature extends ANY implements Comparable<AbstractFeature>, HasSourcePosition
 {
 
 
@@ -98,7 +99,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * Reserved fields to be used by dev.flang.air to find used features and to
    * mark features that are called dynamically.
    */
-  public SourcePosition _usedAt;
+  public HasSourcePosition _usedAt;
   public boolean _calledDynamically;
 
 
@@ -856,7 +857,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   public abstract FeatureName featureName();
-  public abstract SourcePosition pos();
   public abstract FormalGenerics generics();
   public abstract List<AbstractCall> inherits();
   public abstract AbstractFeature outer();

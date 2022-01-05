@@ -54,6 +54,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -171,7 +172,7 @@ public class MiddleEnd extends ANY
    * @param usedAt the position this feature was used at, for creating usefule
    * error messages
    */
-  void markUsed(AbstractFeature f, SourcePosition usedAt)
+  void markUsed(AbstractFeature f, HasSourcePosition usedAt)
   {
     markUsed(f, false, usedAt);
   }
@@ -205,7 +206,7 @@ public class MiddleEnd extends ANY
    * @param usedAt the position this feature was used at, for creating usefule
    * error messages
    */
-  void markUsed(AbstractFeature f, boolean dynamically, SourcePosition usedAt)
+  void markUsed(AbstractFeature f, boolean dynamically, HasSourcePosition usedAt)
   {
     if (dynamically)
       {
@@ -263,20 +264,20 @@ public class MiddleEnd extends ANY
   {
     if (f.outer() != null)
       {
-        markUsed(f.outer(), f.pos());
+        markUsed(f.outer(), f);
       }
     for (var fa : f.arguments())
       {
-        markUsed(fa, f.pos());
+        markUsed(fa, f);
       }
     for (var p: f.inherits())
       {
         markUsed(p.calledFeature(), p.pos);
       }
-    findUsedFeatures(f.resultType(), f.pos());
+    findUsedFeatures(f.resultType(), f);
     if (f.choiceTag() != null)
       {
-        markUsed(f.choiceTag(), f.pos());
+        markUsed(f.choiceTag(), f);
       }
 
     var fv = new FeatureVisitor() {
@@ -295,7 +296,7 @@ public class MiddleEnd extends ANY
   /**
    * Mark all features used within this type as used.
    */
-  void findUsedFeatures(AbstractType t, SourcePosition pos)
+  void findUsedFeatures(AbstractType t, HasSourcePosition pos)
   {
     if (!t.isGenericArgument())
       {

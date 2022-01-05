@@ -57,6 +57,7 @@ import dev.flang.ast.Universe; // NYI: remove dependency!
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -1237,7 +1238,7 @@ public class Clazzes extends ANY
   /**
    * Has this feature been found to be used?
    */
-  public static SourcePosition isUsedAt(AbstractFeature thiz)
+  public static HasSourcePosition isUsedAt(AbstractFeature thiz)
   {
     return thiz._usedAt;
   }
@@ -1247,7 +1248,7 @@ public class Clazzes extends ANY
    * Add f to the set of used features, record at as the position of the first
    * use.
    */
-  public static void addUsedFeature(AbstractFeature f, SourcePosition at)
+  public static void addUsedFeature(AbstractFeature f, HasSourcePosition at)
   {
     f._usedAt = at;
   }

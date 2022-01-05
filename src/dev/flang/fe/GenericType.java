@@ -38,7 +38,7 @@ import dev.flang.ast.Types;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 
-import dev.flang.util.SourcePosition;
+import dev.flang.util.HasSourcePosition;
 
 
 /**
@@ -74,7 +74,7 @@ public class GenericType extends LibraryType
    * Constructor for a plain Type from a given feature that does not have any
    * actual generics.
    */
-  GenericType(LibraryModule mod, int at, SourcePosition pos, Generic generic, Type.RefOrVal rov)
+  GenericType(LibraryModule mod, int at, HasSourcePosition pos, Generic generic, Type.RefOrVal rov)
   {
     super(mod, at, pos);
 
@@ -88,7 +88,7 @@ public class GenericType extends LibraryType
    * Constructor for a plain Type from a given feature that does not have any
    * actual generics.
    */
-  GenericType(LibraryModule mod, int at, SourcePosition pos, Generic generic)
+  GenericType(LibraryModule mod, int at, HasSourcePosition pos, Generic generic)
   {
     this(mod, at, pos, generic, Type.RefOrVal.LikeUnderlyingFeature);
   }
