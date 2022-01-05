@@ -844,6 +844,24 @@ class LibraryOut extends DataOut
   {
     if (lastPos == null || lastPos.compareTo(newPos) != 0)
       {
+        write(k.ordinal() | 0x80);
+        pos(newPos);
+      }
+    else
+      {
+        write(k.ordinal());
+      }
+    return newPos;
+  }
+
+
+  /**
+   * Write source code position
+   *
+   * @param post the position
+   */
+  void pos(SourcePosition pos)
+  {
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Pos                                                                             |
@@ -853,21 +871,14 @@ class LibraryOut extends DataOut
    *   | true   | 1      | int           | position                                      |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-        write(k.ordinal() | 0x80);
-        if (!newPos.isBuiltIn())
-          {
-            _fixUpsSourcePositions.add(newPos);
-            _fixUpsSourcePositionsAt.add(offset());
-            var sf = newPos._sourceFile;
-            _sourceFiles.put(fileName(sf), sf);
-          }
-        writeInt(0);
-      }
-    else
+    if (!pos.isBuiltIn())
       {
-        write(k.ordinal());
+        _fixUpsSourcePositions.add(pos);
+        _fixUpsSourcePositionsAt.add(offset());
+        var sf = pos._sourceFile;
+        _sourceFiles.put(fileName(sf), sf);
       }
-    return newPos;
+    writeInt(0);
   }
 
 
