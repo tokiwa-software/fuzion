@@ -842,7 +842,7 @@ class LibraryOut extends DataOut
    */
   SourcePosition exprKindAndPos(IR.ExprKind k, SourcePosition lastPos, SourcePosition newPos)
   {
-    if (/*(k.ordinal() != 4 && k.ordinal() != 7 && k.ordinal() != 9) && */(lastPos == null || lastPos.compareTo(newPos) != 0))
+    if (lastPos == null || lastPos.compareTo(newPos) != 0)
       {
   /*
    *   +---------------------------------------------------------------------------------+
