@@ -1230,7 +1230,7 @@ public class Clazzes extends ANY
    */
   public static boolean isUsedAtAll(AbstractFeature thiz)
   {
-    return thiz.astFeature()._usedAt != null;
+    return thiz._usedAt != null;
   }
 
 
@@ -1239,7 +1239,7 @@ public class Clazzes extends ANY
    */
   public static SourcePosition isUsedAt(AbstractFeature thiz)
   {
-    return thiz.astFeature()._usedAt;
+    return thiz._usedAt;
   }
 
 

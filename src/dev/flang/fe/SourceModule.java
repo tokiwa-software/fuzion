@@ -1011,7 +1011,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             if (f.isConstructor() || f.isChoice())
               {
                 type_fs.add(f);
-                result = f.astFeature();
+                result = f;
               }
             else
               {
@@ -1116,37 +1116,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public ByteBuffer data()
   {
     return new LibraryOut(this).buffer();
-  }
-
-
-  /**
-   * Map from offset in MIR file data to the AST Feature
-   *
-   * NYI: Remove once ASTFeatures are no longer needed.
-   */
-  TreeMap<Integer, Feature> _offsetToAstFeature = new TreeMap<>();
-
-
-  /**
-   * Record offset ix for feature f.
-   *
-   * NYI: Remove once ASTFeatures are no longer needed.
-   */
-  void registerOffset(Feature f, int ix)
-  {
-    data(f)._mirOffset = ix;
-    _offsetToAstFeature.put(ix, f);
-  }
-
-
-  /**
-   * Get the AST Feature from offset in MIR file.
-   *
-   * NYI: Remove once ASTFeatures are no longer needed.
-   */
-  Feature featureFromOffset(int offset)
-  {
-    return _offsetToAstFeature.get(offset);
   }
 
 

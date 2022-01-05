@@ -1005,7 +1005,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                   }
               }
             check
-              (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType().sameAs(af));
+              (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == af);
           }
       }
 
@@ -1682,7 +1682,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       ((outer != null) != (target != null));
 
-    if (f.outerRef().sameAs(cf))
+    if (f.outerRef() == cf)
       { // a "normal" outer ref for the outer clazz surrounding this instance or
         // (if in recursion) an inherited outer ref referring to the target of
         // the inherits call
@@ -2072,7 +2072,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 if (f.isField() &&
                     Clazzes.isUsed(f, this) &&
                     this != Clazzes.c_void.get() &&
-                    f.sameAs(findRedefinition(f))  // NYI: proper field redefinition handling missing, see tests/redef_args/*
+                    f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
                     )
                   {
                     if (f.isOpenGenericField())

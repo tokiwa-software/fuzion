@@ -267,7 +267,7 @@ public class Type extends AbstractType
     this.name  = n;
     this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
     this._outer = o;
-    this.feature = (f == null) ? null : f.astFeature();
+    this.feature = f;
     this.generic = null;
     this._refOrVal = refOrVal;
     this.checkedForGeneric = f != null;
@@ -657,7 +657,7 @@ public class Type extends AbstractType
       (feature == null,
        Types.INTERNAL_NAMES.contains(name));
 
-    feature = feat.astFeature();
+    feature = feat;
 
     var interned = Types.intern(this);
 

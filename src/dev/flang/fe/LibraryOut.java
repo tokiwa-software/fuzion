@@ -377,7 +377,6 @@ class LibraryOut extends DataOut
         code(f.code());
       }
     innerFeatures(f);
-    _sourceModule.registerOffset(f, ix);
   }
 
 

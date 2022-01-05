@@ -92,7 +92,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     return _libraryFeature == null ? this : _libraryFeature;
   }
-  public AbstractFeature astFeature() { return this; } // NYI remove
 
 
   /**
@@ -117,12 +116,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * LibraryFeature, this will be loaded from the library module file.
    */
   public abstract Set<AbstractFeature> redefines();
-
-
-  public boolean sameAs(AbstractFeature other) // NYI: remove
-  {
-    return astFeature() == other.astFeature();
-  }
 
 
   /* pre-implemented convenience functions: */
@@ -247,7 +240,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             check
               (Errors.count() > 0 || p.calledFeature() != null);
 
-            if (p.calledFeature().sameAs(Types.resolved.f_choice))
+            if (p.calledFeature() == Types.resolved.f_choice)
               {
                 if (lastP != null)
                   {
@@ -315,7 +308,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     Generic result = generics().get(name);
 
     if (POSTCONDITIONS) ensure
-      ((result == null) || (result._name.equals(name) && (result.feature().sameAs(this))));
+      ((result == null) || (result._name.equals(name) && (result.feature() == this)));
     // result == null ==> for all g in generics: !g.name.equals(name)
 
     return result;
@@ -591,10 +584,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public FeatureName handDown(SrcModule module, AbstractFeature f, FeatureName fn, AbstractCall p, AbstractFeature heir)
   {
     if (PRECONDITIONS) require
-      (module == null || module.declaredOrInheritedFeatures(this).get(fn).sameAs(f),
+      (module == null || module.declaredOrInheritedFeatures(this).get(fn) == f,
        this != heir);
 
-    if (f.outer().sameAs(p.calledFeature())) // NYI: currently does not support inheriting open generic over several levels
+    if (f.outer() == p.calledFeature()) // NYI: currently does not support inheriting open generic over several levels
       {
         fn = f.effectiveName(p.generics());
       }
@@ -702,7 +695,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public List<AbstractCall> tryFindInheritanceChain(AbstractFeature ancestor)
   {
     List<AbstractCall> result;
-    if (this.sameAs(ancestor))
+    if (this == ancestor)
       {
         result = new List<>();
       }
@@ -764,7 +757,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                          (state().atLeast(Feature.State.LOADED),
        parent != null && parent.state().atLeast(Feature.State.LOADED));
 
-    if (this.sameAs(parent))
+    if (this == parent)
       {
         return true;
       }
@@ -804,14 +797,14 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     for (var c: inherits())
       {
-        var nc = c.visit(fv, astFeature());
+        var nc = c.visit(fv, this);
         check
           (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
     contract().visit(fv, this);
     if (isRoutine())
       {
-        code().visit(fv, astFeature());
+        code().visit(fv, this);
       }
   }
 
@@ -830,7 +823,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     contract().visitStatements(v);
     if (isRoutine())
       {
-        astFeature().code().visitStatements(v);
+        code().visitStatements(v);
       }
   }
 
@@ -893,7 +886,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public int compareTo(AbstractFeature other)
   {
     int result;
-    if (sameAs(other))
+    if (this == other)
       {
         result = 0;
       }

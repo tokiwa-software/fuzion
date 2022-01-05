@@ -696,7 +696,7 @@ public class Interpreter extends ANY
        outerClazz == Clazzes.ref_f32.getIfCreated() ||
        outerClazz == Clazzes.ref_f64.getIfCreated()) &&
       /* NYI: somewhat ugly way to access "val" field, should better have Clazzes.ref_i32_val.getIfCreate() etc. */
-      innerClazz.feature().sameAs(outerClazz.feature().get("val"));
+      innerClazz.feature() == outerClazz.feature().get("val");
 
     if (dynamic && !builtInVal)
       {

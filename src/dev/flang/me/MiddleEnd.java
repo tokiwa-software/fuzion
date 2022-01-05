@@ -242,7 +242,7 @@ public class MiddleEnd extends ANY
 
         for (var df : _mir._module.declaredFeatures(f).values())
           {
-            for (AbstractFeature of : df.astFeature().redefines())
+            for (AbstractFeature of : df.redefines())
               {
                 if (Clazzes.isUsedAtAll(of))
                   {

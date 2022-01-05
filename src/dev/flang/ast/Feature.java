@@ -1610,7 +1610,7 @@ public class Feature extends AbstractFeature implements Stmnt
         check
           (Errors.count() > 0 || cf != null);
 
-        if (cf != null && cf.isChoice() && !cf.sameAs(Types.resolved.f_choice))
+        if (cf != null && cf.isChoice() && cf != Types.resolved.f_choice)
           {
             AstErrors.cannotInheritFromChoice(p.pos);
           }
@@ -1912,7 +1912,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public Stmnt visit(FeatureVisitor v, AbstractFeature outer)
   {
     check
-      (!this._state.atLeast(State.LOADED) || this.outer().sameAs(outer));
+      (!this._state.atLeast(State.LOADED) || this.outer() == outer);
 
     // impl.initialValue is code executed by outer, not by this. So we visit it
     // here, while impl.code is visited when impl.visit is called with this as

@@ -584,7 +584,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        f.generics().sizeMatches(actualGenerics),
        Errors.count() > 0 || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics());
 
-    f = f.astFeature();
     AbstractType result = this;
     if (f != null)
       {

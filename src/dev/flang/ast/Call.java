@@ -648,7 +648,7 @@ public class Call extends AbstractCall
   {
     Call result = null;
     if (Types.resolved != null &&
-        targetFeature(res, thiz).sameAs(Types.resolved.f_bool) &&
+        targetFeature(res, thiz) == Types.resolved.f_bool &&
         isInfixOperator() &&
         target instanceof Call tc &&
         tc.isInfixOperator())
@@ -884,7 +884,7 @@ public class Call extends AbstractCall
     Call result = this;
     if (!forFun && // not a call to "b" within an expression of the form "fun a.b", will be handled after syntactic sugar
         _type.isFunType() &&
-        !calledFeature_.sameAs(Types.resolved.f_function) && // exclude inherits call in function type
+        calledFeature_ != Types.resolved.f_function && // exclude inherits call in function type
         calledFeature_.arguments().size() == 0 &&
         hasParentheses())
       {
@@ -928,9 +928,9 @@ public class Call extends AbstractCall
     check(frmlT == Types.intern(frmlT));
     var declF = calledFeature_.outer();
     var heirF = targetTypeOrConstraint(res).featureOfType();
-    if (!declF.sameAs(heirF))
+    if (declF != heirF)
       {
-        var a = calledFeature_.handDown(res, new AbstractType[] { frmlT }, heirF.astFeature());
+        var a = calledFeature_.handDown(res, new AbstractType[] { frmlT }, heirF);
         if (a.length != 1)
           {
             // Check that the number or args can only change for the
@@ -994,7 +994,7 @@ public class Call extends AbstractCall
             if (frmlT.isOpenGeneric())
               { // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target:
                 Generic g = frmlT.genericArgument();
-                var frmlTs = g.replaceOpen(g.formalGenerics().feature().sameAs(calledFeature_)
+                var frmlTs = g.replaceOpen(g.formalGenerics().feature() == calledFeature_
                                            ? generics
                                            : target.type().generics());
                 addToResolvedFormalArgumentTypes(res, argnum + i, frmlTs.toArray(new AbstractType[frmlTs.size()]), frml);
@@ -1162,7 +1162,7 @@ public class Call extends AbstractCall
    */
   private void inferGenericsFromArgs(Resolution res, AbstractFeature outer)
   {
-    var cf = calledFeature_.astFeature();
+    var cf = calledFeature_;
     int sz = cf.generics().list.size();
     AbstractType[] found    = new AbstractType[sz]; // The generics that could be inferred
     boolean[]      conflict = new boolean[sz]; // The generics that had conflicting types
@@ -1177,7 +1177,7 @@ public class Call extends AbstractCall
 
         var t = frml.resultTypeIfPresent(res, NO_GENERICS);
         if (t.isGenericArgument() &&
-            t.genericArgument().feature().sameAs(cf) &&
+            t.genericArgument().feature() == cf &&
             t.genericArgument().isOpen())
           {
             inferredOpen = new List<>();
@@ -1262,7 +1262,7 @@ public class Call extends AbstractCall
     if (formalType.isGenericArgument())
       {
         var g = formalType.genericArgument();
-        if (g.feature().sameAs(calledFeature_))
+        if (g.feature() == calledFeature_)
           { // we found a use of a generic type, so record it:
             var i = g.index();
             if (found[i] == null || actualType.isAssignableFromOrContainsError(found[i]))
@@ -1345,7 +1345,7 @@ public class Call extends AbstractCall
                                                                     "call",
                                                                     "Called feature: "+calledFeature_.qualifiedName()+"\n"))
           {
-            var cf = calledFeature_.astFeature();
+            var cf = calledFeature_;
             var t = _isTailRecursive ? Types.resolved.t_void // a tail recursive call will not return and execute further
                                      : cf.resultTypeIfPresent(res, generics);
             if (t == null)
@@ -1559,10 +1559,10 @@ public class Call extends AbstractCall
         //   a: b   into if a b     else true
         //   !a     into if a false else true
         var cf = calledFeature_;
-        if      (cf.sameAs(Types.resolved.f_bool_AND    )) { result = newIf(target, _actuals.get(0), BoolConst.FALSE); }
-        else if (cf.sameAs(Types.resolved.f_bool_OR     )) { result = newIf(target, BoolConst.TRUE , _actuals.get(0)); }
-        else if (cf.sameAs(Types.resolved.f_bool_IMPLIES)) { result = newIf(target, _actuals.get(0), BoolConst.TRUE ); }
-        else if (cf.sameAs(Types.resolved.f_bool_NOT    )) { result = newIf(target, BoolConst.FALSE, BoolConst.TRUE ); }
+        if      (cf == Types.resolved.f_bool_AND    ) { result = newIf(target, _actuals.get(0), BoolConst.FALSE); }
+        else if (cf == Types.resolved.f_bool_OR     ) { result = newIf(target, BoolConst.TRUE , _actuals.get(0)); }
+        else if (cf == Types.resolved.f_bool_IMPLIES) { result = newIf(target, _actuals.get(0), BoolConst.TRUE ); }
+        else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(target, BoolConst.FALSE, BoolConst.TRUE ); }
       }
     return result;
   }
