@@ -547,7 +547,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   SortedMap<FeatureName, AbstractFeature>declaredFeaturesOrNull(AbstractFeature outer)
   {
-    var d = _data.get(outer);
+    var d = data(outer);
     if (d != null)
       {
         return d._declaredFeatures;
@@ -565,7 +565,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer)
   {
-    var d = _data.get(outer);
+    var d = data(outer);
     if (d != null)
       {
         return d._declaredOrInheritedFeatures;
@@ -806,7 +806,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   private void addToHeirs(AbstractFeature outer, FeatureName fn, Feature f)
   {
-    var d = _data.get(outer);
+    var d = data(outer);
     if (d != null)
       {
         for (var h : d._heirs)
@@ -827,7 +827,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   public Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
   {
-    var d = _data.get(f);
+    var d = data(f);
     var result = d._allInnerAndInheritedFeatures;
     if (result == null)
       {

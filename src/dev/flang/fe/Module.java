@@ -111,12 +111,6 @@ public abstract class Module extends ANY
   Module[] _dependsOn;
 
 
-  /**
-   * Map from features in this module or in modules it depends on to module-specific data  for this feature.
-   */
-  protected Map<AbstractFeature, FData> _data = new HashMap<>();
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -164,11 +158,11 @@ public abstract class Module extends ANY
    */
   FData data(AbstractFeature outer)
   {
-    var d = _data.get(outer);
+    var d = (FData) outer._frontEndData;
     if (d == null)
       {
         d = new FData();
-        _data.put(outer, d);
+        outer._frontEndData = d;
       }
     return d;
   }

@@ -102,6 +102,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public SourcePosition _usedAt;
   public boolean _calledDynamically;
 
+
+  /**
+   * Caching used in front end.
+   */
+  public Object _frontEndData;
+
   /*-----------------------------  methods  -----------------------------*/
 
   /**
