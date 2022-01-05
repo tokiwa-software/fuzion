@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.SortedMap;
 
@@ -82,6 +83,19 @@ public interface SrcModule
    * Add given feature to the features declared in this SrcModule.
    */
   void add(Feature f);
+
+
+  /*----------------------  methods needed by AIR  ----------------------*/
+
+  /* NYI: cleanup: methods for AIR phase should not be defined in package ast! */
+
+  /**
+   * allInnerAndInheritedFeatures returns a complete set of inner features, used
+   * by Clazz.layout and Clazz.hasState.
+   *
+   * @return
+   */
+  Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f);
 
 }
 

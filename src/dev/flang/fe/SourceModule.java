@@ -819,6 +819,38 @@ public class SourceModule extends Module implements SrcModule, MirModule
   }
 
 
+  /**
+   * allInnerAndInheritedFeatures returns a complete set of inner features, used
+   * by Clazz.layout and Clazz.hasState.
+   *
+   * @return
+   */
+  public Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
+  {
+    var d = _data.get(f);
+    var result = d._allInnerAndInheritedFeatures;
+    if (result == null)
+      {
+        result = new TreeSet<>();
+
+        result.addAll(declaredFeatures(f).values());
+        for (var p : f.inherits())
+          {
+            var cf = p.calledFeature();
+            check
+              (Errors.count() > 0 || cf != null);
+
+            if (cf != null)
+              {
+                result.addAll(allInnerAndInheritedFeatures(cf));
+              }
+          }
+        d._allInnerAndInheritedFeatures = result;
+      }
+    return result;
+  }
+
+
   /*--------------------------  feature lookup  -------------------------*/
 
 

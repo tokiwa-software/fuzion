@@ -825,7 +825,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         // feature after inheritance. For each parent for which the feature
         // is called, we need to set up a table in this tree that contains
         // the inherited feature or its redefinition.
-        for (AbstractFeature f: feature().allInnerAndInheritedFeatures(_module))
+        for (AbstractFeature f: _module.allInnerAndInheritedFeatures(feature()))
           {
             // if (isInstantiated_) -- NYI: if not instantiated, we do not need to add f to dynamic binding, but we seem to need its side-effects
             if (isAddedToDynamicBinding(f))
@@ -1236,7 +1236,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     var f = feature();
     new FindClassesVisitor().visitAncestors(f);
-    for (AbstractFeature ff: f.allInnerAndInheritedFeatures(_module))
+    for (AbstractFeature ff: _module.allInnerAndInheritedFeatures(f))
       {
         if (Clazzes.isUsed(ff, this) &&
             this._type != Types.t_ADDRESS // NYI: would be better is isUSED would return false for ADDRESS
@@ -2066,7 +2066,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         else
           {
             var fields = new List<Clazz>();
-            for (var f: feature().allInnerAndInheritedFeatures(_module))
+            for (var f: _module.allInnerAndInheritedFeatures(feature()))
               {
                 if (f.isField() &&
                     Clazzes.isUsed(f, this) &&

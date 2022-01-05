@@ -79,7 +79,7 @@ public abstract class Module extends ANY
      * All features that have been found to inherit from this feature.  This set
      * is collected during RESOLVING_DECLARATIONS.
      */
-    public Set<AbstractFeature> _heirs = new TreeSet<>();
+    Set<AbstractFeature> _heirs = new TreeSet<>();
 
 
     /**
@@ -87,8 +87,12 @@ public abstract class Module extends ANY
      * does not include redefintions of redefinitions.  This set is collected
      * during RESOLVING_DECLARATIONS.
      */
-    public Set<AbstractFeature> _redefinitions = null;
+    Set<AbstractFeature> _redefinitions = null;
 
+    /**
+     * Cached result of SourceModule.allInnerandinheritedfeatures().
+     */
+    Set<AbstractFeature> _allInnerAndInheritedFeatures = null;
 
     /**
      * offset of this feature's data in .mir file.

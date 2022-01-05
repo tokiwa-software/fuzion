@@ -856,38 +856,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
-  /**
-   * allInnerAndInheritedFeatures returns a complete set of inner features, used
-   * by Clazz.layout and Clazz.hasState.
-   *
-   * @return
-   */
-  Collection<AbstractFeature> _allInnerAndInheritedFeatures;
-  public Collection<AbstractFeature> allInnerAndInheritedFeatures(SrcModule mod)
-  {
-    if (PRECONDITIONS) require
-                         (state().atLeast(Feature.State.RESOLVED));
-
-    if (_allInnerAndInheritedFeatures != null) { return _allInnerAndInheritedFeatures;  }
-    TreeSet<AbstractFeature> result = new TreeSet<>();
-
-    result.addAll(mod.declaredFeatures(this).values());
-    for (var p : inherits())
-      {
-        var cf = p.calledFeature();
-        check
-          (Errors.count() > 0 || cf != null);
-
-        if (cf != null)
-          {
-            result.addAll(cf.allInnerAndInheritedFeatures(mod));
-          }
-      }
-    _allInnerAndInheritedFeatures = result;
-    return result;
-  }
-
-
   public abstract FeatureName featureName();
   public abstract SourcePosition pos();
   public abstract FormalGenerics generics();
