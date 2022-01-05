@@ -541,7 +541,7 @@ class LibraryOut extends DataOut
       {
         lastPos = expressions(a._value, lastPos);
         lastPos = expressions(a._target, lastPos);
-        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Assign);
+        lastPos = exprKindAndPos(IR.ExprKind.Assign, lastPos, s.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Assign                                                                          |
@@ -556,7 +556,7 @@ class LibraryOut extends DataOut
     else if (s instanceof Unbox u)
       {
         lastPos = expressions(u.adr_, lastPos);
-        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Unbox);
+        lastPos = exprKindAndPos(IR.ExprKind.Unbox, lastPos, s.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Unbox                                                                           |
@@ -574,7 +574,7 @@ class LibraryOut extends DataOut
     else if (s instanceof Box b)
       {
         lastPos = expressions(b._value, lastPos);
-        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Box);
+        lastPos = exprKindAndPos(IR.ExprKind.Box, lastPos, s.pos());
       }
     else if (s instanceof Block b)
       {
@@ -599,7 +599,7 @@ class LibraryOut extends DataOut
       }
     else if (s instanceof Constant c)
       {
-        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Const);
+        lastPos = exprKindAndPos(IR.ExprKind.Const, lastPos, s.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Constant                                                                        |
@@ -620,12 +620,12 @@ class LibraryOut extends DataOut
       }
     else if (s instanceof Current)
       {
-        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Current);
+        lastPos = exprKindAndPos(IR.ExprKind.Current, lastPos, s.pos());
       }
     else if (s instanceof If i)
       {
         lastPos = expressions(i.cond, lastPos);
-        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Match);
+        lastPos = exprKindAndPos(IR.ExprKind.Match, lastPos, s.pos());
         writeInt(2);
         writeInt(1);
         type(Types.resolved.f_TRUE.resultType());
@@ -652,7 +652,7 @@ class LibraryOut extends DataOut
           {
             lastPos = expressions(a, lastPos);
           }
-        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Call);
+        lastPos = exprKindAndPos(IR.ExprKind.Call, lastPos, s.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Call                                                                            |
@@ -717,7 +717,7 @@ class LibraryOut extends DataOut
     else if (s instanceof AbstractMatch m)
       {
         lastPos = expressions(m.subject(), lastPos);
-        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Match);
+        lastPos = exprKindAndPos(IR.ExprKind.Match, lastPos, s.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Match                                                                           |
@@ -771,7 +771,7 @@ class LibraryOut extends DataOut
     else if (s instanceof Tag t)
       {
         lastPos = expressions(t._value, lastPos);
-        lastPos = writePos(lastPos, s.pos(), IR.ExprKind.Tag);
+        lastPos = exprKindAndPos(IR.ExprKind.Tag, lastPos, s.pos());
   /*
    *   +---------------------------------------------------------------------------------+
    *   | Tag                                                                             |
@@ -831,14 +831,16 @@ class LibraryOut extends DataOut
 
 
   /**
-   * Write source code position
+   * Write expression kind and (optional) source code position if it changed.
+   *
+   * @param k the expression kind
    *
    * @param lastPos the previous position that was written already
    *
    * @param newPos the new position that is to be written if it differs from
    * lastPos
    */
-  SourcePosition writePos(SourcePosition lastPos, SourcePosition newPos, IR.ExprKind k)
+  SourcePosition exprKindAndPos(IR.ExprKind k, SourcePosition lastPos, SourcePosition newPos)
   {
     if (/*(k.ordinal() != 4 && k.ordinal() != 7 && k.ordinal() != 9) && */(lastPos == null || lastPos.compareTo(newPos) != 0))
       {
