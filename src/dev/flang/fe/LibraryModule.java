@@ -764,10 +764,11 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.4+| true  .4+| 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters
+.5+| true  .5+| 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters
                        | Name          | name
                        | int           | arg count
                        | int           | name id
+                       | Pos           | source code position
    | T=1      | 1      | TypeArgs      | optional type arguments
    | hasRT    | 1      | Type          | optional result type,
                                        hasRT = !isConstructor && !isChoice
@@ -800,6 +801,8 @@ Feature
    *   |        |        | int           | arg count                                     |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | int           | name id                                       |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | Pos           | source code position                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | T=1    | 1      | TypeArgs      | optional type arguments                       |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -913,12 +916,24 @@ Feature
   {
     return data().getInt(featureIdPos(at));
   }
+  int featurePositionPos(int at)
+  {
+    return featureIdNextPos(at);
+  }
+  int featurePosition(int at)
+  {
+    return data().getInt(featurePositionPos(at));
+  }
+  int featurePositionNextPos(int at)
+  {
+    return featurePositionPos(at) + 4;
+  }
   int featureTypeArgsPos(int at)
   {
     if (PRECONDITIONS) require
       ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0);
 
-    return featureIdNextPos(at);
+    return featurePositionNextPos(at);
   }
   int featureResultTypePos(int at)
   {
@@ -928,7 +943,7 @@ Feature
       }
     else
       {
-        return featureIdNextPos(at);
+        return featurePositionNextPos(at);
       }
   }
   boolean featureHasResultType(int at)

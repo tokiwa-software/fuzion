@@ -244,6 +244,8 @@ class LibraryOut extends DataOut
    *   |        |        | int           | arg count                                     |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | int           | name id                                       |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | Pos           | source code position                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | T=1    | 1      | TypeArgs      | optional type arguments                       |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -322,6 +324,7 @@ class LibraryOut extends DataOut
     writeName(n.baseName());  // NYI: internal names (outer refs, statement results) are too long and waste memory
     writeInt (n.argCount());  // NYI: use better integer encoding
     writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
+    pos(f.pos());
     if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0)
       {
         check
