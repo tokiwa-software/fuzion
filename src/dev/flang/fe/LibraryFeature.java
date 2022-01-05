@@ -29,7 +29,6 @@ package dev.flang.fe;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
 import java.util.Stack;
@@ -64,7 +63,6 @@ import dev.flang.ast.Unbox;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
-import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 
@@ -135,12 +133,6 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * Source code files, created on demand
-   */
-  private final ArrayList<SourceFile> _sourceFiles;
-
-
-  /**
    * Cached result of pos()
    */
   private SourcePosition _pos = null;
@@ -162,12 +154,6 @@ public class LibraryFeature extends AbstractFeature
     var id = lib.featureId(index);
     var bn = new String(bytes, StandardCharsets.UTF_8);
     _featureName = FeatureName.get(bn, ac, id);
-    var sfc = lib.sourceFilesCount();
-    _sourceFiles = new ArrayList<>(lib.sourceFilesCount());
-    for (int i = 0; i < sfc; i++)
-      {
-        _sourceFiles.add(null);
-      }
   }
 
 
@@ -759,38 +745,7 @@ public class LibraryFeature extends AbstractFeature
    */
   private SourcePosition pos(int pos)
   {
-    if (pos < 0)
-      {
-        return SourcePosition.notAvailable;
-      }
-    else if (pos == 0)
-      {
-        return SourcePosition.builtIn;
-      }
-    else
-      {
-        var at = _libModule.sourceFilesFirstSourceFilePos();
-        check
-          (pos > at);
-        var i = 0;
-        while (pos > _libModule.sourceFileNextPos(at))
-          {
-            at = _libModule.sourceFileNextPos(at);
-            i++;
-            check
-              (i < _libModule.sourceFilesCount());
-          }
-        var sf = _sourceFiles.get(i);
-        if (sf == null)
-          {
-            var bb = _libModule.sourceFileBytes(at);
-            var ba = new byte[bb.limit()]; // NYI: Would be better if SoureFile could use bb directly.
-            bb.get(0, ba);
-            sf = new SourceFile(Path.of(_libModule.sourceFileName(at)), ba);
-            _sourceFiles.set(i, sf);
-          }
-        return new SourcePosition(sf, pos - _libModule.sourceFileBytesPos(at));
-      }
+    return _libModule.pos(pos);
   }
 
 

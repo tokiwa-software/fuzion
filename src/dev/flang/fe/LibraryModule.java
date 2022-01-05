@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.ByteBuffer;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -56,6 +57,7 @@ import dev.flang.util.FuzionConstants;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
 import dev.flang.util.SourceDir;
+import dev.flang.util.SourceFile;
 import dev.flang.util.SourcePosition;
 
 
@@ -136,6 +138,12 @@ public class LibraryModule extends Module
 
 
   /**
+   * Source code files, created on demand
+   */
+  private final ArrayList<SourceFile> _sourceFiles;
+
+
+  /**
    * The universe
    */
   final Feature _universe;
@@ -156,6 +164,13 @@ public class LibraryModule extends Module
     _data = data;
     _universe = universe;
     if (DUMP) System.out.println(dump());
+
+    _sourceFiles = new ArrayList<>(sourceFilesCount());
+    var sfc = sourceFilesCount();
+    for (int i = 0; i < sfc; i++)
+      {
+        _sourceFiles.add(null);
+      }
   }
 
   /*-----------------------------  methods  -----------------------------*/
@@ -2188,6 +2203,50 @@ SourceFile
 
 
   /*-------------------------------  misc  ------------------------------*/
+
+
+  /**
+   * Create a Source position instance for the given position in this library file.
+   *
+   * @param pos the position, may be -1 for undefined or 0 for
+   * SourcePosition.builtIn, otherwise a valid index into a source file in this
+   * module.
+   */
+  SourcePosition pos(int pos)
+  {
+    if (pos < 0)
+      {
+        return SourcePosition.notAvailable;
+      }
+    else if (pos == 0)
+      {
+        return SourcePosition.builtIn;
+      }
+    else
+      {
+        var at = sourceFilesFirstSourceFilePos();
+        check
+          (pos > at);
+        var i = 0;
+        while (pos > sourceFileNextPos(at))
+          {
+            at = sourceFileNextPos(at);
+            i++;
+            check
+              (i < sourceFilesCount());
+          }
+        var sf = _sourceFiles.get(i);
+        if (sf == null)
+          {
+            var bb = sourceFileBytes(at);
+            var ba = new byte[bb.limit()]; // NYI: Would be better if SoureFile could use bb directly.
+            bb.get(0, ba);
+            sf = new SourceFile(Path.of(sourceFileName(at)), ba);
+            _sourceFiles.set(i, sf);
+          }
+        return new SourcePosition(sf, pos - sourceFileBytesPos(at));
+      }
+  }
 
 
   /**
