@@ -626,7 +626,23 @@ public class LibraryFeature extends AbstractFeature
   {
     return _featureName;
   }
-  public SourcePosition pos() { return _from == null ? LibraryModule.DUMMY_POS : _from.pos(); }
+
+  /**
+   * Source code position where this feature was declared.
+   */
+  public SourcePosition pos()
+  {
+    if (_libModule.USE_FUM)
+      {
+        return pos(_libModule.featurePosition(_index));
+      }
+    else
+      {
+        return _from == null ? LibraryModule.DUMMY_POS : _from.pos();
+      }
+  }
+
+
   List<AbstractCall> _inherits = null;
   public List<AbstractCall> inherits()
   {
