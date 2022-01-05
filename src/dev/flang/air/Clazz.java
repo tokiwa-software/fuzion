@@ -754,7 +754,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
     TreeSet<SourcePosition> result = null;
     switch (layouting_)
       {
-      case During: result = new TreeSet<>(); result.add(this._type.pos()); break;
+      case During:
+        result = new TreeSet<>();
+        result.add(this.feature().pos());
+        break;
       case Before:
         {
           layouting_ = LayoutStatus.During;
@@ -767,7 +770,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                       result = c.layout();
                       if (result != null)
                         {
-                          result.add(_type.pos());
+                          result.add(c.feature().pos());
                         }
                     }
                 }
@@ -776,7 +779,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             {
               if (result == null && !fc.feature().isOuterRef())
                 {
-                  result = addToLayout(fc.resultClazz());
+                  result = layoutFieldType(fc);
                 }
             }
           layouting_ = LayoutStatus.After;
@@ -788,15 +791,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Helper for layout() to check a given field f.
+   * Helper for layout() to layout type of given field.
    *
-   * @param f a field to be added to this.
-   *
-   * @param select, In case f is open eneric, the current actual generic to use.
+   * @param field to be added to this.
    */
-  private TreeSet<SourcePosition> addToLayout(Clazz fieldClazz)
+  private TreeSet<SourcePosition> layoutFieldType(Clazz field)
   {
     TreeSet<SourcePosition> result = null;
+    var fieldClazz = field.resultClazz();
     if (!fieldClazz.isRef() &&
         !fieldClazz.feature().isBuiltInPrimitive() &&
         !fieldClazz.isVoidType())
@@ -804,8 +806,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         result = fieldClazz.layout();
         if (result != null)
           {
-            result.add(fieldClazz.feature().pos());
-            result.add(this._type.pos());
+            result.add(field.feature().pos());
           }
       }
     return result;
