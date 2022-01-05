@@ -886,9 +886,13 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public int compareTo(AbstractFeature other)
   {
     int result;
-    if (this == other)
+    var a = System.identityHashCode(this);
+    var b = System.identityHashCode(other);
+    if (a != b || this == other)
       {
-        result = 0;
+        result =
+          a < b ? -1 :
+          a > b ? +1 : 0;
       }
     else if ((this.outer() == null) &&  (other.outer() != null))
       {
@@ -901,7 +905,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     else
       {
         result = (this.outer() != null) ? this.outer().compareTo(other.outer())
-                                       : 0;
+                                        : 0;
         if (result == 0)
           {
             result = featureName().compareTo(other.featureName());
