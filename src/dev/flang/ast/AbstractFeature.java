@@ -879,41 +879,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   // in FUIR or later
   public abstract Contract contract();
 
-
-  /**
-   * Compare this to other for sorting Feature
-   */
-  public int compareTo(AbstractFeature other)
-  {
-    int result;
-    var a = System.identityHashCode(this);
-    var b = System.identityHashCode(other);
-    if (a != b || this == other)
-      {
-        result =
-          a < b ? -1 :
-          a > b ? +1 : 0;
-      }
-    else if ((this.outer() == null) &&  (other.outer() != null))
-      {
-        result = -1;
-      }
-    else if ((this.outer() != null) &&  (other.outer() == null))
-      {
-        result = +1;
-      }
-    else
-      {
-        result = (this.outer() != null) ? this.outer().compareTo(other.outer())
-                                        : 0;
-        if (result == 0)
-          {
-            result = featureName().compareTo(other.featureName());
-          }
-      }
-    return result;
-  }
-
 }
 
 /* end of file */

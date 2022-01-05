@@ -844,6 +844,18 @@ public class LibraryFeature extends AbstractFeature
     return _redefines;
   }
 
+
+  /**
+   * Compare this to other for sorting Features
+   */
+  public int compareTo(AbstractFeature other)
+  {
+    return (other instanceof Feature)
+      ? -1
+      : _index - ((LibraryFeature) other)._index;  // there are only two subclasses: Feature and LibraryFeature.
+  }
+
+
 }
 
 /* end of file */

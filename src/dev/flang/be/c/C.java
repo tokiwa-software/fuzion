@@ -707,8 +707,8 @@ public class C extends ANY
     return CStmnt.seq(CStmnt.decl("fzT__R1conststring *", tmp),
                       tmp.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("fzT__R1conststring")))),
                       tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(_fuir.clazz_conststring())),
-                      sysArray.field(new CIdent("fzF_0_data"  )).assign(CExpr.string(bytes).castTo("void *")),
-                      sysArray.field(new CIdent("fzF_1_length")).assign(CExpr.int32const(bytes.length)));
+                      sysArray.field(new CIdent("fzF_1_data"  )).assign(CExpr.string(bytes).castTo("void *")),
+                      sysArray.field(new CIdent("fzF_0_length")).assign(CExpr.int32const(bytes.length)));
   }
 
 
