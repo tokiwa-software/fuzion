@@ -256,6 +256,22 @@ public class LibraryModule extends Module
 
 
   /**
+   * Get the feature corresponding to given offset
+   *
+   * @param offset the offset in data(), -1 for 'null', 0 for universe.
+   *
+   * @return the AbstractFeature corresponding to given offset.
+   */
+  AbstractFeature feature(int offset)
+  {
+    return
+      (offset == -1) ? null :
+      (offset ==  0) ? universe()
+                     : libraryFeature(offset);
+  }
+
+
+  /**
    * The features declared within universe by this module
    */
   List<AbstractFeature> features()
@@ -702,11 +718,12 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.5+| true  .5+| 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters
+.6+| true  .6+| 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters
                        | Name          | name
                        | int           | arg count
                        | int           | name id
                        | Pos           | source code position
+                       | int           | outer feature index, 0 for outer()==universe
    | T=1      | 1      | TypeArgs      | optional type arguments
    | hasRT    | 1      | Type          | optional result type,
                                        hasRT = !isConstructor && !isChoice
@@ -741,6 +758,8 @@ Feature
    *   |        |        | int           | name id                                       |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Pos           | source code position                          |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | int           | outer feature index, 0 for outer()==universe  |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | T=1    | 1      | TypeArgs      | optional type arguments                       |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -866,12 +885,24 @@ Feature
   {
     return featurePositionPos(at) + 4;
   }
+  int featureOuterPos(int at)
+  {
+    return featurePositionNextPos(at);
+  }
+  AbstractFeature featureOuter(int at)
+  {
+    return feature(data().getInt(featureOuterPos(at)));
+  }
+  int featureOuterNextPos(int at)
+  {
+    return featureOuterPos(at) + 4;
+  }
   int featureTypeArgsPos(int at)
   {
     if (PRECONDITIONS) require
       ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0);
 
-    return featurePositionNextPos(at);
+    return featureOuterNextPos(at);
   }
   int featureResultTypePos(int at)
   {
@@ -881,7 +912,7 @@ Feature
       }
     else
       {
-        return featurePositionNextPos(at);
+        return featureOuterNextPos(at);
       }
   }
   boolean featureHasResultType(int at)

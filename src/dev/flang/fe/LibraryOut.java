@@ -246,6 +246,8 @@ class LibraryOut extends DataOut
    *   |        |        | int           | name id                                       |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Pos           | source code position                          |
+   *   |        |        +---------------+-----------------------------------------------+
+   *   |        |        | int           | outer feature index, 0 for outer()==universe  |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | T=1    | 1      | TypeArgs      | optional type arguments                       |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -325,6 +327,14 @@ class LibraryOut extends DataOut
     writeInt (n.argCount());  // NYI: use better integer encoding
     writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
     pos(f.pos());
+    if (!f.outer().isUniverse())
+      {
+        writeOffset(f.outer());
+      }
+    else
+      {
+        writeInt(0);
+      }
     if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0)
       {
         check
@@ -1003,17 +1013,34 @@ class LibraryOut extends DataOut
     writeInt(v);
   }
 
+
   /**
    * Write offset of given feature, create fixup if not known yet.
    */
   void writeOffset(AbstractFeature f)
   {
-    var o = _offsetsForFeature.get(f);
-    var v = o == null ? -1 : (int) o;
-    if (o == null)
+    int v;
+    if (f.isUniverse())
       {
-        _fixUpsF.add(f);
-        _fixUpsFAt.add(offset());
+        v = 0;
+      }
+    else if (f == null)
+      {
+        v = -1;
+      }
+    else
+      {
+        var o = _offsetsForFeature.get(f);
+        if (o == null)
+          {
+            _fixUpsF.add(f);
+            _fixUpsFAt.add(offset());
+            v = -1;
+          }
+        else
+          {
+            v = (int) o;
+          }
       }
     writeInt(v);
   }

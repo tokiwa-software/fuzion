@@ -204,7 +204,7 @@ public class LibraryFeature extends AbstractFeature
     var result = _outer;
     if (result == null)
       {
-        result = findOuter(_libModule.universe(), FuzionConstants.MIR_FILE_FIRST_FEATURE_OFFSET);
+        result = _libModule.featureOuter(_index);
         _outer = result;
       }
 
