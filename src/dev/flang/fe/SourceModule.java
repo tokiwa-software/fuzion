@@ -156,7 +156,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     _defaultMain = defaultMain;
     _universe = universe;
 
-    if (LibraryModule.USE_FUM && dependsOn.length > 0)
+    if (dependsOn.length > 0)
       {
         Types.reset();
         var stdlib = (LibraryModule) dependsOn[0];
@@ -166,8 +166,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                                                          lookupFeatureForType(SourcePosition.builtIn, name, universe, universe),
                                                          ref ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature,
                                                          Type.NONE,
-                                                         universe.thisType(),
-                                                         null),
+                                                         universe.thisType()),
                            universe);
       }
     if (universe.state().atLeast(Feature.State.RESOLVED))

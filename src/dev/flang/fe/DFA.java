@@ -72,7 +72,7 @@ public class DFA extends ANY
   {
     for (var f = _mir.firstFeature(); f <= _mir.lastFeature(); f++)
       {
-        if (!LibraryModule.USE_FUM) checkFeature(f);
+        if (!true) checkFeature(f); // NYI!
       }
   }
 

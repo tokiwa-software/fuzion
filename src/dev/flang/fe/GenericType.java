@@ -74,9 +74,9 @@ public class GenericType extends LibraryType
    * Constructor for a plain Type from a given feature that does not have any
    * actual generics.
    */
-  GenericType(LibraryModule mod, int at, SourcePosition pos, Generic generic, AbstractType from, Type.RefOrVal rov)
+  GenericType(LibraryModule mod, int at, SourcePosition pos, Generic generic, Type.RefOrVal rov)
   {
-    super(mod, at, pos, from);
+    super(mod, at, pos);
 
     this._generic = generic;
     this._refOrVal = Type.RefOrVal.LikeUnderlyingFeature;
@@ -88,9 +88,9 @@ public class GenericType extends LibraryType
    * Constructor for a plain Type from a given feature that does not have any
    * actual generics.
    */
-  GenericType(LibraryModule mod, int at, SourcePosition pos, Generic generic, AbstractType from)
+  GenericType(LibraryModule mod, int at, SourcePosition pos, Generic generic)
   {
-    this(mod, at, pos, generic, from, Type.RefOrVal.LikeUnderlyingFeature);
+    this(mod, at, pos, generic, Type.RefOrVal.LikeUnderlyingFeature);
   }
 
   /*-----------------------------  methods  -----------------------------*/
@@ -166,7 +166,7 @@ public class GenericType extends LibraryType
     return switch (_refOrVal)
       {
       case Ref -> this;
-      default -> new GenericType(_libModule, _at, _pos, _generic, _from, Type.RefOrVal.Ref);
+      default -> new GenericType(_libModule, _at, _pos, _generic, Type.RefOrVal.Ref);
       };
   }
   public AbstractType asValue()

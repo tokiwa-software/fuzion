@@ -82,89 +82,77 @@ public class FrontEnd extends ANY
   {
     var universe = Feature.createUniverse();
     Types.reset();
-    if (options._saveBaseLib != null)
+    universe = new Feature.Universe()
       {
-        LibraryModule.USE_FUM = true;
-      }
-    if (LibraryModule.USE_FUM)
+        public AbstractFeature get(String name)
+        {
+          return get(name, -1);
+        }
+        public AbstractFeature get(String name, int argcount)
+        {
+          if (_stdlib == null)
+            {
+              return super.get(name, argcount);
+            }
+          // NYI: Code dupliction with LibraryFeature.get and ast.Feature.get()
+          AbstractFeature result = Types.f_ERROR;
+          var d = _stdlib.featuresMap();
+          var set = (argcount >= 0
+                     ? FeatureName.getAll(d, name, argcount)
+                     : FeatureName.getAll(d, name          )).values();
+          if (set.size() == 1)
+            {
+              for (var f2 : set)
+                {
+                  result = f2;
+                }
+            }
+          else if (set.isEmpty())
+            {
+              return super.get(name, argcount);
+            }
+          else
+            {
+              AstErrors.internallyReferencedFeatureNotUnique(LibraryModule.DUMMY_POS, name + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
+            }
+          return result;
+        }
+      };
+
+    var p = options._saveBaseLib;
+    if (p != null)
       {
-        universe = new Feature.Universe()
+        var sourceDirs = new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) };
+        var srcModule = new SourceModule(options, sourceDirs, null, null, new Module[0], universe);
+        var mir = srcModule.createMIR();
+        var data = mir._module.data();
+        System.out.println(" + " + p);
+        try (var os = Files.newOutputStream(p))
           {
-            public AbstractFeature get(String name)
-            {
-              return get(name, -1);
-            }
-            public AbstractFeature get(String name, int argcount)
-            {
-              if (_stdlib == null)
-                {
-                  return super.get(name, argcount);
-                }
-              // NYI: Code dupliction with LibraryFeature.get and ast.Feature.get()
-              AbstractFeature result = Types.f_ERROR;
-              var d = _stdlib.featuresMap();
-              var set = (argcount >= 0
-                         ? FeatureName.getAll(d, name, argcount)
-                         : FeatureName.getAll(d, name          )).values();
-              if (set.size() == 1)
-                {
-                  for (var f2 : set)
-                    {
-                      result = f2;
-                    }
-                }
-              else if (set.isEmpty())
-                {
-                  return super.get(name, argcount);
-                }
-              else
-                {
-                  AstErrors.internallyReferencedFeatureNotUnique(LibraryModule.DUMMY_POS, name + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
-                }
-              return result;
-            }
-          };
-
-        var p = options._saveBaseLib;
-        if (p != null)
-          {
-            var sourceDirs = new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) };
-            var srcModule = new SourceModule(options, sourceDirs, null, null, new Module[0], universe);
-            var mir = srcModule.createMIR();
-            var data = mir._module.data();
-            System.out.println(" + " + p);
-            try (var os = Files.newOutputStream(p))
-              {
-                Channels.newChannel(os).write(data);
-              }
-            catch (IOException io)
-              {
-                Errors.error("FrontEnd I/O error when writing module file",
-                             "While trying to write file '"+ p + "' received '" + io + "'");
-              }
-            _module = null;
-            return;
-          }
-
-        // yippieh: At this point, we forget srcModule and continue with data only:
-        var b = options._fuzionHome.resolve("modules").resolve("base.fum");
-        try (var ch = (FileChannel) Files.newByteChannel(b, EnumSet.of(StandardOpenOption.READ)))
-          {
-            var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
-            _stdlib = new LibraryModule("base", data, new Module[0], universe);
+            Channels.newChannel(os).write(data);
           }
         catch (IOException io)
           {
-            Errors.error("FrontEnd I/O error when reading module file",
-                         "While trying to read file '"+ b + "' received '" + io + "'");
+            Errors.error("FrontEnd I/O error when writing module file",
+                         "While trying to write file '"+ p + "' received '" + io + "'");
           }
-        universe.setState(Feature.State.RESOLVED);
+        _module = null;
+        return;
       }
-    else
+
+    // yippieh: At this point, we forget srcModule and continue with data only:
+    var b = options._fuzionHome.resolve("modules").resolve("base.fum");
+    try (var ch = (FileChannel) Files.newByteChannel(b, EnumSet.of(StandardOpenOption.READ)))
       {
-        _stdlib = new LibraryModule(options, "stdlib", new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) }, null, null, new Module[0], universe);
-        _stdlib._srcModule.data(universe)._declaredOrInheritedFeatures = null;
+        var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
+        _stdlib = new LibraryModule("base", data, new Module[0], universe);
       }
+    catch (IOException io)
+      {
+        Errors.error("FrontEnd I/O error when reading module file",
+                     "While trying to read file '"+ b + "' received '" + io + "'");
+      }
+    universe.setState(Feature.State.RESOLVED);
 
     Path[] sourcePaths;
     Path inputFile;
@@ -193,10 +181,7 @@ public class FrontEnd extends ANY
         sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
       }
     _module = new SourceModule(options, sourceDirs, inputFile, options._main, new Module[] {_stdlib}, universe);
-    if (LibraryModule.USE_FUM)
-      {
-        ((Feature.Universe)universe).setModule((dev.flang.ast.SrcModule) _module);
-      }
+    ((Feature.Universe)universe).setModule((dev.flang.ast.SrcModule) _module);
   }
 
 

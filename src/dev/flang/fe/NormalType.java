@@ -99,10 +99,9 @@ public class NormalType extends LibraryType
              AbstractFeature feature,
              Type.RefOrVal refOrVal,
              List<AbstractType> generics,
-             AbstractType outer,
-             AbstractType from)
+             AbstractType outer)
   {
-    super(mod, at, pos, from);
+    super(mod, at, pos);
 
     this._feature = feature;
     this._refOrVal = refOrVal;
@@ -143,7 +142,7 @@ public class NormalType extends LibraryType
     if (PRECONDITIONS) require
       (!isGenericArgument());
 
-    return new NormalType(_libModule, _at, _pos, _feature, _refOrVal, g2, o2, _from instanceof dev.flang.ast.Type ?_from.actualType(g2, o2) : null);
+    return new NormalType(_libModule, _at, _pos, _feature, _refOrVal, g2, o2);
   }
 
 
@@ -192,8 +191,7 @@ public class NormalType extends LibraryType
     var result = _asRef;
     if (result == null)
       {
-        var fromRef =  _from instanceof NormalType ? null : Types.intern(_from).asRef();
-        result = isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, Type.RefOrVal.Ref, _generics, _outer, fromRef);
+        result = isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, Type.RefOrVal.Ref, _generics, _outer);
         _asRef = result;
       }
     return result;
@@ -204,8 +202,7 @@ public class NormalType extends LibraryType
     var result = _asValue;
     if (result == null)
       {
-        var fromValue =  _from instanceof NormalType ? null : Types.intern(_from).asValue();
-        result = !isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, Type.RefOrVal.Value, _generics, _outer, fromValue);
+        result = !isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, Type.RefOrVal.Value, _generics, _outer);
         _asValue = result;
       }
     return result;

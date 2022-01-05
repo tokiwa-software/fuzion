@@ -86,7 +86,7 @@ public class LibraryCall extends AbstractCall
     super(pos);
     _libModule = lib;
     _index = index;
-    _type = _libModule.USE_FUM ? lib.callType(index) : Types.t_ERROR;
+    _type = lib.callType(index);
     var na = _libModule.callNumArgs(index);
     var actuals = new List<Expr>();
     for (var i = 0; i < na; i++)
@@ -100,7 +100,7 @@ public class LibraryCall extends AbstractCall
         var tp = _libModule.callTypeParametersPos(index);
         for (var i = 0; i < ng; i++)
           {
-            var t = _libModule.type(tp, LibraryModule.DUMMY_POS, null);
+            var t = _libModule.type(tp);
             g.add(t);
             tp = _libModule.typeNextPos(tp);
           }
@@ -110,7 +110,7 @@ public class LibraryCall extends AbstractCall
     _generics = g;
     Expr target = null;
     var feat = lib.callCalledFeature(index);
-    var f = lib.libraryFeature(feat, null);
+    var f = lib.libraryFeature(feat);
     if (f.outer().isUniverse())
       {
         target = new Universe(pos());

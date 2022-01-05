@@ -71,25 +71,17 @@ public abstract class LibraryType extends AbstractType
   public final SourcePosition _pos;
 
 
-  /**
-   * NYI: For now, this is just a wrapper around an AST type. This should be
-   * removed once all data is obtained from _libModule;
-   */
-  protected final AbstractType _from;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Constructor to set common fields.
    */
-  LibraryType(LibraryModule mod, int at, SourcePosition pos, AbstractType from /* NYI: to be removed */)
+  LibraryType(LibraryModule mod, int at, SourcePosition pos)
   {
     this._libModule = mod;
     this._at = at;
     this._pos = pos;
-    this._from = from == null ? this : from.astType();
   }
 
 
@@ -100,9 +92,6 @@ public abstract class LibraryType extends AbstractType
   {
     return _pos;
   }
-
-
-  public AbstractType astType() { return _libModule.USE_FUM ? this : _from; }
 
 }
 
