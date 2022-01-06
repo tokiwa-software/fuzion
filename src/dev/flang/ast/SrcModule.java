@@ -51,12 +51,6 @@ public interface SrcModule
 
 
   /**
-   * During resolution, load all inner classes of this that are
-   * defined in separate files.
-   */
-  void loadInnerFeatures(AbstractFeature f);
-
-  /**
    * Find all the inner feature declarations within this feature and set
    * this._outer and, recursively, the outer references of all inner features to
    * the corresponding outer declaring feature.
