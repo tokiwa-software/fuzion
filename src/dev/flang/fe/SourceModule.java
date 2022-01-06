@@ -330,7 +330,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * During resolution, load all inner classes of this that are
    * defined in separate files.
    */
-  public void loadInnerFeatures(AbstractFeature f)
+  private void loadInnerFeatures(AbstractFeature f)
   {
     if (!_closed)
       {
@@ -564,7 +564,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
       (outer.state() == Feature.State.RESOLVING_DECLARATIONS);
 
     if (data(outer)._declaredOrInheritedFeatures == null)
-      data(outer)._declaredOrInheritedFeatures = new TreeMap<>();
+      {
+        data(outer)._declaredOrInheritedFeatures = new TreeMap<>();
+      }
     findInheritedFeatures(outer);
     loadInnerFeatures(outer);
     findDeclaredFeatures(outer);
