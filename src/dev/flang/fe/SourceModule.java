@@ -204,7 +204,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
       {
         _universe.setState(Feature.State.RESOLVED);
         var stdlib = _dependsOn[0];
-        new Types.Resolved((name, ref) -> new NormalType(stdlib,
+        new Types.Resolved(this,
+                           (name, ref) -> new NormalType(stdlib,
                                                          -1,
                                                          SourcePosition.builtIn,
                                                          lookupFeatureForType(SourcePosition.builtIn, name, _universe, _universe),
@@ -232,7 +233,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     var d = _main == null
       ? _universe
-      : _universe.get(_main);
+      : _universe.get(this, _main);
 
     if (false)  // NYI: Eventually, we might want to stop here in case of errors. This is disabled just to check the robustness of the next steps
       {

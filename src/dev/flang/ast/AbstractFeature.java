@@ -117,25 +117,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public Object _frontEndData;
 
 
-  /**
-   * The source module this is defined in.  This is set when this is first
-   * scheduled for resolution.
-   */
-  SrcModule _module = null; // NYI: remove!
-
-
-  /**
-   * Add this feature to the given source module.  This is called when this is
-   * first scheduled for resolution.
-   */
-  void addTo(SrcModule m)
-  {
-    if (PRECONDITIONS) require
-      (_module == null || _module == m || isUniverse());
-
-    _module = m;
-  }
-
   /*-----------------------------  methods  -----------------------------*/
 
   /**
@@ -966,9 +947,9 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @return the found feature or null in case of an error.
    */
-  public AbstractFeature get(String name)
+  public AbstractFeature get(SrcModule mod, String name)
   {
-    return get(name, -1);
+    return get(mod, name, -1);
   }
 
 
@@ -981,10 +962,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @return the found feature or Types.f_ERROR in case of an error.
    */
-  public AbstractFeature get(String name, int argcount)
+  public AbstractFeature get(SrcModule mod, String name, int argcount)
   {
     AbstractFeature result = Types.f_ERROR;
-    var d = _module.declaredFeatures(this);
+    var d = mod.declaredFeatures(this);
     var set = (argcount >= 0
                ? FeatureName.getAll(d, name, argcount)
                : FeatureName.getAll(d, name          )).values();
