@@ -519,7 +519,7 @@ class Fuzion extends Tool
           {
             var mir = fe.createMIR();
             long feTime = System.currentTimeMillis();
-            var air = new MiddleEnd(options, mir, fe.res()._module /* NYI: remove */).air();
+            var air = new MiddleEnd(options, mir, fe.module() /* NYI: remove */).air();
             long meTime = System.currentTimeMillis();
             var fuir = new Optimizer(options, air).fuir();
             long irTime = System.currentTimeMillis();

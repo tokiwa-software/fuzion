@@ -43,7 +43,6 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
-import dev.flang.ast.Resolution;
 import dev.flang.ast.Types;
 
 import dev.flang.util.ANY;
@@ -233,11 +232,10 @@ public class FrontEnd extends ANY
   }
 
 
-  public Resolution res()
+  public SourceModule module()
   {
-    return ((SourceModule) _module)._res; // NYI: Cast!
+    return _module;
   }
-
 
 }
 
