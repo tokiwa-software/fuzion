@@ -134,19 +134,13 @@ public class SourceModule extends Module implements SrcModule, MirModule
   Resolution _res;
 
 
-  /**
-   * List of all features declared in this module.
-   */
-  List<Feature> _features = new List<>();
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Create SourceModule for given options and sourceDirs.
    */
-  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile, String defaultMain, Module[] dependsOn, Feature universe)
+  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile, String defaultMain, LibraryModule[] dependsOn, Feature universe)
   {
     super(dependsOn);
 
@@ -155,25 +149,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
     _inputFile = inputFile;
     _defaultMain = defaultMain;
     _universe = universe;
-
-    if (dependsOn.length > 0)
-      {
-        Types.reset();
-        var stdlib = (LibraryModule) dependsOn[0];
-        new Types.Resolved((name, ref) -> new NormalType(stdlib,
-                                                         -1,
-                                                         SourcePosition.builtIn,
-                                                         lookupFeatureForType(SourcePosition.builtIn, name, universe, universe),
-                                                         ref ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature,
-                                                         Type.NONE,
-                                                         universe.thisType()),
-                           universe);
-      }
-    if (universe.state().atLeast(Feature.State.RESOLVED))
-      {
-        universe.resetState();   // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
-      }
-    createASTandResolve();
   }
 
 
@@ -218,24 +193,26 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Add given feature to the features declared in this SrcModule.
-   */
-  public void add(Feature f)
-  {
-    if (!f.isUniverse())
-      {
-        _features.add(f);
-      }
-  }
-
-
-  /**
    * Create the absgtract syntax tree and resolve all features.
    */
   void createASTandResolve()
   {
     check
       (_universe != null);
+
+    if (_dependsOn.length > 0)
+      {
+        _universe.setState(Feature.State.RESOLVED);
+        var stdlib = _dependsOn[0];
+        new Types.Resolved((name, ref) -> new NormalType(stdlib,
+                                                         -1,
+                                                         SourcePosition.builtIn,
+                                                         lookupFeatureForType(SourcePosition.builtIn, name, _universe, _universe),
+                                                         ref ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature,
+                                                         Type.NONE,
+                                                         _universe.thisType()),
+                           _universe);
+      }
 
     _main = (_inputFile != null)
       ? parseStdIn(new Parser(_inputFile))
@@ -353,7 +330,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * During resolution, load all inner classes of this that are
    * defined in separate files.
    */
-  public void loadInnerFeatures(Feature f)
+  public void loadInnerFeatures(AbstractFeature f)
   {
     if (!_closed)
       {
@@ -422,7 +399,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public void findDeclarations(Feature inner, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (inner.state() == Feature.State.LOADING,
+      (inner.isUniverse() || inner.state() == Feature.State.LOADING,
        ((outer == null) == (inner.featureName().baseName().equals(FuzionConstants.UNIVERSE_NAME))),
        !inner.outerSet());
 
@@ -521,7 +498,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
       {
         s = new TreeMap<>();
         d._declaredFeatures = s;
-        for (Module m : _dependsOn)
+        for (var m : _dependsOn)
           { // NYI: properly obtain set of declared features from m, do we need
             // to take care for the order and dependencies between modules?
             var md = m.declaredFeaturesOrNull(outer);
@@ -546,12 +523,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   SortedMap<FeatureName, AbstractFeature>declaredFeaturesOrNull(AbstractFeature outer)
   {
-    var d = data(outer);
-    if (d != null)
-      {
-        return d._declaredFeatures;
-      }
-    return null;
+    return declaredFeatures(outer);
   }
 
 
@@ -567,7 +539,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var d = data(outer);
     if (d != null)
       {
-        return d._declaredOrInheritedFeatures;
+        if (outer.isUniverse())
+          {
+            return declaredFeaturesOrNull(outer);
+          }
+        else
+          {
+            return d._declaredOrInheritedFeatures;
+          }
       }
     return null;
   }
@@ -688,14 +667,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param outer the declaring feature
    */
-  private void findDeclaredFeatures(Feature outer)
+  private void findDeclaredFeatures(AbstractFeature outer)
   {
     var s = declaredFeatures(outer);
     for (var e : s.entrySet())
       {
         var fn = e.getKey();
         var f = e.getValue();
-        var doi = data(outer)._declaredOrInheritedFeatures;
+        var doi = declaredOrInheritedFeatures(outer);
         var existing = doi.get(fn);
         if (existing == null)
           {

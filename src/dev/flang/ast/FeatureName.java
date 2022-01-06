@@ -107,7 +107,7 @@ public class FeatureName extends ANY implements Comparable<FeatureName>
   /**
    * Get the unique element (baseName, argCount).
    */
-  static FeatureName get(String baseName, int argCount)
+  public static FeatureName get(String baseName, int argCount)
   {
     if (PRECONDITIONS) require
       (baseName != null,

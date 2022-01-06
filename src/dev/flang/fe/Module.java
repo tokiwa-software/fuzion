@@ -108,7 +108,7 @@ public abstract class Module extends ANY
   /**
    * What modules does this module depend on?
    */
-  Module[] _dependsOn;
+  LibraryModule[] _dependsOn;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -117,7 +117,7 @@ public abstract class Module extends ANY
   /**
    * Create SourceModule for given options and sourceDirs.
    */
-  Module(Module[] dependsOn)
+  Module(LibraryModule[] dependsOn)
   {
     _dependsOn = dependsOn;
   }
@@ -177,7 +177,7 @@ public abstract class Module extends ANY
   public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS) || of.isUniverse());
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.RESOLVING_DECLARATIONS) || of.isUniverse());
 
     var d = data(outer);
     var s = d._declaredOrInheritedFeatures;
@@ -191,10 +191,13 @@ public abstract class Module extends ANY
                 s = new TreeMap<>();
               }
           }
+        else if (outer.isUniverse())
+          {
+            s = declaredFeaturesOrNull(outer);
+          }
         else
           {
             s = new TreeMap<>();
-            d._declaredOrInheritedFeatures= s;
             for (Module m : _dependsOn)
               { // NYI: properly obtain set of declared features from m, do we need
                 // to take care for the order and dependencies between modules?
@@ -208,6 +211,7 @@ public abstract class Module extends ANY
                   }
               }
           }
+        d._declaredOrInheritedFeatures= s;
       }
     return s;
   }

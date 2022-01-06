@@ -86,7 +86,7 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * index of this feature within _libModule.
+   * Unique index of this feature.
    */
   final int _index;
 
@@ -94,13 +94,13 @@ public class LibraryFeature extends AbstractFeature
   /**
    * cached result of kind()
    */
-  private final int _kind;
+  private final Kind _kind;
 
 
   /**
    * cached result of featureName()
    */
-  private final FeatureName _featureName;
+  private FeatureName _featureName;
 
 
   /**
@@ -126,11 +126,6 @@ public class LibraryFeature extends AbstractFeature
    */
   List<AbstractFeature> _arguments = null;
 
-  /**
-   * cached result of thisType()
-   */
-  private AbstractType _thisType;
-
 
   /**
    * Cached result of pos()
@@ -148,12 +143,7 @@ public class LibraryFeature extends AbstractFeature
   {
     _libModule = lib;
     _index = index;
-    _kind = lib.featureKind(index) & FuzionConstants.MIR_FILE_KIND_MASK;
-    var bytes = lib.featureName(index);
-    var ac = lib.featureArgCount(index);
-    var id = lib.featureId(index);
-    var bn = new String(bytes, StandardCharsets.UTF_8);
-    _featureName = FeatureName.get(bn, ac, id);
+    _kind = lib.featureKindEnum(index);
   }
 
 
@@ -383,25 +373,20 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * thisType returns the type of this feature's frame object.  This type exists
-   * even for features the do not have a frame such as abstracts, intrinsics,
-   * choice or field.
+   * createThisType returns a new instance of the type of this feature's frame
+   * object.  This can be called even if !hasThisType() since thisClazz() is
+   * used also for abstract or intrinsic feature to determine the resultClazz().
    *
    * @return this feature's frame object
    */
-  public AbstractType thisType()
+  public AbstractType createThisType()
   {
     if (PRECONDITIONS) require
       (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField());
 
-    AbstractType result = _thisType;
-    if (result == null)
-      {
-        var o = outer();
-        var ot = o == null ? null : o.thisType();
-        result = new NormalType(_libModule, -1, this, this, Type.RefOrVal.LikeUnderlyingFeature, generics().asActuals(), ot);
-        _thisType = result;
-      }
+    var o = outer();
+    var ot = o == null ? null : o.thisType();
+    AbstractType result = new NormalType(_libModule, -1, this, this, Type.RefOrVal.LikeUnderlyingFeature, generics().asActuals(), ot);
 
     if (POSTCONDITIONS) ensure
       (result != null,
@@ -496,7 +481,17 @@ public class LibraryFeature extends AbstractFeature
 
   public FeatureName featureName()
   {
-    return _featureName;
+    var result = _featureName;
+    if (result == null)
+      {
+        var bytes = _libModule.featureName(_index);
+        var ac = _libModule.featureArgCount(_index);
+        var id = _libModule.featureId(_index);
+        var bn = new String(bytes, StandardCharsets.UTF_8);
+        result = FeatureName.get(bn, ac, id);
+        _featureName = result;
+      }
+    return result;
   }
 
 
@@ -532,9 +527,6 @@ public class LibraryFeature extends AbstractFeature
     return _inherits;
   }
 
-  // following are used in IR/Clazzes middle end or later only:
-  public Impl.Kind implKind() { return Impl.Kind.Routine; /* NYI! */ }      // NYI: remove, used only in Clazz.java for some obscure case
-  public Expr initialValue() { check(false); return null; }   // NYI: remove, used only in Clazz.java for some obscure case
 
   // following used in MIR or later
   public Expr code()

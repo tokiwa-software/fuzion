@@ -341,7 +341,7 @@ public class Type extends AbstractType
    *
    * @param n the name, such as "int", "bool".
    */
-  public static Type type(Resolution res, String n, Feature universe)
+  public static Type type(Resolution res, String n, AbstractFeature universe)
   {
     if (PRECONDITIONS) require
       (n.length() > 0);
@@ -356,7 +356,7 @@ public class Type extends AbstractType
    *
    * @param n the name, such as "int", "bool".
    */
-  public static Type type(Resolution res, boolean ref, String n, Feature universe)
+  public static Type type(Resolution res, boolean ref, String n, AbstractFeature universe)
   {
     if (PRECONDITIONS) require
       (n.length() > 0);

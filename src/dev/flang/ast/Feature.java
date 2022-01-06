@@ -277,14 +277,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * For a Feature that can be called and hasThisType() is true, this will be
-   * set to the frame type during resolution.  This type uses the formal
-   * generics as actual generics. For a generic feature, these must be replaced.
-   */
-  private AbstractType thisType_ = null;
-
-
-  /**
    * For choice feature (i.e., isChoice() holds): The tag field that holds in
    * i32 that identifies the index of the actual generic argument to choice that
    * is represented.
@@ -322,13 +314,6 @@ public class Feature extends AbstractFeature implements Stmnt
   }
 
 
-  /**
-   * The source module this is defined in.  This is set when this is first
-   * scheduled for resolution.
-   */
-  SrcModule _module = null;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -361,40 +346,6 @@ public class Feature extends AbstractFeature implements Stmnt
                   new Block(SourcePosition.builtIn,
                             new List<Stmnt>()),
                   Impl.Kind.Routine));
-  }
-
-
-  /**
-   * Class for the Universe Feature.
-   */
-  public static class Universe extends Feature
-  {
-    public Universe()
-    {
-    }
-    public Universe(SrcModule m)
-    {
-      setState(Feature.State.RESOLVED);
-      _module = m;
-    }
-    public void setModule(SrcModule m)
-    {
-      _module = m;
-    }
-    public boolean isUniverse()
-    {
-      check
-        (this.outer() == null);
-      return true;
-    }
-  }
-
-  /**
-   * Constructor for universe
-   */
-  public static Feature createUniverse()
-  {
-    return new Universe();
   }
 
 
@@ -714,7 +665,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public void setState(State newState)
   {
     if (PRECONDITIONS) require
-      (newState.ordinal() == _state.ordinal() + 1 || newState == State.RESOLVED);
+     (newState.ordinal() == _state.ordinal() + 1 || newState == State.RESOLVED || isUniverse());
 
     this._state = newState;
   }
@@ -728,20 +679,6 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (isUniverse());
     _state = Feature.State.LOADING;
-  }
-
-
-  /**
-   * Add this feature to the given ource module.  This is called when this is
-   * first scheduled for resolution.
-   */
-  void addTo(SrcModule m)
-  {
-    if (PRECONDITIONS) require
-      (_module == null || _module == m || isUniverse());
-
-    _module = m;
-    m.add(this);
   }
 
 
@@ -807,7 +744,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public AbstractFeature outer()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.FINDING_DECLARATIONS));
+      (isUniverse() || state().atLeast(State.FINDING_DECLARATIONS));
 
     return _outer;
   }
@@ -820,7 +757,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean outerSet()
   {
     if (PRECONDITIONS) require
-      (state() == Feature.State.LOADING);
+      (isUniverse() || state() == Feature.State.LOADING);
 
     return _outer != null;
   }
@@ -831,7 +768,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public void setOuter(AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (state() == Feature.State.LOADING,
+      (isUniverse() || state() == Feature.State.LOADING,
        !outerSet());
 
     this._outer = outer;
@@ -1348,7 +1285,7 @@ public class Feature extends AbstractFeature implements Stmnt
         if (hasThisType())
           {
             var tt = thisType();
-            thisType_ = tt.resolve(res, this);
+            _thisType = tt.resolve(res, this);
           }
 
         if ((_impl.kind_ == Impl.Kind.FieldActual) && (_impl._initialValue.typeOrNull() == null))
@@ -1563,7 +1500,7 @@ public class Feature extends AbstractFeature implements Stmnt
             if (t == thisType())
               {
                 AstErrors.choiceMustNotReferToOwnValueType(_pos, t);
-                thisType_ = Types.t_ERROR;
+                _thisType = Types.t_ERROR;
                 eraseChoiceGenerics();
               }
             var o = outer();
@@ -1862,56 +1799,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
     if (POSTCONDITIONS) ensure
       (_state.atLeast(State.RESOLVED_SUGAR2));
-  }
-
-
-  /**
-   * Get inner feature with given name.
-   *
-   * @param name the name of the feature within this.
-   *
-   * @return the found feature or null in case of an error.
-   */
-  public AbstractFeature get(String name)
-  {
-    return get(name, -1);
-  }
-
-
-  /**
-   * Get inner feature with given name and argCount.
-   *
-   * @param name the name of the feature within this.
-   *
-   * @param argcount the number of arguments, -1 if not specified.
-   *
-   * @return the found feature or Types.f_ERROR in case of an error.
-   */
-  public AbstractFeature get(String name, int argcount)
-  {
-    AbstractFeature result = Types.f_ERROR;
-    var d = _module.declaredFeatures(this);
-    var set = (argcount >= 0
-               ? FeatureName.getAll(d, name, argcount)
-               : FeatureName.getAll(d, name          )).values();
-    if (set.size() == 1)
-      {
-        for (var f2 : set)
-          {
-            result = f2;
-          }
-      }
-    else if (set.isEmpty())
-      {
-        AstErrors.internallyReferencedFeatureNotFound(_pos, name, this, name);
-      }
-    else
-      { // NYI: This might happen if the user adds additional features
-        // with different argCounts. name should contain argCount to
-        // avoid this
-        AstErrors.internallyReferencedFeatureNotUnique(_pos, name + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
-      }
-    return result;
   }
 
 
@@ -2313,44 +2200,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
     if (POSTCONDITIONS) ensure
       (result != null);
-
-    return result;
-  }
-
-
-  /**
-   * thisType returns the type of this feature's frame object.  This can be
-   * called even if !hasThisType() since thisClazz() is used also for abstract
-   * or intrinsic feature to determine the resultClazz().
-   *
-   * @return this feature's frame object
-   */
-  public AbstractType thisType()
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.FINDING_DECLARATIONS));
-
-    AbstractType result = thisType_;
-    if (result == null)
-      {
-        result = this == Types.f_ERROR
-          ? Types.t_ERROR
-          : new Type(_pos, _featureName.baseName(), _generics.asActuals(), null, this, Type.RefOrVal.LikeUnderlyingFeature);
-        thisType_ = result;
-      }
-    if (_state.atLeast(State.RESOLVED_TYPES))
-      {
-        result = Types.intern(result);
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null,
-       Errors.count() > 0 || result.isRef() == isThisRef(),
-       // does not hold if feature is declared repeatedly
-       Errors.count() > 0 || result.featureOfType() == this,
-       true || // this condition is very expensive to check and obviously true:
-       !_state.atLeast(State.RESOLVED_TYPES) || result == Types.intern(result)
-       );
 
     return result;
   }

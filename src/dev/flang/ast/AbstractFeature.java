@@ -96,6 +96,14 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * For a Feature that can be called and hasThisType() is true, this will be
+   * set to the frame type during resolution.  This type uses the formal
+   * generics as actual generics. For a generic feature, these must be replaced.
+   */
+  protected AbstractType _thisType = null;
+
+
+  /**
    * Reserved fields to be used by dev.flang.air to find used features and to
    * mark features that are called dynamically.
    */
@@ -107,6 +115,26 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * Caching used in front end.
    */
   public Object _frontEndData;
+
+
+  /**
+   * The source module this is defined in.  This is set when this is first
+   * scheduled for resolution.
+   */
+  SrcModule _module = null; // NYI: remove!
+
+
+  /**
+   * Add this feature to the given source module.  This is called when this is
+   * first scheduled for resolution.
+   */
+  void addTo(SrcModule m)
+  {
+    if (PRECONDITIONS) require
+      (_module == null || _module == m || isUniverse());
+
+    _module = m;
+  }
 
   /*-----------------------------  methods  -----------------------------*/
 
@@ -311,6 +339,71 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (POSTCONDITIONS) ensure
       ((result == null) || (result._name.equals(name) && (result.feature() == this)));
     // result == null ==> for all g in generics: !g.name.equals(name)
+
+    return result;
+  }
+
+
+  /**
+   * thisType returns the type of this feature's frame object.  This can be
+   * called even if !hasThisType() since thisClazz() is used also for abstract
+   * or intrinsic feature to determine the resultClazz().
+   *
+   * @return this feature's frame object
+   */
+  public AbstractType thisType()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(Feature.State.FINDING_DECLARATIONS));
+
+    AbstractType result = _thisType;
+    if (result == null)
+      {
+        result = this == Types.f_ERROR
+          ? Types.t_ERROR
+          : createThisType();
+        _thisType = result;
+      }
+    if (state().atLeast(Feature.State.RESOLVED_TYPES))
+      {
+        result = Types.intern(result);
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result != null,
+       Errors.count() > 0 || result.isRef() == isThisRef(),
+       // does not hold if feature is declared repeatedly
+       Errors.count() > 0 || result.featureOfType() == this,
+       true || // this condition is very expensive to check and obviously true:
+       !state().atLeast(Feature.State.RESOLVED_TYPES) || result == Types.intern(result)
+       );
+
+    return result;
+  }
+
+
+  /**
+   * createThisType returns a new instance of the type of this feature's frame
+   * object.  This can be called even if !hasThisType() since thisClazz() is
+   * used also for abstract or intrinsic feature to determine the resultClazz().
+   *
+   * @return this feature's frame object
+   */
+  protected AbstractType createThisType()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(Feature.State.FINDING_DECLARATIONS));
+
+    var result = new Type(pos(), featureName().baseName(), generics().asActuals(), null, this, Type.RefOrVal.LikeUnderlyingFeature);
+
+    if (POSTCONDITIONS) ensure
+      (result != null,
+       Errors.count() > 0 || result.isRef() == isThisRef(),
+       // does not hold if feature is declared repeatedly
+       Errors.count() > 0 || result.featureOfType() == this,
+       true || // this condition is very expensive to check and obviously true:
+       !state().atLeast(Feature.State.RESOLVED_TYPES) || result == Types.intern(result)
+       );
 
     return result;
   }
@@ -860,18 +953,68 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public abstract FormalGenerics generics();
   public abstract List<AbstractCall> inherits();
   public abstract AbstractFeature outer();
-  public abstract AbstractType thisType();
   public abstract List<AbstractFeature> arguments();
   public abstract AbstractType resultType();
   public abstract AbstractFeature resultField();
   public abstract AbstractFeature outerRef();
-  public abstract AbstractFeature get(String name);
+
+
+  /**
+   * Get inner feature with given name, ignoring the argument count.
+   *
+   * @param name the name of the feature within this.
+   *
+   * @return the found feature or null in case of an error.
+   */
+  public AbstractFeature get(String name)
+  {
+    return get(name, -1);
+  }
+
+
+  /**
+   * Get inner feature with given name and argCount.
+   *
+   * @param name the name of the feature within this.
+   *
+   * @param argcount the number of arguments, -1 if not specified.
+   *
+   * @return the found feature or Types.f_ERROR in case of an error.
+   */
+  public AbstractFeature get(String name, int argcount)
+  {
+    AbstractFeature result = Types.f_ERROR;
+    var d = _module.declaredFeatures(this);
+    var set = (argcount >= 0
+               ? FeatureName.getAll(d, name, argcount)
+               : FeatureName.getAll(d, name          )).values();
+    if (set.size() == 1)
+      {
+        for (var f2 : set)
+          {
+            result = f2;
+          }
+      }
+    else if (set.isEmpty())
+      {
+        AstErrors.internallyReferencedFeatureNotFound(pos(), name, this, name);
+      }
+    else
+      { // NYI: This might happen if the user adds additional features
+        // with different argCounts. name should contain argCount to
+        // avoid this
+        AstErrors.internallyReferencedFeatureNotUnique(pos(), name + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
+      }
+    return result;
+  }
+
 
   // following are used in IR/Clazzes middle end or later only:
   public abstract AbstractFeature choiceTag();
 
-  public abstract Impl.Kind implKind();  // NYI: remove, used only in Clazz.java for some obscure case
-  public abstract Expr initialValue();   // NYI: remove, used only in Clazz.java for some obscure case
+  // following are used in IR/Clazzes middle end or later only:
+  public Impl.Kind implKind() { return Impl.Kind.Routine; /* NYI! */ }      // NYI: remove, used only in Clazz.java for some obscure case
+  public Expr initialValue() { check(false); return null; }   // NYI: remove, used only in Clazz.java for some obscure case
 
   // following used in MIR or later
   public abstract Expr code();

@@ -108,7 +108,7 @@ public class Types extends ANY
 
   public static class Resolved
   {
-    public final Feature universe;
+    public final AbstractFeature universe;
     public final AbstractType t_i8  ;
     public final AbstractType t_i16 ;
     public final AbstractType t_i32 ;
@@ -168,7 +168,7 @@ public class Types extends ANY
     {
       AbstractType type(String name, boolean isRef);
     }
-    public Resolved(CreateType ct, Feature universe)
+    public Resolved(CreateType ct, AbstractFeature universe)
     {
       this.universe = universe;
       t_i8            = ct.type("i8"          , false);
@@ -223,7 +223,7 @@ public class Types extends ANY
       t_UNDEFINED.resolveArtificialType(universe);
       t_ERROR    .resolveArtificialType(f_ERROR);
     }
-    Resolved(Resolution res, Feature universe)
+    Resolved(Resolution res, AbstractFeature universe)
     {
       this((name, ref) -> Type.type(res, ref, name, universe), universe);
     }

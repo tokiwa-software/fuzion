@@ -145,7 +145,7 @@ class LibraryOut extends DataOut
    * The count n is not stored explicitly, the list of inner Features ends after
    * size bytes.
    */
-  void innerFeatures(Feature f)
+  void innerFeatures(AbstractFeature f)
   {
     var m = _sourceModule.declaredFeaturesOrNull(f);
     if (m == null)

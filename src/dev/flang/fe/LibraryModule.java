@@ -146,7 +146,7 @@ public class LibraryModule extends Module
   /**
    * The universe
    */
-  final Feature _universe;
+  final AbstractFeature _universe;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -155,7 +155,7 @@ public class LibraryModule extends Module
   /**
    * Create LibraryModule for given options and sourceDirs.
    */
-  LibraryModule(String name, ByteBuffer data, Module[] dependsOn, Feature universe)
+  LibraryModule(String name, ByteBuffer data, LibraryModule[] dependsOn, AbstractFeature universe)
   {
     super(dependsOn);
 
@@ -179,7 +179,7 @@ public class LibraryModule extends Module
   /**
    * The universe
    */
-  Feature universe()
+  AbstractFeature universe()
   {
     return _universe;
   }
@@ -223,6 +223,10 @@ public class LibraryModule extends Module
           {
             result.put(d.featureName(), d);
           }
+      }
+    else if (outer.isUniverse())
+      {
+        return featuresMap();
       }
     return result;
   }
