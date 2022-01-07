@@ -218,7 +218,7 @@ public class NormalType extends LibraryType
   {
     String result = "";
 
-    if (outer() != null && !outer().featureOfType().isUniverse())
+    if (outer() != null && !outer().isGenericArgument() && !outer().featureOfType().isUniverse())
       {
         result = outer() + ".";
       }
