@@ -306,6 +306,14 @@ field       : visibility
       }
     int pos = pos();
     skipName();
+    while (skipDot())
+      {
+        if (!isNamePrefix())
+          {
+            return false;
+          }
+        skipName();
+      }
     if (skipComma())
       {
         return true;
