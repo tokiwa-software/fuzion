@@ -36,14 +36,13 @@ stream<T> ref : List<T> is
     fromStream list<T> is
       if hasNext
         h := next;
-        ref : Cons<T,list<T>> {
-            memoizedTail option<some<list<T>>> := nil
-            head => h
-            tail =>
-              if !memoizedTail.exists
-                set memoizedTail := some fromStream
-              memoizedTail.get.val
-          }
+        ref : Cons<T,list<T>>
+          memoizedTail option<some<list<T>>> := nil
+          head => h
+          tail =>
+            if !memoizedTail.exists
+              set memoizedTail := some fromStream
+            memoizedTail.get.val
       else
         nil
     fromStream
@@ -216,10 +215,8 @@ stream<T> ref : List<T> is
   #
   map<B>(f T -> B) stream<B> is
     ref : stream<B>
-      {
-        hasNext => stream.this.hasNext
-        next B is f stream.this.next
-      }
+      hasNext => stream.this.hasNext
+      next B is f stream.this.next
 
 
   # NYI: This currently does not work with the C backend since generics resolution

@@ -112,7 +112,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
 
       # use map implementation from List:
       #
-      map<B>(f fun(T) B)  => mapList f
+      map<B>(f T -> B)  => mapList f
 
 
     # create a list from this interval
@@ -126,7 +126,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
 
     # use map implementation from List:
     #
-    map<B>(f fun(T) B)  => mapList f
+    map<B>(f T -> B)  => mapList f
 
 
     # string representation of this interval, e.g., "1..10"

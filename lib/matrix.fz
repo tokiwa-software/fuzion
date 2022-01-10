@@ -48,14 +48,13 @@ is
   redef infix *  (b matrix<T>) =>
     matrix (array2<T> e.length0 b.e.length1
       (i,j ->
-        {
-          for
-            v := e[0,0].zero, v+f
-            x in e.indices1
-            f := a.e[i,x]*b.e[x,j]
-          else
-            v
-        }))
+        for
+          v := e[0,0].zero, v+f
+          x in e.indices1
+          f := a.e[i,x]*b.e[x,j]
+        else
+          v
+        ))
   redef infix /  (b matrix<T>) matrix<T>
     pre
       safety: false

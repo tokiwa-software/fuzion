@@ -87,9 +87,8 @@ strings is
   # create string from the given utf8 bytes
   #
   fromBytes(utf8Bytes List<u8>) string is
-    ref : string {
-        redef utf8 => utf8Bytes
-      }
+    ref : string
+      redef utf8 => utf8Bytes
 
 
   # NYI: remove the convenience functions when Fuzion supports char literals
