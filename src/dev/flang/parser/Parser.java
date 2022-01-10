@@ -156,35 +156,17 @@ public class Parser extends Lexer
 
 
   /**
-   * Parse a unit.
+   * Parse a unit, i.e., stmnts followed by Token.t_eof.
    *
-unit        : feature semi EOF
+unit        : stmnts EOF
             ;
    */
-  public Feature unit()
-  {
-    Feature result = feature().feature();
-    semi();
-    if (Errors.count() == 0)
-      {
-        match(Token.t_eof, "unit");
-      }
-    return result;
-  }
-
-
-  /**
-   * Parse stmnts followed by Token.t_eof.
-   *
-stmntsEof   : stmnts EOF
-            ;
-   */
-  public List<Stmnt> stmntsEof()
+  public List<Stmnt> unit()
   {
     var result = stmnts();
     if (Errors.count() == 0)
       {
-        match(Token.t_eof, "stmntsAsUnit");
+        match(Token.t_eof, "Unit");
       }
     return result;
   }

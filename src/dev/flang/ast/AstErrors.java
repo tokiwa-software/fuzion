@@ -162,6 +162,18 @@ public class AstErrors extends ANY
   }
 
 
+  public static void statementNotAllowedOutsideOfFeatureDeclaration(Stmnt s)
+  {
+    error(s.pos(),
+          "Statements other than feature declarations not allowed here",
+          "Statements require a surrounding features declaration.  The statements " +
+          "are executed when that surrounding feature is called.  Without a surrounding " +
+          "feature, is it not clear when and in which order statements should be executed. " +
+          "The only exception to this is the main source file given as an argument directly " +
+          "to the 'fz' command.");
+  }
+
+
   /**
    * Create an error message for a declaration of a feature using
    * FuzionConstants.RESULT_NAME.

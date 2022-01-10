@@ -58,6 +58,7 @@ import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Impl;
 import dev.flang.ast.Resolution;
 import dev.flang.ast.SrcModule;
+import dev.flang.ast.Stmnt;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 
@@ -159,36 +160,72 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Run the given parser to parse statements. This is used for processing stdin
-   * or an explicit input file.  These require special treatment since it is
-   * allowed to declare initializes fields in here.
+   * If source comes from stdin or an explicit input file, parse this and
+   * extract the main feature.  Otherwise, return the default main.
    *
    * @return the main feature found or null if none
    */
-  String parseStdIn(Parser p)
+  String parseMain()
   {
-    var stmnts = p.stmntsEof();
-    // NYI: Instead of adding this code to _universe.impl._code, better collect
-    // a module's contribution to the universe's code locally to the module and
-    // add this when creating AIR.  Then, we would not need to change the
-    // universe from stdlib here.
-    ((Block) _universe.code()).statements_.addAll(stmnts);
-    boolean first = true;
-    String main = null;
-    for (var s : stmnts)
+    var res = _defaultMain;
+    var p = _inputFile;
+    if (p != null)
       {
-        main = null;
-        if (s instanceof Feature f)
+        var stmnts = parseFile(p);
+        ((Block) _universe.code()).statements_.addAll(stmnts);
+        for (var s : stmnts)
           {
-            f.legalPartOfUniverse();  // suppress FeErrors.initialValueNotAllowed
-            if (first)
+            if (s instanceof Feature f)
               {
-                main = f.featureName().baseName();
+                f.legalPartOfUniverse();  // suppress FeErrors.initialValueNotAllowed
+                if (stmnts.size() == 1)
+                  {
+                    res =  f.featureName().baseName();
+                  }
               }
           }
-        first = false;
       }
-    return main;
+    return res;
+  }
+
+
+  /**
+   * Load and parse the given Fuzion source file.
+   *
+   * @param p path of the file.
+   *
+   * @return the features found in source file p, may be empty, never null.
+   */
+  List<Stmnt> parseFile(Path p)
+  {
+    _options.verbosePrintln(2, " - " + p);
+    return new Parser(p).unit();
+  }
+
+
+  /**
+   * Load and parse the given Fuzion source file and return its features.
+   *
+   * @param p path of the file.
+   *
+   * @return the features found in source file p, may be empty, never null.
+   */
+  List<Feature> parseAndGetFeatures(Path p)
+  {
+    var stmnts = parseFile(p);
+    var result = new List<Feature>();
+    for (var s : stmnts)
+      {
+        if (s instanceof Feature f)
+          {
+            result.add(f);
+          }
+        else if (Errors.count() == 0)
+          {
+            AstErrors.statementNotAllowedOutsideOfFeatureDeclaration(s);
+          }
+      }
+    return result;
   }
 
 
@@ -215,10 +252,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                            _universe);
       }
 
-    _main = (_inputFile != null)
-      ? parseStdIn(new Parser(_inputFile))
-      : _defaultMain;
-
+    _main = parseMain();
     _res = new Resolution(_options, _universe, this);
     findDeclarations(_universe, null);
     _universe.scheduleForResolution(_res);
@@ -347,10 +381,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                                {
                                  if (isValidSourceFile(p))
                                    {
-                                     Feature inner = parseFile(p);
-                                     check
-                                       (inner != null || Errors.count() > 0);
-                                     if (inner != null)
+                                     for (var inner : parseAndGetFeatures(p))
                                        {
                                          findDeclarations(inner, f);
                                          inner.scheduleForResolution(_res);
@@ -365,21 +396,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
               }
           }
       }
-  }
-
-
-  /**
-   * Load and parse the fuzion source file for the feature with the
-   * given file name
-   *
-   * @param name a qualified name, e.g. "fuzion.std.out"
-   *
-   * @return the parsed source file or null in case of an error.
-   */
-  Feature parseFile(Path fname)
-  {
-    _options.verbosePrintln(2, " - " + fname);
-    return new Parser(fname).unit();
   }
 
 
@@ -764,7 +780,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
     addDeclaredInnerFeature(outer, fn, f);
     if (outer instanceof Feature of && of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
       {
-        check(Errors.count() > 0 || outer.isChoice() && f.isField() || !declaredOrInheritedFeatures(outer).containsKey(fn));
+        check(Errors.count() > 0 ||
+              outer.isChoice() && f.isField() ||
+              outer.isUniverse() ||
+              !declaredOrInheritedFeatures(outer).containsKey(fn));
         declaredOrInheritedFeatures(outer).put(fn, f);
         if (!outer.isChoice() || !f.isField())  // A choice does not inherit any fields
           {
