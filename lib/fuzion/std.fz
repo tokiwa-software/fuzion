@@ -30,7 +30,7 @@ fuzion.std is
   exit(code i32) void is intrinsic
 
 
-  # panic -- display a panic message and exit immediately with erroc code 1
+  # panic -- display a panic message and exit immediately with error code 1
   #
   panic(msg string) void is
     say "*** panic: $msg"
