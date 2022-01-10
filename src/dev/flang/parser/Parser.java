@@ -901,12 +901,12 @@ argument    : visibility
               {
                 return FormalOrActual.both;
               }
-            if (isNonEmptyVisibilityPrefix() || isModifiersPrefix())
-              {
-                return FormalOrActual.formal;
-              }
             do
               {
+                if (isNonEmptyVisibilityPrefix() || isModifiersPrefix())
+                  {
+                    return FormalOrActual.formal;
+                  }
                 do
                   {
                     if (!isArgNamesPrefix())
