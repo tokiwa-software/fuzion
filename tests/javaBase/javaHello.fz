@@ -1,0 +1,67 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion example javaHello
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# javaHello is a minimalistic example that shows how Java's
+# java.lang.System.out.println can be called from Fuzion code.
+#
+# See Makefile for how to start fuzion to run this example.
+#
+javaHello : Java is
+
+  # we can call code in Java package directly using fully
+  # qualified class names
+  #
+  java.lang.System.out.println "Hello Java 🌍!"
+
+  # or we can create a local field as a shortcut
+  #
+  System := java.lang.System
+  System.out.println "Hello Java 🌍!"
+
+  # we can use a different name as well
+  #
+  js := java.lang.System
+  js.out.println "Hello Java 🌍!"
+
+  # we can also store a Java instance in a Fuzion field
+  #
+  o := java.lang.System.out
+  o.println "Hello Java 🌍!"
+
+  # or wrap a Java call into a Fuzion feature
+  #
+  println (s string) => java.lang.System.out.println s
+  println "Hello Java 🌍!"
+
+  # let's work a bit with Java:
+  #
+  javaString := java.lang.String.new "Hello Java 🌍!"                          # create Java string, type Java.java.lang.String
+  javaBytes  := javaString.getBytes "UTF8"                                     # get its UTF8 bytes, type is fuzion.java.Array<i8>
+  match javaBytes
+    err error => say "got an error: $err"
+    bytes fuzion.java.Array =>
+      say "string has {bytes.count} bytes: $bytes"
+      javaString2 := java.lang.String.new bytes 6 bytes.count-6                # create Java string from bytes subset,
+      say "Hello "+javaString2                                                 # append Java string to Fuzion string and print it

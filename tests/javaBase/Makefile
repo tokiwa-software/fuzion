@@ -17,34 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test Makefile to be included for simple tests
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# A simple tests compares the actual output with the expected output
-#
-# expected variables
-#
-#  NAME -- the name of the main feature to be tested
-#  FUZION -- the fz command
-#  FUZION_OPTIONS -- options to be passed to $(FUZION)
-
-FUZION_OPTIONS ?=
-FUZION ?= ../../bin/fz
-FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
-FILE = $(NAME).fz
-
-int:
-	../check_simple_example.sh "$(FUZION_RUN)" $(FILE) || exit 1
-
-c:
-	../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
-
-record:
-	echo $(FUZION_RUN)
-	../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
-
-record_c:
-	../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)
+NAME = javaHello
+FUZION_OPTIONS = -unsafeIntrinsics=on -modules=java.base
+include ../simple.mk
