@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -90,7 +89,23 @@ public class Feature extends AbstractFeature implements Stmnt
   };
 
 
+  /*------------------------  static variables  -------------------------*/
+
+
+  /**
+   * static counter used to generate unique _id values.
+   */
+  static int _ids_ = 0;
+
+
   /*----------------------------  variables  ----------------------------*/
+
+
+  /**
+   * Unique identifier to define a total ordered over Features (used in
+   * compareTo)
+   */
+  int _id = _ids_++;
 
 
   /**
@@ -194,8 +209,8 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * The parents of this feature
    */
-  private final List<Call> _inherits;
-  public final List<Call> inherits() { return _inherits; }
+  private final List<AbstractCall> _inherits;
+  public final List<AbstractCall> inherits() { return _inherits; }
 
 
   /**
@@ -244,7 +259,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * For Features with !returnType.isConstructorType(), this will be set to the
    * result type during resolveTypes.
    */
-  private Type resultType_ = null;
+  private AbstractType resultType_ = null;
 
 
   /**
@@ -262,14 +277,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * For a Feature that can be called and hasThisType() is true, this will be
-   * set to the frame type during resolution.  This type uses the formal
-   * generics as actual generics. For a generic feature, these must be replaced.
-   */
-  private Type thisType_ = null;
-
-
-  /**
    * For choice feature (i.e., isChoice() holds): The tag field that holds in
    * i32 that identifies the index of the actual generic argument to choice that
    * is represented.
@@ -278,14 +285,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * holds for that classs.
    */
   public Feature choiceTag_ = null;
-  public Feature choiceTag() { return choiceTag_; }
-
-
-  /**
-   * For fields of open generic type: The results of select(res,i) and
-   * select(i).
-   */
-  private ArrayList<Feature> _selectOpen;
+  public AbstractFeature choiceTag() { return choiceTag_; }
 
 
   /**
@@ -295,6 +295,23 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   boolean _isIndexVarUpdatedByLoop = false;
   public boolean isIndexVarUpdatedByLoop() { return _isIndexVarUpdatedByLoop; }
+
+
+  /**
+   * All features that have been found to be directly redefined by this feature.
+   * This does not include redefintions of redefinitions.  Four Features loaded
+   * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
+   * LibraryFeature, this will be loaded from the library module file.
+   */
+  private Set<AbstractFeature> _redefines = null;
+  public Set<AbstractFeature> redefines()
+  {
+    if (_redefines == null)
+      {
+        _redefines = new TreeSet<>();
+      }
+    return _redefines;
+  }
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -323,37 +340,12 @@ public class Feature extends AbstractFeature implements Stmnt
          new List<String>(FuzionConstants.UNIVERSE_NAME),
          FormalGenerics.NONE,
          new List<Feature>(),
-         new List<Call>(),
+         new List<>(),
          Contract.EMPTY_CONTRACT,
          new Impl(SourcePosition.builtIn,
                   new Block(SourcePosition.builtIn,
                             new List<Stmnt>()),
                   Impl.Kind.Routine));
-  }
-
-
-  /**
-   * Class for the Universe Feature.
-   */
-  static class Universe extends Feature
-  {
-    Universe()
-    {
-    }
-    public boolean isUniverse()
-    {
-      check
-        (this.outer() == null);
-      return true;
-    }
-  }
-
-  /**
-   * Constructor for universe
-   */
-  public static Feature createUniverse()
-  {
-    return new Universe();
   }
 
 
@@ -370,7 +362,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Constructor for an anonymous feature
+   * Create an anonymous feature
    *
    * @param pos the soucecode position, used for error messages.
    *
@@ -382,22 +374,28 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @param b the implementation block
    */
-  public Feature(SourcePosition pos,
-                 ReturnType r,
-                 List<Call> i,
-                 Contract c,
-                 Block b)
+  public static Feature anonymous(SourcePosition pos,
+                                  ReturnType r,
+                                  List<AbstractCall> i,
+                                  Contract c,
+                                  Block b)
   {
-    this(pos,
-         Consts.VISIBILITY_INVISIBLE,
-         0,
-         r,
-         new List<String>("#anonymous"+uniqueAnonymousFeatureId),
-         FormalGenerics.NONE,
-         new List<Feature>(),
-         i,
-         c,
-         new Impl(b.pos, b, Impl.Kind.Routine));
+    return new Feature(pos,
+                       Consts.VISIBILITY_INVISIBLE,
+                       0,
+                       r,
+                       new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),
+                       FormalGenerics.NONE,
+                       new List<Feature>(),
+                       i,
+                       c,
+                       new Impl(b.pos, b, Impl.Kind.Routine))
+      {
+        boolean isAnonymousInnerFeature()
+        {
+          return true;
+        }
+      };
   }
 
 
@@ -419,9 +417,9 @@ public class Feature extends AbstractFeature implements Stmnt
   Feature(Resolution res,
           SourcePosition pos,
           Visi v,
-          Type t,
+          AbstractType t,
           String qname,
-          Feature outer)
+          AbstractFeature outer)
   {
     this(pos,
          v,
@@ -447,7 +445,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   Feature(SourcePosition pos,
           Visi v,
-          Type t,
+          AbstractType t,
           String qname)
   {
     this(pos,
@@ -476,10 +474,10 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   Feature(SourcePosition pos,
           Visi v,
-          Type t,
+          AbstractType t,
           String qname,
           Expr initialValue,
-          Feature outerOfInitialValue)
+          AbstractFeature outerOfInitialValue)
   {
     this(pos,
          v,
@@ -488,7 +486,7 @@ public class Feature extends AbstractFeature implements Stmnt
          new List<String>(qname),
          FormalGenerics.NONE,
          new List<Feature>(),
-         new List<Call>(),
+         new List<>(),
          null,
          initialValue == null ? Impl.FIELD
                               : new Impl(pos, initialValue, outerOfInitialValue));
@@ -516,7 +514,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public Feature(SourcePosition pos,
                  Visi v,
                  int m,
-                 Type t,
+                 AbstractType t,
                  String n,
                  Contract c)
   {
@@ -527,7 +525,7 @@ public class Feature extends AbstractFeature implements Stmnt
          new List<String>(n),
          FormalGenerics.NONE,
          new List<Feature>(),
-         new List<Call>(),
+         new List<>(),
          c,
          Impl.FIELD);
   }
@@ -560,7 +558,7 @@ public class Feature extends AbstractFeature implements Stmnt
           ReturnType r,
           List<String> qname,
           List<Feature> a,
-          List<Call> i,
+          List<AbstractCall> i,
           Contract c,
           Impl     p)
   {
@@ -607,7 +605,7 @@ public class Feature extends AbstractFeature implements Stmnt
                  List<String> qname,
                  FormalGenerics g,
                  List<Feature> a,
-                 List<Call> i,
+                 List<AbstractCall> i,
                  Contract c,
                  Impl p)
   {
@@ -620,7 +618,7 @@ public class Feature extends AbstractFeature implements Stmnt
     this._visibility = v;
     this._modifiers  = m;
     this._returnType = r;
-    this._posOfReturnType = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnType().pos;
+    this._posOfReturnType = r == NoType.INSTANCE || r.isConstructorType() ? pos : r.functionReturnType().pos();
     String n = qname.getLast();
     if (n.equals("_"))
       {
@@ -639,10 +637,10 @@ public class Feature extends AbstractFeature implements Stmnt
                         (p.kind_ != Impl.Kind.Field      ) &&
                         (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.OBJECT_NAME  ) &&
                                                !qname.getFirst().equals(FuzionConstants.UNIVERSE_NAME))))
-      ? new List<Call>(new Call(_pos, FuzionConstants.OBJECT_NAME, Expr.NO_EXPRS))
+      ? new List<>(new Call(_pos, FuzionConstants.OBJECT_NAME, Expr.NO_EXPRS))
       : i;
 
-    this._contract  = c;
+    this._contract = c == null ? Contract.EMPTY_CONTRACT : c;
     this._impl = p;
 
     g.setFeature(this);
@@ -667,7 +665,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public void setState(State newState)
   {
     if (PRECONDITIONS) require
-      (newState.ordinal() == _state.ordinal() + 1);
+     (newState.ordinal() == _state.ordinal() + 1 || newState == State.RESOLVED || isUniverse());
 
     this._state = newState;
   }
@@ -726,9 +724,7 @@ public class Feature extends AbstractFeature implements Stmnt
         Iterator<String> it = _qname.iterator();
         if (!checkNames(this, it) || it.hasNext())
           {
-            Errors.error(_pos,
-                         "Feature is declared in wrong environment",
-                         "Feature " + _qname + " is declared in wrong environment " + _outer.qualifiedName());
+            AstErrors.declaredInWrongEnv(_pos, _qname, _outer);
           }
       }
     if (!isResultField() && _qname.getLast().equals(FuzionConstants.RESULT_NAME))
@@ -748,7 +744,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public AbstractFeature outer()
   {
     if (PRECONDITIONS) require
-      (state().atLeast(State.FINDING_DECLARATIONS));
+      (isUniverse() || state().atLeast(State.FINDING_DECLARATIONS));
 
     return _outer;
   }
@@ -761,7 +757,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean outerSet()
   {
     if (PRECONDITIONS) require
-      (state() == Feature.State.LOADING);
+      (isUniverse() || state() == Feature.State.LOADING);
 
     return _outer != null;
   }
@@ -772,7 +768,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public void setOuter(AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (state() == Feature.State.LOADING,
+      (isUniverse() || state() == Feature.State.LOADING,
        !outerSet());
 
     this._outer = outer;
@@ -857,10 +853,9 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return true iff this feature is anonymous.
    */
-  public boolean isAnonymousInnerFeature()
+  boolean isAnonymousInnerFeature()
   {
-    // NYI: better have a flag for this
-    return _featureName.baseName().startsWith("#");
+    return false;
   }
 
 
@@ -889,22 +884,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * true iff this feature as a result field. This is the case if the returnType
-   * is not a constructortype (self, value, single) and this is not a field.
-   *
-   * @return true iff this has a result field.
-   */
-  boolean hasResultField()
-  {
-    return
-      (_impl.kind_ == Impl.Kind.RoutineDef) ||
-      (_impl.kind_ == Impl.Kind.Routine &&
-       !_returnType.isConstructorType() &&
-       _returnType != NoType.INSTANCE);
-  }
-
-
-  /**
    * if hasResultField(), add a corresponding field to hold the result.
    */
   public void addResultField(Resolution res)
@@ -914,7 +893,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
     if (hasResultField())
       {
-        Type t = _impl.kind_ == Impl.Kind.Routine
+        var t = _impl.kind_ == Impl.Kind.Routine
           ? _returnType.functionReturnType()
           : Types.t_UNDEFINED /* dummy type, will be replaced during TYPES_INFERENCING phase */;
 
@@ -953,58 +932,9 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return true iff this has a function result
    */
-  public boolean hasResult()
+  boolean hasResult()
   {
     return isField() || hasResultField();
-  }
-
-
-  /**
-   * Is this a choice feature, i.e., does it directly inherit from choice? If
-   * so, return the actual generic parameters passed to the choice.
-   *
-   * @return null if this is not a choice feature, the actual generic
-   * parameters, i.e, the actual choice types, otherwise.
-   */
-  public List<Type> choiceGenerics()
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVING_TYPES));
-
-    List<Type> result;
-
-    if (this == Types.f_ERROR)
-      {
-        result = null;
-      }
-    else if (this == Types.resolved.f_choice)
-      {
-        result = _generics.asActuals();
-      }
-    else
-      {
-        result = null;
-        Call lastP = null;
-        for (Call p: _inherits)
-          {
-            check
-              (Errors.count() > 0 || p.calledFeature() != null);
-
-            if (p.calledFeature().sameAs(Types.resolved.f_choice))
-              {
-                if (lastP != null)
-                  {
-                    Errors.error(p.pos,
-                                 "Repeated inheritance of choice is not permitted",
-                                 "A choice feature must inherit directly from choice exactly one time.\n" +
-                                 "Previous inheritance from choice at " + lastP.pos);
-                  }
-                lastP = p;
-                result = p.generics;
-              }
-          }
-      }
-    return result;
   }
 
 
@@ -1024,14 +954,17 @@ public class Feature extends AbstractFeature implements Stmnt
       }
     else
       {
-        for (Call p: _inherits)
+        for (var p: _inherits)
           {
             check
               (Errors.count() > 0 || p.calledFeature() != null);
 
             if (p.calledFeature() == Types.resolved.f_choice)
               {
-                p.generics = new List<Type>(Types.t_ERROR);
+                if (p instanceof Call cp)
+                  {
+                    cp.generics = new List<AbstractType>(Types.t_ERROR);
+                  }
               }
           }
       }
@@ -1050,7 +983,7 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * Is this a tag field created for a choice-type?
    */
-  public boolean isChoiceTag()
+  boolean isChoiceTag()
   {
     return false;
   }
@@ -1086,16 +1019,13 @@ public class Feature extends AbstractFeature implements Stmnt
   public void visit(FeatureVisitor v)
   {
     _generics.visit(v, this);
-    for (Call c: _inherits)
+    for (var c: _inherits)
       {
         Expr nc = c.visit(v, this);
         check
           (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
-    if (_contract != null)
-      {
-        _contract.visit(v, this);
-      }
+    _contract.visit(v, this);
     _impl.visit(v, this);
     _returnType.visit(v, this);
   }
@@ -1135,7 +1065,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * @return true iff this is the last argument of a feature and t is its return
    * type.
    */
-  public boolean isLastArgType(Type t)
+  boolean isLastArgType(Type t)
   {
     return
       outer() != null &&
@@ -1164,7 +1094,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * used to replace this entry to break the cycle (and hopefully avoid other
    * problems during compilation).
    */
-  private void cyclicInheritanceError(Call p, ListIterator<Call> i)
+  private void cyclicInheritanceError(AbstractCall p, ListIterator<AbstractCall> i)
   {
     if (PRECONDITIONS) require
       (p != null,
@@ -1180,9 +1110,7 @@ public class Feature extends AbstractFeature implements Stmnt
           {
             cycle.append(( c + 1 < 10 ? " " : "") + (c + 1) + cyclicInhData.get(cyclicInhData.size() - c));
           }
-        Errors.error(_pos,
-                     "Recursive inheritance in feature " + qualifiedName(),
-                     cycle.toString());
+        AstErrors.recursiveInheritance(_pos, this, cycle.toString());
         cyclicInhData.clear();
       }
     else
@@ -1223,12 +1151,15 @@ public class Feature extends AbstractFeature implements Stmnt
         check
           ((_outer == null) || _outer.state().atLeast(State.RESOLVING));
 
-        ListIterator<Call> i = _inherits.listIterator();
+        var i = _inherits.listIterator();
         while (i.hasNext() && !_detectedCyclicInheritance)
           {
-            Call p = i.next();
+            var p = i.next();
             p.loadCalledFeature(res, this);
-            p.isInheritanceCall_ = true;
+            if (p instanceof Call cp)
+              {
+                cp.isInheritanceCall_ = true;
+              }
             var parent = p.calledFeature();
             check
               (Errors.count() > 0 || parent != null);
@@ -1251,9 +1182,9 @@ public class Feature extends AbstractFeature implements Stmnt
 
   static FeatureVisitor findGenerics = new FeatureVisitor()
     {
-      public Function action(Function f, Feature outer) { f.findGenerics(this, outer); return f; }
-      public This     action(This     t, Feature outer) { t.findGenerics(      outer); return t; }
-      public Type     action(Type     t, Feature outer) { t.findGenerics(      outer); return t; }
+      public Function     action(Function     f, AbstractFeature outer) { f.findGenerics(this, outer); return f; }
+      public This         action(This         t, AbstractFeature outer) { t.findGenerics(      outer); return t; }
+      public AbstractType action(AbstractType t, AbstractFeature outer) { t.findGenerics(      outer); return t; }
     };
 
   /*
@@ -1308,15 +1239,15 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         res = r;
       }
-    public void     action(Assign      a, Feature outer) {        a.resolveTypes(res, outer); }
-    public Call     action(Call        c, Feature outer) { return c.resolveTypes(res, outer); }
-    public Stmnt    action(Destructure d, Feature outer) { return d.resolveTypes(res, outer); }
-    public Stmnt    action(Feature     f, Feature outer) { return f.resolveTypes(res, outer); }
-    public Function action(Function    f, Feature outer) {        f.resolveTypes(res, outer); return f; }
-    public void     action(Generic     g, Feature outer) {        g.resolveTypes(res, outer); }
-    public void     action(Match       m, Feature outer) {        m.resolveTypes(res, outer); }
-    public Expr     action(This        t, Feature outer) { return t.resolveTypes(res, outer); }
-    public Type     action(Type        t, Feature outer) { return t.resolve(res, outer); }
+    public void         action(Assign       a, AbstractFeature outer) {        a.resolveTypes(res, outer); }
+    public Call         action(Call         c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
+    public Stmnt        action(Destructure  d, AbstractFeature outer) { return d.resolveTypes(res, outer); }
+    public Stmnt        action(Feature      f, AbstractFeature outer) { return f.resolveTypes(res, outer); }
+    public Function     action(Function     f, AbstractFeature outer) {        f.resolveTypes(res, outer); return f; }
+    public void         action(Generic      g, AbstractFeature outer) {        g.resolveTypes(res, outer); }
+    public void         action(Match        m, AbstractFeature outer) {        m.resolveTypes(res, outer); }
+    public Expr         action(This         t, AbstractFeature outer) { return t.resolveTypes(res, outer); }
+    public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve     (res, outer); }
 
     /**
      * visitActuals delays type resolution for actual arguments within a feature
@@ -1324,16 +1255,9 @@ public class Feature extends AbstractFeature implements Stmnt
      * type does not depend on the actual arguments, but the actual arguments
      * might depend directly or indirectly on the feature's type.
      */
-    void visitActuals(Runnable r, Feature outer)
+    void visitActuals(Runnable r, AbstractFeature outer)
     {
-      if (outer._state.atLeast(State.RESOLVED_TYPES))
-        {
-          r.run();
-        }
-      else
-        {
-          outer.whenResolvedTypes.add(r);
-        }
+      outer.whenResolvedTypes(r);
     }
   }
 
@@ -1360,7 +1284,8 @@ public class Feature extends AbstractFeature implements Stmnt
 
         if (hasThisType())
           {
-            thisType_ = thisType().resolve(res, this);
+            var tt = thisType();
+            _thisType = tt.resolve(res, this);
           }
 
         if ((_impl.kind_ == Impl.Kind.FieldActual) && (_impl._initialValue.typeOrNull() == null))
@@ -1426,7 +1351,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
         visit(new FeatureVisitor()
           {
-            public Expr action(Call c, Feature outer) { return c.resolveSyntacticSugar(res, outer); }
+            public Expr action(Call c, AbstractFeature outer) { return c.resolveSyntacticSugar(res, outer); }
           });
 
         _state = State.RESOLVED_SUGAR1;
@@ -1442,22 +1367,16 @@ public class Feature extends AbstractFeature implements Stmnt
    * Find list of all accesses to this feature's closure by any of its inner
    * features.
    */
-  private List<Call> closureAccesses(Resolution res)
+  private List<AbstractCall> closureAccesses(Resolution res)
   {
-    List<Call> result = new List<>();
+    List<AbstractCall> result = new List<>();
     for (AbstractFeature af : res._module.declaredOrInheritedFeatures(this).values())
       {
-        var f = af.astFeature();
-        f.visit(new FeatureVisitor()
-          {
-            public Call action(Call c, Feature outer)
-            {
-              if (c.calledFeature() == outerRefOrNull())
-                {
-                  result.add(c);
-                }
-              return c;
-            }
+        af.visitStatements(s -> {
+            if (s instanceof AbstractCall c && c.calledFeature() == outerRef())
+              {
+                result.add(c);
+              }
           });
       }
     return result;
@@ -1472,20 +1391,17 @@ public class Feature extends AbstractFeature implements Stmnt
    * @param errorPos the position this error should be reported at, this should
    * be the definition of the choice type.
    */
-  public void checkNoClosureAccesses(Resolution res, SourcePosition errorPos)
+  void checkNoClosureAccesses(Resolution res, SourcePosition errorPos)
   {
-    List<Call> closureAccesses = closureAccesses(res);
+    var closureAccesses = closureAccesses(res);
     if (!closureAccesses.isEmpty())
       {
         StringBuilder accesses = new StringBuilder();
-        for (Call c: closureAccesses)
+        for (var c: closureAccesses)
           {
             accesses.append(c.pos.show()).append("\n");
           }
-        Errors.error(errorPos,
-                     "Choice type must not access fields of surrounding scope.",
-                     "A closure cannot be built for a choice type. Forbidden accesses occur at \n" +
-                     accesses);
+        AstErrors.choiceMustNotAccessSurroundingScope(errorPos, accesses.toString());
       }
   }
 
@@ -1530,9 +1446,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
     if (isThisRef())
       {
-        Errors.error(_pos,
-                     "choice feature must not be ref",
-                     "A choice feature must be a value type since it is not constructed ");
+        AstErrors.choiceMustNotBeRef(_pos);
       }
 
     for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
@@ -1540,10 +1454,7 @@ public class Feature extends AbstractFeature implements Stmnt
         // choice type must not have any fields
         if (p.isField() && !p.isOuterRef() && !p.isChoiceTag())
           {
-            Errors.error(_pos,
-                         "Choice must not contain any fields",
-                         "Field >>" + p.qualifiedName() + "<< is not permitted in choice.\n" +
-                         "Field declared at "+ p.pos().show());
+            AstErrors.choiceMustNotContainFields(_pos,p);
           }
       }
     // choice type must not contain any code, but may contain inner features
@@ -1554,55 +1465,42 @@ public class Feature extends AbstractFeature implements Stmnt
       case FieldActual:  // a field with implicit type taken from actual argument to call
       case Field:        // a field
         {
-          Errors.error(_pos,
-                       "Choice feature must not be a field",
-                       "A choice feature must be a normal feature with empty code section");
+          AstErrors.choiceMustNotBeField(_pos);
           break;
         }
       case RoutineDef:  // normal feature with code and implicit result type
         {
-          Errors.error(_pos,
-                       "Choice feature must not be defined as a function",
-                       "A choice feature must be a normal feature with empty code section");
+          AstErrors.choiceMustNotBeRoutine(_pos);
           break;
         }
       case Routine:      // normal feature with code
         {
           if (!_impl.containsOnlyDeclarations())
             {
-              Errors.error(_pos,
-                           "Choice feature must not contain any code",
-                           "A choice feature must be a normal feature with empty code section");
+              AstErrors.choiceMustNotContainCode(_pos);
             }
           break;
         }
       case Abstract:
         { // not ok
-          Errors.error(_pos,
-                       "Choice feature must not be abstract",
-                       "A choice feature must be a normal feature with empty code section");
+          AstErrors.choiceMustNotBeAbstract(_pos);
           break;
         }
       case Intrinsic:
         {
-          Errors.error(_pos,
-                       "Choice feature must not be intrinsic",
-                       "A choice feature must be a normal feature with empty code section");
+          AstErrors.choiceMustNotBeIntrinsic(_pos);
           break;
         }
       }
 
-    for (Type t : choiceGenerics())
+    for (var t : choiceGenerics())
       {
         if (!t.isRef())
           {
             if (t == thisType())
               {
-                Errors.error(_pos,
-                             "Choice cannot refer to its own value type as one of the choice alternatives",
-                             "Embedding a choice type in itself would result in an infinitely large type.\n" +
-                             "Fauly generic argument: "+t+" at "+t.pos.show());
-                thisType_ = Types.t_ERROR;
+                AstErrors.choiceMustNotReferToOwnValueType(_pos, t);
+                _thisType = Types.t_ERROR;
                 eraseChoiceGenerics();
               }
             var o = outer();
@@ -1610,10 +1508,7 @@ public class Feature extends AbstractFeature implements Stmnt
               {
                 if (t == o.thisType())
                   {
-                    Errors.error(_pos,
-                                 "Choice cannot refer to an outer value type as one of the choice alternatives",
-                                 "Embedding an outer value in a choice type would result in infinitely large type.\n" +
-                                 "Fauly generic argument: "+t+" at "+t.pos.show());
+                    AstErrors.choiceMustNotReferToOuterValueType(_pos, t);
                     // o.thisType_ = Types.t_ERROR;  NYI: Do we need this?
                     eraseChoiceGenerics();
                   }
@@ -1625,7 +1520,7 @@ public class Feature extends AbstractFeature implements Stmnt
     thisType().checkChoice(_pos);
 
     checkNoClosureAccesses(res, _pos);
-    for (Call p : _inherits)
+    for (var p : _inherits)
       {
         p.calledFeature().checkNoClosureAccesses(res, p.pos);
       }
@@ -1640,7 +1535,7 @@ public class Feature extends AbstractFeature implements Stmnt
         /**
          * Is this a tag field created for a choice-type?
          */
-        public boolean isChoiceTag()
+        boolean isChoiceTag()
         {
           return true;
         }
@@ -1661,18 +1556,16 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   void choiceTypeCheckAndInternalFields(Resolution res)
   {
-    for (Call p : _inherits)
+    for (var p : _inherits)
       {
         // choice type is leaf
         var cf = p.calledFeature();
         check
           (Errors.count() > 0 || cf != null);
 
-        if (cf != null && cf.isChoice() && !cf.sameAs(Types.resolved.f_choice))
+        if (cf != null && cf.isChoice() && cf != Types.resolved.f_choice)
           {
-            Errors.error(p.pos,
-                         "Cannot inherit from choice feature",
-                         "Choice must be leaf.");
+            AstErrors.cannotInheritFromChoice(p.pos);
           }
       }
     if (isChoice())
@@ -1709,7 +1602,10 @@ public class Feature extends AbstractFeature implements Stmnt
         choiceTypeCheckAndInternalFields(res);
 
         resultType_ = resultType();
-        resultType_.checkChoice(_posOfReturnType);
+        if (resultType_ instanceof Type t)
+          {
+            t.checkChoice(_posOfReturnType);
+          }
 
         /**
          * Perform type inference from outside to the inside, i.e., propage the
@@ -1726,11 +1622,11 @@ public class Feature extends AbstractFeature implements Stmnt
          * that i32 will be the type for "a".
          */
         visit(new FeatureVisitor() {
-            public void  action(Assign   a, Feature outer) { a.propagateExpectedType(res, outer); }
-            public Call  action(Call     c, Feature outer) { c.propagateExpectedType(res, outer); return c; }
-            public void  action(Cond     c, Feature outer) { c.propagateExpectedType(res, outer); }
-            public void  action(Impl     i, Feature outer) { i.propagateExpectedType(res, outer); }
-            public void  action(If       i, Feature outer) { i.propagateExpectedType(res, outer); }
+            public void  action(Assign   a, AbstractFeature outer) { a.propagateExpectedType(res, outer); }
+            public Call  action(Call     c, AbstractFeature outer) { c.propagateExpectedType(res, outer); return c; }
+            public void  action(Cond     c, AbstractFeature outer) { c.propagateExpectedType(res, outer); }
+            public void  action(Impl     i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
+            public void  action(If       i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
           });
 
         _state = State.TYPES_INFERENCED;
@@ -1759,9 +1655,9 @@ public class Feature extends AbstractFeature implements Stmnt
         _state = State.BOXING;
 
         visit(new FeatureVisitor() {
-            public void  action(Assign    a, Feature outer) { a.box(outer);           }
-            public Call  action(Call      c, Feature outer) { c.box(outer); return c; }
-            public Expr  action(InlineArray i, Feature outer) { i.box(outer); return i; }
+            public void  action(Assign      a, AbstractFeature outer) { a.box(outer);           }
+            public Call  action(Call        c, AbstractFeature outer) { c.box(outer); return c; }
+            public Expr  action(InlineArray i, AbstractFeature outer) { i.box(outer); return i; }
           });
 
         _state = State.BOXED;
@@ -1770,250 +1666,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
     if (POSTCONDITIONS) ensure
       (_state.atLeast(State.BOXED));
-  }
-
-
-  /**
-   * Determine the formal argument types of this feature.
-   *
-   * @return a new array containing this feature's formal argument types.
-   */
-  public Type[] argTypes()
-  {
-    int argnum = 0;
-    var result = new Type[_arguments.size()];
-    for (Feature frml : _arguments)
-      {
-        check
-          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
-
-        Type frmlT = frml.resultType();
-        check(frmlT == Types.intern(frmlT));
-        result[argnum] = frmlT;
-        argnum++;
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
-
-    return result;
-  }
-
-
-  /**
-   * Find the chain of inheritance calls from this to its parent f.
-   *
-   * NYI: Repeated inheritance handling is still missing, there might be several
-   * different inheritance chains, need to check if they lead to the same result
-   * (wrt generic arguments) or renaminging/selection of the preferred
-   * implementation.
-   *
-   * @param ancestor the ancestor feature this inherits from
-   *
-   * @return The inheritance chain from the inheritance call to ancestor at the
-   * first index down to the last inheritance call within this.  Empty list in
-   * case this == ancestor, null in case this does not inherit from ancestor.
-   */
-  public List<Call> tryFindInheritanceChain(AbstractFeature ancestor)
-  {
-    List<Call> result;
-    if (this == ancestor)
-      {
-        result = new List<Call>();
-      }
-    else
-      {
-        result = null;
-        for (Call c : _inherits)
-          {
-            result = c.calledFeature().tryFindInheritanceChain(ancestor);
-            if (result != null)
-              {
-                result.add(c);
-                break;
-              }
-          }
-      }
-    return result;
-  }
-
-
-  /**
-   * Find the chain of inheritance calls from this to its parent f.
-   *
-   * NYI: Repeated inheritance handling is still missing, there might be several
-   * different inheritance chains, need to check if they lead to the same result
-   * (wrt generic arguments) or renaminging/selection of the preferred
-   * implementation.
-   *
-   * @param ancestor the ancestor feature this inherits from
-   *
-   * @return The inheritance chain from the inheritance call to ancestor at the
-   * first index down to the last inheritance call within this.  Empty list in
-   * case this == ancestor, never null.
-   */
-  public List<Call> findInheritanceChain(AbstractFeature ancestor)
-  {
-    if (PRECONDITIONS) require
-      (ancestor != null);
-
-    List<Call> result = tryFindInheritanceChain(ancestor);
-
-    if (POSTCONDITIONS) ensure
-      (this == Types.f_ERROR || ancestor == Types.f_ERROR || Errors.count() > 0 || result != null);
-
-    return result;
-  }
-
-
-  /**
-   * Check if this features argument list contains arguments of open generic
-   * type. If this is the case, then the argCount of the feature name may change
-   * when inherited.
-   */
-  public boolean hasOpenGenericsArgList()
-  {
-    boolean result = false;
-    AbstractFeature o = this;
-    while (o != null && !result)
-      {
-        for (var g : o.generics().list)
-          {
-            if (g.isOpen())
-              {
-                for (Feature a : _arguments)
-                  {
-                    Type t = a.returnType().functionReturnType();
-                    if (!t.checkedForGeneric)
-                      {
-                        a.visit(findGenerics);
-                      }
-                    result = result || t.isGenericArgument() && t.genericArgument() == g;
-                  }
-              }
-          }
-        o = o.outer();
-      }
-    return result;
-  }
-
-
-  /**
-   * For a feature with given FeatureName fn that is directly inherited from
-   * this through inheritance call p to heir, this determines the actual
-   * FeatureName as seen in the heir feature.
-   *
-   * The reasons for a feature name to change during inheritance are
-   *
-   * - actual generic arguments to open generic parameters change the argument
-   *   count.
-   *
-   * - explicit renaming during inheritance
-   *
-   * @param f a feature that is declared in or inherted by this feature
-   *
-   * @param fn a feature name within this feature
-   *
-   * @param p an inheritance call in heir inheriting from this
-   *
-   * @param the heir that contains the inheritance call p
-   *
-   * @return the new feature name as seen within heir.
-   */
-  public FeatureName handDown(Resolution res, AbstractFeature f, FeatureName fn, Call p, AbstractFeature heir)
-  {
-    if (PRECONDITIONS) require
-      (res._module.declaredOrInheritedFeatures(this).get(fn).sameAs(f),
-       this != heir);
-
-    if (f.outer().sameAs(p.calledFeature())) // NYI: currently does not support inheriting open generic over several levels
-      {
-        fn = f.effectiveName(p.generics);
-      }
-
-    return fn;
-  }
-
-
-  /**
-   * Get the actual type from a type used in this feature after it was inherited
-   * by heir.  During inheritance, formal generics may be replaced by actual
-   * generics.
-   *
-   * @param t a type used in this feature, must not be an open generic type
-   * (which can be replaced by several types during inheritance).
-   *
-   * @param heir a heir of this, might be equal to this.
-   *
-   * @return interned type that represents t seen as it is seen from heir.
-   */
-  public Type handDownNonOpen(Resolution res, Type t, AbstractFeature heir)
-  {
-    if (PRECONDITIONS) require
-      (!t.isOpenGeneric(),
-       heir != null,
-       _state.atLeast(State.CHECKING_TYPES1));
-
-    var a = handDown(res, new Type[] { t }, heir);
-
-    check
-      (Errors.count() > 0 || a.length == 1);
-
-    return a.length == 1 ? a[0] : Types.t_ERROR;
-  }
-
-
-  /**
-   * Determine the actual types of an array of types in this feature after it
-   * was inherited by heir. The types may change on the way due to formal
-   * generics being replaced by actual generic arguments on the way.
-   *
-   * Due to open generics, even the number of types may change through
-   * inheritance.
-   *
-   * @param a an array of types to be handed down
-   *
-   * @param heir a feature that inhertis from outer()
-   *
-   * @return the types from the argument array a has seen this within
-   * heir. Their number might have changed due to open generics.
-   */
-  public Type[] handDown(Resolution res, Type[] a, AbstractFeature heir)  // NYI: This does not distinguish different inheritance chains yet
-  {
-    if (PRECONDITIONS) require
-      (heir != null,
-       _state.atLeast(State.RESOLVED_TYPES));
-
-    if (heir != Types.f_ERROR)
-      {
-        for (Call c : heir.findInheritanceChain(outer()))
-          {
-            for (int i = 0; i < a.length; i++)
-              {
-                Type ti = a[i];
-                if (ti.isOpenGeneric())
-                  {
-                    List<Type> frmlTs = ti.genericArgument().replaceOpen(c.generics);
-                    a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
-                    for (Type tg : frmlTs)
-                      {
-                        check
-                          (tg == Types.intern(tg));
-                        a[i] = tg;
-                        i++;
-                      }
-                    i = i - 1;
-                  }
-                else
-                  {
-                    FormalGenerics.resolve(res, c.generics, heir);
-                    ti = ti.actualType(c.calledFeature(), c.generics);
-                    a[i] = Types.intern(ti);
-                  }
-              }
-          }
-      }
-    return a;
   }
 
 
@@ -2051,10 +1703,10 @@ public class Feature extends AbstractFeature implements Stmnt
         (_state == State.CHECKING_TYPES2)    )
       {
         visit(new FeatureVisitor() {
-            public void  action(Assign    a, Feature outer) { a.checkTypes(res);             }
-            public Call  action(Call      c, Feature outer) { c.checkTypes(outer); return c; }
-            public void  action(If        i, Feature outer) { i.checkTypes();                }
-            public Expr  action(InlineArray i, Feature outer) { i.checkTypes();      return i; }
+            public void  action(Assign      a, AbstractFeature outer) { a.checkTypes(res);             }
+            public Call  action(Call        c, AbstractFeature outer) { c.checkTypes(outer); return c; }
+            public void  action(If          i, AbstractFeature outer) { i.checkTypes();                }
+            public Expr  action(InlineArray i, AbstractFeature outer) { i.checkTypes();      return i; }
           });
         checkTypes(res);
 
@@ -2083,7 +1735,7 @@ public class Feature extends AbstractFeature implements Stmnt
     Feature result = resultField_;
 
     if (POSTCONDITIONS) ensure
-      (hasResultField() == (result != null));
+      (Errors.count() > 0 || hasResultField() == (result != null));
     return result;
   }
 
@@ -2135,10 +1787,10 @@ public class Feature extends AbstractFeature implements Stmnt
         _state = State.RESOLVING_SUGAR2;
 
         visit(new FeatureVisitor() {
-            public Stmnt action(Feature   f, Feature outer) { return new Nop(_pos);                         }
-            public Expr  action(Function  f, Feature outer) { return f.resolveSyntacticSugar2(res, outer); }
-            public Expr  action(InlineArray i, Feature outer) { return i.resolveSyntacticSugar2(res, outer); }
-            public void  action(Impl      i, Feature outer) {        i.resolveSyntacticSugar2(res, outer); }
+            public Stmnt action(Feature   f, AbstractFeature outer) { return new Nop(_pos);                         }
+            public Expr  action(Function  f, AbstractFeature outer) { return f.resolveSyntacticSugar2(res, outer); }
+            public Expr  action(InlineArray i, AbstractFeature outer) { return i.resolveSyntacticSugar2(res, outer); }
+            public void  action(Impl      i, AbstractFeature outer) {        i.resolveSyntacticSugar2(res, outer); }
           });
 
         _state = State.RESOLVED_SUGAR2;
@@ -2147,109 +1799,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
     if (POSTCONDITIONS) ensure
       (_state.atLeast(State.RESOLVED_SUGAR2));
-  }
-
-
-  /**
-   * Find an internally referenced feature within this based on its qualified
-   * name.
-   *
-   * @param qname the qualified name of the feature relative to this.  If
-   * this.isUniverse(), qname is the fully qualifed name.
-   *
-   * @return the found feature or null in case of an error.
-   */
-  public AbstractFeature get(Resolution res, String qname)
-  {
-    return get(res, qname, false);
-  }
-
-
-  /**
-   * Find an internally referenced feature within this based on its qualified
-   * name.
-   *
-   * @param qname the qualified name of the feature relative to this.  If
-   * this.isUniverse(), qname is the fully qualifed name.
-   *
-   * @param argcount the number of arguments, -1 if not specified.
-   *
-   * @return the found feature or null in case of an error.
-   */
-  public AbstractFeature get(Resolution res, String qname, int argcount)
-  {
-    return get(res, qname, false, argcount);
-  }
-
-
-  /**
-   * Mark features given by their qualified name as used. This is a convenience
-   * method to mark features that cannot be detected as used automatically,
-   * e.g., because they are used internally or within intrinsic features.
-   *
-   * @param qname the qualified name of the feature relative to this.  If
-   * this.isUniverse(), qname is the fully qualifed name.
-   *
-   * @param markUsed true iff the features on the way should be marked as used.
-   *
-   * @return the found feature or null in case of an error.
-   */
-  AbstractFeature get(Resolution res, String qname, boolean markUsed)
-  {
-    return get(res, qname, markUsed, -1);
-  }
-
-
-  /**
-   * Mark features given by their qualified name as used. This is a convenience
-   * method to mark features that cannot be detected as used automatically,
-   * e.g., because they are used internally or within intrinsic features.
-   *
-   * @param qname the qualified name of the feature relative to this.  If
-   * this.isUniverse(), qname is the fully qualifed name.
-   *
-   * @param markUsed true iff the features on the way should be marked as used.
-   *
-   * @param argcount the number of arguments, -1 if not specified.
-   *
-   * @return the found feature or Types.f_ERROR in case of an error.
-   */
-  AbstractFeature get(Resolution res, String qname, boolean markUsed, int argcount)
-  {
-    AbstractFeature f = this;
-    var nams = qname.split("\\.");
-    boolean err = false;
-    for (var nam : nams)
-      {
-        if (!err)
-          {
-            var set = (argcount >= 0
-                       ? FeatureName.getAll(res._module.declaredFeatures(f), nam, argcount)
-                       : FeatureName.getAll(res._module.declaredFeatures(f), nam         )).values();
-            if (set.size() == 1)
-              {
-                for (var f2 : set)
-                  {
-                    f = f2;
-                  }
-              }
-            else
-              {
-                if (set.isEmpty())
-                  {
-                    AstErrors.internallyReferencedFeatureNotFound(_pos, qname, f, nam);
-                  }
-                else
-                  { // NYI: This might happen if the user adds additional features
-                    // with different argCounts. qname should contain argCount to
-                    // avoid this
-                    AstErrors.internallyReferencedFeatureNotUnique(_pos, qname + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
-                  }
-                err = true;
-              }
-          }
-      }
-    return err ? Types.f_ERROR : f;
   }
 
 
@@ -2263,7 +1812,7 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @return this.
    */
-  public Stmnt visit(FeatureVisitor v, Feature outer)
+  public Stmnt visit(FeatureVisitor v, AbstractFeature outer)
   {
     check
       (!this._state.atLeast(State.LOADED) || this.outer() == outer);
@@ -2291,7 +1840,7 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @param outer the root feature that contains this statement.
    */
-  public Stmnt resolveTypes(Resolution res, Feature outer)
+  public Stmnt resolveTypes(Resolution res, AbstractFeature outer)
   {
     Stmnt result = this;
 
@@ -2303,22 +1852,14 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         if ((_returnType != NoType.INSTANCE))
           {
-            Errors.error(_pos,
-                         "Field definition using := must not specify an explicit type",
-                         "Definition of field: " + qualifiedName() + "\n" +
-                         "Explicit type given: " + _returnType + "\n" +
-                         "Defining expression: " + _impl._initialValue);
+            AstErrors.fieldDefMustNotHaveType(_pos, this, _returnType, _impl._initialValue);
           }
       }
     if (_impl.kind_ == Impl.Kind.RoutineDef)
       {
         if ((_returnType != NoType.INSTANCE))
           {
-            Errors.error(_pos,
-                         "Function definition using => must not specify an explicit type",
-                         "Definition of function: " + qualifiedName() + "\n" +
-                         "Explicit type given: " + _returnType + "\n" +
-                         "Defining expression: " + _impl._code);
+            AstErrors.routineDefMustNotHaveType(_pos, this, _returnType, _impl._code);
           }
       }
     if (_impl._initialValue != null)
@@ -2329,7 +1870,7 @@ public class Feature extends AbstractFeature implements Stmnt
            (this,
             new Assign(res, _pos, this, _impl._initialValue, outer)
             {
-              public Assign visit(FeatureVisitor v, Feature outer)
+              public Assign visit(FeatureVisitor v, AbstractFeature outer)
               {
                 /* During findFieldDefInScope, we check field uses in impl, but
                  * we have to avoid doing this again in this assignment since a declaration
@@ -2418,7 +1959,7 @@ public class Feature extends AbstractFeature implements Stmnt
           curres[1] = curres[0];
         }
 
-        public Call action(Call c, Feature outer)
+        public Call action(Call c, AbstractFeature outer)
         {
           if (c == call)
             { // Found the call, so we got the result!
@@ -2428,8 +1969,7 @@ public class Feature extends AbstractFeature implements Stmnt
             {
               // NYI: Special handling for anonymous inner features that currently do not appear as statements
               if (c.calledFeatureKnown() &&
-                  c.calledFeature().isAnonymousInnerFeature() &&
-                  c.calledFeature().featureName().baseName().startsWith("#anonymous") &&
+                  c.calledFeature() instanceof Feature cf && cf.isAnonymousInnerFeature() &&
                   c.calledFeature() == inner)
                 {
                   found();
@@ -2437,14 +1977,14 @@ public class Feature extends AbstractFeature implements Stmnt
             }
           return c;
         }
-        public void action(Assign a, Feature outer)
+        public void action(Assign a, AbstractFeature outer)
         {
           if (a == assign)
             { // Found the assign, so we got the result!
               found();
             }
         }
-        public Stmnt action(Destructure d, Feature outer)
+        public Stmnt action(Destructure d, AbstractFeature outer)
         {
           if (d == destructure)
             { // Found the assign, so we got the result!
@@ -2452,29 +1992,29 @@ public class Feature extends AbstractFeature implements Stmnt
             }
           return d;
         }
-        public void actionBefore(Block b, Feature outer)
+        public void actionBefore(Block b, AbstractFeature outer)
         {
           if (b._newScope)
             {
               stack.push(curres[0]);
             }
         }
-        public void  actionAfter(Block b, Feature outer)
+        public void  actionAfter(Block b, AbstractFeature outer)
         {
           if (b._newScope)
             {
               curres[0] = stack.pop();
             }
         }
-        public void actionBefore(Case c, Feature outer)
+        public void actionBefore(AbstractCase c)
         {
           stack.push(curres[0]);
         }
-        public void  actionAfter(Case c, Feature outer)
+        public void  actionAfter(AbstractCase c)
         {
           curres[0] = stack.pop();
         }
-        public Stmnt action(Feature f, Feature outer)
+        public Stmnt action(Feature f, AbstractFeature outer)
         {
           if (f.isField() && f.featureName().baseName().equals(name))
             {
@@ -2486,7 +2026,7 @@ public class Feature extends AbstractFeature implements Stmnt
             }
           return f;
         }
-        public Expr action(Function  f, Feature outer)
+        public Expr action(Function  f, AbstractFeature outer)
         {
           if (inner != null && f._wrapper == inner)
             {
@@ -2506,7 +2046,7 @@ public class Feature extends AbstractFeature implements Stmnt
         c.cond.visit(fv, this);
       }
 
-    for (Call p: _inherits)
+    for (var p: _inherits)
       {
         p.visit(fv, this);
       }
@@ -2593,9 +2133,9 @@ public class Feature extends AbstractFeature implements Stmnt
    * case the type is currently unknown (in particular, in case of a type
    * inference from a field declared later).
    */
-  private Type resultTypeRaw()
+  AbstractType resultTypeRaw()
   {
-    Type result;
+    AbstractType result;
 
     check
       (state().atLeast(State.RESOLVING_TYPES));
@@ -2639,72 +2179,17 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * resultTypeRaw returns the result type of this feature with given
-   * actual generics applied.
-   *
-   * @param generics the actual generic arguments to create the type, or null if
-   * generics should not be replaced.
-   *
-   * @return this feature's result type using the given actual generics, null in
-   * case the type is currently unknown (in particular, in case of a type
-   * inference to a field declared later).
-   */
-  private Type resultTypeRaw(List<Type> actualGenerics)
-  {
-    check
-      (state().atLeast(State.RESOLVING_TYPES));
-
-    Type result = resultTypeRaw();
-    if (result != null)
-      {
-        result = result.actualType(this, actualGenerics);
-      }
-
-    return result;
-  }
-
-
-  /**
-   * In case this has not been resolved for types yet, do so. Next, try to
-   * determine the result type of this feature. If the type is not explicit, but
-   * needs to be inferenced, the result might still be null. Inferenced types
-   * become available once this is in state RESOLVED_TYPES.
-   *
-   * @param res Resolution instance use to resolve this for types.
-   *
-   * @param generics the generics argument to be passed to resultTypeRaw
-   *
-   * @return the result type, Types.resulved.t_unit if none and null in case the
-   * type must be inferenced and is not available yet.
-   */
-  protected Type resultTypeIfPresent(Resolution res, List<Type> generics)
-  {
-    if (!_state.atLeast(State.RESOLVING_TYPES))
-      {
-        res.resolveDeclarations(this);
-        resolveTypes(res);
-      }
-    Type result = resultTypeRaw(generics);
-    if (result != null)
-      {
-        result.findGenerics(outer());
-      }
-    return result;
-  }
-
-
-  /**
-   * After type resolution, resultType returns the result type of this
+   * After type resolution, resultyType returns the result type of this
    * feature using the formal generic argument.
    *
    * @return the result type, t_ERROR in case of an error. Never null.
    */
-  public Type resultType()
+  public AbstractType resultType()
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 || _state.atLeast(State.RESOLVED_TYPES));
 
-    Type result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw() : null;
+    var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw() : null;
     if (result == null)
       {
         check
@@ -2715,101 +2200,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
     if (POSTCONDITIONS) ensure
       (result != null);
-
-    return result;
-  }
-
-
-  /**
-   * In case this has not been resolved for types yet, do so. Next, try to
-   * determine the result type of this feature. If the type is not explicit, but
-   * needs to be inferred, but it could not be inferred, cause a runtime
-   * error since we apparently have a cyclic dependencies for type inference.
-   *
-   * @param rpos the source code position to be used for error reporting
-   *
-   * @param res Resolution instance use to resolve this for types.
-   *
-   * @param generics the actual generic arguments to be applied to the type
-   *
-   * @return the result type, Types.resulved.t_unit if none and
-   * Types.t_ERROR in case the type could not be inferenced and error
-   * was reported.
-   */
-  Type resultTypeForTypeInference(SourcePosition rpos, Resolution res, List<Type> generics)
-  {
-    Type result = resultTypeIfPresent(res, generics);
-    if (result == null)
-      {
-        // NYI: It would be nice to output the whole cycle here as part of the detail message
-        Errors.error(rpos,
-                     "Illegal forward or cyclic type inference",
-                     "The definition of a field using \":=\", or of a feature or function\n" +
-                     "using \"=>\" must not create cyclic type dependencies.\n"+
-                     "Referenced feature: " + qualifiedName() + " at " + _pos.show());
-        result = Types.t_ERROR;
-      }
-    return result;
-  }
-
-
-  /**
-   * Check if this is a built in primitive.  For these, the type of an outer
-   * reference for inner features is not a reference, but a copy of the value
-   * itself since there are no inner features to modify the value.
-   */
-  public boolean isBuiltInPrimitive()
-  {
-    return
-      (  _outer != null)
-      && _outer.isUniverse()
-      && (   "i8"  .equals(_featureName.baseName())
-          || "i16" .equals(_featureName.baseName())
-          || "i32" .equals(_featureName.baseName())
-          || "i64" .equals(_featureName.baseName())
-          || "u8"  .equals(_featureName.baseName())
-          || "u16" .equals(_featureName.baseName())
-          || "u32" .equals(_featureName.baseName())
-          || "u64" .equals(_featureName.baseName())
-          || "f32" .equals(_featureName.baseName())
-          || "f64" .equals(_featureName.baseName())
-          || "bool".equals(_featureName.baseName()));
-  }
-
-
-  /**
-   * thisType returns the type of this feature's frame object.  This can be
-   * called even if !hasThisType() since thisClazz() is used also for abstract
-   * or intrinsic feature to determine the resultClazz().
-   *
-   * @return this feature's frame object
-   */
-  public Type thisType()
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.FINDING_DECLARATIONS));
-
-    Type result = thisType_;
-    if (result == null)
-      {
-        result = this == Types.f_ERROR
-          ? Types.t_ERROR
-          : new Type(_pos, _featureName.baseName(), _generics.asActuals(), null, this, Type.RefOrVal.LikeUnderlyingFeature);
-        thisType_ = result;
-      }
-    if (_state.atLeast(State.RESOLVED_TYPES))
-      {
-        result = Types.intern(result);
-      }
-
-    if (POSTCONDITIONS) ensure
-      (result != null,
-       Errors.count() > 0 || result.isRef() == isThisRef(),
-       // does not hold if feature is declared repeatedly
-       Errors.count() > 0 || result.featureOfType() == this,
-       true || // this condition is very expensive to check and obviously true:
-       !_state.atLeast(State.RESOLVED_TYPES) || result == Types.intern(result)
-       );
 
     return result;
   }
@@ -2885,36 +2275,6 @@ public class Feature extends AbstractFeature implements Stmnt
       (definedInOwnFile);
   }
 
-
-  /**
-   * allInnerAndInheritedFeatures returns a complete set of inner features, used
-   * by Clazz.layout and Clazz.hasState.
-   *
-   * @return
-   */
-  public Collection<AbstractFeature> allInnerAndInheritedFeatures(Resolution res)
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVED));
-
-    TreeSet<AbstractFeature> result = new TreeSet();
-
-    result.addAll(res._module.declaredFeatures(this).values());
-    for (Call p : _inherits)
-      {
-        var cf = p.calledFeature();
-        check
-          (Errors.count() > 0 || cf != null);
-
-        if (cf != null)
-          {
-            result.addAll(cf.allInnerAndInheritedFeatures(res));
-          }
-      }
-
-    return result;
-  }
-
   /**
    * outerRefName
    *
@@ -2930,48 +2290,22 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
+   * Is this a routine that returns the current instance as its result?
+   */
+  public boolean isConstructor()
+  {
+    return isRoutine() && _returnType.isConstructorType() ||
+      // special handling if this is called before resolveDeclarations:
+      !state().atLeast(State.RESOLVING_DECLARATIONS) && _impl.kind_ == Impl.Kind.Routine && _returnType == NoType.INSTANCE;
+  }
+
+
+  /**
    * Has the frame object of this feature a ref type?
    */
   public boolean isThisRef()
   {
     return _returnType == RefType.INSTANCE;
-  }
-
-
-  /**
-   * If outer is a value type, we can either store its address in the inner
-   * feature's data, or we can copy the value if it is small enough and
-   * immutable.
-   *
-   * @return true iff outerRef is the copy of an outer value type, false iff
-   * otuerRef is the address of an outer value type or a reference to an outer
-   * reference type.
-   */
-  public boolean isOuterRefCopyOfValue()
-  {
-    if (PRECONDITIONS) require
-      (_outer != null);
-
-    // if outher is a small and immutable value type, we can copy it:
-    return this._outer.isBuiltInPrimitive();  // NYI: We might copy user defined small types as well
-  }
-
-
-  /**
-   * If outer is a value type, we can either store its address in the inner
-   * feature's data, or we can copy the value if it is small enough and
-   * immutable.
-   *
-   * @return true iff outerRef is the address of an outer value type, false iff
-   * otuerRef is the address of an outer value type or a reference to an outer
-   * reference type.
-   */
-  public boolean isOuterRefAdrOfValue()
-  {
-    if (PRECONDITIONS) require
-      (_outer != null);
-
-    return !this._outer.isThisRef() && !isOuterRefCopyOfValue();
   }
 
 
@@ -2985,10 +2319,10 @@ public class Feature extends AbstractFeature implements Stmnt
        _state == State.FINDING_DECLARATIONS);
 
     var o = this._outer;
-    if (_impl._code != null || _contract != null)
+    if (_impl._code != null || _contract != Contract.EMPTY_CONTRACT)
       {
-        Type outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
-                                                   : o.thisType();
+        var outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
+                                                  : o.thisType();
         outerRef_ = new Feature(res,
                                 _pos,
                                 Consts.VISIBILITY_PRIVATE,
@@ -3008,6 +2342,8 @@ public class Feature extends AbstractFeature implements Stmnt
   /**
    * outerRef returns the field of this feature that refers to the
    * outer field.
+   *
+   * @return the outer ref if it exists, null otherwise.
    */
   public AbstractFeature outerRef()
   {
@@ -3034,198 +2370,17 @@ public class Feature extends AbstractFeature implements Stmnt
     return false;
   }
 
-  /**
-   * Check if this has an outerRef and return it if this is the case
-   *
-   * @return the outer ref if it exists, null otherwise.
-   */
-  public AbstractFeature outerRefOrNull()
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.RESOLVED_DECLARATIONS));
-
-    return this._outer != null
-      ? outerRef()
-      : null;
-  }
-
 
   /**
-   * depth
-   *
-   * @return
+   * Compare this to other for sorting Feature
    */
-  public int depth()
+  public int compareTo(AbstractFeature other)
   {
-    int result;
-    var o = outer();
-    result = (o == null)
-      ? 0
-      : o.depth()+1;
-    return result;
+    return (other instanceof Feature of)
+      ? _id - of._id
+      : +1;
   }
 
-
-  /**
-   * Check if this is equal to or inherits from parent
-   *
-   * @param parent a loaded feature
-   *
-   * @return true iff this is a heir of parent.
-   */
-  public boolean inheritsFrom(AbstractFeature parent)
-  {
-    if (PRECONDITIONS) require
-      (_state.atLeast(State.LOADED),
-       parent != null && parent.state().atLeast(State.LOADED));
-
-    if (this == parent)
-      {
-        return true;
-      }
-    else
-      {
-        for (Call p : _inherits)
-          {
-            if (p.calledFeature().inheritsFrom(parent))
-              {
-                return true;
-              }
-          }
-      }
-    return false;
-  }
-
-
-  /**
-   * Is this a non-genenric feature.
-   */
-  boolean isNonGeneric()
-  {
-    if (PRECONDITIONS) require
-      (outer() != null);
-
-    return
-      (_generics == FormalGenerics.NONE);
-  }
-
-
-  /**
-   * Are calls to this feature performed using dynamic binding?
-   */
-  public boolean isDynamic()
-  {
-    if (PRECONDITIONS) require
-      (this == Types.f_ERROR || outer() != null);
-
-    return
-      this != Types.f_ERROR &&
-      isNonGeneric() &&
-      !outer().isChoice();
-  }
-
-
-  /**
-   * Is this a field of open generic type?
-   */
-  public boolean isOpenGenericField()
-  {
-    return isField() && resultType().isOpenGeneric();
-  }
-
-
-  /**
-   * For fields of open generic type, this creates actual fields for the actual
-   * generic argument.
-   *
-   * @param res Resolution instance use to resolve this for types.
-   *
-   * @param i the index of the actual generic argument
-   *
-   * @return the field that corresponds to the i-th actual generic argument.
-   */
-  public AbstractFeature select(Resolution res, int i)
-  {
-    if (PRECONDITIONS) require
-      (isOpenGenericField(),
-       i >= 0,
-       _state.atLeast(State.RESOLVED_TYPES));
-
-    if (_selectOpen == null)
-      {
-        _selectOpen = new ArrayList<>();
-      }
-    int s = _selectOpen.size();
-    while (s <= i)
-      {
-        Feature f = new Feature(_pos,
-                                _visibility,
-                                _modifiers,
-                                resultType().generic.select(s),
-                                "#" + _featureName.baseName() + "." + s,
-                                _contract);
-        res._module.findDeclarations(f, outer());
-        f.scheduleForResolution(res);
-        _selectOpen.add(f);
-        s = _selectOpen.size();
-      }
-    return _selectOpen.get(i);
-  }
-
-
-  /**
-   * For fields of open generic type, this returns the actual fields for the
-   * actual generic argument.
-   *
-   * @param i the index of the actual generic argument
-   *
-   * @return the field that corresponds to the i-th actual generic argument.
-   */
-  public Feature select(int i)
-  {
-    if (PRECONDITIONS) require
-      (isOpenGenericField(),
-       _state.atLeast(State.RESOLVED),
-       i < selectSize());
-
-    return _selectOpen.get(i);
-  }
-
-
-  /**
-   * For fields of open generic type, this returns the number of actual fields
-   * for the actual generic argument.
-   *
-   * @return the number of fields.
-   */
-  public int selectSize()
-  {
-    if (PRECONDITIONS) require
-      (isOpenGenericField(),
-       _state.atLeast(State.RESOLVED));
-
-    return _selectOpen == null ? 0 : _selectOpen.size();
-  }
-
-
-  /**
-   * Find formal generic argument of this feature with given name.
-   *
-   * @param name the name of a formal generic argument.
-   *
-   * @return null if name is not the name of a formal generic argument
-   * of this. Otherwise, a reference to the formal generic argument.
-   */
-  public Generic getGeneric(String name)
-  {
-    Generic result = _generics.get(name);
-
-    if (POSTCONDITIONS) ensure
-      ((result == null) || (result._name.equals(name) && (result.feature() == this)));
-    // result == null ==> for all g in generics: !g.name.equals(name)
-
-    return result;
-  }
 
 }
 

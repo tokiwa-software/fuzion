@@ -119,7 +119,7 @@ public class Assign extends ANY implements Stmnt
    *
    * @param outer the root feature that contains this statement.
    */
-  public Assign(SourcePosition pos, Feature f, Expr v, Feature outer)
+  public Assign(SourcePosition pos, Feature f, Expr v, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
       (outer.state().atLeast(Feature.State.RESOLVED_TYPES),
@@ -148,7 +148,7 @@ public class Assign extends ANY implements Stmnt
    *
    * @param outer the root feature that contains this statement.
    */
-  public Assign(Resolution res, SourcePosition pos, Feature f, Expr v, Feature outer)
+  public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
       (outer.state() == Feature.State.RESOLVING_TYPES   ||
@@ -166,6 +166,28 @@ public class Assign extends ANY implements Stmnt
         propagateExpectedType(res, outer);
       }
   }
+
+
+  /**
+   * Constructor for Assign loaded from .fum/MIR module file be front end.
+   *
+   * @param pos the source position
+   *
+   * @param f the feature we are assigning a value to
+   *
+   * @param t the target value containing f
+   *
+   * @param v the value to be assigned.
+   */
+  public Assign(SourcePosition pos, AbstractFeature f, Expr t, Expr v)
+  {
+    this._pos = pos;
+    this._name = f.featureName().baseName();
+    this._assignedField = f;
+    this._target = t;
+    this._value = v;
+  }
+
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -190,7 +212,7 @@ public class Assign extends ANY implements Stmnt
    *
    * @return this
    */
-  public Assign visit(FeatureVisitor v, Feature outer)
+  public Assign visit(FeatureVisitor v, AbstractFeature outer)
   {
     _value = _value.visit(v, outer);
     if (_target != null)
@@ -203,13 +225,27 @@ public class Assign extends ANY implements Stmnt
 
 
   /**
+   * visit all the statements within this Assign.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    Stmnt.super.visitStatements(v);
+    _value.visitStatements(v);
+    _target.visitStatements(v);
+  }
+
+
+  /**
    * determine the static type of all expressions and declared features in this feature
    *
    * @param res the resolution instance.
    *
    * @param outer the root feature that contains this statement.
    */
-  public void resolveTypes(Resolution res, Feature outer)
+  public void resolveTypes(Resolution res, AbstractFeature outer)
   {
     resolveTypes(res, outer, null);
   }
@@ -224,7 +260,7 @@ public class Assign extends ANY implements Stmnt
    * @param destructure if this is called for an assignment that is created to
    * replace a Destructure, this refers to the Destructure statement.
    */
-  void resolveTypes(Resolution res, Feature outer, Destructure destructure)
+  void resolveTypes(Resolution res, AbstractFeature outer, Destructure destructure)
   {
     var f = _assignedField;
     if (f == null)
@@ -273,7 +309,7 @@ public class Assign extends ANY implements Stmnt
    *
    * @param t the expected type.
    */
-  public void propagateExpectedType(Resolution res, Feature outer)
+  public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
     check
       (_assignedField != Types.f_ERROR || Errors.count() > 0);
@@ -291,14 +327,14 @@ public class Assign extends ANY implements Stmnt
    *
    * @param outer the feature that contains this expression
    */
-  public void box(Feature outer)
+  public void box(AbstractFeature outer)
   {
     check
       (_assignedField != Types.f_ERROR || Errors.count() > 0);
 
     if (_assignedField != Types.f_ERROR)
       {
-        _value = _value.box(this, 0);
+        _value = _value.box(_assignedField.resultType());
       }
   }
 
@@ -316,7 +352,7 @@ public class Assign extends ANY implements Stmnt
     var f = _assignedField;
     if (f != Types.f_ERROR)
       {
-        Type frmlT = f.resultType();
+        var frmlT = f.resultType();
 
         check
           (Errors.count() > 0 || frmlT != Types.t_ERROR);

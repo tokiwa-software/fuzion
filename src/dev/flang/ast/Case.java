@@ -49,7 +49,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Case extends ANY
+public class Case extends AbstractCase
 {
 
 
@@ -60,28 +60,25 @@ public class Case extends ANY
 
 
   /**
-   * The soucecode position of this case, used for error messages.
-   */
-  public final SourcePosition pos;
-
-
-  /**
    * Field with type from this.type created in case fieldName != null.
    */
-  public final Feature field;
+  final Feature _field;
+  public AbstractFeature field() { return _field; }
 
 
   /**
    * List of types to be matched against. null if we match against type or match
    * everything.
    */
-  public final List<Type> types;
+  final List<AbstractType> _types;
+  public List<AbstractType> types() { return _types; }
 
 
   /**
    * code to be executed in case of a match
    */
-  public Block code;
+  public Block _code;
+  public Block code() { return _code; }
 
 
   /**
@@ -125,7 +122,7 @@ public class Case extends ANY
    * @param c code to be executed in case of a match
    */
   public Case(SourcePosition pos,
-              List<Type> l,
+              List<AbstractType> l,
               Block c)
   {
     this(pos, null, l, c);
@@ -159,19 +156,20 @@ public class Case extends ANY
    */
   private Case(SourcePosition p,
                Feature f,
-               List<Type> l,
+               List<AbstractType> l,
                Block c)
   {
+    super(p);
+
     if (PRECONDITIONS) require
       (p != null,
        (l == null) || (f == null),  // if l is non-null, t is null
        c != null                    // code is never null
        );
 
-    pos   = p;
-    field = f;
-    types = l;
-    code  = c;
+    _field = f;
+    _types = l;
+    _code  = c;
   }
 
 
@@ -186,23 +184,23 @@ public class Case extends ANY
    *
    * @param outer the feature surrounding this expression.
    */
-  public void visit(FeatureVisitor v, Feature outer)
+  public void visit(FeatureVisitor v, AbstractFeature outer)
   {
-    v.actionBefore(this, outer);
-    if (field != null)
+    v.actionBefore(this);
+    if (_field != null)
       {
-        field.visit(v, outer);
+        _field.visit(v, outer);
       }
-    if (types != null)
+    if (_types != null)
       {
-        ListIterator<Type> i = types.listIterator();
+        var i = _types.listIterator();
         while (i.hasNext())
           {
             i.set(i.next().visit(v, outer));
           }
       }
-    code = code.visit(v, outer);
-    v.actionAfter(this, outer);
+    _code = _code.visit(v, outer);
+    v.actionAfter(this);
   }
 
 
@@ -221,19 +219,19 @@ public class Case extends ANY
    * @return true iff all types could be resolved, false if any type resolution
    * failed and the type was set to Types.t_ERROR.
    */
-  boolean resolveType(Resolution res, List<Type> cgs, Feature outer, SourcePosition[] matched)
+  boolean resolveType(Resolution res, List<AbstractType> cgs, AbstractFeature outer, SourcePosition[] matched)
   {
     boolean result = true;
-    if (field != null)
+    if (_field != null)
       {
-        var t = field.returnType().functionReturnType();
+        var t = _field.returnType().functionReturnType();
         var rt = resolveType(res, t, cgs, outer, matched);
-        field._returnType = new FunctionReturnType(rt);
+        _field._returnType = new FunctionReturnType(rt);
         result &= rt != Types.t_ERROR;
       }
-    if (types != null)
+    if (_types != null)
       {
-        ListIterator<Type> ti = types.listIterator();
+        var ti = _types.listIterator();
         while (ti.hasNext())
           {
             var t = ti.next();
@@ -261,13 +259,13 @@ public class Case extends ANY
    * that have already beend found.  This is updated and used to report an error
    * in case there are repeated matches.
    */
-  Type resolveType(Resolution res, Type t, List<Type> cgs, Feature outer, SourcePosition[] matched)
+  AbstractType resolveType(Resolution res, AbstractType t, List<AbstractType> cgs, AbstractFeature outer, SourcePosition[] matched)
   {
     var original_t = t;
-    List<Type> matches = new List<Type>();
+    List<AbstractType> matches = new List<>();
     int i = 0;
     t.resolveFeature(res, outer);
-    var inferGenerics = !t.isGenericArgument() && t._generics.isEmpty() && t.featureOfType().generics() != FormalGenerics.NONE;
+    var inferGenerics = !t.isGenericArgument() && t.generics().isEmpty() && t.featureOfType().generics() != FormalGenerics.NONE;
     if (!inferGenerics)
       {
         t = t.resolve(res, outer);
@@ -275,15 +273,15 @@ public class Case extends ANY
     for (var cg : cgs)
       {
         if (inferGenerics  && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
-            !inferGenerics && t == cg                                 /* match exactly */ )
+            !inferGenerics && t.compareTo(cg) == 0                    /* match exactly */ )
           {
             t = cg;
             matches.add(cg);
             if (matched[i] != null)
               {
-                AstErrors.repeatedMatch(pos, matched[i], t, cgs);
+                AstErrors.repeatedMatch(pos(), matched[i], t, cgs);
               }
-            matched[i] = pos;
+            matched[i] = pos();
           }
         i++;
       }
@@ -298,13 +296,13 @@ public class Case extends ANY
               }
             else
               {
-                AstErrors.matchCaseDoesNotMatchAny(pos, original_t, cgs);
+                AstErrors.matchCaseDoesNotMatchAny(pos(), original_t, cgs);
                 t = Types.t_ERROR;
               }
           }
         else
           {
-            AstErrors.matchCaseMatchesSeveral(pos, original_t, cgs, matches);
+            AstErrors.matchCaseMatchesSeveral(pos(), original_t, cgs, matches);
           }
       }
     return t;
@@ -319,25 +317,25 @@ public class Case extends ANY
   public String toString()
   {
     var sb = new StringBuilder();
-    if (field != null)
+    if (_field != null)
       {
-        sb.append(field.featureName().baseName() + " " + field.returnType());
+        sb.append(_field.featureName().baseName() + " " + _field.returnType());
       }
-    else if (types == null)
+    else if (_types == null)
       {
         sb.append("*");
       }
     else
       {
         boolean first = true;
-        for (var t : types)
+        for (var t : _types)
           {
             sb.append(first ? "" : ", ");
             sb.append(t.toString());
             first = false;
           }
       }
-    sb.append(" => ").append(code);
+    sb.append(" => ").append(code());
 
     return sb.toString();
   }

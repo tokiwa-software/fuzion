@@ -118,17 +118,15 @@ public abstract class Expr extends ANY implements Stmnt
    *
    * @return this Expr's type or t_ERROR in case it is not known yet.
    */
-  public Type type()
+  public AbstractType type()
   {
-    Type result = typeOrNull();
+    var result = typeOrNull();
     if (result == null)
       {
         result = Types.t_ERROR;
         // NYI: This should try to find the reason for the missing type and
         // print the problem
-        Errors.error(pos,
-                     "Failed to infer type of expression.",
-                     "Expression with unknown type: " + this);
+        AstErrors.failedToInferType(this);
       }
     return result;
   }
@@ -140,7 +138,7 @@ public abstract class Expr extends ANY implements Stmnt
    *
    * @return this Expr's type or null if not known.
    */
-  public abstract Type typeOrNull();
+  public abstract AbstractType typeOrNull();
 
 
   /**
@@ -169,7 +167,7 @@ public abstract class Expr extends ANY implements Stmnt
    *
    * @param outer the class that contains this expression.
    */
-  void loadCalledFeature(Resolution res, Feature outer)
+  void loadCalledFeature(Resolution res, AbstractFeature outer)
   {
     if (Errors.count() == 0)
       {
@@ -190,7 +188,7 @@ public abstract class Expr extends ANY implements Stmnt
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
-  public abstract Expr visit(FeatureVisitor v, Feature outer);
+  public abstract Expr visit(FeatureVisitor v, AbstractFeature outer);
 
 
   /**
@@ -209,7 +207,7 @@ public abstract class Expr extends ANY implements Stmnt
    * @return the Stmnt this Expr is to be replaced with, typically an Assign
    * that performs the assignment to r.
    */
-  Stmnt assignToField(Resolution res, Feature outer, Feature r)
+  Stmnt assignToField(Resolution res, AbstractFeature outer, Feature r)
   {
     return new Assign(res, pos, r, this, outer);
   }
@@ -232,16 +230,16 @@ public abstract class Expr extends ANY implements Stmnt
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, Type t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
     return this;
   }
 
 
-  protected Expr addFieldForResult(Resolution res, Feature outer, Type t)
+  protected Expr addFieldForResult(Resolution res, AbstractFeature outer, AbstractType t)
   {
     var result = this;
-    if (t != Types.resolved.t_void)
+    if (t.compareTo(Types.resolved.t_void) != 0)
       {
         Feature r = new Feature(res,
                                 pos,
@@ -252,7 +250,7 @@ public abstract class Expr extends ANY implements Stmnt
         r.scheduleForResolution(res);
         res.resolveTypes();
         result = new Block(pos, pos, new List<>(assignToField(res, outer, r),
-                                              new Call(pos, new Current(pos, outer.thisType()), r).resolveTypes(res, outer)));
+                                                new Call(pos, new Current(pos, outer.thisType()), r).resolveTypes(res, outer)));
       }
     return result;
   }
@@ -278,37 +276,6 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * Get the formal type of the usage of an expression (see box).
-   *
-   * @param s the target statement this expression is used by.
-   *
-   * @param arg in case s is a call, the index of the actual argument this
-   * expression is assigned to.
-   *
-   * @return the formal type required by the user of this expression.
-   */
-  Type getFormalType(Stmnt s, int arg)
-  {
-    if (PRECONDITIONS) require
-      (s instanceof Call || s instanceof Assign || s instanceof InlineArray);
-
-    if (s instanceof Call c)
-      {
-        return c.resolvedFormalArgumentTypes[arg];
-      }
-    else if (s instanceof Assign a)
-      {
-        return a._assignedField.resultType();
-      }
-    else if (s instanceof InlineArray i)
-      {
-        return i.elementType();
-      }
-    throw new Error("unexpected target of boxing: "+s.getClass());
-  }
-
-
-  /**
    * Check if this value might need boxing, unboxing or tagging and wrap this
    * into Box()/Tag() if this is the case.
    *
@@ -319,28 +286,24 @@ public abstract class Expr extends ANY implements Stmnt
    *
    * @return this or an instance of Box wrapping this.
    */
-  Expr box(Stmnt s, int arg)
+  Expr box(AbstractType frmlT)
   {
-    if (PRECONDITIONS) require
-      (s instanceof Call || s instanceof Assign || s instanceof InlineArray);
-
     var result = this;
     var t = type();
-    var frmlT = getFormalType(s, arg);
 
-    if (t != Types.resolved.t_void)
+    if (t.compareTo(Types.resolved.t_void) != 0)
       {
-        if ((!t.isRef() || isCallToOuterRef()) && t != Types.resolved.t_void &&
+        if ((!t.isRef() || isCallToOuterRef()) &&
             (frmlT.isRef() ||
              (frmlT.isChoice() &&
               !frmlT.isAssignableFrom(t) &&
               frmlT.isAssignableFrom(t.asRef()))) ||
             frmlT.isGenericArgument())
           {
-            result = new Box(result, s, arg);
+            result = new Box(result, frmlT);
             t = result.type();
           }
-        if (frmlT.isChoice() && t != frmlT && frmlT.isAssignableFrom(t))
+        if (frmlT.isChoice() && t.compareTo(frmlT) != 0 && frmlT.isAssignableFrom(t))
           {
             result = new Tag(result, frmlT);
           }
@@ -364,7 +327,7 @@ public abstract class Expr extends ANY implements Stmnt
   boolean getCompileTimeConstBool()
   {
     if (PRECONDITIONS) require
-      (isCompileTimeConst() && type() == Types.resolved.t_bool);
+      (isCompileTimeConst() && type().compareTo(Types.resolved.t_bool) == 0);
 
     throw new Error();
   }
@@ -376,7 +339,7 @@ public abstract class Expr extends ANY implements Stmnt
   int getCompileTimeConstI32()
   {
     if (PRECONDITIONS) require
-      (isCompileTimeConst() && type() == Types.resolved.t_i32);
+      (isCompileTimeConst() && type().compareTo(Types.resolved.t_i32) == 0);
 
     throw new Error();
   }

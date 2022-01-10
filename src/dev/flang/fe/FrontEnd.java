@@ -26,14 +26,28 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.io.IOException;
+
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+
+import java.util.EnumSet;
 
 import dev.flang.mir.MIR;
 
+import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AstErrors;
 import dev.flang.ast.Feature;
-import dev.flang.ast.Resolution;
+import dev.flang.ast.FeatureName;
+import dev.flang.ast.Types;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.SourceDir;
 import dev.flang.util.SourceFile;
 
@@ -46,6 +60,59 @@ import dev.flang.util.SourceFile;
 public class FrontEnd extends ANY
 {
 
+  /*----------------------------  constants  ----------------------------*/
+
+
+  static FeatureName UNIVERSE_NAME = FeatureName.get(FuzionConstants.UNIVERSE_NAME, 0);
+
+
+  /*-----------------------------  classes  -----------------------------*/
+
+
+  /**
+   * Class for the Universe Feature.
+   */
+  class Universe extends Feature
+  {
+    { setState(Feature.State.LOADING); }
+    public boolean isUniverse()
+    {
+      return true;
+    }
+
+    public FeatureName featureName()
+    {
+      return UNIVERSE_NAME;
+    }
+
+    public AbstractFeature get(String name, int argcount)
+    {
+      AbstractFeature result = Types.f_ERROR;
+      var d = _module.declaredFeatures(this);
+      var set = (argcount >= 0
+                 ? FeatureName.getAll(d, name, argcount)
+                 : FeatureName.getAll(d, name          )).values();
+      if (set.size() == 1)
+        {
+          for (var f2 : set)
+            {
+              result = f2;
+            }
+        }
+      else if (set.isEmpty())
+        {
+          AstErrors.internallyReferencedFeatureNotFound(pos(), name, this, name);
+        }
+      else
+        { // NYI: This might happen if the user adds additional features
+          // with different argCounts. name should contain argCount to
+          // avoid this
+          AstErrors.internallyReferencedFeatureNotUnique(pos(), name + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
+        }
+      return result;
+    }
+  }
+
 
   /*----------------------------  variables  ----------------------------*/
 
@@ -53,7 +120,7 @@ public class FrontEnd extends ANY
   /**
    * The module we are compiling.
    */
-  private final Module _module;
+  private SourceModule _module;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -64,25 +131,10 @@ public class FrontEnd extends ANY
    */
   public FrontEnd(FrontEndOptions options)
   {
-    var universe = Feature.createUniverse();
-    var stdlib = new LibraryModule(options, new SourceDir[] { new SourceDir(options._fuzionHome.resolve("lib")) }, null, null, new Module[0], universe);
-    Path[] sourcePaths;
-    Path inputFile;
-    if (options._readStdin)
-      {
-        sourcePaths = new Path[] { };
-        inputFile = SourceFile.STDIN;
-      }
-    else if (options._inputFile != null)
-      {
-        sourcePaths = new Path[] { };
-        inputFile = options._inputFile;
-      }
-    else
-      {
-        sourcePaths = new Path[] { Path.of(".") };
-        inputFile = null;
-      }
+    Types.reset();
+    var universe = new Universe();
+
+    var sourcePaths = sourcePaths(options);
     var sourceDirs = new SourceDir[sourcePaths.length + options._modules.size()];
     for (int i = 0; i < sourcePaths.length; i++)
       {
@@ -92,7 +144,82 @@ public class FrontEnd extends ANY
       {
         sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
       }
-    _module = new SourceModule(options, sourceDirs, inputFile, options._main, new Module[] {stdlib}, universe);
+    LibraryModule[] dependsOn;
+    var save = options._saveBaseLib;
+    if (save == null)
+      {
+        var b = options._fuzionHome.resolve("modules").resolve("base.fum");
+        try (var ch = (FileChannel) Files.newByteChannel(b, EnumSet.of(StandardOpenOption.READ)))
+          {
+            var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
+            var stdlib = new LibraryModule("base", data, new LibraryModule[0], universe);
+            dependsOn = new LibraryModule[] { stdlib };
+          }
+        catch (IOException io)
+          {
+            Errors.error("FrontEnd I/O error when reading module file",
+                         "While trying to read file '"+ b + "' received '" + io + "'");
+            dependsOn = null;
+          }
+      }
+    else
+      {
+        dependsOn = new LibraryModule[] { };
+      }
+    if (Errors.count() == 0)
+      {
+        _module = new SourceModule(options, sourceDirs, inputFile(options), options._main, dependsOn, universe);
+        _module.createASTandResolve();
+      }
+    if (save != null && Errors.count() == 0)
+      {
+        saveModule(save);
+      }
+  }
+
+
+  /**
+   * Get all the paths to use to read source code from
+   */
+  private Path[] sourcePaths(FrontEndOptions options)
+  {
+    return
+      (options._saveBaseLib != null  ) ? new Path[] { options._fuzionHome.resolve("lib") } :
+      (options._readStdin         ||
+       options._inputFile != null    ) ? new Path[] { }
+                                       : new Path[] { Path.of(".") };
+  }
+
+
+  /**
+   * Get the path of one additional main input file (like compiling from stdin
+   * or just one single source file).
+   */
+  private Path inputFile(FrontEndOptions options)
+  {
+    return
+      options._readStdin         ? SourceFile.STDIN   :
+      options._inputFile != null ? options._inputFile
+                                 : null;
+  }
+
+
+  /**
+   * Save _module to a module file
+   */
+  private void saveModule(Path p)
+  {
+    var data = _module.data();
+    System.out.println(" + " + p);
+    try (var os = Files.newOutputStream(p))
+      {
+        Channels.newChannel(os).write(data);
+      }
+    catch (IOException io)
+      {
+        Errors.error("FrontEnd I/O error when writing module file",
+                     "While trying to write file '"+ p + "' received '" + io + "'");
+      }
   }
 
 
@@ -105,11 +232,10 @@ public class FrontEnd extends ANY
   }
 
 
-  public Resolution res()
+  public SourceModule module()
   {
-    return ((SourceModule) _module)._res; // NYI: Cast!
+    return _module;
   }
-
 
 }
 

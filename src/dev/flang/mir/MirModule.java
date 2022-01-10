@@ -56,15 +56,6 @@ public interface MirModule
    */
   SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer);
 
-
-  /**
-   * Get direct redefininitions of given Feature as seen by this module.
-   * Result is never null.
-   *
-   * @param f the original feature
-   */
-  Set<AbstractFeature> redefinitions(AbstractFeature f);
-
 }
 
 /* end of file */

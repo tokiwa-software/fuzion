@@ -68,7 +68,7 @@ public class FormalGenerics extends ANY
   /**
    * true iff this is an open list that with an arbitrary number of actual
    * formal generic arguments.  This means that the last formal generic can be
-   * repeate 0.. times, the actual arguments must hence have at least
+   * repeated 0.. times, the actual arguments must hence have at least
    * list.size()-1 elements.
    */
   final boolean isOpen;
@@ -77,7 +77,7 @@ public class FormalGenerics extends ANY
   /**
    * The Feature that contains this formal generics declaration.
    */
-  private Feature _feature = null;
+  private AbstractFeature _feature = null;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -101,7 +101,7 @@ public class FormalGenerics extends ANY
    * @param open true iff the list is open, i.e., followed by an ellipsis.
    */
   public FormalGenerics(List<Generic> l,
-                 boolean open)
+                        boolean open)
   {
     if (PRECONDITIONS) require
       (l.size() > 0);
@@ -115,13 +115,33 @@ public class FormalGenerics extends ANY
   }
 
 
+  /**
+   * Constructor for a FormalGenerics instance
+   *
+   * @param l the list of formal generics. May not be empty.
+   *
+   * @param open true iff the list is open, i.e., followed by an ellipsis.
+   */
+  public FormalGenerics(List<Generic> l,
+                        boolean open,
+                        AbstractFeature f)
+  {
+    this(l, open);
+
+    if (PRECONDITIONS) require
+      (l.size() > 0);
+
+    setFeature(f);
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
   /**
    * Stores a reference to the surrounding feature in this  FormalGenerics instance.
    */
-  void setFeature(Feature feature)
+  void setFeature(AbstractFeature feature)
   {
     if (PRECONDITIONS) require
       (this._feature == null);
@@ -142,7 +162,7 @@ public class FormalGenerics extends ANY
    *
    * @return
    */
-  public Feature feature()
+  public AbstractFeature feature()
   {
     return _feature;
   }
@@ -168,7 +188,7 @@ public class FormalGenerics extends ANY
    * @return true iff the number of actual arguments fits with the number of
    * expected arguments.
    */
-  public boolean sizeMatches(List<Type> actualGenerics)
+  public boolean sizeMatches(List<AbstractType> actualGenerics)
   {
     if (asActuals_ == actualGenerics)
       {
@@ -201,7 +221,7 @@ public class FormalGenerics extends ANY
    *
    * @return true iff size and type of actualGenerics does match
    */
-  public boolean errorIfSizeOrTypeDoesNotMatch(List<Type> actualGenerics,
+  public boolean errorIfSizeOrTypeDoesNotMatch(List<AbstractType> actualGenerics,
                                                SourcePosition pos,
                                                String detail1,
                                                String detail2)
@@ -229,7 +249,7 @@ public class FormalGenerics extends ANY
    *
    * @param outer the feature surrounding this expression.
    */
-  public void visit(FeatureVisitor v, Feature outer)
+  public void visit(FeatureVisitor v, AbstractFeature outer)
   {
     for (Generic gen : list)
       {
@@ -273,23 +293,24 @@ public class FormalGenerics extends ANY
    *
    * @param generics the actual generic arguments that should be resolved
    */
-  public static void resolve(Resolution res, List<Type> generics, AbstractFeature outer)
+  public static void resolve(Resolution res, List<AbstractType> generics, AbstractFeature outer)
   {
     if (!generics.isEmpty())
       {
         if (!(generics instanceof FormalGenerics.AsActuals))
           {
-            ListIterator<Type> i = generics.listIterator();
+            ListIterator<AbstractType> i = generics.listIterator();
             while (i.hasNext())
               {
-                i.set(i.next().resolve(res, outer));
+                var t = i.next();
+                i.set(t.resolve(res, outer));
               }
           }
       }
   }
 
 
-  private List<Type> asActuals_ = null;
+  private List<AbstractType> asActuals_ = null;
 
 
   /**
@@ -297,9 +318,9 @@ public class FormalGenerics extends ANY
    * the generics list of formals used as actuals, e.g., in an outer reference,
    * such that it can be replaced 1:1 by the actual generic arguments.
    */
-  class AsActuals extends List<Type>
+  class AsActuals extends List<AbstractType>
   {
-    public boolean sizeMatches(List<Type> actualGenerics)
+    public boolean sizeMatches(List<AbstractType> actualGenerics)
     {
       return FormalGenerics.this.sizeMatches(actualGenerics);
     }
@@ -312,9 +333,9 @@ public class FormalGenerics extends ANY
    *
    * @return actual generics that match these formal generics.
    */
-  List<Type> asActuals()
+  public List<AbstractType> asActuals()
   {
-    List<Type> result = asActuals_;
+    List<AbstractType> result = asActuals_;
     if (result == null)
       {
         if (this == FormalGenerics.NONE)

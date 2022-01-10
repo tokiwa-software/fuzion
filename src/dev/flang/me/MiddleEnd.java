@@ -26,18 +26,23 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.me;
 
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import dev.flang.air.AIR;
 
+import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
+import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
+import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Call; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
-import dev.flang.ast.Match; // NYI: remove dependency!
-import dev.flang.ast.Resolution; // NYI: remove dependency!
+import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
-import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 
 import dev.flang.mir.MIR;
@@ -49,6 +54,7 @@ import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -80,17 +86,21 @@ public class MiddleEnd extends ANY
   final List<AbstractFeature> _forFindingUsedFeatures = new List<>();
 
 
-  final Resolution _res;
+  /**
+   * Redefinitions collected for used features. This contains the results of
+   * redefinitions().
+   */
+  private TreeMap<AbstractFeature, Set<AbstractFeature>> _redefinitions = new TreeMap<>();
+
 
   /*--------------------------  constructors  ---------------------------*/
 
 
-  public MiddleEnd(FuzionOptions options, MIR mir, Resolution res)
+  public MiddleEnd(FuzionOptions options, MIR mir, SrcModule mod)
   {
     _options = options;
     _mir = mir;
-    _res = res;
-    Clazz._res = res; // NYI: Bad hack!
+    Clazz._module = mod; // NYI: Bad hack!
   }
 
 
@@ -129,22 +139,25 @@ public class MiddleEnd extends ANY
   void markInternallyUsed() {
     var tag = FuzionConstants.CHOICE_TAG_NAME;
     var universe = _mir.universe();
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "i8" ,1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "i16",1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "i32",1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "i64",1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "u8" ,1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "u16",1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "u32",1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "u64",1).get(_res, "val"), SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "bool").get(_res, tag) , SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "conststring")   , SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "conststring").get(_res, "isEmpty"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "conststring").get(_res, "asString"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
+    var m = Clazz._module;
+    markUsed(universe.get(m, "i8" ,1).get(m, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(m, "i16",1).get(m, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(m, "i32",1).get(m, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(m, "i64",1).get(m, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(m, "u8" ,1).get(m, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(m, "u16",1).get(m, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(m, "u32",1).get(m, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(m, "u64",1).get(m, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(m, "f32",1).get(m, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(m, "f64",1).get(m, "val"), SourcePosition.builtIn);
+    markUsed(universe.get(m, "bool" ).get(m, tag  ), SourcePosition.builtIn);
+    markUsed(universe.get(m, "conststring")                   , SourcePosition.builtIn);
+    markUsed(universe.get(m, "conststring").get(m, "isEmpty" ), SourcePosition.builtIn);  // NYI: check why this is not found automatically
+    markUsed(universe.get(m, "conststring").get(m, "asString"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
     markUsed(Types.resolved.f_sys_array_data              , SourcePosition.builtIn);
     markUsed(Types.resolved.f_sys_array_length            , SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "unit")          , SourcePosition.builtIn);
-    markUsed(((Feature)universe /* NYI: Cast! */).get(_res, "void")          , SourcePosition.builtIn);
+    markUsed(universe.get(m, "unit")          , SourcePosition.builtIn);
+    markUsed(universe.get(m, "void")          , SourcePosition.builtIn);
   }
 
 
@@ -160,11 +173,30 @@ public class MiddleEnd extends ANY
    * @param usedAt the position this feature was used at, for creating usefule
    * error messages
    */
-  void markUsed(AbstractFeature f, SourcePosition usedAt)
+  void markUsed(AbstractFeature f, HasSourcePosition usedAt)
   {
     markUsed(f, false, usedAt);
   }
 
+
+  /**
+   * Get direct redefininitions of given Feature.  This set is filled
+   * dynamically with all used features that are found.
+   *
+   * Result is never null.
+   *
+   * @param f the original feature
+   */
+  Set<AbstractFeature>redefinitions(AbstractFeature f)
+  {
+    var r = _redefinitions.get(f);
+    if (r == null)
+      {
+        r = new TreeSet<>();
+        _redefinitions.put(f,r);
+      }
+    return r;
+  }
 
   /**
    * During FINDING_USED_FEATURES, this sets the flag that this feature is used.
@@ -175,7 +207,7 @@ public class MiddleEnd extends ANY
    * @param usedAt the position this feature was used at, for creating usefule
    * error messages
    */
-  void markUsed(AbstractFeature f, boolean dynamically, SourcePosition usedAt)
+  void markUsed(AbstractFeature f, boolean dynamically, HasSourcePosition usedAt)
   {
     if (dynamically)
       {
@@ -184,7 +216,7 @@ public class MiddleEnd extends ANY
     if (!Clazzes.isUsedAtAll(f))
       {
         Clazzes.addUsedFeature(f, usedAt);
-        if (f.state() != Feature.State.ERROR)
+        if (!(f instanceof Feature ff) || ff.state() == Feature.State.RESOLVED)
           {
             scheduleForFindUsedFeatures(f);
           }
@@ -205,11 +237,23 @@ public class MiddleEnd extends ANY
                   }
               }
           }
-        if (f.isIntrinsic() && f.outerRefOrNull() != null)
+        if (f.isIntrinsic() && f.outerRef() != null)
           {
-            markUsed(f.outerRefOrNull(), false, usedAt);
+            markUsed(f.outerRef(), false, usedAt);
           }
-        for (AbstractFeature rf : _mir._module.redefinitions(f))
+
+        for (var df : _mir._module.declaredFeatures(f).values())
+          {
+            for (AbstractFeature of : df.redefines())
+              {
+                if (Clazzes.isUsedAtAll(of))
+                  {
+                    markUsed(df, usedAt);
+                  }
+                redefinitions(of).add(df);
+              }
+          }
+        for (AbstractFeature rf : redefinitions(f))
           {
             markUsed(rf, usedAt);
           }
@@ -221,37 +265,31 @@ public class MiddleEnd extends ANY
   {
     if (f.outer() != null)
       {
-        markUsed(f.outer(), f.pos());
+        markUsed(f.outer(), f);
       }
     for (var fa : f.arguments())
       {
-        markUsed(fa, f.pos());
-        if (fa.isOpenGenericField())
-          {
-            for (var i = 0; i<fa.selectSize(); i++)
-              {
-                markUsed(fa.select(i), f.pos());
-              }
-          }
+        markUsed(fa, f);
       }
     for (var p: f.inherits())
       {
         markUsed(p.calledFeature(), p.pos);
       }
-    findUsedFeatures(f.resultType(), f.pos());
+    findUsedFeatures(f.resultType(), f);
     if (f.choiceTag() != null)
       {
-        markUsed(f.choiceTag(), f.pos());
+        markUsed(f.choiceTag(), f);
       }
 
-    f.visit(new FeatureVisitor() {
+    var fv = new FeatureVisitor() {
         // it does not seem to be necessary to mark all features in types as used:
-        // public Type  action(Type    t, Feature outer) { t.findUsedFeatures(res, pos); return t; }
-        public Call  action(Call    c, Feature outer) { findUsedFeatures(c); return c; }
-        //        public Stmnt action(Feature f, Feature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
-        public void  action(Match   m, Feature outer) { findUsedFeatures(m);           }
-        public void  action(Tag     t, Feature outer) { findUsedFeatures(t._taggedType, t.pos()); }
-      });
+        // public Type  action(Type    t, AbstractFeature outer) { t.findUsedFeatures(res, pos); return t; }
+        public void action(AbstractCall c               ) { findUsedFeatures(c); }
+        //        public Stmnt action(Feature f, AbstractFeature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
+        public void action(AbstractMatch m              ) { findUsedFeatures(m);           }
+        public void action(Tag     t, AbstractFeature outer) { findUsedFeatures(t._taggedType, t.pos()); }
+      };
+    f.visitCode(fv);
   }
 
 
@@ -259,12 +297,12 @@ public class MiddleEnd extends ANY
   /**
    * Mark all features used within this type as used.
    */
-  void findUsedFeatures(Type t, SourcePosition pos)
+  void findUsedFeatures(AbstractType t, HasSourcePosition pos)
   {
     if (!t.isGenericArgument())
       {
         markUsed(t.featureOfType(), pos);
-        for (var tg : t._generics)
+        for (var tg : t.generics())
           {
             findUsedFeatures(tg, pos);
           }
@@ -275,21 +313,21 @@ public class MiddleEnd extends ANY
   /**
    * Find used features, i.e., mark all features that are found to be the target of a call as used.
    */
-  void findUsedFeatures(Call c)
+  void findUsedFeatures(AbstractCall c)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || c.calledFeature_ != null);
+      (Errors.count() > 0 || c.calledFeature() != null);
 
     var cf = c.calledFeature();
     if (cf != null)
       {
         markUsed(cf, c.isDynamic(), c.pos());
-        for (Type t : c.generics)
+        for (var t : c.generics())
           {
             if (!t.isGenericArgument())
               {
                 AbstractFeature f = t.featureOfType();
-                markUsed(f, t.pos);  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
+                markUsed(f, t.pos());  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
               }
           }
       }
@@ -299,9 +337,9 @@ public class MiddleEnd extends ANY
   /**
    * Find used features, i.e., mark all features that are found to be the target of a call as used.
    */
-  void findUsedFeatures(Match m)
+  void findUsedFeatures(AbstractMatch m)
   {
-    AbstractFeature sf = m.subject.type().featureOfType();
+    AbstractFeature sf = m.subject().type().featureOfType();
     AbstractFeature ct = sf.choiceTag();
 
     check

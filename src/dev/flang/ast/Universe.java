@@ -64,7 +64,7 @@ public class Universe extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return Types.resolved.universe.thisType();
   }
@@ -80,7 +80,7 @@ public class Universe extends Expr
    *
    * @return this.
    */
-  public Universe visit(FeatureVisitor v, Feature outer)
+  public Universe visit(FeatureVisitor v, AbstractFeature outer)
   {
     return this;
   }

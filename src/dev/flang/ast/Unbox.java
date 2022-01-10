@@ -53,7 +53,7 @@ public class Unbox extends Expr
   /**
    * The type of this, set during creation.
    */
-  private Type type_;
+  private AbstractType type_;
 
 
   /**
@@ -80,9 +80,32 @@ public class Unbox extends Expr
    *
    * @param t the result type
    */
-  public Unbox(SourcePosition pos, Expr adr, Type type, AbstractFeature outer)
+  public Unbox(SourcePosition pos, Expr adr, AbstractType type)
   {
     super(pos);
+
+    if (PRECONDITIONS) require
+      (pos != null,
+       adr != null,
+       adr.type().isRef() || adr instanceof AbstractCall c && c.calledFeature().isOuterRef(),
+       !type.featureOfType().isThisRef()
+       );
+
+    this.adr_ = adr;
+    this.type_ = Types.intern(type); // outer.thisType().resolve(outer);
+  }
+
+
+  /**
+   * Constructor
+   *
+   * @param pos the soucecode position, used for error messages.
+   *
+   * @param t the result type
+   */
+  public Unbox(SourcePosition pos, Expr adr, AbstractType type, AbstractFeature outer)
+  {
+    this(pos, adr, type);
 
     if (PRECONDITIONS) require
       (pos != null,
@@ -91,9 +114,6 @@ public class Unbox extends Expr
        Errors.count() > 0 || type.featureOfType() == outer,
        !type.featureOfType().isThisRef()
        );
-
-    this.adr_ = adr;
-    this.type_ = Types.intern(type); // outer.thisType().resolve(outer);
   }
 
 
@@ -106,7 +126,7 @@ public class Unbox extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return type_;
   }
@@ -122,11 +142,24 @@ public class Unbox extends Expr
    *
    * @return this.
    */
-  public Unbox visit(FeatureVisitor v, Feature outer)
+  public Unbox visit(FeatureVisitor v, AbstractFeature outer)
   {
     adr_ = adr_.visit(v, outer);
     v.action(this, outer);
     return this;
+  }
+
+
+  /**
+   * visit all the statements within this Unbox.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    super.visitStatements(v);
+    adr_.visitStatements(v);
   }
 
 
@@ -138,11 +171,10 @@ public class Unbox extends Expr
    *
    * @return this or an instance of Box wrapping this.
    */
-  Expr box(Stmnt s, int arg)
+  Expr box(AbstractType frmlT)
   {
-    var frmlT = getFormalType(s, arg);
     var t = type();
-    if (t != Types.resolved.t_void &&
+    if (t.compareTo(Types.resolved.t_void) != 0 &&
         ((!frmlT.isRef() ||
           (frmlT.isChoice() &&
            !frmlT.isAssignableFrom(t) &&
@@ -151,7 +183,7 @@ public class Unbox extends Expr
         this._needed = true;
         this.type_ = frmlT;
       }
-    return super.box(s, arg);
+    return super.box(frmlT);
   }
 
 

@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -82,9 +83,13 @@ public class AstErrors extends ANY
   {
     return code(s);
   }
-  static String s(Type t)
+  static String s(AbstractType t)
   {
     return st(t.toString());
+  }
+  static String s(ReturnType rt)
+  {
+    return st(rt.toString());
   }
   static String st(String t)
   {
@@ -94,7 +99,24 @@ public class AstErrors extends ANY
   {
     return st(g.toString());
   }
+  static String slg(List<Generic> g)
+  {
+    var sl = new List<String>();
+    for (var e : g)
+      {
+        sl.add(s(e));
+      }
+    return sl.toString();
+  }
+  static String s(FormalGenerics fg)
+  {
+    return st(fg.toString());
+  }
   static String s(Expr e)
+  {
+    return expr(e.toString());
+  }
+  static String sle(List<Expr> e)
   {
     return expr(e.toString());
   }
@@ -106,11 +128,11 @@ public class AstErrors extends ANY
   {
     return expr(s);
   }
-  static String s(Feature f, FormalGenerics fg)
+  static String s(AbstractFeature f, FormalGenerics fg)
   {
     return code(f.qualifiedName() + fg);
   }
-  static String s(List<Type> l)
+  static String s(List<AbstractType> l)
   {
     return type(l.toString());
   }
@@ -172,11 +194,11 @@ public class AstErrors extends ANY
   static void incompatibleType(SourcePosition pos,
                                String where,
                                String detail,
-                               Type frmlT,
+                               AbstractType frmlT,
                                Expr value)
   {
     var assignableTo = new TreeSet<String>();
-    Type actlT = value.type();
+    var actlT = value.type();
     frmlT.isAssignableFrom(actlT, assignableTo);
     var assignableToSB = new StringBuilder();
     for (var ts : assignableTo)
@@ -211,7 +233,7 @@ public class AstErrors extends ANY
    */
   static void incompatibleTypeInAssignment(SourcePosition pos,
                                            AbstractFeature field,
-                                           Type frmlT,
+                                           AbstractType frmlT,
                                            Expr value)
   {
     incompatibleType(pos,
@@ -237,7 +259,7 @@ public class AstErrors extends ANY
    */
   static void incompatibleArgumentTypeInCall(AbstractFeature calledFeature,
                                              int count,
-                                             Type frmlT,
+                                             AbstractType frmlT,
                                              Expr value)
   {
     var frmls = calledFeature.arguments().iterator();
@@ -270,8 +292,8 @@ public class AstErrors extends ANY
    * @param value the value assigned to arrayType's elements.
    */
   static void incompatibleTypeInArrayInitialization(SourcePosition pos,
-                                                    Type arrayType,
-                                                    Type frmlT,
+                                                    AbstractType arrayType,
+                                                    AbstractType frmlT,
                                                     Expr value)
   {
     incompatibleType(pos,
@@ -289,7 +311,7 @@ public class AstErrors extends ANY
           "different separator used at " + p2.show());
   }
 
-  static void assignmentTargetNotFound(Assign ass, Feature outer)
+  static void assignmentTargetNotFound(Assign ass, AbstractFeature outer)
   {
     var solution = solutionDeclareReturnTypeIfResult(ass._name, 0);
     error(ass.pos(),
@@ -300,7 +322,7 @@ public class AstErrors extends ANY
           solution);
   }
 
-  static void assignmentToNonField(Assign ass, AbstractFeature f, Feature outer)
+  static void assignmentToNonField(Assign ass, AbstractFeature f, AbstractFeature outer)
   {
     error(ass.pos(),
           "Target of assignment is not a field",
@@ -309,7 +331,7 @@ public class AstErrors extends ANY
           "For assignment: " + s(ass) + "\n");
   }
 
-  static void assignmentToIndexVar(Assign ass, AbstractFeature f, Feature outer)
+  static void assignmentToIndexVar(Assign ass, AbstractFeature f, AbstractFeature outer)
   {
     error(ass.pos(),
           "Target of assignment must not be a loop index variable",
@@ -326,7 +348,7 @@ public class AstErrors extends ANY
     StringBuilder fstr = new StringBuilder();
     var fargs = call.calledFeature().arguments().iterator();
     AbstractFeature farg = null;
-    for (Type t : call.resolvedFormalArgumentTypes)
+    for (var t : call.resolvedFormalArgumentTypes)
       {
         ferror = t == Types.t_ERROR;
         fstr.append(fstr.length
@@ -361,7 +383,7 @@ public class AstErrors extends ANY
    * information, like "Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n".
    */
   static void wrongNumberOfGenericArguments(FormalGenerics fg,
-                                            List<Type> actualGenerics,
+                                            List<AbstractType> actualGenerics,
                                             SourcePosition pos,
                                             String detail1,
                                             String detail2)
@@ -447,7 +469,7 @@ public class AstErrors extends ANY
   }
   */
 
-  static void ifConditionMustBeBool(SourcePosition pos, Type type)
+  static void ifConditionMustBeBool(SourcePosition pos, AbstractType type)
   {
     check
       (count() > 0 || type != Types.t_ERROR);
@@ -460,16 +482,16 @@ public class AstErrors extends ANY
       }
   }
 
-  static void matchSubjectMustNotBeTypeParameter(SourcePosition pos, Type t)
+  static void matchSubjectMustNotBeTypeParameter(SourcePosition pos, AbstractType t)
   {
     error(pos,
           "" + skw("match") + " subject type must not be a type parameter",
           "Matched type: " + s(t) + "\n" +
-          "which is a type parameter declared at " + t.generic._pos.show());
+          "which is a type parameter declared at " + t.genericArgument()._pos.show());
 
   }
 
-  static void matchSubjectMustBeChoice(SourcePosition pos, Type t)
+  static void matchSubjectMustBeChoice(SourcePosition pos, AbstractType t)
   {
     error(pos,
           "" + skw("match") + " subject type must be a choice type",
@@ -477,7 +499,7 @@ public class AstErrors extends ANY
 
   }
 
-  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, Type t, List<Type> choiceGenerics)
+  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, AbstractType t, List<AbstractType> choiceGenerics)
   {
     error(pos,
           "" + skw("case") + " clause matches type that had been matched already",
@@ -487,7 +509,7 @@ public class AstErrors extends ANY
   }
 
 
-  static void matchCaseDoesNotMatchAny(SourcePosition pos, Type t, List<Type> choiceGenerics)
+  static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType t, List<AbstractType> choiceGenerics)
   {
     error(pos,
           "" + skw("case") + " clause in " + skw("match") + " statement does not match any type of the subject",
@@ -495,7 +517,7 @@ public class AstErrors extends ANY
           subjectTypes(choiceGenerics));
   }
 
-  static void matchCaseMatchesSeveral(SourcePosition pos, Type t, List<Type> choiceGenerics, List<Type> matches)
+  static void matchCaseMatchesSeveral(SourcePosition pos, AbstractType t, List<AbstractType> choiceGenerics, List<AbstractType> matches)
   {
     error(pos,
           "" + skw("case") + " clause in " + skw("match") + " statement matches several types of the subject",
@@ -504,7 +526,7 @@ public class AstErrors extends ANY
           "matches are " + typeListConjunction(matches));
   }
 
-  static void missingMatches(SourcePosition pos, List<Type> choiceGenerics, List<Type> missingMatches)
+  static void missingMatches(SourcePosition pos, List<AbstractType> choiceGenerics, List<AbstractType> missingMatches)
   {
     error(pos,
           "" + skw("match") + " statement does not cover all of the subject's types",
@@ -515,17 +537,17 @@ public class AstErrors extends ANY
   /**
    * Create list of the form "'i32', 'string' or 'bool'"
    */
-  private static String typeListAlternatives(List<Type> tl)  { return typeList(tl, "or" ); }
+  private static String typeListAlternatives(List<AbstractType> tl)  { return typeList(tl, "or" ); }
 
   /**
    * Create list of the form "'i32', 'string' and 'bool'"
    */
-  private static String typeListConjunction (List<Type> tl)  { return typeList(tl, "and"); }
+  private static String typeListConjunction (List<AbstractType> tl)  { return typeList(tl, "and"); }
 
   /**
    * Create list of the form "'i32', 'string' " + conj + " 'bool'"
    */
-  private static String typeList(List<Type> tl, String conj)
+  private static String typeList(List<AbstractType> tl, String conj)
   {
     StringBuilder mt = new StringBuilder();
     String comma = "", last = "";
@@ -546,14 +568,14 @@ public class AstErrors extends ANY
     return mt.toString();
   }
 
-  private static String subjectTypes(List<Type> choiceGenerics)
+  private static String subjectTypes(List<AbstractType> choiceGenerics)
   {
     return choiceGenerics.isEmpty()
       ? "Subject type is an empty choice type that cannot match any case\n"
       : "Subject type is one of " + typeListAlternatives(choiceGenerics) + "\n";
   }
 
-  static void internallyReferencedFeatureNotUnique(SourcePosition pos, String qname, Collection<AbstractFeature> set)
+  public static void internallyReferencedFeatureNotUnique(SourcePosition pos, String qname, Collection<AbstractFeature> set)
   {
     var sb = new StringBuilder();
     for (var f: set)
@@ -578,7 +600,7 @@ public class AstErrors extends ANY
    *
    * @param name name of the feature that caused a problem, e.g., "JavaObject"
    */
-  static void internallyReferencedFeatureNotFound(SourcePosition pos, String qname, AbstractFeature outer, String name)
+  public static void internallyReferencedFeatureNotFound(SourcePosition pos, String qname, AbstractFeature outer, String name)
   {
     error(pos,
           "Internally referenced feature " + sqn(qname) + " not found",
@@ -615,7 +637,7 @@ public class AstErrors extends ANY
           solution);
   }
 
-  public static void cannotRedefineGeneric(SourcePosition pos, Feature f, AbstractFeature existing)
+  public static void cannotRedefineGeneric(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
   {
     cannotRedefine(pos, f, existing, "Cannot redefine feature with generic arguments",
                    "To solve this, ask the Fuzion team to remove this restriction :-)."); // NYI: inheritance and generics
@@ -679,21 +701,23 @@ public class AstErrors extends ANY
           solution);
   }
 
-  static void ambiguousType(Type t,
-                            List<AbstractFeature> possibilities)
+  public static void ambiguousType(SourcePosition pos,
+                                   String t,
+                                   List<AbstractFeature> possibilities)
   {
-    error(t.pos,
+    error(pos,
           "Ambiguous type",
           "For a type used in a declaration, overloading results in an ambiguity that cannot be resolved by the compiler.\n" +
-          "Type that is ambiguous: " + s(t) + "\n" +
+          "Type that is ambiguous: " + st(t) + "\n" +
           "Possible features that match this type: \n" +
           featureList(possibilities) + "\n" +
           "To solve this, rename these features such that each one has a unique name.");
   }
 
-  static void typeNotFound(Type t,
-                           AbstractFeature outerfeat,
-                           List<AbstractFeature> nontypes_found)
+  public static void typeNotFound(SourcePosition pos,
+                                  String t,
+                                  AbstractFeature outerfeat,
+                                  List<AbstractFeature> nontypes_found)
   {
     int n = nontypes_found.size();
     boolean hasAbstract = false;
@@ -701,12 +725,12 @@ public class AstErrors extends ANY
     for (var f : nontypes_found)
       {
         hasAbstract = f.isAbstract();
-        hasReturnType = f.returnType() != NoType.INSTANCE && !f.returnType().isConstructorType();
+        hasReturnType =  (!(f instanceof Feature ff) || ff._returnType != NoType.INSTANCE) && !f.isConstructor();
       }
-    error(t.pos,
+    error(pos,
           "Type not found",
-          "Type " + st(t.name) + " was not found, no corresponding feature nor formal generic argument exists\n" +
-          "Type that was not found: " + s(t) + "\n" +
+          "Type " + st(t) + " was not found, no corresponding feature nor formal generic argument exists\n" +
+          "Type that was not found: " + st(t) + "\n" +
           "within feature: " + s(outerfeat) + "\n" +
           (n == 0 ? "" :
            "However, " + singularOrPlural(n, "feature") + " " +
@@ -751,7 +775,7 @@ public class AstErrors extends ANY
           "Outer features available: " + (available.size() == 0 ? "-- none! --" : available));
   }
 
-  static void blockMustEndWithExpression(SourcePosition pos, Type expectedType)
+  static void blockMustEndWithExpression(SourcePosition pos, AbstractType expectedType)
   {
     check
       (count() > 0  || expectedType != Types.t_ERROR);
@@ -770,7 +794,7 @@ public class AstErrors extends ANY
     error(g._pos,
           "Constraint for generic argument must not be generic type parameter",
           "Affected generic argument: " + st(g._name) + "\n" +
-          "_constraint: " + s(g.constraint()) + " declared at " + g.constraint().generic._pos);
+          "_constraint: " + s(g.constraint()) + " declared at " + g.constraint().genericArgument()._pos);
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
@@ -810,7 +834,7 @@ public class AstErrors extends ANY
           "a choice is always a value type");
   }
 
-  static void genericsMustBeDisjoint(SourcePosition pos, Type t1, Type t2)
+  static void genericsMustBeDisjoint(SourcePosition pos, AbstractType t1, AbstractType t2)
   {
     error(pos,
           "Generics arguments to choice type must be disjoint types",
@@ -827,7 +851,7 @@ public class AstErrors extends ANY
           "Open formal argument: " + s(generic) + "");
   }
 
-  static void integerConstantOutOfLegalRange(SourcePosition pos, String constant, Type t, String from, String to)
+  static void integerConstantOutOfLegalRange(SourcePosition pos, String constant, AbstractType t, String from, String to)
   {
     error(pos,
           "Integer constant value outside of allowed range for target type",
@@ -837,7 +861,7 @@ public class AstErrors extends ANY
           "Acceptable range of values: " + ss(from) + " .. " + ss(to));
   }
 
-  static void nonWholeNumberUsedAsIntegerConstant(SourcePosition pos, String constant, Type t)
+  static void nonWholeNumberUsedAsIntegerConstant(SourcePosition pos, String constant, AbstractType t)
   {
     error(pos,
           "Numeric literal used for integer type is not a whole number",
@@ -846,7 +870,7 @@ public class AstErrors extends ANY
           "Assigned to type: " + s(t) + "\n");
   }
 
-  static void floatConstantTooLarge(SourcePosition pos, String constant, Type t, String max, String maxH)
+  static void floatConstantTooLarge(SourcePosition pos, String constant, AbstractType t, String max, String maxH)
   {
     error(pos,
           "Float constant value outside of allowed range for target type",
@@ -856,7 +880,7 @@ public class AstErrors extends ANY
           "Max allowed value: " + ss("-"+max) + " .. " + ss(max) + " or " + ss("-" + maxH) + " .. " + ss(maxH));
   }
 
-  static void floatConstantTooSmall(SourcePosition pos, String constant, Type t, String min, String minH)
+  static void floatConstantTooSmall(SourcePosition pos, String constant, AbstractType t, String min, String minH)
   {
     error(pos,
           "Float constant value too small, would underflow to 0",
@@ -866,15 +890,15 @@ public class AstErrors extends ANY
           "Min representable value > 0: " + ss(min) + " or " + ss(minH));
   }
 
-  static void wrongNumberOfArgumentsInLambda(SourcePosition pos, List<String> names, Type funType)
+  static void wrongNumberOfArgumentsInLambda(SourcePosition pos, List<String> names, AbstractType funType)
   {
-    int req = funType._generics.size() - 1;
+    int req = funType.generics().size() - 1;
     int delta = names.size() - req;
     var ns = sn(names);
     error(pos,
           "Wrong number of arguments in lambda expression",
           "Lambda expression has " + singularOrPlural(names.size(), "argument") + " while the target type expects " +
-          singularOrPlural(funType._generics.size()-1, "argument") + ".\n" +
+          singularOrPlural(funType.generics().size()-1, "argument") + ".\n" +
           "Arguments of lambda expression: " + ns + "\n" +
           "Expected function type: " + funType + "\n" +
           "To solve this, " +
@@ -885,7 +909,7 @@ public class AstErrors extends ANY
           );
   }
 
-  static void expectedFunctionTypeForLambda(SourcePosition pos, Type t)
+  static void expectedFunctionTypeForLambda(SourcePosition pos, AbstractType t)
   {
     error(pos,
           "Target type of a lambda expression must be " + s(Types.resolved.f_function) + ".",
@@ -905,6 +929,322 @@ public class AstErrors extends ANY
           "To solve this, declare an explicit type for the target field, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
   }
 
+  static void declaredInWrongEnv(SourcePosition pos, List<String> qname, AbstractFeature outer)
+  {
+    error(pos,
+          "Feature is declared in wrong environment",
+          "Feature " + sn(qname) + " is declared in wrong environment " + s(outer));
+  }
+
+  static void repeatedInheritanceOfChoice(SourcePosition pos, SourcePosition lastP)
+  {
+    error(pos,
+          "Repeated inheritance of choice is not permitted",
+          "A choice feature must inherit directly from choice exactly once.\n" +
+          "Previous inheritance from choice at " + lastP);
+  }
+
+  static void cannotInheritFromChoice(SourcePosition pos)
+  {
+    error(pos,
+          "Cannot inherit from choice feature",
+          "Choice must be leaf.");
+
+  }
+
+  static void recursiveInheritance(SourcePosition pos, Feature f, String cycle)
+  {
+    error(pos,
+          "Recursive inheritance in feature " + s(f),
+          cycle);
+  }
+
+  static void choiceMustNotAccessSurroundingScope(SourcePosition pos, String accesses)
+  {
+    error(pos,
+          "Choice type must not access fields of surrounding scope.",
+          "A closure cannot be built for a choice type. Forbidden accesses occur at \n" +
+          accesses);
+  }
+
+  static void choiceMustNotBeRef(SourcePosition pos)
+  {
+    error(pos,
+          "choice feature must not be ref",
+          "A choice feature must be a value type since it is not constructed ");
+  }
+
+  static void choiceMustNotContainFields(SourcePosition pos, AbstractFeature f)
+  {
+    error(pos,
+          "Choice must not contain any fields",
+          "Field " + s(f) + " is not permitted in choice.\n" +
+          "Field declared at "+ f.pos().show());
+  }
+
+  static void choiceMustNotBeField(SourcePosition pos)
+  {
+    error(pos,
+          "Choice feature must not be a field",
+          "A choice feature must be a normal feature with empty code section");
+  }
+
+  static void choiceMustNotBeRoutine(SourcePosition pos)
+  {
+    error(pos,
+          "Choice feature must not be defined as a routine with a result",
+          "A choice feature must be a normal feature with empty code section");
+  }
+
+  static void choiceMustNotContainCode(SourcePosition pos)
+  {
+    error(pos,
+          "Choice feature must not contain any code",
+          "A choice feature must be a normal feature with empty code section");
+  }
+
+  static void choiceMustNotBeAbstract(SourcePosition pos)
+  {
+    error(pos,
+          "Choice feature must not be abstract",
+          "A choice feature must be a normal feature with empty code section");
+  }
+
+  static void choiceMustNotBeIntrinsic(SourcePosition pos)
+  {
+    error(pos,
+          "Choice feature must not be intrinsic",
+          "A choice feature must be a normal feature with empty code section");
+  }
+
+  static void choiceMustNotReferToOwnValueType(SourcePosition pos, AbstractType t)
+  {
+    error(pos,
+          "Choice cannot refer to its own value type as one of the choice alternatives",
+          "Embedding a choice type in itself would result in an infinitely large type.\n" +
+          "Faulty generic argument: " + s(t) + " at " + t.pos().show());
+  }
+
+  static void choiceMustNotReferToOuterValueType(SourcePosition pos, AbstractType t)
+  {
+    error(pos,
+          "Choice cannot refer to an outer value type as one of the choice alternatives",
+          "Embedding an outer value in a choice type would result in infinitely large type.\n" +
+          "Faulty generic argument: " + s(t) + " at " + t.pos().show());
+  }
+
+  static void fieldDefMustNotHaveType(SourcePosition pos, AbstractFeature f, ReturnType rt, Expr initialValue)
+  {
+    error(pos,
+          "Field definition using " + ss(":=")+ " must not specify an explicit type",
+          "Definition of field: " + s(f) + "\n" +
+          "Explicit type given: " + s(rt) + "\n" +
+          "Defining expression: " + s(initialValue));
+  }
+
+  static void routineDefMustNotHaveType(SourcePosition pos, AbstractFeature f, ReturnType rt, Expr code)
+  {
+    error(pos,
+          "Function definition using " + ss("=>") + " must not specify an explicit type",
+          "Definition of function: " + s(f) + "\n" +
+          "Explicit type given: " + s(rt) + "\n" +
+          "Defining expression: " + s(code));
+  }
+
+  static void forwardTypeInference(SourcePosition pos, AbstractFeature f, SourcePosition at)
+  {
+    // NYI: It would be nice to output the whole cycle here as part of the detail message
+    error(pos,
+          "Illegal forward or cyclic type inference",
+          "The definition of a field using " + ss(":=") + ", or of a feature or function\n" +
+          "using " + ss("=>") + " must not create cyclic type dependencies.\n"+
+          "Referenced feature: " + s(f) + " at " + at.show());
+  }
+
+  static void illegalSelect(SourcePosition pos, String select, NumberFormatException e)
+  {
+    error(pos,
+          "Illegal select clause",
+          "Failed to parse integer " + ss(select) + ": " + e);
+  }
+
+  static void cannotAccessValueOfOpenGeneric(SourcePosition pos, AbstractFeature f, AbstractType t)
+  {
+    error(pos,
+          "Cannot access value of open generic type",
+          "When calling " + s(f) + " result type " + s(t) + " is open generic, " +
+          "which cannot be accessed directly.  You might try to access one specific generic parameter " +
+          "by adding '.0', '.1', etc.");
+  }
+
+  static void useOfSelectorRequiresCallWithOpenGeneric(SourcePosition pos, AbstractFeature f, String name, int select, AbstractType t)
+  {
+    error(pos,
+          "Use of selector requires call to feature with open generic type",
+          "In call to " + s(f) + "\n" +
+          "Selected variant " + ss(name + "." + select) + "\n" +
+          "Type of called feature: " + s(t));
+  }
+
+  static void selectorRange(SourcePosition pos, int sz, AbstractFeature f, String name, int select, List<AbstractType> types)
+  {
+    error(pos,
+          "" +
+          (sz > 1  ? "Selector must be in the range of 0.." + (sz - 1) + " for " + sz +" actual generic arguments" :
+           sz == 1 ? "Selector must be 0 for one actual generic argument"
+           : "Selector not permitted since no actual genenric arguments are")+
+          " given for the open generic type",
+          "In call to " + s(f) + "\n" +
+          "Selected variant " + ss(name + "." + select) + "\n" +
+          "Number of actual generic arguments: " + types.size() + "\n" +
+          "Actual generic arguments: " + (sz == 0 ? "none" : s(types)) + "\n");
+  }
+
+  static void failedToInferOpenGenericArg(SourcePosition pos, int count, Expr actual)
+  {
+    error(pos,
+          "Failed to infer open generic argument type from actual argument.",
+          "Type of " + ordinal(count) + " actual argument could not be inferred at " + actual.pos.show());
+  }
+
+  static void incompatibleTypesDuringTypeInference(SourcePosition pos, Generic g, String foundAt)
+  {
+    error(pos,
+          "Incompatible types found during type inference for generic arguments",
+          "Types inferred for " + ordinal(g.index()+1) + " generic argument " + s(g) + ":\n" +
+          foundAt);
+  }
+
+  static void faildToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<Generic> missing)
+  {
+    error(pos,
+          "Failed to infer actual generic parameters",
+          "In call to " + s(cf) + ", no actual generic parameters are given and inference of the generic parameters failed.\n" +
+          "Expected generic parameters: " + s(cf.generics()) + "\n"+
+          "Type inference failed for " + singularOrPlural(missing.size(), "generic argument") + " " + slg(missing) + "\n");
+  }
+
+  static void functionMustNotProvideActuals(SourcePosition pos, Call c, List<Expr> actuals)
+  {
+    error(pos,
+          "Function declaration of the form " + ss("fun a.b") + " must not provide any actual arguments to " + ss("b") + ", " + ss("b") + " is not called here",
+          "Call that followed " + ss("fun") + ": " + s(c) + "\n" +
+          "Actual arguments: " + sle(actuals) + "\n");
+  }
+
+  static void functionMustNotProvideParentheses(SourcePosition pos, Call c)
+  {
+    error(pos,
+          "Function declaration of the form " + ss("fun a.b") + " must not provide any parentheses " + ss("b()") + ", " + ss("b") +" is not called here",
+          "Call that followed " + ss("fun") + ": " + s(c) + "\n");
+  }
+
+  static void cannotCallChoice(SourcePosition pos, AbstractFeature cf)
+  {
+    error(pos,
+          "Cannot call choice feature",
+          "A choice feature is only used as a type, values are created by assignments only.\n"+
+          "Choice feature that is called: " + s(cf) + "\n" +
+          "Declared at " + cf.pos().show());
+  }
+
+  static void incompatibleActualGeneric(SourcePosition pos, Generic f, AbstractType g)
+  {
+    error(pos,
+          "Incompatible actual generic parameter",
+          "formal type " + s(f) + "\n"+
+          "actual type " + s(g) + "\n");
+  }
+
+  static void destructuringForGeneric(SourcePosition pos, AbstractType t, List<String> names)
+  {
+    error(pos,
+          "Destructuring not possible for value whose type is a generic argument.",
+          "Type of expression is " + s(t) + "\n" +
+          "Cannot destructure value of generic argument type into (" + sn(names) + ")");
+  }
+
+  static void destructuringRepeatedEntry(SourcePosition pos, String n, int count)
+  {
+    error(pos,
+          "Repeated entry in destructuring",
+          "Variable " + ss(n) + " appears " + count + " times.");
+  }
+
+
+  static void destructuringMisMatch(SourcePosition pos, List<String> fieldNames, List<String> names)
+  {
+    int fn = fieldNames.size();
+    int nn = names.size();
+    error(pos,
+          "Destructuring mismatch between number of visible fields and number of target variables.",
+          "Found " + ((fn == 0) ? "no visible argument fields" :
+                      (fn == 1) ? "one visible argument field" :
+                      "" + fn + " visible argument fields"     ) + " " + sn(fieldNames) + "\n" +
+          (nn == 0 ? "while there are no destructuring variables" :
+           nn == 1 ? "while there is one destructuring variable: " + sn(names)
+           : "while there are " + nn + " destructuring variables: " + sn(names)) + ".\n"
+          );
+  }
+
+  static void illegalResultType(AbstractFeature f, ReturnType rt)
+  {
+    error(f.pos(),
+          "Illegal result type " + s(rt) + " in field declaration with initialization using " + ss(":="),
+          "Field declared: " + s(f));
+  }
+
+  static void illegalResultTypeDef(AbstractFeature f, ReturnType rt)
+  {
+    error(f.pos(),
+          "Illegal result type " + s(rt) + " in field definition using " + ss(":="),
+          "For field definition using " + ss(":=") + ", the type is determined automatically, " +
+          "it must not be given explicitly.\n" +
+          "Field declared: " + s(f));
+  }
+
+  static void illegalResultTypeNoInit(AbstractFeature f, ReturnType rt)
+  {
+    error(f.pos(),
+          "Illegal result type " + s(rt) + " in field declaration using " + ss(":= ?"),
+          "Field declared: " + s(f));
+  }
+
+  static void illegalResultTypeRoutineDef(AbstractFeature f, ReturnType rt)
+  {
+    error(f.pos(),
+          "Illegal result type " + s(rt) + " in feature definition using " + ss("=>"),
+          "For function definition using " + ss("=>") + ", the type is determined automatically, " +
+          "it must not be given explicitly.\n" +
+          "Feature declared: " + s(f));
+  }
+
+  static void failedToInferType(Expr e)
+  {
+    error(e.pos(),
+          "Failed to infer type of expression.",
+          "Expression with unknown type: " + s(e));
+  }
+
+  static void incompatibleResultsOnBranches(SourcePosition pos, String msg, List<AbstractType> types, Map<AbstractType, List<SourcePosition>> positions)
+  {
+    StringBuilder typesMsg = new StringBuilder();
+    for (var t : types)
+      {
+        var l = positions.get(t);
+        typesMsg.append(( l.size() == 1 ? "block returns" : "blocks return") + " value of type " + s(t) + " at ");
+        boolean first = true;
+        for (SourcePosition p : l)
+          {
+            typesMsg.append((first ? "" : "and at ") + p.show() + "\n");
+            first = false;
+          }
+      }
+    error(pos,
+          msg,
+          "Incompatible result types in different branches:\n" +
+          typesMsg);
+  }
 }
 
 /* end of file */

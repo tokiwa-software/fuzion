@@ -34,7 +34,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class BoolConst extends Expr
+public class BoolConst extends Constant
 {
 
 
@@ -43,6 +43,13 @@ public class BoolConst extends Expr
 
   public static final BoolConst TRUE = new BoolConst(true);
   public static final BoolConst FALSE = new BoolConst(false);
+
+
+  /**
+   * Serialized forms of this constants:
+   */
+  static final byte[] DATA_TRUE  = new byte[] { 1 };
+  static final byte[] DATA_FALSE = new byte[] { 0 };
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -90,7 +97,7 @@ public class BoolConst extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return Types.resolved.t_bool;
   }
@@ -106,7 +113,7 @@ public class BoolConst extends Expr
    *
    * @return this.
    */
-  public BoolConst visit(FeatureVisitor v, Feature outer)
+  public BoolConst visit(FeatureVisitor v, AbstractFeature outer)
   {
     // nothing to be done for a constant
     return this;
@@ -121,6 +128,15 @@ public class BoolConst extends Expr
   boolean getCompileTimeConstBool()
   {
     return b;
+  }
+
+
+  /**
+   * Serialized form of the data of this constant.
+   */
+  public byte[] data()
+  {
+    return b ? DATA_TRUE : DATA_FALSE;
   }
 
 

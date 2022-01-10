@@ -51,7 +51,7 @@ public class Tag extends Expr
   /**
    * The desired tagged type, set during creation.
    */
-  public Type _taggedType;
+  public AbstractType _taggedType;
 
 
   /**
@@ -70,7 +70,7 @@ public class Tag extends Expr
    *
    * @param value the value instance
    */
-  public Tag(Expr value, Type taggedType)
+  public Tag(Expr value, AbstractType taggedType)
   {
     super(value.pos);
 
@@ -92,7 +92,7 @@ public class Tag extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return _taggedType;
   }
@@ -108,11 +108,24 @@ public class Tag extends Expr
    *
    * @return this.
    */
-  public Tag visit(FeatureVisitor v, Feature outer)
+  public Tag visit(FeatureVisitor v, AbstractFeature outer)
   {
     _value = _value.visit(v, outer);
     v.action(this, outer);
     return this;
+  }
+
+
+  /**
+   * visit all the statements within this Tag.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    super.visitStatements(v);
+    _value.visitStatements(v);
   }
 
 

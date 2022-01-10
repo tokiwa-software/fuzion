@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.nio.charset.StandardCharsets;
+
 import dev.flang.util.SourcePosition;
 
 
@@ -34,7 +36,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class StrConst extends Expr
+public class StrConst extends Constant
 {
 
   /*----------------------------  variables  ----------------------------*/
@@ -58,8 +60,21 @@ public class StrConst extends Expr
    */
   public StrConst(SourcePosition pos, String s)
   {
+    this(pos, s, true);
+  }
+
+
+  /**
+   * Constructor
+   *
+   * @param pos the soucecode position, used for error messages.
+   *
+   * @param s
+   */
+  public StrConst(SourcePosition pos, String s, boolean quoted)
+  {
     super(pos);
-    this.str = s.substring(1,s.length()-1);
+    this.str = quoted ? s.substring(1,s.length()-1) : s;
   }
 
 
@@ -72,7 +87,7 @@ public class StrConst extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return Types.resolved.t_string;
   }
@@ -88,10 +103,19 @@ public class StrConst extends Expr
    *
    * @return this.
    */
-  public StrConst visit(FeatureVisitor v, Feature outer)
+  public StrConst visit(FeatureVisitor v, AbstractFeature outer)
   {
     // nothing to be done for a constant
     return this;
+  }
+
+
+  /**
+   * Serialized form of the data of this constant.
+   */
+  public byte[] data()
+  {
+    return str.getBytes(StandardCharsets.UTF_8);
   }
 
 

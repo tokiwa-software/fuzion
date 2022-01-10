@@ -73,14 +73,14 @@ public class Old extends Expr
    *
    * @param thiz the class that contains this expression.
    */
-  void loadCalledFeature(Resolution res, Feature thiz)
+  void loadCalledFeature(Resolution res, AbstractFeature thiz)
   {
     e.loadCalledFeature(res, thiz);
   }
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
+   * visit all the statements within this Old.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited objects.
@@ -89,10 +89,23 @@ public class Old extends Expr
    *
    * @return this.
    */
-  public Old visit(FeatureVisitor v, Feature outer)
+  public Old visit(FeatureVisitor v, AbstractFeature outer)
   {
     e = e.visit(v, outer);
     return this;
+  }
+
+
+  /**
+   * visit all the statements within this Old.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    super.visitStatements(v);
+    e.visitStatements(v);
   }
 
 
@@ -102,7 +115,7 @@ public class Old extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return e.typeOrNull();
   }

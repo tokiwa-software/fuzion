@@ -262,7 +262,7 @@ field       : visibility
     var a = (current() == Token.t_lparen) && fork().skipType() ? new List<Feature>() : formArgs();
     ReturnType r = returnType();
     var hasType = r != NoType.INSTANCE;
-    List<Call> i = inherits();
+    var i = inherits();
     Contract c = contract(true);
     Impl p =
       g == FormalGenerics.NONE &&
@@ -1084,7 +1084,7 @@ inherits    : inherit
             |
             ;
    */
-  List<Call> inherits()
+  List<AbstractCall> inherits()
   {
     return isInheritPrefix() ? inherit() : new List<>();
   }
@@ -1096,7 +1096,7 @@ inherits    : inherit
 inherit     : COLON callList
             ;
    */
-  List<Call> inherit()
+  List<AbstractCall> inherit()
   {
     matchOperator(":", "inherit");
     return callList();
@@ -1123,9 +1123,9 @@ callList    : call ( COMMA callList
                    )
             ;
    */
-  List<Call> callList()
+  List<AbstractCall> callList()
   {
-    List<Call> result = new List<Call>(call(null));
+    var result = new List<AbstractCall>(call(null));
     while (skipComma())
       {
         result.add(call(null));
@@ -1168,7 +1168,7 @@ call        : name ( actualGens actualArgs callTail
       {
         // we must check isActualGens() to distinguish the less operator in 'a < b'
         // from the actual generics in 'a<b>'.
-        List<Type> g = (!isActualGens()) ? Call.NO_GENERICS : actualGens();
+        var g = (!isActualGens()) ? Call.NO_GENERICS : actualGens();
         var l = actualArgs(line);
         result = new Call(pos, target, n, g, l);
         result = callTail(result);
@@ -1249,9 +1249,9 @@ actualGens  : "<" typeList ">"
             |
             ;
    */
-  List<Type> actualGens()
+  List<AbstractType> actualGens()
   {
-    List<Type> result = Call.NO_GENERICS;
+    var result = Call.NO_GENERICS;
     if (splitSkip("<"))
       {
         result = Type.NONE;
@@ -1312,9 +1312,9 @@ typeList    : type ( COMMA typeList
                    )
             ;
    */
-  List<Type> typeList()
+  List<AbstractType> typeList()
   {
-    List<Type> result = new List<>(type());
+    List<AbstractType> result = new List<>(type());
     while (skipComma())
       {
         result.add(type());
@@ -1806,7 +1806,7 @@ lambda      : contract "->" block
   Expr lambda(List<String> n)
   {
     SourcePosition pos = posObject();
-    List<Call> i = new List<>(); // inherits() is not supported for lambda, do we need it?
+    var i = new List<AbstractCall>(); // inherits() is not supported for lambda, do we need it?
     Contract   c = contract();
     matchOperator("->", "lambda");
     return new Function(pos, n, i, c, (Expr) block(true));
@@ -2125,7 +2125,7 @@ function    : formArgs
       {
         r = new FunctionReturnType(type());
       }
-    List<Call> i = inherits();
+    var i = inherits();
     Contract   c = contract();
     Function result;
     if (isOperator("=>"))
@@ -2187,7 +2187,7 @@ match       : "match" exprInLine BRACEL cases BRACER
         match(Token.t_match, "match");
         Expr e = exprInLine();
         boolean gotLBrace = skip(true, Token.t_lbrace);
-        List<Case> c = cases(true);
+        var c = cases(true);
         if (gotLBrace)
           {
             match(true, Token.t_rbrace, "block");
@@ -2220,9 +2220,9 @@ maybecomma  : comma
             |
             ;
    */
-  List<Case> cases(boolean indent)
+  List<AbstractCase> cases(boolean indent)
   {
-    List<Case> result = new List<>();
+    List<AbstractCase> result = new List<>();
     var in = indent ? new Indentation() : (Indentation) null;
     var sl = -1;
     var usesBars = false;
@@ -2293,7 +2293,7 @@ caseStar    : STAR       caseBlock
       }
     else
       {
-        List<Type> l = typeList();
+        var l = typeList();
         result = new Case(pos, l, caseBlock());
       }
     // NYI: Cleanup: new abstract class CaseCondition with three implementations: star, fieldDecl, typeList.
@@ -2722,12 +2722,12 @@ nextValue   : COMMA exprAtMinIndent
     Feature f1 = new Feature(pos,v1,m1,r1,new List<>(n1),
                              FormalGenerics.NONE,
                              new List<Feature>(),
-                             new List<Call>(),
+                             new List<>(),
                              c1,p1);
     Feature f2 = new Feature(pos,v2,m2,r2,new List<>(n2),
                              FormalGenerics.NONE,
                              new List<Feature>(),
-                             new List<Call>(),
+                             new List<>(),
                              c2,p2);
     indexVars.add(f1);
     nextValues.add(f2);
@@ -3046,10 +3046,10 @@ anonymous   : returnType
   {
     SourcePosition pos = posObject();
     ReturnType r = returnType();
-    List<Call> i = inherit();
+    var        i = inherit();
     Contract   c = contract();
     Block      b = block(false);
-    var f = new Feature(pos, r, i, c, b);
+    var f = Feature.anonymous(pos, r, i, c, b);
     var ca = new Call(pos, f);
     return ca;
     // NYI: This would simplify the code (in Feature.findFieldDefInScope that
@@ -3363,7 +3363,7 @@ type        : onetype ( PIPE onetype ) *
     Type result = onetype();
     if (isOperator('|'))
       {
-        List<Type> l = new List<>(result);
+        List<AbstractType> l = new List<>(result);
         while (skip('|'))
           {
             l.add(onetype());
@@ -3456,7 +3456,7 @@ typeOpt     : type
       }
     else if (skip(Token.t_fun))
       {
-        List<Type> a = Type.NONE;
+        var a = Type.NONE;
         if (skipLParen())
           {
             if (current() != Token.t_rparen)
@@ -3471,7 +3471,7 @@ typeOpt     : type
       }
     else if (skip(Token.t_lparen))
       {
-        List<Type> a = Type.NONE;
+        var a = Type.NONE;
         if (current() != Token.t_rparen)
           {
             a = typeList();

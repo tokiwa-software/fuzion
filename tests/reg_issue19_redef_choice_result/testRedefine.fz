@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# Regression test for #19: https://github.com/fridis/fuzion/issues/19
+# Regression test for #19: https://github.com/tokiwa-software/fuzion/issues/19
 #
 # A simple negative test for redefining the result type of a feature.  This
 # should report errors for the redefinitions bad1.get and bad2.get.

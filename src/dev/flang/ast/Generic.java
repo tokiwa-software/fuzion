@@ -69,7 +69,7 @@ public class Generic extends ANY
    * the constraint on this generic paremter, null for the implicit Object
    * constraint.
    */
-  private Type _constraint;
+  private AbstractType _constraint;
 
 
   /**
@@ -139,7 +139,7 @@ public class Generic extends ANY
    * @param constraint the constraint on the generic paremter, null for the
    * implicit Object constraint.
    */
-  public Generic(SourcePosition pos, int index, String name, Type constraint)
+  public Generic(SourcePosition pos, int index, String name, AbstractType constraint)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -191,7 +191,7 @@ public class Generic extends ANY
    *
    * @param outer the feature surrounding this expression.
    */
-  public void visit(FeatureVisitor v, Feature outer)
+  public void visit(FeatureVisitor v, AbstractFeature outer)
   {
     if (_constraint != null)
       {
@@ -209,7 +209,7 @@ public class Generic extends ANY
    *
    * @param outer the root feature that contains this statement.
    */
-  public void resolveTypes(Resolution res, Feature outer)
+  public void resolveTypes(Resolution res, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
       (outer == feature());
@@ -275,7 +275,7 @@ public class Generic extends ANY
    *
    * @return
    */
-  public Feature feature()
+  public AbstractFeature feature()
   {
     if (PRECONDITIONS) require
       (_formalGenerics != null);
@@ -289,18 +289,27 @@ public class Generic extends ANY
    *
    * @return
    */
-  public Type constraint()
+  public AbstractType constraint()
   {
     if (PRECONDITIONS) require
       (feature().state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-    Type result = (_constraint == null) ? Types.resolved.t_object
-                                        : _constraint;
+    var result = (_constraint == null) ? Types.resolved.t_object
+                                       : _constraint;
 
     if (POSTCONDITIONS) ensure
       (result != null);
 
     return result;
+  }
+
+
+  /**
+   * Return the name of this formal generic.
+   */
+  public String name()
+  {
+    return _name;
   }
 
 
@@ -320,16 +329,16 @@ public class Generic extends ANY
    *
    * @param actualGenerics the actual generics that replace this.
    */
-  public Type replace(List<Type> actualGenerics)
+  public AbstractType replace(List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
       (!isOpen(),
        Errors.count() > 0 || _formalGenerics.sizeMatches(actualGenerics));
 
-    Type result;
+    AbstractType result;
     if (_select >= 0)
       {
-        List<Type> openTypes = _selectFrom.replaceOpen(actualGenerics);
+        var openTypes = _selectFrom.replaceOpen(actualGenerics);
         result = _select < openTypes.size()
           ? openTypes.get(_select)
           : // This is not an error, we can run into this situation, e.g., for
@@ -343,7 +352,7 @@ public class Generic extends ANY
       {
         result = null;
         int i = index();
-        Iterator<Type> actuals = actualGenerics.iterator();
+        var actuals = actualGenerics.iterator();
         while (i > 0 && actuals.hasNext())
           {
             actuals.next();
@@ -370,14 +379,14 @@ public class Generic extends ANY
    * @return the part of actualGenerics that this is replaced by, May be an
    * empty list or an arbitrarily long list.
    */
-  public List<Type> replaceOpen(List<Type> actualGenerics)
+  public List<AbstractType> replaceOpen(List<AbstractType> actualGenerics)
   {
     if (PRECONDITIONS) require
       (isOpen(),
        _formalGenerics.sizeMatches(actualGenerics));
 
-    Iterator<Generic> formals = _formalGenerics.list.iterator();
-    Iterator<Type>    actuals = actualGenerics.iterator();
+    var formals = _formalGenerics.list.iterator();
+    var actuals = actualGenerics.iterator();
 
     // fist, skip all formal/actual generics until we reached the last formal:
     Generic formal = formals.next();
@@ -392,7 +401,7 @@ public class Generic extends ANY
       (formal == this);
 
     // Now, return the tail of actuals:
-    return actuals.hasNext() ? new List<Type>(actuals)
+    return actuals.hasNext() ? new List<>(actuals)
                              : Type.NONE;
   }
 

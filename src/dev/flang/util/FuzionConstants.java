@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
+import java.nio.file.Path;
+
 
 /**
  * FuzionConstants specify some global constants required by different modules
@@ -38,6 +40,9 @@ public class FuzionConstants extends ANY
 
 
   /*----------------------------  constants  ----------------------------*/
+
+
+  /*----------------------  special feature names  ----------------------*/
 
 
   /**
@@ -76,6 +81,76 @@ public class FuzionConstants extends ANY
    * disambiguate different (value) types.
    */
   public static final String CHOICE_TAG_NAME = "#tag";
+
+
+  /**
+   * Prefix for names of anonymous inner features.
+   */
+  public static final String ANONYMOUS_FEATURE_PREFIX = "#anonymous";
+
+
+  /*-----------------  special values used in MIR file  -----------------*/
+
+
+  public static final int MIR_FILE_MAGIC0 = 0xF710BEAD;  // FuZIOn BEAD, a module .fum
+  public static final byte[] MIR_FILE_MAGIC = int2Bytes(MIR_FILE_MAGIC0);
+  public static final String MIR_FILE_MAGIC_EXPLANATION = "Module file magic: 'FuZIOn BEAD'";
+
+
+  public static final int MIR_FILE_FIRST_FEATURE_OFFSET = 4;
+
+  /**
+   * feature kind value for constructor routines
+   */
+  public static final int MIR_FILE_KIND_CONSTRUCTOR_VALUE = 5;
+  public static final int MIR_FILE_KIND_CONSTRUCTOR_REF   = 6;
+
+  /**
+   * The bits of feature kind that are not flags
+   */
+  public static final int MIR_FILE_KIND_MASK    = 0x7;
+
+
+  /**
+   * Flag OR'ed to kind for routines with generic type parameters.
+   */
+  public static final int MIR_FILE_KIND_HAS_TYPE_PAREMETERS = 8;
+
+  /**
+   * Fuzion home directory as used in module files instead of absolute or
+   * relative path of build directory.
+   */
+  public static final Path SYMBOLIC_FUZION_HOME = Path.of("$FUZION");
+
+  /*-----------------  special values used in AIR file  -----------------*/
+
+
+  public static final int AIR_FILE_MAGIC0 = 0xF710C0DE;  // FuZIOn CODE, application code .fapp
+  public static final byte[] AIR_FILE_MAGIC = int2Bytes(AIR_FILE_MAGIC0);
+
+
+  /*-----------------  special values used in FUIR file  -----------------*/
+
+
+  public static final int FUIR_FILE_MAGIC0 = 0xF710DEED;  // FuZIOn DEED, fuzion IR, .fuir
+  public static final byte[] FUIR_FILE_MAGIC = int2Bytes(FUIR_FILE_MAGIC0);
+
+
+  /*-------------------------  static methods  --------------------------*/
+
+
+  /**
+   * Convert 32-bit integer to 4 bytes in big endian order.
+   */
+  private static byte[] int2Bytes(int i)
+  {
+    return new byte[]
+      { (byte) (i >> 24),
+        (byte) (i >> 16),
+        (byte) (i >>  8),
+        (byte) (i      )
+      };
+  }
 
 }
 

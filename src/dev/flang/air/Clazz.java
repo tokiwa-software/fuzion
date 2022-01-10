@@ -34,11 +34,14 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import dev.flang.ast.AbstractCall; // NYI: remove dependency!
+import dev.flang.ast.AbstractCase; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
+import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
+import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Assign; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Call; // NYI: remove dependency!
-import dev.flang.ast.Case; // NYI: remove dependency!
 import dev.flang.ast.Consts; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
@@ -46,17 +49,17 @@ import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
-import dev.flang.ast.Match; // NYI: remove dependency!
-import dev.flang.ast.Resolution; // NYI: remove dependency!
+import dev.flang.ast.SrcModule; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
-import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
+import dev.flang.util.YesNo;
 
 
 /**
@@ -81,7 +84,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   static final Clazz[] NO_CLAZZES = new Clazz[0];
 
 
-  public static Resolution _res;
+  public static SrcModule _module;
 
 
   /*-----------------------------  classes  -----------------------------*/
@@ -105,7 +108,15 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    *
    */
-  public final Type _type;
+  public final AbstractType _type;
+
+
+  /**
+   * If this clazz represents a field of an open generic type, then _select
+   * choses the actual generic parameter to be used as the type of this field.
+   * Otherwise, _select is -1.
+   */
+  public final int _select;
 
 
   /**
@@ -173,7 +184,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * If instances of this class are created, this gives a source code position
    * that does create such an instance.  To be used in error messages.
    */
-  SourcePosition instantiationPos_ = null;
+  HasSourcePosition instantiationPos_ = null;
 
 
   /**
@@ -191,8 +202,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * Actual inner clazzes when calling a dynamically bound feature on this.
+   *
+   * This maps a feature to a Clazz. Only for fields of open generic types, this
+   * maps a feature to a Clazz[] that contains the actual fields.  The array
+   * might be empty.
    */
-  public final Map<AbstractFeature, Clazz> _inner = new TreeMap<>();
+  public final Map<AbstractFeature, Object> _inner = new TreeMap<>();
 
 
   /**
@@ -273,7 +288,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Cached result of isUnitType().
    */
-  private Type.YesNo _isUnitType = Type.YesNo.dontKnow;
+  private YesNo _isUnitType = YesNo.dontKnow;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -282,16 +297,19 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Constructor
    *
-   * @param type
+   * @param actualType the actual type this clazz is build on. The actual type
+   * might not be a generic argument.
+   *
+   * @param select in case actualType refers to a field whose result type is an
+   * open generic parameter, select specifies the actual generic to be used.
    *
    * @param outer
    */
-  public Clazz(Type actualType, Clazz outer)
+  public Clazz(AbstractType actualType, int select, Clazz outer)
   {
     if (PRECONDITIONS) require
       (!Clazzes.closed,
-       Errors.count() > 0 || !actualType.isGenericArgument(),
-       Errors.count() > 0 || actualType.isFreeFromFormalGenerics(),
+       Errors.count() > 0 || !actualType.dependsOnGenerics(),
        Errors.count() > 0 || actualType.featureOfType().outer() == null || outer.feature().inheritsFrom(actualType.featureOfType().outer()),
        Errors.count() > 0 || actualType.featureOfType().outer() != null || outer == null,
        Errors.count() > 0 || (actualType != Types.t_ERROR     &&
@@ -304,6 +322,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
 
     this._type = actualType;
+    this._select = select;
     /* NYI: Handling of outer in Clazz is not done properly yet. There are two
      * basic cases:
      *
@@ -362,8 +381,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private boolean hasUsedOuterRef()
   {
     var or = feature().outerRef();
-    return feature().hasResult()  // do not specialize a constructor
-      && or != null && or.state().atLeast(Feature.State.RESOLVED);
+    return !feature().isConstructor()  // do not specialize a constructor
+      && or != null && (!(or instanceof Feature orf) || orf.state().atLeast(Feature.State.RESOLVED));
   }
 
 
@@ -380,7 +399,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *
    * @return the normalized version of outer.
    */
-  private Clazz normalizeOuter(Type t, Clazz outer)
+  private Clazz normalizeOuter(AbstractType t, Clazz outer)
   {
     if (outer != null && !hasUsedOuterRef() && !feature().isField() && t != Types.t_ERROR)
       {
@@ -425,10 +444,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
         return normalize2(t);
       }
   }
-  private Clazz normalize2(Type t)
+  private Clazz normalize2(AbstractType t)
   {
     var f = t.featureOfType();
-    if (f == Types.resolved.universe)
+    if (f.isUniverse())
       {
         return Clazzes.universe.get();
       }
@@ -464,7 +483,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         parent._heirs.add(parent);
       }
     parent._heirs.add(this);
-    for (Call p: parent.feature().inherits())
+    for (var p: parent.feature().inherits())
       {
         var pc = parent.actualClazz(p.type().asRef());
         registerAsHeir(pc);
@@ -495,12 +514,41 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Convert a given type to the actual type within this class. An
    * actual type does not refer to any formal generic arguments.
+   *
+   * @param t the original type
    */
-  public Type actualType(Type t)
+  public AbstractType actualType(AbstractType t)
   {
     if (PRECONDITIONS) require
       (t != null,
        Errors.count() > 0 || !t.isOpenGeneric());
+
+    return actualType(t, -1);
+  }
+
+
+  /**
+   * Convert a given type to the actual type within this class. An
+   * actual type does not refer to any formal generic arguments.
+   *
+   * @param t the original type
+   *
+   * @param select specifies the actual type parameter in case
+   * t.isOpenGeneric().
+   */
+  public AbstractType actualType(AbstractType t, int select)
+  {
+    if (PRECONDITIONS) require
+      (t != null,
+       Errors.count() > 0 || ((select >= 0) == t.isOpenGeneric()));
+
+    if (t.isOpenGeneric())
+      {
+        var types = replaceOpen(t);
+        check
+          (Errors.count() > 0 || select >= 0 && select < types.size());
+        t = 0 <= select && select < types.size() ? types.get(select) : Types.t_ERROR;
+      }
 
     t = this._type.actualType(t);
     if (this._outer != null)
@@ -515,14 +563,36 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Convert a given type to the actual runtime clazz within this class. The
    * formal generics arguments will first be replaced via actualType(t), and the
    * Clazz will be created from the result.
+   *
+   * @param t the original type
    */
-  public Clazz actualClazz(Type t)
+  public Clazz actualClazz(AbstractType t)
   {
     if (PRECONDITIONS) require
       (t != null,
        Errors.count() > 0 || !t.isOpenGeneric());
 
-    return Clazzes.clazz(actualType(t));
+    return actualClazz(t, -1);
+  }
+
+
+  /**
+   * Convert a given type to the actual runtime clazz within this class. The
+   * formal generics arguments will first be replaced via actualType(t), and the
+   * Clazz will be created from the result.
+   *
+   * @param t the original type
+   *
+   * @param select specifies the actual type parameter in case
+   * t.isOpenGeneric().
+   */
+  public Clazz actualClazz(AbstractType t, int select)
+  {
+    if (PRECONDITIONS) require
+      (t != null,
+       Errors.count() > 0 || ((select >= 0) == t.isOpenGeneric()));
+
+    return Clazzes.clazz(actualType(t, select));
   }
 
 
@@ -535,7 +605,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * @return The list of actual generics after replacing the generics of this
    * class or its outer classes.
    */
-  public List<Type> actualGenerics(List<Type> generics)
+  public List<AbstractType> actualGenerics(List<AbstractType> generics)
   {
     generics = this._type.replaceGenerics(generics);
     if (this._outer != null)
@@ -570,16 +640,16 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isUnitType()
   {
-    if (_isUnitType != Type.YesNo.dontKnow)
+    if (_isUnitType != YesNo.dontKnow)
       {
-        return _isUnitType == Type.YesNo.yes;
+        return _isUnitType == YesNo.yes;
       }
     // Tricky: To avoid endless recursion, we set _isUnitType to No. In case we
     // have a recursive type, isUnitType() will return false, so recursion will
     // stop and the result for the recursive type will be false.
     //
     // Object layout will later report an error for this case.
-    _isUnitType = Type.YesNo.no;
+    _isUnitType = YesNo.no;
 
     if (isRef() || feature().isBuiltInPrimitive() || isVoidType())
       {
@@ -603,13 +673,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         for (var f : fields())
           {
-            if (!f.fieldClazz().isUnitType())
+            var rc = f.resultClazz();
+            if (rc == null || !rc.isUnitType())
               {
                 return false;
               }
           }
       }
-    _isUnitType = Type.YesNo.yes;
+    _isUnitType = YesNo.yes;
     return true;
   }
 
@@ -625,7 +696,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isVoidType()
   {
-    return _type == Types.resolved.t_void;
+    return _type.compareTo(Types.resolved.t_void) == 0;
   }
 
 
@@ -649,15 +720,19 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   void layoutAndHandleCycle()
   {
-    List<SourcePosition> cycle = layout();
+    var cycle = layout();
     if (cycle != null && Errors.count() <= AirErrors.count)
       {
         StringBuilder cycleString = new StringBuilder();
+        var tp = _type.pos();
         for (SourcePosition p : cycle)
           {
-            cycleString.append(p.show()).append("\n");
+            if (!p.equals(tp))
+              {
+                cycleString.append(p.show()).append("\n");
+              }
           }
-        AirErrors.error(this._type.pos,
+        AirErrors.error(tp,
                         "Cyclic field nesting is not permitted",
                         "Cyclic value field nesting would result in infinitely large objects.\n" +
                         "Cycle of nesting found during clazz layout:\n" +
@@ -665,19 +740,26 @@ public class Clazz extends ANY implements Comparable<Clazz>
                         "To solve this, you could change one or several of the fields involved to a reference type by adding 'ref' before the type.");
       }
 
-    createDynamicBinding(_res);
+    createDynamicBinding();
   }
 
 
   /**
-   * layout this clazz.
+   * layout this clazz.  This does not really do the layout, but it checks that
+   * the layout is possible and there are no recursively nested value types.
+   *
+   * @return null in case of success, a list of source code positions that shows
+   * the recursively nested value types otherwise.
    */
-  private List<SourcePosition> layout()
+  private TreeSet<SourcePosition> layout()
   {
-    List<SourcePosition> result = null;
+    TreeSet<SourcePosition> result = null;
     switch (layouting_)
       {
-      case During: result = new List<>(this._type.pos); break;
+      case During:
+        result = new TreeSet<>();
+        result.add(this.feature().pos());
+        break;
       case Before:
         {
           layouting_ = LayoutStatus.During;
@@ -688,24 +770,18 @@ public class Clazz extends ANY implements Comparable<Clazz>
                   if (result == null && !c.isRef())
                     {
                       result = c.layout();
+                      if (result != null)
+                        {
+                          result.add(c.feature().pos());
+                        }
                     }
                 }
             }
           for (var fc : fields())
             {
-              var f = fc.feature();
-              var fieldClazz = clazzForField(f);
-              if (result == null &&
-                  !fieldClazz.isRef() &&
-                  !fieldClazz.feature().isBuiltInPrimitive() &&
-                  !fieldClazz.isVoidType())
+              if (result == null && !fc.feature().isOuterRef())
                 {
-                  result = fieldClazz.layout();
-                  if (result != null)
-                    {
-                      result.add(f.pos());
-                      result.add(this._type.pos);
-                    }
+                  result = layoutFieldType(fc);
                 }
             }
           layouting_ = LayoutStatus.After;
@@ -717,9 +793,32 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Helper for layout() to layout type of given field.
+   *
+   * @param field to be added to this.
+   */
+  private TreeSet<SourcePosition> layoutFieldType(Clazz field)
+  {
+    TreeSet<SourcePosition> result = null;
+    var fieldClazz = field.resultClazz();
+    if (!fieldClazz.isRef() &&
+        !fieldClazz.feature().isBuiltInPrimitive() &&
+        !fieldClazz.isVoidType())
+      {
+        result = fieldClazz.layout();
+        if (result != null)
+          {
+            result.add(field.feature().pos());
+          }
+      }
+    return result;
+  }
+
+
+  /**
    * Create dynamic binding data for this clazz in case it is a ref.
    */
-  private void createDynamicBinding(Resolution res)
+  private void createDynamicBinding()
   {
     if (isRef())
       {
@@ -729,7 +828,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         // feature after inheritance. For each parent for which the feature
         // is called, we need to set up a table in this tree that contains
         // the inherited feature or its redefinition.
-        for (AbstractFeature f: feature().allInnerAndInheritedFeatures(res))
+        for (AbstractFeature f: _module.allInnerAndInheritedFeatures(feature()))
           {
             // if (isInstantiated_) -- NYI: if not instantiated, we do not need to add f to dynamic binding, but we seem to need its side-effects
             if (isAddedToDynamicBinding(f))
@@ -764,11 +863,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             for (var p: chain)
               {
-                fn = f.outer().handDown(_res, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
+                fn = f.outer().handDown(_module, f, fn, p, feature());  // NYI: need to update f/f.outer() to support several levels of inheritance correctly!
               }
           }
       }
-    return _res._module.lookupFeature(feature(), fn);
+    return _module.lookupFeature(feature(), fn);
   }
 
 
@@ -792,14 +891,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * @return the inner clazz of the target in the call.
    */
   public /* NYI: make package private */ Clazz lookup(AbstractFeature f,
-                      List<Type> actualGenerics,
-                      SourcePosition p)
+                      List<AbstractType> actualGenerics,
+                      HasSourcePosition p)
   {
     if (PRECONDITIONS) require
       (f != null,
        this != Clazzes.c_void.get());
 
-    return lookup(f, actualGenerics, p, false);
+    return lookup(f, -1, actualGenerics, p, false);
   }
 
 
@@ -811,6 +910,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * types or to fill the virtual call table.
    *
    * @param f the feature that is called
+   *
+   * @param select in case f is a field of open generic type, this selects the
+   * actual field.  -1 otherwise.
    *
    * @param actualGenerics the actual generics provided in the call,
    * Call.NO_GENERICS if none.
@@ -827,15 +929,36 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * @return the inner clazz of the target in the call.
    */
   Clazz lookup(AbstractFeature f,
-               List<Type> actualGenerics,
-               SourcePosition p,
+               int select,
+               List<AbstractType> actualGenerics,
+               HasSourcePosition p,
                boolean isInheritanceCall)
   {
     if (PRECONDITIONS) require
       (f != null,
        this != Clazzes.c_void.get());
 
-    var innerClazz = actualGenerics.isEmpty() ? _inner.get(f) : null;
+    Clazz innerClazz = null;
+    Clazz[] innerClazzes = null;
+    if (actualGenerics.isEmpty())
+      {
+        if (select < 0)
+          {
+            innerClazz = (Clazz) _inner.get(f);
+          }
+        else
+          {
+            innerClazzes = (Clazz[]) _inner.get(f);
+            if (innerClazzes == null)
+              {
+                innerClazzes = new Clazz[replaceOpen(f.resultType()).size()];
+                _inner.put(f, innerClazzes);
+              }
+            check
+              (Errors.count() > 0 || select < innerClazzes.length);
+            innerClazz = select < innerClazzes.length ? innerClazzes[select] : Clazzes.error.get();
+          }
+      }
     if (innerClazz == null)
       {
         AbstractFeature af = findRedefinition(f);
@@ -857,9 +980,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 abstractCalled_.add(af);
               }
 
-            Type t = af.thisType().actualType(af, actualGenerics);
+            AbstractType t = af.thisType().actualType(af, actualGenerics);
             t = actualType(t);
-            innerClazz = Clazzes.clazzWithSpecificOuter(t, this);
+            innerClazz = Clazzes.clazzWithSpecificOuter(t, select, this);
             if (p != null)
               {
                 if (!isInheritanceCall)
@@ -870,14 +993,21 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
             if (actualGenerics.isEmpty())
               {
-                _inner.put(f, innerClazz);
+                if (select < 0)
+                  {
+                    _inner.put(f, innerClazz);
+                  }
+                else
+                  {
+                    innerClazzes[select] = innerClazz;
+                  }
                 if (f.isField())
                   {
-                    clazzForField(f);
+                    clazzForFieldX(f, select);
                   }
               }
             check
-              (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType().sameAs(af));
+              (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == af);
           }
       }
 
@@ -892,11 +1022,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Get the runtime clazz of a field in this clazz.
    *
-   * NYI: try to remove
+   * NYI: try to remove, used only in interpreter
    *
    * @param field a field
+   *
+   * @param select in case field has an open generic type, this selects the
+   * actual field. -1 otherwise.
    */
-  public Clazz clazzForField(AbstractFeature field)
+  public Clazz clazzForFieldX(AbstractFeature field, int select)
   {
     check
       (Errors.count() > 0 || field.isField(),
@@ -914,32 +1047,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
           field.isOuterRef() && fo.isOuterRefAdrOfValue()     ? actualClazz(Types.t_ADDRESS) :
           field.isOuterRef() && fo.isOuterRefCopyOfValue() ||
           !field.isOuterRef() && field != fo.resultField() // NYI: use lookup/resultClazz for all fields
-                                                           ? actualClazz(field.resultType())
+                                                           ? actualClazz(field.resultType(), select)
                                                            : lookup(field, Call.NO_GENERICS, Clazzes.isUsedAt(field)).resultClazz();
-        clazzForField_.put(field, result);
+        if (select < 0)
+          {
+            clazzForField_.put(field, result);
+          }
       }
     return result;
-  }
-
-
-  /**
-   * Special handling for field results clazzes that differ for some outer ref
-   * fields.
-   *
-   * NYI: Try to remove this special handling.
-   */
-  public Clazz fieldClazz()
-  {
-    if (PRECONDITIONS) require
-      (feature().isField());
-
-    var field = feature();
-
-    return
-      field.isOuterRef() && field.outer().isOuterRefAdrOfValue()  ? actualClazz(Types.t_ADDRESS) :
-      field.isOuterRef() && field.outer().isOuterRefCopyOfValue() ||
-      !field.isOuterRef() && field != field.outer().resultField() ? actualClazz(field.resultType())
-                                                                  : resultClazz();
   }
 
 
@@ -963,9 +1078,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
             ? "ref "
             : ""
             )
-         + feature().featureName().baseName() + (this._type._generics.isEmpty()
+         + feature().featureName().baseName() + (this._type.generics().isEmpty()
                                                  ? ""
-                                                 : "<" + this._type._generics + ">"));
+                                                 : "<" + this._type.generics() + ">"));
   }
 
 
@@ -1046,7 +1161,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
        this ._type == Types.intern(this ._type),
        other._type == Types.intern(other._type));
 
-    var result = this._type.compareToIgnoreOuter(other._type);
+    var result =
+      this._select < other._select ? -1 :
+      this._select > other._select ? +1 : this._type.compareToIgnoreOuter(other._type);
     if (result == 0)
       {
         result = compareOuter(other);
@@ -1055,36 +1172,29 @@ public class Clazz extends ANY implements Comparable<Clazz>
   }
 
 
-  public boolean dependsOnGenerics()  //  NYI: Only used in caching for Type.clazz, which should be removed
-  {
-    return !this._type._generics.isEmpty() || (this._outer != null && this._outer.dependsOnGenerics());
-  }
-
-
   /**
    * Visitor to find all runtime classes.
    */
   private class FindClassesVisitor extends FeatureVisitor
   {
-    public void      action     (Unbox      u, Feature outer) { Clazzes.findClazzes(u, Clazz.this); }
-    public void      action     (Assign     a, Feature outer) { Clazzes.findClazzes(a, Clazz.this); }
-    public void      action     (Box        b, Feature outer) { Clazzes.findClazzes(b, Clazz.this); }
-    public void      actionAfter(Case       c, Feature outer) { Clazzes.findClazzes(c, Clazz.this); }
-    public Call      action     (Call       c, Feature outer) { Clazzes.findClazzes(c, Clazz.this); return c; }
-    public void      action     (If         i, Feature outer) { Clazzes.findClazzes(i, Clazz.this); }
-    public InlineArray action     (InlineArray  i, Feature outer) { Clazzes.findClazzes(i, Clazz.this); return i; }
-    public void      action     (Match      m, Feature outer) { Clazzes.findClazzes(m, Clazz.this); }
-    public void      action     (Tag        t, Feature outer) { Clazzes.findClazzes(t, Clazz.this); }
+    public void        action     (Unbox        u, AbstractFeature outer) { Clazzes.findClazzes(u, Clazz.this); }
+    public void        action     (Assign       a, AbstractFeature outer) { Clazzes.findClazzes(a, Clazz.this); }
+    public void        actionAfter(AbstractCase c                       ) { Clazzes.findClazzes(c, Clazz.this); }
+    public void        action     (AbstractCall c                       ) { Clazzes.findClazzes(c, Clazz.this); }
+    public void        action     (If           i, AbstractFeature outer) { Clazzes.findClazzes(i, Clazz.this); }
+    public InlineArray action     (InlineArray  i, AbstractFeature outer) { Clazzes.findClazzes(i, Clazz.this); return i; }
+    public void        action     (AbstractMatch m                      ) { Clazzes.findClazzes(m, Clazz.this); }
+    public void        action     (Tag          t, AbstractFeature outer) { Clazzes.findClazzes(t, Clazz.this); }
     void visitAncestors(AbstractFeature f)
     {
-      f.visit(this);
-      for (Call c: f.inherits())
+      f.visitCode(this);
+      for (var c: f.inherits())
         {
           AbstractFeature cf = c.calledFeature();
-          var n = c._actuals.size();
+          var n = c.actuals().size();
           for (var i = 0; i < n; i++)
             {
-              var a = c._actuals.get(i);
+              var a = c.actuals().get(i);
               if (i >= cf.arguments().size())
                 {
                   check
@@ -1125,11 +1235,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Find all inner clazzes of this that are referenced when this is executed
    */
-  void findAllClassesWhenCalled(Resolution res)
+  void findAllClassesWhenCalled()
   {
     var f = feature();
-    new FindClassesVisitor().visitAncestors((Feature) f); // NYI: Cast!
-    for (AbstractFeature ff: f.allInnerAndInheritedFeatures(res))
+    new FindClassesVisitor().visitAncestors(f);
+    for (AbstractFeature ff: _module.allInnerAndInheritedFeatures(f))
       {
         if (Clazzes.isUsed(ff, this) &&
             this._type != Types.t_ADDRESS // NYI: would be better is isUSED would return false for ADDRESS
@@ -1309,7 +1419,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (isChoice());
 
     ArrayList<Clazz> result = new ArrayList<>();
-    for (Type t : actualGenerics(feature().choiceGenerics()))
+    for (var t : actualGenerics(feature().choiceGenerics()))
       {
         result.add(actualClazz(t));
       }
@@ -1322,11 +1432,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Determine the index of the generic argument of this choice type that
    * matches the given static type.
    */
-  public int getChoiceTag(Type staticTypeOfValue)
+  public int getChoiceTag(AbstractType staticTypeOfValue)
   {
     if (PRECONDITIONS) require
       (isChoice(),
-       staticTypeOfValue.isFreeFromFormalGenerics(),
+       !staticTypeOfValue.dependsOnGenerics(),
        staticTypeOfValue == Types.intern(staticTypeOfValue));
 
     int result = -1;
@@ -1370,7 +1480,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * @param at gives the position in the source code that causes this instantiation.  p can be
    * null, which means that this should not be marked as called.
    */
-  void called(SourcePosition at)
+  void called(HasSourcePosition at)
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 || !isChoice());
@@ -1413,7 +1523,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    *
    * @param at gives the position in the source code that causes this instantiation.
    */
-  void instantiated(SourcePosition at)
+  void instantiated(HasSourcePosition at)
   {
     if (PRECONDITIONS) require
       (at != null);
@@ -1574,7 +1684,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       ((outer != null) != (target != null));
 
-    if (f.outerRefOrNull() == cf)
+    if (f.outerRef() == cf)
       { // a "normal" outer ref for the outer clazz surrounding this instance or
         // (if in recursion) an inherited outer ref referring to the target of
         // the inherits call
@@ -1589,9 +1699,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        for (Call p : f.inherits())
+        for (var p : f.inherits())
           {
-            result = inheritedOuterRefClazz(null, p.target, cf, p.calledFeature(), result);
+            result = inheritedOuterRefClazz(null, p.target(), cf, p.calledFeature(), result);
           }
       }
     return result;
@@ -1610,6 +1720,22 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Determine the nesting level of a given feature f. The nesting level is 0
+   * for the universe, 1 for any feature declared in the universe, and
+   * depth(f.outer())+1 for all the rest.
+   */
+  private int depth(AbstractFeature f)
+  {
+    check
+      (Errors.count() > 0 || f.isUniverse() || f.outer() != null);
+
+    return f.isUniverse() || (f.outer() == null)
+      ? 0
+      : depth(f.outer()) + 1;
+  }
+
+
+  /**
    * Determine the clazz of the result of calling this clazz.
    *
    * @return the result clazz.
@@ -1618,7 +1744,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     var f = feature();
 
-    if (f.isUniverse() || f.returnType().isConstructorType())
+    if (f.isConstructor())
       {
         return this;
       }
@@ -1628,8 +1754,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        var t = actualType(f.resultType());
-        if (t.isFreeFromFormalGenerics() && !t.isGenericArgument())
+        var ft = f.resultType();
+        var t = _outer.actualType(ft, _select);
+        if (!t.dependsOnGenerics())
           {
             /* We have this situation:
 
@@ -1673,7 +1800,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                type inference is used). We need proper tests for this and implement it for
                depthInSource > 1.
              */
-            int goBack = f.depth()-t.featureOfType().depth() + 1;
+            int goBack = depth(f) - depth(t.featureOfType()) + 1;
             var innerBase = this;
             while (goBack > 0)
               {
@@ -1684,7 +1811,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               {
                 var res = innerBase == null || t == Types.t_UNDEFINED || t == Types.t_ERROR
                   ? Clazzes.create(t, null)
-                  : innerBase.lookup(t.featureOfType(), t._generics, null);
+                  : innerBase.lookup(t.featureOfType(), t.generics(), null);
                 if (t.isRef())
                   {
                     res = res.asRef();
@@ -1778,17 +1905,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 {
                   if (a.isOpenGenericField())
                     {
-                      for (var i = 0; i < a.selectSize(); i++)
+                      var types = replaceOpen(a.resultType());
+                      for (var i = 0; i < types.size(); i++)
                         {
-                          var s = a.select(i);
-                          if (Clazzes.isUsed(s, this))
-                            {
-                              var sa = lookup(s, Call.NO_GENERICS, Clazzes.isUsedAt(s));
-                              if (sa.resultClazz()._type != Types.resolved.t_unit)  // NYI: Use a different, artificial type to mark unused open generic args!
-                                {
-                                  args.add(sa);
-                                }
-                            }
+                          args.add(lookup(a, i, Call.NO_GENERICS, Clazzes.isUsedAt(a), false));
                         }
                     }
                   else if (this != Clazzes.c_void.get())
@@ -1824,7 +1944,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private Clazz[] determineActualGenerics()
   {
     var result = NO_CLAZZES;
-    var gs = _type._generics;
+    var gs = _type.generics();
     if (!gs.isEmpty())
       {
         result = new Clazz[gs.size()];
@@ -1861,7 +1981,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       case Intrinsic  :
       case Routine    :
         {
-          var or = f.outerRefOrNull();
+          var or = f.outerRef();
           if (or != null && Clazzes.isUsedAtAll(or))
             {
               result = lookup(or, Call.NO_GENERICS, Clazzes.isUsedAt(or));
@@ -1903,6 +2023,32 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * For an open generic type ft find the actual type parameters within this
+   * clazz.  The resulting list could be empty.
+   */
+  public List<AbstractType> replaceOpen(AbstractType ft)
+  {
+    if (PRECONDITIONS) require
+      (Errors.count() > 0 || ft.isOpenGeneric());
+
+    var g = ft.isOpenGeneric() ? ft.genericArgument() : null;
+    if (g != null && feature().generics() == g.formalGenerics())
+      {
+        return g.replaceOpen(_type.generics());
+      }
+    else if (!feature().isUniverse())
+      {
+        return _outer.replaceOpen(ft);
+      }
+    else
+      {
+        check
+          (Errors.count() >= 0);
+        return new List<>();
+      }
+  }
+
+  /**
    * Set of fields in this clazz, including inherited and artificially added fields.
    *
    * @return the set of fields, empty array if none. null before this clazz was
@@ -1923,16 +2069,26 @@ public class Clazz extends ANY implements Comparable<Clazz>
         else
           {
             var fields = new List<Clazz>();
-            for (var f: feature().allInnerAndInheritedFeatures(_res))
+            for (var f: _module.allInnerAndInheritedFeatures(feature()))
               {
                 if (f.isField() &&
                     Clazzes.isUsed(f, this) &&
                     this != Clazzes.c_void.get() &&
-                    !f.resultType().isOpenGeneric() &&
-                    f.sameAs(findRedefinition(f))  // NYI: proper field redefinition handling missing, see tests/redef_args/*
+                    f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
                     )
                   {
-                    fields.add(lookup(f, Call.NO_GENERICS, Clazzes.isUsedAt(f)));
+                    if (f.isOpenGenericField())
+                      {
+                        var types = replaceOpen(f.resultType());
+                        for (var i = 0; i < types.size(); i++)
+                          {
+                            fields.add(lookup(f, i, Call.NO_GENERICS, Clazzes.isUsedAt(f), false));
+                          }
+                      }
+                    else
+                      {
+                        fields.add(lookup(f, Call.NO_GENERICS, Clazzes.isUsedAt(f)));
+                      }
                   }
               }
             _fields = fields.toArray(new Clazz[fields.size()]);

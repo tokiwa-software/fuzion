@@ -49,7 +49,7 @@ public class Contract
   /**
    * Empty contract
    */
-  static final Contract EMPTY_CONTRACT = new Contract(NO_COND, NO_COND, NO_COND);
+  public static final Contract EMPTY_CONTRACT = new Contract(NO_COND, NO_COND, NO_COND);
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -104,11 +104,31 @@ public class Contract
    *
    * @param outer the feature surrounding this expression.
    */
-  public void visit(FeatureVisitor v, Feature outer)
+  public void visit(FeatureVisitor v, AbstractFeature outer)
   {
-    if (req != null) { for (Cond c: req) { c.visit(v, outer); } }
-    if (ens != null) { for (Cond c: ens) { c.visit(v, outer); } }
-    if (inv != null) { for (Cond c: inv) { c.visit(v, outer); } }
+    if (this != EMPTY_CONTRACT)
+      {
+        for (Cond c: req) { c.visit(v, outer); }
+        for (Cond c: ens) { c.visit(v, outer); }
+        for (Cond c: inv) { c.visit(v, outer); }
+      }
+  }
+
+
+  /**
+   * visit all the statements within this Contract.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    if (this != EMPTY_CONTRACT)
+      {
+        for (Cond c: req) { c.visitStatements(v); }
+        for (Cond c: ens) { c.visitStatements(v); }
+        for (Cond c: inv) { c.visitStatements(v); }
+      }
   }
 
 

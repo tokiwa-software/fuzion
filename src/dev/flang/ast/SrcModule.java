@@ -26,8 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.SortedMap;
+
+import dev.flang.util.SourcePosition;
 
 
 /**
@@ -46,12 +49,6 @@ public interface SrcModule
    */
   SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer);
 
-
-  /**
-   * During resolution, load all inner classes of this that are
-   * defined in separate files.
-   */
-  void loadInnerFeatures(Feature f);
 
   /**
    * Find all the inner feature declarations within this feature and set
@@ -73,12 +70,20 @@ public interface SrcModule
   SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name);
   FeaturesAndOuter lookupNoTarget(AbstractFeature thiz, String name, Call call, Assign assign, Destructure destructure);
   void checkTypes(Feature f);
+  AbstractFeature lookupFeatureForType(SourcePosition pos, String name, AbstractFeature o, AbstractFeature outerfeat);
 
+
+  /*----------------------  methods needed by AIR  ----------------------*/
+
+  /* NYI: cleanup: methods for AIR phase should not be defined in package ast! */
 
   /**
-   * Add given feature to the features declared in this SrcModule.
+   * allInnerAndInheritedFeatures returns a complete set of inner features, used
+   * by Clazz.layout and Clazz.hasState.
+   *
+   * @return
    */
-  void add(Feature f);
+  Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f);
 
 }
 

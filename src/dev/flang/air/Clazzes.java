@@ -33,26 +33,23 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import dev.flang.ast.AbstractCall; // NYI: remove dependency!
+import dev.flang.ast.AbstractCase; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
+import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
+import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Assign; // NYI: remove dependency!
 import dev.flang.ast.Block; // NYI: remove dependency!
-import dev.flang.ast.BoolConst; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
-import dev.flang.ast.Call; // NYI: remove dependency!
-import dev.flang.ast.Case; // NYI: remove dependency!
+import dev.flang.ast.Constant; // NYI: remove dependency!
 import dev.flang.ast.Current; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
-import dev.flang.ast.FunctionReturnType; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
-import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
-import dev.flang.ast.NumLiteral; // NYI: remove dependency!
-import dev.flang.ast.Match; // NYI: remove dependency!
 import dev.flang.ast.Old; // NYI: remove dependency!
-import dev.flang.ast.StrConst; // NYI: remove dependency!
+import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
-import dev.flang.ast.Type; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
 import dev.flang.ast.Universe; // NYI: remove dependency!
@@ -60,6 +57,7 @@ import dev.flang.ast.Universe; // NYI: remove dependency!
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -77,28 +75,12 @@ public class Clazzes extends ANY
 
 
   /**
-   * All used features mapped to the first source code position their are used at.
-   *
-   * NYI: This should be moved to MiddleEnd.java and joined with clazzes, so we
-   * do not need a separate pass for finding used features.
-   */
-  private static final Map<AbstractFeature, SourcePosition> _usedFeatures_ = new TreeMap<>();
-
-
-  /**
-   * NYI: This is redundant with _calledDynamically_, so one of them has to go
-   * (preferably this one).
-   */
-  private static final Map<AbstractFeature, Boolean> _dynamicallyCalledFeatures0_ = new TreeMap<>();
-
-
-  /**
    * All clazzes found in the system.
    *
    * NYI: One of these maps is probably redundant!
    */
   private static final Map<Clazz, Clazz> clazzes = new TreeMap<>();
-  private static final Map<Type, Clazz> _clazzesForTypes_ = new TreeMap<>();
+  private static final Map<AbstractType, Clazz> _clazzesForTypes_ = new TreeMap<>();
 
   /**
    * All clazzes found so far that have not been analyzed yet for clazzes that
@@ -109,7 +91,7 @@ public class Clazzes extends ANY
 
   static interface TypF
   {
-    Type get();
+    AbstractType get();
   }
   public static class OnDemandClazz
   {
@@ -137,7 +119,7 @@ public class Clazzes extends ANY
             {
               var oldClosed = closed;
               closed = false;
-              _dummy = new Clazz(_t.get(), universe.get());
+              _dummy = new Clazz(_t.get(), -1, universe.get());
               closed = oldClosed;
             }
           _clazz = clazzes.get(_dummy);
@@ -222,15 +204,15 @@ public class Clazzes extends ANY
    * found that a feature is called dynamically: Then this features needs to be
    * added to the dynamic binding data of heir classes of f.outer).
    */
-  private static TreeMap<AbstractFeature, List<Runnable>> _whenCalledDynamically_ = new TreeMap();
-  static TreeMap<Clazz, List<Runnable>> _whenCalled_ = new TreeMap();
+  private static TreeMap<AbstractFeature, List<Runnable>> _whenCalledDynamically_ = new TreeMap<>();
+  static TreeMap<Clazz, List<Runnable>> _whenCalled_ = new TreeMap<>();
 
 
   /**
    * Set of features that are called dynamically. Populated during findClasses
    * phase.
    */
-  private static TreeSet<AbstractFeature> _calledDynamically_ = new TreeSet();
+  private static TreeSet<AbstractFeature> _calledDynamically_ = new TreeSet<>();
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -279,12 +261,32 @@ public class Clazzes extends ANY
    * @return the existing or newly created Clazz that represents actualType
    * within outer.
    */
-  public static Clazz create(Type actualType, Clazz outer)
+  public static Clazz create(AbstractType actualType, Clazz outer)
+  {
+    return create(actualType, -1, outer);
+  }
+
+
+  /**
+   * Create a clazz for the given actual type and the given outer clazz.
+   * Clazzes created are recorded to be handed by findAllClasses.
+   *
+   * @param actualType the type of the clazz, must be free from generics
+   *
+   * @param select in case actualType is a field with open generic result, this
+   * choses the actual field from outer's actual generics. -1 otherwise.
+   *
+   * @param clazz the runtime clazz of the outer feature of
+   * actualType.featureOfType.
+   *
+   * @return the existing or newly created Clazz that represents actualType
+   * within outer.
+   */
+  public static Clazz create(AbstractType actualType, int select, Clazz outer)
   {
     if (PRECONDITIONS) require
       (actualType == Types.intern(actualType),
-       Errors.count() > 0 || !actualType.isGenericArgument(),
-       Errors.count() > 0 || actualType.isFreeFromFormalGenerics());
+       Errors.count() > 0 || !actualType.dependsOnGenerics());
 
     Clazz result = null;
     Clazz o = outer;
@@ -309,17 +311,17 @@ public class Clazzes extends ANY
                 // NYI: recursive chain of value types should be detected during
                 // types checking phase!
                 StringBuilder chain = new StringBuilder();
-                chain.append("1: "+actualType+" at "+actualType.pos.show()+"\n");
+                chain.append("1: "+actualType+" at "+actualType.pos().show()+"\n");
                 int i = 2;
                 Clazz c = outer;
                 while (c._type != actualType)
                   {
-                    chain.append(""+i+": "+c._type+" at "+c._type.pos.show()+"\n");
+                    chain.append(""+i+": "+c._type+" at "+c._type.pos().show()+"\n");
                     c = c._outer;
                     i++;
                   }
-                chain.append(""+i+": "+c._type+" at "+c._type.pos.show()+"\n");
-                Errors.error(actualType.pos,
+                chain.append(""+i+": "+c._type+" at "+c._type.pos().show()+"\n");
+                Errors.error(actualType.pos(),
                              "Recursive value type is not allowed",
                              "Value type " + actualType + " equals type of outer feature.\n"+
                              "The chain of outer types that lead to this recursion is:\n"+
@@ -336,13 +338,13 @@ public class Clazzes extends ANY
         // but it might be overkill in some cases. We might rethink this and,
         // e.g. treat clazzes of inherited features with a reference outer clazz
         // the same.
-        var newcl =  new Clazz(actualType, outer);
+        var newcl =  new Clazz(actualType, select, outer);
         result = intern(newcl);
         if (result == newcl)
           {
             check
-              (Errors.count() > 0 || result.feature().state().atLeast(Feature.State.RESOLVED));
-            if (result.feature().state().atLeast(Feature.State.RESOLVED))
+              (Errors.count() > 0 || !(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED));
+            if (!(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED))
               {
                 clazzesToBeVisited.add(result);
               }
@@ -397,10 +399,10 @@ public class Clazzes extends ANY
       {
         c.get().instantiated(SourcePosition.builtIn);
       }
-    constStringBytesArray = conststring.get().lookup(Types.resolved.f_array_internalArray, Call.NO_GENERICS, SourcePosition.builtIn).resultClazz();
+    constStringBytesArray = conststring.get().lookup(Types.resolved.f_array_internalArray, AbstractCall.NO_GENERICS, SourcePosition.builtIn).resultClazz();
     constStringBytesArray.instantiated(SourcePosition.builtIn);
-    constStringBytesArray.lookup(Types.resolved.f_sys_array_data  , Call.NO_GENERICS, SourcePosition.builtIn);
-    constStringBytesArray.lookup(Types.resolved.f_sys_array_length, Call.NO_GENERICS, SourcePosition.builtIn);
+    constStringBytesArray.lookup(Types.resolved.f_sys_array_data  , AbstractCall.NO_GENERICS, SourcePosition.builtIn);
+    constStringBytesArray.lookup(Types.resolved.f_sys_array_length, AbstractCall.NO_GENERICS, SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
       {
@@ -408,7 +410,7 @@ public class Clazzes extends ANY
         Clazz cl = clazzesToBeVisited.removeFirst();
 
         cl.findAllClasses();
-        cl.findAllClassesWhenCalled(main._res);
+        cl.findAllClassesWhenCalled();
         if (!cl.feature().isField())
           {
             toLayout.add(cl);
@@ -699,79 +701,61 @@ public class Clazzes extends ANY
         if (isUsed(a._assignedField, sClazz))
           {
             var vc = sClazz.asValue();
-            var fc = vc.lookup(a._assignedField, Call.NO_GENERICS, a.pos());
+            var fc = vc.lookup(a._assignedField, AbstractCall.NO_GENERICS, a.pos());
             outerClazz.setRuntimeClazz(a.tid_ + 1, fc);
+            propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz);
           }
       }
   }
 
 
   /**
-   * Find all static clazzes for this Box and store them in outerClazz.
+   * propagate the expected clazz of an expression.  This is used to find the
+   * result type of Box() expressions that are a NOP if the expected type is a
+   * value type or the boxed type is already a ref type, while it performs
+   * boxing if a value type is used as a ref.
+   *
+   * @param e the expression we are propagating the expected clazz into
+   *
+   * @param ec the expected result clazz of e
+   *
+   * @param outerClazz the current clazz
    */
-  public static void findClazzes(Box b, Clazz outerClazz)
+  static void propagateExpectedClazz(Expr e, Clazz ec, Clazz outerClazz)
   {
-    Clazz vc = clazz(b._value, outerClazz);
-    Clazz rc = vc;
-    var s = b._stmnt;
-    Clazz ft = null;
-    if (s instanceof Call c)
+    if (e instanceof Box b)
       {
-        var tclazz = clazz(c.target, outerClazz);
-        if (tclazz != c_void.get())
-          {
-            var inner = tclazz.lookup(c.calledFeature(),
-                                      outerClazz.actualGenerics(c.generics),
-                                      c.pos());
-
-            var tc = inner;
-            var afs = inner.argumentFields();
-            // NYI: The following if is somewhat arbitrary, needs a better
-            // condition. If removed, tests/reg_issue29_arrayOfUnitType
-            // failes. The better condition should filter out unused arguments,
-            // while unused is something like 'of unit type'.
-            if (b._arg < afs.length)
-              {
-                ft = afs[b._arg].resultClazz();
-              }
-          }
-      }
-    else if (s instanceof Assign a)
-      {
-        var f = a._assignedField;
-        if (isUsed(f, outerClazz))
-          {
-            Clazz sClazz = clazz(a._target, outerClazz);
-            ft = sClazz.asValue().lookup(f, Call.NO_GENERICS, a.pos()).resultClazz();
-          }
-      }
-    else if (s instanceof InlineArray i)
-      {
-        ft = outerClazz.actualClazz(i.elementType());
-      }
-    else
-      {
-        throw new Error("unexpected box target statement: " + s.getClass());
-      }
-    if (ft != null)
-      {
-        if (ft.isRef() ||
-            (ft._type.isChoice() &&
-             !ft._type.isAssignableFrom(vc._type) &&
-             ft._type.isAssignableFrom(vc._type.asRef())))
+        Clazz vc = clazz(b._value, outerClazz);
+        Clazz rc = vc;
+        if (ec.isRef() ||
+            (ec._type.isChoice() &&
+             !ec._type.isAssignableFrom(vc._type) &&
+             ec._type.isAssignableFrom(vc._type.asRef())))
           {
             rc = vc.asRef();
           }
+        if (b._valAndRefClazzId < 0)
+          {
+            b._valAndRefClazzId = getRuntimeClazzIds(2);
+          }
+        outerClazz.setRuntimeClazz(b._valAndRefClazzId    , vc);
+        outerClazz.setRuntimeClazz(b._valAndRefClazzId + 1, rc);
+        if (vc != rc)
+          {
+            rc.instantiated(b.pos());
+          }
       }
-    if (b._valAndRefClazzId < 0)
+    else if (e instanceof Block b)
       {
-        b._valAndRefClazzId = getRuntimeClazzIds(2);
+        var s = b.statements_;
+        if (!s.isEmpty() && s.get(s.size()-1) instanceof Expr e0)
+          {
+            propagateExpectedClazz(e0, ec, outerClazz);
+          }
       }
-    outerClazz.setRuntimeClazz(b._valAndRefClazzId    , vc);
-    outerClazz.setRuntimeClazz(b._valAndRefClazzId + 1, rc);
-    if (vc != rc)
+    else if (e instanceof Tag t)
       {
-        rc.instantiated(b.pos());
+        propagateExpectedClazz(t._value, ec, outerClazz);
       }
   }
 
@@ -812,18 +796,18 @@ public class Clazzes extends ANY
    * and will be used both as frame clazz for d<i32,p> and as the context for
    * call to e<z>.
    */
-  public static void findClazzes(Call c, Clazz outerClazz)
+  public static void findClazzes(AbstractCall c, Clazz outerClazz)
   {
     if (PRECONDITIONS) require
-      (Errors.count() > 0 || c.calledFeature_ != null && c.target != null);
+      (Errors.count() > 0 || c.calledFeature() != null && c.target() != null);
 
-    if (c.calledFeature_ == null  || c.target == null)
+    if (c.calledFeature() == null  || c.target() == null)
       {
         return;  // previous errors, give up
       }
 
-    var tclazz  = clazz(c.target, outerClazz);
-    var cf      = c.calledFeature_;
+    var tclazz  = clazz(c.target(), outerClazz);
+    var cf      = c.calledFeature();
     var dynamic = c.isDynamic() && tclazz.isRef();
     if (dynamic)
       {
@@ -831,17 +815,13 @@ public class Clazzes extends ANY
       }
     if (!cf.isChoice() && tclazz != c_void.get())
       {
-        var innerClazz = tclazz.lookup(cf, outerClazz.actualGenerics(c.generics), c.pos, c.isInheritanceCall_);
+        var innerClazz = tclazz.lookup(cf, c.select(), outerClazz.actualGenerics(c.generics()), c.pos, c.isInheritanceCall());
         if (c.sid_ < 0)
           {
             c.sid_ = getRuntimeClazzIds(2);
           }
         outerClazz.setRuntimeData(c.sid_ + 0, innerClazz);
         outerClazz.setRuntimeData(c.sid_ + 1, tclazz    );
-        if (innerClazz.feature().isField()) // NYI: workaround to create temp clazz created by clazzForField, remove once clazzForField is removed
-          {
-            Clazz fclazz = tclazz.clazzForField(innerClazz.feature());
-          }
 
         if (!dynamic)
           {
@@ -850,7 +830,7 @@ public class Clazzes extends ANY
                        {
                          var ic = innerClazz.isCalled();
                          innerClazz._isCalledDirectly = true;  // NYI: Check why this is needed
-                         if (!c.isInheritanceCall_)
+                         if (!c.isInheritanceCall())
                            {
                              innerClazz.instantiated(c.pos());
                            }
@@ -866,6 +846,17 @@ public class Clazzes extends ANY
                                }
                            }
                        });
+          }
+
+        var afs = innerClazz.argumentFields();
+        var i = 0;
+        for (var a : c.actuals())
+          {
+            if (i < afs.length)  // NYI: check boxing for open generic argument lists
+              {
+                propagateExpectedClazz(a, afs[i].resultClazz(), outerClazz);
+              }
+            i++;
           }
       }
   }
@@ -887,27 +878,27 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(Case c, Clazz outerClazz)
+  public static void findClazzes(AbstractCase c, Clazz outerClazz)
   {
     // NYI: Check if this works for a case that is part of an inherits clause, do
     // we need to store in outerClazz.outer?
     if (c.runtimeClazzId_ < 0)
       {
-        c.runtimeClazzId_ = getRuntimeClazzIds(c.field != null
+        c.runtimeClazzId_ = getRuntimeClazzIds(c.field() != null
                                                ? 1
-                                               : c.types.size());
+                                               : c.types().size());
       }
     int i = c.runtimeClazzId_;
-    if (c.field != null)
+    if (c.field() != null)
       {
-        var fOrFc = isUsed(c.field, outerClazz)
-          ? outerClazz.lookup(c.field, Call.NO_GENERICS, isUsedAt(c.field))
-          : outerClazz.actualClazz(c.field.resultType());
+        var fOrFc = isUsed(c.field(), outerClazz)
+          ? outerClazz.lookup(c.field(), AbstractCall.NO_GENERICS, isUsedAt(c.field()))
+          : outerClazz.actualClazz(c.field().resultType());
         outerClazz.setRuntimeClazz(i, fOrFc);
       }
     else
       {
-        for (Type caseType : c.types)
+        for (var caseType : c.types())
           {
             outerClazz.setRuntimeClazz(i, outerClazz.actualClazz(caseType));
             i++;
@@ -919,7 +910,7 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(Match m, Clazz outerClazz)
+  public static void findClazzes(AbstractMatch m, Clazz outerClazz)
   {
     if (m.runtimeClazzId_ < 0)
       {
@@ -927,7 +918,9 @@ public class Clazzes extends ANY
         // we need to store in outerClazz.outer?
         m.runtimeClazzId_ = getRuntimeClazzIds(1);
       }
-    outerClazz.setRuntimeClazz(m.runtimeClazzId_, clazz(m.subject, outerClazz));
+    var subjClazz = clazz(m.subject(), outerClazz);
+    var subjClazzValue = subjClazz.asValue(); // this is used in the be/interpreter
+    outerClazz.setRuntimeClazz(m.runtimeClazzId_, subjClazz);
   }
 
 
@@ -958,11 +951,16 @@ public class Clazzes extends ANY
       {
         i._arrayClazzId = getRuntimeClazzIds(2);
       }
-    Clazz sa = ac.lookup(Types.resolved.f_array_internalArray, Call.NO_GENERICS, i.pos()).resultClazz();
+    Clazz sa = ac.lookup(Types.resolved.f_array_internalArray, AbstractCall.NO_GENERICS, i.pos()).resultClazz();
     sa.instantiated(i.pos());
     outerClazz.setRuntimeClazz(i._arrayClazzId    , ac);
     outerClazz.setRuntimeClazz(i._arrayClazzId + 1, sa);
     ac.instantiated(i.pos());
+    var ec = outerClazz.actualClazz(i.elementType());
+    for (var e : i._elements)
+      {
+        propagateExpectedClazz(e, ec, outerClazz);
+      }
   }
 
 
@@ -992,14 +990,16 @@ public class Clazzes extends ANY
         result = outerClazz.actualClazz(b._type);
       }
 
-    else if (e instanceof Call c)
+    else if (e instanceof AbstractCall c)
       {
-        var tclazz = clazz(c.target, outerClazz);
+        var tclazz = clazz(c.target(), outerClazz);
         if (tclazz != c_void.get())
           {
             var inner = tclazz.lookup(c.calledFeature(),
-                                      outerClazz.actualGenerics(c.generics),
-                                      c.pos());
+                                      c.select(),
+                                      outerClazz.actualGenerics(c.generics()),
+                                      c.pos(),
+                                      false);
             result = inner.resultClazz();
           }
         else
@@ -1017,19 +1017,9 @@ public class Clazzes extends ANY
         result = outerClazz.actualClazz(i.type());
       }
 
-    else if (e instanceof BoolConst b)
+    else if (e instanceof AbstractMatch m)
       {
-        result = bool.get();
-      }
-
-    else if (e instanceof NumLiteral i)
-      {
-        result = outerClazz.actualClazz(i.type());
-      }
-
-    else if (e instanceof Match m)
-      {
-        result = outerClazz.actualClazz(m.type_);
+        result = outerClazz.actualClazz(m.type());
       }
 
     else if (e instanceof Old o)
@@ -1042,11 +1032,18 @@ public class Clazzes extends ANY
         result = universe.get();
       }
 
-    else if (e instanceof StrConst s)
+    else if (e instanceof Constant c)
       {
-        i32.get();
-        object.get();
-        result = conststring.get();
+        result = outerClazz.actualClazz(c.type());
+        if (result == string.get())
+          { /* this is a bit tricky: in the front end, the type of a string
+             * constant is 'string'.  However, for the back end, the type is
+             * 'consstring' such that the backend can create an instance of
+             * 'constString' and see the correct type (and create proper type
+             * conversion code to 'string' if this is needed).
+             */
+            result = conststring.get();
+          }
       }
 
     else if (e instanceof Tag t)
@@ -1065,7 +1062,8 @@ public class Clazzes extends ANY
           {
             throw new Error("" + e.getClass() + " should no longer exist at runtime");
           }
-        return error.get(); // dummy class
+
+        result = error.get(); // dummy class
       }
 
     if (POSTCONDITIONS) ensure
@@ -1083,11 +1081,10 @@ public class Clazzes extends ANY
    *
    * @return
    */
-  public static Clazz clazz(Type thiz)
+  public static Clazz clazz(AbstractType thiz)
   {
     if (PRECONDITIONS) require
-      (!thiz.isOpenGeneric(),
-       Errors.count() > 0 || thiz.isFreeFromFormalGenerics());
+      (Errors.count() > 0 || !thiz.dependsOnGenerics());
 
     Clazz outerClazz;
     if (thiz.outer() != null)
@@ -1099,7 +1096,7 @@ public class Clazzes extends ANY
         outerClazz = null;
       }
 
-    Type t = Types.intern(thiz);
+    var t = Types.intern(thiz);
     var result = _clazzesForTypes_.get(t);
     if (result == null)
       {
@@ -1119,27 +1116,24 @@ public class Clazzes extends ANY
    * clazz that is inserted as the outer clazz for the outermost type that was
    * explicitly given in the source code.
    *
+   * @param thiz the type of the clazz, must be free from generics
+   *
+   * @param select in case thiz is a field with open generic result, this
+   * choses the actual field from outer's actual generics. -1 otherwise.
+   *
    * @param outerClazz the outer clazz
    *
-   * @return
+   * @return the corresponding Clazz.
    */
-  public static Clazz clazzWithSpecificOuter(Type thiz, Clazz outerClazz)
+  public static Clazz clazzWithSpecificOuter(AbstractType thiz, int select, Clazz outerClazz)
   {
     if (PRECONDITIONS) require
-      (!thiz.isOpenGeneric(),
-       thiz.isFreeFromFormalGenericsInSource(),
+      (!thiz.dependsOnGenerics(),
        outerClazz != null || thiz.featureOfType().outer() == null,
-       Errors.count()>0 || thiz == Types.t_ERROR || !thiz.outerMostInSource() || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
+       Errors.count()>0 || thiz == Types.t_ERROR || outerClazz == null || outerClazz.feature().inheritsFrom(thiz.featureOfType().outer()));
 
-    Clazz result;
-
-    if (!thiz.outerMostInSource())
-      {
-        outerClazz = clazzWithSpecificOuter(thiz.outer(), outerClazz._outer);
-      }
-
-    Type t = Types.intern(thiz);
-    result = create(t, outerClazz);
+    var t = Types.intern(thiz);
+    var result = create(t, select, outerClazz);
 
     return result;
   }
@@ -1231,21 +1225,22 @@ public class Clazzes extends ANY
     return isUsedAtAll(thiz);
   }
 
+
   /**
    * Has this feature been found to be used?
    */
   public static boolean isUsedAtAll(AbstractFeature thiz)
   {
-    return _usedFeatures_.get(thiz.astFeature()) != null;
+    return thiz._usedAt != null;
   }
 
 
   /**
    * Has this feature been found to be used?
    */
-  public static SourcePosition isUsedAt(AbstractFeature thiz)
+  public static HasSourcePosition isUsedAt(AbstractFeature thiz)
   {
-    return _usedFeatures_.get(thiz.astFeature());
+    return thiz._usedAt;
   }
 
 
@@ -1253,9 +1248,9 @@ public class Clazzes extends ANY
    * Add f to the set of used features, record at as the position of the first
    * use.
    */
-  public static void addUsedFeature(AbstractFeature f, SourcePosition at)
+  public static void addUsedFeature(AbstractFeature f, HasSourcePosition at)
   {
-    _usedFeatures_.put(f.astFeature(), at);
+    f._usedAt = at;
   }
 
 
@@ -1266,7 +1261,7 @@ public class Clazzes extends ANY
    */
   public static boolean isCalledDynamically0(AbstractFeature f)
   {
-    return _dynamicallyCalledFeatures0_.getOrDefault(f, false);
+    return f._calledDynamically;
   }
 
 
@@ -1278,7 +1273,7 @@ public class Clazzes extends ANY
    */
   public static void setCalledDynamically0(AbstractFeature f)
   {
-    _dynamicallyCalledFeatures0_.put(f, true);
+    f._calledDynamically = true;
   }
 
 }

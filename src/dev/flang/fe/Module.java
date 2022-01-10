@@ -27,14 +27,21 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AstErrors;
+import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
+import dev.flang.ast.FormalGenerics;
 
 import dev.flang.mir.MIR;
 
 import dev.flang.util.ANY;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 
 /**
@@ -47,13 +54,61 @@ public abstract class Module extends ANY
 {
 
 
+
+  /*-----------------------------  classes  -----------------------------*/
+
+
+  /**
+   * Data stored locally to a Feature.
+   */
+  static class FData
+  {
+
+    /**
+     * Features declared inside a feature. The inner features are mapped from
+     * their FeatureName.
+     */
+    SortedMap<FeatureName, AbstractFeature> _declaredFeatures;
+
+    /**
+     * Features declared inside a feature or inherited from its parents.
+     */
+    SortedMap<FeatureName, AbstractFeature> _declaredOrInheritedFeatures;
+
+    /**
+     * All features that have been found to inherit from this feature.  This set
+     * is collected during RESOLVING_DECLARATIONS.
+     */
+    Set<AbstractFeature> _heirs = new TreeSet<>();
+
+
+    /**
+     * All features that have been found to directly redefine this feature. This
+     * does not include redefintions of redefinitions.  This set is collected
+     * during RESOLVING_DECLARATIONS.
+     */
+    Set<AbstractFeature> _redefinitions = null;
+
+    /**
+     * Cached result of SourceModule.allInnerandinheritedfeatures().
+     */
+    Set<AbstractFeature> _allInnerAndInheritedFeatures = null;
+
+    /**
+     * offset of this feature's data in .mir file.
+     */
+    int _mirOffset = -1;
+
+  }
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
   /**
    * What modules does this module depend on?
    */
-  Module[] _dependsOn;
+  LibraryModule[] _dependsOn;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -62,7 +117,7 @@ public abstract class Module extends ANY
   /**
    * Create SourceModule for given options and sourceDirs.
    */
-  Module(Module[] dependsOn)
+  Module(LibraryModule[] dependsOn)
   {
     _dependsOn = dependsOn;
   }
@@ -97,13 +152,69 @@ public abstract class Module extends ANY
 
 
   /**
-   * Get direct redefininitions of given Feature as seen by this module.
-   * Result is null if f has no redefinitions in this module.
+   * Get or create the data record for given outer feature.
    *
-   * @param f the original feature
+   * @param outer the feature we need to get the data record from.
    */
-  abstract Set<AbstractFeature>redefinitionsOrNull(AbstractFeature f);
+  FData data(AbstractFeature outer)
+  {
+    var d = (FData) outer._frontEndData;
+    if (d == null)
+      {
+        d = new FData();
+        outer._frontEndData = d;
+      }
+    return d;
+  }
 
+
+  /**
+   * Get declared and inherited features for given outer Feature as seen by this
+   * module.  Result is never null.
+   *
+   * @param outer the declaring feature
+   */
+  public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
+  {
+    if (PRECONDITIONS) require
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.RESOLVING_DECLARATIONS) || of.isUniverse());
+
+    var d = data(outer);
+    var s = d._declaredOrInheritedFeatures;
+    if (s == null)
+      {
+        if (outer instanceof LibraryFeature olf)
+          {
+            s = olf._libModule.declaredOrInheritedFeaturesOrNull(outer);
+            if (s == null)
+              {
+                s = new TreeMap<>();
+              }
+          }
+        else if (outer.isUniverse())
+          {
+            s = declaredFeaturesOrNull(outer);
+          }
+        else
+          {
+            s = new TreeMap<>();
+            for (Module m : _dependsOn)
+              { // NYI: properly obtain set of declared features from m, do we need
+                // to take care for the order and dependencies between modules?
+                var md = m.declaredOrInheritedFeaturesOrNull(outer);
+                if (md != null)
+                  {
+                    for (var e : md.entrySet())
+                      {
+                        s.put(e.getKey(), e.getValue());
+                      }
+                  }
+              }
+          }
+        d._declaredOrInheritedFeatures= s;
+      }
+    return s;
+  }
 
 }
 

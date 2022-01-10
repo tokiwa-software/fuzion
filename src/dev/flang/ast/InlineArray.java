@@ -63,7 +63,7 @@ public class InlineArray extends Expr
   /**
    * The type of this array.
    */
-  private Type type_;
+  private AbstractType type_;
 
 
   /**
@@ -98,11 +98,11 @@ public class InlineArray extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     if (type_ == null)
       {
-        var t = Types.resolved.t_void;
+        AbstractType t = Types.resolved.t_void;
         for (var e : _elements)
           {
             var et = e.typeOrNull();
@@ -141,7 +141,7 @@ public class InlineArray extends Expr
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, Type t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
     if (type_ == null)
       {
@@ -166,15 +166,15 @@ public class InlineArray extends Expr
    *
    * @param if t is Array<T>; the element type T. Types.t_ERROR otherwise.
    */
-  private Type elementType(Type t)
+  private AbstractType elementType(AbstractType t)
   {
     if (PRECONDITIONS) require
       (t != null);
 
     if (t.featureOfType() == Types.resolved.f_array &&
-        t._generics.size() == 1)
+        t.generics().size() == 1)
       {
-        return t._generics.get(0);
+        return t.generics().get(0);
       }
     else
       {
@@ -188,7 +188,7 @@ public class InlineArray extends Expr
    *
    * @param if type() is Array<T>; the element type T. Types.t_ERROR otherwise.
    */
-  public Type elementType()
+  public AbstractType elementType()
   {
     return elementType(type());
   }
@@ -204,7 +204,7 @@ public class InlineArray extends Expr
    *
    * @return this.
    */
-  public Expr visit(FeatureVisitor v, Feature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var li = _elements.listIterator();
     while (li.hasNext())
@@ -217,18 +217,34 @@ public class InlineArray extends Expr
 
 
   /**
+   * visit all the statements within this InlineArray.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    super.visitStatements(v);
+    for (var e : _elements)
+      {
+        e.visitStatements(v);
+      }
+  }
+
+
+  /**
    * Boxing for actual arguments: Find actual arguments of value type that are
    * assigned to formal argument types that are references and box them.
    *
    * @param outer the feature that contains this expression
    */
-  public void box(Feature outer)
+  public void box(AbstractFeature outer)
   {
     var li = _elements.listIterator();
     while (li.hasNext())
       {
         var e = li.next();
-        li.set(e.box(this, 0));
+        li.set(e.box(elementType()));
       }
   }
 
@@ -267,12 +283,12 @@ public class InlineArray extends Expr
    *
    * @param outer the root feature that contains this statement.
    */
-  public Expr resolveSyntacticSugar2(Resolution res, Feature outer)
+  public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
     Expr result = this;
     if (true)  // NYI: This syntactic sugar should not be resolved if this array is a compile-time constant
       {
-        var eT           = new List<Type>(elementType());
+        var eT           = new List<AbstractType>(elementType());
         var lengthArgs   = new List<Expr>(new NumLiteral(_elements.size()));
         var sys          = new Call(pos(), null, "sys"                  ).resolveTypes(res, outer);
         var sysArrayCall = new Call(pos(), sys , "array", eT, lengthArgs).resolveTypes(res, outer);

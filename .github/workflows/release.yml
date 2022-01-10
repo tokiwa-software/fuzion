@@ -1,0 +1,33 @@
+name: github release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup jdk-17
+      uses: actions/setup-java@main
+      with:
+        java-version: 17
+        distribution: 'adopt'
+
+  # NYI ebnf is not generated because of missing antlr/pcregrep
+    - name: build release
+      run: make release
+
+    - name: Read VERSION file
+      id: getversion
+      run: echo "::set-output name=version::$(cat version.txt)"
+
+    - uses: ncipollo/release-action@v1
+      with:
+        artifacts: "fuzion_${{ steps.getversion.outputs.version }}.tar.gz"
+        tag: "v${{ steps.getversion.outputs.version }}"
+        prerelease: false
+        generateReleaseNotes: true
+        token: ${{ secrets.GITHUB_TOKEN }}

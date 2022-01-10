@@ -587,7 +587,7 @@ public class Loop extends ANY
                                          /* name */        new List<>(streamName),
                                          /* generics */    FormalGenerics.NONE,
                                          /* args */        new List<Feature>(),
-                                         /* inherits */    new List<Call>(),
+                                         /* inherits */    new List<>(),
                                          /* contract */    null,
                                          /* impl */        new Impl(p, asStream, Impl.Kind.FieldDef));
             stream._isIndexVarUpdatedByLoop = true;  // hack to prevent error AstErrors.initialValueNotAllowed(this)

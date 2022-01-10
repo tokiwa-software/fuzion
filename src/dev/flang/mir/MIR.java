@@ -28,9 +28,9 @@ package dev.flang.mir;
 
 import java.nio.ByteBuffer;
 
+import dev.flang.ast.AbstractCall;  // NYI: Remove dependency!
 import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
 import dev.flang.ast.Assign;  // NYI: Remove dependency!
-import dev.flang.ast.Call;  // NYI: Remove dependency!
 
 import dev.flang.ir.IR;
 
@@ -183,10 +183,10 @@ public class MIR extends IR
    */
   private void addCode(AbstractFeature heir, List<Object> code, AbstractFeature ff)
   {
-    for (Call p: ff.inherits())
+    for (var p: ff.inherits())
       {
         /*
-NYI: Any side-effects in p.target or p._actuals will be executed twice, once for
+NYI: Any side-effects in p.target or p.actuals() will be executed twice, once for
      the precondition and once for the inlinded call! See this example:
 
 hw25 is
@@ -208,7 +208,7 @@ hw25 is
   if (count == 3) say "PASS" else say "FAIL"
         */
 
-        toStack(code, p.target);
+        toStack(code, p.target());
         var pf = p.calledFeature();
         /* NYI: initialize outer ref
 
@@ -227,10 +227,10 @@ hw25 is
         */
 
         check
-          (p._actuals.size() == p.calledFeature().arguments().size());
-        for (var i = 0; i < p._actuals.size(); i++)
+          (p.actuals().size() == p.calledFeature().arguments().size());
+        for (var i = 0; i < p.actuals().size(); i++)
           {
-            var a = p._actuals.get(i);
+            var a = p.actuals().get(i);
             var f = pf.arguments().get(i);
             toStack(code, a);
             code.add(ExprKind.Current);
@@ -296,7 +296,7 @@ hw25 is
   {
     return f == -1
       ? "-- no feature --"
-      : _featureIds.get(f).qualifiedName() + " " + _featureIds.get(f).state();
+      : _featureIds.get(f).qualifiedName();
   }
 
 
@@ -324,8 +324,8 @@ hw25 is
     var ff = _featureIds.get(f);
     var s = _codeIds.get(c).get(ix);
     var af =
-      (s instanceof Call   call) ? call.calledFeature() :
-      (s instanceof Assign a   ) ? a._assignedField :
+      (s instanceof AbstractCall   call) ? call.calledFeature() :
+      (s instanceof Assign         a   ) ? a._assignedField :
       (AbstractFeature) (Object) new Object() { { if (true) throw new Error("acccessedFeature found unexpected Stmnt."); } } /* Java is ugly... */;
 
     return af == null ? -1 : _featureIds.get(af);

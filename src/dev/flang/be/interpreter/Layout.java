@@ -98,7 +98,17 @@ class Layout extends ANY
   /**
    * Offsets of the fields in instances of this clazz.
    */
-  Map<AbstractFeature, Integer> _offsets = new TreeMap<>();
+  Map<Clazz, Integer> _offsets = new TreeMap<>();
+
+
+  /**
+   * Offsets of the fields in instances of this clazz. This maps fields to
+   * Integer offsets and open generic fields to int[] with offsets for all
+   * select-variants.
+   *
+   * NYI: Remove, this should be replaced by _offsets.
+   */
+  Map<AbstractFeature, Object> _offsets0 = new TreeMap<>();
 
 
   /*---------------------------  consructors  ---------------------------*/
@@ -118,8 +128,9 @@ class Layout extends ANY
         var tag = _clazz.choiceTag();
         if (tag != null)
           {
-            _offsets.put(tag.feature(), _size - Integer.MIN_VALUE);
-            _size += get(tag.fieldClazz()).size();
+            _offsets.put(tag, _size - Integer.MIN_VALUE);
+            _offsets0.put(tag.feature(), _size - Integer.MIN_VALUE);
+            _size += get(tag.resultClazz()).size();
           }
         int maxSz = 0;
         for (var cg : _clazz.choiceGenerics())
@@ -138,24 +149,43 @@ class Layout extends ANY
       {
         for (var f : _clazz.fields())
           {
-            var fc = f.fieldClazz();
+            var ff = f.feature();
+            // NYI: Ugly special handling, clean up:
+            var fc =
+              ff.isOuterRef() && ff.outer().isOuterRefAdrOfValue()  ? f.actualClazz(Types.t_ADDRESS) :
+              ff.isOuterRef() && ff.outer().isOuterRefCopyOfValue() ? f._outer.actualClazz(ff.resultType(), f._select)
+                                                                    : f.resultClazz();
             int fsz;
             if        (fc.isRef()) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_i8    ) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_i16   ) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_i32   ) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_i64   ) { fsz = 2;
-            } else if (fc._type == Types.resolved.t_u8    ) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_u16   ) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_u32   ) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_u64   ) { fsz = 2;
-            } else if (fc._type == Types.resolved.t_f32   ) { fsz = 1;
-            } else if (fc._type == Types.resolved.t_f64   ) { fsz = 2;
-            } else if (fc._type == Types.resolved.t_void  ) { fsz = 0;
+            } else if (fc._type.compareTo(Types.resolved.t_i8    ) == 0) { fsz = 1;
+            } else if (fc._type.compareTo(Types.resolved.t_i16   ) == 0) { fsz = 1;
+            } else if (fc._type.compareTo(Types.resolved.t_i32   ) == 0) { fsz = 1;
+            } else if (fc._type.compareTo(Types.resolved.t_i64   ) == 0) { fsz = 2;
+            } else if (fc._type.compareTo(Types.resolved.t_u8    ) == 0) { fsz = 1;
+            } else if (fc._type.compareTo(Types.resolved.t_u16   ) == 0) { fsz = 1;
+            } else if (fc._type.compareTo(Types.resolved.t_u32   ) == 0) { fsz = 1;
+            } else if (fc._type.compareTo(Types.resolved.t_u64   ) == 0) { fsz = 2;
+            } else if (fc._type.compareTo(Types.resolved.t_f32   ) == 0) { fsz = 1;
+            } else if (fc._type.compareTo(Types.resolved.t_f64   ) == 0) { fsz = 2;
+            } else if (fc._type.compareTo(Types.resolved.t_void  ) == 0) { fsz = 0;
             } else {
               fsz = get(fc).size();
             }
-            _offsets.put(f.feature(), _size - Integer.MIN_VALUE);
+            _offsets.put(f, _size - Integer.MIN_VALUE);
+            if (f._select < 0)
+              {
+                _offsets0.put(f.feature(), _size - Integer.MIN_VALUE);
+              }
+            else
+              {
+                int[] a = (int[]) _offsets0.get(f.feature());
+                if (a == null)
+                  {
+                    a = new int[_clazz.replaceOpen(f.feature().resultType()).size()];
+                    _offsets0.put(f.feature(), a);
+                  }
+                a[f._select] = _size - Integer.MIN_VALUE;
+              }
             _size += fsz;
           }
         _size -= Integer.MIN_VALUE;
@@ -195,8 +225,27 @@ class Layout extends ANY
 
   /**
    * Offset of field f within instances of _clazz.
+   *
+   * NYI: Remove, replace by offset(Clazz)
    */
-  int offset(AbstractFeature f)
+  int offset0(AbstractFeature f, int select)
+  {
+    if (PRECONDITIONS) require
+      (_clazz.isRoutine() || _clazz.isChoice(),
+       f.resultType().isOpenGeneric() == (select >= 0),
+       sizeAvailable());
+
+    var o = _offsets0.get(f);
+    var result = select < 0 ? ((Integer) o)
+                            : ((int[]) o)[select];
+    return result;
+  }
+
+
+  /**
+   * Offset of field f within instances of _clazz.
+   */
+  int offset(Clazz f)
   {
     if (PRECONDITIONS) require
       (_clazz.isRoutine() || _clazz.isChoice(),

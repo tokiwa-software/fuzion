@@ -38,7 +38,7 @@ import java.nio.ByteOrder;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class NumLiteral extends Expr
+public class NumLiteral extends Constant
 {
 
 
@@ -206,7 +206,7 @@ public class NumLiteral extends Expr
    * The type of this constant.  This can be set by the user of this type
    * depending on what this is assigned to.
    */
-  private Type type_;
+  private AbstractType type_;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -347,7 +347,7 @@ public class NumLiteral extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     if (type_ == null)
       {
@@ -571,7 +571,7 @@ public class NumLiteral extends Expr
   public float f32Value()
   {
     if (PRECONDITIONS) require
-      (type() == Types.resolved.t_f32);
+      (type().compareTo(Types.resolved.t_f32) == 0);
 
     return ByteBuffer.wrap(data()).order(ByteOrder.LITTLE_ENDIAN).getFloat();
   }
@@ -582,7 +582,7 @@ public class NumLiteral extends Expr
   public double f64Value()
   {
     if (PRECONDITIONS) require
-      (type() == Types.resolved.t_f64);
+      (type().compareTo(Types.resolved.t_f64) == 0);
 
     return ByteBuffer.wrap(data()).order(ByteOrder.LITTLE_ENDIAN).getDouble();
   }
@@ -659,18 +659,18 @@ public class NumLiteral extends Expr
    *
    * @return the corresponding ConstantType or nul if none.
    */
-  ConstantType findConstantType(Type t)
+  ConstantType findConstantType(AbstractType t)
   {
-    if      (t == Types.resolved.t_i8 ) { return ConstantType.ct_i8 ; }
-    else if (t == Types.resolved.t_i16) { return ConstantType.ct_i16; }
-    else if (t == Types.resolved.t_i32) { return ConstantType.ct_i32; }
-    else if (t == Types.resolved.t_i64) { return ConstantType.ct_i64; }
-    else if (t == Types.resolved.t_u8 ) { return ConstantType.ct_u8 ; }
-    else if (t == Types.resolved.t_u16) { return ConstantType.ct_u16; }
-    else if (t == Types.resolved.t_u32) { return ConstantType.ct_u32; }
-    else if (t == Types.resolved.t_u64) { return ConstantType.ct_u64; }
-    else if (t == Types.resolved.t_f32) { return ConstantType.ct_f32; }
-    else if (t == Types.resolved.t_f64) { return ConstantType.ct_f64; }
+    if      (t.compareTo(Types.resolved.t_i8 ) == 0) { return ConstantType.ct_i8 ; }
+    else if (t.compareTo(Types.resolved.t_i16) == 0) { return ConstantType.ct_i16; }
+    else if (t.compareTo(Types.resolved.t_i32) == 0) { return ConstantType.ct_i32; }
+    else if (t.compareTo(Types.resolved.t_i64) == 0) { return ConstantType.ct_i64; }
+    else if (t.compareTo(Types.resolved.t_u8 ) == 0) { return ConstantType.ct_u8 ; }
+    else if (t.compareTo(Types.resolved.t_u16) == 0) { return ConstantType.ct_u16; }
+    else if (t.compareTo(Types.resolved.t_u32) == 0) { return ConstantType.ct_u32; }
+    else if (t.compareTo(Types.resolved.t_u64) == 0) { return ConstantType.ct_u64; }
+    else if (t.compareTo(Types.resolved.t_f32) == 0) { return ConstantType.ct_f32; }
+    else if (t.compareTo(Types.resolved.t_f64) == 0) { return ConstantType.ct_f64; }
     else                                { return null;             }
   }
 
@@ -692,7 +692,7 @@ public class NumLiteral extends Expr
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, Type t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
     if (type_ == null && findConstantType(t) != null)
       {
@@ -713,7 +713,7 @@ public class NumLiteral extends Expr
    *
    * @return this.
    */
-  public NumLiteral visit(FeatureVisitor v, Feature outer)
+  public NumLiteral visit(FeatureVisitor v, AbstractFeature outer)
   {
     // nothing to be done for a constant
     return this;

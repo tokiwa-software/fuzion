@@ -44,7 +44,7 @@ public class Function extends Expr
 
 
   static final List<Feature> NO_FEATURES = new List<Feature>();
-  static final List<Call> NO_CALLS = new List<Call>();
+  static final List<AbstractCall> NO_CALLS = new List<>();
 
 
   /*-------------------------  static variables -------------------------*/
@@ -81,7 +81,7 @@ public class Function extends Expr
   AbstractFeature feature_;
 
 
-  Type type_;
+  AbstractType type_;
 
 
   /**
@@ -108,7 +108,7 @@ public class Function extends Expr
    * In this case, _wrapper and call_ will be created during propagateExpectedType().
    */
   List<String> _names;  // names of the arguments: "x", "y"
-  List<Call> _inherits; // inherits calls, currently always empty
+  List<AbstractCall> _inherits; // inherits calls, currently always empty
   Contract _contract;   // contract of the lambda
   Expr _expr;           // the right hand side of the '->'
 
@@ -185,7 +185,7 @@ public class Function extends Expr
   public Function(SourcePosition pos,
                   ReturnType r,
                   List<Feature> a,
-                  List<Call> i,
+                  List<AbstractCall> i,
                   Contract c,
                   Block b)
   {
@@ -221,7 +221,7 @@ public class Function extends Expr
   public Function(SourcePosition pos,
                   ReturnType r,
                   List<Feature> a,
-                  List<Call> i,
+                  List<AbstractCall> i,
                   Contract c,
                   Expr e)
   {
@@ -262,7 +262,7 @@ public class Function extends Expr
   private Function(SourcePosition pos,
                    ReturnType r,
                    List<Feature> a,
-                   List<Call> i,
+                   List<AbstractCall> i,
                    Contract c,
                    Impl p)
   {
@@ -289,7 +289,7 @@ public class Function extends Expr
     Feature f = new Feature(pos, r, new List<String>("call"), a, i, c, p);
     this.feature_ = f;
 
-    List<Type> generics = new List<Type>();
+    List<AbstractType> generics = new List<>();
     generics.add(f.hasResult() ? Types.t_UNDEFINED : new Type("unit"));
     for (int j = 0; j < a.size(); j++)
       {
@@ -333,7 +333,7 @@ public class Function extends Expr
    */
   public Function(SourcePosition pos,
                   List<String> names,
-                  List<Call> i,
+                  List<AbstractCall> i,
                   Contract c,
                   Expr e)
   {
@@ -357,7 +357,7 @@ public class Function extends Expr
    *
    * @param thiz the class that contains this expression.
    */
-  void loadCalledFeature(Resolution res, Feature thiz)
+  void loadCalledFeature(Resolution res, AbstractFeature thiz)
   {
     if (this.call_ != null)
       {
@@ -370,9 +370,9 @@ public class Function extends Expr
 
             if (f != null)
               {
-                if (f.returnType() != RefType.INSTANCE && f.returnType().isConstructorType())
+                if (f.isConstructor())
                   {
-                    System.err.println("NYI: fun for returnType >>"+f.returnType()+"<< not allowed");
+                    System.err.println("NYI: fun for constructor type not allowed");
                     System.exit(1);
                   }
               }
@@ -398,7 +398,7 @@ public class Function extends Expr
    * result. In particular, if the result is assigned to a temporary field, this
    * will be replaced by the statement that reads the field.
    */
-  public Expr propagateExpectedType(Resolution res, Feature outer, Type t)
+  public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
     if (call_ == null)
       {
@@ -426,7 +426,7 @@ public class Function extends Expr
          * [..]
          */
         List<Feature> a = new List<>();
-        var gs = t._generics;
+        var gs = t.generics();
         int i = 1;
         for (var n : _names)
           {
@@ -484,7 +484,7 @@ public class Function extends Expr
    * @return this or an alternative Expr if the action performed during the
    * visit replaces this by the alternative.
    */
-  public Expr visit(FeatureVisitor v, Feature outer)
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     if (this.call_ != null)
       {
@@ -503,7 +503,7 @@ public class Function extends Expr
    *
    * @param outer the root feature that contains this statement.
    */
-  public void findGenerics(FeatureVisitor v, Feature outer)
+  public void findGenerics(FeatureVisitor v, AbstractFeature outer)
   {
     if (this.feature_ != null)
       { /* NYI: Neeed? The following comment seems wrong: */
@@ -512,9 +512,11 @@ public class Function extends Expr
         var f = this.feature_;
         for (var a : f.arguments())
           {
-            a.returnType().visit(v, outer);
+            var rt = ((Feature)a).returnType(); // NYI: Cast!
+            rt.visit(v, outer);
           }
-        f.returnType().visit(v, outer);
+        var rt = ((Feature)f).returnType(); // NYI: Cast!
+        rt.visit(v, outer);
       }
   }
 
@@ -537,9 +539,9 @@ public class Function extends Expr
    * Produce the list of actual generic arguments to be passed to
    * functionOrRoutine.
    */
-  List<Type> generics(Resolution res)
+  List<AbstractType> generics(Resolution res)
   {
-    List<Type> generics = new List<Type>();
+    List<AbstractType> generics = new List<>();
 
     var f = this.feature_ == null ? this.call_.calledFeature()
                                   : this.feature_;
@@ -548,8 +550,8 @@ public class Function extends Expr
 
     if (f != null)
       {
-        generics.add(f.hasResult()
-                     ? ((Feature) f).resultTypeForTypeInference(pos, res, Type.NONE) // NYI: Cast!
+        generics.add(f instanceof Feature ff && ff.hasResult()  // NYI: Cast!
+                     ? ff.resultTypeForTypeInference(pos, res, Type.NONE)
                      : new Type("unit"));
         for (var a : f.arguments())
           {
@@ -568,7 +570,7 @@ public class Function extends Expr
    *
    * @param outer the root feature that contains this statement.
    */
-  public void resolveTypes(Resolution res, Feature outer)
+  public void resolveTypes(Resolution res, AbstractFeature outer)
   {
     if (this.call_ == null)
       {
@@ -578,7 +580,7 @@ public class Function extends Expr
     else if (this.feature_ == null)
       {
         var fr = functionOrRoutine();
-        List<Type> generics = generics(res);
+        var generics = generics(res);
         FormalGenerics.resolve(res, generics, outer);
         type_ = fr != null ? new Type(pos, fr.featureName().baseName(), generics, null, fr, Type.RefOrVal.LikeUnderlyingFeature).resolve(res, outer)
                            : Types.t_ERROR;
@@ -603,7 +605,7 @@ public class Function extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type type()
+  public AbstractType type()
   {
     var result = typeOrNull();
     if (result == null)
@@ -621,7 +623,7 @@ public class Function extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public Type typeOrNull()
+  public AbstractType typeOrNull()
   {
     return type_;
   }
@@ -636,7 +638,7 @@ public class Function extends Expr
    *
    * @param outer the root feature that contains this statement.
    */
-  public Expr resolveSyntacticSugar2(Resolution res, Feature outer)
+  public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
     Expr result = this;
     if (Errors.count() == 0)  // avoid null pointer hdlg in case calledFeature not found etc.
@@ -694,7 +696,7 @@ public class Function extends Expr
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             var fr = functionOrRoutine();
-            List<Call> inherits = new List<>(new Call(pos, fr.featureName().baseName(), type_._generics, Expr.NO_EXPRS));
+            List<AbstractCall> inherits = new List<>(new Call(pos, fr.featureName().baseName(), type_.generics(), Expr.NO_EXPRS));
 
             List<Stmnt> statements = new List<Stmnt>(fcall);
 

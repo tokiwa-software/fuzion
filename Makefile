@@ -33,9 +33,12 @@ CLASSES_DIR = $(BUILD_DIR)/classes
 JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/ANY.java \
           $(SRC)/dev/flang/util/Callable.java \
+          $(SRC)/dev/flang/util/DataOut.java \
           $(SRC)/dev/flang/util/Errors.java \
           $(SRC)/dev/flang/util/FuzionOptions.java \
           $(SRC)/dev/flang/util/FuzionConstants.java \
+          $(SRC)/dev/flang/util/HasSourcePosition.java \
+          $(SRC)/dev/flang/util/HexDump.java \
           $(SRC)/dev/flang/util/Intervals.java \
           $(SRC)/dev/flang/util/List.java \
           $(SRC)/dev/flang/util/Map2Int.java \
@@ -46,12 +49,17 @@ JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/SourcePosition.java \
           $(SRC)/dev/flang/util/Terminal.java \
           $(SRC)/dev/flang/util/UnicodeData.java \
+          $(SRC)/dev/flang/util/YesNo.java \
 
 JAVA_FILES_UTIL_UNICODE = \
           $(SRC)/dev/flang/util/unicode/ParseUnicodeData.java \
 
 JAVA_FILES_AST = \
+          $(SRC)/dev/flang/ast/AbstractCall.java \
+          $(SRC)/dev/flang/ast/AbstractCase.java \
           $(SRC)/dev/flang/ast/AbstractFeature.java \
+          $(SRC)/dev/flang/ast/AbstractMatch.java \
+          $(SRC)/dev/flang/ast/AbstractType.java \
           $(SRC)/dev/flang/ast/Assign.java \
           $(SRC)/dev/flang/ast/AstErrors.java \
           $(SRC)/dev/flang/ast/Block.java \
@@ -62,6 +70,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Check.java \
           $(SRC)/dev/flang/ast/Cond.java \
           $(SRC)/dev/flang/ast/Consts.java \
+          $(SRC)/dev/flang/ast/Constant.java \
           $(SRC)/dev/flang/ast/Contract.java \
           $(SRC)/dev/flang/ast/Current.java \
           $(SRC)/dev/flang/ast/Destructure.java \
@@ -88,6 +97,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Resolution.java \
           $(SRC)/dev/flang/ast/ReturnType.java \
           $(SRC)/dev/flang/ast/SrcModule.java \
+          $(SRC)/dev/flang/ast/StatementVisitor.java \
           $(SRC)/dev/flang/ast/Stmnt.java \
           $(SRC)/dev/flang/ast/StrConst.java \
           $(SRC)/dev/flang/ast/Tag.java \
@@ -118,9 +128,14 @@ JAVA_FILES_FE = \
           $(SRC)/dev/flang/fe/FeErrors.java \
           $(SRC)/dev/flang/fe/FrontEnd.java \
           $(SRC)/dev/flang/fe/FrontEndOptions.java \
+          $(SRC)/dev/flang/fe/GenericType.java \
+          $(SRC)/dev/flang/fe/LibraryCall.java \
           $(SRC)/dev/flang/fe/LibraryFeature.java \
           $(SRC)/dev/flang/fe/LibraryModule.java \
+          $(SRC)/dev/flang/fe/LibraryOut.java \
+          $(SRC)/dev/flang/fe/LibraryType.java \
           $(SRC)/dev/flang/fe/Module.java \
+          $(SRC)/dev/flang/fe/NormalType.java \
           $(SRC)/dev/flang/fe/SourceModule.java \
 
 JAVA_FILES_AIR = \
@@ -222,20 +237,27 @@ JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
+MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_JAVA_BASE         = $(BUILD_DIR)/modules/java.base/__marker_for_make__
 MOD_JAVA_XML          = $(BUILD_DIR)/modules/java.xml/__marker_for_make__
 MOD_JAVA_DATATRANSFER = $(BUILD_DIR)/modules/java.datatransfer/__marker_for_make__
 MOD_JAVA_DESKTOP      = $(BUILD_DIR)/modules/java.desktop/__marker_for_make__
 
+VERSION = $(shell cat $(FZ_SRC)/version.txt)
+
 ALL = \
 	$(BUILD_DIR)/bin/fz \
 	$(BUILD_DIR)/bin/fzjava \
+	$(MOD_BASE) \
 	$(MOD_JAVA_BASE) \
 	$(MOD_JAVA_XML) \
 	$(MOD_JAVA_DATATRANSFER) \
 	$(MOD_JAVA_DESKTOP) \
 	$(BUILD_DIR)/tests \
 	$(BUILD_DIR)/examples
+
+DOCUMENTATION = \
+	$(BUILD_DIR)/doc/fumfile.html     # fum file format documentation created with asciidoc
 
 .PHONY: all
 all: $(ALL)
@@ -251,7 +273,7 @@ $(FUZION_EBNF): $(SRC)/dev/flang/parser/Parser.java
 $(JAVA_FILE_TOOLS_VERSION): $(FZ_SRC)/version.txt $(JAVA_FILE_TOOLS_VERSION_IN)
 	mkdir -p $(@D)
 	cat $(JAVA_FILE_TOOLS_VERSION_IN) \
-          | sed "s^@@VERSION@@^`cat $(FZ_SRC)/version.txt`^g" \
+          | sed "s^@@VERSION@@^$(VERSION)^g" \
           | sed "s^@@GIT_HASH@@^`cd $(FZ_SRC); echo -n \`git rev-parse HEAD\` \`git diff-index --quiet HEAD -- || echo with local changes\``^g" \
           | sed "s^@@DATE@@^`date +%Y-%m-%d\ %H:%M:%S`^g"  \
           | sed "s^@@BUILTBY@@^`echo -n $(USER)@; hostname`^g" >$@
@@ -311,7 +333,7 @@ $(CLASS_FILES_OPT): $(JAVA_FILES_OPT) $(CLASS_FILES_AIR) $(CLASS_FILES_FUIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_OPT)
 	touch $@
 
-$(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST), replace by $(CLASS_FILES_FUIR)
+$(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR) $(CLASS_FILES_AIR) $(CLASS_FILES_AST)  # NYI: remove dependency on $(CLASS_FILES_AST), replace by $(CLASS_FILES_FUIR)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_INTERPRETER)
 	touch $@
@@ -370,6 +392,10 @@ $(BUILD_DIR)/bin/fz: $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/bin/fz $@
 	chmod +x $@
+
+$(MOD_BASE): $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz
+	mkdir -p $(@D)
+	$(BUILD_DIR)/bin/fz -XsaveBaseLib=$@
 
 $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
@@ -440,6 +466,13 @@ $(BUILD_DIR)/UnicodeData.java.generated: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR
 $(BUILD_DIR)/UnicodeData.java: $(BUILD_DIR)/UnicodeData.java.generated $(SRC)/dev/flang/util/UnicodeData.java.in
 	sed -e '/@@@ generated code start @@@/r build/UnicodeData.java.generated' $(SRC)/dev/flang/util/UnicodeData.java.in >$@
 
+.phony: doc
+doc: $(DOCUMENTATION)
+
+$(BUILD_DIR)/doc/fumfile.html: $(SRC)/dev/flang/fe/LibraryModule.java
+	mkdir -p $(@D)
+	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" | asciidoc - >$@
+
 # phony target to regenerate UnicodeData.java using the latest UnicodeData.txt.
 # This must be phony since $(SRC)/dev/flang/util/UnicodeData.java would
 # be a circular dependency
@@ -473,3 +506,8 @@ run_tests_c: $(BUILD_DIR)/bin/fz $(BUILD_DIR)/tests
 clean:
 	rm -rf $(BUILD_DIR)
 	find $(FZ_SRC) -name "*~" -exec rm {} \;
+
+.PHONY: release
+release: clean all
+	rm -f fuzion_$(VERSION).tar.gz
+	tar cfz fuzion_$(VERSION).tar.gz -C build .

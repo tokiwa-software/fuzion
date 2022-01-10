@@ -26,18 +26,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
 import java.nio.ByteBuffer;
 
-import java.nio.charset.StandardCharsets;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -46,6 +43,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
 import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
@@ -84,50 +82,6 @@ import dev.flang.util.SourcePosition;
 public class SourceModule extends Module implements SrcModule, MirModule
 {
 
-
-  /*-----------------------------  classes  -----------------------------*/
-
-
-  /**
-   * Data stored locally to a Feature.
-   */
-  static class FData
-  {
-
-    /**
-     * Features declared inside a feature. The inner features are mapped from
-     * their FeatureName.
-     */
-    SortedMap<FeatureName, AbstractFeature> _declaredFeatures;
-
-    /**
-     * Features declared inside a feature or inherited from its parents.
-     */
-    SortedMap<FeatureName, AbstractFeature> _declaredOrInheritedFeatures;
-
-    /**
-     * All features that have been found to inherit from this feature.  This set
-     * is collected during RESOLVING_DECLARATIONS.
-     */
-    public Set<AbstractFeature> _heirs = new TreeSet<>();
-
-
-    /**
-     * All features that have been found to directly redefine this feature. This
-     * does not include redefintions of redefinitions.  This set is collected
-     * during RESOLVING_DECLARATIONS.
-     */
-    public Set<AbstractFeature> _redefinitions = null;
-
-
-    /**
-     * offset of this feature's data in .mir file.
-     */
-    int _mirOffset = -1;
-
-  }
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -154,7 +108,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * The universe is the implicit root of all features that
    * themeselves do not have their own root.
    */
-  private Feature _universe;
+  final Feature _universe;
 
 
   /**
@@ -177,20 +131,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   String _main;
 
-
-  /**
-   * Map from features in this module or in modules it depends on to module-specific data  for this feature.
-   */
-  private Map<AbstractFeature, FData> _data = new HashMap<>();
-
-
   Resolution _res;
-
-
-  /**
-   * List of all features declared in this module.
-   */
-  List<Feature> _features = new List<>();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -199,7 +140,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /**
    * Create SourceModule for given options and sourceDirs.
    */
-  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile, String defaultMain, Module[] dependsOn, Feature universe)
+  SourceModule(FrontEndOptions options, SourceDir[] sourceDirs, Path inputFile, String defaultMain, LibraryModule[] dependsOn, Feature universe)
   {
     super(dependsOn);
 
@@ -208,11 +149,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
     _inputFile = inputFile;
     _defaultMain = defaultMain;
     _universe = universe;
-    if (universe.state().atLeast(Feature.State.RESOLVED))
-      {
-        universe.resetState();   // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
-      }
-    createASTandResolve();
   }
 
 
@@ -257,24 +193,27 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Add given feature to the features declared in this SrcModule.
-   */
-  public void add(Feature f)
-  {
-    if (!f.isUniverse())
-      {
-        _features.add(f);
-      }
-  }
-
-
-  /**
    * Create the abstract syntax tree and resolve all features.
    */
   void createASTandResolve()
   {
     check
       (_universe != null);
+
+    if (_dependsOn.length > 0)
+      {
+        _universe.setState(Feature.State.RESOLVED);
+        var stdlib = _dependsOn[0];
+        new Types.Resolved(this,
+                           (name, ref) -> new NormalType(stdlib,
+                                                         -1,
+                                                         SourcePosition.builtIn,
+                                                         lookupFeatureForType(SourcePosition.builtIn, name, _universe, _universe),
+                                                         ref ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature,
+                                                         Type.NONE,
+                                                         _universe.thisType()),
+                           _universe);
+      }
 
     _main = (_inputFile != null)
       ? parseStdIn(new Parser(_inputFile))
@@ -294,7 +233,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     var d = _main == null
       ? _universe
-      : _universe.get(_res, _main);
+      : _universe.get(this, _main);
 
     if (false)  // NYI: Eventually, we might want to stop here in case of errors. This is disabled just to check the robustness of the next steps
       {
@@ -392,7 +331,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * During resolution, load all inner classes of this that are
    * defined in separate files.
    */
-  public void loadInnerFeatures(Feature f)
+  private void loadInnerFeatures(AbstractFeature f)
   {
     if (!_closed)
       {
@@ -461,7 +400,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public void findDeclarations(Feature inner, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (inner.state() == Feature.State.LOADING,
+      (inner.isUniverse() || inner.state() == Feature.State.LOADING,
        ((outer == null) == (inner.featureName().baseName().equals(FuzionConstants.UNIVERSE_NAME))),
        !inner.outerSet());
 
@@ -484,7 +423,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
     inner.visit(new FeatureVisitor()
       {
-        public Call      action(Call      c, Feature outer) {
+        public Call      action(Call      c, AbstractFeature outer) {
           if (c.name == null)
             { /* this is an anonymous feature declaration */
               check
@@ -497,7 +436,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             }
           return c;
         }
-        public Feature   action(Feature   f, Feature outer) { findDeclarations(f, outer); return f; }
+        public Feature   action(Feature   f, AbstractFeature outer) { findDeclarations(f, outer); return f; }
       });
 
     if (inner.initialValue() != null &&
@@ -547,23 +486,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Get or create the data record for given outer feature.
-   *
-   * @param outer the feature we need to get the data record from.
-   */
-  FData data(AbstractFeature outer)
-  {
-    var d = _data.get(outer);
-    if (d == null)
-      {
-        d = new FData();
-        _data.put(outer, d);
-      }
-    return d;
-  }
-
-
-  /**
    * Get declared features for given outer Feature as seen by this module.
    * Result is never null.
    *
@@ -577,7 +499,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
       {
         s = new TreeMap<>();
         d._declaredFeatures = s;
-        for (Module m : _dependsOn)
+        for (var m : _dependsOn)
           { // NYI: properly obtain set of declared features from m, do we need
             // to take care for the order and dependencies between modules?
             var md = m.declaredFeaturesOrNull(outer);
@@ -602,58 +524,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   SortedMap<FeatureName, AbstractFeature>declaredFeaturesOrNull(AbstractFeature outer)
   {
-    var d = _data.get(outer);
-    if (d != null)
-      {
-        return d._declaredFeatures;
-      }
-    return null;
-  }
-
-
-  /**
-   * Get declared and inherited features for given outer Feature as seen by this
-   * module.  Result is never null.
-   *
-   * @param outer the declaring feature
-   */
-  public SortedMap<FeatureName, AbstractFeature> declaredOrInheritedFeatures(AbstractFeature outer)
-  {
-    if (PRECONDITIONS) require
-      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
-
-    if (outer instanceof LibraryFeature olf)
-      {
-        var s = olf._libModule.declaredOrInheritedFeaturesOrNull(outer);
-        if (s == null)
-          {
-            s = new TreeMap<>();
-          }
-        return s;
-      }
-    else
-      {
-        var d = data(outer);
-        var s = d._declaredOrInheritedFeatures;
-        if (s == null)
-          {
-            s = new TreeMap<>();
-            d._declaredOrInheritedFeatures= s;
-            for (Module m : _dependsOn)
-              { // NYI: properly obtain set of declared features from m, do we need
-                // to take care for the order and dependencies between modules?
-                var md = m.declaredOrInheritedFeaturesOrNull(outer);
-                if (md != null)
-                  {
-                    for (var e : md.entrySet())
-                      {
-                        s.put(e.getKey(), e.getValue());
-                      }
-                  }
-              }
-          }
-        return s;
-      }
+    return declaredFeatures(outer);
   }
 
 
@@ -666,10 +537,17 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer)
   {
-    var d = _data.get(outer);
+    var d = data(outer);
     if (d != null)
       {
-        return d._declaredOrInheritedFeatures;
+        if (outer.isUniverse())
+          {
+            return declaredFeaturesOrNull(outer);
+          }
+        else
+          {
+            return d._declaredOrInheritedFeatures;
+          }
       }
     return null;
   }
@@ -686,7 +564,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (PRECONDITIONS) require
       (outer.state() == Feature.State.RESOLVING_DECLARATIONS);
 
-    data(outer)._declaredOrInheritedFeatures = new TreeMap<>();
+    if (data(outer)._declaredOrInheritedFeatures == null)
+      {
+        data(outer)._declaredOrInheritedFeatures = new TreeMap<>();
+      }
     findInheritedFeatures(outer);
     loadInnerFeatures(outer);
     findDeclaredFeatures(outer);
@@ -702,7 +583,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   private void findInheritedFeatures(Feature outer)
   {
-    for (Call p : outer.inherits())
+    for (var p : outer.inherits())
       {
         var cf = p.calledFeature().libraryFeature();
         check
@@ -724,7 +605,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                         check
                           (cf != outer);
 
-                        var newfn = cf.handDown(_res, f, fn, p, outer);
+                        var newfn = cf.handDown(this, f, fn, p, outer);
                         addInheritedFeature(outer, p.pos(), newfn, f);
                       }
                   }
@@ -738,63 +619,13 @@ public class SourceModule extends Module implements SrcModule, MirModule
                     check
                       (cf != outer);
 
-                    var newfn = cf.handDown(_res, f, fn, p, outer);
+                    var newfn = cf.handDown(this, f, fn, p, outer);
                     addInheritedFeature(outer, p.pos(), newfn, f);
                   }
               }
           }
       }
   }
-
-
-  /**
-   * Get direct redefininitions of given Feature as seen by this module.
-   * Result is never null.
-   *
-   * @param f the original feature
-   */
-  public Set<AbstractFeature>redefinitions(AbstractFeature f)
-  {
-    f = f.libraryFeature();
-    var d = data(f);
-    var r = d._redefinitions;
-    if (r == null)
-      {
-        r = new TreeSet<>();
-        d._redefinitions = r;
-        for (Module m : _dependsOn)
-          { // NYI: properly obtain set of declared features from m, do we need
-            // to take care for the order and dependencies between modules?
-            var mr = m.redefinitionsOrNull(f);
-            if (mr != null)
-              {
-                for (var e : mr)
-                  {
-                    r.add(e);
-                  }
-              }
-          }
-      }
-    return r;
-  }
-
-
-  /**
-   * Get redefinitions for given outer Feature as seen by this module.
-   * Result is null if f has no redefinitions in this module.
-   *
-   * @param f the original feature
-   */
-  Set<AbstractFeature>redefinitionsOrNull(AbstractFeature f)
-  {
-    var d = _data.get(f);
-    if (d != null)
-      {
-        return d._redefinitions;
-      }
-    return null;
-  }
-
 
 
   /**
@@ -814,10 +645,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var existing = s == null ? null : s.get(fn);
     if (existing != null)
       {
-        if (redefinitions(existing).contains(f))
+        if (f.redefines().contains(existing))
           { // f redefined existing, so we are fine
           }
-        else if (redefinitions(f).contains(existing))
+        else if (existing.redefines().contains(f))
           { // existing redefines f, so use existing
             f = existing;
           }
@@ -839,22 +670,24 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param outer the declaring feature
    */
-  private void findDeclaredFeatures(Feature outer)
+  private void findDeclaredFeatures(AbstractFeature outer)
   {
     var s = declaredFeatures(outer);
     for (var e : s.entrySet())
       {
         var fn = e.getKey();
         var f = e.getValue();
-        var doi = data(outer)._declaredOrInheritedFeatures;
+        var doi = declaredOrInheritedFeatures(outer);
         var existing = doi.get(fn);
         if (existing == null)
           {
             if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) != 0)
               {
-                System.out.println("doi is "+outer.qualifiedName()+" is "+doi);
                 AstErrors.redefineModifierDoesNotRedefine(f);
               }
+          }
+        else if (existing == f)
+          {
           }
         else if (existing.outer() == outer)
           {
@@ -873,7 +706,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
         else
           {
-            redefinitions(existing).add(f);
+            f.redefines().add(existing);
           }
         doi.put(fn, f);
         if (f instanceof Feature ff)
@@ -887,7 +720,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   void addDeclaredInnerFeature(AbstractFeature outer, Feature f)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(Feature.State.LOADING));
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
     var fn = f.featureName();
     var df = declaredFeatures(outer);
@@ -929,12 +762,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
           }
       }
     addDeclaredInnerFeature(outer, fn, f);
-    if (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+    if (outer instanceof Feature of && of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
       {
-        check(Errors.count() > 0 || f.isAnonymousInnerFeature());
-        //        check(Errors.count() > 0 || !this.declaredOrInheritedFeatures_.containsKey(fn) || f.isChoiceTag());
+        check(Errors.count() > 0 || outer.isChoice() && f.isField() || !declaredOrInheritedFeatures(outer).containsKey(fn));
         declaredOrInheritedFeatures(outer).put(fn, f);
-        if (!f.isChoiceTag())  // NYI: somewhat ugly special handling of choice tags should not be needed
+        if (!outer.isChoice() || !f.isField())  // A choice does not inherit any fields
           {
             addToHeirs(outer, fn, f);
           }
@@ -955,7 +787,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   private void addToHeirs(AbstractFeature outer, FeatureName fn, Feature f)
   {
-    var d = _data.get(outer);
+    var d = data(outer);
     if (d != null)
       {
         for (var h : d._heirs)
@@ -965,6 +797,38 @@ public class SourceModule extends Module implements SrcModule, MirModule
             addToHeirs(h, fn, f);
           }
       }
+  }
+
+
+  /**
+   * allInnerAndInheritedFeatures returns a complete set of inner features, used
+   * by Clazz.layout and Clazz.hasState.
+   *
+   * @return
+   */
+  public Collection<AbstractFeature> allInnerAndInheritedFeatures(AbstractFeature f)
+  {
+    var d = data(f);
+    var result = d._allInnerAndInheritedFeatures;
+    if (result == null)
+      {
+        result = new TreeSet<>();
+
+        result.addAll(declaredFeatures(f).values());
+        for (var p : f.inherits())
+          {
+            var cf = p.calledFeature();
+            check
+              (Errors.count() > 0 || cf != null);
+
+            if (cf != null)
+              {
+                result.addAll(allInnerAndInheritedFeatures(cf));
+              }
+          }
+        d._allInnerAndInheritedFeatures = result;
+      }
+    return result;
   }
 
 
@@ -979,7 +843,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
     return declaredOrInheritedFeatures(outer).get(name);
   }
@@ -996,7 +860,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
     return FeatureName.getAll(declaredOrInheritedFeatures(outer), name);
   }
@@ -1015,7 +879,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name, int argCount)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
     return FeatureName.getAll(declaredOrInheritedFeatures(outer), name, argCount);
   }
@@ -1045,7 +909,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   public FeaturesAndOuter lookupNoTarget(AbstractFeature outer, String name, Call call, Assign assign, Destructure destructure)
   {
     if (PRECONDITIONS) require
-      (outer.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+      (!(outer instanceof Feature of) || of.state().atLeast(Feature.State.LOADING));
 
     var result = new FeaturesAndOuter();
     var curOuter = outer;
@@ -1076,7 +940,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                 for (var fn : fields)
                   {
                     var fi = fs.get(fn);
-                    if (f != null || fi.outer() == outer && !fi.isArtificialField())
+                    if (f != null || fi.outer() == outer && (!(fi instanceof Feature fif) || !fif.isArtificialField()))
                       {
                         fs.remove(fn);
                       }
@@ -1098,6 +962,65 @@ public class SourceModule extends Module implements SrcModule, MirModule
   }
 
 
+  /**
+   * Lookup the feature that is referenced in a non-generic type.  There might
+   * be several features with the given name and different argumentn counts.
+   * Then, only the feature that is a constructor defines the type.
+   *
+   * If there are several such constructors, the type is ambiguous and an error
+   * will be produced.
+   *
+   * Also, if there is no such type, an error will be produced.
+   *
+   * @param pos the position of the type.
+   *
+   * @param name the name of the type
+   *
+   * @param o the outer feature of the type
+   *
+   * @param outerfeat the outer feature that contains (uses) the type.
+   */
+  public AbstractFeature lookupFeatureForType(SourcePosition pos, String name, AbstractFeature o, AbstractFeature outerfeat)
+  {
+    AbstractFeature result = null;
+    var type_fs = new List<AbstractFeature>();
+    var nontype_fs = new List<AbstractFeature>();
+    do
+      {
+        var fs = lookupFeatures(o, name).values();
+        for (var f : fs)
+          {
+            if (f.isConstructor() || f.isChoice())
+              {
+                type_fs.add(f);
+                result = f;
+              }
+            else
+              {
+                nontype_fs.add(f);
+              }
+          }
+        if (type_fs.size() > 1)
+          {
+            AstErrors.ambiguousType(pos, name, type_fs);
+            result = Types.f_ERROR;
+          }
+        o = o.outer();
+      }
+    while (result == null && o != null);
+
+    if (result == null)
+      {
+        result = Types.f_ERROR;
+        if (name != Types.ERROR_NAME)
+          {
+            AstErrors.typeNotFound(pos, name, outerfeat, nontype_fs);
+          }
+      }
+    return result;
+  }
+
+
   /*--------------------------  type checking  --------------------------*/
 
 
@@ -1112,21 +1035,21 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     var args = f.arguments();
     int ean = args.size();
-    for (var r : redefinitions(f))
+    for (var o : f.redefines())
       {
-        Type[] ta = f.handDown(_res, f.argTypes(), r.outer());
-        Type[] ra = r.argTypes();
+        var ta = o.handDown(_res, o.argTypes(), f.outer());
+        var ra = f.argTypes();
         if (ta.length != ra.length)
           {
-            AstErrors.argumentLengthsMismatch(f, ta.length, r, ra.length);
+            AstErrors.argumentLengthsMismatch(o, ta.length, f, ra.length);
           }
         else
           {
             for (int i = 0; i < ta.length; i++)
               {
-                Type t1 = ta[i];
-                Type t2 = ra[i];
-                if (t1 != t2 && !t1.containsError() && !t2.containsError())
+                var t1 = ta[i];
+                var t2 = ra[i];
+                if (t1.compareTo(t2) != 0 && !t1.containsError() && !t2.containsError())
                   {
                     // original arg list may be shorter if last arg is open generic:
                     check
@@ -1135,26 +1058,26 @@ public class SourceModule extends Module implements SrcModule, MirModule
                        args.get(args.size()-1).resultType().isOpenGeneric());
                     int ai = Math.min(args.size() - 1, i);
 
-                    var actualArg   = r.arguments().get(i);
+                    var actualArg   = f.arguments().get(i);
                     var originalArg =   args       .get(ai);
-                    AstErrors.argumentTypeMismatchInRedefinition(f, originalArg,
-                                                                 r,    actualArg);
+                    AstErrors.argumentTypeMismatchInRedefinition(o, originalArg,
+                                                                 f, actualArg);
                   }
               }
           }
 
-        Type t1 = f.handDownNonOpen(_res, f.resultType(), r.outer());
-        Type t2 = r.resultType();
+        var t1 = o.handDownNonOpen(_res, o.resultType(), f.outer());
+        var t2 = f.resultType();
         if ((t1.isChoice()
-             ? t1 != t2  // we (currently) do not tag the result in a redefined feature, see testRedefine
+             ? t1.compareTo(t2) != 0  // we (currently) do not tag the result in a redefined feature, see testRedefine
              : !t1.isAssignableFrom(t2)) &&
             t2 != Types.resolved.t_void)
           {
-            AstErrors.resultTypeMismatchInRedefinition(f, r);
+            AstErrors.resultTypeMismatchInRedefinition(o, f);
           }
       }
 
-    if (f.returnType().isConstructorType() && f.isRoutine())
+    if (f.isConstructor())
       {
         var cod = f.code();
         var rt = cod.type();
@@ -1170,90 +1093,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Helper class that wraps ByteArrayOutputStream to make field count
-   * accessible.
-   */
-  static class BAOutputStream extends ByteArrayOutputStream
-  {
-    public int count() { return this.count; }
-  }
-
-  /**
-   * Helper class that wraps DataOutputStream to provide the current offset and
-   * create a ByteBuffer.
-   */
-  static class DOutputStream extends DataOutputStream
-  {
-    DOutputStream()
-    {
-      super(new BAOutputStream());
-    }
-    int offset()
-    {
-      return ((BAOutputStream)out).count();
-    }
-    ByteBuffer buffer()
-    {
-      return ByteBuffer.wrap(((BAOutputStream)out).toByteArray());
-    }
-  }
-
-
-  /**
    * Create a ByteBuffer containing the .mir file binary data for this module.
    */
   public ByteBuffer data()
   {
-    var o = new DOutputStream();
-    try
-      {
-        collectData(o, _universe);
-      }
-    catch (IOException io)
-      {
-        throw new Error(io);  // NYI: proper error handling
-      }
-    return o.buffer();
-  }
-
-
-  /**
-   * Collect the binary data for features declared within given feature.
-   */
-  void collectData(DOutputStream o, Feature f) throws IOException
-  {
-    var m = declaredFeaturesOrNull(f);
-    var sz = m == null ? 0 : m.size();
-    o.writeInt(sz);
-    if (sz > 0)
-      {
-        for (var df : m.values())
-          {
-            if (df instanceof Feature dff)
-              {
-                collectFeature(o,dff);
-              }
-          }
-      }
-  }
-
-
-  /**
-   * Collect the binary data for given feature.
-   */
-  void collectFeature(DOutputStream o, Feature f) throws IOException
-  {
-    var ix = o.offset();
-    var k = f.kind().ordinal();
-    var n = f.featureName();
-    var utf8Name = n.baseName().getBytes(StandardCharsets.UTF_8);
-    o.write(k);
-    o.writeInt(utf8Name.length);             // NYI: use better integer encoding
-    o.write(utf8Name);                       // NYI: internal names (outer refs, statement results) are too long and waste memory
-    o.writeInt(f.featureName().argCount());  // NYI: use better integer encoding
-    o.writeInt(f.featureName()._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
-    collectData(o,f);
-    data(f)._mirOffset = ix;
+    return new LibraryOut(this).buffer();
   }
 
 

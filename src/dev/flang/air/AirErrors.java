@@ -33,6 +33,7 @@ import dev.flang.ast.AstErrors;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
 
 
@@ -73,7 +74,7 @@ public class AirErrors extends AstErrors
 
   public static void abstractFeatureNotImplemented(AbstractFeature featureThatDoesNotImplementAbstract,
                                                    Set<AbstractFeature> abstractFeature,
-                                                   SourcePosition instantiatedAt)
+                                                   HasSourcePosition instantiatedAt)
   {
     var abs = new StringBuilder();
     var abstracts = new StringBuilder();
@@ -82,13 +83,13 @@ public class AirErrors extends AstErrors
         abs.append(abs.length() == 0 ? "" : ", ").append(af.featureName().baseName());
         abstracts.append((abstracts.length() == 0 ? "inherits or declares" : "and") + " abstract feature " +
                          s(af) + " declared at " + af.pos().show() + "\n" +
-                         "which is called at " + Clazzes.isUsedAt(af).show() + "\n");
+                         "which is called at " + Clazzes.isUsedAt(af).pos().show() + "\n");
       }
     abstracts.append("without providing an implementation\n");
     error(featureThatDoesNotImplementAbstract.pos(),
           "Used abstract " + (abstractFeature.size() > 1 ? "features " + abs + " are" : "feature " + abs + " is") + " not implemented",
           "Feature " + s(featureThatDoesNotImplementAbstract) + " " +
-          "instantiated at " + instantiatedAt.show() + "\n" +
+          "instantiated at " + instantiatedAt.pos().show() + "\n" +
           abstracts);
   }
 

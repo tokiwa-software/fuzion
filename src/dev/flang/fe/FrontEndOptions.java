@@ -77,13 +77,19 @@ public class FrontEndOptions extends FuzionOptions
   final Path _fuzionHome;
 
 
+  /**
+   * Path to save the base library module to, null if not saving the standard lib.
+   */
+  final Path _saveBaseLib;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Costructor initializing fields as given.
    */
-  public FrontEndOptions(int verbose, Path fuzionHome, List<String> modules, int fuzionDebugLevel, boolean fuzionSafety, boolean readStdin, String main)
+  public FrontEndOptions(int verbose, Path fuzionHome, Path saveBaseLib, List<String> modules, int fuzionDebugLevel, boolean fuzionSafety, boolean readStdin, String main)
   {
     super(verbose,
           fuzionDebugLevel,
@@ -92,11 +98,13 @@ public class FrontEndOptions extends FuzionOptions
     if (PRECONDITIONS) require
                          (verbose >= 0,
                           fuzionHome != null,
-                          readStdin || main != null,
+                          readStdin || main != null || saveBaseLib != null,
                           !readStdin || main == null,
+                          saveBaseLib == null || !readStdin && main == null,
                           modules != null);
 
     _fuzionHome = fuzionHome;
+    _saveBaseLib = saveBaseLib;
     _readStdin = readStdin;
     Path inputFile = null;
     if (main != null)
