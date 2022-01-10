@@ -148,7 +148,7 @@ O(n log n).
       if (size & sz) = 0
         psMap ndata nsize dest+sz
       else
-        tmp := array<tuple<K,V>> sz (fun(i i32) => ndata[dest+i])
+        tmp := array<tuple<K,V>> sz (i -> ndata[dest+i])
         for
           i1 := 0, if (use1) i1+1 else i1
           i2 := 0, if (use1) i2   else i2+1
@@ -190,8 +190,8 @@ O(n log n).
         sz0 := sz / 2
         nt := (tail - sz0) / 2
         at0 := (at
-                + {if (size & sz0) != 0 nt else 0}
-                + {if (size & sz ) != 0 sz else 0})
+                + (if (size & sz0) != 0 nt else 0)
+                + (if (size & sz ) != 0 sz else 0))
         if (size & sz) != 0
           match binarySearch at at+sz-1
             v V => v
@@ -221,7 +221,7 @@ O(n log n).
     join (ole i32, sz i32, rsz i32, skip i32) unit is
       if sz <= size
         if (size & sz) /= 0
-          tmp := array<K> rsz (fun(i i32) => r[i])
+          tmp := array<K> rsz (i -> r[i])
           for
             i1 := 0, if (use1) i1+1 else i1
             i2 := 0, if (use1) i2   else i2+1
@@ -265,8 +265,8 @@ O(n log n).
           sz0 := sz / 2
           nt := (tail - sz0) / 2
           at0 := (at
-                  + {if (size & sz0) != 0 nt else 0}
-                  + {if (size & sz ) != 0 sz else 0})
+                  + (if (size & sz0) != 0 nt else 0)
+                  + (if (size & sz ) != 0 sz else 0))
           m0 := if (size & sz) != 0
               min m at at+sz-1
             else
@@ -294,8 +294,8 @@ O(n log n).
           sz0 := sz / 2
           nt := (tail - sz0) / 2
           at0 := (at
-                  + {if (size & sz0) /= 0 nt else 0}
-                  + {if (size & sz ) /= 0 sz else 0})
+                  + (if (size & sz0) /= 0 nt else 0)
+                  + (if (size & sz ) /= 0 sz else 0))
           m0 := if ((size & sz) != 0)
               max m at at+sz-1
             else
@@ -339,8 +339,8 @@ O(n log n).
           sz0 := sz / 2
           nt := (tail - sz0) / 2
           at0 := (at
-                  + {if (size & sz0) /= 0 nt else 0}
-                  + {if (size & sz ) /= 0 sz else 0})
+                  + (if (size & sz0) /= 0 nt else 0)
+                  + (if (size & sz ) /= 0 sz else 0))
           a0 := if (size & sz) != 0
               addAll a at at+sz-1
             else

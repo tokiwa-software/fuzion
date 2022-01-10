@@ -141,7 +141,7 @@ array<T>(internalArray sys.array<T>) : List<T> is
 
   # map the array to a new array applying function f to all elements
   #
-  map<B>(f fun(T) B) array<B> is
+  map<B>(f T -> B) array<B> is
     array<B> array.this.length (i -> f array.this[i])
 
 
@@ -169,7 +169,7 @@ array<T>(internalArray sys.array<T>) : List<T> is
   # reverse the order of the elements in this array
   #
   reverse array<T> is
-    array<T> array.this.length (fun(i i32) => array.this[array.this.length-1-i])
+    array<T> array.this.length (i -> array.this[array.this.length-1-i])
 
 
   # sort this array using total order defined by lessOrEqual

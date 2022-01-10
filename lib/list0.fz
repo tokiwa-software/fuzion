@@ -161,10 +161,9 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
       match list.this
         _ nil  => nil
         c Cons =>
-          ref : Cons<A, list<A>> {   # NYI: indentation syntax for anonymous not supported
-              redef head => c.head
-              redef tail => c.tail.take n-1
-            }
+          ref : Cons<A, list<A>>   # NYI: indentation syntax for anonymous not supported
+            redef head => c.head
+            redef tail => c.tail.take n-1
 
 
   # reverse the order of the elements in this list
@@ -212,11 +211,9 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
         match t
           nil => list.this
           c2 Cons =>
-            ref : Cons<A, list<A>> {
-                head => c.head
-                tail => c.tail.concat t
-              }
-
+            ref : Cons<A, list<A>>
+              head => c.head
+              tail => c.tail.concat t
 
   # infix operand synonyme for concat
   #
@@ -248,10 +245,9 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
       _ nil  => nil
       c Cons =>
         if p c.head
-          ref : Cons<A, list<A>> {   # NYI: indentation syntax for anonymous not supported
-              redef head => c.head
-              redef tail => c.tail.takeWhile p
-            }
+          ref : Cons<A, list<A>>   # NYI: indentation syntax for anonymous not supported
+            redef head => c.head
+            redef tail => c.tail.takeWhile p
         else
           nil
 
@@ -288,12 +284,10 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
   # 'list.this' and the empty list 'nil'.
   #
   redef tails list<list<A>> is
-    ref : Cons<list<A>, list<list<A>>> {
-        head => list.this
-        tail => list.this ? nil    => nil
-                          | c Cons => c.tail.tails
-      }
-
+    ref : Cons<list<A>, list<list<A>>>
+      head => list.this
+      tail => list.this ? nil    => nil
+                        | c Cons => c.tail.tails
 
   # create stream from this list
   #
