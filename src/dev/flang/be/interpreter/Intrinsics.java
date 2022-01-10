@@ -611,7 +611,7 @@ public class Intrinsics extends ANY
     else if (n.equals("Object.hashCode" )) { result = (args) -> new i32Value (args.get(0).toString().hashCode()); }
     else if (n.equals("Object.asString" )) { result = (args) -> Interpreter.value(args.get(0).toString());
       // NYI: This could be more useful by giving the object's class, an id, public fields, etc.
-      }
+    }
     else
       {
         Errors.fatal(f.pos(),
@@ -638,7 +638,7 @@ public class Intrinsics extends ANY
   }
 
   static ArrayData sysArrayAlloc(int sz,
-                                Clazz arrayClazz)
+                                 Clazz arrayClazz)
   {
     // NYI: Properly determine generic argument type of array
     var elementType = elementType(arrayClazz);
