@@ -162,12 +162,18 @@ public class Intrinsics extends ANY
             var nameI   = constructor ? null : (Instance) args.get(a++);
             var sigI    =                      (Instance) args.get(a++);
             var thizI   = !virtual    ? null : (Instance) args.get(a++);
-            var argz = args.get(a);
+
+            var argz = args.get(a); // of type sys.array<JavaObject>, we need to get field argz.data
+            var argfields = innerClazz.argumentFields();
+            var argsArray = argfields[argfields.length - 1];
+            var sac = argsArray.resultClazz();
+            var argzData = Interpreter.getField(Types.resolved.f_sys_array_data, sac, argz);
+
             String clName =                          (String) JavaInterface.instanceToJavaObject(clNameI);
             String name   = nameI   == null ? null : (String) JavaInterface.instanceToJavaObject(nameI  );
             String sig    =                          (String) JavaInterface.instanceToJavaObject(sigI   );
             Object thiz   = thizI   == null ? null :          JavaInterface.instanceToJavaObject(thizI  );
-            return JavaInterface.call(clName, name, sig, thiz, argz, resultClazz);
+            return JavaInterface.call(clName, name, sig, thiz, argzData, resultClazz);
           };
       }
     else if (n.equals("fuzion.java.arrayLength"))
