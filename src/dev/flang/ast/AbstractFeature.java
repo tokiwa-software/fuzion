@@ -161,8 +161,11 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public String qualifiedName()
   {
     var n = featureName().baseName();
-    return isUniverse() || outer().isUniverse() ? n
-                                                : outer().qualifiedName() + "." + n;
+    return
+      isUniverse()         ||
+      outer() == null      ||
+      outer().isUniverse()    ? n
+                              : outer().qualifiedName() + "." + n;
   }
 
 
