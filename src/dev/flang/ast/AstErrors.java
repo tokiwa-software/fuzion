@@ -422,7 +422,7 @@ public class AstErrors extends ANY
     var srt = rt == null ? "an unknown type" : s(rt);
     error(res.posOfLast(), "Constructor code should result in type " + st("unit") + "",
           "Type returned by this constructor's implementation is " +srt + "\n" +
-          "To solve this, you could turn this contstructor into a routine by adding a matching result type " +
+          "To solve this, you could turn this constructor into a routine by adding a matching result type " +
           "compatible to " + srt + " or by using " + code("=>") + " instead of " + code("is") + " to "+
           "infer the result type from the result expression.\n" +
           "Alternatively, you could explicitly return " + st("unit") + " as the last statement or " +

@@ -193,7 +193,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Create the absgtract syntax tree and resolve all features.
+   * Create the abstract syntax tree and resolve all features.
    */
   void createASTandResolve()
   {
