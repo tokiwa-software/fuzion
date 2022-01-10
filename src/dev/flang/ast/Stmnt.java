@@ -62,6 +62,18 @@ public interface Stmnt
 
 
   /**
+   * visit all the statements within this Stmnt.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  default void visitStatements(StatementVisitor v)
+  {
+    v.action(this);
+  }
+
+
+  /**
    * Does this statement consist of nothing but declarations? I.e., it has no
    * code that actually would be executed at runtime.
    */

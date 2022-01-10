@@ -134,7 +134,7 @@ public class Resolution extends ANY
   final FuzionOptions _options;
 
 
-  final Feature universe;
+  final AbstractFeature universe;
 
 
   public final SrcModule _module;
@@ -193,7 +193,7 @@ public class Resolution extends ANY
    * Constructor to Resolve the universe.
    */
   public Resolution(FuzionOptions options,
-                    Feature universe,
+                    AbstractFeature universe,
                     SrcModule sm)
   {
     this.universe = universe;
@@ -213,7 +213,6 @@ public class Resolution extends ANY
     if (PRECONDITIONS) require
       (f.state() == Feature.State.RESOLVING);
 
-    f.addTo(_module);
     forInheritance.add(f);
   }
 

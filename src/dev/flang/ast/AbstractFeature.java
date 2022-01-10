@@ -28,11 +28,13 @@ package dev.flang.ast;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Set;
 import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -44,26 +46,11 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractFeature extends ANY implements Comparable<AbstractFeature>
+public abstract class AbstractFeature extends ANY implements Comparable<AbstractFeature>, HasSourcePosition
 {
 
-  /**
-   * NYI: to be removed: Temporary mapping from Feature to corresponding
-   * libraryFeature (if it exists) and back to the ast.Feature.
-   *
-   * As long as the duality of ast.Feature/fe.LibraryFeature exists, a check for
-   * feature equality should be done using sameAs.
-   */
-  public AbstractFeature _libraryFeature = null;
-  public AbstractFeature libraryFeature()
-  {
-    return _libraryFeature == null ? this : _libraryFeature;
-  }
-  public AbstractFeature astFeature() { return this; }
-  public boolean sameAs(AbstractFeature other)
-  {
-    return astFeature() == other.astFeature();
-  }
+
+  /*------------------------------  enums  ------------------------------*/
 
 
   /**
@@ -88,6 +75,58 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       return values()[ordinal];
     }
   }
+
+
+  /*----------------------------  variables  ----------------------------*/
+
+
+
+  /**
+   * NYI: to be removed: Temporary mapping from Feature to corresponding
+   * libraryFeature (if it exists) and back to the ast.Feature.
+   *
+   * As long as the duality of ast.Feature/fe.LibraryFeature exists, a check for
+   * feature equality should be done using sameAs.
+   */
+  public AbstractFeature _libraryFeature = null; // NYI: remove when USE_FUM is default
+  public AbstractFeature libraryFeature() // NYI: remove
+  {
+    return _libraryFeature == null ? this : _libraryFeature;
+  }
+
+
+  /**
+   * For a Feature that can be called and hasThisType() is true, this will be
+   * set to the frame type during resolution.  This type uses the formal
+   * generics as actual generics. For a generic feature, these must be replaced.
+   */
+  protected AbstractType _thisType = null;
+
+
+  /**
+   * Reserved fields to be used by dev.flang.air to find used features and to
+   * mark features that are called dynamically.
+   */
+  public HasSourcePosition _usedAt;
+  public boolean _calledDynamically;
+
+
+  /**
+   * Caching used in front end.
+   */
+  public Object _frontEndData;
+
+
+  /*-----------------------------  methods  -----------------------------*/
+
+  /**
+   * All features that have been found to be directly redefined by this feature.
+   * This does not include redefintions of redefinitions.  Four Features loaded
+   * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
+   * LibraryFeature, this will be loaded from the library module file.
+   */
+  public abstract Set<AbstractFeature> redefines();
+
 
   /* pre-implemented convenience functions: */
   public boolean isRoutine() { return kind() == Kind.Routine; }
@@ -198,7 +237,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         result = null;
       }
-    else if (this == Types.resolved.f_choice)
+    else if (this.compareTo(Types.resolved.f_choice) == 0)
       {
         result = generics().asActuals();
       }
@@ -211,7 +250,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
             check
               (Errors.count() > 0 || p.calledFeature() != null);
 
-            if (p.calledFeature().sameAs(Types.resolved.f_choice))
+            if (p.calledFeature() == Types.resolved.f_choice)
               {
                 if (lastP != null)
                   {
@@ -279,10 +318,129 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     Generic result = generics().get(name);
 
     if (POSTCONDITIONS) ensure
-      ((result == null) || (result._name.equals(name) && (result.feature().sameAs(this))));
+      ((result == null) || (result._name.equals(name) && (result.feature() == this)));
     // result == null ==> for all g in generics: !g.name.equals(name)
 
     return result;
+  }
+
+
+  /**
+   * thisType returns the type of this feature's frame object.  This can be
+   * called even if !hasThisType() since thisClazz() is used also for abstract
+   * or intrinsic feature to determine the resultClazz().
+   *
+   * @return this feature's frame object
+   */
+  public AbstractType thisType()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(Feature.State.FINDING_DECLARATIONS));
+
+    AbstractType result = _thisType;
+    if (result == null)
+      {
+        result = this == Types.f_ERROR
+          ? Types.t_ERROR
+          : createThisType();
+        _thisType = result;
+      }
+    if (state().atLeast(Feature.State.RESOLVED_TYPES))
+      {
+        result = Types.intern(result);
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result != null,
+       Errors.count() > 0 || result.isRef() == isThisRef(),
+       // does not hold if feature is declared repeatedly
+       Errors.count() > 0 || result.featureOfType() == this,
+       true || // this condition is very expensive to check and obviously true:
+       !state().atLeast(Feature.State.RESOLVED_TYPES) || result == Types.intern(result)
+       );
+
+    return result;
+  }
+
+
+  /**
+   * createThisType returns a new instance of the type of this feature's frame
+   * object.  This can be called even if !hasThisType() since thisClazz() is
+   * used also for abstract or intrinsic feature to determine the resultClazz().
+   *
+   * @return this feature's frame object
+   */
+  protected AbstractType createThisType()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(Feature.State.FINDING_DECLARATIONS));
+
+    var result = new Type(pos(), featureName().baseName(), generics().asActuals(), null, this, Type.RefOrVal.LikeUnderlyingFeature);
+
+    if (POSTCONDITIONS) ensure
+      (result != null,
+       Errors.count() > 0 || result.isRef() == isThisRef(),
+       // does not hold if feature is declared repeatedly
+       Errors.count() > 0 || result.featureOfType() == this,
+       true || // this condition is very expensive to check and obviously true:
+       !state().atLeast(Feature.State.RESOLVED_TYPES) || result == Types.intern(result)
+       );
+
+    return result;
+  }
+
+
+  /**
+   * resultTypeRaw returns the result type of this feature using the
+   * formal generic argument.
+   *
+   * @return this feature's result type using the formal generics, null in
+   * case the type is currently unknown (in particular, in case of a type
+   * inference from a field declared later).
+   */
+  AbstractType resultTypeRaw()
+  {
+    return resultType();
+  }
+
+
+  /**
+   * resultTypeRaw returns the result type of this feature with given
+   * actual generics applied.
+   *
+   * @param generics the actual generic arguments to create the type, or null if
+   * generics should not be replaced.
+   *
+   * @return this feature's result type using the given actual generics, null in
+   * case the type is currently unknown (in particular, in case of a type
+   * inference to a field declared later).
+   */
+  AbstractType resultTypeRaw(List<AbstractType> actualGenerics)
+  {
+    check
+      (state().atLeast(Feature.State.RESOLVING_TYPES));
+
+    var result = resultTypeRaw();
+    if (result != null)
+      {
+        result = result.actualType(this, actualGenerics);
+      }
+
+    return result;
+  }
+
+
+  /**
+   * Type resolution for a feature f: For all expressions and statements in f's
+   * inheritance clause, contract, and implementation, determine the static type
+   * of the expression. Were needed, perform type inference. Schedule f for
+   * syntactic sugar resolution.
+   *
+   * @param res this is called during type resolution, res gives the resolution
+   * instance.
+   */
+  void resolveTypes(Resolution res)
+  {
   }
 
 
@@ -301,11 +459,45 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
   {
-    return resultType();
+    if (!state().atLeast(Feature.State.RESOLVING_TYPES))
+      {
+        res.resolveDeclarations(this);
+        resolveTypes(res);
+      }
+    var result = resultTypeRaw(generics);
+    if (result != null && result instanceof Type rt)
+      {
+        rt.findGenerics(outer());
+      }
+    return result;
   }
+
+
+  /**
+   * In case this has not been resolved for types yet, do so. Next, try to
+   * determine the result type of this feature. If the type is not explicit, but
+   * needs to be inferred, but it could not be inferred, cause a runtime
+   * error since we apparently have a cyclic dependencies for type inference.
+   *
+   * @param rpos the source code position to be used for error reporting
+   *
+   * @param res Resolution instance use to resolve this for types.
+   *
+   * @param generics the actual generic arguments to be applied to the type
+   *
+   * @return the result type, Types.resulved.t_unit if none and
+   * Types.t_ERROR in case the type could not be inferenced and error
+   * was reported.
+   */
   AbstractType resultTypeForTypeInference(SourcePosition rpos, Resolution res, List<AbstractType> generics)
   {
-    return resultTypeIfPresent(res, generics);
+    var result = resultTypeIfPresent(res, generics);
+    if (result == null)
+      {
+        AstErrors.forwardTypeInference(rpos, this, pos());
+        result = Types.t_ERROR;
+      }
+    return result;
   }
 
 
@@ -467,10 +659,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public FeatureName handDown(SrcModule module, AbstractFeature f, FeatureName fn, AbstractCall p, AbstractFeature heir)
   {
     if (PRECONDITIONS) require
-      (module.declaredOrInheritedFeatures(this).get(fn).sameAs(f),
+      (module == null || module.declaredOrInheritedFeatures(this).get(fn) == f,
        this != heir);
 
-    if (f.outer().sameAs(p.calledFeature())) // NYI: currently does not support inheriting open generic over several levels
+    if (f.outer() == p.calledFeature()) // NYI: currently does not support inheriting open generic over several levels
       {
         fn = f.effectiveName(p.generics());
       }
@@ -534,6 +726,34 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Get the actual type from a type used in this feature after it was inherited
+   * by heir.  During inheritance, formal generics may be replaced by actual
+   * generics.
+   *
+   * @param t a type used in this feature, must not be an open generic type
+   * (which can be replaced by several types during inheritance).
+   *
+   * @param heir a heir of this, might be equal to this.
+   *
+   * @return interned type that represents t seen as it is seen from heir.
+   */
+  public AbstractType handDownNonOpen(Resolution res, AbstractType t, AbstractFeature heir)
+  {
+    if (PRECONDITIONS) require
+      (!t.isOpenGeneric(),
+       heir != null,
+       heir.state().atLeast(Feature.State.CHECKING_TYPES1));
+
+    var a = handDown(res, new AbstractType[] { t }, heir);
+
+    check
+      (Errors.count() > 0 || a.length == 1);
+
+    return a.length == 1 ? a[0] : Types.t_ERROR;
+  }
+
+
+  /**
    * Find the chain of inheritance calls from this to its parent f.
    *
    * NYI: Repeated inheritance handling is still missing, there might be several
@@ -550,7 +770,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public List<AbstractCall> tryFindInheritanceChain(AbstractFeature ancestor)
   {
     List<AbstractCall> result;
-    if (this.sameAs(ancestor))
+    if (this == ancestor)
       {
         result = new List<>();
       }
@@ -612,7 +832,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                          (state().atLeast(Feature.State.LOADED),
        parent != null && parent.state().atLeast(Feature.State.LOADED));
 
-    if (this.sameAs(parent))
+    if (this == parent)
       {
         return true;
       }
@@ -652,17 +872,33 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     for (var c: inherits())
       {
-        var nc = c.visit(fv, (Feature) astFeature());
+        var nc = c.visit(fv, this);
         check
           (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
-    if (contract() != null)
-      {
-        contract().visit(fv, this);
-      }
+    contract().visit(fv, this);
     if (isRoutine())
       {
-        code().visit(fv, (Feature) astFeature());
+        code().visit(fv, this);
+      }
+  }
+
+
+  /**
+   * Call v.action(s) on all statements s within this feature.
+   *
+   * @param v the action to be performed on the statements.
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    for (var c: inherits())
+      {
+        c.visitStatements(v);
+      }
+    contract().visitStatements(v);
+    if (isRoutine())
+      {
+        code().visitStatements(v);
       }
   }
 
@@ -694,91 +930,78 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
-  /**
-   * allInnerAndInheritedFeatures returns a complete set of inner features, used
-   * by Clazz.layout and Clazz.hasState.
-   *
-   * @return
-   */
-  public Collection<AbstractFeature> allInnerAndInheritedFeatures(SrcModule mod)
-  {
-    if (PRECONDITIONS) require
-                         (state().atLeast(Feature.State.RESOLVED));
-
-    TreeSet<AbstractFeature> result = new TreeSet<>();
-
-    result.addAll(mod.declaredFeatures(this).values());
-    for (var p : inherits())
-      {
-        var cf = p.calledFeature();
-        check
-          (Errors.count() > 0 || cf != null);
-
-        if (cf != null)
-          {
-            result.addAll(cf.allInnerAndInheritedFeatures(mod));
-          }
-      }
-
-    return result;
-  }
-
-
   public abstract FeatureName featureName();
-  public abstract SourcePosition pos();
   public abstract FormalGenerics generics();
   public abstract List<AbstractCall> inherits();
   public abstract AbstractFeature outer();
-  public abstract AbstractType thisType();
   public abstract List<AbstractFeature> arguments();
   public abstract AbstractType resultType();
   public abstract AbstractFeature resultField();
   public abstract AbstractFeature outerRef();
-  public abstract AbstractFeature get(String name);
+
+
+  /**
+   * Get inner feature with given name, ignoring the argument count.
+   *
+   * @param name the name of the feature within this.
+   *
+   * @return the found feature or null in case of an error.
+   */
+  public AbstractFeature get(SrcModule mod, String name)
+  {
+    return get(mod, name, -1);
+  }
+
+
+  /**
+   * Get inner feature with given name and argCount.
+   *
+   * @param name the name of the feature within this.
+   *
+   * @param argcount the number of arguments, -1 if not specified.
+   *
+   * @return the found feature or Types.f_ERROR in case of an error.
+   */
+  public AbstractFeature get(SrcModule mod, String name, int argcount)
+  {
+    AbstractFeature result = Types.f_ERROR;
+    var d = mod.declaredFeatures(this);
+    var set = (argcount >= 0
+               ? FeatureName.getAll(d, name, argcount)
+               : FeatureName.getAll(d, name          )).values();
+    if (set.size() == 1)
+      {
+        for (var f2 : set)
+          {
+            result = f2;
+          }
+      }
+    else if (set.isEmpty())
+      {
+        AstErrors.internallyReferencedFeatureNotFound(pos(), name, this, name);
+      }
+    else
+      { // NYI: This might happen if the user adds additional features
+        // with different argCounts. name should contain argCount to
+        // avoid this
+        AstErrors.internallyReferencedFeatureNotUnique(pos(), name + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
+      }
+    return result;
+  }
+
 
   // following are used in IR/Clazzes middle end or later only:
   public abstract AbstractFeature choiceTag();
 
-  public abstract Impl.Kind implKind();  // NYI: remove, used only in Clazz.java for some obscure case
-  public abstract Expr initialValue();   // NYI: remove, used only in Clazz.java for some obscure case
+  // following are used in IR/Clazzes middle end or later only:
+  public Impl.Kind implKind() { return Impl.Kind.Routine; /* NYI! */ }      // NYI: remove, used only in Clazz.java for some obscure case
+  public Expr initialValue() { check(false); return null; }   // NYI: remove, used only in Clazz.java for some obscure case
 
   // following used in MIR or later
   public abstract Expr code();
 
   // in FUIR or later
   public abstract Contract contract();
-
-
-  /**
-   * Compare this to other for sorting Feature
-   */
-  public int compareTo(AbstractFeature other)
-  {
-    int result;
-    if (sameAs(other))
-      {
-        result = 0;
-      }
-    else if ((this.outer() == null) &&  (other.outer() != null))
-      {
-        result = -1;
-      }
-    else if ((this.outer() != null) &&  (other.outer() == null))
-      {
-        result = +1;
-      }
-    else
-      {
-        result = (this.outer() != null) ? this.outer().compareTo(other.outer())
-                                       : 0;
-        if (result == 0)
-          {
-            result = featureName().compareTo(other.featureName());
-          }
-      }
-    return result;
-  }
-
 
 }
 

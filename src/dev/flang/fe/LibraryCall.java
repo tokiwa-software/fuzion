@@ -32,7 +32,11 @@ import java.util.Stack;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
+import dev.flang.ast.FeatureVisitor;
+import dev.flang.ast.Types;
+import dev.flang.ast.Universe;
 
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -68,6 +72,7 @@ public class LibraryCall extends AbstractCall
   private final List<Expr> _actuals;
   private final List<AbstractType> _generics;
   private final AbstractFeature _calledFeature;
+  private final int _select;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -76,12 +81,12 @@ public class LibraryCall extends AbstractCall
   /**
    * Create LibraryCall
    */
-  LibraryCall(LibraryModule lib, int index, Stack<Expr> s)
+  LibraryCall(LibraryModule lib, int index, Stack<Expr> s, SourcePosition pos)
   {
-    super(LibraryModule.DUMMY_POS);
+    super(pos);
     _libModule = lib;
     _index = index;
-    _type = _libModule.USE_FUM ? lib.callType(index) : null;
+    _type = lib.callType(index);
     var na = _libModule.callNumArgs(index);
     var actuals = new List<Expr>();
     for (var i = 0; i < na; i++)
@@ -95,7 +100,7 @@ public class LibraryCall extends AbstractCall
         var tp = _libModule.callTypeParametersPos(index);
         for (var i = 0; i < ng; i++)
           {
-            var t = _libModule.type(tp, LibraryModule.DUMMY_POS, null);
+            var t = _libModule.type(tp);
             g.add(t);
             tp = _libModule.typeNextPos(tp);
           }
@@ -105,39 +110,97 @@ public class LibraryCall extends AbstractCall
     _generics = g;
     Expr target = null;
     var feat = lib.callCalledFeature(index);
-    var f = lib.libraryFeature(feat, null);
-    if (!f.outer().isUniverse())
+    var f = lib.libraryFeature(feat);
+    if (f.outer().isUniverse())
+      {
+        target = new Universe(pos());
+      }
+    else
       {
         target = s.pop();
       }
     _target = target;
     _calledFeature = f;
+    _select = f.resultType().isOpenGeneric() ? lib.callSelect(index) : -1;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
 
 
+  /**
+   * visit all the features, expressions, statements within this feature.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited objects.
+   *
+   * @param outer the feature surrounding this expression.
+   *
+   * @return this.
+   */
+  public Expr visit(FeatureVisitor v, AbstractFeature outer)
+  {
+    var i = generics().listIterator();
+    while (i.hasNext())
+      {
+        i.set(i.next().visit(v, outer));
+      }
+    var j = actuals().listIterator(); // _actuals can change during resolveTypes, so create iterator early
+    while (j.hasNext())
+      {
+        j.set(j.next().visit(v, outer));
+      };
+    if (target() != null)
+      {
+        var t = target().visit(v, outer);
+        check
+          (target() == t);
+      }
+    v.action(this);
+    return this;
+  }
+
+
+
   public List<AbstractType> generics() { return _generics; }
   public AbstractFeature calledFeature() { return _calledFeature; }
   public Expr target() { return _target; }
   public List<Expr> actuals() { return _actuals; }
-  public int select() {
-    if (type().isOpenGeneric())
-      {
-        return -1;
-      }
-    else
-      {
-        throw new Error("NYI");
-      }
+  public int select() { return _select; }
+  public boolean isDynamic()
+  {
+    return calledFeature().isDynamic() && !(target() instanceof Current);
   }
-  public boolean isDynamic() { throw new Error("NYI"); }
-  public boolean isInheritanceCall()  { throw new Error("NYI"); }
+  boolean _isInheritanceCall = false;
+  public boolean isInheritanceCall()
+  {
+    return _isInheritanceCall;
+  }
   public AbstractType typeOrNull()
   {
     return _type;
   }
+
+
+  /**
+   * toString
+   *
+   * @return
+   */
+  public String toString()
+  {
+    var t = target();
+    return (t == null //||
+             //t instanceof Universe
+            ? ""
+            : t.toString() + ".")
+      + calledFeature().featureName().baseName()
+      + (generics().isEmpty() ? "" : "<" + generics() + ">")
+      + (actuals().isEmpty() ? "" : "(" + actuals() +")")
+      //+ (select() < 0        ? "" : "." + select())
+      ;
+  }
+
 
 }
 

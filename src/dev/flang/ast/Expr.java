@@ -239,7 +239,7 @@ public abstract class Expr extends ANY implements Stmnt
   protected Expr addFieldForResult(Resolution res, AbstractFeature outer, AbstractType t)
   {
     var result = this;
-    if (t != Types.resolved.t_void)
+    if (t.compareTo(Types.resolved.t_void) != 0)
       {
         Feature r = new Feature(res,
                                 pos,
@@ -276,37 +276,6 @@ public abstract class Expr extends ANY implements Stmnt
 
 
   /**
-   * Get the formal type of the usage of an expression (see box).
-   *
-   * @param s the target statement this expression is used by.
-   *
-   * @param arg in case s is a call, the index of the actual argument this
-   * expression is assigned to.
-   *
-   * @return the formal type required by the user of this expression.
-   */
-  AbstractType getFormalType(Stmnt s, int arg)
-  {
-    if (PRECONDITIONS) require
-      (s instanceof Call || s instanceof Assign || s instanceof InlineArray);
-
-    if (s instanceof Call c)
-      {
-        return c.resolvedFormalArgumentTypes[arg];
-      }
-    else if (s instanceof Assign a)
-      {
-        return a._assignedField.resultType();
-      }
-    else if (s instanceof InlineArray i)
-      {
-        return i.elementType();
-      }
-    throw new Error("unexpected target of boxing: "+s.getClass());
-  }
-
-
-  /**
    * Check if this value might need boxing, unboxing or tagging and wrap this
    * into Box()/Tag() if this is the case.
    *
@@ -317,28 +286,24 @@ public abstract class Expr extends ANY implements Stmnt
    *
    * @return this or an instance of Box wrapping this.
    */
-  Expr box(Stmnt s, int arg)
+  Expr box(AbstractType frmlT)
   {
-    if (PRECONDITIONS) require
-      (s instanceof Call || s instanceof Assign || s instanceof InlineArray);
-
     var result = this;
     var t = type();
-    var frmlT = getFormalType(s, arg);
 
-    if (t != Types.resolved.t_void)
+    if (t.compareTo(Types.resolved.t_void) != 0)
       {
-        if ((!t.isRef() || isCallToOuterRef()) && t != Types.resolved.t_void &&
+        if ((!t.isRef() || isCallToOuterRef()) &&
             (frmlT.isRef() ||
              (frmlT.isChoice() &&
               !frmlT.isAssignableFrom(t) &&
               frmlT.isAssignableFrom(t.asRef()))) ||
             frmlT.isGenericArgument())
           {
-            result = new Box(result, s, arg);
+            result = new Box(result, frmlT);
             t = result.type();
           }
-        if (frmlT.isChoice() && t != frmlT && frmlT.isAssignableFrom(t))
+        if (frmlT.isChoice() && t.compareTo(frmlT) != 0 && frmlT.isAssignableFrom(t))
           {
             result = new Tag(result, frmlT);
           }
@@ -362,7 +327,7 @@ public abstract class Expr extends ANY implements Stmnt
   boolean getCompileTimeConstBool()
   {
     if (PRECONDITIONS) require
-      (isCompileTimeConst() && type() == Types.resolved.t_bool);
+      (isCompileTimeConst() && type().compareTo(Types.resolved.t_bool) == 0);
 
     throw new Error();
   }
@@ -374,7 +339,7 @@ public abstract class Expr extends ANY implements Stmnt
   int getCompileTimeConstI32()
   {
     if (PRECONDITIONS) require
-      (isCompileTimeConst() && type() == Types.resolved.t_i32);
+      (isCompileTimeConst() && type().compareTo(Types.resolved.t_i32) == 0);
 
     throw new Error();
   }

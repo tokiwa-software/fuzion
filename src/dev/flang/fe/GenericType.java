@@ -30,11 +30,15 @@ import java.util.Set;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Generic;
+import dev.flang.ast.Type;
+import dev.flang.ast.Types;
 
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 
-import dev.flang.util.SourcePosition;
+import dev.flang.util.HasSourcePosition;
 
 
 /**
@@ -54,6 +58,15 @@ public class GenericType extends LibraryType
   Generic _generic;
 
 
+  /**
+   * Is this an explicit reference or value type?  Ref/Value to make this a
+   * reference/value type independent of the type of the underlying feature
+   * defining a ref type or not, false to keep the underlying feature's
+   * ref/value status.
+   */
+  Type.RefOrVal _refOrVal;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -61,19 +74,46 @@ public class GenericType extends LibraryType
    * Constructor for a plain Type from a given feature that does not have any
    * actual generics.
    */
-  GenericType(LibraryModule mod, int at, SourcePosition pos, Generic generic, AbstractType from)
+  GenericType(LibraryModule mod, int at, HasSourcePosition pos, Generic generic, Type.RefOrVal rov)
   {
-    super(mod, at, pos, from);
+    super(mod, at, pos);
 
     this._generic = generic;
+    this._refOrVal = Type.RefOrVal.LikeUnderlyingFeature;
+    this._refOrVal = rov;
+  }
+
+
+  /**
+   * Constructor for a plain Type from a given feature that does not have any
+   * actual generics.
+   */
+  GenericType(LibraryModule mod, int at, HasSourcePosition pos, Generic generic)
+  {
+    this(mod, at, pos, generic, Type.RefOrVal.LikeUnderlyingFeature);
   }
 
   /*-----------------------------  methods  -----------------------------*/
 
 
+  /**
+   * Dummy visit() for types.
+   *
+   * NYI: This is called during me.MiddleEnd.findUsedFeatures(). It should be
+   * replaced by a different mechanism not using FaetureVisitor.
+   */
+  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
+  {
+    return this;
+  }
+
+
   public AbstractFeature featureOfType()
   {
-    throw new Error("GenericType.featureOfType() not defined");
+    check
+      (Errors.count() > 0);
+
+    return Types.f_ERROR;
   }
 
   public boolean isGenericArgument()
@@ -83,7 +123,10 @@ public class GenericType extends LibraryType
 
   public List<AbstractType> generics()
   {
-    throw new Error("GenericType.generics() not defined");
+    check
+      (Errors.count() > 0);
+
+    return Type.NONE;
   }
 
 
@@ -104,23 +147,37 @@ public class GenericType extends LibraryType
    */
   public boolean isRef()
   {
-    return false;
+    return switch (_refOrVal)
+      {
+      case Ref -> true;
+      case Value -> false;
+      case LikeUnderlyingFeature -> false;
+      };
   }
 
   public AbstractType outer()
   {
-    throw new Error("GenericType.outer() not defined");
+    check(Errors.count() > 0);
+    return null;
   }
 
   public AbstractType asRef()
   {
-    throw new Error("GenericType.asRef() not defined");
+    return switch (_refOrVal)
+      {
+      case Ref -> this;
+      default -> new GenericType(_libModule, _at, _pos, _generic, Type.RefOrVal.Ref);
+      };
   }
   public AbstractType asValue()
   {
     throw new Error("GenericType.asValue() not defined");
   }
 
+  public String toString()
+  {
+    return genericArgument().feature().qualifiedName() + "." + genericArgument().name() + (this.isRef() ? " (boxed)" : "");
+  }
 
 }
 

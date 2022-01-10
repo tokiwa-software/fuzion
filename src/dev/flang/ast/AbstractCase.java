@@ -20,21 +20,33 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Check
+ * Source of class AbstractCase
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.ast;
 
+import dev.flang.util.ANY;
+import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 
 /**
- * Check <description>
+ * AbstractCase represents one case in a match expression, e.g.,
+ *
+ *   A,B => { a; }
+ *
+ * or
+ *
+ *   C c => { c.x; },
+ *
+ * or
+ *
+ *   *   => { q; }
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Check implements Stmnt
+public abstract class AbstractCase extends ANY
 {
 
 
@@ -42,43 +54,61 @@ public class Check implements Stmnt
 
 
   /**
-   *
+   * The soucecode position of this case, used for error messages.
    */
-  Cond cond;
+  final SourcePosition _pos;
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * Counter for a unique id for this case statement. This is used to store data
+   * in the runtime clazz for this case.
    */
-  public final SourcePosition _pos;
+  public int runtimeClazzId_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
 
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
-   * Constructor
+   * Constructor for an AbstractCase that assigns
    *
-   * @param c
+   * @param pos the soucecode position, used for error messages.
    */
-  public Check(SourcePosition pos, Cond c)
+  public AbstractCase(SourcePosition pos)
   {
-    this._pos = pos;
-    this.cond = c;
+    _pos = pos;
   }
-
 
 
   /*-----------------------------  methods  -----------------------------*/
 
 
   /**
-   * The soucecode position of this statment, used for error messages.
+   * The soucecode position of this case, used for error messages.
    */
   public SourcePosition pos()
   {
     return _pos;
   }
+
+
+  /**
+   * Field with type from this.type created in case fieldName != null.
+   */
+  public abstract AbstractFeature field();
+
+
+  /**
+   * List of types to be matched against. null if we match against type or match
+   * everything.
+   */
+  public abstract List<AbstractType> types();
+
+
+  /**
+   * code to be executed in case of a match
+   */
+  public abstract Block code();
 
 
   /**
@@ -88,48 +118,38 @@ public class Check implements Stmnt
    * visited objects.
    *
    * @param outer the feature surrounding this expression.
-   *
-   * @return this.
    */
-  public Check visit(FeatureVisitor v, AbstractFeature outer)
+  public void visit(FeatureVisitor v, AbstractFeature outer)
   {
-    cond.visit(v, outer);
-    return this;
+    v.actionBefore(this);
+    if (field() instanceof Feature f)
+      {
+        f.visit(v, outer);
+      }
+    if (types() != null)
+      {
+        var i = types().listIterator();
+        while (i.hasNext())
+          {
+            i.set(i.next().visit(v, outer));
+          }
+      }
+    var nc = code().visit(v, outer);
+    check
+      (nc == code());
+    v.actionAfter(this);
   }
 
 
   /**
-   * visit all the statements within this Check.
+   * visit all the statements within this Case.
    *
    * @param v the visitor instance that defines an action to be performed on
    * visited statements
    */
   public void visitStatements(StatementVisitor v)
   {
-    Stmnt.super.visitStatements(v);
-    cond.visitStatements(v);
-  }
-
-
-  /**
-   * Does this statement consist of nothing but declarations? I.e., it has no
-   * code that actually would be executed at runtime.
-   */
-  public boolean containsOnlyDeclarations()
-  {
-    return false;
-  };
-
-
-  /**
-   * toString
-   *
-   * @return
-   */
-  public String toString()
-  {
-    return
-      "check "+cond+"\n";
+    code().visitStatements(v);
   }
 
 }

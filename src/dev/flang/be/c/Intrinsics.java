@@ -92,6 +92,9 @@ class Intrinsics extends ANY
 
     switch (c._fuir.clazzIntrinsicName(cl))
       {
+      case "safety"              : return (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
+      case "debug"               : return (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
+      case "debugLevel"          : return (CExpr.int32const(c._options.fuzionDebugLevel())).ret();
       case "fuzion.std.exit"     : return CExpr.call("exit", new List<>(A0));
       case "fuzion.std.out.write": var cid = new CIdent("c");
                                    return CStmnt.seq(CStmnt.decl("char",cid),

@@ -37,6 +37,8 @@ JAVA_FILES_UTIL = \
           $(SRC)/dev/flang/util/Errors.java \
           $(SRC)/dev/flang/util/FuzionOptions.java \
           $(SRC)/dev/flang/util/FuzionConstants.java \
+          $(SRC)/dev/flang/util/HasSourcePosition.java \
+          $(SRC)/dev/flang/util/HexDump.java \
           $(SRC)/dev/flang/util/Intervals.java \
           $(SRC)/dev/flang/util/List.java \
           $(SRC)/dev/flang/util/Map2Int.java \
@@ -54,7 +56,9 @@ JAVA_FILES_UTIL_UNICODE = \
 
 JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/AbstractCall.java \
+          $(SRC)/dev/flang/ast/AbstractCase.java \
           $(SRC)/dev/flang/ast/AbstractFeature.java \
+          $(SRC)/dev/flang/ast/AbstractMatch.java \
           $(SRC)/dev/flang/ast/AbstractType.java \
           $(SRC)/dev/flang/ast/Assign.java \
           $(SRC)/dev/flang/ast/AstErrors.java \
@@ -93,6 +97,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Resolution.java \
           $(SRC)/dev/flang/ast/ReturnType.java \
           $(SRC)/dev/flang/ast/SrcModule.java \
+          $(SRC)/dev/flang/ast/StatementVisitor.java \
           $(SRC)/dev/flang/ast/Stmnt.java \
           $(SRC)/dev/flang/ast/StrConst.java \
           $(SRC)/dev/flang/ast/Tag.java \
@@ -232,6 +237,7 @@ JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
+MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_JAVA_BASE         = $(BUILD_DIR)/modules/java.base/__marker_for_make__
 MOD_JAVA_XML          = $(BUILD_DIR)/modules/java.xml/__marker_for_make__
 MOD_JAVA_DATATRANSFER = $(BUILD_DIR)/modules/java.datatransfer/__marker_for_make__
@@ -242,12 +248,16 @@ VERSION = $(shell cat $(FZ_SRC)/version.txt)
 ALL = \
 	$(BUILD_DIR)/bin/fz \
 	$(BUILD_DIR)/bin/fzjava \
+	$(MOD_BASE) \
 	$(MOD_JAVA_BASE) \
 	$(MOD_JAVA_XML) \
 	$(MOD_JAVA_DATATRANSFER) \
 	$(MOD_JAVA_DESKTOP) \
 	$(BUILD_DIR)/tests \
 	$(BUILD_DIR)/examples
+
+DOCUMENTATION = \
+	$(BUILD_DIR)/doc/fumfile.html     # fum file format documentation created with asciidoc
 
 .PHONY: all
 all: $(ALL)
@@ -383,6 +393,10 @@ $(BUILD_DIR)/bin/fz: $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib
 	cp -rf $(FZ_SRC)/bin/fz $@
 	chmod +x $@
 
+$(MOD_BASE): $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz
+	mkdir -p $(@D)
+	$(BUILD_DIR)/bin/fz -XsaveBaseLib=$@
+
 $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
@@ -451,6 +465,13 @@ $(BUILD_DIR)/UnicodeData.java.generated: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR
 
 $(BUILD_DIR)/UnicodeData.java: $(BUILD_DIR)/UnicodeData.java.generated $(SRC)/dev/flang/util/UnicodeData.java.in
 	sed -e '/@@@ generated code start @@@/r build/UnicodeData.java.generated' $(SRC)/dev/flang/util/UnicodeData.java.in >$@
+
+.phony: doc
+doc: $(DOCUMENTATION)
+
+$(BUILD_DIR)/doc/fumfile.html: $(SRC)/dev/flang/fe/LibraryModule.java
+	mkdir -p $(@D)
+	sed -n '/--asciidoc--/,/--asciidoc--/p' $^ | grep -v "\--asciidoc--" | asciidoc - >$@
 
 # phony target to regenerate UnicodeData.java using the latest UnicodeData.txt.
 # This must be phony since $(SRC)/dev/flang/util/UnicodeData.java would

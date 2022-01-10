@@ -306,6 +306,28 @@ public class If extends Expr
 
 
   /**
+   * visit all the statements within this If.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    super.visitStatements(v);
+    cond.visitStatements(v);
+    block.visitStatements(v);
+    if (elseBlock != null)
+      {
+        elseBlock.visitStatements(v);
+      }
+    if (elseIf != null)
+      {
+        elseIf.visitStatements(v);
+      }
+  }
+
+
+  /**
    * Convert this Expression into an assignment to the given field.  In case
    * this is a statment with several branches such as an "if" or a "match"
    * statement, add corresponding assignments in each branch and convert this

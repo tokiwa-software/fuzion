@@ -26,9 +26,13 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.interpreter;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
@@ -37,6 +41,7 @@ import java.util.TreeMap;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 
 import dev.flang.fuir.FUIR;
@@ -46,24 +51,21 @@ import dev.flang.air.Clazzes;
 
 import dev.flang.ast.AbstractCall; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.AbstractMatch; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Assign; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Block; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.BoolConst; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Box; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Case; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Check; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.Constant; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Current; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.InlineArray; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.NumLiteral; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Match; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Old; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Stmnt; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.StrConst; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Tag; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Unbox; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -81,6 +83,13 @@ public class Interpreter extends ANY
 
 
   /*-----------------------------  statics  -----------------------------*/
+
+
+  /**
+   * User specified options. In particular, debugLevel and safety is needed by
+   * the backend.
+   */
+  static FuzionOptions _options_;
 
 
   /**
@@ -162,7 +171,7 @@ public class Interpreter extends ANY
     return sb.toString();
   }
 
-  static Map<String, Value> _cachedStrings_ = new TreeMap<>();
+  static Map<Constant, Value> _cachedConsts_ = new HashMap<>();
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -180,8 +189,9 @@ public class Interpreter extends ANY
   /**
    * Create an interpreter to execute the given intermediate code.
    */
-  public Interpreter(FUIR fuir)
+  public Interpreter(FuzionOptions options, FUIR fuir)
   {
+    _options_ = options;
     _fuir = fuir;
     Errors.showAndExit();
     Clazzes.showStatistics();
@@ -323,32 +333,35 @@ public class Interpreter extends ANY
 
     else if (s instanceof Assign a)
       {
-        Value v    = execute(a._value   , staticClazz, cur);
+        Value v    = execute(a._value , staticClazz, cur);
         Value thiz = execute(a._target, staticClazz, cur);
         Clazz sClazz = staticClazz.getRuntimeClazz(a.tid_ + 0);
         setField(a._assignedField, -1, sClazz, thiz, v);
         result = Value.NO_VALUE;
       }
 
-    else if (s instanceof BoolConst b)
+    else if (s instanceof Constant i)
       {
-        result = new boolValue(b.b);
-      }
-
-    else if (s instanceof NumLiteral i)
-      {
-        var t = i.type();
-        if      (t == Types.resolved.t_i8 ) { result = new i8Value (i.intValue().intValue()); }
-        else if (t == Types.resolved.t_i16) { result = new i16Value(i.intValue().intValue()); }
-        else if (t == Types.resolved.t_i32) { result = new i32Value(i.intValue().intValue()); }
-        else if (t == Types.resolved.t_i64) { result = new i64Value(i.intValue().longValue()); }
-        else if (t == Types.resolved.t_u8 ) { result = new u8Value (i.intValue().intValue()); }
-        else if (t == Types.resolved.t_u16) { result = new u16Value(i.intValue().intValue()); }
-        else if (t == Types.resolved.t_u32) { result = new u32Value(i.intValue().intValue()); }
-        else if (t == Types.resolved.t_u64) { result = new u64Value(i.intValue().longValue()); }
-        else if (t == Types.resolved.t_f32) { result = new f32Value(i.f32Value()); }
-        else if (t == Types.resolved.t_f64) { result = new f64Value(i.f64Value()); }
-        else                                { result = Value.NO_VALUE; check(false); }
+        result = _cachedConsts_.get(i);
+        if (result == null)
+          {
+            var t = i.type();
+            var d = i.data();
+            if      (t.compareTo(Types.resolved.t_bool  ) == 0) { result = new boolValue(d[0] != 0                                                           ); }
+            else if (t.compareTo(Types.resolved.t_i8    ) == 0) { result = new i8Value  (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get      ()       ); }
+            else if (t.compareTo(Types.resolved.t_i16   ) == 0) { result = new i16Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getShort ()       ); }
+            else if (t.compareTo(Types.resolved.t_i32   ) == 0) { result = new i32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt   ()       ); }
+            else if (t.compareTo(Types.resolved.t_i64   ) == 0) { result = new i64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong  ()       ); }
+            else if (t.compareTo(Types.resolved.t_u8    ) == 0) { result = new u8Value  (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).get      () & 0xff); }
+            else if (t.compareTo(Types.resolved.t_u16   ) == 0) { result = new u16Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getChar  ()       ); }
+            else if (t.compareTo(Types.resolved.t_u32   ) == 0) { result = new u32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt   ()       ); }
+            else if (t.compareTo(Types.resolved.t_u64   ) == 0) { result = new u64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong  ()       ); }
+            else if (t.compareTo(Types.resolved.t_f32   ) == 0) { result = new f32Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat ()       ); }
+            else if (t.compareTo(Types.resolved.t_f64   ) == 0) { result = new f64Value (ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble()       ); }
+            else if (t.compareTo(Types.resolved.t_string) == 0) { result = value(new String(d, StandardCharsets.UTF_8));                                        }
+            else                                                { result = Value.NO_VALUE; check(false); }
+            _cachedConsts_.put(i, result);
+          }
       }
 
     else if (s instanceof Block b)
@@ -381,11 +394,14 @@ public class Interpreter extends ANY
           }
       }
 
-    else if (s instanceof Match m)
+    else if (s instanceof AbstractMatch m)
       {
         result = null;
         Clazz staticSubjectClazz = staticClazz.getRuntimeClazz(m.runtimeClazzId_);
-        Value sub = execute(m.subject, staticClazz, cur);
+        staticSubjectClazz = staticSubjectClazz.asValue(); /* asValue since subject in , e.g., 'match (bool.this)' may be 'ref bool'
+                                                            * NYI: might be better to store asValue directly at getRuntimeClazz(m.runtimeClazzId_)
+                                                            */
+        Value sub = execute(m.subject(), staticClazz, cur);
         var sf = staticSubjectClazz.feature();
         int tag;
         Value refVal = null;
@@ -406,26 +422,26 @@ public class Interpreter extends ANY
           ? ((Instance) refVal).clazz()
           : staticSubjectClazz.getChoiceClazz(tag);
 
-        Iterator<Case> it = m.cases.iterator();
+        var it = m.cases().iterator();
         boolean matches = false;
         do
           {
-            Case c = it.next();
+            var c = it.next();
 
-            if (c.field != null && Clazzes.isUsed(c.field, staticClazz))
+            if (c.field() != null && Clazzes.isUsed(c.field(), staticClazz))
               {
                 Clazz fieldClazz = staticClazz.getRuntimeClazz(c.runtimeClazzId_).resultClazz();
                 if (fieldClazz.isAssignableFrom(subjectClazz))
                   {
                     Value v = tag < 0 ? refVal
                                       : getChoiceVal(sf, staticSubjectClazz, sub, tag);
-                    setField(c.field, -1, staticClazz, cur, v);
+                    setField(c.field(), -1, staticClazz, cur, v);
                     matches = true;
                   }
               }
             else
               {
-                var nt = c.field != null ? 1 : c.types.size();
+                var nt = c.field() != null ? 1 : c.types().size();
                 for (int i = 0; !matches && i < nt; i++)
                   {
                     Clazz caseClazz = staticClazz.getRuntimeClazz(c.runtimeClazzId_ + i);
@@ -434,7 +450,7 @@ public class Interpreter extends ANY
               }
             if (matches)
               {
-                result = execute(c.code, staticClazz, cur);
+                result = execute(c.code(), staticClazz, cur);
               }
           }
         while (!matches && it.hasNext());
@@ -442,15 +458,15 @@ public class Interpreter extends ANY
         if (!matches)
           {
             var permitted = new List<Clazz>();
-            for (var c : m.cases)
+            for (var c : m.cases())
               {
-                if (c.field != null)
+                if (c.field() != null)
                   {
                     permitted.add(staticClazz.getRuntimeClazz(c.runtimeClazzId_).resultClazz());
                   }
                 else
                   {
-                    for (int i = 0; i < c.types.size(); i++)
+                    for (int i = 0; i < c.types().size(); i++)
                       {
                         permitted.add(staticClazz.getRuntimeClazz(c.runtimeClazzId_ + i));
                       }
@@ -481,9 +497,10 @@ public class Interpreter extends ANY
     else if (s instanceof Box b)
       {
         Value val = execute(b._value, staticClazz, cur);
-        Clazz vc = (Clazz) staticClazz.getRuntimeData(b._valAndRefClazzId);
-        Clazz rc = (Clazz) staticClazz.getRuntimeData(b._valAndRefClazzId + 1);
-        if (vc.isRef() || !rc.isRef())
+        var id = b._valAndRefClazzId;
+        Clazz vc = id < 0 ? null : (Clazz) staticClazz.getRuntimeData(id);
+        Clazz rc = id < 0 ? null : (Clazz) staticClazz.getRuntimeData(id + 1);
+        if (id < 0 || vc.isRef() || !rc.isRef())
           { // vc's type is a generic argument or outer type whose actual type
             // does not need boxing
             check
@@ -502,7 +519,7 @@ public class Interpreter extends ANY
                 // Fields select()ed from fields of open generic type have type t_unit
                 // if the actual clazz does not have the number of actual open generic
                 // parameters.
-                if (vc.actualType(f.resultType()) != Types.resolved.t_unit)
+                if (vc.actualType(f.resultType()).compareTo(Types.resolved.t_unit) != 0)
                   {
                     Value v = getField(f, vc, val);
                     // NYI: Check that this works well for internal fields such as choice tags.
@@ -543,17 +560,6 @@ public class Interpreter extends ANY
                       }
                   }
               }
-          }
-      }
-
-    else if (s instanceof StrConst t)
-      {
-        var str = t.str;
-        result = _cachedStrings_.get(str);
-        if (result == null)
-          {
-            result = value(t.str);
-            _cachedStrings_.put(str, result);
           }
       }
 
@@ -690,7 +696,7 @@ public class Interpreter extends ANY
        outerClazz == Clazzes.ref_f32.getIfCreated() ||
        outerClazz == Clazzes.ref_f64.getIfCreated()) &&
       /* NYI: somewhat ugly way to access "val" field, should better have Clazzes.ref_i32_val.getIfCreate() etc. */
-      innerClazz.feature().sameAs(outerClazz.feature().get("val"));
+      innerClazz.feature() == outerClazz.feature().get(Clazz._module, "val");
 
     if (dynamic && !builtInVal)
       {
@@ -941,7 +947,7 @@ public class Interpreter extends ANY
     if (PRECONDITIONS) require
       (choiceClazz.isChoice(),
        choiceClazz.feature() == thiz,
-       choiceClazz._type != staticTypeOfValue);
+       choiceClazz._type.compareTo(staticTypeOfValue) != 0);
 
     int tag = choiceClazz.getChoiceTag(staticTypeOfValue);
     Clazz  vclazz  = choiceClazz.getChoiceClazz(tag);
@@ -1302,13 +1308,13 @@ public class Interpreter extends ANY
     if (PRECONDITIONS) require
       (fclazz != null,
        slot != null,
-       v != null || thiz.isChoice() || fclazz._type == Types.resolved.t_unit);
+       v != null || thiz.isChoice() || fclazz._type.compareTo(Types.resolved.t_unit) == 0);
 
     if (fclazz.isRef())
       {
         setRefField   (thiz,        slot, v);
       }
-    else if (fclazz._type != Types.resolved.t_unit)  // NYI: remove these assignments in earlier phase
+    else if (fclazz._type.compareTo(Types.resolved.t_unit) != 0)  // NYI: remove these assignments in earlier phase
       {
         setNonRefField(thiz, fclazz, slot, v);
       }

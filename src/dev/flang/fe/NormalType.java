@@ -31,12 +31,14 @@ import java.util.Set;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Feature;
+import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Type;
+import dev.flang.ast.Types;
 
 import dev.flang.util.List;
 
-import dev.flang.util.SourcePosition;
+import dev.flang.util.HasSourcePosition;
 
 
 /**
@@ -59,9 +61,12 @@ public class NormalType extends LibraryType
 
 
   /**
-   * Is this explicitly a ref type even if _feature is a value type?
+   * Is this an explicit reference or value type?  Ref/Value to make this a
+   * reference/value type independent of the type of the underlying feature
+   * defining a ref type or not, false to keep the underlying feature's
+   * ref/value status.
    */
-  boolean _makeRef;
+  Type.RefOrVal _refOrVal;
 
 
   /**
@@ -78,6 +83,7 @@ public class NormalType extends LibraryType
    * Cached result of asRef()
    */
   AbstractType _asRef = null;
+  AbstractType _asValue = null;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -89,23 +95,34 @@ public class NormalType extends LibraryType
    */
   NormalType(LibraryModule mod,
              int at,
-             SourcePosition pos,
+             HasSourcePosition pos,
              AbstractFeature feature,
-             boolean makeRef,
+             Type.RefOrVal refOrVal,
              List<AbstractType> generics,
-             AbstractType outer,
-             AbstractType from)
+             AbstractType outer)
   {
-    super(mod, at, pos, from);
+    super(mod, at, pos);
 
     this._feature = feature;
-    this._makeRef = makeRef;
+    this._refOrVal = refOrVal;
     this._generics = generics;
     this._outer = outer;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Dummy visit() for types.
+   *
+   * NYI: This is called during me.MiddleEnd.findUsedFeatures(). It should be
+   * replaced by a different mechanism not using FaetureVisitor.
+   */
+  public AbstractType visit(FeatureVisitor v, AbstractFeature outerfeat)
+  {
+    return this;
+  }
 
 
   /**
@@ -125,7 +142,7 @@ public class NormalType extends LibraryType
     if (PRECONDITIONS) require
       (!isGenericArgument());
 
-    return new NormalType(_libModule, _at, _pos, _feature, false, g2, o2, _from instanceof dev.flang.ast.Type ?_from.actualType(g2, o2) : null);
+    return new NormalType(_libModule, _at, _pos, _feature, _refOrVal, g2, o2);
   }
 
 
@@ -155,7 +172,12 @@ public class NormalType extends LibraryType
    */
   public boolean isRef()
   {
-    return _makeRef || _feature.isThisRef();
+    return switch (_refOrVal)
+      {
+      case Ref -> true;
+      case Value -> false;
+      default -> _feature.isThisRef();
+      };
   }
 
   public AbstractType outer()
@@ -169,8 +191,7 @@ public class NormalType extends LibraryType
     var result = _asRef;
     if (result == null)
       {
-        var fromRef =  _from instanceof NormalType ? null : _from.asRef();
-        result = isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, true, _generics, _outer, fromRef);
+        result = isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, Type.RefOrVal.Ref, _generics, _outer);
         _asRef = result;
       }
     return result;
@@ -178,7 +199,13 @@ public class NormalType extends LibraryType
 
   public AbstractType asValue()
   {
-    throw new Error("NormalType.asValue() not defined");
+    var result = _asValue;
+    if (result == null)
+      {
+        result = !isRef() ? this :  new NormalType(_libModule, _at, _pos, _feature, Type.RefOrVal.Value, _generics, _outer);
+        _asValue = result;
+      }
+    return result;
   }
 
 
@@ -191,7 +218,7 @@ public class NormalType extends LibraryType
   {
     String result = "";
 
-    if (outer() != null && !outer().featureOfType().isUniverse())
+    if (outer() != null && !outer().isGenericArgument() && !outer().featureOfType().isUniverse())
       {
         result = outer() + ".";
       }
@@ -204,7 +231,7 @@ public class NormalType extends LibraryType
       {
         result = result + "<" + generics() + ">";
       }
-    return result + " (" + _libModule._name + ")";
+    return result;
   }
 
 

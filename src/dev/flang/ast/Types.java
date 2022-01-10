@@ -108,7 +108,7 @@ public class Types extends ANY
 
   public static class Resolved
   {
-    public final Feature universe;
+    public final AbstractFeature universe;
     public final AbstractType t_i8  ;
     public final AbstractType t_i16 ;
     public final AbstractType t_i32 ;
@@ -168,7 +168,7 @@ public class Types extends ANY
     {
       AbstractType type(String name, boolean isRef);
     }
-    public Resolved(CreateType ct, Feature universe)
+    public Resolved(SrcModule mod, CreateType ct, AbstractFeature universe)
     {
       this.universe = universe;
       t_i8            = ct.type("i8"          , false);
@@ -198,34 +198,34 @@ public class Types extends ANY
       t_object        = ct.type("Object"      , false);
       t_unit          = ct.type("unit"        , false);
       t_void          = ct.type("void"        , false);
-      f_void          = universe.get("void");
-      f_choice        = universe.get("choice");
-      f_TRUE          = universe.get("TRUE");
-      f_FALSE         = universe.get("FALSE");
-      f_bool          = universe.get("bool");
-      f_bool_NOT      = f_bool.get("prefix !");
-      f_bool_AND      = f_bool.get("infix &&");
-      f_bool_OR       = f_bool.get("infix ||");
-      f_bool_IMPLIES  = f_bool.get("infix :");
-      f_debug         = universe.get("debug", 0);
-      f_debugLevel    = universe.get("debugLevel");
-      f_function      = universe.get(FUNCTION_NAME);
-      f_function_call = f_function.get("call");
-      f_safety        = universe.get("safety");
-      f_array         = universe.get("array", 1);
-      f_array_internalArray = f_array.get("internalArray");
-      f_sys                 = universe.get("sys");
-      f_sys_array           = f_sys.get("array");
-      f_sys_array_data      = f_sys_array.get("data");
-      f_sys_array_length    = f_sys_array.get("length");
+      f_void          = universe.get(mod, "void");
+      f_choice        = universe.get(mod, "choice");
+      f_TRUE          = universe.get(mod, "TRUE");
+      f_FALSE         = universe.get(mod, "FALSE");
+      f_bool          = universe.get(mod, "bool");
+      f_bool_NOT      = f_bool.get(mod, "prefix !");
+      f_bool_AND      = f_bool.get(mod, "infix &&");
+      f_bool_OR       = f_bool.get(mod, "infix ||");
+      f_bool_IMPLIES  = f_bool.get(mod, "infix :");
+      f_debug         = universe.get(mod, "debug", 0);
+      f_debugLevel    = universe.get(mod, "debugLevel");
+      f_function      = universe.get(mod, FUNCTION_NAME);
+      f_function_call = f_function.get(mod, "call");
+      f_safety        = universe.get(mod, "safety");
+      f_array         = universe.get(mod, "array", 1);
+      f_array_internalArray = f_array.get(mod, "internalArray");
+      f_sys                 = universe.get(mod, "sys");
+      f_sys_array           = f_sys.get(mod, "array");
+      f_sys_array_data      = f_sys_array.get(mod, "data");
+      f_sys_array_length    = f_sys_array.get(mod, "length");
       resolved = this;
-      t_ADDRESS  .resolveArtificialType(universe.get("Object"));
+      t_ADDRESS  .resolveArtificialType(universe.get(mod, "Object"));
       t_UNDEFINED.resolveArtificialType(universe);
       t_ERROR    .resolveArtificialType(f_ERROR);
     }
-    Resolved(Resolution res, Feature universe)
+    Resolved(Resolution res, AbstractFeature universe)
     {
-      this((name, ref) -> Type.type(res, ref, name, universe), universe);
+      this(res._module, (name, ref) -> Type.type(res, ref, name, universe), universe);
     }
   }
 

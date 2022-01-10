@@ -27,16 +27,26 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fe;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 
 import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
+import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.BoolConst;
+import dev.flang.ast.Box;
+import dev.flang.ast.Cond;
+import dev.flang.ast.Constant;
 import dev.flang.ast.Contract;
+import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
@@ -44,12 +54,11 @@ import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Generic;
 import dev.flang.ast.Impl;
-import dev.flang.ast.ReturnType;
-import dev.flang.ast.SrcModule;
 import dev.flang.ast.Stmnt;
-import dev.flang.ast.StrConst;
+import dev.flang.ast.Tag;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
+import dev.flang.ast.Unbox;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -77,34 +86,33 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * index of this feature within _libModule.
+   * Unique index of this feature.
    */
-  private final int _index;
-
-
-  /**
-   * NYI: For now, this is just a wrapper around an AST feature. This should be
-   * removed once all data is obtained from _libModule;
-   */
-  public final AbstractFeature _from;
+  final int _index;
 
 
   /**
    * cached result of kind()
    */
-  private final int _kind;
+  private final Kind _kind;
 
 
   /**
    * cached result of featureName()
    */
-  private final FeatureName _featureName;
+  private FeatureName _featureName;
 
 
   /**
    * cached result of generics():
    */
   private FormalGenerics _generics;
+
+
+  /**
+   * cached result of contract()
+   */
+  Contract _contract;
 
 
   /**
@@ -118,10 +126,12 @@ public class LibraryFeature extends AbstractFeature
    */
   List<AbstractFeature> _arguments = null;
 
+
   /**
-   * cached result of thisType()
+   * Cached result of pos()
    */
-  private AbstractType _thisType;
+  private SourcePosition _pos = null;
+
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -129,22 +139,11 @@ public class LibraryFeature extends AbstractFeature
   /**
    * Create LibraryFeature
    */
-  LibraryFeature(LibraryModule lib, int index, AbstractFeature from)
+  LibraryFeature(LibraryModule lib, int index)
   {
     _libModule = lib;
     _index = index;
-    _from = from;
-    check
-      (from._libraryFeature == null);
-    from._libraryFeature = this;
-
-    _kind = lib.featureKind(index) & FuzionConstants.MIR_FILE_KIND_MASK;
-    var bytes = lib.featureName(index);
-    var ac = lib.featureArgCount(index);
-    var id = lib.featureId(index);
-    var bn = new String(bytes, StandardCharsets.UTF_8);
-    _featureName = FeatureName.get(bn, ac, id);
-    check(_featureName == _from.featureName());
+    _kind = lib.featureKindEnum(index);
   }
 
 
@@ -187,12 +186,9 @@ public class LibraryFeature extends AbstractFeature
     var result = _outer;
     if (result == null)
       {
-        result = findOuter(_libModule._mir.universe(), FuzionConstants.MIR_FILE_FIRST_FEATURE_OFFSET);
+        result = _libModule.featureOuter(_index);
         _outer = result;
       }
-
-    check
-      (result.astFeature() == _from.outer().astFeature());
 
     return result;
   }
@@ -218,10 +214,10 @@ public class LibraryFeature extends AbstractFeature
        at < _libModule.data().limit());
 
     AbstractFeature result = null;
-    var sz = _libModule.data().getInt(at);
+    var sz = _libModule.innerFeaturesSize(at);
     check
       (at+4+sz <= _libModule.data().limit());
-    var i = at+4;
+    var i = _libModule.innerFeaturesFeaturesPos(at);
     if (i <= _index && _index < i+sz)
       {
         while (result == null)
@@ -232,16 +228,26 @@ public class LibraryFeature extends AbstractFeature
               }
             else
               {
-                var o = _libModule.libraryFeature(i, _libModule._srcModule.featureFromOffset(i));
+                var o = _libModule.libraryFeature(i);
                 check
                   (o != null);
-                var inner = _libModule.featureInnerSizePos(i);
+                var inner = _libModule.featureInnerFeaturesPos(i);
                 result = findOuter(o, inner);
                 i = _libModule.featureNextPos(i);
               }
           }
       }
     return result;
+  }
+
+
+  /**
+   * The features declared within this feature.
+   */
+  List<AbstractFeature> declaredFeatures()
+  {
+    var i = _libModule.featureInnerFeaturesPos(_index);
+    return _libModule.innerFeatures(i);
   }
 
 
@@ -253,13 +259,12 @@ public class LibraryFeature extends AbstractFeature
     if (_arguments == null)
       {
         _arguments = new List<AbstractFeature>();
-        var i = _libModule.featureInnerPos(_index);
+        var i = _libModule.innerFeatures(_libModule.featureInnerFeaturesPos(_index));
         var n = _libModule.featureArgCount(_index);
         while (_arguments.size() < n)
           {
-            var a = _libModule.libraryFeature(i, (Feature) _from.arguments().get(_arguments.size()).astFeature());
+            var a = i.get(_arguments.size());
             _arguments.add(a);
-            i = _libModule.featureNextPos(i);
           }
       }
     return _arguments;
@@ -276,15 +281,9 @@ public class LibraryFeature extends AbstractFeature
     AbstractFeature result = null;
     if (hasResultField())
       {
-        var i = _libModule.featureInnerPos(_index);
+        var i = _libModule.innerFeatures(_libModule.featureInnerFeaturesPos(_index));
         var n = _libModule.featureArgCount(_index);
-        var c = 0;
-        while (c < n)
-          {
-            c++;
-            i = _libModule.featureNextPos(i);
-          }
-        result = _libModule.libraryFeature(i, (Feature) _from.resultField());
+        result = i.get(n);
       }
 
     check
@@ -304,15 +303,9 @@ public class LibraryFeature extends AbstractFeature
     AbstractFeature result = null;
     if (hasOuterRef())
       {
-        var i = _libModule.featureInnerPos(_index);
+        var i = _libModule.innerFeatures(_libModule.featureInnerFeaturesPos(_index));
         var n = _libModule.featureArgCount(_index) + (hasResultField() ? 1 : 0);
-        var c = 0;
-        while (c < n)
-          {
-            c++;
-            i = _libModule.featureNextPos(i);
-          }
-        result = _libModule.libraryFeature(i, (Feature) _from.outerRef());
+        result = i.get(n);
       }
 
     check
@@ -320,6 +313,7 @@ public class LibraryFeature extends AbstractFeature
 
     return result;
   }
+
 
   /**
    * For choice feature (i.e., isChoice() holds): The tag field that holds in
@@ -333,8 +327,8 @@ public class LibraryFeature extends AbstractFeature
     AbstractFeature result = null;
     if (isChoice())
       {
-        var i = _libModule.featureInnerPos(_index);
-        result = _libModule.libraryFeature(i, (Feature) _from.choiceTag());
+        var i = _libModule.innerFeatures(_libModule.featureInnerFeaturesPos(_index));
+        result = i.get(0);
       }
 
     check
@@ -354,12 +348,9 @@ public class LibraryFeature extends AbstractFeature
   public AbstractFeature get(String name)
   {
     AbstractFeature result = null;
-    var sz = _libModule.featureInnerSize(_index);
-    var i = _libModule.featureInnerPos(_index);
-    var e = i + sz;
-    while  (i < e)
+    var i = _libModule.innerFeatures(_libModule.featureInnerFeaturesPos(_index));
+    for (var r : i)
       {
-        var r = _libModule.libraryFeature(i, _libModule._srcModule.featureFromOffset(i));
         var rn = r.featureName();
         if (rn.baseName().equals(name))
           {
@@ -372,7 +363,6 @@ public class LibraryFeature extends AbstractFeature
                 Errors.fatal("Ambiguous inner feature '" + name + "': found '" + result.featureName() + "' and '" + r.featureName() + "'.");
               }
           }
-        i = _libModule.featureNextPos(i);
       }
     if (result == null)
       {
@@ -383,32 +373,26 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * thisType returns the type of this feature's frame object.  This type exists
-   * even for features the do not have a frame such as abstracts, intrinsics,
-   * choice or field.
+   * createThisType returns a new instance of the type of this feature's frame
+   * object.  This can be called even if !hasThisType() since thisClazz() is
+   * used also for abstract or intrinsic feature to determine the resultClazz().
    *
    * @return this feature's frame object
    */
-  public AbstractType thisType()
+  public AbstractType createThisType()
   {
     if (PRECONDITIONS) require
       (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField());
 
-    AbstractType result = _thisType;
-    if (result == null)
-      {
-        // NYI: Remove creation of ast.Type here:
-        result = new Type(pos(), featureName().baseName(), generics().asActuals(), null, this, Type.RefOrVal.LikeUnderlyingFeature);
-
-        result = new NormalType(_libModule, -1, pos(), this, false, generics().asActuals(), result.outer(), result);
-        _thisType = result;
-      }
+    var o = outer();
+    var ot = o == null ? null : o.thisType();
+    AbstractType result = new NormalType(_libModule, -1, this, this, Type.RefOrVal.LikeUnderlyingFeature, generics().asActuals(), ot);
 
     if (POSTCONDITIONS) ensure
       (result != null,
        Errors.count() > 0 || result.isRef() == isThisRef(),
        // does not hold if feature is declared repeatedly
-       Errors.count() > 0 || result.featureOfType().sameAs(this),
+       Errors.count() > 0 || result.featureOfType() == this,
        true || // this condition is very expensive to check and obviously true:
        result == Types.intern(result)
        );
@@ -434,8 +418,7 @@ public class LibraryFeature extends AbstractFeature
       }
     else
       {
-        var from = _from.resultType();
-        return _libModule.type(_libModule.featureResultTypePos(_index), from.pos(), from);
+        return _libModule.type(_libModule.featureResultTypePos(_index));
       }
   }
 
@@ -452,7 +435,7 @@ public class LibraryFeature extends AbstractFeature
           {
             result = FormalGenerics.NONE;
           }
-        else if (_libModule.USE_FUM)
+        else
           {
             var tai = _libModule.featureTypeArgsPos(_index);
             var list = new List<Generic>();
@@ -465,14 +448,18 @@ public class LibraryFeature extends AbstractFeature
                 while (i < n)
                   {
                     var gn = _libModule.typeArgName(tali);
-                    var gp = _from.generics().list.get(i)._pos; // NYI: pos of generic
+                    var gp = LibraryModule.DUMMY_POS;
                     var tali0 = tali;
                     var i0 = i;
                     var g = new Generic(gp, i, gn, null)
                       {
                         public AbstractType constraint()
                         {
-                          return _libModule.typeArgConstraint(tali0, gp, _from instanceof LibraryFeature ? null : _from.generics().list.get(i0).constraint());
+                          return _libModule.typeArgConstraint(tali0);
+                        }
+                        public String toString()
+                        {
+                          return gn;
                         }
                       };
                     list.add(g);
@@ -486,10 +473,6 @@ public class LibraryFeature extends AbstractFeature
                 result = FormalGenerics.NONE;
               }
           }
-        else
-          {
-            result = _from.generics();
-          }
         _generics = result;
       }
     return result;
@@ -498,9 +481,33 @@ public class LibraryFeature extends AbstractFeature
 
   public FeatureName featureName()
   {
-    return _featureName;
+    var result = _featureName;
+    if (result == null)
+      {
+        var bytes = _libModule.featureName(_index);
+        var ac = _libModule.featureArgCount(_index);
+        var id = _libModule.featureId(_index);
+        var bn = new String(bytes, StandardCharsets.UTF_8);
+        result = FeatureName.get(bn, ac, id);
+        _featureName = result;
+      }
+    return result;
   }
-  public SourcePosition pos() { return _from.pos(); }
+
+
+  /**
+   * Source code position where this feature was declared.
+   */
+  public SourcePosition pos()
+  {
+    if (_pos == null)
+      {
+        _pos = pos(_libModule.featurePosition(_index));
+      }
+    return _pos;
+  }
+
+
   List<AbstractCall> _inherits = null;
   public List<AbstractCall> inherits()
   {
@@ -512,134 +519,125 @@ public class LibraryFeature extends AbstractFeature
         for (var i = 0; i < n; i++)
           {
             var p = (AbstractCall) code1(ip);
+            ((LibraryCall) p)._isInheritanceCall = true;
             _inherits.add(p);
             ip = _libModule.codeNextPos(ip);
           }
       }
-    if (_libModule.USE_FUM)
-      {
-        return _inherits;
-      }
-    else
-      {
-        return _from.inherits();
-      }
+    return _inherits;
   }
 
-  // following are used in IR/Clazzes middle end or later only:
-  public Impl.Kind implKind() { if (_libModule.USE_FUM) { check(false); return _from.implKind(); } else { return _from.implKind(); } }      // NYI: remove, used only in Clazz.java for some obscure case
-  public Expr initialValue() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.initialValue(); } }   // NYI: remove, used only in Clazz.java for some obscure case
 
   // following used in MIR or later
   public Expr code()
   {
     if (PRECONDITIONS) require
       (isRoutine());
-    if (true)
-      {
-        var c = _libModule.featureCodePos(_index);
-        var result = code(c);
-        if (result != null)
-          {
-            return result;
-          }
-      }
-    if (_libModule.USE_FUM)
-      {
-        check(false); return null;
-      }
-    else
-      {
-        return _from.code();
-      }
+
+    var c = _libModule.featureCodePos(_index);
+    return code(c);
   }
+
 
   /**
    * Convert code at given offset in _libModule to an ast.Expr
    */
   Expr code1(int at)
   {
-    var s = new Stack<Expr>();
-    code(at, s);
-    check
-      (s.size() == 1);
-    return s.pop();
+    var res = _libModule._code1.get(at);
+    if (res == null)
+      {
+        var s = new Stack<Expr>();
+        code(at, s, -1);
+        check
+          (s.size() == 1);
+        res = s.pop();
+        _libModule._code1.put(at, res);
+      }
+    return res;
   }
+
 
   /**
    * Convert code at given offset in _libModule to an ast.Expr
    */
   Expr code(int at)
   {
-    var s = new Stack<Expr>();
-    code(at, s);
-    check
-      (s.size() == 0);
-    return null;
+    var res = _libModule._code.get(at);
+    if (res == null)
+      {
+        var s = new Stack<Expr>();
+        res = code(at, s, -1);
+        check
+          (s.size() == 0);
+        _libModule._code.put(at, res);
+      }
+    return res;
   }
 
 
   /**
    * Convert code at given offset in _libModule to an ast.Expr
+   *
+   * @param at position of this code section
+   *
+   * @param s the stack of expressions
+   *
+   * @param pos the current source code position from earlier code, -1 if none.
    */
-  void code(int at, Stack<Expr> s)
+  Block code(int at, Stack<Expr> s, int pos)
   {
+    var l = new List<Stmnt>();
     var sz = _libModule.codeSize(at);
     var eat = _libModule.codeExpressionsPos(at);
     var e = eat;
     while (e < eat+sz)
       {
         var k = _libModule.expressionKind(e);
-        var iat = e + 1;
+        var iat = _libModule.expressionExprPos(e);
+        pos = _libModule.expressionHasPosition(e) ? _libModule.expressionPosition(e) : pos;
         Expr ex = null;
+        Stmnt c = null;
+        Expr x = null;
         switch (k)
           {
           case Assign:
             {
               var field = _libModule.assignField(iat);
-              var f = _libModule.libraryFeature(field, null);
+              var f = _libModule.libraryFeature(field);
               var target = s.pop();
               var val = s.pop();
+              c = new Assign(pos(pos), f, target, val);
               break;
             }
           case Unbox:
             {
-              var val = s.pop();
-              // NYI: type
-              s.push(null);
+              x = s.pop();
+              x = new Unbox(x.pos(), x, _libModule.unboxType(iat));
+              ((Unbox)x)._needed = _libModule.unboxNeeded(iat);
               break;
             }
           case Box:
             {
-              var val = s.pop();
-              // NYI: type
-              s.push(null);
+              x = new Box(s.pop());
               break;
             }
           case Const:
             {
               var t = _libModule.constType(iat);
               var d = _libModule.constData(iat);
-              Expr r;
-              if (t == Types.resolved.t_bool)
+              x = new Constant(pos(pos))
                 {
-                  r = d[0] == 0 ? BoolConst. FALSE : BoolConst.TRUE;
-                }
-              else if (t == Types.resolved.t_string)
-                {
-                  r = new StrConst(pos(), new String(d, StandardCharsets.UTF_8));
-                }
-              else
-                { // NYI: Numeric
-                  r = null;
-                }
-              s.push(r);
+                  public AbstractType typeOrNull() { return t; }
+                  public byte[] data() { return d; }
+                  public Expr visit(FeatureVisitor v, AbstractFeature af) { return this; };
+                  public String toString() { return "LibraryFeature.Constant of type "+type(); }
+                };
               break;
             }
           case Current:
             {
-              // NYI: type
-              s.push(null);
+              x = new Current(pos(pos), thisType());
               break;
             }
           case Match:
@@ -647,46 +645,174 @@ public class LibraryFeature extends AbstractFeature
               var subj = s.pop();
               var n = _libModule.matchNumberOfCases(iat);
               var cat = _libModule.matchCasesPos(iat);
+              var cases = new List<AbstractCase>();
               for (var i = 0; i < n; i++)
                 {
-                  code(cat);
-                  cat = _libModule.matchCaseNextPos(cat);
+                  var cn = _libModule.caseNumTypes(cat);
+                  var cf = (cn == -1) ? _libModule.libraryFeature(_libModule.caseField(cat)) : null;
+                  List<AbstractType> ts = null;
+                  if (cn != -1)
+                    {
+                      ts = new List<>();
+                      var tat = _libModule.caseTypePos(cat);
+                      for (var ci = 0; ci < cn; ci++)
+                        {
+                          ts.add(_libModule.type(tat));
+                          tat = _libModule.typeNextPos(tat);
+                        }
+                    }
+                  var cc = code(_libModule.caseCodePos(cat));
+                  var fts = ts;
+                  var lc = new AbstractCase(null)
+                    {
+                      public SourcePosition pos() { return LibraryModule.DUMMY_POS; /* NYI: Need proper position */ }
+                      public AbstractFeature field() { return cf; }
+                      public List<AbstractType> types() { return fts; }
+                      public Block code() { return (Block) cc; }
+                      public String toString() { return "LibraryFeature.AbstractCase"; }
+                    };
+                  cases.add(lc);
+                  cat = _libModule.caseNextPos(cat);
                 }
+              c = new AbstractMatch(pos(pos))
+                {
+                  public Expr subject() { return subj; }
+                  public List<AbstractCase> cases() { return cases; }
+                  public String toString() { return "LibraryFeature.AbstractMatch"; }
+                };
               break;
             }
           case Call:
             {
-              var r = new LibraryCall(_libModule, iat, s);
-              s.push(r);
+              x = new LibraryCall(_libModule, iat, s, pos(pos));
               break;
             }
           case Pop:
             {
-              s.pop();
+              c = s.pop();
               break;
             }
           case Tag:
             {
               var val = s.pop();
-              // NYI: tag
-              s.push(null);
+              var taggedType = _libModule.tagType(iat);
+              x = new Tag(val, taggedType);
               break;
             }
           case Unit:
             {
-              s.push(null);
+              x = new Block(pos(pos), new List<>());
               break;
             }
           default: throw new Error("Unexpected expression kind: " + k);
           }
+        if (x != null)
+          {
+            check
+              (c == null);
+            if (!l.isEmpty())
+              {
+                l.add(x);
+                x = new Block(pos(pos), l);
+                l = new List<>();
+              }
+            s.push(x);
+          }
+        else if (c != null)
+          {
+            l.add(c);
+          }
         e = _libModule.expressionNextPos(e);
       }
+    return new Block(pos(pos), l);
   }
 
-  // in FUIR or later
-  public Contract contract() { if (_libModule.USE_FUM) { check(false); return null; } else { return _from.contract(); } }
 
-  public AbstractFeature astFeature() { return _libModule.USE_FUM ? this : _from; }
+  /**
+   * Create a Source position instance for the given position in this library file.
+   *
+   * @param pos the position, may be -1 for undefined or 0 for
+   * SourcePosition.builtIn, otherwise a valid index into a source file in this
+   * module.
+   */
+  private SourcePosition pos(int pos)
+  {
+    return _libModule.pos(pos);
+  }
+
+
+  /**
+   * Read a list a n conditions at given position in _libModule.
+   */
+  private List<Cond> condList(int n, int at)
+  {
+    var result = new List<Cond>();
+    for (var i = 0; i < n; i++)
+      {
+        var x = code1(at);
+        result.add(new Cond(x));
+        at = _libModule.codeNextPos(at);
+      }
+    return result;
+  }
+
+
+  public Contract contract()
+  {
+    if (_contract == null)
+      {
+        var pre_n  = _libModule.featurePreCondCount (_index);
+        var post_n = _libModule.featurePostCondCount(_index);
+        var inv_n  = _libModule.featureInvCondCount (_index);
+        if (pre_n == 0 && post_n == 0 && inv_n == 0)
+          {
+            _contract = Contract.EMPTY_CONTRACT;
+          }
+        else
+          {
+            _contract = new Contract(condList(pre_n , _libModule.featurePreCondPos (_index)),
+                                     condList(post_n, _libModule.featurePostCondPos(_index)),
+                                     condList(inv_n , _libModule.featureInvCondPos (_index)));
+          }
+      }
+    return _contract;
+  }
+
+
+  /**
+   * All features that have been found to be directly redefined by this feature.
+   * This does not include redefintions of redefinitions.  Four Features loaded
+   * from source code, this set is collected during RESOLVING_DECLARATIONS.  For
+   * LibraryFeature, this will be loaded from the library module file.
+   */
+  private Set<AbstractFeature> _redefines;
+  public Set<AbstractFeature> redefines()
+  {
+    if (_redefines == null)
+      {
+        _redefines = new TreeSet<>();
+        var n = _libModule.featureRedefinesCount(_index);
+        var ip = _libModule.featureRedefinesPos(_index);
+        for (var i = 0; i < n; i++)
+          {
+            var r = _libModule.libraryFeature(_libModule.featureRedefine(_index, i));
+            _redefines.add(r);
+          }
+      }
+    return _redefines;
+  }
+
+
+  /**
+   * Compare this to other for sorting Features
+   */
+  public int compareTo(AbstractFeature other)
+  {
+    return (other instanceof Feature)
+      ? -1
+      : _index - ((LibraryFeature) other)._index;  // there are only two subclasses: Feature and LibraryFeature.
+  }
+
 
 }
 

@@ -60,8 +60,21 @@ public class StrConst extends Constant
    */
   public StrConst(SourcePosition pos, String s)
   {
+    this(pos, s, true);
+  }
+
+
+  /**
+   * Constructor
+   *
+   * @param pos the soucecode position, used for error messages.
+   *
+   * @param s
+   */
+  public StrConst(SourcePosition pos, String s, boolean quoted)
+  {
     super(pos);
-    this.str = s.substring(1,s.length()-1);
+    this.str = quoted ? s.substring(1,s.length()-1) : s;
   }
 
 

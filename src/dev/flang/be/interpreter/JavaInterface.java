@@ -328,7 +328,7 @@ public class JavaInterface extends ANY
    * Convert an instance of 'sys.array<Object>' to a Java Object[] with
    * the corresponding Java values.
    *
-   * @param v a value of type 'sys.array<Object>'.
+   * @param v a value of type ArrayData as it is stored in 'sys.array.data'.
    *
    * @return corresponding Java array.
    */
@@ -357,7 +357,8 @@ public class JavaInterface extends ANY
    * @param thiz target instance for a virtual call, null for static method or
    * constructor call
    *
-   * @param args array of arguments to be passed to the method or constructor
+   * @param args array of arguments to be passed to the method or constructor,
+   * must be of type array data, i.e., the value in sys.array<JavaObject>.data.
    *
    * @param resultClazz the result type of the constructed instance
    */

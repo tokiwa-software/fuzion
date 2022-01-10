@@ -26,6 +26,8 @@
 # List -- ancestor for features that can be converted to a 'list' or a
 # 'stream'
 #
+# NYI: rename this as 'Sequence' to avoid confusion with 'list'
+#
 List<T> ref is
 
 

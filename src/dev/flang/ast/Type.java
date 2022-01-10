@@ -267,7 +267,7 @@ public class Type extends AbstractType
     this.name  = n;
     this._generics = ((g == null) || g.isEmpty()) ? NONE : g;
     this._outer = o;
-    this.feature = (f == null) ? null : f.astFeature();
+    this.feature = f;
     this.generic = null;
     this._refOrVal = refOrVal;
     this.checkedForGeneric = f != null;
@@ -341,7 +341,7 @@ public class Type extends AbstractType
    *
    * @param n the name, such as "int", "bool".
    */
-  public static Type type(Resolution res, String n, Feature universe)
+  public static Type type(Resolution res, String n, AbstractFeature universe)
   {
     if (PRECONDITIONS) require
       (n.length() > 0);
@@ -356,7 +356,7 @@ public class Type extends AbstractType
    *
    * @param n the name, such as "int", "bool".
    */
-  public static Type type(Resolution res, boolean ref, String n, Feature universe)
+  public static Type type(Resolution res, boolean ref, String n, AbstractFeature universe)
   {
     if (PRECONDITIONS) require
       (n.length() > 0);
@@ -657,7 +657,7 @@ public class Type extends AbstractType
       (feature == null,
        Types.INTERNAL_NAMES.contains(name));
 
-    feature = feat.astFeature();
+    feature = feat;
 
     var interned = Types.intern(this);
 
@@ -721,21 +721,16 @@ public class Type extends AbstractType
 
     if (!isGenericArgument())
       {
-        var o = outerfeat;
+        var of = outerfeat;
         if (_outer != null)
           {
             _outer = _outer.resolve(res, outerfeat);
-            if (_outer.isGenericArgument())
-              { // an error message was generated already during findGenerics()
-                check
-                  (Errors.count() > 0);
-                feature = Types.f_ERROR;
-              }
-            o = _outer.featureOfType();
+            var ot = _outer.isGenericArgument() ?_outer.genericArgument().constraint() : _outer;
+            of = ot.featureOfType();
           }
         if (feature == null)
           {
-            feature = res._module.lookupFeatureForType(pos(), name, o, outerfeat);
+            feature = res._module.lookupFeatureForType(pos(), name, of, outerfeat);
           }
       }
     if (POSTCONDITIONS) ensure

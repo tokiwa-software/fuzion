@@ -20,41 +20,30 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of interface MirModule
+ * Source of class StatementVisitor
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.mir;
-
-import java.nio.ByteBuffer;
-
-import java.util.Set;
-import java.util.SortedMap;
-
-import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
-import dev.flang.ast.FeatureName;  // NYI: Remove dependency!
+package dev.flang.ast;
 
 
 /**
- * MirModule provides callbacks from the MIR to data structures in the current
- * module, in particular to sets of features.
+ * This is used to perform some action on all Stmnt's within a Feature or other
+ * structure of the AST.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public interface MirModule
+public interface StatementVisitor
 {
 
-  /**
-   * The binary data from this module's .mir file.
-   */
-  ByteBuffer data();
+
+  /*-----------------------------  methods  -----------------------------*/
 
 
   /**
-   * Get declared features for given outer Feature as seen by this module.
-   * Result is never null.
+   * action is to be called an all Stmnt's encountered.
    */
-  SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer);
+  abstract void action (Stmnt s);
 
 }
 

@@ -107,6 +107,25 @@ public abstract class AbstractCall extends Expr
   }
 
 
+  /**
+   * visit all the statements within this Call.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    super.visitStatements(v);
+    for (var a : actuals())
+      {
+        a.visitStatements(v);
+      }
+    if (target() != null)
+      {
+        target().visitStatements(v);
+      }
+  }
+
 }
 
 /* end of file */

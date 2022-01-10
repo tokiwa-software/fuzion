@@ -168,6 +168,28 @@ public class Assign extends ANY implements Stmnt
   }
 
 
+  /**
+   * Constructor for Assign loaded from .fum/MIR module file be front end.
+   *
+   * @param pos the source position
+   *
+   * @param f the feature we are assigning a value to
+   *
+   * @param t the target value containing f
+   *
+   * @param v the value to be assigned.
+   */
+  public Assign(SourcePosition pos, AbstractFeature f, Expr t, Expr v)
+  {
+    this._pos = pos;
+    this._name = f.featureName().baseName();
+    this._assignedField = f;
+    this._target = t;
+    this._value = v;
+  }
+
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -199,6 +221,20 @@ public class Assign extends ANY implements Stmnt
       }
     v.action(this, outer);
     return this;
+  }
+
+
+  /**
+   * visit all the statements within this Assign.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    Stmnt.super.visitStatements(v);
+    _value.visitStatements(v);
+    _target.visitStatements(v);
   }
 
 
@@ -298,7 +334,7 @@ public class Assign extends ANY implements Stmnt
 
     if (_assignedField != Types.f_ERROR)
       {
-        _value = _value.box(this, 0);
+        _value = _value.box(_assignedField.resultType());
       }
   }
 

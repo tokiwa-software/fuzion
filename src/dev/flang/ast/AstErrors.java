@@ -575,7 +575,7 @@ public class AstErrors extends ANY
       : "Subject type is one of " + typeListAlternatives(choiceGenerics) + "\n";
   }
 
-  static void internallyReferencedFeatureNotUnique(SourcePosition pos, String qname, Collection<AbstractFeature> set)
+  public static void internallyReferencedFeatureNotUnique(SourcePosition pos, String qname, Collection<AbstractFeature> set)
   {
     var sb = new StringBuilder();
     for (var f: set)
@@ -600,7 +600,7 @@ public class AstErrors extends ANY
    *
    * @param name name of the feature that caused a problem, e.g., "JavaObject"
    */
-  static void internallyReferencedFeatureNotFound(SourcePosition pos, String qname, AbstractFeature outer, String name)
+  public static void internallyReferencedFeatureNotFound(SourcePosition pos, String qname, AbstractFeature outer, String name)
   {
     error(pos,
           "Internally referenced feature " + sqn(qname) + " not found",
@@ -637,7 +637,7 @@ public class AstErrors extends ANY
           solution);
   }
 
-  public static void cannotRedefineGeneric(SourcePosition pos, Feature f, AbstractFeature existing)
+  public static void cannotRedefineGeneric(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
   {
     cannotRedefine(pos, f, existing, "Cannot redefine feature with generic arguments",
                    "To solve this, ask the Fuzion team to remove this restriction :-)."); // NYI: inheritance and generics

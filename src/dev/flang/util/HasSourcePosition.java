@@ -20,41 +20,26 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of interface MirModule
+ * Source of interface HasSourcePosition
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.mir;
-
-import java.nio.ByteBuffer;
-
-import java.util.Set;
-import java.util.SortedMap;
-
-import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
-import dev.flang.ast.FeatureName;  // NYI: Remove dependency!
+package dev.flang.util;
 
 
 /**
- * MirModule provides callbacks from the MIR to data structures in the current
- * module, in particular to sets of features.
+ * HasSourcePosition provides a lazy evaluation way to provide a source code
+ * position.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public interface MirModule
+public interface HasSourcePosition
 {
 
   /**
-   * The binary data from this module's .mir file.
+   * Create and return the actual source code position held by this instance.
    */
-  ByteBuffer data();
-
-
-  /**
-   * Get declared features for given outer Feature as seen by this module.
-   * Result is never null.
-   */
-  SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer);
+  SourcePosition pos();
 
 }
 

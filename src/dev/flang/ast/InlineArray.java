@@ -217,6 +217,22 @@ public class InlineArray extends Expr
 
 
   /**
+   * visit all the statements within this InlineArray.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    super.visitStatements(v);
+    for (var e : _elements)
+      {
+        e.visitStatements(v);
+      }
+  }
+
+
+  /**
    * Boxing for actual arguments: Find actual arguments of value type that are
    * assigned to formal argument types that are references and box them.
    *
@@ -228,7 +244,7 @@ public class InlineArray extends Expr
     while (li.hasNext())
       {
         var e = li.next();
-        li.set(e.box(this, 0));
+        li.set(e.box(elementType()));
       }
   }
 

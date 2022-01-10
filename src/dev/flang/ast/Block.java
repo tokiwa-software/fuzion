@@ -219,6 +219,22 @@ public class Block extends Expr
 
 
   /**
+   * visit all the statements within this Block.
+   *
+   * @param v the visitor instance that defines an action to be performed on
+   * visited statements
+   */
+  public void visitStatements(StatementVisitor v)
+  {
+    super.visitStatements(v);
+    for (var s : statements_)
+      {
+        s.visitStatements(v);
+      }
+  }
+
+
+  /**
    * resultExpressionIndex returns the index of the last non-NOP statement of
    * this block if it is an expression, -1 if the block is empty or the last
    * non-NOP statement is not an Expr.
@@ -279,12 +295,12 @@ public class Block extends Expr
    *
    * @return this or an instance of Box wrapping this.
    */
-  Expr box(Stmnt s, int arg)
+  Expr box(AbstractType frmlT)
   {
     var r = removeResultExpression();
     if (r != null)
       {
-        statements_.add(r.box(s, arg));
+        statements_.add(r.box(frmlT));
       }
     return this;
   }
@@ -385,7 +401,7 @@ public class Block extends Expr
       {
         statements_.add(resExpr.assignToField(res, outer, r));
       }
-    else if (r.resultType() != Types.resolved.t_unit)
+    else if (r.resultType().compareTo(Types.resolved.t_unit) != 0)
       {
         AstErrors.blockMustEndWithExpression(closingBracePos_, r.resultType());
       }
@@ -412,7 +428,7 @@ public class Block extends Expr
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType type)
   {
-    if (type == Types.resolved.t_unit && hasImplicitResult())
+    if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return
         // something else:
         statements_.add(new Block(pos, new List<>()));
