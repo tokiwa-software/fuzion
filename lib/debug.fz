@@ -33,3 +33,8 @@ debug bool is intrinsic  # 0 < debugLevel   , intrinsic only to allow compiler t
 # enabled at the given debug-level.
 #
 debug(n i32) => n <= debugLevel
+
+
+# Current debug level, used by condition qualified debug(i32)
+#
+debugLevel i32 is intrinsic
