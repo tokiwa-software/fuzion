@@ -143,3 +143,29 @@ u8(val u8) : wrappingInteger<u8>, hasInterval<u8>, u8s is
     m := v & 0xcc; v := v - m + (m >> 2)
     m := v & 0xf0; v := v - m + (m >> 4)
     v
+
+
+# u8s -- unit type defining features related to u8 but not requiring an
+# instance
+#
+u8s : wrappingIntegers<u8> is
+
+  redef name => "u8"
+
+  redef zero => u8 0
+  redef one  => u8 1
+
+  redef min => zero
+  redef max => u8 0xff
+
+
+# u8 -- returns value of unit type u8s
+#
+# This is a convenience feature that allows using, e.g., 'u8.sum' to
+# get the the monoid of (u8, infix +) instead of 'u8s.sum'.
+#
+# since this u8 with no arguments is a routine and not a constructor, it
+# does not define a type (which would cause a name clash with u8 with one
+# argument).
+#
+u8 => u8s

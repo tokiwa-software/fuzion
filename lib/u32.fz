@@ -172,3 +172,29 @@ u32(val u32) : wrappingInteger<u32>, hasInterval<u32>, u32s is
     m := v & 0xcccccccc; v := v - m + (m >> 2)
     m := v & 0xf0f0f0f0; v := v - m + (m >> 4)
     (v *° 0x01010101 >> 24).as_i32
+
+
+# u32s -- unit type defining features related to u32 but not requiring an
+# instance
+#
+u32s : wrappingIntegers<u32> is
+
+  redef name => "u32"
+
+  redef zero => u32 0
+  redef one  => u32 1
+
+  redef min => u32 0
+  redef max => u32 0x_ffff_ffff
+
+
+# u32 -- returns value of unit type u32s
+#
+# This is a convenience feature that allows using, e.g., 'u32.sum' to
+# get the the monoid of (u32, infix +) instead of 'u32s.sum'.
+#
+# since this u32 with no arguments is a routine and not a constructor, it
+# does not define a type (which would cause a name clash with u32 with one
+# argument).
+#
+u32 => u32s

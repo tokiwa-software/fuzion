@@ -151,3 +151,29 @@ i8(val i8) : wrappingInteger<i8>, hasInterval<i8>, i8s is
   #
   onesCount i32 is
     val.castTo_u8.onesCount
+
+
+# i8s -- unit type defining features related to i8 but not requiring an
+# instance
+#
+i8s : wrappingIntegers<i8> is
+
+  redef name => "i8"
+
+  redef zero => i8 0
+  redef one  => i8 1
+
+  redef min => i8 -0x80
+  redef max => i8  0x7f
+
+
+# i8 -- returns value of unit type i8s
+#
+# This is a convenience feature that allows using, e.g., 'i8.sum' to
+# get the the monoid of (i8, infix +) instead of 'i8s.sum'.
+#
+# since this i8 with no arguments is a routine and not a constructor, it
+# does not define a type (which would cause a name clash with i8 with one
+# argument).
+#
+i8 => i8s

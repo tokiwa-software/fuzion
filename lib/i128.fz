@@ -25,8 +25,38 @@
 
 # i128 -- 128-bit signed integer values
 #
-i128(val i128) : integer<i128> is
-  redef infix + (other i128) i128 is intrinsic
-  redef infix - (other i128) i128 is intrinsic
-  redef infix * (other i128) i128 is intrinsic
-  redef infix / (other i128) i128 is intrinsic
+i128(hi i64, lo u64) : wrappingInteger<i128>, hasInterval<i128>, i128s is
+  redef infix + (other i128) i128 is intrinsic  # NYI
+  redef infix - (other i128) i128 is intrinsic  # NYI
+  redef infix * (other i128) i128 is intrinsic  # NYI
+  redef infix / (other i128) i128 is intrinsic  # NYI
+
+  # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
+  # from hasInterval is abstract, fz should not complain about this conflict.
+  redef max => i128 0x_7fff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+
+
+# i128s -- unit type defining features related to i128 but not requiring an
+# instance
+#
+i128s : wrappingIntegers<i128> is
+
+  redef name => "i128"
+
+  redef zero => i128 0 0
+  redef one  => i128 0 1
+
+  redef min => i128 -0x_8000_0000_0000_0000 0
+  redef max => i128  0x_7fff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+
+
+# i128 -- returns value of unit type i128s
+#
+# This is a convenience feature that allows using, e.g., 'i128.sum' to
+# get the the monoid of (i128, infix +) instead of 'i128s.sum'.
+#
+# since this i128 with no arguments is a routine and not a constructor, it
+# does not define a type (which would cause a name clash with i128 with one
+# argument).
+#
+i128 => i128s

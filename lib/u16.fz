@@ -154,3 +154,29 @@ u16(val u16) : wrappingInteger<u16>, hasInterval<u16>, u16s is
     m := v & 0xcccc; v := v - m + (m >> 2)
     m := v & 0xf0f0; v := v - m + (m >> 4)
     (v + (v >> 8)) & 0x1f
+
+
+# u16s -- unit type defining features related to u16 but not requiring an
+# instance
+#
+u16s : wrappingIntegers<u16> is
+
+  redef name => "u16"
+
+  redef zero => u16 0
+  redef one  => u16 1
+
+  redef min => u16 0
+  redef max => u16 0xffff
+
+
+# u16 -- returns value of unit type u16s
+#
+# This is a convenience feature that allows using, e.g., 'u16.sum' to
+# get the the monoid of (u16, infix +) instead of 'u16s.sum'.
+#
+# since this u16 with no arguments is a routine and not a constructor, it
+# does not define a type (which would cause a name clash with u16 with one
+# argument).
+#
+u16 => u16s

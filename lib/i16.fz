@@ -156,3 +156,29 @@ i16(val i16) : wrappingInteger<i16>, hasInterval<i16>, i16s is
   #
   onesCount i32 is
     val.castTo_u16.onesCount
+
+
+# i16s -- unit type defining features related to i16 but not requiring an
+# instance
+#
+i16s : wrappingIntegers<i16> is
+
+  redef name => "i16"
+
+  redef zero => i16 0
+  redef one  => i16 1
+
+  redef min => i16 -0x8000
+  redef max => i16  0x7fff
+
+
+# i16 -- returns value of unit type i16s
+#
+# This is a convenience feature that allows using, e.g., 'i16.sum' to
+# get the the monoid of (i16, infix +) instead of 'i16s.sum'.
+#
+# since this i16 with no arguments is a routine and not a constructor, it
+# does not define a type (which would cause a name clash with i16 with one
+# argument).
+#
+i16 => i16s

@@ -191,3 +191,29 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
     m := v & 0x_cccccccc_cccccccc; v := v - m + (m >> 2)
     m := v & 0x_f0f0f0f0_f0f0f0f0; v := v - m + (m >> 4)
     (v *° 0x_01010101_01010101 >> 56).as_i32
+
+
+# u64s -- unit type defining features related to u64 but not requiring an
+# instance
+#
+u64s : wrappingIntegers<u64> is
+
+  redef name => "u64"
+
+  redef zero => u64 0
+  redef one  => u64 1
+
+  redef min => u64 0
+  redef max => u64 0x_ffff_ffff_ffff_ffff
+
+
+# u64 -- returns value of unit type u64s
+#
+# This is a convenience feature that allows using, e.g., 'u64.sum' to
+# get the the monoid of (u64, infix +) instead of 'u64s.sum'.
+#
+# since this u64 with no arguments is a routine and not a constructor, it
+# does not define a type (which would cause a name clash with u64 with one
+# argument).
+#
+u64 => u64s

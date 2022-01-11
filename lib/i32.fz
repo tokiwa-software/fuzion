@@ -165,3 +165,29 @@ i32(val i32) : wrappingInteger<i32>, hasInterval<i32>, i32s is
   #
   onesCount i32 is
     val.castTo_u32.onesCount
+
+
+# i32s -- unit type defining features related to i32 but not requiring an
+# instance
+#
+i32s : wrappingIntegers<i32> is
+
+  redef name => "i32"
+
+  redef zero => 0
+  redef one  => 1
+
+  redef min => -0x_8000_0000
+  redef max =>  0x_7fff_ffff
+
+
+# i32 -- returns value of unit type i32s
+#
+# This is a convenience feature that allows using, e.g., 'i32.sum' to
+# get the the monoid of (i32, infix +) instead of 'i32s.sum'.
+#
+# since this i32 with no arguments is a routine and not a constructor, it
+# does not define a type (which would cause a name clash with i32 with one
+# argument).
+#
+i32 => i32s

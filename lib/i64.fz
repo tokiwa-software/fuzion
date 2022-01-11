@@ -150,3 +150,29 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
   #
   onesCount i32 is
     val.castTo_u64.onesCount
+
+
+# i64s -- unit type defining features related to i64 but not requiring an
+# instance
+#
+i64s : wrappingIntegers<i64> is
+
+  redef name => "i64"
+
+  redef zero => i64 0
+  redef one  => i64 1
+
+  redef min => -0x_8000_0000_0000_0000
+  redef max =>  0x_7fff_ffff_ffff_ffff
+
+
+# i64 -- returns value of unit type i64s
+#
+# This is a convenience feature that allows using, e.g., 'i64.sum' to
+# get the the monoid of (i64, infix +) instead of 'i64s.sum'.
+#
+# since this i64 with no arguments is a routine and not a constructor, it
+# does not define a type (which would cause a name clash with i64 with one
+# argument).
+#
+i64 => i64s

@@ -25,7 +25,6 @@
 
 # wrappingInteger
 #
-#
 # wrappingInteger is the abstract ancestor of integer numbers that have min and
 # max values and operations with wrap-around semantics.
 #
@@ -180,3 +179,12 @@ wrappingInteger<T: wrappingInteger<T>> : integer<T>, wrappingIntegers<T> is
         min
     else
       thiz ** other
+
+
+# wrappingIntegers -- unit type defining features related to wrappingInteger
+# but not requiring an instance
+#
+wrappingIntegers<T: wrappingInteger<T>> : numerics<T> is
+
+  min T is abstract
+  max T is abstract
