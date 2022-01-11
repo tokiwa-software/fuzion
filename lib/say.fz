@@ -27,3 +27,8 @@
 # an object followed by a line break.
 #
 say(s ref Object) => stdout.println s
+
+
+# A handy shortcut for stdout.println, output a line break.
+#
+say => stdout.println
