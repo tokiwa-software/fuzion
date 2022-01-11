@@ -2,7 +2,7 @@
 [32m--CURDIR--/testRedefine.fz:43:5:[39m [1;31merror 1[0m[1m: Wrong result type in redefined feature[0m
 [34m    get i32 is 42
 [33m----^[0m
-In '[35mtestRedefine.bad1.get[39m' that redefines '[35mtestRedefine.getter.get[39m' result type is '[33mi32[39m', result type should be '[33mtestRedefine.getter.A[39m'. Original feature declared at [32m--CURDIR--/testRedefine.fz:37:5:[39m
+In '[35mtestRedefine.bad1.get[39m' that redefines '[35mtestRedefine.getter.get[39m' result type is '[33mi32[39m', result type should be '[33mchoice<string, i32, nil>[39m' (from '[33mtestRedefine.getter.A[39m').  Original feature declared at [32m--CURDIR--/testRedefine.fz:37:5:[39m
 [34m    get A is abstract
 [33m----^[0m
 
@@ -10,7 +10,7 @@ In '[35mtestRedefine.bad1.get[39m' that redefines '[35mtestRedefine.getter.ge
 [32m--CURDIR--/testRedefine.fz:46:5:[39m [1;31merror 2[0m[1m: Wrong result type in redefined feature[0m
 [34m    get => 42
 [33m----^[0m
-In '[35mtestRedefine.bad2.get[39m' that redefines '[35mtestRedefine.getter.get[39m' result type is '[33mi32[39m', result type should be '[33mtestRedefine.getter.A[39m'. Original feature declared at [32m--CURDIR--/testRedefine.fz:37:5:[39m
+In '[35mtestRedefine.bad2.get[39m' that redefines '[35mtestRedefine.getter.get[39m' result type is '[33mi32[39m', result type should be '[33mchoice<string, i32, nil>[39m' (from '[33mtestRedefine.getter.A[39m').  Original feature declared at [32m--CURDIR--/testRedefine.fz:37:5:[39m
 [34m    get A is abstract
 [33m----^[0m
 
