@@ -1077,9 +1077,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
                        args.get(args.size()-1).resultType().isOpenGeneric());
                     int ai = Math.min(args.size() - 1, i);
 
-                    var actualArg   = f.arguments().get(i);
-                    var originalArg =   args       .get(ai);
-                    AstErrors.argumentTypeMismatchInRedefinition(o, originalArg,
+                    var originalArg = o.arguments().get(i);
+                    var actualArg   =   args       .get(ai);
+                    AstErrors.argumentTypeMismatchInRedefinition(o, originalArg, t1,
                                                                  f, actualArg);
                   }
               }
@@ -1092,7 +1092,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
              : !t1.isAssignableFrom(t2)) &&
             t2 != Types.resolved.t_void)
           {
-            AstErrors.resultTypeMismatchInRedefinition(o, f);
+            AstErrors.resultTypeMismatchInRedefinition(o, t1, f);
           }
       }
 

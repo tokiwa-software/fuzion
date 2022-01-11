@@ -408,23 +408,47 @@ public class AstErrors extends ANY
           "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
   }
 
-  public static void argumentTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractFeature originalArg,
+  /**
+   * A type that might originally be a generic argument could be a concrete type
+   * when we detect an error. So if we have both, the original type and the
+   * concrete type, we include both in the error message. If both are the same,
+   * only one is shown.
+   *
+   * @param t the concrete type we found a problem with
+   *
+   * @param from the declared type that has become t when generics were
+   * replaced. Might be equal to t.
+   *
+   * @return s(t) if t equals from, s(t) + " (from " + s(from + ")" otherwise.
+   */
+  static String typeWithFrom(AbstractType t, AbstractType from)
+  {
+    return t.compareTo(from) == 0
+      ? s(t)
+      : s(t) + " (from " + s(from) + ")";
+  }
+
+  public static void argumentTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractFeature originalArg, AbstractType originalArgType,
                                                         AbstractFeature redefinedFeature, AbstractFeature redefinedArg)
   {
     error(redefinedArg.pos(),
           "Wrong argument type in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
-          "argument type is " + s(redefinedArg.resultType()) + ", argument type should be " + s(originalArg.resultType()) + " " +
+          "argument type is " + s(redefinedArg.resultType()) + ", argument type should be " +
+          // originalArg.resultType() might be a generic argument that has been replaced by originalArgType:
+          typeWithFrom(originalArgType, originalArg.resultType()) + ".  " +
           "Original argument declared at " + originalArg.pos().show());
   }
 
-  public static void resultTypeMismatchInRedefinition(AbstractFeature originalFeature,
+  public static void resultTypeMismatchInRedefinition(AbstractFeature originalFeature, AbstractType originalType,
                                                       AbstractFeature redefinedFeature)
   {
     error(redefinedFeature.pos(),
           "Wrong result type in redefined feature",
           "In " + s(redefinedFeature) + " that redefines " + s(originalFeature) + " " +
-          "result type is " + s(redefinedFeature.resultType()) + ", result type should be " + s(originalFeature.resultType()) + ". " +
+          "result type is " + s(redefinedFeature.resultType()) + ", result type should be " +
+          // originalFeature.resultType() might be a generic argument that has been replaced by originalType:
+          typeWithFrom(originalType, originalFeature.resultType()) + ".  " +
           "Original feature declared at " + originalFeature.pos().show());
   }
 
