@@ -27,3 +27,10 @@ Cons<A, B> ref is
   head A is abstract
 
   tail B is abstract
+
+
+# cons -- feature used to define simple, non-lazy Cons cells
+#
+# A cons is a cell that contains a head and a tail
+#
+cons<A, B>(head A, tail B) : Cons<A, B> is
