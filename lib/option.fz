@@ -118,3 +118,16 @@ is
     =>
       option.this ? v T => v
                   | nil => default
+
+
+# option with 1 argument provides an short-hand to wrap a value into an option
+#
+# Using this enables to write
+#
+#   o := option x
+#
+# insted of
+#
+#   o option<TypeOfX> := x
+#
+option<T> (o option<T>) => o
