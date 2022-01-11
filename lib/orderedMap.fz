@@ -89,3 +89,11 @@ is
       c := "", ", "
     else
       r
+
+
+# orderedMap -- convenience routine to create an empty instance of orderedMap
+#
+#
+orderedMap<K : ordered<K>, V> => (orderedMap
+                                    Lists.empty<K>.asArray
+                                    Lists.empty<V>.asArray)
