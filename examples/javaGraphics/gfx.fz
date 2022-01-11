@@ -28,8 +28,7 @@
 #
 # See Makefile for how to start fuzion to run this example.
 #
-gfx
-: Java  # inheriting Java makes Java packages visible
+gfx : Java  # inheriting Java makes Java packages visible
 is
 
   /* the following two values are geometry values that may be modified to alter

@@ -28,8 +28,7 @@
 #
 # See Makefile for how to start fuzion to run this example.
 #
-javaHello
-: Java  # inheriting Java makes Java packages visible
+javaHello : Java  # inheriting Java makes Java packages visible
 is
 
   # we can call code in Java package directly using fully
