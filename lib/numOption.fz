@@ -128,3 +128,17 @@ is
   redef asString string is
     numOption.this ? v T => v.asString
                    | nil => "--no value--"
+
+
+# numOption with 1 argument provides an short-hand to wrap a value into a
+# numOption
+#
+# Using this enables to write
+#
+#   o := numOption x
+#
+# insted of
+#
+#   o numOption<TypeOfX> := x
+#
+numOption<T> (o numOption<T>) => o
