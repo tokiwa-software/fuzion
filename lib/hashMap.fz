@@ -129,3 +129,11 @@ is
                                   nil     => fuzion.std.panic "filter failed"
                                   t tuple => t)
     res
+
+
+# hashMap -- convenience routine to create an empty instance of hashMap
+#
+#
+hashMap<K : hasHash<K>, V> => (hashMap
+                                 Lists.empty<K>.asArray
+                                 Lists.empty<V>.asArray)
