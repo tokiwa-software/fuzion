@@ -82,3 +82,40 @@ is
   redef zero => complex real.zero real.zero
   redef one  => complex real.one real.zero
   i => complex real.zero real.one
+
+
+# complexes -- unit type defining features related to complex
+#
+# complexes is a unit type defining features related to complex but not
+# requiring an instance.
+#
+# The plural form of complex is complexes or complices (archaic), according
+# to https://www.wordhippo.com/what-is/the-plural-of/complex.html, so we
+# use complexes.
+#
+complexes<E : numeric<E>> : numerics<complex<E>> is
+
+  redef name => "complex"
+
+  # NYI: There is currently no easy way to get hold of an instance of the unit
+  # type corresponding to E.
+  #
+  #   redef zero => complex E.zero E.zero
+  #   redef one  => complex E.one  E.zero
+  #
+  # dummy implementations:
+  # redef zero => fuzion.std.panic "NYI: complexes.zero not implemented, needs to instantiate type arg E"
+  # redef one  => fuzion.std.panic "NYI: complexes.one not implemented, needs to instantiate type arg E"
+
+
+# complex -- returns value of unit type complexes
+#
+# This is a convenience feature that allows using, e.g.,
+# 'complex<i32>.sum' to get the the monoid of (complex, infix +) instead of
+# 'complexs.sum'.
+#
+# Since this complex with no arguments is a routine and not a constructor, it
+# does not define a type (which would cause a name clash with complex with two
+# arguments).
+#
+complex<E: numeric<E>> => complexes<E>
