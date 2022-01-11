@@ -29,6 +29,13 @@
 # just to safe us from typing one more letter.  But at least we stop
 # here and do not use boo, bo or similar.
 #
+# bool is a choice type that can either be TRUE of FALSE.
+#
+# Note that 'TRUE' and 'FALSE' themselves are not of type 'bool'.
+# Routines 'true' and 'false' are the preferred way to get a constant
+# value of type 'bool'.
+#
+#
 bool : choice<FALSE, TRUE> is
 
   # not
@@ -64,3 +71,43 @@ bool : choice<FALSE, TRUE> is
 
   # human readable string
   redef asString => if bool.this "true" else "false"
+
+
+# boolean value "false"
+#
+# Note that this value is of unit type >>FALSE<<, not of type >>bool<<, i.e.,
+# if it is used for type inference as in
+#
+#    myBoolean := FALSE
+#
+# you will get a variable of type >>FALSE<<, it will not be possible to assign
+# >>TRUE<< to it.  You can use >>false<< as an alternative to get type >>bool<<.
+#
+#
+FALSE is
+
+
+# boolean value "true"
+#
+# Note that this value is of unit type >>TRUE<<, not of type >>bool<<, i.e.,
+# if it is used for type inference as in
+#
+#    myBoolean := TRUE
+#
+# you will get a variable of type >>TRUE<<, it will not be possible to assign
+# >>FALSE<< to it.  You can use >>true<< as an alternative to get type >>bool<<.
+#
+#
+TRUE is
+
+
+# boolean value "false" as a constant of type >>bool<<.
+#
+#
+false bool is FALSE
+
+
+# boolean value "true" as a constant of type >>bool<<.
+#
+#
+true bool is TRUE
