@@ -353,3 +353,28 @@ O(n log n).
   # infix operator synonyme for union of two psMaps
   #
   infix ⋃ (other ref psMap<K, V>) => union other  # NYI: 'ref' due to lack of 'like this'
+
+
+# psMap -- a partially sorted map
+#
+# This feature creates an empty instance of psMap.
+#
+psMap<K : ordered<K>, V> => psMap (sys.array<tuple<K,V>> 0) 0 0
+
+
+# psMap -- routine to initialize a partially sorted map from two Lists
+#
+# This feature creates a pre-initialized instance of psMap.
+#
+psMap<K : ordered<K>, V> (
+    # list of keys in the map
+    ks List<K>,
+    # list of values corresponding to keys in the map
+    vs List<V>)
+ =>
+  for
+    r := psMap<K,V>, r.add k v
+    k in ks
+    v in vs
+  else
+    r
