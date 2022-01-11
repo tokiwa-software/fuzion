@@ -17,21 +17,29 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature List
+#  Source code of Fuzion standard library feature Sequence
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# List -- ancestor for features that can be converted to a 'list' or a
+# Sequence -- ancestor for features that can be converted to a 'list' or a
 # 'stream'
 #
-# NYI: rename this as 'Sequence' to avoid confusion with 'list'
+# Sequences are empty, finite or infinite ordered collections of instances
+# of a given type.  Sequences calculate elements lazily on demand.
 #
-List<T> ref is
+# Sequence is a 'ref' type, i.e., different sub-features may be assigned
+# to a field of type 'Sequence'.
+#
+# Heirs of Sequence must implement either 'asList' or 'asStream'.  Failure
+# to implement any of these results in an endless recursion when the Sequence
+# is used.
+#
+Sequence<T> ref is
 
 
-  # create a list from this List.
+  # create a list from this Sequence.
   #
   # A list is immutable, so it can be reused and shared between threads.
   # Compared to a stream, a list may require more (heap) allocation.
@@ -58,10 +66,10 @@ List<T> ref is
   isEmpty => asList.isEmpty
 
 
-  # count the number of elements in this List.  Note that this typically
+  # count the number of elements in this Sequence.  Note that this typically
   # runs forever if executed on an endless list
   #
-  count => (mapList<i32> (_ -> 1)).fold i32.sum
+  count => (mapSequence<i32> (_ -> 1)).fold i32.sum
 
 
   # get the head of this list, panic if list is empty
@@ -83,7 +91,7 @@ List<T> ref is
    => asList.last
 
 
-  # collect the contents of this List into an array
+  # collect the contents of this Sequence into an array
   #
   asArray array<T> is
     s := asStream
@@ -146,18 +154,18 @@ List<T> ref is
 
 
   # create a list that consists only of the first n elements of this
-  # List, fewer if this stream has fewer elements
+  # Sequence, fewer if this stream has fewer elements
   #
   take (n i32) => asList.take n
 
 
-  # create a list that consists of the elements of this List except the first
+  # create a list that consists of the elements of this Sequence except the first
   # n elements
   #
   drop (n i32) => asList.drop n
 
 
-  # create a slice from this List that consists of the elements starting at index
+  # create a slice from this Sequence that consists of the elements starting at index
   # from (including) up to index to (excluding).
   #
   slice(from, to i32) => drop(from).take to-from
@@ -175,18 +183,18 @@ List<T> ref is
   dropWhile (p T -> bool) => asList.dropWhile p
 
 
-  # create a List that consists of all the elements of this List followed
+  # create a Sequence that consists of all the elements of this Sequence followed
   # by all the elements of s
   #
-  concatLists (s List<T>) List<T> is asList.concat s.asList
+  concatSequences (s Sequence<T>) Sequence<T> is asList.concat s.asList
 
 
-  # infix operand synonyme for concatLists
+  # infix operand synonyme for concatSequences
   #
-  infix ++ (s List<T>) => asList ++ s.asList
+  infix ++ (s Sequence<T>) => asList ++ s.asList
 
 
-  # create a list that repeats the current List indefinitely.  In case 'List.this'
+  # create a list that repeats the current Sequence indefinitely.  In case 'Sequence.this'
   # is empty, returns 'nil'
   #
   cycle list<T> is asList.cycle
@@ -211,7 +219,7 @@ List<T> ref is
   asString (sep string) => asList.asString sep
 
 
-  # map the List to a new List applying function f to all elements
+  # map the Sequence to a new Sequence applying function f to all elements
   #
   # This performs a lazy mapping, f is called only when the elements
   # in the list are accessed.
@@ -219,10 +227,10 @@ List<T> ref is
   # NYI: As long as covariance for result type is not permitted we cannot
   # call this 'map' since this would clash with, e.g., 'array.map'
   #
-  mapList<B>(f T -> B) => asList.map f
+  mapSequence<B>(f T -> B) => asList.map f
 
 
-  # fold the elements of this List using the given monoid.
+  # fold the elements of this Sequence using the given monoid.
   #
   # e.g., to sum the elements of a stream of i32, use s.fold i32.sum
   #
@@ -241,34 +249,34 @@ List<T> ref is
   # create a new list from the result of applying 'f' to the
   # elements of this list and 'b' in order.
   #
-  zip<U,V>(b List<U>, f (T,U)->V) => asList.zip0 b.asList f
+  zip<U,V>(b Sequence<U>, f (T,U)->V) => asList.zip0 b.asList f
 
 
-# Lists -- unit type defining features related to List but not requiring
+# Sequences -- unit type defining features related to Sequence but not requiring
 # an instance
 #
-Lists is
+Sequences is
 
 
   # create an empty list
   #
-  empty<T> List<T> is
+  empty<T> Sequence<T> is
     e list<T> := nil
     e
 
 
-  # monoid of Lists with infix concatentation operation.
+  # monoid of Sequences with infix concatentation operation.
   #
-  concatMonoid<T> : Monoid<List<T>> is
+  concatMonoid<T> : Monoid<Sequence<T>> is
 
     # associative operation
     #
-    infix ∙ (a, b List<T>) List<T> is a.concatLists b
+    infix ∙ (a, b Sequence<T>) Sequence<T> is a.concatSequences b
 
     # equality
     #
-    redef infix == (a, b List<T>) =>
-      fuzion.std.panic "NYI: Lists.concatMonoid.infix ==, requires T : hasEquals"
+    redef infix == (a, b Sequence<T>) =>
+      fuzion.std.panic "NYI: Sequences.concatMonoid.infix ==, requires T : hasEquals"
 
     # identity element
     #
@@ -279,9 +287,9 @@ Lists is
   # of the list, 1 if it comes directly after head, etc. nil if x is not
   # in the list.
   #
-  indexIn<A: hasEquals<A>>(l List<A>, x A) => (searchableList<A> l).indexOf x
+  indexIn<A: hasEquals<A>>(l Sequence<A>, x A) => (searchableList<A> l).indexOf x
 
 
   # get the index of x within this list or nil if it does not exist
   #
-  find<A: hasEquals<A>>(l List<A>, x List<A>) => (searchableList<A> l).find x
+  find<A: hasEquals<A>>(l Sequence<A>, x Sequence<A>) => (searchableList<A> l).find x

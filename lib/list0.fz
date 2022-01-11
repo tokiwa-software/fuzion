@@ -33,7 +33,7 @@
 #
 #
 #
-list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
+list<A> : choice<nil, Cons<A, list<A>>>, Sequence<A> is
 # list<A> : nil | Cons<A, list<A>> is   -- NYI: sum type syntax
 # list<A> : nil | Cons A, list A is     -- NYI: sum type syntax, optional '<', '>'
 # list A : nil | Cons A, list A is      -- NYI: sum type syntax, optional '<', '>' (2x)
@@ -217,7 +217,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, List<A> is
 
   # infix operand synonyme for concat
   #
-  redef infix ++ (t List<A>) => concat t.asList
+  redef infix ++ (t Sequence<A>) => concat t.asList
 
 
   # create a list from the tail of list.this dropping n elements (or fewer
@@ -347,7 +347,7 @@ lists is
     # equality
     #
     redef infix == (a, b list<A>) =>
-      fuzion.std.panic "NYI: Lists.concatMonoid.infix ==, requires A : hasEquals"
+      fuzion.std.panic "NYI: lists.concatMonoid.infix ==, requires A : hasEquals"
 
     # identity element
     #

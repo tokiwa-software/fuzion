@@ -33,7 +33,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   redef asString => string.this
 
   # any concrete string must implement utf8
-  utf8 List<u8> is abstract
+  utf8 Sequence<u8> is abstract
 
   # is this string empty?
   isEmpty => !utf8.asStream.hasNext
@@ -55,7 +55,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   pre
     n >= 0
   is
-    redef utf8 ref : List<u8> is
+    redef utf8 ref : Sequence<u8> is
       redef asStream ref : stream<u8> is
         i := 0
         bytes := string.this.utf8.asStream
@@ -258,10 +258,10 @@ string ref : hasHash<string>, ordered<string>, strings is
   codepointsArray => asCodepoints.asArray
 
 
-  # convert this string into a List of codepoint and errors for encoding problems
+  # convert this string into a Sequence of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
-  asCodepoints : List<codepoint> is
+  asCodepoints : Sequence<codepoint> is
     redef asStream ref : stream<codepoint> is
       s := codepointsAndErrors
       n option<codepoint> := nil
@@ -495,7 +495,7 @@ strings is
     redef infix + (other Object) string is
       fromArray (a.add other)
 
-    redef utf8 ref : List<u8> is
+    redef utf8 ref : Sequence<u8> is
       redef asStream ref : stream<u8> is
         i := 0
         s := a[i].asString.utf8.asStream
@@ -517,7 +517,7 @@ strings is
 
   # create string from the given utf8 bytes
   #
-  fromBytes(utf8Bytes List<u8>) string is
+  fromBytes(utf8Bytes Sequence<u8>) string is
     ref : string
       redef utf8 => utf8Bytes
 

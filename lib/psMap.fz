@@ -241,8 +241,8 @@ O(n log n).
 
   # get a stream of all key/value pairs in this map
   #
-  redef items List<tuple<K,V>> is
-    res : List<tuple<K,V>> is
+  redef items Sequence<tuple<K,V>> is
+    res : Sequence<tuple<K,V>> is
       redef asStream =>
         (asKeyArray.map<tuple<K,V>> (k -> (k, psMap.this[k].get))).asStream
     res
@@ -362,15 +362,15 @@ O(n log n).
 psMap<K : ordered<K>, V> => psMap (sys.array<tuple<K,V>> 0) 0 0
 
 
-# psMap -- routine to initialize a partially sorted map from two Lists
+# psMap -- routine to initialize a partially sorted map from two Sequences
 #
 # This feature creates a pre-initialized instance of psMap.
 #
 psMap<K : ordered<K>, V> (
     # list of keys in the map
-    ks List<K>,
+    ks Sequence<K>,
     # list of values corresponding to keys in the map
-    vs List<V>)
+    vs Sequence<V>)
  =>
   for
     r := psMap<K,V>, r.add k v

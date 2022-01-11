@@ -23,11 +23,11 @@
 #
 # -----------------------------------------------------------------------
 
-# setOf -- routine to initialize a set from a List of ordered elements
+# setOf -- routine to initialize a set from a Sequence of ordered elements
 #
 # This feature creates an instance of a Set.
 #
-setOf<K : ordered<K>> (vs List<K>) Set<K> is psSet vs
+setOf<K : ordered<K>> (vs Sequence<K>) Set<K> is psSet vs
 
 
 # setOf -- routine to initialize an empty set of ordered elements

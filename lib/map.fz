@@ -39,13 +39,13 @@ map<K, V> ref is
 
   # get a stream of all key/value pairs in this map
   #
-  items List<tuple<K,V>> is abstract
+  items Sequence<tuple<K,V>> is abstract
 
 
   # get a stream of all keys in this map
   #
-  keys List<K> is
-    res : List<K> is
+  keys Sequence<K> is
+    res : Sequence<K> is
       redef asStream => items.asStream.map<K> (t -> (k,_) := t; k)
     res
 
@@ -57,8 +57,8 @@ map<K, V> ref is
 
   # get a stream of all values in this map
   #
-  values List<V> is
-    res : List<V> is
+  values Sequence<V> is
+    res : Sequence<V> is
       redef asStream => items.asStream.map<V> (t -> (_,v) := t; v)
     res
 

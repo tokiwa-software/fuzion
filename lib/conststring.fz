@@ -30,7 +30,7 @@
 #
 conststring (cannotBeCalled void) ref : string, array<u8> (sys.array<u8> -1) is
 
-  redef utf8 List<u8> is conststring.this
+  redef utf8 Sequence<u8> is conststring.this
 
   # Resolve repeated inheritance of asString, isEmpty from string and from array.
   #

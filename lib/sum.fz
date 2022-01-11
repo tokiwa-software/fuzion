@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# sum -- generic sum of the elements of a List of numeric.
+# sum -- generic sum of the elements of a Sequence of numeric.
 #
 # This should allow summing the elements of a list, as in
 #
@@ -32,7 +32,7 @@
 #
 # NYI: This is experimental and does not work yet
 #
-sum<T: numerics<T>> (l List<T>) =>
+sum<T: numerics<T>> (l Sequence<T>) =>
 
   # NYI: the following code to get T's sum monoid does not work for l.isEmpty,
   # it should be something like

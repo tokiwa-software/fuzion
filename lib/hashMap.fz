@@ -119,8 +119,8 @@ is
 
   # get a stream of all key/value pairs in this map
   #
-  items List<tuple<K,V>> is
-    res : List<tuple<K,V>> is
+  items Sequence<tuple<K,V>> is
+    res : Sequence<tuple<K,V>> is
       redef asStream =>
         contents
           .asStream
@@ -135,5 +135,5 @@ is
 #
 #
 hashMap<K : hasHash<K>, V> => (hashMap
-                                 Lists.empty<K>.asArray
-                                 Lists.empty<V>.asArray)
+                                 Sequences.empty<K>.asArray
+                                 Sequences.empty<V>.asArray)

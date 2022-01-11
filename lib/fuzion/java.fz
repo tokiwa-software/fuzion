@@ -62,7 +62,7 @@ public fuzion.java is
 
   # A Java array
   #
-  public Array<T>(private redef javaRef Object) ref : List<T>, JavaObject javaRef
+  public Array<T>(private redef javaRef Object) ref : Sequence<T>, JavaObject javaRef
   is
     length            => arrayLength<T> Array.this
     index [ ] (i i32) => arrayGet<T>    Array.this i
@@ -180,9 +180,9 @@ public fuzion.java is
   private arrayGet<T>(a Array<T>, ix i32) T is intrinsic
 
 
-  # convert a List to a Java Array object
+  # convert a Sequence to a Java Array object
   #
-  public arrayToJavaObject<T>(a List<T>) Array<T> is
+  public arrayToJavaObject<T>(a Sequence<T>) Array<T> is
     arrayToJavaObject0<T> a.asArray.internalArray.data
 
 

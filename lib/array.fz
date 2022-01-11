@@ -28,7 +28,7 @@
 # This is the result type of array<T>(i32, i32 -> T) which creates an
 # initalized immutable array
 #
-array<T>(internalArray sys.array<T>) : List<T> is
+array<T>(internalArray sys.array<T>) : Sequence<T> is
 
 # public:
 

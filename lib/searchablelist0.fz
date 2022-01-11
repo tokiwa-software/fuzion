@@ -26,10 +26,10 @@
 # searchablelist -- a list whose elements inherit from hasEquals
 #
 # In contrast to searchableList, this uses choice type 'list' and not ref
-# type 'List', so it is more efficient.
+# type 'Sequence', so it is more efficient.
 #
 #
-searchablelist<A: hasEquals<A>>(from list<A>) : List<A>
+searchablelist<A: hasEquals<A>>(from list<A>) : Sequence<A>
 /* : list<A> -- NYI: we might allow inherting from a choice to get a choice
                      with more restrictions on the type arguments
 
@@ -45,7 +45,7 @@ searchablelist<A: hasEquals<A>>(from list<A>) : List<A>
 
 is
 
-  # create a list from this List.
+  # create a list from this searchablelist.
   #
   redef asList => from
 

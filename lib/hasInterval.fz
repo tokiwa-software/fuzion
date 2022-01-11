@@ -71,7 +71,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
     contains (e T) => lower <= e <= upper
 
 
-    # Create a List that is steping through this interval skipping values. For a
+    # Create a Sequence that is steping through this interval skipping values. For a
     # non-negative step parameter, the stream will return lower, lower+step,
     # lower+2*step, etc. as long as these values are <= upper.
     #
@@ -110,9 +110,9 @@ hasInterval<T: hasInterval<T>> : integer<T> is
       contains (e T) => lower <= e <= upper && ((e - lower) %% step)
 
 
-      # use map implementation from List:
+      # use map implementation from Sequence:
       #
-      map<B>(f T -> B)  => mapList f
+      map<B>(f T -> B)  => mapSequence f
 
 
     # create a list from this interval
@@ -124,9 +124,9 @@ hasInterval<T: hasInterval<T>> : integer<T> is
       if (lower > upper) nil else cons lower
 
 
-    # use map implementation from List:
+    # use map implementation from Sequence:
     #
-    map<B>(f T -> B)  => mapList f
+    map<B>(f T -> B)  => mapSequence f
 
 
     # string representation of this interval, e.g., "1..10"

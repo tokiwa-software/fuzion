@@ -132,7 +132,7 @@ integer<T : integer<T>> : numeric<T> is
       debug: u32 1 < base <= 36
   is
     ref : string
-      redef utf8 ref : List<u8> is
+      redef utf8 ref : Sequence<u8> is
         redef asStream stream<u8> is
           b := from_u32 base
           if thiz.sign >= 0

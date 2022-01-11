@@ -29,17 +29,17 @@
 # type 'list', so it is more flexible.
 #
 #
-searchableList<A: hasEquals<A>>(from List<A>) : List<A>
+searchableList<A: hasEquals<A>>(from Sequence<A>) : Sequence<A>
 is
 
-  # create a list from this List.
+  # create a list from this Sequence.
   #
   redef asList => from.asList
 
 
   # does this list start with l?
   #
-  startsWith (l List<A>) =>
+  startsWith (l Sequence<A>) =>
     (searchablelist asList).startsWith l.asList
 
 
@@ -51,23 +51,23 @@ is
 
   # get the index of l within this list or nil if it does not exist
   #
-  find (l List<A>) =>
+  find (l Sequence<A>) =>
     (searchablelist asList).find l.asList
 
 
   # replace all occurances of f by r
   #
-  replace (f, r List<A>) =>
+  replace (f, r Sequence<A>) =>
     (searchablelist asList).replace f.asList r.asList
 
 
   # get the number of matches of l
   #
-  countMatchesOverlapping (l List<A>) =>
+  countMatchesOverlapping (l Sequence<A>) =>
     (searchablelist asList).countMatchesOverlapping l.asList
 
 
   # get the number of non-overlapping matches of l within this
   #
-  countMatches (l List<A>) =>
+  countMatches (l Sequence<A>) =>
     (searchablelist asList).countMatches l.asList

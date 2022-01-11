@@ -36,7 +36,7 @@
 #
 psSet<K : ordered<K>>
   (psm ref psMap<K,unit>,  # NYI: 'ref' due to lack of 'like this'
-   dummy unit    # just to distinguish this from routine psSet(vs List<K>)
+   dummy unit    # just to distinguish this from routine psSet(vs Sequence<K>)
   )
   : Set<K>
 is
@@ -91,9 +91,9 @@ is
   infix ⋃ (other ref psSet<K>) => psSet (psm ⋃ other.psm) unit  # NYI: 'ref' due to lack of 'like this'
 
 
-  # add all elements of the given List to this set
+  # add all elements of the given Sequence to this set
   #
-  addAll (s List<K>) ref psSet<K> is  # NYI: 'ref' due to lack of 'like this'
+  addAll (s Sequence<K>) ref psSet<K> is  # NYI: 'ref' due to lack of 'like this'
     addAllFromStream s.asStream
 
 
@@ -140,8 +140,8 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 psSet<K : ordered<K>> => psSet psMap<K,unit> unit
 
 
-# psSet -- routine to initialize a partially sorted set from one List
+# psSet -- routine to initialize a partially sorted set from one Sequence
 #
 # This feature creates a pre-initialized instance of psSet.
 #
-psSet<K : ordered<K>> (vs List<K>) => psSet<K>.addAll vs
+psSet<K : ordered<K>> (vs Sequence<K>) => psSet<K>.addAll vs
