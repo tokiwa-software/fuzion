@@ -84,3 +84,17 @@ is
   redef infix >= (b fraction<B>) =>  (a - b).num.sign >= 0
 
   redef asString => "" + num + "⁄" + den
+
+
+# fraction -- a convenience routine to create a fraction with den = one
+#
+#
+# To create a fraction that represents a whole number such as
+#
+#   two := fraction 2 1
+#
+# you can use this routine with one argument and write
+#
+#   two := fraction 2
+#
+fraction<B : integer<B>> (num B) => num ⁄ num.one
