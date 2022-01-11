@@ -104,3 +104,17 @@ outcome<T> : choice<T, error /* ...  NYI: this should be open generic! */> is
   redef asString =>
     outcome.this ? v T     => v.asString
                  | e error => "--$e--"
+
+
+# outcome with 1 argument provides an short-hand to wrap a value into a
+# outcome
+#
+# Using this enables to write
+#
+#   o := outcome x
+#
+# insted of
+#
+#   o outcome<TypeOfX> := x
+#
+outcome<T> (o outcome<T>) => o
