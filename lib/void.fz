@@ -54,7 +54,7 @@
 #
 # Type void may be used as an actual generic argument for a generic feature.  If this
 # is done, it will turn all features that have arguments of that type into absurd
-# features.  Also, this will ensure that any feature that produce a result of that
+# features.  Also, this will ensure that any feature that produces a result of that
 # type to never return a result (typically to not be callable in the first place as
 # well).  An example could be a stack of capacity zero: stack<void>(0) with an
 # absurd
