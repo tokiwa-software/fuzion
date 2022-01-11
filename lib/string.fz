@@ -452,3 +452,83 @@ string ref : hasHash<string>, ordered<string>, strings is
 #   fromBytes s2
 
     strings.fromBytes s2
+
+
+# strings -- unit type defining features related to string but not
+# requiring an instance
+#
+strings is
+
+
+  # monoid of strings with infix + operation.
+  #
+  concat : Monoid<string> is
+    redef infix ∙ (a, b string) => a + b
+    redef infix == (a, b string) => a == b
+    redef e => ""
+
+
+  # monoid of strings with infix '+ sep +' operation, i.e., concatenate with
+  # given separator
+  #
+  concat(sep string) : Monoid<string> is
+    redef infix ∙ (a, b string) string is if (a.isEmpty || b.isEmpty) a + b else a + sep + b
+    redef infix == (a, b string) => a == b
+    redef e => ""
+
+
+  # create string by concatenating the results of $a[a.indices].
+  #
+  # This uses a growing array if further strings are appended using 'infix +',
+  # so it avoids quadratic runtime caused if each 'infix +' would create its
+  # own concatenation-string.
+  #
+  # The performance of creating a string a0+a1+a2+...+a<n> is in O(n) since the
+  # backing array is shared and doubled in size when full (so the final array size
+  # is less than 2n in size and the sum of all arrays is less than 4n = 2n + n +
+  # n/2+n/4+...).
+  #
+  # The performance of iterating the utf8 bytes of a string is O(l+n) for an
+  # array of length l created by concatenating n sub-strings.
+  #
+  fromArray(a marray<Object>) ref : string is
+    redef infix + (other Object) string is
+      fromArray (a.add other)
+
+    redef utf8 ref : List<u8> is
+      redef asStream ref : stream<u8> is
+        i := 0
+        s := a[i].asString.utf8.asStream
+        gotNext := false
+
+        findNext bool is
+          set gotNext := gotNext || (
+            for hs := s.hasNext
+            while !hs && i+1 < a.length
+              set i := i + 1
+              set s := a[i].asString.utf8.asStream
+            else
+              hs)
+          gotNext
+
+        redef hasNext => findNext
+        redef next    => findNext; set gotNext := false; s.next
+
+
+  # create string from the given utf8 bytes
+  #
+  fromBytes(utf8Bytes List<u8>) string is
+    ref : string
+      redef utf8 => utf8Bytes
+
+
+  # NYI: remove the convenience functions when Fuzion supports char literals
+  #
+  minusChar => "-".utf8.asStream.next
+  plusChar  => "+".utf8.asStream.next
+  zeroChar  => "0".utf8.asStream.next
+  nineChar  => "9".utf8.asStream.next
+  aChar     => "a".utf8.asStream.next
+  zChar     => "z".utf8.asStream.next
+  capAChar  => "A".utf8.asStream.next
+  capZChar  => "Z".utf8.asStream.next
