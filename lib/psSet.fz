@@ -131,3 +131,17 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
     redef infix ∙ (a, b psSet<K>) => a ⋃ b
     redef infix == (a, b psSet<K>) => (a ⋃ b).size = a.size  # NYI: a bit expensive
     redef e => empty
+
+
+# psSet -- a partially sorted set based on psMap
+#
+# This feature creates an empty instance of psSet.
+#
+psSet<K : ordered<K>> => psSet psMap<K,unit> unit
+
+
+# psSet -- routine to initialize a partially sorted set from one List
+#
+# This feature creates a pre-initialized instance of psSet.
+#
+psSet<K : ordered<K>> (vs List<K>) => psSet<K>.addAll vs
