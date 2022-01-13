@@ -584,6 +584,125 @@ public class Lexer extends SourceFile
 
 
   /**
+   * short-hand for bracketTermWithNLs with atMinIndent==false and c==def.
+   */
+  <V> V bracketTermWithNLs(Token[] brackets, String rule, Callable<V> c)
+  {
+    return bracketTermWithNLs(brackets, rule, c, c);
+  }
+
+
+  /**
+   * short-hand for bracketTermWithNLs with c==def.
+   */
+  <V> V bracketTermWithNLs(boolean atMinIndent, Token[] brackets, String rule, Callable<V> c)
+  {
+    return bracketTermWithNLs(atMinIndent, brackets, rule, c, c);
+  }
+
+
+  /**
+   * short-hand for bracketTermWithNLs with atMinIndent==false.
+   */
+  <V> V bracketTermWithNLs(Token[] brackets, String rule, Callable<V> c, Callable<V> def)
+  {
+    return bracketTermWithNLs(false, brackets, rule, c, def);
+  }
+
+
+  /**
+   * Parse a term in brackets that may extend over several lines. In case this appears in an
+   * expression that must be in the same line, e.g.,
+   *
+   *   n := a * (b + c) - d
+   *
+   * continue the same line after the closing bracket, e.g.
+   *
+   *   n := a * (b
+   *         + c) - d
+   *
+   * @param atMinIndent may the closing bracket be at minIndent?  The opening
+   * bracket may always be at minIndent and if it is, the closing one may be as
+   * well. This parameter is usefule for code like
+   *
+   *   myFeature {
+   *     say "Hello"
+   *   }
+   *
+   * where the opening bracket is not at minIndent, but the closing one is.
+   *
+   * @param brackets the opening / closing bracket to use
+   *
+   * @param rule the parser rule we are processing, used in syntax error messages.
+   *
+   * @param c code to parse the inside of the brackets
+   *
+   * @param def code to produce a default result in case closing bracket follows
+   * immediately after opening bracket.
+   *
+   * @return value returned by c or def, resp.
+   */
+  <V> V bracketTermWithNLs(boolean atMinIndent, Token[] brackets, String rule, Callable<V> c, Callable<V> def)
+  {
+    var start = brackets[0];
+    var end   = brackets[1];
+    var ol = line();
+    var startsIndent = pos() == _minIndentStartPos;
+    match(atMinIndent, start, rule);
+    V result = relaxLineAndSpaceLimit(current() != end ? c : def);
+    var nl = line();
+    relaxLineAndSpaceLimit(() ->
+                           {
+                             match(startsIndent || atMinIndent, end, rule);
+                             return Void.TYPE; // is there a better unit type in Java?
+                           });
+    var sl = sameLine(-1);
+    if (sl == ol)
+      {
+        sl = nl;
+      }
+    sameLine(sl);
+    return result;
+  }
+
+
+  /**
+   * check if we can parse a bracket term and skip it if so.
+   *
+   * @param brackets the opening / closing bracket to use
+   *
+   * @param c code to parse the inside of the brackets
+   *
+   * @return true if both brackets are present and c returned true, Otherwise no
+   * bracket term could be pares and the parser/lexer is at an undefined
+   * position.
+   */
+  boolean skipBracketTermWithNLs(Token[] brackets, Callable<Boolean> c)
+  {
+    var start = brackets[0];
+    var end   = brackets[1];
+    var ol = line();
+    var startsIndent = pos() == _minIndentStartPos;
+    var result = skip(start) && relaxLineAndSpaceLimit(c);
+    if (result)
+      {
+        var nl = line();
+        result = relaxLineAndSpaceLimit(() -> {
+            return skip(startsIndent , end);
+          });
+        var sl = sameLine(-1);
+        if (sl == ol)
+          {
+            sl = nl;
+          }
+        sameLine(sl);
+      }
+    return result;
+  }
+
+
+
+  /**
    * Advance to the next token that is not ignore()d.
    */
   public void next()
@@ -2397,6 +2516,130 @@ HEX_TAIL    : "." HEX_DIGITS
       }
     return result;
   }
+
+
+  /**
+   * Parse "(" if it is found
+   *
+   * @return true iff a "(" was found and skipped.
+   */
+  boolean skipLParen()
+  {
+    return skip(Token.t_lparen);
+  }
+
+
+  /**
+   * Parse given token and skip it. if it was found.
+   *
+   * @param t a token.
+   *
+   * @return true iff the current token was t and was skipped, otherwise no
+   * change is made.
+   */
+  boolean skip(Token t)
+  {
+    boolean result = false;
+    if (current() == t)
+      {
+        next();
+        result = true;
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse given token and skip it. if it was found.
+   *
+   * @param t a token.
+   *
+   * @return true iff the current token was t and was skipped, otherwise no
+   * change is made.
+   */
+  boolean skip(boolean atMinIndent, Token t)
+  {
+    boolean result = false;
+    if (current(atMinIndent) == t)
+      {
+        next();
+        result = true;
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse singe-char t_op.
+   *
+   * @param op the single-char operator
+   *
+   * @return true iff an t_op op was found and skipped.
+   */
+  boolean skip(char op)
+  {
+    boolean result = false;
+    if (isOperator(op))
+      {
+        next();
+        result = true;
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse specific t_op.
+   *
+   * @param op the operator
+   *
+   * @return true iff an t_op op was found and skipped.
+   */
+  boolean skip(String op)
+  {
+    boolean result = false;
+    if (isOperator(op))
+      {
+        next();
+        result = true;
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse specific t_op after splitting it off from the current op.
+   *
+   * @param op the operator
+   *
+   * @return true iff an t_op op was found and skipped.
+   */
+  boolean splitSkip(String op)
+  {
+    boolean result = false;
+    splitOperator(op);
+    if (isOperator(op))
+      {
+        next();
+        result = true;
+      }
+    return result;
+  }
+
+
+  /**
+   * Return the details of the numeric literal of the current t_numliteral token.
+   */
+  Literal skipNumLiteral()
+  {
+    if (PRECONDITIONS) require
+      (current() == Token.t_numliteral);
+
+    var result = curLiteral();
+    next();
+    return result;
+  }
+
 
 }
 

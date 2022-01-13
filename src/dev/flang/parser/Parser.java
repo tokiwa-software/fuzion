@@ -28,6 +28,7 @@ package dev.flang.parser;
 
 import java.nio.file.Path;
 
+import dev.flang.util.Callable;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -55,6 +56,14 @@ public class Parser extends Lexer
 
 
   /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Different kinds of opening / closing brackets
+   */
+  static Token[] PARENS   = new Token[] { Token.t_lparen  , Token.t_rparen   };
+  static Token[] BRACES   = new Token[] { Token.t_lbrace  , Token.t_rbrace   };
+  static Token[] CROCHETS = new Token[] { Token.t_lcrochet, Token.t_rcrochet };
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -220,7 +229,7 @@ routine     : visibility
               modifiers
               featNames
               formGens
-              formArgs
+              formArgsOpt
               returnType
               inherits
               contract
@@ -241,7 +250,7 @@ field       : visibility
     int m = modifiers();
     List<List<String>> n = featNames();
     FormalGenerics g = formGens();
-    var a = (current() == Token.t_lparen) && fork().skipType() ? new List<Feature>() : formArgs();
+    var a = (current() == Token.t_lparen) && fork().skipType() ? new List<Feature>() : formArgsOpt();
     ReturnType r = returnType();
     var hasType = r != NoType.INSTANCE;
     var i = inherits();
@@ -779,10 +788,25 @@ generic     : IDENT
 
 
   /**
+   * Parse optional formal argument list. Result is empty List in case no formArgs is found.
+   *
+formArgsOpt : formArgs
+            |
+            ;
+   */
+  List<Feature> formArgsOpt()
+  {
+    return (current() == Token.t_lparen)
+      ? formArgs()
+      : new List<>();
+  }
+
+
+
+  /**
    * Parse formal argument list
    *
 formArgs    : LPAREN argLst RPAREN
-            |
             ;
 argLst      : argList
             |
@@ -800,31 +824,27 @@ argument    : visibility
    */
   List<Feature> formArgs()
   {
-    return relaxLineAndSpaceLimit(() -> {
-        List<Feature> result = new List<>();
-        if (skipLParen())
-          {
-            if (isNonEmptyVisibilityPrefix() || isModifiersPrefix() || isArgNamesPrefix())
-              {
-                do
-                  {
-                    SourcePosition pos = posObject();
-                    Visi v = visibility();
-                    int m = modifiers();
-                    List<String> n = argNames();
-                    Type t = type();
-                    Contract c = contract();
-                    for (String s : n)
-                      {
-                        result.add(new Feature(pos, v, m, t, s, c));
-                      }
-                  }
-                 while (skipComma());
-              }
-            match(Token.t_rparen, "formArgs");
-          }
-        return result;
-      });
+    return bracketTermWithNLs(PARENS, "formArgs",
+                              () -> {
+                                var result = new List<Feature>();
+                                do
+                                  {
+                                    SourcePosition pos = posObject();
+                                    Visi v = visibility();
+                                    int m = modifiers();
+                                    List<String> n = argNames();
+                                    Type t = type();
+                                    Contract c = contract();
+                                    for (String s : n)
+                                      {
+                                        result.add(new Feature(pos, v, m, t, s, c));
+                                      }
+                                  }
+                                while (skipComma());
+                                return result;
+                              },
+                              () -> new List<Feature>()
+                              );
   }
 
 
@@ -837,25 +857,21 @@ argument    : visibility
    */
   boolean skipFormArgs()
   {
-    return relaxLineAndSpaceLimit(() -> {
-        boolean result = skipLParen();
-        if (result)
+    return skipBracketTermWithNLs(PARENS, () -> {
+        var result = true;
+        if (isNonEmptyVisibilityPrefix() || isModifiersPrefix() || isArgNamesPrefix())
           {
-            if (isNonEmptyVisibilityPrefix() || isModifiersPrefix() || isArgNamesPrefix())
+            do
               {
-                do
+                visibility();
+                modifiers();
+                result = skipArgNames() && skipType();
+                if (result)
                   {
-                    visibility();
-                    modifiers();
-                    result = skipArgNames() && skipType();
-                    if (result)
-                      {
-                        contract();
-                      }
+                    contract();
                   }
-                while (result && skipComma());
               }
-            result = result && skip(Token.t_rparen);
+            while (result && skipComma());
           }
         return result;
       });
@@ -876,41 +892,42 @@ argument    : visibility
    */
   FormalOrActual skipFormArgsNotActualArgs()
   {
-    return relaxLineAndSpaceLimit(() -> {
-        if (skipLParen())
+    var result = new FormalOrActual[] { FormalOrActual.both };
+    skipBracketTermWithNLs(PARENS, () -> {
+        if (current() != Token.t_rparen)
           {
-            if (skip(Token.t_rparen))
-              {
-                return FormalOrActual.both;
-              }
             do
               {
                 if (isNonEmptyVisibilityPrefix() || isModifiersPrefix())
                   {
-                    return FormalOrActual.formal;
+                    result[0] = FormalOrActual.formal;
+                    return false;
                   }
                 do
                   {
                     if (!isArgNamesPrefix())
                       {
-                        return FormalOrActual.actual;
+                        result[0] = FormalOrActual.actual;
+                        return false;
                       }
                     skipName();
                   }
                 while (skipComma());
                 if (!skipType())
                   {
-                    return FormalOrActual.actual;
+                    result[0] = FormalOrActual.actual;
+                    return false;
                   }
               }
             while (skipComma());
-            if (!skip(Token.t_rparen))
-              {
-                return FormalOrActual.actual;
-              }
           }
-        return FormalOrActual.both;
+        if (!skip(Token.t_rparen))
+          {
+            result[0] = FormalOrActual.actual;
+          }
+        return false;
       });
+    return result[0];
   }
 
 
@@ -1183,12 +1200,7 @@ indexCall   : ( LBRACKET exprList RBRACKET
     do
       {
         SourcePosition pos = posObject();
-        next();
-        var l = relaxLineAndSpaceLimit(() -> {
-            var res = exprList();
-            match(Token.t_rcrochet, "indexCall");
-            return res;
-          });
+        var l = bracketTermWithNLs(CROCHETS, "indexCall", () -> exprList());
         if (skip(":="))
           {
             l.add(exprInLine());
@@ -1342,27 +1354,11 @@ actualArgs  : actualsList               // must be in same line as name of calle
    */
   List<Expr> actualArgs(int line)
   {
-    List<Expr> result = relaxLineAndSpaceLimit(() -> {
-        List<Expr> res = null;
-        if (!ignoredTokenBefore() && skipLParen())
-          {
-            if (current() != Token.t_rparen)
-              {
-                res = exprList();
-              }
-            else
-              {
-                res = new List<>();
-              }
-            match(Token.t_rparen, "actualArgs");
-          }
-        return res;
-      });
-    if (result == null)
-      {
-        result = actualsList(line);
-      }
-    return result;
+    return (ignoredTokenBefore() || current() != Token.t_lparen)
+      ? actualsList(line)
+      : bracketTermWithNLs(PARENS, "actualArgs",
+                           () -> exprList(),
+                           () -> new List<>());
   }
 
 
@@ -1537,7 +1533,7 @@ bracketTerm : block
             | inlineArray
             ;
    */
-  Expr bracketTerm(boolean mayBeAtMinIndent)
+  Expr bracketTerm()
   {
     if (PRECONDITIONS) require
       (current() == Token.t_lbrace   ||
@@ -1547,7 +1543,7 @@ bracketTerm : block
     var c = current();
     switch (c)
       {
-      case t_lbrace  : return block(mayBeAtMinIndent);
+      case t_lbrace  : return block(false);
       case t_lparen  : return klammer();
       case t_lcrochet: return inlineArray();
       default: throw new Error("Unexpected case: "+c);
@@ -1604,7 +1600,7 @@ exprInLine  : expr             // within one line
           //   }
           //   + c
           var f = fork();
-          f.bracketTerm(false);
+          f.bracketTerm();
           if (f.line() != line && f.isOperator('.'))
             {
               line = -1;
@@ -1742,30 +1738,21 @@ klammerLambd: LPAREN argNamesOpt RPAREN lambda
   Expr klammer()
   {
     SourcePosition pos = posObject();
-    match(Token.t_lparen, "klammer");
     var f = fork();
-    var tupleElements = relaxLineAndSpaceLimit(() -> {
-        List<Expr> elements = new List<>();
-        if (!skip(Token.t_rparen)) // not an empty tuple
-          {
-            do
-              {
-                elements.add(expr());
-              }
-            while (skipComma());
-            match(Token.t_rparen, "klammer");
-          }
-        return elements;
-      });
+    var tupleElements = new List<Expr>();
+    bracketTermWithNLs(PARENS, "klammer",
+                       () -> {
+                         do
+                           {
+                             tupleElements.add(expr());
+                           }
+                         while (skipComma());
+                         return Void.TYPE;
+                       },
+                       () -> Void.TYPE);
+
     return
-      isLambdaPrefix()          ? lambda(f.relaxLineAndSpaceLimit(() ->
-                                                                  { var r = f.argNamesOpt();
-                                                                    if (!f.skip(Token.t_rparen) || f.pos() != pos())
-                                                                      {
-                                                                        f.syntaxError(f.pos(), "plain list of argument names (argNameOpt) before lambda", "klammer");
-                                                                      }
-                                                                    return r;
-                                                                  })) :
+      isLambdaPrefix()          ? lambda(f.bracketTermWithNLs(PARENS, "argNamesOpt", () -> f.argNamesOpt())) :
       tupleElements.size() == 1 ? tupleElements.get(0) // a klammerexpr, not a tuple
                                 : new Call(pos, null, "tuple", tupleElements);
   }
@@ -1858,31 +1845,29 @@ inlineArray : LBRACKET expr (COMMA expr)+ RBRACKET
    */
   Expr inlineArray()
   {
-    return relaxLineAndSpaceLimit(() -> {
-        SourcePosition pos = posObject();
-        match(Token.t_lcrochet, "inlineArray");
-        List<Expr> elements = new List<>();
-        if (!skip(Token.t_rcrochet)) // not empty array
-          {
-            elements.add(expr());
-            var sep = current();
-            var s = sep;
-            var p1 = pos();
-            boolean reportedMixed = false;
-            while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
-              {
-                elements.add(expr());
-                s = current();
-                if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
-                  {
-                    AstErrors.arrayInitCommaAndSemiMixed(pos, posObject(p1), posObject());
-                    reportedMixed = true;
-                  }
-              }
-            match(Token.t_rcrochet, "inlineArray");
-          }
-        return new InlineArray(pos, elements);
-      });
+    SourcePosition pos = posObject();
+    var elements = new List<Expr>();
+    bracketTermWithNLs(CROCHETS, "inlineArray",
+                       () -> {
+                         elements.add(expr());
+                         var sep = current();
+                         var s = sep;
+                         var p1 = pos();
+                         boolean reportedMixed = false;
+                         while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
+                           {
+                             elements.add(expr());
+                             s = current();
+                             if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
+                               {
+                                 AstErrors.arrayInitCommaAndSemiMixed(pos, posObject(p1), posObject());
+                                 reportedMixed = true;
+                               }
+                           }
+                         return Void.TYPE;
+                       },
+                       () -> Void.TYPE);
+    return new InlineArray(pos, elements);
   }
 
 
@@ -1914,7 +1899,7 @@ simpleterm  : bracketTerm
       {
       case t_lbrace    :
       case t_lparen    :
-      case t_lcrochet  :         result = bracketTerm(true);                           break;
+      case t_lcrochet  :         result = bracketTerm();                               break;
       case t_fun       :         result = fun();                                       break;
       case t_numliteral: var l = skipNumLiteral();
                          var m = l.mantissaValue();
@@ -2097,7 +2082,7 @@ fun         : "fun" function
   /**
    * Parse function
    *
-function    : formArgs
+function    : formArgsOpt
               typeOpt
               inherits
               contract
@@ -2109,7 +2094,7 @@ function    : formArgs
    */
   Function function(SourcePosition pos)
   {
-    List<Feature> a = formArgs();
+    List<Feature> a = formArgsOpt();
     ReturnType r = NoType.INSTANCE;
     if (isType())
       {
@@ -2397,19 +2382,22 @@ block       : BRACEL stmnts BRACER
         //
         return new Block(pos1, pos1, new List<>());
       }
-    else
+    else if (current(mayBeAtMinIndent) != Token.t_lbrace)
       {
         return relaxLineAndSpaceLimit(() -> {
-            boolean gotLBrace = skip(mayBeAtMinIndent, Token.t_lbrace);
             var l = stmnts();
             var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
-            if (gotLBrace)
-              {
-                pos2 = posObject();
-                match(mayBeAtMinIndent, Token.t_rbrace, "block");
-              }
             return new Block(pos1, pos2, l);
           });
+      }
+    else
+      {
+        return bracketTermWithNLs(mayBeAtMinIndent, BRACES, "block",
+                                  () -> {
+                                    var l = stmnts();
+                                    var pos2 = posObject();
+                                    return new Block(pos1, pos2, l);
+                                  });
       }
   }
 
@@ -3670,129 +3658,6 @@ dot         : "."
         sameLine(result ? line() : oldLine);
       }
 
-    return result;
-  }
-
-
-  /**
-   * Parse "(" if it is found
-   *
-   * @return true iff a "(" was found and skipped.
-   */
-  boolean skipLParen()
-  {
-    return skip(Token.t_lparen);
-  }
-
-
-  /**
-   * Parse given token and skip it. if it was found.
-   *
-   * @param t a token.
-   *
-   * @return true iff the current token was t and was skipped, otherwise no
-   * change is made.
-   */
-  boolean skip(Token t)
-  {
-    boolean result = false;
-    if (current() == t)
-      {
-        next();
-        result = true;
-      }
-    return result;
-  }
-
-
-  /**
-   * Parse given token and skip it. if it was found.
-   *
-   * @param t a token.
-   *
-   * @return true iff the current token was t and was skipped, otherwise no
-   * change is made.
-   */
-  boolean skip(boolean atMinIndent, Token t)
-  {
-    boolean result = false;
-    if (current(atMinIndent) == t)
-      {
-        next();
-        result = true;
-      }
-    return result;
-  }
-
-
-  /**
-   * Parse singe-char t_op.
-   *
-   * @param op the single-char operator
-   *
-   * @return true iff an t_op op was found and skipped.
-   */
-  boolean skip(char op)
-  {
-    boolean result = false;
-    if (isOperator(op))
-      {
-        next();
-        result = true;
-      }
-    return result;
-  }
-
-
-  /**
-   * Parse specific t_op.
-   *
-   * @param op the operator
-   *
-   * @return true iff an t_op op was found and skipped.
-   */
-  boolean skip(String op)
-  {
-    boolean result = false;
-    if (isOperator(op))
-      {
-        next();
-        result = true;
-      }
-    return result;
-  }
-
-
-  /**
-   * Parse specific t_op after splitting it off from the current op.
-   *
-   * @param op the operator
-   *
-   * @return true iff an t_op op was found and skipped.
-   */
-  boolean splitSkip(String op)
-  {
-    boolean result = false;
-    splitOperator(op);
-    if (isOperator(op))
-      {
-        next();
-        result = true;
-      }
-    return result;
-  }
-
-
-  /**
-   * Return the details of the numeric literal of the current t_numliteral token.
-   */
-  Literal skipNumLiteral()
-  {
-    if (PRECONDITIONS) require
-      (current() == Token.t_numliteral);
-
-    var result = curLiteral();
-    next();
     return result;
   }
 
