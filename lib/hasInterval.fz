@@ -71,7 +71,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
     contains (e T) => lower <= e <= upper
 
 
-    # Create a Sequence that is steping through this interval skipping values. For a
+    # Create a Sequence that is stepping through this interval skipping values. For a
     # non-negative step parameter, the stream will return lower, lower+step,
     # lower+2*step, etc. as long as these values are <= upper.
     #
