@@ -279,15 +279,15 @@ public abstract class Expr extends ANY implements Stmnt
    * Check if this value might need boxing, unboxing or tagging and wrap this
    * into Box()/Tag() if this is the case.
    *
-   * @param s the target statment this expression is used by.
-   *
-   * @param arg in case s is a call, the index of the actual argument this
-   * expression is assigned to.
+   * @param frmlT the formal type this value is assigned to
    *
    * @return this or an instance of Box wrapping this.
    */
   Expr box(AbstractType frmlT)
   {
+    if (PRECONDITIONS) require
+      (frmlT != null);
+
     var result = this;
     var t = type();
 

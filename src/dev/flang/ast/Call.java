@@ -955,6 +955,8 @@ public class Call extends AbstractCall
 
         if (argnum < resolvedFormalArgumentTypes.length)
           {
+            check
+              (frmlT != null);
             resolvedFormalArgumentTypes[argnum] = frmlT;
           }
       }
@@ -1006,6 +1008,8 @@ public class Call extends AbstractCall
                 frmlT = targetTypeOrConstraint(res).actualType(frmlT);
                 frmlT = frmlT.actualType(calledFeature_, generics);
                 frmlT = Types.intern(frmlT);
+                check
+                  (frmlT != null);
                 resolvedFormalArgumentTypes[argnum + i] = frmlT;
               }
           }
@@ -1039,6 +1043,8 @@ public class Call extends AbstractCall
       }
     for (int i = 0; i < a.length; i++)
       {
+        check
+          (a[i] != null);
         resolvedFormalArgumentTypes[argnum + i] = a[i];
       }
   }
@@ -1054,6 +1060,7 @@ public class Call extends AbstractCall
     var fargs = calledFeature_.arguments();
     resolvedFormalArgumentTypes = fargs.size() == 0 ? Type.NO_TYPES
                                                     : new AbstractType[fargs.size()];
+    Arrays.fill(resolvedFormalArgumentTypes, Types.t_ERROR);
     int count = 0;
     for (var frml : fargs)
       {
@@ -1409,6 +1416,9 @@ public class Call extends AbstractCall
               {
                 Expr actl = i.next();
                 var frmlT = resolvedFormalArgumentTypes[count];
+                check
+                  (frmlT != null,
+                   frmlT != Types.t_ERROR || Errors.count() > 0);
                 i.set(actl.propagateExpectedType(res, outer, frmlT));
                 count++;
               }
@@ -1441,7 +1451,11 @@ public class Call extends AbstractCall
             while (i.hasNext())
               {
                 Expr actl = i.next();
-                i.set(actl.box(resolvedFormalArgumentTypes[count]));
+                var rft = resolvedFormalArgumentTypes[count];
+                check
+                  (rft != null,
+                   rft != Types.t_ERROR || Errors.count() > 0);
+                i.set(actl.box(rft));
                 count++;
               }
           }
