@@ -134,7 +134,7 @@ public class SourcePosition extends ANY implements Comparable<SourcePosition>, H
 
     this._sourceFile = sourceFile;
     this._line = sourceFile.lineNum(bytePos);
-    this._column = bytePos - sourceFile.lineStartPos(_line);
+    this._column = bytePos - sourceFile.lineStartPos(_line) + 1;
   }
 
 
