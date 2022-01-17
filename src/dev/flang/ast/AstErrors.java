@@ -136,9 +136,13 @@ public class AstErrors extends ANY
   {
     return type(l.toString());
   }
-  static String sn(List<String> names)
+  static String sn(List<String> names) // names as list "a, b, c"
   {
     return ss(names.toString());
+  }
+  static String sqn(List<String> names) // names as qualified name "a.b.c"
+  {
+    return ss(names.toString("", ".", ""));
   }
   static String code(String s) { return "'" + Terminal.PURPLE + s + Terminal.REGULAR_COLOR + "'"; }
   static String type(String s) { return "'" + Terminal.YELLOW + s + Terminal.REGULAR_COLOR + "'"; }
@@ -969,7 +973,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Feature is declared in wrong environment",
-          "Feature " + sn(qname) + " is declared in wrong environment " + s(outer));
+          "Feature " + sqn(qname) + " is declared in wrong environment " + s(outer));
   }
 
   static void repeatedInheritanceOfChoice(SourcePosition pos, SourcePosition lastP)
