@@ -1004,6 +1004,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     AbstractFeature result = null;
     var type_fs = new List<AbstractFeature>();
     var nontype_fs = new List<AbstractFeature>();
+    var orig_o = o;
     do
       {
         var fs = lookupFeatures(o, name).values();
@@ -1033,7 +1034,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         result = Types.f_ERROR;
         if (name != Types.ERROR_NAME)
           {
-            AstErrors.typeNotFound(pos, name, outerfeat, nontype_fs);
+            AstErrors.typeNotFound(pos, name, orig_o, outerfeat, nontype_fs);
           }
       }
     return result;

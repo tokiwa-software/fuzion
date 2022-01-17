@@ -756,6 +756,7 @@ public class AstErrors extends ANY
 
   public static void typeNotFound(SourcePosition pos,
                                   String t,
+                                  AbstractFeature outer,
                                   AbstractFeature outerfeat,
                                   List<AbstractFeature> nontypes_found)
   {
@@ -771,6 +772,7 @@ public class AstErrors extends ANY
           "Type not found",
           "Type " + st(t) + " was not found, no corresponding feature nor formal generic argument exists\n" +
           "Type that was not found: " + st(t) + "\n" +
+          "in feature: " + s(outer) + "\n" +
           "within feature: " + s(outerfeat) + "\n" +
           (n == 0 ? "" :
            "However, " + singularOrPlural(n, "feature") + " " +
