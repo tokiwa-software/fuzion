@@ -2051,7 +2051,7 @@ Case
 
 --asciidoc--
 
-Case
+Tag
 ^^^^
 
 [options="header",cols="1,1,2,5"]
