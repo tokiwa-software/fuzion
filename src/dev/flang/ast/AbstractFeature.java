@@ -145,6 +145,23 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * get a reference to the outermost feature.
+   */
+  public AbstractFeature universe()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(Feature.State.LOADED));
+
+    AbstractFeature r = this;
+    while (!r.isUniverse())
+      {
+        r = r.outer();
+      }
+    return r;
+  }
+
+
+  /**
    * is this the outermost feature?
    */
   public boolean isUniverse()

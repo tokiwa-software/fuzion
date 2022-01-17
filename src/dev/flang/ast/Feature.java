@@ -776,23 +776,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * get a reference to the outermost feature.
-   */
-  public AbstractFeature universe()
-  {
-    if (PRECONDITIONS) require
-      (state().atLeast(State.LOADED));
-
-    AbstractFeature r = this;
-    while (!r.isUniverse())
-      {
-        r = r.outer();
-      }
-    return r;
-  }
-
-
-  /**
    * What is this Feature's kind?
    *
    * @return Routine, Field, Intrinsic, Abstract or Choice.
