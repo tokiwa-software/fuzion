@@ -438,10 +438,10 @@ public class LibraryFeature extends AbstractFeature
         else
           {
             var tai = _libModule.featureTypeArgsPos(_index);
-            var list = new List<Generic>();
             var n = _libModule.typeArgsCount(tai);
             if (n > 0)
               {
+                var list = new List<Generic>();
                 var isOpen = _libModule.typeArgsOpen(tai);
                 var tali = _libModule.typeArgsListPos(tai);
                 var i = 0;
