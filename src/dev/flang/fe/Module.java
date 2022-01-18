@@ -211,7 +211,7 @@ public abstract class Module extends ANY
                   }
               }
           }
-        d._declaredOrInheritedFeatures= s;
+        d._declaredOrInheritedFeatures = s;
       }
     return s;
   }
