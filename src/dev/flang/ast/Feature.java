@@ -1228,7 +1228,8 @@ public class Feature extends AbstractFeature implements Stmnt
     public void         action(Assign       a, AbstractFeature outer) {        a.resolveTypes(res, outer); }
     public Call         action(Call         c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
     public Stmnt        action(Destructure  d, AbstractFeature outer) { return d.resolveTypes(res, outer); }
-    public Stmnt        action(Feature      f, AbstractFeature outer) { return f.resolveTypes(res, outer); }
+    public Stmnt        action(Feature      f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
+                                                                        return f.resolveTypes(res, f.outer() ); }
     public Function     action(Function     f, AbstractFeature outer) {        f.resolveTypes(res, outer); return f; }
     public void         action(Generic      g, AbstractFeature outer) {        g.resolveTypes(res, outer); }
     public void         action(Match        m, AbstractFeature outer) {        m.resolveTypes(res, outer); }
@@ -1800,26 +1801,6 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public Stmnt visit(FeatureVisitor v, AbstractFeature outer)
   {
-    /**
-     * Tricky: If this is a feature declared with a qualified name such as
-     * g.if in the following code
-     *
-     *   g is
-     *     h is
-     *       g.f is say "g.f"
-     *
-     * then outer is 'h', but this.outer() is the actual qualified outer feature
-     * 'g'. So we continue with 'g' in this case:
-     *
-     * NYI: Need to check for which FeatureVisitors this special handling is
-     * actually needed and what it does. We might move this action to setOuter()
-     * or perform it right after setting the state to LOADED.
-     */
-    var to = this._state.atLeast(State.LOADED) ? this.outer() : outer;
-
-    check
-      (to == outer || this._qname.size() > 1);
-
     // impl.initialValue is code executed by outer, not by this. So we visit it
     // here, while impl.code is visited when impl.visit is called with this as
     // outer argument.
@@ -1829,9 +1810,9 @@ public class Feature extends AbstractFeature implements Stmnt
          * RESOLVING_TYPES phase: */
         !outer.state().atLeast(State.RESOLVING_SUGAR1))
       {
-        _impl._initialValue = _impl._initialValue.visit(v, to);
+        _impl._initialValue = _impl._initialValue.visit(v, outer);
       }
-    return v.action(this, to);
+    return v.action(this, outer);
   }
 
 
