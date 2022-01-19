@@ -190,6 +190,22 @@ public abstract class Module extends ANY
               {
                 s = new TreeMap<>();
               }
+            for (var e : declaredFeaturesOrNull(outer).entrySet())
+              {
+                if (e.getValue() instanceof Feature f)
+                  { // f is a qualified feature that was added as source code
+                    var fn = f.featureName();
+                    var existing = s.get(fn);
+                    if (existing != null)
+                      {
+                        AstErrors.duplicateFeatureDeclaration(f.pos(), outer, s.get(fn));
+                      }
+                    else
+                      {
+                        s.put(f.featureName(), f);
+                      }
+                  }
+              }
           }
         else if (outer.isUniverse())
           {

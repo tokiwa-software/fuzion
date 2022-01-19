@@ -151,7 +151,8 @@ public class Assign extends ANY implements Stmnt
   public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, AbstractFeature outer)
   {
     if (PRECONDITIONS) require
-      (outer.state() == Feature.State.RESOLVING_TYPES   ||
+      (Errors.count() > 0 ||
+       outer.state() == Feature.State.RESOLVING_TYPES   ||
        outer.state() == Feature.State.RESOLVED_TYPES    ||
        outer.state() == Feature.State.TYPES_INFERENCING ||
        outer.state() == Feature.State.RESOLVING_SUGAR2);

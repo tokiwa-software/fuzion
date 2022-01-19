@@ -667,6 +667,18 @@ public class AstErrors extends ANY
           "To solve this, consider renaming one of these two features or changing its number of arguments");
   }
 
+  public static void qualifiedDeclarationNotAllowedForField(Feature f)
+  {
+    var q = f._qname;
+    var o = new List<>(q.subList(0, f._qname.size()-1).iterator());
+    error(f.pos(),
+          "Qualified declaration not allowed for field",
+          "All fields have to be declared textually within the source of their outer features.\n" +
+          "Field declared: " + sqn(q) + "\n" +
+          "To fix this, you could move the declaration into the implementation of feature " + sqn(o) +
+          ".  Alternatively, you can declare a routine instead. ");
+  }
+
   static void cannotRedefine(SourcePosition pos, AbstractFeature f, AbstractFeature existing, String msg, String solution)
   {
     error(pos,
@@ -969,13 +981,6 @@ public class AstErrors extends ANY
           "with argument count of the lambda expression equal to the number of generic parameters of the type.  The type of the\n" +
           "assigned field must be given explicitly.\n" +
           "To solve this, declare an explicit type for the target field, e.g., " + ss("f (i32, i32) -> bool := x, y -> x > y") + ".");
-  }
-
-  static void declaredInWrongEnv(SourcePosition pos, List<String> qname, AbstractFeature outer)
-  {
-    error(pos,
-          "Feature is declared in wrong environment",
-          "Feature " + sqn(qname) + " is declared in wrong environment " + s(outer));
   }
 
   static void repeatedInheritanceOfChoice(SourcePosition pos, SourcePosition lastP)

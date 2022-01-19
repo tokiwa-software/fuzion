@@ -165,7 +165,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * usually has just one entry equal to name. If it has several entries, this
    * gives the fully qualified name of this feature.
    */
-  private List<String> _qname;
+  public final List<String> _qname;
 
 
   /**
@@ -260,6 +260,13 @@ public class Feature extends AbstractFeature implements Stmnt
    * result type during resolveTypes.
    */
   private AbstractType resultType_ = null;
+
+
+  /**
+   * Actions collectected to be executed as soon as this feature has reached
+   * State.RESOLVED_DECLARATIONS, see method whenResolvedDeclarations().
+   */
+  private List<Runnable> whenResolvedDeclarations = new List<>();
 
 
   /**
@@ -692,41 +699,12 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * Compare the fully qualified name of feature t (not of 'this'!) with the
-   * names provided by the iterator, i.e., return true iff it returns "fuzion",
-   * "std", "out", etc. and this feature is fuzion.std.out.
-   *
-   * @param t the feature to check.
-   *
-   * @param it an iterator producing the elements of a fully qualified name
-   *
-   * @return true if this features's fully qualified names is a prefix of the
-   * names produced by it.
-   */
-  private boolean checkNames(AbstractFeature t, Iterator<String> it)
-  {
-    return
-      t.isUniverse() ||
-      checkNames(t.outer(), it) &&
-      it.hasNext() &&
-      it.next().equals(t.featureName().baseName());
-  }
-
-
-  /**
-   * Check that the fully qualified name matches the _outer feature(s) using
-   * checkNames(). If not, show a corresponding error.
+   * Check for possible errors related to the feature name. Currenlty, this only
+   * checks that no feature uses FuzionConstants.RESULT_NAME as its base name
+   * since this is reserved for the implicit result field.
    */
   public void checkName()
   {
-    if (_qname.size() > 1)
-      {
-        Iterator<String> it = _qname.iterator();
-        if (!checkNames(this, it) || it.hasNext())
-          {
-            AstErrors.declaredInWrongEnv(_pos, _qname, _outer);
-          }
-      }
     if (!isResultField() && _qname.getLast().equals(FuzionConstants.RESULT_NAME))
       {
         AstErrors.declarationOfResultFeature(_pos);
@@ -1207,11 +1185,36 @@ public class Feature extends AbstractFeature implements Stmnt
           }
 
         _state = State.RESOLVED_DECLARATIONS;
+        while (!whenResolvedDeclarations.isEmpty())
+          {
+            whenResolvedDeclarations.removeFirst().run();
+          }
         res.scheduleForTypeResolution(this);
       }
 
     if (POSTCONDITIONS) ensure
       (_state.atLeast(State.RESOLVED_DECLARATIONS));
+  }
+
+
+  /**
+   * Perform an action as soon as this feature has reached
+   * State.atLeast(State.RESOLVED_DECLARATIONS).  Perform the action immediately
+   * if this is already the case, otherwise record the action to perform it as
+   * soon as this is the case.
+   *
+   * @param r the action
+   */
+  public void whenResolvedDeclarations(Runnable r)
+  {
+    if (_state.atLeast(State.RESOLVED_DECLARATIONS))
+      {
+        r.run();
+      }
+    else
+      {
+        whenResolvedDeclarations.add(r);
+      }
   }
 
 
@@ -1797,8 +1800,25 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public Stmnt visit(FeatureVisitor v, AbstractFeature outer)
   {
+    /**
+     * Tricky: If this is a feature declared with a qualified name such as
+     * g.if in the following code
+     *
+     *   g is
+     *     h is
+     *       g.f is say "g.f"
+     *
+     * then outer is 'h', but this.outer() is the actual qualified outer feature
+     * 'g'. So we continue with 'g' in this case:
+     *
+     * NYI: Need to check for which FeatureVisitors this special handling is
+     * actually needed and what it does. We might move this action to setOuter()
+     * or perform it right after setting the state to LOADED.
+     */
+    var to = this._state.atLeast(State.LOADED) ? this.outer() : outer;
+
     check
-      (!this._state.atLeast(State.LOADED) || this.outer() == outer);
+      (to == outer || this._qname.size() > 1);
 
     // impl.initialValue is code executed by outer, not by this. So we visit it
     // here, while impl.code is visited when impl.visit is called with this as
@@ -1809,9 +1829,9 @@ public class Feature extends AbstractFeature implements Stmnt
          * RESOLVING_TYPES phase: */
         !outer.state().atLeast(State.RESOLVING_SUGAR1))
       {
-        _impl._initialValue = _impl._initialValue.visit(v, outer);
+        _impl._initialValue = _impl._initialValue.visit(v, to);
       }
-    return v.action(this, outer);
+    return v.action(this, to);
   }
 
 

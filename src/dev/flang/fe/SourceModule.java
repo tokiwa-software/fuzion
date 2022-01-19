@@ -384,7 +384,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
                                      for (var inner : parseAndGetFeatures(p))
                                        {
                                          findDeclarations(inner, f);
-                                         inner.scheduleForResolution(_res);
+                                         if (inner.state().atLeast(Feature.State.LOADED))
+                                           {
+                                             inner.scheduleForResolution(_res);
+                                           }
                                        }
                                    }
                                });
@@ -420,10 +423,101 @@ public class SourceModule extends Module implements SrcModule, MirModule
        ((outer == null) == (inner.featureName().baseName().equals(FuzionConstants.UNIVERSE_NAME))),
        !inner.outerSet());
 
+    if (inner._qname.size() > 1)
+      {
+        setOuterAndAddInnerForQualified(inner, outer);
+      }
+    else
+      {
+        setOuterAndAddInner(inner, outer);
+      }
+  }
+
+
+  /**
+   * For a feature declared with a qualified name, find the actual outer
+   * feature, which might be different to the surrounding outer feature.
+   *
+   * Then, call setOUterAndAddInner with the outer that was found.  This call
+   * might be delayed until outer's declarations have been resolved, i.e., after
+   * the return of this call.
+   *
+   * @param inner the feature declared with qualified name.
+   *
+   * @param outer the surrounding feature
+   */
+  void setOuterAndAddInnerForQualified(Feature inner, AbstractFeature outer)
+  {
+    if (PRECONDITIONS) require
+      (inner._qname.size() > 1);
+
+    if (inner.isField())
+      {
+        AstErrors.qualifiedDeclarationNotAllowedForField(inner);
+      }
+
+    // q is something like 'a.b.c.d', so first find 'a'
+    var result = outer.findOuter(inner._qname.get(0));
+
+    // now result is 'a' or '#universe', so we iterate 'b.c' or 'a.b.c' to
+    // find 'c'
+    var at = result.isUniverse() ? 0 : 1;
+    setOuterAndAddInnerForQualifiedRec(inner, result, outer, at);
+  }
+
+
+  /**
+   * Helper for setOuterAndAddInnerForQualifiedRec() above to iterate over outer features except the
+   * outermost feature.
+   *
+   * This might register a callback in case the outer did not go through
+   * findDeclarations yet. This might happen repeatedly for a chain of outer features.
+   *
+   * @param inner the feature declared with qualified name.
+   *
+   * @param outer the surrounding feature
+   */
+  void setOuterAndAddInnerForQualifiedRec(Feature inner, AbstractFeature result, AbstractFeature outer, int at)
+  {
+    var q = inner._qname;
+    while (at < q.size()-1 && result != Types.f_ERROR && result != null)
+      {
+        if ((result instanceof Feature rf) && !rf.state().atLeast(Feature.State.RESOLVED_DECLARATIONS) && !rf.isUniverse())
+          {
+            var fresult = result;
+            var fat = at;
+            rf.whenResolvedDeclarations(() -> setOuterAndAddInnerForQualifiedRec(inner, fresult, outer, fat));
+            result = null;
+          }
+        else
+          {
+            result = lookupFeatureForType(inner.pos(), q.get(at), result, outer);
+            at++;
+          }
+      }
+    if (result != null)
+      {
+        setOuterAndAddInner(inner, result);
+      }
+  }
+
+
+  /**
+   * set inner's outer feature, find its declared inner features and, recursively, do the
+   * same for these inner features.
+   *
+   * @param inner the inner feature that has been loaded and found to be inner of outer.
+   *
+   * @param outer inner's outer feature.
+   */
+  void setOuterAndAddInner(Feature inner, AbstractFeature outer)
+  {
+    if (PRECONDITIONS) require
+      (inner.isUniverse() || inner.state() == Feature.State.LOADING,
+       inner.isUniverse() == (outer == null));
+
     inner.setOuter(outer);
-
     inner.setState(Feature.State.FINDING_DECLARATIONS);
-
     inner.checkName();
 
     if (outer != null)
@@ -553,19 +647,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer)
   {
-    var d = data(outer);
-    if (d != null)
-      {
-        if (outer.isUniverse())
-          {
-            return declaredFeaturesOrNull(outer);
-          }
-        else
-          {
-            return d._declaredOrInheritedFeatures;
-          }
-      }
-    return null;
+    return outer.isUniverse()
+      ? declaredFeaturesOrNull(outer)
+      : data(outer)._declaredOrInheritedFeatures;
   }
 
 
@@ -580,9 +664,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (PRECONDITIONS) require
       (outer.state() == Feature.State.RESOLVING_DECLARATIONS);
 
-    if (data(outer)._declaredOrInheritedFeatures == null)
+    var d = data(outer);
+    if (d._declaredOrInheritedFeatures == null)
       {
-        data(outer)._declaredOrInheritedFeatures = new TreeMap<>();
+        d._declaredOrInheritedFeatures = new TreeMap<>();
       }
     findInheritedFeatures(outer);
     loadInnerFeatures(outer);
