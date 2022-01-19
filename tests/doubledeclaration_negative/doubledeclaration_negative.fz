@@ -27,3 +27,4 @@ doubledeclaration_negative is
 
   cyclic1 is
    a := 3
+   b => 33
