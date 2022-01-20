@@ -245,7 +245,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                            (name, ref) -> new NormalType(stdlib,
                                                          -1,
                                                          SourcePosition.builtIn,
-                                                         lookupFeatureForType(SourcePosition.builtIn, name, _universe, _universe),
+                                                         lookupFeatureForType(SourcePosition.builtIn, name, _universe),
                                                          ref ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature,
                                                          Type.NONE,
                                                          _universe.thisType()),
@@ -456,7 +456,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         AstErrors.qualifiedDeclarationNotAllowedForField(inner);
       }
 
-    setOuterAndAddInnerForQualifiedRec(inner, 0, outer, outer);
+    setOuterAndAddInnerForQualifiedRec(inner, 0, outer);
   }
 
 
@@ -472,19 +472,17 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * @param outer the outer we search the current qualified name in
    *
    * @param at current index in inner._qname
-   *
-   * @param outerfeat the surrounding feature
    */
-  private void setOuterAndAddInnerForQualifiedRec(Feature inner, int at, AbstractFeature outer, AbstractFeature outerfeat)
+  private void setOuterAndAddInnerForQualifiedRec(Feature inner, int at, AbstractFeature outer)
   {
     outer.whenResolvedDeclarations
       (() ->
        {
          var q = inner._qname;
-         var o = lookupFeatureForType(inner.pos(), q.get(at), outer, outerfeat);
+         var o = lookupFeatureForType(inner.pos(), q.get(at), outer);
          if (at < q.size()-2)
            {
-             setOuterAndAddInnerForQualifiedRec(inner, at+1, o, outerfeat);
+             setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
            }
          else
            {
@@ -1075,10 +1073,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * @param name the name of the type
    *
    * @param o the outer feature of the type
-   *
-   * @param outerfeat the outer feature that contains (uses) the type.
    */
-  public AbstractFeature lookupFeatureForType(SourcePosition pos, String name, AbstractFeature o, AbstractFeature outerfeat)
+  public AbstractFeature lookupFeatureForType(SourcePosition pos, String name, AbstractFeature o)
   {
     AbstractFeature result = null;
     var type_fs = new List<AbstractFeature>();
@@ -1113,7 +1109,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         result = Types.f_ERROR;
         if (name != Types.ERROR_NAME)
           {
-            AstErrors.typeNotFound(pos, name, orig_o, outerfeat, nontype_fs);
+            AstErrors.typeNotFound(pos, name, orig_o, nontype_fs);
           }
       }
     return result;
