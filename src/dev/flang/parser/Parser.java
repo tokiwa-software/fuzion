@@ -1374,10 +1374,11 @@ actualArgs  : actualsList               // must be in same line as name of calle
   boolean endsActuals(Indentation in)
   {
     return
-      (in != null) ? currentAtMinIndent() == Token.t_indentationLimit ||
-                     endsActuals(currentNoLimit()) ||
-                     !in.ok()
-                   : endsActuals(current());
+      isOperator('.') ||
+      ((in != null) ? currentAtMinIndent() == Token.t_indentationLimit ||
+                      endsActuals(currentNoLimit()) ||
+                      !in.ok()
+                    : endsActuals(current()));
   }
 
 
