@@ -171,24 +171,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * Find outer feature whose base name equals name.
-   *
-   * @param name the name of an outer feature we are looking for
-   *
-   * @return the innermost Feature for which base name equals name. Universe if
-   * none found.
-   */
-  public AbstractFeature findOuter(String name)
-  {
-    if (PRECONDITIONS) require
-      (isUniverse() || state().atLeast(Feature.State.FINDING_DECLARATIONS));
-
-    return isUniverse() || name.equals(featureName().baseName()) ? this
-                                                                 : outer().findOuter(name);
-  }
-
-
-  /**
    * qualifiedName returns the qualified name of this feature
    *
    * @return the qualified name, e.g. "fuzion.std.out.println"
@@ -236,6 +218,21 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   Feature.State state()
   {
     return Feature.State.RESOLVED;
+  }
+
+
+
+  /**
+   * Perform an action as soon as this feature has reached
+   * State.atLeast(State.RESOLVED_DECLARATIONS).  Perform the action immediately
+   * if this is already the case, otherwise record the action to perform it as
+   * soon as this is the case.
+   *
+   * @param r the action
+   */
+  public void whenResolvedDeclarations(Runnable r)
+  {
+    r.run();
   }
 
 

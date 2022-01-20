@@ -456,13 +456,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         AstErrors.qualifiedDeclarationNotAllowedForField(inner);
       }
 
-    // q is something like 'a.b.c.d', so first find 'a'
-    var result = outer.findOuter(inner._qname.get(0));
-
-    // now result is 'a' or '#universe', so we iterate 'b.c' or 'a.b.c' to
-    // find 'c'
-    var at = result.isUniverse() ? 0 : 1;
-    setOuterAndAddInnerForQualifiedRec(inner, result, outer, at);
+    setOuterAndAddInnerForQualifiedRec(inner, 0, outer, outer);
   }
 
 
@@ -475,30 +469,41 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param inner the feature declared with qualified name.
    *
-   * @param outer the surrounding feature
+   * @param outer the outer we search the current qualified name in
+   *
+   * @param at current index in inner._qname
+   *
+   * @param outerfeat the surrounding feature
    */
-  void setOuterAndAddInnerForQualifiedRec(Feature inner, AbstractFeature result, AbstractFeature outer, int at)
+  private void setOuterAndAddInnerForQualifiedRec(Feature inner, int at, AbstractFeature outer, AbstractFeature outerfeat)
   {
-    var q = inner._qname;
-    while (at < q.size()-1 && result != Types.f_ERROR && result != null)
-      {
-        if ((result instanceof Feature rf) && !rf.state().atLeast(Feature.State.RESOLVED_DECLARATIONS) && !rf.isUniverse())
-          {
-            var fresult = result;
-            var fat = at;
-            rf.whenResolvedDeclarations(() -> setOuterAndAddInnerForQualifiedRec(inner, fresult, outer, fat));
-            result = null;
-          }
-        else
-          {
-            result = lookupFeatureForType(inner.pos(), q.get(at), result, outer);
-            at++;
-          }
-      }
-    if (result != null)
-      {
-        setOuterAndAddInner(inner, result);
-      }
+    outer.whenResolvedDeclarations
+      (() ->
+       {
+         var i = inner;
+         var o = outer;
+         var a = at;
+         var q = i._qname;
+         while (a < q.size()-1 && o != null)
+           {
+             if ((o instanceof Feature of) && !of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS) && !of.isUniverse())
+               {
+                 setOuterAndAddInnerForQualifiedRec(i, a, o, outerfeat);
+                 o = null;
+               }
+             else
+               {
+                 o = lookupFeatureForType(i.pos(), q.get(a), o, outerfeat);
+                 a++;
+               }
+           }
+         if (o != null)
+           {
+             setOuterAndAddInner(i, o);
+             _res.resolveDeclarations(o);
+             i.scheduleForResolution(_res);
+           }
+       });
   }
 
 
