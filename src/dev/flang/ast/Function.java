@@ -555,7 +555,7 @@ public class Function extends Expr
                      : new Type("unit"));
         for (var a : f.arguments())
           {
-            ((Feature) a).resolveTypes(res); // NYI: Cast!
+            a.resolveTypes(res);
             generics.add(a.resultType());
           }
       }
