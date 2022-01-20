@@ -480,28 +480,17 @@ public class SourceModule extends Module implements SrcModule, MirModule
     outer.whenResolvedDeclarations
       (() ->
        {
-         var i = inner;
-         var o = outer;
-         var a = at;
-         var q = i._qname;
-         while (a < q.size()-1 && o != null)
+         var q = inner._qname;
+         var o = lookupFeatureForType(inner.pos(), q.get(at), outer, outerfeat);
+         if (at < q.size()-2)
            {
-             if ((o instanceof Feature of) && !of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS) && !of.isUniverse())
-               {
-                 setOuterAndAddInnerForQualifiedRec(i, a, o, outerfeat);
-                 o = null;
-               }
-             else
-               {
-                 o = lookupFeatureForType(i.pos(), q.get(a), o, outerfeat);
-                 a++;
-               }
+             setOuterAndAddInnerForQualifiedRec(inner, at+1, o, outerfeat);
            }
-         if (o != null)
+         else
            {
-             setOuterAndAddInner(i, o);
+             setOuterAndAddInner(inner, o);
              _res.resolveDeclarations(o);
-             i.scheduleForResolution(_res);
+             inner.scheduleForResolution(_res);
            }
        });
   }
