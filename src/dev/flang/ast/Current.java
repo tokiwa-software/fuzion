@@ -61,6 +61,8 @@ public class Current extends AbstractCurrent
    */
   public Current(SourcePosition pos, AbstractType t)
   {
+    super(t);
+
     if (PRECONDITIONS) require
       (pos != null,
        t != null);
