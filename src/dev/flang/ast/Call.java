@@ -81,6 +81,12 @@ public class Call extends AbstractCall
 
 
   /**
+   * The soucecode position of this expression, used for error messages.
+   */
+  private final SourcePosition _pos;
+
+
+  /**
    * name of called feature, set by parser
    */
   public String name;
@@ -241,7 +247,7 @@ public class Call extends AbstractCall
   public Call(SourcePosition pos,
               Expr t, String n, List<AbstractType> g, List<Expr> a)
   {
-    super(pos);
+    this._pos = pos;
     this.target = t;
     this.name = n;
     this._select = -1;
@@ -297,7 +303,7 @@ public class Call extends AbstractCall
   public Call(SourcePosition pos,
               Expr t, String n, String select)
   {
-    super(pos);
+    this._pos = pos;
     this.target = t;
     this.name = n;
     int s = -1;
@@ -330,7 +336,7 @@ public class Call extends AbstractCall
    */
   public Call(SourcePosition pos, Expr t, String n, int select)
   {
-    super(pos);
+    this._pos = pos;
     this.target = t;
     this.name = n;
     this._select = select;
@@ -352,7 +358,7 @@ public class Call extends AbstractCall
    */
   public Call(SourcePosition pos, Expr t, AbstractFeature calledFeature, int select)
   {
-    super(pos);
+    this._pos = pos;
     this.name = calledFeature.featureName().baseName();
     this._select = select;
     this.generics = NO_GENERICS;
@@ -391,7 +397,7 @@ public class Call extends AbstractCall
               Expr    target,
               AbstractFeature anonymous)
   {
-    super(pos);
+    this._pos = pos;
     this.target         = target;
     this.name           = null;
     this._select        = -1;
@@ -421,7 +427,7 @@ public class Call extends AbstractCall
   public Call(SourcePosition pos,
               String name, List<AbstractType> generics, List<Expr> actuals, Expr target, AbstractFeature calledFeature, AbstractType type)
   {
-    super(pos);
+    this._pos = pos;
     this.name = name;
     this._select = -1;
     this.generics = generics;
@@ -433,6 +439,15 @@ public class Call extends AbstractCall
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * The soucecode position of this expression, used for error messages.
+   */
+  public SourcePosition pos()
+  {
+    return _pos;
+  }
 
 
   /**

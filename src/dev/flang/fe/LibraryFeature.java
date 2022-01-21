@@ -691,7 +691,7 @@ public class LibraryFeature extends AbstractFeature
             }
           case Call:
             {
-              x = new LibraryCall(_libModule, iat, s, SourcePosition.notAvailable)
+              x = new LibraryCall(_libModule, iat, s)
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
               break;
             }

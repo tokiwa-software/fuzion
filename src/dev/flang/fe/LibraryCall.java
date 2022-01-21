@@ -81,9 +81,8 @@ public class LibraryCall extends AbstractCall
   /**
    * Create LibraryCall
    */
-  LibraryCall(LibraryModule lib, int index, Stack<Expr> s, SourcePosition pos)
+  LibraryCall(LibraryModule lib, int index, Stack<Expr> s)
   {
-    super(pos);
     _libModule = lib;
     _index = index;
     _type = lib.callType(index);
@@ -113,7 +112,7 @@ public class LibraryCall extends AbstractCall
     var f = lib.libraryFeature(feat);
     if (f.outer().isUniverse())
       {
-        target = new Universe(pos)
+        target = new Universe(SourcePosition.notAvailable)
           {
             public SourcePosition pos() { return pos(); }
           };

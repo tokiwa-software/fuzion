@@ -84,9 +84,8 @@ public abstract class AbstractCall extends Expr
    *
    * @param pos the sourcecode position, used for error messages.
    */
-  public AbstractCall(SourcePosition pos)
+  public AbstractCall()
   {
-    super(pos);
   }
 
 
