@@ -701,7 +701,7 @@ public class Clazzes extends ANY
         if (isUsed(a._assignedField, sClazz))
           {
             var vc = sClazz.asValue();
-            var fc = vc.lookup(a._assignedField, AbstractCall.NO_GENERICS, a.pos());
+            var fc = vc.lookup(a._assignedField, AbstractCall.NO_GENERICS, a);
             outerClazz.setRuntimeClazz(a.tid_ + 1, fc);
             propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz);
           }
@@ -742,7 +742,7 @@ public class Clazzes extends ANY
         outerClazz.setRuntimeClazz(b._valAndRefClazzId + 1, rc);
         if (vc != rc)
           {
-            rc.instantiated(b.pos());
+            rc.instantiated(b);
           }
       }
     else if (e instanceof Block b)
@@ -832,7 +832,7 @@ public class Clazzes extends ANY
                          innerClazz._isCalledDirectly = true;  // NYI: Check why this is needed
                          if (!c.isInheritanceCall())
                            {
-                             innerClazz.instantiated(c.pos());
+                             innerClazz.instantiated(c);
                            }
                          if (!ic && innerClazz.isCalled())
                            {
@@ -937,7 +937,7 @@ public class Clazzes extends ANY
       }
     outerClazz.setRuntimeClazz(t._valAndTaggedClazzId    , vc);
     outerClazz.setRuntimeClazz(t._valAndTaggedClazzId + 1, tc);
-    tc.instantiated(t.pos());
+    tc.instantiated(t);
   }
 
 
@@ -951,11 +951,11 @@ public class Clazzes extends ANY
       {
         i._arrayClazzId = getRuntimeClazzIds(2);
       }
-    Clazz sa = ac.lookup(Types.resolved.f_array_internalArray, AbstractCall.NO_GENERICS, i.pos()).resultClazz();
-    sa.instantiated(i.pos());
+    Clazz sa = ac.lookup(Types.resolved.f_array_internalArray, AbstractCall.NO_GENERICS, i).resultClazz();
+    sa.instantiated(i);
     outerClazz.setRuntimeClazz(i._arrayClazzId    , ac);
     outerClazz.setRuntimeClazz(i._arrayClazzId + 1, sa);
-    ac.instantiated(i.pos());
+    ac.instantiated(i);
     var ec = outerClazz.actualClazz(i.elementType());
     for (var e : i._elements)
       {
@@ -998,7 +998,7 @@ public class Clazzes extends ANY
             var inner = tclazz.lookup(c.calledFeature(),
                                       c.select(),
                                       outerClazz.actualGenerics(c.generics()),
-                                      c.pos(),
+                                      c,
                                       false);
             result = inner.resultClazz();
           }

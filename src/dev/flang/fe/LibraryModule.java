@@ -54,6 +54,7 @@ import dev.flang.mir.MIR;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
 import dev.flang.util.SourceDir;
@@ -375,7 +376,7 @@ public class LibraryModule extends Module
                   (cf != outer);
 
                 var newfn = cf.handDown(null /*this*/, f, fn, p, outer);
-                addInheritedFeature(set, outer, p.pos(), newfn, f);
+                addInheritedFeature(set, outer, p, newfn, f);
               }
           }
       }
@@ -397,7 +398,7 @@ public class LibraryModule extends Module
    *
    * @param f the feature to be added.
    */
-  private void addInheritedFeature(SortedMap<FeatureName, AbstractFeature> set, AbstractFeature outer, SourcePosition pos, FeatureName fn, AbstractFeature f)
+  private void addInheritedFeature(SortedMap<FeatureName, AbstractFeature> set, AbstractFeature outer, HasSourcePosition pos, FeatureName fn, AbstractFeature f)
   {
     var s = set;
     var existing = s == null ? null : s.get(fn);

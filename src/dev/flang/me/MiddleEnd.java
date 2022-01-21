@@ -287,7 +287,7 @@ public class MiddleEnd extends ANY
         public void action(AbstractCall c               ) { findUsedFeatures(c); }
         //        public Stmnt action(Feature f, AbstractFeature outer) { markUsed(res, pos);      return f; } // NYI: this seems wrong ("f." missing) or unnecessary
         public void action(AbstractMatch m              ) { findUsedFeatures(m);           }
-        public void action(Tag     t, AbstractFeature outer) { findUsedFeatures(t._taggedType, t.pos()); }
+        public void action(Tag     t, AbstractFeature outer) { findUsedFeatures(t._taggedType, t); }
       };
     f.visitCode(fv);
   }
@@ -321,13 +321,13 @@ public class MiddleEnd extends ANY
     var cf = c.calledFeature();
     if (cf != null)
       {
-        markUsed(cf, c.isDynamic(), c.pos());
+        markUsed(cf, c.isDynamic(), c);
         for (var t : c.generics())
           {
             if (!t.isGenericArgument())
               {
                 AbstractFeature f = t.featureOfType();
-                markUsed(f, t.pos());  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
+                markUsed(f, t);  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
               }
           }
       }
@@ -347,7 +347,7 @@ public class MiddleEnd extends ANY
 
     if (ct != null)
       {
-        markUsed(ct, m.pos());
+        markUsed(ct, m);
       }
   }
 

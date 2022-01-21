@@ -2016,7 +2016,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (isChoice() && !isChoiceOfOnlyRefs())
       {
         var f = feature();
-        result = lookup(f.choiceTag(), Call.NO_GENERICS, f.pos());
+        result = lookup(f.choiceTag(), Call.NO_GENERICS, f);
       }
     return result;
   }
