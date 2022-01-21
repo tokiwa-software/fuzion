@@ -630,7 +630,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var t = _libModule.constType(iat);
               var d = _libModule.constData(iat);
-              x = new Constant(SourcePosition.notAvailable)
+              x = new Constant()
                 {
                   public AbstractType typeOrNull() { return t; }
                   public byte[] data() { return d; }

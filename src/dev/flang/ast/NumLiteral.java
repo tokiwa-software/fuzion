@@ -38,7 +38,7 @@ import java.nio.ByteOrder;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class NumLiteral extends Constant
+public class NumLiteral extends SourceConstant
 {
 
 

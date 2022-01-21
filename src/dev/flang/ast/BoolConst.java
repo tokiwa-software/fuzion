@@ -34,7 +34,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class BoolConst extends Constant
+public class BoolConst extends SourceConstant
 {
 
 
