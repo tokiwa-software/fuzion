@@ -77,8 +77,8 @@ public class Case extends AbstractCase
   /**
    * code to be executed in case of a match
    */
-  public AbstractBlock _code;
-  public AbstractBlock code() { return _code; }
+  public Block _code;
+  public Block code() { return _code; }
 
 
   /**

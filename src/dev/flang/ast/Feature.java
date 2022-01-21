@@ -1976,14 +1976,14 @@ public class Feature extends AbstractFeature implements Stmnt
             }
           return d;
         }
-        public void actionBefore(AbstractBlock b, AbstractFeature outer)
+        public void actionBefore(Block b, AbstractFeature outer)
         {
           if (b._newScope)
             {
               stack.push(curres[0]);
             }
         }
-        public void  actionAfter(AbstractBlock b, AbstractFeature outer)
+        public void  actionAfter(Block b, AbstractFeature outer)
         {
           if (b._newScope)
             {
