@@ -34,6 +34,7 @@ import java.util.Set;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -83,8 +84,8 @@ public class Type extends AbstractType
   /**
    * The soucecode position of this type, used for error messages.
    */
-  public final SourcePosition pos;
-  public SourcePosition pos() { return pos; }
+  public final HasSourcePosition pos;
+  public SourcePosition pos() { return pos.pos(); }
 
 
   /**
@@ -187,7 +188,7 @@ public class Type extends AbstractType
    *
    * @param o
    */
-  public Type(SourcePosition pos, String n, List<AbstractType> g, Type o)
+  public Type(HasSourcePosition pos, String n, List<AbstractType> g, Type o)
   {
     this(pos, n,g,o,null, RefOrVal.LikeUnderlyingFeature);
   }
@@ -205,7 +206,7 @@ public class Type extends AbstractType
    */
   public Type(Type t, List<AbstractType> g, AbstractType o)
   {
-    this(t.pos(), t.name, g, o, t.feature, t._refOrVal);
+    this((HasSourcePosition) t, t.name, g, o, t.feature, t._refOrVal);
 
     if (PRECONDITIONS) require
       ( (t.generics() instanceof FormalGenerics.AsActuals) || t.generics().size() == g.size(),
@@ -228,7 +229,7 @@ public class Type extends AbstractType
    */
   public Type(AbstractType t, List<AbstractType> g, AbstractType o)
   {
-    this(t.pos(), t.featureOfType().featureName().baseName(), g, o, t.featureOfType(),
+    this((HasSourcePosition) t, t.featureOfType().featureName().baseName(), g, o, t.featureOfType(),
          t.isRef() == t.featureOfType().isThisRef() ? RefOrVal.LikeUnderlyingFeature :
          t.isRef() ? RefOrVal.Ref
                    : RefOrVal.Value);
@@ -257,7 +258,7 @@ public class Type extends AbstractType
    * @param ref true iff this type should be a ref type, otherwise it will be a
    * value type.
    */
-  public Type(SourcePosition pos, String n, List<AbstractType> g, AbstractType o, AbstractFeature f, RefOrVal refOrVal)
+  public Type(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o, AbstractFeature f, RefOrVal refOrVal)
   {
     if (PRECONDITIONS) require
       (pos != null,
@@ -287,7 +288,7 @@ public class Type extends AbstractType
    *
    * @param g the formal generic this referes to
    */
-  public Type(SourcePosition pos, Generic g)
+  public Type(HasSourcePosition pos, Generic g)
   {
     if (PRECONDITIONS) require
       (g != null);
@@ -621,7 +622,7 @@ public class Type extends AbstractType
           {
             if (outer().isGenericArgument())
               {
-                AstErrors.formalGenericAsOuterType(pos, this);
+                AstErrors.formalGenericAsOuterType(pos(), this);
               }
           }
         else
@@ -636,7 +637,7 @@ public class Type extends AbstractType
 
             if ((generic != null) && !_generics.isEmpty())
               {
-                AstErrors.formalGenericWithGenericArgs(pos, this, generic);
+                AstErrors.formalGenericWithGenericArgs(pos(), this, generic);
               }
           }
       }
@@ -692,7 +693,7 @@ public class Type extends AbstractType
           }
         FormalGenerics.resolve(res, _generics, outerfeat);
         if (!feature.generics().errorIfSizeOrTypeDoesNotMatch(_generics,
-                                                              pos,
+                                                              this,
                                                               "type",
                                                               "Type: " + toString() + "\n"))
           {

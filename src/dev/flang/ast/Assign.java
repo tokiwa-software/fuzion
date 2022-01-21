@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
 
 
@@ -36,7 +37,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Assign extends ANY implements Stmnt
+public class Assign extends ANY implements Stmnt, HasSourcePosition
 {
 
 

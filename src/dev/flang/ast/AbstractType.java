@@ -30,6 +30,7 @@ import java.util.Set;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 import dev.flang.util.YesNo;
@@ -41,7 +42,7 @@ import dev.flang.util.YesNo;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class AbstractType extends ANY implements Comparable<AbstractType>
+public abstract class AbstractType extends ANY implements Comparable<AbstractType>, HasSourcePosition
 {
 
 

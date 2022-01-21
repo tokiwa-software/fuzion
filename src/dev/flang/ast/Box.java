@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.SourcePosition;
+
 
 /**
  * Box is an expression that copies a value instance into a newly created
@@ -95,9 +97,9 @@ public class Box extends Expr
    *
    * @param value the value to be boxed.
    */
-  public Box(Expr value)
+  public Box(Expr value, SourcePosition pos)
   {
-    super(value.pos());
+    super(pos);
 
     if (PRECONDITIONS) require
       (pos != null,

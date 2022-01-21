@@ -596,6 +596,7 @@ public class LibraryFeature extends AbstractFeature
         var k = _libModule.expressionKind(e);
         var iat = _libModule.expressionExprPos(e);
         pos = _libModule.expressionHasPosition(e) ? _libModule.expressionPosition(e) : pos;
+        var fpos = pos;
         Expr ex = null;
         Stmnt c = null;
         Expr x = null;
@@ -607,37 +608,42 @@ public class LibraryFeature extends AbstractFeature
               var f = _libModule.libraryFeature(field);
               var target = s.pop();
               var val = s.pop();
-              c = new Assign(pos(pos), f, target, val);
+              c = new Assign(SourcePosition.notAvailable, f, target, val)
+                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
               break;
             }
           case Unbox:
             {
-              x = s.pop();
-              x = new Unbox(x.pos(), x, _libModule.unboxType(iat));
+              var fx = s.pop();
+              x = new Unbox(SourcePosition.notAvailable, fx, _libModule.unboxType(iat))
+                { public SourcePosition pos() { return fx.pos(); } };
               ((Unbox)x)._needed = _libModule.unboxNeeded(iat);
               break;
             }
           case Box:
             {
-              x = new Box(s.pop());
+              x = new Box(s.pop(), SourcePosition.notAvailable)
+                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
               break;
             }
           case Const:
             {
               var t = _libModule.constType(iat);
               var d = _libModule.constData(iat);
-              x = new Constant(pos(pos))
+              x = new Constant(SourcePosition.notAvailable)
                 {
                   public AbstractType typeOrNull() { return t; }
                   public byte[] data() { return d; }
                   public Expr visit(FeatureVisitor v, AbstractFeature af) { return this; };
                   public String toString() { return "LibraryFeature.Constant of type "+type(); }
+                  public SourcePosition pos() { return LibraryFeature.this.pos(fpos); }
                 };
               break;
             }
           case Current:
             {
-              x = new Current(pos(pos), thisType());
+              x = new Current(SourcePosition.notAvailable, thisType())
+                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
               break;
             }
           case Match:
@@ -674,17 +680,19 @@ public class LibraryFeature extends AbstractFeature
                   cases.add(lc);
                   cat = _libModule.caseNextPos(cat);
                 }
-              c = new AbstractMatch(pos(pos))
+              c = new AbstractMatch(SourcePosition.notAvailable)
                 {
                   public Expr subject() { return subj; }
                   public List<AbstractCase> cases() { return cases; }
                   public String toString() { return "LibraryFeature.AbstractMatch"; }
+                  public SourcePosition pos() { return LibraryFeature.this.pos(fpos); }
                 };
               break;
             }
           case Call:
             {
-              x = new LibraryCall(_libModule, iat, s, pos(pos));
+              x = new LibraryCall(_libModule, iat, s, SourcePosition.notAvailable)
+                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
               break;
             }
           case Pop:
@@ -696,12 +704,14 @@ public class LibraryFeature extends AbstractFeature
             {
               var val = s.pop();
               var taggedType = _libModule.tagType(iat);
-              x = new Tag(val, taggedType);
+              x = new Tag(val, taggedType)
+                { public SourcePosition pos() { return val.pos(); } };
               break;
             }
           case Unit:
             {
-              x = new Block(pos(pos), new List<>());
+              x = new Block(SourcePosition.notAvailable, new List<>())
+                { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
               break;
             }
           default: throw new Error("Unexpected expression kind: " + k);
@@ -713,7 +723,8 @@ public class LibraryFeature extends AbstractFeature
             if (!l.isEmpty())
               {
                 l.add(x);
-                x = new Block(pos(pos), l);
+                x = new Block(SourcePosition.notAvailable, l)
+                  { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
                 l = new List<>();
               }
             s.push(x);
@@ -724,7 +735,9 @@ public class LibraryFeature extends AbstractFeature
           }
         e = _libModule.expressionNextPos(e);
       }
-    return new Block(pos(pos), l);
+    var fpos = pos;
+    return new Block(SourcePosition.notAvailable, l)
+      { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
   }
 
 

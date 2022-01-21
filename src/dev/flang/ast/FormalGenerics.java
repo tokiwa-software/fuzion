@@ -31,6 +31,7 @@ import java.util.ListIterator;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -222,7 +223,7 @@ public class FormalGenerics extends ANY
    * @return true iff size and type of actualGenerics does match
    */
   public boolean errorIfSizeOrTypeDoesNotMatch(List<AbstractType> actualGenerics,
-                                               SourcePosition pos,
+                                               HasSourcePosition pos,
                                                String detail1,
                                                String detail2)
   {
@@ -231,10 +232,10 @@ public class FormalGenerics extends ANY
       {
         result = false;
         AstErrors.wrongNumberOfGenericArguments(this,
-                                               actualGenerics,
-                                               pos,
-                                               detail1,
-                                               detail2);
+                                                actualGenerics,
+                                                pos.pos(),
+                                                detail1,
+                                                detail2);
       }
     // NYI: check that generics match the generic constraints
     return result;
@@ -350,7 +351,7 @@ public class FormalGenerics extends ANY
             // placeholder for the actual generics.
             for (Generic g : list)
               {
-                result.add(new Type(_feature.pos(), g));
+                result.add(new Type((HasSourcePosition) _feature, g));
               }
           }
         asActuals_ = result;
