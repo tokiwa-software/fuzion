@@ -35,6 +35,7 @@ import java.util.TreeSet;
 import java.util.TreeMap;
 
 import dev.flang.ast.AbstractAssign;
+import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
@@ -43,7 +44,6 @@ import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Check;
 import dev.flang.ast.Constant;
-import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FormalGenerics;
@@ -630,7 +630,7 @@ class LibraryOut extends DataOut
         writeInt(d.length);
         write(d);
       }
-    else if (s instanceof Current)
+    else if (s instanceof AbstractCurrent)
       {
         lastPos = exprKindAndPos(IR.ExprKind.Current, lastPos, s.pos());
       }

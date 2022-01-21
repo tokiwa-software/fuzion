@@ -38,6 +38,7 @@ import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractConstant;
+import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
@@ -46,7 +47,6 @@ import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
 import dev.flang.ast.Cond;
 import dev.flang.ast.Contract;
-import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
@@ -642,7 +642,7 @@ public class LibraryFeature extends AbstractFeature
             }
           case Current:
             {
-              x = new Current(SourcePosition.notAvailable, thisType())
+              x = new AbstractCurrent(thisType())
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
               break;
             }

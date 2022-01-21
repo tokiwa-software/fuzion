@@ -29,11 +29,11 @@ package dev.flang.ir;
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.AbstractConstant; // NYI: remove dependency
+import dev.flang.ast.AbstractCurrent; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.Block; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Check; // NYI: remove dependency
-import dev.flang.ast.Current; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.Feature; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
@@ -220,7 +220,7 @@ public class IR extends ANY
       {
         l.add(s);
       }
-    else if (s instanceof Current)
+    else if (s instanceof AbstractCurrent)
       {
         l.add(ExprKind.Current);
       }

@@ -59,6 +59,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/AbstractCall.java \
           $(SRC)/dev/flang/ast/AbstractCase.java \
           $(SRC)/dev/flang/ast/AbstractConstant.java \
+          $(SRC)/dev/flang/ast/AbstractCurrent.java \
           $(SRC)/dev/flang/ast/AbstractFeature.java \
           $(SRC)/dev/flang/ast/AbstractMatch.java \
           $(SRC)/dev/flang/ast/AbstractType.java \
@@ -74,7 +75,6 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Consts.java \
           $(SRC)/dev/flang/ast/Constant.java \
           $(SRC)/dev/flang/ast/Contract.java \
-          $(SRC)/dev/flang/ast/Current.java \
           $(SRC)/dev/flang/ast/Destructure.java \
           $(SRC)/dev/flang/ast/Expr.java \
           $(SRC)/dev/flang/ast/Feature.java \

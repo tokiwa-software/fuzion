@@ -30,9 +30,9 @@ import java.util.Collections;
 import java.util.Stack;
 
 import dev.flang.ast.AbstractCall;
+import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
 import dev.flang.ast.FeatureVisitor;
 import dev.flang.ast.Types;
@@ -172,7 +172,7 @@ public class LibraryCall extends AbstractCall
   public int select() { return _select; }
   public boolean isDynamic()
   {
-    return calledFeature().isDynamic() && !(target() instanceof Current);
+    return calledFeature().isDynamic() && !(target() instanceof AbstractCurrent);
   }
   boolean _isInheritanceCall = false;
   public boolean isInheritanceCall()
