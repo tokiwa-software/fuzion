@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import dev.flang.util.SourcePosition;
+
 
 /**
  * Tag is an expression that converts a value to a choice type, i.e., it adds a
@@ -83,6 +85,15 @@ public class Tag extends Expr
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * The soucecode position of this expression, used for error messages.
+   */
+  public SourcePosition pos()
+  {
+    return _value.pos();
+  }
 
 
   /**

@@ -37,7 +37,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Unbox extends Expr
+public abstract class Unbox extends Expr
 {
 
 

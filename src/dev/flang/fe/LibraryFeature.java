@@ -704,8 +704,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var val = s.pop();
               var taggedType = _libModule.tagType(iat);
-              x = new Tag(val, taggedType)
-                { public SourcePosition pos() { return val.pos(); } };
+              x = new Tag(val, taggedType);
               break;
             }
           case Unit:
