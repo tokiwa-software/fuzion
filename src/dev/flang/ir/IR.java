@@ -26,9 +26,9 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ir;
 
+import dev.flang.ast.AbstractAssign; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
-import dev.flang.ast.Assign; // NYI: remove dependency
 import dev.flang.ast.Block; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Check; // NYI: remove dependency
@@ -188,7 +188,7 @@ public class IR extends ANY
       (l != null,
        s != null);
 
-    if (s instanceof Assign a)
+    if (s instanceof AbstractAssign a)
       {
         toStack(l, a._value);
         toStack(l, a._target);
@@ -342,7 +342,7 @@ public class IR extends ANY
       {
         result = ExprKind.Comment;
       }
-    else if (e instanceof Assign)
+    else if (e instanceof AbstractAssign)
       {
         result = ExprKind.Assign;
       }

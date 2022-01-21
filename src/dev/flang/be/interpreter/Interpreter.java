@@ -49,11 +49,11 @@ import dev.flang.fuir.FUIR;
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
+import dev.flang.ast.AbstractAssign; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractCall; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Assign; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Block; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Box; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Check; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -331,7 +331,7 @@ public class Interpreter extends ANY
         result = cur;
       }
 
-    else if (s instanceof Assign a)
+    else if (s instanceof AbstractAssign a)
       {
         Value v    = execute(a._value , staticClazz, cur);
         Value thiz = execute(a._target, staticClazz, cur);

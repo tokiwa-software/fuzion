@@ -34,10 +34,10 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.TreeMap;
 
+import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.Box;
 import dev.flang.ast.Call;
@@ -549,7 +549,7 @@ class LibraryOut extends DataOut
    */
   SourcePosition expressions(Stmnt s, boolean dumpResult, SourcePosition lastPos)
   {
-    if (s instanceof Assign a)
+    if (s instanceof AbstractAssign a)
       {
         lastPos = expressions(a._value, lastPos);
         lastPos = expressions(a._target, lastPos);

@@ -1225,7 +1225,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         res = r;
       }
-    public void         action(Assign       a, AbstractFeature outer) {        a.resolveTypes(res, outer); }
+    public void         action(AbstractAssign a, AbstractFeature outer) {        a.resolveTypes(res, outer); }
     public Call         action(Call         c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
     public Stmnt        action(Destructure  d, AbstractFeature outer) { return d.resolveTypes(res, outer); }
     public Stmnt        action(Feature      f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
@@ -1609,7 +1609,7 @@ public class Feature extends AbstractFeature implements Stmnt
          * that i32 will be the type for "a".
          */
         visit(new FeatureVisitor() {
-            public void  action(Assign   a, AbstractFeature outer) { a.propagateExpectedType(res, outer); }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.propagateExpectedType(res, outer); }
             public Call  action(Call     c, AbstractFeature outer) { c.propagateExpectedType(res, outer); return c; }
             public void  action(Cond     c, AbstractFeature outer) { c.propagateExpectedType(res, outer); }
             public void  action(Impl     i, AbstractFeature outer) { i.propagateExpectedType(res, outer); }
@@ -1642,7 +1642,7 @@ public class Feature extends AbstractFeature implements Stmnt
         _state = State.BOXING;
 
         visit(new FeatureVisitor() {
-            public void  action(Assign      a, AbstractFeature outer) { a.box(outer);           }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.box(outer);           }
             public Call  action(Call        c, AbstractFeature outer) { c.box(outer); return c; }
             public Expr  action(InlineArray i, AbstractFeature outer) { i.box(outer); return i; }
           });
@@ -1690,7 +1690,7 @@ public class Feature extends AbstractFeature implements Stmnt
         (_state == State.CHECKING_TYPES2)    )
       {
         visit(new FeatureVisitor() {
-            public void  action(Assign      a, AbstractFeature outer) { a.checkTypes(res);             }
+            public void  action(AbstractAssign a, AbstractFeature outer) { a.checkTypes(res);             }
             public Call  action(Call        c, AbstractFeature outer) { c.checkTypes(outer); return c; }
             public void  action(If          i, AbstractFeature outer) { i.checkTypes();                }
             public Expr  action(InlineArray i, AbstractFeature outer) { i.checkTypes();      return i; }
@@ -1854,7 +1854,7 @@ public class Feature extends AbstractFeature implements Stmnt
            (this,
             new Assign(res, _pos, this, _impl._initialValue, outer)
             {
-              public Assign visit(FeatureVisitor v, AbstractFeature outer)
+              public AbstractAssign visit(FeatureVisitor v, AbstractFeature outer)
               {
                 /* During findFieldDefInScope, we check field uses in impl, but
                  * we have to avoid doing this again in this assignment since a declaration
@@ -1905,7 +1905,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * @return in case we found a feature visible in the call's or assign's scope,
    * this is the feature.
    */
-  public Feature findFieldDefInScope(String name, Call call, Assign assign, Destructure destructure, AbstractFeature inner)
+  public Feature findFieldDefInScope(String name, Call call, AbstractAssign assign, Destructure destructure, AbstractFeature inner)
   {
     if (PRECONDITIONS) require
       (name != null,
@@ -1961,7 +1961,7 @@ public class Feature extends AbstractFeature implements Stmnt
             }
           return c;
         }
-        public void action(Assign a, AbstractFeature outer)
+        public void action(AbstractAssign a, AbstractFeature outer)
         {
           if (a == assign)
             { // Found the assign, so we got the result!

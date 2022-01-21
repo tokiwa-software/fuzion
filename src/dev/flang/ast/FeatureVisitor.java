@@ -58,7 +58,7 @@ public abstract class FeatureVisitor extends ANY
 
 
   public void         action      (Unbox        u, AbstractFeature outer) { }
-  public void         action      (Assign       a, AbstractFeature outer) { }
+  public void         action      (AbstractAssign a, AbstractFeature outer) { }
   public void         actionBefore(Block        b, AbstractFeature outer) { }
   public void         actionAfter (Block        b, AbstractFeature outer) { }
   public void         action      (AbstractCall c                       ) { }

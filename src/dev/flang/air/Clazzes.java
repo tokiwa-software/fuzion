@@ -33,12 +33,12 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import dev.flang.ast.AbstractAssign; // NYI: remove dependency!
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractCase; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
-import dev.flang.ast.Assign; // NYI: remove dependency!
 import dev.flang.ast.Block; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Constant; // NYI: remove dependency!
@@ -681,7 +681,7 @@ public class Clazzes extends ANY
   /**
    * Find all static clazzes for this case and store them in outerClazz.
    */
-  public static void findClazzes(Assign a, Clazz outerClazz)
+  public static void findClazzes(AbstractAssign a, Clazz outerClazz)
   {
     if (PRECONDITIONS) require
       (a != null, outerClazz != null);

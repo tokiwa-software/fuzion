@@ -68,7 +68,7 @@ public interface SrcModule
   AbstractFeature lookupFeature(AbstractFeature outer, FeatureName name);
   void findDeclaredOrInheritedFeatures(Feature outer);
   SortedMap<FeatureName, AbstractFeature> lookupFeatures(AbstractFeature outer, String name);
-  FeaturesAndOuter lookupNoTarget(AbstractFeature thiz, String name, Call call, Assign assign, Destructure destructure);
+  FeaturesAndOuter lookupNoTarget(AbstractFeature thiz, String name, Call call, AbstractAssign assign, Destructure destructure);
   void checkTypes(Feature f);
   AbstractFeature lookupFeatureForType(SourcePosition pos, String name, AbstractFeature o);
 

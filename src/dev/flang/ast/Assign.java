@@ -28,26 +28,20 @@ package dev.flang.ast;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.SourcePosition;
 
 
 /**
- * Assign <description>
+ * Assign represents an Assignment, created either from Source code or
+ * loaded from a .fum library file.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Assign extends ANY implements Stmnt, HasSourcePosition
+public class Assign extends AbstractAssign
 {
 
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * The soucecode position of this assignment, used for error messages.
-   */
-  final SourcePosition _pos;
 
 
   /**
@@ -58,52 +52,34 @@ public class Assign extends ANY implements Stmnt, HasSourcePosition
 
 
   /**
-   *
+   * The soucecode position of this assignment, used for error messages.
    */
-  public Expr _value;
-
-
-  /**
-   * Field that is assigned by this assign statement. initialized
-   * during init() phase.
-   */
-  public AbstractFeature _assignedField;
-
-
-  public Expr _target;
-
-
-  /**
-   * Is this an allowed assignment to an index var, i.e., an assignment to an
-   * index var that happens in the nextIteration part of a loop.
-   */
-  boolean _indexVarAllowed = false;
-
-
-  public int tid_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+  final SourcePosition _pos;
 
 
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
-   * Constructor
+   * Constructor used be the parser
    *
    * @param pos the soucecode position, used for error messages.
    *
-   * @param n
+   * @param n the name of the assigned field
    *
-   * @param v
+   * @param v the value assigned to field with name n
    */
   public Assign(SourcePosition pos, String n, Expr v)
   {
+    super(v);
+
     check
       (pos != null,
        n != null,
        v != null);
-    this._pos = pos;
+
     this._name = n;
-    this._value = v;
+    this._pos = pos;
   }
 
 
@@ -120,17 +96,17 @@ public class Assign extends ANY implements Stmnt, HasSourcePosition
    *
    * @param outer the root feature that contains this statement.
    */
-  public Assign(SourcePosition pos, Feature f, Expr v, AbstractFeature outer)
+  public Assign(SourcePosition pos, AbstractFeature f, Expr v, AbstractFeature outer)
   {
+    super(f, new This(pos, outer, f.outer()), v);
+
     if (PRECONDITIONS) require
-      (outer.state().atLeast(Feature.State.RESOLVED_TYPES),
+      (Errors.count() > 0 ||
+       outer.state().atLeast(Feature.State.RESOLVED_TYPES),
        f != null);
 
-    this._pos = pos;
     this._name = null;
-    this._assignedField = f;
-    this._value = v;
-    this._target = new This(pos, outer, f.outer());
+    this._pos = pos;
   }
 
 
@@ -151,45 +127,23 @@ public class Assign extends ANY implements Stmnt, HasSourcePosition
    */
   public Assign(Resolution res, SourcePosition pos, AbstractFeature f, Expr v, AbstractFeature outer)
   {
+    super(f, This.thiz(res, pos, outer, f.outer()), v);
+
     if (PRECONDITIONS) require
       (Errors.count() > 0 ||
        outer.state() == Feature.State.RESOLVING_TYPES   ||
        outer.state() == Feature.State.RESOLVED_TYPES    ||
        outer.state() == Feature.State.TYPES_INFERENCING ||
-       outer.state() == Feature.State.RESOLVING_SUGAR2);
+       outer.state() == Feature.State.RESOLVING_SUGAR2,
+       f != null);
 
-    this._pos = pos;
     this._name = null;
-    this._assignedField = f;
-    this._value = v;
-    this._target = This.thiz(res, pos, outer, f.outer());
+    this._pos = pos;
     if (outer.state().atLeast(Feature.State.TYPES_INFERENCING))
       {
         propagateExpectedType(res, outer);
       }
   }
-
-
-  /**
-   * Constructor for Assign loaded from .fum/MIR module file be front end.
-   *
-   * @param pos the source position
-   *
-   * @param f the feature we are assigning a value to
-   *
-   * @param t the target value containing f
-   *
-   * @param v the value to be assigned.
-   */
-  public Assign(SourcePosition pos, AbstractFeature f, Expr t, Expr v)
-  {
-    this._pos = pos;
-    this._name = f.featureName().baseName();
-    this._assignedField = f;
-    this._target = t;
-    this._value = v;
-  }
-
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -203,54 +157,6 @@ public class Assign extends ANY implements Stmnt, HasSourcePosition
     return _pos;
   }
 
-
-  /**
-   * visit all the features, expressions, statements within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   *
-   * @return this
-   */
-  public Assign visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    _value = _value.visit(v, outer);
-    if (_target != null)
-      {
-        _target = _target.visit(v, outer);
-      }
-    v.action(this, outer);
-    return this;
-  }
-
-
-  /**
-   * visit all the statements within this Assign.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited statements
-   */
-  public void visitStatements(StatementVisitor v)
-  {
-    Stmnt.super.visitStatements(v);
-    _value.visitStatements(v);
-    _target.visitStatements(v);
-  }
-
-
-  /**
-   * determine the static type of all expressions and declared features in this feature
-   *
-   * @param res the resolution instance.
-   *
-   * @param outer the root feature that contains this statement.
-   */
-  public void resolveTypes(Resolution res, AbstractFeature outer)
-  {
-    resolveTypes(res, outer, null);
-  }
 
   /**
    * determine the static type of all expressions and declared features in this feature
@@ -270,14 +176,14 @@ public class Assign extends ANY implements Stmnt, HasSourcePosition
         var fo = res._module.lookupNoTarget(outer, _name, null, destructure == null ? this : null, destructure);
         check
           (Errors.count() > 0 || fo.features.size() <= 1);
-        f = fo.filter(_pos, FeatureName.get(_name, 0), __ -> false);
+        f = fo.filter(pos(), FeatureName.get(_name, 0), __ -> false);
         if (f == null)
           {
             AstErrors.assignmentTargetNotFound(this, outer);
             f = Types.f_ERROR;
           }
         _assignedField = f;
-        _target        = fo.target(_pos, res, outer);
+        _target        = fo.target(pos(), res, outer);
       }
     if      (f == Types.f_ERROR          ) { check(Errors.count() > 0); /* ignore */ }
     else if (!f.isField()                ) { AstErrors.assignmentToNonField    (this, f, outer); }
@@ -299,96 +205,15 @@ public class Assign extends ANY implements Stmnt, HasSourcePosition
 
 
   /**
-   * During type inference: Inform this expression that it is used in an
-   * environment that expects the given type.  In particular, if this
-   * expression's result is assigned to a field, this will be called with the
-   * type of the field.
-   *
-   * @param res this is called during type inference, res gives the resolution
-   * instance.
-   *
-   * @param outer the feature that contains this expression
-   *
-   * @param t the expected type.
-   */
-  public void propagateExpectedType(Resolution res, AbstractFeature outer)
-  {
-    check
-      (_assignedField != Types.f_ERROR || Errors.count() > 0);
-
-    if (_assignedField != Types.f_ERROR)
-      {
-        _value = _value.propagateExpectedType(res, outer, _assignedField.resultType());
-      }
-  }
-
-
-  /**
-   * Boxing for actual arguments: Find actual arguments of value type that are
-   * assigned to formal argument types that are references and box them.
-   *
-   * @param outer the feature that contains this expression
-   */
-  public void box(AbstractFeature outer)
-  {
-    check
-      (_assignedField != Types.f_ERROR || Errors.count() > 0);
-
-    if (_assignedField != Types.f_ERROR)
-      {
-        _value = _value.box(_assignedField.resultType());
-      }
-  }
-
-
-  /**
-   * check the types in this assignment
-   *
-   * @param outer the root feature that contains this statement.
-   */
-  public void checkTypes(Resolution res)
-  {
-    check
-      (_assignedField != Types.f_ERROR || Errors.count() > 0);
-
-    var f = _assignedField;
-    if (f != Types.f_ERROR)
-      {
-        var frmlT = f.resultType();
-
-        check
-          (Errors.count() > 0 || frmlT != Types.t_ERROR);
-
-        if (!frmlT.isAssignableFrom(_value))
-          {
-            AstErrors.incompatibleTypeInAssignment(_pos, f, frmlT, _value);
-          }
-
-        check
-          (res._module.lookupFeature(this._target.type().featureOfType(), f.featureName()) == f || Errors.count() > 0);
-      }
-  }
-
-
-  /**
-   * Does this statement consist of nothing but declarations? I.e., it has no
-   * code that actually would be executed at runtime.
-   */
-  public boolean containsOnlyDeclarations()
-  {
-    return false;
-  }
-
-
-  /**
    * toString
    *
    * @return
    */
   public String toString()
   {
-    return "set " + (_name == null ? _assignedField.featureName().baseName() : _name) + " := " + _value;
+    return _name == null ? super.toString() : toString(_name);
   }
+
 
 }
 

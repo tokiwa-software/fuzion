@@ -34,12 +34,12 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 
+import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Assign;
 import dev.flang.ast.Block;
 import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
@@ -608,7 +608,7 @@ public class LibraryFeature extends AbstractFeature
               var f = _libModule.libraryFeature(field);
               var target = s.pop();
               var val = s.pop();
-              c = new Assign(SourcePosition.notAvailable, f, target, val)
+              c = new AbstractAssign(f, target, val)
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
               break;
             }

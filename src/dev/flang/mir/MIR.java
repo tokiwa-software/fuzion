@@ -28,9 +28,9 @@ package dev.flang.mir;
 
 import java.nio.ByteBuffer;
 
+import dev.flang.ast.AbstractAssign;  // NYI: Remove dependency!
 import dev.flang.ast.AbstractCall;  // NYI: Remove dependency!
 import dev.flang.ast.AbstractFeature;  // NYI: Remove dependency!
-import dev.flang.ast.Assign;  // NYI: Remove dependency!
 
 import dev.flang.ir.IR;
 
@@ -325,7 +325,7 @@ hw25 is
     var s = _codeIds.get(c).get(ix);
     var af =
       (s instanceof AbstractCall   call) ? call.calledFeature() :
-      (s instanceof Assign         a   ) ? a._assignedField :
+      (s instanceof AbstractAssign a   ) ? a._assignedField :
       (AbstractFeature) (Object) new Object() { { if (true) throw new Error("acccessedFeature found unexpected Stmnt."); } } /* Java is ugly... */;
 
     return af == null ? -1 : _featureIds.get(af);

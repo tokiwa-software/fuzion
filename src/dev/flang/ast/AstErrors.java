@@ -338,7 +338,7 @@ public class AstErrors extends ANY
           solution);
   }
 
-  static void assignmentToNonField(Assign ass, AbstractFeature f, AbstractFeature outer)
+  static void assignmentToNonField(AbstractAssign ass, AbstractFeature f, AbstractFeature outer)
   {
     error(ass.pos(),
           "Target of assignment is not a field",
@@ -347,7 +347,7 @@ public class AstErrors extends ANY
           "For assignment: " + s(ass) + "\n");
   }
 
-  static void assignmentToIndexVar(Assign ass, AbstractFeature f, AbstractFeature outer)
+  static void assignmentToIndexVar(AbstractAssign ass, AbstractFeature f, AbstractFeature outer)
   {
     error(ass.pos(),
           "Target of assignment must not be a loop index variable",
