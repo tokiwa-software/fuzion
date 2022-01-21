@@ -233,7 +233,7 @@ public class This extends Expr
     var f = this.feature_;
     if (f.isUniverse())
       {
-        getOuter = new Universe(pos());
+        getOuter = new Universe();
       }
     else
       {

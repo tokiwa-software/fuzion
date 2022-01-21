@@ -112,10 +112,7 @@ public class LibraryCall extends AbstractCall
     var f = lib.libraryFeature(feat);
     if (f.outer().isUniverse())
       {
-        target = new Universe(SourcePosition.notAvailable)
-          {
-            public SourcePosition pos() { return pos(); }
-          };
+        target = new Universe();
       }
     else
       {

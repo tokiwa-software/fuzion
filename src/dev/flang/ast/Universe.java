@@ -46,16 +46,22 @@ public class Universe extends Expr
 
   /**
    * Constructor
-   *
-   * @param pos the soucecode position, used for error messages.
    */
-  public Universe(SourcePosition pos)
+  public Universe()
   {
-    super(pos);
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * The soucecode position of this expression, used for error messages.
+   */
+  public SourcePosition pos()
+  {
+    return SourcePosition.builtIn;
+  }
 
 
   /**
