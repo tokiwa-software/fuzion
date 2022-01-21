@@ -37,7 +37,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class InlineArray extends Expr
+public class InlineArray extends ExprWithPos
 {
 
 

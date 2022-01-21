@@ -74,7 +74,7 @@ public class Tag extends Expr
    */
   public Tag(Expr value, AbstractType taggedType)
   {
-    super(value.pos());
+    super();
 
     if (PRECONDITIONS) require
       (value != null);

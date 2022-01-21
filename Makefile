@@ -79,6 +79,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/Current.java \
           $(SRC)/dev/flang/ast/Destructure.java \
           $(SRC)/dev/flang/ast/Expr.java \
+          $(SRC)/dev/flang/ast/ExprWithPos.java \
           $(SRC)/dev/flang/ast/Feature.java \
           $(SRC)/dev/flang/ast/FeatureName.java \
           $(SRC)/dev/flang/ast/FeatureVisitor.java \

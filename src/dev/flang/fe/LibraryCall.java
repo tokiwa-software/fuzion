@@ -48,7 +48,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class LibraryCall extends AbstractCall
+public abstract class LibraryCall extends AbstractCall
 {
 
 

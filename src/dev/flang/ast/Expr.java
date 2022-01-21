@@ -62,27 +62,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   /*----------------------------  variables  ----------------------------*/
 
 
-  /**
-   * The soucecode position of this expression, used for error messages.
-   */
-  private final SourcePosition pos;
-
-
   /*--------------------------  constructors  ---------------------------*/
-
-
-  /**
-   * Constructor for an Expression at the given source code postition.
-   *
-   * @param pos the soucecode position, used for error messages. NYI: Remove!
-   */
-  public Expr(SourcePosition pos)
-  {
-    if (PRECONDITIONS) require
-      (pos != null);
-
-    this.pos = pos;
-  }
 
 
   /**
@@ -90,19 +70,9 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
    */
   public Expr()
   {
-    this(SourcePosition.notAvailable);
   }
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The soucecode position of this expression, used for error messages.
-   */
-  public SourcePosition pos()
-  {
-    return pos;
-  }
 
 
   /**
@@ -165,7 +135,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
    */
   SourcePosition posOfLast()
   {
-    return pos;
+    return pos();
   }
 
 
@@ -251,6 +221,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
     var result = this;
     if (t.compareTo(Types.resolved.t_void) != 0)
       {
+        var pos = pos();
         Feature r = new Feature(res,
                                 pos,
                                 Consts.VISIBILITY_INVISIBLE,
@@ -260,7 +231,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
         r.scheduleForResolution(res);
         res.resolveTypes();
         result = new Block(pos, pos, new List<>(assignToField(res, outer, r),
-                                                new Call(pos, new Current(pos, outer.thisType()), r).resolveTypes(res, outer)));
+                                                    new Call(pos, new Current(pos, outer.thisType()), r).resolveTypes(res, outer)));
       }
     return result;
   }

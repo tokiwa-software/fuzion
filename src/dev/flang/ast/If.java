@@ -38,17 +38,11 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class If extends Expr
+public class If extends ExprWithPos
 {
 
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * The soucecode position of this expression, used for error messages.
-   */
-  private final SourcePosition _pos;
 
 
   /**
@@ -125,15 +119,6 @@ public class If extends Expr
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * The soucecode position of this expression, used for error messages.
-   */
-  public SourcePosition pos()
-  {
-    return _pos;
-  }
 
 
   /**

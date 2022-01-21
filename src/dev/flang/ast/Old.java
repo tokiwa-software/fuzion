@@ -32,7 +32,7 @@ package dev.flang.ast;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Old extends Expr
+public class Old extends ExprWithPos
 {
 
 

@@ -36,7 +36,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Function extends Expr
+public class Function extends ExprWithPos
 {
 
 
