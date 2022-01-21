@@ -79,11 +79,8 @@ public class Box extends Expr
    */
   public Box(Expr value, AbstractType frmlT)
   {
-    super(value.pos);
-
     if (PRECONDITIONS) require
-      (pos != null,
-       value != null,
+      (value != null,
        !value.type().isRef() || value.isCallToOuterRef());
 
     this._value = value;
@@ -97,13 +94,10 @@ public class Box extends Expr
    *
    * @param value the value to be boxed.
    */
-  public Box(Expr value, SourcePosition pos)
+  public Box(Expr value)
   {
-    super(pos);
-
     if (PRECONDITIONS) require
-      (pos != null,
-       value != null,
+      (value != null,
        true /* NYI */ || !value.type().isRef() || value.isCallToOuterRef());
 
     this._value = value;
@@ -113,6 +107,15 @@ public class Box extends Expr
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * The soucecode position of this expression, used for error messages.
+   */
+  public SourcePosition pos()
+  {
+    return _value.pos();
+  }
 
 
   /**

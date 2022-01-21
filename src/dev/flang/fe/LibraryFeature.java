@@ -622,7 +622,7 @@ public class LibraryFeature extends AbstractFeature
             }
           case Box:
             {
-              x = new Box(s.pop(), SourcePosition.notAvailable)
+              x = new Box(s.pop())
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
               break;
             }
