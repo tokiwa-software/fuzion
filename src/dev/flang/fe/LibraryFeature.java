@@ -35,6 +35,7 @@ import java.util.Stack;
 import java.util.TreeSet;
 
 import dev.flang.ast.AbstractAssign;
+import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
 import dev.flang.ast.AbstractConstant;
@@ -42,7 +43,6 @@ import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.Block;
 import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
 import dev.flang.ast.Cond;
@@ -585,7 +585,7 @@ public class LibraryFeature extends AbstractFeature
    *
    * @param pos the current source code position from earlier code, -1 if none.
    */
-  Block code(int at, Stack<Expr> s, int pos)
+  AbstractBlock code(int at, Stack<Expr> s, int pos)
   {
     var l = new List<Stmnt>();
     var sz = _libModule.codeSize(at);
@@ -674,7 +674,7 @@ public class LibraryFeature extends AbstractFeature
                       public SourcePosition pos() { return LibraryModule.DUMMY_POS; /* NYI: Need proper position */ }
                       public AbstractFeature field() { return cf; }
                       public List<AbstractType> types() { return fts; }
-                      public Block code() { return (Block) cc; }
+                      public AbstractBlock code() { return (AbstractBlock) cc; }
                       public String toString() { return "LibraryFeature.AbstractCase"; }
                     };
                   cases.add(lc);
@@ -710,7 +710,7 @@ public class LibraryFeature extends AbstractFeature
             }
           case Unit:
             {
-              x = new Block(SourcePosition.notAvailable, new List<>())
+              x = new AbstractBlock(new List<>())
                 { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
               break;
             }
@@ -723,7 +723,7 @@ public class LibraryFeature extends AbstractFeature
             if (!l.isEmpty())
               {
                 l.add(x);
-                x = new Block(SourcePosition.notAvailable, l)
+                x = new AbstractBlock(l)
                   { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
                 l = new List<>();
               }
@@ -736,7 +736,7 @@ public class LibraryFeature extends AbstractFeature
         e = _libModule.expressionNextPos(e);
       }
     var fpos = pos;
-    return new Block(SourcePosition.notAvailable, l)
+    return new AbstractBlock(l)
       { public SourcePosition pos() { return LibraryFeature.this.pos(fpos); } };
   }
 

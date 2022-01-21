@@ -108,7 +108,7 @@ public abstract class AbstractCase extends ANY
   /**
    * code to be executed in case of a match
    */
-  public abstract Block code();
+  public abstract AbstractBlock code();
 
 
   /**

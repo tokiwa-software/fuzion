@@ -35,6 +35,7 @@ import java.util.TreeSet;
 import java.util.TreeMap;
 
 import dev.flang.ast.AbstractAssign;
+import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCurrent;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
@@ -588,7 +589,7 @@ class LibraryOut extends DataOut
         lastPos = expressions(b._value, lastPos);
         lastPos = exprKindAndPos(IR.ExprKind.Box, lastPos, s.pos());
       }
-    else if (s instanceof Block b)
+    else if (s instanceof AbstractBlock b)
       {
         int i = 0;
         for (var st : b.statements_)

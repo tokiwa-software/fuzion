@@ -34,6 +34,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency!
+import dev.flang.ast.AbstractBlock; // NYI: remove dependency!
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractCase; // NYI: remove dependency!
 import dev.flang.ast.AbstractConstant; // NYI: remove dependency!
@@ -41,7 +42,6 @@ import dev.flang.ast.AbstractCurrent; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
-import dev.flang.ast.Block; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
@@ -745,7 +745,7 @@ public class Clazzes extends ANY
             rc.instantiated(b);
           }
       }
-    else if (e instanceof Block b)
+    else if (e instanceof AbstractBlock b)
       {
         var s = b.statements_;
         if (!s.isEmpty() && s.get(s.size()-1) instanceof Expr e0)
@@ -979,7 +979,7 @@ public class Clazzes extends ANY
       {
         result = clazz(u.adr_, outerClazz);
       }
-    else if (e instanceof Block b)
+    else if (e instanceof AbstractBlock b)
       {
         Expr resExpr = b.resultExpression();
         result = resExpr != null ? clazz(resExpr, outerClazz)

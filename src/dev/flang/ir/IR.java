@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ir;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
+import dev.flang.ast.AbstractBlock; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.AbstractConstant; // NYI: remove dependency
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency
@@ -207,7 +208,7 @@ public class IR extends ANY
         toStack(l, b._value);
         l.add(b);
       }
-    else if (s instanceof Block b)
+    else if (s instanceof AbstractBlock b)
       {
         // for (var st : b.statements_)  -- not possible since we need index i
         for (int i=0; i<b.statements_.size(); i++)

@@ -50,13 +50,13 @@ import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.AbstractBlock; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractCall; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractConstant; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractCurrent; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Block; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Box; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Check; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -364,7 +364,7 @@ public class Interpreter extends ANY
           }
       }
 
-    else if (s instanceof Block b)
+    else if (s instanceof AbstractBlock b)
       {
         result = Value.NO_VALUE;
         for (Stmnt stmnt : b.statements_)

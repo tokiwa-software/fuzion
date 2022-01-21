@@ -43,6 +43,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.ast.AbstractAssign;
+import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
@@ -172,7 +173,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (p != null)
       {
         var stmnts = parseFile(p);
-        ((Block) _universe.code()).statements_.addAll(stmnts);
+        ((AbstractBlock) _universe.code()).statements_.addAll(stmnts);
         for (var s : stmnts)
           {
             if (s instanceof Feature f)

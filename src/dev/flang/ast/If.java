@@ -53,12 +53,12 @@ public class If extends Expr
   /**
    *
    */
-  public Block block;
+  public AbstractBlock block;
 
   /**
    *
    */
-  public Block elseBlock;
+  public AbstractBlock elseBlock;
 
   /**
    *
