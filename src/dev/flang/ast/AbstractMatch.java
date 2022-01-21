@@ -66,12 +66,9 @@ public abstract class AbstractMatch extends Expr
 
   /**
    * Constructor for a AbstractMatch
-   *
-   * @param pos the soucecode position, used for error messages.
    */
-  public AbstractMatch(SourcePosition pos)
+  public AbstractMatch()
   {
-    super(pos);
   }
 
 

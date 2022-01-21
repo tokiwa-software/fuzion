@@ -69,6 +69,12 @@ public class Match extends AbstractMatch
   public List<AbstractCase> cases() { return _cases; }
 
 
+  /**
+   * The soucecode position of this expression, used for error messages.
+   */
+  private final SourcePosition _pos;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -86,8 +92,6 @@ public class Match extends AbstractMatch
                Expr e,
                List<AbstractCase> c)
   {
-    super(pos);
-
     if (PRECONDITIONS) require
       (e != null,
        c != null,
@@ -95,10 +99,20 @@ public class Match extends AbstractMatch
 
     _subject = e;
     _cases = c;
+    _pos = pos;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * The soucecode position of this expression, used for error messages.
+   */
+  public SourcePosition pos()
+  {
+    return _pos;
+  }
 
 
   /**
