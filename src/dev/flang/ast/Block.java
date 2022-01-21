@@ -360,7 +360,7 @@ public class Block extends Expr
     Expr resExpr = resultExpression();
     if (resExpr != null)
       {
-        result = resExpr.pos;
+        result = resExpr.pos();
       }
     return result;
   }
@@ -431,7 +431,7 @@ public class Block extends Expr
     if (type.compareTo(Types.resolved.t_unit) == 0 && hasImplicitResult())
       { // return unit if this is expected even if we would implicitly return
         // something else:
-        statements_.add(new Block(pos, new List<>()));
+        statements_.add(new Block(pos(), new List<>()));
       }
     Expr resExpr = removeResultExpression();
     if (resExpr != null)

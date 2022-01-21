@@ -189,7 +189,7 @@ public class Function extends Expr
                   Contract c,
                   Block b)
   {
-    this(pos, r, a, i, c, new Impl(b.pos, b, Impl.Kind.Routine));
+    this(pos, r, a, i, c, new Impl(b.pos(), b, Impl.Kind.Routine));
   }
 
 
@@ -227,7 +227,7 @@ public class Function extends Expr
   {
     // NYI: This currently does not work to define a function without a result as in
     //  fun () => {}
-    this(pos, r, a, i, c, new Impl(e.pos, e, Impl.Kind.RoutineDef));
+    this(pos, r, a, i, c, new Impl(e.pos(), e, Impl.Kind.RoutineDef));
   }
 
 
@@ -404,7 +404,7 @@ public class Function extends Expr
       {
         if (t != Types.t_ERROR && t.featureOfType() != Types.resolved.f_function)
           {
-            AstErrors.expectedFunctionTypeForLambda(pos, t);
+            AstErrors.expectedFunctionTypeForLambda(pos(), t);
             t = Types.t_ERROR;
           }
 
@@ -446,15 +446,15 @@ public class Function extends Expr
           }
         if (t != Types.t_ERROR)
           {
-            Feature f = new Feature(pos, new FunctionReturnType(gs.get(0)), new List<String>("call"), a, _inherits, _contract,
+            Feature f = new Feature(pos(), new FunctionReturnType(gs.get(0)), new List<String>("call"), a, _inherits, _contract,
                                     new Impl(_expr.pos(), _expr, Impl.Kind.Routine));
             this.feature_ = f;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
-            inheritsCall_ = new Call(pos, Types.FUNCTION_NAME, gs, Expr.NO_EXPRS);
+            inheritsCall_ = new Call(pos(), Types.FUNCTION_NAME, gs, Expr.NO_EXPRS);
             List<Stmnt> statements = new List<Stmnt>(f);
             String wrapperName = "#fun" + id++;
-            _wrapper = new Feature(pos,
+            _wrapper = new Feature(pos(),
                                    Consts.VISIBILITY_INVISIBLE,
                                    Consts.MODIFIER_FINAL,
                                    RefType.INSTANCE,
@@ -463,9 +463,9 @@ public class Function extends Expr
                                    NO_FEATURES,
                                    new List<>(inheritsCall_),
                                    new Contract(null,null,null),
-                                   new Impl(pos, new Block(pos, statements), Impl.Kind.Routine));
+                                   new Impl(pos(), new Block(pos(), statements), Impl.Kind.Routine));
             res._module.findDeclarations(_wrapper, outer);
-            call_ = new Call(pos, new Current(pos(), outer.thisType()), _wrapper).resolveTypes(res, outer);
+            call_ = new Call(pos(), new Current(pos(), outer.thisType()), _wrapper).resolveTypes(res, outer);
           }
         type_ = t;
       }
@@ -551,7 +551,7 @@ public class Function extends Expr
     if (f != null)
       {
         generics.add(f instanceof Feature ff && ff.hasResult()  // NYI: Cast!
-                     ? ff.resultTypeForTypeInference(pos, res, Type.NONE)
+                     ? ff.resultTypeForTypeInference(pos(), res, Type.NONE)
                      : new Type("unit"));
         for (var a : f.arguments())
           {
@@ -582,7 +582,7 @@ public class Function extends Expr
         var fr = functionOrRoutine();
         var generics = generics(res);
         FormalGenerics.resolve(res, generics, outer);
-        type_ = fr != null ? new Type(pos, fr.featureName().baseName(), generics, null, fr, Type.RefOrVal.LikeUnderlyingFeature).resolve(res, outer)
+        type_ = fr != null ? new Type(pos(), fr.featureName().baseName(), generics, null, fr, Type.RefOrVal.LikeUnderlyingFeature).resolve(res, outer)
                            : Types.t_ERROR;
       }
     else
@@ -610,7 +610,7 @@ public class Function extends Expr
     var result = typeOrNull();
     if (result == null)
       {
-        AstErrors.noTypeInferenceFromLambda(pos);
+        AstErrors.noTypeInferenceFromLambda(pos());
         result = Types.t_ERROR;
       }
     return result;
@@ -679,12 +679,12 @@ public class Function extends Expr
             for (var f : calledFeature.arguments())
               {
                 String name = "a"+argnum;
-                actual_args.add(new Call(pos, null, name));
-                formal_args.add(new Feature(pos, Consts.VISIBILITY_LOCAL, 0, f.resultType(), name, new Contract(null,null,null)));
+                actual_args.add(new Call(pos(), null, name));
+                formal_args.add(new Feature(pos(), Consts.VISIBILITY_LOCAL, 0, f.resultType(), name, new Contract(null,null,null)));
                 argnum++;
               }
-            Call callWithArgs = new Call(pos, null, call.name, actual_args);
-            Feature fcall = new Feature(pos, Consts.VISIBILITY_PUBLIC,
+            Call callWithArgs = new Call(pos(), null, call.name, actual_args);
+            Feature fcall = new Feature(pos(), Consts.VISIBILITY_PUBLIC,
                                         Consts.MODIFIER_REDEFINE,
                                         NoType.INSTANCE, // calledFeature.returnType,
                                         new List<String>("call"),
@@ -692,16 +692,16 @@ public class Function extends Expr
                                         formal_args,
                                         NO_CALLS,
                                         new Contract(null,null,null),
-                                        new Impl(pos, callWithArgs, Impl.Kind.RoutineDef));
+                                        new Impl(pos(), callWithArgs, Impl.Kind.RoutineDef));
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             var fr = functionOrRoutine();
-            List<AbstractCall> inherits = new List<>(new Call(pos, fr.featureName().baseName(), type_.generics(), Expr.NO_EXPRS));
+            List<AbstractCall> inherits = new List<>(new Call(pos(), fr.featureName().baseName(), type_.generics(), Expr.NO_EXPRS));
 
             List<Stmnt> statements = new List<Stmnt>(fcall);
 
             String wrapperName = "#fun"+ id++;
-            Feature function = new Feature(pos,
+            Feature function = new Feature(pos(),
                                            Consts.VISIBILITY_INVISIBLE,
                                            Consts.MODIFIER_FINAL,
                                            RefType.INSTANCE,
@@ -710,9 +710,9 @@ public class Function extends Expr
                                            NO_FEATURES,
                                            inherits,
                                            new Contract(null,null,null),
-                                           new Impl(pos, new Block(pos, statements), Impl.Kind.Routine));
+                                           new Impl(pos(), new Block(pos(), statements), Impl.Kind.Routine));
             res._module.findDeclarations(function, call.target.type().featureOfType());
-            result = new Call(pos,
+            result = new Call(pos(),
                               call.target,
                               function)
               .resolveTypes(res, outer);

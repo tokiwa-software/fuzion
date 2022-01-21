@@ -65,7 +65,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   /**
    * The soucecode position of this expression, used for error messages.
    */
-  public final SourcePosition pos;
+  private final SourcePosition pos;
 
 
   /*--------------------------  constructors  ---------------------------*/

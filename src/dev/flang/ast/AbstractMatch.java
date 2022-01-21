@@ -145,7 +145,7 @@ public abstract class AbstractMatch extends Expr
       }
     if (result == Types.t_UNDEFINED)
       {
-        new IncompatibleResultsOnBranches(pos,
+        new IncompatibleResultsOnBranches(pos(),
                                           "Incompatible types in cases of match statement",
                                           new Iterator<Expr>()
                                           {

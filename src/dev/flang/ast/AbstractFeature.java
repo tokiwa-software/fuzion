@@ -289,7 +289,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
               {
                 if (lastP != null)
                   {
-                    AstErrors.repeatedInheritanceOfChoice(p.pos, lastP.pos);
+                    AstErrors.repeatedInheritanceOfChoice(p.pos(), lastP.pos());
                   }
                 lastP = p;
                 result = p.generics();

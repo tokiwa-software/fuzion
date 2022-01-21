@@ -545,7 +545,7 @@ public class Call extends AbstractCall
     else
       { /* search for feature in thiz and outer classes */
         result = res._module.lookupNoTarget(targetFeature, name, this, null, null);
-        target = result.target(pos, res, thiz);
+        target = result.target(pos(), res, thiz);
       }
     return result;
   }
@@ -581,8 +581,8 @@ public class Call extends AbstractCall
                               b.type(),
                               tmpName,
                               thiz);
-        Call t1 = new Call(pos(), new Current(pos, thiz.thisType()), tmp, -1);
-        Call t2 = new Call(pos(), new Current(pos, thiz.thisType()), tmp, -1);
+        Call t1 = new Call(pos(), new Current(pos(), thiz.thisType()), tmp, -1);
+        Call t2 = new Call(pos(), new Current(pos(), thiz.thisType()), tmp, -1);
         var result = new Call(pos(), t2, name, _actuals)
           {
             boolean isChainedBoolRHS() { return true; }
@@ -696,7 +696,7 @@ public class Call extends AbstractCall
           {
             var fo = calledFeatureCandidates(targetFeature, res, thiz);
             FeatureName calledName = FeatureName.get(name, _actuals.size());
-            calledFeature_ = fo.filter(pos,
+            calledFeature_ = fo.filter(pos(),
                                        calledName,
                                        ff ->  (ff.hasOpenGenericsArgList()               /* actual generics might come from type inference */
                                                || forFun                                 /* a fun-declaration "fun a.b.f" */
@@ -891,7 +891,7 @@ public class Call extends AbstractCall
         // a Function: the result is the first generic argument
         var funResultType = _type.generics().isEmpty() ? Types.t_ERROR : _type.generics().getFirst();
         var numFormalArgs = _type.generics().size() - 1;
-        result = new Call(pos,
+        result = new Call(pos(),
                           "call",
                           NO_GENERICS,
                           _actuals,
@@ -1100,12 +1100,12 @@ public class Call extends AbstractCall
     var tt = targetTypeOrConstraint(res);
     if (_select < 0 && t.isOpenGeneric())
       {
-        AstErrors.cannotAccessValueOfOpenGeneric(pos, calledFeature_, t);
+        AstErrors.cannotAccessValueOfOpenGeneric(pos(), calledFeature_, t);
         t = Types.t_ERROR;
       }
     else if (_select >= 0 && !t.isOpenGeneric())
       {
-        AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos, calledFeature_, name, _select, t);
+        AstErrors.useOfSelectorRequiresCallWithOpenGeneric(pos(), calledFeature_, name, _select, t);
         t = Types.t_ERROR;
       }
     else if (_select < 0)
@@ -1123,7 +1123,7 @@ public class Call extends AbstractCall
         int sz = types.size();
         if (_select >= sz)
           {
-            AstErrors.selectorRange(pos, sz, calledFeature_, name, _select, types);
+            AstErrors.selectorRange(pos(), sz, calledFeature_, name, _select, types);
             calledFeature_ = Types.f_ERROR;
             t = Types.t_ERROR;
           }
@@ -1196,7 +1196,7 @@ public class Call extends AbstractCall
                 if (actualType == null)
                   {
                     actualType = Types.t_ERROR;
-                    AstErrors.failedToInferOpenGenericArg(pos, count, actual);
+                    AstErrors.failedToInferOpenGenericArg(pos(), count, actual);
                   }
                 inferredOpen.add(actualType);
               }
@@ -1208,7 +1208,7 @@ public class Call extends AbstractCall
             var actualType = actual.typeOrNull();
             if (actualType != null)
               {
-                inferGeneric(res, t, actualType, actual.pos, found, conflict, foundAt);
+                inferGeneric(res, t, actualType, actual.pos(), found, conflict, foundAt);
               }
           }
       }
@@ -1229,7 +1229,7 @@ public class Call extends AbstractCall
           }
         else if (conflict[i])
           {
-            AstErrors.incompatibleTypesDuringTypeInference(pos, g, foundAt[i]);
+            AstErrors.incompatibleTypesDuringTypeInference(pos(), g, foundAt[i]);
             t = Types.t_ERROR;
           }
 
@@ -1240,7 +1240,7 @@ public class Call extends AbstractCall
       }
     if (!missing.isEmpty())
       {
-        AstErrors.faildToInferActualGeneric(pos,cf, missing);
+        AstErrors.faildToInferActualGeneric(pos(),cf, missing);
       }
   }
 
@@ -1348,7 +1348,7 @@ public class Call extends AbstractCall
             inferGenericsFromArgs(res, outer);
           }
         if (calledFeature_.generics().errorIfSizeOrTypeDoesNotMatch(generics,
-                                                                    pos,
+                                                                    pos(),
                                                                     "call",
                                                                     "Called feature: "+calledFeature_.qualifiedName()+"\n"))
           {
@@ -1360,7 +1360,7 @@ public class Call extends AbstractCall
                 cf.whenResolvedTypes
                   (() ->
                    {
-                     var t2 = cf.resultTypeForTypeInference(pos, res, generics);
+                     var t2 = cf.resultTypeForTypeInference(pos(), res, generics);
                      resolveType(res, t2, calledFeature_.outer());
                    });
               }
@@ -1372,7 +1372,7 @@ public class Call extends AbstractCall
                     cf.whenResolvedTypes
                       (() ->
                        {
-                         var t2 = cf.resultTypeForTypeInference(pos, res, generics);
+                         var t2 = cf.resultTypeForTypeInference(pos(), res, generics);
                          resolveType(res, t2, calledFeature_.outer());
                        });
                   }
@@ -1477,11 +1477,11 @@ public class Call extends AbstractCall
         // call will be replaced during Function.resolveSyntacticSugar.
         if (_actuals.size() != 0)
           {
-            AstErrors.functionMustNotProvideActuals(pos, this, _actuals);
+            AstErrors.functionMustNotProvideActuals(pos(), this, _actuals);
           }
         else if (hasParentheses())
           {
-            AstErrors.functionMustNotProvideParentheses(pos, this);
+            AstErrors.functionMustNotProvideParentheses(pos(), this);
           }
       }
     else if (_type != Types.t_ERROR)
@@ -1516,7 +1516,7 @@ public class Call extends AbstractCall
               }
             if (!ok)
               {
-                AstErrors.cannotCallChoice(pos, calledFeature_);
+                AstErrors.cannotCallChoice(pos(), calledFeature_);
               }
           }
 
@@ -1530,7 +1530,7 @@ public class Call extends AbstractCall
             var g = gi.next();
             if (!f.constraint().constraintAssignableFrom(g))
               {
-                AstErrors.incompatibleActualGeneric(pos, f, g);
+                AstErrors.incompatibleActualGeneric(pos(), f, g);
               }
           }
       }

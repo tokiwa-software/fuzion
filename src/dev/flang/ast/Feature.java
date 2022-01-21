@@ -396,7 +396,7 @@ public class Feature extends AbstractFeature implements Stmnt
                        new List<Feature>(),
                        i,
                        c,
-                       new Impl(b.pos, b, Impl.Kind.Routine))
+                       new Impl(b.pos(), b, Impl.Kind.Routine))
       {
         boolean isAnonymousInnerFeature()
         {
@@ -1063,7 +1063,7 @@ public class Feature extends AbstractFeature implements Stmnt
        i != null);
 
     var parent = p.calledFeature();
-    String inh = "    inherits " + parent.qualifiedName() + " at " + p.pos.show() + "\n";
+    String inh = "    inherits " + parent.qualifiedName() + " at " + p.pos().show() + "\n";
     if (_detectedCyclicInheritance)
       { // the cycle closes while returning from recursion in resolveInheritance, so show the error:
         StringBuilder cycle = new StringBuilder(inh);
@@ -1386,7 +1386,7 @@ public class Feature extends AbstractFeature implements Stmnt
         StringBuilder accesses = new StringBuilder();
         for (var c: closureAccesses)
           {
-            accesses.append(c.pos.show()).append("\n");
+            accesses.append(c.pos().show()).append("\n");
           }
         AstErrors.choiceMustNotAccessSurroundingScope(errorPos, accesses.toString());
       }
@@ -1509,7 +1509,7 @@ public class Feature extends AbstractFeature implements Stmnt
     checkNoClosureAccesses(res, _pos);
     for (var p : _inherits)
       {
-        p.calledFeature().checkNoClosureAccesses(res, p.pos);
+        p.calledFeature().checkNoClosureAccesses(res, p.pos());
       }
 
     choiceTag_ = new Feature(res,
@@ -1552,7 +1552,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
         if (cf != null && cf.isChoice() && cf != Types.resolved.f_choice)
           {
-            AstErrors.cannotInheritFromChoice(p.pos);
+            AstErrors.cannotInheritFromChoice(p.pos());
           }
       }
     if (isChoice())

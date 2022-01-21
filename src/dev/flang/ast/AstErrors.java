@@ -375,7 +375,7 @@ public class AstErrors extends ANY
       }
     if (!ferror) // if something went wrong earlier, report no error here
       {
-        error(call.pos,
+        error(call.pos(),
               "Wrong number of actual arguments in call",
               "Number of actual arguments is " + call._actuals.size() + ", while call expects " + argumentsString(fsz) + ".\n" +
               "Called feature: " + s(call.calledFeature())+ "\n"+
@@ -745,7 +745,7 @@ public class AstErrors extends ANY
   {
     var solution = solutionDeclareReturnTypeIfResult(calledName.baseName(),
                                                      calledName.argCount());
-    error(call.pos,
+    error(call.pos(),
           "Could not find called feature",
           "Feature not found: " + sbn(calledName) + "\n" +
           "Target feature: " + s( targetFeature) + "\n" +
@@ -820,7 +820,7 @@ public class AstErrors extends ANY
 
   static void outerFeatureNotFoundInThis(This t, AbstractFeature feat, String qname, List<String> available)
   {
-    error(t.pos,
+    error(t.pos(),
           "Could not find outer feature in " + skw(".this") + "-expression",
           "Within feature: " + s(feat) + "\n" +
           "Outer feature that was not found: " + sqn(qname) + "\n" +
@@ -856,7 +856,7 @@ public class AstErrors extends ANY
           "or an iteration ended, it does not make sense " +
           "to have an else condition unless there is a while clause or an iterator " +
           "index variable.\n" +
-          "The else block of this loop is declared at " + elseBlock.pos.show());
+          "The else block of this loop is declared at " + elseBlock.pos().show());
   }
 
   static void formalGenericAsOuterType(SourcePosition pos, Type t)
@@ -891,8 +891,8 @@ public class AstErrors extends ANY
     error(pos,
           "Generics arguments to choice type must be disjoint types",
           "The following types have overlapping values:\n" +
-          "" + s(t1) + "" + /* " at " + t1.pos.show() + */ "\n" +  // NYI: use pos before Types were interned!
-          "" + s(t2) + "" + /* " at " + t2.pos.show() + */ "\n");
+          "" + s(t1) + "" + /* " at " + t1.pos().show() + */ "\n" +  // NYI: use pos before Types were interned!
+          "" + s(t2) + "" + /* " at " + t2.pos().show() + */ "\n");
   }
 
   static void illegalUseOfOpenFormalGeneric(SourcePosition pos, Generic generic)
@@ -1149,7 +1149,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Failed to infer open generic argument type from actual argument.",
-          "Type of " + ordinal(count) + " actual argument could not be inferred at " + actual.pos.show());
+          "Type of " + ordinal(count) + " actual argument could not be inferred at " + actual.pos().show());
   }
 
   static void incompatibleTypesDuringTypeInference(SourcePosition pos, Generic g, String foundAt)

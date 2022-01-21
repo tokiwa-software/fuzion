@@ -273,7 +273,7 @@ public class MiddleEnd extends ANY
       }
     for (var p: f.inherits())
       {
-        markUsed(p.calledFeature(), p.pos);
+        markUsed(p.calledFeature(), p);
       }
     findUsedFeatures(f.resultType(), f);
     if (f.choiceTag() != null)

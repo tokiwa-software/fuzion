@@ -169,7 +169,7 @@ public class Match extends AbstractMatch
           }
         if (!missingMatches.isEmpty() && ok)
           {
-            AstErrors.missingMatches(pos, cgs, missingMatches);
+            AstErrors.missingMatches(pos(), cgs, missingMatches);
           }
       }
   }

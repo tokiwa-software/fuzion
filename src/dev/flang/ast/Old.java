@@ -57,7 +57,7 @@ public class Old extends Expr
    */
   public Old(Expr e)
   {
-    super(e.pos);
+    super(e.pos());
     this.e = e;
   }
 
