@@ -148,7 +148,7 @@ class LibraryOut extends DataOut
    */
   void innerFeatures(AbstractFeature f)
   {
-    var m = _sourceModule.declaredFeaturesOrNull(f);
+    var m = _sourceModule.declaredFeatures(f);
     if (m == null)
       {
         writeInt(0);

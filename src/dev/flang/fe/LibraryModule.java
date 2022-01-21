@@ -210,10 +210,6 @@ public class LibraryModule extends Module
    *
    * @param outer the declaring feature
    */
-  SortedMap<FeatureName, AbstractFeature>declaredFeaturesOrNull(AbstractFeature outer)
-  {
-    return declaredFeatures(outer);
-  }
   SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
   {
     var result = new TreeMap<FeatureName, AbstractFeature>();

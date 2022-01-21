@@ -138,7 +138,7 @@ public abstract class Module extends ANY
    *
    * @param outer the declaring feature
    */
-  abstract SortedMap<FeatureName, AbstractFeature>declaredFeaturesOrNull(AbstractFeature outer);
+  abstract SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer);
 
 
   /**
@@ -190,7 +190,7 @@ public abstract class Module extends ANY
               {
                 s = new TreeMap<>();
               }
-            for (var e : declaredFeaturesOrNull(outer).entrySet())
+            for (var e : declaredFeatures(outer).entrySet())
               {
                 if (e.getValue() instanceof Feature f)
                   { // f is a qualified feature that was added as source code
@@ -209,7 +209,7 @@ public abstract class Module extends ANY
           }
         else if (outer.isUniverse())
           {
-            s = declaredFeaturesOrNull(outer);
+            s = declaredFeatures(outer);
           }
         else
           {

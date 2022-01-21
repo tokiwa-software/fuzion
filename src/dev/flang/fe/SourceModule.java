@@ -605,7 +605,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         for (var m : _dependsOn)
           { // NYI: properly obtain set of declared features from m, do we need
             // to take care for the order and dependencies between modules?
-            var md = m.declaredFeaturesOrNull(outer);
+            var md = m.declaredFeatures(outer);
             if (md != null)
               {
                 for (var e : md.entrySet())
@@ -620,18 +620,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Get declared features for given outer Feature as seen by this module.
-   * Result is null if outer has no declared features in this module.
-   *
-   * @param outer the declaring feature
-   */
-  SortedMap<FeatureName, AbstractFeature>declaredFeaturesOrNull(AbstractFeature outer)
-  {
-    return declaredFeatures(outer);
-  }
-
-
-  /**
    * Get declared and inherited features for given outer Feature as seen by this
    * module.  Result may be null if this module does not contribute anything to
    * outer.
@@ -641,7 +629,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer)
   {
     return outer.isUniverse()
-      ? declaredFeaturesOrNull(outer)
+      ? declaredFeatures(outer)
       : data(outer)._declaredOrInheritedFeatures;
   }
 
