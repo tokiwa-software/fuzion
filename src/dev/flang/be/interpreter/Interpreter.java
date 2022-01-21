@@ -51,13 +51,13 @@ import dev.flang.air.Clazzes;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractCall; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.AbstractConstant; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Block; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Box; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Check; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Constant; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Current; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -171,7 +171,7 @@ public class Interpreter extends ANY
     return sb.toString();
   }
 
-  static Map<Constant, Value> _cachedConsts_ = new HashMap<>();
+  static Map<AbstractConstant, Value> _cachedConsts_ = new HashMap<>();
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -340,7 +340,7 @@ public class Interpreter extends ANY
         result = Value.NO_VALUE;
       }
 
-    else if (s instanceof Constant i)
+    else if (s instanceof AbstractConstant i)
       {
         result = _cachedConsts_.get(i);
         if (result == null)

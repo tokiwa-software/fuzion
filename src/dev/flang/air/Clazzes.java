@@ -36,12 +36,12 @@ import java.util.TreeSet;
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency!
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
 import dev.flang.ast.AbstractCase; // NYI: remove dependency!
+import dev.flang.ast.AbstractConstant; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Block; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
-import dev.flang.ast.Constant; // NYI: remove dependency!
 import dev.flang.ast.Current; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
@@ -1032,7 +1032,7 @@ public class Clazzes extends ANY
         result = universe.get();
       }
 
-    else if (e instanceof Constant c)
+    else if (e instanceof AbstractConstant c)
       {
         result = outerClazz.actualClazz(c.type());
         if (result == string.get())

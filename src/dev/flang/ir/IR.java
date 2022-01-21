@@ -28,11 +28,11 @@ package dev.flang.ir;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
+import dev.flang.ast.AbstractConstant; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.Block; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Check; // NYI: remove dependency
-import dev.flang.ast.Constant; // NYI: remove dependency
 import dev.flang.ast.Current; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.Feature; // NYI: remove dependency
@@ -216,7 +216,7 @@ public class IR extends ANY
             toStack(l, st, dumpResult || i < b.statements_.size()-1);
           }
       }
-    else if (s instanceof Constant)
+    else if (s instanceof AbstractConstant)
       {
         l.add(s);
       }
@@ -367,8 +367,8 @@ public class IR extends ANY
       {
         result = ExprKind.Tag;
       }
-    else if (e instanceof Constant    ||
-             e instanceof InlineArray   )
+    else if (e instanceof AbstractConstant ||
+             e instanceof InlineArray         )
       {
         result = ExprKind.Const;
       }

@@ -37,6 +37,7 @@ import java.util.TreeSet;
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractCase;
+import dev.flang.ast.AbstractConstant;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractMatch;
 import dev.flang.ast.AbstractType;
@@ -44,7 +45,6 @@ import dev.flang.ast.Block;
 import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
 import dev.flang.ast.Cond;
-import dev.flang.ast.Constant;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Current;
 import dev.flang.ast.Expr;
@@ -630,7 +630,7 @@ public class LibraryFeature extends AbstractFeature
             {
               var t = _libModule.constType(iat);
               var d = _libModule.constData(iat);
-              x = new Constant()
+              x = new AbstractConstant()
                 {
                   public AbstractType typeOrNull() { return t; }
                   public byte[] data() { return d; }

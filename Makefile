@@ -58,6 +58,7 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/AbstractAssign.java \
           $(SRC)/dev/flang/ast/AbstractCall.java \
           $(SRC)/dev/flang/ast/AbstractCase.java \
+          $(SRC)/dev/flang/ast/AbstractConstant.java \
           $(SRC)/dev/flang/ast/AbstractFeature.java \
           $(SRC)/dev/flang/ast/AbstractMatch.java \
           $(SRC)/dev/flang/ast/AbstractType.java \
@@ -97,7 +98,6 @@ JAVA_FILES_AST = \
           $(SRC)/dev/flang/ast/RefType.java \
           $(SRC)/dev/flang/ast/Resolution.java \
           $(SRC)/dev/flang/ast/ReturnType.java \
-          $(SRC)/dev/flang/ast/SourceConstant.java \
           $(SRC)/dev/flang/ast/SrcModule.java \
           $(SRC)/dev/flang/ast/StatementVisitor.java \
           $(SRC)/dev/flang/ast/Stmnt.java \

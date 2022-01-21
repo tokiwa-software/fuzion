@@ -36,7 +36,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class StrConst extends SourceConstant
+public class StrConst extends Constant
 {
 
   /*----------------------------  variables  ----------------------------*/

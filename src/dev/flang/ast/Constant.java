@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Constant
+ * Source of class SourceConstant
  *
  *---------------------------------------------------------------------*/
 
@@ -31,12 +31,21 @@ import dev.flang.util.SourcePosition;
 
 /**
  * Constant represents a constant in the source code such as '3.14', 'true',
- * '"Hello"'.  This class might be loaded from a libraray or parsed in sources.
+ * '"Hello"'.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public abstract class Constant extends Expr
+public abstract class Constant extends AbstractConstant
 {
+
+
+  /*----------------------------  variables  ----------------------------*/
+
+
+  /**
+   * The soucecode position of this expression, used for error messages.
+   */
+  private final SourcePosition _pos;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -44,9 +53,15 @@ public abstract class Constant extends Expr
 
   /**
    * Constructor for a Constant at the given source code postition.
+   *
+   * @param pos the soucecode position, used for error messages.
    */
-  public Constant()
+  public Constant(SourcePosition pos)
   {
+    if (PRECONDITIONS) require
+      (pos != null);
+
+    this._pos = pos;
   }
 
 
@@ -54,10 +69,12 @@ public abstract class Constant extends Expr
 
 
   /**
-   * Serialized form of the data of this constant.
+   * The soucecode position of this expression, used for error messages.
    */
-  public abstract byte[] data();
-
+  public SourcePosition pos()
+  {
+    return this._pos;
+  }
 
 }
 

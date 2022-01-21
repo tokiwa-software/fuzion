@@ -37,11 +37,11 @@ import dev.flang.air.Clazzes;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
+import dev.flang.ast.AbstractConstant; // NYI: remove dependency
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
-import dev.flang.ast.Constant; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
@@ -1290,7 +1290,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Const);
 
     var ic = _codeIds.get(c).get(ix);
-    if      (ic instanceof Constant co) { return co.data(); }
+    if      (ic instanceof AbstractConstant co) { return co.data(); }
     else if (ic instanceof InlineArray)
       {
         throw new Error("NYI: FUIR support for InlineArray still missing");
