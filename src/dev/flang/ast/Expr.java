@@ -219,7 +219,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
    */
   Stmnt assignToField(Resolution res, AbstractFeature outer, Feature r)
   {
-    return new Assign(res, pos, r, this, outer);
+    return new Assign(res, pos(), r, this, outer);
   }
 
 
