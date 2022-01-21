@@ -29,7 +29,7 @@ package dev.flang.ast;
 import java.util.Iterator;
 
 import dev.flang.util.Errors;
-import dev.flang.util.SourcePosition;
+
 
 /**
  * Unbox is an expression that dereferences an address of a value type to
@@ -76,17 +76,15 @@ public class Unbox extends Expr
   /**
    * Constructor
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param adr the expression (outer ref) leading to the outer ref value that should
+   * be unboxed.
    *
-   * @param t the result type
+   * @param type the result type
    */
-  public Unbox(SourcePosition pos, Expr adr, AbstractType type)
+  public Unbox(Expr adr, AbstractType type)
   {
-    super(pos);
-
     if (PRECONDITIONS) require
-      (pos != null,
-       adr != null,
+      (adr != null,
        adr.type().isRef() || adr instanceof AbstractCall c && c.calledFeature().isOuterRef(),
        !type.featureOfType().isThisRef()
        );
@@ -99,17 +97,17 @@ public class Unbox extends Expr
   /**
    * Constructor
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param adr the expression (outer ref) leading to the outer ref value that should
+   * be unboxed.
    *
    * @param t the result type
    */
-  public Unbox(SourcePosition pos, Expr adr, AbstractType type, AbstractFeature outer)
+  public Unbox(Expr adr, AbstractType type, AbstractFeature outer)
   {
-    this(pos, adr, type);
+    this(adr, type);
 
     if (PRECONDITIONS) require
-      (pos != null,
-       adr != null,
+      (adr != null,
        adr.type().isRef(),
        Errors.count() > 0 || type.featureOfType() == outer,
        !type.featureOfType().isThisRef()

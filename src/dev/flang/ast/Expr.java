@@ -74,7 +74,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   /**
    * Constructor for an Expression at the given source code postition.
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the soucecode position, used for error messages. NYI: Remove!
    */
   public Expr(SourcePosition pos)
   {
@@ -82,6 +82,15 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
       (pos != null);
 
     this.pos = pos;
+  }
+
+
+  /**
+   * Constructor for an Expression.
+   */
+  public Expr()
+  {
+    this(SourcePosition.notAvailable);
   }
 
   /*-----------------------------  methods  -----------------------------*/

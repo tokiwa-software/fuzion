@@ -615,7 +615,7 @@ public class LibraryFeature extends AbstractFeature
           case Unbox:
             {
               var fx = s.pop();
-              x = new Unbox(SourcePosition.notAvailable, fx, _libModule.unboxType(iat))
+              x = new Unbox(fx, _libModule.unboxType(iat))
                 { public SourcePosition pos() { return fx.pos(); } };
               ((Unbox)x)._needed = _libModule.unboxNeeded(iat);
               break;
