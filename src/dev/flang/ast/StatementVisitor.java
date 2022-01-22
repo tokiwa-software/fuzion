@@ -45,6 +45,13 @@ public interface StatementVisitor
    */
   abstract void action (Stmnt s);
 
+  /**
+   * action is to be called an all AbstractCase's encountered.
+   */
+  default void action(AbstractCase c)
+  {
+  }
+
 }
 
 /* end of file */

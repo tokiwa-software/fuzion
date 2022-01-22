@@ -150,6 +150,7 @@ public abstract class AbstractCase extends ANY
   public void visitStatements(StatementVisitor v)
   {
     code().visitStatements(v);
+    v.action(this);
   }
 
 }
