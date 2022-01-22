@@ -133,6 +133,23 @@ public class LibraryFeature extends AbstractFeature
   private SourcePosition _pos = null;
 
 
+  /**
+   * cached result of code()
+   */
+  private Expr _code;
+
+
+  /**
+   * cached result of resultField()
+   */
+  private AbstractFeature _resultField;
+
+
+  /**
+   * cached result of outerRef()
+   */
+  private AbstractFeature _outerRef;
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -157,7 +174,7 @@ public class LibraryFeature extends AbstractFeature
    */
   public Kind kind()
   {
-    return _libModule.featureKindEnum(_index);
+    return _kind;
   }
 
   /**
@@ -278,12 +295,13 @@ public class LibraryFeature extends AbstractFeature
    */
   public AbstractFeature resultField()
   {
-    AbstractFeature result = null;
-    if (hasResultField())
+    AbstractFeature result = _resultField;
+    if (result == null && hasResultField())
       {
         var i = _libModule.innerFeatures(_libModule.featureInnerFeaturesPos(_index));
         var n = _libModule.featureArgCount(_index);
         result = i.get(n);
+        _resultField = result;
       }
 
     check
@@ -300,12 +318,13 @@ public class LibraryFeature extends AbstractFeature
    */
   public AbstractFeature outerRef()
   {
-    AbstractFeature result = null;
-    if (hasOuterRef())
+    AbstractFeature result = _outerRef;
+    if (result == null && hasOuterRef())
       {
         var i = _libModule.innerFeatures(_libModule.featureInnerFeaturesPos(_index));
         var n = _libModule.featureArgCount(_index) + (hasResultField() ? 1 : 0);
         result = i.get(n);
+        _outerRef = result;
       }
 
     check
@@ -534,8 +553,14 @@ public class LibraryFeature extends AbstractFeature
     if (PRECONDITIONS) require
       (isRoutine());
 
-    var c = _libModule.featureCodePos(_index);
-    return code(c);
+    var result = _code;
+    if (result == null)
+      {
+        var c = _libModule.featureCodePos(_index);
+        result = code(c);
+        _code = result;
+      }
+    return result;
   }
 
 
