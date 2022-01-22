@@ -46,10 +46,12 @@ import dev.flang.ast.Consts; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
+import dev.flang.ast.StatementVisitor; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
 import dev.flang.ast.SrcModule; // NYI: remove dependency!
+import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
@@ -1173,54 +1175,43 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Visitor to find all runtime classes.
+   * visit all the code in f, including inherited features, by fc.
    */
-  private class FindClassesVisitor extends FeatureVisitor
+  private void inspectCode(StatementVisitor fc, AbstractFeature f)
   {
-    public void        action     (Unbox          u, AbstractFeature outer) { Clazzes.findClazzes(u, Clazz.this); }
-    public void        action     (AbstractAssign a, AbstractFeature outer) { Clazzes.findClazzes(a, Clazz.this); }
-    public void        actionAfter(AbstractCase   c                       ) { Clazzes.findClazzes(c, Clazz.this); }
-    public void        action     (AbstractCall   c                       ) { Clazzes.findClazzes(c, Clazz.this); }
-    public void        action     (If             i, AbstractFeature outer) { Clazzes.findClazzes(i, Clazz.this); }
-    public InlineArray action     (InlineArray    i, AbstractFeature outer) { Clazzes.findClazzes(i, Clazz.this); return i; }
-    public void        action     (AbstractMatch  m                       ) { Clazzes.findClazzes(m, Clazz.this); }
-    public void        action     (Tag            t, AbstractFeature outer) { Clazzes.findClazzes(t, Clazz.this); }
-    void visitAncestors(AbstractFeature f)
-    {
-      f.visitCode(this);
-      for (var c: f.inherits())
-        {
-          AbstractFeature cf = c.calledFeature();
-          var n = c.actuals().size();
-          for (var i = 0; i < n; i++)
-            {
-              var a = c.actuals().get(i);
-              if (i >= cf.arguments().size())
-                {
-                  check
-                    (Errors.count() > 0);
-                }
-              else
-                {
-                  var cfa = cf.arguments().get(i);
-                  var ccc = lookup(cfa, Call.NO_GENERICS, Clazzes.isUsedAt(f));
-                  if (c.parentCallArgFieldIds_ < 0)
-                    {
-                      c.parentCallArgFieldIds_ = Clazzes.getRuntimeClazzIds(n);
-                    }
-                  Clazz.this.setRuntimeData(c.parentCallArgFieldIds_+i, ccc);
-                }
-            }
+    f.visitStatements(fc);
+    for (var c: f.inherits())
+      {
+        AbstractFeature cf = c.calledFeature();
+        var n = c.actuals().size();
+        for (var i = 0; i < n; i++)
+          {
+            var a = c.actuals().get(i);
+            if (i >= cf.arguments().size())
+              {
+                check
+                  (Errors.count() > 0);
+              }
+            else
+              {
+                var cfa = cf.arguments().get(i);
+                var ccc = lookup(cfa, Call.NO_GENERICS, Clazzes.isUsedAt(f));
+                if (c.parentCallArgFieldIds_ < 0)
+                  {
+                    c.parentCallArgFieldIds_ = Clazzes.getRuntimeClazzIds(n);
+                  }
+                Clazz.this.setRuntimeData(c.parentCallArgFieldIds_+i, ccc);
+              }
+          }
 
-          check
-            (Errors.count() > 0 || cf != null);
+        check
+          (Errors.count() > 0 || cf != null);
 
-          if (cf != null)
-            {
-              visitAncestors(cf);
-            }
-        }
-    }
+        if (cf != null)
+          {
+            inspectCode(fc, cf);
+          }
+      }
   }
 
 
@@ -1230,7 +1221,24 @@ public class Clazz extends ANY implements Comparable<Clazz>
   void findAllClasses()
   {
     var f = feature();
-    new FindClassesVisitor().visitAncestors(f);
+    inspectCode(new StatementVisitor()
+      {
+        public void action (Stmnt s)
+        {
+          if      (s instanceof Unbox          u) { Clazzes.findClazzes(u, Clazz.this); }
+          else if (s instanceof AbstractAssign a) { Clazzes.findClazzes(a, Clazz.this); }
+          else if (s instanceof AbstractCall   c) { Clazzes.findClazzes(c, Clazz.this); }
+          else if (s instanceof If             i) { Clazzes.findClazzes(i, Clazz.this); }
+          else if (s instanceof InlineArray    i) { Clazzes.findClazzes(i, Clazz.this); }
+          else if (s instanceof AbstractMatch  m) { Clazzes.findClazzes(m, Clazz.this); }
+          else if (s instanceof Tag            t) { Clazzes.findClazzes(t, Clazz.this); }
+        }
+        public void action(AbstractCase c)
+        {
+          Clazzes.findClazzes(c, Clazz.this);
+        }
+      },
+                f);
     for (AbstractFeature ff: _module.allInnerAndInheritedFeatures(f))
       {
         if (Clazzes.isUsed(ff, this) &&
@@ -1241,20 +1249,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
                                           () -> { var innerClazz = lookup(ff, Call.NO_GENERICS, Clazzes.isUsedAt(ff)); });
           }
       }
-  }
-
-
-  /**
-   * Find all clazzes that are created when f is called on this clazz.
-   *
-   * This determines all the possible runtime types of all calls within the code
-   * of f and within the code of all clazzes f inherits from.
-   *
-   * @param f the feature that is called on this.
-   */
-  void findAllClasses(Expr target, AbstractFeature f)
-  {
-    target.visit(new FindClassesVisitor(), (Feature) f /* NYI: Cast! */);
   }
 
 
