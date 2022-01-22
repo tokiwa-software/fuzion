@@ -95,11 +95,12 @@ public abstract class AbstractBlock extends Expr
    */
   public void visitStatements(StatementVisitor v)
   {
-    super.visitStatements(v);
-    for (var s : statements_)
+    var s = statements_;
+    for (int i = 0; i < s.size(); i++)
       {
-        s.visitStatements(v);
+        s.get(i).visitStatements(v);
       }
+    super.visitStatements(v);
   }
 
 

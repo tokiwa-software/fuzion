@@ -120,10 +120,12 @@ public abstract class AbstractMatch extends Expr
    */
   public void visitStatements(StatementVisitor v)
   {
+    subject().visitStatements(v);
     super.visitStatements(v);
-    for (var c: cases())
+    var c = cases();
+    for (int i = 0; i < c.size(); i++)
       {
-        c.visitStatements(v);
+        c.get(i).visitStatements(v);
       }
   }
 

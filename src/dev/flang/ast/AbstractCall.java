@@ -114,7 +114,6 @@ public abstract class AbstractCall extends Expr
    */
   public void visitStatements(StatementVisitor v)
   {
-    super.visitStatements(v);
     for (var a : actuals())
       {
         a.visitStatements(v);
@@ -123,6 +122,7 @@ public abstract class AbstractCall extends Expr
       {
         target().visitStatements(v);
       }
+    super.visitStatements(v);
   }
 
 }

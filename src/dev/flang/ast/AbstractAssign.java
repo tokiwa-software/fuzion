@@ -137,9 +137,9 @@ public abstract class AbstractAssign extends ANY implements Stmnt, HasSourcePosi
    */
   public void visitStatements(StatementVisitor v)
   {
-    Stmnt.super.visitStatements(v);
     _value.visitStatements(v);
     _target.visitStatements(v);
+    Stmnt.super.visitStatements(v);
   }
 
 

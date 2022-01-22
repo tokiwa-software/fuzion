@@ -156,8 +156,8 @@ public abstract class Unbox extends Expr
    */
   public void visitStatements(StatementVisitor v)
   {
-    super.visitStatements(v);
     adr_.visitStatements(v);
+    super.visitStatements(v);
   }
 
 
