@@ -1225,17 +1225,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Find all clazzes referenced by this even if this is not executed.
-   */
-  void findAllClasses()
-  {
-  }
-
-
-  /**
    * Find all inner clazzes of this that are referenced when this is executed
    */
-  void findAllClassesWhenCalled()
+  void findAllClasses()
   {
     var f = feature();
     new FindClassesVisitor().visitAncestors(f);
