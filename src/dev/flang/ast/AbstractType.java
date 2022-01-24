@@ -698,7 +698,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             result = hasError ? Types.t_ERROR : result.actualType(g2, o2);
           }
       }
-    return result.astType(); // NYI: remove .astType(), needed only because isAssignableFrom is not correct yet.
+    return result;
   }
 
 
@@ -926,7 +926,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public abstract AbstractType outer();
   public abstract Generic genericArgument();
 
-  public AbstractType astType() { return this; }
 }
 
 /* end of file */
