@@ -241,7 +241,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   public boolean isOuterRef()
   {
-    return featureName().baseName().startsWith(FuzionConstants.OUTER_REF_PREFIX);
+    return outer().outerRef() == this;
   }
 
 

@@ -2294,13 +2294,7 @@ public class Feature extends AbstractFeature implements Stmnt
                                 Consts.VISIBILITY_PRIVATE,
                                 outerRefType,
                                 outerRefName(),
-                                this)
-          {
-            public boolean isOuterRef()
-            {
-              return true;
-            }
-          };
+                                this);
       }
   }
 
@@ -2325,15 +2319,6 @@ public class Feature extends AbstractFeature implements Stmnt
       (isField() || isUniverse() || (this == Types.f_ERROR) || result != null);
 
     return result;
-  }
-
-
-  /**
-   * Check if this is an outer ref field.
-   */
-  public boolean isOuterRef()
-  {
-    return false;
   }
 
 
