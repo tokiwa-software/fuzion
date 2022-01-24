@@ -941,15 +941,6 @@ public class Feature extends AbstractFeature implements Stmnt
   }
 
 
-  /**
-   * Is this a tag field created for a choice-type?
-   */
-  boolean isChoiceTag()
-  {
-    return false;
-  }
-
-
   /*
    * Inheritance resolution for a feature f: recursively, perform inheritance
    * resolution for the outer feature of f and for all direct ancestors of a f,
@@ -1439,7 +1430,7 @@ public class Feature extends AbstractFeature implements Stmnt
     for (AbstractFeature p : res._module.declaredOrInheritedFeatures(this).values())
       {
         // choice type must not have any fields
-        if (p.isField() && !p.isOuterRef() && !p.isChoiceTag())
+        if (p.isField() && !p.isOuterRef() && (p != p.outer().choiceTag()))
           {
             AstErrors.choiceMustNotContainFields(_pos,p);
           }
@@ -1517,16 +1508,7 @@ public class Feature extends AbstractFeature implements Stmnt
                              Consts.VISIBILITY_PRIVATE,
                              Types.resolved.t_i32,
                              FuzionConstants.CHOICE_TAG_NAME,
-                             this)
-      {
-        /**
-         * Is this a tag field created for a choice-type?
-         */
-        boolean isChoiceTag()
-        {
-          return true;
-        }
-      };
+                             this);
     choiceTag_.scheduleForResolution(res);
   }
 

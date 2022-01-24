@@ -735,7 +735,7 @@ public class Interpreter extends ANY
                      ocv != Clazzes.u64 .getIfCreated() || f.qualifiedName().equals("u64.val"),
                      ocv != Clazzes.f32 .getIfCreated() || f.qualifiedName().equals("f32.val") &&
                      ocv != Clazzes.f64 .getIfCreated() || f.qualifiedName().equals("f64.val"),
-                     ocv != Clazzes.bool.getIfCreated() || f.qualifiedName().equals("bool." + FuzionConstants.CHOICE_TAG_NAME));
+                     ocv != Clazzes.bool.getIfCreated() || f == Types.resolved.f_bool.choiceTag());
                   result = (args) -> args.get(0);
                 }
               else
@@ -1275,7 +1275,7 @@ public class Interpreter extends ANY
     else if (staticClazz == Clazzes.bool.getIfCreated() && curValue instanceof boolValue)
       {
         check
-          (thiz.qualifiedName().equals("bool." + FuzionConstants.CHOICE_TAG_NAME));
+          (thiz == Types.resolved.f_bool.choiceTag());
         result = curValue;
       }
     else

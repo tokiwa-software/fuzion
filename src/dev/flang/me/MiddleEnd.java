@@ -137,7 +137,6 @@ public class MiddleEnd extends ANY
    * Mark internally used features as used.
    */
   void markInternallyUsed() {
-    var tag = FuzionConstants.CHOICE_TAG_NAME;
     var universe = _mir.universe();
     var m = Clazz._module;
     markUsed(universe.get(m, "i8" ,1).get(m, "val"), SourcePosition.builtIn);
@@ -150,7 +149,7 @@ public class MiddleEnd extends ANY
     markUsed(universe.get(m, "u64",1).get(m, "val"), SourcePosition.builtIn);
     markUsed(universe.get(m, "f32",1).get(m, "val"), SourcePosition.builtIn);
     markUsed(universe.get(m, "f64",1).get(m, "val"), SourcePosition.builtIn);
-    markUsed(universe.get(m, "bool" ).get(m, tag  ), SourcePosition.builtIn);
+    markUsed(universe.get(m, "bool" ).choiceTag()  , SourcePosition.builtIn);
     markUsed(universe.get(m, "conststring")                   , SourcePosition.builtIn);
     markUsed(universe.get(m, "conststring").get(m, "isEmpty" ), SourcePosition.builtIn);  // NYI: check why this is not found automatically
     markUsed(universe.get(m, "conststring").get(m, "asString"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
