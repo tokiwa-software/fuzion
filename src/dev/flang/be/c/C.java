@@ -703,7 +703,7 @@ public class C extends ANY
    */
   CStmnt constString(byte[] bytes, CIdent tmp)
   {
-    var sysArray = fields(tmp, _fuir.clazz_conststring()).field(new CIdent("fzF_0_internalArray"));
+    var sysArray = fields(tmp, _fuir.clazz_conststring()).field(new CIdent("fzF_1_internalArray"));
     return CStmnt.seq(CStmnt.decl("fzT__R1conststring *", tmp),
                       tmp.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("fzT__R1conststring")))),
                       tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(_fuir.clazz_conststring())),
