@@ -241,7 +241,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   public boolean isOuterRef()
   {
-    return outer().outerRef() == this;
+    var o = outer();
+    return o != null && o.outerRef() == this;
   }
 
 
@@ -881,7 +882,11 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   public boolean hasOuterRef()
   {
-    return !isField() && !isChoice() && !isUniverse() && (this != Types.f_ERROR);
+    return
+      !isField() &&
+      // !isChoice() &&   NYI: choice shouuld not have an outer ref!
+      !isUniverse() &&
+      (this != Types.f_ERROR);
   }
 
 

@@ -89,6 +89,12 @@ public class LibraryModule extends Module
   static final boolean DUMP = "true".equals(System.getenv("FUZION_DUMP_MODULE_FILE"));
 
 
+  /**
+   * Pre-allocated empty array
+   */
+  static byte[] NO_BYTES = new byte[0];
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -175,6 +181,15 @@ public class LibraryModule extends Module
   }
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * NYI: Convert local index of this module into global index.
+   */
+  int globalIndex(int index)
+  {
+    return index;
+  }
 
 
   /**
@@ -821,8 +836,12 @@ Feature
     var i = featureNamePos(at);
     var d = data();
     var l = d.getInt(i); i = i + 4;
-    var b = new byte[l];
-    d.get(i, b);
+    var b = NO_BYTES;
+    if (l > 0)
+      {
+        b = new byte[l];
+        d.get(i, b);
+      }
     return b;
   }
   int featureArgCountPos(int at)

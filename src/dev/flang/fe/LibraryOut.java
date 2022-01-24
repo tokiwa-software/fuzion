@@ -180,7 +180,10 @@ class LibraryOut extends DataOut
         if (f.isChoice())
           {
             check
-              (Errors.count() > 0 || added.isEmpty()); // a choice has no arguments, no result and no outer ref.
+              (Errors.count() > 0 ||
+               added.size() == 1 // a choice has no arguments, no result but one outer ref (to universe).
+                                 // NYI: remove choice's outer ref!
+               );
             var ct = f.choiceTag();
             innerFeatures.add(ct);
             added.add(ct);
@@ -324,7 +327,12 @@ class LibraryOut extends DataOut
       }
     var n = f.featureName();
     write(k);
-    writeName(n.baseName());  // NYI: internal names (outer refs, statement results) are too long and waste memory
+    var bn = n.baseName();
+    if (bn.startsWith("#"))
+      {
+        bn = "";
+      }
+    writeName(bn);
     writeInt (n.argCount());  // NYI: use better integer encoding
     writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
     pos(f.pos());

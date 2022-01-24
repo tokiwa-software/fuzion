@@ -347,7 +347,7 @@ public class LibraryFeature extends AbstractFeature
     if (isChoice())
       {
         var i = _libModule.innerFeatures(_libModule.featureInnerFeaturesPos(_index));
-        result = i.get(0);
+        result = i.get(1);  // first entry is outer ref. NYI: Remove outer ref from choice!
       }
 
     check
@@ -506,8 +506,16 @@ public class LibraryFeature extends AbstractFeature
         var bytes = _libModule.featureName(_index);
         var ac = _libModule.featureArgCount(_index);
         var id = _libModule.featureId(_index);
-        var bn = new String(bytes, StandardCharsets.UTF_8);
-        result = FeatureName.get(bn, ac, id);
+        if (bytes.length == 0)
+          {
+            var gi = _libModule.globalIndex(_index);
+            result = FeatureName.get(gi, ac, id);
+          }
+        else
+          {
+            var bn = new String(bytes, StandardCharsets.UTF_8);
+            result = FeatureName.get(bn, ac, id);
+          }
         _featureName = result;
       }
     return result;
