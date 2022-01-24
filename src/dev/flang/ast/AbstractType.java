@@ -55,6 +55,16 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public YesNo _dependsOnGenerics = YesNo.dontKnow;
 
 
+  /**
+   * Cached results for actualType(t) and actualType(f, List<AbstractType>);
+   */
+  private Object _actualTypeCachedFor1;
+  private AbstractType _actualTypeCache;
+  private Object _actualType2CachedFor1;
+  private Object _actualType2CachedFor2;
+  private AbstractType _actualType2Cache;
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -541,6 +551,41 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        Errors.count() > 0 || !t.isOpenGeneric(),
        isGenericArgument() || featureOfType().generics().sizeMatches(generics()));
 
+    AbstractType result;
+    if (t._actualTypeCachedFor1 == this)
+      {
+        result = t._actualTypeCache;
+      }
+    else
+      {
+        result = actualType_(t);
+        t._actualTypeCachedFor1 = this;
+        t._actualTypeCache = result;
+      }
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+    return result;
+  }
+
+
+  /**
+   * Replace generic types used in given type t by the actual generic arguments
+   * given in this.
+   *
+   * Internal version of actualType(t) that does not perform caching.
+   *
+   * @param t a possibly generic type, must not be an open generic.
+   *
+   * @return t with all generic arguments from this.featureOfType._generics
+   * replaced by this._generics.
+   */
+  private AbstractType actualType_(AbstractType t)
+  {
+    /* NYI: Performance: This requires time in O(this.depth *
+     * featureOfType.inheritanceDepth * t.depth), i.e. it is in O(n³)! Caching
+     * is used to alleviate this a bit, but this is probably not sufficient!
+     */
     var result = t;
     if (result.dependsOnGenerics())
       {
@@ -557,9 +602,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               }
           }
       }
-
-    if (POSTCONDITIONS) ensure
-      (result != null);
     return result;
   }
 
@@ -585,7 +627,45 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
        f.generics().sizeMatches(actualGenerics),
        Errors.count() > 0 || !isOpenGeneric() || genericArgument().formalGenerics() != f.generics());
 
-    AbstractType result = this;
+    AbstractType result;
+    if (_actualType2CachedFor1 == f &&
+        _actualType2CachedFor2 == actualGenerics)
+      {
+        result = _actualType2Cache;
+      }
+    else
+      {
+        result = actualType_(f, actualGenerics);
+        _actualType2CachedFor1 = f;
+        _actualType2CachedFor2 = actualGenerics;
+        _actualType2Cache = result;
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if type t depends on a formal generic parameter of this. If so,
+   * replace t by the corresponding actual generic parameter from the list
+   * provided.
+   *
+   * Internal version of actualType(t) that does not perform caching.
+   *
+   * @param f the feature actualGenerics belong to.
+   *
+   * @param actualGenerics the actual generic parameters
+   *
+   * @return t iff t does not depend on a formal generic parameter of this,
+   * otherwise the type that results by replacing all formal generic parameters
+   * of this in t by the corresponding type from actualGenerics.
+   */
+  public AbstractType actualType_(AbstractFeature f, List<AbstractType> actualGenerics)
+  {
+    /* NYI: Performance: This requires time in O(this.depth *
+     * f.inheritanceDepth), i.e. it is in O(n²)!  Caching is used to alleviate
+     * this a bit, but this is probably not sufficient!
+     */
+    var result = this;
     if (f != null)
       {
         for (var i : f.inherits())
