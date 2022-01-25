@@ -46,14 +46,19 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Prefix used for all internal names
+   */
+  public static final String INTERNAL_NAME_PREFIX = "#";
+
+  /**
    * Artificial name of universe feature.
    */
-  public static final String UNIVERSE_NAME    = "#universe";
+  public static final String UNIVERSE_NAME    = INTERNAL_NAME_PREFIX + "universe";
 
   /**
    * Prefix of artifically generated name of outer refs.
    */
-  public static final String OUTER_REF_PREFIX = "#^";
+  public static final String OUTER_REF_PREFIX = INTERNAL_NAME_PREFIX + "^";
 
   /**
    * Name of Object feature, i.e., the implicit parent feature of all other
@@ -73,20 +78,89 @@ public class FuzionConstants extends ANY
    * Artificial name of implicitly declared result field in case the assignment
    * to result is implicitly from the last statement's value.
    */
-  public static final String INTERNAL_RESULT_NAME = "#result";
+  public static final String INTERNAL_RESULT_NAME = INTERNAL_NAME_PREFIX + "result";
 
 
   /**
    * Artificial field added to instances of choice.fz if needed to
    * disambiguate different (value) types.
    */
-  public static final String CHOICE_TAG_NAME = "#tag";
+  public static final String CHOICE_TAG_NAME = INTERNAL_NAME_PREFIX + "tag";
 
 
   /**
    * Prefix for names of anonymous inner features.
    */
-  public static final String ANONYMOUS_FEATURE_PREFIX = "#anonymous";
+  public static final String ANONYMOUS_FEATURE_PREFIX = INTERNAL_NAME_PREFIX + "anonymous";
+
+
+  /**
+   * Field introduced in, e.g.,
+   *
+   *   x := if a then 0 else 1
+   *
+   * converted to
+   *
+   *   if a then
+   *     #stmtResult123 := 0
+   *   else
+   *     #stmtResult123 := 1
+   *   x := #stmtResult123
+   */
+  public static final String STATEMENT_RESULT_PREFIX = INTERNAL_NAME_PREFIX + "stmtResult";
+
+
+  /**
+   * Field introduced in, e.g.,
+   *
+   *   x := a < b < c
+   *
+   * converted to
+   *
+   *   #chainedBoolTemp123 = b
+   *   x := a < #chainedBoolTemp123 && #chainedBoolTemp123 < c
+   */
+  public static final String CHAINED_BOOL_TMP_PREFIX = INTERNAL_NAME_PREFIX + "chainedBoolTemp";
+
+
+  /**
+   * Field introduced in, e.g.,
+   *
+   *   x := a,b -> a*b
+   */
+  public static final String LAMBDA_PREFIX = INTERNAL_NAME_PREFIX + "fun";
+
+
+  /**
+   * Field introduced in, e.g.,
+   *
+   *   x := [a, b, c]
+   */
+  public static final String INLINE_SYS_ARRAY_PREFIX = INTERNAL_NAME_PREFIX + "inlineSysArray";
+
+  /**
+   * Field introduced in, e.g.,
+   *
+   *   for x in set do
+   *     say x
+   */
+  public static final String REC_LOOP_PREFIX = INTERNAL_NAME_PREFIX + "loop";
+
+
+  /**
+   * Field introduced in, e.g.,
+   *
+   *   _ = f a
+   */
+  public static final String UNDERSCORE_PREFIX = INTERNAL_NAME_PREFIX + "_";
+
+
+  /**
+   * Field introduced in, e.g.,
+   *
+   *   (a,b) = f c
+   */
+  public static final String DESTRUCTURE_PREFIX = INTERNAL_NAME_PREFIX + "destructure";
 
 
   /*-----------------  special values used in MIR file  -----------------*/

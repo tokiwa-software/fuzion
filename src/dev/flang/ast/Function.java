@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -301,7 +302,7 @@ public class Function extends ExprWithPos
                              generics,
                              Expr.NO_EXPRS);
     List<Stmnt> statements = new List<Stmnt>(f);
-    String wrapperName = "#fun"+ id++;
+    String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
     _wrapper = new Feature(pos,
                            Consts.VISIBILITY_INVISIBLE,
                            Consts.MODIFIER_FINAL,
@@ -453,7 +454,7 @@ public class Function extends ExprWithPos
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
             inheritsCall_ = new Call(pos(), Types.FUNCTION_NAME, gs, Expr.NO_EXPRS);
             List<Stmnt> statements = new List<Stmnt>(f);
-            String wrapperName = "#fun" + id++;
+            String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             _wrapper = new Feature(pos(),
                                    Consts.VISIBILITY_INVISIBLE,
                                    Consts.MODIFIER_FINAL,
@@ -700,7 +701,7 @@ public class Function extends ExprWithPos
 
             List<Stmnt> statements = new List<Stmnt>(fcall);
 
-            String wrapperName = "#fun"+ id++;
+            String wrapperName = FuzionConstants.LAMBDA_PREFIX + id++;
             Feature function = new Feature(pos(),
                                            Consts.VISIBILITY_INVISIBLE,
                                            Consts.MODIFIER_FINAL,

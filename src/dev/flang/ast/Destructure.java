@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 import dev.flang.util.ANY;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -294,7 +295,7 @@ public class Destructure extends ANY implements Stmnt
                                   _pos,
                                   Consts.VISIBILITY_PRIVATE,
                                   t,
-                                  "#destructure" + id++,
+                                  FuzionConstants.DESTRUCTURE_PREFIX + id++,
                                   outer);
         tmp.scheduleForResolution(res);
         stmnts.add(tmp.resolveTypes(res, outer));

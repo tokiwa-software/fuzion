@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -294,7 +295,7 @@ public class InlineArray extends ExprWithPos
         var sysArrayCall = new Call(pos(), sys , "array", eT, lengthArgs).resolveTypes(res, outer);
         var sysT         = new Type(pos(), "sys", Type.NONE, null);
         var sysArrayT    = new Type(pos(), "array", eT, sysT);
-        var sysArrayName = "#inlineArraySys" + (_id_++);
+        var sysArrayName = FuzionConstants.INLINE_SYS_ARRAY_PREFIX + (_id_++);
         var sysArrayVar  = new Feature(pos(), Consts.VISIBILITY_LOCAL, sysArrayT, sysArrayName, null, outer);
         res._module.findDeclarations(sysArrayVar, outer);
         res.resolveDeclarations(sysArrayVar);

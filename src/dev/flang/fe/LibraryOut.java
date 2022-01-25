@@ -328,7 +328,7 @@ class LibraryOut extends DataOut
     var n = f.featureName();
     write(k);
     var bn = n.baseName();
-    if (bn.startsWith("#"))
+    if (bn.startsWith(FuzionConstants.INTERNAL_NAME_PREFIX))
       {
         bn = "";
       }

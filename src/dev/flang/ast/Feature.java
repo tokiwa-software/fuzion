@@ -631,7 +631,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         // NYI: Check that this feature is allowed to have this name, i.e., it
         // is declared in a Destructure statement.
-        n = "#_"+ underscoreId++;
+        n = FuzionConstants.UNDERSCORE_PREFIX + underscoreId++;
       }
     this._qname     = qname;
     this._generics  = g;
@@ -828,7 +828,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public boolean isArtificialField()
   {
-    return isField() && _featureName.baseName().startsWith("#");
+    return isField() && _featureName.baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
   }
 
 

@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -226,7 +227,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
                                 pos,
                                 Consts.VISIBILITY_INVISIBLE,
                                 t,
-                                "#stmtResult" + (_id_++),
+                                FuzionConstants.STATEMENT_RESULT_PREFIX + (_id_++),
                                 outer);
         r.scheduleForResolution(res);
         res.resolveTypes();

@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.Iterator;
 
 import dev.flang.util.ANY;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -221,7 +222,7 @@ public class Loop extends ANY
 
 
   /**
-   * The name of this loop's tail recursive routine, without leading "#"
+   * The name of this loop's tail recursive routine, used as prefix for internal names
    */
   private final String _rawLoopName;
 
@@ -283,7 +284,7 @@ public class Loop extends ANY
     _successBlock = sb;
     _elseBlock0 = eb0;
     _elseBlock1 = eb1;
-    var loopName = "#loop" +  _id_++ ;
+    var loopName = FuzionConstants.REC_LOOP_PREFIX +  _id_++ ;
     _rawLoopName = loopName;
     if (!iterates() && whileCond == null && _elseBlock0 != null)
       {
