@@ -83,13 +83,20 @@ public class FrontEndOptions extends FuzionOptions
   final Path _saveBaseLib;
 
 
+  /**
+   * When saving to a .fum module file, erase internal names of features since
+   * they should not be needed. This can be disabled for debugging.
+   */
+  final boolean _eraseInternalNamesInLib;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Costructor initializing fields as given.
    */
-  public FrontEndOptions(int verbose, Path fuzionHome, Path saveBaseLib, List<String> modules, int fuzionDebugLevel, boolean fuzionSafety, boolean readStdin, String main)
+  public FrontEndOptions(int verbose, Path fuzionHome, Path saveBaseLib, boolean eraseInternalNamesInLib, List<String> modules, int fuzionDebugLevel, boolean fuzionSafety, boolean readStdin, String main)
   {
     super(verbose,
           fuzionDebugLevel,
@@ -105,6 +112,7 @@ public class FrontEndOptions extends FuzionOptions
 
     _fuzionHome = fuzionHome;
     _saveBaseLib = saveBaseLib;
+    _eraseInternalNamesInLib = eraseInternalNamesInLib;
     _readStdin = readStdin;
     Path inputFile = null;
     if (main != null)

@@ -183,6 +183,12 @@ class Fuzion extends Tool
 
 
   /**
+   * When saving a library, should we erase internal names?
+   */
+  Boolean _eraseInternalNamesInLib = null;
+
+
+  /**
    * Flag to enable intrinsic functions such as fuzion.java.callVirtual. These are
    * not allowed if run in a web playground.
    */
@@ -265,7 +271,7 @@ class Fuzion extends Tool
   protected String STANDARD_OPTIONS(boolean xtra)
   {
     return super.STANDARD_OPTIONS(xtra) +
-      (xtra ? "[-XfuzionHome=<path>] [-XsaveBaseLib=<path>] " : "");
+      (xtra ? "[-XfuzionHome=<path>] [-XsaveBaseLib=<path>] [-XeraseInternalNamesInLib=(on|off)] " : "");
   }
 
 
@@ -451,12 +457,13 @@ class Fuzion extends Tool
                   }
                 _backend = _allBackends_.get(a);
               }
-            else if (a.startsWith("-XfuzionHome="     )) { _fuzionHome             = parsePath(a);              }
-            else if (a.startsWith("-XsaveBaseLib="    )) { _saveBaseLib            = parsePath(a);              }
-            else if (a.startsWith("-modules="         )) { _modules.addAll(parseStringListArg(a));              }
-            else if (a.matches("-debug(=\\d+|)"       )) { _debugLevel             = parsePositiveIntArg(a, 1); }
-            else if (a.startsWith("-safety="          )) { _safety                 = parseOnOffArg(a);          }
-            else if (a.startsWith("-unsafeIntrinsics=")) { _enableUnsafeIntrinsics = parseOnOffArg(a);          }
+            else if (a.startsWith("-XfuzionHome="            )) { _fuzionHome              = parsePath(a);              }
+            else if (a.startsWith("-XsaveBaseLib="           )) { _saveBaseLib             = parsePath(a);              }
+            else if (a.startsWith("-XeraseInternalNamesInLib")) { _eraseInternalNamesInLib = parseOnOffArg(a);          }
+            else if (a.startsWith("-modules="                )) { _modules.addAll(parseStringListArg(a));               }
+            else if (a.matches("-debug(=\\d+|)"              )) { _debugLevel              = parsePositiveIntArg(a, 1); }
+            else if (a.startsWith("-safety="                 )) { _safety                  = parseOnOffArg(a);          }
+            else if (a.startsWith("-unsafeIntrinsics="       )) { _enableUnsafeIntrinsics  = parseOnOffArg(a);          }
             else if (_backend.handleOption(a))
               {
               }
@@ -486,6 +493,14 @@ class Fuzion extends Tool
       {
         fatal("no '-' to read from stdin may be given if -XsaveBaseLib is set");
       }
+    if (_saveBaseLib != null && _backend != Backend.undefined)
+      {
+        fatal("no backend may be specified in conjunction with -XsaveBaseLib");
+      }
+    if (_eraseInternalNamesInLib != null && _saveBaseLib == null)
+      {
+        fatal("-XeraseInternalNamesInLib may only be specified when creating a library using -XsaveBaseLib");
+      }
     if (_main != null && _readStdin)
       {
         fatal("cannot process main feature name together with stdin input");
@@ -503,6 +518,7 @@ class Fuzion extends Tool
         var options = new FrontEndOptions(_verbose,
                                           _fuzionHome,
                                           _saveBaseLib,
+                                          _eraseInternalNamesInLib == null ? true : _eraseInternalNamesInLib,
                                           _modules,
                                           _debugLevel,
                                           _safety,
