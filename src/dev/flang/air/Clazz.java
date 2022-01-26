@@ -345,10 +345,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
      */
     this._outer = normalizeOuter(actualType, outer);
 
-    if (isChoice())
-      {
-        choiceGenerics_ = choiceGenerics();
-      }
     this._dynamicBinding = null;
   }
 
@@ -362,6 +358,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   void dependencies()
   {
+    choiceGenerics_ = determineChoiceGenerics();
     _resultClazz = determineResultClazz();
     _resultField = determineResultField();
     _argumentFields = determineArgumentFields();
@@ -1399,18 +1396,39 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * @return the actual clazzes of this choice clazz, in the order they appear
    * as actual generics.
    */
+  private ArrayList<Clazz> determineChoiceGenerics()
+  {
+    ArrayList<Clazz> result;
+
+    if (isChoice())
+      {
+        result = new ArrayList<>();
+        for (var t : actualGenerics(feature().choiceGenerics()))
+          {
+            result.add(actualClazz(t));
+          }
+      }
+    else
+      {
+        result = null;
+      }
+
+    return result;
+  }
+
+
+  /**
+   * Obtain the actual classes of a choice.
+   *
+   * @return the actual clazzes of this choice clazz, in the order they appear
+   * as actual generics.
+   */
   public ArrayList<Clazz> choiceGenerics()
   {
     if (PRECONDITIONS) require
       (isChoice());
 
-    ArrayList<Clazz> result = new ArrayList<>();
-    for (var t : actualGenerics(feature().choiceGenerics()))
-      {
-        result.add(actualClazz(t));
-      }
-
-    return result;
+    return choiceGenerics_;
   }
 
 
