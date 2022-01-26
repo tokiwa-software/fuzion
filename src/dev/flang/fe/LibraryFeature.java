@@ -321,7 +321,7 @@ public class LibraryFeature extends AbstractFeature
     if (isChoice())
       {
         var i = innerFeatures();
-        result = i.get(1);  // first entry is outer ref. NYI: Remove outer ref from choice!
+        result = i.get(0);  // first entry is outer ref.
       }
 
     if (CHECKS) check

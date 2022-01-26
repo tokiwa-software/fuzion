@@ -2282,14 +2282,12 @@ public class Feature extends AbstractFeature implements Stmnt
   public void addOuterRef(Resolution res)
   {
     if (PRECONDITIONS) require
-      (this._outer != null,
-       _state == State.FINDING_DECLARATIONS);
+      (_state == State.FINDING_DECLARATIONS);
 
-    var o = this._outer;
-    if (_impl._code != null || _contract != Contract.EMPTY_CONTRACT)
+    if (hasOuterRef())
       {
         var outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
-                                                  : o.thisType();
+                                                  : this._outer.thisType();
         outerRef_ = new Feature(res,
                                 _pos,
                                 Consts.VISIBILITY_PRIVATE,
@@ -2312,12 +2310,12 @@ public class Feature extends AbstractFeature implements Stmnt
       (isUniverse() || (this == Types.f_ERROR) || outer() != null,
        (this == Types.f_ERROR) ||
        _state.atLeast(State.RESOLVED_DECLARATIONS) &&
-       (!_state.atLeast(State.CHECKING_TYPES2) || outerRef_ != null || isField() || isUniverse()));
+       (!_state.atLeast(State.CHECKING_TYPES2) || outerRef_ != null || !hasOuterRef()));
 
     Feature result = outerRef_;
 
     if (POSTCONDITIONS) ensure
-      (isField() || isUniverse() || (this == Types.f_ERROR) || result != null);
+      (!hasOuterRef() || result != null);
 
     return result;
   }

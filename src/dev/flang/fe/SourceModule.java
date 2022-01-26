@@ -512,11 +512,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
     inner.setOuter(outer);
     inner.setState(Feature.State.FINDING_DECLARATIONS);
     inner.checkName();
+    inner.addOuterRef(_res);
 
     if (outer != null)
       {
         addDeclaredInnerFeature(outer, inner);
-        inner.addOuterRef(_res);
       }
     for (var a : inner.arguments())
       {

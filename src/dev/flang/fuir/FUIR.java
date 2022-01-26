@@ -717,7 +717,8 @@ hw25 is
         */
 
         var pf = p.calledFeature();
-        var or = (Clazz) cc._inner.get(pf.outerRef());  // NYI: ugly cast
+        var of = pf.outerRef();
+        var or = (of == null) ? null : (Clazz) cc._inner.get(of);  // NYI: ugly cast
         toStack(code, p.target());
         if (or != null && !or.resultClazz().isUnitType())
           {

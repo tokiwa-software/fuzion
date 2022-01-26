@@ -883,10 +883,13 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public boolean hasOuterRef()
   {
     return
+      (this != Types.f_ERROR) &&
+      // !isAbstract() &&      // NYI: check why abstract requires outer ref
+      // !isIntrinsic() &&     // outer is require for backend code generator
       !isField() &&
-      // !isChoice() &&   NYI: choice shouuld not have an outer ref!
+      !isChoice() &&
       !isUniverse() &&
-      (this != Types.f_ERROR);
+      !outer().isUniverse();
   }
 
 

@@ -181,8 +181,7 @@ class LibraryOut extends DataOut
           {
             if (CHECKS) check
               (Errors.count() > 0 ||
-               added.size() == 1 // a choice has no arguments, no result but one outer ref (to universe).
-                                 // NYI: remove choice's outer ref!
+               added.size() == 0 // a choice has no arguments, no result, no outer ref
                );
             var ct = f.choiceTag();
             innerFeatures.add(ct);
