@@ -376,7 +376,7 @@ visiList    : e=visi ( COMMA visiList
         else if (skip(Token.t_private  )) { v = Consts.VISIBILITY_PRIVATE  ; }
         else if (skip(Token.t_protected)) { v = Consts.VISIBILITY_CHILDREN ; }
         else if (skip(Token.t_public   )) { v = Consts.VISIBILITY_PUBLIC   ; }
-        else                              { check(false);                    }
+        else                              { throw new Error();               }
       }
     return v;
   }
@@ -520,7 +520,7 @@ name        : IDENT                            // all parts of name must be in s
                 }
               break;
             }
-          default: check(false);
+          default: throw new Error();
           }
         sameLine(oldLine);
       }
@@ -621,7 +621,7 @@ modifier    : "lazy"
           case t_redefine    : m = Consts.MODIFIER_REDEFINE    ; break;
           case t_const       : m = Consts.MODIFIER_CONST       ; break;
           case t_leaf        : m = Consts.MODIFIER_LEAF        ; break;
-          default            : check(false); m = -1; // not reached.
+          default            : throw new Error();
           }
         if ((ms & m) != 0)
           {

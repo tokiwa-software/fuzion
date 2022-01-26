@@ -1028,7 +1028,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   // following are used in IR/Clazzes middle end or later only:
   public Impl.Kind implKind() { return Impl.Kind.Routine; /* NYI! */ }      // NYI: remove, used only in Clazz.java for some obscure case
-  public Expr initialValue() { check(false); return null; }   // NYI: remove, used only in Clazz.java for some obscure case
+
+  public Expr initialValue()   // NYI: remove, used only in Clazz.java for some obscure case
+  {
+    throw new Error("AbstractFeature.initialValue");
+  }
+
 
   // following used in MIR or later
   public abstract Expr code();

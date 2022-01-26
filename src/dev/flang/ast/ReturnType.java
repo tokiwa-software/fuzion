@@ -74,8 +74,6 @@ public abstract class ReturnType extends ANY
       (!isConstructorType());
 
     throw new Error(); // this is redefined for FuncionReturnType
-
-    return null; // not reached
   }
 
 
