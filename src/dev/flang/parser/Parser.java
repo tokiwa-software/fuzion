@@ -2508,7 +2508,7 @@ stmnts      :
       var progress = lastPos < pos;
       var indented = firstIndent > oldIndent;
       var ok = indented && progress;
-      check
+      if (CHECKS) check
         (Errors.count() > 0 || progress);
       if (ok && lastLineNum != lineNum(pos))
         { // a new line, so check its indentation:
@@ -2769,7 +2769,7 @@ ifstmnt      : "if" exprInLine thenPart elseBlockOpt
           }
         else
           {
-            check
+            if (CHECKS) check
               (els == null);
           }
         return result;

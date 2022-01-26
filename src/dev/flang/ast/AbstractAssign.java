@@ -80,7 +80,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt, HasSourcePosi
    */
   public AbstractAssign(Expr v)
   {
-    check
+    if (CHECKS) check
       (v != null);
 
     this._value = v;
@@ -186,7 +186,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt, HasSourcePosi
    */
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
-    check
+    if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.count() > 0);
 
     if (_assignedField != Types.f_ERROR)
@@ -204,7 +204,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt, HasSourcePosi
    */
   public void box(AbstractFeature outer)
   {
-    check
+    if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.count() > 0);
 
     if (_assignedField != Types.f_ERROR)
@@ -221,7 +221,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt, HasSourcePosi
    */
   public void checkTypes(Resolution res)
   {
-    check
+    if (CHECKS) check
       (_assignedField != Types.f_ERROR || Errors.count() > 0);
 
     var f = _assignedField;
@@ -229,7 +229,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt, HasSourcePosi
       {
         var frmlT = f.resultType();
 
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || frmlT != Types.t_ERROR);
 
         if (!frmlT.isAssignableFrom(_value))
@@ -237,7 +237,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt, HasSourcePosi
             AstErrors.incompatibleTypeInAssignment(pos(), f, frmlT, _value);
           }
 
-        check
+        if (CHECKS) check
           (res._module.lookupFeature(this._target.type().featureOfType(), f.featureName()) == f || Errors.count() > 0);
       }
   }

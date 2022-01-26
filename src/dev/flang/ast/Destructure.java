@@ -194,7 +194,7 @@ public class Destructure extends ANY implements Stmnt
       }
     else
       {
-        check
+        if (CHECKS) check
           (!def);
         names = new List<String>();
         for (Feature f : fields)

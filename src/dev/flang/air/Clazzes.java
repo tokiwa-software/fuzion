@@ -342,7 +342,7 @@ public class Clazzes extends ANY
         result = intern(newcl);
         if (result == newcl)
           {
-            check
+            if (CHECKS) check
               (Errors.count() > 0 || !(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED));
             if (!(result.feature() instanceof Feature f) || f.state().atLeast(Feature.State.RESOLVED))
               {
@@ -386,7 +386,7 @@ public class Clazzes extends ANY
     create(Types.t_ADDRESS, universe.get());
 
     // mark internally referenced clazzes as called or instantiated:
-    check
+    if (CHECKS) check
       (Errors.count() > 0 || main != null);
     if (main != null)
       {
@@ -433,7 +433,7 @@ public class Clazzes extends ANY
               }
           }
       }
-    check
+    if (CHECKS) check
       (clazzesToBeVisited.size() == 0);
     closed = true;
     for (var cl : clazzes.keySet())
@@ -688,7 +688,7 @@ public class Clazzes extends ANY
     if (PRECONDITIONS) require
       (a != null, outerClazz != null);
 
-    check
+    if (CHECKS) check
       (Errors.count() > 0 || a._target != null);
 
     if (a._target != null)

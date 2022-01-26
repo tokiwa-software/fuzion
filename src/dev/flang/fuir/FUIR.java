@@ -292,7 +292,8 @@ public class FUIR extends IR
     for (var i = 0; i < result.size(); i++)
       {
         res[i] = _clazzIds.get(result.get(i));
-        check(res[i] != -1);
+        if (CHECKS) check
+          (res[i] != -1);
       }
     return res;
   }
@@ -729,7 +730,7 @@ hw25 is
             code.add(ExprKind.Current);
             code.add(or);  // field clazz means assignment to field
           }
-        check
+        if (CHECKS) check
           (p.actuals().size() == p.calledFeature().arguments().size());
         for (var i = 0; i < p.actuals().size(); i++)
           {
@@ -1134,7 +1135,8 @@ hw25 is
     for (var i = 0; i < innerClazzes.size(); i++)
       {
         innerClazzIds[i] = _clazzIds.get(innerClazzes.get(i));
-        check(innerClazzIds[i] != -1);
+        if (CHECKS) check
+          (innerClazzIds[i] != -1);
       }
     return innerClazzIds;
   }

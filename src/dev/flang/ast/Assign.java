@@ -73,7 +73,7 @@ public class Assign extends AbstractAssign
   {
     super(v);
 
-    check
+    if (CHECKS) check
       (pos != null,
        n != null,
        v != null);
@@ -174,7 +174,7 @@ public class Assign extends AbstractAssign
     if (f == null)
       {
         var fo = res._module.lookupNoTarget(outer, _name, null, destructure == null ? this : null, destructure);
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || fo.features.size() <= 1);
         f = fo.filter(pos(), FeatureName.get(_name, 0), __ -> false);
         if (f == null)
@@ -185,7 +185,10 @@ public class Assign extends AbstractAssign
         _assignedField = f;
         _target        = fo.target(pos(), res, outer);
       }
-    if      (f == Types.f_ERROR          ) { check(Errors.count() > 0); /* ignore */ }
+    if      (f == Types.f_ERROR          ) { if (CHECKS) check
+                                               (Errors.count() > 0);
+                                             /* ignore */
+                                           }
     else if (!f.isField()                ) { AstErrors.assignmentToNonField    (this, f, outer); }
     else if (!_indexVarAllowed       &&
              f instanceof Feature ff &&

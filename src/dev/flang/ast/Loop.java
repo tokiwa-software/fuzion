@@ -533,7 +533,7 @@ public class Loop extends ANY
         i++;
         Feature f = ivi.next();
         Feature n = nvi.next();
-        check
+        if (CHECKS) check
           (f.impl().kind_ != Impl.Kind.FieldIter);
         var p = f.pos();
         var ia = new Call(p, f.featureName().baseName());

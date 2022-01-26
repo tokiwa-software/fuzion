@@ -120,7 +120,7 @@ public class IR extends ANY
      */
     public static ExprKind from(int ordinal)
     {
-      check
+      if (CHECKS) check
         (values()[ordinal].ordinal() == ordinal);
 
       return values()[ordinal];

@@ -278,7 +278,7 @@ public class LibraryFeature extends AbstractFeature
         _resultField = result;
       }
 
-    check
+    if (CHECKS) check
       (hasResultField() == (result != null));
 
     return result;
@@ -301,7 +301,7 @@ public class LibraryFeature extends AbstractFeature
         _outerRef = result;
       }
 
-    check
+    if (CHECKS) check
       (hasOuterRef() == (result != null));
 
     return result;
@@ -324,7 +324,7 @@ public class LibraryFeature extends AbstractFeature
         result = i.get(1);  // first entry is outer ref. NYI: Remove outer ref from choice!
       }
 
-    check
+    if (CHECKS) check
       (isChoice() == (result != null));
 
     return result;
@@ -556,7 +556,7 @@ public class LibraryFeature extends AbstractFeature
       {
         var s = new Stack<Expr>();
         code(at, s, -1);
-        check
+        if (CHECKS) check
           (s.size() == 1);
         res = s.pop();
         _libModule._code1.put(at, res);
@@ -575,7 +575,7 @@ public class LibraryFeature extends AbstractFeature
       {
         var s = new Stack<Expr>();
         res = code(at, s, -1);
-        check
+        if (CHECKS) check
           (s.size() == 0);
         _libModule._code.put(at, res);
       }
@@ -724,7 +724,7 @@ public class LibraryFeature extends AbstractFeature
           }
         if (x != null)
           {
-            check
+            if (CHECKS) check
               (c == null);
             if (!l.isEmpty())
               {

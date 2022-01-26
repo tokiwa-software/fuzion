@@ -179,7 +179,7 @@ class LibraryOut extends DataOut
           }
         if (f.isChoice())
           {
-            check
+            if (CHECKS) check
               (Errors.count() > 0 ||
                added.size() == 1 // a choice has no arguments, no result but one outer ref (to universe).
                                  // NYI: remove choice's outer ref!
@@ -316,10 +316,10 @@ class LibraryOut extends DataOut
       !f.isConstructor() ? f.kind().ordinal() :
       f.isThisRef()      ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
                          : FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE;
-    check
+    if (CHECKS) check
       (k >= 0,
        f.isConstructor() || k < FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
-    check
+    if (CHECKS) check
       (Errors.count() > 0 || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
     if (f.generics() != FormalGenerics.NONE)
       {
@@ -346,7 +346,7 @@ class LibraryOut extends DataOut
       }
     if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0)
       {
-        check
+        if (CHECKS) check
           (f.generics().list.size() > 0);
         writeInt(f.generics().list.size());
         writeBool(f.generics().isOpen());
@@ -357,7 +357,7 @@ class LibraryOut extends DataOut
             type(g.constraint());
           }
       }
-    check
+    if (CHECKS) check
       (f.arguments().size() == f.featureName().argCount());
     if (!f.isConstructor() && !f.isChoice())
       {
@@ -449,7 +449,7 @@ class LibraryOut extends DataOut
         addOffset(t, offset());
         if (t.isGenericArgument())
           {
-            check
+            if (CHECKS) check
               (!t.isRef());
             writeInt(-1);
             writeOffset(t.genericArgument());
@@ -457,7 +457,8 @@ class LibraryOut extends DataOut
         else
           {
             boolean makeRef = t.isRef() && !t.featureOfType().isThisRef();
-            check // there is no explicit value type at this phase:
+            // there is no explicit value type at this phase:
+            if (CHECKS) check
               (makeRef || t.isRef() == t.featureOfType().isThisRef());
             writeInt(t.generics().size());
             writeOffset(t.featureOfType());
@@ -717,14 +718,14 @@ class LibraryOut extends DataOut
         else
           {
             n = cf.generics().list.size();
-            check
+            if (CHECKS) check
               (c.generics.size() == n);
           }
         for (int i = 0; i < n; i++)
           {
             type(c.generics.get(i));
           }
-        check
+        if (CHECKS) check
           (cf.resultType().isOpenGeneric() == (c.select() >= 0));
         if (cf.resultType().isOpenGeneric())
           {
@@ -778,7 +779,7 @@ class LibraryOut extends DataOut
             else
               {
                 var ts = c.types();
-                check
+                if (CHECKS) check
                   (ts.size() > 0);
                 writeInt(ts.size());
                 for (var t : ts)
@@ -1065,7 +1066,7 @@ class LibraryOut extends DataOut
         var g  = _fixUpsG  .get(i);
         var at = _fixUpsGAt.get(i);
         var o = _offsetsForGeneric.get(g);
-        check
+        if (CHECKS) check
           (o != null);
         writeIntAt(at, o);
       }
@@ -1074,7 +1075,7 @@ class LibraryOut extends DataOut
         var g  = _fixUpsF  .get(i);
         var at = _fixUpsFAt.get(i);
         var o = _offsetsForFeature.get(g);
-        check
+        if (CHECKS) check
           (o != null);
         writeIntAt(at, o);
       }
@@ -1085,7 +1086,7 @@ class LibraryOut extends DataOut
         var sf = p._sourceFile;
         var n = fileName(sf);
         var o = _sourceFilePositions.get(n) + p.bytePos();
-        check
+        if (CHECKS) check
           (o > 0);
         writeIntAt(at, o);
       }

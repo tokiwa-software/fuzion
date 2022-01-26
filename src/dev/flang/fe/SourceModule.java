@@ -235,7 +235,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   void createASTandResolve()
   {
-    check
+    if (CHECKS) check
       (_universe != null);
 
     if (_dependsOn.length > 0)
@@ -529,7 +529,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         public Call      action(Call      c, AbstractFeature outer) {
           if (c.name == null)
             { /* this is an anonymous feature declaration */
-              check
+              if (CHECKS) check
                 (Errors.count() > 0  || c.calledFeature() != null);
 
               if (c.calledFeature() instanceof Feature cf)
@@ -668,7 +668,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     for (var p : outer.inherits())
       {
         var cf = p.calledFeature().libraryFeature();
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || cf != null);
 
         if (cf != null)
@@ -684,7 +684,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                       {
                         var fn = fnf.getKey();
                         var f = fnf.getValue();
-                        check
+                        if (CHECKS) check
                           (cf != outer);
 
                         var newfn = cf.handDown(this, f, fn, p, outer);
@@ -698,7 +698,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                   {
                     var fn = fnf.getKey();
                     var f = fnf.getValue();
-                    check
+                    if (CHECKS) check
                       (cf != outer);
 
                     var newfn = cf.handDown(this, f, fn, p, outer);
@@ -774,9 +774,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         else if (existing.outer() == outer)
           {
             // This cannot happen, this case was already handled in addDeclaredInnerFeature:
-            check
-              (false);
-            AstErrors.duplicateFeatureDeclaration(f.pos(), outer, existing);
+            throw new Error();
           }
         else if (existing.generics() != FormalGenerics.NONE)
           {
@@ -846,10 +844,12 @@ public class SourceModule extends Module implements SrcModule, MirModule
     addDeclaredInnerFeature(outer, fn, f);
     if (outer instanceof Feature of && of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
       {
-        check(Errors.count() > 0 ||
-              outer.isChoice() && f.isField() ||
-              outer.isUniverse() ||
-              !declaredOrInheritedFeatures(outer).containsKey(fn));
+        if (CHECKS) check
+          (Errors.count() > 0 ||
+           outer.isChoice() && f.isField() ||
+           outer.isUniverse() ||
+           !declaredOrInheritedFeatures(outer).containsKey(fn));
+
         declaredOrInheritedFeatures(outer).put(fn, f);
         if (!outer.isChoice() || !f.isField())  // A choice does not inherit any fields
           {
@@ -903,7 +903,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         for (var p : f.inherits())
           {
             var cf = p.calledFeature();
-            check
+            if (CHECKS) check
               (Errors.count() > 0 || cf != null);
 
             if (cf != null)
@@ -1136,7 +1136,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
                 if (t1.compareTo(t2) != 0 && !t1.containsError() && !t2.containsError())
                   {
                     // original arg list may be shorter if last arg is open generic:
-                    check
+                    if (CHECKS) check
                       (Errors.count() > 0 ||
                        i < args.size() ||
                        args.get(args.size()-1).resultType().isOpenGeneric());

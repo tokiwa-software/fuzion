@@ -858,7 +858,7 @@ public class Feature extends AbstractFeature implements Stmnt
           ? _returnType.functionReturnType()
           : Types.t_UNDEFINED /* dummy type, will be replaced during TYPES_INFERENCING phase */;
 
-        check
+        if (CHECKS) check
           (resultField_ == null);
         resultField_ = new Feature(res,
                                    _pos,
@@ -917,7 +917,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         for (var p: _inherits)
           {
-            check
+            if (CHECKS) check
               (Errors.count() > 0 || p.calledFeature() != null);
 
             if (p.calledFeature() == Types.resolved.f_choice)
@@ -974,7 +974,7 @@ public class Feature extends AbstractFeature implements Stmnt
     for (var c: _inherits)
       {
         Expr nc = c.visit(v, this);
-        check
+        if (CHECKS) check
           (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
     _contract.visit(v, this);
@@ -1100,7 +1100,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         _state = State.RESOLVING_INHERITANCE;
 
-        check
+        if (CHECKS) check
           ((_outer == null) || _outer.state().atLeast(State.RESOLVING));
 
         var i = _inherits.listIterator();
@@ -1113,7 +1113,7 @@ public class Feature extends AbstractFeature implements Stmnt
                 cp.isInheritanceCall_ = true;
               }
             var parent = p.calledFeature();
-            check
+            if (CHECKS) check
               (Errors.count() > 0 || parent != null);
             if (parent instanceof Feature fp)
               {
@@ -1157,13 +1157,13 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         _state = State.RESOLVING_DECLARATIONS;
 
-        check
+        if (CHECKS) check
           (_state == State.RESOLVING_DECLARATIONS);
 
         this._returnType = _impl.checkReturnType(this);
         res._module.findDeclaredOrInheritedFeatures(this);
 
-        check
+        if (CHECKS) check
           (_state.atLeast(State.RESOLVING_DECLARATIONS));
 
         if (_state == State.RESOLVING_DECLARATIONS)
@@ -1529,7 +1529,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         // choice type is leaf
         var cf = p.calledFeature();
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || cf != null);
 
         if (cf != null && cf.isChoice() && cf != Types.resolved.f_choice)
@@ -1559,7 +1559,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         _state = State.TYPES_INFERENCING;
 
-        check
+        if (CHECKS) check
           (resultType_ == null
            || isUniverse() // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
            );
@@ -1810,7 +1810,7 @@ public class Feature extends AbstractFeature implements Stmnt
   {
     Stmnt result = this;
 
-    check
+    if (CHECKS) check
       (this.outer() == outer);
 
     if (_impl.kind_ == Impl.Kind.FieldDef    ||
@@ -2103,7 +2103,7 @@ public class Feature extends AbstractFeature implements Stmnt
   {
     AbstractType result;
 
-    check
+    if (CHECKS) check
       (state().atLeast(State.RESOLVING_TYPES));
 
     if (resultType_ != null)
@@ -2117,13 +2117,13 @@ public class Feature extends AbstractFeature implements Stmnt
     else if (_impl.kind_ == Impl.Kind.FieldDef ||
              _impl.kind_ == Impl.Kind.FieldActual)
       {
-        check
+        if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
         result = _impl._initialValue.typeOrNull();
       }
     else if (_impl.kind_ == Impl.Kind.RoutineDef)
       {
-        check
+        if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
         result = _impl._code.typeOrNull();
       }
@@ -2158,7 +2158,7 @@ public class Feature extends AbstractFeature implements Stmnt
     var result = _state.atLeast(State.RESOLVED_TYPES) ? resultTypeRaw() : null;
     if (result == null)
       {
-        check
+        if (CHECKS) check
           (Errors.count() > 0);
 
         result = Types.t_ERROR;
@@ -2187,7 +2187,8 @@ public class Feature extends AbstractFeature implements Stmnt
 
   public FeatureName featureName()
   {
-    check(_arguments.size() == _featureName.argCount());
+    if (CHECKS) check
+      (_arguments.size() == _featureName.argCount());
     return _featureName;
   }
 

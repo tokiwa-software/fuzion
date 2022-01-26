@@ -1668,7 +1668,7 @@ HEX_TAIL    : "." HEX_DIGITS
     int startPos = _curPos;
     int p = curCodePoint();
 
-    check
+    if (CHECKS) check
       (p == '*');
 
     nextCodePoint();
@@ -1940,11 +1940,11 @@ HEX_TAIL    : "." HEX_DIGITS
         setPos(_curPos);
         for (int i = 0; i < op.length(); i++)
           {
-            check
+            if (CHECKS) check
               (op.charAt(i) == curCodePoint());
             nextCodePoint();
           }
-        check
+        if (CHECKS) check
           (isOperator(op));
       }
   }
@@ -2307,7 +2307,7 @@ HEX_TAIL    : "." HEX_DIGITS
      */
     Token nextRaw()
     {
-      check
+      if (CHECKS) check
         (_stringLexer == this,
          _pos == -1);
 

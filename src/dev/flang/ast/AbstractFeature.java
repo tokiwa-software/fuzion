@@ -69,7 +69,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
      */
     public static Kind from(int ordinal)
     {
-      check
+      if (CHECKS) check
         (values()[ordinal].ordinal() == ordinal);
 
       return values()[ordinal];
@@ -199,7 +199,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (hasOpenGenericsArgList())
       {
         var argCount = arguments().size() + actualGenerics.size() - outer().generics().list.size();
-        check
+        if (CHECKS) check
           (argCount >= 0);
         result =  FeatureName.get(result.baseName(),
                                   argCount);
@@ -274,7 +274,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         AbstractCall lastP = null;
         for (var p: inherits())
           {
-            check
+            if (CHECKS) check
               (Errors.count() > 0 || p.calledFeature() != null);
 
             if (p.calledFeature() == Types.resolved.f_choice)
@@ -444,7 +444,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   AbstractType resultTypeRaw(List<AbstractType> actualGenerics)
   {
-    check
+    if (CHECKS) check
       (state().atLeast(Feature.State.RESOLVING_TYPES));
 
     var result = resultTypeRaw();
@@ -732,7 +732,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                     a = Arrays.copyOf(a, a.length - 1 + frmlTs.size());
                     for (var tg : frmlTs)
                       {
-                        check
+                        if (CHECKS) check
                           (tg == Types.intern(tg));
                         a[i] = tg;
                         i++;
@@ -773,7 +773,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
     var a = handDown(res, new AbstractType[] { t }, heir);
 
-    check
+    if (CHECKS) check
       (Errors.count() > 0 || a.length == 1);
 
     return a.length == 1 ? a[0] : Types.t_ERROR;
@@ -904,7 +904,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     for (var c: inherits())
       {
         var nc = c.visit(fv, this);
-        check
+        if (CHECKS) check
           (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
     contract().visit(fv, this);
@@ -945,11 +945,13 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     var result = new AbstractType[arguments().size()];
     for (var frml : arguments())
       {
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
         var frmlT = frml.resultType();
-        check(frmlT == Types.intern(frmlT));
+        if (CHECKS) check
+          (frmlT == Types.intern(frmlT));
+
         result[argnum] = frmlT;
         argnum++;
       }

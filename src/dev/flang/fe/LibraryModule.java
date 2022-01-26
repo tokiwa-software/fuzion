@@ -371,7 +371,7 @@ public class LibraryModule extends Module
     for (var p : outer.inherits())
       {
         var cf = p.calledFeature().libraryFeature();
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || cf != null);
 
         if (cf != null)
@@ -383,7 +383,7 @@ public class LibraryModule extends Module
               {
                 var fn = fnf.getKey();
                 var f = fnf.getValue();
-                check
+                if (CHECKS) check
                   (cf != outer);
 
                 var newfn = cf.handDown(null /*this*/, f, fn, p, outer);
@@ -464,7 +464,7 @@ public class LibraryModule extends Module
 
     Generic result = null;
     var sz = data().getInt(at);
-    check
+    if (CHECKS) check
       (at+4+sz <= data().limit());
     var i = at+4;
     if (i <= offset && offset < i+sz)
@@ -492,7 +492,7 @@ public class LibraryModule extends Module
               }
             else
               {
-                check
+                if (CHECKS) check
                   (o != null);
                 var inner = featureInnerFeaturesPos(i);
                 if (inner <= offset && offset <= featureNextPos(i))
@@ -501,7 +501,8 @@ public class LibraryModule extends Module
                   }
               }
             i = featureNextPos(i);
-            check(result != null || i <= offset);
+            if (CHECKS) check
+              (result != null || i <= offset);
           }
       }
     return result;
@@ -530,7 +531,7 @@ public class LibraryModule extends Module
           {
             var at2 = typeIndex(at);
             var k2 = typeKind(at2);
-            check
+            if (CHECKS) check
               (k2 == -1 || k2 >= 0);
             result = type(at2);
             // we do not cache references to types, so don't add this to _libraryTypes for at.
@@ -2046,7 +2047,7 @@ Case
       }
     else
       {
-        check
+        if (CHECKS) check
           (n > 0);
         result = caseTypePos(at);
         while (n > 0)
@@ -2227,14 +2228,14 @@ SourceFile
     else
       {
         var at = sourceFilesFirstSourceFilePos();
-        check
+        if (CHECKS) check
           (pos > at);
         var i = 0;
         while (pos > sourceFileNextPos(at))
           {
             at = sourceFileNextPos(at);
             i++;
-            check
+            if (CHECKS) check
               (i < sourceFilesCount());
           }
         var sf = _sourceFiles.get(i);

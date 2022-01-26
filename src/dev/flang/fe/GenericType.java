@@ -110,7 +110,7 @@ public class GenericType extends LibraryType
 
   public AbstractFeature featureOfType()
   {
-    check
+    if (CHECKS) check
       (Errors.count() > 0);
 
     return Types.f_ERROR;
@@ -123,7 +123,7 @@ public class GenericType extends LibraryType
 
   public List<AbstractType> generics()
   {
-    check
+    if (CHECKS) check
       (Errors.count() > 0);
 
     return Type.NONE;
@@ -157,7 +157,8 @@ public class GenericType extends LibraryType
 
   public AbstractType outer()
   {
-    check(Errors.count() > 0);
+    if (CHECKS) check
+      (Errors.count() > 0);
     return null;
   }
 

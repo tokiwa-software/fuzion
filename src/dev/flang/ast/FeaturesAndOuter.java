@@ -98,7 +98,7 @@ public class FeaturesAndOuter extends ANY
         var fn = f.getKey();
         if (fn.equalsExceptId(name))  /* an exact match, so use it: */
           {
-            check
+            if (CHECKS) check
               (Errors.count() > 0 || !match || fn.argCount() == 0);
             if (!match)
               {

@@ -341,7 +341,7 @@ public class MiddleEnd extends ANY
     AbstractFeature sf = m.subject().type().featureOfType();
     AbstractFeature ct = sf.choiceTag();
 
-    check
+    if (CHECKS) check
       (Errors.count() > 0 || ct != null);
 
     if (ct != null)

@@ -291,7 +291,7 @@ public class Case extends AbstractCase
           {
             if (t == Types.t_ERROR)
               {
-                check
+                if (CHECKS) check
                   (Errors.count() > 0);
               }
             else

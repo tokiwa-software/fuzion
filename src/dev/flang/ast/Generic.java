@@ -358,7 +358,7 @@ public class Generic extends ANY
             actuals.next();
             i--;
           }
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || actuals.hasNext());
         result = actuals.hasNext() ? actuals.next() : Types.t_ERROR;
       }
@@ -392,12 +392,12 @@ public class Generic extends ANY
     Generic formal = formals.next();
     while (formals.hasNext())
       {
-        check
+        if (CHECKS) check
           (formal != this);
         actuals.next();
         formal = formals.next();
       }
-    check
+    if (CHECKS) check
       (formal == this);
 
     // Now, return the tail of actuals:

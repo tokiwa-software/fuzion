@@ -158,7 +158,7 @@ public class Match extends AbstractMatch
         AstErrors.matchSubjectMustBeChoice(_subject.pos(), st);
       }
     var cgs = st.choiceGenerics();
-    check
+    if (CHECKS) check
       (cgs != null || Errors.count() > 0);
     if (cgs != null)
       {

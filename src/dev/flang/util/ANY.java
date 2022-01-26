@@ -48,7 +48,8 @@ public class ANY
    */
   public static final boolean PRECONDITIONS  = System.getenv().getOrDefault("PRECONDITIONS" , "false").equals("true");
   public static final boolean POSTCONDITIONS = System.getenv().getOrDefault("POSTCONDITIONS", "false").equals("true");
-  public static final boolean CHECKS = PRECONDITIONS | POSTCONDITIONS;
+  public static final boolean CHECKS = PRECONDITIONS | POSTCONDITIONS |
+    System.getenv().getOrDefault("CHECKS", "false").equals("true");
 
 
   /*-----------------------------  methods  -----------------------------*/

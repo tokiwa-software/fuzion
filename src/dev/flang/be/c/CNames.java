@@ -273,7 +273,7 @@ public class CNames extends ANY
               res = s +
                 res.substring(p.length(), p.length() + 10) + "__" +
                 res.substring(res.length() - MAX_C99_IDENTIFIER_LENGTH + s.length() + 12);
-              check
+              if (CHECKS) check
                 (res.length() == MAX_C99_IDENTIFIER_LENGTH);
             }
           _cache.set(num, res);

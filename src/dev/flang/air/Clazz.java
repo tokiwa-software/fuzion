@@ -547,7 +547,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (t.isOpenGeneric())
       {
         var types = replaceOpen(t);
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || select >= 0 && select < types.size());
         t = 0 <= select && select < types.size() ? types.get(select) : Types.t_ERROR;
       }
@@ -859,7 +859,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (tf != Types.f_ERROR && f != Types.f_ERROR && tf != Types.resolved.f_void)
       {
         var chain = tf.findInheritanceChain(f.outer());
-        check
+        if (CHECKS) check
           (chain != null || Errors.count() > 0);
         if (chain != null)
           {
@@ -956,7 +956,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 innerClazzes = new Clazz[replaceOpen(f.resultType()).size()];
                 _inner.put(f, innerClazzes);
               }
-            check
+            if (CHECKS) check
               (Errors.count() > 0 || select < innerClazzes.length);
             innerClazz = select < innerClazzes.length ? innerClazzes[select] : Clazzes.error.get();
           }
@@ -964,7 +964,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (innerClazz == null)
       {
         AbstractFeature af = findRedefinition(f);
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || af != null);
 
         if (f == Types.f_ERROR || af == null)
@@ -1008,7 +1008,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                     clazzForFieldX(f, select);
                   }
               }
-            check
+            if (CHECKS) check
               (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == af);
           }
       }
@@ -1033,7 +1033,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public Clazz clazzForFieldX(AbstractFeature field, int select)
   {
-    check
+    if (CHECKS) check
       (Errors.count() > 0 || field.isField(),
        Errors.count() > 0 || feature().inheritsFrom(field.outer()));
 
@@ -1041,7 +1041,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (result == null)
       {
         var fo = field.outer();
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || fo != null);
 
         result =
@@ -1189,7 +1189,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             var a = c.actuals().get(i);
             if (i >= cf.arguments().size())
               {
-                check
+                if (CHECKS) check
                   (Errors.count() > 0);
               }
             else
@@ -1204,7 +1204,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
           }
 
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || cf != null);
 
         if (cf != null)
@@ -1431,13 +1431,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         if (g._type.isAssignableFrom(staticTypeOfValue))
           {
-            check
+            if (CHECKS) check
               (result < 0);
             result = index;
           }
         index++;
       }
-    check
+    if (CHECKS) check
       (result >= 0);
 
     return result;
@@ -1678,7 +1678,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           {
             outer = Clazzes.clazz(target, this);
           }
-        check
+        if (CHECKS) check
           (result == null || result == outer);
 
         result = outer;
@@ -1712,7 +1712,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   private int depth(AbstractFeature f)
   {
-    check
+    if (CHECKS) check
       (Errors.count() > 0 || f.isUniverse() || f.outer() != null);
 
     return f.isUniverse() || (f.outer() == null)
@@ -2028,7 +2028,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else
       {
-        check
+        if (CHECKS) check
           (Errors.count() >= 0);
         return new List<>();
       }

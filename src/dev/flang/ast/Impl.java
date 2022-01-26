@@ -163,7 +163,7 @@ public class Impl extends ANY
       }
     else
       {
-        check
+        if (CHECKS) check
           (kind == Kind.Routine    ||
            kind == Kind.RoutineDef    );
         this._code = e;

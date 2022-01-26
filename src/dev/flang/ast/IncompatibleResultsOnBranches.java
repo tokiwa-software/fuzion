@@ -82,7 +82,7 @@ public class IncompatibleResultsOnBranches extends ANY
       {
         add(it.next());
       }
-    check
+    if (CHECKS) check
       (types_.size() > 1);
 
     AstErrors.incompatibleResultsOnBranches(pos, msg, types_, positions_);

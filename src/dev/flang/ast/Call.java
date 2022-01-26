@@ -310,7 +310,7 @@ public class Call extends AbstractCall
     try
       {
         s = Integer.parseInt(select);
-        check
+        if (CHECKS) check
           (s >= 0); // parser should not allow negative value
       }
     catch (NumberFormatException e)
@@ -705,7 +705,7 @@ public class Call extends AbstractCall
         name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
       {
         var targetFeature = targetFeature(res, thiz);
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || targetFeature != null);
         if (targetFeature != null && targetFeature != Types.f_ERROR)
           {
@@ -940,7 +940,9 @@ public class Call extends AbstractCall
   {
     int result = 1;
     var frmlT = frml.resultType();
-    check(frmlT == Types.intern(frmlT));
+    if (CHECKS) check
+      (frmlT == Types.intern(frmlT));
+
     var declF = calledFeature_.outer();
     var heirF = targetTypeOrConstraint(res).featureOfType();
     if (declF != heirF)
@@ -953,7 +955,7 @@ public class Call extends AbstractCall
             // it would change for other arguments, changing the
             // resolvedFormalArgumentTypes array would invalidate
             // argnum for following arguments.
-            check
+            if (CHECKS) check
               (Errors.count() > 0 || argnum == resolvedFormalArgumentTypes.length - 1);
             if (argnum != resolvedFormalArgumentTypes.length -1)
               {
@@ -965,12 +967,12 @@ public class Call extends AbstractCall
       }
     else
       {
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || argnum <= resolvedFormalArgumentTypes.length);
 
         if (argnum < resolvedFormalArgumentTypes.length)
           {
-            check
+            if (CHECKS) check
               (frmlT != null);
             resolvedFormalArgumentTypes[argnum] = frmlT;
           }
@@ -1001,7 +1003,7 @@ public class Call extends AbstractCall
   {
     for (int i = 0; i < n; i++)
       {
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || argnum + i <= resolvedFormalArgumentTypes.length);
 
         if (argnum + i < resolvedFormalArgumentTypes.length)
@@ -1023,7 +1025,7 @@ public class Call extends AbstractCall
                 frmlT = targetTypeOrConstraint(res).actualType(frmlT);
                 frmlT = frmlT.actualType(calledFeature_, generics);
                 frmlT = Types.intern(frmlT);
-                check
+                if (CHECKS) check
                   (frmlT != null);
                 resolvedFormalArgumentTypes[argnum + i] = frmlT;
               }
@@ -1058,7 +1060,7 @@ public class Call extends AbstractCall
       }
     for (int i = 0; i < a.length; i++)
       {
-        check
+        if (CHECKS) check
           (a[i] != null);
         resolvedFormalArgumentTypes[argnum + i] = a[i];
       }
@@ -1079,7 +1081,7 @@ public class Call extends AbstractCall
     int count = 0;
     for (var frml : fargs)
       {
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
         int argnum = count;  // effectively final copy of count
@@ -1194,7 +1196,7 @@ public class Call extends AbstractCall
     int count = 1; // argument count, for error messages
     for (var frml : cf.arguments())
       {
-        check
+        if (CHECKS) check
           (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
         var t = frml.resultTypeIfPresent(res, NO_GENERICS);
@@ -1349,7 +1351,7 @@ public class Call extends AbstractCall
     loadCalledFeature(res, outer);
     FormalGenerics.resolve(res, generics, outer);
 
-    check
+    if (CHECKS) check
       (Errors.count() > 0 || calledFeature_ != null);
 
     if (calledFeature_ == null)
@@ -1431,7 +1433,7 @@ public class Call extends AbstractCall
               {
                 Expr actl = i.next();
                 var frmlT = resolvedFormalArgumentTypes[count];
-                check
+                if (CHECKS) check
                   (frmlT != null,
                    frmlT != Types.t_ERROR || Errors.count() > 0);
                 i.set(actl.propagateExpectedType(res, outer, frmlT));
@@ -1467,7 +1469,7 @@ public class Call extends AbstractCall
               {
                 Expr actl = i.next();
                 var rft = resolvedFormalArgumentTypes[count];
-                check
+                if (CHECKS) check
                   (rft != null,
                    rft != Types.t_ERROR || Errors.count() > 0);
                 i.set(actl.box(rft));

@@ -328,7 +328,7 @@ public class FZJava extends Tool
         try
           {
             var c = cl.loadClass(cn);
-            check
+            if (CHECKS) check
               (cn.equals(c.getName()));
             processClass(c);
           }

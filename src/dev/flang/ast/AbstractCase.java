@@ -135,7 +135,7 @@ public abstract class AbstractCase extends ANY
           }
       }
     var nc = code().visit(v, outer);
-    check
+    if (CHECKS) check
       (nc == code());
     v.actionAfter(this);
   }

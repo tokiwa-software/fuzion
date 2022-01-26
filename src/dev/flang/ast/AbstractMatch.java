@@ -100,7 +100,7 @@ public abstract class AbstractMatch extends Expr
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
     var ns = subject().visit(v, outer);
-    check
+    if (CHECKS) check
       (subject() == ns);
 
     v.action(this);

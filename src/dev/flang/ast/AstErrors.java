@@ -482,7 +482,7 @@ public class AstErrors extends ANY
   /* NYI: currently unused, need to check if a "while (23)" produces a useful error message
   static void whileConditionMustBeBool(SourcePosition pos, Type type)
   {
-    check
+    if (CHECKS) check
       (count() > 0 || type != Types.t_ERROR);
 
     if (type != Types.t_ERROR)
@@ -497,7 +497,7 @@ public class AstErrors extends ANY
   /* NYI: currently unused, need to check if a "do until (23)" produces a useful error message
   static void untilConditionMustBeBool(SourcePosition pos, Type type)
   {
-    check
+    if (CHECKS) check
       (count() > 0 || type != Types.t_ERROR);
 
     if (type != Types.t_ERROR)
@@ -511,7 +511,7 @@ public class AstErrors extends ANY
 
   static void ifConditionMustBeBool(SourcePosition pos, AbstractType type)
   {
-    check
+    if (CHECKS) check
       (count() > 0 || type != Types.t_ERROR);
 
     if (type != Types.t_ERROR)
@@ -807,7 +807,7 @@ public class AstErrors extends ANY
 
   static void missingResultTypeForField(Feature f)
   {
-    check
+    if (CHECKS) check
       (count() > 0 || !f.featureName().baseName().equals(ERROR_STRING));
 
     if (!f.featureName().baseName().equals(ERROR_STRING))
@@ -829,7 +829,7 @@ public class AstErrors extends ANY
 
   static void blockMustEndWithExpression(SourcePosition pos, AbstractType expectedType)
   {
-    check
+    if (CHECKS) check
       (count() > 0  || expectedType != Types.t_ERROR);
 
     if (expectedType != Types.t_ERROR)

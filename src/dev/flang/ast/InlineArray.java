@@ -262,7 +262,7 @@ public class InlineArray extends ExprWithPos
 
     var elementType = elementType();
 
-    check
+    if (CHECKS) check
       (Errors.count() > 0 || elementType != Types.t_ERROR);
 
     for (var e : _elements)

@@ -323,7 +323,7 @@ public class C extends ANY
       {
         var ol = new List<CStmnt>(CStmnt.lineComment("Dynamic access of " + _fuir.clazzAsString(cc0)));
         var ccs = _fuir.accessedClazzes(cl, c, i);
-        check
+        if (CHECKS) check
           (_types.hasData(tc)); // target in dynamic call cannot be unit type
         var stackWithArgs = (Stack<CExpr>) stack.clone();
         args(-1, cc0, stack, _fuir.clazzArgCount(cc0));  // pop all args except target
@@ -589,7 +589,7 @@ public class C extends ANY
                       else
                         {
                           ctags.add(CExpr.int32const(tagNum).comment(_fuir.clazzAsString(tc)));
-                          check
+                          if (CHECKS) check
                             (hasTag || !_types.hasData(tc));
                         }
                     }
@@ -639,7 +639,7 @@ public class C extends ANY
                                                                           : new CIdent(_names.CHOICE_ENTRY_NAME + tagNum));
           if (_fuir.clazzIsUnitType(valuecl) && _fuir.clazzIsChoiceOfOnlyRefs(newcl))
             {// replace unit-type values by 0, 1, 2, 3,... cast to ref Object
-              check
+              if (CHECKS) check
                 (value == CExpr.UNIT);
               if (tagNum >= CConstants.PAGE_SIZE)
                 {
@@ -752,7 +752,7 @@ public class C extends ANY
   {
     var rt = _fuir.clazzResultClazz(f);
     var t = pop(stack, tc);
-    check
+    if (CHECKS) check
       (t != null || !_types.hasData(rt) || tc == _fuir.clazzUniverse());
     var occ   = _fuir.clazzOuterClazz(f);
     var vocc  = _fuir.clazzAsValue(occ);

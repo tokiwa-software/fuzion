@@ -258,7 +258,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     var actlT = expr.type();
 
-    check
+    if (CHECKS) check
       (actlT == Types.intern(actlT));
 
     return isAssignableFromOrContainsError(actlT) &&
@@ -300,7 +300,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
         else
           {
-            check
+            if (CHECKS) check
               (actual.featureOfType() != null || Errors.count() > 0);
             if (actual.featureOfType() != null)
               {
@@ -385,7 +385,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           }
         else
           {
-            check
+            if (CHECKS) check
               (actual.featureOfType() != null || Errors.count() > 0);
             if (actual.featureOfType() != null)
               {

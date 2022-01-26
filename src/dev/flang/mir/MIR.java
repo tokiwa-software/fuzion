@@ -226,7 +226,7 @@ hw25 is
           }
         */
 
-        check
+        if (CHECKS) check
           (p.actuals().size() == p.calledFeature().arguments().size());
         for (var i = 0; i < p.actuals().size(); i++)
           {

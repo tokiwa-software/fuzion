@@ -366,7 +366,7 @@ public class Function extends ExprWithPos
         if (this.feature_ == null)
           {
             var f = this.call_.calledFeature();
-            check
+            if (CHECKS) check
               (Errors.count() > 0 || f != null);
 
             if (f != null)
@@ -490,7 +490,7 @@ public class Function extends ExprWithPos
     if (this.call_ != null)
       {
         var e = this.call_.visit(v, outer);
-        check
+        if (CHECKS) check
           (e == this.call_); // NYI: This will fail e.g. if call_ is a call to bool.infix &&, need to handle explicitly
         this.call_ = (Call) e;
       }
@@ -526,7 +526,7 @@ public class Function extends ExprWithPos
   {
     var f = this.feature_ == null ? this.call_.calledFeature()
                                   : this.feature_;
-    check
+    if (CHECKS) check
       (Errors.count() > 0 || f != null);
 
     if (f != null)
@@ -546,7 +546,7 @@ public class Function extends ExprWithPos
 
     var f = this.feature_ == null ? this.call_.calledFeature()
                                   : this.feature_;
-    check
+    if (CHECKS) check
       (Errors.count() > 0 || f != null);
 
     if (f != null)
@@ -593,7 +593,7 @@ public class Function extends ExprWithPos
         // Call.resolveType returns something differnt than this only for an
         // immediate function call, which is never the case in an inherits
         // clause.
-        check
+        if (CHECKS) check
           (inheritsCall_ == inheritsCall2);
         type_ = call_.type();
       }

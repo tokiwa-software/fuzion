@@ -511,7 +511,9 @@ public class Type extends AbstractType
   {
     if (this._outer == null)
       {
-        check(_interned == null);
+        if (CHECKS) check
+          (_interned == null);
+
         this._outer = t;
       }
     else
@@ -584,7 +586,9 @@ public class Type extends AbstractType
             var t = _outer.visit(v, outerfeat);
             if (t != _outer)
               {
-                check(_interned == null);
+                if (CHECKS) check
+                  (_interned == null);
+
                 _outer = _outer.visit(v, outerfeat);
               }
           }
@@ -596,7 +600,7 @@ public class Type extends AbstractType
           {
             var gt = i.next();
             var ng = (gt instanceof Type gtt ? gtt.visit(v, outerfeat) : gt);
-            check
+            if (CHECKS) check
               (gt == ng || _interned == null);
             i.set(ng);
           }
@@ -662,7 +666,7 @@ public class Type extends AbstractType
 
     var interned = Types.intern(this);
 
-    check
+    if (CHECKS) check
       (interned == this);
   }
 
@@ -767,7 +771,7 @@ public class Type extends AbstractType
 
     if (result == null)
       {
-        check
+        if (CHECKS) check
           (Errors.count() > 0);
 
         result = Types.f_ERROR;
@@ -827,7 +831,8 @@ public class Type extends AbstractType
               }
             else if (generic != null)
               {
-                check(Errors.count() > 0);
+                if (CHECKS) check
+                  (Errors.count() > 0);
               }
             if (result != null)
               {

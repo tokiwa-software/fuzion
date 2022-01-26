@@ -243,7 +243,7 @@ public class Interpreter extends ANY
               }
             Errors.fatal("*** " + e + "\n" + callStack());
           }
-        check
+        if (CHECKS) check
           (Errors.count() == 0);
       }
   }
@@ -477,7 +477,7 @@ public class Interpreter extends ANY
                          "Permitted clazzes: " + permitted.toString("",", ","") + "\n" +
                          callStack());
           }
-        check
+        if (CHECKS) check
           (matches);
 
       }
@@ -503,7 +503,7 @@ public class Interpreter extends ANY
         if (id < 0 || vc.isRef() || !rc.isRef())
           { // vc's type is a generic argument or outer type whose actual type
             // does not need boxing
-            check
+            if (CHECKS) check
               (vc == rc);
 
             result = val;
@@ -529,7 +529,7 @@ public class Interpreter extends ANY
               }
             if (vc.isChoice())
               {
-                check
+                if (CHECKS) check
                   (rc.isChoice());
 
                 var vl = Layout.get(vc);
@@ -537,7 +537,7 @@ public class Interpreter extends ANY
                 var voff = 0;
                 var roff = 0;
                 var vsz  = vl.size();
-                check
+                if (CHECKS) check
                   (rl.size() == vsz);
                 if (val instanceof LValue lv)
                   {
@@ -550,7 +550,7 @@ public class Interpreter extends ANY
                   }
                 else
                   {
-                    check
+                    if (CHECKS) check
                       (!rc.isChoiceOfOnlyRefs() || vsz == 1);
                     var vi = (Instance) val;
                     for (int i = 0; i<vsz; i++)
@@ -704,7 +704,7 @@ public class Interpreter extends ANY
       }
     else if (innerClazz == null)
       {
-        check
+        if (CHECKS) check
           (Errors.count() > 0);
         result = (args) -> { Errors.fatal("null feature called"); return Value.NO_VALUE; };
       }
@@ -724,7 +724,7 @@ public class Interpreter extends ANY
               var ocv = outerClazz.asValue();
               if (builtInVal || ocv == Clazzes.bool.getIfCreated())
                 {
-                  check
+                  if (CHECKS) check
                     (ocv != Clazzes.i8  .getIfCreated() || f.qualifiedName().equals("i8.val"),
                      ocv != Clazzes.i16 .getIfCreated() || f.qualifiedName().equals("i16.val"),
                      ocv != Clazzes.i32 .getIfCreated() || f.qualifiedName().equals("i32.val"),
@@ -819,7 +819,7 @@ public class Interpreter extends ANY
     cur.checkStaticClazz(staticClazz);
     _callStackFrames.push(staticClazz);
 
-    check
+    if (CHECKS) check
       (Clazzes.isUsedAtAll(thiz));
 
     setOuter(thiz, staticClazz, cur, args.get(0));
@@ -966,7 +966,7 @@ public class Interpreter extends ANY
       { // store tag and value separately
         setField(thiz.choiceTag(), -1, choiceClazz, choice, new i32Value(tag));
       }
-    check
+    if (CHECKS) check
       (vclazz._type.isAssignableFrom(staticTypeOfValue));
     setFieldSlot(thiz, vclazz, valSlot, v);
   }
@@ -1166,7 +1166,7 @@ public class Interpreter extends ANY
    */
   private static Value loadField(AbstractFeature thiz, Clazz fclazz, LValue slot)
   {
-    check
+    if (CHECKS) check
       (fclazz != null,
        slot != null);
 
@@ -1214,67 +1214,67 @@ public class Interpreter extends ANY
     Value result;
     if (staticClazz == Clazzes.i8.getIfCreated() && curValue instanceof i8Value)
       {
-        check
+        if (CHECKS) check
           (thiz.qualifiedName().equals("i8.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.i16.getIfCreated() && curValue instanceof i16Value)
       {
-        check
+        if (CHECKS) check
           (thiz.qualifiedName().equals("i16.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.i32.getIfCreated() && curValue instanceof i32Value)
       {
-        check
+        if (CHECKS) check
           (thiz.qualifiedName().equals("i32.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.i64.getIfCreated() && curValue instanceof i64Value)
       {
-        check
+        if (CHECKS) check
           (thiz.qualifiedName().equals("i64.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.u8.getIfCreated() && curValue instanceof u8Value)
       {
-        check
+        if (CHECKS) check
           (thiz.qualifiedName().equals("u8.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.u16.getIfCreated() && curValue instanceof u16Value)
       {
-        check
+        if (CHECKS) check
           (thiz.qualifiedName().equals("u16.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.u32.getIfCreated() && curValue instanceof u32Value)
       {
-        check
+        if (CHECKS) check
           (thiz.qualifiedName().equals("u32.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.u64.getIfCreated() && curValue instanceof u64Value)
       {
-        check
+        if (CHECKS) check
           (thiz.qualifiedName().equals("u64.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.f32.getIfCreated() && curValue instanceof f32Value)
       {
-        check
+        if (CHECKS) check
           (thiz.qualifiedName().equals("f32.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.f64.getIfCreated() && curValue instanceof f64Value)
       {
-        check
+        if (CHECKS) check
           (thiz.qualifiedName().equals("f64.val"));
         result = curValue;
       }
     else if (staticClazz == Clazzes.bool.getIfCreated() && curValue instanceof boolValue)
       {
-        check
+        if (CHECKS) check
           (thiz == Types.resolved.f_bool.choiceTag());
         result = curValue;
       }

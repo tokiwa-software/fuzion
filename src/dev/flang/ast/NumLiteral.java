@@ -248,7 +248,7 @@ public class NumLiteral extends Constant
         exponentBase = exponentBase / 5;
         e5 += e;
       }
-    check
+    if (CHECKS) check
       (exponentBase == 1); // we do not support exponentBases other that 2^n*5^m
 
     while (b % 2 == 0)
@@ -261,7 +261,7 @@ public class NumLiteral extends Constant
         b = b / 5;
         e5 -= dotAt;
       }
-    check
+    if (CHECKS) check
       (b == 1); // we do not support bases other that 2^n*5^m
 
     while (v.signum() != 0 && v.mod(B2).signum() == 0)
@@ -430,7 +430,7 @@ public class NumLiteral extends Constant
   {
     ConstantType ct = findConstantType(type_);
 
-    check
+    if (CHECKS) check
       (ct._isFloat);
 
     var res = new byte[ct._bytes];
@@ -464,7 +464,7 @@ public class NumLiteral extends Constant
         var deltaBits = ct._mBits - m.bitLength();
         m = shiftWithRounding(m, deltaBits);
         e2 = e2 - deltaBits;
-        check
+        if (CHECKS) check
           (m.bitLength() == ct._mBits);
 
         // add bias to e2 and handle overflow and denormalized numbers
@@ -514,7 +514,7 @@ public class NumLiteral extends Constant
         else
           {
             var high1 = B1.shiftLeft(ct._mBits-1);
-            check
+            if (CHECKS) check
               (m.and(high1).signum() != 0);
             m = m.andNot(high1);
           }

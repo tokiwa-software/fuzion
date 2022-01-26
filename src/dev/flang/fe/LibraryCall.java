@@ -152,7 +152,7 @@ public abstract class LibraryCall extends AbstractCall
     if (target() != null)
       {
         var t = target().visit(v, outer);
-        check
+        if (CHECKS) check
           (target() == t);
       }
     v.action(this);
