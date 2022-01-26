@@ -212,53 +212,6 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * Helper method for outer() to find the outer feature of this festure
-   * starting with outer which is defined in _libModule.data() at offset 'at'.
-   *
-   * @param outer the 'current' outer feature that is declared at 'at'
-   *
-   * @param at the position of outer's inner feature declarations within
-   * _libModule.data()
-   *
-   * @return the outer feature found or null if outer is not an outer feature of
-   * this.
-   */
-  private AbstractFeature findOuter(AbstractFeature outer, int at)
-  {
-    if (PRECONDITIONS) require
-      (outer != null,
-       at >= 0,
-       at < _libModule.data().limit());
-
-    AbstractFeature result = null;
-    var sz = _libModule.innerFeaturesSize(at);
-    check
-      (at+4+sz <= _libModule.data().limit());
-    var i = _libModule.innerFeaturesFeaturesPos(at);
-    if (i <= _index && _index < i+sz)
-      {
-        while (result == null)
-          {
-            if (i == _index)
-              {
-                result = outer;
-              }
-            else
-              {
-                var o = _libModule.libraryFeature(i);
-                check
-                  (o != null);
-                var inner = _libModule.featureInnerFeaturesPos(i);
-                result = findOuter(o, inner);
-                i = _libModule.featureNextPos(i);
-              }
-          }
-      }
-    return result;
-  }
-
-
-  /**
    * The features declared within this feature.
    */
   List<AbstractFeature> declaredFeatures()
