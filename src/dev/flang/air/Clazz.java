@@ -143,7 +143,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Cached result of choiceGenerics(), only used if isChoice() and
    * !isChoiceOfOnlyRefs().
    */
-  public ArrayList<Clazz> choiceGenerics_;
+  public ArrayList<Clazz> _choiceGenerics;
 
 
   /**
@@ -358,7 +358,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   void dependencies()
   {
-    choiceGenerics_ = determineChoiceGenerics();
+    _choiceGenerics = determineChoiceGenerics();
     _resultClazz = determineResultClazz();
     _resultField = determineResultField();
     _argumentFields = determineArgumentFields();
@@ -1354,9 +1354,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     boolean hasRefs = false;
 
-    if (choiceGenerics_ != null)
+    if (_choiceGenerics != null)
       {
-        for (Clazz c : choiceGenerics_)
+        for (Clazz c : _choiceGenerics)
           {
             hasRefs = hasRefs || c.isRef();
           }
@@ -1378,9 +1378,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     boolean hasNonRefsWithState = false;
 
-    if (choiceGenerics_ != null)
+    if (_choiceGenerics != null)
       {
-        for (Clazz c : choiceGenerics_)
+        for (Clazz c : _choiceGenerics)
           {
             hasNonRefsWithState = hasNonRefsWithState || (!c.isRef() && !c.isUnitType() && !c.isVoidType());
           }
@@ -1428,7 +1428,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (isChoice());
 
-    return choiceGenerics_;
+    return _choiceGenerics;
   }
 
 
@@ -1445,7 +1445,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
     int result = -1;
     int index = 0;
-    for (Clazz g : choiceGenerics_)
+    for (Clazz g : _choiceGenerics)
       {
         if (g._type.isAssignableFrom(staticTypeOfValue))
           {
@@ -1472,9 +1472,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (isChoice(),
        id >= 0,
-       id <  choiceGenerics_.size());
+       id <  _choiceGenerics.size());
 
-    return choiceGenerics_.get(id);
+    return _choiceGenerics.get(id);
   }
 
 

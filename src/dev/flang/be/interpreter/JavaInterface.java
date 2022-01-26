@@ -250,7 +250,7 @@ public class JavaInterface extends ANY
     var ok = e == null;
     if (resultClazz.feature().qualifiedName().equals("outcome"))
       {
-        var valClazz = resultClazz.choiceGenerics_.get(ok ? 0 : 1);
+        var valClazz = resultClazz._choiceGenerics.get(ok ? 0 : 1);
         var res = ok ? javaObjectToPlainInstance(o, valClazz)
                      : javaThrowableToError     (e, valClazz);
         result = Interpreter.tag(resultClazz, valClazz, res);

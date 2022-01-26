@@ -96,10 +96,10 @@ public class ChoiceIdAsRef extends Value
     if (PRECONDITIONS) require
       (clazz.isChoice(),
        id >= 0,
-       id <  clazz.choiceGenerics_.size());
+       id <  clazz._choiceGenerics.size());
 
     ChoiceIdAsRef result;
-    if (clazz.choiceGenerics_.size() > 2)
+    if (clazz._choiceGenerics.size() > 2)
       {
         // make sure all values are preallocated
         while (preallocated_.size() <= id)
@@ -138,7 +138,7 @@ public class ChoiceIdAsRef extends Value
       {
         // null stands for the first (and only) non-reference type
         result = 0;
-        while (clazz.choiceGenerics_.get(result).isRef())
+        while (clazz._choiceGenerics.get(result).isRef())
           {
             result++;
           }
@@ -154,7 +154,7 @@ public class ChoiceIdAsRef extends Value
 
     if (POSTCONDITIONS) ensure
       (result < 0 ||
-       result < clazz.choiceGenerics_.size()
+       result < clazz._choiceGenerics.size()
        // && get(clazz, result) == idAsRef  -- would cause endless recursion
        );
 
