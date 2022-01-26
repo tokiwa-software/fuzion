@@ -26,4 +26,7 @@
 # A handy shortcut for stdout.print, output string representation of
 # an object, do not add a line break at the end.
 #
-yak(s ref Object) => stdout.print(s)
+# The term 'yak' was taken from the expression 'Yakety Yak' as in the
+# song by The Coasters.
+#
+yak(s ref Object) => stdout.print s
