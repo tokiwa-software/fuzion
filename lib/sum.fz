@@ -25,25 +25,38 @@
 
 # sum -- generic sum of the elements of a Sequence of numeric.
 #
-# This should allow summing the elements of a list, as in
+# This allows summing the elements of a list, as in
 #
 #   l := [1,2,3]
-#   say sum l     # 6
+#   say (sum l)     # '6'
 #
-# NYI: This is experimental and does not work yet
 #
-sum<T: numerics<T>> (l Sequence<T>) =>
+sum<T: numeric<T>> (l Sequence<T>)
+  pre
+    debug: !l.isEmpty   # sum does not work (yet) for empty Sequence
+  =>
 
   # NYI: the following code to get T's sum monoid does not work for l.isEmpty,
   # it should be something like
   #
   #  m := T.sum
   #
-  if l.isEmpty
-    fuzion.std.panic "NYI: sum does not work for empty list"
-  m := l.asList.forceHead.sum
+  n := l.asList.forceHead
+  sum n l
 
-  # NYI: This currently causes an error in the backend (interpreter crash due to
-  # abstract feature being called and C compiler error for incompatible types):
-  #
-  l.fold m
+
+# sum -- generic sum of the elements of a Sequence of numeric.
+#
+# This allows summing the elements of a list, as in
+#
+#   l := [1,2,3]
+#   say (sum i32 l)     # '6'
+#
+#
+sum<U: numerics<T>, T: numeric<T>> (
+  # the numeric type we are summing, unit value
+  n U,
+  l Sequence<T>
+  )
+  =>
+  l.fold n.sum
