@@ -390,6 +390,7 @@ $(BUILD_DIR)/assets/logo_bleed_cropmark.svg: $(CLASS_FILES_MISC_LOGO)
 	touch $@
 
 $(BUILD_DIR)/lib: $(FZ_SRC)/lib
+	rm -rf $@
 	mkdir -p $(@D)
 	cp -rf $^ $@
 
