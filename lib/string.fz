@@ -454,6 +454,18 @@ string ref : hasHash<string>, ordered<string>, strings is
     strings.fromBytes s2
 
 
+  # is this part of given set
+  #
+  elementOf(s Set<string>) => s.contains string.this
+  infix ∈ (s Set<string>) => string.this.elementOf s
+
+
+  # is this not part of given set
+  #
+  notElementOf(s Set<string>) => !elementOf s
+  infix ∉ (s Set<string>) => string.this.notElementOf s
+
+
 # strings -- unit type defining features related to string but not
 # requiring an instance
 #
