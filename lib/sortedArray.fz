@@ -38,9 +38,9 @@
 sortedArray<T>
   (
 
-  # orginal, unsorted array
+  # orginal, unsorted Sequence
   #
-  from ref array<T>,  # NYI: 'ref' due to lack of 'like this'
+  from Sequence<T>,
 
   # predicate defining total order on T.
   #
@@ -54,7 +54,7 @@ sortedArray<T>
 
   )
 
-  : array<T> sort(from, 1).internalArray
+  : array<T> (sort from.asArray 1).internalArray
 
 is
 
@@ -65,7 +65,7 @@ is
   sort
     (
     # array with sub-heaps of heapSize sorted
-    a ref array<T>,  # NYI: 'ref' due to lack of 'like this'
+    a array<T>,
 
     # the current heap size, 1 on initial call, must be power of 2
     heapSize i32
@@ -191,8 +191,8 @@ is
 #
 sortedArray<T: ordered<T>>
   (
-  # orginal, unsorted array
-  from array<T>
+  # orginal, unsorted Sequence
+  from Sequence<T>
   ) sortedArray<T>
 
 is
