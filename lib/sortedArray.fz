@@ -180,3 +180,20 @@ is
         else               m
 
     binarySearch 0, length-1
+
+
+# sortedarray -- sorted one-dimensional immutable array of ordered elements
+#
+# This takes an unsorted array as an argument and returns a sorted one using
+# the order defined by the type of the elements T.
+#
+# See sortedArray(from, lessOrEqual) for details
+#
+sortedArray<T: ordered<T>>
+  (
+  # orginal, unsorted array
+  from array<T>
+  ) sortedArray<T>
+
+is
+  sortedArray<T> from (a,b -> a <= b)
