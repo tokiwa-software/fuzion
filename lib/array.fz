@@ -175,14 +175,6 @@ array<T>(internalArray sys.array<T>) : Sequence<T> is
     array<T> array.this.length (i -> array.this[array.this.length-1-i])
 
 
-  # sort this array using total order defined by lessOrEqual
-  sort(lessOrEqual (T, T) -> bool) => sortedArray array.this lessOrEqual
-
-
-  # sort this array using total order defined for 'f a[i]'
-  sortBy<O: ordered<O>>(f T->O) => sort (a, b -> f a <= f b)
-
-
   # get a list of tuples indices and elements in this array
   #
   enumerate list<tuple<i32, T>> is

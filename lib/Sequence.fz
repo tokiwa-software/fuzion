@@ -246,6 +246,14 @@ Sequence<T> ref is
     take at ++ [v] ++ drop at
 
 
+  # sort this Sequence using the total order defined by lessOrEqual
+  sort(lessOrEqual (T, T) -> bool) => sortedArray Sequence.this lessOrEqual
+
+
+  # sort this Sequence using total order defined for 'f a[i]'
+  sortBy<O: ordered<O>>(f T->O) => sort (a, b -> f a <= f b)
+
+
   # create a new list from the result of applying 'f' to the
   # elements of this list and 'b' in order.
   #
