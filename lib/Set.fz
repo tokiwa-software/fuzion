@@ -41,3 +41,9 @@ Set<T: hasEquals<T>> ref : Sequence<T> is
   # list representation of values in this set
   #
   redef asList list<T> is abstract
+
+
+  # add new element k to this set.
+  #
+  add (k T) Set<T> is
+    abstract
