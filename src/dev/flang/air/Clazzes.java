@@ -884,23 +884,25 @@ public class Clazzes extends ANY
   {
     // NYI: Check if this works for a case that is part of an inherits clause, do
     // we need to store in outerClazz.outer?
+    var f = c.field();
+    var t = c.types();
     if (c.runtimeClazzId_ < 0)
       {
-        c.runtimeClazzId_ = getRuntimeClazzIds(c.field() != null
-                                               ? 1
-                                               : c.types().size());
+        c.runtimeClazzId_ = getRuntimeClazzIds(f != null ? 1 :
+                                               t != null ? t.size()
+                                                         : 0);
       }
     int i = c.runtimeClazzId_;
-    if (c.field() != null)
+    if (f != null)
       {
-        var fOrFc = isUsed(c.field(), outerClazz)
-          ? outerClazz.lookup(c.field(), AbstractCall.NO_GENERICS, isUsedAt(c.field()))
-          : outerClazz.actualClazz(c.field().resultType());
+        var fOrFc = isUsed(f, outerClazz)
+          ? outerClazz.lookup(f, AbstractCall.NO_GENERICS, isUsedAt(f))
+          : outerClazz.actualClazz(f.resultType());
         outerClazz.setRuntimeClazz(i, fOrFc);
       }
-    else
+    else if (t != null)
       {
-        for (var caseType : c.types())
+        for (var caseType : t)
           {
             outerClazz.setRuntimeClazz(i, outerClazz.actualClazz(caseType));
             i++;
