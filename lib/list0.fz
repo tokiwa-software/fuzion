@@ -353,3 +353,11 @@ lists is
     #
     e list<A> is
       nil
+
+
+# convenience routine to create a list from head h and lazy tail t.
+#
+list<T> (h T, t () -> list<T>) =>
+  ref : Cons<T,list<T>>
+    head => h
+    tail => t()
