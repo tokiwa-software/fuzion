@@ -720,7 +720,7 @@ class ForClass extends ANY
         if (t.isArray())
           {
             var et = plainResultType(t.getComponentType());
-            mt = (et == null) ? null : "List<" + et + ">";
+            mt = (et == null) ? null : "Sequence<" + et + ">";
           }
         else if (t == String.class)
           {
