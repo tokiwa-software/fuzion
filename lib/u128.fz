@@ -248,6 +248,8 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
 #
 u128s : wrappingIntegers<u128> is
 
+  redef name => "u128"
+
   redef zero => u128 0 0
   redef one  => u128 0 1
 
