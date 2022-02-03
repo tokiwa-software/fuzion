@@ -432,7 +432,7 @@ public class Generic extends ANY
    */
   public String toString()
   {
-    return _name+(_constraint == null ? "" : " -> "+_constraint);
+    return _name;
   }
 
 

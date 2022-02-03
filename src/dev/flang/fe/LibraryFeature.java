@@ -450,10 +450,6 @@ public class LibraryFeature extends AbstractFeature
                         {
                           return _libModule.typeArgConstraint(tali0);
                         }
-                        public String toString()
-                        {
-                          return gn;
-                        }
                       };
                     list.add(g);
                     tali = _libModule.typeArgNextPos(tali);
