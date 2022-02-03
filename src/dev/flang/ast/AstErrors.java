@@ -1196,9 +1196,9 @@ public class AstErrors extends ANY
   static void incompatibleActualGeneric(SourcePosition pos, Generic f, AbstractType g)
   {
     error(pos,
-          "Incompatible actual generic parameter",
-          "formal type " + s(f) + "\n"+
-          "actual type " + s(g) + "\n");
+          "Incompatible type parameter",
+          "formal type parameter " + s(f) + " with constraint " + s(f.constraint()) + "\n"+
+          "actual type parameter " + s(g) + "\n");
   }
 
   static void destructuringForGeneric(SourcePosition pos, AbstractType t, List<String> names)
