@@ -534,6 +534,17 @@ strings is
       redef utf8 => utf8Bytes
 
 
+  # create string from the given codepoints
+  #
+  fromCodepoints(codePoints Sequence<codepoint>) string is
+    # NYI: would be nicer if result was created lazily
+    for
+      res := "", res + cp
+      cp in codePoints
+    else
+      res
+
+
   # NYI: remove the convenience functions when Fuzion supports char literals
   #
   minusChar => "-".utf8.asStream.next
