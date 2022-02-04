@@ -36,7 +36,6 @@ import dev.flang.mir.MIR;
 
 import dev.flang.util.ANY;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
