@@ -94,7 +94,7 @@ public class Case extends AbstractCase
   /**
    * Constructor for a Case that assigns the value to a new field
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param t the type to be matched against
    *
@@ -115,7 +115,7 @@ public class Case extends AbstractCase
   /**
    * Constructor for a Case that checks for one or several types at once
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param l List of types to be matched against
    *
@@ -132,7 +132,7 @@ public class Case extends AbstractCase
   /**
    * Constructor for a Case that matches all cases
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param c code to be executed in case of a match
    */
@@ -146,7 +146,7 @@ public class Case extends AbstractCase
   /**
    * Constructor for a Case that assigns the value to a new field
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param f the field declared to hold the value in this case
    *

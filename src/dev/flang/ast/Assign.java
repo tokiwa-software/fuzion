@@ -52,7 +52,7 @@ public class Assign extends AbstractAssign
 
 
   /**
-   * The soucecode position of this assignment, used for error messages.
+   * The sourcecode position of this assignment, used for error messages.
    */
   final SourcePosition _pos;
 
@@ -63,7 +63,7 @@ public class Assign extends AbstractAssign
   /**
    * Constructor used be the parser
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param n the name of the assigned field
    *
@@ -88,7 +88,7 @@ public class Assign extends AbstractAssign
    * create an implicit assignment to result if the code does not do this
    * explicitly.
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param f
    *
@@ -117,7 +117,7 @@ public class Assign extends AbstractAssign
    *
    * @param res the resolution instance.
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param f
    *
@@ -150,7 +150,7 @@ public class Assign extends AbstractAssign
 
 
   /**
-   * The soucecode position of this statment, used for error messages.
+   * The sourcecode position of this statment, used for error messages.
    */
   public SourcePosition pos()
   {

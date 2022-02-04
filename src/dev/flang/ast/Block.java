@@ -46,7 +46,7 @@ public class Block extends AbstractBlock
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   private final SourcePosition _pos;
 
@@ -69,7 +69,7 @@ public class Block extends AbstractBlock
   /**
    * Generic constructor
    *
-   * @param pos the soucecode position of the start of this block, used for
+   * @param pos the sourcecode position of the start of this block, used for
    * error messages.
    *
    * @param closingBracePos the sourcecode position of this block's closing
@@ -98,7 +98,7 @@ public class Block extends AbstractBlock
    * Generate a block of statements that define a new scope. This is generally
    * called from the Parser when the source contains a block.
    *
-   * @param pos the soucecode position of the start of this block, used for
+   * @param pos the sourcecode position of the start of this block, used for
    * error messages.
    *
    * @param closingBracePos the sourcecode position of this block's closing
@@ -119,7 +119,7 @@ public class Block extends AbstractBlock
    * Generate a block of statements that do not define a new scope, i.e.,
    * declarations remain visible after this block.
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param s the list of statements
    */
@@ -134,7 +134,7 @@ public class Block extends AbstractBlock
    * Generate a block of statements that do not define a new scope, i.e.,
    * declarations remain visible after this block.
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param s the list of statements
    *
@@ -199,7 +199,7 @@ public class Block extends AbstractBlock
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {

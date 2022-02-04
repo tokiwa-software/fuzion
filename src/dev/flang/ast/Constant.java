@@ -43,7 +43,7 @@ public abstract class Constant extends AbstractConstant
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   private final SourcePosition _pos;
 
@@ -54,7 +54,7 @@ public abstract class Constant extends AbstractConstant
   /**
    * Constructor for a Constant at the given source code postition.
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    */
   public Constant(SourcePosition pos)
   {
@@ -69,7 +69,7 @@ public abstract class Constant extends AbstractConstant
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {

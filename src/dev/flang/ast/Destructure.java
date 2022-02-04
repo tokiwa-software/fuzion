@@ -66,7 +66,7 @@ public class Destructure extends ANY implements Stmnt
 
 
   /**
-   * The soucecode position of this destructure, used for error messages.
+   * The sourcecode position of this destructure, used for error messages.
    */
   final SourcePosition _pos;
 
@@ -99,7 +99,7 @@ public class Destructure extends ANY implements Stmnt
   /**
    * Constructor
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param n
    *
@@ -126,7 +126,7 @@ public class Destructure extends ANY implements Stmnt
 
 
   /**
-   * The soucecode position of this statment, used for error messages.
+   * The sourcecode position of this statment, used for error messages.
    */
   public SourcePosition pos()
   {

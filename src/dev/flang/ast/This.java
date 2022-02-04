@@ -69,7 +69,7 @@ public class This extends ExprWithPos
   /**
    * Constructor
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param qual
    *
@@ -90,7 +90,7 @@ public class This extends ExprWithPos
   /**
    * Constructor to be used during type resolution.
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param cur the current feature that contains this expression
    *
@@ -114,7 +114,7 @@ public class This extends ExprWithPos
    * Constructor to be used for implicit This instances to be used before type
    * resolution.
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param cur the current feature that contains this this expression
    *
@@ -138,7 +138,7 @@ public class This extends ExprWithPos
    *
    * @param res The Resolution instance to be used for resolveTypes().
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param cur the current feature that contains this this expression
    *
