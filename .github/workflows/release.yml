@@ -29,5 +29,5 @@ jobs:
         artifacts: "fuzion_${{ steps.getversion.outputs.version }}.tar.gz"
         tag: "v${{ steps.getversion.outputs.version }}"
         prerelease: false
-        generateReleaseNotes: true
+        generateReleaseNotes: false
         token: ${{ secrets.GITHUB_TOKEN }}
