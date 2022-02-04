@@ -516,4 +516,4 @@ clean:
 .PHONY: release
 release: clean all
 	rm -f fuzion_$(VERSION).tar.gz
-	tar cfz fuzion_$(VERSION).tar.gz -C build .
+	tar cfz fuzion_$(VERSION).tar.gz --transform s/^build/fuzion_$(VERSION)/ build
