@@ -67,7 +67,7 @@ public abstract class LibraryType extends AbstractType
   public final int _at;
 
   /**
-   * The soucecode position of this type, used for error messages.
+   * The sourcecode position of this type, used for error messages.
    */
   public final HasSourcePosition _pos;
 

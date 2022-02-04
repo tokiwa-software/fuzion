@@ -43,7 +43,7 @@ abstract class ExprWithPos extends Expr
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   private final SourcePosition _pos;
 
@@ -66,7 +66,7 @@ abstract class ExprWithPos extends Expr
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {

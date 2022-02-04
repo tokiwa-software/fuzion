@@ -48,7 +48,7 @@ public class Check implements Stmnt
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public final SourcePosition _pos;
 
@@ -73,7 +73,7 @@ public class Check implements Stmnt
 
 
   /**
-   * The soucecode position of this statment, used for error messages.
+   * The sourcecode position of this statment, used for error messages.
    */
   public SourcePosition pos()
   {

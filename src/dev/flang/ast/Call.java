@@ -81,7 +81,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   private final SourcePosition _pos;
 
@@ -442,7 +442,7 @@ public class Call extends AbstractCall
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {

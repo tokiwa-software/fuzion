@@ -215,7 +215,7 @@ public class NumLiteral extends Constant
   /**
    * Constructor
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param s
    */
