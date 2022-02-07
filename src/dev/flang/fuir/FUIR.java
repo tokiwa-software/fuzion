@@ -912,6 +912,42 @@ hw25 is
   }
 
 
+  /**
+   * Get the id of clazz consstring.internalArray
+   *
+   * @param the id of connststring.internalArray or -1 if that clazz was not created.
+   */
+  public int clazz_conststring_internalArray()
+  {
+    var cc = Clazzes.constStringInternalArray;
+    return cc == null ? -1 : _clazzIds.get(cc);
+  }
+
+
+  /**
+   * Get the id of clazz sys.array<u8>.data
+   *
+   * @param the id of connststring.internalArray or -1 if that clazz was not created.
+   */
+  public int clazz_sysArray_u8_data()
+  {
+    var cc = Clazzes.sysArray_u8_data;
+    return cc == null ? -1 : _clazzIds.get(cc);
+  }
+
+
+  /**
+   * Get the id of clazz sys.array<u8>.length
+   *
+   * @param the id of connststring.internalArray or -1 if that clazz was not created.
+   */
+  public int clazz_sysArray_u8_length()
+  {
+    var cc = Clazzes.sysArray_u8_length;
+    return cc == null ? -1 : _clazzIds.get(cc);
+  }
+
+
   /*--------------------------  accessing code  -------------------------*/
 
 

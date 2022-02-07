@@ -650,7 +650,7 @@ public class Interpreter extends ANY
   {
     Clazz cl = Clazzes.conststring.get();
     Instance result = new Instance(cl);
-    var saCl = Clazzes.constStringBytesArray;
+    var saCl = Clazzes.sysArray_u8;
     Instance sa = new Instance(saCl);
     byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
     setField(Types.resolved.f_sys_array_length, -1, saCl, sa, new i32Value(bytes.length));
