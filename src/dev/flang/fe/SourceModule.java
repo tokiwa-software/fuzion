@@ -377,17 +377,16 @@ public class SourceModule extends Module implements SrcModule, MirModule
                 if (d != null)
                   {
                     Files.list(d._dir)
+                      .filter(p -> isValidSourceFile(p))
+                      .sorted()
                       .forEach(p ->
                                {
-                                 if (isValidSourceFile(p))
+                                 for (var inner : parseAndGetFeatures(p))
                                    {
-                                     for (var inner : parseAndGetFeatures(p))
+                                     findDeclarations(inner, f);
+                                     if (inner.state().atLeast(Feature.State.LOADED))
                                        {
-                                         findDeclarations(inner, f);
-                                         if (inner.state().atLeast(Feature.State.LOADED))
-                                           {
-                                             inner.scheduleForResolution(_res);
-                                           }
+                                         inner.scheduleForResolution(_res);
                                        }
                                    }
                                });
