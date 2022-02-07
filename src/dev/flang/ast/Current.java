@@ -44,7 +44,7 @@ public class Current extends AbstractCurrent
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   private final SourcePosition _pos;
 
@@ -55,7 +55,7 @@ public class Current extends AbstractCurrent
   /**
    * Constructor
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param t the result type
    */
@@ -75,7 +75,7 @@ public class Current extends AbstractCurrent
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {

@@ -47,7 +47,7 @@ public class Generic extends ANY
 
 
   /**
-   * The soucecode position of this feature declaration, used for error
+   * The sourcecode position of this feature declaration, used for error
    * messages.
    */
   public final SourcePosition _pos;
@@ -110,7 +110,7 @@ public class Generic extends ANY
   /**
    * Constructor for an unconstraint formal generic parameter.
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param index the index in the formal generics declaration, starting at 0
    *
@@ -130,7 +130,7 @@ public class Generic extends ANY
   /**
    * Constructor for a constrainted formal generic parameter.
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param index the index in the formal generics declaration, starting at 0
    *

@@ -54,7 +54,7 @@ public abstract class AbstractCase extends ANY
 
 
   /**
-   * The soucecode position of this case, used for error messages.
+   * The sourcecode position of this case, used for error messages.
    */
   final SourcePosition _pos;
 
@@ -72,7 +72,7 @@ public abstract class AbstractCase extends ANY
   /**
    * Constructor for an AbstractCase that assigns
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    */
   public AbstractCase(SourcePosition pos)
   {
@@ -84,7 +84,7 @@ public abstract class AbstractCase extends ANY
 
 
   /**
-   * The soucecode position of this case, used for error messages.
+   * The sourcecode position of this case, used for error messages.
    */
   public SourcePosition pos()
   {

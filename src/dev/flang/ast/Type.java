@@ -82,7 +82,7 @@ public class Type extends AbstractType
 
 
   /**
-   * The soucecode position of this type, used for error messages.
+   * The sourcecode position of this type, used for error messages.
    */
   public final HasSourcePosition pos;
   public SourcePosition pos() { return pos.pos(); }

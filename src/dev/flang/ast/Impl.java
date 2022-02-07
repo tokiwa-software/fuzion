@@ -60,7 +60,7 @@ public class Impl extends ANY
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public final SourcePosition pos;
 
@@ -105,7 +105,7 @@ public class Impl extends ANY
   /**
    * Implementation of a feature
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param e the code or initial value
    *
@@ -124,7 +124,7 @@ public class Impl extends ANY
    * Implementation of a argument field feature whose type if inferred from the
    * actual argument.
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param e the actual argument to a call to a.outer()
    *
@@ -139,7 +139,7 @@ public class Impl extends ANY
   /**
    * Implementation of a feature
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param e the code or initial value
    *

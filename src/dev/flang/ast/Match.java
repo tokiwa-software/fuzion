@@ -70,7 +70,7 @@ public class Match extends AbstractMatch
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   private final SourcePosition _pos;
 
@@ -81,7 +81,7 @@ public class Match extends AbstractMatch
   /**
    * Constructor for a Match
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param e the expression that is checked by this match, must be of a choice
    * type
@@ -107,7 +107,7 @@ public class Match extends AbstractMatch
 
 
   /**
-   * The soucecode position of this expression, used for error messages.
+   * The sourcecode position of this expression, used for error messages.
    */
   public SourcePosition pos()
   {

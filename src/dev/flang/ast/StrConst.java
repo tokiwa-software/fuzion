@@ -54,7 +54,7 @@ public class StrConst extends Constant
   /**
    * Constructor
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param s
    */
@@ -67,7 +67,7 @@ public class StrConst extends Constant
   /**
    * Constructor
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param s
    */

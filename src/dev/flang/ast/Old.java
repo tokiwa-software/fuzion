@@ -51,7 +51,7 @@ public class Old extends ExprWithPos
   /**
    * Constructor
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param e
    */

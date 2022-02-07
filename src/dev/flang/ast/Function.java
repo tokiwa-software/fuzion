@@ -137,7 +137,7 @@ public class Function extends ExprWithPos
    *   }
    *  x(a.b._anonymous<#>_f_());
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param c the call after the fun keyword
    */
@@ -171,7 +171,7 @@ public class Function extends ExprWithPos
    *   }
    *  x(_anonymous<#>_f_());
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param r the return type or null for a routine
    *
@@ -207,7 +207,7 @@ public class Function extends ExprWithPos
    *   }
    *  x(_anonymous<#>_f_());
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param r the return type or null for a routine
    *
@@ -248,7 +248,7 @@ public class Function extends ExprWithPos
    *   }
    *  x(_anonymous<#>_f_());
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param r the return type or null for a routine
    *
@@ -322,7 +322,7 @@ public class Function extends ExprWithPos
    *
    *   (x,y) pre y != 0 -> x*y
    *
-   * @param pos the soucecode position, used for error messages.
+   * @param pos the sourcecode position, used for error messages.
    *
    * @param names the names of the arguments, "x", "y"
    *

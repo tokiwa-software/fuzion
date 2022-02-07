@@ -179,36 +179,36 @@ integer<T : integer<T>> : numeric<T> is
   bin => integer.this.asString 2
 
 
-  # creeate binary representation with given number of digits.
+  # create binary representation with given number of digits.
   #
   bin(len i32) => integer.this.asString len 2
 
 
-  # creeate octal representation
+  # create octal representation
   #
   oct => integer.this.asString 8
 
 
-  # creeate octal representation with given number of digits.
+  # create octal representation with given number of digits.
   #
   oct(len i32) => integer.this.asString len 8
 
 
-  # creeate decimal representation
+  # create decimal representation
   #
   dec => integer.this.asString 10
 
 
-  # creeate decimal representation with given number of digits.
+  # create decimal representation with given number of digits.
   #
   dec(len i32) => integer.this.asString len 10
 
 
-  # creeate hexadecimal representation
+  # create hexadecimal representation
   #
   hex => integer.this.asString 16
 
 
-  # creeate hexadecimal representation with given number of digits.
+  # create hexadecimal representation with given number of digits.
   #
   hex(len i32) => integer.this.asString len 16
