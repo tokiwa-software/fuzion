@@ -196,6 +196,7 @@ public class C extends ANY
        "#include <unistd.h>\n"+
        "#include <stdint.h>\n"+
        "#include <assert.h>\n"+
+       "#include <time.h>\n"+
        "\n");
 
     var ordered = _types.inOrder();

@@ -35,3 +35,6 @@ fuzion.std is
   panic(msg string) void is
     say "*** panic: $msg"
     exit 1
+
+  # no guaranty for precision nor resolution
+  nano_time u64 is intrinsic
