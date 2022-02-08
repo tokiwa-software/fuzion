@@ -45,4 +45,4 @@ FUZION_BIN="$(dirname "$(readlink -f "$0")")"
 : ${FUZION_JAVA_STACK_SIZE=5m}
 : ${FUZION_JAVA_OPTIONS="-Xss$FUZION_JAVA_STACK_SIZE"}
 
-$FUZION_JAVA $FUZION_JAVA_OPTIONS -cp "$FUZION_JAVA_CLASSPATH" -Dfuzion.home=$FUZION_HOME -Dfuzion.command=$FUZION_CMD dev.flang.tools.Fuzion "$@"
+$FUZION_JAVA $FUZION_JAVA_OPTIONS -cp "$FUZION_JAVA_CLASSPATH" -Dfuzion.home="$FUZION_HOME" -Dfuzion.command="$FUZION_CMD" dev.flang.tools.Fuzion "$@"

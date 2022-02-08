@@ -47,7 +47,7 @@ fi
 
 NEW_LINE=$'\n'
 SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
-cd $SCRIPTPATH/..
+cd "$SCRIPTPATH"/..
 
 #
 EBNF_LEXER=$(pcregrep -M "^[a-zA-Z0-9_]+[ ]*:(\n|.)*?( ;)" ./src/dev/flang/parser/Lexer.java)
@@ -64,12 +64,12 @@ echo "$EBNF"
 
 # test grammar with antlr4
 TMP=$(mktemp -d)
-mkdir -p $TMP/fuzion_grammar
-echo "$EBNF" > $TMP/fuzion_grammar/Fuzion.g4
+mkdir -p "$TMP"/fuzion_grammar
+echo "$EBNF" > "$TMP"/fuzion_grammar/Fuzion.g4
 # NYI add option -Werror
-antlr4 -long-messages -o $TMP/fuzion_grammar $TMP/fuzion_grammar/Fuzion.g4
+antlr4 -long-messages -o "$TMP"/fuzion_grammar "$TMP"/fuzion_grammar/Fuzion.g4
 antlr4_rc=$?
-rm -rf $TMP
+rm -rf "$TMP"
 
 if [ ! $antlr4_rc -eq 0 ]; then
   echo "antlr4 failed parsing grammar"
