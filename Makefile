@@ -522,6 +522,7 @@ release: clean all
 	rm -f fuzion_$(VERSION).tar.gz
 	tar cfz fuzion_$(VERSION).tar.gz --transform s/^build/fuzion_$(VERSION)/ build
 
+# shellcheck (https://www.shellcheck.net) checks shell scripts for issues/bugs
 .PHONY: shellcheck
 shellcheck:
 	shellcheck $(SHELL_SCRIPTS) $(shell find . -iname '*.sh' -not -path "./build/*")
