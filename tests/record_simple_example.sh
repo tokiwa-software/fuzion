@@ -36,25 +36,25 @@
 #
 
 SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
-CURDIR=$($SCRIPTPATH/_cur_dir.sh)
+CURDIR=$("$SCRIPTPATH"/_cur_dir.sh)
 
-if [ -f $2.skip ]; then
+if [ -f "$2".skip ]; then
     echo "SKIPPED $2"
 else
     unset OPT
-    head -n 1 $2 | grep -q -E "# fuzion.debugLevel=.*$"      && export OPT=-Dfuzion.debugLevel=10
-    head -n 1 $2 | grep -q -E "# fuzion.debugLevel=9( .*|)$" && export OPT=-Dfuzion.debugLevel=9
-    head -n 1 $2 | grep -q -E "# fuzion.debugLevel=8( .*|)$" && export OPT=-Dfuzion.debugLevel=8
-    head -n 1 $2 | grep -q -E "# fuzion.debugLevel=7( .*|)$" && export OPT=-Dfuzion.debugLevel=7
-    head -n 1 $2 | grep -q -E "# fuzion.debugLevel=6( .*|)$" && export OPT=-Dfuzion.debugLevel=6
-    head -n 1 $2 | grep -q -E "# fuzion.debugLevel=5( .*|)$" && export OPT=-Dfuzion.debugLevel=5
-    head -n 1 $2 | grep -q -E "# fuzion.debugLevel=4( .*|)$" && export OPT=-Dfuzion.debugLevel=4
-    head -n 1 $2 | grep -q -E "# fuzion.debugLevel=3( .*|)$" && export OPT=-Dfuzion.debugLevel=3
-    head -n 1 $2 | grep -q -E "# fuzion.debugLevel=2( .*|)$" && export OPT=-Dfuzion.debugLevel=2
-    head -n 1 $2 | grep -q -E "# fuzion.debugLevel=1( .*|)$" && export OPT=-Dfuzion.debugLevel=1
-    head -n 1 $2 | grep -q -E "# fuzion.debugLevel=0( .*|)$" && export OPT=-Dfuzion.debugLevel=0
-    $1 $2 >$2.expected_out 2>$2.expected_err0
-    cat $2.expected_err0 | sed "s|$CURDIR[\\\/]|--CURDIR--/|g" >$2.expected_err
-    rm -rf $2.expected_err0
+    head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=.*$"      && export OPT=-Dfuzion.debugLevel=10
+    head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=9( .*|)$" && export OPT=-Dfuzion.debugLevel=9
+    head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=8( .*|)$" && export OPT=-Dfuzion.debugLevel=8
+    head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=7( .*|)$" && export OPT=-Dfuzion.debugLevel=7
+    head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=6( .*|)$" && export OPT=-Dfuzion.debugLevel=6
+    head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=5( .*|)$" && export OPT=-Dfuzion.debugLevel=5
+    head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=4( .*|)$" && export OPT=-Dfuzion.debugLevel=4
+    head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=3( .*|)$" && export OPT=-Dfuzion.debugLevel=3
+    head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=2( .*|)$" && export OPT=-Dfuzion.debugLevel=2
+    head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=1( .*|)$" && export OPT=-Dfuzion.debugLevel=1
+    head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=0( .*|)$" && export OPT=-Dfuzion.debugLevel=0
+    $1 "$2" >"$2".expected_out 2>"$2".expected_err0
+    cat "$2".expected_err0 | sed "s|$CURDIR[\\\/]|--CURDIR--/|g" >"$2".expected_err
+    rm -rf "$2".expected_err0
     echo "RECORDED $2"
 fi

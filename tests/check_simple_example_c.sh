@@ -36,10 +36,10 @@
 #
 
 SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
-CURDIR=$($SCRIPTPATH/_cur_dir.sh)
+CURDIR=$("$SCRIPTPATH"/_cur_dir.sh)
 
 RC=0
-if [ -f $2.skip ]; then
+if [ -f "$2".skip ]; then
     echo "SKIP $2"
 else
     echo -n "RUN $2 "
@@ -47,7 +47,7 @@ else
     rm -f testbin
 
     # NYI: Use this version to check there are no warnings produced by C compiler:
-    (($1 $2 -c -o=testbin                && ./testbin) 2>tmp_err0.txt | head -n 100) >tmp_out.txt;
+    (($1 "$2" -c -o=testbin                && ./testbin) 2>tmp_err0.txt | head -n 100) >tmp_out.txt;
 
     # This version dumps stderr output if fz was successful, which essentially ignores C compiler warnings:
     # (($1 $2 -c -o=testbin 2>tmp_err0.txt && ./testbin  2>tmp_err0.txt | head -n 100) >tmp_out.txt;
@@ -57,29 +57,29 @@ else
 
     expout=$2.expected_out
     experr=$2.expected_err
-    if [ -f $2.expected_out_c ]; then
+    if [ -f "$2".expected_out_c ]; then
         expout=$2.expected_out_c
     fi
-    if [ -f $2.expected_err_c ]; then
+    if [ -f "$2".expected_err_c ]; then
         experr=$2.expected_err_c
     fi
-    head -n 100 $expout >tmp_exp_out.txt
+    head -n 100 "$expout" >tmp_exp_out.txt
     diff tmp_exp_out.txt tmp_out.txt
     if [ $? -eq 0 ]; then
-        diff $experr tmp_err.txt >/dev/null
+        diff "$experr" tmp_err.txt >/dev/null
         if [ $? -eq 0 ]; then
             echo -ne "\033[32;1mPASSED\033[0m."
         else
-            if [ -s $experr ] && [ -s tmp_err.txt ]; then
+            if [ -s "$experr" ] && [ -s tmp_err.txt ]; then
                 echo -ne "\033[33;1mDIFF IN STDERR\033[0m."
             else
-                diff $experr tmp_err.txt
+                diff "$experr" tmp_err.txt
                 echo -e "\033[31;1m*** FAILED\033[0m err on $2"
                 RC=1
             fi
         fi
     else
-        diff $experr tmp_err.txt
+        diff "$experr" tmp_err.txt
         echo -e "\033[31;1m*** FAILED\033[0m out on $2"
         RC=1
     fi
