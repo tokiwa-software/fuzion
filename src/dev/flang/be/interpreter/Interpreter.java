@@ -842,6 +842,8 @@ public class Interpreter extends ANY
           }
         else
           {
+            // field might have been redefined, see https://github.com/tokiwa-software/fuzion/issues/165
+            a = staticClazz.lookup(a, dev.flang.ast.Call.NO_GENERICS, Clazzes.isUsedAt(a)).feature();
             setField(a,
                      -1,
                      staticClazz,
