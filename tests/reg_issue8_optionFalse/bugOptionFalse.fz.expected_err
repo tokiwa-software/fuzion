@@ -7,5 +7,6 @@ expected formal type: '[33moption<bugOptionFalse.x.V>[39m'
 actual type found   : '[33mbool[39m'
 assignable to       : '[33mbool[39m'
 for value assigned  : '[36mfalse[39m'
+To solve this, you could change the type of the target '[36mbugOptionFalse.x.b.#stmtResult0[39m' to '[33mbool[39m' or convert the type of the assigned value to '[33moption<bugOptionFalse.x.V>[39m'.
 
 one error.

@@ -203,6 +203,8 @@ public class AstErrors extends ANY
    *
    * @param detail detail on the use of incompatible types, e.g., "assignent to field abc.fgh\n".
    *
+   * @param target string representing the target of the assignment, e.g., "field abc.fgh".
+   *
    * @param frmlT the expected formal type
    *
    * @param value the value to be assigned.
@@ -210,9 +212,11 @@ public class AstErrors extends ANY
   static void incompatibleType(SourcePosition pos,
                                String where,
                                String detail,
+                               String target,
                                AbstractType frmlT,
                                Expr value)
   {
+    String remedy = null;
     var assignableToSB = new StringBuilder();
     var actlT = value.type();
     var valueThisOrOuter = !actlT.isRef() && (value.isCallToOuterRef() || value instanceof Current);
@@ -221,6 +225,10 @@ public class AstErrors extends ANY
         assignableToSB
           .append("assignable to       : ref ")
           .append(st(actlT.asRef().toString()));
+        if (frmlT.isAssignableFromOrContainsError(actlT))
+          {
+            remedy = "To solve this, you could create a new value instance by calling the constructor of " + s(actlT) + ".\n";
+          }
       }
     else
       {
@@ -235,6 +243,14 @@ public class AstErrors extends ANY
               .append(st(ts));
           }
       }
+    if (remedy == null && frmlT.asRef().isAssignableFrom(value))
+      {
+        remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
+      }
+    else
+      {
+        remedy = "To solve this, you could change the type of the target " + ss(target) + " to " + s(actlT) + " or convert the type of the assigned value to " + s(frmlT) + ".\n";
+      }
 
     error(pos,
           "Incompatible types " + where,
@@ -242,7 +258,8 @@ public class AstErrors extends ANY
           "expected formal type: " + s(frmlT) + "\n" +
           "actual type found   : " + s(actlT) + (valueThisOrOuter ? " or any subtype" : "") + "\n" +
           assignableToSB + (assignableToSB.length() > 0 ? "\n" : "") +
-          "for value assigned  : " + s(value) + "\n");
+          "for value assigned  : " + s(value) + "\n" +
+          remedy);
   }
 
 
@@ -266,6 +283,7 @@ public class AstErrors extends ANY
     incompatibleType(pos,
                      "in assignment",
                      "assignment to field : " + s(field) + "\n",
+                     field.qualifiedName(),
                      frmlT,
                      value);
   }
@@ -300,6 +318,7 @@ public class AstErrors extends ANY
     incompatibleType(value.pos(),
                      "when passing argument in a call",
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbn(f)) + " does not match expected type.\n" +
+                     (f == null ? "argument #" + (count+1) : f.featureName().baseName()),
                      "In call to          : " + s(calledFeature) + "\n",
                      frmlT,
                      value);
@@ -326,6 +345,7 @@ public class AstErrors extends ANY
     incompatibleType(pos,
                      "in array initialization",
                      "array type          : " + s(arrayType) + "\n",
+                     "array element",
                      frmlT,
                      value);
   }
