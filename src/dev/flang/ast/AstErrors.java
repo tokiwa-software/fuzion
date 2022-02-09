@@ -213,23 +213,34 @@ public class AstErrors extends ANY
                                AbstractType frmlT,
                                Expr value)
   {
-    var assignableTo = new TreeSet<String>();
-    var actlT = value.type();
-    frmlT.isAssignableFrom(actlT, assignableTo);
     var assignableToSB = new StringBuilder();
-    for (var ts : assignableTo)
+    var actlT = value.type();
+    var valueThisOrOuter = !actlT.isRef() && (value.isCallToOuterRef() || value instanceof Current);
+    if (valueThisOrOuter)
       {
         assignableToSB
-          .append(assignableToSB.length() == 0
-                  ?    "assignable to       : "
-                  : ",\n                      ")
-          .append(st(ts));
+          .append("assignable to       : ref ")
+          .append(st(actlT.asRef().toString()));
       }
+    else
+      {
+        var assignableTo = new TreeSet<String>();
+        frmlT.isAssignableFrom(actlT, assignableTo);
+        for (var ts : assignableTo)
+          {
+            assignableToSB
+              .append(assignableToSB.length() == 0
+                      ?    "assignable to       : "
+                      : ",\n                      ")
+              .append(st(ts));
+          }
+      }
+
     error(pos,
           "Incompatible types " + where,
           detail +
           "expected formal type: " + s(frmlT) + "\n" +
-          "actual type found   : " + s(actlT) + (!actlT.isRef() && (value.isCallToOuterRef() || value instanceof Current) ? " or any subtype" : "") + "\n" +
+          "actual type found   : " + s(actlT) + (valueThisOrOuter ? " or any subtype" : "") + "\n" +
           assignableToSB + (assignableToSB.length() > 0 ? "\n" : "") +
           "for value assigned  : " + s(value) + "\n");
   }
