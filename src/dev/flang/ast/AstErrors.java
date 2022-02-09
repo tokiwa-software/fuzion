@@ -193,6 +193,24 @@ public class AstErrors extends ANY
           "Otherwise, you may chose a different name than " + sbn(FuzionConstants.RESULT_NAME) + " for your feature.");
   }
 
+
+  /**
+   * is t an integer type i8..i128 or u8..u128.
+   */
+  private static boolean integerType(AbstractType t)
+  {
+    return
+      t.compareTo(Types.resolved.t_i8 ) == 0 ||
+      t.compareTo(Types.resolved.t_i16) == 0 ||
+      t.compareTo(Types.resolved.t_i32) == 0 ||
+      t.compareTo(Types.resolved.t_i64) == 0 ||
+      t.compareTo(Types.resolved.t_u8 ) == 0 ||
+      t.compareTo(Types.resolved.t_u16) == 0 ||
+      t.compareTo(Types.resolved.t_u32) == 0 ||
+      t.compareTo(Types.resolved.t_u64) == 0;
+  }
+
+
   /**
    * Create an error message for incompatible types, e.g., in an assignment to a
    * field or in passing an argument to a call.
@@ -246,6 +264,19 @@ public class AstErrors extends ANY
     if (remedy == null && frmlT.asRef().isAssignableFrom(value))
       {
         remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
+      }
+    else if (integerType(frmlT) && integerType(actlT))
+      {
+        var fs =
+          frmlT.compareTo(Types.resolved.t_i8 ) == 0  ? "i8"   :
+          frmlT.compareTo(Types.resolved.t_i16) == 0  ? "i16"  :
+          frmlT.compareTo(Types.resolved.t_i32) == 0  ? "i32 " :
+          frmlT.compareTo(Types.resolved.t_i64) == 0  ? "i64"  :
+          frmlT.compareTo(Types.resolved.t_u8 ) == 0  ? "u8"   :
+          frmlT.compareTo(Types.resolved.t_u16) == 0  ? "u16"  :
+          frmlT.compareTo(Types.resolved.t_u32) == 0  ? "u32"  :
+          frmlT.compareTo(Types.resolved.t_u64) == 0  ? "u64"  : "**error**";
+        remedy = "To solve this, you could convert the value using + " + ss(".as_" + fs) + ".\n";
       }
     else
       {
