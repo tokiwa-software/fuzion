@@ -33,13 +33,13 @@ is
 # private:
 
   # just for brevity
-  a => matrix.this
+  a => matrix e
 
 # public:
 
   # enable generic features in ancestors
-  redef thiz => matrix.this
-  redef orderedThis => matrix.this
+  redef thiz => a
+  redef orderedThis => a
 
   # basic operations
   redef prefix + => a

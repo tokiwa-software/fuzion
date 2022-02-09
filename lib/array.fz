@@ -200,7 +200,7 @@ array<T>(internalArray sys.array<T>) : Sequence<T> is
   # collect the contents of this Sequence into an array
   #
   redef asArray array<T> is
-    array.this
+    array internalArray
 
 
 # array -- create initialized one-dimensional immutable array
