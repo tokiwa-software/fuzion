@@ -131,3 +131,13 @@ is
 #   o option<TypeOfX> := x
 #
 option<T> (o option<T>) => o
+
+
+# type related to option declaring features not requiring an instance of option
+#
+options<A> : monads<A, option<A>> is
+
+
+  # return function
+  #
+  return (a A) => option a

@@ -84,12 +84,40 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
   redef infix >  (other i64) bool is intrinsic
   redef infix >= (other i64) bool is intrinsic
 
+  as_i8 i8
+    pre
+      thiz >= i8.min.as_i64,
+      thiz <= i8.max.as_i64
+    is
+      low8bits.as_i8
+  as_i16 i16
+    pre
+      thiz <= i16.max.as_i64,
+      thiz <= i16.max.as_i64
+    is
+      low16bits.as_i16
   as_i32 i32
     pre
       thiz >= i32.min.as_i64,
       thiz <= i32.max.as_i64
     is
       low32bits.castTo_i32
+  as_u8 u8
+    pre
+      thiz >= 0
+#      thiz <= u8.max.as_i64
+#    post
+#      analysis: result.as_u64 == thiz
+    is
+      low8bits
+  as_u16 u16
+     pre
+      thiz >= 0
+#      thiz <= u16max.as_i64
+#    post
+#      analysis: result.as_u64 == thiz
+    is
+      low16bits
   as_u32 u32
     pre
       thiz >= 0

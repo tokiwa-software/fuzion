@@ -521,6 +521,8 @@ public class Interpreter extends ANY
                 // parameters.
                 if (vc.actualType(f.resultType()).compareTo(Types.resolved.t_unit) != 0)
                   {
+                    // see tests/redef_args and issue #86 for a case where this lookup is needed:
+                    f = vc.lookup(f, dev.flang.ast.Call.NO_GENERICS, Clazzes.isUsedAt(f)).feature();
                     Value v = getField(f, vc, val);
                     // NYI: Check that this works well for internal fields such as choice tags.
                     // System.out.println("Box "+vc+" => "+rc+" copying "+f.qualifiedName()+" "+v);
@@ -842,6 +844,8 @@ public class Interpreter extends ANY
           }
         else
           {
+            // field might have been redefined, see https://github.com/tokiwa-software/fuzion/issues/165
+            a = staticClazz.lookup(a, dev.flang.ast.Call.NO_GENERICS, Clazzes.isUsedAt(a)).feature();
             setField(a,
                      -1,
                      staticClazz,

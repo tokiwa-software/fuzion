@@ -36,13 +36,13 @@ is
 # private:
 
   # just for brevity
-  a => complex.this
+  a => complex real imag
 
 # public:
 
   # enable generic features in ancestors
-  redef thiz => complex.this
-  redef orderedThis => complex.this
+  redef thiz => a
+  redef orderedThis => a
 
   # basic operations
   redef prefix + => a

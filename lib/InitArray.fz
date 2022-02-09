@@ -26,7 +26,7 @@
 # InitArray -- convenience feature for array creation
 #
 # NYI: Replace by better syntactic sugar in the Fuzion parser / front end.
-InitArray<T> is
+InitArray<T> ref is
 
   Nil is
   node (head T, tail list) ref is

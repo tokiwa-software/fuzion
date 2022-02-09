@@ -63,14 +63,16 @@ monad<A, MA: monad<A, MA>> is
   join <MMA : monad<MA, monad<A, MA>>> (a MMA) MA is abstract
 
 
-  # return function
-  #
-  # NYI: This should be A -> MA, not MA x A -> MA as it is right now
-  # since it needs an instance to be called on.
-  #
-  return (a A) MA is abstract
-
-
   # NYI: fmap:
   #
   # fmap<B> (f A -> B) is monad.this >>= fun (x A) B is return f x
+
+
+# type related to monad declaring features not requiring an instance of monad
+#
+monads<A, MA: monad<A, MA>> is
+
+
+  # return function
+  #
+  return (a A) MA is abstract

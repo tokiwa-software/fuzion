@@ -193,6 +193,24 @@ public class AstErrors extends ANY
           "Otherwise, you may chose a different name than " + sbn(FuzionConstants.RESULT_NAME) + " for your feature.");
   }
 
+
+  /**
+   * is t an integer type i8..i128 or u8..u128.
+   */
+  private static boolean integerType(AbstractType t)
+  {
+    return
+      t.compareTo(Types.resolved.t_i8 ) == 0 ||
+      t.compareTo(Types.resolved.t_i16) == 0 ||
+      t.compareTo(Types.resolved.t_i32) == 0 ||
+      t.compareTo(Types.resolved.t_i64) == 0 ||
+      t.compareTo(Types.resolved.t_u8 ) == 0 ||
+      t.compareTo(Types.resolved.t_u16) == 0 ||
+      t.compareTo(Types.resolved.t_u32) == 0 ||
+      t.compareTo(Types.resolved.t_u64) == 0;
+  }
+
+
   /**
    * Create an error message for incompatible types, e.g., in an assignment to a
    * field or in passing an argument to a call.
@@ -203,6 +221,8 @@ public class AstErrors extends ANY
    *
    * @param detail detail on the use of incompatible types, e.g., "assignent to field abc.fgh\n".
    *
+   * @param target string representing the target of the assignment, e.g., "field abc.fgh".
+   *
    * @param frmlT the expected formal type
    *
    * @param value the value to be assigned.
@@ -210,28 +230,67 @@ public class AstErrors extends ANY
   static void incompatibleType(SourcePosition pos,
                                String where,
                                String detail,
+                               String target,
                                AbstractType frmlT,
                                Expr value)
   {
-    var assignableTo = new TreeSet<String>();
-    var actlT = value.type();
-    frmlT.isAssignableFrom(actlT, assignableTo);
+    String remedy = null;
     var assignableToSB = new StringBuilder();
-    for (var ts : assignableTo)
+    var actlT = value.type();
+    var valueThisOrOuter = !actlT.isRef() && (value.isCallToOuterRef() || value instanceof Current);
+    if (valueThisOrOuter)
       {
         assignableToSB
-          .append(assignableToSB.length() == 0
-                  ?    "assignable to       : "
-                  : ",\n                      ")
-          .append(st(ts));
+          .append("assignable to       : ref ")
+          .append(st(actlT.asRef().toString()));
+        if (frmlT.isAssignableFromOrContainsError(actlT))
+          {
+            remedy = "To solve this, you could create a new value instance by calling the constructor of " + s(actlT) + ".\n";
+          }
       }
+    else
+      {
+        var assignableTo = new TreeSet<String>();
+        frmlT.isAssignableFrom(actlT, assignableTo);
+        for (var ts : assignableTo)
+          {
+            assignableToSB
+              .append(assignableToSB.length() == 0
+                      ?    "assignable to       : "
+                      : ",\n                      ")
+              .append(st(ts));
+          }
+      }
+    if (remedy == null && frmlT.asRef().isAssignableFrom(value))
+      {
+        remedy = "To solve this, you could change the type of " + ss(target) + " to a " + st("ref")+ " type like " + s(frmlT.asRef()) + ".\n";
+      }
+    else if (integerType(frmlT) && integerType(actlT))
+      {
+        var fs =
+          frmlT.compareTo(Types.resolved.t_i8 ) == 0  ? "i8"   :
+          frmlT.compareTo(Types.resolved.t_i16) == 0  ? "i16"  :
+          frmlT.compareTo(Types.resolved.t_i32) == 0  ? "i32 " :
+          frmlT.compareTo(Types.resolved.t_i64) == 0  ? "i64"  :
+          frmlT.compareTo(Types.resolved.t_u8 ) == 0  ? "u8"   :
+          frmlT.compareTo(Types.resolved.t_u16) == 0  ? "u16"  :
+          frmlT.compareTo(Types.resolved.t_u32) == 0  ? "u32"  :
+          frmlT.compareTo(Types.resolved.t_u64) == 0  ? "u64"  : "**error**";
+        remedy = "To solve this, you could convert the value using + " + ss(".as_" + fs) + ".\n";
+      }
+    else
+      {
+        remedy = "To solve this, you could change the type of the target " + ss(target) + " to " + s(actlT) + " or convert the type of the assigned value to " + s(frmlT) + ".\n";
+      }
+
     error(pos,
           "Incompatible types " + where,
           detail +
           "expected formal type: " + s(frmlT) + "\n" +
-          "actual type found   : " + s(actlT) + (!actlT.isRef() && (value.isCallToOuterRef() || value instanceof Current) ? " or any subtype" : "") + "\n" +
+          "actual type found   : " + s(actlT) + (valueThisOrOuter ? " or any subtype" : "") + "\n" +
           assignableToSB + (assignableToSB.length() > 0 ? "\n" : "") +
-          "for value assigned  : " + s(value) + "\n");
+          "for value assigned  : " + s(value) + "\n" +
+          remedy);
   }
 
 
@@ -255,6 +314,7 @@ public class AstErrors extends ANY
     incompatibleType(pos,
                      "in assignment",
                      "assignment to field : " + s(field) + "\n",
+                     field.qualifiedName(),
                      frmlT,
                      value);
   }
@@ -290,6 +350,7 @@ public class AstErrors extends ANY
                      "when passing argument in a call",
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbn(f)) + " does not match expected type.\n" +
                      "In call to          : " + s(calledFeature) + "\n",
+                     (f == null ? "argument #" + (count+1) : f.featureName().baseName()),
                      frmlT,
                      value);
   }
@@ -315,6 +376,7 @@ public class AstErrors extends ANY
     incompatibleType(pos,
                      "in array initialization",
                      "array type          : " + s(arrayType) + "\n",
+                     "array element",
                      frmlT,
                      value);
   }

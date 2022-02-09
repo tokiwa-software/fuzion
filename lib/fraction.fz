@@ -45,12 +45,12 @@ is
 # private:
 
   # just for brevity
-  a => fraction.this
+  a => fraction num den
 
 # public:
 
   # enable generic features in ancestors
-  redef thiz => fraction.this
+  redef thiz => a
 
   # reduce numerator and denominator by their gcd:
   reduce =>

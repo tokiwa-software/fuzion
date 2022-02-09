@@ -27,7 +27,7 @@ redef_args is
 
   exitCode := 0
 
-  chck(b bool, msg string) is
+  chck(b bool, msg string) =>
     s := if (b)
       "PASSED: "
     else
@@ -62,5 +62,15 @@ redef_args is
   c3 ref Complex3 := Complex4 3 4
   chck (c3                .real  == 3) "double redefined generic field real accessed through super feature set correctly"
   chck (c3                .imag  == 4) "double redefined generic field imag accessed through super feature set correctly"
+
+  # regression test using example from https://github.com/tokiwa-software/fuzion/issues/165
+  v := ra 33
+  chck (v = 2) "redefined field as in #165"
+  ra(redef a i32) : st 2 =>
+    chck (a = 2) "redefined field as in #165"
+    a
+  st (a i32) is
+    chck (a = 2) "redefined field as in #165"
+
 
   fuzion.std.exit exitCode

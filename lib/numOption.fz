@@ -142,3 +142,13 @@ is
 #   o numOption<TypeOfX> := x
 #
 numOption<T> (o numOption<T>) => o
+
+
+# type related to numOption declaring features not requiring an instance of numOption
+#
+numOptions<T: numeric<T>> : monads<T, numOption<T>> is
+
+
+  # return function
+  #
+  return (a T) => numOption a
