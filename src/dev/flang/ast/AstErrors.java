@@ -349,8 +349,8 @@ public class AstErrors extends ANY
     incompatibleType(value.pos(),
                      "when passing argument in a call",
                      "Actual type for argument #" + (count+1) + (f == null ? "" : " " + sbn(f)) + " does not match expected type.\n" +
-                     (f == null ? "argument #" + (count+1) : f.featureName().baseName()),
                      "In call to          : " + s(calledFeature) + "\n",
+                     (f == null ? "argument #" + (count+1) : f.featureName().baseName()),
                      frmlT,
                      value);
   }
