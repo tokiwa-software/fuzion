@@ -608,13 +608,13 @@ public class Function extends ExprWithPos
    */
   public AbstractType type()
   {
-    var result = typeForFeatureResultTypeInferencing();
+    var result = type_;
     if (result == null)
       {
         AstErrors.noTypeInferenceFromLambda(pos());
-        result = Types.t_ERROR;
+        type_ = Types.t_ERROR;
       }
-    return result;
+    return type_;
   }
 
 
@@ -626,6 +626,22 @@ public class Function extends ExprWithPos
    */
   public AbstractType typeForFeatureResultTypeInferencing()
   {
+    return type();
+  }
+
+
+  /**
+   * typeForGenericsTypeInfereing returns the type of this expression or null if
+   * the type is still unknown, i.e., before or during type resolution for
+   * generic type arguments.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  public AbstractType typeForGenericsTypeInfereing()
+  {
+    // unlike typeForFeatureResultTypeInferencing(), we do not produce an error
+    // but just return null here since everything might eventually turn out fine
+    // in this case.
     return type_;
   }
 
@@ -642,6 +658,7 @@ public class Function extends ExprWithPos
   public Expr resolveSyntacticSugar2(Resolution res, AbstractFeature outer)
   {
     Expr result = this;
+    var ignore = type(); // just for the side-effect of producing an error if there was no type-propagation.
     if (Errors.count() == 0)  // avoid null pointer hdlg in case calledFeature not found etc.
       {
         if (this.feature_ == null)

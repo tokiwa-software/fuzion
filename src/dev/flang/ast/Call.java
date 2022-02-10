@@ -1221,7 +1221,7 @@ public class Call extends AbstractCall
           {
             count++;
             Expr actual = resolveTypeForNextActual(aargs, res, outer);
-            var actualType = actual.typeForFeatureResultTypeInferencing();
+            var actualType = actual.typeForGenericsTypeInfereing();
             if (actualType != null)
               {
                 inferGeneric(res, t, actualType, actual.pos(), found, conflict, foundAt);

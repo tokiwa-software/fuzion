@@ -123,6 +123,19 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
 
   /**
+   * typeForGenericsTypeInfereing returns the type of this expression or null if
+   * the type is still unknown, i.e., before or during type resolution for
+   * generic type arguments.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  public AbstractType typeForGenericsTypeInfereing()
+  {
+    return typeForFeatureResultTypeInferencing();
+  }
+
+
+  /**
    * The source code position of this expression that produces the result value
    * of this Expression. This is usually equal to this Expression's position,
    * unless we have a block of the form
