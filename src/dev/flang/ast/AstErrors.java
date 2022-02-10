@@ -520,7 +520,7 @@ public class AstErrors extends ANY
 
   public static void constructorResultMustBeUnit(Expr res)
   {
-    var rt = res.typeForFeatureResultTypeInferencing();
+    var rt = res.type();
     var srt = rt == null ? "an unknown type" : s(rt);
     error(res.posOfLast(), "Constructor code should result in type " + st("unit") + "",
           "Type returned by this constructor's implementation is " +srt + "\n" +

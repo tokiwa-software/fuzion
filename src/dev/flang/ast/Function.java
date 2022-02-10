@@ -619,18 +619,6 @@ public class Function extends ExprWithPos
 
 
   /**
-   * typeForFeatureResultTypeInferencing returns the type of this expression or
-   * null if the type is still unknown, i.e., before or during type resolution.
-   *
-   * @return this Expr's type or null if not known.
-   */
-  AbstractType typeForFeatureResultTypeInferencing()
-  {
-    return type();
-  }
-
-
-  /**
    * typeForGenericsTypeInfereing returns the type of this expression or null if
    * the type is still unknown, i.e., before or during type resolution for
    * generic type arguments.
