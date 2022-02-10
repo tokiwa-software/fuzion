@@ -124,7 +124,7 @@ public abstract class Unbox extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public AbstractType typeForFeatureResultTypeInferencing()
+  AbstractType typeForFeatureResultTypeInferencing()
   {
     return type_;
   }

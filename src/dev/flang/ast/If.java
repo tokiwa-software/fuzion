@@ -231,7 +231,7 @@ public class If extends ExprWithPos
    *
    * @return this Expr's type or null if not known.
    */
-  public AbstractType typeForFeatureResultTypeInferencing()
+  AbstractType typeForFeatureResultTypeInferencing()
   {
     if (_type == null)
       {

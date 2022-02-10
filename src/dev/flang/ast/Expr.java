@@ -119,7 +119,10 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
    *
    * @return this Expr's type or null if not known.
    */
-  public abstract AbstractType typeForFeatureResultTypeInferencing();
+  AbstractType typeForFeatureResultTypeInferencing()
+  {
+    return type();
+  }
 
 
   /**

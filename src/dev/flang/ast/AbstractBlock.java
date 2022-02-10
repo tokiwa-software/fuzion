@@ -110,7 +110,7 @@ public abstract class AbstractBlock extends Expr
    *
    * @return this Expr's type or null if not known.
    */
-  public AbstractType typeForFeatureResultTypeInferencing()
+  AbstractType typeForFeatureResultTypeInferencing()
   {
     return Types.resolved.t_unit;
   }
