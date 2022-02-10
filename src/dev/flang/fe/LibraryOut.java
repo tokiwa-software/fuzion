@@ -802,7 +802,7 @@ class LibraryOut extends DataOut
    *   | true   | 1      | Type          | resulting tagged union type                   |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-        type(t.typeOrNull());
+        type(t.typeForFeatureResultTypeInferencing());
       }
     else if (s instanceof Nop)
       {

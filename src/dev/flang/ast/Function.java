@@ -601,14 +601,14 @@ public class Function extends ExprWithPos
 
 
   /**
-   * typeOrNull returns the type of this expression or null if the type is still
-   * unknown, i.e., before or during type resolution.
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
    *
-   * @return this Expr's type or null if not known.
+   * @return this Expr's type or t_ERROR in case it is not known yet.
    */
   public AbstractType type()
   {
-    var result = typeOrNull();
+    var result = typeForFeatureResultTypeInferencing();
     if (result == null)
       {
         AstErrors.noTypeInferenceFromLambda(pos());
@@ -619,12 +619,12 @@ public class Function extends ExprWithPos
 
 
   /**
-   * typeOrNull returns the type of this expression or null if the type is still
-   * unknown, i.e., before or during type resolution.
+   * typeForFeatureResultTypeInferencing returns the type of this expression or
+   * null if the type is still unknown, i.e., before or during type resolution.
    *
    * @return this Expr's type or null if not known.
    */
-  public AbstractType typeOrNull()
+  public AbstractType typeForFeatureResultTypeInferencing()
   {
     return type_;
   }

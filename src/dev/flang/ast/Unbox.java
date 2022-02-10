@@ -119,12 +119,12 @@ public abstract class Unbox extends Expr
 
 
   /**
-   * typeOrNull returns the type of this expression or null if the type is still
-   * unknown, i.e., before or during type resolution.
+   * typeForFeatureResultTypeInferencing returns the type of this expression or
+   * null if the type is still unknown, i.e., before or during type resolution.
    *
    * @return this Expr's type or null if not known.
    */
-  public AbstractType typeOrNull()
+  public AbstractType typeForFeatureResultTypeInferencing()
   {
     return type_;
   }
