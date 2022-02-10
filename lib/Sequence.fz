@@ -260,6 +260,20 @@ Sequence<T> ref is
   zip<U,V>(b Sequence<U>, f (T,U)->V) => asList.zip0 b.asList f
 
 
+  # takes a transducer xf, a reducer f and an initial value
+  # returns the result of applying the reducer xf f to the Sequence
+  transduce<R,U,V>(xf ((U,V) -> U) -> (R,T) -> R, f (U,V) -> U, init R) =>
+    red := xf f
+    for
+      res := init, red res el
+      el in Sequence.this do
+    else
+      res
+
+  # NYI
+  transduce<R>(xf ((Sequence<R>,R) -> Sequence<R>) -> (Sequence<R>,T) -> Sequence<R>) =>
+    transduce xf ((u,v) -> u ++ [v]) Sequences.empty<R>
+
 # Sequences -- unit type defining features related to Sequence but not requiring
 # an instance
 #

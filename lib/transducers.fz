@@ -1,0 +1,60 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Sequence
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# transducers map one reducing function to another
+#
+# see https://clojure.org/reference/transducers
+# for in depth information about transducers
+#
+# usage example:
+#
+# human(age i32) is
+# ages := map<Sequence<i32>, human, i32> (x -> x.age)
+# gt_ten := filter<Sequence<i32>, i32> (x -> x > 10)
+# ppl_older_ten := compose ages gt_ten
+# res := [human(4), human(12), human(30)].transduce ppl_older_ten ((r,b) -> r + 1) 0
+# say res  # expected output is 2
+transducers =>
+
+  # filter values based on evaluation of predicate
+  filter<R,T>(predicate T -> bool) ((R,T) -> R) -> (R,T) -> R is
+    red -> (res, val) -> if(predicate val) red.call res val else res
+
+  # map values from T to U
+  map<R,T,U>(mapper T -> U) ((R,U) -> R) -> (R,T) -> R is
+    red -> (res, val) -> red.call res (mapper val)
+
+  # count amount of values
+  count<R: numeric<R>,T>() ((R,R) -> R) -> (R,T) -> R is
+    # NYI c := R.zero
+    red -> (res, val) ->
+                        # NYI
+                        # set c := c + R.one
+                        # red.call res c
+                        red.call res res.one
+
+  # compose NYI not needed if Function provides composition
+  # compose<R,T,U,V,W>(t1 ((R,T) -> R) -> (R,U) -> R, t2 ((R,V) -> R) -> (R,W) -> R) =>
+  #   red -> t2 t1 red
