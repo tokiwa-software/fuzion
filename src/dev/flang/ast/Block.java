@@ -232,18 +232,18 @@ public class Block extends AbstractBlock
 
 
   /**
-   * typeOrNull returns the type of this expression or null if the type is still
-   * unknown, i.e., before or during type resolution.
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
    *
-   * @return this Expr's type or null if not known.
+   * @return this Expr's type or t_ERROR in case it is not known yet.
    */
-  public AbstractType typeOrNull()
+  public AbstractType type()
   {
     AbstractType result = Types.resolved.t_unit;
     Expr resExpr = resultExpression();
     if (resExpr != null)
       {
-        result = resExpr.typeOrNull();
+        result = resExpr.typeForFeatureResultTypeInferencing();
       }
     return result;
   }

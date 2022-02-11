@@ -175,7 +175,7 @@ public abstract class LibraryCall extends AbstractCall
   {
     return _isInheritanceCall;
   }
-  public AbstractType typeOrNull()
+  public AbstractType type()
   {
     return _type;
   }

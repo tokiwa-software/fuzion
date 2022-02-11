@@ -101,7 +101,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
    */
   public AbstractType type()
   {
-    var result = typeOrNull();
+    var result = typeForFeatureResultTypeInferencing();
     if (result == null)
       {
         result = Types.t_ERROR;
@@ -114,12 +114,28 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
 
 
   /**
-   * typeOrNull returns the type of this expression or null if the type is still
-   * unknown, i.e., before or during type resolution.
+   * typeForFeatureResultTypeInferencing returns the type of this expression or
+   * null if the type is still unknown, i.e., before or during type resolution.
    *
    * @return this Expr's type or null if not known.
    */
-  public abstract AbstractType typeOrNull();
+  AbstractType typeForFeatureResultTypeInferencing()
+  {
+    return type();
+  }
+
+
+  /**
+   * typeForGenericsTypeInfereing returns the type of this expression or null if
+   * the type is still unknown, i.e., before or during type resolution for
+   * generic type arguments.
+   *
+   * @return this Expr's type or null if not known.
+   */
+  public AbstractType typeForGenericsTypeInfereing()
+  {
+    return typeForFeatureResultTypeInferencing();
+  }
 
 
   /**

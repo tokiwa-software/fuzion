@@ -635,7 +635,7 @@ public class LibraryFeature extends AbstractFeature
               var d = _libModule.constData(iat);
               x = new AbstractConstant()
                 {
-                  public AbstractType typeOrNull() { return t; }
+                  public AbstractType type() { return t; }
                   public byte[] data() { return d; }
                   public Expr visit(FeatureVisitor v, AbstractFeature af) { return this; };
                   public String toString() { return "LibraryFeature.Constant of type "+type(); }

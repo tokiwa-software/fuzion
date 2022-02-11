@@ -156,12 +156,12 @@ public class This extends ExprWithPos
 
 
   /**
-   * typeOrNull returns the type of this expression or null if the type is still
-   * unknown, i.e., before or during type resolution.
+   * typeForFeatureResultTypeInferencing returns the type of this expression or
+   * null if the type is still unknown, i.e., before or during type resolution.
    *
    * @return this Expr's type or null if not known.
    */
-  public AbstractType typeOrNull()
+  AbstractType typeForFeatureResultTypeInferencing()
   {
     return null;  // After type resolution, This is no longer part of the code.
   }

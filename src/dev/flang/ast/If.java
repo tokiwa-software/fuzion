@@ -194,8 +194,8 @@ public class If extends ExprWithPos
 
 
   /**
-   * Helper routine for typeOrNull to determine the type of this if statement on
-   * demand, i.e., as late as possible.
+   * Helper routine for typeForFeatureResultTypeInferencing to determine the
+   * type of this if statement on demand, i.e., as late as possible.
    */
   private AbstractType typeFromIfOrElse()
   {
@@ -210,7 +210,7 @@ public class If extends ExprWithPos
         Iterator<Expr> it = branches();
         while (it.hasNext())
           {
-            var t = it.next().typeOrNull();
+            var t = it.next().typeForFeatureResultTypeInferencing();
             result = result == null || t == null ? null : result.union(t);
           }
       }
@@ -226,12 +226,12 @@ public class If extends ExprWithPos
 
 
   /**
-   * typeOrNull returns the type of this expression or null if the type is still
-   * unknown, i.e., before or during type resolution.
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
    *
-   * @return this Expr's type or null if not known.
+   * @return this Expr's type or t_ERROR in case it is not known yet.
    */
-  public AbstractType typeOrNull()
+  public AbstractType type()
   {
     if (_type == null)
       {
