@@ -40,11 +40,17 @@ transducertest :transducers is
 
   xf_map := map<Sequence<bool>,i32, bool>(x -> x > 3)
   r := (1..5).transduce xf_map
-  chck (r.filter(x -> x).count == 2) "map transducer"
+  chck (r.count == 5) "map transducer"
 
-  xf_count := count<i32,i32>
-  r := (1..5).transduce xf_count ((x,r) -> r) 0
-  # NYI
-  chck (r == 1) "count transducer"
+  xf_count := count<bool>
+  r := (1..5).map<bool>(x -> false).transduce xf_count 0
+  chck (r == 5) "count transducer"
+
+  human(age i32) is
+  ages := map<i32, human, i32> (x -> x.age)
+  gt_ten := filter<i32, i32> (x -> x > 10)
+  xf := (compose (compose ages gt_ten) count<i32>)
+  m := [human(4), human(12), human(30)].transduce xf 0
+  chck (m == 2) "compose transducers"
 
   fuzion.std.exit exitCode

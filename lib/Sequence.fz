@@ -270,7 +270,11 @@ Sequence<T> ref is
     else
       res
 
-  # NYI
+  # transduce with noop reducing fn
+  transduce<R,U>(xf ((U,U) -> U) -> (R,T) -> R, default R) =>
+    transduce<R,U,U> xf ((x,r) -> r) default
+
+  # transduce into new sequence
   transduce<R>(xf ((Sequence<R>,R) -> Sequence<R>) -> (Sequence<R>,T) -> Sequence<R>) =>
     transduce xf ((u,v) -> u ++ [v]) Sequences.empty<R>
 

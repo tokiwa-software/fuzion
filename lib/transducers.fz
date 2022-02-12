@@ -36,7 +36,7 @@
 # ppl_older_ten := compose ages gt_ten
 # res := [human(4), human(12), human(30)].transduce ppl_older_ten ((r,b) -> r + 1) 0
 # say res  # expected output is 2
-transducers =>
+transducers is
 
   # filter values based on evaluation of predicate
   filter<R,T>(predicate T -> bool) ((R,T) -> R) -> (R,T) -> R is
@@ -47,14 +47,14 @@ transducers =>
     red -> (res, val) -> red.call res (mapper val)
 
   # count amount of values
-  count<R: numeric<R>,T>() ((R,R) -> R) -> (R,T) -> R is
-    # NYI c := R.zero
+  # NYI statefulness is easy to misuse
+  count<T>() ((i32,i32) -> i32) -> (i32,T) -> i32 is
+    c := 0
     red -> (res, val) ->
-                        # NYI
-                        # set c := c + R.one
-                        # red.call res c
-                        red.call res res.one
+                        set c := c + 1
+                        c
 
   # compose NYI not needed if Function provides composition
-  # compose<R,T,U,V,W>(t1 ((R,T) -> R) -> (R,U) -> R, t2 ((R,V) -> R) -> (R,W) -> R) =>
-  #   red -> t2 t1 red
+  # f ° g
+  compose<R1,R2,R3,T,U,V>(f ((R3,T) -> R3) -> (R1,U) -> R1, g ((R2,V) -> R2) -> (R3,T) -> R3) ((R2,V) -> R2) -> (R1,U) -> R1 is
+    red -> f (g red)
