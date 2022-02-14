@@ -31,11 +31,11 @@
 # usage example:
 #
 # human(age i32) is
-# ages := map<Sequence<i32>, human, i32> (x -> x.age)
-# gt_ten := filter<Sequence<i32>, i32> (x -> x > 10)
-# ppl_older_ten := compose ages gt_ten
-# res := [human(4), human(12), human(30)].transduce ppl_older_ten ((r,b) -> r + 1) 0
-# say res  # expected output is 2
+# ages := map<i32, human, i32> (x -> x.age)
+# gt_ten := filter<i32, i32> (x -> x > 10)
+# xf := (compose (compose ages gt_ten) count<i32>)
+# res := [human(4), human(12), human(30)].transduce xf 0
+# say res # expected output is 2
 transducers is
 
   # filter values based on evaluation of predicate
