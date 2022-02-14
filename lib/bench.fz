@@ -1,0 +1,50 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature bitset
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# benchmark f for milli_seconds
+# returns: iterations per second
+#
+bench<R>(f Function<R>, milli_seconds i32) f64 is
+  nano_seconds := milli_seconds.as_u64 * 1E6
+  warm_up_time := u64 1000 * 1E6
+  start := fuzion.std.nano_time
+
+  warm_up =>
+    say "warming up"
+    do
+      f.call
+      until fuzion.std.nano_time - start > warm_up_time
+
+  warm_up
+
+  say "start benchmarking"
+  iterations := for iter := (u64 0), iter + u64 1
+  while fuzion.std.nano_time - start < nano_seconds
+  do
+    f.call
+  else
+    iter
+
+  (iterations.as_f64 / (nano_seconds.as_f64 * 1E-9))
