@@ -220,6 +220,14 @@ JAVA_FILES_TOOLS_FZJAVA = \
 JAVA_FILES_MISC_LOGO =\
           $(SRC)/dev/flang/misc/logo/FuzionLogo.java
 
+JAVA_FILES_ALL = $(JAVA_FILES_UTIL) $(JAVA_FILES_UTIL_UNICODE)\
+                 $(JAVA_FILES_AST) $(JAVA_FILES_PARSER) $(JAVA_FILES_IR)\
+                 $(JAVA_FILES_MIR) $(JAVA_FILES_FE) $(JAVA_FILES_AIR)\
+                 $(JAVA_FILES_ME) $(JAVA_FILES_FUIR) $(JAVA_FILES_OPT)\
+                 $(JAVA_FILES_BE_INTERPRETER) $(JAVA_FILES_BE_C)\
+                 $(JAVA_FILES_TOOLS) $(JAVA_FILES_TOOLS_FZJAVA)\
+                 $(JAVA_FILES_MISC_LOGO)
+
 CLASS_FILES_UTIL           = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
 CLASS_FILES_UTIL_UNICODE   = $(CLASSES_DIR)/dev/flang/util/unicode/__marker_for_make__
 CLASS_FILES_AST            = $(CLASSES_DIR)/dev/flang/ast/__marker_for_make__
@@ -526,3 +534,11 @@ release: clean all
 .PHONY: shellcheck
 shellcheck:
 	shellcheck $(SHELL_SCRIPTS) $(shell find . -iname '*.sh' -not -path "./build/*")
+
+.PHONY: lint/java
+lint/java: $(JARS_JFREE_SVG_JAR)
+	$(JAVAC) -Xlint -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) -d $(CLASSES_DIR) $(JAVA_FILES_ALL)
+
+.PHONY: lint/javadoc
+lint/javadoc: $(JARS_JFREE_SVG_JAR)
+	$(JAVAC) -Xdoclint -cp $(CLASSES_DIR):$(JARS_JFREE_SVG_JAR) -d $(CLASSES_DIR) $(JAVA_FILES_ALL)
