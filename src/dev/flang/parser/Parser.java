@@ -1948,10 +1948,17 @@ simpleterm  : bracketTerm
   /**
    * Parse stringTerm
    *
-stringTerm  : STRING
-            // NYI string interpolation
-            // | STRING$ ident stringTerm
-            // | STRING{ block stringTerm
+stringTerm  : '"<any chars>"'
+            | '"<any chars>$' IDENT stringTermD
+            | '"<any chars>{' block stringTermB
+            ;
+stringTermD : '<any chars>"'
+            | '<any chars>$' IDENT stringTermD
+            | '<any chars>{' block stringTermB
+            ;
+stringTermB : '}<any chars>"'
+            | '}<any chars>$' IDENT stringTermD
+            | '}<any chars>{' block stringTermB
             ;
   */
   Expr stringTerm(Expr leftString)
@@ -2363,7 +2370,8 @@ caseBlock   : ARROW          // if followed by '|'
   /**
    * Parse block
    *
-block       : BRACEL stmnts BRACER
+block       : stmnts
+            | BRACEL stmnts BRACER
             ;
    */
   Block block(boolean mayBeAtMinIndent)
