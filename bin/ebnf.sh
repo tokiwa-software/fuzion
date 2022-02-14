@@ -49,9 +49,9 @@ NEW_LINE=$'\n'
 SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
 cd "$SCRIPTPATH"/..
 
-#
-EBNF_LEXER=$(pcregrep -M "^(fragment[ ])*[a-zA-Z0-9_]+[ ]*:(\n|.)*?( ;)" ./src/dev/flang/parser/Lexer.java)
-EBNF_PARSER=$(pcregrep -M "^(fragment[ ])*[a-zA-Z0-9_]+[ ]*:(\n|.)*?( ;)" ./src/dev/flang/parser/Parser.java)
+RULE_MATCHER="^(fragment\n)*[a-zA-Z0-9_]+[ ]*:(\n|.)*?( ;)"
+EBNF_LEXER=$(pcregrep -M "$RULE_MATCHER" ./src/dev/flang/parser/Lexer.java)
+EBNF_PARSER=$(pcregrep -M "$RULE_MATCHER" ./src/dev/flang/parser/Parser.java)
 
 # header
 EBNF_HEADER="grammar Fuzion;${NEW_LINE}${NEW_LINE}"
