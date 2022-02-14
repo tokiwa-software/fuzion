@@ -184,6 +184,7 @@ public class SourceFile extends ANY
     if (PRECONDITIONS) require
       (fileName != null);
 
+    _fileName = fileName;
     byte[] sf;
     try
       {
@@ -198,7 +199,6 @@ public class SourceFile extends ANY
         sf = new byte[0];
       }
 
-    _fileName = fileName;
     _bytes = sf;
     _pos = 0;
     _cur = BAD_CODEPOINT;
