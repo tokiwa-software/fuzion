@@ -351,6 +351,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     try
       {
         return p.getFileName().toString().endsWith(".fz") &&
+          !Files.isDirectory(p) &&
           Files.isReadable(p) &&
           (_inputFile == null || _inputFile == SourceFile.STDIN || !Files.isSameFile(_inputFile, p));
       }

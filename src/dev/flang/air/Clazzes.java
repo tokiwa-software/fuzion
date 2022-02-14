@@ -704,12 +704,12 @@ public class Clazzes extends ANY
 
         Clazz sClazz = clazz(a._target, outerClazz);
         outerClazz.setRuntimeClazz(a.tid_, sClazz);
+        var vc = sClazz.asValue();
+        var fc = vc.lookup(a._assignedField, AbstractCall.NO_GENERICS, a);
+        propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz);
         if (isUsed(a._assignedField, sClazz))
           {
-            var vc = sClazz.asValue();
-            var fc = vc.lookup(a._assignedField, AbstractCall.NO_GENERICS, a);
             outerClazz.setRuntimeClazz(a.tid_ + 1, fc);
-            propagateExpectedClazz(a._value, fc.resultClazz(), outerClazz);
           }
       }
   }

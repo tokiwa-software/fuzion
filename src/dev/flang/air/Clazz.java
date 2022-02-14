@@ -2040,7 +2040,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         return g.replaceOpen(_type.generics());
       }
-    else if (!feature().isUniverse())
+    else if (_outer != null)
       {
         return _outer.replaceOpen(ft);
       }

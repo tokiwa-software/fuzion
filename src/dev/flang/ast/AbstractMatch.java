@@ -131,7 +131,7 @@ public abstract class AbstractMatch extends Expr
 
 
   /**
-   * Helper routine for typeOrNull to determine the type of this match statement
+   * Helper routine for typeForFeatureResultTypeInferencing to determine the type of this match statement
    * on demand, i.e., as late as possible.
    */
   private AbstractType typeFromCases()
@@ -139,7 +139,7 @@ public abstract class AbstractMatch extends Expr
     AbstractType result = Types.resolved.t_void;
     for (var c: cases())
       {
-        var t = c.code().typeOrNull();
+        var t = c.code().typeForFeatureResultTypeInferencing();
         result = result == null || t == null ? null : result.union(t);
       }
     if (result == Types.t_UNDEFINED)
@@ -159,12 +159,12 @@ public abstract class AbstractMatch extends Expr
 
 
   /**
-   * typeOrNull returns the type of this expression or null if the type is still
-   * unknown, i.e., before or during type resolution.
+   * type returns the type of this expression or Types.t_ERROR if the type is
+   * still unknown, i.e., before or during type resolution.
    *
-   * @return this Expr's type or null if not known.
+   * @return this Expr's type or t_ERROR in case it is not known yet.
    */
-  public AbstractType typeOrNull()
+  public AbstractType type()
   {
     if (_type == null)
       {
