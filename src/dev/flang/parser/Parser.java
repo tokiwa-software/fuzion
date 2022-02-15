@@ -1529,7 +1529,7 @@ actualsLstC : COMMA expr actualsLstC
   /**
    * A bracketTerm
    *
-bracketTerm : block
+bracketTerm : brblock
             | klammer
             | inlineArray
             ;
@@ -1544,7 +1544,7 @@ bracketTerm : block
     var c = current();
     switch (c)
       {
-      case t_lbrace  : return block(false);
+      case t_lbrace  : return brblock(false);
       case t_lparen  : return klammer();
       case t_lcrochet: return inlineArray();
       default: throw new Error("Unexpected case: "+c);
@@ -2371,7 +2371,7 @@ caseBlock   : ARROW          // if followed by '|'
    * Parse block
    *
 block       : stmnts
-            | BRACEL stmnts BRACER
+            | brblock
             ;
    */
   Block block(boolean mayBeAtMinIndent)
@@ -2401,13 +2401,26 @@ block       : stmnts
       }
     else
       {
-        return bracketTermWithNLs(mayBeAtMinIndent, BRACES, "block",
-                                  () -> {
-                                    var l = stmnts();
-                                    var pos2 = posObject();
-                                    return new Block(pos1, pos2, l);
-                                  });
+        return brblock(mayBeAtMinIndent);
       }
+  }
+
+
+  /**
+   * Parse block
+   *
+brblock     : BRACEL stmnts BRACER
+            ;
+   */
+  Block brblock(boolean mayBeAtMinIndent)
+  {
+    SourcePosition pos1 = posObject();
+    return bracketTermWithNLs(mayBeAtMinIndent, BRACES, "block",
+                              () -> {
+                                var l = stmnts();
+                                var pos2 = posObject();
+                                return new Block(pos1, pos2, l);
+                              });
   }
 
 
