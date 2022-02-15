@@ -1948,17 +1948,17 @@ simpleterm  : bracketTerm
   /**
    * Parse stringTerm
    *
-stringTerm  : '"<any chars>"'
-            | '"<any chars>$' IDENT stringTermD
-            | '"<any chars>{' block stringTermB
+stringTerm  : '"any chars"'
+            | '"any chars follwed by dollar' IDENT stringTermD
+            | '"any chars{' block stringTermB
             ;
-stringTermD : '<any chars>"'
-            | '<any chars>$' IDENT stringTermD
-            | '<any chars>{' block stringTermB
+stringTermD : 'any chars"'
+            | 'any chars follwed by dollar' IDENT stringTermD
+            | 'any chars{' block stringTermB
             ;
-stringTermB : '}<any chars>"'
-            | '}<any chars>$' IDENT stringTermD
-            | '}<any chars>{' block stringTermB
+stringTermB : '}any chars"'
+            | '}any chars follwed by dollar' IDENT stringTermD
+            | '}any chars{' block stringTermB
             ;
   */
   Expr stringTerm(Expr leftString)
