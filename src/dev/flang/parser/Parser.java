@@ -1948,16 +1948,16 @@ simpleterm  : bracketTerm
   /**
    * Parse stringTerm
    *
-stringTerm  : '"any chars"'
-            | '"any chars follwed by dollar' IDENT stringTermD
-            | '"any chars{' block stringTermB
+stringTerm  : '&quot;any chars&quot;'
+            | '&quot; any chars &dollar;' IDENT stringTermD
+            | '&quot; any chars{' block stringTermB
             ;
-stringTermD : 'any chars"'
-            | 'any chars follwed by dollar' IDENT stringTermD
+stringTermD : 'any chars&quot;'
+            | 'any chars&dollar;' IDENT stringTermD
             | 'any chars{' block stringTermB
             ;
-stringTermB : '}any chars"'
-            | '}any chars follwed by dollar' IDENT stringTermD
+stringTermB : '}any chars&quot;'
+            | '}any chars&dollar;' IDENT stringTermD
             | '}any chars{' block stringTermB
             ;
   */

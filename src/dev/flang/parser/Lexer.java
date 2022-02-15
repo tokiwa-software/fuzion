@@ -883,6 +883,26 @@ public class Lexer extends SourceFile
                                                    : skipOp();
               break;
             }
+          /**
+OPERATOR  : ( '!'
+            | '$'
+            | '%'
+            | '&'
+            | '*'
+            | '+'
+            | '-'
+            | '.'
+            | ':'
+            | '<'
+            | '='
+            | '>'
+            | '?'
+            | '^'
+            | '|'
+            | '~'
+            )+
+          ;
+          */
           case K_OP      :   // '+'|'-'|'*'|'%'|'|'|'~'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^'|'.')+;
             {
               token = skipOp();
@@ -1006,6 +1026,17 @@ NUM_LITERAL : [0-9]+
               token = Token.t_numliteral;
               break;
             }
+          /**
+IDENT     : ( 'a'..'z'
+            | 'A'..'Z'
+            )
+            ( 'a'..'z'
+            | 'A'..'Z'
+            | '0'..'9'
+            | '_'
+            )*
+          ;
+          */
           case K_LETTER  :    // 'A'..'Z', 'a'..'z'
             {
               while (partOfIdentifier(curCodePoint()))
