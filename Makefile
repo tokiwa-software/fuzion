@@ -515,7 +515,7 @@ run_tests_c: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(BUILD_DIR)/tests
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
-	find $(FZ_SRC) -name "*~" -exec rm {} \;
+	find $(FZ_SRC) -name "*~" -type f -exec rm {} \;
 
 .PHONY: release
 release: clean all
