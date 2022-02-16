@@ -1597,24 +1597,6 @@ public class Call extends AbstractCall
     return result;
   }
 
-
-  /**
-   * Does this call use dynamic binding. Dynamic binding is used if the called
-   * feature uses dynamic binding and the target is not Current. In case the
-   * target is current, this call will be specialized to avoid dynamic binding.
-   */
-  public boolean isDynamic()
-  {
-    if (PRECONDITIONS) require
-      (Errors.count() > 0 || calledFeature_ != null);
-
-    var cf = calledFeature_;
-    return
-      cf != null &&
-      cf.isDynamic() &&
-      !(target instanceof Current);
-  }
-
 }
 
 /* end of file */

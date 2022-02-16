@@ -166,10 +166,6 @@ public abstract class LibraryCall extends AbstractCall
   public Expr target() { return _target; }
   public List<Expr> actuals() { return _actuals; }
   public int select() { return _select; }
-  public boolean isDynamic()
-  {
-    return calledFeature().isDynamic() && !(target() instanceof AbstractCurrent);
-  }
   boolean _isInheritanceCall = false;
   public boolean isInheritanceCall()
   {
