@@ -1841,14 +1841,20 @@ plainLambda : argNames lambda
    * Parse inlineArray
    *
 inlineArray : LBRACKET RBRACKET
-            | LBRACKET arrElements RBRACKET
+            | LBRACKET cmaSepElmts RBRACKET
+            | LBRACKET semiSepElmts RBRACKET
             ;
-arrElements : expr arrElSep arrElements
-            | expr arrElSep
-            | expr
+cmaSepElmts : expr addCmaElmts
             ;
-arrElSep    : COMMA
+addCmaElmts : COMMA cmaSepElmts
+            | COMMA
+            |
+            ;
+semiSepElmts: expr addSemiElmts
+            ;
+addSemiElmts: SEMI semiSepElmts
             | SEMI
+            |
             ;
    */
   Expr inlineArray()
