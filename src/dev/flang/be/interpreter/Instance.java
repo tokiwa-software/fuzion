@@ -129,10 +129,8 @@ public class Instance extends Value
   public Clazz clazz()
   {
     Clazz result = clazz;
-    if ((result != null) && !result.isRef())
-      {
-        Errors.fatal("No clazz in a value instance: type " + result._type + " value " + this + "\n" + Interpreter.callStack());
-      }
+    if (CHECKS) check
+      ((result == null) || result.isRef() || result.isDynamicOuterRef());
     return result;
   }
 

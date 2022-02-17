@@ -1160,6 +1160,8 @@ hw25 is
     var innerClazzes = new List<Clazz>();
     for (var clz : tclazz.heirs())
       {
+        if (CHECKS) check
+          (clz.isRef() == tclazz.isRef());
         var in = (Clazz) clz._inner.get(f);  // NYI: cast would fail for open generic field
         if (in != null && clazzNeedsCode(in))
           {

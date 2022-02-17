@@ -208,10 +208,6 @@ public class MiddleEnd extends ANY
    */
   void markUsed(AbstractFeature f, boolean dynamically, HasSourcePosition usedAt)
   {
-    if (dynamically)
-      {
-        Clazzes.setCalledDynamically0(f);
-      }
     if (!Clazzes.isUsedAtAll(f))
       {
         Clazzes.addUsedFeature(f, usedAt);

@@ -133,7 +133,8 @@ public abstract class AbstractCall extends Expr
   {
     return
       calledFeature().isDynamic() &&
-      !(target() instanceof AbstractCurrent);
+      !(target() instanceof AbstractCurrent) &&
+      !isInheritanceCall();
   }
 
 }

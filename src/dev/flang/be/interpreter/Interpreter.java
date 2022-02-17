@@ -304,7 +304,7 @@ public class Interpreter extends ANY
         if (d instanceof Clazz innerClazz)
           {
             var tclazz = (Clazz) staticClazz.getRuntimeData(c.sid_ + 1);
-            var dyn = tclazz.isRef() && c.isDynamic();
+            var dyn = (tclazz.isRef() || c.target().isCallToOuterRef() && tclazz.isUsedAsDynamicOuterRef()) && c.isDynamic();
             d = callable(dyn, innerClazz, tclazz);
             if (d == null)
               {
@@ -523,10 +523,13 @@ public class Interpreter extends ANY
                   {
                     // see tests/redef_args and issue #86 for a case where this lookup is needed:
                     f = vc.lookup(f, dev.flang.ast.Call.NO_GENERICS, Clazzes.isUsedAt(f)).feature();
-                    Value v = getField(f, vc, val);
-                    // NYI: Check that this works well for internal fields such as choice tags.
-                    // System.out.println("Box "+vc+" => "+rc+" copying "+f.qualifiedName()+" "+v);
-                    setField(f, -1, rc, result, v);
+                    if (Clazzes.isUsed(f, vc))
+                      {
+                        Value v = getField(f, vc, val);
+                        // NYI: Check that this works well for internal fields such as choice tags.
+                        // System.out.println("Box "+vc+" => "+rc+" copying "+f.qualifiedName()+" "+v);
+                        setField(f, -1, rc, result, v);
+                      }
                   }
               }
             if (vc.isChoice())
