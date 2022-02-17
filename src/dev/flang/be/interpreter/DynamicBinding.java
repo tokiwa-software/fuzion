@@ -61,7 +61,7 @@ public class DynamicBinding extends ANY
    *
    * NYI: like _offsets, this should use a more efficient lookup table.
    */
-  Map<AbstractFeature, BackendCallable> _callables = new TreeMap<>();
+  private Map<AbstractFeature, BackendCallable> _callables = new TreeMap<>();
 
 
   /**
