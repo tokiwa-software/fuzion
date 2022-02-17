@@ -28,7 +28,6 @@ package dev.flang.parser;
 
 import java.nio.file.Path;
 
-import dev.flang.util.Callable;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -1857,7 +1856,10 @@ inlineArray : LBRACKET expr (COMMA expr)+ RBRACKET
                          boolean reportedMixed = false;
                          while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
                            {
-                             elements.add(expr());
+                             if (current() != Token.t_rcrochet)
+                               {
+                                 elements.add(expr());
+                               }
                              s = current();
                              if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
                                {
