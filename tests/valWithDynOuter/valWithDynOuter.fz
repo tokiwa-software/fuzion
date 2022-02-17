@@ -33,9 +33,9 @@ valWithDynOuter is
 
   chck(s, expected string) =>
     if s = expected
-      say "PASSED; $s"
+      say "PASSED: $s"
     else
-      say "FAILED; $s /= $expected"
+      say "FAILED: $s /= $expected"
       set exitCode := 1
 
   # test if e.y produces expected as result
@@ -130,18 +130,18 @@ valWithDynOuter is
   chck o.f "ww"
 
   rv2 ref v := v "v2"
-  o := rv2;
+  o := rv2
   chck o.f "v2"
   test_mut rv2.g ".v2v2-v:v.x."
   chck o.f "v2v2"
 
   rw2 ref v := w
-  o := rw2;
+  o := rw2
   chck o.f "w"
   test_mut rw2.g ".ww-w:w.x."
   chck o.f "ww"
 
-  o := s;
+  o := s
   chck o.f "s"
   test_mut o.g ".ss-s:s.x."
   chck o.f "ss"
