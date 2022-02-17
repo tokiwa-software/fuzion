@@ -1840,8 +1840,15 @@ plainLambda : argNames lambda
   /**
    * Parse inlineArray
    *
-inlineArray : LBRACKET expr (COMMA expr)+ RBRACKET
-            | LBRACKET expr (SEMI  expr)+ RBRACKET
+inlineArray : LBRACKET RBRACKET
+            | LBRACKET arrElements RBRACKET
+            ;
+arrElements : expr arrElSep arrElements
+            | expr arrElSep
+            | expr
+            ;
+arrElSep    : COMMA
+            | SEMI
             ;
    */
   Expr inlineArray()
@@ -2677,7 +2684,8 @@ indexVar    : visibility
               |      contract implFldIter
               )
             ;
-implFldIter : "in" exprInLine;
+implFldIter : "in" exprInLine
+            ;
 nextValue   : COMMA exprAtMinIndent
             |
             ;
