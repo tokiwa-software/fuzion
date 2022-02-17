@@ -1856,7 +1856,7 @@ inlineArray : LBRACKET expr (COMMA expr)+ RBRACKET
                          boolean reportedMixed = false;
                          while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
                            {
-                             if(current() != Token.t_rcrochet)
+                             if (current() != Token.t_rcrochet)
                                {
                                  elements.add(expr());
                                }
