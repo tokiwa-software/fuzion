@@ -2320,10 +2320,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public AbstractFeature outerRef()
   {
     if (PRECONDITIONS) require
-      (isUniverse() || (this == Types.f_ERROR) || outer() != null,
-       (this == Types.f_ERROR) ||
-       _state.atLeast(State.RESOLVED_DECLARATIONS) &&
-       (!_state.atLeast(State.CHECKING_TYPES2) || outerRef_ != null || !hasOuterRef()));
+      (_state.atLeast(State.RESOLVED_DECLARATIONS));
 
     Feature result = outerRef_;
 
