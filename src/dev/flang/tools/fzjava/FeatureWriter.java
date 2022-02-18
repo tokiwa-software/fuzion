@@ -136,7 +136,8 @@ class FeatureWriter extends ANY
             // so we replace it by '_jList'.
             s = "_jList";
           }
-        else if (s.equals("hashCode") ||
+        else if (s.equals("Sequence") ||
+                 s.equals("hashCode") ||
                  s.equals("string"  ) ||
                  s.equals("array"   )    )
           {
