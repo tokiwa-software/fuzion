@@ -269,8 +269,7 @@ Sequences is
   # create an empty list
   #
   empty<T> Sequence<T> is
-    e list<T> := nil
-    e
+    lists.empty<T>
 
 
   # monoid of Sequences with infix concatentation operation.

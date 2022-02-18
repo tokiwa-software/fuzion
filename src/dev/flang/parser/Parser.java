@@ -28,7 +28,6 @@ package dev.flang.parser;
 
 import java.nio.file.Path;
 
-import dev.flang.util.Callable;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -1840,8 +1839,21 @@ plainLambda : argNames lambda
   /**
    * Parse inlineArray
    *
-inlineArray : LBRACKET expr (COMMA expr)+ RBRACKET
-            | LBRACKET expr (SEMI  expr)+ RBRACKET
+inlineArray : LBRACKET RBRACKET
+            | LBRACKET cmaSepElmts RBRACKET
+            | LBRACKET semiSepElmts RBRACKET
+            ;
+cmaSepElmts : expr addCmaElmts
+            ;
+addCmaElmts : COMMA cmaSepElmts
+            | COMMA
+            |
+            ;
+semiSepElmts: expr addSemiElmts
+            ;
+addSemiElmts: SEMI semiSepElmts
+            | SEMI
+            |
             ;
    */
   Expr inlineArray()
@@ -1857,7 +1869,10 @@ inlineArray : LBRACKET expr (COMMA expr)+ RBRACKET
                          boolean reportedMixed = false;
                          while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
                            {
-                             elements.add(expr());
+                             if (current() != Token.t_rcrochet)
+                               {
+                                 elements.add(expr());
+                               }
                              s = current();
                              if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
                                {
@@ -2677,7 +2692,8 @@ indexVar    : visibility
               |      contract implFldIter
               )
             ;
-implFldIter : "in" exprInLine;
+implFldIter : "in" exprInLine
+            ;
 nextValue   : COMMA exprAtMinIndent
             |
             ;
