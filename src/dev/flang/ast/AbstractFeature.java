@@ -717,7 +717,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     if (PRECONDITIONS) require
       (heir != null,
-       state().atLeast(Feature.State.RESOLVED_TYPES));
+       state().atLeast(Feature.State.RESOLVING_TYPES));
 
     if (heir != Types.f_ERROR)
       {
