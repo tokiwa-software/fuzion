@@ -240,7 +240,8 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters |
+   *   | true   | 1      | byte          | 000CTkkk  kkk = kind, T = has type parameters |
+   *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -323,6 +324,10 @@ class LibraryOut extends DataOut
     if (f.generics() != FormalGenerics.NONE)
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS;
+      }
+    if (f.isIntrinsicConstructor())
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR;
       }
     var n = f.featureName();
     write(k);

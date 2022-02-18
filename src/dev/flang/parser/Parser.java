@@ -3272,6 +3272,7 @@ condList    : cond ( COMMA condList
 implRout    : block
             | "is" "abstract"
             | "is" "intrinsic"
+            | "is" "intrinsic_constructor"
             | "is" block
             | ARROW e=block
             ;
@@ -3281,8 +3282,9 @@ implRout    : block
     SourcePosition pos = posObject();
     Impl result;
     var startRoutine = (currentAtMinIndent() == Token.t_lbrace || skip(true, Token.t_is));
-    if (startRoutine)    { result = skip(Token.t_abstract ) ? Impl.ABSTRACT  :
-                                    skip(Token.t_intrinsic) ? Impl.INTRINSIC :
+    if (startRoutine)    { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
+                                    skip(Token.t_intrinsic            ) ? Impl.INTRINSIC             :
+                                    skip(Token.t_intrinsic_constructor) ? Impl.INTRINSIC_CONSTRUCTOR :
                                     new Impl(pos, block(true)      , Impl.Kind.Routine   ); }
     else if (skip("=>")) { result = new Impl(pos, block(true)      , Impl.Kind.RoutineDef); }
     else

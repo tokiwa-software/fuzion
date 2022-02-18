@@ -145,6 +145,13 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Is this an intrinsic feature that creates an instance of its result ref
+   * type?
+   */
+  public abstract boolean isIntrinsicConstructor();
+
+
+  /**
    * get a reference to the outermost feature.
    */
   public AbstractFeature universe()
