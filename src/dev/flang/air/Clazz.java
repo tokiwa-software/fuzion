@@ -1866,7 +1866,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
              */
             int goBack = depth(f) - depth(t.featureOfType()) + 1;
             var innerBase = this;
-            while (goBack > 0)
+            while (goBack > 0 &&
+                   innerBase._outer != null // NYI: this sometimes overflows if chain of outer's is shorter then f's outers.  This whole code is broken and needs to be rewritten!
+                   )
               {
                 innerBase = innerBase._outer;
                 goBack--;
