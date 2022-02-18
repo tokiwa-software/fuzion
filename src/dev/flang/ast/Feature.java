@@ -883,7 +883,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public boolean resultInternal()
   {
-    return _impl.kind_ == Impl.Kind.RoutineDef;
+    return _impl.kind_ == Impl.Kind.RoutineDef; // NYI: should be true if result is not used
   }
 
 

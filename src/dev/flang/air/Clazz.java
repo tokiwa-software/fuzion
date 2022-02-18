@@ -1045,14 +1045,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
             AbstractType t = af.thisType().actualType(af, actualGenerics);
             t = actualType(t);
             innerClazz = Clazzes.clazzWithSpecificOuter(t, select, this);
-            if (p != null)
-              {
-                if (!isInheritanceCall)
-                  {
-                    innerClazz.called(p);
-                    innerClazz.instantiated(p);
-                  }
-              }
             if (actualGenerics.isEmpty())
               {
                 if (select < 0)
@@ -1071,6 +1063,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
             if (CHECKS) check
               (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == af);
           }
+      }
+    if (innerClazz != null && p != null && !isInheritanceCall)
+      {
+        innerClazz.called(p);
+        innerClazz.instantiated(p);
       }
 
     if (POSTCONDITIONS) ensure
