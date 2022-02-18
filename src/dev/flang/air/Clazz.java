@@ -183,13 +183,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Is there a non-dynamic call to this clazz?  If so, it has to be considered
-   * called even if the outer clazz is not instantiated.  NYI: check why!
-   */
-  boolean _isCalledDirectly = false;
-
-
-  /**
    * If instances of this class are created, this gives a source code position
    * that does create such an instance.  To be used in error messages.
    */
@@ -1067,7 +1060,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (innerClazz != null && p != null && !isInheritanceCall)
       {
         innerClazz.called(p);
-        innerClazz.instantiated(p);
+        if (!isInheritanceCall)
+          {
+            innerClazz.instantiated(p);
+          }
       }
 
     if (POSTCONDITIONS) ensure
@@ -1603,7 +1599,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isCalled()
   {
-    return (isCalled_ && isOuterInstantiated() || _isCalledDirectly) && !feature().isAbstract() &&
+    return isCalled_ && isOuterInstantiated() && !feature().isAbstract() &&
       (_argumentFields == null || /* this may happen when creating deterḿining isUnitType() on cyclic value type, will cause an error during layout() */
        !isAbsurd());
   }

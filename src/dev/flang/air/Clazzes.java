@@ -838,32 +838,6 @@ public class Clazzes extends ANY
           }
         outerClazz.setRuntimeData(c.sid_ + 0, innerClazz);
         outerClazz.setRuntimeData(c.sid_ + 1, tclazz    );
-
-        if (!dynamic)
-          {
-            whenCalled(outerClazz,
-                       () ->
-                       {
-                         var ic = innerClazz.isCalled();
-                         innerClazz._isCalledDirectly = true;  // NYI: Check why this is needed
-                         if (!c.isInheritanceCall())
-                           {
-                             innerClazz.instantiated(c);
-                           }
-                         if (!ic && innerClazz.isCalled())
-                           {
-                             var l = _whenCalled_.remove(innerClazz);
-                             if (l != null)
-                               {
-                                 for (var r : l)
-                                   {
-                                     r.run();
-                                   }
-                               }
-                           }
-                       });
-          }
-
         var afs = innerClazz.argumentFields();
         var i = 0;
         for (var a : c.actuals())
