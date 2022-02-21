@@ -111,15 +111,24 @@ public class InlineArray extends ExprWithPos
               t  == null ? null :
               et == null ? null : t.union(et);
           }
-        type_ =
-          t == null              ? null :
-          t == Types.t_UNDEFINED ? null :
-          Types.intern(new Type(pos(),
-                                "array",
-                                new List<>(t),
-                                null,
-                                Types.resolved.f_array,
-                                Type.RefOrVal.LikeUnderlyingFeature));
+        if (t == Types.t_UNDEFINED)
+          {
+            new IncompatibleResultsOnBranches(pos(),
+                                              "Incompatible types in array elements",
+                                              _elements.iterator());
+            type_ = Types.t_ERROR;
+          }
+        if (type_ == null)
+          {
+            type_ =
+              t == null ? Types.t_ERROR :
+              Types.intern(new Type(pos(),
+                                  "array",
+                                  new List<>(t),
+                                  null,
+                                  Types.resolved.f_array,
+                                  Type.RefOrVal.LikeUnderlyingFeature));
+          }
       }
     return type_;
   }
