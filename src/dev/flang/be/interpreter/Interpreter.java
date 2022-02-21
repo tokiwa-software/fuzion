@@ -319,7 +319,8 @@ public class Interpreter extends ANY
           }
         else // if (d == "dyn")
           {
-            var cl = ((Instance) args.get(0)).clazz();
+            var v = (ValueWithClazz) args.get(0);
+            Clazz cl = v.clazz();
             ca = (Callable) ((DynamicBinding)cl._dynamicBinding).callable(c.calledFeature());
           }
         result = ca.call(args);
@@ -419,7 +420,7 @@ public class Interpreter extends ANY
             tag = getField(sf.choiceTag(), staticSubjectClazz, sub).i32Value();
           }
         Clazz subjectClazz = tag < 0
-          ? ((Instance) refVal).clazz()
+          ? ((ValueWithClazz) refVal).clazz()
           : staticSubjectClazz.getChoiceClazz(tag);
 
         var it = m.cases().iterator();
@@ -1150,7 +1151,7 @@ public class Interpreter extends ANY
       {
         curValue = (curValue instanceof LValue lv) ? loadRefField(thiz, lv)
                                                    : curValue;
-        clazz = ((Instance) curValue).clazz();
+        clazz = ((ValueWithClazz) curValue).clazz();
       }
     off = Layout.get(clazz).offset0(thiz, select);
 
