@@ -458,7 +458,7 @@ string ref : hasHash<string>, ordered<string>, strings is
                      rest.split s
 
 
-  # remove leading and traling white space from this string
+  # remove leading and trailing white space from this string
   #
   trim string is
     s0 := utf8
