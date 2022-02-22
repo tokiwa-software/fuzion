@@ -39,7 +39,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   isEmpty => !utf8.asStream.hasNext
 
   # returns true if string is empty or contains whitespace only
-  isBlank => utf8 ∀ (u) -> isAsciiWhiteSpace u
+  isBlank => utf8 ∀ u -> isAsciiWhiteSpace u
 
   # length of this string in bytes
   byteLength => utf8.asStream.count
