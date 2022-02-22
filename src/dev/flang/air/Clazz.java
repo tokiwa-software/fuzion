@@ -1562,12 +1562,21 @@ public class Clazz extends ANY implements Comparable<Clazz>
           }
 
         if (feature().isIntrinsic())
-          { // value instances returned from intrinsics are recored to be
-            // instantiated.  (ref instances are excluded since returning, e.g.,
-            // a 'ref string' does not mean that we really have an instance of
-            // string, but more likely an instance of a heir of string).
+          { // value instances returned from intrinsics are automatically
+            // recorded to be instantiated, refs only if intrinsic is marked as
+            // 'intrinsic_constructor'.
             var rc = resultClazz();
-            if (!rc.isRef())
+            if (rc.isChoice())
+              {
+                if (feature().isIntrinsicConstructor())
+                  {
+                    for (var cg : rc.choiceGenerics())
+                      {
+                        cg.instantiated(at);
+                      }
+                  }
+              }
+            else if (!rc.isRef() || feature().isIntrinsicConstructor())
               {
                 rc.instantiated(at);
               }
@@ -1857,7 +1866,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
              */
             int goBack = depth(f) - depth(t.featureOfType()) + 1;
             var innerBase = this;
-            while (goBack > 0)
+            while (goBack > 0 &&
+                   innerBase._outer != null // NYI: this sometimes overflows if chain of outer's is shorter then f's outers.  This whole code is broken and needs to be rewritten!
+                   )
               {
                 innerBase = innerBase._outer;
                 goBack--;

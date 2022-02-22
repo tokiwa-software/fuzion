@@ -145,6 +145,13 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Is this an intrinsic feature that creates an instance of its result ref
+   * type?
+   */
+  public abstract boolean isIntrinsicConstructor();
+
+
+  /**
    * get a reference to the outermost feature.
    */
   public AbstractFeature universe()
@@ -192,9 +199,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   public FeatureName effectiveName(List<AbstractType> actualGenerics)
   {
-    if (PRECONDITIONS) require
-      (outer().generics().sizeMatches(actualGenerics));
-
     var result = featureName();
     if (hasOpenGenericsArgList())
       {
@@ -691,6 +695,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
     if (f.outer() == p.calledFeature()) // NYI: currently does not support inheriting open generic over several levels
       {
+        // NYI: This might be incorrect in case p.generics() is inferred but not set yet.
         fn = f.effectiveName(p.generics());
       }
 

@@ -38,6 +38,9 @@ string ref : hasHash<string>, ordered<string>, strings is
   # is this string empty?
   isEmpty => !utf8.asStream.hasNext
 
+  # returns true if string is empty or contains whitespace only
+  isBlank => utf8 ∀ u -> isAsciiWhiteSpace u
+
   # length of this string in bytes
   byteLength => utf8.asStream.count
 
@@ -438,6 +441,21 @@ string ref : hasHash<string>, ordered<string>, strings is
         #
         # currerntly creates an error (recursive value type), this needs to be fixed (or,
         # at least, understood better).
+
+
+  # split string at s
+  #
+  split(s string) list<string>
+    pre
+      !s.isEmpty
+    is
+    match (find s)
+      nil => [string.this].asList
+      idx i32 => ref : Cons<string, list<string>>
+                   head => substring 0 idx
+                   tail =>
+                     rest := substring (idx + s.codepointLength) string.this.codepointLength
+                     rest.split s
 
 
   # remove leading and trailing white space from this string

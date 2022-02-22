@@ -202,6 +202,16 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * Is this an intrinsic feature that creates an instance of its result ref
+   * type?
+   */
+  public boolean isIntrinsicConstructor()
+  {
+    return isIntrinsic() && _libModule.featureIsIntrinsicConstructor(_index);
+  }
+
+
+  /**
    * Find the outer feature of this festure.
    */
   public AbstractFeature outer()

@@ -50,6 +50,8 @@ public class Impl extends ANY
 
   public static final Impl INTRINSIC = new Impl(Kind.Intrinsic);
 
+  public static final Impl INTRINSIC_CONSTRUCTOR = new Impl(Kind.Intrinsic);
+
   /**
    * A dummy Impl instance used in case of parsing error.
    */

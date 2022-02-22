@@ -295,9 +295,21 @@ public class JavaInterface extends ANY
     else
       {
         var result = new Instance(resultClazz);
-        if (result.refs.length > 0 /* better check that result is heir of fuzion.java.JavaObject */ )
+        for (var e : Layout.get(resultClazz)._offsets0.entrySet())
           {
-            result.refs[0] = new JavaRef(o);
+            var f = e.getKey();
+            var off = (Integer) e.getValue();
+            var v = switch (f.featureName().baseName())
+              {
+              case "javaRef"   -> new JavaRef(o);
+              case "forbidden" -> Value.NO_VALUE;
+              default -> f.isOuterRef() ? new Instance(resultClazz._outer)
+                                        : (Value) (Object) new Object() { { if (true) throw new Error("unexpected field in fuzion.java.Array: "+f.qualifiedName()); }};
+              };
+            if (v != Value.NO_VALUE)
+              {
+                result.refs[off] = v;
+              }
           }
         return result;
       }

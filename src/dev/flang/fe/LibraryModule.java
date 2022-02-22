@@ -709,7 +709,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters
+.6+| true  .6+| 1      | byte          | 000CTkkk  kkk = kind, T = has type parameters, C = is intrinsic constructor
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -740,7 +740,8 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters |
+   *   | true   | 1      | byte          | 000CTkkk  kkk = kind, T = has type parameters |
+   *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -820,6 +821,10 @@ Feature
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
     return k == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
+  }
+  boolean featureIsIntrinsicConstructor(int at)
+  {
+    return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR) != 0);
   }
   int featureNamePos(int at)
   {
