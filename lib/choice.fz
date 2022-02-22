@@ -103,7 +103,6 @@
 # A choice type with no actual generic arguments is isomorphic to 'void', i.e, it
 # is a type that has an empty set of possible values.
 #
-
 choice<A...> is
 
 #  a<X> X
