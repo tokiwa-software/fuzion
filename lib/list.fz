@@ -188,7 +188,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, Sequence<A> is
     "[{list.this.asString ","}]"
 
 
-  # create a string rlepresentation of this list including all the string
+  # create a string representation of this list including all the string
   # representations of its contents, separated by 'sep'.
   #
   redef asString (sep string) =>
