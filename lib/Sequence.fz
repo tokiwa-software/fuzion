@@ -237,6 +237,14 @@ Sequence<T> ref is
   fold (m Monoid<T>) => asList.fold m.e, m
 
 
+  # reduce this Sequence to R with an initial value init
+  # and a reducing function f
+  reduce<R>(init R, f (R,T) -> R) R is
+    match asList
+      nil => init
+      c Cons => c.tail.reduce<R> (f init c.head) f
+
+
   # insert element v at position at
   #
   insert(at i32, v T)
