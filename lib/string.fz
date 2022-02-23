@@ -38,6 +38,9 @@ string ref : hasHash<string>, ordered<string>, strings is
   # is this string empty?
   isEmpty => !utf8.asStream.hasNext
 
+  # returns true if string is empty or contains whitespace only
+  isBlank => utf8 ∀ u -> isAsciiWhiteSpace u
+
   # length of this string in bytes
   byteLength => utf8.asStream.count
 
@@ -455,7 +458,7 @@ string ref : hasHash<string>, ordered<string>, strings is
                      rest.split s
 
 
-  # remove leading and traling white space from this string
+  # remove leading and trailing white space from this string
   #
   trim string is
     s0 := utf8

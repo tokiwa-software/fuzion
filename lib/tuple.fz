@@ -118,5 +118,4 @@
 # A tuple type with no actual generic arguments is isomorphic to 'unit', i.e, it
 # is a type that has only one single value: '()'.
 #
-
 tuple<A...>(values A) is
