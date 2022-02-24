@@ -42,7 +42,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   isBlank => utf8 ∀ u -> isAsciiWhiteSpace u
 
   # length of this string in bytes
-  byteLength => utf8.asStream.count
+  byteLength => utf8.count
 
   # length of this string in codepoints
   codepointLength => asCodepoints.count
