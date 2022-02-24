@@ -877,7 +877,7 @@ public class C extends ANY
             var rc = _fuir.clazzResultClazz(or);
             var a2 =_fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
             var esc = _fuir.clazzOuterRefEscapes(cc);
-            var a3 = esc ? CExpr.call(CNames.HEAP_CLONE._name, new List<>(a2, CExpr.call("sizeof",new List<>(a))))
+            var a3 = esc ? CExpr.call(CNames.HEAP_CLONE._name, new List<>(a2, a.sizeOfExpr()))
                          : a2;
             var a4 = esc || tc != rc ? a3.castTo(_types.clazzField(or)) : a3;
             return new List<>(a4);
