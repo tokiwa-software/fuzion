@@ -170,9 +170,7 @@ stream<T> ref : Sequence<T> is
   #
   redef count i32 is
     # NYI: check if this works: map<i32>(x -> 1).fold i32.sum
-    res := 0
-    forAll (x -> set res := res + 1)
-    res
+    asList.map<i32>(x -> 1).fold i32.sum
 
 
   # collect all items from this stream into an array
