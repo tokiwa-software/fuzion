@@ -1,0 +1,117 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature handles
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# handles provide a means to create handles that refer to update-able
+# cells.
+#
+# handles is a one-way state monad. It provides features to create several
+# handles that refer to modifiable value and features to 'get', 'put' or
+# 'update' this value.
+#
+private handles<T,X>(
+  # array containing values stored for the handles
+  #
+  # NYI: As soon as one-way monads are enforced, this array can be implemented
+  # using marray, reducing the overhead of an update from O(count) to O(1)!
+  #
+  private ar array<T>,
+
+  # the inner value of this monad
+  v X)
+is
+
+  # number of handles created
+  private count => ar.length
+
+
+  # a one-way feature to create a new handle and update the monad
+  # in the current environment
+  #
+  #
+  new (
+    # initial value refered to by the new handle
+    w T
+    ) /* one way! */
+   =>
+    na := array<T> count+1 (i -> if (i < count) ar[i] else w)
+    ((handle count), handles na v)
+
+
+  # a one-way feature to read the value refered to by a given handle
+  #
+  get (
+    # a handle created by 'new'
+    h handle
+    ) /* one way! */
+   =>
+    (handles ar v, ar[h.x])
+
+
+  # a one-way feature to write the value refered to by a given handle
+  #
+  put (
+    # a handle created by 'new'
+    h handle,
+
+    # the new value to be stored with 'h'
+    w T) /* one way! */
+   =>
+    handles (ar.put h.x w) unit
+
+
+  # a one-way feature to read and update the value refered to by a
+  # given handle
+  #
+  update (
+    # a handle created by 'new'
+    h handle,
+
+    # function calculcating the new value from the old value
+    f T->T
+    ) /* one way! */
+   =>
+    handles (ar.put h.x (f ar[h.x])) unit
+
+
+  infix >>= (f X -> handles<T,X>) => bind<X> f
+
+  bind <B> (f X -> handles<T,B>) handles<T,B> is
+    handles<T,B> ar (f v).v
+
+  return<B> (w B) => handles ar w
+
+
+# short-hand for creating an empty set of handles of given type.
+#
+handles<T> => handles<T,unit> (array<T> 0 x->do) unit
+
+
+# handle value created by 'handles.new'
+#
+private handle(
+  # the index in 'handles.ar'
+  private x i32
+  )
+is
