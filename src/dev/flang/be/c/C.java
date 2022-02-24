@@ -195,9 +195,21 @@ public class C extends ANY
        "#include <stdio.h>\n"+
        "#include <unistd.h>\n"+
        "#include <stdint.h>\n"+
+       "#include <string.h>\n"+
        "#include <assert.h>\n"+
        "\n");
-
+    var o = CExpr.ident("of");
+    var s = CExpr.ident("sz");
+    var r = new CIdent("r");
+    cf.print
+      (CStmnt.lineComment("helper to clone a (stack) instance to the heap"));
+    cf.print
+      (CStmnt.functionDecl("void *",
+                           CNames.HEAP_CLONE,
+                           new List<>("void *", "of", "size_t", "sz"),
+                           CStmnt.seq(new List<>(CStmnt.decl(null, "void *", r, CExpr.call("malloc", new List<>(s))),
+                                                 CExpr.call("memcpy", new List<>(r, o, s)),
+                                                 r.ret()))));
     var ordered = _types.inOrder();
     Stream.of(CompilePhase.values()).forEachOrdered
       ((p) ->
@@ -862,10 +874,13 @@ public class C extends ANY
         var a = tc == _fuir.clazzUniverse() ? _names.UNIVERSE : pop(stack, tc);
         if (or != -1)
           {
-            var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
             var rc = _fuir.clazzResultClazz(or);
-            var a3 = tc != rc ? a2.castTo(_types.clazzField(or)) : a2;
-            return new List<>(a3);
+            var a2 =_fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
+            var esc = _fuir.clazzOuterRefEscapes(cc);
+            var a3 = esc ? CExpr.call(CNames.HEAP_CLONE._name, new List<>(a2, CExpr.call("sizeof",new List<>(a))))
+                         : a2;
+            var a4 = esc || tc != rc ? a3.castTo(_types.clazzField(or)) : a3;
+            return new List<>(a4);
           }
       }
     return new List<>();

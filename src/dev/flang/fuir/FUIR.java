@@ -565,6 +565,32 @@ public class FUIR extends IR
 
 
   /**
+   * Is a clazz cl's clazzOuterRef() a value type that survives the call to
+   * cl?  If this is the case, we need to heap allocate the outer ref.
+   *
+   * @param cl a clazz id
+   *
+   * @return true if cl's may be kept alive longer than through its original
+   * constructor call since inner instances stay alive.
+   */
+  public boolean clazzOuterRefEscapes(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    var or = cc.outerRef();
+    var cco = cc._outer;
+    if (or == null || cco.isUnitType())
+      {
+        return false;
+      }
+    else
+      {
+        var rc = or.resultClazz();
+        return !rc.isRef() && !rc.feature().isBuiltInPrimitive() && cc.feature().isConstructor();
+      }
+  }
+
+
+  /**
    * Get the id of clazz Object.
    *
    * @return clazz id of clazz Object

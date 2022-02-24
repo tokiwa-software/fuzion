@@ -109,6 +109,12 @@ public class CNames extends ANY
 
 
   /**
+   * Prefix for helper functions
+   */
+  private static final String HELPER_PREFIX = "fzH_";
+
+
+  /**
    * C identifier of argument variable that refers to a clazz' outer instance.
    */
   static final CExpr OUTER = new CIdent("fzouter");
@@ -143,6 +149,12 @@ public class CNames extends ANY
    * The prefix of the name of the choice union's reference entries.
    */
   static final CIdent CHOICE_REF_ENTRY_NAME = new CIdent("vref");
+
+
+  /**
+   * Name of helper function to clone a stack allocated instance on the heap.
+   */
+  static final CIdent HEAP_CLONE = new CIdent(HELPER_PREFIX + "heapClone");
 
 
 
