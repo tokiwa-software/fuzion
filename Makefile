@@ -527,3 +527,13 @@ release: clean all
 .PHONY: shellcheck
 shellcheck:
 	shellcheck $(SHELL_SCRIPTS) $(shell find . -iname '*.sh' -not -path "./build/*")
+
+# show readme in browser, requires 'sudo apt install grip'
+.PHONY: show_readme
+show_readme:
+	grip -b README.md
+
+# show release notes in browser, requires 'sudo apt install grip'
+.PHONY: show_release_notes
+show_release_notes:
+	grip -b release_notes.md
