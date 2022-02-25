@@ -1,5 +1,8 @@
-## 2022-02-25: V0.070dev
-- TBW
+## 2022-02-25: V0.070
+
+- fzjava
+  - fixed name conflicts between Java's `String.isBlank`/`String.split` and
+    Fuzion's `string.isBlank`/`String.split`.
 
 ## 2022-02-25: V0.069
 
