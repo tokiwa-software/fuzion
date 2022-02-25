@@ -146,18 +146,22 @@
 
   - suppoert for qualified features, even to add inner features to library code
     such as
-```
+    ```
       i32.factorial => if val <= 1 then 1 else val * (val-1).factorial
-```
+    ```
+
     or even
-```
+
+    ```
       i32.postfix ! => if val <= 1 then 1 else val * (val-1).factorial
-```
+    ```
+
     such that you can write
-```
+
+    ```
       say 6.factorial
       say 4!
-```
+    ```
   - parser now uses the same rule when parsing a .fz file read form a source
     directory as when reading stdin or an explicit file given on the command
     line.  Before, .fz files read from a source directory were not permitted to
