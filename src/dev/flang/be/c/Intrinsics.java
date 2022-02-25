@@ -271,6 +271,43 @@ class Intrinsics extends ANY
       case "u64.low16bits"       : return outer.and(CExpr.uint64const(0xFFFFL)).castTo("fzT_1u16").ret();
       case "u64.low32bits"       : return outer.and(CExpr.uint64const(0xffffFFFFL)).castTo("fzT_1u32").ret();
 
+      case "f32.prefix -"        :
+      case "f64.prefix -"        : return outer.neg().ret();
+      case "f32.infix +"         :
+      case "f64.infix +"         : return outer.add(A0).ret();
+      case "f32.infix -"         :
+      case "f64.infix -"         : return outer.sub(A0).ret();
+      case "f32.infix *"         :
+      case "f64.infix *"         : return outer.mul(A0).ret();
+      case "f32.infix /"         :
+      case "f64.infix /"         : return outer.div(A0).ret();
+      // NYI needs explicit linking of libmath
+      // case "f32.infix %"    : return CExpr.call("fmod", new List<>(outer.castTo("float"), A0.castTo("float"))).ret();
+      // case "f64.infix %"    : return CExpr.call("fmod", new List<>(outer.castTo("double"), A0.castTo("double"))).ret();
+      case "f32.infix **"        :
+      case "f64.infix **"        : return CExpr.call("pow", new List<>(outer, A0)).ret();
+      case "f32.infix =="        :
+      case "f64.infix =="        : return outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "f32.infix !="        :
+      case "f64.infix !="        : return outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "f32.infix <"         :
+      case "f64.infix <"         : return outer.lt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "f32.infix <="        :
+      case "f64.infix <="        : return outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "f32.infix >"         :
+      case "f64.infix >"         : return outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "f32.infix >="        :
+      case "f64.infix >="        : return outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      // NYI this is bad, we should not expose those, i think... better to ask user how to round
+      // case "f32.castTo_u32" :
+      // case "f64.castTo_u64" :
+      case "f32.asString"        :
+      case "f64.asString"        :
+        {
+          var res = new CIdent("res");
+          return CStmnt.seq(c.floatToConstString(outer, res),
+            res.castTo("fzT__Rstring*").ret());
+        }
       case "Object.hashCode"     :
         {
           var hc = c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or))
