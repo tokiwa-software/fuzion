@@ -286,66 +286,70 @@ string ref : hasHash<string>, ordered<string>, strings is
     s := utf8.asStream
     hasNext => s.hasNext
     next outcome<codepoint> is
-      b1 := s.next.as_u32
+      p := codepoints
+      e(msg string) => error "Bad UTF8 encoding found: cannot decode $msg"
+
+      b1 := s.next
+      e1(msg string) => e "$b1: $msg"
       # UTF-8 definition taken from https://en.wikipedia.org/wiki/UTF-8
-      if b1 ∈ codepoints.utf8EncodedInOneByte           # ASCII
-        codepoint b1
-      else if (u32 0xc0) <= b1 <= 0xf4
+      if b1.as_u32 ∈ p.utf8EncodedInOneByte           # ASCII
+        codepoint b1.as_u32
+      else if u8 0xc0 <= b1 <= 0xf4
         if !s.hasNext
-          error "Bad UTF8 encoding found: cannot decode: $b1 at end of string: expected continuation byte"
+          e1 "end of string, expected continuation byte"
         else
-          b2 := s.next.as_u32
+          b2 := s.next
+          e2(msg string) => e "$b1, $b2: $msg"
           if (b2 & 0xc0) != 0x80
-            error "Bad UTF8 encoding found: cannot decode $b1, $b2, expected continuation byte in the range 0x80..0xbf."
-          else if (u32 0xc0) <= b1 <= 0xdf   # 0x0080..0x7ff encoded in 2 bytes
-            res := (b1 & 0x1f) << 6 | (b2 & 0x3f)
-            if res ∉ codepoints.utf8EncodedInTwoBytes
-              error "Bad UTF8 encoding found: $b1, $b2: codepoint $res uses overlong 2-byte encoding, allowed for range {codepoints.utf8EncodedInTwoBytes}."
+            e2 "expected continuation byte in the range 0x80..0xbf."
+          else if u8 0xc0 <= b1 <= 0xdf   # 0x0080..0x7ff encoded in 2 bytes
+            res := (b1.as_u32 & 0x1f) << 6 | (b2.as_u32 & 0x3f)
+            if res ∉ p.utf8EncodedInTwoBytes
+              e2 "codepoint $res uses overlong 2-byte encoding, allowed for range {p.utf8EncodedInTwoBytes}."
             else
               codepoint res
-          else if (u32 0xe0) <= b1
+          else if u8 0xe0 <= b1
             if !s.hasNext
-              error "Bad UTF8 encoding found: cannot decode: $b1, $b2 at end of string, expected continuation byte"
+              e2 "end of string, expected continuation byte"
             else
-              b3 := s.next.as_u32
+              b3 := s.next
+              e3(msg string) => e "$b1, $b2, $b3: $msg"
               if (b3 & 0xc0) != 0x80
-                error "Bad UTF8 encoding found: cannot decode $b1, $b2, $b3, expected two continuation bytes in the range 0x80..0xbf."
+                e3 "expected two continuation bytes in the range 0x80..0xbf."
               else if b1 <= 0xef       # 0x0800..0xffff encoded in 3 bytes
-                res := (((b1 & 0x0f) << 12) |
-                        ((b2 & 0x3f) <<  6) |
-                        ((b3 & 0x3f)      )   )
-                if res ∉ codepoints.utf8EncodedInThreeBytes
-                  error "Bad UTF8 encoding found: $b1, $b2, $b2: codepoint $res uses overlong 3-byte encoding, allowed for range {codepoints.utf8EncodedInTwoBytes}."
-                else if res ∈ codepoints.utf16Surrogate
-                  error "Bad UTF8 encoding found: $b1, $b2, $b3: codepoint $res is invalid, values in the range {codepoints.utf16Surrogate} are reserved for UTF-16 surrogate halves."
-                else if res ∈ codepoints.notACharacter
-                  error "Bad UTF8 encoding found: $b1, $b2, $b3: codepoint $res is not a valid unicode character {codepoints.notACharacter}."
+                res := (((b1.as_u32 & 0x0f) << 12) |
+                        ((b2.as_u32 & 0x3f) <<  6) |
+                        ((b3.as_u32 & 0x3f)      )   )
+                if res ∉ p.utf8EncodedInThreeBytes
+                  e3 "codepoint $res uses overlong 3-byte encoding, allowed for range {p.utf8EncodedInTwoBytes}."
+                else if res ∈ p.utf16Surrogate
+                  e3 "codepoint $res is invalid, values in the range {p.utf16Surrogate} are reserved for UTF-16 surrogate halves."
+                else if res ∈ p.notACharacter
+                  e3 "codepoint $res is not a valid unicode character {p.notACharacter}."
                 else
                   codepoint res
               else                     # 0x010000..0x10ffff encoded in 4 bytes
                 if !s.hasNext
-                  error "Bad UTF8 encoding found: cannot decode: $b1, $b2,$b2 at end of string, expected continuation byte"
+                  e3 "end of string, expected continuation byte"
                 else
-                  b4 := s.next.as_u32
+                  b4 := s.next
+                  e4(msg string) => e "$b1, $b2, $b3, $b4: $msg"
                   if (b4 & 0xc0) != 0x80
-                    error "Bad UTF8 encoding found: cannot decode $b1, $b2, $b3, $b4, expected three continuation bytes in the range 0x80..0xbf."
+                    e4 "expected three continuation bytes in the range 0x80..0xbf."
                   else
-                    res := (((b1 & 0x07) << 18) |
-                            ((b2 & 0x3f) << 12) |
-                            ((b3 & 0x3f) <<  6) |
-                            ((b4 & 0x3f)      )   )
-                    if res ∉ codepoints.utf8EncodedInFourBytes
-                      error "Bad UTF8 encoding found: $b1, $b2, $b2, $b4: codepoint $res uses overlong 4-byte encoding."
+                    res := (((b1.as_u32 & 0x07) << 18) |
+                            ((b2.as_u32 & 0x3f) << 12) |
+                            ((b3.as_u32 & 0x3f) <<  6) |
+                            ((b4.as_u32 & 0x3f)      )   )
+                    if res ∉ p.utf8EncodedInFourBytes
+                      e4 "codepoint $res uses overlong 4-byte encoding."
                     else if res > 0x10ffff
-                      error "Bad UTF8 encoding found: $b1, $b2, $b2, $b4: codepoint $res is outside of the allowed range for codepoints 0x000000..0x10ffff."
+                      e4 "codepoint $res is outside of the allowed range for codepoints 0x000000..0x10ffff."
                     else
                       codepoint res
-      else if (u32 0x80) <= b1 <= 0xbf
-        error "Bad UTF8 encoding found: $b1: stray continuation byte without preceding leading byte."
-      else if (u32 0xf5) <= b1 <= 0xfd
-        error "Bad UTF8 encoding found: $b1: codes 0xf8..0xff are undefined."
-      else if (u32 0xfe) <= b1 <= 0xff
-        error "Bad UTF8 encoding found: $b1: codes 0xfe and 0xff are undefined, used for endianess checking."
+      else if u8 0x80 <= b1 <= 0xbf then e1 "stray continuation byte without preceding leading byte."
+      else if u8 0xf5 <= b1 <= 0xfd then e1 "codes 0xf5..0xfd are undefined."
+      else if u8 0xfe <= b1 <= 0xff then e1 "codes 0xfe and 0xff are undefined, used for endianess checking."
       else
         fuzion.std.panic "string.codepointStream: missing case for $b1"
 
