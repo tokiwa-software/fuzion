@@ -1,4 +1,5 @@
-2022-02-25: V0.069dev
+
+# 2022-02-25: V0.069dev
 
 - flang.dev
   - design
@@ -9,7 +10,7 @@
 
 - C backend
   - heap allocate value instances that are kept alive through inner instances,
-    fixes segfaul in #168.
+    fixes segfault in #168.
 
 - IR
   - added new category of clazz: dynamic outer ref. A value clazz _c_ is a
@@ -36,9 +37,9 @@
   - several fixes, cleanup
 
 - fz, fzjava
-  - minor fixes in scripts for issues reported by _shelcheck_.
+  - minor fixes in scripts for issues reported by _shellcheck_.
 
-2022-02-04: V0.068
+# 2022-02-04: V0.068
 
 - fzjava
 
@@ -56,7 +57,7 @@
 
     - added strings.fromCodepoints
 
-2022-01-30: V0.067
+# 2022-01-30: V0.067
 
 - front end
 
@@ -86,7 +87,7 @@
   - added explanation of the origin of the term 'yak' to the same named feature.
 
 
-2022-01-24: V0.066
+# 2022-01-24: V0.066
 
 - front end:
 
@@ -100,7 +101,7 @@
       support code modification, so it might be faster.
 
 
-2022-01-21: V0.065
+# 2022-01-21: V0.065
 
 - flang.dev
 
@@ -174,7 +175,7 @@
     i32s.fz and i32_.fz as well.  This is possible since .fz files read from a
     source directory now may contain several feature declarations.
 
-2022-01-06: V0.064
+# 2022-01-06: V0.064
 
 - front end:
 
@@ -185,7 +186,7 @@
     file for more detailed error messages.
 
 
-2022-01-03: V0.063
+# 2022-01-03: V0.063
 
 - front end:
 
@@ -201,7 +202,7 @@
     Currently, the AST is also re-created to produce the FUIR representation
     used by the C backend, but this should eventually not be needed any longer.
 
-2021-10-29: V0.062
+# 2021-10-29: V0.062
 
 - flang.dev website
 
@@ -218,7 +219,7 @@
     of uses of uninitialized fields.
 
 
-2021-10-15: V0.061
+# 2021-10-15: V0.061
 
 - flang.dev website
 
@@ -239,7 +240,7 @@
   - switched to OpenJDK 17
 
 
-2021-09-30: V0.060
+# 2021-09-30: V0.060
 
 - flang.dev website
 
@@ -296,7 +297,7 @@
   - many bug fixes
 
 
-2021-09-02: V0.059
+# 2021-09-02: V0.059
 
 - FrontEnd / lib / backends
 
@@ -318,14 +319,14 @@
     window.
 
 
-2021-08-23: V0.058
+# 2021-08-23: V0.058
 
 - FrontEnd
 
   - fix running examples such as tutorial/overflow* on flang.dev (see git commit
     for details).
 
-2021-08-20: V0.057
+# 2021-08-20: V0.057
 
 - Java interface
 
@@ -371,7 +372,7 @@
   - Fuzion logo is now generated
 
 
-2021-07-30: V0.056
+# 2021-07-30: V0.056
 
 - Parser
 
@@ -394,7 +395,7 @@
   - error messages now enclose code snippets in '' and highlight feature names, types
     and expressions in different colors.
 
-2021-07-21: V0.055
+# 2021-07-21: V0.055
 
 - C backend
 
@@ -409,7 +410,7 @@
     several tests that failed when using the C backend.
 
 
-2021-07-08: V0.054
+# 2021-07-08: V0.054
 
 - flang.dev
 
@@ -423,7 +424,7 @@
   - fixed issue#8: returing 'false' as 'option<V>' n logner allowed
 
 
-2021-07-06: V0.053
+# 2021-07-06: V0.053
 
 - Parser
 
@@ -444,7 +445,7 @@
 
   - faction now uses unicode fraction slash '⁄' to create fraction, e.g., '1⁄2'
 
-2021-06-30: V0.052
+# 2021-06-30: V0.052
 
 - Parser
 
@@ -487,7 +488,7 @@
     separated by white space.
 
 
-2021-06-29: V0.051
+# 2021-06-29: V0.051
 
 - flang.dev
 
@@ -531,7 +532,7 @@
   - several bug fixes in FE, IR, FUIR; interpreter and C backend.
 
 
-2021-06-23: V0.050
+# 2021-06-23: V0.050
 
 - Fuzion front-end/middle-end
 
@@ -545,7 +546,7 @@
 
   - added idiom 76
 
-2021-06-22: V0.049
+# 2021-06-22: V0.049
 
 - lib: added
 
@@ -565,7 +566,7 @@
 
   - added idioms 39, 40, 49, 68, 76, 82, 116
 
-2021-06-18: V0.048
+# 2021-06-18: V0.048
 
 - IR: Added mechanism to 'normalize' clazzes to reduce the explosion in the total
   number of clazzes generated: Clazzes that only differ in their outer clazzes
@@ -582,7 +583,7 @@
 
   - added idioms 62, 63
 
-2021-05-31: V0.047
+# 2021-05-31: V0.047
 
 - tools:
 
@@ -598,7 +599,7 @@
   - fix exponential performance when printing string built from s+(s+(s+(...)))
 
 
-2021-05-30: V0.046
+# 2021-05-30: V0.046
 
 - lib
 
@@ -611,7 +612,7 @@
     113, 114, 117, 118, 119, 122, 124, 127, 227, 231
 
 
-2021-05-24: V0.045
+# 2021-05-24: V0.045
 
 - lib:
 
@@ -635,7 +636,7 @@
 
   - added idioms # 38, 44, 46, 47, 48, 53, 54, 55, 57
 
-2021-05-24: V0.044
+# 2021-05-24: V0.044
 
 - lib
 
@@ -657,7 +658,7 @@
 
   - added idioms # 51, 52
 
-2021-05-21: V0.043
+# 2021-05-21: V0.043
 
 - lib
 
@@ -678,7 +679,7 @@
 
   - added design page on integer literals / constants.
 
-2021-05-20: V0.042
+# 2021-05-20: V0.042
 
 - lib
 
@@ -695,7 +696,7 @@
 
   - added idioms # 18, 22, 26, 27, 34, 42
 
-2021-05-19: V0.041
+# 2021-05-19: V0.041
 
 - flang.dev
 
@@ -715,7 +716,7 @@
 
   - fix#9: AdrToValue.type() was not intern()ed.
 
-2021-05-18: V0.040
+# 2021-05-18: V0.040
 
 -lib
 
@@ -735,7 +736,7 @@
 
   - add support for indentation in generated code.
 
-2021-04-20: V0.039
+# 2021-04-20: V0.039
 
 - C backend
 
@@ -748,7 +749,7 @@
   - new design of main page using CSS magic.
 
 
-2021-04-20: V0.038
+# 2021-04-20: V0.038
 
 - Fuzion language
 
@@ -759,7 +760,7 @@
     automatic.  Support in FUIR/C backend missing, only interpreter for now.
 
 
-2021-04-14: V0.037
+# 2021-04-14: V0.037
 
 - Fuzion language
 
@@ -784,7 +785,7 @@
   - numeric.min, numeric.max added
 
 
-2021-04-08: V0.036
+# 2021-04-08: V0.036
 
 - lib
 
@@ -796,7 +797,7 @@
     '(a i32, b bool) := obj' and array writes 'a[i] := v' now use ':='
     instead of '='.
 
-2021-04-07: V0.035
+# 2021-04-07: V0.035
 
 - Fuzion Language:
 
@@ -807,7 +808,7 @@
 
     to make sure that mutations are clearly visible in the source code.
 
-2021-04-06: V0.034
+# 2021-04-06: V0.034
 
 - Fuzion Language
 
@@ -827,7 +828,7 @@
 
   - 'fz -latex' creates a LaTeX style for Fuzion source code.
 
-2021-03-29: V0.033
+# 2021-03-29: V0.033
 
 - lib
 
@@ -836,7 +837,7 @@
   - renamed FALSE.fz and TRUE.fz to avoid name clashes on case-insensitive file
     systems.
 
-2021-03-25: V0.032
+# 2021-03-25: V0.032
 
 - Fuzion Language:
 
@@ -858,7 +859,7 @@
     | '\{' |  {    | 0x7b    |
     | '\}' |  }    | 0x7d    |
 
-2021-03-19: V0.031
+# 2021-03-19: V0.031
 
 - C backend
 
@@ -868,13 +869,13 @@
 
   - Makefiles now run tests using c backend in addition to interpreter
 
-2021-03-18: V0.030
+# 2021-03-18: V0.030
 
 - C backend
 
   - support for postconditions
 
-2021-03-17: V0.029
+# 2021-03-17: V0.029
 
 - C backend
 
@@ -884,7 +885,7 @@
 
   - support for preconditions
 
-2021-03-16: V0.028
+# 2021-03-16: V0.028
 
 - AST/IR/BE:
 
@@ -901,7 +902,7 @@
   - a field with formal generics or formal arguments is now disallowed as early
     as during the parsing step.
 
-2021-03-15: V0.027
+# 2021-03-15: V0.027
 
 - IR
 
@@ -914,7 +915,7 @@
 
   - support for fields declared in universe
 
-2021-03-11: V0.026
+# 2021-03-11: V0.026
 
 - C backend:
 
@@ -922,7 +923,7 @@
 
   - bug fixes for dynamic calls and write accesses to outer fields
 
-2021-03-10: V0.025
+# 2021-03-10: V0.025
 
 - C backend:
 
@@ -933,7 +934,7 @@
 
   - added c_man_or_boy, a benchmark that compiles a the man_or_boy example to C
 
-2021-03-09: V0.024
+# 2021-03-09: V0.024
 
 - Desgn:
 
@@ -949,7 +950,7 @@
 
   - fixed dynamic calls that did not work to call inherited feature.
 
-2021-03-05: V0.023
+# 2021-03-05: V0.023
 
 - Design
 
@@ -962,7 +963,7 @@
 
   - several bug fixes and improvements.
 
-2021-03-02: V0.022
+# 2021-03-02: V0.022
 
 - C backend
 
@@ -976,7 +977,7 @@
   - code cleanup
 
 
-2021-02-24: V0.021
+# 2021-02-24: V0.021
 
 - IR:
 
@@ -990,7 +991,7 @@
 
   - monad.fz added for experiments.
 
-2021-02-22: V0.020
+# 2021-02-22: V0.020
 
 - lib:
 
@@ -1006,7 +1007,7 @@
     could be created, e.g., 'integer<i32>.ref decimalStr', which should be
     'i32.ref deciamStr'.
 
-2021-02-18: V0.019
+# 2021-02-18: V0.019
 
 - lib:
 
@@ -1026,7 +1027,7 @@
   - internal cleanup with respect to types, removed internally used type t_ANY, replaced it
     by void.
 
-2021-02-12: V0.018
+# 2021-02-12: V0.018
 
 - C backend:
 
@@ -1043,7 +1044,7 @@ Benchmarks:
   - added c_hello, a benchmark that compiles a HelloWorld example to C
 
 
-2021-02-07: V0.017
+# 2021-02-07: V0.017
 
 - Frotend:
 
@@ -1088,7 +1089,7 @@ Benchmarks:
   - lots of minor improvements
 
 
-2021-02-01: V0.016
+# 2021-02-01: V0.016
 
 - Frontend:
 
@@ -1119,7 +1120,7 @@ Benchmarks:
   - added page on static vs. dynamic typing
 
 
-2021-01-12: V0.015
+# 2021-01-12: V0.015
 
 - Fuzion IR
 
@@ -1164,7 +1165,7 @@ Benchmarks:
   - added proper command line handling to fusion command line tool, in
     particular -interpreter, -c, -llvm, etc. to chose backend.
 
-2020-11-22: V0.014
+# 2020-11-22: V0.014
 
 - Fusion Middle End
 
@@ -1202,7 +1203,7 @@ Benchmarks:
 
   - added test case redef_args to redefine argument fields.  Not working yet.
 
-2020-11-16: V0.013
+# 2020-11-16: V0.013
 
 - Fusion Interpreter: No longer uses virtual call for a dynamic feature called
   on a value instance.
@@ -1218,7 +1219,7 @@ Benchmarks:
 - removed "throws" keyword and its uses in feature declarations and
   pre/postconditions.
 
-2020-11-13: V0.012
+# 2020-11-13: V0.012
 
 - Fusion Interpreter
 
@@ -1244,7 +1245,7 @@ Benchmarks:
 - Fusion middle end: Major cleanup and some bugfixes in handling of outer
   features that showed up when writing hasInterval.
 
-2020-11-10: V0.011
+# 2020-11-10: V0.011
 
 - website
 
@@ -1334,7 +1335,7 @@ Benchmarks:
 
   - added specialization for reading fields in value type to improve performance
 
-2020-11-06: V0.010
+# 2020-11-06: V0.010
 
 - benchmarks: Added first simple performance benchmark that runs the man_or_boy
   example repeatedly.
@@ -1354,7 +1355,7 @@ Benchmarks:
     be.interpreter to ast will have to be changed to refer to fuir (once it
     exists.
 
-2020-11-03: V0.009
+# 2020-11-03: V0.009
 
 - website
 
@@ -1394,7 +1395,7 @@ Benchmarks:
   syntax for their implementation as routine definititions: "is" block, "=>"
   block or a block enclosed in { }.
 
-2020-11-01: V0.008
+# 2020-11-01: V0.008
 
 - website
 
@@ -1418,7 +1419,7 @@ Benchmarks:
 
   - Removed redundent directory listing in source dirs to improve speed.
 
-2020-10-29: V0.007
+# 2020-10-29: V0.007
 
 - scopes for match cases: features declared in match cases are now visible only
   in the match case they were declared in.  In particular, the same variable
@@ -1492,7 +1493,7 @@ Benchmarks:
     - disabling pre- and postconditions in production (enabled by setting env
       variables PRECONDTIONS=true and POSCONDITIONS=true)
 
-2020-10-22: V0.006
+# 2020-10-22: V0.006
 
 - feature declarations and visibility
 
@@ -1567,7 +1568,7 @@ Benchmarks:
 
      - expected EOF in case of previous errors
 
-2020-10-14: V0.005
+# 2020-10-14: V0.005
 
 - Benchmarks
 
@@ -1630,7 +1631,7 @@ Benchmarks:
 
   - improved logging
 
-2020-10-05: V0.004
+# 2020-10-05: V0.004
 
 - lexer
 
@@ -1649,7 +1650,7 @@ Benchmarks:
 
   - removed Null.fu
 
-2020-10-02: V0.003
+# 2020-10-02: V0.003
 
 - webserver
 
@@ -1710,7 +1711,7 @@ Benchmarks:
   - added compile-time errors for the case that a feature with an implementation
     is marked as abstract
 
-2020-09-30: V0.002
+# 2020-09-30: V0.002
 
 - renamed intrinsic features for reference comparison as >>infix ===<< and
   >>infix !==<< to avoid type errors when redefined in i32 and bool.
@@ -1723,6 +1724,6 @@ Benchmarks:
   used instead.
 
 
-2020-09-29: V0.001
+# 2020-09-29: V0.001
 
 - First version to be presented to very few selected users via the flang.dev website.
