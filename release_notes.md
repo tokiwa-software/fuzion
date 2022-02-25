@@ -23,12 +23,12 @@
     instance of their result type.  This simplifies static analysis for
     frequence cases such as *fuzion.java.getField0*.
   - inline arrays now may end with a comma as in
-```
+    ```
       a := [ 1,
              2,
              3,
            ]
-```
+    ```
 
 - stdlib
   - added *Sequence.reduce*, *string.split*, *string.isBlank*, *handles*, ...
@@ -113,14 +113,14 @@
 
     - single-line operator expressions may now continue after a multi-line
       klammer-expression, e.g.,
-```
+      ```
         a := 1 * (2
                   + 3
                   + 4) - 5
 
-```
+      ```
       is allowed now.  The same holds for expressions using [] or {}:
-```
+      ```
         b := 2 * { say "hi"
                    + 4
                  } - 1
@@ -129,14 +129,14 @@
                    "B",
                    "C" ].fold strings.concat
                         .byteLength - 5
-```
+      ```
     - improve handling of '.'-chained calls over several lines. It is now
       possible to write
-```
+      ```
         s := myseq.drop n
                   .take m
                   .asString
-```
+      ```
       before, '.take' was applied to 'n' instead of the result of '.drop'.  Now,
       a space separated argument list is terminated by a new line followed by
       '.', while a call in a line is permitted to continue in the next line if
@@ -149,15 +149,12 @@
     ```
       i32.factorial => if val <= 1 then 1 else val * (val-1).factorial
     ```
-
     or even
 
     ```
       i32.postfix ! => if val <= 1 then 1 else val * (val-1).factorial
     ```
-
     such that you can write
-
     ```
       say 6.factorial
       say 4!
@@ -433,13 +430,13 @@
 - Parser
 
   - More haskell-style call syntax
-```
+    ```
       f(a,b)   calls f with arguments 'a', 'b'
       f (a,b)  calls f with argument '(a,b)', a tuple
 
       f fun () => x    no longer works
       f (fun () => x)  must be used instead
-```
+    ```
 
 - Front End
 
@@ -455,31 +452,31 @@
 
   - Haskell-style call syntax with space separated arguments and left binding,
     so the call
-```
+    ```
       f a b (g c d)
-```
+    ```
     is equivalent to
-```
+    ```
       f(a,b,g(c,d))
-```
+    ```
     Additionally, infix, prefix and postfix operators now bind stronger than a call
     if there is no white space (or comment) between the operator and its operand,
     and weaker than a call if there is white space.  This means
-```
+    ```
       f x+1
-```
+    ```
     is equivalent to
-```
+    ```
       f(x+1)
-```
+    ```
     while
-```
+    ```
       f x + 1
-```
+    ```
     is equivalent to
-```
+    ```
       f(x)+1
-```
+    ```
     This makes the semantics depend on white space in a way that might be
     surprising.  This change is therefore considered for experiments only, if this
     turns out to be too confusing, the grammar should go back to not make operator
@@ -506,22 +503,22 @@
   - allow chained boolean expressions with >3 terms, e.g., 'a < b < c < d'
 
   - support for '? |' instead of match, allow '|' as case separator
-```
+    ```
       a ? x X => x.foo
         | y Y => y.bar
-```
+    ```
     as short-hand for
-```
+    ```
      match a
        x X => x.foo
        y Y => y.bar
-```
+    ```
     also allowed is
-```
+    ```
      match a
        | x X => x.foo
        | y Y => y.bar
-```
+    ```
   - A loop's 'until' clause now supports 'then' to separate the condition from
     the code executed for successful loop termination.  The code is now
     summetric to 'if cond then'.
