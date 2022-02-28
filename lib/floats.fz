@@ -75,3 +75,6 @@ floats<T: float<T>> : numerics<T> is
   epsilon T is abstract
 
 
+  squareRoot(val T) T is abstract
+  # square root
+  sqrt(val T) => squareRoot val

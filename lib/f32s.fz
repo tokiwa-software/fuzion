@@ -55,3 +55,5 @@ f32s : floats<f32> is
   redef max f32 is intrinsic
   redef epsilon f32 is intrinsic
 
+  redef squareRoot(val f32) f32 is intrinsic
+

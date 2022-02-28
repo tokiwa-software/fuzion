@@ -73,6 +73,10 @@ FloatingPointNumbers is
     chck (a.zero * a.one == a.zero)                                "{a.name}: product operator"
     chck (a.zero / a.one == a.zero)                                "{a.name}: division operator"
 
+    # sqrt
+    two := a.one + a.one
+    chck (a.sqrt (two * two) - two < a.epsilon)                    "{a.name}: sqrt"
+
   generic_tests f32s.zero
   generic_tests f64s.zero
 
