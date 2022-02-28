@@ -733,23 +733,26 @@ public class C extends ANY
   // NYI this conversion should be done in Fuzion
   CStmnt floatToConstString(CExpr expr, CIdent tmp)
   {
-    var charCount = 50;
+    // NYI how much do we need?
+    var bufferSize = 50;
     var res = new CIdent("float_as_string_result");
+    var usedChars = new CIdent("used_chars");
     var malloc = CExpr.call("malloc",
-      new List<>(CExpr.sizeOfType("char").mul(CExpr.int32const(charCount))));
-    var sprintf = CStmnt.seq(
-        CStmnt.decl("char*", res, malloc),
-        CExpr.call("sprintf", new List<>(res, CExpr.string("%.21g"), expr)));
+      new List<>(CExpr.sizeOfType("char").mul(CExpr.int32const(bufferSize))));
+    var sprintf = CExpr.call("sprintf", new List<>(res, CExpr.string("%.21g"), expr));
 
     var internalArray = _names.fieldName(_fuir.clazz_conststring_internalArray());
     var data          = _names.fieldName(_fuir.clazz_sysArray_u8_data());
     var length        = _names.fieldName(_fuir.clazz_sysArray_u8_length());
     var sysArray = fields(tmp, _fuir.clazz_conststring()).field(internalArray);
-    return CStmnt.seq(sprintf, CStmnt.decl("fzT__R1conststring *", tmp),
+    return CStmnt.seq(CStmnt.decl("char*", res, malloc),
+                      CStmnt.decl("int", usedChars, sprintf),
+                      res.assign(CExpr.call("realloc", new List<>(res, usedChars))),
+                      CStmnt.decl("fzT__R1conststring *", tmp),
                       tmp.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("fzT__R1conststring")))),
                       tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(_fuir.clazz_conststring())),
                       sysArray.field(data  ).assign(res.castTo("void *")),
-                      sysArray.field(length).assign(CExpr.int32const(charCount)));
+                      sysArray.field(length).assign(usedChars));
   }
 
 
