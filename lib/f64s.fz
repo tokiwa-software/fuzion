@@ -47,12 +47,6 @@ f64s : floats<f64> is
 
   # minPositive => # NYI: 4.9E-324
 
-  # nan => ...
-
-  #  infinity =>
-
-  # negInfinity =>
-
 
   from_i64(v i64) f64 is intrinsic
 

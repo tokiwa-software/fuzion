@@ -49,11 +49,24 @@ floats<T: float<T>> : numerics<T> is
   #
   exponentBits i32 is abstract
 
-  # redef exponentRange => -126..127
+  # NYI redef exponentRange => -126..127
 
   # redef range => f32 # NYI: -3.4028235E38..3.4028235E38
 
   # minPositive => # NYI:1.4E-45
+
+  # non signaling not a number
+  quietNaN => zero / zero
+
+  # not a number
+  NaN => quietNaN
+
+  negativeInfinity => -one / zero
+
+  positiveInfinity => one / zero
+
+  # infinity
+  infinity => positiveInfinity
 
   minExp T is abstract
   maxExp T is abstract

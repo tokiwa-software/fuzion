@@ -47,13 +47,6 @@ f32s : floats<f32> is
 
   # minPositive => # NYI:1.4E-45
 
-  # nan => ...
-
-  #  infinity =>
-
-  # negInfinity =>
-
-
   from_i64(v i64) f32 is intrinsic
 
   minExp f32 is intrinsic
