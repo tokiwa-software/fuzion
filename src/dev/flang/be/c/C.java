@@ -733,14 +733,13 @@ public class C extends ANY
   // NYI this conversion should be done in Fuzion
   CStmnt floatToConstString(CExpr expr, CIdent tmp)
   {
-    var charCount = 20;
+    var charCount = 50;
     var res = new CIdent("float_as_string_result");
     var malloc = CExpr.call("malloc",
       new List<>(CExpr.sizeOfType("char").mul(CExpr.int32const(charCount))));
     var sprintf = CStmnt.seq(
-        CStmnt.decl("char*", res),
-        res.assign(malloc),
-        CExpr.call("sprintf", new List<>(res, CExpr.string("%f"), expr)));
+        CStmnt.decl("char*", res, malloc),
+        CExpr.call("sprintf", new List<>(res, CExpr.string("%.21g"), expr)));
 
     var internalArray = _names.fieldName(_fuir.clazz_conststring_internalArray());
     var data          = _names.fieldName(_fuir.clazz_sysArray_u8_data());
