@@ -81,9 +81,7 @@ FloatingPointNumbers is
   chck (10.0 ** 2.0 == 100.0)                                     "f64: 10 to the power 2 equals 100"
 
   # modulo
-  chck ((f32 10.0 % f32 2.4 >= f32 0.39) &&
-        (f32 10.0 % f32 2.4 <= f32 0.41))                         "f32: 10 mod 2.4 is ~0.4"
-  chck ((10.0 % 2.4 >= 0.39) &&
-        (10.0 % 2.4 <= 0.41))                                     "f64: 10 mod 2.4 is ~0.4"
+  chck (f32 10.0 % f32 2.4 - f32 0.4 < f32 10.0 * f32s.epsilon)   "f32: 10 mod 2.4 is ~0.4"
+  chck (10.0 % 2.4 - 0.4 <=10.0 * f64s.epsilon)                   "f64: 10 mod 2.4 is ~0.4"
 
   fuzion.std.exit exitCode
