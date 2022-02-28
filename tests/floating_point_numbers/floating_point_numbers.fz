@@ -1,0 +1,89 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test FloatingPointNumbers
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+FloatingPointNumbers is
+
+  exitCode := 0
+
+  chck(b bool, msg string) =>
+    s := if b
+      "PASSED: "
+    else
+      set exitCode := 1
+      "FAILED: "
+    say (s + msg)
+
+  duplicate<T:float<T>>(f T) =>
+    f + f
+
+  threefold<T:float<T>>(f T) =>
+    f + f + f
+
+  generic_tests<T: float<T>>(a T) is
+    # serialize floating point numbers
+    chck ("{a.quietNaN}" ==  "nan")                                 "{a.name}: quiet nan serializes correctly"
+    chck ("{a.negativeInfinity}" ==  "-inf")                        "{a.name}: neg inf serializes correctly"
+    chck ("{a.positiveInfinity}" ==  "inf")                         "{a.name}: pos inf serializes correctly"
+    chck ("{a.zero}" == "0")                                        "{a.name}: 0 serializes to string"
+    chck ("{a.one}" == "1")                                         "{a.name}: 1 serializes to string"
+    chck ("{a.one / (duplicate a.one)}" == "0.5")                   "{a.name}: 0.5 serializes to string"
+    chck ("{a.one / (threefold a.one)}".startsWith "0.3333333")     "{a.name}: 1/3 serializes to string"
+
+    # comparision operators
+    chck (
+      a.zero == a.zero &&
+      a.zero != a.one &&
+      a.one  >= a.zero &&
+      a.zero <= a.one &&
+      a.zero == a.zero &&
+      a.one  >  a.zero &&
+      a.zero <  a.one)                                              "{a.name}: comparison operators work as expected"
+
+    # negation operator
+    chck ((-(-a.zero) == a.zero) &&
+          (-(-a.one) == a.one) &&
+          (-(-a.positiveInfinity) == a.positiveInfinity) &&
+          (-(-a.negativeInfinity) == a.negativeInfinity))          "{a.name}: double negation is same number"
+
+    # operator +,-,*,/ test
+    chck (a.zero + a.one == a.one)                                 "{a.name}: plus operator"
+    chck (a.zero - a.one == -a.one)                                "{a.name}: minus operator"
+    chck (a.zero * a.one == a.zero)                                "{a.name}: product operator"
+    chck (a.zero / a.one == a.zero)                                "{a.name}: division operator"
+
+  generic_tests f32s.zero
+  generic_tests f64s.zero
+
+  # power
+  chck (f32 10.0 ** f32 2.0 == f32 100.0)                         "f32: 10 to the power 2 equals 100"
+  chck (10.0 ** 2.0 == 100.0)                                     "f64: 10 to the power 2 equals 100"
+
+  # modulo
+  chck ((f32 10.0 % f32 2.4 >= f32 0.39) &&
+        (f32 10.0 % f32 2.4 <= f32 0.41))                         "f32: 10 mod 2.4 is ~0.4"
+  chck ((10.0 % 2.4 >= 0.39) &&
+        (10.0 % 2.4 <= 0.41))                                     "f64: 10 mod 2.4 is ~0.4"
+
+  fuzion.std.exit exitCode

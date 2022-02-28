@@ -74,6 +74,4 @@ floats<T: float<T>> : numerics<T> is
   max T is abstract
   epsilon T is abstract
 
-  # infinity =>
 
-  # negInfinity T is abstract
