@@ -50,6 +50,11 @@ f64s : floats<f64> is
 
   from_i64(v i64) f64 is intrinsic
 
+  redef ℇ => 2.7182818284590452354
+
+  redef π => 3.14159265358979323846
+
+
   redef minExp f64 is intrinsic
   redef maxExp f64 is intrinsic
   redef min f64 is intrinsic
