@@ -55,3 +55,9 @@ f64s : floats<f64> is
 
 
   from_i64(v i64) f64 is intrinsic
+
+  minExp f64 is intrinsic
+  maxExp f64 is intrinsic
+  min f64 is intrinsic
+  max f64 is intrinsic
+  epsilon f64 is intrinsic

@@ -29,7 +29,6 @@ package dev.flang.be.c;
 import java.nio.charset.StandardCharsets;
 
 import dev.flang.fuir.FUIR;
-
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -308,6 +307,16 @@ class Intrinsics extends ANY
           return CStmnt.seq(c.floatToConstString(outer, res),
             res.castTo("fzT__Rstring*").ret());
         }
+      case "f32s.minExp"         : return CExpr.ident("FLT_MIN_EXP").ret();
+      case "f32s.maxExp"         : return CExpr.ident("FLT_MAX_EXP").ret();
+      case "f32s.min"            : return CExpr.ident("FLT_MIN").ret();
+      case "f32s.max"            : return CExpr.ident("FLT_MAX").ret();
+      case "f32s.epsilon"        : return CExpr.ident("FLT_EPSILON").ret();
+      case "f64s.minExp"         : return CExpr.ident("DBL_MIN_EXP").ret();
+      case "f64s.maxExp"         : return CExpr.ident("DBL_MAX_EXP").ret();
+      case "f64s.min"            : return CExpr.ident("DBL_MIN").ret();
+      case "f64s.max"            : return CExpr.ident("DBL_MAX").ret();
+      case "f64s.epsilon"        : return CExpr.ident("DBL_EPSILON").ret();
       case "Object.hashCode"     :
         {
           var hc = c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or))

@@ -197,6 +197,7 @@ public class C extends ANY
        "#include <stdint.h>\n"+
        "#include <string.h>\n"+
        "#include <math.h>\n"+
+       "#include <float.h>\n"+
        "#include <assert.h>\n"+
        "\n");
     var o = CExpr.ident("of");

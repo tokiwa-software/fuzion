@@ -55,7 +55,11 @@ floats<T: float<T>> : numerics<T> is
 
   # minPositive => # NYI:1.4E-45
 
-  # nan => ...
+  minExp T is abstract
+  maxExp T is abstract
+  min T is abstract
+  max T is abstract
+  epsilon T is abstract
 
   # infinity =>
 
