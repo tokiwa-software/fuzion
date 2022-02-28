@@ -280,8 +280,8 @@ class Intrinsics extends ANY
       case "f64.infix *"         : return outer.mul(A0).ret();
       case "f32.infix /"         :
       case "f64.infix /"         : return outer.div(A0).ret();
-      case "f32.infix %"         : return CExpr.call("fmod", new List<>(outer.castTo("float"), A0.castTo("float"))).ret();
-      case "f64.infix %"         : return CExpr.call("fmod", new List<>(outer.castTo("double"), A0.castTo("double"))).ret();
+      case "f32.infix %"         : return CExpr.call("fmod", new List<>(outer, A0)).ret();
+      case "f64.infix %"         : return CExpr.call("fmod", new List<>(outer, A0)).ret();
       case "f32.infix **"        :
       case "f64.infix **"        : return CExpr.call("pow", new List<>(outer, A0)).ret();
       case "f32.infix =="        :
