@@ -88,4 +88,15 @@ FloatingPointNumbers is
   chck (f32 10.0 % f32 2.4 - f32 0.4 < f32 10.0 * f32s.epsilon)   "f32: 10 mod 2.4 is ~0.4"
   chck (10.0 % 2.4 - 0.4 <=10.0 * f64s.epsilon)                   "f64: 10 mod 2.4 is ~0.4"
 
+  # castTo_f64, zero, negInf, posInf
+  chck ((u64 0x_8000_0000_0000_0000).castTo_f64 == (-f64s.zero))                 "castTo_f64 works, bit representation for zero is correct"
+  chck ((u64 0x_FFF0_0000_0000_0000).castTo_f64 == (f64s.negativeInfinity))      "castTo_f64 works, bit representation for negInf is correct"
+  chck ((u64 0x_7FF0_0000_0000_0000).castTo_f64 == (f64s.positiveInfinity))      "castTo_f64 works, bit representation for posInf is correct"
+
+  # castTo_u64
+  chck ((-f64s.zero).castTo_u64 == 0x_8000_0000_0000_0000)                       "castTo_u64 works"
+  chck ((f64s.negativeInfinity).castTo_u64 == 0x_FFF0_0000_0000_0000)            "castTo_u64 works"
+  chck ((f64s.positiveInfinity).castTo_u64 == 0x_7FF0_0000_0000_0000)            "castTo_u64 works"
+
+
   fuzion.std.exit exitCode

@@ -262,7 +262,9 @@ class Intrinsics extends ANY
       case "u8.castTo_i8"        : return outer.castTo("fzT_1i8").ret();
       case "u16.castTo_i16"      : return outer.castTo("fzT_1i16").ret();
       case "u32.castTo_i32"      : return outer.castTo("fzT_1i32").ret();
+      case "u32.castTo_f32"      : return outer.adrOf().castTo("fzT_1f32*").deref().ret();
       case "u64.castTo_i64"      : return outer.castTo("fzT_1i64").ret();
+      case "u64.castTo_f64"      : return outer.adrOf().castTo("fzT_1f64*").deref().ret();
       case "u16.low8bits"        : return outer.and(CExpr.uint16const(0xFF)).castTo("fzT_1u8").ret();
       case "u32.low8bits"        : return outer.and(CExpr.uint32const(0xFF)).castTo("fzT_1u8").ret();
       case "u64.low8bits"        : return outer.and(CExpr.uint64const(0xFFL)).castTo("fzT_1u8").ret();
@@ -296,9 +298,8 @@ class Intrinsics extends ANY
       case "f64.infix >"         : return outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "f32.infix >="        :
       case "f64.infix >="        : return outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
-      // NYI this is bad, we should not expose those, i think... better to ask user how to round
-      // case "f32.castTo_u32" :
-      // case "f64.castTo_u64" :
+      case "f32.castTo_u32"      : return outer.adrOf().castTo("fzT_1u32*").deref().ret();
+      case "f64.castTo_u64"      : return outer.adrOf().castTo("fzT_1u64*").deref().ret();
       case "f32.asString"        :
       case "f64.asString"        :
         {
