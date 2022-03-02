@@ -317,8 +317,8 @@ class Intrinsics extends ANY
       case "f64s.min"            : return CExpr.ident("DBL_MIN").ret();
       case "f64s.max"            : return CExpr.ident("DBL_MAX").ret();
       case "f64s.epsilon"        : return CExpr.ident("DBL_EPSILON").ret();
-      case "f32s.squareRoot"     : return CExpr.call("sqrtf", new List<>(outer)).ret();
-      case "f64s.squareRoot"     : return CExpr.call("sqrt", new List<>(outer)).ret();
+      case "f32s.squareRoot"     : return CExpr.call("sqrtf", new List<>(A0)).ret();
+      case "f64s.squareRoot"     : return CExpr.call("sqrt", new List<>(A0)).ret();
       case "Object.hashCode"     :
         {
           var hc = c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or))
