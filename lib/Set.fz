@@ -45,5 +45,13 @@ Set<T: hasEquals<T>> ref : Sequence<T> is
 
   # add new element k to this set.
   #
-  add (k T) Set<T> is
-    abstract
+  add (k T) Set<T> is abstract
+
+
+  redef asString =>
+    if isEmpty
+      "∅"
+    else
+      ("\{"
+       + asList.map<string>(x -> x.asString).fold(strings.concat ";")
+       + "\}")
