@@ -62,3 +62,20 @@ f64s : floats<f64> is
   redef epsilon f64 is intrinsic
 
   redef squareRoot(val f64) f64 is intrinsic
+
+  redef exp(val f64) f64 is intrinsic
+  redef log(val f64) f64 is intrinsic
+
+  redef sin(val f64) f64 is intrinsic
+  redef cos(val f64) f64 is intrinsic
+  redef tan(val f64) f64 is intrinsic
+  redef asin(val f64) f64 is intrinsic
+  redef acos(val f64) f64 is intrinsic
+  redef atan(val f64) f64 is intrinsic
+
+  redef sinh(val f64) f64 is intrinsic
+  redef cosh(val f64) f64 is intrinsic
+  redef tanh(val f64) f64 is intrinsic
+  redef asinh(val f64) f64 is intrinsic
+  redef acosh(val f64) f64 is intrinsic
+  redef atanh(val f64) f64 is intrinsic

@@ -57,3 +57,20 @@ f32s : floats<f32> is
 
   redef squareRoot(val f32) f32 is intrinsic
 
+  redef exp(val f32) f32 is intrinsic
+  redef log(val f32) f32 is intrinsic
+
+  redef sin(val f32) f32 is intrinsic
+  redef cos(val f32) f32 is intrinsic
+  redef tan(val f32) f32 is intrinsic
+  redef asin(val f32) f32 is intrinsic
+  redef acos(val f32) f32 is intrinsic
+  redef atan(val f32) f32 is intrinsic
+
+  redef sinh(val f32) f32 is intrinsic
+  redef cosh(val f32) f32 is intrinsic
+  redef tanh(val f32) f32 is intrinsic
+  redef asinh(val f32) f32 is intrinsic
+  redef acosh(val f32) f32 is intrinsic
+  redef atanh(val f32) f32 is intrinsic
+

@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-FloatingPointNumbers is
+floating_point_numbers is
 
   exitCode := 0
 
@@ -76,6 +76,26 @@ FloatingPointNumbers is
     # sqrt
     two := a.one + a.one
     chck (a.sqrt (two * two) - two < a.epsilon)                    "{a.name}: sqrt"
+
+    # exponentation / logarithm
+    chck (a.exp(a.zero)  == a.one)                                 "{a.name}: exp"
+    chck (a.log(a.one)   == a.zero)                                "{a.name}: log"
+
+    # trigonometric
+    chck (a.sin(a.zero)  == a.zero)                                "{a.name}: sin"
+    chck (a.cos(a.zero)  == a.one)                                 "{a.name}: cos"
+    chck (a.tan(a.zero)  == a.zero)                                "{a.name}: tan"
+    chck (a.asin(a.zero) == a.zero)                                "{a.name}: asin"
+    chck (a.acos(a.one)  == a.zero)                                "{a.name}: acos"
+    chck (a.atan(a.zero) == a.zero)                                "{a.name}: atan"
+
+    # hyperbolicus
+    chck (a.sinh(a.zero)  == a.zero)                               "{a.name}: sinh"
+    chck (a.cosh(a.zero)  == a.one)                                "{a.name}: cosh"
+    chck (a.tanh(a.zero)  == a.zero)                               "{a.name}: tanh"
+    chck (a.asinh(a.zero) == a.zero)                               "{a.name}: asinh"
+    chck (a.acosh(a.one)  == a.zero)                               "{a.name}: acosh"
+    chck (a.atanh(a.zero) == a.zero)                               "{a.name}: atanh"
 
   generic_tests f32s.zero
   generic_tests f64s.zero

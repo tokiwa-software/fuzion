@@ -317,8 +317,37 @@ class Intrinsics extends ANY
       case "f64s.min"            : return CExpr.ident("DBL_MIN").ret();
       case "f64s.max"            : return CExpr.ident("DBL_MAX").ret();
       case "f64s.epsilon"        : return CExpr.ident("DBL_EPSILON").ret();
-      case "f32s.squareRoot"     : return CExpr.call("sqrtf", new List<>(A0)).ret();
-      case "f64s.squareRoot"     : return CExpr.call("sqrt", new List<>(A0)).ret();
+      case "f32s.squareRoot"     : return CExpr.call("sqrtf",  new List<>(A0)).ret();
+      case "f64s.squareRoot"     : return CExpr.call("sqrt",   new List<>(A0)).ret();
+      case "f32s.exp"            : return CExpr.call("expf",   new List<>(A0)).ret();
+      case "f64s.exp"            : return CExpr.call("exp",    new List<>(A0)).ret();
+      case "f32s.log"            : return CExpr.call("logf",   new List<>(A0)).ret();
+      case "f64s.log"            : return CExpr.call("log",    new List<>(A0)).ret();
+      case "f32s.sin"            : return CExpr.call("sinf",   new List<>(A0)).ret();
+      case "f64s.sin"            : return CExpr.call("sin",    new List<>(A0)).ret();
+      case "f32s.cos"            : return CExpr.call("cosf",   new List<>(A0)).ret();
+      case "f64s.cos"            : return CExpr.call("cos",    new List<>(A0)).ret();
+      case "f32s.tan"            : return CExpr.call("tanf",   new List<>(A0)).ret();
+      case "f64s.tan"            : return CExpr.call("tan",    new List<>(A0)).ret();
+      case "f32s.asin"           : return CExpr.call("asinhf", new List<>(A0)).ret();
+      case "f64s.asin"           : return CExpr.call("asinh",  new List<>(A0)).ret();
+      case "f32s.acos"           : return CExpr.call("acoshf", new List<>(A0)).ret();
+      case "f64s.acos"           : return CExpr.call("acosh",  new List<>(A0)).ret();
+      case "f32s.atan"           : return CExpr.call("atanhf", new List<>(A0)).ret();
+      case "f64s.atan"           : return CExpr.call("atanh",  new List<>(A0)).ret();
+      case "f32s.sinh"           : return CExpr.call("sinhf",  new List<>(A0)).ret();
+      case "f64s.sinh"           : return CExpr.call("sinh",   new List<>(A0)).ret();
+      case "f32s.cosh"           : return CExpr.call("coshf",  new List<>(A0)).ret();
+      case "f64s.cosh"           : return CExpr.call("cosh",   new List<>(A0)).ret();
+      case "f32s.tanh"           : return CExpr.call("tanhf",  new List<>(A0)).ret();
+      case "f64s.tanh"           : return CExpr.call("tanh",   new List<>(A0)).ret();
+      case "f32s.asinh"          : return CExpr.call("asinhf", new List<>(A0)).ret();
+      case "f64s.asinh"          : return CExpr.call("asinh",  new List<>(A0)).ret();
+      case "f32s.acosh"          : return CExpr.call("acoshf", new List<>(A0)).ret();
+      case "f64s.acosh"          : return CExpr.call("acosh",  new List<>(A0)).ret();
+      case "f32s.atanh"          : return CExpr.call("atanhf", new List<>(A0)).ret();
+      case "f64s.atanh"          : return CExpr.call("atanh",  new List<>(A0)).ret();
+
       case "Object.hashCode"     :
         {
           var hc = c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or))

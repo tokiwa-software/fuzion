@@ -84,3 +84,29 @@ floats<T: float<T>> : numerics<T> is
   squareRoot(val T) T is abstract
   # square root
   sqrt(val T) => squareRoot val
+
+
+  # exponentiation, logarithm
+
+  exp (val T) T is abstract
+  log (val T) T is abstract
+
+
+  # trigonometric
+
+  sin (val T) T is abstract
+  cos (val T) T is abstract
+  tan (val T) T is abstract
+  asin(val T) T is abstract
+  acos(val T) T is abstract
+  atan(val T) T is abstract
+
+
+  # hyperbolicus
+
+  sinh (val T) T is abstract
+  cosh (val T) T is abstract
+  tanh (val T) T is abstract
+  asinh(val T) T is abstract
+  acosh(val T) T is abstract
+  atanh(val T) T is abstract
