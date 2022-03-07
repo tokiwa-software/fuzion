@@ -29,7 +29,7 @@
 # float is the abstract parent of concrete floating point features such as
 # f32 or f64.
 #
-float<T: float<T>> : numeric<T>,/*NYI hasInterval<T>, */floats<T> is
+float<T: float<T>> : numeric<T>, hasInterval<T>, floats<T> is
 
 
   # preconditions for basic operations: true if the operation's result is
@@ -44,3 +44,5 @@ float<T: float<T>> : numeric<T>,/*NYI hasInterval<T>, */floats<T> is
   redef infix /! (other T) bool is true
   redef infix %! (other T) bool is true
   redef infix **!(other T) bool is true
+
+  redef max => floats<T>.max

@@ -29,7 +29,7 @@
 # f64 are binary64-numbers as defined in the IEEE 754-2019 standard, see
 # https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
 #
-f64(val f64) : float<f64>,/*NYI  hasInterval<f64>, */f64s is
+f64(val f64) : float<f64>, hasInterval<f64>, f64s is
 
   redef thiz        => f64.this.val
   redef orderedThis => f64.this.val
@@ -53,6 +53,7 @@ f64(val f64) : float<f64>,/*NYI  hasInterval<f64>, */f64s is
   redef infix >  (other f64) bool is intrinsic
   redef infix >= (other f64) bool is intrinsic
 
+  redef max => f64s.max
 
   # conversion
   # might be better to have ppl explicitly use round, ceil, floor etc.
