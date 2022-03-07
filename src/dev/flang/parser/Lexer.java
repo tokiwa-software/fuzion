@@ -1369,7 +1369,7 @@ PLUSMINUS   : "+"
         }
       else
         {
-          return _mantissa.value();
+          return _mantissa.absValue();
         }
     }
 
@@ -1393,7 +1393,7 @@ PLUSMINUS   : "+"
     }
     BigInteger exponent()
     {
-      return _hasError || _exponent == null ? BigInteger.valueOf(0) : _exponent.value();
+      return _hasError || _exponent == null ? BigInteger.valueOf(0) : _exponent.signedValue();
     }
     int exponentBase()
     {
@@ -1686,16 +1686,23 @@ HEX_TAIL    : "." HEX_DIGITS
     }
 
 
-
+    /**
+     * The value, ignoring '-' and ingoring decimal '.' position (i.e., value of '123.456' is
+     * 123456).
+     */
+    BigInteger absValue()
+    {
+      return new BigInteger(_digits, _base._base);
+    }
 
     /**
      * The value, ignoring decimal '.' position (i.e., value of '123.456' is
      * 123456).
      */
-    BigInteger value()
+    BigInteger signedValue()
     {
-      var v = new BigInteger(_digits, _base._base);
-      return _negative ? v.negate() : v;
+      var res = absValue();
+      return _negative ? res.negate() : res;
     }
 
   }

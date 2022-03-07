@@ -337,9 +337,17 @@ public class NumLiteral extends Constant
   {
     var o = _originalString;
     var s = o.startsWith("-") ? o.substring(1) : "-" + o;
-    return new NumLiteral(pos, s, _base, _mantissa.negate(), _exponent2, _exponent5);
+    return new NumLiteral(pos, s, _base, _mantissa, _exponent2, _exponent5);
   }
 
+
+  /**
+   * Is this negative?
+   */
+  private boolean signBit()
+  {
+    return _originalString.startsWith("-");
+  }
 
   /**
    * type returns the type of this expression or Types.t_ERROR if the type is
@@ -418,7 +426,7 @@ public class NumLiteral extends Constant
             v = v.multiply(B5);
             e5 = e5 - 1;
           }
-        return v;
+        return signBit() ? v.negate() : v;
       }
   }
 
@@ -435,12 +443,11 @@ public class NumLiteral extends Constant
 
     var res = new byte[ct._bytes];
     var m = _mantissa;
-    var s = m.signum();
-    if (s != 0)
+    var f = B0;
+    if (m.signum() != 0)
       {
         var e5 = _exponent5;
         var e2 = _exponent2;
-        m = s > 0 ? m : m.negate();
 
         // incorporate e5 into m/e2:
         if (e5 > 0)
@@ -518,19 +525,19 @@ public class NumLiteral extends Constant
               (m.and(high1).signum() != 0);
             m = m.andNot(high1);
           }
-        var f = BigInteger.valueOf((2-s)/2) .shiftLeft(ct._eBits  )
-          .or(  BigInteger.valueOf(e2     )).shiftLeft(ct._mBits-1)
+        f = (signBit() ? B1 : B0)    .shiftLeft(ct._eBits  )
+          .or(BigInteger.valueOf(e2)).shiftLeft(ct._mBits-1)
           .or(m);
-        var b = f.toByteArray();
-        var l0 = 0L;
-        var bl = Math.min(b.length, ct._bytes);
-        var bs = Math.max(0, b.length - ct._bytes);
-        for (var i = 0; i < bl; i++)
-          {
-            var bv = b[i+bs];
-            l0 = l0 | (((long) bv & 0xff) << ((bl-1-i)*8));
-            res[bl-1-i] = bv;
-          }
+      }
+    var b = f.toByteArray();
+    var l0 = 0L;
+    var bl = Math.min(b.length, ct._bytes);
+    var bs = Math.max(0, b.length - ct._bytes);
+    for (var i = 0; i < bl; i++)
+      {
+        var bv = b[i+bs];
+        l0 = l0 | (((long) bv & 0xff) << ((bl-1-i)*8));
+        res[bl-1-i] = bv;
       }
     return res;
   }
@@ -743,7 +750,7 @@ public class NumLiteral extends Constant
           {
             if (ix >= b.length)
               {
-                result[ix] = (byte) (_mantissa.signum() < 0 ? 0xff : 0x00);
+                result[ix] = (byte) (i.signum() < 0 ? 0xff : 0x00);
               }
             else
               {
