@@ -100,6 +100,16 @@ floating_point_numbers is
   generic_tests f32s.zero
   generic_tests f64s.zero
 
+  chck (f32s.min == 0x1P-126)                                      "f32s: min"
+  chck (f32s.max == (f32 0x1P127 * (f32 2.0 - f32 0x1P-23)))       "f32s: max"
+  chck (f32s.minExp == -126)                                       "f32s: minExp"
+  chck (f32s.maxExp ==  127)                                       "f32s: maxExp"
+
+  chck (f64s.min == 0x1P-1022)                                     "f64s: min"
+  chck (f64s.max == (f64 0x1P1023 * (f64 2.0 - f64 0x1P-52)))      "f64s: max"
+  chck (f64s.minExp == -1022)                                      "f64s: minExp"
+  chck (f64s.maxExp ==  1023)                                      "f64s: maxExp"
+
   # power
   chck (f32 10.0 ** f32 2.0 == f32 100.0)                         "f32: 10 to the power 2 equals 100"
   chck (10.0 ** 2.0 == 100.0)                                     "f64: 10 to the power 2 equals 100"
