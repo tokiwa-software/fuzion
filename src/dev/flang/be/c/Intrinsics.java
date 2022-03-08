@@ -307,13 +307,18 @@ class Intrinsics extends ANY
           return CStmnt.seq(c.floatToConstString(outer, res),
             res.castTo("fzT__Rstring*").ret());
         }
-      case "f32s.minExp"         : return CExpr.ident("FLT_MIN_EXP").ret();
-      case "f32s.maxExp"         : return CExpr.ident("FLT_MAX_EXP").ret();
+      /* The C standard library follows the convention that floating-point numbers x × 2exp have 0.5 ≤ x < 1,
+       * while the IEEE 754 standard text uses the convention 1 ≤ x < 2.
+       * This convention in C is not just used for DBL_MAX_EXP, but also for functions such as frexp.
+       * source: https://github.com/rust-lang/rust/issues/88734
+       */
+      case "f32s.minExp"         : return CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret();
+      case "f32s.maxExp"         : return CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret();
       case "f32s.min"            : return CExpr.ident("FLT_MIN").ret();
       case "f32s.max"            : return CExpr.ident("FLT_MAX").ret();
       case "f32s.epsilon"        : return CExpr.ident("FLT_EPSILON").ret();
-      case "f64s.minExp"         : return CExpr.ident("DBL_MIN_EXP").ret();
-      case "f64s.maxExp"         : return CExpr.ident("DBL_MAX_EXP").ret();
+      case "f64s.minExp"         : return CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret();
+      case "f64s.maxExp"         : return CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret();
       case "f64s.min"            : return CExpr.ident("DBL_MIN").ret();
       case "f64s.max"            : return CExpr.ident("DBL_MAX").ret();
       case "f64s.epsilon"        : return CExpr.ident("DBL_EPSILON").ret();

@@ -49,8 +49,8 @@ f32s : floats<f32> is
 
   from_i64(v i64) f32 is intrinsic
 
-  redef minExp f32 is intrinsic
-  redef maxExp f32 is intrinsic
+  redef minExp i32 is intrinsic
+  redef maxExp i32 is intrinsic
   redef min f32 is intrinsic
   redef max f32 is intrinsic
   redef epsilon f32 is intrinsic

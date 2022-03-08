@@ -55,8 +55,8 @@ f64s : floats<f64> is
   redef π => 3.14159265358979323846
 
 
-  redef minExp f64 is intrinsic
-  redef maxExp f64 is intrinsic
+  redef minExp i32 is intrinsic
+  redef maxExp i32 is intrinsic
   redef min f64 is intrinsic
   redef max f64 is intrinsic
   redef epsilon f64 is intrinsic

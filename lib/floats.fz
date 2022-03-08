@@ -74,8 +74,8 @@ floats<T: float<T>> : numerics<T> is
   # pi 3.14...
   π T is abstract
 
-  minExp T is abstract
-  maxExp T is abstract
+  minExp i32 is abstract
+  maxExp i32 is abstract
   min T is abstract
   max T is abstract
   epsilon T is abstract
