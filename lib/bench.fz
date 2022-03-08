@@ -23,18 +23,16 @@
 #
 # -----------------------------------------------------------------------
 
-# benchmark f for milli_seconds
+# benchmark f for nano_seconds
 # returns: iterations per second
 #
-bench<R>(f Function<R>, milli_seconds i32) f64 is
-  nano_seconds := milli_seconds.as_u64 * 1E6
-  warm_up_time := u64 1E9
+bench<R>(f Function<R>, nano_seconds u64, warm_up_nano_seconds u64) f64 is
   start := fuzion.std.nano_time
 
   warm_up =>
     do
       f.call
-    until fuzion.std.nano_time - start > warm_up_time
+    until fuzion.std.nano_time - start > warm_up_nano_seconds
 
   warm_up
 
@@ -46,3 +44,9 @@ bench<R>(f Function<R>, milli_seconds i32) f64 is
     iter
 
   (iterations.as_f64 / (nano_seconds.as_f64 * 1E-9))
+
+# benchmark f for milli_seconds (1s warm up)
+# returns: iterations per second
+#
+bench<R>(f Function<R>, milli_seconds i32) f64 is
+  bench f (milli_seconds.as_u64 * 1E6) (u64 1E9)
