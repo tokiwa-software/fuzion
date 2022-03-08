@@ -226,6 +226,23 @@ public class Types extends ANY
     Resolved(Resolution res, AbstractFeature universe)
     {
       this(res._module, (name, ref) -> Type.type(res, ref, name, universe), universe);
+      t_i8         .featureOfType().resolveTypes(res);
+      t_i16        .featureOfType().resolveTypes(res);
+      t_i32        .featureOfType().resolveTypes(res);
+      t_i64        .featureOfType().resolveTypes(res);
+      t_u8         .featureOfType().resolveTypes(res);
+      t_u16        .featureOfType().resolveTypes(res);
+      t_u32        .featureOfType().resolveTypes(res);
+      t_u64        .featureOfType().resolveTypes(res);
+      t_f32        .featureOfType().resolveTypes(res);
+      t_f64        .featureOfType().resolveTypes(res);
+      t_bool       .featureOfType().resolveTypes(res);
+      t_sys        .featureOfType().resolveTypes(res);
+      t_string     .featureOfType().resolveTypes(res);
+      t_conststring.featureOfType().resolveTypes(res);
+      t_object     .featureOfType().resolveTypes(res);
+      t_unit       .featureOfType().resolveTypes(res);
+      t_void       .featureOfType().resolveTypes(res);
     }
   }
 

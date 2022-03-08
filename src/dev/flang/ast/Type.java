@@ -209,8 +209,8 @@ public class Type extends AbstractType
     this((HasSourcePosition) t, t.name, g, o, t.feature, t._refOrVal);
 
     if (PRECONDITIONS) require
-      ( (t.generics() instanceof FormalGenerics.AsActuals) || t.generics().size() == g.size(),
-       !(t.generics() instanceof FormalGenerics.AsActuals) || ((FormalGenerics.AsActuals)t.generics()).sizeMatches(g),
+      (Errors.count() > 0 ||  (t.generics() instanceof FormalGenerics.AsActuals) || t.generics().size() == g.size(),
+       Errors.count() > 0 || !(t.generics() instanceof FormalGenerics.AsActuals) || ((FormalGenerics.AsActuals)t.generics()).sizeMatches(g),
         t == Types.t_ERROR || (t.outer() == null) == (o == null));
 
     checkedForGeneric = t.checkedForGeneric();
