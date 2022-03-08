@@ -538,6 +538,7 @@ public class Intrinsics extends ANY
     else if (n.equals("u32.low8bits"    )) { result = (args) -> new u8Value  (       0xff & (                           args.get(0).u32Value())); }
     else if (n.equals("u32.low16bits"   )) { result = (args) -> new u16Value (     0xffff & (                           args.get(0).u32Value())); }
     else if (n.equals("u32.castTo_i32"  )) { result = (args) -> new i32Value (              (                           args.get(0).u32Value())); }
+    else if (n.equals("u32.castTo_f32"  )) { result = (args) -> new f32Value (              Float.intBitsToFloat(       args.get(0).u32Value())); }
     else if (n.equals("u32.as_f64"      )) { result = (args) -> new f64Value ((double)      (                           args.get(0).u32Value())); }
     else if (n.equals("u32.prefix -°"   )) { result = (args) -> new u32Value (              (                       -   args.get(0).u32Value())); }
     else if (n.equals("u32.infix +°"    )) { result = (args) -> new u32Value (              (args.get(0).u32Value() +   args.get(1).u32Value())); }
@@ -560,6 +561,7 @@ public class Intrinsics extends ANY
     else if (n.equals("u64.low16bits"   )) { result = (args) -> new u16Value (     0xffff & ((int)                      args.get(0).u64Value())); }
     else if (n.equals("u64.low32bits"   )) { result = (args) -> new u32Value ((int)         (                           args.get(0).u64Value())); }
     else if (n.equals("u64.castTo_i64"  )) { result = (args) -> new i64Value (              (                           args.get(0).u64Value())); }
+    else if (n.equals("u64.castTo_f64"  )) { result = (args) -> new f64Value (              Double.longBitsToDouble(    args.get(0).u64Value())); }
     else if (n.equals("u64.as_f64"      )) { result = (args) -> new f64Value (2.0 *        ((args.get(0).u64Value()>>>1) & 0x7fffffffffffffffL)); }
     else if (n.equals("u64.prefix -°"   )) { result = (args) -> new u64Value (              (                       -   args.get(0).u64Value())); }
     else if (n.equals("u64.infix +°"    )) { result = (args) -> new u64Value (              (args.get(0).u64Value() +   args.get(1).u64Value())); }
