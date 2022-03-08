@@ -36,5 +36,5 @@ fuzion.std is
     say "*** panic: $msg"
     exit 1
 
-  # no guaranty for precision nor resolution
+  # no guaranty can be given for precision nor resolution
   nano_time u64 is intrinsic
