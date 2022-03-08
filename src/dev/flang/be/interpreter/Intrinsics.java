@@ -595,7 +595,6 @@ public class Intrinsics extends ANY
     else if (n.equals("f32.infix >="    )) { result = (args) -> new boolValue(                (args.get(0).f32Value() >= args.get(1).f32Value())); }
     else if (n.equals("f32.castTo_u32"  )) { result = (args) -> new u32Value (    Float.floatToIntBits(                  args.get(0).f32Value())); }
     else if (n.equals("f32.asString"    )) { result = (args) -> Interpreter.value(Float.toString      (                  args.get(0).f32Value())); }
-    else if (n.equals("f32s.squareRoot" )) { result = (args) -> new f32Value ((float)Math.sqrt(                  (double)args.get(1).f32Value())); }
     else if (n.equals("f64.prefix -"    )) { result = (args) -> new f64Value (                (                       -  args.get(0).f64Value())); }
     else if (n.equals("f64.infix +"     )) { result = (args) -> new f64Value (                (args.get(0).f64Value() +  args.get(1).f64Value())); }
     else if (n.equals("f64.infix -"     )) { result = (args) -> new f64Value (                (args.get(0).f64Value() -  args.get(1).f64Value())); }
@@ -611,7 +610,46 @@ public class Intrinsics extends ANY
     else if (n.equals("f64.infix >="    )) { result = (args) -> new boolValue(                (args.get(0).f64Value() >= args.get(1).f64Value())); }
     else if (n.equals("f64.castTo_u64"  )) { result = (args) -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())); }
     else if (n.equals("f64.asString"    )) { result = (args) -> Interpreter.value(Double.toString       (                args.get(0).f64Value())); }
-    else if (n.equals("f64s.squareRoot" )) { result = (args) -> new f64Value (        Math.sqrt(                         args.get(1).f64Value())); }
+    else if (n.equals("f32s.acos"       )) { result = (args) -> new f32Value ((float)           Math.acos(               args.get(1).f32Value())); }
+    // else if (n.equals("f32s.acosh"      )) { result = (args) -> new f32Value ((float)           Math.acosh(              args.get(1).f32Value())); }
+    else if (n.equals("f32s.asin"       )) { result = (args) -> new f32Value ((float)           Math.asin(               args.get(1).f32Value())); }
+    // else if (n.equals("f32s.asinh"      )) { result = (args) -> new f32Value ((float)           Math.asinh(              args.get(1).f32Value())); }
+    else if (n.equals("f32s.atan"       )) { result = (args) -> new f32Value ((float)           Math.atan(               args.get(1).f32Value())); }
+    // else if (n.equals("f32s.atanh"      )) { result = (args) -> new f32Value ((float)           Math.atanh(              args.get(1).f32Value())); }
+    else if (n.equals("f32s.cos"        )) { result = (args) -> new f32Value ((float)           Math.cos(                args.get(1).f32Value())); }
+    else if (n.equals("f32s.cosh"       )) { result = (args) -> new f32Value ((float)           Math.cosh(               args.get(1).f32Value())); }
+    else if (n.equals("f32s.epsilon"    )) { result = (args) -> new f32Value (                  Math.ulp(                (float)1));               }
+    else if (n.equals("f32s.exp"        )) { result = (args) -> new f32Value ((float)           Math.exp(                args.get(1).f32Value())); }
+    else if (n.equals("f32s.log"        )) { result = (args) -> new f32Value ((float)           Math.log(                args.get(1).f32Value())); }
+    else if (n.equals("f32s.max"        )) { result = (args) -> new f32Value (                                           Float.MAX_VALUE);         }
+    else if (n.equals("f32s.maxExp"     )) { result = (args) -> new i32Value (                                           Float.MAX_EXPONENT);      }
+    else if (n.equals("f32s.min"        )) { result = (args) -> new f32Value (                                           Float.MIN_NORMAL);        }
+    else if (n.equals("f32s.minExp"     )) { result = (args) -> new i32Value (                                           Float.MIN_EXPONENT);      }
+    else if (n.equals("f32s.sin"        )) { result = (args) -> new f32Value ((float)          Math.sin(                 args.get(1).f32Value())); }
+    else if (n.equals("f32s.sinh"       )) { result = (args) -> new f32Value ((float)          Math.sinh(                args.get(1).f32Value())); }
+    else if (n.equals("f32s.squareRoot" )) { result = (args) -> new f32Value ((float)          Math.sqrt(        (double)args.get(1).f32Value())); }
+    else if (n.equals("f32s.tan"        )) { result = (args) -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())); }
+    else if (n.equals("f32s.tanh"       )) { result = (args) -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())); }
+    else if (n.equals("f64s.acos"       )) { result = (args) -> new f64Value (                 Math.acos(                args.get(1).f64Value())); }
+    // else if (n.equals("f64s.acosh"      )) { result = (args) -> new f64Value (                 Math.acosh(               args.get(1).f64Value())); }
+    else if (n.equals("f64s.asin"       )) { result = (args) -> new f64Value (                 Math.asin(                args.get(1).f64Value())); }
+    // else if (n.equals("f64s.asinh"      )) { result = (args) -> new f64Value (                 Math.asinh(               args.get(1).f64Value())); }
+    else if (n.equals("f64s.atan"       )) { result = (args) -> new f64Value (                 Math.atan(                args.get(1).f64Value())); }
+    // else if (n.equals("f64s.atanh"      )) { result = (args) -> new f64Value (                 Math.atanh(               args.get(1).f64Value())); }
+    else if (n.equals("f64s.cos"        )) { result = (args) -> new f64Value (                 Math.cos(                 args.get(1).f64Value())); }
+    else if (n.equals("f64s.cosh"       )) { result = (args) -> new f64Value (                 Math.cosh(                args.get(1).f64Value())); }
+    else if (n.equals("f64s.epsilon"    )) { result = (args) -> new f64Value (                 Math.ulp(                 (double)1));              }
+    else if (n.equals("f64s.exp"        )) { result = (args) -> new f64Value (                 Math.exp(                 args.get(1).f64Value())); }
+    else if (n.equals("f64s.log"        )) { result = (args) -> new f64Value (                 Math.log(                 args.get(1).f64Value())); }
+    else if (n.equals("f64s.max"        )) { result = (args) -> new f64Value (                                               Double.MAX_VALUE);    }
+    else if (n.equals("f64s.maxExp"     )) { result = (args) -> new i32Value (                                               Double.MAX_EXPONENT); }
+    else if (n.equals("f64s.min"        )) { result = (args) -> new f64Value (                                               Double.MIN_NORMAL);   }
+    else if (n.equals("f64s.minExp"     )) { result = (args) -> new i32Value (                                               Double.MIN_EXPONENT); }
+    else if (n.equals("f64s.sin"        )) { result = (args) -> new f64Value (                 Math.sin(                 args.get(1).f64Value())); }
+    else if (n.equals("f64s.sinh"       )) { result = (args) -> new f64Value (                 Math.sinh(                args.get(1).f64Value())); }
+    else if (n.equals("f64s.squareRoot" )) { result = (args) -> new f64Value (                 Math.sqrt(                args.get(1).f64Value())); }
+    else if (n.equals("f64s.tan"        )) { result = (args) -> new f64Value (                 Math.tan(                 args.get(1).f64Value())); }
+    else if (n.equals("f64s.tanh"       )) { result = (args) -> new f64Value (                 Math.tan(                 args.get(1).f64Value())); }
     else if (n.equals("Object.hashCode" )) { result = (args) -> new i32Value (args.get(0).toString().hashCode()); }
     else if (n.equals("Object.asString" )) { result = (args) -> Interpreter.value(args.get(0).toString());
       // NYI: This could be more useful by giving the object's class, an id, public fields, etc.
