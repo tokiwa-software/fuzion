@@ -507,16 +507,32 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 run_tests: run_tests_int run_tests_c
 
 # phony target to run Fuzion tests using interpreter and report number of failures
-.PHONY .SILENT: run_tests_int
+.PHONY .SILENT .IGNORE: run_tests_int
 run_tests_int: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(BUILD_DIR)/tests
 	echo -n "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
-.PHONY .SILENT: run_tests_c
+.PHONY .SILENT .IGNORE: run_tests_c
 run_tests_c: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c
+
+# phony target to run Fuzion tests and report number of failures
+.PHONY: run_tests_parallel
+run_tests_parallel: run_tests_int_parallel run_tests_c_parallel
+
+# phony target to run Fuzion tests using interpreter and report number of failures
+.PHONY .SILENT: run_tests_int_parallel
+run_tests_int_parallel: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(BUILD_DIR)/tests
+	echo -n "testing interpreter: "
+	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) int
+
+# phony target to run Fuzion tests using c backend and report number of failures
+.PHONY .SILENT: run_tests_c_parallel
+run_tests_c_parallel: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(BUILD_DIR)/tests
+	echo -n "testing C backend: "; \
+	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) c
 
 .PHONY: clean
 clean:

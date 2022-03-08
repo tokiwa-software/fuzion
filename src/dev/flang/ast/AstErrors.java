@@ -1352,6 +1352,13 @@ public class AstErrors extends ANY
           "Incompatible result types in different branches:\n" +
           typesMsg);
   }
+
+  static void lossOfPrecision(SourcePosition pos, String _originalString, int _base, AbstractType type_)
+  {
+    error(pos,
+      "Loss of precision for: " + _originalString,
+      "Expected number given in base " + _base + " to fit into " + type_ + " without loss of precision.");
+  }
 }
 
 /* end of file */

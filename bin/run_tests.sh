@@ -46,7 +46,16 @@ for test in $TESTS; do
           || (echo -n "#" && echo "$test: failed" >>"$BUILD_DIR"/run_tests.results)
 fi
 done
-echo -n " $(cat "$BUILD_DIR"/run_tests.results | grep ok$      | wc -l)/$(echo "$TESTS" | wc -w) tests passed,"
-echo -n " $(cat "$BUILD_DIR"/run_tests.results | grep skipped$ | wc -l) skipped,"
-echo    " $(cat "$BUILD_DIR"/run_tests.results | grep failed$  | wc -l) failed."
+
+OK=$(     cat "$BUILD_DIR"/run_tests.results | grep --count ok$     )
+SKIPPED=$(cat "$BUILD_DIR"/run_tests.results | grep --count skipped$)
+FAILED=$( cat "$BUILD_DIR"/run_tests.results | grep --count failed$ )
+
+echo -n " $OK/$(echo "$TESTS" | wc -w) tests passed,"
+echo -n " $SKIPPED skipped,"
+echo    " $FAILED failed."
 cat "$BUILD_DIR"/run_tests.results | grep failed$ || echo -n
+
+if [ "$FAILED" -ge 1 ]; then
+  exit 1;
+fi

@@ -563,7 +563,12 @@ public class NumLiteral extends Constant
     else if (sh < 0)
       {
         var roundingBit = B1.shiftLeft(-sh-1);
-        return v.add(roundingBit).shiftRight(-sh);
+        var result = v.add(roundingBit).shiftRight(-sh);
+        if (_exponent5 == 0 && !result.shiftLeft(-sh).equals(v))
+          {
+            AstErrors.lossOfPrecision(pos(), _originalString, _base, type_);
+          }
+        return result;
       }
     else
       {
