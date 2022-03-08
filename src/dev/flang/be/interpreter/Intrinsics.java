@@ -600,7 +600,7 @@ public class Intrinsics extends ANY
     else if (n.equals("f64.infix *"     )) { result = (args) -> new f64Value (                (args.get(0).f64Value() *  args.get(1).f64Value())); }
     else if (n.equals("f64.infix /"     )) { result = (args) -> new f64Value (                (args.get(0).f64Value() /  args.get(1).f64Value())); }
     else if (n.equals("f64.infix %"     )) { result = (args) -> new f64Value (                (args.get(0).f64Value() %  args.get(1).f64Value())); }
-    else if (n.equals("f64.infix **"    )) { result = (args) -> new f64Value ((float) Math.pow(args.get(0).f64Value(),   args.get(1).f64Value())); }
+    else if (n.equals("f64.infix **"    )) { result = (args) -> new f64Value (        Math.pow(args.get(0).f64Value(),   args.get(1).f64Value())); }
     else if (n.equals("f64.infix =="    )) { result = (args) -> new boolValue(                (args.get(0).f64Value() == args.get(1).f64Value())); }
     else if (n.equals("f64.infix !="    )) { result = (args) -> new boolValue(                (args.get(0).f64Value() != args.get(1).f64Value())); }
     else if (n.equals("f64.infix <"     )) { result = (args) -> new boolValue(                (args.get(0).f64Value() <  args.get(1).f64Value())); }
