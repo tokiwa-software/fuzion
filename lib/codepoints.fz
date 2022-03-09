@@ -36,6 +36,18 @@ codepoints is
   #
   ascii => u32 0 .. 0x7f
 
+  # 0 to 9
+  ascii_digit => u32 0x30 .. 0x39
+
+  # A to Z (uppercase only)
+  A_to_Z => u32 0x41 .. 0x5A
+
+  # a to z (lowercase only)
+  a_to_z => u32 0x61 .. 0x7A
+
+  # a-z and A-Z
+  # https://en.wikipedia.org/wiki/ISO_basic_Latin_alphabet
+  latin_alphabet => A_to_Z.concatSequences a_to_z # NYI It would be better to use union of those two sets
 
   # range of values encoded in one byte
   #
