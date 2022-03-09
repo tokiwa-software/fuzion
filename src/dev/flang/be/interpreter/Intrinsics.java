@@ -594,6 +594,7 @@ public class Intrinsics extends ANY
     else if (n.equals("f32.infix >"     )) { result = (args) -> new boolValue(                (args.get(0).f32Value() >  args.get(1).f32Value())); }
     else if (n.equals("f32.infix >="    )) { result = (args) -> new boolValue(                (args.get(0).f32Value() >= args.get(1).f32Value())); }
     else if (n.equals("f32.castTo_u32"  )) { result = (args) -> new u32Value (    Float.floatToIntBits(                  args.get(0).f32Value())); }
+    else if (n.equals("f32.as_f64"      )) { result = (args) -> new f64Value (                                           args.get(0).f32Value()) ; }
     else if (n.equals("f32.asString"    )) { result = (args) -> Interpreter.value(Float.toString      (                  args.get(0).f32Value())); }
     else if (n.equals("f64.prefix -"    )) { result = (args) -> new f64Value (                (                       -  args.get(0).f64Value())); }
     else if (n.equals("f64.infix +"     )) { result = (args) -> new f64Value (                (args.get(0).f64Value() +  args.get(1).f64Value())); }

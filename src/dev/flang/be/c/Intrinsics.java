@@ -300,6 +300,7 @@ class Intrinsics extends ANY
       case "f64.infix >="        : return outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "f32.castTo_u32"      : return outer.adrOf().castTo("fzT_1u32*").deref().ret();
       case "f64.castTo_u64"      : return outer.adrOf().castTo("fzT_1u64*").deref().ret();
+      case "f32.as_f64"          : return outer.castTo("fzT_1f64").ret();
       case "f32.asString"        :
       case "f64.asString"        :
         {
