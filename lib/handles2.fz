@@ -1,0 +1,112 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature handles
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# handles2 provide a means to create handles that refer to update-able
+# cells.
+#
+# This uses mutable field for better performance.
+#
+# handles2 is a one-way state monad. It provides features to create several
+# handles that refer to modifiable value and features to 'get', 'put' or
+# 'update' this value.
+#
+# NYI: Experimental, must eventually be properly integrated in one-way monad
+# handling.
+#
+private handles2<X>(
+  # the inner value of this monad
+  v X)
+is
+
+  # a one-way feature to create a new handle and update the monad
+  # in the current environment
+  #
+  #
+  new<T> (
+    # initial value refered to by the new handle
+    w T
+    ) /* one way! */
+   =>
+    ((handles2 v), handle2<T> w)
+
+
+  # a one-way feature to read the value refered to by a given handle
+  #
+  get<T> (
+    # a handle created by 'new'
+    h handle2<T>
+    ) /* one way! */
+   =>
+    ((handles2 v), h.x)
+
+
+  # a one-way feature to write the value refered to by a given handle
+  #
+  put<T> (
+    # a handle created by 'new'
+    h handle2<T>,
+
+    # the new value to be stored with 'h'
+    w T) /* one way! */
+   =>
+    h.put w
+    handles2 unit
+
+
+  # a one-way feature to read and update the value refered to by a
+  # given handle
+  #
+  update<T> (
+    # a handle created by 'new'
+    h handle2<T>,
+
+    # function calculcating the new value from the old value
+    f T->T
+    ) /* one way! */
+   =>
+    h.put (f h.x)
+    handles2 unit
+
+
+  infix >>= (f X -> handles2<X>) => bind<X> f
+
+  bind <B> (f X -> handles2<B>) handles2<B> is
+    handles2<B> (f v).v
+
+  return<B> (w B) => handles2 w
+
+
+# short-hand for creating an empty set of handles of given type.
+#
+handles2 => handles2<unit> unit
+
+# handle value created by 'handles.new'
+#
+private handle2<T> (
+  private x T
+  ) ref
+is
+  private put(new_x T) is
+    set x := new_x
