@@ -136,6 +136,11 @@ numeric<T : numeric<T>> : hasHash<T>, ordered<T>, numerics<T> is
 
   # is this part of given set
   #
+  # NYI: infix operators currently always use dynamic binding on the lhs and pass
+  # the rhs as an argument.  If we would support an 'rinfix ∈' that would use the
+  # rhs for dynamic binding and the lhs as argument, we could define '∈' in Set<T>
+  # and it would work for all set types.
+  #
   elementOf(s Set<T>) => s.contains thiz
   infix ∈ (s Set<T>) => numeric.this.elementOf s
 
