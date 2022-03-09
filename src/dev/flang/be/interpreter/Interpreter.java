@@ -59,6 +59,7 @@ import dev.flang.ast.AbstractMatch; // NYI: remove dependency! Use dev.flang.fui
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Box; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Check; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.Env; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -611,6 +612,12 @@ public class Interpreter extends ANY
           }
         result = new Instance(ac);
         setField(Types.resolved.f_array_internalArray, -1, ac, result, sa);
+      }
+
+    else if (s instanceof Env v)
+      {
+        Clazz vClazz = staticClazz.getRuntimeClazz(v._clazzId);
+        result = Intrinsics._onewayMonads_.get(vClazz);
       }
 
     else

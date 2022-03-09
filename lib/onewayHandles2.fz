@@ -1,0 +1,124 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature handles
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# onewayHandles provide a means to create handles that refer to update-able
+# cells using a one-way monad.
+#
+# onewayHandles is a one-way state monad. It provides features to create
+# several handles that refer to modifiable value and features to 'get', 'put'
+# or 'update' this value.
+#
+# This monad uses mutation of field onewayHandle2.val for better performance.
+#
+# NYI: handling of one-way monads is completely experimental
+#
+private onewayHandles2/*<X>*/(
+  # the inner value of this monad
+  # v X
+  rr option<()->unit>,
+  _ bool
+  ) : onewayMonad rr
+is
+
+  # a one-way feature to create a new handle and update the monad
+  # in the current environment
+  #
+  #
+  new<T> (
+    # initial value refered to by the new handle
+    w T
+    ) /* one way! */
+   =>
+    replace
+    onewayHandle2 w
+
+
+  # a one-way feature to read the value refered to by a given handle
+  #
+  get<T> (
+    # a handle created by 'new'
+    h onewayHandle2<T>
+    ) /* one way! */
+   =>
+    replace
+    h.val
+
+
+  # a one-way feature to write the value refered to by a given handle
+  #
+  put<T> (
+    # a handle created by 'new'
+    h onewayHandle2<T>,
+
+    # the new value to be stored with 'h'
+    w T) /* one way! */
+   =>
+    h.put w
+    replace
+
+
+  # a one-way feature to read and update the value refered to by a
+  # given handle
+  #
+  update<T> (
+    # a handle created by 'new'
+    h onewayHandle2<T>,
+
+    # function calculcating the new value from the old value
+    f T->T
+    ) /* one way! */
+   =>
+    h.put (f h.val)
+    replace
+    h.val
+
+
+#  infix >>= (f X -> onewayHandles<X>) => bind<X> f
+
+#  bind <B> (f X -> onewayHandles<B>) onewayHandles<B> is
+#    onewayHandles<B> (f v).v
+
+#  return<B> (w B) => onewayHandles w
+
+
+# short-hand for creating an empty set of handles of given type.
+#
+onewayHandles2(rr ()->unit) =>
+  onewayHandles2 rr true
+  unit
+
+# handle value created by 'handles.new'
+#
+private onewayHandle2<T> (
+  private val T
+  ) ref
+is
+  private put(new_val T) is
+    set val := new_val
+  update(f T->T) =>
+    res := f val
+    put res
+    onewayHandles2.env.replace
+    res

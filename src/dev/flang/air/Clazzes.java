@@ -43,6 +43,7 @@ import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
+import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
@@ -957,6 +958,20 @@ public class Clazzes extends ANY
 
 
   /**
+   * Find all static clazzes for this Env and store them in outerClazz.
+   */
+  public static void findClazzes(Env v, Clazz outerClazz)
+  {
+    Clazz ac = clazz(v, outerClazz);
+    if (v._clazzId < 0)
+      {
+        v._clazzId = getRuntimeClazzId();
+      }
+    outerClazz.setRuntimeClazz(v._clazzId, ac);
+  }
+
+
+  /**
    * Determine the result clazz of an Expr.
    *
    * NYI: Temporary solution, will be replaced by dynamic calls.
@@ -1046,6 +1061,11 @@ public class Clazzes extends ANY
     else if (e instanceof InlineArray ia)
       {
         result = outerClazz.actualClazz(ia.type());
+      }
+
+    else if (e instanceof Env v)
+      {
+        result = outerClazz.actualClazz(v.type());
       }
 
     else

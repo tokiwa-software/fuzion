@@ -78,6 +78,7 @@ public class Lexer extends SourceFile
     t_stringBD,    // '}+-*$'     in "abc{x}+-*$x.".
     t_stringBB,    // '}+-*{'     in "abc{x}+-*{a+b}."
     t_this("this"),
+    t_env("env"),
     t_check("check"),
     t_else("else"),
     t_if("if"),

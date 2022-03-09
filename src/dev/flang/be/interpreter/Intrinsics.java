@@ -39,7 +39,10 @@ import dev.flang.util.Errors;
 import dev.flang.util.List;
 
 import java.lang.reflect.Array;
+
 import java.nio.charset.StandardCharsets;
+
+import java.util.TreeMap;
 
 
 /**
@@ -60,6 +63,17 @@ public class Intrinsics extends ANY
 
 
   /*----------------------------  variables  ----------------------------*/
+
+
+  /*------------------------  static variables  -------------------------*/
+
+
+  /**
+   * Currently installed one-way monads.
+   *
+   * NYI: This should be thread-local eventually.
+   */
+  static TreeMap<Clazz, Value> _onewayMonads_ = new TreeMap<>();
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -611,6 +625,39 @@ public class Intrinsics extends ANY
     else if (n.equals("Object.hashCode" )) { result = (args) -> new i32Value (args.get(0).toString().hashCode()); }
     else if (n.equals("Object.asString" )) { result = (args) -> Interpreter.value(args.get(0).toString());
       // NYI: This could be more useful by giving the object's class, an id, public fields, etc.
+    }
+    else if (n.equals("onewayMonad.install" )) {
+      result = (args) ->
+      {
+        var m = args.get(0);
+        var cl = innerClazz._outer;
+        check
+          (_onewayMonads_.get(cl) == null);
+        _onewayMonads_.put(cl, m);
+        return Value.EMPTY_VALUE;
+      };
+    }
+    else if (n.equals("onewayMonad.remove" )) {
+      result = (args) ->
+      {
+        var m = args.get(0);
+        var cl = innerClazz._outer;
+        check
+        (_onewayMonads_.get(cl) != null);
+        _onewayMonads_.put(cl, null);
+        return Value.EMPTY_VALUE;
+      };
+    }
+    else if (n.equals("onewayMonad.replace" )) {
+      result = (args) ->
+      {
+        var m = args.get(0);
+        var cl = innerClazz._outer;
+        check
+        (_onewayMonads_.get(cl) != null);
+        _onewayMonads_.put(cl, m);
+        return Value.EMPTY_VALUE;
+      };
     }
     else
       {

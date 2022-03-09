@@ -43,6 +43,7 @@ import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Call; // NYI: remove dependency!
 import dev.flang.ast.Consts; // NYI: remove dependency!
+import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
@@ -1285,6 +1286,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
               else if (s instanceof AbstractCall   c) { Clazzes.findClazzes(c, Clazz.this); }
               else if (s instanceof If             i) { Clazzes.findClazzes(i, Clazz.this); }
               else if (s instanceof InlineArray    i) { Clazzes.findClazzes(i, Clazz.this); }
+              else if (s instanceof Env            b) { Clazzes.findClazzes(b, Clazz.this); }
               else if (s instanceof AbstractMatch  m) { Clazzes.findClazzes(m, Clazz.this); }
               else if (s instanceof Tag            t) { Clazzes.findClazzes(t, Clazz.this); }
             }
