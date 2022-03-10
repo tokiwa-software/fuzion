@@ -552,7 +552,7 @@ public class Intrinsics extends ANY
     else if (n.equals("u32.low8bits"    )) { result = (args) -> new u8Value  (       0xff & (                           args.get(0).u32Value())); }
     else if (n.equals("u32.low16bits"   )) { result = (args) -> new u16Value (     0xffff & (                           args.get(0).u32Value())); }
     else if (n.equals("u32.castTo_i32"  )) { result = (args) -> new i32Value (              (                           args.get(0).u32Value())); }
-    else if (n.equals("u32.as_f64"      )) { result = (args) -> new f64Value ((double)      (                           args.get(0).u32Value())); }
+    else if (n.equals("u32.as_f64"      )) { result = (args) -> new f64Value ((double)      Integer.toUnsignedLong(     args.get(0).u32Value())); }
     else if (n.equals("u32.prefix -°"   )) { result = (args) -> new u32Value (              (                       -   args.get(0).u32Value())); }
     else if (n.equals("u32.infix +°"    )) { result = (args) -> new u32Value (              (args.get(0).u32Value() +   args.get(1).u32Value())); }
     else if (n.equals("u32.infix -°"    )) { result = (args) -> new u32Value (              (args.get(0).u32Value() -   args.get(1).u32Value())); }
@@ -574,7 +574,7 @@ public class Intrinsics extends ANY
     else if (n.equals("u64.low16bits"   )) { result = (args) -> new u16Value (     0xffff & ((int)                      args.get(0).u64Value())); }
     else if (n.equals("u64.low32bits"   )) { result = (args) -> new u32Value ((int)         (                           args.get(0).u64Value())); }
     else if (n.equals("u64.castTo_i64"  )) { result = (args) -> new i64Value (              (                           args.get(0).u64Value())); }
-    else if (n.equals("u64.as_f64"      )) { result = (args) -> new f64Value (2.0 *        ((args.get(0).u64Value()>>>1) & 0x7fffffffffffffffL)); }
+    else if (n.equals("u64.as_f64"      )) { result = (args) -> new f64Value (Double.parseDouble(Long.toUnsignedString(args.get(0).u64Value()))); }
     else if (n.equals("u64.prefix -°"   )) { result = (args) -> new u64Value (              (                       -   args.get(0).u64Value())); }
     else if (n.equals("u64.infix +°"    )) { result = (args) -> new u64Value (              (args.get(0).u64Value() +   args.get(1).u64Value())); }
     else if (n.equals("u64.infix -°"    )) { result = (args) -> new u64Value (              (args.get(0).u64Value() -   args.get(1).u64Value())); }
@@ -613,7 +613,7 @@ public class Intrinsics extends ANY
     else if (n.equals("f64.infix *"     )) { result = (args) -> new f64Value (                (args.get(0).f64Value() *  args.get(1).f64Value())); }
     else if (n.equals("f64.infix /"     )) { result = (args) -> new f64Value (                (args.get(0).f64Value() /  args.get(1).f64Value())); }
     else if (n.equals("f64.infix %"     )) { result = (args) -> new f64Value (                (args.get(0).f64Value() %  args.get(1).f64Value())); }
-    else if (n.equals("f64.infix **"    )) { result = (args) -> new f64Value ((float) Math.pow(args.get(0).f64Value(),   args.get(1).f64Value())); }
+    else if (n.equals("f64.infix **"    )) { result = (args) -> new f64Value (        Math.pow(args.get(0).f64Value(),   args.get(1).f64Value())); }
     else if (n.equals("f64.infix =="    )) { result = (args) -> new boolValue(                (args.get(0).f64Value() == args.get(1).f64Value())); }
     else if (n.equals("f64.infix !="    )) { result = (args) -> new boolValue(                (args.get(0).f64Value() != args.get(1).f64Value())); }
     else if (n.equals("f64.infix <"     )) { result = (args) -> new boolValue(                (args.get(0).f64Value() <  args.get(1).f64Value())); }
