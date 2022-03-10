@@ -35,94 +35,122 @@
 #
 # NYI: handling of one-way monads is completely experimental
 #
-private onewayHandles/*<X>*/(
+private onewayHandles<T,X>(
   # the inner value of this monad
-  # v X
+  v X,
   n i32,
-  s Sequence<tuple<i32,i32>>,
-  rr option<()->unit>
-  ) : onewayMonad rr
+  s Sequence<tuple<i32,T>>,
+  redef r plain | inst | repl
+  ) : onewayMonad r
 is
+
+  # create a new instance with one additional handle
+  #
+  # the new handle can be accessed by 'result.last'
+  #
+  new (
+    # initial value refered to by the new handle
+    w T
+    ) onewayHandles<T,X>
+  post
+    result.hasLast
+  is
+    onewayHandles<T,X> v n+1 ([(n,w)] ++ s) mode
+
+
+  # has one element been created using 'new'?
+  #
+  hasLast => n > 0
+
+
+  # return the last handle that was created by 'new'
+  #
+  last
+    pre
+      hasLast
+   =>
+    onewayHandle n-1
+
 
   # a one-way feature to create a new handle and update the monad
   # in the current environment
   #
   #
-  new/*<T>*/ (
+  /* env */
+  create (
     # initial value refered to by the new handle
-    w i32/*T*/
-    ) /* one way! */
+    w T
+    )
    =>
-    res := onewayHandle n
-    onewayHandles n+1 ([(n,w)] ++ s) nil
-    res
+    (new w).last
 
 
-  # a one-way feature to read the value refered to by a given handle
+  # get the value refered to by a given handle
   #
-  get/*<T>*/ (
+  get (
     # a handle created by 'new'
     h onewayHandle/*<T>*/
     ) /* one way! */
    =>
     for x in s
     until x.values.0 == h.x
-      res := x.values.1
-      onewayHandles n [x]++s nil
-      res
+      x.values.1
     else
       fuzion.std.panic "no entry for {h.x} found"
 
 
-  # a one-way feature to write the value refered to by a given handle
+  # create a new instance with new value refered to by a given handle
   #
-  put/*<T>*/ (
+  put (
     # a handle created by 'new'
     h onewayHandle/*<T>*/,
 
     # the new value to be stored with 'h'
-    w i32/*T*/) /* one way! */
+    w T)
    =>
-    onewayHandles n ([(h.x,w)] ++ s) nil
+    onewayHandles<T,X> v n ([(h.x,w)] ++ s) mode
 
 
-  # a one-way feature to read and update the value refered to by a
-  # given handle
+  # create a new instance with the value refered to by a given handle read and
+  # updated.
   #
-  update/*<T>*/ (
+  update (
     # a handle created by 'new'
     h onewayHandle/*<T>*/,
 
     # function calculcating the new value from the old value
-    f i32->i32/*T->T*/
-    ) /* one way! */
+    f T->T
+    )
    =>
     for x in s
     until x.values.0 == h.x
-      (onewayHandles n ([(h.x,f x.values.1)] ++ s) nil).get h
+      onewayHandles<T,X> v n ([(h.x,f x.values.1)] ++ s) mode
     else
       fuzion.std.panic "no entry for {h.x} found"
 
 
-#  infix >>= (f X -> onewayHandles<X>) => bind<X> f
+  infix >>= (f X -> onewayHandles<T,X>) => bind<X> f
 
-#  bind <B> (f X -> onewayHandles<B>) onewayHandles<B> is
-#    onewayHandles<B> (f v).v
+  bind <B> (f X -> onewayHandles<T,B>) onewayHandles<T,B> is
+    onewayHandles<T,B> (f v).v n s plain
 
-#  return<B> (w B) => onewayHandles w
+  return<B> (w B) => onewayHandles<T,B> w n s plain
 
 
 # short-hand for creating an empty set of handles of given type.
 #
-onewayHandles(rr ()->unit) =>
-  onewayHandles 0 Sequences.empty<tuple<i32,i32>> rr
+onewayHandles<T>(rr ()->unit) =>
+  onewayHandles<T,unit> unit 0 Sequences.empty<tuple<i32,T>> (inst rr)
   unit
+
+# short-hand for creating an empty set of handles of given type.
+#
+onewayHandles<T> =>
+  onewayHandles<T,unit> unit 0 Sequences.empty<tuple<i32,T>> plain
 
 # handle value created by 'handles.new'
 #
-private onewayHandle/*<T>*/ (
-  private x i32/*T*/
-  ) ref
+private onewayHandle (
+  private x i32
+  )
 is
-#  private put(new_x i32/*T*/) is
-#    set x := new_x

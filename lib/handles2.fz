@@ -26,87 +26,139 @@
 # handles2 provide a means to create handles that refer to update-able
 # cells.
 #
-# This uses mutable field for better performance.
-#
-# handles2 is a one-way state monad. It provides features to create several
+# handles is a state monad.  It provides features to create several
 # handles that refer to modifiable value and features to 'get', 'put' or
 # 'update' this value.
 #
-# NYI: Experimental, must eventually be properly integrated in one-way monad
-# handling.
+# For performance, this implementation uses mutable state. It can consequently
+# only be used as a one-way monad.
 #
-private handles2<X>(
+private handles2<T,X>(
   # the inner value of this monad
-  v X)
+  v X,
+
+  lastOpt option<handle2<T>>,
+
+  # action to be taken: plain nomad, install or replace?
+  redef r plain | inst | repl
+  ) : onewayMonad r
 is
+
+  # create a new instance with one additional handle
+  #
+  # the new handle can be accessed by 'result.last'
+  #
+  new (
+    # initial value refered to by the new handle
+    w T
+    ) handles2<T,X>
+  post
+    result.hasLast
+  is
+    handles2<T,X> v (handle2 w) mode
+
+
+  # has one element been created using 'new'?
+  #
+  hasLast => lastOpt??
+
+
+  # return the last handle that was created by 'new'
+  #
+  last
+    pre
+      hasLast
+   =>
+    lastOpt.get
+
 
   # a one-way feature to create a new handle and update the monad
   # in the current environment
   #
-  #
-  new<T> (
+  /* env */
+  create (
     # initial value refered to by the new handle
     w T
-    ) /* one way! */
+    )
    =>
-    ((handles2 v), handle2<T> w)
+    (new w).last
 
 
-  # a one-way feature to read the value refered to by a given handle
+  # get the value refered to by a given handle
   #
-  get<T> (
+  get (
     # a handle created by 'new'
     h handle2<T>
-    ) /* one way! */
+    )
    =>
-    ((handles2 v), h.x)
+    h.x
 
 
-  # a one-way feature to write the value refered to by a given handle
+  # create a new instance with new value refered to by a given handle
   #
-  put<T> (
+  put (
     # a handle created by 'new'
     h handle2<T>,
 
     # the new value to be stored with 'h'
-    w T) /* one way! */
+    w T)
+  pre
+    match mode
+      plain => !false # NYI
+      inst, repl => true
    =>
     h.put w
-    handles2 unit
+    handles2<T,X> v lastOpt mode
 
 
-  # a one-way feature to read and update the value refered to by a
-  # given handle
+  # create a new instance with the value refered to by a given handle read and
+  # updated.
   #
-  update<T> (
+  update (
     # a handle created by 'new'
     h handle2<T>,
 
     # function calculcating the new value from the old value
     f T->T
-    ) /* one way! */
+    )
+  pre
+    match mode
+      plain => !false # NYI
+      inst, repl => true
    =>
     h.put (f h.x)
-    handles2 unit
+    handles2<T,X> v lastOpt mode
 
 
-  infix >>= (f X -> handles2<X>) => bind<X> f
+  infix >>= (f X -> handles2<T,X>) => bind<X> f
 
-  bind <B> (f X -> handles2<B>) handles2<B> is
-    handles2<B> (f v).v
+  bind <B> (f X -> handles2<T,B>) handles2<T,B> is
+    handles2<T,B> (f v).v lastOpt plain
 
-  return<B> (w B) => handles2 w
+  return<B> (w B) => handles2<T,B> w lastOpt plain
 
-
-# short-hand for creating an empty set of handles of given type.
+# short-hand for creating and installing an empty set of handles2 of given type.
 #
-handles2 => handles2<unit> unit
+handles2<T>(rr ()->unit) =>
+  handles2<T,unit> unit nil (inst rr)
+  unit
 
-# handle value created by 'handles.new'
+# short-hand for creating an empty set of handles2 of given type.
 #
-private handle2<T> (
+handles2<T> => handles2<T,unit> unit nil plain
+
+
+# handle value created by 'handles2.new'
+#
+private handle2<T>(
+  # the index in 'handles2.ar'
   private x T
   ) ref
 is
   private put(new_x T) is
     set x := new_x
+
+  update(f T->T) =>
+    set x := f x
+    # handles2<T,unit>.env.replace       -- NYI: does not work yet since Env not supported in .fum file
+    x

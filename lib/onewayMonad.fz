@@ -32,13 +32,19 @@ onewayMonad /* <X> NYI: the type wrapped by this monad */ (
   # code to run while this monad is installed. Iff nil, do not
   # run any code but replace the installed monad instancea by this.
   #
-  r option<()->unit>
+  r plain | inst | repl
   )
 is
 
   match r
-    _ nil      => replace
-    f Function => run f
+    _ plain =>
+    i inst  => run i.f
+    _ repl  => replace
+
+  mode plain | inst | repl is
+    match r
+      _ plain    => plain
+      inst, repl => repl
 
   # install this one-way monad in the current context
   private install unit is intrinsic
@@ -58,3 +64,8 @@ is
     res
 
   # NYI: typical monad operations bind, return, fmap, etc. are missing.
+
+
+plain is
+inst(f ()->unit) is
+repl is

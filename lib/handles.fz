@@ -26,11 +26,15 @@
 # handles provide a means to create handles that refer to update-able
 # cells.
 #
-# handles is a one-way state monad. It provides features to create several
+# handles is a state monad.  It provides features to create several
 # handles that refer to modifiable value and features to 'get', 'put' or
 # 'update' this value.
 #
 private handles<T,X>(
+
+  # the inner value of this monad
+  v X,
+
   # array containing values stored for the handles
   #
   # NYI: As soon as one-way monads are enforced, this array can be implemented
@@ -38,79 +42,113 @@ private handles<T,X>(
   #
   private ar array<T>,
 
-  # the inner value of this monad
-  v X)
+  # action to be taken: plain nomad, install or replace?
+  redef r plain | inst | repl
+  ) : onewayMonad r
 is
 
   # number of handles created
   private count => ar.length
 
 
-  # a one-way feature to create a new handle and update the monad
-  # in the current environment
+  # create a new instance with one additional handle
   #
+  # the new handle can be accessed by 'result.last'
   #
   new (
     # initial value refered to by the new handle
     w T
-    ) /* one way! */
-   =>
+    ) handles<T,X>
+  post
+   result.hasLast
+  is
     na := array<T> count+1 (i -> if (i < count) ar[i] else w)
-    ((handle count), handles na v)
+    handles<T,X> v na mode
 
 
-  # a one-way feature to read the value refered to by a given handle
+  # has one element been created using 'new'?
+  #
+  hasLast => count > 0
+
+
+  # return the last handle that was created by 'new'
+  #
+  last
+    pre
+      hasLast
+   =>
+    handle<T> count-1
+
+
+  # a one-way feature to create a new handle and update the monad
+  # in the current environment
+  #
+  /* env */
+  create (
+    # initial value refered to by the new handle
+    w T
+    )
+   =>
+    (new w).last
+
+
+  # get the value refered to by a given handle
   #
   get (
     # a handle created by 'new'
-    h handle
-    ) /* one way! */
+    h handle<T>
+    )
    =>
-    (handles ar v, ar[h.x])
+    ar[h.x]
 
 
-  # a one-way feature to write the value refered to by a given handle
+  # create a new instance with new value refered to by a given handle
   #
   put (
     # a handle created by 'new'
-    h handle,
+    h handle<T>,
 
     # the new value to be stored with 'h'
-    w T) /* one way! */
+    w T)
    =>
-    handles (ar.put h.x w) unit
+    handles<T,X> v (ar.put h.x w) mode
 
 
-  # a one-way feature to read and update the value refered to by a
-  # given handle
+  # create a new instance with the value refered to by a given handle read and
+  # updated.
   #
   update (
     # a handle created by 'new'
-    h handle,
+    h handle<T>,
 
     # function calculcating the new value from the old value
     f T->T
-    ) /* one way! */
+    )
    =>
-    handles (ar.put h.x (f ar[h.x])) unit
+    handles<T,X> v (ar.put h.x (f ar[h.x])) mode
 
 
   infix >>= (f X -> handles<T,X>) => bind<X> f
 
   bind <B> (f X -> handles<T,B>) handles<T,B> is
-    handles<T,B> ar (f v).v
+    handles<T,B> (f v).v ar plain
 
-  return<B> (w B) => handles ar w
+  return<B> (w B) => handles<T,B> w ar plain
 
+# short-hand for creating and installing an empty set of handles of given type.
+#
+handles<T>(rr ()->unit) =>
+  handles<T,unit> unit (array<T> 0 x->do) (inst rr)
+  unit
 
 # short-hand for creating an empty set of handles of given type.
 #
-handles<T> => handles<T,unit> (array<T> 0 x->do) unit
+handles<T> => handles<T,unit> unit (array<T> 0 x->do) plain
 
 
 # handle value created by 'handles.new'
 #
-private handle(
+private handle<T>(
   # the index in 'handles.ar'
   private x i32
   )

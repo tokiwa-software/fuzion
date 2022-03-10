@@ -37,9 +37,9 @@
 private onewayHandles2/*<X>*/(
   # the inner value of this monad
   # v X
-  rr option<()->unit>,
+  redef r plain | inst | repl,
   _ bool
-  ) : onewayMonad rr
+  ) : onewayMonad r
 is
 
   # a one-way feature to create a new handle and update the monad
@@ -106,7 +106,7 @@ is
 # short-hand for creating an empty set of handles of given type.
 #
 onewayHandles2(rr ()->unit) =>
-  onewayHandles2 rr true
+  onewayHandles2 (inst rr) true
   unit
 
 # handle value created by 'handles.new'
