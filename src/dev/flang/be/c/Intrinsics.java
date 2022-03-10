@@ -258,6 +258,10 @@ class Intrinsics extends ANY
       case "i8.castTo_u8"        : return outer.castTo("fzT_1u8").ret();
       case "i16.castTo_u16"      : return outer.castTo("fzT_1u16").ret();
       case "i32.castTo_u32"      : return outer.castTo("fzT_1u32").ret();
+      case "i32.as_f64"          : return outer.castTo("fzT_1f64").ret();
+      case "u32.as_f64"          : return outer.castTo("fzT_1f64").ret();
+      case "i64.as_f64"          : return outer.castTo("fzT_1f64").ret();
+      case "u64.as_f64"          : return outer.castTo("fzT_1f64").ret();
       case "i64.castTo_u64"      : return outer.castTo("fzT_1u64").ret();
       case "u8.castTo_i8"        : return outer.castTo("fzT_1i8").ret();
       case "u16.castTo_i16"      : return outer.castTo("fzT_1i16").ret();
