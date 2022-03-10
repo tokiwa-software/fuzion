@@ -462,12 +462,13 @@ public class NumLiteral extends Constant
 
         // make sure m's bitLength is exactly mBits
         var deltaBits = ct._mBits - m.bitLength();
-        m = shiftWithRounding(m, deltaBits);
+        var shiftLeadsToLossOfFraction = deltaBits >= 0 ? false : !m.shiftRight(-deltaBits).shiftLeft(-deltaBits).equals(m);
+        m = shiftWithRoundingNearestTiesToEven(m, deltaBits, false);
         e2 = e2 - deltaBits;
         // rounding changed mantissa length => shift again
         if((m.bitLength() == ct._mBits + 1))
           {
-            m = shiftWithRounding(m, -1);
+            m = shiftWithRoundingNearestTiesToEven(m, -1, false);
             e2 = e2 + 1;
           }
         if (CHECKS) check
@@ -500,7 +501,9 @@ public class NumLiteral extends Constant
           }
         else if (e2 <= 0)
           { // denormalized
-            m = shiftWithRounding(m, e2-1);
+            m = shiftWithRoundingNearestTiesToEven(m, e2-1, shiftLeadsToLossOfFraction);
+            if (CHECKS) check
+              (m.bitLength() <= ct._mBits-1);
             e2 = 0;
             if (m.signum() == 0)
               {
@@ -562,6 +565,39 @@ public class NumLiteral extends Constant
     else if (sh < 0)
       {
         var roundingBit = B1.shiftLeft(-sh-1);
+        return v.add(roundingBit).shiftRight(-sh);
+      }
+    else
+      {
+        return v;
+      }
+  }
+
+  /**
+   * Helper routine to shift BigInteger v left (sh > 0) or right (sh < 0) and
+   * perform rounding to nearest tiest to even.
+   *
+   * @param v a BigInteger value
+   *
+   * @param sh a shift distance
+   *
+   * @return shifted and rounded BitInteger
+   */
+  private BigInteger shiftWithRoundingNearestTiesToEven(BigInteger v, int sh, boolean previousShiftLeadToLossOfFraction)
+  {
+    if (sh > 0)
+      {
+        return v.shiftLeft(sh);
+      }
+    else if (sh < 0)
+      {
+        var roundingBit = B1.shiftLeft(-sh-1);
+        if( v.getLowestSetBit() == -sh-1
+         && v.add(roundingBit).shiftRight(-sh).getLowestSetBit() == 0
+         && !previousShiftLeadToLossOfFraction)
+          {
+            return v.shiftRight(-sh);
+          }
         return v.add(roundingBit).shiftRight(-sh);
       }
     else

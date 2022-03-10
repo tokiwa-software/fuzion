@@ -153,4 +153,25 @@ floating_point_numbers is
   chck (u64s.max.as_f64 == 0x_ffff_ffff_ffff_ffff)                               "u64s.as_f64 max"
   chck ((f32 1.5).as_f64 == 1.5)                                                 "f32.as_f64 1.5"
 
+  # check some corner case numbers for correct bit representation
+  chck ((f32 0x1P-149)        == (u32 0x00000001).castTo_f32)                    "f32: smallest positive subnormal number"
+  chck ((f32 0x0.FFFFFEP-126) == (u32 0x007FFFFF).castTo_f32)                    "f32: largest subnormal number"
+  chck ((f32 0x1P-126)        == (u32 0x00800000).castTo_f32)                    "f32: smallest positive normal"
+  chck ((f32 0x1.FFFFFEP127)  == (u32 0x7F7FFFFF).castTo_f32)                    "f32: largest normal number"
+  chck ((f32 1)-(f32 0x1P-24) == (u32 0x3F7FFFFF).castTo_f32)                    "f32: largest normal less than one"
+  chck ((f32 1)+(f32 0x1P-23) == (u32 0x3F800001).castTo_f32)                    "f32: smallest number larger one"
+
+  chck ((f32 0x0.3F4243P-126) == (u32 0x001FA122).castTo_f32)                    "f32: random subnormal"
+  chck ((f32 0x0.7FFFFFP-126) == (u32 0x00400000).castTo_f32)                    "f32: subnormal rounded up"
+  chck ((f32 0x1.7FFFFEP-126) == (u32 0x00BFFFFF).castTo_f32)                    "f32: random normal number"
+
+  chck (f32 0x0.000006P-126  == (u32 0b0000_0000_0000_0000_0000_0011).castTo_f32) "f32: no rounding necessaryy"
+  chck (f32 0x0.7FFFF9P-126  == (u32 0b0011_1111_1111_1111_1111_1100).castTo_f32) "f32: subnormal rounded down"
+  chck (f32 0x0.7FFFF91P-126 == (u32 0b0011_1111_1111_1111_1111_1101).castTo_f32) "f32: subnormal rounded up"
+  chck (f32 0x0.000006P-126 + 0x0.7FFFF9P-126 == (u32 0b0011_1111_1111_1111_1111_1111).castTo_f32) "f32: addition"
+
+  # real:       0b0111_1111_1111_1111_1111_1111
+  # rounded:    0b1000_0000_0000_0000_0000_0000
+  chck (f32 0x0.7FFFFFP-126 == (u32 0b0100_0000_0000_0000_0000_0000).castTo_f32) "f32: rounded up"
+
   fuzion.std.exit exitCode
