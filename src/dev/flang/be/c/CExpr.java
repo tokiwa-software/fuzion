@@ -88,7 +88,7 @@ abstract class CExpr extends CStmnt
    *
    * @return the resulting expression
    */
-  static CExpr ident(String name)
+  static CIdent ident(String name)
   {
     if (PRECONDITIONS) require
       (isAlphanumeric(name));
