@@ -23,6 +23,6 @@
 #
 # -----------------------------------------------------------------------
 
-# fuzion --
+# fuzion -- unit feature to group fuzion-infrustructure related features
 #
 fuzion is
