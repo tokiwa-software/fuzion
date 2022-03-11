@@ -27,7 +27,7 @@
 # cells.
 #
 # handles is a state monad.  It provides features to create several
-# handles that refer to modifiable value and features to 'get', 'put' or
+# handles that refeor to modifiable value and features to 'get', 'put' or
 # 'update' this value.
 #
 private handles<T,X>(
@@ -43,8 +43,8 @@ private handles<T,X>(
   private ar array<T>,
 
   # action to be taken: plain nomad, install or replace?
-  redef r plain | inst | repl
-  ) : onewayMonad r
+  redef r onewayMonadModes
+  ) : onewayMonad<X, handles<T,X>> r
 is
 
   # number of handles created
@@ -131,19 +131,19 @@ is
   infix >>= (f X -> handles<T,X>) => bind<X> f
 
   bind <B> (f X -> handles<T,B>) handles<T,B> is
-    handles<T,B> (f v).v ar plain
+    handles<T,B> (f v).v ar onewayMonadMode.plain
 
-  return<B> (w B) => handles<T,B> w ar plain
+  return<B> (w B) => handles<T,B> w ar onewayMonadMode.plain
 
 # short-hand for creating and installing an empty set of handles of given type.
 #
 handles<T>(rr ()->unit) =>
-  handles<T,unit> unit (array<T> 0 x->do) (inst rr)
+  handles<T,unit> unit (array<T> 0 x->do) (onewayMonadMode.inst rr)
   unit
 
 # short-hand for creating an empty set of handles of given type.
 #
-handles<T> => handles<T,unit> unit (array<T> 0 x->do) plain
+handles<T> => handles<T,unit> unit (array<T> 0 x->do) onewayMonadMode.plain
 
 
 # handle value created by 'handles.new'

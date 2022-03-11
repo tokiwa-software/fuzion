@@ -40,8 +40,8 @@ private handles2<T,X>(
   lastOpt option<handle2<T>>,
 
   # action to be taken: plain nomad, install or replace?
-  redef r plain | inst | repl
-  ) : onewayMonad r
+  redef r onewayMonadModes
+  ) : onewayMonad<X, handles2<T,X>> r
 is
 
   # create a new instance with one additional handle
@@ -104,8 +104,8 @@ is
     w T)
   pre
     match mode
-      plain => !false # NYI
-      inst, repl => true
+      onewayMonadMode.plain => !false # NYI
+      onewayMonadMode.inst, onewayMonadMode.repl => true
    =>
     h.put w
     handles2<T,X> v lastOpt mode
@@ -123,8 +123,8 @@ is
     )
   pre
     match mode
-      plain => !false # NYI
-      inst, repl => true
+      onewayMonadMode.plain => !false # NYI
+      onewayMonadMode.inst, onewayMonadMode.repl => true
    =>
     h.put (f h.x)
     handles2<T,X> v lastOpt mode
@@ -133,19 +133,19 @@ is
   infix >>= (f X -> handles2<T,X>) => bind<X> f
 
   bind <B> (f X -> handles2<T,B>) handles2<T,B> is
-    handles2<T,B> (f v).v lastOpt plain
+    handles2<T,B> (f v).v lastOpt onewayMonadMode.plain
 
-  return<B> (w B) => handles2<T,B> w lastOpt plain
+  return<B> (w B) => handles2<T,B> w lastOpt onewayMonadMode.plain
 
 # short-hand for creating and installing an empty set of handles2 of given type.
 #
 handles2<T>(rr ()->unit) =>
-  handles2<T,unit> unit nil (inst rr)
+  handles2<T,unit> unit nil (onewayMonadMode.inst rr)
   unit
 
 # short-hand for creating an empty set of handles2 of given type.
 #
-handles2<T> => handles2<T,unit> unit nil plain
+handles2<T> => handles2<T,unit> unit nil onewayMonadMode.plain
 
 
 # handle value created by 'handles2.new'

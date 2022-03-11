@@ -27,24 +27,24 @@
 # a monadic feature that can be accessed only throuh the environment and
 # that will be replaced in the environment whenever a new instance is created.
 #
-onewayMonad /* <X> NYI: the type wrapped by this monad */ (
+onewayMonad<A, MA: onewayMonad<A, MA>> (
 
   # code to run while this monad is installed. Iff nil, do not
   # run any code but replace the installed monad instancea by this.
   #
-  r plain | inst | repl
-  )
+  r onewayMonadModes
+  ) ref : monad<A, MA>
 is
 
   match r
-    _ plain =>
-    i inst  => run i.f
-    _ repl  => replace
+    _ onewayMonadMode.plain =>
+    i onewayMonadMode.inst  => run i.f
+    _ onewayMonadMode.repl  => replace
 
-  mode plain | inst | repl is
+  mode onewayMonadModes is
     match r
-      _ plain    => plain
-      inst, repl => repl
+      _ onewayMonadMode.plain    => onewayMonadMode.plain
+      onewayMonadMode.inst, onewayMonadMode.repl => onewayMonadMode.repl
 
   # install this one-way monad in the current context
   private install unit is intrinsic
@@ -63,9 +63,14 @@ is
     remove
     res
 
-  # NYI: typical monad operations bind, return, fmap, etc. are missing.
+onewayMonads<A, MA: onewayMonad<A, MA>> : monads<A, MA> is
 
+onewayMonadMode is
+  plain is
+  inst(f ()->unit) is
+  repl is
 
-plain is
-inst(f ()->unit) is
-repl is
+onewayMonadModes : choice<onewayMonadMode.plain,
+                          onewayMonadMode.inst,
+                          onewayMonadMode.repl>
+is
