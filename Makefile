@@ -245,12 +245,7 @@ JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
 FZ_SRC_LIB = $(FZ_SRC)/lib
-FUZION_FILES_LIB = \
-	$(wildcard $(FZ_SRC_LIB)/*.fz) \
-	$(wildcard $(FZ_SRC_LIB)/*/*.fz) \
-	$(wildcard $(FZ_SRC_LIB)/*/*/*.fz) \
-	$(wildcard $(FZ_SRC_LIB)/*/*/*/*.fz) \
-	$(wildcard $(FZ_SRC_LIB)/*/*/*/*/*.fz)
+FUZION_FILES_LIB = $(shell find $(FZ_SRC_LIB) -name "*.fz")
 
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_JAVA_BASE         = $(BUILD_DIR)/modules/java.base/__marker_for_make__
