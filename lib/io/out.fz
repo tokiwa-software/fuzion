@@ -1,0 +1,93 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature handles
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# out -- oneway monad providing an output stream
+#
+private out<X>(
+
+  # the inner value of this monad
+  v X,
+
+  p canPrint,
+
+  # action to be taken: plain nomad, install or replace?
+  redef r onewayMonadModes
+  ) ref : onewayMonad<X, out<X>> r
+is
+
+  # print the given stream
+  #
+  println (s Object) =>
+    p.println s
+    replace
+
+
+  infix >>= (f X -> out<X>) => bind<X> f
+
+  bind <B> (f X -> out<B>) out<B> is
+    out<B> (f v).v p onewayMonadMode.plain
+
+  return<B> (w B) => out<B> w p onewayMonadMode.plain
+
+# short-hand for creating and installing out monad
+#
+out(rr ()->unit) => out defaultPrint rr
+
+# short-hand for creating and installing out monad
+#
+out(p canPrint, rr ()->unit) =>
+  out<unit> unit p (onewayMonadMode.inst rr)
+  unit
+
+# short-hand for creating out monad
+#
+out => out<unit> unit defaultPrint onewayMonadMode.plain
+
+canPrint ref is
+
+  println(s Object) =>
+    print s
+    println
+
+  println =>
+    print (codepoint 10)
+
+  print(s Object) unit is abstract
+
+
+defaultPrint : canPrint is
+
+  print(s Object) => stdout.print s
+
+# short-hand for creating out monad
+#
+outStarred(rr ()->unit) => out starredPrint rr
+
+starredPrint : defaultPrint is
+
+  redef println(s Object) =>
+    print "*** "
+    print s
+    println
