@@ -618,6 +618,12 @@ public class Interpreter extends ANY
       {
         Clazz vClazz = staticClazz.getRuntimeClazz(v._clazzId);
         result = Intrinsics._onewayMonads_.get(vClazz);
+        if (result == null)
+          {
+            Errors.fatal("*** oneway monad for " + vClazz + " not present in current environment\n" +
+                         "    available are " + Intrinsics._onewayMonads_.keySet() + "\n" +
+                         callStack());
+          }
       }
 
     else
