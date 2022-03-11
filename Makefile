@@ -244,6 +244,14 @@ JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
 
+FZ_SRC_LIB = $(FZ_SRC)/lib
+FUZION_FILES_LIB = \
+	$(wildcard $(FZ_SRC_LIB)/*.fz) \
+	$(wildcard $(FZ_SRC_LIB)/*/*.fz) \
+	$(wildcard $(FZ_SRC_LIB)/*/*/*.fz) \
+	$(wildcard $(FZ_SRC_LIB)/*/*/*/*.fz) \
+	$(wildcard $(FZ_SRC_LIB)/*/*/*/*/*.fz)
+
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_JAVA_BASE         = $(BUILD_DIR)/modules/java.base/__marker_for_make__
 MOD_JAVA_XML          = $(BUILD_DIR)/modules/java.xml/__marker_for_make__
@@ -400,10 +408,10 @@ $(BUILD_DIR)/assets/logo_bleed_cropmark.svg: $(CLASS_FILES_MISC_LOGO)
 	rm -f $@.tmp.pdf
 	touch $@
 
-$(BUILD_DIR)/lib: $(FZ_SRC)/lib
+$(BUILD_DIR)/lib: $(FUZION_FILES_LIB)
 	rm -rf $@
 	mkdir -p $(@D)
-	cp -rf $^ $@
+	cp -rf $(FZ_SRC_LIB) $@
 
 $(BUILD_DIR)/bin/fz: $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib
 	mkdir -p $(@D)
