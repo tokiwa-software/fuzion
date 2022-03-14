@@ -37,10 +37,22 @@ private out<X>(
   ) ref : onewayMonad<X, out<X>> r
 is
 
-  # print the given stream
+  # print the given string followed be new line
   #
   println (s Object) =>
     p.println s
+    replace
+
+  # print the given string
+  #
+  print (s Object) =>
+    p.print s
+    replace
+
+  # print new line
+  #
+  println =>
+    p.println
     replace
 
 
