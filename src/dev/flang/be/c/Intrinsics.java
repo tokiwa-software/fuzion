@@ -313,8 +313,7 @@ class Intrinsics extends ANY
       case "onewayMonad.replace":
       case "onewayMonad.default":
         {
-          var rc = c._fuir.clazzResultClazz(or);
-          var ev = c._names.ENV.index(c._names.clazzId(rc));
+          var ev = c._names.env(onewayMonadType(c, cl));
           var n  = c._names.NULL;
           var e  = c._names.OUTER;
           return
@@ -339,6 +338,54 @@ class Intrinsics extends ANY
 
       }
   }
+
+
+  /**
+   * Is cl one of the instrinsics in onewayMonad that changes the onewayMonad in
+   * the current environment?
+   *
+   * @param c the C backend
+   *
+   * @param cl the id of the intrinsic clazz
+   *
+   * @return true for onewayMonad.install and similar features.
+   */
+  boolean isOnewayMonad(C c, int cl)
+  {
+    if (PRECONDITIONS) require
+      (c._fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
+
+    return switch(c._fuir.clazzIntrinsicName(cl))
+      {
+      case "onewayMonad.install",
+           "onewayMonad.remove" ,
+           "onewayMonad.replace",
+           "onewayMonad.default" -> true;
+      default -> false;
+      };
+  }
+
+
+  /**
+   * For an intrinstic in onewayMonad that changes the onewayMonad in the
+   * current environment, return the type of the environment.  This type is used
+   * to distinguish different environments.
+   *
+   * @param c the C backend
+   *
+   * @param cl the id of the intrinsic clazz
+   *
+   * @return the type of the outer feature of cl
+   */
+  int onewayMonadType(C c, int cl)
+  {
+    if (PRECONDITIONS) require
+      (isOnewayMonad(c, cl));
+
+    var or = c._fuir.clazzOuterRef(cl);
+    return c._fuir.clazzResultClazz(or);
+  }
+
 
 
   /**

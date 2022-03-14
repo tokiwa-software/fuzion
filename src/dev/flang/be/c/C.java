@@ -218,8 +218,15 @@ public class C extends ANY
                                                  CExpr.call("memcpy", new List<>(r, o, s)),
                                                  r.ret()))));
     var ordered = _types.inOrder();
-    // thread local onewayMonad environments: NYI: filter ordered for onewayMonads usd as environamt and reduce size accordingliy
-    cf.print(CStmnt.decl("__thread", "void *", _names.ENV, CExpr.int32const(ordered.size()), null));
+
+    // thread local onewayMonad environments
+    ordered.stream().filter(cl -> _fuir.clazzNeedsCode(cl) &&
+                                  _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic  &&
+                                  _intrinsics.isOnewayMonad(this, cl))
+                    .mapToInt(cl -> _intrinsics.onewayMonadType(this, cl))
+                    .distinct()
+                    .forEach(cl -> cf.print(CStmnt.decl("__thread", "void *", _names.env(cl), CNames.NULL)));
+
     Stream.of(CompilePhase.values()).forEachOrdered
       ((p) ->
        {
@@ -685,7 +692,7 @@ public class C extends ANY
       case Env:
         {
           var ecl = _fuir.envClazz(cl, c, i);
-          var res = _names.ENV.index(_names.clazzId(ecl));
+          var res = _names.env(ecl);
           push(stack, ecl, res);
           break;
         }

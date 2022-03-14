@@ -115,9 +115,9 @@ public class CNames extends ANY
 
 
   /**
-   * The name of the thread local env variable
+   * Prefix for thread local env variable that stores the current oneway monad.
    */
-  static final CIdent ENV = new CIdent("fzEnv");
+  private static final String ENV_PREFIX = "fzEnv_";
 
 
   /**
@@ -459,6 +459,17 @@ public class CNames extends ANY
   {
     var index = _fuir.fieldIndex(field);
     return new CIdent(FIELD_PREFIX + index + "_" + mangle(_fuir.clazzBaseName(field)));
+
+  }
+
+  /**
+   * The name of the thread local env variable for the given onewayMonad type.
+   *
+   * @param cl clazz id for a onewayMonad type.
+   */
+  CIdent env(int cl)
+  {
+    return new CIdent(ENV_PREFIX + clazzId2num(cl));
   }
 
 }
