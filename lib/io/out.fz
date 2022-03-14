@@ -92,14 +92,3 @@ canPrint ref is
 defaultPrint : canPrint is
 
   print(s Object) => stdout.print s
-
-# short-hand for creating out monad
-#
-outStarred(rr ()->unit) => out starredPrint rr
-
-starredPrint : defaultPrint is
-
-  redef println(s Object) =>
-    print "*** "
-    print s
-    println
