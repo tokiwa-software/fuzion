@@ -111,6 +111,12 @@ public class C extends ANY
   final CTypes _types;
 
 
+  /**
+   * C intrinsics
+   */
+  final Intrinsics _intrinsics;
+
+
   /*---------------------------  consructors  ---------------------------*/
 
 
@@ -128,6 +134,7 @@ public class C extends ANY
     _fuir = fuir;
     _names = new CNames(fuir);
     _types = new CTypes(_fuir, _names);
+    _intrinsics = new Intrinsics();
     Errors.showAndExit();
   }
 
@@ -981,7 +988,7 @@ public class C extends ANY
             {
               l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"));
               var o = ck == FUIR.FeatureKind.Routine ? codeForRoutine(cl, false)
-                                                     : new Intrinsics().code(this, cl);
+                                                     : _intrinsics.code(this, cl);
               l.add(cFunctionDecl(cl, false, o));
             }
           }
