@@ -348,8 +348,7 @@ abstract class CStmnt extends ANY
         {
           for (var cs : s)
             {
-              cs.code(sb);
-              sb.append(cs.needsSemi() ? ";\n" : "");
+              cs.codeSemi(sb);
             }
         }
         boolean needsSemi()
@@ -375,8 +374,7 @@ abstract class CStmnt extends ANY
         {
           for (var cs : s)
             {
-              cs.code(sb);
-              sb.append(cs.needsSemi() ? ";\n" : "");
+              cs.codeSemi(sb);
             }
         }
         boolean needsSemi()
@@ -481,8 +479,7 @@ abstract class CStmnt extends ANY
           cc.code(sb);
           sb.append(")\n")
             .append("{\n");
-          s.code(sb.indent());
-          sb.append(s.needsSemi() ? ";\n" : "");  // NYI: Join with s.code(sb) to s.codeSemi(sb).
+          s.codeSemi(sb.indent());
           sb.append("}\n");
         }
         boolean needsSemi()
@@ -502,6 +499,19 @@ abstract class CStmnt extends ANY
    * @param sb will be used to append the code to
    */
   abstract void code(CString sb);
+
+
+  /**
+   * Create the C code corresponding to this statement followed by a semicolon
+   * if needed.
+   *
+   * @param sb will be used to append the code to
+   */
+  void codeSemi(CString sb)
+  {
+    code(sb);
+    sb.append(needsSemi() ? ";\n" : "");
+  }
 
 
   /**
