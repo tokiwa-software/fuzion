@@ -631,8 +631,6 @@ public class Intrinsics extends ANY
       {
         var m = args.get(0);
         var cl = innerClazz._outer;
-        check
-          (_onewayMonads_.get(cl) == null);
         _onewayMonads_.put(cl, m);
         return Value.EMPTY_VALUE;
       };
@@ -644,7 +642,7 @@ public class Intrinsics extends ANY
         var cl = innerClazz._outer;
         check
         (_onewayMonads_.get(cl) != null);
-        _onewayMonads_.put(cl, null);
+        _onewayMonads_.put(cl, null); // NYI: restore original value!
         return Value.EMPTY_VALUE;
       };
     }
@@ -656,6 +654,18 @@ public class Intrinsics extends ANY
         check
         (_onewayMonads_.get(cl) != null);
         _onewayMonads_.put(cl, m);
+        return Value.EMPTY_VALUE;
+      };
+    }
+    else if (n.equals("onewayMonad.default" )) {
+      result = (args) ->
+      {
+        var m = args.get(0);
+        var cl = innerClazz._outer;
+        if (_onewayMonads_.get(cl) == null)
+          {
+            _onewayMonads_.put(cl, m);
+          }
         return Value.EMPTY_VALUE;
       };
     }

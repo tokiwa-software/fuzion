@@ -37,14 +37,15 @@ onewayMonad<A, MA: onewayMonad<A, MA>> (
 is
 
   match r
-    _ onewayMonadMode.plain =>
-    i onewayMonadMode.inst  => run i.f
-    _ onewayMonadMode.repl  => replace
+    _ onewayMonadMode.plain   =>
+    i onewayMonadMode.inst    => run i.f
+    _ onewayMonadMode.repl    => replace
+    _ onewayMonadMode.default => default
 
   mode onewayMonadModes is
     match r
-      _ onewayMonadMode.plain    => onewayMonadMode.plain
-      onewayMonadMode.inst, onewayMonadMode.repl => onewayMonadMode.repl
+      _ onewayMonadMode.plain => onewayMonadMode.plain
+      onewayMonadMode.inst, onewayMonadMode.repl, onewayMonadMode.default => onewayMonadMode.repl
 
   # install this one-way monad in the current context
   private install unit is intrinsic
@@ -54,6 +55,9 @@ is
 
   # replace one-way monad in the current context by this
   private replace unit is intrinsic
+
+  # set default one-way monad in the current context to this if none is installed
+  private default unit is intrinsic
 
   # execute the code of 'f' in the context of this one-way monad
   #
@@ -69,8 +73,10 @@ onewayMonadMode is
   plain is
   inst(f ()->unit) is
   repl is
+  default is
 
 onewayMonadModes : choice<onewayMonadMode.plain,
                           onewayMonadMode.inst,
-                          onewayMonadMode.repl>
+                          onewayMonadMode.repl,
+                          onewayMonadMode.default>
 is
