@@ -626,49 +626,10 @@ public class Intrinsics extends ANY
     else if (n.equals("Object.asString" )) { result = (args) -> Interpreter.value(args.get(0).toString());
       // NYI: This could be more useful by giving the object's class, an id, public fields, etc.
     }
-    else if (n.equals("onewayMonad.install" )) {
-      result = (args) ->
-      {
-        var m = args.get(0);
-        var cl = innerClazz._outer;
-        _onewayMonads_.put(cl, m);
-        return Value.EMPTY_VALUE;
-      };
-    }
-    else if (n.equals("onewayMonad.remove" )) {
-      result = (args) ->
-      {
-        var m = args.get(0);
-        var cl = innerClazz._outer;
-        check
-        (_onewayMonads_.get(cl) != null);
-        _onewayMonads_.put(cl, null); // NYI: restore original value!
-        return Value.EMPTY_VALUE;
-      };
-    }
-    else if (n.equals("onewayMonad.replace" )) {
-      result = (args) ->
-      {
-        var m = args.get(0);
-        var cl = innerClazz._outer;
-        check
-        (_onewayMonads_.get(cl) != null);
-        _onewayMonads_.put(cl, m);
-        return Value.EMPTY_VALUE;
-      };
-    }
-    else if (n.equals("onewayMonad.default" )) {
-      result = (args) ->
-      {
-        var m = args.get(0);
-        var cl = innerClazz._outer;
-        if (_onewayMonads_.get(cl) == null)
-          {
-            _onewayMonads_.put(cl, m);
-          }
-        return Value.EMPTY_VALUE;
-      };
-    }
+    else if (n.equals("onewayMonad.install" ) ||
+             n.equals("onewayMonad.remove"  ) ||
+             n.equals("onewayMonad.replace" ) ||
+             n.equals("onewayMonad.default" )    ) { result = onewayMonad(n, innerClazz); }
     else
       {
         Errors.fatal(f.pos(),
@@ -677,6 +638,34 @@ public class Intrinsics extends ANY
         result = (args) -> Value.NO_VALUE;
       }
     return result;
+  }
+
+
+  /**
+   * Create code for one-way monad intrinsics.
+   *
+   * @param n qualified name of the intrinsic to be called.
+   *
+   * @param innerClazz the frame clazz of the called feature
+   *
+   * @return a Callable instance to execute the intrinsic call.
+   */
+  static Callable onewayMonad(String n, Clazz innerClazz)
+  {
+    return (args) ->
+      {
+        var m = args.get(0);
+        var cl = innerClazz._outer;
+        switch (n)
+          {
+          case "onewayMonad.install": _onewayMonads_.put(cl, m); break;
+          case "onewayMonad.remove" : check(_onewayMonads_.get(cl) != null); _onewayMonads_.put(cl, null); break; // NYI: restore original value!
+          case "onewayMonad.replace": check(_onewayMonads_.get(cl) != null); _onewayMonads_.put(cl, m   ); break;
+          case "onewayMonad.default": if (_onewayMonads_.get(cl) == null) {  _onewayMonads_.put(cl, m   ); } break;
+          default: throw new Error("unexected onewayMonad intrinsic '"+n+"'");
+          }
+        return Value.EMPTY_VALUE;
+      };
   }
 
 
