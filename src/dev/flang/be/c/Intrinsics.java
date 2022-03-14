@@ -90,7 +90,8 @@ class Intrinsics extends ANY
       c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or)) ? CNames.OUTER.deref().field(CNames.FIELDS_IN_REF_CLAZZ)
                                                        : CNames.OUTER;
 
-    switch (c._fuir.clazzIntrinsicName(cl))
+    var in = c._fuir.clazzIntrinsicName(cl);
+    switch (in)
       {
       case "safety"              : return (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
       case "debug"               : return (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
@@ -305,6 +306,26 @@ class Intrinsics extends ANY
           return c._types.hasData(gc)
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).ret()
             : CStmnt.EMPTY;
+        }
+
+      case "onewayMonad.install":
+      case "onewayMonad.remove" :
+      case "onewayMonad.replace":
+      case "onewayMonad.default":
+        {
+          var rc = c._fuir.clazzResultClazz(or);
+          var ev = c._names.ENV.index(c._names.clazzId(rc));
+          var n  = c._names.NULL;
+          var e  = c._names.OUTER;
+          return
+            switch (c._fuir.clazzIntrinsicName(cl))
+              {
+              case "onewayMonad.install" -> ev.assign(e);
+              case "onewayMonad.remove"  -> ev.assign(n);
+              case "onewayMonad.replace" -> ev.assign(e);
+              case "onewayMonad.default" -> CStmnt.iff(CExpr.eq(ev, n), ev.assign(e));
+              default -> throw new Error("unexpected intrinsic '" + in + "'.");
+              };
         }
 
       default:

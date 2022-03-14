@@ -211,6 +211,8 @@ public class C extends ANY
                                                  CExpr.call("memcpy", new List<>(r, o, s)),
                                                  r.ret()))));
     var ordered = _types.inOrder();
+    // thread local onewayMonad environments: NYI: filter ordered for onewayMonads usd as environamt and reduce size accordingliy
+    cf.print(CStmnt.decl("__thread", "void *", _names.ENV, CExpr.int32const(ordered.size()), null));
     Stream.of(CompilePhase.values()).forEachOrdered
       ((p) ->
        {
@@ -671,6 +673,13 @@ public class C extends ANY
                          _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? CStmnt.EMPTY : tag.assign(CExpr.int32const(tagNum)),
                          assign(entry, value, valuecl));
           push(stack, newcl, res);
+          break;
+        }
+      case Env:
+        {
+          var ecl = _fuir.envClazz(cl, c, i);
+          var res = _names.ENV.index(_names.clazzId(ecl));
+          push(stack, ecl, res);
           break;
         }
       case Dup:

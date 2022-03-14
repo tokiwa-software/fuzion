@@ -42,6 +42,7 @@ import dev.flang.ast.AbstractFeature; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
+import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
@@ -1028,6 +1029,23 @@ hw25 is
     var t = (Tag) _codeIds.get(c).get(ix);
     var ncl = (Clazz) outerClazz.getRuntimeData(t._valAndTaggedClazzId + 1);
     return ncl == null ? -1 : _clazzIds.get(ncl);
+  }
+
+  /**
+   * For outer clazz cl with an Env instruction in code c at ix, return the type
+   * of the env value.
+   */
+  public int envClazz(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Env);
+
+    var outerClazz = _clazzIds.get(cl);
+    var v = (Env) _codeIds.get(c).get(ix);
+    var vcl = (Clazz) outerClazz.getRuntimeData(v._clazzId);
+    return vcl == null ? -1 : _clazzIds.get(vcl);
   }
 
   public int boxValueClazz(int cl, int c, int ix)

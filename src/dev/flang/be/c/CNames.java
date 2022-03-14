@@ -115,6 +115,12 @@ public class CNames extends ANY
 
 
   /**
+   * The name of the thread local env variable
+   */
+  static final CIdent ENV = new CIdent("fzEnv");
+
+
+  /**
    * C identifier of argument variable that refers to a clazz' outer instance.
    */
   static final CExpr OUTER = new CIdent("fzouter");
@@ -156,6 +162,11 @@ public class CNames extends ANY
    */
   static final CIdent HEAP_CLONE = new CIdent(HELPER_PREFIX + "heapClone");
 
+
+  /**
+   * C symbol "NULL"
+   */
+  static final CExpr NULL = new CIdent("NULL");
 
 
   /*----------------------------  variables  ----------------------------*/
