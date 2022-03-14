@@ -73,9 +73,11 @@ out(p canPrint, rr ()->unit) =>
   out<unit> unit p (onewayMonadMode.inst rr)
   unit
 
-# short-hand for creating out monad
+# short-hand for accessing out monad in current environment
 #
-out => out<unit> unit defaultPrint onewayMonadMode.plain
+out =>
+  outs.installDefault
+  io.out<unit>.env
 
 canPrint ref is
 
@@ -92,3 +94,14 @@ canPrint ref is
 defaultPrint : canPrint is
 
   print(s Object) => stdout.print s
+
+
+# unit type feature defining features related to out but not requiring an
+# instance.
+#
+outs is
+
+  # install default onewayMonad out using defaultPrint
+  installDefault unit is
+    out unit defaultPrint onewayMonadMode.default
+    unit
