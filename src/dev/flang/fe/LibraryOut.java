@@ -45,6 +45,7 @@ import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Check;
 import dev.flang.ast.Constant;
+import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FormalGenerics;
@@ -808,6 +809,20 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    */
         type(t.type());
+      }
+    else if (s instanceof Env e)
+      {
+        lastPos = exprKindAndPos(IR.ExprKind.Env, lastPos, s.pos());
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Env                                                                             |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Type          | The type of this env                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+        type(e.type());
       }
     else if (s instanceof Nop)
       {

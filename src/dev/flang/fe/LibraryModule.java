@@ -40,6 +40,7 @@ import java.util.TreeSet;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
+import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
@@ -1455,6 +1456,7 @@ Expression
    | k==Cal   | 1      | Call          | feature call
    | k==Mat   | 1      | Match         | match statement
    | k==Tag   | 1      | Tag           | tag expression
+   | k==Env   | 1      | Env           | env expression
 |====
 
 --asciidoc--
@@ -1479,6 +1481,8 @@ Expression
    *   | k==Mat | 1      | Match         | match statement                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Tag | 1      | Tag           | tag expression                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | k==Env | 1      | Env           | env expression                                |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
   int expressionKindPos(int at)
@@ -1526,6 +1530,7 @@ Expression
       case Match   -> matchNextPos(eAt);
       case Call    -> callNextPos (eAt);
       case Tag     -> tagNextPos  (eAt);
+      case Env     -> envNextPos  (eAt);
       case Pop     -> eAt;
       case Unit    -> eAt;
       default      -> throw new Error("unexpected expression kind "+k+" at "+at+" in "+this);
@@ -2103,6 +2108,44 @@ Tag
   int tagNextPos(int at)
   {
     return typeNextPos(tagTypePos(at));
+  }
+
+
+
+  /*
+
+--asciidoc--
+
+Env
+^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+   | true     | 1      | Type          | type of resulting env value
+|====
+
+--asciidoc--
+   *   +---------------------------------------------------------------------------------+
+   *   | Env                                                                             |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Type          | type of resulting env value                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+  int envTypePos(int at)
+  {
+    return at;
+  }
+  AbstractType envType(int at)
+  {
+    return type(envTypePos(at));
+  }
+  int envNextPos(int at)
+  {
+    return typeNextPos(envTypePos(at));
   }
 
 

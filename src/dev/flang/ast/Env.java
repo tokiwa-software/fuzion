@@ -69,7 +69,7 @@ public class Env extends ExprWithPos
    *
    * @param a
    */
-  public Env(SourcePosition pos, Type t)
+  public Env(SourcePosition pos, AbstractType t)
   {
     super(pos);
 
