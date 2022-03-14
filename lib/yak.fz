@@ -29,4 +29,4 @@
 # The term 'yak' was taken from the expression 'Yakety Yak' as in the
 # song by The Coasters.
 #
-yak(s ref Object) => stdout.print s
+yak(s ref Object) => io.out.print s

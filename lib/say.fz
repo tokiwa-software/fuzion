@@ -26,9 +26,9 @@
 # A handy shortcut for stdout.println, output string representation of
 # an object followed by a line break.
 #
-say(s ref Object) => stdout.println s
+say(s ref Object) => io.out.println s
 
 
 # A handy shortcut for stdout.println, output a line break.
 #
-say => stdout.println
+say => io.out.println
