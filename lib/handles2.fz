@@ -55,7 +55,7 @@ is
   post
     result.hasLast
   is
-    handles2<T,X> v (handle2 w) mode
+    handles2<T,X> v (handle2 w unit) mode
 
 
   # has one element been created using 'new'?
@@ -91,7 +91,7 @@ is
     h handle2<T>
     )
    =>
-    h.x
+    h.get
 
 
   # create a new instance with new value refered to by a given handle
@@ -104,7 +104,8 @@ is
     w T)
   pre
     match mode
-      onewayMonadMode.plain => !false # NYI
+      onewayMonadMode.plain   => false  # must be used as onewayMonad only
+      onewayMonadMode.default => false
       onewayMonadMode.inst, onewayMonadMode.repl => true
    =>
     h.put w
@@ -123,10 +124,11 @@ is
     )
   pre
     match mode
-      onewayMonadMode.plain => !false # NYI
+      onewayMonadMode.plain   => false  # must be used as onewayMonad only
+      onewayMonadMode.default => false
       onewayMonadMode.inst, onewayMonadMode.repl => true
    =>
-    h.put (f h.x)
+    h.put (f h.get)
     handles2<T,X> v lastOpt mode
 
 
@@ -145,20 +147,54 @@ handles2<T>(rr ()->unit) =>
 
 # short-hand for creating an empty set of handles2 of given type.
 #
-handles2<T> => handles2<T,unit> unit nil onewayMonadMode.plain
+handles2_<T> => handles2<T,unit> unit nil onewayMonadMode.plain
+
+
+# short-hand for accessing handles monad for given type in current environment
+#
+handles2<T> =>
+  handles2_type<T>.installDefault
+  handles2<T,unit>.env
 
 
 # handle value created by 'handles2.new'
 #
 private handle2<T>(
-  # the index in 'handles2.ar'
-  private x T
+
+  # get value stored in this handle
+  #
+  get T,
+
+  # additional dummy arg to distinguish this from handles2(v)
+  private _ unit
+
   ) ref
 is
-  private put(new_x T) is
-    set x := new_x
 
-  update(f T->T) =>
-    set x := f x
+  # set value stored in this handle to new_val
+  #
+  put(new_val T) is
+    set get := new_val
     handles2<T,unit>.env.replace
-    x
+
+  # update value stored in this handle using f.
+  #
+  update(f T->T) =>
+    set get := f get
+    handles2<T,unit>.env.replace
+    get
+
+# unit type containing features related to handles but nor requiring an instance
+#
+handles2_type<T> is
+
+  # install default instance of handles2
+  #
+  installDefault unit is
+    handles2<T,unit> unit nil onewayMonadMode.default
+    unit
+
+
+# create a new handle2 using the handles2 instance from the current environment
+#
+handle2<T>(v T) => handles2<T>.create v

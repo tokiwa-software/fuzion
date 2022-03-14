@@ -27,7 +27,7 @@
 # cells.
 #
 # handles is a state monad.  It provides features to create several
-# handles that refeor to modifiable value and features to 'get', 'put' or
+# handles that refer to modifiable value and features to 'get', 'put' or
 # 'update' this value.
 #
 private handles<T,X>(
@@ -60,7 +60,7 @@ is
     w T
     ) handles<T,X>
   post
-   result.hasLast
+    result.hasLast
   is
     na := array<T> count+1 (i -> if (i < count) ar[i] else w)
     handles<T,X> v na mode
@@ -77,7 +77,7 @@ is
     pre
       hasLast
    =>
-    handle<T> count-1
+    handle<T> count-1 unit
 
 
   # a one-way feature to create a new handle and update the monad
@@ -125,7 +125,21 @@ is
     f T->T
     )
    =>
-    handles<T,X> v (ar.put h.x (f ar[h.x])) mode
+    update0 h.x f
+
+
+  # create a new instance with the value refered to by a given handle read and
+  # updated.
+  #
+  private update0 (
+    # a handle created by 'new'
+    x i32,
+
+    # function calculcating the new value from the old value
+    f T->T
+    )
+   =>
+    handles<T,X> v (ar.put x (f ar[x])) mode
 
 
   infix >>= (f X -> handles<T,X>) => bind<X> f
@@ -143,13 +157,53 @@ handles<T>(rr ()->unit) =>
 
 # short-hand for creating an empty set of handles of given type.
 #
-handles<T> => handles<T,unit> unit (array<T> 0 x->do) onewayMonadMode.plain
+handles_<T> => handles<T,unit> unit (array<T> 0 x->do) onewayMonadMode.plain
+
+
+# short-hand for accessing handles monad for given type in current environment
+#
+handles<T> =>
+  handles_type<T>.installDefault
+  handles<T,unit>.env
 
 
 # handle value created by 'handles.new'
 #
 private handle<T>(
   # the index in 'handles.ar'
-  private x i32
+  private x i32,
+  private _ unit
   )
 is
+
+  # set value stored in this handle to new_x
+  #
+  put(new_x T) is
+    _ := update old_x->new_x
+
+  # update value stored in this handle using f.
+  #
+  update(f T->T) =>
+    handles<T>.update0 x f
+    get
+
+  # get value stored in this handle
+  #
+  get =>
+    handles<T>.ar[x]
+
+
+# unit type containing features related to handles but nor requiring an instance
+#
+handles_type<T> is
+
+  # install default instance of handles
+  #
+  installDefault unit is
+    handles<T,unit> unit (array<T> 0 x->do) onewayMonadMode.default
+    unit
+
+
+# create a new handle using the handles instance from the current environment
+#
+handle<T>(v T) => handles<T>.create v
