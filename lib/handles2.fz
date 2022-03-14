@@ -160,5 +160,5 @@ is
 
   update(f T->T) =>
     set x := f x
-    # handles2<T,unit>.env.replace       -- NYI: does not work yet since Env not supported in .fum file
+    handles2<T,unit>.env.replace
     x
