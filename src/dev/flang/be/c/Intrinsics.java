@@ -313,16 +313,18 @@ class Intrinsics extends ANY
       case "onewayMonad.replace":
       case "onewayMonad.default":
         {
-          var ev = c._names.env(onewayMonadType(c, cl));
-          var n  = c._names.NULL;
-          var e  = c._names.OUTER;
+          var ecl = onewayMonadType(c, cl);
+          var ev  = c._names.env(ecl);
+          var evi = c._names.envInstalled(ecl);
+          var o   = c._names.OUTER;
+          var e   = c._fuir.clazzIsRef(ecl) ? o : o.deref();
           return
             switch (c._fuir.clazzIntrinsicName(cl))
               {
-              case "onewayMonad.install" -> ev.assign(e);
-              case "onewayMonad.remove"  -> ev.assign(n);
-              case "onewayMonad.replace" -> ev.assign(e);
-              case "onewayMonad.default" -> CStmnt.iff(CExpr.eq(ev, n), ev.assign(e));
+              case "onewayMonad.install" ->                       CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )) ;
+              case "onewayMonad.remove"  ->                                                evi.assign(CIdent.FALSE)  ;
+              case "onewayMonad.replace" ->                                  ev.assign(e)                            ;
+              case "onewayMonad.default" -> CStmnt.iff(evi.not(), CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )));
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };
         }

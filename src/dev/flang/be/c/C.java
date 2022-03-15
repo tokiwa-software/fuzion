@@ -201,6 +201,7 @@ public class C extends ANY
       ("#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+
        "#include <unistd.h>\n"+
+       "#include <stdbool.h>\n"+
        "#include <stdint.h>\n"+
        "#include <string.h>\n"+
        "#include <assert.h>\n"+
@@ -219,14 +220,6 @@ public class C extends ANY
                                                  r.ret()))));
     var ordered = _types.inOrder();
 
-    // thread local onewayMonad environments
-    ordered.stream().filter(cl -> _fuir.clazzNeedsCode(cl) &&
-                                  _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic  &&
-                                  _intrinsics.isOnewayMonad(this, cl))
-                    .mapToInt(cl -> _intrinsics.onewayMonadType(this, cl))
-                    .distinct()
-                    .forEach(cl -> cf.print(CStmnt.decl("__thread", "void *", _names.env(cl), CNames.NULL)));
-
     Stream.of(CompilePhase.values()).forEachOrdered
       ((p) ->
        {
@@ -235,6 +228,20 @@ public class C extends ANY
              cf.print(p.compile(this, c));
            }
          cf.println("");
+
+         // thread local onewayMonad environments
+         if (p == CompilePhase.STRUCTS)
+           {
+             ordered
+               .stream()
+               .filter(cl -> _fuir.clazzNeedsCode(cl) &&
+                       _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic  &&
+                       _intrinsics.isOnewayMonad(this, cl))
+               .mapToInt(cl -> _intrinsics.onewayMonadType(this, cl))
+               .distinct()
+               .forEach(cl -> cf.print(CStmnt.seq(CStmnt.decl("__thread", _types.clazz(cl), _names.env(cl)),
+                                                  CStmnt.decl("bool", _names.envInstalled(cl)))));
+           }
        });
     cf.println("int main(int argc, char **args) { " + _names.function(_fuir.mainClazzId(), false) + "(); }");
   }
@@ -693,6 +700,11 @@ public class C extends ANY
         {
           var ecl = _fuir.envClazz(cl, c, i);
           var res = _names.env(ecl);
+          var evi = _names.envInstalled(ecl);
+          o = CStmnt.iff(evi.not(),
+                         CStmnt.seq(CExpr.fprintfstderr("*** oneway monad for %s not present in current environment\n",
+                                                        CExpr.string(_fuir.clazzAsString(ecl))),
+                                    CExpr.exit(1)));
           push(stack, ecl, res);
           break;
         }

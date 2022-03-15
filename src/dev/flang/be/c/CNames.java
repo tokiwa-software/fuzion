@@ -121,6 +121,13 @@ public class CNames extends ANY
 
 
   /**
+   * Prefix for thread local env variable that stores the bool flag whether
+   * there is a current oneway monad installed.
+   */
+  private static final String ENV_INSTALLED_PREFIX = "fzEnvInstalled_";
+
+
+  /**
    * C identifier of argument variable that refers to a clazz' outer instance.
    */
   static final CExpr OUTER = new CIdent("fzouter");
@@ -470,6 +477,17 @@ public class CNames extends ANY
   CIdent env(int cl)
   {
     return new CIdent(ENV_PREFIX + clazzId2num(cl));
+  }
+
+  /**
+   * The name of the thread local env variable for the thread local env variable that
+   * stores the bool flag whether there is a current oneway monad installed.
+   *
+   * @param cl clazz id for a onewayMonad type.
+   */
+  CIdent envInstalled(int cl)
+  {
+    return new CIdent(ENV_INSTALLED_PREFIX + clazzId2num(cl));
   }
 
 }
