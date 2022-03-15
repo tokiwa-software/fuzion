@@ -1,0 +1,43 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature handles
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# effect -- abstract parent feature for effects
+#
+# effect provides a means to perform effectful operations.  Instances
+# of effect are installed in the current environment while their code is
+# executed.  The code may access the effect via <type>.env.
+#
+effect
+  # NYI: ,aybe onewayMonad should better inherit from effect
+  : onewayMonad<unit, effect> (onewayMonadMode.inst code)
+is
+
+  # the code to be executed within this effect.  This is typically
+  # redefined as an argument field of a sub-feature of effect.
+  #
+  # NYI: Currently, there is no direct way to return a result value
+  # from the code.
+  #
+  code ()->unit is abstract
