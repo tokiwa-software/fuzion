@@ -75,7 +75,7 @@ public class Intrinsics extends ANY
    *
    * NYI: This should be thread-local eventually.
    */
-  static TreeMap<Clazz, Value> _onewayMonads_ = new TreeMap<>();
+  static TreeMap<Clazz, Value> _effects_ = new TreeMap<>();
 
 
   /*-------------------------  static methods  --------------------------*/
@@ -628,15 +628,15 @@ public class Intrinsics extends ANY
     else if (n.equals("Object.asString" )) { result = (args) -> Interpreter.value(args.get(0).toString());
       // NYI: This could be more useful by giving the object's class, an id, public fields, etc.
     }
-    else if (n.equals("onewayMonad.install" ) ||
-             n.equals("onewayMonad.remove"  ) ||
-             n.equals("onewayMonad.replace" ) ||
-             n.equals("onewayMonad.default" )    ) { result = onewayMonad(n, innerClazz); }
-    else if (n.equals("onewayMonad.abort"))
+    else if (n.equals("effect.install" ) ||
+             n.equals("effect.remove"  ) ||
+             n.equals("effect.replace" ) ||
+             n.equals("effect.default" )    ) { result = effect(n, innerClazz); }
+    else if (n.equals("effect.abort"))
       {
-        result = onewayMonad(n, innerClazz);
+        result = effect(n, innerClazz);
       }
-    else if (n.equals("onewayMonad.onewayMonadHelper.abortable"))
+    else if (n.equals("effect.effectHelper.abortable"))
       {
         result = (args) ->
           {
@@ -691,7 +691,7 @@ public class Intrinsics extends ANY
    *
    * @return a Callable instance to execute the intrinsic call.
    */
-  static Callable onewayMonad(String n, Clazz innerClazz)
+  static Callable effect(String n, Clazz innerClazz)
   {
     return (args) ->
       {
@@ -699,12 +699,12 @@ public class Intrinsics extends ANY
         var cl = innerClazz._outer;
         switch (n)
           {
-          case "onewayMonad.install": _onewayMonads_.put(cl, m); break;
-          case "onewayMonad.remove" : check(_onewayMonads_.get(cl) != null); _onewayMonads_.put(cl, null); break; // NYI: restore original value!
-          case "onewayMonad.replace": check(_onewayMonads_.get(cl) != null); _onewayMonads_.put(cl, m   ); break;
-          case "onewayMonad.default": if (_onewayMonads_.get(cl) == null) {  _onewayMonads_.put(cl, m   ); } break;
-          case "onewayMonad.abort": throw new Abort(cl);
-          default: throw new Error("unexected onewayMonad intrinsic '"+n+"'");
+          case "effect.install":                                   _effects_.put(cl, m   );   break;
+          case "effect.remove" : check(_effects_.get(cl) != null); _effects_.put(cl, null);   break; // NYI: restore original value!
+          case "effect.replace": check(_effects_.get(cl) != null); _effects_.put(cl, m   );   break;
+          case "effect.default": if (_effects_.get(cl) == null) {  _effects_.put(cl, m   ); } break;
+          case "effect.abort": throw new Abort(cl);
+          default: throw new Error("unexected effect intrinsic '"+n+"'");
           }
         return Value.EMPTY_VALUE;
       };

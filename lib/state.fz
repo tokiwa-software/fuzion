@@ -37,7 +37,7 @@ state<T, S> (
   # the current state
   get S,
 
-  redef r onewayMonadModes
+  redef r effectModes
   ) ref : onewayMonad<T, state<T,S>> r
 is
 
@@ -87,7 +87,7 @@ is
 # state with 1 argument is short hand for a state containing unit and
 # initialValue
 #
-state<S> (initialValue S) => state unit initialValue onewayMonadMode.plain
+state<S> (initialValue S) => state unit initialValue effectMode.plain
 
 # install new state monad for type S and run r within that state monad
 #
@@ -95,7 +95,7 @@ state<S> (initialValue S) => state unit initialValue onewayMonadMode.plain
 #
 state<S,R>(initialValue S, r ()->R) =>
   res R := ?
-  (state<unit, S> unit initialValue (onewayMonadMode.inst ()->set res := r.call))
+  (state<unit, S> unit initialValue (effectMode.inst ()->set res := r.call))
   res
 
 

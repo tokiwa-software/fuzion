@@ -29,9 +29,89 @@
 # of effect are installed in the current environment while their code is
 # executed.  The code may access the effect via <type>.env.
 #
-effect
-  # NYI: ,aybe onewayMonad should better inherit from effect
-  : onewayMonad<unit, effect> (onewayMonadMode.inst code)
+effect (
+  # action to be performed, may include code to run while this effect is installed.
+  #
+  r effectModes
+  )
+is
+
+  match r
+    _ effectMode.plain   =>
+    i effectMode.inst    => run i.f
+    _ effectMode.repl    => replace
+    _ effectMode.abort   => fuzion.std.panic "abort"
+    _ effectMode.default => default
+
+  mode effectModes is
+    match r
+      _ effectMode.plain => effectMode.plain
+      effectMode.inst, effectMode.repl, effectMode.abort, effectMode.default => effectMode.repl
+
+  # install this one-way monad in the current context
+  private install unit is intrinsic
+
+  # remove this one-way monad in the current context
+  private remove  unit is intrinsic
+
+  # replace one-way monad in the current context by this
+  private replace unit is intrinsic
+
+  # replace one-way monad in the current context by this and abort current execution
+  private abort void is intrinsic
+
+  # set default one-way monad in the current context to this if none is installed
+  private default unit is intrinsic
+
+  # execute the code of 'f' in the context of this one-way monad
+  #
+  private run<R>(f () -> R) R is
+    install
+    res option<R> := nil
+    q ()->unit := ()-> set res := f()
+    h := (effectHelper q)
+    h.abortable
+    remove
+    match res
+      nil => r R := ?; r  # NYI, get default value
+      x R => x
+
+  # abort the current execution and return from the surrounding call to
+  # abortable with result == false.
+  #
+  return void is abort
+
+
+  effectHelper(f () -> unit) : Function<unit> is
+    # execute call whith support for abort to return early.
+    #
+    abortable unit is intrinsic
+
+    call unit is
+      f();
+
+
+effects is
+
+effectMode is
+  plain is
+  inst(f ()->unit) is
+  repl is
+  abort is
+  default is
+
+effectModes : choice<effectMode.plain,
+                     effectMode.inst,
+                     effectMode.repl,
+                     effectMode.abort,
+                     effectMode.default>
+is
+
+
+
+
+
+effect : effect (effectMode.inst code)
 is
 
   # the code to be executed within this effect.  This is typically

@@ -308,13 +308,13 @@ class Intrinsics extends ANY
             : CStmnt.EMPTY;
         }
 
-      case "onewayMonad.install":
-      case "onewayMonad.remove" :
-      case "onewayMonad.replace":
-      case "onewayMonad.default":
-      case "onewayMonad.abort":
+      case "effect.install":
+      case "effect.remove" :
+      case "effect.replace":
+      case "effect.default":
+      case "effect.abort":
         {
-          var ecl = onewayMonadType(c, cl);
+          var ecl = effectType(c, cl);
           var ev  = c._names.env(ecl);
           var evi = c._names.envInstalled(ecl);
           var o   = c._names.OUTER;
@@ -322,17 +322,17 @@ class Intrinsics extends ANY
           return
             switch (in)
               {
-              case "onewayMonad.install" ->                       CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )) ;
-              case "onewayMonad.remove"  ->                                                evi.assign(CIdent.FALSE)  ;
-              case "onewayMonad.replace" ->                                  ev.assign(e)                            ;
-              case "onewayMonad.default" -> CStmnt.iff(evi.not(), CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )));
-              case "onewayMonad.abort"   -> CStmnt.seq(CExpr.fprintfstderr("*** C backend support for %s missing\n",
+              case "effect.install" ->                       CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )) ;
+              case "effect.remove"  ->                                                evi.assign(CIdent.FALSE)  ;
+              case "effect.replace" ->                                  ev.assign(e)                            ;
+              case "effect.default" -> CStmnt.iff(evi.not(), CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )));
+              case "effect.abort"   -> CStmnt.seq(CExpr.fprintfstderr("*** C backend support for %s missing\n",
                                                                            CExpr.string(c._fuir.clazzIntrinsicName(cl))),
                                                        CExpr.exit(1));
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };
         }
-      case "onewayMonad.onewayMonadHelper.abortable":
+      case "effect.effectHelper.abortable":
         {
           var oc = c._fuir.clazzOuterClazz(cl);
           var call = c._fuir.lookupCall(oc);
@@ -355,14 +355,14 @@ class Intrinsics extends ANY
 
 
   /**
-   * Is cl one of the instrinsics in onewayMonad that changes the onewayMonad in
+   * Is cl one of the instrinsics in effect that changes the effect in
    * the current environment?
    *
    * @param c the C backend
    *
    * @param cl the id of the intrinsic clazz
    *
-   * @return true for onewayMonad.install and similar features.
+   * @return true for effect.install and similar features.
    */
   boolean isOnewayMonad(C c, int cl)
   {
@@ -371,17 +371,17 @@ class Intrinsics extends ANY
 
     return switch(c._fuir.clazzIntrinsicName(cl))
       {
-      case "onewayMonad.install",
-           "onewayMonad.remove" ,
-           "onewayMonad.replace",
-           "onewayMonad.default" -> true;
+      case "effect.install",
+           "effect.remove" ,
+           "effect.replace",
+           "effect.default" -> true;
       default -> false;
       };
   }
 
 
   /**
-   * For an intrinstic in onewayMonad that changes the onewayMonad in the
+   * For an intrinstic in effect that changes the effect in the
    * current environment, return the type of the environment.  This type is used
    * to distinguish different environments.
    *
@@ -391,7 +391,7 @@ class Intrinsics extends ANY
    *
    * @return the type of the outer feature of cl
    */
-  int onewayMonadType(C c, int cl)
+  int effectType(C c, int cl)
   {
     if (PRECONDITIONS) require
       (isOnewayMonad(c, cl));

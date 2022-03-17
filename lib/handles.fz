@@ -43,7 +43,7 @@ private handles<T,X>(
   private ar array<T>,
 
   # action to be taken: plain nomad, install or replace?
-  redef r onewayMonadModes
+  redef r effectModes
   ) : onewayMonad<X, handles<T,X>> r
 is
 
@@ -145,19 +145,19 @@ is
   infix >>= (f X -> handles<T,X>) => bind<X> f
 
   bind <B> (f X -> handles<T,B>) handles<T,B> is
-    handles<T,B> (f v).v ar onewayMonadMode.plain
+    handles<T,B> (f v).v ar effectMode.plain
 
-  return<B> (w B) => handles<T,B> w ar onewayMonadMode.plain
+  return<B> (w B) => handles<T,B> w ar effectMode.plain
 
 # short-hand for creating and installing an empty set of handles of given type.
 #
 handles<T>(rr ()->unit) =>
-  handles<T,unit> unit (array<T> 0 x->do) (onewayMonadMode.inst rr)
+  handles<T,unit> unit (array<T> 0 x->do) (effectMode.inst rr)
   unit
 
 # short-hand for creating an empty set of handles of given type.
 #
-handles_<T> => handles<T,unit> unit (array<T> 0 x->do) onewayMonadMode.plain
+handles_<T> => handles<T,unit> unit (array<T> 0 x->do) effectMode.plain
 
 
 # short-hand for accessing handles monad for given type in current environment
@@ -200,7 +200,7 @@ handles_type<T> is
   # install default instance of handles
   #
   installDefault unit is
-    handles<T,unit> unit (array<T> 0 x->do) onewayMonadMode.default
+    handles<T,unit> unit (array<T> 0 x->do) effectMode.default
     unit
 
 

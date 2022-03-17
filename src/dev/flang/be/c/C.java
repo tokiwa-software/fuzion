@@ -229,7 +229,7 @@ public class C extends ANY
            }
          cf.println("");
 
-         // thread local onewayMonad environments
+         // thread local effect environments
          if (p == CompilePhase.STRUCTS)
            {
              ordered
@@ -237,7 +237,7 @@ public class C extends ANY
                .filter(cl -> _fuir.clazzNeedsCode(cl) &&
                        _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic  &&
                        _intrinsics.isOnewayMonad(this, cl))
-               .mapToInt(cl -> _intrinsics.onewayMonadType(this, cl))
+               .mapToInt(cl -> _intrinsics.effectType(this, cl))
                .distinct()
                .forEach(cl -> cf.print(CStmnt.seq(CStmnt.decl("__thread", _types.clazz(cl), _names.env(cl)),
                                                   CStmnt.decl("bool", _names.envInstalled(cl)))));

@@ -40,7 +40,7 @@ private handles2<T,X>(
   lastOpt option<handle2<T>>,
 
   # action to be taken: plain nomad, install or replace?
-  redef r onewayMonadModes
+  redef r effectModes
   ) : onewayMonad<X, handles2<T,X>> r
 is
 
@@ -104,10 +104,10 @@ is
     w T)
   pre
     match mode
-      onewayMonadMode.plain   => false  # must be used as onewayMonad only
-      onewayMonadMode.default => false
-      onewayMonadMode.abort   => false
-      onewayMonadMode.inst, onewayMonadMode.repl => true
+      effectMode.plain   => false  # must be used as onewayMonad only
+      effectMode.default => false
+      effectMode.abort   => false
+      effectMode.inst, effectMode.repl => true
    =>
     h.put w
     handles2<T,X> v lastOpt mode
@@ -125,10 +125,10 @@ is
     )
   pre
     match mode
-      onewayMonadMode.plain   => false  # must be used as onewayMonad only
-      onewayMonadMode.default => false
-      onewayMonadMode.abort   => false
-      onewayMonadMode.inst, onewayMonadMode.repl => true
+      effectMode.plain   => false  # must be used as onewayMonad only
+      effectMode.default => false
+      effectMode.abort   => false
+      effectMode.inst, effectMode.repl => true
    =>
     h.put (f h.get)
     handles2<T,X> v lastOpt mode
@@ -137,19 +137,19 @@ is
   infix >>= (f X -> handles2<T,X>) => bind<X> f
 
   bind <B> (f X -> handles2<T,B>) handles2<T,B> is
-    handles2<T,B> (f v).v lastOpt onewayMonadMode.plain
+    handles2<T,B> (f v).v lastOpt effectMode.plain
 
-  return<B> (w B) => handles2<T,B> w lastOpt onewayMonadMode.plain
+  return<B> (w B) => handles2<T,B> w lastOpt effectMode.plain
 
 # short-hand for creating and installing an empty set of handles2 of given type.
 #
 handles2<T>(rr ()->unit) =>
-  handles2<T,unit> unit nil (onewayMonadMode.inst rr)
+  handles2<T,unit> unit nil (effectMode.inst rr)
   unit
 
 # short-hand for creating an empty set of handles2 of given type.
 #
-handles2_<T> => handles2<T,unit> unit nil onewayMonadMode.plain
+handles2_<T> => handles2<T,unit> unit nil effectMode.plain
 
 
 # short-hand for accessing handles monad for given type in current environment
@@ -193,7 +193,7 @@ handles2_type<T> is
   # install default instance of handles2
   #
   installDefault unit is
-    handles2<T,unit> unit nil onewayMonadMode.default
+    handles2<T,unit> unit nil effectMode.default
     unit
 
 
