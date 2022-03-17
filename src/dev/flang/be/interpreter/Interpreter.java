@@ -797,7 +797,7 @@ public class Interpreter extends ANY
               break;
             }
           case Intrinsic:
-            result = Intrinsics.call(innerClazz);
+            result = Intrinsics.call(this, innerClazz);
             break;
           case Choice: // NYI: why choice here?
           case Routine:

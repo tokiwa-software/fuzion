@@ -106,6 +106,7 @@ is
     match mode
       onewayMonadMode.plain   => false  # must be used as onewayMonad only
       onewayMonadMode.default => false
+      onewayMonadMode.abort   => false
       onewayMonadMode.inst, onewayMonadMode.repl => true
    =>
     h.put w
@@ -126,6 +127,7 @@ is
     match mode
       onewayMonadMode.plain   => false  # must be used as onewayMonad only
       onewayMonadMode.default => false
+      onewayMonadMode.abort   => false
       onewayMonadMode.inst, onewayMonadMode.repl => true
    =>
     h.put (f h.get)

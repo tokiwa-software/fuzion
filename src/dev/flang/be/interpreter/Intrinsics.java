@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.interpreter;
 
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.Call; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Consts; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -42,6 +43,7 @@ import java.lang.reflect.Array;
 
 import java.nio.charset.StandardCharsets;
 
+import java.util.ArrayList;
 import java.util.TreeMap;
 
 
@@ -86,7 +88,7 @@ public class Intrinsics extends ANY
    *
    * @return a Callable instance to execute the intrinsic call.
    */
-  public static Callable call(Clazz innerClazz)
+  public static Callable call(Interpreter interpreter, Clazz innerClazz)
   {
     if (PRECONDITIONS) require
       (innerClazz.feature().isIntrinsic());
@@ -630,6 +632,35 @@ public class Intrinsics extends ANY
              n.equals("onewayMonad.remove"  ) ||
              n.equals("onewayMonad.replace" ) ||
              n.equals("onewayMonad.default" )    ) { result = onewayMonad(n, innerClazz); }
+    else if (n.equals("onewayMonad.abort"))
+      {
+        result = onewayMonad(n, innerClazz);
+      }
+    else if (n.equals("onewayMonad.onewayMonadHelper.abortable"))
+      {
+        result = (args) ->
+          {
+            var oc = innerClazz._outer;
+            var effect = oc._outer;
+            var call = Types.resolved.f_function_call;
+            var ic = oc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+            var al = new ArrayList<Value>();
+            al.add(args.get(0));
+            try {
+              var ignore = interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al);
+              return new boolValue(true);
+            } catch (Abort a) {
+              if (a._effect == effect)
+                {
+                  return new boolValue(false);
+                }
+              else
+                {
+                  throw a;
+                }
+            }
+          };
+      }
     else
       {
         Errors.fatal(f.pos(),
@@ -638,6 +669,16 @@ public class Intrinsics extends ANY
         result = (args) -> Value.NO_VALUE;
       }
     return result;
+  }
+
+  static class Abort extends Error
+  {
+    Clazz _effect;
+    Abort(Clazz effect)
+    {
+      super();
+      this._effect = effect;
+    }
   }
 
 
@@ -662,6 +703,7 @@ public class Intrinsics extends ANY
           case "onewayMonad.remove" : check(_onewayMonads_.get(cl) != null); _onewayMonads_.put(cl, null); break; // NYI: restore original value!
           case "onewayMonad.replace": check(_onewayMonads_.get(cl) != null); _onewayMonads_.put(cl, m   ); break;
           case "onewayMonad.default": if (_onewayMonads_.get(cl) == null) {  _onewayMonads_.put(cl, m   ); } break;
+          case "onewayMonad.abort": throw new Abort(cl);
           default: throw new Error("unexected onewayMonad intrinsic '"+n+"'");
           }
         return Value.EMPTY_VALUE;

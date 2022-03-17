@@ -42,6 +42,7 @@ import dev.flang.ast.AbstractFeature; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
+import dev.flang.ast.Call; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
@@ -905,7 +906,7 @@ hw25 is
       {
       case Abstract : return false;
       case Choice   : return false;
-      case Intrinsic: return !cc.isAbsurd();
+      case Intrinsic:
       case Routine  :
       case Field    :
         return (cc.isInstantiated() || cc.feature().isOuterRef()) && cc != Clazzes.conststring.getIfCreated() && !cc.isAbsurd();
@@ -1528,6 +1529,22 @@ hw25 is
 
     var s = _codeIds.get(c).get(ix+1+cix);
     return ((NumLiteral)s).intValue().intValueExact();
+  }
+
+
+  /**
+   * For a clazz that is a heir of 'Function', find the corresponding inner
+   * clazz for 'call'.  This is used for code generation of intrinsic
+   * 'abortable' that has to create code to call 'call'.
+   *
+   * @param cl index of a clazz that is a heir of 'Function'.
+   */
+  public int lookupCall(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    var call = Types.resolved.f_function_call;
+    var ic = cc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+    return _clazzIds.get(ic);
   }
 
 }

@@ -312,6 +312,7 @@ class Intrinsics extends ANY
       case "onewayMonad.remove" :
       case "onewayMonad.replace":
       case "onewayMonad.default":
+      case "onewayMonad.abort":
         {
           var ecl = onewayMonadType(c, cl);
           var ev  = c._names.env(ecl);
@@ -319,14 +320,25 @@ class Intrinsics extends ANY
           var o   = c._names.OUTER;
           var e   = c._fuir.clazzIsRef(ecl) ? o : o.deref();
           return
-            switch (c._fuir.clazzIntrinsicName(cl))
+            switch (in)
               {
               case "onewayMonad.install" ->                       CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )) ;
               case "onewayMonad.remove"  ->                                                evi.assign(CIdent.FALSE)  ;
               case "onewayMonad.replace" ->                                  ev.assign(e)                            ;
               case "onewayMonad.default" -> CStmnt.iff(evi.not(), CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )));
+              case "onewayMonad.abort"   -> CStmnt.seq(CExpr.fprintfstderr("*** C backend support for %s missing\n",
+                                                                           CExpr.string(c._fuir.clazzIntrinsicName(cl))),
+                                                       CExpr.exit(1));
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };
+        }
+      case "onewayMonad.onewayMonadHelper.abortable":
+        {
+          var oc = c._fuir.clazzOuterClazz(cl);
+          var call = c._fuir.lookupCall(oc);
+          check
+            (c._fuir.clazzNeedsCode(call));
+          return CExpr.call(c._names.function(call, false), new List<>(c._names.OUTER));
         }
 
       default:

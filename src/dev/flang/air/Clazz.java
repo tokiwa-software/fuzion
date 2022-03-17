@@ -1561,28 +1561,54 @@ public class Clazz extends ANY implements Comparable<Clazz>
                     r.run();
                   }
               }
+            if (feature().isIntrinsic())
+              {
+                intrinsicCalled(at);
+              }
           }
+      }
+  }
 
-        if (feature().isIntrinsic())
-          { // value instances returned from intrinsics are automatically
-            // recorded to be instantiated, refs only if intrinsic is marked as
-            // 'intrinsic_constructor'.
-            var rc = resultClazz();
-            if (rc.isChoice())
+
+  /**
+   * Find clazzes required by intrinsic method that has been found be to called.
+   *
+   * This includes results of intrinsic contructors are any specifc clazzes
+   * required for specific instrinsics, e.g., clazzes called from the intrinsic.
+   *
+   * @param at position that the intrinsic has been found to be called.
+   */
+  void intrinsicCalled(HasSourcePosition at)
+  {
+    if (PRECONDITIONS) require
+      (feature().isIntrinsic(),
+       isCalled());
+
+    // value instances returned from intrinsics are automatically
+    // recorded to be instantiated, refs only if intrinsic is marked as
+    // 'intrinsic_constructor'.
+    var rc = resultClazz();
+    if (rc.isChoice())
+      {
+        if (feature().isIntrinsicConstructor())
+          {
+            for (var cg : rc.choiceGenerics())
               {
-                if (feature().isIntrinsicConstructor())
-                  {
-                    for (var cg : rc.choiceGenerics())
-                      {
-                        cg.instantiated(at);
-                      }
-                  }
-              }
-            else if (!rc.isRef() || feature().isIntrinsicConstructor())
-              {
-                rc.instantiated(at);
+                cg.instantiated(at);
               }
           }
+      }
+    else if (!rc.isRef() || feature().isIntrinsicConstructor())
+      {
+        rc.instantiated(at);
+      }
+
+    switch (feature().qualifiedName())
+      {
+      case "onewayMonad.onewayMonadHelper.abortable":
+        _outer.lookup(Types.resolved.f_function_call, Call.NO_GENERICS, at);
+        break;
+      default: break;
       }
   }
 
