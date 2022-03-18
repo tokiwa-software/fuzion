@@ -29,8 +29,10 @@ private out (
   p canPrint,
 
   # action to be taken: plain nomad, install or replace?
-  redef r effectModes
-  ) ref : effect r
+  redef r effectModes,
+
+  _ unit
+  ) : effect r
 is
 
   # print the given string followed be new line
@@ -54,13 +56,22 @@ is
 
 # short-hand for creating and installing out monad
 #
-out(rr ()->unit) => out defaultPrint (effectMode.inst rr)
+out(rr ()->unit) => out defaultPrint rr
+
+
+# short-hand for creating and installing out monad
+#
+out(p canPrint, rr ()->unit) =>
+  out p (effectMode.inst rr) unit
+  unit
+
 
 # short-hand for accessing out monad in current environment
 #
 out =>
   outs.installDefault
   io.out.env
+
 
 canPrint ref is
 
@@ -86,5 +97,5 @@ outs is
 
   # install default effect out using defaultPrint
   installDefault unit is
-    out defaultPrint effectMode.default
+    out defaultPrint effectMode.default unit
     unit
