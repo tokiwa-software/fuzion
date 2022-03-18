@@ -41,7 +41,7 @@ is
   # resulting 'outcome'.
   #
   on<R>(f ()->R) outcome<R> is
-    (run<option<outcome<R>>> (()->outcome f()) nil).lazyGet ()->err.get
+    (run<outcome<R>> (()->outcome f()) ()->err.get)
 
   # terminate immediately with the given error wrapped in 'outcome'.
   #
