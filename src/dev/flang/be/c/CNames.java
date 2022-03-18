@@ -109,6 +109,25 @@ public class CNames extends ANY
 
 
   /**
+   * Prefix for helper functions
+   */
+  private static final String HELPER_PREFIX = "fzH_";
+
+
+  /**
+   * Prefix for thread local env variable that stores the current oneway monad.
+   */
+  private static final String ENV_PREFIX = "fzEnv_";
+
+
+  /**
+   * Prefix for thread local env variable that stores the bool flag whether
+   * there is a current oneway monad installed.
+   */
+  private static final String ENV_INSTALLED_PREFIX = "fzEnvInstalled_";
+
+
+  /**
    * C identifier of argument variable that refers to a clazz' outer instance.
    */
   static final CExpr OUTER = new CIdent("fzouter");
@@ -144,6 +163,17 @@ public class CNames extends ANY
    */
   static final CIdent CHOICE_REF_ENTRY_NAME = new CIdent("vref");
 
+
+  /**
+   * Name of helper function to clone a stack allocated instance on the heap.
+   */
+  static final CIdent HEAP_CLONE = new CIdent(HELPER_PREFIX + "heapClone");
+
+
+  /**
+   * C symbol "NULL"
+   */
+  static final CExpr NULL = new CIdent("NULL");
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -436,6 +466,28 @@ public class CNames extends ANY
   {
     var index = _fuir.fieldIndex(field);
     return new CIdent(FIELD_PREFIX + index + "_" + mangle(_fuir.clazzBaseName(field)));
+
+  }
+
+  /**
+   * The name of the thread local env variable for the given onewayMonad type.
+   *
+   * @param cl clazz id for a onewayMonad type.
+   */
+  CIdent env(int cl)
+  {
+    return new CIdent(ENV_PREFIX + clazzId2num(cl));
+  }
+
+  /**
+   * The name of the thread local env variable for the thread local env variable that
+   * stores the bool flag whether there is a current oneway monad installed.
+   *
+   * @param cl clazz id for a onewayMonad type.
+   */
+  CIdent envInstalled(int cl)
+  {
+    return new CIdent(ENV_INSTALLED_PREFIX + clazzId2num(cl));
   }
 
 }

@@ -45,6 +45,8 @@ class CIdent extends CExpr
   final static CIdent STDERR = new CIdent("stderr");
   final static CIdent FILE = new CIdent("__FILE__");
   final static CIdent LINE = new CIdent("__LINE__");
+  final static CIdent TRUE = new CIdent("true");
+  final static CIdent FALSE = new CIdent("false");
 
 
   /*----------------------------  variables  ----------------------------*/

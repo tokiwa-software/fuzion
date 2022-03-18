@@ -59,6 +59,7 @@ import dev.flang.ast.AbstractMatch; // NYI: remove dependency! Use dev.flang.fui
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Box; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Check; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.Env; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -304,7 +305,7 @@ public class Interpreter extends ANY
         if (d instanceof Clazz innerClazz)
           {
             var tclazz = (Clazz) staticClazz.getRuntimeData(c.sid_ + 1);
-            var dyn = tclazz.isRef() && c.isDynamic();
+            var dyn = (tclazz.isRef() || c.target().isCallToOuterRef() && tclazz.isUsedAsDynamicOuterRef()) && c.isDynamic();
             d = callable(dyn, innerClazz, tclazz);
             if (d == null)
               {
@@ -319,7 +320,8 @@ public class Interpreter extends ANY
           }
         else // if (d == "dyn")
           {
-            var cl = ((Instance) args.get(0)).clazz();
+            var v = (ValueWithClazz) args.get(0);
+            Clazz cl = v.clazz();
             ca = (Callable) ((DynamicBinding)cl._dynamicBinding).callable(c.calledFeature());
           }
         result = ca.call(args);
@@ -419,7 +421,7 @@ public class Interpreter extends ANY
             tag = getField(sf.choiceTag(), staticSubjectClazz, sub).i32Value();
           }
         Clazz subjectClazz = tag < 0
-          ? ((Instance) refVal).clazz()
+          ? ((ValueWithClazz) refVal).clazz()
           : staticSubjectClazz.getChoiceClazz(tag);
 
         var it = m.cases().iterator();
@@ -523,10 +525,13 @@ public class Interpreter extends ANY
                   {
                     // see tests/redef_args and issue #86 for a case where this lookup is needed:
                     f = vc.lookup(f, dev.flang.ast.Call.NO_GENERICS, Clazzes.isUsedAt(f)).feature();
-                    Value v = getField(f, vc, val);
-                    // NYI: Check that this works well for internal fields such as choice tags.
-                    // System.out.println("Box "+vc+" => "+rc+" copying "+f.qualifiedName()+" "+v);
-                    setField(f, -1, rc, result, v);
+                    if (Clazzes.isUsed(f, vc))
+                      {
+                        Value v = getField(f, vc, val);
+                        // NYI: Check that this works well for internal fields such as choice tags.
+                        // System.out.println("Box "+vc+" => "+rc+" copying "+f.qualifiedName()+" "+v);
+                        setField(f, -1, rc, result, v);
+                      }
                   }
               }
             if (vc.isChoice())
@@ -607,6 +612,18 @@ public class Interpreter extends ANY
           }
         result = new Instance(ac);
         setField(Types.resolved.f_array_internalArray, -1, ac, result, sa);
+      }
+
+    else if (s instanceof Env v)
+      {
+        Clazz vClazz = staticClazz.getRuntimeClazz(v._clazzId);
+        result = Intrinsics._effects_.get(vClazz);
+        if (result == null)
+          {
+            Errors.fatal("*** oneway monad for " + vClazz + " not present in current environment\n" +
+                         "    available are " + Intrinsics._effects_.keySet() + "\n" +
+                         callStack());
+          }
       }
 
     else
@@ -780,7 +797,7 @@ public class Interpreter extends ANY
               break;
             }
           case Intrinsic:
-            result = Intrinsics.call(innerClazz);
+            result = Intrinsics.call(this, innerClazz);
             break;
           case Choice: // NYI: why choice here?
           case Routine:
@@ -1147,7 +1164,7 @@ public class Interpreter extends ANY
       {
         curValue = (curValue instanceof LValue lv) ? loadRefField(thiz, lv)
                                                    : curValue;
-        clazz = ((Instance) curValue).clazz();
+        clazz = ((ValueWithClazz) curValue).clazz();
       }
     off = Layout.get(clazz).offset0(thiz, select);
 

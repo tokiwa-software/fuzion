@@ -91,6 +91,12 @@ is
   infix ⋃ (other ref psSet<K>) => psSet (psm ⋃ other.psm) unit  # NYI: 'ref' due to lack of 'like this'
 
 
+  # intersection of two psSets
+  infix ⋂ (other ref psSet<K>) =>
+    s := (psSet.this ⋃ other).filter (x -> psSet.this.has x && other.has x)
+    psSet<K>.addAllFromStream s
+
+
   # add all elements of the given Sequence to this set
   #
   addAll (s Sequence<K>) ref psSet<K> is  # NYI: 'ref' due to lack of 'like this'

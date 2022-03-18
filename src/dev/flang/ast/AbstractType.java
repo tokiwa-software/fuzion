@@ -659,7 +659,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * otherwise the type that results by replacing all formal generic parameters
    * of this in t by the corresponding type from actualGenerics.
    */
-  public AbstractType actualType_(AbstractFeature f, List<AbstractType> actualGenerics)
+  private AbstractType actualType_(AbstractFeature f, List<AbstractType> actualGenerics)
   {
     /* NYI: Performance: This requires time in O(this.depth *
      * f.inheritanceDepth), i.e. it is in O(n²)!  Caching is used to alleviate

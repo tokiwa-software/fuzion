@@ -42,6 +42,8 @@ import dev.flang.ast.AbstractFeature; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
+import dev.flang.ast.Call; // NYI: remove dependency
+import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
@@ -565,6 +567,32 @@ public class FUIR extends IR
 
 
   /**
+   * Is a clazz cl's clazzOuterRef() a value type that survives the call to
+   * cl?  If this is the case, we need to heap allocate the outer ref.
+   *
+   * @param cl a clazz id
+   *
+   * @return true if cl's may be kept alive longer than through its original
+   * constructor call since inner instances stay alive.
+   */
+  public boolean clazzOuterRefEscapes(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    var or = cc.outerRef();
+    var cco = cc._outer;
+    if (or == null || cco.isUnitType())
+      {
+        return false;
+      }
+    else
+      {
+        var rc = or.resultClazz();
+        return !rc.isRef() && !rc.feature().isBuiltInPrimitive() && cc.feature().isConstructor();
+      }
+  }
+
+
+  /**
    * Get the id of clazz Object.
    *
    * @return clazz id of clazz Object
@@ -878,7 +906,7 @@ hw25 is
       {
       case Abstract : return false;
       case Choice   : return false;
-      case Intrinsic: return !cc.isAbsurd();
+      case Intrinsic:
       case Routine  :
       case Field    :
         return (cc.isInstantiated() || cc.feature().isOuterRef()) && cc != Clazzes.conststring.getIfCreated() && !cc.isAbsurd();
@@ -1002,6 +1030,23 @@ hw25 is
     var t = (Tag) _codeIds.get(c).get(ix);
     var ncl = (Clazz) outerClazz.getRuntimeData(t._valAndTaggedClazzId + 1);
     return ncl == null ? -1 : _clazzIds.get(ncl);
+  }
+
+  /**
+   * For outer clazz cl with an Env instruction in code c at ix, return the type
+   * of the env value.
+   */
+  public int envClazz(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Env);
+
+    var outerClazz = _clazzIds.get(cl);
+    var v = (Env) _codeIds.get(c).get(ix);
+    var vcl = (Clazz) outerClazz.getRuntimeData(v._clazzId);
+    return vcl == null ? -1 : _clazzIds.get(vcl);
   }
 
   public int boxValueClazz(int cl, int c, int ix)
@@ -1160,6 +1205,8 @@ hw25 is
     var innerClazzes = new List<Clazz>();
     for (var clz : tclazz.heirs())
       {
+        if (CHECKS) check
+          (clz.isRef() == tclazz.isRef());
         var in = (Clazz) clz._inner.get(f);  // NYI: cast would fail for open generic field
         if (in != null && clazzNeedsCode(in))
           {
@@ -1482,6 +1529,22 @@ hw25 is
 
     var s = _codeIds.get(c).get(ix+1+cix);
     return ((NumLiteral)s).intValue().intValueExact();
+  }
+
+
+  /**
+   * For a clazz that is a heir of 'Function', find the corresponding inner
+   * clazz for 'call'.  This is used for code generation of intrinsic
+   * 'abortable' that has to create code to call 'call'.
+   *
+   * @param cl index of a clazz that is a heir of 'Function'.
+   */
+  public int lookupCall(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    var call = Types.resolved.f_function_call;
+    var ic = cc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+    return _clazzIds.get(ic);
   }
 
 }

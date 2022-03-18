@@ -49,14 +49,14 @@ NEW_LINE=$'\n'
 SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
 cd "$SCRIPTPATH"/..
 
-#
-EBNF_LEXER=$(pcregrep -M "^[a-zA-Z0-9_]+[ ]*:(\n|.)*?( ;)" ./src/dev/flang/parser/Lexer.java)
-EBNF_PARSER=$(pcregrep -M "^[a-zA-Z0-9_]+[ ]*:(\n|.)*?( ;)" ./src/dev/flang/parser/Parser.java)
+RULE_MATCHER="^(fragment\n)*[a-zA-Z0-9_]+[ ]*:(\n|.)*?( ;)"
+EBNF_LEXER=$(pcregrep -M "$RULE_MATCHER" ./src/dev/flang/parser/Lexer.java)
+EBNF_PARSER=$(pcregrep -M "$RULE_MATCHER" ./src/dev/flang/parser/Parser.java)
 
 # header
-EBNF="grammar Fuzion;${NEW_LINE}${NEW_LINE}"
+EBNF_HEADER="grammar Fuzion;${NEW_LINE}${NEW_LINE}"
 # combine parser and lexer
-EBNF="${EBNF}${EBNF_LEXER}${NEW_LINE}${EBNF_PARSER}"
+EBNF="${EBNF_HEADER}${EBNF_PARSER}${NEW_LINE}${EBNF_LEXER}"
 # replace " by '
 EBNF=$(sed 's/"/\x27/g' <<< "$EBNF")
 

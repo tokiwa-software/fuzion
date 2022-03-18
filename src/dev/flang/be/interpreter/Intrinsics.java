@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.interpreter;
 
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.Call; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Consts; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -39,7 +40,11 @@ import dev.flang.util.Errors;
 import dev.flang.util.List;
 
 import java.lang.reflect.Array;
+
 import java.nio.charset.StandardCharsets;
+
+import java.util.ArrayList;
+import java.util.TreeMap;
 
 
 /**
@@ -62,6 +67,17 @@ public class Intrinsics extends ANY
   /*----------------------------  variables  ----------------------------*/
 
 
+  /*------------------------  static variables  -------------------------*/
+
+
+  /**
+   * Currently installed one-way monads.
+   *
+   * NYI: This should be thread-local eventually.
+   */
+  static TreeMap<Clazz, Value> _effects_ = new TreeMap<>();
+
+
   /*-------------------------  static methods  --------------------------*/
 
 
@@ -72,7 +88,7 @@ public class Intrinsics extends ANY
    *
    * @return a Callable instance to execute the intrinsic call.
    */
-  public static Callable call(Clazz innerClazz)
+  public static Callable call(Interpreter interpreter, Clazz innerClazz)
   {
     if (PRECONDITIONS) require
       (innerClazz.feature().isIntrinsic());
@@ -613,6 +629,39 @@ public class Intrinsics extends ANY
       // NYI: This could be more useful by giving the object's class, an id, public fields, etc.
     }
     else if (n.equals("fuzion.std.nano_time"  )) { result = (args) -> new u64Value (System.nanoTime()); }
+    else if (n.equals("effect.install" ) ||
+             n.equals("effect.remove"  ) ||
+             n.equals("effect.replace" ) ||
+             n.equals("effect.default" )    ) { result = effect(n, innerClazz); }
+    else if (n.equals("effect.abort"))
+      {
+        result = effect(n, innerClazz);
+      }
+    else if (n.equals("effect.effectHelper.abortable"))
+      {
+        result = (args) ->
+          {
+            var oc = innerClazz._outer;
+            var effect = oc._outer;
+            var call = Types.resolved.f_function_call;
+            var ic = oc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+            var al = new ArrayList<Value>();
+            al.add(args.get(0));
+            try {
+              var ignore = interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al);
+              return new boolValue(true);
+            } catch (Abort a) {
+              if (a._effect == effect)
+                {
+                  return new boolValue(false);
+                }
+              else
+                {
+                  throw a;
+                }
+            }
+          };
+      }
     else
       {
         Errors.fatal(f.pos(),
@@ -621,6 +670,45 @@ public class Intrinsics extends ANY
         result = (args) -> Value.NO_VALUE;
       }
     return result;
+  }
+
+  static class Abort extends Error
+  {
+    Clazz _effect;
+    Abort(Clazz effect)
+    {
+      super();
+      this._effect = effect;
+    }
+  }
+
+
+  /**
+   * Create code for one-way monad intrinsics.
+   *
+   * @param n qualified name of the intrinsic to be called.
+   *
+   * @param innerClazz the frame clazz of the called feature
+   *
+   * @return a Callable instance to execute the intrinsic call.
+   */
+  static Callable effect(String n, Clazz innerClazz)
+  {
+    return (args) ->
+      {
+        var m = args.get(0);
+        var cl = innerClazz._outer;
+        switch (n)
+          {
+          case "effect.install":                                   _effects_.put(cl, m   );   break;
+          case "effect.remove" : check(_effects_.get(cl) != null); _effects_.put(cl, null);   break; // NYI: restore original value!
+          case "effect.replace": check(_effects_.get(cl) != null); _effects_.put(cl, m   );   break;
+          case "effect.default": if (_effects_.get(cl) == null) {  _effects_.put(cl, m   ); } break;
+          case "effect.abort": throw new Abort(cl);
+          default: throw new Error("unexected effect intrinsic '"+n+"'");
+          }
+        return Value.EMPTY_VALUE;
+      };
   }
 
 

@@ -90,7 +90,8 @@ class Intrinsics extends ANY
       c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or)) ? CNames.OUTER.deref().field(CNames.FIELDS_IN_REF_CLAZZ)
                                                        : CNames.OUTER;
 
-    switch (c._fuir.clazzIntrinsicName(cl))
+    var in = c._fuir.clazzIntrinsicName(cl);
+    switch (in)
       {
       case "safety"              : return (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
       case "debug"               : return (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
@@ -314,6 +315,39 @@ class Intrinsics extends ANY
             .ret();
         }
 
+      case "effect.install":
+      case "effect.remove" :
+      case "effect.replace":
+      case "effect.default":
+      case "effect.abort":
+        {
+          var ecl = effectType(c, cl);
+          var ev  = c._names.env(ecl);
+          var evi = c._names.envInstalled(ecl);
+          var o   = c._names.OUTER;
+          var e   = c._fuir.clazzIsRef(ecl) ? o : o.deref();
+          return
+            switch (in)
+              {
+              case "effect.install" ->                       CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )) ;
+              case "effect.remove"  ->                                                evi.assign(CIdent.FALSE)  ;
+              case "effect.replace" ->                                  ev.assign(e)                            ;
+              case "effect.default" -> CStmnt.iff(evi.not(), CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )));
+              case "effect.abort"   -> CStmnt.seq(CExpr.fprintfstderr("*** C backend support for %s missing\n",
+                                                                           CExpr.string(c._fuir.clazzIntrinsicName(cl))),
+                                                       CExpr.exit(1));
+              default -> throw new Error("unexpected intrinsic '" + in + "'.");
+              };
+        }
+      case "effect.effectHelper.abortable":
+        {
+          var oc = c._fuir.clazzOuterClazz(cl);
+          var call = c._fuir.lookupCall(oc);
+          check
+            (c._fuir.clazzNeedsCode(call));
+          return CExpr.call(c._names.function(call, false), new List<>(c._names.OUTER));
+        }
+
       default:
         var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
         Errors.warning(msg);
@@ -325,6 +359,54 @@ class Intrinsics extends ANY
 
       }
   }
+
+
+  /**
+   * Is cl one of the instrinsics in effect that changes the effect in
+   * the current environment?
+   *
+   * @param c the C backend
+   *
+   * @param cl the id of the intrinsic clazz
+   *
+   * @return true for effect.install and similar features.
+   */
+  boolean isOnewayMonad(C c, int cl)
+  {
+    if (PRECONDITIONS) require
+      (c._fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
+
+    return switch(c._fuir.clazzIntrinsicName(cl))
+      {
+      case "effect.install",
+           "effect.remove" ,
+           "effect.replace",
+           "effect.default" -> true;
+      default -> false;
+      };
+  }
+
+
+  /**
+   * For an intrinstic in effect that changes the effect in the
+   * current environment, return the type of the environment.  This type is used
+   * to distinguish different environments.
+   *
+   * @param c the C backend
+   *
+   * @param cl the id of the intrinsic clazz
+   *
+   * @return the type of the outer feature of cl
+   */
+  int effectType(C c, int cl)
+  {
+    if (PRECONDITIONS) require
+      (isOnewayMonad(c, cl));
+
+    var or = c._fuir.clazzOuterRef(cl);
+    return c._fuir.clazzResultClazz(or);
+  }
+
 
 
   /**

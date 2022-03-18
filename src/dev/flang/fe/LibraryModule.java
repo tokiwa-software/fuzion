@@ -40,6 +40,7 @@ import java.util.TreeSet;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
+import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
@@ -709,7 +710,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters
+.6+| true  .6+| 1      | byte          | 000CTkkk  kkk = kind, T = has type parameters, C = is intrinsic constructor
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -740,7 +741,8 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters |
+   *   | true   | 1      | byte          | 000CTkkk  kkk = kind, T = has type parameters |
+   *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -820,6 +822,10 @@ Feature
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
     return k == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
+  }
+  boolean featureIsIntrinsicConstructor(int at)
+  {
+    return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR) != 0);
   }
   int featureNamePos(int at)
   {
@@ -1450,6 +1456,7 @@ Expression
    | k==Cal   | 1      | Call          | feature call
    | k==Mat   | 1      | Match         | match statement
    | k==Tag   | 1      | Tag           | tag expression
+   | k==Env   | 1      | Env           | env expression
 |====
 
 --asciidoc--
@@ -1474,6 +1481,8 @@ Expression
    *   | k==Mat | 1      | Match         | match statement                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Tag | 1      | Tag           | tag expression                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | k==Env | 1      | Env           | env expression                                |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
   int expressionKindPos(int at)
@@ -1521,6 +1530,7 @@ Expression
       case Match   -> matchNextPos(eAt);
       case Call    -> callNextPos (eAt);
       case Tag     -> tagNextPos  (eAt);
+      case Env     -> envNextPos  (eAt);
       case Pop     -> eAt;
       case Unit    -> eAt;
       default      -> throw new Error("unexpected expression kind "+k+" at "+at+" in "+this);
@@ -2098,6 +2108,44 @@ Tag
   int tagNextPos(int at)
   {
     return typeNextPos(tagTypePos(at));
+  }
+
+
+
+  /*
+
+--asciidoc--
+
+Env
+^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+   | true     | 1      | Type          | type of resulting env value
+|====
+
+--asciidoc--
+   *   +---------------------------------------------------------------------------------+
+   *   | Env                                                                             |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Type          | type of resulting env value                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+  int envTypePos(int at)
+  {
+    return at;
+  }
+  AbstractType envType(int at)
+  {
+    return type(envTypePos(at));
+  }
+  int envNextPos(int at)
+  {
+    return typeNextPos(envTypePos(at));
   }
 
 

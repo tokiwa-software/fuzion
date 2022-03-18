@@ -1127,7 +1127,7 @@ public class Call extends AbstractCall
     else if (_select < 0)
       {
         t = t.resolve(res, tt.featureOfType());
-        t = tt.isGenericArgument() ? t : tt.actualType(t);
+        t = (target() instanceof Current) || tt.isGenericArgument() ? t : tt.actualType(t);
         if (calledFeature_.isConstructor() && t.compareTo(Types.resolved.t_void) != 0)
           {  /* specialize t for the target type here */
             t = new Type(t, t.generics(), target.type());
@@ -1595,24 +1595,6 @@ public class Call extends AbstractCall
         else if (cf == Types.resolved.f_bool_NOT    ) { result = newIf(target, BoolConst.FALSE, BoolConst.TRUE ); }
       }
     return result;
-  }
-
-
-  /**
-   * Does this call use dynamic binding. Dynamic binding is used if the called
-   * feature uses dynamic binding and the target is not Current. In case the
-   * target is current, this call will be specialized to avoid dynamic binding.
-   */
-  public boolean isDynamic()
-  {
-    if (PRECONDITIONS) require
-      (Errors.count() > 0 || calledFeature_ != null);
-
-    var cf = calledFeature_;
-    return
-      cf != null &&
-      cf.isDynamic() &&
-      !(target instanceof Current);
   }
 
 }

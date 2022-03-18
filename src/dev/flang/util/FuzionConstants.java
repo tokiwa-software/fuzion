@@ -188,7 +188,14 @@ public class FuzionConstants extends ANY
   /**
    * Flag OR'ed to kind for routines with generic type parameters.
    */
-  public static final int MIR_FILE_KIND_HAS_TYPE_PAREMETERS = 8;
+  public static final int MIR_FILE_KIND_HAS_TYPE_PAREMETERS = 0x08;
+
+
+  /**
+   * Flag OR'ed to kind for intrinsics that create an instance of their result ref type.
+   */
+  public static final int MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR = 0x10;
+
 
   /**
    * Fuzion home directory as used in module files instead of absolute or

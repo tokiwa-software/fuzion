@@ -111,6 +111,12 @@ public class C extends ANY
   final CTypes _types;
 
 
+  /**
+   * C intrinsics
+   */
+  final Intrinsics _intrinsics;
+
+
   /*---------------------------  consructors  ---------------------------*/
 
 
@@ -128,6 +134,7 @@ public class C extends ANY
     _fuir = fuir;
     _names = new CNames(fuir);
     _types = new CTypes(_fuir, _names);
+    _intrinsics = new Intrinsics();
     Errors.showAndExit();
   }
 
@@ -194,12 +201,26 @@ public class C extends ANY
       ("#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+
        "#include <unistd.h>\n"+
+       "#include <stdbool.h>\n"+
        "#include <stdint.h>\n"+
+       "#include <string.h>\n"+
        "#include <assert.h>\n"+
        "#include <time.h>\n"+
        "\n");
-
+    var o = CExpr.ident("of");
+    var s = CExpr.ident("sz");
+    var r = new CIdent("r");
+    cf.print
+      (CStmnt.lineComment("helper to clone a (stack) instance to the heap"));
+    cf.print
+      (CStmnt.functionDecl("void *",
+                           CNames.HEAP_CLONE,
+                           new List<>("void *", "of", "size_t", "sz"),
+                           CStmnt.seq(new List<>(CStmnt.decl(null, "void *", r, CExpr.call("malloc", new List<>(s))),
+                                                 CExpr.call("memcpy", new List<>(r, o, s)),
+                                                 r.ret()))));
     var ordered = _types.inOrder();
+
     Stream.of(CompilePhase.values()).forEachOrdered
       ((p) ->
        {
@@ -208,6 +229,20 @@ public class C extends ANY
              cf.print(p.compile(this, c));
            }
          cf.println("");
+
+         // thread local effect environments
+         if (p == CompilePhase.STRUCTS)
+           {
+             ordered
+               .stream()
+               .filter(cl -> _fuir.clazzNeedsCode(cl) &&
+                       _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic  &&
+                       _intrinsics.isOnewayMonad(this, cl))
+               .mapToInt(cl -> _intrinsics.effectType(this, cl))
+               .distinct()
+               .forEach(cl -> cf.print(CStmnt.seq(CStmnt.decl("__thread", _types.clazz(cl), _names.env(cl)),
+                                                  CStmnt.decl("bool", _names.envInstalled(cl)))));
+           }
        });
     cf.println("int main(int argc, char **args) { " + _names.function(_fuir.mainClazzId(), false) + "(); }");
   }
@@ -662,6 +697,18 @@ public class C extends ANY
           push(stack, newcl, res);
           break;
         }
+      case Env:
+        {
+          var ecl = _fuir.envClazz(cl, c, i);
+          var res = _names.env(ecl);
+          var evi = _names.envInstalled(ecl);
+          o = CStmnt.iff(evi.not(),
+                         CStmnt.seq(CExpr.fprintfstderr("*** oneway monad for %s not present in current environment\n",
+                                                        CExpr.string(_fuir.clazzAsString(ecl))),
+                                    CExpr.exit(1)));
+          push(stack, ecl, res);
+          break;
+        }
       case Dup:
         {
           var v = stack.pop();
@@ -863,10 +910,13 @@ public class C extends ANY
         var a = tc == _fuir.clazzUniverse() ? _names.UNIVERSE : pop(stack, tc);
         if (or != -1)
           {
-            var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
             var rc = _fuir.clazzResultClazz(or);
-            var a3 = tc != rc ? a2.castTo(_types.clazzField(or)) : a2;
-            return new List<>(a3);
+            var a2 =_fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
+            var esc = _fuir.clazzOuterRefEscapes(cc);
+            var a3 = esc ? CExpr.call(CNames.HEAP_CLONE._name, new List<>(a2, a.sizeOfExpr()))
+                         : a2;
+            var a4 = esc || tc != rc ? a3.castTo(_types.clazzField(or)) : a3;
+            return new List<>(a4);
           }
       }
     return new List<>();
@@ -958,7 +1008,7 @@ public class C extends ANY
             {
               l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"));
               var o = ck == FUIR.FeatureKind.Routine ? codeForRoutine(cl, false)
-                                                     : new Intrinsics().code(this, cl);
+                                                     : _intrinsics.code(this, cl);
               l.add(cFunctionDecl(cl, false, o));
             }
           }

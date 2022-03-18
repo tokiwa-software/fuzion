@@ -119,6 +119,14 @@ is
       option.this ? v T => v
                   | nil => default
 
+  # unwraps an option if it exists, returns default value otherwise. default
+  # is evaluated lazily.
+  #
+  lazyGet(default ()->T)
+    =>
+      option.this ? v T => v
+                  | nil => default()
+
 
 # option with 1 argument provides an short-hand to wrap a value into an option
 #

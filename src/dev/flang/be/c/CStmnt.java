@@ -215,6 +215,27 @@ abstract class CStmnt extends ANY
    */
   static CStmnt decl(String modifier, String type, CIdent ident, CExpr init)
   {
+    return decl(modifier, type, ident, null, init);
+  }
+
+
+  /**
+   * C declaration such as 'char c[4] = "123";'
+   *
+   * @param modifier a modifier, e.g., "static", null for none.
+   *
+   * @param type the type of the defined entity
+   *
+   * @param ident the name of the defined entity
+   *
+   * @param sz array size, null if none
+   *
+   * @param init initial value or null if none.
+   *
+   * @return corresponding CStmnt
+   */
+  static CStmnt decl(String modifier, String type, CIdent ident, CExpr sz, CExpr init)
+  {
     return new CStmnt()
       {
         void code(CString sb)
@@ -224,6 +245,12 @@ abstract class CStmnt extends ANY
             .append(type)
             .append(" ");
           ident.code(sb);
+          if (sz != null)
+            {
+              sb.append("[");
+              sz.code(sb);
+              sb.append("]");
+            }
           if (init != null)
             {
               sb.append(" = ");
@@ -321,8 +348,7 @@ abstract class CStmnt extends ANY
         {
           for (var cs : s)
             {
-              cs.code(sb);
-              sb.append(cs.needsSemi() ? ";\n" : "");
+              cs.codeSemi(sb);
             }
         }
         boolean needsSemi()
@@ -348,8 +374,7 @@ abstract class CStmnt extends ANY
         {
           for (var cs : s)
             {
-              cs.code(sb);
-              sb.append(cs.needsSemi() ? ";\n" : "");
+              cs.codeSemi(sb);
             }
         }
         boolean needsSemi()
@@ -454,7 +479,7 @@ abstract class CStmnt extends ANY
           cc.code(sb);
           sb.append(")\n")
             .append("{\n");
-          s.code(sb.indent());
+          s.codeSemi(sb.indent());
           sb.append("}\n");
         }
         boolean needsSemi()
@@ -474,6 +499,19 @@ abstract class CStmnt extends ANY
    * @param sb will be used to append the code to
    */
   abstract void code(CString sb);
+
+
+  /**
+   * Create the C code corresponding to this statement followed by a semicolon
+   * if needed.
+   *
+   * @param sb will be used to append the code to
+   */
+  void codeSemi(CString sb)
+  {
+    code(sb);
+    sb.append(needsSemi() ? ";\n" : "");
+  }
 
 
   /**

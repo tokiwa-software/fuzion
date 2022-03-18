@@ -1,0 +1,101 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature handles
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# out -- oneway monad providing an output stream
+#
+private out (
+  p canPrint,
+
+  # action to be taken: plain nomad, install or replace?
+  redef r effectModes,
+
+  _ unit
+  ) : effect r
+is
+
+  # print the given string followed be new line
+  #
+  println (s Object) =>
+    p.println s
+    replace
+
+  # print the given string
+  #
+  print (s Object) =>
+    p.print s
+    replace
+
+  # print new line
+  #
+  println =>
+    p.println
+    replace
+
+
+# short-hand for creating and installing out monad
+#
+out(rr ()->unit) => out defaultPrint rr
+
+
+# short-hand for creating and installing out monad
+#
+out(p canPrint, rr ()->unit) =>
+  out p (effectMode.inst rr) unit
+  unit
+
+
+# short-hand for accessing out monad in current environment
+#
+out =>
+  outs.installDefault
+  io.out.env
+
+
+canPrint ref is
+
+  println(s Object) =>
+    print s
+    println
+
+  println =>
+    print (codepoint 10)
+
+  print(s Object) unit is abstract
+
+
+defaultPrint : canPrint is
+
+  print(s Object) => stdout.print s
+
+
+# unit type feature defining features related to out but not requiring an
+# instance.
+#
+outs is
+
+  # install default effect out using defaultPrint
+  installDefault unit is
+    out defaultPrint effectMode.default unit
+    unit

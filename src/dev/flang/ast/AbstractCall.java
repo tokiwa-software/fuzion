@@ -96,7 +96,6 @@ public abstract class AbstractCall extends Expr
   public abstract Expr target();
   public abstract List<Expr> actuals();
   public abstract int select();
-  public abstract boolean isDynamic();
   public abstract boolean isInheritanceCall();
   public Expr visit(FeatureVisitor v, AbstractFeature outer)
   {
@@ -122,6 +121,20 @@ public abstract class AbstractCall extends Expr
         target().visitStatements(v);
       }
     super.visitStatements(v);
+  }
+
+
+  /**
+   * Does this call use dynamic binding.  Dynamic binding is used if the called
+   * feature uses dynamic binding and the target is not Current.  In case the
+   * target is current, this call will be specialized to avoid dynamic binding.
+   */
+  public boolean isDynamic()
+  {
+    return
+      calledFeature().isDynamic() &&
+      !(target() instanceof AbstractCurrent) &&
+      !isInheritanceCall();
   }
 
 }

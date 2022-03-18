@@ -43,6 +43,7 @@ import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
+import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
@@ -81,6 +82,7 @@ public class Clazzes extends ANY
    */
   private static final Map<Clazz, Clazz> clazzes = new TreeMap<>();
   private static final Map<AbstractType, Clazz> _clazzesForTypes_ = new TreeMap<>();
+
 
   /**
    * All clazzes found so far that have not been analyzed yet for clazzes that
@@ -506,6 +508,10 @@ public class Clazzes extends ANY
    */
   static void calledDynamically(AbstractFeature f)
   {
+    if (PRECONDITIONS) require
+      (isUsedAtAll(f),
+       f.generics().list.isEmpty());
+
     if (!_calledDynamically_.contains(f))
       {
         _calledDynamically_.add(f);
@@ -814,7 +820,12 @@ public class Clazzes extends ANY
 
     var tclazz  = clazz(c.target(), outerClazz);
     var cf      = c.calledFeature();
-    var dynamic = c.isDynamic() && tclazz.isRef();
+    var callToOuterRef = c.target().isCallToOuterRef();
+    boolean dynamic = c.isDynamic() && (tclazz.isRef() || callToOuterRef);
+    if (callToOuterRef)
+      {
+        tclazz._isCalledAsOuter = true;
+      }
     if (dynamic)
       {
         calledDynamically(cf);
@@ -828,32 +839,6 @@ public class Clazzes extends ANY
           }
         outerClazz.setRuntimeData(c.sid_ + 0, innerClazz);
         outerClazz.setRuntimeData(c.sid_ + 1, tclazz    );
-
-        if (!dynamic)
-          {
-            whenCalled(outerClazz,
-                       () ->
-                       {
-                         var ic = innerClazz.isCalled();
-                         innerClazz._isCalledDirectly = true;  // NYI: Check why this is needed
-                         if (!c.isInheritanceCall())
-                           {
-                             innerClazz.instantiated(c);
-                           }
-                         if (!ic && innerClazz.isCalled())
-                           {
-                             var l = _whenCalled_.remove(innerClazz);
-                             if (l != null)
-                               {
-                                 for (var r : l)
-                                   {
-                                     r.run();
-                                   }
-                               }
-                           }
-                       });
-          }
-
         var afs = innerClazz.argumentFields();
         var i = 0;
         for (var a : c.actuals())
@@ -973,6 +958,20 @@ public class Clazzes extends ANY
 
 
   /**
+   * Find all static clazzes for this Env and store them in outerClazz.
+   */
+  public static void findClazzes(Env v, Clazz outerClazz)
+  {
+    Clazz ac = clazz(v, outerClazz);
+    if (v._clazzId < 0)
+      {
+        v._clazzId = getRuntimeClazzId();
+      }
+    outerClazz.setRuntimeClazz(v._clazzId, ac);
+  }
+
+
+  /**
    * Determine the result clazz of an Expr.
    *
    * NYI: Temporary solution, will be replaced by dynamic calls.
@@ -1062,6 +1061,11 @@ public class Clazzes extends ANY
     else if (e instanceof InlineArray ia)
       {
         result = outerClazz.actualClazz(ia.type());
+      }
+
+    else if (e instanceof Env v)
+      {
+        result = outerClazz.actualClazz(v.type());
       }
 
     else
@@ -1261,28 +1265,6 @@ public class Clazzes extends ANY
     f._usedAt = at;
   }
 
-
-  /**
-   * Has f been found to be called dynamically?
-   *
-   * NYI: remove, redundant with isCalledDynamically.
-   */
-  public static boolean isCalledDynamically0(AbstractFeature f)
-  {
-    return f._calledDynamically;
-  }
-
-
-  /**
-   * Add f to the set of dynamically called features, record at as the position
-   * of the first use.
-   *
-   * NYI: remove, redundant with isCalledDynamically.
-   */
-  public static void setCalledDynamically0(AbstractFeature f)
-  {
-    f._calledDynamically = true;
-  }
 
 }
 

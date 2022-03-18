@@ -45,6 +45,7 @@ import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Check;
 import dev.flang.ast.Constant;
+import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FormalGenerics;
@@ -240,7 +241,8 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters |
+   *   | true   | 1      | byte          | 000CTkkk  kkk = kind, T = has type parameters |
+   *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -323,6 +325,10 @@ class LibraryOut extends DataOut
     if (f.generics() != FormalGenerics.NONE)
       {
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS;
+      }
+    if (f.isIntrinsicConstructor())
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR;
       }
     var n = f.featureName();
     write(k);
@@ -803,6 +809,20 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    */
         type(t.type());
+      }
+    else if (s instanceof Env e)
+      {
+        lastPos = exprKindAndPos(IR.ExprKind.Env, lastPos, s.pos());
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Env                                                                             |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Type          | The type of this env                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+        type(e.type());
       }
     else if (s instanceof Nop)
       {

@@ -28,7 +28,6 @@ package dev.flang.parser;
 
 import java.nio.file.Path;
 
-import dev.flang.util.Callable;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -1529,7 +1528,7 @@ actualsLstC : COMMA expr actualsLstC
   /**
    * A bracketTerm
    *
-bracketTerm : block
+bracketTerm : brblock
             | klammer
             | inlineArray
             ;
@@ -1544,7 +1543,7 @@ bracketTerm : block
     var c = current();
     switch (c)
       {
-      case t_lbrace  : return block(false);
+      case t_lbrace  : return brblock(false);
       case t_lparen  : return klammer();
       case t_lcrochet: return inlineArray();
       default: throw new Error("Unexpected case: "+c);
@@ -1840,8 +1839,21 @@ plainLambda : argNames lambda
   /**
    * Parse inlineArray
    *
-inlineArray : LBRACKET expr (COMMA expr)+ RBRACKET
-            | LBRACKET expr (SEMI  expr)+ RBRACKET
+inlineArray : LBRACKET RBRACKET
+            | LBRACKET cmaSepElmts RBRACKET
+            | LBRACKET semiSepElmts RBRACKET
+            ;
+cmaSepElmts : expr addCmaElmts
+            ;
+addCmaElmts : COMMA cmaSepElmts
+            | COMMA
+            |
+            ;
+semiSepElmts: expr addSemiElmts
+            ;
+addSemiElmts: SEMI semiSepElmts
+            | SEMI
+            |
             ;
    */
   Expr inlineArray()
@@ -1857,7 +1869,10 @@ inlineArray : LBRACKET expr (COMMA expr)+ RBRACKET
                          boolean reportedMixed = false;
                          while ((s == Token.t_comma || s == Token.t_semicolon) && skip(s))
                            {
-                             elements.add(expr());
+                             if (current() != Token.t_rcrochet)
+                               {
+                                 elements.add(expr());
+                               }
                              s = current();
                              if ((s == Token.t_comma || s == Token.t_semicolon) && s != sep && !reportedMixed)
                                {
@@ -1948,10 +1963,17 @@ simpleterm  : bracketTerm
   /**
    * Parse stringTerm
    *
-stringTerm  : STRING
-            // NYI string interpolation
-            // | STRING$ ident stringTerm
-            // | STRING{ block stringTerm
+stringTerm  : '&quot;any chars&quot;'
+            | '&quot; any chars &dollar;' IDENT stringTermD
+            | '&quot; any chars{' block stringTermB
+            ;
+stringTermD : 'any chars&quot;'
+            | 'any chars&dollar;' IDENT stringTermD
+            | 'any chars{' block stringTermB
+            ;
+stringTermB : '}any chars&quot;'
+            | '}any chars&dollar;' IDENT stringTermD
+            | '}any chars{' block stringTermB
             ;
   */
   Expr stringTerm(Expr leftString)
@@ -2015,7 +2037,7 @@ stringTerm  : STRING
       default          :
         return
           isStartedString(current())
-          || isNamePrefix()    // Matches call and qualThis
+          || isNamePrefix()    // Matches call, qualThis and env
           || isAnonymousPrefix() // matches anonymous inner feature declaration
           ;
       }
@@ -2363,7 +2385,8 @@ caseBlock   : ARROW          // if followed by '|'
   /**
    * Parse block
    *
-block       : BRACEL stmnts BRACER
+block       : stmnts
+            | brblock
             ;
    */
   Block block(boolean mayBeAtMinIndent)
@@ -2393,13 +2416,26 @@ block       : BRACEL stmnts BRACER
       }
     else
       {
-        return bracketTermWithNLs(mayBeAtMinIndent, BRACES, "block",
-                                  () -> {
-                                    var l = stmnts();
-                                    var pos2 = posObject();
-                                    return new Block(pos1, pos2, l);
-                                  });
+        return brblock(mayBeAtMinIndent);
       }
+  }
+
+
+  /**
+   * Parse block
+   *
+brblock     : BRACEL stmnts BRACER
+            ;
+   */
+  Block brblock(boolean mayBeAtMinIndent)
+  {
+    SourcePosition pos1 = posObject();
+    return bracketTermWithNLs(mayBeAtMinIndent, BRACES, "block",
+                              () -> {
+                                var l = stmnts();
+                                var pos2 = posObject();
+                                return new Block(pos1, pos2, l);
+                              });
   }
 
 
@@ -2656,7 +2692,8 @@ indexVar    : visibility
               |      contract implFldIter
               )
             ;
-implFldIter : "in" exprInLine;
+implFldIter : "in" exprInLine
+            ;
 nextValue   : COMMA exprAtMinIndent
             |
             ;
@@ -2997,6 +3034,7 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
    *
 callOrFeatOrThis  : anonymous
                   | qualThis
+                  | env
                   | plainLambda
                   | call
                   ;
@@ -3006,6 +3044,7 @@ callOrFeatOrThis  : anonymous
     return
       isAnonymousPrefix()   ? anonymous()   : // starts with value/ref/:/fun/name
       isQualThisPrefix()    ? qualThis()    : // starts with name
+      isEnvPrefix()         ? env()         : // starts with name
       isPlainLambdaPrefix() ? plainLambda() : // x,y,z post result = x*y*z -> x*y*z
       isNamePrefix()        ? call(null)      // starts with name
                             : null;
@@ -3102,6 +3141,44 @@ qualThis    : name ( dot name )* dot "this"
         result = skip(Token.t_this);
       }
     return result;
+  }
+
+  /**
+   * Parse env
+   *
+env         : simpletype dot "env"
+            ;
+   */
+  Env env()
+  {
+    var t = simpletype(true);
+    var e = new Env(posObject(), t);
+    match(Token.t_env, "env");
+    return e;
+  }
+
+
+  /**
+   * Check if the current position starts an env.  Does not change the
+   * position of the parser.
+   *
+   * @return true iff the next token(s) start a env
+   */
+  boolean isEnvPrefix()
+  {
+    return isNamePrefix() && fork().skipEnvPrefix();
+  }
+
+
+  /**
+   * Check if the current position starts an env.  Does not change the
+   * position of the parser.
+   *
+   * @return true iff the next token(s) start an env.
+   */
+  boolean skipEnvPrefix()
+  {
+    return skipSimpletype(true) && skip(Token.t_env);
   }
 
 
@@ -3235,6 +3312,7 @@ condList    : cond ( COMMA condList
 implRout    : block
             | "is" "abstract"
             | "is" "intrinsic"
+            | "is" "intrinsic_constructor"
             | "is" block
             | ARROW e=block
             ;
@@ -3244,8 +3322,9 @@ implRout    : block
     SourcePosition pos = posObject();
     Impl result;
     var startRoutine = (currentAtMinIndent() == Token.t_lbrace || skip(true, Token.t_is));
-    if (startRoutine)    { result = skip(Token.t_abstract ) ? Impl.ABSTRACT  :
-                                    skip(Token.t_intrinsic) ? Impl.INTRINSIC :
+    if (startRoutine)    { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
+                                    skip(Token.t_intrinsic            ) ? Impl.INTRINSIC             :
+                                    skip(Token.t_intrinsic_constructor) ? Impl.INTRINSIC_CONSTRUCTOR :
                                     new Impl(pos, block(true)      , Impl.Kind.Routine   ); }
     else if (skip("=>")) { result = new Impl(pos, block(true)      , Impl.Kind.RoutineDef); }
     else
@@ -3430,7 +3509,7 @@ typeOpt     : type
     SourcePosition pos = posObject();
     if (skip(Token.t_ref))
       {
-        result = simpletype();
+        result = simpletype(false);
         result.setRef();
       }
     else if (skip(Token.t_fun))
@@ -3461,7 +3540,7 @@ typeOpt     : type
       }
     else
       {
-        result = simpletype();
+        result = simpletype(false);
         if (skip("->"))
           {
             result = Type.funType(pos, type(), new List<>(result));
@@ -3482,7 +3561,7 @@ typeOpt     : type
     boolean result;
     if (skip(Token.t_ref))
       {
-        result = skipSimpletype();
+        result = skipSimpletype(false);
       }
     else if (skip(Token.t_fun))
       {
@@ -3506,7 +3585,7 @@ typeOpt     : type
       }
     else
       {
-        result = skipSimpletype() && (!skip("->") || skipSimpletype());
+        result = skipSimpletype(false) && (!skip("->") || skipSimpletype(false));
       }
     return result;
   }
@@ -3521,15 +3600,18 @@ simpletype  : name actualGens
               )
             ;
    */
-  Type simpletype()
+  Type simpletype(boolean expectEnv)
   {
     Type result = null;
     do
       {
-        result = new Type(posObject(),
-                          name(),
-                          actualGens(),
-                          result);
+        if (result == null || !expectEnv || current() != Token.t_env)
+          {
+            result = new Type(posObject(),
+                              name(),
+                              actualGens(),
+                              result);
+          }
       }
     while (skipDot());
     return result;
@@ -3542,12 +3624,15 @@ simpletype  : name actualGens
    * @return true iff the next token(s) is a simpletype, otherwise no simpletype
    * was found and the parser/lexer is at an undefined position.
    */
-  boolean skipSimpletype()
+  boolean skipSimpletype(boolean expectEnv)
   {
-    boolean result;
+    boolean result = false;
     do
       {
-        result = skipName() && skipActualGens();
+        if (!result || !expectEnv || current() != Token.t_env)
+          {
+            result = skipName() && skipActualGens();
+          }
       }
     while (result && skipDot());
     return result;

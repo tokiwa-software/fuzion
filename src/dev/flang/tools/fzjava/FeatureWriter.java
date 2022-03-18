@@ -136,9 +136,12 @@ class FeatureWriter extends ANY
             // so we replace it by '_jList'.
             s = "_jList";
           }
-        else if (s.equals("hashCode") ||
+        else if (s.equals("Sequence") ||
+                 s.equals("hashCode") ||
                  s.equals("string"  ) ||
-                 s.equals("array"   )    )
+                 s.equals("array"   ) ||
+                 s.equals("isBlank" ) ||
+                 s.equals("split"   )    )
           {
             // NYI: this is just a precaution to avoid confusion with Fuzion
             // types.  Need to find a way to avoid this, e.g., by using

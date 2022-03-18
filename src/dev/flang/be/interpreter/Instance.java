@@ -37,7 +37,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Instance extends Value
+public class Instance extends ValueWithClazz
 {
 
   /*----------------------------  constants  ----------------------------*/
@@ -57,11 +57,6 @@ public class Instance extends Value
 
   /*----------------------------  variables  ----------------------------*/
 
-
-  /**
-   *
-   */
-  private final Clazz clazz;
 
 
   /**
@@ -87,10 +82,11 @@ public class Instance extends Value
    */
   public Instance(Clazz clazz)
   {
+    super(clazz);
+
     if (PRECONDITIONS) require
       (clazz != null);
 
-    this.clazz = clazz;
     int sz = Layout.get(clazz).size();
     this.refs = new Value[sz];
     this.nonrefs = new int[sz];
@@ -101,40 +97,7 @@ public class Instance extends Value
   }
 
 
-  /**
-   * Constructor for the data in an array
-   *
-   * @param l
-   */
-  public Instance(int l)
-  {
-    this.clazz = null;
-    this.refs = new Value[l];
-    this.nonrefs = new int[l];
-    for (int i = 0; i<l; i++)
-      {
-        this.nonrefs[i] = UNINITIALIZED_INT;
-      }
-  }
-
-
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * clazz returns the clazz of a reference instance
-   *
-   * @return
-   */
-  public Clazz clazz()
-  {
-    Clazz result = clazz;
-    if ((result != null) && !result.isRef())
-      {
-        Errors.fatal("No clazz in a value instance: type " + result._type + " value " + this + "\n" + Interpreter.callStack());
-      }
-    return result;
-  }
 
 
   /**
@@ -145,8 +108,8 @@ public class Instance extends Value
   public int i8Value()
   {
     if (PRECONDITIONS) require
-      (clazz == Clazzes.i8    .getIfCreated() ||
-       clazz == Clazzes.ref_i8.getIfCreated()   );
+      (_clazz == Clazzes.i8    .getIfCreated() ||
+       _clazz == Clazzes.ref_i8.getIfCreated()   );
 
     return nonrefs[0];
   }
@@ -160,8 +123,8 @@ public class Instance extends Value
   public int i16Value()
   {
     if (PRECONDITIONS) require
-      (clazz == Clazzes.i16    .getIfCreated() ||
-       clazz == Clazzes.ref_i16.getIfCreated()   );
+      (_clazz == Clazzes.i16    .getIfCreated() ||
+       _clazz == Clazzes.ref_i16.getIfCreated()   );
 
     return nonrefs[0];
   }
@@ -175,8 +138,8 @@ public class Instance extends Value
   public int i32Value()
   {
     if (PRECONDITIONS) require
-      (clazz == Clazzes.i32    .getIfCreated() ||
-       clazz == Clazzes.ref_i32.getIfCreated()   );
+      (_clazz == Clazzes.i32    .getIfCreated() ||
+       _clazz == Clazzes.ref_i32.getIfCreated()   );
 
     return nonrefs[0];
   }
@@ -190,8 +153,8 @@ public class Instance extends Value
   public long i64Value()
   {
     if (PRECONDITIONS) require
-      (clazz == Clazzes.i64    .getIfCreated() ||
-       clazz == Clazzes.ref_i64.getIfCreated()    );
+      (_clazz == Clazzes.i64    .getIfCreated() ||
+       _clazz == Clazzes.ref_i64.getIfCreated()    );
 
     return
         nonrefs[0    ] & 0xFFFFffffL |
@@ -207,8 +170,8 @@ public class Instance extends Value
   public int u8Value()
   {
     if (PRECONDITIONS) require
-      (clazz == Clazzes.u8    .getIfCreated() ||
-       clazz == Clazzes.ref_u8.getIfCreated()    );
+      (_clazz == Clazzes.u8    .getIfCreated() ||
+       _clazz == Clazzes.ref_u8.getIfCreated()    );
 
     return nonrefs[0];
   }
@@ -223,8 +186,8 @@ public class Instance extends Value
   public int u16Value()
   {
     if (PRECONDITIONS) require
-      (clazz == Clazzes.u16    .getIfCreated() ||
-       clazz == Clazzes.ref_u16.getIfCreated()    );
+      (_clazz == Clazzes.u16    .getIfCreated() ||
+       _clazz == Clazzes.ref_u16.getIfCreated()    );
 
     return nonrefs[0];
   }
@@ -238,8 +201,8 @@ public class Instance extends Value
   public int u32Value()
   {
     if (PRECONDITIONS) require
-      (clazz == Clazzes.u32    .getIfCreated() ||
-       clazz == Clazzes.ref_u32.getIfCreated()    );
+      (_clazz == Clazzes.u32    .getIfCreated() ||
+       _clazz == Clazzes.ref_u32.getIfCreated()    );
 
     return nonrefs[0];
   }
@@ -253,8 +216,8 @@ public class Instance extends Value
   public long u64Value()
   {
     if (PRECONDITIONS) require
-      (clazz == Clazzes.u64    .getIfCreated() ||
-       clazz == Clazzes.ref_u64.getIfCreated()    );
+      (_clazz == Clazzes.u64    .getIfCreated() ||
+       _clazz == Clazzes.ref_u64.getIfCreated()    );
 
     return
         nonrefs[0    ] & 0xFFFFffffL |
@@ -270,8 +233,8 @@ public class Instance extends Value
   public float f32Value()
   {
     if (PRECONDITIONS) require
-      (clazz == Clazzes.f32    .getIfCreated() ||
-       clazz == Clazzes.ref_f32.getIfCreated()    );
+      (_clazz == Clazzes.f32    .getIfCreated() ||
+       _clazz == Clazzes.ref_f32.getIfCreated()    );
 
     return Float.intBitsToFloat(nonrefs[0]);
   }
@@ -285,8 +248,8 @@ public class Instance extends Value
   public double f64Value()
   {
     if (PRECONDITIONS) require
-      (clazz == Clazzes.f64    .getIfCreated() ||
-       clazz == Clazzes.ref_f64.getIfCreated()    );
+      (_clazz == Clazzes.f64    .getIfCreated() ||
+       _clazz == Clazzes.ref_f64.getIfCreated()    );
 
     var l =
         nonrefs[0    ] & 0xFFFFffffL |
@@ -303,10 +266,10 @@ public class Instance extends Value
   public boolean boolValue()
   {
     if (PRECONDITIONS) require
-      (clazz == Clazzes.c_TRUE .getIfCreated() ||
-       clazz == Clazzes.c_FALSE.getIfCreated()   );
+      (_clazz == Clazzes.c_TRUE .getIfCreated() ||
+       _clazz == Clazzes.c_FALSE.getIfCreated()   );
 
-    return clazz == Clazzes.c_TRUE.getIfCreated();
+    return _clazz == Clazzes.c_TRUE.getIfCreated();
   }
 
 
@@ -329,9 +292,9 @@ public class Instance extends Value
       }
     else
       {
-        if (expected != clazz)
+        if (expected != _clazz)
           {
-            throw new Error("Runtime clazz "+clazz+" does not equal static "+expected);
+            throw new Error("Runtime clazz "+_clazz+" does not equal static "+expected);
           }
       }
   }
@@ -362,7 +325,7 @@ public class Instance extends Value
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS)
-      require(size == Layout.get(clazz).size());
+      require(size == Layout.get(_clazz).size());
 
     storeNonRef(slot, size, 0);
   }
@@ -407,7 +370,7 @@ public class Instance extends Value
    */
   public String toString()
   {
-    return "instance[" + clazz + "]" + this.hashCode();
+    return "instance[" + _clazz + "]" + this.hashCode();
   }
 
 

@@ -45,12 +45,12 @@ public fuzion.java is
 
   # intrinsic to read static field
   #
-  private getStaticField0<T>(clazz JavaObject, field JavaObject) T is intrinsic
+  private getStaticField0<T>(clazz JavaObject, field JavaObject) T is intrinsic_constructor
 
 
   # intrinsic to read instance field
   #
-  private getField0<T>(thiz JavaObject, field JavaObject) T is intrinsic
+  private getField0<T>(thiz JavaObject, field JavaObject) T is intrinsic_constructor
 
 
   # A Java reference
@@ -153,21 +153,21 @@ public fuzion.java is
                     name JavaObject,
                     signature JavaObject,
                     thiz JavaObject,
-                    args sys.array<JavaObject>) T is intrinsic
+                    args sys.array<JavaObject>) T is intrinsic_constructor
 
   # intrinsic to call given Java static method
   #
   private callS0<T>(className JavaObject,
                     name JavaObject,
                     signature JavaObject,
-                    args sys.array<JavaObject>) T is intrinsic
+                    args sys.array<JavaObject>) T is intrinsic_constructor
 
 
   # intrinsic to call given Java constructor
   #
   private callC0<T>(className JavaObject,
                     signature JavaObject,
-                    args sys.array<JavaObject>) T is intrinsic
+                    args sys.array<JavaObject>) T is intrinsic_constructor
 
 
   # intrinsic to get the length of a Java array of arbitrary type
@@ -177,7 +177,7 @@ public fuzion.java is
 
   # intrinsic to get an element of a Java array of arbitrary type
   #
-  private arrayGet<T>(a Array<T>, ix i32) T is intrinsic
+  private arrayGet<T>(a Array<T>, ix i32) T is intrinsic_constructor
 
 
   # convert a Sequence to a Java Array object
@@ -188,7 +188,7 @@ public fuzion.java is
 
   # intrinsic to convert an array to a Java Array object
   #
-  private arrayToJavaObject0<T>(a Object) Array<T> is intrinsic
+  private arrayToJavaObject0<T>(a Object) Array<T> is intrinsic_constructor
 
 
   # convert a string to a Java String object
@@ -199,7 +199,7 @@ public fuzion.java is
 
   # intrinsic to convert a string to a Java String object
   #
-  private stringToJavaObject0(s Object) JavaObject is intrinsic
+  private stringToJavaObject0(s Object) JavaObject is intrinsic_constructor
 
 
   # convert a Java String to a stirng
@@ -209,39 +209,39 @@ public fuzion.java is
 
   # intrinsic to convert an i8 to a Java Byte object
   #
-  public i8ToJavaObject(v i8) JavaObject is intrinsic
+  public i8ToJavaObject(v i8) JavaObject is intrinsic_constructor
 
 
   # intrinsic to convert an u16 to a Java Character object
   #
-  public u16ToJavaObject(v u16) JavaObject is intrinsic
+  public u16ToJavaObject(v u16) JavaObject is intrinsic_constructor
 
 
   # intrinsic to convert an i16 to a Java Short object
   #
-  public i16ToJavaObject(v i16) JavaObject is intrinsic
+  public i16ToJavaObject(v i16) JavaObject is intrinsic_constructor
 
 
   # intrinsic to convert an i32 to a Java Integer object
   #
-  public i32ToJavaObject(v i32) JavaObject is intrinsic
+  public i32ToJavaObject(v i32) JavaObject is intrinsic_constructor
 
 
   # intrinsic to convert an i64 to a Java Long object
   #
-  public i64ToJavaObject(v i64) JavaObject is intrinsic
+  public i64ToJavaObject(v i64) JavaObject is intrinsic_constructor
 
 
   # intrinsic to convert an f32 to a Java Float object
   #
-  public f32ToJavaObject(v f32) JavaObject is intrinsic
+  public f32ToJavaObject(v f32) JavaObject is intrinsic_constructor
 
 
   # intrinsic to convert a f64 to a Java Double object
   #
-  public f64ToJavaObject(v f64) JavaObject is intrinsic
+  public f64ToJavaObject(v f64) JavaObject is intrinsic_constructor
 
 
   # intrinsic to convert a bool to a Java Boolean object
   #
-  public boolToJavaObject(b bool) JavaObject is intrinsic
+  public boolToJavaObject(b bool) JavaObject is intrinsic_constructor

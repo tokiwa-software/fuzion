@@ -652,7 +652,7 @@ abstract class CExpr extends CStmnt
    */
   CExpr sizeOfExpr()
   {
-    return new Unary(this, "sizeof");
+    return new Unary(this, "sizeof ");
   }
 
 
