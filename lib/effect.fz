@@ -38,7 +38,7 @@ is
 
   match r
     _ effectMode.plain   =>
-    i effectMode.inst    => run i.f
+    i effectMode.inst    => run i.f unit
     _ effectMode.repl    => replace
     _ effectMode.abort   => fuzion.std.panic "abort"
     _ effectMode.default => default
@@ -65,7 +65,7 @@ is
 
   # execute the code of 'f' in the context of this one-way monad
   #
-  private run<R>(f () -> R) R is
+  private run<R>(f () -> R, def R) R is
     install
     res option<R> := nil
     q ()->unit := ()-> set res := f()
@@ -73,7 +73,7 @@ is
     h.abortable
     remove
     match res
-      nil => r R := ?; r  # NYI, get default value
+      nil => def
       x R => x
 
   # abort the current execution and return from the surrounding call to
