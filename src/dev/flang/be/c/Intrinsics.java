@@ -307,6 +307,13 @@ class Intrinsics extends ANY
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).ret()
             : CStmnt.EMPTY;
         }
+      case "fuzion.std.nano_time":
+        {
+          return CExpr.call("clock", new List<>())
+            .mul(CExpr.uint64const(1_000_000_000))
+            .div(CExpr.ident("CLOCKS_PER_SEC"))
+            .ret();
+        }
 
       case "effect.install":
       case "effect.remove" :

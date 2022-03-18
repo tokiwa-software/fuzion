@@ -17,24 +17,29 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fuzion.std
+#  Source code of Fuzion standard library feature bench
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-fuzion.std is
+# benchmark f for nano_seconds
+# returns: iterations per second
+#
+bench<R>(f Function<R>, nano_seconds u64, warm_up_nano_seconds u64) f64 is
+  start := fuzion.std.nano_time
 
-  # exit -- exit immediately with the given return code
-  #
-  exit(code i32) void is intrinsic
+  is_warmup => fuzion.std.nano_time - start < warm_up_nano_seconds
 
+  for iter := (u64 0), if (is_warmup) iter else iter + 1
+  while fuzion.std.nano_time - start < warm_up_nano_seconds + nano_seconds
+  do
+    f.call
+  else
+    iter.as_f64 / (nano_seconds.as_f64 * 1E-9)
 
-  # panic -- display a panic message and exit immediately with error code 1
-  #
-  panic(msg string) void is
-    say "*** panic: $msg"
-    exit 1
-
-  # no guarantee can be given for precision nor resolution
-  nano_time u64 is intrinsic
+# benchmark f for milli_seconds (1s warm up)
+# returns: iterations per second
+#
+bench<R>(f Function<R>, milli_seconds i32) f64 is
+  bench f (milli_seconds.as_u64 * 1E6) (u64 1E9)
