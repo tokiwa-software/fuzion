@@ -628,6 +628,7 @@ public class Intrinsics extends ANY
     else if (n.equals("Object.asString" )) { result = (args) -> Interpreter.value(args.get(0).toString());
       // NYI: This could be more useful by giving the object's class, an id, public fields, etc.
     }
+    else if (n.equals("fuzion.std.nano_time"  )) { result = (args) -> new u64Value (System.nanoTime()); }
     else if (n.equals("effect.install" ) ||
              n.equals("effect.remove"  ) ||
              n.equals("effect.replace" ) ||

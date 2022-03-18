@@ -205,6 +205,7 @@ public class C extends ANY
        "#include <stdint.h>\n"+
        "#include <string.h>\n"+
        "#include <assert.h>\n"+
+       "#include <time.h>\n"+
        "\n");
     var o = CExpr.ident("of");
     var s = CExpr.ident("sz");
