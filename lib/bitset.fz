@@ -86,7 +86,7 @@ is
          else
            r
 
-  # createa  string representation of a bitset of the form "{2, 4}
+  # create a string representation of a bitset of the form "{2, 4}
   #
   redef asString string is
     match highest
