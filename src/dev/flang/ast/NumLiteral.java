@@ -471,6 +471,12 @@ public class NumLiteral extends Constant
         var deltaBits = ct._mBits - m.bitLength();
         m = shiftWithRounding(m, deltaBits);
         e2 = e2 - deltaBits;
+        // rounding changed mantissa length => shift again
+        if((m.bitLength() == ct._mBits + 1))
+          {
+            m = shiftWithRounding(m, -1);
+            e2 = e2 + 1;
+          }
         if (CHECKS) check
           (m.bitLength() == ct._mBits);
 
