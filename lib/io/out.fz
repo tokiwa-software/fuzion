@@ -97,5 +97,5 @@ outs is
 
   # install default effect out using defaultPrint
   installDefault unit is
-    out defaultPrint effectMode.default unit
-    unit
+    if !(effects.exists<io.out>)
+      _ := out defaultPrint effectMode.default unit

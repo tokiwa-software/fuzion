@@ -93,6 +93,9 @@ is
 
 effects is
 
+  # has an effect of the given type been installed?
+  exists<E> bool is intrinsic
+
 effectMode is
   plain is
   inst(f ()->unit) is

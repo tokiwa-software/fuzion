@@ -339,6 +339,12 @@ class Intrinsics extends ANY
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };
         }
+      case "effects.exists":
+        {
+          var ecl = c._fuir.clazzActualGeneric(cl, 0);
+          var evi = c._names.envInstalled(ecl);
+          return CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
+        }
       case "effect.effectHelper.abortable":
         {
           var oc = c._fuir.clazzOuterClazz(cl);

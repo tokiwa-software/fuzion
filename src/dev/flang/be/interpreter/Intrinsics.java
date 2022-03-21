@@ -659,6 +659,14 @@ public class Intrinsics extends ANY
             }
           };
       }
+    else if (n.equals("effects.exists"))
+      {
+        result = (args) ->
+          {
+            var cl = innerClazz.actualGenerics()[0];
+            return new boolValue(_effects_.containsKey(cl));
+          };
+      }
     else
       {
         Errors.fatal(f.pos(),
