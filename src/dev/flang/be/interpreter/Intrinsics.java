@@ -632,11 +632,8 @@ public class Intrinsics extends ANY
     else if (n.equals("effect.install" ) ||
              n.equals("effect.remove"  ) ||
              n.equals("effect.replace" ) ||
-             n.equals("effect.default" )    ) { result = effect(n, innerClazz); }
-    else if (n.equals("effect.abort"))
-      {
-        result = effect(n, innerClazz);
-      }
+             n.equals("effect.default" ) ||
+             n.equals("effect.abort"   )    ) {  result = effect(n, innerClazz);  }
     else if (n.equals("effect.effectHelper.abortable"))
       {
         result = (args) ->
