@@ -629,36 +629,10 @@ public class Intrinsics extends ANY
       // NYI: This could be more useful by giving the object's class, an id, public fields, etc.
     }
     else if (n.equals("fuzion.std.nano_time"  )) { result = (args) -> new u64Value (System.nanoTime()); }
-    else if (n.equals("effect.install" ) ||
-             n.equals("effect.remove"  ) ||
-             n.equals("effect.replace" ) ||
+    else if (n.equals("effect.replace" ) ||
              n.equals("effect.default" ) ||
-             n.equals("effect.abort"   )    ) {  result = effect(n, innerClazz);  }
-    else if (n.equals("effect.effectHelper.abortable"))
-      {
-        result = (args) ->
-          {
-            var oc = innerClazz._outer;
-            var effect = oc._outer;
-            var call = Types.resolved.f_function_call;
-            var ic = oc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
-            var al = new ArrayList<Value>();
-            al.add(args.get(0));
-            try {
-              var ignore = interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al);
-              return new boolValue(true);
-            } catch (Abort a) {
-              if (a._effect == effect)
-                {
-                  return new boolValue(false);
-                }
-              else
-                {
-                  throw a;
-                }
-            }
-          };
-      }
+             n.equals("effect.abortable")||
+             n.equals("effect.abort"   )    ) {  result = effect(interpreter, n, innerClazz);  }
     else if (n.equals("effects.exists"))
       {
         result = (args) ->
@@ -697,7 +671,7 @@ public class Intrinsics extends ANY
    *
    * @return a Callable instance to execute the intrinsic call.
    */
-  static Callable effect(String n, Clazz innerClazz)
+  static Callable effect(Interpreter interpreter, String n, Clazz innerClazz)
   {
     return (args) ->
       {
@@ -705,10 +679,36 @@ public class Intrinsics extends ANY
         var cl = innerClazz._outer;
         switch (n)
           {
-          case "effect.install":                                   _effects_.put(cl, m   );   break;
-          case "effect.remove" : check(_effects_.get(cl) != null); _effects_.put(cl, null);   break; // NYI: restore original value!
           case "effect.replace": check(_effects_.get(cl) != null); _effects_.put(cl, m   );   break;
           case "effect.default": if (_effects_.get(cl) == null) {  _effects_.put(cl, m   ); } break;
+          case "effect.abortable" :
+            {
+              var prev = _effects_.get(cl);
+              _effects_.put(cl, m);
+              var call = Types.resolved.f_function_call;
+              var oc = innerClazz.actualGenerics()[0]; //innerClazz.argumentFields()[0].resultClazz();
+              var ic = oc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+              var al = new ArrayList<Value>();
+              al.add(args.get(1));
+              try {
+                var ignore = interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al);
+                return new boolValue(true);
+              } catch (Abort a) {
+                if (a._effect == cl)
+                  {
+                    return new boolValue(false);
+                  }
+                else
+                  {
+                    throw a;
+                  }
+              } finally {
+                if (prev != null)
+                  {
+                    _effects_.put(cl, prev);
+                  }
+              }
+            }
           case "effect.abort": throw new Abort(cl);
           default: throw new Error("unexected effect intrinsic '"+n+"'");
           }

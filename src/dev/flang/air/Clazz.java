@@ -1605,8 +1605,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
     switch (feature().qualifiedName())
       {
-      case "effect.effectHelper.abortable":
-        _outer.lookup(Types.resolved.f_function_call, Call.NO_GENERICS, at);
+      case "effect.abortable":
+        argumentFields()[0].resultClazz().lookup(Types.resolved.f_function_call, Call.NO_GENERICS, at);
         break;
       default: break;
       }

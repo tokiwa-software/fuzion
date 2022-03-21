@@ -315,10 +315,9 @@ class Intrinsics extends ANY
             .ret();
         }
 
-      case "effect.install":
-      case "effect.remove" :
       case "effect.replace":
       case "effect.default":
+      case "effect.abortable":
       case "effect.abort":
         {
           var ecl = effectType(c, cl);
@@ -329,10 +328,26 @@ class Intrinsics extends ANY
           return
             switch (in)
               {
-              case "effect.install" ->                       CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )) ;
-              case "effect.remove"  ->                                                evi.assign(CIdent.FALSE)  ;
               case "effect.replace" ->                                  ev.assign(e)                            ;
               case "effect.default" -> CStmnt.iff(evi.not(), CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )));
+              case "effect.abortable" ->
+                {
+                  var oc = c._fuir.clazzActualGeneric(cl, 0); // c._fuir.clazzOuterClazz(cl);
+                  var call = c._fuir.lookupCall(oc);
+                  if (c._fuir.clazzNeedsCode(call))
+                    {
+                      yield CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE ),
+                                       CExpr.call(c._names.function(call, false), new List<>(A0)),
+                                       evi.assign(CIdent.FALSE )
+                                       ) ;
+                    }
+                  else
+                    {
+                      yield CStmnt.seq(CExpr.fprintfstderr("*** C backend no code for class '%s'\n",
+                                                           CExpr.string(c._fuir.clazzAsString(call))),
+                                       CExpr.call("exit", new List<>(CExpr.int32const(1))));
+                    }
+                }
               case "effect.abort"   -> CStmnt.seq(CExpr.fprintfstderr("*** C backend support for %s missing\n",
                                                                            CExpr.string(c._fuir.clazzIntrinsicName(cl))),
                                                        CExpr.exit(1));
@@ -384,10 +399,10 @@ class Intrinsics extends ANY
 
     return switch(c._fuir.clazzIntrinsicName(cl))
       {
-      case "effect.install",
-           "effect.remove" ,
-           "effect.replace",
-           "effect.default" -> true;
+      case "effect.replace",
+           "effect.default",
+           "effect.abortable",
+           "effect.abort" -> true;
       default -> false;
       };
   }
