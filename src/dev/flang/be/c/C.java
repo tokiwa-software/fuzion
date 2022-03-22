@@ -206,6 +206,7 @@ public class C extends ANY
        "#include <string.h>\n"+
        "#include <assert.h>\n"+
        "#include <time.h>\n"+
+       "#include <setjmp.h>\n"+
        "\n");
     var o = CExpr.ident("of");
     var s = CExpr.ident("sz");
@@ -241,7 +242,8 @@ public class C extends ANY
                .mapToInt(cl -> _intrinsics.effectType(this, cl))
                .distinct()
                .forEach(cl -> cf.print(CStmnt.seq(CStmnt.decl("__thread", _types.clazz(cl), _names.env(cl)),
-                                                  CStmnt.decl("bool", _names.envInstalled(cl)))));
+                                                  CStmnt.decl("bool"                      , _names.envInstalled(cl)),
+                                                  CStmnt.decl("jmp_buf*"                  , _names.envJmpBuf(cl)))));
            }
        });
     cf.println("int main(int argc, char **args) { " + _names.function(_fuir.mainClazzId(), false) + "(); }");

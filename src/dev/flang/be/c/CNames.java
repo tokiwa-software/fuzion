@@ -115,16 +115,23 @@ public class CNames extends ANY
 
 
   /**
-   * Prefix for thread local env variable that stores the current oneway monad.
+   * Prefix for thread local env variable that stores the current effect.
    */
   private static final String ENV_PREFIX = "fzEnv_";
 
 
   /**
    * Prefix for thread local env variable that stores the bool flag whether
-   * there is a current oneway monad installed.
+   * there is a current effect installed.
    */
   private static final String ENV_INSTALLED_PREFIX = "fzEnvInstalled_";
+
+
+  /**
+   * Prefix for thread local env variable that stores the setjmp/longjmp buffer
+   * to abort an installed effect
+   */
+  private static final String ENV_JMPBUF_PREFIX = "fzEnvJmpBuf_";
 
 
   /**
@@ -469,25 +476,39 @@ public class CNames extends ANY
 
   }
 
+
   /**
-   * The name of the thread local env variable for the given onewayMonad type.
+   * The name of the thread local env variable for the given effect type.
    *
-   * @param cl clazz id for a onewayMonad type.
+   * @param cl clazz id for a effect type.
    */
   CIdent env(int cl)
   {
     return new CIdent(ENV_PREFIX + clazzId2num(cl));
   }
 
+
   /**
-   * The name of the thread local env variable for the thread local env variable that
-   * stores the bool flag whether there is a current oneway monad installed.
+   * The name of the thread local env variable that stores the bool flag whether
+   * there is a current effect installed.
    *
-   * @param cl clazz id for a onewayMonad type.
+   * @param cl clazz id for an effect type.
    */
   CIdent envInstalled(int cl)
   {
     return new CIdent(ENV_INSTALLED_PREFIX + clazzId2num(cl));
+  }
+
+
+  /**
+   * The name of the thread local env variable that stores the setjmp/longjmp
+   * buffer to abort an installed effect.
+   *
+   * @param cl clazz id for a effect type.
+   */
+  CIdent envJmpBuf(int cl)
+  {
+    return new CIdent(ENV_JMPBUF_PREFIX + clazzId2num(cl));
   }
 
 }

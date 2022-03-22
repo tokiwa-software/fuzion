@@ -323,6 +323,7 @@ class Intrinsics extends ANY
           var ecl = effectType(c, cl);
           var ev  = c._names.env(ecl);
           var evi = c._names.envInstalled(ecl);
+          var evj = c._names.envJmpBuf(ecl);
           var o   = c._names.OUTER;
           var e   = c._fuir.clazzIsRef(ecl) ? o : o.deref();
           return
@@ -336,10 +337,23 @@ class Intrinsics extends ANY
                   var call = c._fuir.lookupCall(oc);
                   if (c._fuir.clazzNeedsCode(call))
                     {
-                      yield CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE ),
-                                       CExpr.call(c._names.function(call, false), new List<>(A0)),
-                                       evi.assign(CIdent.FALSE )
-                                       ) ;
+                      var jmpbuf = new CIdent("jmpbuf");
+                      yield CStmnt.seq(CStmnt.decl("jmp_buf", jmpbuf),
+                                       ev.assign(e),
+                                       evi.assign(CIdent.TRUE ),
+                                       evj.assign(jmpbuf.adrOf()),
+                                       CStmnt.iff(CExpr.call("setjmp",new List<>(jmpbuf)).eq(CExpr.int32const(0)),
+                                                  CExpr.call(c._names.function(call, false), new List<>(A0))),
+                                       /* NYI: this is a bit radical: we copy back the value from env to the outer instance, i.e.,
+                                        * the outer instance is no longer immutable and we might run into difficulties if
+                                        * the outer instance is used otherwise.
+                                        *
+                                        * It might be better to store the adr of a a value type effect in ev. Then we do not
+                                        * have to copy anything back, but we would have to copy the value in case of effect.replace
+                                        * and effect.default.
+                                        */
+                                       e.assign(ev),
+                                       evi.assign(CIdent.FALSE));
                     }
                   else
                     {
@@ -348,9 +362,11 @@ class Intrinsics extends ANY
                                        CExpr.call("exit", new List<>(CExpr.int32const(1))));
                     }
                 }
-              case "effect.abort"   -> CStmnt.seq(CExpr.fprintfstderr("*** C backend support for %s missing\n",
-                                                                           CExpr.string(c._fuir.clazzIntrinsicName(cl))),
-                                                       CExpr.exit(1));
+              case "effect.abort"   ->
+                CStmnt.seq(CStmnt.iff(evi, CExpr.call("longjmp",new List<>(evj.deref(), CExpr.int32const(1)))),
+                           CExpr.fprintfstderr("*** C backend support for %s missing\n",
+                                               CExpr.string(c._fuir.clazzIntrinsicName(cl))),
+                           CExpr.exit(1));
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };
         }
