@@ -338,7 +338,13 @@ class Intrinsics extends ANY
                   if (c._fuir.clazzNeedsCode(call))
                     {
                       var jmpbuf = new CIdent("jmpbuf");
-                      yield CStmnt.seq(CStmnt.decl("jmp_buf", jmpbuf),
+                      var oldev  = new CIdent("old_ev");
+                      var oldevi = new CIdent("old_evi");
+                      var oldevj = new CIdent("old_evj");
+                      yield CStmnt.seq(CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
+                                       CStmnt.decl("bool"             , oldevi, evi),
+                                       CStmnt.decl("jmp_buf*"         , oldevj, evj),
+                                       CStmnt.decl("jmp_buf", jmpbuf),
                                        ev.assign(e),
                                        evi.assign(CIdent.TRUE ),
                                        evj.assign(jmpbuf.adrOf()),
@@ -353,7 +359,9 @@ class Intrinsics extends ANY
                                         * and effect.default.
                                         */
                                        e.assign(ev),
-                                       evi.assign(CIdent.FALSE));
+                                       ev .assign(oldev ),
+                                       evi.assign(oldevi),
+                                       evj.assign(oldevj));
                     }
                   else
                     {
