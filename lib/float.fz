@@ -29,7 +29,7 @@
 # float is the abstract parent of concrete floating point features such as
 # f32 or f64.
 #
-float<T: float<T>> : numeric<T>, hasInterval<T>, floats<T> is
+float<T: float<T>> : numeric<T>, floats<T> is
 
 
   # preconditions for basic operations: true if the operation's result is
