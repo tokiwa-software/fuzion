@@ -265,7 +265,9 @@ class Intrinsics extends ANY
       case "u8.castTo_i8"        : return outer.castTo("fzT_1i8").ret();
       case "u16.castTo_i16"      : return outer.castTo("fzT_1i16").ret();
       case "u32.castTo_i32"      : return outer.castTo("fzT_1i32").ret();
+      case "u32.castTo_f32"      : return outer.adrOf().castTo("fzT_1f32*").deref().ret();
       case "u64.castTo_i64"      : return outer.castTo("fzT_1i64").ret();
+      case "u64.castTo_f64"      : return outer.adrOf().castTo("fzT_1f64*").deref().ret();
       case "u16.low8bits"        : return outer.and(CExpr.uint16const(0xFF)).castTo("fzT_1u8").ret();
       case "u32.low8bits"        : return outer.and(CExpr.uint32const(0xFF)).castTo("fzT_1u8").ret();
       case "u64.low8bits"        : return outer.and(CExpr.uint64const(0xFFL)).castTo("fzT_1u8").ret();
@@ -299,6 +301,8 @@ class Intrinsics extends ANY
       case "f64.infix >"         : return outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "f32.infix >="        :
       case "f64.infix >="        : return outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "f32.castTo_u32"      : return outer.adrOf().castTo("fzT_1u32*").deref().ret();
+      case "f64.castTo_u64"      : return outer.adrOf().castTo("fzT_1u64*").deref().ret();
       case "f32.asString"        :
       case "f64.asString"        :
         {
@@ -306,6 +310,45 @@ class Intrinsics extends ANY
           return CStmnt.seq(c.floatToConstString(outer, res),
                             res.castTo(c._types.clazz(rc)).ret());
         }
+      /* The C standard library follows the convention that floating-point numbers x × 2exp have 0.5 ≤ x < 1,
+       * while the IEEE 754 standard text uses the convention 1 ≤ x < 2.
+       * This convention in C is not just used for DBL_MAX_EXP, but also for functions such as frexp.
+       * source: https://github.com/rust-lang/rust/issues/88734
+       */
+      case "f32s.minExp"         : return CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret();
+      case "f32s.maxExp"         : return CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret();
+      case "f32s.minPositive"    : return CExpr.ident("FLT_MIN").ret();
+      case "f32s.max"            : return CExpr.ident("FLT_MAX").ret();
+      case "f32s.epsilon"        : return CExpr.ident("FLT_EPSILON").ret();
+      case "f64s.minExp"         : return CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret();
+      case "f64s.maxExp"         : return CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret();
+      case "f64s.minPositive"    : return CExpr.ident("DBL_MIN").ret();
+      case "f64s.max"            : return CExpr.ident("DBL_MAX").ret();
+      case "f64s.epsilon"        : return CExpr.ident("DBL_EPSILON").ret();
+      case "f32s.squareRoot"     : return CExpr.call("sqrtf",  new List<>(A0)).ret();
+      case "f64s.squareRoot"     : return CExpr.call("sqrt",   new List<>(A0)).ret();
+      case "f32s.exp"            : return CExpr.call("expf",   new List<>(A0)).ret();
+      case "f64s.exp"            : return CExpr.call("exp",    new List<>(A0)).ret();
+      case "f32s.log"            : return CExpr.call("logf",   new List<>(A0)).ret();
+      case "f64s.log"            : return CExpr.call("log",    new List<>(A0)).ret();
+      case "f32s.sin"            : return CExpr.call("sinf",   new List<>(A0)).ret();
+      case "f64s.sin"            : return CExpr.call("sin",    new List<>(A0)).ret();
+      case "f32s.cos"            : return CExpr.call("cosf",   new List<>(A0)).ret();
+      case "f64s.cos"            : return CExpr.call("cos",    new List<>(A0)).ret();
+      case "f32s.tan"            : return CExpr.call("tanf",   new List<>(A0)).ret();
+      case "f64s.tan"            : return CExpr.call("tan",    new List<>(A0)).ret();
+      case "f32s.asin"           : return CExpr.call("asinf", new List<>(A0)).ret();
+      case "f64s.asin"           : return CExpr.call("asin",  new List<>(A0)).ret();
+      case "f32s.acos"           : return CExpr.call("acosf", new List<>(A0)).ret();
+      case "f64s.acos"           : return CExpr.call("acos",  new List<>(A0)).ret();
+      case "f32s.atan"           : return CExpr.call("atanf", new List<>(A0)).ret();
+      case "f64s.atan"           : return CExpr.call("atan",  new List<>(A0)).ret();
+      case "f32s.sinh"           : return CExpr.call("sinhf",  new List<>(A0)).ret();
+      case "f64s.sinh"           : return CExpr.call("sinh",   new List<>(A0)).ret();
+      case "f32s.cosh"           : return CExpr.call("coshf",  new List<>(A0)).ret();
+      case "f64s.cosh"           : return CExpr.call("cosh",   new List<>(A0)).ret();
+      case "f32s.tanh"           : return CExpr.call("tanhf",  new List<>(A0)).ret();
+      case "f64s.tanh"           : return CExpr.call("tanh",   new List<>(A0)).ret();
 
       case "Object.hashCode"     :
         {

@@ -1,0 +1,75 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test floating_point_math
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# tests basic floating point math for f32/f64
+floating_point_math is
+
+  exitCode := 0
+
+  chck(b bool, msg string) =>
+    s := if b
+      "PASSED: "
+    else
+      set exitCode := 1
+      "FAILED: "
+    say (s + msg)
+
+  generic_tests<T: float<T>>(a T) is
+
+    zero := a.zero
+    one := a.one
+    two := one + one
+
+    # sqrt
+    chck (a.sqrt (two * two) == two)                                       "{a.name}: sqrt (2*2) = 2"
+
+    # exponentation / logarithm
+    chck (a.exp zero   == one)                                             "{a.name}: exp 0 = 1"
+    chck (a.exp one    == a.ℇ)                                             "{a.name}: exp 1 = ℇ"
+    chck (a.log one    == zero)                                            "{a.name}: log 1 = 0"
+
+    # trigonometric
+    chck (a.sin zero   == zero)                                            "{a.name}: sin 0  = 0"
+    chck (a.sin a.π    <  a.epsilon)                                       "{a.name}: sin π  ~= 0"
+    chck (a.cos zero   == one)                                             "{a.name}: cos 0  = 1"
+    chck (a.cos a.π    == -one)                                            "{a.name}: cos π  = -1"
+    chck (a.tan zero   == zero)                                            "{a.name}: tan 0  = 0"
+    chck (a.asin zero  == zero)                                            "{a.name}: asin 0 = 0"
+    chck (a.acos one   == zero)                                            "{a.name}: acos 1 = 0"
+    chck (a.atan zero  == zero)                                            "{a.name}: atan 0 = 0"
+
+    # hyperbolicus
+    chck (a.sinh zero   == zero)                                           "{a.name}: sinh  0 = 0"
+    chck (a.cosh zero   == one)                                            "{a.name}: cosh  0 = 1"
+    chck (a.tanh zero   == zero)                                           "{a.name}: tanh  0 = 0"
+    chck (a.asinh zero  == zero)                                           "{a.name}: asinh 0 = 0"
+    chck (a.acosh one   == zero)                                           "{a.name}: acosh 1 = 0"
+    chck (a.atanh zero  == zero)                                           "{a.name}: atanh 0 = 0"
+
+
+  generic_tests f32s.zero
+  generic_tests f64s.zero
+
+  fuzion.std.exit exitCode
