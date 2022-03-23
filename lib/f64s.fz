@@ -41,11 +41,6 @@ f64s : floats<f64> is
   significandBits => 53
   exponentBits => 11
 
-  exponentRange => -1024..1023
-
-  # redef range => f64 # NYI: 4.9E-324..1.7976931348623157E308
-
-  # minPositive => # NYI: 4.9E-324
 
   from_i64(v i64) f64 is intrinsic
 
@@ -56,7 +51,7 @@ f64s : floats<f64> is
 
   redef minExp i32 is intrinsic
   redef maxExp i32 is intrinsic
-  redef min f64 is intrinsic
+  redef minPositive f64 is intrinsic
   redef max f64 is intrinsic
   redef epsilon f64 is intrinsic
 

@@ -636,7 +636,7 @@ public class Intrinsics extends ANY
     else if (n.equals("f32s.log"        )) { result = (args) -> new f32Value ((float)           Math.log(                args.get(1).f32Value())); }
     else if (n.equals("f32s.max"        )) { result = (args) -> new f32Value (                                           Float.MAX_VALUE);         }
     else if (n.equals("f32s.maxExp"     )) { result = (args) -> new i32Value (                                           Float.MAX_EXPONENT);      }
-    else if (n.equals("f32s.min"        )) { result = (args) -> new f32Value (                                           Float.MIN_NORMAL);        }
+    else if (n.equals("f32s.minPositive")) { result = (args) -> new f32Value (                                           Float.MIN_NORMAL);        }
     else if (n.equals("f32s.minExp"     )) { result = (args) -> new i32Value (                                           Float.MIN_EXPONENT);      }
     else if (n.equals("f32s.sin"        )) { result = (args) -> new f32Value ((float)          Math.sin(                 args.get(1).f32Value())); }
     else if (n.equals("f32s.sinh"       )) { result = (args) -> new f32Value ((float)          Math.sinh(                args.get(1).f32Value())); }
@@ -653,7 +653,7 @@ public class Intrinsics extends ANY
     else if (n.equals("f64s.log"        )) { result = (args) -> new f64Value (                 Math.log(                 args.get(1).f64Value())); }
     else if (n.equals("f64s.max"        )) { result = (args) -> new f64Value (                                               Double.MAX_VALUE);    }
     else if (n.equals("f64s.maxExp"     )) { result = (args) -> new i32Value (                                               Double.MAX_EXPONENT); }
-    else if (n.equals("f64s.min"        )) { result = (args) -> new f64Value (                                               Double.MIN_NORMAL);   }
+    else if (n.equals("f64s.minPositive")) { result = (args) -> new f64Value (                                               Double.MIN_NORMAL);   }
     else if (n.equals("f64s.minExp"     )) { result = (args) -> new i32Value (                                               Double.MIN_EXPONENT); }
     else if (n.equals("f64s.sin"        )) { result = (args) -> new f64Value (                 Math.sin(                 args.get(1).f64Value())); }
     else if (n.equals("f64s.sinh"       )) { result = (args) -> new f64Value (                 Math.sinh(                args.get(1).f64Value())); }

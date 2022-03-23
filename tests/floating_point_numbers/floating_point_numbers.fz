@@ -117,10 +117,10 @@ floating_point_numbers is
   chck (f64s.minExp == -1022)                                             "f64: minExp is correct"
   chck (f64s.maxExp == 1023)                                              "f64: maxExp is correct"
 
-  # min, max
-  chck (f32s.min == 0x1P-126)                                             "f32: min is correct"
+  # minPositive, max
+  chck (f32s.minPositive == 0x1P-126)                                     "f32: minPositive is correct"
   chck (f32s.max == (f32 0x1P127 * (f32 2.0 - f32 0x1P-23)))              "f32: max is correct"
-  chck (f64s.min == 0x1P-1022)                                            "f64: min is correct"
+  chck (f64s.minPositive == 0x1P-1022)                                    "f64: minPositive is correct"
   chck (f64s.max == (f64 0x1P1023 * (f64 2.0 - f64 0x1P-52)))             "f64: max is correct"
 
   fuzion.std.exit exitCode
