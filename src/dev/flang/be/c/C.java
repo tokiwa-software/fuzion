@@ -170,7 +170,8 @@ public class C extends ANY
       }
     Errors.showAndExit();
 
-    var command = new List<String>("clang", "-O3", "-o", name, cname);
+    // NYI link libmath only when needed
+    var command = new List<String>("clang", "-O3", "-lm", "-o", name, cname);
     _options.verbosePrintln(" * " + command.toString("", " ", ""));;
     try
       {
@@ -204,6 +205,8 @@ public class C extends ANY
        "#include <stdbool.h>\n"+
        "#include <stdint.h>\n"+
        "#include <string.h>\n"+
+       "#include <math.h>\n"+
+       "#include <float.h>\n"+
        "#include <assert.h>\n"+
        "#include <time.h>\n"+
        "#include <setjmp.h>\n"+
@@ -578,6 +581,8 @@ public class C extends ANY
             case c_u16  -> CExpr.uint16const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getChar ());
             case c_u32  -> CExpr.uint32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ());
             case c_u64  -> CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
+            case c_f32  -> CExpr.   f32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat());
+            case c_f64  -> CExpr.   f64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble());
             case c_conststring ->
             {
               var tmp = _names.newTemp();
@@ -762,6 +767,31 @@ public class C extends ANY
                       tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(_fuir.clazz_conststring())),
                       sysArray.field(data  ).assign(CExpr.string(bytes).castTo("void *")),
                       sysArray.field(length).assign(CExpr.int32const(bytes.length)));
+  }
+
+  // NYI this conversion should be done in Fuzion
+  CStmnt floatToConstString(CExpr expr, CIdent tmp)
+  {
+    // NYI how much do we need?
+    var bufferSize = 50;
+    var res = new CIdent("float_as_string_result");
+    var usedChars = new CIdent("used_chars");
+    var malloc = CExpr.call("malloc",
+      new List<>(CExpr.sizeOfType("char").mul(CExpr.int32const(bufferSize))));
+    var sprintf = CExpr.call("sprintf", new List<>(res, CExpr.string("%.21g"), expr));
+
+    var internalArray = _names.fieldName(_fuir.clazz_conststring_internalArray());
+    var data          = _names.fieldName(_fuir.clazz_sysArray_u8_data());
+    var length        = _names.fieldName(_fuir.clazz_sysArray_u8_length());
+    var sysArray = fields(tmp, _fuir.clazz_conststring()).field(internalArray);
+    return CStmnt.seq(CStmnt.decl("char*", res, malloc),
+                      CStmnt.decl("int", usedChars, sprintf),
+                      res.assign(CExpr.call("realloc", new List<>(res, usedChars))),
+                      CStmnt.decl("fzT__R1conststring *", tmp),
+                      tmp.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("fzT__R1conststring")))),
+                      tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(_fuir.clazz_conststring())),
+                      sysArray.field(data  ).assign(res.castTo("void *")),
+                      sysArray.field(length).assign(usedChars));
   }
 
 

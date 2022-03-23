@@ -17,30 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature float
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# float -- floating point values
-#
-#
-# float is the abstract parent of concrete floating point features such as
-# f32 or f64.
-#
-float<T: float<T>> : numeric<T>, floats<T> is
-
-
-  # preconditions for basic operations: true if the operation's result is
-  # representable for the given values.  For IEEE_754, all operations are
-  # defined for all values.
-  #
-  redef prefix +! bool is true
-  redef prefix -! bool is true
-  redef infix +! (other T) bool is true
-  redef infix -! (other T) bool is true
-  redef infix *! (other T) bool is true
-  redef infix /! (other T) bool is true
-  redef infix %! (other T) bool is true
-  redef infix **!(other T) bool is true
+NAME = floating_point_numbers
+include ../positive.mk
