@@ -589,7 +589,7 @@ public class FUIR extends IR
     else
       {
         var rc = or.resultClazz();
-        return !rc.isRef() && !rc.feature().isBuiltInPrimitive() && cc.feature().isConstructor();
+        return !rc.isRef() && !rc.feature().isBuiltInPrimitive();
       }
   }
 
