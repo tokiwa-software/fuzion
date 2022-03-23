@@ -121,6 +121,7 @@ u32(val u32) : wrappingInteger<u32>, hasInterval<u32>, u32s is
   low8bits  u8  is intrinsic
   low16bits u16 is intrinsic
   castTo_i32 i32 is intrinsic
+  castTo_f32 f32 is intrinsic
 
   # conversion to float
   as_f64 f64 is intrinsic

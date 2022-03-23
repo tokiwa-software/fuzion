@@ -264,7 +264,9 @@ class Intrinsics extends ANY
       case "u8.castTo_i8"        : return outer.castTo("fzT_1i8").ret();
       case "u16.castTo_i16"      : return outer.castTo("fzT_1i16").ret();
       case "u32.castTo_i32"      : return outer.castTo("fzT_1i32").ret();
+      case "u32.castTo_f32"      : return outer.adrOf().castTo("fzT_1f32*").deref().ret();
       case "u64.castTo_i64"      : return outer.castTo("fzT_1i64").ret();
+      case "u64.castTo_f64"      : return outer.adrOf().castTo("fzT_1f64*").deref().ret();
       case "u16.low8bits"        : return outer.and(CExpr.uint16const(0xFF)).castTo("fzT_1u8").ret();
       case "u32.low8bits"        : return outer.and(CExpr.uint32const(0xFF)).castTo("fzT_1u8").ret();
       case "u64.low8bits"        : return outer.and(CExpr.uint64const(0xFFL)).castTo("fzT_1u8").ret();
@@ -298,6 +300,8 @@ class Intrinsics extends ANY
       case "f64.infix >"         : return outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "f32.infix >="        :
       case "f64.infix >="        : return outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "f32.castTo_u32"      : return outer.adrOf().castTo("fzT_1u32*").deref().ret();
+      case "f64.castTo_u64"      : return outer.adrOf().castTo("fzT_1u64*").deref().ret();
       case "f32.asString"        :
       case "f64.asString"        :
         {
@@ -305,6 +309,40 @@ class Intrinsics extends ANY
           return CStmnt.seq(c.floatToConstString(outer, res),
             res.castTo("fzT__Rstring*").ret());
         }
+      case "f32s.minExp"         : return CExpr.ident("FLT_MIN_EXP").ret();
+      case "f32s.maxExp"         : return CExpr.ident("FLT_MAX_EXP").ret();
+      case "f32s.min"            : return CExpr.ident("FLT_MIN").ret();
+      case "f32s.max"            : return CExpr.ident("FLT_MAX").ret();
+      case "f32s.epsilon"        : return CExpr.ident("FLT_EPSILON").ret();
+      case "f64s.minExp"         : return CExpr.ident("DBL_MIN_EXP").ret();
+      case "f64s.maxExp"         : return CExpr.ident("DBL_MAX_EXP").ret();
+      case "f64s.min"            : return CExpr.ident("DBL_MIN").ret();
+      case "f64s.max"            : return CExpr.ident("DBL_MAX").ret();
+      case "f64s.epsilon"        : return CExpr.ident("DBL_EPSILON").ret();
+      case "f32s.squareRoot"     : return CExpr.call("sqrtf",  new List<>(A0)).ret();
+      case "f64s.squareRoot"     : return CExpr.call("sqrt",   new List<>(A0)).ret();
+      case "f32s.exp"            : return CExpr.call("expf",   new List<>(A0)).ret();
+      case "f64s.exp"            : return CExpr.call("exp",    new List<>(A0)).ret();
+      case "f32s.log"            : return CExpr.call("logf",   new List<>(A0)).ret();
+      case "f64s.log"            : return CExpr.call("log",    new List<>(A0)).ret();
+      case "f32s.sin"            : return CExpr.call("sinf",   new List<>(A0)).ret();
+      case "f64s.sin"            : return CExpr.call("sin",    new List<>(A0)).ret();
+      case "f32s.cos"            : return CExpr.call("cosf",   new List<>(A0)).ret();
+      case "f64s.cos"            : return CExpr.call("cos",    new List<>(A0)).ret();
+      case "f32s.tan"            : return CExpr.call("tanf",   new List<>(A0)).ret();
+      case "f64s.tan"            : return CExpr.call("tan",    new List<>(A0)).ret();
+      case "f32s.asin"           : return CExpr.call("asinf", new List<>(A0)).ret();
+      case "f64s.asin"           : return CExpr.call("asin",  new List<>(A0)).ret();
+      case "f32s.acos"           : return CExpr.call("acosf", new List<>(A0)).ret();
+      case "f64s.acos"           : return CExpr.call("acos",  new List<>(A0)).ret();
+      case "f32s.atan"           : return CExpr.call("atanf", new List<>(A0)).ret();
+      case "f64s.atan"           : return CExpr.call("atan",  new List<>(A0)).ret();
+      case "f32s.sinh"           : return CExpr.call("sinhf",  new List<>(A0)).ret();
+      case "f64s.sinh"           : return CExpr.call("sinh",   new List<>(A0)).ret();
+      case "f32s.cosh"           : return CExpr.call("coshf",  new List<>(A0)).ret();
+      case "f64s.cosh"           : return CExpr.call("cosh",   new List<>(A0)).ret();
+      case "f32s.tanh"           : return CExpr.call("tanhf",  new List<>(A0)).ret();
+      case "f64s.tanh"           : return CExpr.call("tanh",   new List<>(A0)).ret();
 
       case "Object.hashCode"     :
         {
@@ -357,7 +395,6 @@ class Intrinsics extends ANY
           var ecl = effectType(c, cl);
           var ev  = c._names.env(ecl);
           var evi = c._names.envInstalled(ecl);
-          var evj = c._names.envJmpBuf(ecl);
           var o   = c._names.OUTER;
           var e   = c._fuir.clazzIsRef(ecl) ? o : o.deref();
           return
@@ -371,31 +408,10 @@ class Intrinsics extends ANY
                   var call = c._fuir.lookupCall(oc);
                   if (c._fuir.clazzNeedsCode(call))
                     {
-                      var jmpbuf = new CIdent("jmpbuf");
-                      var oldev  = new CIdent("old_ev");
-                      var oldevi = new CIdent("old_evi");
-                      var oldevj = new CIdent("old_evj");
-                      yield CStmnt.seq(CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
-                                       CStmnt.decl("bool"             , oldevi, evi),
-                                       CStmnt.decl("jmp_buf*"         , oldevj, evj),
-                                       CStmnt.decl("jmp_buf", jmpbuf),
-                                       ev.assign(e),
-                                       evi.assign(CIdent.TRUE ),
-                                       evj.assign(jmpbuf.adrOf()),
-                                       CStmnt.iff(CExpr.call("setjmp",new List<>(jmpbuf)).eq(CExpr.int32const(0)),
-                                                  CExpr.call(c._names.function(call, false), new List<>(A0))),
-                                       /* NYI: this is a bit radical: we copy back the value from env to the outer instance, i.e.,
-                                        * the outer instance is no longer immutable and we might run into difficulties if
-                                        * the outer instance is used otherwise.
-                                        *
-                                        * It might be better to store the adr of a a value type effect in ev. Then we do not
-                                        * have to copy anything back, but we would have to copy the value in case of effect.replace
-                                        * and effect.default.
-                                        */
-                                       e.assign(ev),
-                                       ev .assign(oldev ),
-                                       evi.assign(oldevi),
-                                       evj.assign(oldevj));
+                      yield CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE ),
+                                       CExpr.call(c._names.function(call, false), new List<>(A0)),
+                                       evi.assign(CIdent.FALSE )
+                                       ) ;
                     }
                   else
                     {
@@ -404,11 +420,9 @@ class Intrinsics extends ANY
                                        CExpr.call("exit", new List<>(CExpr.int32const(1))));
                     }
                 }
-              case "effect.abort"   ->
-                CStmnt.seq(CStmnt.iff(evi, CExpr.call("longjmp",new List<>(evj.deref(), CExpr.int32const(1)))),
-                           CExpr.fprintfstderr("*** C backend support for %s missing\n",
-                                               CExpr.string(c._fuir.clazzIntrinsicName(cl))),
-                           CExpr.exit(1));
+              case "effect.abort"   -> CStmnt.seq(CExpr.fprintfstderr("*** C backend support for %s missing\n",
+                                                                           CExpr.string(c._fuir.clazzIntrinsicName(cl))),
+                                                       CExpr.exit(1));
               default -> throw new Error("unexpected intrinsic '" + in + "'.");
               };
         }

@@ -48,3 +48,29 @@ f32s : floats<f32> is
   # minPositive => # NYI:1.4E-45
 
   from_i64(v i64) f32 is intrinsic
+
+  redef ℇ => f32 2.7182818284590452354
+
+  redef π => f32 3.14159265358979323846
+
+  redef minExp f32 is intrinsic
+  redef maxExp f32 is intrinsic
+  redef min f32 is intrinsic
+  redef max f32 is intrinsic
+  redef epsilon f32 is intrinsic
+
+  redef squareRoot(val f32) f32 is intrinsic
+
+  redef exp(val f32) f32 is intrinsic
+  redef log(val f32) f32 is intrinsic
+
+  redef sin(val f32) f32 is intrinsic
+  redef cos(val f32) f32 is intrinsic
+  redef tan(val f32) f32 is intrinsic
+  redef asin(val f32) f32 is intrinsic
+  redef acos(val f32) f32 is intrinsic
+  redef atan(val f32) f32 is intrinsic
+
+  redef sinh(val f32) f32 is intrinsic
+  redef cosh(val f32) f32 is intrinsic
+  redef tanh(val f32) f32 is intrinsic
