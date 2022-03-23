@@ -17,38 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature f64s
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# f64s -- unit type defining features related to f64 but not requiring an
-# instance
-#
-#
-# f64 are binary64-numbers as defined in the IEEE 754-2019 standard, see
-# https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
-#
-f64s : floats<f64> is
-
-  redef name => "f64"
-
-  redef zero => f64 0
-  redef one  => f64 1
-
-  redef bytes => 8
-  significandBits => 53
-  exponentBits => 11
-
-  exponentRange => -1024..1023
-
-  # redef range => f64 # NYI: 4.9E-324..1.7976931348623157E308
-
-  # minPositive => # NYI: 4.9E-324
-
-  from_i64(v i64) f64 is intrinsic
-
-  redef ℇ => 2.7182818284590452354
-
-  redef π => 3.14159265358979323846
+NAME = floating_point_numbers
+include ../positive.mk

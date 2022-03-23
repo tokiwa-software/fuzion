@@ -115,6 +115,8 @@ public class FUIR extends IR
     c_u16         { Clazz getIfCreated() { return Clazzes.u16        .getIfCreated(); } },
     c_u32         { Clazz getIfCreated() { return Clazzes.u32        .getIfCreated(); } },
     c_u64         { Clazz getIfCreated() { return Clazzes.u64        .getIfCreated(); } },
+    c_f32         { Clazz getIfCreated() { return Clazzes.f32        .getIfCreated(); } },
+    c_f64         { Clazz getIfCreated() { return Clazzes.f64        .getIfCreated(); } },
     c_bool        { Clazz getIfCreated() { return Clazzes.bool       .getIfCreated(); } },
     c_TRUE        { Clazz getIfCreated() { return Clazzes.c_TRUE     .getIfCreated(); } },
     c_FALSE       { Clazz getIfCreated() { return Clazzes.c_FALSE    .getIfCreated(); } },
