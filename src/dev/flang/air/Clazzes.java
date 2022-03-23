@@ -398,7 +398,7 @@ public class Clazzes extends ANY
         main.called(SourcePosition.builtIn);
         main.instantiated(SourcePosition.builtIn);
       }
-    for (var c : new OnDemandClazz[] { universe, i32, u32, i64, u64 })
+    for (var c : new OnDemandClazz[] { universe, i32, u32, i64, u64, f32, f64 })
       {
         c.get().called(SourcePosition.builtIn);
         c.get().instantiated(SourcePosition.builtIn);
