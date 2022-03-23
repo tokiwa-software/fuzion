@@ -83,6 +83,7 @@ class Intrinsics extends ANY
    */
   CStmnt code(C c, int cl)
   {
+    var rc = c._fuir.clazzResultClazz(cl);
     var or = c._fuir.clazzOuterRef(cl);
     var outer =
       or == -1                                         ? null :
@@ -303,7 +304,7 @@ class Intrinsics extends ANY
         {
           var res = new CIdent("res");
           return CStmnt.seq(c.floatToConstString(outer, res),
-            res.castTo("fzT__Rstring*").ret());
+                            res.castTo(c._types.clazz(rc)).ret());
         }
 
       case "Object.hashCode"     :
@@ -317,7 +318,7 @@ class Intrinsics extends ANY
         {
           var res = new CIdent("res");
           return CStmnt.seq(c.constString("NYI: Object.asString".getBytes(StandardCharsets.UTF_8), res),
-                            res.castTo("fzT__Rstring*").ret());
+                            res.castTo(c._types.clazz(rc)).ret());
 
         }
 
