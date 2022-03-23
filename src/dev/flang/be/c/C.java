@@ -754,20 +754,40 @@ public class C extends ANY
 
   /**
    * Create code to create a constant string and assign it to a new temp
-   * variable. Return an CExpr that reads this variable.
+   * variable.
    */
   CStmnt constString(byte[] bytes, CIdent tmp)
   {
+    return constString(CExpr.string(bytes),
+                       CExpr.int32const(bytes.length),
+                       tmp);
+  }
+
+
+  /**
+   * Create code to create a constant string and assign it to a new temp
+   * variable.
+   *
+   * @param bytes C code resulting in char* to bytes of this string
+   *
+   * @param len length of this string, in bytes
+   *
+   * @param tmp local vad the new string should be assigned to
+   */
+  CStmnt constString(CExpr bytes, CExpr len, CIdent tmp)
+  {
+    var cs            = _fuir.clazz_conststring();
     var internalArray = _names.fieldName(_fuir.clazz_conststring_internalArray());
     var data          = _names.fieldName(_fuir.clazz_sysArray_u8_data());
     var length        = _names.fieldName(_fuir.clazz_sysArray_u8_length());
-    var sysArray = fields(tmp, _fuir.clazz_conststring()).field(internalArray);
-    return CStmnt.seq(CStmnt.decl("fzT__R1conststring *", tmp),
-                      tmp.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("fzT__R1conststring")))),
-                      tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(_fuir.clazz_conststring())),
-                      sysArray.field(data  ).assign(CExpr.string(bytes).castTo("void *")),
-                      sysArray.field(length).assign(CExpr.int32const(bytes.length)));
+    var sysArray = fields(tmp, cs).field(internalArray);
+    return CStmnt.seq(CStmnt.decl(_types.clazz(cs), tmp),
+                      tmp.assign(CExpr.call("malloc", new List<>(tmp.deref().sizeOfExpr()))),
+                      tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(cs)),
+                      sysArray.field(data  ).assign(bytes.castTo("void *")),
+                      sysArray.field(length).assign(len));
   }
+
 
   // NYI this conversion should be done in Fuzion
   CStmnt floatToConstString(CExpr expr, CIdent tmp)
@@ -780,18 +800,10 @@ public class C extends ANY
       new List<>(CExpr.sizeOfType("char").mul(CExpr.int32const(bufferSize))));
     var sprintf = CExpr.call("sprintf", new List<>(res, CExpr.string("%.21g"), expr));
 
-    var internalArray = _names.fieldName(_fuir.clazz_conststring_internalArray());
-    var data          = _names.fieldName(_fuir.clazz_sysArray_u8_data());
-    var length        = _names.fieldName(_fuir.clazz_sysArray_u8_length());
-    var sysArray = fields(tmp, _fuir.clazz_conststring()).field(internalArray);
     return CStmnt.seq(CStmnt.decl("char*", res, malloc),
                       CStmnt.decl("int", usedChars, sprintf),
                       res.assign(CExpr.call("realloc", new List<>(res, usedChars))),
-                      CStmnt.decl("fzT__R1conststring *", tmp),
-                      tmp.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("fzT__R1conststring")))),
-                      tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(_fuir.clazz_conststring())),
-                      sysArray.field(data  ).assign(res.castTo("void *")),
-                      sysArray.field(length).assign(usedChars));
+                      constString(res, usedChars, tmp));
   }
 
 
