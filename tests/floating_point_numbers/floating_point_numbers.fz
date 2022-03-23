@@ -141,7 +141,7 @@ floating_point_numbers is
   # minExp, maxExp
   chck (f32s.minExp == -126)                                              "f32 minExp is correct"
   chck (f32s.maxExp == 127)                                               "f32 maxExp is correct"
-  chck (f64s.minExp == -1023)                                             "f64 minExp is correct"
-  chck (f64s.maxExp == 1024)                                              "f64 maxExp is correct"
+  chck (f64s.minExp == -1022)                                             "f64 minExp is correct"
+  chck (f64s.maxExp == 1023)                                              "f64 maxExp is correct"
 
   fuzion.std.exit exitCode
