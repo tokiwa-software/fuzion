@@ -1,0 +1,143 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature random
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# random -- effect that provides random numbers
+#
+random (
+
+  # the current state
+  p randomProvider,
+
+  redef r effectModes
+  ) : effect r
+is
+
+
+  # go to the next random value, leaving the contents unchanged
+  #
+  next => random p.next mode
+
+
+  # return next random number of type i32 in the range 0..max-1
+  #
+  nextI32(max i32)
+  pre max >= 0
+   => (next.get max.as_u64).as_i32
+
+
+  # return next random number of type i64 in the range 0..max-1
+  #
+  nextI64(max i64)
+  pre max >= 0
+   => (next.get max.as_u64).as_i64
+
+
+  # return next random number of type u32 in the range 0..max-1
+  #
+  nextU32(max u32) => (next.get max.as_u64).as_u32
+
+
+  # return next random number of type u64 in the range 0..max-1
+  #
+  nextU64(max u64) =>  next.get max
+
+  # return next random number of type f32 in the range 0..1
+  #
+  nextF32 => nextF64.as_f32
+
+  # return next random number of type f64 in the range 0..1
+  #
+  nextF64 => next.p.get.as_f64 / 1P64
+
+
+  # get the current random number in the range 0..max-1
+  #
+  get (max u64)
+   =>
+     p.get % max  # NYI: This implementation is bad if max is big
+
+
+  # get the current random number as a bool
+  #
+  getBool => (get 2) = 0
+
+
+# random with no argument returns random.env, i.e., the currently installed
+# source of randomness.
+#
+random =>
+  randoms.installDefault
+  random.env
+
+
+# randomProvider -- abstract source of random numbers
+#
+# This provides the random number input to be used by the 'random' effect.
+# Implementation may be dumb sequences of pseudo-random numbers or high-qualiity
+# cryptographic random number generators
+#
+# A randomProvider contains an immutable state, repeated calls to 'get' result
+# in the same value.  To produce a sequence of different random numbers, 'next'
+# must be used to create a new instance of 'randomProvider' before 'get' can be
+# used to obtain the new random number.
+#
+randomProvider ref is
+
+  # create a new instance of randomProvider containing a new state. Depending
+  # on the qualifity of this random number generator, this might be a simple
+  # function of the original randomProvider or it might use an external source
+  # of entropy to create a new instance.
+  #
+  next randomProvider is abstract
+
+  # Return the random number stored in this instance of randomProvider, in the
+  # range 0..u64.max
+  #
+  # NOTE: this feature is pure, i.e., repeated calls on the same target result
+  # in equal results.  Use 'next' to get different results.
+  #
+  get u64 is abstract
+
+
+# type related to random declaring features not requiring an instance of random
+#
+randoms is
+
+  installDefault is
+    if !(effects.exists<random>)
+      _ := random dummyRandomProvider effectMode.default
+
+
+dummyRandomProvider randomProvider is
+
+  rp(seed u64) : randomProvider is
+
+    next randomProvider is
+      # NYI: This does not meet any requirements on a decent random number generator
+      rp (seed *° 171717171 +° 13131313)
+
+    get u64 is seed
+
+  rp (u64 77777777777777 ^ fuzion.std.nano_time)
