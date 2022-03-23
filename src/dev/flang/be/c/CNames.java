@@ -458,9 +458,9 @@ public class CNames extends ANY
   /**
    * Create a name for a new local temp variable.
    */
-  CIdent newTemp()
+  CLocal newTemp()
   {
-    return new CIdent(TEMP_VAR_PREFIX + (_tempVarId++));
+    return new CLocal(TEMP_VAR_PREFIX + (_tempVarId++));
   }
 
 

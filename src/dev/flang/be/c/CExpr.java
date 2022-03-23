@@ -841,8 +841,22 @@ abstract class CExpr extends CStmnt
           inner.code(sb);
           sb.append("/* ").append(s).append(" */");
         }
+        boolean isLocalVar()
+        {
+          return inner.isLocalVar();
+        }
       };
   }
+
+
+  /**
+   * Is this a local variable?
+   */
+  boolean isLocalVar()
+  {
+    return false;
+  }
+
 
   /**
    * Create String for debugging-output.
