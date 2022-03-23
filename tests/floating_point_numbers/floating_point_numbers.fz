@@ -23,6 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
+# tests basic floating point operations for f32/f64
 floating_point_numbers is
 
   exitCode := 0
