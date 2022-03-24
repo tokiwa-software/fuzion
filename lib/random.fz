@@ -64,14 +64,16 @@ is
   nextU64(max u64) =>  next.get max
 
 
-  # return next random number of type f32 in the range 0..1
+  # return next random number of type f32 in the range [0..1),
+  # result will never be equal to f32 1
   #
   nextF32 =>
     max := u64 1 << f32s.significandBits.as_u64
     (nextU64 max).as_f64.as_f32 / max.as_f64.as_f32
 
 
-  # return next random number of type f64 in the range 0..1
+  # return next random number of type f64 in the range [0..1),
+  # result will never be equal to f64 1
   #
   nextF64 =>
     max := u64 1 << f64s.significandBits.as_u64
