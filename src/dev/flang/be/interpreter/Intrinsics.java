@@ -115,8 +115,25 @@ public class Intrinsics extends ANY
     var f = innerClazz.feature();
     String n = f.qualifiedName();
     // NYI: We must check the argument count in addition to the name!
-    if (n.equals("fuzion.std.out.write") ||
-        n.equals("fuzion.std.err.write"))
+    if      (n.equals("fuzion.std.args.count"))  { result = (args) -> new i32Value(1); /* NYI: args after cmd name not supported yet */  }
+    else if (n.equals("fuzion.std.args.get"  ))
+      {
+        result = (args) ->
+          {
+            var i = args.get(1).i32Value();
+            var fuir = interpreter._fuir;
+            if (i == 0)
+              {
+                return  Interpreter.value(fuir.clazzAsString(fuir.mainClazzId()));
+              }
+            else
+              {
+                return  Interpreter.value("argument#"+i); /* NYI: args after cmd name not supported yet */
+              }
+          };
+      }
+    else if (n.equals("fuzion.std.out.write") ||
+             n.equals("fuzion.std.err.write"))
       {
         var s = outOrErr(n);
         result = (args) ->

@@ -211,6 +211,10 @@ public class C extends ANY
        "#include <time.h>\n"+
        "#include <setjmp.h>\n"+
        "\n");
+    cf.print
+      (CStmnt.decl("int", _names.GLOBAL_ARGC));
+    cf.print
+      (CStmnt.decl("char **", _names.GLOBAL_ARGV));
     var o = CExpr.ident("of");
     var s = CExpr.ident("sz");
     var r = new CIdent("r");
@@ -249,7 +253,11 @@ public class C extends ANY
                                                   CStmnt.decl("jmp_buf*"                  , _names.envJmpBuf(cl)))));
            }
        });
-    cf.println("int main(int argc, char **args) { " + _names.function(_fuir.mainClazzId(), false) + "(); }");
+    cf.println("int main(int argc, char **argv) { ");
+    cf.print(CStmnt.seq(_names.GLOBAL_ARGC.assign(new CIdent("argc")),
+                        _names.GLOBAL_ARGV.assign(new CIdent("argv")),
+                        CExpr.call(_names.function(_fuir.mainClazzId(), false), new List<>())));
+    cf.println("}");
   }
 
 

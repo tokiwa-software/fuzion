@@ -183,6 +183,18 @@ public class CNames extends ANY
   static final CExpr NULL = new CIdent("NULL");
 
 
+  /**
+   * global C variable to hold argc
+   */
+  static final CIdent GLOBAL_ARGC = new CIdent("fzG_argc");
+
+
+  /**
+   * global C variable to hold argv
+   */
+  static final CIdent GLOBAL_ARGV = new CIdent("fzG_argv");
+
+
   /*----------------------------  variables  ----------------------------*/
 
 

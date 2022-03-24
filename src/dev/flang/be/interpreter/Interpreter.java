@@ -181,7 +181,7 @@ public class Interpreter extends ANY
   /**
    * The intermediate representation of the code we are interpreting.
    */
-  final FUIR _fuir;
+  public final FUIR _fuir;
 
 
   /*---------------------------  consructors  ---------------------------*/

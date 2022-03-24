@@ -113,6 +113,14 @@ class Intrinsics extends ANY
       case "safety"              : return (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
       case "debug"               : return (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
       case "debugLevel"          : return (CExpr.int32const(c._options.fuzionDebugLevel())).ret();
+      case "fuzion.std.args.count": return c._names.GLOBAL_ARGC.ret();
+      case "fuzion.std.args.get" :
+        {
+          var tmp = new CIdent("tmp");
+          var str = c._names.GLOBAL_ARGV.index(A0);
+          return CStmnt.seq(c.constString(str,CExpr.call("strlen",new List<>(str)), tmp),
+                            tmp.castTo(c._types.clazz(rc)).ret());
+        }
       case "fuzion.std.exit"     : return CExpr.call("exit", new List<>(A0));
       case "fuzion.std.out.write":
       case "fuzion.std.err.write": var cid = new CIdent("c");
