@@ -41,6 +41,8 @@ import dev.flang.util.List;
 
 import java.lang.reflect.Array;
 
+import java.io.PrintStream;
+
 import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
@@ -82,6 +84,22 @@ public class Intrinsics extends ANY
 
 
   /**
+   * Get the proper output file handle 'stdout' or 'stderr' depending on the
+   * prefix of the intrinsic feature name in.
+   *
+   * @param in name of an intrinsic feature in fuzion.std.out or fuzion.std.err.
+   *
+   * @return CIdent of 'stdout' or 'stderr'
+   */
+  private static PrintStream outOrErr(String in)
+  {
+    if      (in.startsWith("fuzion.std.out.")) { return System.out; }
+    else if (in.startsWith("fuzion.std.err.")) { return System.err; }
+    else                                       { throw new Error("outOrErr called on "+in); }
+  }
+
+
+  /**
    * Create a Callable to call an intrinsic feature.
    *
    * @param innerClazz the frame clazz of the called feature
@@ -97,19 +115,23 @@ public class Intrinsics extends ANY
     var f = innerClazz.feature();
     String n = f.qualifiedName();
     // NYI: We must check the argument count in addition to the name!
-    if (n.equals("fuzion.std.out.write"))
+    if (n.equals("fuzion.std.out.write") ||
+        n.equals("fuzion.std.err.write"))
       {
+        var s = outOrErr(n);
         result = (args) ->
           {
-            System.out.write(args.get(1).u8Value());
+            s.write(args.get(1).u8Value());
             return Value.EMPTY_VALUE;
           };
       }
-    else if (n.equals("fuzion.std.out.flush"))
+    else if (n.equals("fuzion.std.out.flush") ||
+             n.equals("fuzion.std.err.flush"))
       {
+        var s = outOrErr(n);
         result = (args) ->
           {
-            System.out.flush();
+            s.flush();
             return Value.EMPTY_VALUE;
           };
       }

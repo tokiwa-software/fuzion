@@ -75,6 +75,22 @@ class Intrinsics extends ANY
 
 
   /**
+   * Get the proper output file handle 'stdout' or 'stderr' depending on the
+   * prefix of the intrinsic feature name in.
+   *
+   * @param in name of an intrinsic feature in fuzion.std.out or fuzion.std.err.
+   *
+   * @return CIdent of 'stdout' or 'stderr'
+   */
+  private CIdent outOrErr(String in)
+  {
+    if      (in.startsWith("fuzion.std.out.")) { return new CIdent("stdout"); }
+    else if (in.startsWith("fuzion.std.err.")) { return new CIdent("stderr"); }
+    else                                       { throw new Error("outOrErr called on "+in); }
+  }
+
+
+  /**
    * Create code for intrinsic feature
    *
    * @param c the C backend
@@ -98,16 +114,18 @@ class Intrinsics extends ANY
       case "debug"               : return (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
       case "debugLevel"          : return (CExpr.int32const(c._options.fuzionDebugLevel())).ret();
       case "fuzion.std.exit"     : return CExpr.call("exit", new List<>(A0));
-      case "fuzion.std.out.write": var cid = new CIdent("c");
+      case "fuzion.std.out.write":
+      case "fuzion.std.err.write": var cid = new CIdent("c");
                                    return CStmnt.seq(CStmnt.decl("char",cid),
                                                        cid.assign(A0.castTo("char")),
                                                        CExpr.call("fwrite",
                                                                   new List<>(cid.adrOf(),
                                                                              CExpr.int32const(1),
                                                                              CExpr.int32const(1),
-                                                                             new CIdent("stdout"))));
+                                                                             outOrErr(in))));
 
-      case "fuzion.std.out.flush": return CExpr.call("fflush", new List<>(new CIdent("stdout")));
+      case "fuzion.std.out.flush":
+      case "fuzion.std.err.flush": return CExpr.call("fflush", new List<>(outOrErr(in)));
 
         /* NYI: The C standard does not guarentee wrap-around semantics for signed types, need
          * to check if this is the case for the C compilers used for Fuzion.
