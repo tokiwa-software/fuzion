@@ -100,6 +100,12 @@ random =>
   randoms.installDefault
   random.env
 
+simpleRandom(seed u64, rr ()->unit) =>
+  _ := random (simpleRandomProvider seed seed) (effectMode.inst rr)
+
+timeSeededRandom(rr ()->unit) =>
+  _ := random simpleRandomProviders.timeSeeded (effectMode.inst rr)
+
 
 # randomProvider -- abstract source of random numbers
 #
@@ -136,34 +142,49 @@ randoms is
 
   installDefault is
     if !(effects.exists<random>)
-      _ := random dummyRandomProvider effectMode.default
+      _ := random simpleRandomProviders.timeSeeded effectMode.default
 
 
-# create a dummer provider for pseudo random numbers that are not safe
+
+# simple random number provider for pseudo random numbers that are not safe
 # for security and that do not meat typical requirements for a good
 # random number generator.
 #
-dummyRandomProvider randomProvider is
+simpleRandomProvider(seed1 u64, seed2 u64) : randomProvider is
 
-  # the dummy random provider constructor
+  # get next instance by shuffling bits in seeds around
   #
-  rp(seed1 u64, seed2 u64) : randomProvider is
+  next randomProvider is
+    # NYI: This does not meet any requirements on a decent random number generator
+    s1 := (seed1 *° 1717171717 +° 13113131313) ^ seed2
+    s2 := (seed2 *° 9191919191 +° 37637373737) ^ seed1
+    rot1 := s2 & 0x3f
+    rot2 := s1 & 0x3f
+    (simpleRandomProvider ((s2 << rot2) | (s2 >> (u64 64 - rot2)))
+                          ((s1 << rot1) | (s1 >> (u64 64 - rot1))))
 
-    # get next instance by shuffling bits in seeds around
-    #
-    next randomProvider is
-      # NYI: This does not meet any requirements on a decent random number generator
-      s1 := (seed1 *° 1717171717 +° 13113131313) ^ seed2
-      s2 := (seed2 *° 9191919191 +° 37637373737) ^ seed1
-      rot1 := s2 & 0x3f
-      rot2 := s1 & 0x3f
-      (rp ((s2 << rot2) | (s2 >> (u64 64 - rot2)))
-          ((s1 << rot1) | (s1 >> (u64 64 - rot1))))
-
-    # get current random number
-    #
-    get u64 is seed1
-
-  # initialize with large numbers XORed with nano time
+  # get current random number
   #
-  rp (u64 77777777777777 ^ fuzion.std.nano_time) 98765432109876543
+  get u64 is seed1
+
+
+# type related to simpleRandomProvider declaraing features not requiring an instance
+# of simpleRandomProvider
+#
+simpleRandomProviders is
+
+  # create a time-seeded simple provider for pseudo random numbers that are not safe
+  # for security and that do not meat typical requirements for a good
+  # random number generator.
+  #
+  timeSeeded randomProvider is
+    # initialize with large numbers XORed with nano time
+    #
+    simpleRandomProvider (u64 77777777777777 ^ fuzion.std.nano_time) 98765432109876543
+
+  # create a time-seed sprovider for pseudo random numbers that are not safe
+  # for security and that do not meat typical requirements for a good
+  # random number generator.
+  #
+  timeSeeded(rr ()->unit) =>
+    _ := random timeSeeded (effectMode.inst rr)
