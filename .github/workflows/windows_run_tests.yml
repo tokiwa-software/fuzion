@@ -1,11 +1,11 @@
-name: windows run_tests
+name: windows run tests
 
 on:
   workflow_dispatch:
 
 jobs:
   run_tests:
-    name: run_tests windows
+    name: windows run tests
     runs-on: windows-latest
     defaults:
       run:
