@@ -28,7 +28,7 @@
 private err (
   redef p canPrint,
 
-  # action to be taken: plain nomad, install or replace?
+  # action to be taken: install or default?
   redef r effectModes,
 
   _ unit

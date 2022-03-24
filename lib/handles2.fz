@@ -39,7 +39,7 @@ private handles2<T,X>(
 
   lastOpt option<handle2<T>>,
 
-  # action to be taken: plain nomad, install or replace?
+  # action to be taken: plain monad, install or replace?
   redef r effectModes
   ) : onewayMonad<X, handles2<T,X>> r
 is
