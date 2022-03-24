@@ -17,55 +17,50 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature out
+#  Source code of Fuzion standard library feature printEffect
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# out -- effect providing an output stream
+# printEffect -- effect providing an output stream
 #
-private out (
-  redef p canPrint,
+# This is used as heir feature for effects such as io.out and io.err.
+#
+private printEffect (
+  p canPrint,
 
   # action to be taken: plain nomad, install or replace?
-  redef r effectModes,
-
-  _ unit
-  ) : printEffect p r
+  redef r effectModes
+  ) : effect r
 is
 
+  # print the given string followed be new line
+  #
+  println (s Object) =>
+    p.println s
+    replace
 
-# short-hand for creating and installing out monad
-#
-out(rr ()->unit) => out defaultPrintToOut rr
+  # print the given string
+  #
+  print (s Object) =>
+    p.print s
+    replace
 
-
-# short-hand for creating and installing out monad
-#
-out(p canPrint, rr ()->unit) =>
-  out p (effectMode.inst rr) unit
-  unit
-
-
-# short-hand for accessing out monad in current environment
-#
-out =>
-  outs.installDefault
-  io.out.env
-
-
-defaultPrintToOut : canPrint is
-
-  print(s Object) => stdout.print s
+  # print new line
+  #
+  println =>
+    p.println
+    replace
 
 
-# unit type feature defining features related to out but not requiring an
-# instance.
-#
-outs is
+canPrint ref is
 
-  # install default effect out using defaultPrint
-  installDefault unit is
-    if !(effects.exists<io.out>)
-      _ := out defaultPrintToOut effectMode.default unit
+  println(s Object) =>
+    print s
+    println
+
+  println =>
+    print (codepoint 10)
+
+  print(s Object) unit is abstract
