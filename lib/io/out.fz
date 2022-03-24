@@ -36,19 +36,19 @@ private out (
 is
 
 
-# short-hand for creating and installing out monad
+# short-hand for creating and installing out effect
 #
 out(rr ()->unit) => out defaultPrintToOut rr
 
 
-# short-hand for creating and installing out monad
+# short-hand for creating and installing out effect
 #
 out(p canPrint, rr ()->unit) =>
   out p (effectMode.inst rr) unit
   unit
 
 
-# short-hand for accessing out monad in current environment
+# short-hand for accessing out effect in current environment
 #
 out =>
   outs.installDefault
