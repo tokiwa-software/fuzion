@@ -44,3 +44,4 @@ jobs:
 
       - name: run tests int
         run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && ./bin/run_tests.sh build int
+
