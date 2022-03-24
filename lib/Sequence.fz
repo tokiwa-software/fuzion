@@ -173,6 +173,14 @@ Sequence<T> ref is
     # on array.slice(from,to).asArray.
 
 
+  # create a tuple of two Sequences by splitting this at the given index, i.e.,
+  # a Sequence of length 'at' and one of length 'count-at'.
+  #
+  # at may be <= 0 or >= count, in which case the resulting tuple will be the
+  # (empty list, Sequence.this.asList) or (Sequence.this.asList, empty list), resp.
+  #
+  splitAt(at i32) => ((take at), (drop at))
+
   # Lazily take the first elements of a list for which predicate 'p' holds.
   #
   takeWhile (p T -> bool) => asList.takeWhile p
