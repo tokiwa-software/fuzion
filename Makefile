@@ -46,6 +46,7 @@ JAVA_FILES_FUIR           = $(wildcard $(SRC)/dev/flang/fuir/*.java          )
 JAVA_FILES_OPT            = $(wildcard $(SRC)/dev/flang/opt/*.java           )
 JAVA_FILES_BE_INTERPRETER = $(wildcard $(SRC)/dev/flang/be/interpreter/*.java)
 JAVA_FILES_BE_C           = $(wildcard $(SRC)/dev/flang/be/c/*.java          )
+JAVA_FILES_BE_EFFECTS     = $(wildcard $(SRC)/dev/flang/be/effects/*.java    )
 JAVA_FILES_TOOLS          = $(wildcard $(SRC)/dev/flang/tools/*.java         ) $(JAVA_FILE_TOOLS_VERSION)
 JAVA_FILES_TOOLS_FZJAVA   = $(wildcard $(SRC)/dev/flang/tools/fzjava/*.java  )
 JAVA_FILES_MISC_LOGO      = $(wildcard $(SRC)/dev/flang/misc/logo/*.java     )
@@ -63,6 +64,7 @@ CLASS_FILES_FUIR           = $(CLASSES_DIR)/dev/flang/fuir/__marker_for_make__
 CLASS_FILES_OPT            = $(CLASSES_DIR)/dev/flang/opt/__marker_for_make__
 CLASS_FILES_BE_INTERPRETER = $(CLASSES_DIR)/dev/flang/be/interpreter/__marker_for_make__
 CLASS_FILES_BE_C           = $(CLASSES_DIR)/dev/flang/be/c/__marker_for_make__
+CLASS_FILES_BE_EFFECTS     = $(CLASSES_DIR)/dev/flang/be/effects/__marker_for_make__
 CLASS_FILES_TOOLS          = $(CLASSES_DIR)/dev/flang/tools/__marker_for_make__
 CLASS_FILES_TOOLS_FZJAVA   = $(CLASSES_DIR)/dev/flang/tools/fzjava/__marker_for_make__
 CLASS_FILES_MISC_LOGO      = $(CLASSES_DIR)/dev/flang/misc/logo/__marker_for_make__
@@ -190,7 +192,12 @@ $(CLASS_FILES_BE_C): $(JAVA_FILES_BE_C) $(CLASS_FILES_FUIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_C)
 	touch $@
 
-$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_BE_INTERPRETER)
+$(CLASS_FILES_BE_EFFECTS): $(JAVA_FILES_BE_EFFECTS) $(CLASS_FILES_FUIR)
+	mkdir -p $(CLASSES_DIR)
+	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_EFFECTS)
+	touch $@
+
+$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_INTERPRETER)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS)
 	touch $@

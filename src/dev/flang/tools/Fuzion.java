@@ -34,6 +34,8 @@ import java.util.TreeSet;
 import dev.flang.be.c.C;
 import dev.flang.be.c.COptions;
 
+import dev.flang.be.effects.Effects;
+
 import dev.flang.be.interpreter.Intrinsics;
 import dev.flang.be.interpreter.Interpreter;
 
@@ -97,6 +99,13 @@ class Fuzion extends Tool
     java       ("-java"),
     classes    ("-classes"),
     llvm       ("-llvm"),
+    effects    ("-effects")
+    {
+      String usage()
+      {
+        return new String(""); /* tricky: empty string != "" */
+      }
+    },
     undefined;
 
     /**
@@ -549,6 +558,7 @@ class Fuzion extends Tool
                   in.run(); break;
                 }
               case c          : new C(new COptions(options, _binaryName_), fuir).compile(); break;
+              case effects    : new Effects(fuir).find(); break;
               default         : Errors.fatal("backend '" + _backend + "' not supported yet"); break;
               }
             long beTime = System.currentTimeMillis();
