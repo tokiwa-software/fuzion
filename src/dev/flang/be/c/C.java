@@ -245,7 +245,7 @@ public class C extends ANY
                .stream()
                .filter(cl -> _fuir.clazzNeedsCode(cl) &&
                        _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic  &&
-                       _intrinsics.isOnewayMonad(this, cl))
+                       _intrinsics.isEffect(this, cl))
                .mapToInt(cl -> _intrinsics.effectType(this, cl))
                .distinct()
                .forEach(cl -> cf.print(CStmnt.seq(CStmnt.decl("__thread", _types.clazz(cl), _names.env(cl)),
@@ -718,7 +718,7 @@ public class C extends ANY
           var res = _names.env(ecl);
           var evi = _names.envInstalled(ecl);
           o = CStmnt.iff(evi.not(),
-                         CStmnt.seq(CExpr.fprintfstderr("*** oneway monad for %s not present in current environment\n",
+                         CStmnt.seq(CExpr.fprintfstderr("*** effect %s not present in current environment\n",
                                                         CExpr.string(_fuir.clazzAsString(ecl))),
                                     CExpr.exit(1)));
           push(stack, ecl, res);

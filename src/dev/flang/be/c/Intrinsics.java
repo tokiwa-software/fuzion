@@ -520,7 +520,7 @@ class Intrinsics extends ANY
    *
    * @return true for effect.install and similar features.
    */
-  boolean isOnewayMonad(C c, int cl)
+  boolean isEffect(C c, int cl)
   {
     if (PRECONDITIONS) require
       (c._fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
@@ -550,7 +550,7 @@ class Intrinsics extends ANY
   int effectType(C c, int cl)
   {
     if (PRECONDITIONS) require
-      (isOnewayMonad(c, cl));
+      (isEffect(c, cl));
 
     var or = c._fuir.clazzOuterRef(cl);
     return c._fuir.clazzResultClazz(or);
