@@ -32,18 +32,8 @@ private args (
   redef r effectModes,
 
   _ unit
-  ) : effect r
+  ) : array(all.internalArray), effect r
 is
-
-  index [] (i i32) string
-    pre
-      i <= count
-  is
-    all[i]
-
-
-  count i32 is
-    all.count
 
 
 # short-hand for creating and installing args effect and run rr
