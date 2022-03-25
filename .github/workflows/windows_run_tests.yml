@@ -1,0 +1,47 @@
+name: windows run tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run_tests:
+    name: windows run tests
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          path-type: minimal
+# NYI maybe use mingw64 here?
+          msystem: MSYS
+# git is used in Makefile: JAVA_FILE_TOOLS_VERSION
+          install: >-
+            make
+            git
+            mingw-w64-x86_64-clang
+
+      - name: install choco packages
+        shell: powershell
+        run: choco install openjdk --version 18.0.0
+
+      - uses: actions/checkout@v2
+
+# NYI how to set PATH permanently?
+      - name: echo PATH
+        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && echo "$PATH"
+
+      - name: echo versions
+        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && clang --version && javac --version
+
+      - name: build
+        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && make
+
+      - name: run tests c
+        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && ./bin/run_tests.sh build c
+
+      - name: run tests int
+        run: export PATH="/mingw64/bin/:/c/Program Files/OpenJDK/jdk-18/bin:$PATH" && ./bin/run_tests.sh build int
+
