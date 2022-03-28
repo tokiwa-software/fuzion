@@ -23,6 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
+# debug -- features related to debug setting
+#
 # debug is a condition qualifier that enables conditions if debugging is
 # enabled.
 #

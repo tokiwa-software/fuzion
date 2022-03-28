@@ -23,8 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# integer
-#
+# integer -- abstract ancestor of integer numbers
 #
 # integer is the abstract ancestor of integer numbers that provides operations
 # from numeric plus a devision remainder operation %, bitwise logical operations,

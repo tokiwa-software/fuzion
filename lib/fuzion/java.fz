@@ -23,6 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
+# fuzion.java -- unit type grouping low-level helpers for Java interface
+#
 public fuzion.java is
 
 

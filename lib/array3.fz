@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# array(length0, length1, length2)
+# array(length0, length1, length2) -- three-dimensional immutable array
 #
 # array provides three-dimensional immutable arrays. These are actually
 # one-dimensional immutable arrays with an additional access function with

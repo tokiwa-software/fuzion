@@ -23,8 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# some is a standard wrapper for values of type T
-#
+# some -- standard wrapper for values of type T
 #
 some<T>(val T) is
 

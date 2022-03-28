@@ -23,6 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
+# fuzion.std.out -- unit type grouping routines to print to stdout
+#
 public fuzion.std.out is
 
   public print(s ref Object) =>

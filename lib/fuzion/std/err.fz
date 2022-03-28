@@ -23,6 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
+# fuzion.std.err -- unit type grouping routines to print to stderr
+#
 public fuzion.std.err is
 
   public print(s ref Object) =>

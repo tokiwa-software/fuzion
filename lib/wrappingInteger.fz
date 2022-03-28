@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# wrappingInteger
+# wrappingInteger -- abstract ancestor of wrap-around integer numbers
 #
 # wrappingInteger is the abstract ancestor of integer numbers that have min and
 # max values and operations with wrap-around semantics.

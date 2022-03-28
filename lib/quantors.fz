@@ -23,6 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
+# quantors -- unit type feature containing quantors ∀ and ∃.
+#
 # quantors provides forAll and exists-quantors for use in contracts qualified
 # for analysis.
 #

@@ -23,6 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
+# outcome -- result type for functions that may return an error
+#
 # outcome is a choice type that represents the result of a routine that
 # may either produce something useful or fail producing an error condition.
 #

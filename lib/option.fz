@@ -23,8 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-# option represents an optional value of type T
+# option -- feature wrapping a value or nothing
 #
+# option represents an optional value of type T
 #
 option<T> :
   choice<T, nil>,

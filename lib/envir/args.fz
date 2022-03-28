@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# args -- effect providing access to command line args
+# envir.args -- effect providing access to command line args
 #
 private args (
   all array<string>,

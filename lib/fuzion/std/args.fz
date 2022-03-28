@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# args -- low-level feature to obtain args array
+# fuzion.std.args -- low-level feature to obtain args array
 #
 private args =>
 

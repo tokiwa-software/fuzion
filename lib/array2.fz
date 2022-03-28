@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# array(length0, length1)
+# array(length0, length1) -- two-dimensional immutable array
 #
 # array provides two-dimensional immutable arrays. These are actually
 # one-dimensional immutable arrays with an additional access function with
