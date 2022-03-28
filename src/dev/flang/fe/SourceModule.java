@@ -806,8 +806,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var existing = df.get(fn);
     if (existing != null)
       {
-        if (f                  .implKind() == Impl.Kind.FieldDef &&
-            ((Feature)existing).implKind() == Impl.Kind.FieldDef    ) // NYI: Cast!
+        if (f       .implKind() == Impl.Kind.FieldDef &&
+            existing.implKind() == Impl.Kind.FieldDef    )
           {
             var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
             fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
