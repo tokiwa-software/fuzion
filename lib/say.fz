@@ -23,7 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-# A handy shortcut for stdout.println, output string representation of
+# say -- shortcut for io.out.println
+#
+# A handy shortcut for io.out.println, output string representation of
 # an object followed by a line break.
 #
 say(s ref Object) => io.out.println s

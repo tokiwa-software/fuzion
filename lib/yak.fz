@@ -23,7 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-# A handy shortcut for stdout.print, output string representation of
+# yak -- shortcut for io.out.print
+#
+# A handy shortcut for io.out.print, output string representation of
 # an object, do not add a line break at the end.
 #
 # The term 'yak' was taken from the expression 'Yakety Yak' as in the

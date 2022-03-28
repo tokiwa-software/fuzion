@@ -23,6 +23,10 @@
 #
 # -----------------------------------------------------------------------
 
+# sys -- unit type to group low-level system APIs APIs
+#
+# NYI: remove?
+#
 sys is
   out is
     print  (s Object) => stdout.print   s

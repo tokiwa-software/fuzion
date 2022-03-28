@@ -23,6 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
+# fuzion.std -- unit type to group low-level std APIs
+#
 fuzion.std is
 
   # exit -- exit immediately with the given return code

@@ -23,4 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
+# stdout -- shorthand for fuzion.std.out
+#
+# NYI: remove?
+#
 stdout => fuzion.std.out
