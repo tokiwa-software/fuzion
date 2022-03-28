@@ -26,14 +26,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.be.effects;
 
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.Graph;
 import dev.flang.util.List;
+import dev.flang.util.MapToN;
 
 
 /**
@@ -47,61 +48,6 @@ public class Effects extends ANY
 
 
   /*-----------------------------  classes  -----------------------------*/
-
-
-  /**
-   * Helper clazz to contain a map from A to a set of B.
-   */
-  static class MapToN<A,B>
-  {
-    TreeMap<A, TreeSet<B>> _map = new TreeMap<>();
-
-    boolean put(A a, B b)
-    {
-      var s = _map.get(a);
-      if (s == null)
-        {
-          s = new TreeSet<B>();
-          _map.put(a, s);
-        }
-      return s.add(b);
-    }
-
-    boolean contains(A a, B b)
-    {
-      var s = _map.get(a);
-      return s != null && s.contains(b);
-    }
-  }
-
-  /**
-   * Helper clazz to contain a directed bi-partite graph with edges from A to B
-   * and efficient lookup for backwards edges from B to A.
-   */
-  static class BiGraph<A,B>
-  {
-    MapToN<A,B> _to   = new MapToN<>();
-    MapToN<B,A> _back = new MapToN<>();
-
-    void put(A a, B b)
-    {
-      _to  .put(a, b);
-      _back.put(b, a);
-    }
-
-    boolean contains(A a, B b)
-    {
-      return _to.contains(a,b);
-    }
-  }
-
-
-  /**
-   * Helper clazz to contain a directed graph.
-   */
-  static class Graph<A> extends BiGraph<A,A>
-  {
-  }
 
 
   /*----------------------------  constants  ----------------------------*/
