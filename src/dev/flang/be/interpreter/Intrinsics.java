@@ -713,7 +713,7 @@ public class Intrinsics extends ANY
         result = (args) ->
           {
             var cl = innerClazz.actualGenerics()[0];
-            return new boolValue(_effects_.containsKey(cl));
+            return new boolValue(_effects_.get(cl) != null /* NOTE not containsKey since cl may map to null! */ );
           };
       }
     else
@@ -778,10 +778,7 @@ public class Intrinsics extends ANY
                     throw a;
                   }
               } finally {
-                if (prev != null)
-                  {
-                    _effects_.put(cl, prev);
-                  }
+                _effects_.put(cl, prev);
               }
             }
           case "effect.abort": throw new Abort(cl);
