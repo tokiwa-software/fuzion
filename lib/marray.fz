@@ -118,3 +118,25 @@ is
       s
     else
       fold i+1, m.op(s, marray.this[i]), m
+
+
+# This feature provides a convenient constructor for marray<T>(length,
+# sys.array<T>, unit).
+#
+marray<T>
+  (
+   # length of the marray to crate
+   length i32,
+
+   # initial value for elements
+   init T
+
+  ) marray<T>
+
+is
+  data := sys.array<T> length
+
+  for x in 0..length-1 do
+    data[x] := init
+
+  marray length data unit
