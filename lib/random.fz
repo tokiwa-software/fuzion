@@ -180,7 +180,7 @@ simpleRandomProviders is
   timeSeeded randomProvider is
     # initialize with large numbers XORed with nano time
     #
-    simpleRandomProvider (u64 77777777777777 ^ fuzion.std.nano_time) 98765432109876543
+    simpleRandomProvider (u64 77777777777777 ^ time.nano_time) 98765432109876543
 
   # create a time-seed sprovider for pseudo random numbers that are not safe
   # for security and that do not meat typical requirements for a good
