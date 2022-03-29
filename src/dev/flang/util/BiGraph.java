@@ -90,6 +90,16 @@ public class BiGraph<A, B>
   }
 
   /**
+   * Get the set of successors of a, return empty set if there are none.
+   *
+   * @param an instance of A, not null.
+   */
+  public Set<B> successors(A a)
+  {
+    return _to.successors(a);
+  }
+
+  /**
    * Get the set of predecessors of a, return empty set if there are none.
    *
    * @param an instance of A, not null.
