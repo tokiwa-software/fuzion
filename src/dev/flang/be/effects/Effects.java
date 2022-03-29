@@ -35,6 +35,7 @@ import dev.flang.util.Errors;
 import dev.flang.util.Graph;
 import dev.flang.util.List;
 import dev.flang.util.MapToN;
+import dev.flang.util.Terminal;
 
 
 /**
@@ -106,10 +107,9 @@ public class Effects extends ANY
     var cl = _fuir.mainClazzId();
     createCallGraph(cl);
     Errors.showAndExit();
-    for (var e : _allEffects)
-      {
-        propagateEffects(e);
-      }
+    _effects.successors(cl)
+      .stream()
+      .forEach(x -> System.out.println(_fuir.clazzAsString(x)));
   }
 
 
@@ -604,11 +604,40 @@ public class Effects extends ANY
    */
   void addEffect(int cl, int ecl)
   {
-    if (!_effects.contains(cl, ecl))
-      {
-        System.out.println(_fuir.clazzAsString(ecl));
-      }
     _effects.put(cl, ecl);
+    propagateEffects(cl, ecl);
+  }
+
+
+  /**
+   * Propagate an effect ecl that is required for a call to cl to all the
+   * predecessors of cl unless cl itself is a call that installs an effectof
+   * type ecl.
+   *
+   * @param cl a called clazz
+   *
+   * @param ecl an effect type
+   */
+  void propagateEffects(int cl, int ecl)
+  {
+    boolean ignore = false;
+    if (_fuir.clazzIntrinsicName(cl).equals("effect.abortable") &&
+        _fuir.clazzOuterClazz(cl) == ecl)
+      {
+        // cl installs its outer clazz as an effect, so the caller no longer depends on ecl.
+      }
+    else
+      {
+        // propagate ecl to callers of cl:
+        for (var p : _callGraph.predecessors(cl))
+          {
+            if (!_effects.contains(p, ecl))
+              {
+                _effects.put(p, ecl);
+                propagateEffects(p, ecl);
+              }
+          }
+      }
   }
 
 }
