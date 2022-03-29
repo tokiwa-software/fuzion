@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
+import java.util.Set;
+
 
 /**
  * BiGraph contains a directed bi-partite graph with edges from A to B and
@@ -86,6 +88,17 @@ public class BiGraph<A, B>
   {
     return _to.contains(a,b);
   }
+
+  /**
+   * Get the set of predecessors of a, return empty set if there are none.
+   *
+   * @param an instance of A, not null.
+   */
+  public Set<A> predecessors(B b)
+  {
+    return _back.successors(b);
+  }
+
 
 }
 

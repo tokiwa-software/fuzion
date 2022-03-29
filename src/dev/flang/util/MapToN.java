@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
+import java.util.Collections;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -85,6 +87,22 @@ public class MapToN<A, B>
   {
     var s = _map.get(a);
     return s != null && s.contains(b);
+  }
+
+
+  /**
+   * Get the set of successors of a, return empty set if there are none.
+   *
+   * @param an instance of A, not null.
+   */
+  public Set<B> successors(A a)
+  {
+    Set<B> result = _map.get(a);
+    if (result == null)
+      {
+        result = Collections.EMPTY_SET;
+      }
+    return result;
   }
 
 }
