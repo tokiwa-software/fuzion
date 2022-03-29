@@ -300,6 +300,10 @@ class Intrinsics extends ANY
       case "u32.low16bits"       : return outer.and(CExpr.uint32const(0xFFFF)).castTo("fzT_1u16").ret();
       case "u64.low16bits"       : return outer.and(CExpr.uint64const(0xFFFFL)).castTo("fzT_1u16").ret();
       case "u64.low32bits"       : return outer.and(CExpr.uint64const(0xffffFFFFL)).castTo("fzT_1u32").ret();
+      case "i32.as_f64"          :
+      case "i64.as_f64"          :
+      case "u32.as_f64"          :
+      case "u64.as_f64"          : return outer.castTo("fzT_1f64").ret();
 
       case "f32.prefix -"        :
       case "f64.prefix -"        : return outer.neg().ret();
