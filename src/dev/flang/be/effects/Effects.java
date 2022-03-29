@@ -106,6 +106,10 @@ public class Effects extends ANY
     var cl = _fuir.mainClazzId();
     createCallGraph(cl);
     Errors.showAndExit();
+    for (var e : _allEffects)
+      {
+        propagateEffects(e);
+      }
   }
 
 
@@ -121,18 +125,8 @@ public class Effects extends ANY
         var ck = _fuir.clazzKind(cl);
         switch (ck)
           {
-          case Routine:
-          case Intrinsic:
-            {
-              if (ck == FUIR.FeatureKind.Routine)
-                {
-                  createCallGraphForRoutine(cl, false);
-                }
-              else
-                {
-                  // NYI: _intrinsics.code(this, cl);
-                }
-            }
+          case Routine  : createCallGraphForRoutine(cl, false); break;
+          case Intrinsic: createCallGraphForIntrinsic(cl); break;
           }
         if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
           {
@@ -165,6 +159,282 @@ public class Effects extends ANY
       }
   }
 
+
+  /**
+   * Create code for given intrinsic clazz cl.
+   *
+   * @param cl id of clazz to generate code for
+   *
+   */
+  void createCallGraphForIntrinsic(int cl)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
+    var in = _fuir.clazzIntrinsicName(cl);
+    switch (in)
+      {
+      case "safety"              : return;
+      case "debug"               : return;
+      case "debugLevel"          : return;
+      case "fuzion.std.args.count": return;
+      case "fuzion.std.args.get" : return;
+      case "fuzion.std.exit"     : return;
+      case "fuzion.std.out.write": return;
+      case "fuzion.std.err.write": return;
+      case "fuzion.std.out.flush": return;
+      case "fuzion.std.err.flush": return;
+      case "i8.prefix -°"        : return;
+      case "i16.prefix -°"       : return;
+      case "i32.prefix -°"       : return;
+      case "i64.prefix -°"       : return;
+      case "i8.infix -°"         : return;
+      case "i16.infix -°"        : return;
+      case "i32.infix -°"        : return;
+      case "i64.infix -°"        : return;
+      case "i8.infix +°"         : return;
+      case "i16.infix +°"        : return;
+      case "i32.infix +°"        : return;
+      case "i64.infix +°"        : return;
+      case "i8.infix *°"         : return;
+      case "i16.infix *°"        : return;
+      case "i32.infix *°"        : return;
+      case "i64.infix *°"        : return;
+      case "i8.div"              : return;
+      case "i16.div"             : return;
+      case "i32.div"             : return;
+      case "i64.div"             : return;
+      case "i8.mod"              : return;
+      case "i16.mod"             : return;
+      case "i32.mod"             : return;
+      case "i64.mod"             : return;
+      case "i8.infix <<"         : return;
+      case "i16.infix <<"        : return;
+      case "i32.infix <<"        : return;
+      case "i64.infix <<"        : return;
+      case "i8.infix >>"         : return;
+      case "i16.infix >>"        : return;
+      case "i32.infix >>"        : return;
+      case "i64.infix >>"        : return;
+      case "i8.infix &"          : return;
+      case "i16.infix &"         : return;
+      case "i32.infix &"         : return;
+      case "i64.infix &"         : return;
+      case "i8.infix |"          : return;
+      case "i16.infix |"         : return;
+      case "i32.infix |"         : return;
+      case "i64.infix |"         : return;
+      case "i8.infix ^"          : return;
+      case "i16.infix ^"         : return;
+      case "i32.infix ^"         : return;
+      case "i64.infix ^"         : return;
+
+      case "i8.infix =="         : return;
+      case "i16.infix =="        : return;
+      case "i32.infix =="        : return;
+      case "i64.infix =="        : return;
+      case "i8.infix !="         : return;
+      case "i16.infix !="        : return;
+      case "i32.infix !="        : return;
+      case "i64.infix !="        : return;
+      case "i8.infix >"          : return;
+      case "i16.infix >"         : return;
+      case "i32.infix >"         : return;
+      case "i64.infix >"         : return;
+      case "i8.infix >="         : return;
+      case "i16.infix >="        : return;
+      case "i32.infix >="        : return;
+      case "i64.infix >="        : return;
+      case "i8.infix <"          : return;
+      case "i16.infix <"         : return;
+      case "i32.infix <"         : return;
+      case "i64.infix <"         : return;
+      case "i8.infix <="         : return;
+      case "i16.infix <="        : return;
+      case "i32.infix <="        : return;
+      case "i64.infix <="        : return;
+
+      case "u8.prefix -°"        : return;
+      case "u16.prefix -°"       : return;
+      case "u32.prefix -°"       : return;
+      case "u64.prefix -°"       : return;
+      case "u8.infix -°"         : return;
+      case "u16.infix -°"        : return;
+      case "u32.infix -°"        : return;
+      case "u64.infix -°"        : return;
+      case "u8.infix +°"         : return;
+      case "u16.infix +°"        : return;
+      case "u32.infix +°"        : return;
+      case "u64.infix +°"        : return;
+      case "u8.infix *°"         : return;
+      case "u16.infix *°"        : return;
+      case "u32.infix *°"        : return;
+      case "u64.infix *°"        : return;
+      case "u8.div"              : return;
+      case "u16.div"             : return;
+      case "u32.div"             : return;
+      case "u64.div"             : return;
+      case "u8.mod"              : return;
+      case "u16.mod"             : return;
+      case "u32.mod"             : return;
+      case "u64.mod"             : return;
+      case "u8.infix <<"         : return;
+      case "u16.infix <<"        : return;
+      case "u32.infix <<"        : return;
+      case "u64.infix <<"        : return;
+      case "u8.infix >>"         : return;
+      case "u16.infix >>"        : return;
+      case "u32.infix >>"        : return;
+      case "u64.infix >>"        : return;
+      case "u8.infix &"          : return;
+      case "u16.infix &"         : return;
+      case "u32.infix &"         : return;
+      case "u64.infix &"         : return;
+      case "u8.infix |"          : return;
+      case "u16.infix |"         : return;
+      case "u32.infix |"         : return;
+      case "u64.infix |"         : return;
+      case "u8.infix ^"          : return;
+      case "u16.infix ^"         : return;
+      case "u32.infix ^"         : return;
+      case "u64.infix ^"         : return;
+
+      case "u8.infix =="         : return;
+      case "u16.infix =="        : return;
+      case "u32.infix =="        : return;
+      case "u64.infix =="        : return;
+      case "u8.infix !="         : return;
+      case "u16.infix !="        : return;
+      case "u32.infix !="        : return;
+      case "u64.infix !="        : return;
+      case "u8.infix >"          : return;
+      case "u16.infix >"         : return;
+      case "u32.infix >"         : return;
+      case "u64.infix >"         : return;
+      case "u8.infix >="         : return;
+      case "u16.infix >="        : return;
+      case "u32.infix >="        : return;
+      case "u64.infix >="        : return;
+      case "u8.infix <"          : return;
+      case "u16.infix <"         : return;
+      case "u32.infix <"         : return;
+      case "u64.infix <"         : return;
+      case "u8.infix <="         : return;
+      case "u16.infix <="        : return;
+      case "u32.infix <="        : return;
+      case "u64.infix <="        : return;
+
+      case "i8.as_i32"           : return;
+      case "i16.as_i32"          : return;
+      case "i32.as_i64"          : return;
+      case "u8.as_i32"           : return;
+      case "u16.as_i32"          : return;
+      case "u32.as_i64"          : return;
+      case "i8.castTo_u8"        : return;
+      case "i16.castTo_u16"      : return;
+      case "i32.castTo_u32"      : return;
+      case "i64.castTo_u64"      : return;
+      case "u8.castTo_i8"        : return;
+      case "u16.castTo_i16"      : return;
+      case "u32.castTo_i32"      : return;
+      case "u32.castTo_f32"      : return;
+      case "u64.castTo_i64"      : return;
+      case "u64.castTo_f64"      : return;
+      case "u16.low8bits"        : return;
+      case "u32.low8bits"        : return;
+      case "u64.low8bits"        : return;
+      case "u32.low16bits"       : return;
+      case "u64.low16bits"       : return;
+      case "u64.low32bits"       : return;
+
+      case "f32.prefix -"        : return;
+      case "f64.prefix -"        : return;
+      case "f32.infix +"         : return;
+      case "f64.infix +"         : return;
+      case "f32.infix -"         : return;
+      case "f64.infix -"         : return;
+      case "f32.infix *"         : return;
+      case "f64.infix *"         : return;
+      case "f32.infix /"         : return;
+      case "f64.infix /"         : return;
+      case "f32.infix %"         : return;
+      case "f64.infix %"         : return;
+      case "f32.infix **"        : return;
+      case "f64.infix **"        : return;
+      case "f32.infix =="        : return;
+      case "f64.infix =="        : return;
+      case "f32.infix !="        : return;
+      case "f64.infix !="        : return;
+      case "f32.infix <"         : return;
+      case "f64.infix <"         : return;
+      case "f32.infix <="        : return;
+      case "f64.infix <="        : return;
+      case "f32.infix >"         : return;
+      case "f64.infix >"         : return;
+      case "f32.infix >="        : return;
+      case "f64.infix >="        : return;
+      case "f32.castTo_u32"      : return;
+      case "f64.castTo_u64"      : return;
+      case "f32.asString"        : return;
+      case "f64.asString"        : return;
+
+      case "f32s.minExp"         : return;
+      case "f32s.maxExp"         : return;
+      case "f32s.minPositive"    : return;
+      case "f32s.max"            : return;
+      case "f32s.epsilon"        : return;
+      case "f64s.minExp"         : return;
+      case "f64s.maxExp"         : return;
+      case "f64s.minPositive"    : return;
+      case "f64s.max"            : return;
+      case "f64s.epsilon"        : return;
+      case "f32s.squareRoot"     : return;
+      case "f64s.squareRoot"     : return;
+      case "f32s.exp"            : return;
+      case "f64s.exp"            : return;
+      case "f32s.log"            : return;
+      case "f64s.log"            : return;
+      case "f32s.sin"            : return;
+      case "f64s.sin"            : return;
+      case "f32s.cos"            : return;
+      case "f64s.cos"            : return;
+      case "f32s.tan"            : return;
+      case "f64s.tan"            : return;
+      case "f32s.asin"           : return;
+      case "f64s.asin"           : return;
+      case "f32s.acos"           : return;
+      case "f64s.acos"           : return;
+      case "f32s.atan"           : return;
+      case "f64s.atan"           : return;
+      case "f32s.sinh"           : return;
+      case "f64s.sinh"           : return;
+      case "f32s.cosh"           : return;
+      case "f64s.cosh"           : return;
+      case "f32s.tanh"           : return;
+      case "f64s.tanh"           : return;
+
+      case "Object.hashCode"     : return;
+      case "Object.asString"     : return;
+      case "sys.array.alloc"     : return;
+      case "sys.array.setel"     : return;
+      case "sys.array.get"       : return;
+      case "fuzion.std.nano_time": return;
+
+      case "effect.replace"      : return;
+      case "effect.default"      : return;
+      case "effect.abortable"    :
+        var oc = _fuir.clazzActualGeneric(cl, 0);
+        var call = _fuir.lookupCall(oc);
+        if (_fuir.clazzNeedsCode(call))
+          {
+            addToCallGraph(cl, call, false);
+          }
+      case "effect.abort"        : return;
+      case "effects.exists"      : return;
+      default:
+        var msg = "code for intrinsic " + _fuir.clazzIntrinsicName(cl) + " is missing";
+        Errors.warning(msg);
+      }
+  }
 
 
   /**
@@ -311,12 +581,15 @@ public class Effects extends ANY
       }
     else
       {
-        _callGraph.put(cl, cc);
-
-        if (!_calledClazzes.contains(cc))
+        if (!_callGraph.contains(cl, cc))
           {
-            _calledClazzes.add(cc);
-            createCallGraph(cc);
+            _callGraph.put(cl, cc);
+
+            if (!_calledClazzes.contains(cc))
+              {
+                _calledClazzes.add(cc);
+                createCallGraph(cc);
+              }
           }
       }
   }
