@@ -43,6 +43,7 @@ JAVA_FILES_FE             = $(wildcard $(SRC)/dev/flang/fe/*.java            )
 JAVA_FILES_AIR            = $(wildcard $(SRC)/dev/flang/air/*.java           )
 JAVA_FILES_ME             = $(wildcard $(SRC)/dev/flang/me/*.java            )
 JAVA_FILES_FUIR           = $(wildcard $(SRC)/dev/flang/fuir/*.java          )
+JAVA_FILES_FUIR_CFG       = $(wildcard $(SRC)/dev/flang/fuir/cfg/*.java          )
 JAVA_FILES_OPT            = $(wildcard $(SRC)/dev/flang/opt/*.java           )
 JAVA_FILES_BE_INTERPRETER = $(wildcard $(SRC)/dev/flang/be/interpreter/*.java)
 JAVA_FILES_BE_C           = $(wildcard $(SRC)/dev/flang/be/c/*.java          )
@@ -61,6 +62,7 @@ CLASS_FILES_FE             = $(CLASSES_DIR)/dev/flang/fe/__marker_for_make__
 CLASS_FILES_AIR            = $(CLASSES_DIR)/dev/flang/air/__marker_for_make__
 CLASS_FILES_ME             = $(CLASSES_DIR)/dev/flang/me/__marker_for_make__
 CLASS_FILES_FUIR           = $(CLASSES_DIR)/dev/flang/fuir/__marker_for_make__
+CLASS_FILES_FUIR_CFG       = $(CLASSES_DIR)/dev/flang/fuir/cfg/__marker_for_make__
 CLASS_FILES_OPT            = $(CLASSES_DIR)/dev/flang/opt/__marker_for_make__
 CLASS_FILES_BE_INTERPRETER = $(CLASSES_DIR)/dev/flang/be/interpreter/__marker_for_make__
 CLASS_FILES_BE_C           = $(CLASSES_DIR)/dev/flang/be/c/__marker_for_make__
@@ -177,6 +179,11 @@ $(CLASS_FILES_FUIR): $(JAVA_FILES_FUIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR)
 	touch $@
 
+$(CLASS_FILES_FUIR_CFG): $(JAVA_FILES_FUIR_CFG) $(CLASS_FILES_UTIL) $(CLASS_FILES_FUIR)
+	mkdir -p $(CLASSES_DIR)
+	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_CFG)
+	touch $@
+
 $(CLASS_FILES_OPT): $(JAVA_FILES_OPT) $(CLASS_FILES_AIR) $(CLASS_FILES_FUIR)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_OPT)
@@ -192,7 +199,7 @@ $(CLASS_FILES_BE_C): $(JAVA_FILES_BE_C) $(CLASS_FILES_FUIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_C)
 	touch $@
 
-$(CLASS_FILES_BE_EFFECTS): $(JAVA_FILES_BE_EFFECTS) $(CLASS_FILES_FUIR)
+$(CLASS_FILES_BE_EFFECTS): $(JAVA_FILES_BE_EFFECTS) $(CLASS_FILES_FUIR_CFG)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_EFFECTS)
 	touch $@
