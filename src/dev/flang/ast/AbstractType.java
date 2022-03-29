@@ -910,7 +910,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return result;
   }
 
-  String name()
+  public String name()
   {
     return isGenericArgument() ? genericArgument().name() : featureOfType().featureName().baseName();
   }
