@@ -41,7 +41,7 @@ is
   # resulting 'outcome'.
   #
   on<R>(f ()->R) outcome<R> is
-    (run<outcome<R>> (()->outcome f()) ()->err.get)
+    (run<outcome<R>> (()->outcome f()) (_)->err.get)
 
   # terminate immediately with the given error wrapped in 'outcome'.
   #

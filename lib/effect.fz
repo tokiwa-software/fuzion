@@ -38,7 +38,7 @@ is
 
   match r
     _ effectMode.plain   =>
-    i effectMode.inst    => run i.f ()->unit
+    i effectMode.inst    => run i.f (_)->unit
     _ effectMode.repl    => replace
     _ effectMode.abort   => fuzion.std.panic "abort"
     _ effectMode.default => default
@@ -68,12 +68,12 @@ is
 
   # execute the code of 'f' in the context of this one-way monad
   #
-  private run<R>(f () -> R, def ()->R) R is
+  private run<R>(f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effecs' uses DFA */)->R) R is
     res option<R> := nil
     cf := (effect_call f)
     abortable cf
     match cf.res
-      nil => def()
+      nil => def(unit)
       x R => x
 
   # abort the current execution and return from the surrounding call to
