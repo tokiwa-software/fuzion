@@ -488,14 +488,6 @@ class Intrinsics extends ANY
           var evi = c._names.envInstalled(ecl);
           return CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
         }
-      case "effect.effectHelper.abortable":
-        {
-          var oc = c._fuir.clazzOuterClazz(cl);
-          var call = c._fuir.lookupCall(oc);
-          check
-            (c._fuir.clazzNeedsCode(call));
-          return CExpr.call(c._names.function(call, false), new List<>(c._names.OUTER));
-        }
 
       default:
         var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
