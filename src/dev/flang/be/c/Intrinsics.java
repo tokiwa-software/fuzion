@@ -437,7 +437,7 @@ class Intrinsics extends ANY
               case "effect.default" -> CStmnt.iff(evi.not(), CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )));
               case "effect.abortable" ->
                 {
-                  var oc = c._fuir.clazzActualGeneric(cl, 0); // c._fuir.clazzOuterClazz(cl);
+                  var oc = c._fuir.clazzActualGeneric(cl, 0);
                   var call = c._fuir.lookupCall(oc);
                   if (c._fuir.clazzNeedsCode(call))
                     {
