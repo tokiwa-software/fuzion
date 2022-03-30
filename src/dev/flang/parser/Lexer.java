@@ -1194,13 +1194,13 @@ IDENT     : ( 'a'..'z'
           case "Nd" -> K_NUMERIC;  // 	Number, Decimal Digit
           case "Nl" -> K_NUMERIC;  // 	Number, Letter
           case "No" -> K_NUMERIC;  // 	Number, Other
-          case "Pc" -> K_UNKNOWN;  // 	Punctuation, Connector
-          case "Pd" -> K_UNKNOWN;  // 	Punctuation, Dash
-          case "Pe" -> K_UNKNOWN;  // 	Punctuation, Close
-          case "Pf" -> K_UNKNOWN;  // 	Punctuation, Final quote (may behave like Ps or Pe depending on usage)
-          case "Pi" -> K_UNKNOWN;  // 	Punctuation, Initial quote (may behave like Ps or Pe depending on usage)
-          case "Po" -> K_UNKNOWN;  // 	Punctuation, Other
-          case "Ps" -> K_UNKNOWN;  // 	Punctuation, Open
+          case "Pc" -> K_OP;       // 	Punctuation, Connector
+          case "Pd" -> K_OP;       // 	Punctuation, Dash
+          case "Pe" -> K_OP;       // 	Punctuation, Close
+          case "Pf" -> K_OP;       // 	Punctuation, Final quote (may behave like Ps or Pe depending on usage)
+          case "Pi" -> K_OP;       // 	Punctuation, Initial quote (may behave like Ps or Pe depending on usage)
+          case "Po" -> K_OP;       // 	Punctuation, Other
+          case "Ps" -> K_OP;       // 	Punctuation, Open
           case "Sc" -> K_OP;       // 	Symbol, Currency
           case "Sk" -> K_OP;       // 	Symbol, Modifier
           case "Sm" -> K_OP;       // 	Symbol, Math
