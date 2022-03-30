@@ -23,62 +23,6 @@
 #
 # -----------------------------------------------------------------------
 
-# time -- effect providing time
+# time -- unit feature to group time related features
 #
-private time (
-  p timeProvider,
-
-  # action to be taken: install or default?
-  redef r effectModes,
-
-  _ unit
-  ) : effect r
-is
-
-  # no guarantee can be given for precision nor resolution
-  nano_time =>
-    res := p.nano_time
-    replace
-    res
-
-
-# short-hand for creating and installing time effect
-#
-time(rr ()->unit) => time defaultTime rr
-
-
-# short-hand for creating and installing time effect
-#
-time(p timeProvider, rr ()->unit) =>
-  time p (effectMode.inst rr) unit
-  unit
-
-
-# short-hand for accessing time effect in current environment
-#
-time =>
-  times.installDefault
-  time.env
-
-
-timeProvider ref is
-
-  # no guarantee can be given for precision nor resolution
-  nano_time u64 is abstract
-
-
-defaultTime : timeProvider is
-
-  # no guarantee can be given for precision nor resolution
-  nano_time => fuzion.std.nano_time
-
-
-# unit type feature defining features related to time but not requiring an
-# instance.
-#
-times is
-
-  # install default effect time using defaultTime
-  installDefault unit is
-    if !(effects.exists<time>)
-      _ := time defaultTime effectMode.default unit
+time is
