@@ -91,5 +91,5 @@ nanos is
 
   # install default effect time using defaultTime
   installDefault unit is
-    if !(effects.exists<time>)
+    if !(effects.exists<nano>)
       _ := nano defaultNanoTime effectMode.default unit
