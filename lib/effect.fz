@@ -48,7 +48,7 @@ is
       _ effectMode.plain => effectMode.plain
       effectMode.inst, effectMode.repl, effectMode.abort, effectMode.default => effectMode.repl
 
-  # replace one-way monad in the current context by this
+  # replace effect in the current context by this
   private replace unit is intrinsic
 
 
@@ -60,13 +60,13 @@ is
   #
   private abortable<T: Function<unit>>(f T) unit is intrinsic
 
-  # replace one-way monad in the current context by this and abort current execution
+  # replace effect in the current context by this and abort current execution
   private abort void is intrinsic
 
-  # set default one-way monad in the current context to this if none is installed
+  # set default effect in the current context to this if none is installed
   private default unit is intrinsic
 
-  # execute the code of 'f' in the context of this one-way monad
+  # execute the code of 'f' in the context of this effect
   #
   private run<R>(f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effecs' uses DFA */)->R) R is
     res option<R> := nil
@@ -75,6 +75,7 @@ is
     match cf.res
       nil => def(unit)
       x R => x
+
 
   # abort the current execution and return from the surrounding call to
   # abortable with result == false.
@@ -121,3 +122,20 @@ is
   # from the code.
   #
   code ()->unit is abstract
+
+
+# simpleEffect provides a simple means to define and use an effect
+#
+# user-defined effects should inherit from this feature and add
+# operations as inner features or fields of function type.
+#
+# To install this effect to execute a function, simpleEffect.use
+# can be called.
+#
+simpleEffect : effect effectMode.plain
+is
+
+  # install this simpleEffect and run code
+  #
+  private use(code ()->unit) unit is
+    abortable (effect_call code)
