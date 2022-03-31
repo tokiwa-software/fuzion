@@ -103,7 +103,7 @@ public class Type extends AbstractType
    * artificial type, this is one of Types.INTERNAL_NAMES (e.g., '--ADDRESS--).
    */
   public final String name;
-  String name()
+  public String name()
   {
     return name;
   }
