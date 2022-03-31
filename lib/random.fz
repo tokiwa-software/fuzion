@@ -35,49 +35,51 @@ random (
 is
 
 
-  # go to the next random value, leaving the contents unchanged
+  # for a random instance installed in the current environment, update the
+  # environment to the next random value.  The the contents of the current
+  # instance are left unchanged, 'random.env' will provide the new instance.
   #
   next => random p.next mode
 
 
   # return next random number of type i32 in the range 0..max-1
   #
-  nextI32(max i32)
+  next_i32(max i32)
   pre max >= 0
    => (next.get max.as_u64).as_i32
 
 
   # return next random number of type i64 in the range 0..max-1
   #
-  nextI64(max i64)
+  next_i64(max i64)
   pre max >= 0
    => (next.get max.as_u64).as_i64
 
 
   # return next random number of type u32 in the range 0..max-1
   #
-  nextU32(max u32) => (next.get max.as_u64).as_u32
+  next_u32(max u32) => (next.get max.as_u64).as_u32
 
 
   # return next random number of type u64 in the range 0..max-1
   #
-  nextU64(max u64) =>  next.get max
+  next_u64(max u64) =>  next.get max
 
 
   # return next random number of type f32 in the range [0..1),
   # result will never be equal to f32 1
   #
-  nextF32 =>
+  next_f32 =>
     max := u64 1 << f32s.significandBits.as_u64
-    (nextU64 max).as_f64.as_f32 / max.as_f64.as_f32
+    (next_u64 max).as_f64.as_f32 / max.as_f64.as_f32
 
 
   # return next random number of type f64 in the range [0..1),
   # result will never be equal to f64 1
   #
-  nextF64 =>
+  next_f64 =>
     max := u64 1 << f64s.significandBits.as_u64
-    (nextU64 max).as_f64 / max.as_f64
+    (next_u64 max).as_f64 / max.as_f64
 
 
   # return next random number as a bool
