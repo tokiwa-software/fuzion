@@ -418,6 +418,7 @@ class Intrinsics extends ANY
       case "fuzion.std.nano_time":
         {
           return CExpr.call("clock", new List<>())
+            .sub(c._names.GLOBAL_CLOCK_OFFSET)
             .mul(CExpr.uint64const(1_000_000_000))
             .div(CExpr.ident("CLOCKS_PER_SEC"))
             .ret();
