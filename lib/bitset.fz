@@ -114,3 +114,21 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
     redef infix ∙ (a, b bitset) => a ⋃ b
     redef infix == (a, b bitset) => a == b
     redef e bitset is empty
+
+
+# bitsets -- unit type defining features related to bitest but not
+# requiring an instance
+#
+bitsets is
+
+  # an empty bitset
+  #
+  empty bitset is nil
+
+
+  # monoid of bitset with infix ⋃ operation.
+  #
+  union : Monoid<bitset> is
+    redef infix ∙ (a, b bitset) => a ⋃ b
+    redef infix == (a, b bitset) => a == b
+    redef e bitset is empty
