@@ -1,4 +1,38 @@
-## 2022-02-25: V0.071dev
+## 2022-02-25: V0.071
+
+- Social media
+
+  - new Twitter channel @FuzionLang, please follow
+
+- Fuzion language
+
+  - added support for effects: New expression '<type>.env' permits access to
+    current instance of an effect
+
+  - unicode punctiations are now allowed as codepoints within operators
+
+- fz
+
+   - 'fz -effects main.fz' now performs static analysis on 'main.fz' and prints
+     effects required by this feature.
+
+- stdlib
+
+  - new effects: io.out, io.err, random, time.nano, state<T>, envir.args, try/raise
+
+  - f32/f63 now offer trigonometric functions, exp, log, and squareRoot, constants ℇ, π
+
+  - intersection operator added to psSet: infix ⋂
+
+- C backend
+
+  - support for f32 and f64
+
+- flang.dev
+
+- tests
+
+  - tests on windows now automated using github
 
 ## 2022-02-25: V0.070
 
