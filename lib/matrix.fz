@@ -90,3 +90,23 @@ is
 
   # NYI: 'matrix' misses imlementaton of many abstract features from
   # 'numeric'. Maybe 'matrix' should not inherit from 'numeric' at all?
+
+
+# matrices -- unit type defining features related to matrix
+#
+# matrices is a unit type defining features related to matrix but not
+# requiring an instance.
+#
+matrices<E : numeric<E>> : numerics<matrix<E>> is
+
+  redef name => "matrix"
+
+  # NYI: There is currently no easy way to get hold of an instance of the unit
+  # type corresponding to E.
+  #
+  #   redef zero => matrix E.zero E.zero
+  #   redef one  => matrix E.one  E.zero
+  #
+  # dummy implementations:
+  redef zero => fuzion.std.panic "NYI: matrices.zero not implemented, needs to instantiate type arg E"
+  redef one  => fuzion.std.panic "NYI: matrices.one not implemented, needs to instantiate type arg E"
