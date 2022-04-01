@@ -404,10 +404,10 @@ public class CFG extends ANY
 
       case "Object.hashCode"     : return;
       case "Object.asString"     : return;
-      case "sys.array.alloc"     : return;
-      case "sys.array.setel"     : return;
-      case "sys.array.get"       : return;
-      case "fuzion.std.nano_time": return;
+      case "fuzion.sys.array.alloc"     : return;
+      case "fuzion.sys.array.setel"     : return;
+      case "fuzion.sys.array.get"       : return;
+      case "fuzion.std.nano_time"       : return;
 
       case "effect.replace"      : return;
       case "effect.default"      : return;

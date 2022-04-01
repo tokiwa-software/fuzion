@@ -791,8 +791,8 @@ public class C extends ANY
   {
     var cs            = _fuir.clazz_conststring();
     var internalArray = _names.fieldName(_fuir.clazz_conststring_internalArray());
-    var data          = _names.fieldName(_fuir.clazz_sysArray_u8_data());
-    var length        = _names.fieldName(_fuir.clazz_sysArray_u8_length());
+    var data          = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
+    var length        = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
     var sysArray = fields(tmp, cs).field(internalArray);
     return CStmnt.seq(CStmnt.decl(_types.clazz(cs), tmp),
                       tmp.assign(CExpr.call("malloc", new List<>(tmp.deref().sizeOfExpr()))),

@@ -395,20 +395,20 @@ class Intrinsics extends ANY
 
         }
 
-      case "sys.array.alloc"     :
+      case "fuzion.sys.array.alloc"     :
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return CExpr.call("malloc",
                             new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(A0))).ret();
         }
-      case "sys.array.setel"     :
+      case "fuzion.sys.array.setel"     :
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return c._types.hasData(gc)
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).assign(A2)
             : CStmnt.EMPTY;
         }
-      case "sys.array.get"       :
+      case "fuzion.sys.array.get"       :
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return c._types.hasData(gc)

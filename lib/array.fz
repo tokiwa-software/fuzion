@@ -28,7 +28,7 @@
 # This is the result type of array<T>(i32, i32 -> T) which creates an
 # initalized immutable array
 #
-array<T>(internalArray sys.array<T>) : Sequence<T> is
+array<T>(internalArray fuzion.sys.array<T>) : Sequence<T> is
 
 # public:
 
@@ -210,7 +210,7 @@ array<T>(length i32, init i32 -> T) array<T> is
 # private:
   indices => 0..length-1
 
-  internal := sys.array<T> length
+  internal := fuzion.sys.array<T> length
   for x in indices do
     internal[x] := init x
 

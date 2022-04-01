@@ -23,9 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# sys -- unit type to group low-level system APIs APIs
-#
-# NYI: remove?
+# fuzion.sys -- unit type to group low-level system APIs APIs
 #
 sys is
   out is

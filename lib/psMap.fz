@@ -48,7 +48,7 @@
 psMap<K : ordered<K>, V>
   (
    # the array containg the sorted arrays, see below for details
-   data sys.array<tuple<K,V>>,
+   data fuzion.sys.array<tuple<K,V>>,
 
    # the number of key and value pairs in this map.
    size i32,
@@ -160,7 +160,7 @@ O(n log n).
         join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
 
     if (nsize & size) = 0
-      set ndata := sys.array<tuple<K,V>> (data.length * 2 + (nsize+1) / 2)
+      set ndata := fuzion.sys.array<tuple<K,V>> (data.length * 2 + (nsize+1) / 2)
       set nfill := 0
     ndata[nfill] := kv
     join fill-1 nfill 1
@@ -214,7 +214,7 @@ O(n log n).
   # create sorted array of all keys in this map
   #
   asKeyArray array<K> is
-    r := sys.array<K> size
+    r := fuzion.sys.array<K> size
 
     # join arrays data[ole..ole+sz-1] and r[dest..dest+rsz-1] to r[dest..dest+sz+rsz-1]
     #
@@ -359,7 +359,7 @@ O(n log n).
 #
 # This feature creates an empty instance of psMap.
 #
-psMap<K : ordered<K>, V> => psMap (sys.array<tuple<K,V>> 0) 0 0
+psMap<K : ordered<K>, V> => psMap (fuzion.sys.array<tuple<K,V>> 0) 0 0
 
 
 # psMap -- routine to initialize a partially sorted map from two Sequences

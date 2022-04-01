@@ -177,7 +177,7 @@ stream<T> ref : Sequence<T> is
   #
   redef asArray array<T> is
     for
-      a := (marray 0 (sys.array<T> 0) unit), a.add x
+      a := (marray 0 (fuzion.sys.array<T> 0) unit), a.add x
     while hasNext
       x := next
     else

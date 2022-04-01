@@ -31,7 +31,7 @@
 #
 array2<T>(length0, length1 i32,
           init2 (i32, i32) -> T)
- : array<T> (sys.array<T> length0*length1)
+ : array<T> (fuzion.sys.array<T> length0*length1)
   pre
     safety: length0 >= 0,
     safety: length1 >= 0,

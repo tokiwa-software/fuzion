@@ -31,7 +31,7 @@ marray<T>
    length i32,
 
    # contents of the marray
-   private data sys.array<T>,
+   private data fuzion.sys.array<T>,
 
    # just to distinguish constructor from marray<T>(i32, T)
    _ unit
@@ -72,7 +72,7 @@ is
   is
     d := if (data.length > length) data
       else
-        newData := sys.array<T> (8.max data.length*2)
+        newData := fuzion.sys.array<T> (8.max data.length*2)
         for i in indices do
           newData[i] := data[i]
         newData
@@ -121,7 +121,7 @@ is
 
 
 # This feature provides a convenient constructor for marray<T>(length,
-# sys.array<T>, unit).
+# fuzion.sys.array<T>, unit).
 #
 marray<T>
   (
@@ -134,7 +134,7 @@ marray<T>
   ) marray<T>
 
 is
-  data := sys.array<T> length
+  data := fuzion.sys.array<T> length
 
   for x in 0..length-1 do
     data[x] := init

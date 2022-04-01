@@ -32,7 +32,7 @@ import java.util.Arrays;
 
 
 /**
- * ArayData represents memory allocated by sys.array.alloc
+ * ArayData represents memory allocated by fuzion.sys.array.alloc
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

@@ -602,13 +602,13 @@ public class Interpreter extends ANY
         Clazz sac = staticClazz.getRuntimeClazz(i._arrayClazzId + 1);
         var sa = new Instance(sac);
         int l = i._elements.size();
-        var arrayData = Intrinsics.sysArrayAlloc(l, sac);
-        setField(Types.resolved.f_sys_array_data  , -1, sac, sa, arrayData);
-        setField(Types.resolved.f_sys_array_length, -1, sac, sa, new i32Value(l));
+        var arrayData = Intrinsics.fuzionSysArrayAlloc(l, sac);
+        setField(Types.resolved.f_fuzion_sys_array_data  , -1, sac, sa, arrayData);
+        setField(Types.resolved.f_fuzion_sys_array_length, -1, sac, sa, new i32Value(l));
         for (int x = 0; x < l; x++)
           {
             var v = execute(i._elements.get(x), staticClazz, cur);
-            Intrinsics.sysArraySetEl(arrayData, x, v, sac);
+            Intrinsics.fuzionSysArraySetEl(arrayData, x, v, sac);
           }
         result = new Instance(ac);
         setField(Types.resolved.f_array_internalArray, -1, ac, result, sa);
@@ -669,12 +669,12 @@ public class Interpreter extends ANY
   {
     Clazz cl = Clazzes.conststring.get();
     Instance result = new Instance(cl);
-    var saCl = Clazzes.sysArray_u8;
+    var saCl = Clazzes.fuzionSysArray_u8;
     Instance sa = new Instance(saCl);
     byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-    setField(Types.resolved.f_sys_array_length, -1, saCl, sa, new i32Value(bytes.length));
+    setField(Types.resolved.f_fuzion_sys_array_length, -1, saCl, sa, new i32Value(bytes.length));
     var arrayData = new ArrayData(bytes);
-    setField(Types.resolved.f_sys_array_data, -1, saCl, sa, arrayData);
+    setField(Types.resolved.f_fuzion_sys_array_data, -1, saCl, sa, arrayData);
     setField(Types.resolved.f_array_internalArray, -1, cl, result, sa);
 
     return result;
@@ -1048,7 +1048,7 @@ public class Interpreter extends ANY
   {
     return
       v instanceof Instance                                            /* a normal ref type     */ ||
-      v instanceof ArrayData                                           /* sys.array.data        */ ||
+      v instanceof ArrayData                                           /* fuzion.sys.array.data */ ||
       v instanceof LValue                                              /* ref type as LValue    */ ||
       v instanceof ChoiceIdAsRef && thiz.isChoice()                    /* a boxed choice tag    */ ||
       (v instanceof i8Value ||
