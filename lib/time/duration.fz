@@ -1,0 +1,310 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature time.duration
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# time.duration -- value representing a duration, i.e., a time span
+#
+# This is intendend for high precision time specification and measurement, it
+# uses a time resolution of 1ns.
+#
+# The maximum value is about 580 years, so this is not intenden for use in
+# calendars that may require time spans exceeding several centuries or millenia,
+# nor astrological time spans.
+#
+duration (
+
+  # the duration in nano seconds
+  #
+  nanos u64
+  )
+
+is
+
+  # this duration in micro seconds, omitting fractional part
+  #
+  micros => nanos / units.nanos_per_micro
+
+  # this duration in milli seconds, omitting fractional part
+  #
+  millis => nanos / units.nanos_per_milli
+
+  # this duration in whole seconds, omitting fractional part
+  #
+  seconds => nanos / units.nanos_per_second
+
+  # this duration in whole minutes, omitting fractional part
+  #
+  minutes => nanos / units.nanos_per_minute
+
+  # this duration in whole hours, omitting fractional part
+  #
+  hours => nanos / units.nanos_per_hour
+
+  # this duration in whole days, omitting fractional part
+  #
+  days => nanos / units.nanos_per_day
+
+  # this duration in whole weeks, omitting fractional part
+  #
+  weeks => nanos / units.nanos_per_week
+
+  # this duration in whole Julian years, omitting fractional part
+  #
+  years => nanos / units.nanos_per_year
+
+
+  # create a string representation of this duration. The string
+  # representation is not accurate, it consists of at least two
+  # and at most 4 decimal digits followed by a time unit string.
+  #
+  redef asString string is
+    (f,u) := for
+      x := units.unitNames.first, n
+      n in units.unitNames.drop 1
+      nf := n.values.0
+  /* NYI this does not work yet, see #228:
+   *
+    while (!(nf = 0 || nanos / nf < 10)) else
+      x
+   *
+   * so use until .. then .. else instead, which works, but repeats 'x'
+   */
+    until nf = 0 || nanos / nf < 10 then
+      x
+    else
+      x
+    "{nanos / f}$u"
+
+# time.durations -- unit type defining features related to duration but not requiring
+# an instance
+#
+durations : units is
+
+  # max value for a duration given in nanos
+  max_duration_nanos   => u64.max
+
+  # max value for a duration given in micros
+  max_duration_micros  => u64.max / nanos_per_micro
+
+  # max value for a duration given in millis
+  max_duration_millis  => u64.max / nanos_per_milli
+
+  # max value for a duration given in seconds
+  max_duration_seconds => u64.max / nanos_per_second
+
+  # max value for a duration given in minutes
+  max_duration_minutes => u64.max / nanos_per_minute
+
+  # max value for a duration given in hours
+  max_duration_hours   => u64.max / nanos_per_hour
+
+  # max value for a duration given in days
+  max_duration_days    => u64.max / nanos_per_day
+
+  # max value for a duration given in weeks
+  max_duration_weeks   => u64.max / nanos_per_week
+
+  # max value for a duration given in years
+  max_duration_years   => u64.max / nanos_per_year
+
+
+  # create duration of n ns
+  #
+  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  #
+  ns (n u64)
+  pre
+    debug: n <= max_duration_nanos
+   => duration n
+
+
+  # create duration of n µs
+  #
+  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  #
+  µs (n u64)
+  pre
+    debug: n <= max_duration_micros
+   => duration n*nanos_per_micro
+
+
+  # create duration of n ms
+  #
+  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  #
+  ms (n u64)
+  pre
+    debug: n <= max_duration_millis
+   => duration n*nanos_per_milli
+
+
+  # create duration of n seconds
+  #
+  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  #
+  s (n u64)
+  pre
+    debug: n <= max_duration_seconds
+   => duration n*nanos_per_second
+
+
+  # create duration of n seconds
+  #
+  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  #
+  seconds (n u64)
+  pre
+    debug: n <= max_duration_seconds
+   => s n
+
+
+  # create duration of n min
+  #
+  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  #
+  min (n u64)
+  pre
+    debug: n <= max_duration_minutes
+   => duration n*nanos_per_minute
+
+
+  # create duration of n min
+  #
+  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  #
+  minutes (n u64)
+  pre
+    debug: n <= max_duration_minutes
+   => min n
+
+
+  # create duration of n hours
+  #
+  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  #
+  h (n u64)
+  pre
+    debug: n <= max_duration_hours
+   => duration n*nanos_per_hour
+
+
+  # create duration of n hours
+  #
+  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  #
+  hours (n u64)
+  pre
+    debug: n <= max_duration_hours
+   => h n
+
+
+  # create duration of n days
+  #
+  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  #
+  days  (n u64)
+  pre
+    debug: n <= max_duration_days
+   => duration n*nanos_per_day
+
+
+  # create duration of n weeks
+  #
+  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  #
+  weeks (n u64)
+  pre
+    debug: n <= max_duration_weeks
+   => duration n*nanos_per_week
+
+
+  # create duration of n years
+  #
+  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  #
+  a (n u64)
+  pre
+    debug: n <= max_duration_years
+   => duration n*nanos_per_year
+
+
+  # create duration of n years
+  #
+  # NYI: Turn this into a 'postfix' call, see https://flang.dev/design/postfix_calls
+  #
+  years (n u64)
+  pre
+    debug: n <= max_duration_years
+   => a n
+
+
+# time.duration.units -- unit time defining units used in duration
+#
+units is
+
+  # factor converting nanos to nanos, just for completeness
+  nanos_per_nano   => u64 1
+
+  # factor converting micros to nanos
+  nanos_per_micro  => u64 1_000
+
+  # factor converting millis to nanos
+  nanos_per_milli  => nanos_per_micro * 1_000
+
+  # factor converting seconds to nanos
+  nanos_per_second => nanos_per_milli * 1_000
+
+  # factor converting minutes to nanos
+  nanos_per_minute => nanos_per_second * 60
+
+  # factor converting hours to nanos
+  nanos_per_hour   => nanos_per_minute * 60
+
+  # factor converting days to nanos
+  nanos_per_day    => nanos_per_hour * 24
+
+  # factor converting weeks to nanos
+  nanos_per_week   => nanos_per_day * 7
+
+  # factor converting years to nanos
+  nanos_per_year   => nanos_per_second * 31_557_600
+
+
+  # array of tuples consisting of the nanos_per_* conversion
+  # factors and an (mostly ISO) name of the corresponding unit.
+  #
+  # Entries are sorted by increasing duration size.  The last
+  # entry is an ((u64 0), "--end marker--").
+  #
+  unitNames =>
+    [ (nanos_per_nano   , "ns"),
+      (nanos_per_micro  , "µs"),
+      (nanos_per_milli  , "ms"),
+      (nanos_per_second , "s"),
+      (nanos_per_minute , "min"),
+      (nanos_per_hour   , "h"),
+      (nanos_per_day    , "days"),
+      (nanos_per_year   , "a"),
+      ((u64 0          ), "--end marker--"),
+      ]
