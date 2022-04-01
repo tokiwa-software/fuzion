@@ -310,9 +310,9 @@ Sequences is
   # of the list, 1 if it comes directly after head, etc. nil if x is not
   # in the list.
   #
-  indexIn<A: hasEquals<A>>(l Sequence<A>, x A) => (searchableList<A> l).indexOf x
+  indexIn<A: hasEquals<A>>(l Sequence<A>, x A) => (searchableSequence<A> l).indexOf x
 
 
   # get the index of x within this list or nil if it does not exist
   #
-  find<A: hasEquals<A>>(l Sequence<A>, x Sequence<A>) => (searchableList<A> l).find x
+  find<A: hasEquals<A>>(l Sequence<A>, x Sequence<A>) => (searchableSequence<A> l).find x
