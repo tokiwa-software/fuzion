@@ -2194,7 +2194,7 @@ match       : "match" exprInLine BRACEL cases BRACER
         var c = cases(true);
         if (gotLBrace)
           {
-            match(true, Token.t_rbrace, "block");
+            match(true, Token.t_rbrace, "match");
           }
         return new Match(pos, e, c);
       });
