@@ -270,14 +270,20 @@ public class Case extends AbstractCase
       {
         t = t.resolve(res, outer);
       }
+    var hasErrors = t.containsError();
+    check
+      (!hasErrors || Errors.count() > 0);
     for (var cg : cgs)
       {
         if (inferGenerics  && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
             !inferGenerics && t.compareTo(cg) == 0                    /* match exactly */ )
           {
             t = cg;
+            hasErrors = hasErrors || t.containsError();
+            check
+              (!hasErrors || Errors.count() > 0);
             matches.add(cg);
-            if (matched[i] != null)
+            if (matched[i] != null && !hasErrors)
               {
                 AstErrors.repeatedMatch(pos(), matched[i], t, cgs);
               }
@@ -285,26 +291,19 @@ public class Case extends AbstractCase
           }
         i++;
       }
-    if (matches.size() != 1)
+    if (matches.isEmpty())
       {
-        if (matches.isEmpty())
+        if (!hasErrors)
           {
-            if (t == Types.t_ERROR)
-              {
-                if (CHECKS) check
-                  (Errors.count() > 0);
-              }
-            else
-              {
-                AstErrors.matchCaseDoesNotMatchAny(pos(), original_t, cgs);
-                t = Types.t_ERROR;
-              }
+            AstErrors.matchCaseDoesNotMatchAny(pos(), original_t, cgs);
           }
-        else
-          {
-            AstErrors.matchCaseMatchesSeveral(pos(), original_t, cgs, matches);
-          }
+        t = Types.t_ERROR;
       }
+    else if (!hasErrors && matches.size() != 1)
+      {
+        AstErrors.matchCaseMatchesSeveral(pos(), original_t, cgs, matches);
+      }
+
     return t;
   }
 
