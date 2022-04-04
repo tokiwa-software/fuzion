@@ -158,16 +158,27 @@ public class FList extends ANY implements Stmnt
       }
     else if (s instanceof Feature f)
       {
-        _list.add(f);
+        boolean ok = true;
         if (f._qname.size() > 1)
           {
             AstErrors.featureOfMustContainOnlyUnqualifiedNames(f, p.pos);
+            ok = false;
           }
-          if (!f.generics().list.isEmpty())
-            {
-              AstErrors.featureOfMustNotHaveFormalGenerics(f, p.pos);
-            }
-        g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), null));
+        if (!f.generics().list.isEmpty())
+          {
+            AstErrors.featureOfMustNotHaveFormalGenerics(f, p.pos);
+            ok = false;
+          }
+        if (!f.isConstructor())
+          {
+            AstErrors.featureOfMustContainOnlyConstructors(f, p.pos);
+            ok = false;
+          }
+        if (ok)
+          {
+            _list.add(f);
+            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), null));
+          }
       }
     else
       {

@@ -217,6 +217,21 @@ public class AstErrors extends ANY
   }
 
 
+  public static void featureOfMustContainOnlyConstructors(Feature f, SourcePosition ofPos)
+  {
+    error(f.pos(),
+          "Feature implementation using " + code("of") + " must contain only constructors. ",
+          "Feature " + sqn(f._qname) + " is not a constructor.\n" +
+          "Declaration started at " + ofPos.show() + "\n" +
+          (f.impl().kind_ == Impl.Kind.RoutineDef
+           ? ("To solve this, you may replace " + code("=>") + " by " + code("is") + " and " +
+              "ensure that the code results in a value of type " + st("unit") + " " +
+              "in the declaration of " + sqn(f._qname) + ".\n")
+           : ("To solve this, you may remove the return type " + s(f._returnType) + " " +
+              "from the declaration of " + sqn(f._qname) + ".\n")));
+  }
+
+
   /**
    * Create an error message for a declaration of a feature using
    * FuzionConstants.RESULT_NAME.
