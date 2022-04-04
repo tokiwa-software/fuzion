@@ -3112,7 +3112,14 @@ qualThis    : name ( dot name )* dot "this"
         q.add(name());
         if (!skipDot())
           {
-            syntaxError("'.'", "qualThis");
+            if (isFullStop())
+              {
+                syntaxError("'.' (not followed by white space)", "qualThis");
+              }
+            else
+              {
+                syntaxError("'.'", "qualThis");
+              }
           }
         pos = posObject();
       }
@@ -3321,6 +3328,7 @@ implRout    : block
             | "is" "intrinsic_constructor"
             | "is" block
             | ARROW e=block
+            | fullStop
             ;
    */
   Impl implRout()
@@ -3333,6 +3341,7 @@ implRout    : block
                                     skip(Token.t_intrinsic_constructor) ? Impl.INTRINSIC_CONSTRUCTOR :
                                     new Impl(pos, block(true)      , Impl.Kind.Routine   ); }
     else if (skip("=>")) { result = new Impl(pos, block(true)      , Impl.Kind.RoutineDef); }
+    else if (skipFullStop() ) { result = new Impl(pos, new Block(pos, pos, new List<>()), Impl.Kind.Routine); }
     else
       {
         syntaxError(pos(), "'is', '{' or '=>' in routine declaration", "implRout");
@@ -3355,7 +3364,8 @@ implFldOrRout   : implRout
   {
     if (currentAtMinIndent() == Token.t_lbrace ||
         currentAtMinIndent() == Token.t_is     ||
-        isOperator("=>")                          )
+        isOperator("=>")                       ||
+        isFullStop()                              )
       {
         return implRout();
       }
@@ -3412,7 +3422,8 @@ implFldUndef: ":=" "?"
       currentAtMinIndent() == Token.t_lbrace ||
       currentAtMinIndent() == Token.t_is ||
       isOperator(":=") ||
-      isOperator("=>");
+      isOperator("=>") ||
+      isFullStop();
   }
 
 
@@ -3733,24 +3744,50 @@ colon       : ":"
 
 
   /**
-   * Parse "." if it is found
+   * Parse "." if it is found.
    *
-dot         : "."
+dot         : "."      // either preceded by white space or not followed by white space
             ;
    *
    * @return true iff a "." was found and skipped.
    */
   boolean skipDot()
   {
-    boolean result = skip('.');
-    if (!result)
-      { // allow dot to appear in new line
-        var oldLine = sameLine(-1);
+    var result = !isFullStop();
+    if (result)
+      {
         result = skip('.');
-        sameLine(result ? line() : oldLine);
+        if (!result)
+          { // allow dot to appear in new line
+            var oldLine = sameLine(-1);
+            result = skip('.');
+            sameLine(result ? line() : oldLine);
+          }
       }
-
     return result;
+  }
+
+
+  /**
+   * Check if current is "." followed by white space.
+   */
+  boolean isFullStop()
+  {
+    return isOperator('.') && !ignoredTokenBefore() && ignoredTokenAfter();
+  }
+
+
+  /**
+   * Parse "." followed by white space if it is found
+   *
+fullStop    : "."        // not following white space but followed by white space
+            ;
+   *
+   * @return true iff a "." follwed by white space was found and skipped.
+   */
+  boolean skipFullStop()
+  {
+    return isFullStop() && skip('.');
   }
 
 }
