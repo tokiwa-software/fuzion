@@ -46,6 +46,75 @@ public class Lexer extends SourceFile
 {
 
 
+  /*-----------------------------  classes  -----------------------------*/
+
+
+  /**
+   * Class representing tokens like t_lparen or specific operators like '<', '<'.
+   */
+  static class TokenOrOp
+  {
+    /**
+     * token
+     */
+    Token _token;
+
+    /**
+     * string in token is Token.t_op.
+     */
+    String _detail;
+
+
+    /**
+     * Create Parens for given field values.
+     */
+    private TokenOrOp(Token t, String d)
+    {
+      _token = t;
+      _detail = d;
+    }
+
+    public String toString()
+    {
+      return
+        _token != Token.t_op ? _token.toString()
+                             : "operator '" + _detail + "'";
+    }
+  }
+
+
+  /**
+   * Class representing parentheses like '(', ')' or '<', '<'.
+   */
+  static class Parens
+  {
+
+    /**
+     * left and right tokens,
+     */
+    TokenOrOp _left, _right;
+
+
+    /**
+     * Create Parens for non-operators like t_lparen
+     */
+    Parens(Token l, Token r)
+    {
+      _left  = new TokenOrOp(l, null);
+      _right = new TokenOrOp(r, null);
+    }
+
+
+    /**
+     * Create Parens for operators like '<', '>'
+     */
+    Parens(String l, String r)
+    {
+      _left  = new TokenOrOp(Token.t_op, l);
+      _right = new TokenOrOp(Token.t_op, r);
+    }
+  }
+
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -588,7 +657,7 @@ public class Lexer extends SourceFile
   /**
    * short-hand for bracketTermWithNLs with atMinIndent==false and c==def.
    */
-  <V> V bracketTermWithNLs(Token[] brackets, String rule, Callable<V> c)
+  <V> V bracketTermWithNLs(Parens brackets, String rule, Callable<V> c)
   {
     return bracketTermWithNLs(brackets, rule, c, c);
   }
@@ -597,7 +666,7 @@ public class Lexer extends SourceFile
   /**
    * short-hand for bracketTermWithNLs with c==def.
    */
-  <V> V bracketTermWithNLs(boolean atMinIndent, Token[] brackets, String rule, Callable<V> c)
+  <V> V bracketTermWithNLs(boolean atMinIndent, Parens brackets, String rule, Callable<V> c)
   {
     return bracketTermWithNLs(atMinIndent, brackets, rule, c, c);
   }
@@ -606,7 +675,7 @@ public class Lexer extends SourceFile
   /**
    * short-hand for bracketTermWithNLs with atMinIndent==false.
    */
-  <V> V bracketTermWithNLs(Token[] brackets, String rule, Callable<V> c, Callable<V> def)
+  <V> V bracketTermWithNLs(Parens brackets, String rule, Callable<V> c, Callable<V> def)
   {
     return bracketTermWithNLs(false, brackets, rule, c, def);
   }
@@ -644,14 +713,14 @@ public class Lexer extends SourceFile
    *
    * @return value returned by c or def, resp.
    */
-  <V> V bracketTermWithNLs(boolean atMinIndent, Token[] brackets, String rule, Callable<V> c, Callable<V> def)
+  <V> V bracketTermWithNLs(boolean atMinIndent, Parens brackets, String rule, Callable<V> c, Callable<V> def)
   {
-    var start = brackets[0];
-    var end   = brackets[1];
+    var start = brackets._left;
+    var end   = brackets._right;
     var ol = line();
     var startsIndent = pos() == _minIndentStartPos;
     match(atMinIndent, start, rule);
-    V result = relaxLineAndSpaceLimit(current() != end ? c : def);
+    V result = relaxLineAndSpaceLimit(!currentMatches(startsIndent || atMinIndent, end) ? c : def);
     var nl = line();
     relaxLineAndSpaceLimit(() ->
                            {
@@ -676,16 +745,16 @@ public class Lexer extends SourceFile
    * @param c code to parse the inside of the brackets
    *
    * @return true if both brackets are present and c returned true, Otherwise no
-   * bracket term could be pares and the parser/lexer is at an undefined
+   * bracket term could be parsed and the parser/lexer is at an undefined
    * position.
    */
-  boolean skipBracketTermWithNLs(Token[] brackets, Callable<Boolean> c)
+  boolean skipBracketTermWithNLs(Parens brackets, Callable<Boolean> c)
   {
-    var start = brackets[0];
-    var end   = brackets[1];
+    var start = brackets._left;
+    var end   = brackets._right;
     var ol = line();
     var startsIndent = pos() == _minIndentStartPos;
-    var result = skip(start) && relaxLineAndSpaceLimit(c);
+    var result = skip(false, start) && relaxLineAndSpaceLimit(c);
     if (result)
       {
         var nl = line();
@@ -1921,6 +1990,47 @@ HEX_TAIL    : "." HEX_DIGITS
 
 
   /**
+   * Match the current token, obtained via currentAtMinIndent() or
+   * current() depending on atMinIndent, with the given token.
+   *
+   * @param t the token we want to see
+   *
+   * @return true iff curent token matches
+   */
+  boolean currentMatches(boolean atMinIndent, TokenOrOp to)
+  {
+    return current(atMinIndent) == to._token &&
+      (to._token != Token.t_op || tokenAsString().equals(to._detail));
+  }
+
+
+  /**
+   * Match the current token, obtained via currentAtMinIndent() or
+   * current() depending on atMinIndent, with the given token. If the
+   * token matches and t != Token.t_eof, advance to the next token using
+   * next(). Otherwise, cause a syntax error.
+   *
+   * @param t the token we want to see
+   *
+   * @param currentRule the current rule we are trying to parse
+   */
+  void match(boolean atMinIndent, TokenOrOp to, String currentRule)
+  {
+    if (currentMatches(atMinIndent, to))
+      {
+        if (to._token != Token.t_eof)
+          {
+            next();
+          }
+      }
+    else
+      {
+        syntaxError(to.toString(), currentRule);
+      }
+  }
+
+
+  /**
    * Match the current token with the given operator, i.e, check that current()
    * is Token.t_op and the operator is op.  If so, advance to the next token
    * using next(). Otherwise, cause a syntax error.
@@ -2621,6 +2731,26 @@ PIPE        : "|"
   {
     boolean result = false;
     if (current(atMinIndent) == t)
+      {
+        next();
+        result = true;
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse given token and skip it. if it was found.
+   *
+   * @param t a token.
+   *
+   * @return true iff the current token was t and was skipped, otherwise no
+   * change is made.
+   */
+  boolean skip(boolean atMinIndent, TokenOrOp t)
+  {
+    boolean result = false;
+    if (currentMatches(atMinIndent, t))
       {
         next();
         result = true;

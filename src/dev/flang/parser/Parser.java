@@ -60,9 +60,9 @@ public class Parser extends Lexer
   /**
    * Different kinds of opening / closing brackets
    */
-  static Token[] PARENS   = new Token[] { Token.t_lparen  , Token.t_rparen   };
-  static Token[] BRACES   = new Token[] { Token.t_lbrace  , Token.t_rbrace   };
-  static Token[] CROCHETS = new Token[] { Token.t_lcrochet, Token.t_rcrochet };
+  static Parens PARENS   = new Parens( Token.t_lparen  , Token.t_rparen   );
+  static Parens BRACES   = new Parens( Token.t_lbrace  , Token.t_rbrace   );
+  static Parens CROCHETS = new Parens( Token.t_lcrochet, Token.t_rcrochet );
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -551,6 +551,7 @@ name        : IDENT                            // all parts of name must be in s
       default       : return false;
       }
   }
+
 
 
   /**
