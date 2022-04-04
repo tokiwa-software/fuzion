@@ -63,6 +63,7 @@ public class Parser extends Lexer
   static Parens PARENS   = new Parens( Token.t_lparen  , Token.t_rparen   );
   static Parens BRACES   = new Parens( Token.t_lbrace  , Token.t_rbrace   );
   static Parens CROCHETS = new Parens( Token.t_lcrochet, Token.t_rcrochet );
+  static Parens ANGLES   = new Parens( "<"             , ">"              );
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -1254,16 +1255,20 @@ actualGens  : "<" typeList ">"
   List<AbstractType> actualGens()
   {
     var result = Call.NO_GENERICS;
-    if (splitSkip("<"))
+    splitOperator("<");
+    if (isOperator('<'))
       {
-        result = Type.NONE;
-        splitOperator(">");
-        if (!isOperator('>'))
-          {
-            result = typeList();
-          }
-        splitOperator(">");
-        matchOperator(">", "formGens");
+        result = bracketTermWithNLs(ANGLES, "actualGens", () ->
+                                    {
+                                      var res = Type.NONE;
+                                      splitOperator(">");
+                                      if (!isOperator('>'))
+                                        {
+                                          res = typeList();
+                                        }
+                                      splitOperator(">");
+                                      return res;
+                                    });
       }
     return result;
   }
