@@ -149,7 +149,7 @@ randoms is
 
 
 # simple random number provider for pseudo random numbers that are not safe
-# for security and that do not meat typical requirements for a good
+# for security and that do not meet typical requirements for a good
 # random number generator.
 #
 simpleRandomProvider(seed1 u64, seed2 u64) : randomProvider is
@@ -170,13 +170,13 @@ simpleRandomProvider(seed1 u64, seed2 u64) : randomProvider is
   get u64 is seed1
 
 
-# type related to simpleRandomProvider declaraing features not requiring an instance
+# type related to simpleRandomProvider declaring features not requiring an instance
 # of simpleRandomProvider
 #
 simpleRandomProviders is
 
   # create a time-seeded simple provider for pseudo random numbers that are not safe
-  # for security and that do not meat typical requirements for a good
+  # for security and that do not meet typical requirements for a good
   # random number generator.
   #
   timeSeeded randomProvider is
@@ -185,7 +185,7 @@ simpleRandomProviders is
     simpleRandomProvider (u64 77777777777777 ^ time.nano.read) 98765432109876543
 
   # create a time-seed sprovider for pseudo random numbers that are not safe
-  # for security and that do not meat typical requirements for a good
+  # for security and that do not meet typical requirements for a good
   # random number generator.
   #
   timeSeeded(rr ()->unit) =>
