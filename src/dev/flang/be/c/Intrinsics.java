@@ -417,11 +417,22 @@ class Intrinsics extends ANY
         }
       case "fuzion.std.nano_time":
         {
-          return CExpr.call("clock", new List<>())
-            .sub(c._names.GLOBAL_CLOCK_OFFSET)
-            .mul(CExpr.uint64const(1_000_000_000))
-            .div(CExpr.ident("CLOCKS_PER_SEC"))
-            .ret();
+          var result = new CIdent("result");
+          var onFailure = CExpr.call("exit", new List<>(new CIdent("1")){});
+          return CStmnt.seq(
+              CStmnt.decl("struct timespec", result),
+              CExpr.iff(
+                  CExpr.call(
+                    "clock_gettime",
+                    new List<>(new CIdent("CLOCK_MONOTONIC"), result.adrOf()){}
+                  ).eq(new CIdent("1").neg()),
+                  onFailure
+                ),
+              result.field(new CIdent("tv_sec"))
+                .mul(CExpr.uint64const(1_000_000_000))
+                .add(result.field(new CIdent("tv_nsec")))
+                .ret()
+            );
         }
 
       case "effect.replace":

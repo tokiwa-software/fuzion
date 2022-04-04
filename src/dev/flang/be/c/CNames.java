@@ -195,12 +195,6 @@ public class CNames extends ANY
   static final CIdent GLOBAL_ARGV = new CIdent("fzG_argv");
 
 
-  /**
-   * global C variable to hold clock offset
-   */
-  static final CIdent GLOBAL_CLOCK_OFFSET = new CIdent("fzG_clock");
-
-
   /*----------------------------  variables  ----------------------------*/
 
 
