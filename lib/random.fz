@@ -84,7 +84,7 @@ is
 
   # return next random number as a bool
   #
-  nextBool =>
+  next_bool =>
     (next.get 2) %% 2
 
 
