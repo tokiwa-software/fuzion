@@ -413,7 +413,7 @@ visi        : COLON qual
       {
         // NYI: record ':', i.e., export to all heirs
       }
-    List<String> result = qual();
+    List<String> result = qual(false);
     return result;
   }
 
@@ -426,9 +426,9 @@ qual        : name ( dot qual
                    )
             ;
    */
-  List<String> qual()
+  List<String> qual(boolean mayBeAtMinIndent)
   {
-    List<String> result = new List<>(name());
+    List<String> result = new List<>(name(mayBeAtMinIndent));
     while (skipDot())
       {
         result.add(name());
@@ -455,14 +455,18 @@ name        : IDENT                            // all parts of name must be in s
    */
   String name()
   {
+    return name(false);
+  }
+  String name(boolean mayBeAtMinIndent)
+  {
     String result = Errors.ERROR_STRING;
     int pos = pos();
-    if (isNamePrefix())
+    if (isNamePrefix(mayBeAtMinIndent))
       {
         var oldLine = sameLine(line());
-        switch (current())
+        switch (current(mayBeAtMinIndent))
           {
-          case t_ident  : result = identifier(); next(); break;
+          case t_ident  : result = identifier(mayBeAtMinIndent); next(); break;
           case t_infix  :
           case t_prefix :
           case t_postfix: result = opName();  break;
@@ -540,7 +544,11 @@ name        : IDENT                            // all parts of name must be in s
    */
   boolean isNamePrefix()
   {
-    switch (current())
+    return isNamePrefix(false);
+  }
+  boolean isNamePrefix(boolean mayBeAtMinIndent)
+  {
+    switch (current(mayBeAtMinIndent))
       {
       case t_ident  :
       case t_infix  :
@@ -670,10 +678,10 @@ featNames   : qual (COMMA featNames
    */
   List<List<String>> featNames()
   {
-    List<List<String>> result = new List<>(qual());
+    List<List<String>> result = new List<>(qual(true));
     while (skipComma())
       {
-        result.add(qual());
+        result.add(qual(true));
       }
     return result;
   }

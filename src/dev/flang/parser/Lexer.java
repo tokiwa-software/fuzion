@@ -2152,12 +2152,24 @@ PIPE        : "|"
   /**
    * Return the actual identifier of the current t_ident token as a string.
    */
+  String identifier(boolean mayBeAtMinIndent)
+  {
+    if (PRECONDITIONS) require
+      (current(mayBeAtMinIndent) == Token.t_ident);
+
+    return tokenAsString();
+  }
+
+
+  /**
+   * Return the actual identifier of the current t_ident token as a string.
+   */
   String identifier()
   {
     if (PRECONDITIONS) require
       (current() == Token.t_ident);
 
-    return tokenAsString();
+    return identifier(false);
   }
 
 
