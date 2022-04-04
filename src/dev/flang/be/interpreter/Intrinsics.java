@@ -48,6 +48,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
+import java.util.concurrent.TimeUnit;
+
 
 /**
  * Intrinsics provides the implementation of Fuzion's intrinsic features.
@@ -218,11 +220,11 @@ public class Intrinsics extends ANY
             var sigI    =                      (Instance) args.get(a++);
             var thizI   = !virtual    ? null : (Instance) args.get(a++);
 
-            var argz = args.get(a); // of type sys.array<JavaObject>, we need to get field argz.data
+            var argz = args.get(a); // of type fuzion.sys.array<JavaObject>, we need to get field argz.data
             var argfields = innerClazz.argumentFields();
             var argsArray = argfields[argfields.length - 1];
             var sac = argsArray.resultClazz();
-            var argzData = Interpreter.getField(Types.resolved.f_sys_array_data, sac, argz);
+            var argzData = Interpreter.getField(Types.resolved.f_fuzion_sys_array_data, sac, argz);
 
             String clName =                          (String) JavaInterface.instanceToJavaObject(clNameI);
             String name   = nameI   == null ? null : (String) JavaInterface.instanceToJavaObject(nameI  );
@@ -424,31 +426,31 @@ public class Intrinsics extends ANY
             return JavaInterface.javaObjectToInstance(jb, resultClazz);
           };
       }
-    else if (n.equals("sys.array.alloc"))
+    else if (n.equals("fuzion.sys.array.alloc"))
       {
         result = (args) ->
           {
-            return sysArrayAlloc(/* size */ args.get(1).i32Value(),
-                                 /* type */ innerClazz._outer);
+            return fuzionSysArrayAlloc(/* size */ args.get(1).i32Value(),
+                                       /* type */ innerClazz._outer);
           };
       }
-    else if (n.equals("sys.array.get"))
+    else if (n.equals("fuzion.sys.array.get"))
       {
         result = (args) ->
           {
-            return sysArrayGet(/* data  */ ((ArrayData)args.get(1)),
-                               /* index */ args.get(2).i32Value(),
-                               /* type  */ innerClazz._outer);
+            return fuzionSysArrayGet(/* data  */ ((ArrayData)args.get(1)),
+                                     /* index */ args.get(2).i32Value(),
+                                     /* type  */ innerClazz._outer);
           };
       }
-    else if (n.equals("sys.array.setel"))
+    else if (n.equals("fuzion.sys.array.setel"))
       {
         result = (args) ->
           {
-            sysArraySetEl(/* data  */ ((ArrayData)args.get(1)),
-                          /* index */ args.get(2).i32Value(),
-                          /* value */ args.get(3),
-                          /* type  */ innerClazz._outer);
+            fuzionSysArraySetEl(/* data  */ ((ArrayData)args.get(1)),
+                                /* index */ args.get(2).i32Value(),
+                                /* value */ args.get(3),
+                                /* type  */ innerClazz._outer);
             return Value.EMPTY_VALUE;
           };
       }
@@ -704,6 +706,21 @@ public class Intrinsics extends ANY
       // NYI: This could be more useful by giving the object's class, an id, public fields, etc.
     }
     else if (n.equals("fuzion.std.nano_time"  )) { result = (args) -> new u64Value (System.nanoTime()); }
+    else if (n.equals("fuzion.std.nano_sleep" )) {
+      result = (args) ->
+        {
+          var d = args.get(1).u64Value();
+          try
+            {
+              TimeUnit.NANOSECONDS.sleep(d < 0 ? Long.MAX_VALUE : d);
+            }
+          catch (InterruptedException ie)
+            {
+              throw new Error("unexpected interrupt", ie);
+            }
+          return new Instance(Clazzes.c_unit.get());
+        };
+    }
     else if (n.equals("effect.replace" ) ||
              n.equals("effect.default" ) ||
              n.equals("effect.abortable")||
@@ -803,8 +820,8 @@ public class Intrinsics extends ANY
       }
   }
 
-  static ArrayData sysArrayAlloc(int sz,
-                                 Clazz arrayClazz)
+  static ArrayData fuzionSysArrayAlloc(int sz,
+                                       Clazz arrayClazz)
   {
     // NYI: Properly determine generic argument type of array
     var elementType = elementType(arrayClazz);
@@ -820,10 +837,10 @@ public class Intrinsics extends ANY
     else                                                        { return new ArrayData(new Value  [sz]); }
   }
 
-  static void sysArraySetEl(ArrayData ad,
-                            int x,
-                            Value v,
-                            Clazz arrayClazz)
+  static void fuzionSysArraySetEl(ArrayData ad,
+                                  int x,
+                                  Value v,
+                                  Clazz arrayClazz)
   {
     // NYI: Properly determine generic argument type of array
     var elementType = elementType(arrayClazz);
@@ -841,9 +858,9 @@ public class Intrinsics extends ANY
   }
 
 
-  static Value sysArrayGet(ArrayData ad,
-                           int x,
-                           Clazz arrayClazz)
+  static Value fuzionSysArrayGet(ArrayData ad,
+                                 int x,
+                                 Clazz arrayClazz)
   {
     // NYI: Properly determine generic argument type of array
     var elementType = elementType(arrayClazz);

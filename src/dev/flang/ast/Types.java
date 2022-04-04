@@ -131,7 +131,7 @@ public class Types extends ANY
     public final AbstractType t_ref_f64 ;
     public final AbstractType t_bool;
     public final AbstractType t_object;
-    public final AbstractType t_sys;
+    private final AbstractType t_fuzion;
     public final AbstractType t_string;
     public final AbstractType t_conststring;
     public final AbstractType t_unit;
@@ -160,10 +160,11 @@ public class Types extends ANY
     public final AbstractFeature f_safety;
     public final AbstractFeature f_array;
     public final AbstractFeature f_array_internalArray;
-    public final AbstractFeature f_sys;
-    public final AbstractFeature f_sys_array;
-    public final AbstractFeature f_sys_array_length;
-    public final AbstractFeature f_sys_array_data;
+    public final AbstractFeature f_fuzion;
+    public final AbstractFeature f_fuzion_sys;
+    public final AbstractFeature f_fuzion_sys_array;
+    public final AbstractFeature f_fuzion_sys_array_length;
+    public final AbstractFeature f_fuzion_sys_array_data;
     public static interface CreateType
     {
       AbstractType type(String name, boolean isRef);
@@ -192,7 +193,7 @@ public class Types extends ANY
       t_ref_f32       = ct.type("f32"         , true );
       t_ref_f64       = ct.type("f64"         , true );
       t_bool          = ct.type("bool"        , false);
-      t_sys           = ct.type("sys"         , false);
+      t_fuzion        = ct.type("fuzion"      , false);
       t_string        = ct.type("string"      , false);
       t_conststring   = ct.type("conststring" , false);
       t_object        = ct.type("Object"      , false);
@@ -214,10 +215,11 @@ public class Types extends ANY
       f_safety        = universe.get(mod, "safety");
       f_array         = universe.get(mod, "array", 1);
       f_array_internalArray = f_array.get(mod, "internalArray");
-      f_sys                 = universe.get(mod, "sys");
-      f_sys_array           = f_sys.get(mod, "array");
-      f_sys_array_data      = f_sys_array.get(mod, "data");
-      f_sys_array_length    = f_sys_array.get(mod, "length");
+      f_fuzion                     = universe.get(mod, "fuzion");
+      f_fuzion_sys                 = f_fuzion.get(mod, "sys");
+      f_fuzion_sys_array           = f_fuzion_sys.get(mod, "array");
+      f_fuzion_sys_array_data      = f_fuzion_sys_array.get(mod, "data");
+      f_fuzion_sys_array_length    = f_fuzion_sys_array.get(mod, "length");
       resolved = this;
       t_ADDRESS  .resolveArtificialType(universe.get(mod, "Object"));
       t_UNDEFINED.resolveArtificialType(universe);
@@ -237,7 +239,7 @@ public class Types extends ANY
       t_f32        .featureOfType().resolveTypes(res);
       t_f64        .featureOfType().resolveTypes(res);
       t_bool       .featureOfType().resolveTypes(res);
-      t_sys        .featureOfType().resolveTypes(res);
+      t_fuzion     .featureOfType().resolveTypes(res);
       t_string     .featureOfType().resolveTypes(res);
       t_conststring.featureOfType().resolveTypes(res);
       t_object     .featureOfType().resolveTypes(res);

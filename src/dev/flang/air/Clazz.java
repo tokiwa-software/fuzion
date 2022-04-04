@@ -1707,7 +1707,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isInstantiated()
   {
-    return this == Clazzes.sysArray_u8 ||
+    return this == Clazzes.fuzionSysArray_u8 ||
       this == Clazzes.conststring.get() ||
       _checkingInstantiatedHeirs>0 || (isOuterInstantiated() || isChoice() || _outer.isRef() && _outer.hasInstantiatedHeirs()) && isInstantiated_;
   }

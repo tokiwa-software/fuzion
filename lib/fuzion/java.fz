@@ -155,21 +155,21 @@ public fuzion.java is
                     name JavaObject,
                     signature JavaObject,
                     thiz JavaObject,
-                    args sys.array<JavaObject>) T is intrinsic_constructor
+                    args fuzion.sys.array<JavaObject>) T is intrinsic_constructor
 
   # intrinsic to call given Java static method
   #
   private callS0<T>(className JavaObject,
                     name JavaObject,
                     signature JavaObject,
-                    args sys.array<JavaObject>) T is intrinsic_constructor
+                    args fuzion.sys.array<JavaObject>) T is intrinsic_constructor
 
 
   # intrinsic to call given Java constructor
   #
   private callC0<T>(className JavaObject,
                     signature JavaObject,
-                    args sys.array<JavaObject>) T is intrinsic_constructor
+                    args fuzion.sys.array<JavaObject>) T is intrinsic_constructor
 
 
   # intrinsic to get the length of a Java array of arbitrary type

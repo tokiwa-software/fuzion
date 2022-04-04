@@ -17,17 +17,38 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature sys
+#  Source code of Fuzion standard library feature sys.array
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# sys -- unit type to group low-level system APIs APIs
+# fuzion.sys.array -- one-dimensional low-level array
 #
-# NYI: remove?
-#
-sys is
-  out is
-    print  (s Object) => stdout.print   s
-    println(s Object) => stdout.println s
+array<T>(length i32) is
+
+# private:
+
+  data := alloc<T> length
+
+  alloc<X>(l i32) Object is intrinsic
+  get  <X>(d Object, i i32) X is intrinsic
+  setel<X>(d Object, i i32, o X) unit is intrinsic
+
+# public:
+
+  indices => 0..length-1
+
+  index [ ] (i i32) T
+    pre
+      safety: 0 <= i < length
+  is
+    get<T> data, i
+
+  set [ ] (i i32, o T) unit
+    pre
+      safety: 0 <= i < length
+  # post   NYI
+    #array.this[i] == o
+  is
+    setel<T> data, i, o

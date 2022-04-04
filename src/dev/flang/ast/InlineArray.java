@@ -300,9 +300,11 @@ public class InlineArray extends ExprWithPos
       {
         var eT           = new List<AbstractType>(elementType());
         var lengthArgs   = new List<Expr>(new NumLiteral(_elements.size()));
-        var sys          = new Call(pos(), null, "sys"                  ).resolveTypes(res, outer);
+        var fuzion       = new Call(pos(), null, "fuzion"               ).resolveTypes(res, outer);
+        var sys          = new Call(pos(), fuzion, "sys"                ).resolveTypes(res, outer);
         var sysArrayCall = new Call(pos(), sys , "array", eT, lengthArgs).resolveTypes(res, outer);
-        var sysT         = new Type(pos(), "sys", Type.NONE, null);
+        var fuzionT      = new Type(pos(), "fuzion", Type.NONE, null);
+        var sysT         = new Type(pos(), "sys"   , Type.NONE, fuzionT);
         var sysArrayT    = new Type(pos(), "array", eT, sysT);
         var sysArrayName = FuzionConstants.INLINE_SYS_ARRAY_PREFIX + (_id_++);
         var sysArrayVar  = new Feature(pos(), Consts.VISIBILITY_LOCAL, sysArrayT, sysArrayName, null, outer);

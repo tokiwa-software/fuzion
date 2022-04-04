@@ -50,6 +50,12 @@ is
     replace
     res
 
+  # no guarantee can be given for precision nor resolution
+  sleep(d duration) =>
+    res := p.sleep d
+    replace
+    res
+
 
 # short-hand for creating and installing time.nano effect
 #
@@ -77,11 +83,17 @@ nanoTimeProvider ref is
   # no guarantee can be given for precision nor resolution
   read u64 is abstract
 
+  # no guarantee can be given for precision nor resolution
+  sleep(d duration) unit is abstract
+
 
 defaultNanoTime : nanoTimeProvider is
 
   # no guarantee can be given for precision nor resolution
   read => fuzion.std.nano_time
+
+  # no guarantee can be given for precision nor resolution
+  sleep(d duration) => fuzion.std.nano_sleep d.nanos
 
 
 # unit type feature defining features related to time.nano but not requiring an

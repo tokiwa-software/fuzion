@@ -77,3 +77,46 @@ f32(val f32) : float<f32>, f32s is
   # convert this to a string.
   #
   redef asString string is intrinsic
+
+
+# f32s -- unit type defining features related to f32 but not requiring an
+# instance
+#
+f32s : floats<f32> is
+
+  redef name => "f32"
+
+  redef zero => f32 0
+  redef one  => f32 1
+
+  redef bytes => 4
+  significandBits => 24
+  exponentBits => 8
+
+  from_i64(v i64) f32 is intrinsic
+
+  redef ℇ => f32 2.7182818284590452354
+
+  redef π => f32 3.14159265358979323846
+
+  redef minExp i32 is intrinsic
+  redef maxExp i32 is intrinsic
+  redef minPositive f32 is intrinsic
+  redef max f32 is intrinsic
+  redef epsilon f32 is intrinsic
+
+  redef squareRoot(val f32) f32 is intrinsic
+
+  redef exp(val f32) f32 is intrinsic
+  redef log(val f32) f32 is intrinsic
+
+  redef sin(val f32) f32 is intrinsic
+  redef cos(val f32) f32 is intrinsic
+  redef tan(val f32) f32 is intrinsic
+  redef asin(val f32) f32 is intrinsic
+  redef acos(val f32) f32 is intrinsic
+  redef atan(val f32) f32 is intrinsic
+
+  redef sinh(val f32) f32 is intrinsic
+  redef cosh(val f32) f32 is intrinsic
+  redef tanh(val f32) f32 is intrinsic

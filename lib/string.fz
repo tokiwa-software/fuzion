@@ -378,7 +378,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   # check if this string starts with given prefix
   #
   startsWith(prefx string) =>
-    (searchableList utf8).startsWith prefx.utf8
+    (searchableSequence utf8).startsWith prefx.utf8
 
 
   # check if this string ends with given suffix
@@ -387,18 +387,18 @@ string ref : hasHash<string>, ordered<string>, strings is
     l  := byteLength
     sl := suffix.byteLength
     end := utf8.drop l-sl
-    (searchableList end).startsWith suffix.utf8
+    (searchableSequence end).startsWith suffix.utf8
 
 
   # find (utf8-byte-) index of 'substring' witin this string.
   #
   find(substring string) =>
-    (searchableList utf8).find substring.utf8
+    (searchableSequence utf8).find substring.utf8
 
 
   # replace all occurances of f within l by r
   #
-  replace (f, r string) => strings.fromBytes ((searchableList utf8).replace f.utf8 r.utf8)
+  replace (f, r string) => strings.fromBytes ((searchableSequence utf8).replace f.utf8 r.utf8)
 
 
   # does this string contain the given 'substring'
@@ -409,7 +409,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   # count number of occurances of given 'substring' in this string
   #
   count (substring string) =>
-    (searchableList utf8).countMatches substring.utf8
+    (searchableSequence utf8).countMatches substring.utf8
 
 
   # is c an ASCII white-space character?  Used by split.
