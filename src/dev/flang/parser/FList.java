@@ -28,6 +28,10 @@ package dev.flang.parser;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
+import dev.flang.ast.AstErrors;
+import dev.flang.ast.Block;
+import dev.flang.ast.Call;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureVisitor;
@@ -101,12 +105,75 @@ public class FList extends ANY implements Stmnt
                Impl p) {
     for (List<String> n : qnames)
       {
+        if (p.kind_ == Impl.Kind.Of)
+          {
+            var ng = new List<AbstractType>();
+            addFeaturesFromBlock(p._code, ng, p);
+            if (i.isEmpty())
+              {
+                AstErrors.featureOfMustInherit(pos, p.pos);
+              }
+            else
+              {
+                var ic = i.getLast();
+                if (!ic.generics().isEmpty())
+                  {
+                    ic.generics().addAll(ng);
+                  }
+                else
+                  {
+                    ((Call)ic).generics = ng;
+                  }
+              }
+            p = new Impl(p.pos, new Block(p.pos, new List<>()), Impl.Kind.Routine);
+          }
         _list.add(new Feature(pos, v,m,r,n,g,a,i,c,p));
       }
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * For a feature declaration of the form
+   *
+   *   xyz : choice of a, b, c.
+   *
+   * add features a, b, c to _list and they types to g.
+   *
+   * @param s the statements containing the feature declarations to be added, in
+   * this case "a, b, c."
+   *
+   * @param g the list of type to be callected, will be added as generic
+   * arguments to 'choice' in this example
+   *
+   * @param p Impl that contains the position of 'of' for error messages.
+   */
+  private void addFeaturesFromBlock(Stmnt s, List<AbstractType> g, Impl p)
+  {
+    if (s instanceof Block b)
+      {
+        b.statements_.forEach(x -> addFeaturesFromBlock(x, g, p));
+      }
+    else if (s instanceof Feature f)
+      {
+        _list.add(f);
+        if (f._qname.size() > 1)
+          {
+            AstErrors.featureOfMustContainOnlyUnqualifiedNames(f, p.pos);
+          }
+          if (!f.generics().list.isEmpty())
+            {
+              AstErrors.featureOfMustNotHaveFormalGenerics(f, p.pos);
+            }
+        g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), null));
+      }
+    else
+      {
+        AstErrors.featureOfMustContainOnlyDeclarations(s, p.pos);
+      }
+  }
 
 
   /**

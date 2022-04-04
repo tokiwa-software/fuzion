@@ -764,7 +764,7 @@ public class Feature extends AbstractFeature implements Stmnt
       ? Kind.Choice
       : switch (_impl.kind_) {
           case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
-          case Routine, RoutineDef                                -> Kind.Routine;
+          case Routine, RoutineDef, Of                            -> Kind.Routine;
           case Abstract                                           -> Kind.Abstract;
           case Intrinsic                                          -> Kind.Intrinsic;
         };

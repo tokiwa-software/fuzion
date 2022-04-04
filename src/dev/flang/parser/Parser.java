@@ -1415,6 +1415,7 @@ actualArgs  : actualsList               // must be in same line as name of calle
            t_lbrace          ,
            t_rbrace          ,
            t_is              ,
+           t_of              ,
            t_pre             ,
            t_post            ,
            t_inv             ,
@@ -3336,6 +3337,7 @@ implRout    : block
             | "is" "intrinsic_constructor"
             | "is" block
             | ARROW e=block
+            | "of" block
             | fullStop
             ;
    */
@@ -3344,12 +3346,13 @@ implRout    : block
     SourcePosition pos = posObject();
     Impl result;
     var startRoutine = (currentAtMinIndent() == Token.t_lbrace || skip(true, Token.t_is));
-    if (startRoutine)    { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
-                                    skip(Token.t_intrinsic            ) ? Impl.INTRINSIC             :
-                                    skip(Token.t_intrinsic_constructor) ? Impl.INTRINSIC_CONSTRUCTOR :
-                                    new Impl(pos, block(true)      , Impl.Kind.Routine   ); }
-    else if (skip("=>")) { result = new Impl(pos, block(true)      , Impl.Kind.RoutineDef); }
-    else if (skipFullStop() ) { result = new Impl(pos, new Block(pos, pos, new List<>()), Impl.Kind.Routine); }
+    if      (startRoutine    ) { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
+                                          skip(Token.t_intrinsic            ) ? Impl.INTRINSIC             :
+                                          skip(Token.t_intrinsic_constructor) ? Impl.INTRINSIC_CONSTRUCTOR :
+                                          new Impl(pos, block(true)      , Impl.Kind.Routine   ); }
+    else if (skip("=>")      ) { result = new Impl(pos, block(true)      , Impl.Kind.RoutineDef); }
+    else if (skip(Token.t_of)) { result = new Impl(pos, block(true)      , Impl.Kind.Of        ); }
+    else if (skipFullStop()  ) { result = new Impl(pos, new Block(pos, pos, new List<>()), Impl.Kind.Routine); }
     else
       {
         syntaxError(pos(), "'is', '{' or '=>' in routine declaration", "implRout");
@@ -3372,6 +3375,7 @@ implFldOrRout   : implRout
   {
     if (currentAtMinIndent() == Token.t_lbrace ||
         currentAtMinIndent() == Token.t_is     ||
+        currentAtMinIndent() == Token.t_of     ||
         isOperator("=>")                       ||
         isFullStop()                              )
       {
@@ -3429,6 +3433,7 @@ implFldUndef: ":=" "?"
     return
       currentAtMinIndent() == Token.t_lbrace ||
       currentAtMinIndent() == Token.t_is ||
+      currentAtMinIndent() == Token.t_of ||
       isOperator(":=") ||
       isOperator("=>") ||
       isFullStop();

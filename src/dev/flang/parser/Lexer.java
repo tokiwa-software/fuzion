@@ -191,6 +191,7 @@ public class Lexer extends SourceFile
     t_private("private"),
     t_protected("protected"),
     t_public("public"),
+    t_of("of"),
     t_eof,               // end of file
     t_indentationLimit,  // token's indentation is not sufficient
     t_lineLimit,         // token is in next line while sameLine() parsing is enabled

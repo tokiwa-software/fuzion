@@ -92,7 +92,8 @@ public class Impl extends ANY
     RoutineDef,   // normal feature with code and implicit result type
     Routine,      // normal feature with code
     Abstract,     // an abstract feature
-    Intrinsic     // an intrinsic feature
+    Intrinsic,    // an intrinsic feature
+    Of            // Syntacitic sugar 'enum : choice of red, green, blue is', exists only during parsing
   };
 
   /**
@@ -407,12 +408,13 @@ public class Impl extends ANY
         {
         case FieldInit  : result = " = "  + _initialValue.getClass() + ": " +_initialValue; break;
         case FieldDef   : result = " := " + _initialValue.getClass() + ": " +_initialValue; break;
-        case FieldActual: result = " typefrom(" + _initialValue.pos() + ")";               break;
-        case Field      : result = "";                                                    break;
-        case RoutineDef : result = " => " + _code.toString();                             break;
-        case Routine    : result =          _code.toString();                             break;
-        case Abstract   : result = "is abstract";                                         break;
-        case Intrinsic  : result = "is intrinsic";                                        break;
+        case FieldActual: result = " typefrom(" + _initialValue.pos() + ")";                break;
+        case Field      : result = "";                                                      break;
+        case RoutineDef : result = " => " + _code.toString();                               break;
+        case Routine    : result = " is " + _code.toString();                               break;
+        case Abstract   : result = "is abstract";                                           break;
+        case Intrinsic  : result = "is intrinsic";                                          break;
+        case Of         : result = "of " + _code.toString();                                break;
         default: throw new Error("Unexpected Kind: "+kind_);
         }
     }
