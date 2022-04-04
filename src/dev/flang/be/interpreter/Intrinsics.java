@@ -48,6 +48,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
+import java.util.concurrent.TimeUnit;
+
 
 /**
  * Intrinsics provides the implementation of Fuzion's intrinsic features.
@@ -704,6 +706,21 @@ public class Intrinsics extends ANY
       // NYI: This could be more useful by giving the object's class, an id, public fields, etc.
     }
     else if (n.equals("fuzion.std.nano_time"  )) { result = (args) -> new u64Value (System.nanoTime()); }
+    else if (n.equals("fuzion.std.nano_sleep" )) {
+      result = (args) ->
+        {
+          var d = args.get(1).u64Value();
+          try
+            {
+              TimeUnit.NANOSECONDS.sleep(d < 0 ? Long.MAX_VALUE : d);
+            }
+          catch (InterruptedException ie)
+            {
+              throw new Error("unexpected interrupt", ie);
+            }
+          return new Instance(Clazzes.c_unit.get());
+        };
+    }
     else if (n.equals("effect.replace" ) ||
              n.equals("effect.default" ) ||
              n.equals("effect.abortable")||

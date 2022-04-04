@@ -423,6 +423,16 @@ class Intrinsics extends ANY
             .div(CExpr.ident("CLOCKS_PER_SEC"))
             .ret();
         }
+      case "fuzion.std.nano_sleep":
+        {
+          var req = new CIdent("req");
+          var sec = A0.div(CExpr.int64const(1_000_000_000));
+          var nsec = A0.sub(sec.mul(CExpr.int64const(1_000_000_000)));
+          return CStmnt.seq(CStmnt.decl("struct timespec",req,CExpr.compoundLiteral("struct timespec",
+                                                                                    sec.code() + "," +
+                                                                                    nsec.code())),
+                            /* NYI: while: */ CExpr.call("nanosleep",new List<>(req.adrOf(),req.adrOf())));
+        }
 
       case "effect.replace":
       case "effect.default":

@@ -40,3 +40,6 @@ fuzion.std is
 
   # no guarantee can be given for precision nor resolution
   nano_time u64 is intrinsic
+
+  # no guarantee can be given for precision nor resolution
+  nano_sleep(n u64) is intrinsic
