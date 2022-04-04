@@ -418,14 +418,17 @@ class Intrinsics extends ANY
       case "fuzion.std.nano_time":
         {
           var result = new CIdent("result");
-          var onFailure = CExpr.call("exit", new List<>(new CIdent("1")){});
+          var onFailure = CStmnt.seq(
+            CExpr.fprintfstderr("*** clock_gettime failed\n"),
+            CExpr.call("exit", new List<>(new CIdent("1")){})
+          );
           return CStmnt.seq(
               CStmnt.decl("struct timespec", result),
               CExpr.iff(
                   CExpr.call(
                     "clock_gettime",
                     new List<>(new CIdent("CLOCK_MONOTONIC"), result.adrOf()){}
-                  ).eq(new CIdent("1").neg()),
+                  ).ne(new CIdent("0")),
                   onFailure
                 ),
               result.field(new CIdent("tv_sec"))
