@@ -407,6 +407,8 @@ public class CFG extends ANY
       case "fuzion.sys.array.alloc"     : return;
       case "fuzion.sys.array.setel"     : return;
       case "fuzion.sys.array.get"       : return;
+      case "fuzion.sys.env_vars.has0"   : return;
+      case "fuzion.sys.env_vars.get0"   : return;
       case "fuzion.std.nano_time"       : return;
 
       case "effect.replace"      : return;

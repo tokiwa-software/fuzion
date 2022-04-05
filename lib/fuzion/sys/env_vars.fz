@@ -17,24 +17,43 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature sys
+#  Source code of Fuzion standard library feature fuzion.sys.envVars
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# fuzion.sys -- unit type to group low-level system APIs APIs
+# fuzion.sys.env_vars -- low-level feature to access environment variables
 #
-sys is
-  out is
-    print  (s Object) => stdout.print   s
-    println(s Object) => stdout.println s
+private env_vars is
 
 
-  # Create a 0-terminated internal array of bytes from
-  # a given string.
+  # intrinsic to check if env var with given name exists
   #
-  # This is used to pass strings down to instrinsics
+  # NOTE: parameter s must be 0-terminated char *
   #
-  private c_string (s string) =>
-    (s + codepoint 0).utf8.asArray.internalArray.data
+  private has0(s Object) bool is intrinsic
+
+
+  # intrinsic to get env var with given name
+  #
+  # NOTE: parameter s must be 0-terminated char *
+  #
+  private get0(s Object) string
+  is intrinsic
+
+
+  # check if env var with given name exists
+  #
+  has(s string) bool is
+    has0 (c_string s)
+
+
+  # intrinsic to get env var with given name
+  #
+  get(s string) option<string> is
+    a := c_string s
+    if has0 a then
+      get0 a
+    else
+      nil

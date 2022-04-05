@@ -1,0 +1,86 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature envir.vars
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# envir.vars -- effect providing access to environment variables
+#
+private vars (
+
+  # the provider this effect uses to read env vars
+  p varsProvider,
+
+  # action to be taken: plain, install or replace?
+  redef r effectModes,
+
+  _ unit
+  ) : effect r
+is
+
+  # If set, get the environment variable corresponding to v
+  #
+  get(v string) => p.get v
+
+
+# short-hand for creating and installing vars effect using
+# given provider and running code rr
+#
+vars(p varsProvider, rr ()->unit) =>
+  _ := vars p (effectMode.inst rr) unit
+
+
+# short-hand for accessing envir.args effect in current environment
+#
+vars =>
+  vars_type.installDefault
+  envir.vars.env
+
+
+# unit type feature defining features related to envir.vars but not
+# requiring an instance.
+#
+vars_type is
+
+  # install default effect using fuzion.sys.env_vars
+  #
+  installDefault unit is
+    if !(effects.exists<envir.vars>)
+      _ := vars defaultVarsProvider effectMode.default unit
+
+
+  # default provider using fuzion.sys.env_vars
+  #
+  private defaultVarsProvider : varsProvider is
+    get(v string) => fuzion.sys.env_vars.get v
+
+
+# varsProvider -- abstract source of environment vars
+#
+# Different heirs of this feature may provided different sources for environemnt
+# variables
+#
+varsProvider ref is
+
+  # If set, get the environment variable corresponding to v
+  #
+  get(v string) option<string> is abstract

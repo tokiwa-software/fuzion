@@ -415,6 +415,21 @@ class Intrinsics extends ANY
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).ret()
             : CStmnt.EMPTY;
         }
+      case "fuzion.sys.env_vars.has0":
+        {
+          return CStmnt.seq(CStmnt.iff(CExpr.call("getenv",new List<>(A0.castTo("char*"))).ne(CNames.NULL),
+                                       c._names.FZ_TRUE.ret()),
+                            c._names.FZ_FALSE.ret());
+        }
+      case "fuzion.sys.env_vars.get0":
+        {
+          var tmp = new CIdent("tmp");
+          var str = new CIdent("str");
+          return CStmnt.seq(CStmnt.decl("char *", str),
+                            str.assign(CExpr.call("getenv",new List<>(A0.castTo("char*")))),
+                            c.constString(str, CExpr.call("strlen",new List<>(str)), tmp),
+                            tmp.castTo(c._types.clazz(rc)).ret());
+        }
       case "fuzion.std.nano_time":
         {
           var result = new CIdent("result");

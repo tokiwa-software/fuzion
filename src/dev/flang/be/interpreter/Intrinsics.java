@@ -102,6 +102,21 @@ public class Intrinsics extends ANY
 
 
   /**
+   * Create a Java string from 0-terminated given byte array.
+   */
+  private static String utf8ByteArrayDataToString(Value internalArray)
+  {
+    var strA = internalArray.arrayData();
+    var ba = (byte[]) strA._array;
+    var l = 0;
+    while (l < ba.length && ba[l] != 0)
+      {
+        l++;
+      }
+    return new String(ba, 0, l, StandardCharsets.UTF_8);
+  }
+
+  /**
    * Create a Callable to call an intrinsic feature.
    *
    * @param innerClazz the frame clazz of the called feature
@@ -286,9 +301,7 @@ public class Intrinsics extends ANY
                 System.err.println("*** error: unsafe feature "+n+" disabled");
                 System.exit(1);
               }
-            var strA = args.get(1).arrayData();
-            var ba = (byte[]) strA._array;
-            String str = new String(ba, StandardCharsets.UTF_8);
+            var str = utf8ByteArrayDataToString(args.get(1));
             Clazz resultClazz = innerClazz.resultClazz();
             return JavaInterface.javaObjectToInstance(str, resultClazz);
           };
@@ -453,6 +466,14 @@ public class Intrinsics extends ANY
                                 /* type  */ innerClazz._outer);
             return Value.EMPTY_VALUE;
           };
+      }
+    else if (n.equals("fuzion.sys.env_vars.has0"))
+      {
+        result = (args) -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null);
+      }
+    else if (n.equals("fuzion.sys.env_vars.get0"))
+      {
+        result = (args) -> Interpreter.value(System.getenv(utf8ByteArrayDataToString(args.get(1))));
       }
     else if (n.equals("safety"      ))
       {
