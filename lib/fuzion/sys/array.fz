@@ -43,7 +43,7 @@ array<T>(length i32) is
     pre
       safety: 0 <= i < length
   is
-    get<T> data, i
+    get<T> data i
 
   set [ ] (i i32, o T) unit
     pre
@@ -51,4 +51,4 @@ array<T>(length i32) is
   # post   NYI
     #array.this[i] == o
   is
-    setel<T> data, i, o
+    setel<T> data i o

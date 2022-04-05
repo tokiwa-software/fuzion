@@ -61,5 +61,5 @@ is
   infix == (a, b T) bool is abstract
 
   # alternative names for infix operators
-  op(a, b T) => infix ∙ a, b
-  eq(a, b T) => infix == a, b
+  op(a, b T) => infix ∙  a b
+  eq(a, b T) => infix == a b

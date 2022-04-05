@@ -28,7 +28,7 @@
 u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
 
   #  redef thiz => u128.this  -- NYI: This causes a type error when using C backend
-  redef thiz => u128 hi, lo
+  redef thiz => u128 hi lo
 
   # overflow checking
 
@@ -48,9 +48,9 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
   redef underflowOnMul(other u128) => false
 
   # neg, add, sub, mul with wrap-around semantics
-  redef prefix -°             u128 is carry u64 := { if (lo > 0             ) 1 else 0 }; u128(u64 0 -° hi -° carry, u64 0 -° lo)
-  redef infix +° (other u128) u128 is carry u64 := { if (lo +° other.lo < lo) 1 else 0 }; u128(hi +° other.hi +° carry, lo +° other.lo)
-  redef infix -° (other u128) u128 is carry u64 := { if (lo < other.lo      ) 1 else 0 }; u128(hi -° other.hi -° carry, lo -° other.lo)
+  redef prefix -°             u128 is carry u64 := { if (lo > 0             ) 1 else 0 }; u128 (u64 0 -° hi -° carry) (u64 0 -° lo)
+  redef infix +° (other u128) u128 is carry u64 := { if (lo +° other.lo < lo) 1 else 0 }; u128 (hi +° other.hi +° carry) (lo +° other.lo)
+  redef infix -° (other u128) u128 is carry u64 := { if (lo < other.lo      ) 1 else 0 }; u128 (hi -° other.hi -° carry) (lo -° other.lo)
   redef infix *° (other u128) u128 is
     a0 := lo & 0x_ffff_ffff
     a1 := lo >> 32
@@ -113,30 +113,30 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
     thiz - div(other) *° other
 
   # bitwise and, or and xor operations
-  redef infix &  (other u128) u128 is u128(hi & other.hi, lo & other.lo)
-  redef infix |  (other u128) u128 is u128(hi | other.hi, lo | other.lo)
-  redef infix ^  (other u128) u128 is u128(hi ^ other.hi, lo ^ other.lo)
+  redef infix &  (other u128) u128 is u128 (hi & other.hi) (lo & other.lo)
+  redef infix |  (other u128) u128 is u128 (hi | other.hi) (lo | other.lo)
+  redef infix ^  (other u128) u128 is u128 (hi ^ other.hi) (lo ^ other.lo)
 
   # shift operations (unsigned)
   redef infix >> (other u128) u128 is
     n := other.as_u64  # NYI: other should be of type u32
     if n >= 128
-      u128 0, 0
+      u128 0 0
     else if n >= 64
-      u128 0, hi >> (n - 64)
+      u128 0 (hi >> (n - 64))
     else if n > 0
-      u128(hi >> n, (lo >> n) | (hi << (u64 64 - n)))
+      u128 (hi >> n) ((lo >> n) | (hi << (u64 64 - n)))
     else
       thiz
 
   redef infix << (other u128) u128 is
     n := other.as_u64  # NYI: other should be of type u32
     if n >= 128
-      u128 0, 0
+      u128 0 0
     else if n >= 64
-      u128(lo << (n-64), 0)
+      u128 (lo << (n-64)) 0
     else if n > 0
-      u128((hi << n) | (lo >> (u64 64 - n)), lo << n)
+      u128 ((hi << n) | (lo >> (u64 64 - n))) (lo << n)
     else
       thiz
 
@@ -222,9 +222,9 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
   #
   highestOneBit u128 is
     if hi = 0
-      u128(0, lo.highestOneBit)
+      u128 0 lo.highestOneBit
     else
-      u128(hi.highestOneBit, 0)
+      u128 hi.highestOneBit 0
 
 
   # count the number of trailing zeros in this integer.

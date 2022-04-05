@@ -116,7 +116,7 @@ u32(val u32) : wrappingInteger<u32>, hasInterval<u32>, u32s is
       thiz.as_i64.as_u64
   as_u128 u128
     is
-      u128 0, as_u64
+      u128 0 as_u64
 
   low8bits  u8  is intrinsic
   low16bits u16 is intrinsic

@@ -144,7 +144,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, Sequence<A> is
   #
   # e.g., to sum the elements of a list of i32, use l.fold i32.sum
   #
-  redef fold (m Monoid<A>) => fold m.e, m
+  redef fold (m Monoid<A>) => fold m.e m
 
 
   # fold the elements of this list using the given monoid and initial value
@@ -152,7 +152,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, Sequence<A> is
   # Used to fold a list tail-recursively
   #
   fold (s A, m Monoid<A>) A is list.this ? nil    => s
-                                         | c Cons => c.tail.fold m.op(s, c.head), m
+                                         | c Cons => c.tail.fold (m.op s c.head) m
 
 
   # Lazily take the first n elements of a list, alternatively the whole list if it
@@ -182,7 +182,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, Sequence<A> is
   #
   reverse (reversedHead list<A>) list<A> is
     list.this ? nil    => reversedHead
-              | c Cons => c.tail.reverse (cons c.head, reversedHead)
+              | c Cons => c.tail.reverse (cons c.head reversedHead)
 
 
   # create a string representation of this list including all the string
@@ -204,7 +204,7 @@ list<A> : choice<nil, Cons<A, list<A>>>, Sequence<A> is
   #
   concatEagerly (t list<A>) list<A> is
     list.this ? nil    => t
-              | c Cons => cons<A, list<A>> c.head, c.tail.concat t
+              | c Cons => cons<A, list<A>> c.head (c.tail.concat t)
 
 
   # Lazy list concatenation, O(1)

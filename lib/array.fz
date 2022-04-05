@@ -152,7 +152,7 @@ array<T>(internalArray fuzion.sys.array<T>) : Sequence<T> is
   #
   # e.g., to sum the elements of an array of i32, use a.fold i32.sum
   #
-  redef fold (m Monoid<T>) => fold 0, m.e, m
+  redef fold (m Monoid<T>) => fold 0 m.e m
 
 
   # fold the elements of this array using the given monoid and initial value
@@ -166,7 +166,7 @@ array<T>(internalArray fuzion.sys.array<T>) : Sequence<T> is
     if i == length
       s
     else
-      fold i+1, m.op(s, array.this[i]), m
+      fold i+1 (m.op s array.this[i]) m
 
 
   # reverse the order of the elements in this array

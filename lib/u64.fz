@@ -132,7 +132,7 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
 #    post
 #      analysis: result.as_u64 == thiz
     is
-      u128 0, thiz
+      u128 0 thiz
 
   low8bits   u8  is intrinsic
   low16bits  u16 is intrinsic

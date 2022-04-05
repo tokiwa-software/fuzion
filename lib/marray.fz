@@ -77,7 +77,7 @@ is
           newData[i] := data[i]
         newData
     d[length] := o
-    marray<T> length+1, d, unit
+    marray<T> length+1 d unit
 
 
   # infix operator synonyme for add
@@ -103,7 +103,7 @@ is
   #
   # e.g., to sum the elements of an array of i32, use a.fold i32.sum
   #
-  redef fold (m Monoid<T>) => fold 0, m.e, m
+  redef fold (m Monoid<T>) => fold 0 m.e m
 
 
   # fold the elements of this array using the given monoid and initial value
@@ -117,7 +117,7 @@ is
     if i == length
       s
     else
-      fold i+1, m.op(s, marray.this[i]), m
+      fold i+1 (m.op s marray.this[i]) m
 
 
 # This feature provides a convenient constructor for marray<T>(length,

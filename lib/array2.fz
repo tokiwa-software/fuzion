@@ -50,7 +50,7 @@ is
 
   for i1 in indices0 do
     for i2 in indices1 do
-      internalArray[i1 * length1 + i2] := init2 i1, i2
+      internalArray[i1 * length1 + i2] := init2 i1 i2
 
   index [ ] (i1, i2 i32) T
     pre

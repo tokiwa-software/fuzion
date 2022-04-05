@@ -242,7 +242,7 @@ Sequence<T> ref is
   #
   # e.g., to sum the elements of a stream of i32, use s.fold i32.sum
   #
-  fold (m Monoid<T>) => asList.fold m.e, m
+  fold (m Monoid<T>) => asList.fold m.e m
 
 
   # reduce this Sequence to R with an initial value init

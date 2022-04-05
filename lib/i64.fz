@@ -57,11 +57,11 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
   redef infix / (other i64)
     pre
       safety: other != 0
-   => div(other)
+   => div other
   redef infix % (other i64)
     pre
       safety: other != 0
-   => mod(other)
+   => mod other
 
   # private division and remainder with crash in case of div-by-zero
   private div (other i64) i64 is intrinsic
@@ -139,7 +139,7 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
     post
       analysis:  result.as_i64 == thiz
     is
-      u128 0, castTo_u64
+      u128 0 castTo_u64
 
   # casting bit representation to unsigned
   low8bits   u8  is castTo_u64.low8bits

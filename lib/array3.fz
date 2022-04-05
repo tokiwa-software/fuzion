@@ -58,7 +58,7 @@ is
   for i1 in 0..length0-1 do
     for i2 in 0..length1-1 do
       for i3 in 0..length2-1 do
-        internalArray[(i1 * length1 + i2) * length2 + i3] := init3 i1, i2, i3
+        internalArray[(i1 * length1 + i2) * length2 + i3] := init3 i1 i2 i3
 
   index [ ] (i0, i1, i2 i32) T
     pre

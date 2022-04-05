@@ -114,7 +114,7 @@ is
         )
 
       # continue sorting with doubled heap size
-      sort na, 2*heapSize
+      sort na 2*heapSize
 
 
   # find index of given key using binary search
@@ -132,17 +132,17 @@ is
         i i32 => # sortedArray.this[i] = key, but we do not have 'infix =' available, so
                  # use lessOrEqual instead:
                  #
-                 (lessOrEqual sortedArray.this[i], key) && (lessOrEqual key, sortedArray.this[i])
+                 lessOrEqual sortedArray.this[i] key && lessOrEqual key sortedArray.this[i]
         nil   => true # NYI: analyis: for all i=0..a.length-1, sortedArray.this[i] /= key
   is
     binarySearch(l, r i32) option<i32> is
       m := (l + r) / 2
       if l > r                          then nil
-      else if !lessOrEqual(key, sortedArray.this[m]) then binarySearch m+1, r
-      else if !lessOrEqual(sortedArray.this[m], key) then binarySearch l, m-1
+      else if !lessOrEqual key sortedArray.this[m] then binarySearch m+1 r
+      else if !lessOrEqual sortedArray.this[m] key then binarySearch l m-1
       else                                   m
 
-    binarySearch 0, length-1
+    binarySearch 0 length-1
 
 
   # find index of key for which cmp returns 0
@@ -175,11 +175,11 @@ is
         nil
       else
         c := cmp sortedArray.this[m]
-        if      c < 0 then binarySearch m+1, r
-        else if c > 0 then binarySearch l, m-1
+        if      c < 0 then binarySearch m+1 r
+        else if c > 0 then binarySearch l m-1
         else               m
 
-    binarySearch 0, length-1
+    binarySearch 0 length-1
 
 
 # sortedarray -- sorted one-dimensional immutable array of ordered elements
