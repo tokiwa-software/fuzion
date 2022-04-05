@@ -482,6 +482,8 @@ public class AstErrors extends ANY
     AbstractFeature farg = null;
     for (var t : call.resolvedFormalArgumentTypes)
       {
+        if (CHECKS) check
+          (t != null);
         ferror = t == Types.t_ERROR;
         fstr.append(fstr.length
                     () > 0 ? ", " : "");
