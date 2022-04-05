@@ -355,6 +355,14 @@ class Intrinsics extends ANY
       case "f64s.minPositive"    : return CExpr.ident("DBL_MIN").ret();
       case "f64s.max"            : return CExpr.ident("DBL_MAX").ret();
       case "f64s.epsilon"        : return CExpr.ident("DBL_EPSILON").ret();
+      case "f32s.isNaN"          :
+      case "f64s.isNaN"          : return CStmnt.seq(
+                                      CStmnt.iff(
+                                        CExpr.call("isnan", new List<>(A0)).ne(new CIdent("0")),
+                                        c._names.FZ_TRUE.ret()
+                                      ),
+                                      c._names.FZ_FALSE.ret()
+                                    );
       case "f32s.squareRoot"     : return CExpr.call("sqrtf",  new List<>(A0)).ret();
       case "f64s.squareRoot"     : return CExpr.call("sqrt",   new List<>(A0)).ret();
       case "f32s.exp"            : return CExpr.call("expf",   new List<>(A0)).ret();
@@ -373,6 +381,8 @@ class Intrinsics extends ANY
       case "f64s.acos"           : return CExpr.call("acos",  new List<>(A0)).ret();
       case "f32s.atan"           : return CExpr.call("atanf", new List<>(A0)).ret();
       case "f64s.atan"           : return CExpr.call("atan",  new List<>(A0)).ret();
+      case "f32s.atan2"          : return CExpr.call("atan2f", new List<>(A0, A1)).ret();
+      case "f64s.atan2"          : return CExpr.call("atan2",  new List<>(A0, A1)).ret();
       case "f32s.sinh"           : return CExpr.call("sinhf",  new List<>(A0)).ret();
       case "f64s.sinh"           : return CExpr.call("sinh",   new List<>(A0)).ret();
       case "f32s.cosh"           : return CExpr.call("coshf",  new List<>(A0)).ret();

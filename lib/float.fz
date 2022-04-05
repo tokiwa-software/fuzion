@@ -76,6 +76,9 @@ floats<T: float<T>> : numerics<T> is
   # not a number
   NaN => quietNaN
 
+  # is not a number?
+  isNaN(val T) bool is abstract
+
   negativeInfinity => -one / zero
 
   positiveInfinity => one / zero
@@ -115,6 +118,7 @@ floats<T: float<T>> : numerics<T> is
   asin(val T) T is abstract
   acos(val T) T is abstract
   atan(val T) T is abstract
+  atan2(y T, x T) T is abstract
 
 
   # hyperbolicus

@@ -667,9 +667,12 @@ public class Intrinsics extends ANY
     else if (n.equals("f64.infix >="    )) { result = (args) -> new boolValue(                (args.get(0).f64Value() >= args.get(1).f64Value())); }
     else if (n.equals("f64.castTo_u64"  )) { result = (args) -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())); }
     else if (n.equals("f64.asString"    )) { result = (args) -> Interpreter.value(Double.toString       (                args.get(0).f64Value())); }
+    else if (n.equals("f32s.isNaN"      )) { result = (args) -> new boolValue(                               Float.isNaN(args.get(1).f32Value())); }
+    else if (n.equals("f64s.isNaN"      )) { result = (args) -> new boolValue(                              Double.isNaN(args.get(1).f64Value())); }
     else if (n.equals("f32s.acos"       )) { result = (args) -> new f32Value ((float)           Math.acos(               args.get(1).f32Value())); }
     else if (n.equals("f32s.asin"       )) { result = (args) -> new f32Value ((float)           Math.asin(               args.get(1).f32Value())); }
     else if (n.equals("f32s.atan"       )) { result = (args) -> new f32Value ((float)           Math.atan(               args.get(1).f32Value())); }
+    else if (n.equals("f32s.atan2"      )) { result = (args) -> new f32Value ((float)  Math.atan2(args.get(1).f32Value(),args.get(2).f32Value())); }
     else if (n.equals("f32s.cos"        )) { result = (args) -> new f32Value ((float)           Math.cos(                args.get(1).f32Value())); }
     else if (n.equals("f32s.cosh"       )) { result = (args) -> new f32Value ((float)           Math.cosh(               args.get(1).f32Value())); }
     else if (n.equals("f32s.epsilon"    )) { result = (args) -> new f32Value (                  Math.ulp(                (float)1));               }
@@ -687,6 +690,7 @@ public class Intrinsics extends ANY
     else if (n.equals("f64s.acos"       )) { result = (args) -> new f64Value (                 Math.acos(                args.get(1).f64Value())); }
     else if (n.equals("f64s.asin"       )) { result = (args) -> new f64Value (                 Math.asin(                args.get(1).f64Value())); }
     else if (n.equals("f64s.atan"       )) { result = (args) -> new f64Value (                 Math.atan(                args.get(1).f64Value())); }
+    else if (n.equals("f64s.atan2"      )) { result = (args) -> new f64Value (         Math.atan2(args.get(1).f64Value(),args.get(2).f64Value())); }
     else if (n.equals("f64s.cos"        )) { result = (args) -> new f64Value (                 Math.cos(                 args.get(1).f64Value())); }
     else if (n.equals("f64s.cosh"       )) { result = (args) -> new f64Value (                 Math.cosh(                args.get(1).f64Value())); }
     else if (n.equals("f64s.epsilon"    )) { result = (args) -> new f64Value (                 Math.ulp(                 (double)1));              }
