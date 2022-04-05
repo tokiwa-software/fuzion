@@ -1052,17 +1052,27 @@ public class Call extends AbstractCall
    */
   private void addToResolvedFormalArgumentTypes(Resolution res, int argnum, AbstractType[] a, AbstractFeature frml)
   {
-    if (a.length != 1)
+    var na = new AbstractType[resolvedFormalArgumentTypes.length - 1 + a.length];
+    var j = 0;
+    for (var i = 0; i < resolvedFormalArgumentTypes.length; i++)
       {
-        resolvedFormalArgumentTypes = Arrays.copyOf(resolvedFormalArgumentTypes,
-                                                    resolvedFormalArgumentTypes.length - 1 + a.length);
+        if (i == argnum)
+          {
+            for (var at : a)
+              {
+                if (CHECKS) check
+                  (at != null);
+                na[j] = at;
+                j++;
+              }
+          }
+        else
+          {
+            na[j] = resolvedFormalArgumentTypes[i];
+            j++;
+          }
       }
-    for (int i = 0; i < a.length; i++)
-      {
-        if (CHECKS) check
-          (a[i] != null);
-        resolvedFormalArgumentTypes[argnum + i] = a[i];
-      }
+    resolvedFormalArgumentTypes = na;
   }
 
 
