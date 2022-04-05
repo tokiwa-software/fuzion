@@ -215,9 +215,6 @@ public class C extends ANY
       (CStmnt.decl("int", _names.GLOBAL_ARGC));
     cf.print
       (CStmnt.decl("char **", _names.GLOBAL_ARGV));
-      // NYI include only when nano_time is used
-    cf.print
-      (CStmnt.decl("clock_t", _names.GLOBAL_CLOCK_OFFSET));
     var o = CExpr.ident("of");
     var s = CExpr.ident("sz");
     var r = new CIdent("r");
@@ -259,8 +256,6 @@ public class C extends ANY
     cf.println("int main(int argc, char **argv) { ");
     cf.print(CStmnt.seq(_names.GLOBAL_ARGC.assign(new CIdent("argc")),
                         _names.GLOBAL_ARGV.assign(new CIdent("argv")),
-                        // NYI include only when nano_time is used
-                        _names.GLOBAL_CLOCK_OFFSET.assign(CExpr.call("clock", new List<>())),
                         CExpr.call(_names.function(_fuir.mainClazzId(), false), new List<>())));
     cf.println("}");
   }
