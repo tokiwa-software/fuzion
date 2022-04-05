@@ -41,7 +41,7 @@ is
 args(rr ()->unit) => args fuzion.std.args rr
 
 
-# short-hand for creating and installing out effect
+# short-hand for creating and installing args effect
 #
 args(a array<string>, rr ()->unit) =>
   _ := args a (effectMode.inst rr) unit
@@ -59,7 +59,7 @@ args =>
 #
 argses is
 
-  # install default effect out using defaultPrint
+  # install default effect args using fuzion.std.args
   installDefault unit is
     if !(effects.exists<envir.args>)
       _ := args fuzion.std.args effectMode.default unit
