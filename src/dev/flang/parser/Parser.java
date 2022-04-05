@@ -1479,13 +1479,9 @@ exprList    : expr ( COMMA exprList
    * @param line the line containing the name of the called feature
    *
 actualsList : exprUntilSp actualsLst
-            | exprUntilSp actualsLstC
             |
             ;
 actualsLst  : exprUntilSp actualsLst
-            |
-            ;
-actualsLstC : COMMA expr actualsLstC
             |
             ;
    */
@@ -1502,32 +1498,21 @@ actualsLstC : COMMA expr actualsLstC
     if (ignoredTokenBefore() && !endsActuals(in))
       {
         result = new List<>(exprUntilSpace());
-        var hasComma = current() == Token.t_comma;
-        if (hasComma)
+        var done = false;
+        while (!done)
           {
-            while (skipComma())
-              {
-                result.add(expr());
+            if (in == null && line() != line && oldLine == -1)
+              { // indentation starts after the first argument:
+                line = -1;
+                sameLine(-1);
+                in = new Indentation();
               }
-          }
-        else
-          {
-            var done = false;
-            while (!done)
+            done = endsActuals(in);
+            if (!done)
               {
-                if (in == null && line() != line && oldLine == -1)
-                  { // indentation starts after the first argument:
-                    line = -1;
-                    sameLine(-1);
-                    in = new Indentation();
-                  }
-                done = endsActuals(in);
-                if (!done)
-                  {
-                    var p = pos();
-                    result.add(exprUntilSpace());
-                    done = p == pos(); /* make sure we do not get stuck on a syntax error */
-                  }
+                var p = pos();
+                result.add(exprUntilSpace());
+                done = p == pos(); /* make sure we do not get stuck on a syntax error */
               }
           }
       }
