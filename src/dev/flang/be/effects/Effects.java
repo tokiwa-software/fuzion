@@ -115,7 +115,8 @@ public class Effects extends CFG
   void propagateEffects(int cl, int ecl)
   {
     boolean ignore = false;
-    if (_fuir.clazzIntrinsicName(cl).equals("effect.abortable") &&
+    if (_fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic &&
+        _fuir.clazzIntrinsicName(cl).equals("effect.abortable") &&
         _fuir.clazzOuterClazz(cl) == ecl)
       {
         // cl installs its outer clazz as an effect, so the caller no longer depends on ecl.
