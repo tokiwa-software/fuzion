@@ -168,7 +168,8 @@ public class Impl extends ANY
       {
         if (CHECKS) check
           (kind == Kind.Routine    ||
-           kind == Kind.RoutineDef    );
+           kind == Kind.RoutineDef ||
+           kind == Kind.Of            );
         this._code = e;
         this._initialValue = null;
       }
