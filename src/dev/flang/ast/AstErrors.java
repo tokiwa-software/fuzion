@@ -655,21 +655,40 @@ public class AstErrors extends ANY
 
   }
 
-  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, AbstractType t, List<AbstractType> choiceGenerics)
+  static void repeatedMatch(SourcePosition pos, SourcePosition[] earlierPos, AbstractType typeOrNull, List<AbstractType> choiceGenerics)
   {
+    StringBuilder earlierPosString = new StringBuilder();
+    TreeSet<SourcePosition> processed = new TreeSet<>();
+    for (var ep : earlierPos)
+      {
+        if (!processed.contains(ep))
+          {
+            processed.add(ep);
+            if (earlierPosString.length() > 0)
+              {
+                earlierPosString.append(", and at \n");
+              }
+            earlierPosString.append(ep.show());
+          }
+      }
     error(pos,
-          "" + skw("case") + " clause matches type that had been matched already",
-          "Matched type: " + s(t) + "\n" +
-          "Originally matched at " + earlierPos.show() + "\n" +
+          "" + skw("case") + " clause matches type that had been matched already.",
+          caseMatches(typeOrNull) +
+          "Originally matched at " + earlierPosString + ".\n" +
           subjectTypes(choiceGenerics));
   }
 
+  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, AbstractType t, List<AbstractType> choiceGenerics)
+  {
+    repeatedMatch(pos, new SourcePosition[] { earlierPos }, t, choiceGenerics);
+  }
 
-  static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType t, List<AbstractType> choiceGenerics)
+
+  static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType typeOrNull, List<AbstractType> choiceGenerics)
   {
     error(pos,
-          "" + skw("case") + " clause in " + skw("match") + " statement does not match any type of the subject",
-          "Case matches type " + s(t) + "\n" +
+          "" + skw("case") + " clause in " + skw("match") + " statement does not match any type of the subject.",
+          caseMatches(typeOrNull) +
           subjectTypes(choiceGenerics));
   }
 
@@ -677,7 +696,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "" + skw("case") + " clause in " + skw("match") + " statement matches several types of the subject",
-          "Case matches type " + s(t) + "\n" +
+          caseMatches(t) +
           subjectTypes(choiceGenerics) +
           "matches are " + typeListConjunction(matches));
   }
@@ -724,11 +743,21 @@ public class AstErrors extends ANY
     return mt.toString();
   }
 
+  private static String typeOrAnyType(AbstractType typeOrNull)
+  {
+    return typeOrNull == null ? "any type" : "type " + s(typeOrNull);
+
+  }
+  private static String caseMatches(AbstractType typeOrNull)
+  {
+    return "Case matches " + typeOrAnyType(typeOrNull) + ".\n";
+  }
+
   private static String subjectTypes(List<AbstractType> choiceGenerics)
   {
     return choiceGenerics.isEmpty()
-      ? "Subject type is an empty choice type that cannot match any case\n"
-      : "Subject type is one of " + typeListAlternatives(choiceGenerics) + "\n";
+      ? "Subject type is an empty choice type that cannot match any case.\n"
+      : "Subject type is one of " + typeListAlternatives(choiceGenerics) + ".\n";
   }
 
   public static void internallyReferencedFeatureNotUnique(SourcePosition pos, String qname, Collection<AbstractFeature> set)
