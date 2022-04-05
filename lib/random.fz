@@ -27,7 +27,7 @@
 #
 random (
 
-  # the current state
+  # the provider this effect uses to create random numbers
   p randomProvider,
 
   redef r effectModes
@@ -144,7 +144,7 @@ randoms is
 
   installDefault is
     if !(effects.exists<random>)
-      _ := random simpleRandomProviders.timeSeeded effectMode.default
+      _ := random simpleRandomProviders.default effectMode.default
 
 
 
@@ -174,6 +174,27 @@ simpleRandomProvider(seed1 u64, seed2 u64) : randomProvider is
 # of simpleRandomProvider
 #
 simpleRandomProviders is
+
+  # name of env var to provide default random seed.
+  #
+  # If set, this u64-value will be used too seed the default random number generator.
+  # If not set, the default random number generator will be time seeded.
+  #
+  # If set to unparsable number, panic on installation of the default random
+  # number generator.
+  #
+  random_seed_env_var => "FUZION_RANDOM_SEED"
+
+  # create the default random provider depending on the environment settings
+  #
+  default =>
+    match envir.vars.get random_seed_env_var
+     s string =>
+       match s.parseU64
+         seed u64 => simpleRandomProvider seed 98765432109876543
+         e error  => fuzion.std.panic "Failed to parse value in env var '$random_seed_env_var': $e"
+     nil      => timeSeeded
+
 
   # create a time-seeded simple provider for pseudo random numbers that are not safe
   # for security and that do not meet typical requirements for a good
