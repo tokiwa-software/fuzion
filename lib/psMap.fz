@@ -127,7 +127,7 @@ O(n log n).
   #
   add (k K, v V) psMap<K, V> is
     if has k
-      fuzion.std.panic "NYI: psMap currently does not handle updates for existing key"
+      panic "NYI: psMap currently does not handle updates for existing key"
     else
       add (k,v)
 

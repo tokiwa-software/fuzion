@@ -1,0 +1,80 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature exit
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# exit -- effect that terminates a computation in exit
+#
+exit (
+
+  # the provider this effect uses to exit
+  p exitProvider,
+
+  redef r effectModes
+  ) : effect r
+is
+
+  # exit with the given code
+  #
+  exit(code i32) => p.exit code
+
+
+# exit with no argument returns exit.env, the currently installed
+# exit provider.
+#
+exit =>
+  exit_type.installDefault
+  exit.env
+
+
+# exit with a code argument calls exit.exit code, i.e., it uses the
+# current exit efffect to exit with the given message.
+#
+exit(code i32) => exit.exit code
+
+
+# exitProvider -- abstract exit
+#
+exitProvider ref is
+
+  # exit with the given message
+  #
+  exit(code i32) void is abstract
+
+
+# type related to exit declaring features not requiring an instance of exit
+#
+exit_type is
+
+  installDefault is
+    if !(effects.exists<exit>)
+      _ := exit defaultExitProvider effectMode.default
+
+  # default exit provider using io.err and exit with return code 1
+  #
+  defaultExitProvider : exitProvider is
+
+    # exit with the given message and exit with return code 1
+    #
+    exit(code i32) =>
+      fuzion.std.exit code

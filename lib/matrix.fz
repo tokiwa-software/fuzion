@@ -59,7 +59,7 @@ is
     pre
       safety: false
   is
-    fuzion.std.panic "'matrix.infix /' not defined."
+    panic "'matrix.infix /' not defined."
 
   # comparison
   redef infix == (b matrix<T>) =>
@@ -74,10 +74,10 @@ is
   redef infix != (b matrix<T>) => !(a = b)
 
   # NYI: total order
-  redef infix <  (b matrix<T>) => fuzion.std.panic "matrix does not define a total order"
-  redef infix <= (b matrix<T>) => fuzion.std.panic "matrix does not define a total order"
-  redef infix >  (b matrix<T>) => fuzion.std.panic "matrix does not define a total order"
-  redef infix >= (b matrix<T>) => fuzion.std.panic "matrix does not define a total order"
+  redef infix <  (b matrix<T>) => panic "matrix does not define a total order"
+  redef infix <= (b matrix<T>) => panic "matrix does not define a total order"
+  redef infix >  (b matrix<T>) => panic "matrix does not define a total order"
+  redef infix >= (b matrix<T>) => panic "matrix does not define a total order"
 
   transpose matrix<T> is
     matrix (array2<T> e.length1 e.length0 i,j->e[j,i])
@@ -85,8 +85,8 @@ is
   redef asString => e.asString
 
   # NYI: these three should be implemented in matrices, not here:
-  redef zero => fuzion.std.panic "matrix.zero not implemented"
-  redef one  => fuzion.std.panic "matrix.one not implemented"
+  redef zero => panic "matrix.zero not implemented"
+  redef one  => panic "matrix.one not implemented"
 
   # NYI: 'matrix' misses imlementaton of many abstract features from
   # 'numeric'. Maybe 'matrix' should not inherit from 'numeric' at all?
@@ -108,5 +108,5 @@ matrices<E : numeric<E>> : numerics<matrix<E>> is
   #   redef one  => matrix E.one  E.zero
   #
   # dummy implementations:
-  redef zero => fuzion.std.panic "NYI: matrices.zero not implemented, needs to instantiate type arg E"
-  redef one  => fuzion.std.panic "NYI: matrices.one not implemented, needs to instantiate type arg E"
+  redef zero => panic "NYI: matrices.zero not implemented, needs to instantiate type arg E"
+  redef one  => panic "NYI: matrices.one not implemented, needs to instantiate type arg E"

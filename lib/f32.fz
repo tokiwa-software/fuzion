@@ -62,7 +62,7 @@ f32(val f32) : float<f32>, f32s is
       as_f64.as_i64
   as_f64 f64
     is
-      fuzion.std.panic "NYI: f32.as_f64"
+      panic "NYI: f32.as_f64"
 
 
   # casting bit representation to u32

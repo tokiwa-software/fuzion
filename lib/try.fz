@@ -61,5 +61,5 @@ try<R> (f ()->R) =>
 #
 tryOrPanic<R> (f ()->R) outcome<R> is
   match try.on f
-    e error => fuzion.std.panic $e
+    e error => panic $e
     r R => r

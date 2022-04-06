@@ -192,7 +192,7 @@ simpleRandomProviders is
      s string =>
        match s.parseU64
          seed u64 => simpleRandomProvider seed 98765432109876543
-         e error  => fuzion.std.panic "Failed to parse value in env var '$random_seed_env_var': $e"
+         e error  => panic "Failed to parse value in env var '$random_seed_env_var': $e"
      nil      => timeSeeded
 
 

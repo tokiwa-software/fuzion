@@ -82,7 +82,7 @@ outcome<T> : choice<T, error /* ...  NYI: this should be open generic! */> is
       safety: outcome.this??
   is
     outcome.this ? v T   => v
-                 | error => fuzion.std.panic "outcome.val called on error"
+                 | error => panic "outcome.val called on error"
 
 
   # error of an outcome that is known to contain an error
@@ -94,7 +94,7 @@ outcome<T> : choice<T, error /* ...  NYI: this should be open generic! */> is
     pre
       safety: outcome.this!!
   is
-    outcome.this ? T       => fuzion.std.panic "outcome.err called on successful outcome"
+    outcome.this ? T       => panic "outcome.err called on successful outcome"
                  | e error => e
 
 

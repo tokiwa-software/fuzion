@@ -126,7 +126,7 @@ is
           .asStream
           .filter         (o -> o??)
           .map<tuple<K,V>>(o -> match o
-                                  nil     => fuzion.std.panic "filter failed"
+                                  nil     => panic "filter failed"
                                   t tuple => t)
     res
 

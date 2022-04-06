@@ -59,10 +59,10 @@ f64(val f64) : float<f64>, f64s is
     pre
       safety: f64.this >= f64s.from_i64 i64.min && f64.this <= from_i64 i64.max
     is
-      fuzion.std.panic "NYI: f64.as_i64"
+      panic "NYI: f64.as_i64"
   as_f32 f32
     is
-      fuzion.std.panic "NYI: f64.as_f32"
+      panic "NYI: f64.as_f32"
 
 
   # casting bit representation to u64
