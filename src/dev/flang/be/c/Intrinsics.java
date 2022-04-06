@@ -390,7 +390,10 @@ class Intrinsics extends ANY
       case "Object.asString"     :
         {
           var res = new CIdent("res");
-          return CStmnt.seq(c.constString("NYI: Object.asString".getBytes(StandardCharsets.UTF_8), res),
+          var clname = c._fuir.clazzAsString(c._fuir.clazzOuterClazz(cl));
+          var instname = "instance[" + clname + "]";
+          var instchars = instname.getBytes(StandardCharsets.UTF_8);
+          return CStmnt.seq(c.constString(instchars, res),
                             res.castTo(c._types.clazz(rc)).ret());
 
         }
