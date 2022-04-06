@@ -3158,7 +3158,8 @@ env         : simpletype dot "env"
    */
   Env env()
   {
-    var t = simpletype(true);
+    var t = simpletype(null);
+    skipDot();
     var e = new Env(posObject(), t);
     match(Token.t_env, "env");
     return e;
@@ -3185,7 +3186,7 @@ env         : simpletype dot "env"
    */
   boolean skipEnvPrefix()
   {
-    return skipSimpletype(true) && skip(Token.t_env);
+    return skipSimpletype() && skipDot() && skip(Token.t_env);
   }
 
 
@@ -3524,7 +3525,7 @@ typeOpt     : type
     SourcePosition pos = posObject();
     if (skip(Token.t_ref))
       {
-        result = simpletype(false);
+        result = simpletype(null);
         result.setRef();
       }
     else if (skip(Token.t_fun))
@@ -3555,7 +3556,7 @@ typeOpt     : type
       }
     else
       {
-        result = simpletype(false);
+        result = simpletype(null);
         if (skip("->"))
           {
             result = Type.funType(pos, type(), new List<>(result));
@@ -3576,7 +3577,7 @@ typeOpt     : type
     boolean result;
     if (skip(Token.t_ref))
       {
-        result = skipSimpletype(false);
+        result = skipSimpletype();
       }
     else if (skip(Token.t_fun))
       {
@@ -3600,7 +3601,7 @@ typeOpt     : type
       }
     else
       {
-        result = skipSimpletype(false) && (!skip("->") || skipSimpletype(false));
+        result = skipSimpletype() && (!skip("->") || skipSimpletype());
       }
     return result;
   }
@@ -3609,27 +3610,50 @@ typeOpt     : type
   /**
    * Parse simpletype
    *
-simpletype  : name actualGens
-              ( dot simpletype
-              |
-              )
+   * @param lhs the left hand side for this type that was already parsed, null
+   * if none.
+   *
+simpletype  : name actualGens typeTail
+            | "type"
             ;
    */
-  Type simpletype(boolean expectEnv)
+  Type simpletype(Type lhs)
   {
-    Type result = null;
-    do
+    var p = posObject();
+    return skip(Token.t_type)
+      ?          new Type(p, "#type", Type.NONE,    lhs)
+      : typeTail(new Type(p, name(),  actualGens(), lhs));
+  }
+
+
+  /**
+   * Parse typeTail
+   *
+typeTail    : dot simpletype
+            |
+            ;
+   */
+  Type typeTail(Type lhs)
+  {
+    return !isDotEnv() && skipDot() ? simpletype(lhs)
+                                    : lhs;
+  }
+
+
+  /**
+   * Check if the current position is a dot followed by "env".  Does not change
+   * the position of the parser.
+   *
+   * @return true iff the next token(s) is a dot followed by "env"
+   */
+  boolean isDotEnv()
+  {
+    if (isDot())
       {
-        if (result == null || !expectEnv || current() != Token.t_env)
-          {
-            result = new Type(posObject(),
-                              name(),
-                              actualGens(),
-                              result);
-          }
+        var f = fork();
+        return f.skipDot() && f.skip(Token.t_env);
       }
-    while (skipDot());
-    return result;
+    return false;
   }
 
 
@@ -3639,18 +3663,22 @@ simpletype  : name actualGens
    * @return true iff the next token(s) is a simpletype, otherwise no simpletype
    * was found and the parser/lexer is at an undefined position.
    */
-  boolean skipSimpletype(boolean expectEnv)
+  boolean skipSimpletype()
   {
     boolean result = false;
-    do
-      {
-        if (!result || !expectEnv || current() != Token.t_env)
-          {
-            result = skipName() && skipActualGens();
-          }
-      }
-    while (result && skipDot());
-    return result;
+    return skip(Token.t_type) || skipName() && skipActualGens() && skipTypeTail();
+  }
+
+
+  /**
+   * Check if the current position is a typeTail and skip it.
+   *
+   * @return true iff the next token(s) is a typeTail, otherwise no typeTail
+   * was found and the parser/lexer is at an undefined position.
+   */
+  boolean skipTypeTail()
+  {
+    return isDotEnv() || !skipDot() || skipSimpletype();
   }
 
 
@@ -3763,6 +3791,15 @@ dot         : "."      // either preceded by white space or not followed by whit
           }
       }
     return result;
+  }
+
+
+  /**
+   * Check if current is "." but not a fullStop.
+   */
+  boolean isDot()
+  {
+    return !isFullStop() && isOperator('.');
   }
 
 
