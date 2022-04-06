@@ -38,62 +38,56 @@ floating_point_math is
 
   generic_tests<T: float<T>>(a T) is
 
-    zero := a.zero
-    one := a.one
-    two := one + one
-    three := two + one
-    four := two + two
-
     # isNaN
     chck (a.isNaN a.NaN)                                                   "{a.name}: isNaN NaN"
-    chck (!a.isNaN a.zero)                                                 "{a.name}: isNaN zero"
+    chck (!a.isNaN a.zero)                                                 "{a.name}: isNaN 0"
     chck (!a.isNaN a.π)                                                    "{a.name}: isNaN π"
     chck (!a.isNaN a.infinity)                                             "{a.name}: isNaN infinity"
 
     # sqrt
-    chck (a.sqrt (two * two) == two)                                       "{a.name}: sqrt (2*2) = 2"
+    chck (a.sqrt (a.two * a.two) == a.two)                                 "{a.name}: sqrt (2*2) = 2"
 
     # exponentation / logarithm
-    chck (a.exp zero   == one)                                             "{a.name}: exp 0 = 1"
-    chck (a.exp one    == a.ℇ)                                             "{a.name}: exp 1 = ℇ"
-    chck (a.log one    == zero)                                            "{a.name}: log 1 = 0"
+    chck (a.exp a.zero   == a.one)                                         "{a.name}: exp 0 = 1"
+    chck (a.exp a.one    == a.ℇ)                                           "{a.name}: exp 1 = ℇ"
+    chck (a.log a.one    == a.zero)                                        "{a.name}: log 1 = 0"
 
     # trigonometric
-    chck (a.sin zero   == zero)                                            "{a.name}: sin 0  = 0"
+    chck (a.sin a.zero   == a.zero)                                        "{a.name}: sin 0  = 0"
     chck (a.sin a.π    <  a.epsilon)                                       "{a.name}: sin π  ~= 0"
-    chck (a.cos zero   == one)                                             "{a.name}: cos 0  = 1"
-    chck (a.cos a.π    == -one)                                            "{a.name}: cos π  = -1"
-    chck (a.tan zero   == zero)                                            "{a.name}: tan 0  = 0"
-    chck (a.asin zero  == zero)                                            "{a.name}: asin 0 = 0"
-    chck (a.acos one   == zero)                                            "{a.name}: acos 1 = 0"
-    chck (a.atan zero  == zero)                                            "{a.name}: atan 0 = 0"
+    chck (a.cos a.zero   == a.one)                                         "{a.name}: cos 0  = 1"
+    chck (a.cos a.π      == -a.one)                                        "{a.name}: cos π  = -1"
+    chck (a.tan a.zero   == a.zero)                                        "{a.name}: tan 0  = 0"
+    chck (a.asin a.zero  == a.zero)                                        "{a.name}: asin 0 = 0"
+    chck (a.acos a.one   == a.zero)                                        "{a.name}: acos 1 = 0"
+    chck (a.atan a.zero  == a.zero)                                        "{a.name}: atan 0 = 0"
 
     # atan2
-    chck (a.isNaN (a.atan2 a.NaN a.one))                                   "{a.name}: atan2 NaN one               = NaN          "
-    chck (a.isNaN (a.atan2 a.one a.NaN))                                   "{a.name}: atan2 one NaN               = NaN          "
-    chck (a.atan2 +a.zero a.one             == +a.zero)                    "{a.name}: atan2 +zero one             = +zero        "
-    chck (a.atan2 -a.zero a.one             == -a.zero)                    "{a.name}: atan2 -zero one             = -zero        "
-    chck (a.atan2 +a.zero -a.one            == +a.π)                       "{a.name}: atan2 +zero -one            = +π           "
-    chck (a.atan2 -a.zero -a.one            == -a.π)                       "{a.name}: atan2 -zero -one            = -π           "
-    chck (a.atan2 a.one a.zero              == +a.π/a.two)                 "{a.name}: atan2 one zero              = +π/two       "
-    chck (a.atan2 -a.one a.zero             == -a.π/a.two)                 "{a.name}: atan2 -one zero             = -π/two       "
-    chck (a.atan2 +a.infinity +a.infinity   == +a.π/four)                  "{a.name}: atan2 +infinity +infinity   = +π/four      "
-    chck (a.atan2 -a.infinity +a.infinity   == -a.π/four)                  "{a.name}: atan2 -infinity +infinity   = -π/four      "
-    chck (a.atan2 +a.infinity -a.infinity   == three*a.π/four)             "{a.name}: atan2 +infinity -infinity   = three*π/four "
-    chck (a.atan2 -a.infinity -a.infinity   == -three*a.π/four)            "{a.name}: atan2 -infinity -infinity   = -three*π/four"
-    chck (a.atan2 a.one +a.infinity         == a.zero)                     "{a.name}: atan2 one +infinity         = zero         "
-    chck (a.atan2 a.one -a.infinity         == +a.π)                       "{a.name}: atan2 one -infinity         = +π           "
-    chck (a.atan2 -a.one -a.infinity        == -a.π)                       "{a.name}: atan2 -one -infinity        = -π           "
-    chck (a.atan2 +a.infinity a.one         == +a.π/a.two)                 "{a.name}: atan2 +infinity one         = +π/two       "
-    chck (a.atan2 -a.infinity a.one         == -a.π/a.two)                 "{a.name}: atan2 -infinity one         = -π/two       "
+    chck (a.isNaN (a.atan2 a.NaN a.one))                                        "{a.name}: atan2 NaN 1            = NaN        "
+    chck (a.isNaN (a.atan2 a.one a.NaN))                                        "{a.name}: atan2 1 NaN            = NaN        "
+    chck (a.atan2 +a.zero a.one             == +a.zero)                         "{a.name}: atan2 +0 1             = +0         "
+    chck (a.atan2 -a.zero a.one             == -a.zero)                         "{a.name}: atan2 -0 1             = -0         "
+    chck (a.atan2 +a.zero -a.one            == +a.π)                            "{a.name}: atan2 +0 -1            = +π         "
+    chck (a.atan2 -a.zero -a.one            == -a.π)                            "{a.name}: atan2 -0 -1            = -π         "
+    chck (a.atan2 a.one a.zero              == +a.π/a.two)                      "{a.name}: atan2 1 0              = +π/two     "
+    chck (a.atan2 -a.one a.zero             == -a.π/a.two)                      "{a.name}: atan2 -1 0             = -π/two     "
+    chck (a.atan2 +a.infinity +a.infinity   == +a.π/a.from_u32(4))              "{a.name}: atan2 +infinity +infinity   = +π/4  "
+    chck (a.atan2 -a.infinity +a.infinity   == -a.π/a.from_u32(4))              "{a.name}: atan2 -infinity +infinity   = -π/4  "
+    chck (a.atan2 +a.infinity -a.infinity   == a.from_u32(3)*a.π/a.from_u32(4)) "{a.name}: atan2 +infinity -infinity   = 3*π/4 "
+    chck (a.atan2 -a.infinity -a.infinity   == -a.from_u32(3)*a.π/a.from_u32(4))"{a.name}: atan2 -infinity -infinity   = -3*π/4"
+    chck (a.atan2 a.one +a.infinity         == a.zero)                          "{a.name}: atan2 1 +infinity         = 0       "
+    chck (a.atan2 a.one -a.infinity         == +a.π)                            "{a.name}: atan2 1 -infinity         = +π      "
+    chck (a.atan2 -a.one -a.infinity        == -a.π)                            "{a.name}: atan2 -1 -infinity        = -π      "
+    chck (a.atan2 +a.infinity a.one         == +a.π/a.two)                      "{a.name}: atan2 +infinity 1         = +π/two  "
+    chck (a.atan2 -a.infinity a.one         == -a.π/a.two)                      "{a.name}: atan2 -infinity 1         = -π/two  "
 
     # hyperbolicus
-    chck (a.sinh zero   == zero)                                           "{a.name}: sinh  0 = 0"
-    chck (a.cosh zero   == one)                                            "{a.name}: cosh  0 = 1"
-    chck (a.tanh zero   == zero)                                           "{a.name}: tanh  0 = 0"
-    chck (a.asinh zero  == zero)                                           "{a.name}: asinh 0 = 0"
-    chck (a.acosh one   == zero)                                           "{a.name}: acosh 1 = 0"
-    chck (a.atanh zero  == zero)                                           "{a.name}: atanh 0 = 0"
+    chck (a.sinh a.zero   == a.zero)                                           "{a.name}: sinh  0 = 0"
+    chck (a.cosh a.zero   == a.one)                                            "{a.name}: cosh  0 = 1"
+    chck (a.tanh a.zero   == a.zero)                                           "{a.name}: tanh  0 = 0"
+    chck (a.asinh a.zero  == a.zero)                                           "{a.name}: asinh 0 = 0"
+    chck (a.acosh a.one   == a.zero)                                           "{a.name}: acosh 1 = 0"
+    chck (a.atanh a.zero  == a.zero)                                           "{a.name}: atanh 0 = 0"
 
 
   generic_tests f32s.zero
