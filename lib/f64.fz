@@ -96,6 +96,8 @@ f64s : floats<f64> is
 
   from_i64(v i64) f64 is intrinsic
 
+  redef isNaN(val f64) bool is intrinsic
+
   redef ℇ => 2.7182818284590452354
 
   redef π => 3.14159265358979323846
@@ -118,7 +120,9 @@ f64s : floats<f64> is
   redef asin(val f64) f64 is intrinsic
   redef acos(val f64) f64 is intrinsic
   redef atan(val f64) f64 is intrinsic
+  redef atan2(y f64, x f64) f64 is intrinsic
 
   redef sinh(val f64) f64 is intrinsic
   redef cosh(val f64) f64 is intrinsic
   redef tanh(val f64) f64 is intrinsic
+

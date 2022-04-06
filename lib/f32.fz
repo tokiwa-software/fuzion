@@ -95,6 +95,8 @@ f32s : floats<f32> is
 
   from_i64(v i64) f32 is intrinsic
 
+  redef isNaN(val f32) bool is intrinsic
+
   redef ℇ => f32 2.7182818284590452354
 
   redef π => f32 3.14159265358979323846
@@ -116,6 +118,7 @@ f32s : floats<f32> is
   redef asin(val f32) f32 is intrinsic
   redef acos(val f32) f32 is intrinsic
   redef atan(val f32) f32 is intrinsic
+  redef atan2(y f32, x f32) f32 is intrinsic
 
   redef sinh(val f32) f32 is intrinsic
   redef cosh(val f32) f32 is intrinsic
