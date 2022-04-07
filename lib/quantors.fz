@@ -40,16 +40,16 @@ quantors is
   # longer need this code duplication here:
   #   forAll<A...>(f Function<bool, A>) bool is intrinsic
   #
-  forAll  <A                  >(f Function<bool, A                           >) bool is intrinsic
-  forAll2 <A,A                >(f Function<bool, A, A                        >) bool is intrinsic
-  forAll3 <A,A,A              >(f Function<bool, A, A, A                     >) bool is intrinsic
-  forAll4 <A,A,A,A            >(f Function<bool, A, A, A, A                  >) bool is intrinsic
-  forAll5 <A,A,A,A,A          >(f Function<bool, A, A, A, A, A               >) bool is intrinsic
-  forAll6 <A,A,A,A,A,A        >(f Function<bool, A, A, A, A, A, A            >) bool is intrinsic
-  forAll7 <A,A,A,A,A,A,A      >(f Function<bool, A, A, A, A, A, A, A         >) bool is intrinsic
-  forAll8 <A,A,A,A,A,A,A,A    >(f Function<bool, A, A, A, A, A, A, A, A      >) bool is intrinsic
-  forAll9 <A,A,A,A,A,A,A,A,A  >(f Function<bool, A, A, A, A, A, A, A, A, A   >) bool is intrinsic
-  forAll10<A,A,A,A,A,A,A,A,A,A>(f Function<bool, A, A, A, A, A, A, A, A, A, A>) bool is intrinsic
+  forAll  <A0                           >(f Function<bool, A0                                    >) bool is intrinsic
+  forAll2 <A0,A1                        >(f Function<bool, A0, A1                                >) bool is intrinsic
+  forAll3 <A0,A1,A2                     >(f Function<bool, A0, A1, A2                            >) bool is intrinsic
+  forAll4 <A0,A1,A2,A3                  >(f Function<bool, A0, A1, A2, A3                        >) bool is intrinsic
+  forAll5 <A0,A1,A2,A3,A4               >(f Function<bool, A0, A1, A2, A3, A4                    >) bool is intrinsic
+  forAll6 <A0,A1,A2,A3,A4,A5            >(f Function<bool, A0, A1, A2, A3, A4, A5                >) bool is intrinsic
+  forAll7 <A0,A1,A2,A3,A4,A5,A6         >(f Function<bool, A0, A1, A2, A3, A4, A5, A6            >) bool is intrinsic
+  forAll8 <A0,A1,A2,A3,A4,A5,A6,A7      >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7        >) bool is intrinsic
+  forAll9 <A0,A1,A2,A3,A4,A5,A6,A7,A8   >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8    >) bool is intrinsic
+  forAll10<A0,A1,A2,A3,A4,A5,A6,A7,A8,A9>(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9>) bool is intrinsic
 
   # short-hand forAll using '∀' symbol
   prefix ∀ <A>(f Function<bool, A>) => forAll f
@@ -63,16 +63,16 @@ quantors is
   # longer need this code duplication here:
   #   exists<A...>(f Function<bool, A>) bool is intrinsic
   #
-  exists  <A                  >(f Function<bool, A                           >) bool is intrinsic
-  exists2 <A,A                >(f Function<bool, A, A                        >) bool is intrinsic
-  exists3 <A,A,A              >(f Function<bool, A, A, A                     >) bool is intrinsic
-  exists4 <A,A,A,A            >(f Function<bool, A, A, A, A                  >) bool is intrinsic
-  exists5 <A,A,A,A,A          >(f Function<bool, A, A, A, A, A               >) bool is intrinsic
-  exists6 <A,A,A,A,A,A        >(f Function<bool, A, A, A, A, A, A            >) bool is intrinsic
-  exists7 <A,A,A,A,A,A,A      >(f Function<bool, A, A, A, A, A, A, A         >) bool is intrinsic
-  exists8 <A,A,A,A,A,A,A,A    >(f Function<bool, A, A, A, A, A, A, A, A      >) bool is intrinsic
-  exists9 <A,A,A,A,A,A,A,A,A  >(f Function<bool, A, A, A, A, A, A, A, A, A   >) bool is intrinsic
-  exists10<A,A,A,A,A,A,A,A,A,A>(f Function<bool, A, A, A, A, A, A, A, A, A, A>) bool is intrinsic
+  exists  <A0                           >(f Function<bool, A0                                    >) bool is intrinsic
+  exists2 <A0,A1                        >(f Function<bool, A0, A1                                >) bool is intrinsic
+  exists3 <A0,A1,A2                     >(f Function<bool, A0, A1, A2                            >) bool is intrinsic
+  exists4 <A0,A1,A2,A3                  >(f Function<bool, A0, A1, A2, A3                        >) bool is intrinsic
+  exists5 <A0,A1,A2,A3,A4               >(f Function<bool, A0, A1, A2, A3, A4                    >) bool is intrinsic
+  exists6 <A0,A1,A2,A3,A4,A5            >(f Function<bool, A0, A1, A2, A3, A4, A5                >) bool is intrinsic
+  exists7 <A0,A1,A2,A3,A4,A5,A6         >(f Function<bool, A0, A1, A2, A3, A4, A5, A6            >) bool is intrinsic
+  exists8 <A0,A1,A2,A3,A4,A5,A6,A7      >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7        >) bool is intrinsic
+  exists9 <A0,A1,A2,A3,A4,A5,A6,A7,A8   >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8    >) bool is intrinsic
+  exists10<A0,A1,A2,A3,A4,A5,A6,A7,A8,A9>(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9>) bool is intrinsic
 
   # short-hand exists using '∃' symbol
   prefix ∃ <A>(f Function<bool, A>) => exists f
