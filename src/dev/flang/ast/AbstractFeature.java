@@ -60,6 +60,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     Routine,
     Field,
+    TypeParameter,
     Intrinsic,
     Abstract,
     Choice;
@@ -117,6 +118,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public Object _frontEndData;
 
 
+  /**
+   * cached result of valueArguments();
+   */
+  private List<AbstractFeature> _valueArguments = null;
+
+
   /*-----------------------------  methods  -----------------------------*/
 
   /**
@@ -134,6 +141,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public boolean isAbstract() { return kind() == Kind.Abstract; }
   public boolean isIntrinsic() { return kind() == Kind.Intrinsic; }
   public boolean isChoice() { return kind() == Kind.Choice; }
+  public boolean isTypeParameter() { return kind() == Kind.TypeParameter; }
 
 
   /**
@@ -1048,6 +1056,28 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
   // in FUIR or later
   public abstract Contract contract();
+
+
+  /**
+   * List of arguments that are values, i.e., not type parameters or effects.
+   */
+  public List<AbstractFeature> valueArguments()
+  {
+    if (_valueArguments == null)
+      {
+        var args = arguments();
+        if (args.stream().anyMatch(a -> a.isTypeParameter()))
+          {
+            _valueArguments = new List<>();
+            _valueArguments.addAll(args.stream().filter(a -> !a.isTypeParameter()).toList());
+          }
+        else
+          {
+            _valueArguments = args;
+          }
+      }
+    return _valueArguments;
+  }
 
 }
 

@@ -28,7 +28,7 @@
 # wrappingInteger is the abstract ancestor of integer numbers that have min and
 # max values and operations with wrap-around semantics.
 #
-wrappingInteger<T: wrappingInteger<T>> : integer<T>, wrappingIntegers<T> is
+wrappingInteger(redef W wrappingInteger<W>.type) : integer<W>, wrappingIntegers<W> is
 
   # overflow checking
 
@@ -36,35 +36,35 @@ wrappingInteger<T: wrappingInteger<T>> : integer<T>, wrappingIntegers<T> is
   wrappedOnNeg bool is abstract
 
   # would addtion thiz + other cause an overflow or underflow?
-  overflowOnAdd(other T) bool is abstract
-  underflowOnAdd(other T) bool is abstract
-  wrappedOnAdd(other T) => overflowOnAdd(other) || underflowOnAdd(other)
+  overflowOnAdd(other W) bool is abstract
+  underflowOnAdd(other W) bool is abstract
+  wrappedOnAdd(other W) => overflowOnAdd(other) || underflowOnAdd(other)
 
   # would subtraction thiz - other cause an overflow or underflow?
-  overflowOnSub(other T) bool is abstract
-  underflowOnSub(other T) bool is abstract
-  wrappedOnSub(other T) => overflowOnSub(other) || underflowOnSub(other)
+  overflowOnSub(other W) bool is abstract
+  underflowOnSub(other W) bool is abstract
+  wrappedOnSub(other W) => overflowOnSub(other) || underflowOnSub(other)
 
   # would multiplication thiz * other cause an overflow or underflow?
-  overflowOnMul(other T) bool is abstract
-  underflowOnMul(other T) bool is abstract
-  wrappedOnMul(other T) => overflowOnMul(other) || underflowOnMul(other)
+  overflowOnMul(other W) bool is abstract
+  underflowOnMul(other W) bool is abstract
+  wrappedOnMul(other W) => overflowOnMul(other) || underflowOnMul(other)
 
   # preconditions used in 'numeric' for basic operations: true if the
   # operation is permitted for the given values
   prefix -! => !wrappedOnNeg
-  infix +! (other T) => !(overflowOnAdd other) && !(underflowOnAdd other)
-  infix -! (other T) => !(overflowOnSub other) && !(underflowOnSub other)
-  infix *! (other T) => !(overflowOnMul other) && !(underflowOnMul other)
-  infix /! (other T) => true  # other != zero is checked in separate condition
-  infix %! (other T) => true  # other != zero is checked in separate condition
-  infix **!(other T) => !(overflowOnExp other)
+  infix +! (other W) => !(overflowOnAdd other) && !(underflowOnAdd other)
+  infix -! (other W) => !(overflowOnSub other) && !(underflowOnSub other)
+  infix *! (other W) => !(overflowOnMul other) && !(underflowOnMul other)
+  infix /! (other W) => true  # other != zero is checked in separate condition
+  infix %! (other W) => true  # other != zero is checked in separate condition
+  infix **!(other W) => !(overflowOnExp other)
 
   # neg, add, sub, mul with wrap-around semantics
-  prefix -° T is abstract
-  infix +° (other T) T is abstract
-  infix -° (other T) T is abstract
-  infix *° (other T) T is abstract
+  prefix -° W is abstract
+  infix +° (other W) W is abstract
+  infix -° (other W) W is abstract
+  infix *° (other W) W is abstract
 
   isMin => thiz == min
   isMax => thiz == max
@@ -72,50 +72,50 @@ wrappingInteger<T: wrappingInteger<T>> : integer<T>, wrappingIntegers<T> is
   # basic operations with runtime error on overflow
 
   # negation, with check for overflow
-  redef prefix - T
+  redef prefix - W
     pre
       debug: !wrappedOnNeg
   is -° thiz
 
   # addition, with check for overflow
-  redef infix +  (other T) T
+  redef infix +  (other W) W
     pre
       debug: !overflowOnAdd(other),
       debug: !underflowOnAdd(other)
   is thiz +° other
 
   # substraction, with check for overflow
-  redef infix -  (other T) T
+  redef infix -  (other W) W
     pre
       debug: !overflowOnSub(other),
       debug: !underflowOnSub(other)
   is thiz -° other
 
   # multiplication, with check for overflow
-  redef infix *  (other T) T
+  redef infix *  (other W) W
     pre
       debug: !overflowOnMul(other),
       debug: !underflowOnMul(other)
   is thiz *° other
 
   # overflow checking operations
-  redef prefix -?          numOption<T> is if wrappedOnNeg        then nil else -thiz
-  redef infix +? (other T) numOption<T> is if wrappedOnAdd(other) then nil else thiz + other
-  redef infix -? (other T) numOption<T> is if wrappedOnSub(other) then nil else thiz - other
-  redef infix *? (other T) numOption<T> is if wrappedOnMul(other) then nil else thiz * other
+  redef prefix -?          numOption<W> is if wrappedOnNeg        then nil else -thiz
+  redef infix +? (other W) numOption<W> is if wrappedOnAdd(other) then nil else thiz + other
+  redef infix -? (other W) numOption<W> is if wrappedOnSub(other) then nil else thiz - other
+  redef infix *? (other W) numOption<W> is if wrappedOnMul(other) then nil else thiz * other
 
   # saturating  operations
   redef prefix -^          => if wrappedOnNeg if thiz > zero then min else max else - thiz
-  redef infix +^ (other T) => if overflowOnAdd(other) then max else if underflowOnAdd(other) then min else thiz + other
-  redef infix -^ (other T) => if overflowOnSub(other) then max else if underflowOnSub(other) then min else thiz - other
-  redef infix *^ (other T) => if overflowOnMul(other) then max else if underflowOnMul(other) then min else thiz * other
+  redef infix +^ (other W) => if overflowOnAdd(other) then max else if underflowOnAdd(other) then min else thiz + other
+  redef infix -^ (other W) => if overflowOnSub(other) then max else if underflowOnSub(other) then min else thiz - other
+  redef infix *^ (other W) => if overflowOnMul(other) then max else if underflowOnMul(other) then min else thiz * other
 
 
   # exponentiation for positive exponent
   #
   # 'zero ** zero' is permitted and results in 'one'.
   #
-  infix ** (other T) T
+  infix ** (other W) W
     pre
       safety: other >= zero,
       debug: !overflowOnExp(other)
@@ -127,7 +127,7 @@ wrappingInteger<T: wrappingInteger<T>> : integer<T>, wrappingIntegers<T> is
   #
   # 'zero **° zero' is permitted and results in 'one'.
   #
-  infix **° (other T) T
+  infix **° (other W) W
     pre
       safety: other >= zero
   is
@@ -145,7 +145,7 @@ wrappingInteger<T: wrappingInteger<T>> : integer<T>, wrappingIntegers<T> is
   #
   # 'zero **? zero' is permitted and results in 'one'.
   #
-  infix **? (other T) numOption<T>
+  infix **? (other W) numOption<W>
     pre
       safety: other >= zero
   is
@@ -161,14 +161,14 @@ wrappingInteger<T: wrappingInteger<T>> : integer<T>, wrappingIntegers<T> is
 
   # would exponentiation 'this ** other' cause an overflow?
   #
-  overflowOnExp(other T) => (thiz **? other)!!
+  overflowOnExp(other W) => (thiz **? other)!!
 
 
   # exponentiation with saturating semantics
   #
   # 'zero **^ zero' is permitted and results in 'one'.
   #
-  infix **^ (other T) T
+  infix **^ (other W) W
     pre
       safety: other >= zero
   is
@@ -184,7 +184,7 @@ wrappingInteger<T: wrappingInteger<T>> : integer<T>, wrappingIntegers<T> is
 # wrappingIntegers -- unit type defining features related to wrappingInteger
 # but not requiring an instance
 #
-wrappingIntegers<T: wrappingInteger<T>> : numerics<T> is
+wrappingIntegers(W wrappingInteger<W>.type) : numerics<W> is
 
-  min T is abstract
-  max T is abstract
+  min W is abstract
+  max W is abstract

@@ -1083,7 +1083,7 @@ public class Call extends AbstractCall
    */
   private void resolveFormalArgumentTypes(Resolution res)
   {
-    var fargs = calledFeature_.arguments();
+    var fargs = calledFeature_.valueArguments();
     resolvedFormalArgumentTypes = fargs.size() == 0 ? Type.NO_TYPES
                                                     : new AbstractType[fargs.size()];
     Arrays.fill(resolvedFormalArgumentTypes, Types.t_ERROR);
@@ -1203,7 +1203,7 @@ public class Call extends AbstractCall
     List<AbstractType> inferredOpen = null;  // if open generics could be inferred, these are the actual open generics
     ListIterator<Expr> aargs = _actuals.listIterator();
     int count = 1; // argument count, for error messages
-    for (var frml : cf.arguments())
+    for (var frml : cf.valueArguments())
       {
         if (CHECKS) check
           (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));

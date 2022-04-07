@@ -176,8 +176,8 @@ public class FuzionConstants extends ANY
   /**
    * feature kind value for constructor routines
    */
-  public static final int MIR_FILE_KIND_CONSTRUCTOR_VALUE = 5;
-  public static final int MIR_FILE_KIND_CONSTRUCTOR_REF   = 6;
+  public static final int MIR_FILE_KIND_CONSTRUCTOR_VALUE = 6;
+  public static final int MIR_FILE_KIND_CONSTRUCTOR_REF   = 7;
 
   /**
    * The bits of feature kind that are not flags

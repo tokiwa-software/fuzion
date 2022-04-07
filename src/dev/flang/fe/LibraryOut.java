@@ -161,7 +161,7 @@ class LibraryOut extends DataOut
         // all other inner features in (alphabetical?) order.
         var innerFeatures = new List<AbstractFeature>();
         var added = new TreeSet<AbstractFeature>();
-        for (var a : f.arguments())
+        for (var a : f.valueArguments())
           {
             innerFeatures.add(a);
             added.add(a);
@@ -192,7 +192,10 @@ class LibraryOut extends DataOut
           {
             if (!added.contains(i))
               {
-                innerFeatures.add(i);
+                if (!i.isTypeParameter()) // NYI: remove this if, save type parameters instead of formal generics
+                  {
+                    innerFeatures.add(i);
+                  }
               }
           }
 
@@ -363,7 +366,7 @@ class LibraryOut extends DataOut
           }
       }
     if (CHECKS) check
-      (f.arguments().size() == f.featureName().argCount());
+      (f.valueArguments().size() == f.featureName().argCount());
     if (!f.isConstructor() && !f.isChoice())
       {
         type(f.resultType());

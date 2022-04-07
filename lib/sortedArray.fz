@@ -35,8 +35,10 @@
 # partially sorted arrays are thrown away.  This might be improved to use an
 # in-place heap sort to bring allocated memory down to O(n).
 #
-sortedArray<T>
+sortedArray
   (
+  # array element type
+  redef T type,
 
   # orginal, unsorted Sequence
   #

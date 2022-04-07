@@ -25,8 +25,8 @@
 
 # hasInterval -- feature for integers that can define an interval
 #
-hasInterval<T: hasInterval<T>> : integer<T> is
-  max  T is abstract
+hasInterval(H hasInterval<H>.type) : integer<H> is
+  max  H is abstract
 /*
   zero T is abstract
   one  T is abstract
@@ -45,30 +45,30 @@ hasInterval<T: hasInterval<T>> : integer<T> is
   #   a <  b: the interval from a to b, both inclusive
   #   a == b: the interval containing only one element, a
   #   a >  b: an empty interval
-  infix .. (upper T) : Set<T> is
+  infix .. (upper H) : Set<H> is
 
-    lower T is thiz
+    lower H is thiz
     # lower => hasInterval.this  # NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
 
-    size T is if lower <= upper then upper - lower + one else zero
+    size H is if lower <= upper then upper - lower + one else zero
 
     # apply function f to all elements in this interval
-    redef forAll(f T -> unit) unit is
+    redef forAll(f H -> unit) unit is
       for
         x := lower, x + one
       while x <= upper
         f x
 
     # create a stream of all the elements of this interval, in order.
-    redef asStream ref : stream<T> is
+    redef asStream ref : stream<H> is
       x := numOption lower
       redef hasNext bool is x.exists && x.val <= upper
-      redef next T is res := x.val; set x := x +? one; res
+      redef next H is res := x.val; set x := x +? one; res
 
 
     # does this range contain the given value?
     #
-    contains (e T) => lower <= e <= upper
+    contains (e H) => lower <= e <= upper
 
 
     # Create a Sequence that is stepping through this interval skipping values. For a
@@ -80,24 +80,24 @@ hasInterval<T: hasInterval<T>> : integer<T> is
     # that a negative step will produce a non-empty stream for an empty interval with
     # lower > upper!
     #
-    infix : (step T) : Set<T> is
+    infix : (step H) : Set<H> is
 
       # create a stream of all the elements of this interval, in order.
-      redef asStream ref : stream<T> is
+      redef asStream ref : stream<H> is
         x := numOption lower
         redef hasNext bool is
           (step > zero && x.exists && x.val <= upper ||
            step < zero && x.exists && x.val >= upper    )
-        redef next T is res := x.val; set x := x +? step; res
+        redef next H is res := x.val; set x := x +? step; res
 
 
       # list representation of values in this interval
       #
-      redef asList list<T> is
-        cons (head T) :  Cons<T, list<T>> is
-          tail list<T> is
+      redef asList list<H> is
+        cons (head H) :  Cons<H, list<H>> is
+          tail list<H> is
             (lower+?step ? nil    => nil
-                         | next T => (next..upper:step).asList.asList)
+                         | next H => (next..upper:step).asList.asList)
         if (step > zero && lower <= upper ||
             step < zero && lower >= upper    )
           cons lower
@@ -107,26 +107,26 @@ hasInterval<T: hasInterval<T>> : integer<T> is
 
       # does this range contain the given value?
       #
-      contains (e T) => lower <= e <= upper && ((e - lower) %% step)
+      contains (e H) => lower <= e <= upper && ((e - lower) %% step)
 
 
       # use map implementation from Sequence:
       #
-      map<B>(f T -> B)  => mapSequence f
+      map<B>(f H -> B)  => mapSequence f
 
 
     # create a list from this interval
     #
-    redef asList list<T> is
-      cons (head T) : Cons<T, list<T>> is
-        tail list<T> is
+    redef asList list<H> is
+      cons (head H) : Cons<H, list<H>> is
+        tail list<H> is
           if (head >= upper) nil else cons head+head.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is hasInterval<i32>, it should be i32.
       if (lower > upper) nil else cons lower
 
 
     # use map implementation from Sequence:
     #
-    map<B>(f T -> B)  => mapSequence f
+    map<B>(f H -> B)  => mapSequence f
 
 
     # string representation of this interval, e.g., "1..10"
@@ -134,7 +134,7 @@ hasInterval<T: hasInterval<T>> : integer<T> is
     redef asString => "$lower..$upper"
 
 
-  # the open interval from this to the maximum T value
+  # the open interval from this to the maximum H value
   postfix .. () infix .. is
     hasInterval.this..max
 

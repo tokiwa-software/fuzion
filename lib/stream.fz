@@ -28,7 +28,7 @@
 # NYI: Check if stream should be replaced by a lazy list, which is a choice
 # of either nil or a tuple (head, tail). This should avoid the need to store
 # mutable state.
-stream<T> ref : Sequence<T> is
+stream(redef T type) ref : Sequence<T> is
 
   # create a list from this stream
   #

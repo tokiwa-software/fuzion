@@ -27,7 +27,7 @@
 #
 # A Cons is a ref to a cell that contains a head and a tail
 #
-Cons<A, B> ref is
+Cons(A, B type) ref is
 
   head A is abstract
 
@@ -38,4 +38,4 @@ Cons<A, B> ref is
 #
 # A cons is a cell that contains a head and a tail
 #
-cons<A, B>(head A, tail B) : Cons<A, B> is
+cons(redef A, B type, head A, tail B) : Cons<A, B> is

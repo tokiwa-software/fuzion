@@ -29,11 +29,17 @@
 # a monadic feature that can be accessed only throuh the environment and
 # that will be replaced in the environment whenever a new instance is created.
 #
-onewayMonad<A, MA: onewayMonad<A, MA>> (
+onewayMonad(
+
+  redef A type,
+
+  OMA onewayMonad<A, OMA>.type,
+
   # action to be performed, may include code to run while this effect is installed.
   #
   redef r effectModes
-  ) : monad<A, MA>, effect r
+  ) : monad<A, OMA>, effect r
 is
 
-onewayMonads<A, MA: onewayMonad<A, MA>> : monads<A, MA> is
+onewayMonads(redef A type,
+             OMA onewayMonad<A, OMA>.type) : monads<A, OMA> is

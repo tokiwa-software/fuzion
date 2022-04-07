@@ -29,33 +29,33 @@
 # from numeric plus a devision remainder operation %, bitwise logical operations,
 # shift operations and gcd. Also, integers can be used to build fractions.
 #
-integer<T : integer<T>> : numeric<T> is
+integer(I integer<I>.type) : numeric<I> is
 
   # division remainder
-  redef infix % (other T) T
+  redef infix % (other I) I
     pre
       safety: other != zero
   is abstract
 
   # test divisibility by other
-  infix %% (other T) bool
+  infix %% (other I) bool
     pre
       safety: other != zero
   is
     thiz % other == zero
 
   # bitwise operations
-  infix &  (other T) T is abstract
-  infix |  (other T) T is abstract
-  infix ^  (other T) T is abstract
+  infix &  (other I) I is abstract
+  infix |  (other I) I is abstract
+  infix ^  (other I) I is abstract
 
   # shift operations
-  infix >> (other T) T
+  infix >> (other I) I
     pre
       safety: other.sign >= 0
   is abstract
 
-  infix << (other T) T
+  infix << (other I) I
     pre
       safety: other.sign >= 0
   is abstract
@@ -63,7 +63,7 @@ integer<T : integer<T>> : numeric<T> is
   # greatest common divisor of this and b
   #
   # note that this assumes zero to be divisible by any positive integer.
-  gcd(b T) T
+  gcd(b I) I
     pre
       safety: sign >= 0,
       safety: b.sign >= 0
@@ -74,10 +74,10 @@ integer<T : integer<T>> : numeric<T> is
       b.gcd(thiz % b)  # tail recursion
 
   # create a fraction
-  infix /-/ (other T) => fraction thiz other
+  infix /-/ (other I) => fraction thiz other
 
   # create a fraction via unicode fraction slash \u2044 '⁄ '
-  infix ⁄ (other T) => integer.this /-/ other
+  infix ⁄ (other I) => integer.this /-/ other
 
   # the constant '2' in whatever integer implementation we have, maximum in case of overflow
   two => from_u32(2)
@@ -86,7 +86,7 @@ integer<T : integer<T>> : numeric<T> is
   ten => from_u32(10)
 
   # the value corresponding to v in whatever integer implementation we have, maximum in case of overflow
-  from_u32(v u32) T is
+  from_u32(v u32) I is
     if v == 0 zero else from_u32(v-1) +^ one
 
   # the u32 value corresponding to this
@@ -100,15 +100,15 @@ integer<T : integer<T>> : numeric<T> is
 
   # find the highest power of b that is less or equal than thiz.
   #
-  private highest(b T) T
+  private highest(b I) I
     pre
       debug: thiz.sign >= 0
     post
       debug: (thiz == zero: result == one),
       debug: (thiz != zero: thiz / b < result <= thiz)
 # NYI: original postcondition code should cause a compiler error since
-# result.infix <= expects an argument of type T while integer.this is
-# not of type T.
+# result.infix <= expects an argument of type I while integer.this is
+# not of type I.
 #
 #     integer.this != zero: integer.this / b < result <= integer.this
   is
@@ -146,7 +146,7 @@ integer<T : integer<T>> : numeric<T> is
           else
             p := -? thiz
             match p
-              v T   => ("-" + v .asString base).utf8.asStream
+              v I   => ("-" + v .asString base).utf8.asStream
               _ nil => (("-" + (-(thiz / b)).asString base) + (-(thiz % b)).asString base).utf8.asStream
 
 

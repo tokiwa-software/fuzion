@@ -762,7 +762,7 @@ hw25 is
             code.add(or);  // field clazz means assignment to field
           }
         if (CHECKS) check
-          (p.actuals().size() == p.calledFeature().arguments().size());
+          (p.actuals().size() == p.calledFeature().valueArguments().size());
         for (var i = 0; i < p.actuals().size(); i++)
           {
             var a = p.actuals().get(i);

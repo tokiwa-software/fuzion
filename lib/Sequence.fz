@@ -290,7 +290,7 @@ Sequences is
 
   # monoid of Sequences with infix concatentation operation.
   #
-  concatMonoid<T> : Monoid<Sequence<T>> is
+  concatMonoid(redef T type) : Monoid<Sequence<T>> is
 
     # associative operation
     #

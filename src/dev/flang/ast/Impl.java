@@ -46,6 +46,9 @@ public class Impl extends ANY
 
   public static final Impl FIELD = new Impl(Kind.Field);
 
+  public static final Impl TYPE_PARAMETER = new Impl(Kind.TypeParameter);
+  public static final Impl TYPE_PARAMETER_OPEN = new Impl(Kind.TypeParameterOpen);
+
   public static final Impl ABSTRACT = new Impl(Kind.Abstract);
 
   public static final Impl INTRINSIC = new Impl(Kind.Intrinsic);
@@ -89,6 +92,8 @@ public class Impl extends ANY
     FieldActual,  // an argument field with type defined by actual argument
     FieldIter,    // a field f declared as an iterator index in a loop (eg., for f in myset { print(f); } )
     Field,        // a field
+    TypeParameter,// a type parameter Field
+    TypeParameterOpen,// an open (list) type parameter Field
     RoutineDef,   // normal feature with code and implicit result type
     Routine,      // normal feature with code
     Abstract,     // an abstract feature

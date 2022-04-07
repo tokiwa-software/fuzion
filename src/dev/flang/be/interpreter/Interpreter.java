@@ -810,6 +810,11 @@ public class Interpreter extends ANY
                 result = (args) -> callOnInstance(f, innerClazz, new Instance(innerClazz), args);
               }
             break;
+          case TypeParameter:
+            {
+              result = (args) -> { throw new Error("NYI: cannot call type parameter (yet)"); };
+              break;
+            }
           default:
             throw new Error("unhandled switch case: "+f.kind());
           }
@@ -832,7 +837,7 @@ public class Interpreter extends ANY
   {
     if (PRECONDITIONS) require
       (thiz.isRoutine(),
-       args.size() == thiz.arguments().size() + 1 || thiz.hasOpenGenericsArgList() /* e.g. in call tuple<i32>(42) */
+       args.size() == thiz.valueArguments().size() + 1 || thiz.hasOpenGenericsArgList() /* e.g. in call tuple<i32>(42) */
        );
 
     cur.checkStaticClazz(staticClazz);
@@ -843,7 +848,7 @@ public class Interpreter extends ANY
 
     setOuter(thiz, staticClazz, cur, args.get(0));
     int aix = 1;
-    for (var a : thiz.arguments())
+    for (var a : thiz.valueArguments())
       {
         if (a.isOpenGenericField())
           {

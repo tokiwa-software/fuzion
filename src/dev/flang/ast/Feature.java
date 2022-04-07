@@ -517,13 +517,16 @@ public class Feature extends AbstractFeature implements Stmnt
    * @param n the name of this argument, never qualified
    *
    * @param c the contract
+   *
+   * @param i Impl.FIELD or Impl.TYPE_PARAMETER
    */
   public Feature(SourcePosition pos,
                  Visi v,
                  int m,
                  AbstractType t,
                  String n,
-                 Contract c)
+                 Contract c,
+                 Impl i)
   {
     this(pos,
          v,
@@ -534,7 +537,33 @@ public class Feature extends AbstractFeature implements Stmnt
          new List<Feature>(),
          new List<>(),
          c,
-         Impl.FIELD);
+         i);
+  }
+
+
+  /**
+   * Constructor for internally generated fields
+   *
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param v the visibility
+   *
+   * @param m the modifiers
+   *
+   * @param t the result type
+   *
+   * @param n the name of this argument, never qualified
+   *
+   * @param c the contract
+   */
+  public Feature(SourcePosition pos,
+                 Visi v,
+                 int m,
+                 AbstractType t,
+                 String n,
+                 Contract c)
+  {
+    this(pos, v, m, t, n, c, Impl.FIELD);
   }
 
 
@@ -634,9 +663,46 @@ public class Feature extends AbstractFeature implements Stmnt
         n = FuzionConstants.UNDERSCORE_PREFIX + underscoreId++;
       }
     this._qname     = qname;
+
+    // Copy FormalGenerics.list to args array a
+    // NYI: Remove, the parser could do this!
+    var a1 = new List<Feature>();
+    for (var g0 : g.list)
+      {
+        var s = g0._name;
+        var t = g0._constraint;
+        if (t == null)
+          {
+            t = new Type("Object");
+          }
+        var mp = g0.isOpen() ? Impl.TYPE_PARAMETER_OPEN
+                             : Impl.TYPE_PARAMETER;
+        a1.add(new Feature(g0._pos, Consts.VISIBILITY_LOCAL, 0, t, s, Contract.EMPTY_CONTRACT, mp));
+      }
+    a1.addAll(a);
+    a = a1;
+
+    // Recreate FormalGenerics from typeParameters
+    // NYI: Remove, FormalGenerics should use AbstractFeature.typeArguments() instead of its own list of Generics.
+    var l = new List<Generic>();
+    var open = false;
+    for (var a0 : a)
+      {
+        if (a0.isTypeParameter())
+          {
+            var at = (Type) a0.returnType().functionReturnType();
+            l.add(new Generic(a0.pos(), l.size(), a0.featureName().baseName(), at));
+            open = a0.impl() == Impl.TYPE_PARAMETER_OPEN;
+          }
+      }
+    if (l.size() > 0)
+      {
+        g = new FormalGenerics(l, open);
+      }
     this._generics  = g;
+
     this._arguments = a;
-    this._featureName = FeatureName.get(n, a.size());
+    this._featureName = FeatureName.get(n, valueArguments().size());
     this._inherits   = (i.isEmpty() &&
                         (p.kind_ != Impl.Kind.FieldActual) &&
                         (p.kind_ != Impl.Kind.FieldDef   ) &&
@@ -764,6 +830,8 @@ public class Feature extends AbstractFeature implements Stmnt
       ? Kind.Choice
       : switch (_impl.kind_) {
           case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
+          case TypeParameter                                      -> Kind.TypeParameter;
+          case TypeParameterOpen                                  -> Kind.TypeParameter;  // NYI: Open?
           case Routine, RoutineDef, Of                            -> Kind.Routine;
           case Abstract                                           -> Kind.Abstract;
           case Intrinsic                                          -> Kind.Intrinsic;
@@ -2201,7 +2269,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public FeatureName featureName()
   {
     if (CHECKS) check
-      (_arguments.size() == _featureName.argCount());
+                  (valueArguments().size() == _featureName.argCount());
     return _featureName;
   }
 

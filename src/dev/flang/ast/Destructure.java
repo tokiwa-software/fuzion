@@ -305,7 +305,7 @@ public class Destructure extends ANY implements Stmnt
         Iterator<String> names = _names.iterator();
         Iterator<Feature> fields = _fields == null ? null : _fields.iterator();
         List<String> fieldNames = new List<>();
-        for (var f : t.featureOfType().arguments())
+        for (var f : t.featureOfType().valueArguments())
           {
             // NYI: check if f is visible
             var tf = f.resultTypeIfPresent(res, Type.NONE);

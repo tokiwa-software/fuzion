@@ -69,7 +69,7 @@ public class Generic extends ANY
    * the constraint on this generic paremter, null for the implicit Object
    * constraint.
    */
-  private AbstractType _constraint;
+  AbstractType _constraint;
 
 
   /**

@@ -28,10 +28,11 @@ package dev.flang.parser;
 
 import java.nio.file.Path;
 
+import dev.flang.ast.*;
+
 import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
-import dev.flang.ast.*;
 
 
 /**
@@ -827,8 +828,12 @@ argList     : argument ( COMMA argList
 argument    : visibility
               modifiers
               argNames
-              type
+              argType
               contract
+            ;
+argType     : typeType
+            | type
+            | type dot typeType
             ;
    */
   List<Feature> formArgs()
@@ -842,11 +847,23 @@ argument    : visibility
                                     Visi v = visibility();
                                     int m = modifiers();
                                     List<String> n = argNames();
-                                    Type t = type();
+                                    Type t;
+                                    Impl i;
+                                    if (current() == Token.t_type)
+                                      {
+                                        t = new Type("Object");
+                                        i =  typeType();
+                                      }
+                                    else
+                                      {
+                                        t = type();
+                                        i = skipDot() ? typeType()
+                                                      : Impl.FIELD;
+                                      }
                                     Contract c = contract();
                                     for (String s : n)
                                       {
-                                        result.add(new Feature(pos, v, m, t, s, c));
+                                        result.add(new Feature(pos, v, m, t, s, c, i));
                                       }
                                   }
                                 while (skipComma());
@@ -854,6 +871,21 @@ argument    : visibility
                               },
                               () -> new List<Feature>()
                               );
+  }
+
+
+  /**
+   * Parse type parameter type suffix
+   *
+typeType    : "type"
+            | "type" "..."
+            ;
+   */
+  Impl typeType()
+  {
+    match(Token.t_type, "argType");
+    return splitSkip("...") ? Impl.TYPE_PARAMETER_OPEN
+                            : Impl.TYPE_PARAMETER;
   }
 
 
@@ -874,7 +906,22 @@ argument    : visibility
               {
                 visibility();
                 modifiers();
-                result = skipArgNames() && skipType();
+                result = skipArgNames();
+                if (result)
+                  {
+                    if (skip(Token.t_type))
+                      {
+                        splitSkip("...");
+                      }
+                    else
+                      {
+                        result = skipType();
+                        if (result && skipDot() && skip(Token.t_type))
+                          {
+                            splitSkip("...");
+                          }
+                      }
+                  }
                 if (result)
                   {
                     contract();
@@ -922,10 +969,26 @@ argument    : visibility
                     skipName();
                   }
                 while (skipComma());
-                if (!skipType())
+                if (skip(Token.t_type))
+                  {
+                    splitSkip("...");
+                  }
+                else if (!skipType())
                   {
                     result[0] = FormalOrActual.actual;
                     return false;
+                  }
+                else if (skipDot())
+                  {
+                    if (!skip(Token.t_type))
+                      {
+                        result[0] = FormalOrActual.actual;
+                        return false;
+                      }
+                    else
+                      {
+                        splitSkip("...");
+                      }
                   }
               }
             while (skipComma());
@@ -3614,44 +3677,35 @@ typeOpt     : type
    * if none.
    *
 simpletype  : name actualGens typeTail
-            | "type"
             ;
-   */
-  Type simpletype(Type lhs)
-  {
-    var p = posObject();
-    return skip(Token.t_type)
-      ?          new Type(p, "#type", Type.NONE,    lhs)
-      : typeTail(new Type(p, name(),  actualGens(), lhs));
-  }
-
-
-  /**
-   * Parse typeTail
-   *
 typeTail    : dot simpletype
             |
             ;
    */
-  Type typeTail(Type lhs)
+  Type simpletype(Type lhs)
   {
-    return !isDotEnv() && skipDot() ? simpletype(lhs)
-                                    : lhs;
+    do
+      {
+        lhs = new Type(posObject(), name(), actualGens(), lhs);
+      }
+    while (!isDotEnvOrType() && skipDot());
+    return lhs;
   }
 
 
   /**
-   * Check if the current position is a dot followed by "env".  Does not change
-   * the position of the parser.
+   * Check if the current position is a dot followed by "env" or "type".  Does
+   * not change the position of the parser.
    *
    * @return true iff the next token(s) is a dot followed by "env"
    */
-  boolean isDotEnv()
+  boolean isDotEnvOrType()
   {
     if (isDot())
       {
         var f = fork();
-        return f.skipDot() && f.skip(Token.t_env);
+        return f.skipDot() && (f.skip(Token.t_env ) ||
+                               f.skip(Token.t_type)    );
       }
     return false;
   }
@@ -3666,19 +3720,7 @@ typeTail    : dot simpletype
   boolean skipSimpletype()
   {
     boolean result = false;
-    return skip(Token.t_type) || skipName() && skipActualGens() && skipTypeTail();
-  }
-
-
-  /**
-   * Check if the current position is a typeTail and skip it.
-   *
-   * @return true iff the next token(s) is a typeTail, otherwise no typeTail
-   * was found and the parser/lexer is at an undefined position.
-   */
-  boolean skipTypeTail()
-  {
-    return isDotEnv() || !skipDot() || skipSimpletype();
+    return skipName() && skipActualGens() && (isDotEnvOrType() || !skipDot() || skipSimpletype());
   }
 
 

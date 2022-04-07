@@ -134,6 +134,7 @@ public class Types extends ANY
     private final AbstractType t_fuzion;
     public final AbstractType t_string;
     public final AbstractType t_conststring;
+    public final AbstractType t_type;
     public final AbstractType t_unit;
 
     /* void will be used as the initial result type of tail recursive calls of
@@ -196,6 +197,7 @@ public class Types extends ANY
       t_fuzion        = ct.type("fuzion"      , false);
       t_string        = ct.type("string"      , false);
       t_conststring   = ct.type("conststring" , false);
+      t_type          = ct.type("Type"        , false);
       t_object        = ct.type("Object"      , false);
       t_unit          = ct.type("unit"        , false);
       t_void          = ct.type("void"        , false);
@@ -242,6 +244,7 @@ public class Types extends ANY
       t_fuzion     .featureOfType().resolveTypes(res);
       t_string     .featureOfType().resolveTypes(res);
       t_conststring.featureOfType().resolveTypes(res);
+      t_type       .featureOfType().resolveTypes(res);
       t_object     .featureOfType().resolveTypes(res);
       t_unit       .featureOfType().resolveTypes(res);
       t_void       .featureOfType().resolveTypes(res);
