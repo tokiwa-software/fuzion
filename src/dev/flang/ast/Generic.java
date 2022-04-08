@@ -104,6 +104,12 @@ public class Generic extends ANY
   private final Generic _selectFrom;
 
 
+  /**
+   * The type parameter this generic corresponds to
+   */
+  private AbstractFeature _typeParameter;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -163,12 +169,17 @@ public class Generic extends ANY
    *
    * @param index the index in the formal generics declaration, starting at 0
    */
-  Generic(Feature typeParameter, int index)
+  public Generic(AbstractFeature typeParameter, int index)
   {
     this(typeParameter.pos(),
          index,
          typeParameter.featureName().baseName(),
-         typeParameter.returnType().functionReturnType());
+         null);
+    _typeParameter = typeParameter;
+    if (!typeParameter.state().atLeast(Feature.State.RESOLVED))
+      {
+        _constraint = ((Feature)typeParameter).returnType().functionReturnType();
+      }
   }
 
 
@@ -194,6 +205,7 @@ public class Generic extends ANY
     _formalGenerics = original._formalGenerics;
     _select = select;
     _selectFrom = original;
+    _typeParameter = _typeParameter;
   }
 
 
@@ -269,8 +281,9 @@ public class Generic extends ANY
     if (PRECONDITIONS) require
       (feature().state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-    var result = (_constraint == null) ? Types.resolved.t_object
-                                       : _constraint;
+    AbstractType result =_typeParameter.state().atLeast(Feature.State.RESOLVED_TYPES)
+      ? _typeParameter.resultType()
+      : ((Feature) _typeParameter).returnType().functionReturnType();
 
     if (POSTCONDITIONS) ensure
       (result != null);
@@ -397,6 +410,12 @@ public class Generic extends ANY
        i >= 0);
 
     return new Type(_pos, new Generic(this, i));
+  }
+
+
+  public AbstractFeature typeParameter()
+  {
+    return _typeParameter;
   }
 
 
