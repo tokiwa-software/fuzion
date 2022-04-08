@@ -243,6 +243,8 @@ Sequence<T> ref is
   #
   # flatMap<B>(f T -> Sequence<B>) =>
   #   asList.flatMap f
+  flatMapSequence<B>(f T -> Sequence<B>) =>
+    asList.flatMap f
 
 
   # fold the elements of this Sequence using the given monoid.
