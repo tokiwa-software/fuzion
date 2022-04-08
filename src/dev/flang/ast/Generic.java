@@ -156,6 +156,23 @@ public class Generic extends ANY
 
 
   /**
+   * Constructor for a constrainted formal generic parameter from a type
+   * parameter feature.
+   *
+   * @param typeParameter the type parameter this is made from
+   *
+   * @param index the index in the formal generics declaration, starting at 0
+   */
+  Generic(Feature typeParameter, int index)
+  {
+    this(typeParameter.pos(),
+         index,
+         typeParameter.featureName().baseName(),
+         typeParameter.returnType().functionReturnType());
+  }
+
+
+  /**
    * Constructor used by select() to create a Generic that selects on particular
    * actual generic passed to an open generic argument.
    *

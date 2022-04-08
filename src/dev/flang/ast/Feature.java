@@ -690,9 +690,8 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         if (a0.isTypeParameter())
           {
-            var at = (Type) a0.returnType().functionReturnType();
-            l.add(new Generic(a0.pos(), l.size(), a0.featureName().baseName(), at));
-            open = a0.impl() == Impl.TYPE_PARAMETER_OPEN;
+            l.add(new Generic(a0, l.size()));
+            open = open || a0.impl() == Impl.TYPE_PARAMETER_OPEN;
           }
       }
     if (l.size() > 0)
