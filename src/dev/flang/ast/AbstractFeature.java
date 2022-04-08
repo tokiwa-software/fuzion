@@ -125,6 +125,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   private List<AbstractFeature> _valueArguments = null;
 
 
+  /**
+   * cached result of typeArguments();
+   */
+  private List<AbstractFeature> _typeArguments = null;
+
+
   /*-----------------------------  methods  -----------------------------*/
 
   /**
@@ -1079,6 +1085,32 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
           }
       }
     return _valueArguments;
+  }
+
+
+  /**
+   * List of arguments that are types, i.e., not type parameters or effects.
+   */
+  public List<AbstractFeature> typeArguments()
+  {
+    if (_typeArguments == null)
+      {
+        var args = arguments();
+        if (args.stream().anyMatch(a -> a.isTypeParameter()))
+          {
+            _typeArguments = new List<>();
+            _typeArguments.addAll(args.stream().filter(a -> a.isTypeParameter()).toList());
+          }
+        else if (args.stream().anyMatch(a -> !a.isTypeParameter()))
+          {
+            _typeArguments = new List<>();
+          }
+        else
+          {
+            _typeArguments = args;
+          }
+      }
+    return _typeArguments;
   }
 
 }
