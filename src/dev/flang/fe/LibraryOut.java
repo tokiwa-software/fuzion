@@ -161,7 +161,7 @@ class LibraryOut extends DataOut
         // all other inner features in (alphabetical?) order.
         var innerFeatures = new List<AbstractFeature>();
         var added = new TreeSet<AbstractFeature>();
-        for (var a : f.valueArguments())
+        for (var a : f.arguments())
           {
             innerFeatures.add(a);
             added.add(a);
@@ -182,7 +182,7 @@ class LibraryOut extends DataOut
           {
             if (CHECKS) check
               (Errors.count() > 0 ||
-               added.size() == 0 // a choice has no arguments, no result, no outer ref
+               added.size() == f.typeArguments().size() // a choice has no arguments, no result, no outer ref, but type args
                );
             var ct = f.choiceTag();
             innerFeatures.add(ct);
@@ -357,7 +357,6 @@ class LibraryOut extends DataOut
         writeBool(f.generics().isOpen());
         for (var g : f.generics().list)
           {
-            _offsetsForGeneric.put(g, offset());
             writeName(g.name());
             type(g.constraint());
           }
@@ -422,7 +421,7 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-2 | 1      | int           | index of type                                 |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | tk==-1 | 1      | int           | index of generic argument                     |
+   *   | tk==-1 | 1      | int           | index of type parameter feature               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -457,7 +456,7 @@ class LibraryOut extends DataOut
             if (CHECKS) check
               (!t.isRef());
             writeInt(-1);
-            writeOffset(t.genericArgument());
+            writeOffset(t.genericArgument().typeParameter());
           }
         else
           {
@@ -968,24 +967,6 @@ class LibraryOut extends DataOut
 
 
   /**
-   * Generics that are referenced before being defined and hence need a fixup:
-   */
-  ArrayList<Generic> _fixUpsG = new ArrayList<>();
-
-
-  /**
-   * Positions of fixups for generics
-   */
-  ArrayList<Integer> _fixUpsGAt = new ArrayList<>();
-
-
-  /**
-   * Generic offsets in this file
-   */
-  Map<Generic, Integer> _offsetsForGeneric = new HashMap<>();
-
-
-  /**
    * Features that are referenced before being defined and hence need a fixup:
    */
   ArrayList<AbstractFeature> _fixUpsF = new ArrayList<>();
@@ -1028,22 +1009,6 @@ class LibraryOut extends DataOut
 
 
   /**
-   * Write offset of given generic, create fixup if not known yet.
-   */
-  void writeOffset(Generic g)
-  {
-    var o = _offsetsForGeneric.get(g);
-    var v = o == null ? -1 : (int) o;
-    if (o == null)
-      {
-        _fixUpsG.add(g);
-        _fixUpsGAt.add(offset());
-      }
-    writeInt(v);
-  }
-
-
-  /**
    * Write offset of given feature, create fixup if not known yet.
    */
   void writeOffset(AbstractFeature f)
@@ -1080,15 +1045,6 @@ class LibraryOut extends DataOut
    */
   private void fixUps()
   {
-    for (var i = 0; i<_fixUpsG.size(); i++)
-      {
-        var g  = _fixUpsG  .get(i);
-        var at = _fixUpsGAt.get(i);
-        var o = _offsetsForGeneric.get(g);
-        if (CHECKS) check
-          (o != null);
-        writeIntAt(at, o);
-      }
     for (var i = 0; i<_fixUpsF.size(); i++)
       {
         var g  = _fixUpsF  .get(i);

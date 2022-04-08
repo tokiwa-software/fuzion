@@ -440,75 +440,19 @@ public class LibraryModule extends Module
    */
   Generic genericArgument(int offset)
   {
-    return findGenericArgument(offset, universe(), FuzionConstants.MIR_FILE_FIRST_FEATURE_OFFSET);
-  }
-
-
-  /**
-   * Helper for genericArgument to find the Generic instance defined at offset
-   * in the InnerFeatures starting at position 'at' in this file.
-   *
-   * @param offset the offset of the Generic
-   *
-   * @param f the outer feature
-   *
-   * @param at the start of the InnerFeatures to search
-   */
-  private Generic findGenericArgument(int offset, AbstractFeature f, int at)
-  {
-    if (PRECONDITIONS) require
-      (f != null,
-       at <= offset,
-       offset < data().limit(),
-       at >= 0,
-       at < data().limit());
-
-    Generic result = null;
-    var sz = data().getInt(at);
-    if (CHECKS) check
-      (at+4+sz <= data().limit());
-    var i = at+4;
-    if (i <= offset && offset < i+sz)
+    var tp = feature(offset);
+    var o = tp.outer();
+    for (var g : o.generics().list)
       {
-        while (result == null)
+        if (g.typeParameter() == tp)
           {
-            var o = libraryFeature(i);
-            if (((featureKind(i) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0) &&
-                offset > i &&
-                offset <= featureResultTypePos(i))
-              {
-                var tai = featureTypeArgsPos(i);
-                var n = typeArgsCount(tai);
-                var j = typeArgsListPos(tai);
-                var ix = 0;
-                while (result == null && ix < n)
-                  {
-                    if (j == offset)
-                      {
-                        result = o.generics().list.get(ix);
-                      }
-                    j = typeArgNextPos(j);
-                    ix++;
-                  }
-              }
-            else
-              {
-                if (CHECKS) check
-                  (o != null);
-                var inner = featureInnerFeaturesPos(i);
-                if (inner <= offset && offset <= featureNextPos(i))
-                  {
-                    result = findGenericArgument(offset, o, inner);
-                  }
-              }
-            i = featureNextPos(i);
-            if (CHECKS) check
-              (result != null || i <= offset);
+            return g;
           }
       }
-    return result;
+    check
+      (false);
+    throw new Error();
   }
-
 
 
   /**
@@ -542,7 +486,7 @@ public class LibraryModule extends Module
             LibraryType res;
             if (k < 0)
               {
-                res = new GenericType(this, at, DUMMY_POS, genericArgument(typeGeneric(at)));
+                res = new GenericType(this, at, DUMMY_POS, genericArgument(typeTypeParameter(at)));
               }
             else
               {
@@ -1221,7 +1165,7 @@ Type
    | tk==-4   | 1      | unit          | ADDRESS
    | tk==-3   | 1      | unit          | type of universe
    | tk==-2   | 1      | int           | index of type
-   | tk==-1   | 1      | int           | index of generic argument
+   | tk==-1   | 1      | int           | index of type parameter feature
 .4+| tk>=0    | 1      | int           | index of feature of type
               | 1      | bool          | isRef
               | tk     | Type          | actual generics
@@ -1242,7 +1186,7 @@ Type
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-2 | 1      | int           | index of type                                 |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | tk==-1 | 1      | int           | index of generic argument                     |
+   *   | tk==-1 | 1      | int           | index of type parameter feature               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -1286,19 +1230,19 @@ Type
 
     return data().getInt(typeIndexPos(at));
   }
-  int typeGenericPos(int at)
+  int typeTypeParameterPos(int at)
   {
     if (PRECONDITIONS) require
       (typeKind(at) == -1);
 
     return at+4;
   }
-  int typeGeneric(int at)
+  int typeTypeParameter(int at)
   {
     if (PRECONDITIONS) require
       (typeKind(at) == -1);
 
-    return data().getInt(typeGenericPos(at));
+    return data().getInt(typeTypeParameterPos(at));
   }
   int typeFeaturePos(int at)
   {
@@ -1366,7 +1310,7 @@ Type
       }
     else if (k == -1)
       {
-        return typeGenericPos(at) + 4;
+        return typeTypeParameterPos(at) + 4;
       }
     else
       {
@@ -1851,7 +1795,7 @@ Call
     var f = libraryFeature(callCalledFeature(at));
     return f.hasOpenGenericsArgList()
       ? callNumArgsRaw(at)
-      : f.arguments().size();
+      : f.valueArguments().size();
   }
   int callNumTypeParametersPos(int at)
   {
@@ -1880,7 +1824,7 @@ Call
     var f = libraryFeature(callCalledFeature(at));
     return f.generics().isOpen()
       ? callNumTypeParametersRaw(at)
-      : f.generics().list.size();
+      : f.typeArguments().size();
   }
   int callTypeParametersPos(int at)
   {
