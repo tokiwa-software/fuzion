@@ -92,11 +92,6 @@ public class FeErrors extends AstErrors
     mainFeatureMustNot(m, "be choice");
   }
 
-  static void mainFeatureMustNotHaveGenericArguments(AbstractFeature m)
-  {
-    mainFeatureMustNot(m, "have generic arguments");
-  }
-
   static void fieldNotInitialized(MIR mir, SourcePosition pos, int af)
   {
     var afn = sqn(mir.featureAsString(af));
