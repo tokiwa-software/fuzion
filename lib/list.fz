@@ -140,6 +140,25 @@ list<A> : choice<nil, Cons<A, list<A>>>, Sequence<A> is
           tail => c.tail.map f
 
 
+  # map the list to a new list applying function f to all elements
+  # and flatten the result of f in the process
+  #
+  # This performs a lazy mapping, f is called only when the elements
+  # are taken from the list.
+  #
+  flatMap<B>(f A -> Sequence<B>) list<B> is
+    match list.this
+      _ nil  => nil
+      c Cons =>
+        match (f c.head).asList
+          _ nil => nil
+          c2 Cons =>
+            ref : Cons<B, list<B>>
+            // Cons<B, list<B>> with    # NYI: better syntax for anonymous feature
+              head => c2.head
+              tail => c2.tail ++ c.tail.flatMap<B> f
+
+
   # fold the elements of this list using the given monoid.
   #
   # e.g., to sum the elements of a list of i32, use l.fold i32.sum
