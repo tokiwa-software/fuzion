@@ -244,7 +244,7 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 000CTkkk  kkk = kind, T = has type parameters |
+   *   | true   | 1      | byte          | 00CTkkkk  k = kind, T = has type parameters   |
    *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |

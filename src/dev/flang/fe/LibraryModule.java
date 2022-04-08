@@ -710,7 +710,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | byte          | 000CTkkk  kkk = kind, T = has type parameters, C = is intrinsic constructor
+.6+| true  .6+| 1      | byte          | 00CTkkkk  k = kind, T = has type parameters, C = is intrinsic constructor
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -741,7 +741,7 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 000CTkkk  kkk = kind, T = has type parameters |
+   *   | true   | 1      | byte          | 00CTkkkk  k = kind, T = has type parameters   |
    *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
