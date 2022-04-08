@@ -413,6 +413,9 @@ public class Generic extends ANY
   }
 
 
+  /**
+   * The type parameter corresponding to this generic.
+   */
   public AbstractFeature typeParameter()
   {
     return _typeParameter;
