@@ -287,7 +287,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     if (main != null && Errors.count() == 0)
       {
-        if (main.arguments().size() != 0)
+        if (main.valueArguments().size() != 0)
           {
             FeErrors.mainFeatureMustNotHaveArguments(main);
           }
