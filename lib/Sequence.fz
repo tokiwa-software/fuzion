@@ -80,6 +80,13 @@ Sequence<T> ref is
     => asList.forceHead
 
 
+  # get the head of this list or default
+  #
+  first(default T)
+    =>
+      if isEmpty then default else asList.forceHead
+
+
   # get the last element of this list, panic if list is empty
   #
   # This may take time in O(count), in particular, it may not terminate
