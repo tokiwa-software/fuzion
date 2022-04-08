@@ -132,6 +132,20 @@ public class AstErrors extends ANY
   {
     return code(f.qualifiedName() + fg);
   }
+  public static String sfn(List<AbstractFeature> fs)
+  {
+    int c = 0;
+    StringBuilder sb = new StringBuilder();
+    for (var f : fs)
+      {
+        c++;
+        sb.append(c == 1         ? "" :
+                  c == fs.size() ? " and "
+                                 : ", ");
+        sb.append(s(f));
+      }
+    return sb.toString();
+  }
   static String s(List<AbstractType> l)
   {
     return type(l.toString());
