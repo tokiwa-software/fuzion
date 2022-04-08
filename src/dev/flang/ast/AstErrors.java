@@ -392,7 +392,7 @@ public class AstErrors extends ANY
                                              AbstractType frmlT,
                                              Expr value)
   {
-    var frmls = calledFeature.arguments().iterator();
+    var frmls = calledFeature.valueArguments().iterator();
     AbstractFeature frml = null;
     int c;
     for (c = 0; c <= count && frmls.hasNext(); c++)
@@ -478,7 +478,7 @@ public class AstErrors extends ANY
     int fsz = call.resolvedFormalArgumentTypes.length;
     boolean ferror = false;
     StringBuilder fstr = new StringBuilder();
-    var fargs = call.calledFeature().arguments().iterator();
+    var fargs = call.calledFeature().valueArguments().iterator();
     AbstractFeature farg = null;
     for (var t : call.resolvedFormalArgumentTypes)
       {
