@@ -1242,7 +1242,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         for (var i = 0; i < n; i++)
           {
             var a = c.actuals().get(i);
-            if (i >= cf.arguments().size())
+            if (i >= cf.valueArguments().size())
               {
                 if (CHECKS) check
                   (Errors.count() > 0);
