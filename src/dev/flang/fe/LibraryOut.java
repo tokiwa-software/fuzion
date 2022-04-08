@@ -192,10 +192,7 @@ class LibraryOut extends DataOut
           {
             if (!added.contains(i))
               {
-                if (!i.isTypeParameter()) // NYI: remove this if, save type parameters instead of formal generics
-                  {
-                    innerFeatures.add(i);
-                  }
+                innerFeatures.add(i);
               }
           }
 
