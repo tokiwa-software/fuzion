@@ -127,9 +127,9 @@ floats(F float<F>.type) : numerics<F> is
   cosh (val F) F is abstract
   tanh (val F) F is abstract
 
+
   # arcus hyperbolicus
 
-  two => one + one
   asinh(val F) F is
     # ln(x+sqrt(x^2+1))
     log (val + sqrt (val ** two + one))

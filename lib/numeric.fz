@@ -134,6 +134,35 @@ numeric(redef T numeric<T>.type) : hasHash<T>, ordered<T>, numerics<T> is
   max(other T) T is if (numeric.this >= other) thiz else other
 
 
+  # the u32 value corresponding to this
+  # note: potential fraction will be discarded
+  to_u32 u32
+    pre
+      debug: thiz >= zero
+  is
+    if (thiz >= one) ((thiz - one).to_u32 + 1)
+    else 0
+
+
+  # find the highest power of b that is less or equal than thiz.
+  #
+  private highest(b T) T
+    pre
+      debug: thiz.sign >= 0
+    post
+      debug: (thiz == zero: result == one),
+      debug: (thiz != zero: thiz / b < result <= thiz)
+  # NYI: original postcondition code should cause a compiler error since
+  # result.infix <= expects an argument of type T while integer.this is
+  # not of type T.
+  #
+  #     integer.this != zero: integer.this / b < result <= integer.this
+  is
+    for
+      bs := one, bs * b
+    while thiz / b >= bs
+
+
   # is this part of given set
   #
   # NYI: infix operators currently always use dynamic binding on the lhs and pass
@@ -167,6 +196,16 @@ numerics<T : numeric<T>> is
   # identity element for 'infix *'
   #
   one  T is abstract
+
+  # the constant '2' in whatever integer implementation we have, maximum in case of overflow
+  two => from_u32(2)
+
+  # the constant '10' in whatever integer implementation we have, maximum in case of overflow
+  ten => from_u32(10)
+
+  # the value corresponding to v in whatever integer implementation we have, maximum in case of overflow
+  from_u32(v u32) T is
+    if v == 0 zero else from_u32(v-1) +^ one
 
   # monoid of numeric with infix + operation.  Will create sum of all elements it
   # is applied to.

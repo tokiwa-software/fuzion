@@ -79,43 +79,6 @@ integer(I integer<I>.type) : numeric<I> is
   # create a fraction via unicode fraction slash \u2044 '⁄ '
   infix ⁄ (other I) => integer.this /-/ other
 
-  # the constant '2' in whatever integer implementation we have, maximum in case of overflow
-  two => from_u32(2)
-
-  # the constant '10' in whatever integer implementation we have, maximum in case of overflow
-  ten => from_u32(10)
-
-  # the value corresponding to v in whatever integer implementation we have, maximum in case of overflow
-  from_u32(v u32) I is
-    if v == 0 zero else from_u32(v-1) +^ one
-
-  # the u32 value corresponding to this
-  to_u32 u32
-    pre
-      debug: thiz >= zero
-  is
-    if (thiz > zero) ((thiz - one).to_u32 + 1)
-    else 0
-
-
-  # find the highest power of b that is less or equal than thiz.
-  #
-  private highest(b I) I
-    pre
-      debug: thiz.sign >= 0
-    post
-      debug: (thiz == zero: result == one),
-      debug: (thiz != zero: thiz / b < result <= thiz)
-# NYI: original postcondition code should cause a compiler error since
-# result.infix <= expects an argument of type I while integer.this is
-# not of type I.
-#
-#     integer.this != zero: integer.this / b < result <= integer.this
-  is
-    for
-      bs := one, bs * b
-    while thiz / b >= bs
-
 
   # convert this to a decimal number in a string.  If negative, add "-" as
   # the first character.
