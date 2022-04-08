@@ -238,6 +238,13 @@ Sequence<T> ref is
   mapSequence<B>(f T -> B) => asList.map f
 
 
+  # NYI "error 1: Cannot redefine feature with generic arguments
+  #      To solve this, ask the Fuzion team to remove this restriction :-)"
+  #
+  # flatMap<B>(f T -> Sequence<B>) =>
+  #   asList.flatMap f
+
+
   # fold the elements of this Sequence using the given monoid.
   #
   # e.g., to sum the elements of a stream of i32, use s.fold i32.sum
