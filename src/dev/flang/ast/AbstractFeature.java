@@ -143,7 +143,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public boolean isIntrinsic() { return kind() == Kind.Intrinsic; }
   public boolean isChoice() { return kind() == Kind.Choice; }
   public boolean isTypeParameter() { return switch (kind()) { case TypeParameter, OpenTypeParameter -> true; default -> false; }; }
-  public boolean isOpenTypeParameter() { return kind() == Kind.TypeParameter; }
+  public boolean isOpenTypeParameter() { return kind() == Kind.OpenTypeParameter; }
 
 
   /**
