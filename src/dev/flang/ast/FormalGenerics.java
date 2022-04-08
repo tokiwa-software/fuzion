@@ -243,23 +243,6 @@ public class FormalGenerics extends ANY
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   */
-  public void visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    for (Generic gen : list)
-      {
-        gen.visit(v, outer);
-      }
-  }
-
-
-  /**
    * Find formal generic argument with given name.
    *
    * @param name the name of a formal generic argument.

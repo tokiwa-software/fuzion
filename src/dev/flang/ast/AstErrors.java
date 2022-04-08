@@ -1002,12 +1002,13 @@ public class AstErrors extends ANY
       }
   }
 
-  static void constraintMustNotBeGenericArgument(Generic g)
+  public static void constraintMustNotBeGenericArgument(AbstractFeature tp)
   {
-    error(g._pos,
-          "Constraint for generic argument must not be generic type parameter",
-          "Affected generic argument: " + st(g._name) + "\n" +
-          "_constraint: " + s(g.constraint()) + " declared at " + g.constraint().genericArgument()._pos);
+    error(tp.pos(),
+          "Constraint for type parameter must not be a type parameter",
+          "Affected type parameter: " + s(tp) + "\n" +
+          "_constraint: " + s(tp.resultType()) + "\n" +
+          "To solve this, change the type provided, e.g. to the unconstraint " + st("type") + ".\n");
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)

@@ -1048,7 +1048,6 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public void visit(FeatureVisitor v)
   {
-    _generics.visit(v, this);
     for (var c: _inherits)
       {
         Expr nc = c.visit(v, this);
@@ -1300,7 +1299,6 @@ public class Feature extends AbstractFeature implements Stmnt
     public Stmnt        action(Feature      f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
                                                                         return f.resolveTypes(res, f.outer() ); }
     public Function     action(Function     f, AbstractFeature outer) {        f.resolveTypes(res, outer); return f; }
-    public void         action(Generic      g, AbstractFeature outer) {        g.resolveTypes(res, outer); }
     public void         action(Match        m, AbstractFeature outer) {        m.resolveTypes(res, outer); }
     public Expr         action(This         t, AbstractFeature outer) { return t.resolveTypes(res, outer); }
     public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve     (res, outer); }

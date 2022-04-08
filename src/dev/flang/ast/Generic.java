@@ -201,48 +201,6 @@ public class Generic extends ANY
 
 
   /**
-   * visit all the features, expressions, statements within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   */
-  public void visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    if (_constraint != null)
-      {
-        _constraint = _constraint.visit(v, outer);
-      }
-    v.action(this, outer);
-  }
-
-
-  /**
-   * determine the static type of all expressions and declared features in this feature
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   *
-   * @param outer the root feature that contains this statement.
-   */
-  public void resolveTypes(Resolution res, AbstractFeature outer)
-  {
-    if (PRECONDITIONS) require
-      (outer == feature());
-
-    if (_constraint != null)
-      {
-        _constraint = _constraint.resolve(res, outer);
-        if (_constraint.isGenericArgument())
-          {
-            AstErrors.constraintMustNotBeGenericArgument(this);
-          }
-      }
-  }
-
-
-  /**
    * setFormalGenerics
    *
    * @param f

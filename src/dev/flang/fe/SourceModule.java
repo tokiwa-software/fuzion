@@ -1169,6 +1169,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
             AstErrors.constructorResultMustBeUnit(cod);
           }
       }
+
+    if (f.isTypeParameter())
+      {
+        if (f.resultType().isGenericArgument())
+          {
+            AstErrors.constraintMustNotBeGenericArgument(f);
+          }
+      }
   }
 
 
