@@ -25,36 +25,36 @@
 
 generics_negative is
 
-  opengenerics1 <A...> is
-  opengenerics2 <A,B...> is
-  opengenerics3 <A,B,C...> is
+  opengenerics1 (A type...) is
+  opengenerics2 (A type, B type...) is
+  opengenerics3 (A type, B type, C type...) is
 
-  opengenerics4 <A,B,C...> is
+  opengenerics4 (A type, B type, C type...) is
     a A := ?;
     b B := ?;
     c C := ?; // 4. should flag an error, open generic cannot be field type.
 
-  opengenerics5a <A,B,C...> is
+  opengenerics5a (A type, B type, C type...) is
     f1(a A) is
 
-  opengenerics5 <A,B,C...> is
+  opengenerics5 (A type, B type, C type...) is
     f1(a A) is
     f2(a A, b B) is
     f3(a A, b B, c C) is
 
-  opengenerics6 <A,B,C...> is
+  opengenerics6 (A type, B type, C type...) is
     f1(a A) is abstract
     f2(a A, b B) is abstract
     f3(a A, b B, c C) is abstract
     f4(a A, b B, c C, a1 A) is abstract  // 6. should flag an error, open generic can only be used for last argument
 
-  opengenerics7 <A,B,C...> : opengenerics6<A,A,A,A> is
+  opengenerics7 (A type, B type, C type...) : opengenerics6<A,A,A,A> is
 
-  opengenerics8 <A,B,C...> : opengenerics6<B,B,B,B> is
+  opengenerics8 (A type, B type, C type...) : opengenerics6<B,B,B,B> is
 
-  opengenerics9 <A,B,C...> : opengenerics6<C,A,A,A> is // 7. should flag an error: open generic cannot be used as generic argument
+  opengenerics9 (A type, B type, C type...) : opengenerics6<C,A,A,A> is // 7. should flag an error: open generic cannot be used as generic argument
 
-  opengenerics10 <A,B,C...> is  // NYI: an error is flagged here in addition to 8. below. Apparently, 8. is checked again after Types were intern()ed.
+  opengenerics10 (A type, B type, C type...) is  // NYI: an error is flagged here in addition to 8. below. Apparently, 8. is checked again after Types were intern()ed.
     x1 : choice<A> is
     x2 : choice<A,B> is
     x3 : choice<A,C,B> is  // 8. should flag an error: choice cannot use open generic
@@ -162,7 +162,7 @@ generics_negative is
   outerGenerics
 
   opengenerics12 is
-    F<A...> ref is
+    F(A type...) ref is
       f(a A) is abstract
 
     G ref : F<i32,bool,i32> is

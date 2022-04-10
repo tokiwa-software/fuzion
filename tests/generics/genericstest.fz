@@ -175,7 +175,7 @@ genericstest is
 
   opengenerics12 is
 
-    F<A...> ref is
+    F(A type...) ref is
       f(a A) unit is abstract
 
     G ref : F<i32,bool,i32> is
