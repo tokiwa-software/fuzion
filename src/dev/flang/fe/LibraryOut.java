@@ -123,6 +123,10 @@ class LibraryOut extends DataOut
     innerFeatures(sm._universe);
     sourceFiles();
     fixUps();
+    sm._options.verbosePrintln(2, "" +
+                               _offsetsForFeature.size() + " features " +
+                               _offsetsForType.size() + " types and " +
+                               _sourceFiles.size() + " source files includes in fum file.");
   }
 
 
