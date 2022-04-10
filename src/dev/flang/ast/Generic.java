@@ -47,13 +47,6 @@ public class Generic extends ANY
 
 
   /**
-   * The sourcecode position of this feature declaration, used for error
-   * messages.
-   */
-  public final SourcePosition _pos;
-
-
-  /**
    * The index in the formal generics declaration, starting at 0
    */
   final int _index;
@@ -152,7 +145,6 @@ public class Generic extends ANY
        index >= 0,
        name != null);
 
-    _pos = pos;
     _index = index;
     _name = name;
     _constraint = constraint;
@@ -198,7 +190,6 @@ public class Generic extends ANY
       (original.isOpen(),
        select >= 0);
 
-    _pos = original._pos;
     _index = original._index + select;
     _name = original._name + "." + select;
     _constraint = original._constraint;
@@ -409,7 +400,7 @@ public class Generic extends ANY
       (isOpen(),
        i >= 0);
 
-    return new Type(_pos, new Generic(this, i));
+    return new Type(_typeParameter.pos(), new Generic(this, i));
   }
 
 

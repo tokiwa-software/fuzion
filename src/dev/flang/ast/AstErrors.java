@@ -659,7 +659,7 @@ public class AstErrors extends ANY
     error(pos,
           "" + skw("match") + " subject type must not be a type parameter",
           "Matched type: " + s(t) + "\n" +
-          "which is a type parameter declared at " + t.genericArgument()._pos.show());
+          "which is a type parameter declared at " + t.genericArgument().typeParameter().pos().show());
 
   }
 
@@ -1028,7 +1028,7 @@ public class AstErrors extends ANY
           "In a type >>a.b<<, the outer type >>a<< must not be a formal generic argument.\n" +
           "Type used: " + s(t) + "\n" +
           "Formal generic used " + s(t.outer()) + "\n" +
-          "Formal generic declared in " + t.outer().genericArgument()._pos.show() + "\n");
+          "Formal generic declared in " + t.outer().genericArgument().typeParameter().pos().show() + "\n");
   }
 
   static void formalGenericWithGenericArgs(SourcePosition pos, Type t, Generic generic)
@@ -1038,7 +1038,7 @@ public class AstErrors extends ANY
           "In a type with generic arguments >>A<B><<, the base type >>A<< must not be a formal generic argument.\n" +
           "Type used: " + s(t) + "\n" +
           "Formal generic used " + s(generic) + "\n" +
-          "Formal generic declared in " + generic._pos.show() + "\n");
+          "Formal generic declared in " + generic.typeParameter().pos().show() + "\n");
   }
 
   static void refToChoice(SourcePosition pos)
