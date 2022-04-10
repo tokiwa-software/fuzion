@@ -157,24 +157,18 @@ public class Generic extends ANY
   /**
    * Replace this formal generic by the corresponding actual generic.
    *
-   * @param actualGenerics the actual generics that replace this.
+   * @param actuals the actual generics that replace this.
    */
-  public AbstractType replace(List<AbstractType> actualGenerics)
+  public AbstractType replace(List<AbstractType> actuals)
   {
     if (PRECONDITIONS) require
       (!isOpen(),
-       Errors.count() > 0 || formalGenerics().sizeMatches(actualGenerics));
+       Errors.count() > 0 || formalGenerics().sizeMatches(actuals));
 
     int i = index();
-    var actuals = actualGenerics.iterator();
-    while (i > 0 && actuals.hasNext())
-      {
-        actuals.next();
-        i--;
-      }
     if (CHECKS) check
-      (Errors.count() > 0 || actuals.hasNext());
-    return actuals.hasNext() ? actuals.next() : Types.t_ERROR;
+      (Errors.count() > 0 || actuals.size() > i);
+    return actuals.size() > index() ? actuals.get(index()) : Types.t_ERROR;
   }
 
 
@@ -186,35 +180,23 @@ public class Generic extends ANY
    * actual generics are <a,b,c,d>, then the actual generics for the open
    * argument C are c, d.
    *
-   * @param actualGenerics the actual generics list
+   * @param actuals the actual generics list
    *
-   * @return the part of actualGenerics that this is replaced by, May be an
+   * @return the part of actuals that this is replaced by, May be an
    * empty list or an arbitrarily long list.
    */
-  public List<AbstractType> replaceOpen(List<AbstractType> actualGenerics)
+  public List<AbstractType> replaceOpen(List<AbstractType> actuals)
   {
     if (PRECONDITIONS) require
       (isOpen(),
-       formalGenerics().sizeMatches(actualGenerics));
+       formalGenerics().sizeMatches(actuals));
 
-    var formals = formalGenerics().list.iterator();
-    var actuals = actualGenerics.iterator();
-
-    // fist, skip all formal/actual generics until we reached the last formal:
-    Generic formal = formals.next();
-    while (formals.hasNext())
-      {
-        if (CHECKS) check
-          (formal != this);
-        actuals.next();
-        formal = formals.next();
-      }
     if (CHECKS) check
-      (formal == this);
+      (formalGenerics().list.getLast() == this);
 
-    // Now, return the tail of actuals:
-    return actuals.hasNext() ? new List<>(actuals)
-                             : Type.NONE;
+    var result = new List<AbstractType>();
+    result.addAll(actuals.subList(formalGenerics().list.size()-1, actuals.size()));
+    return result;
   }
 
 
