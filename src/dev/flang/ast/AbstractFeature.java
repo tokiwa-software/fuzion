@@ -1141,7 +1141,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                 l.add(new Generic(a0, l.size()));
                 open = open || a0.isOpenTypeParameter();
               }
-            _generics = new FormalGenerics(l, this);
+            _generics = new FormalGenerics(l);
           }
       }
     return _generics;

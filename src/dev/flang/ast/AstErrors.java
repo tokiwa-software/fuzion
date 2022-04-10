@@ -128,10 +128,6 @@ public class AstErrors extends ANY
   {
     return expr(s);
   }
-  static String s(AbstractFeature f, FormalGenerics fg)
-  {
-    return code(f.qualifiedName() + fg);
-  }
   public static String sfn(List<AbstractFeature> fs)
   {
     int c = 0;
@@ -540,7 +536,7 @@ public class AstErrors extends ANY
           "Wrong number of generic arguments",
           "Wrong number of actual generic arguments in " + detail1 + ":\n" +
           detail2 +
-          "expected " + fg.sizeText() + (fg == FormalGenerics.NONE ? "" : " for " + s(fg.feature(), fg) + "") + "\n" +
+          "expected " + fg.sizeText() + (fg == FormalGenerics.NONE ? "" : " for " + s(fg) + "") + "\n" +
           "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
   }
 

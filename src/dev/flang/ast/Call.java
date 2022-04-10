@@ -1012,7 +1012,7 @@ public class Call extends AbstractCall
             if (frmlT.isOpenGeneric())
               { // formal arg is open generic, i.e., this expands to 0 or more actual args depending on actual generics for target:
                 Generic g = frmlT.genericArgument();
-                var frmlTs = g.replaceOpen(g.formalGenerics().feature() == calledFeature_
+                var frmlTs = g.replaceOpen(g.feature() == calledFeature_
                                            ? generics
                                            : target.type().generics());
                 addToResolvedFormalArgumentTypes(res, argnum + i, frmlTs.toArray(new AbstractType[frmlTs.size()]), frml);

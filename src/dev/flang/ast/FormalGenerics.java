@@ -51,7 +51,7 @@ public class FormalGenerics extends ANY
   /**
    * Convenience constant for an empty formal generics instance.
    */
-  public static final FormalGenerics NONE = new FormalGenerics(new List<>(), null);
+  public static final FormalGenerics NONE = new FormalGenerics(new List<>());
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -66,12 +66,6 @@ public class FormalGenerics extends ANY
   public final List<Generic> list;
 
 
-  /**
-   * The Feature that contains this formal generics declaration.
-   */
-  private final AbstractFeature _feature;
-
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -79,33 +73,14 @@ public class FormalGenerics extends ANY
    * Constructor for a FormalGenerics instance
    *
    * @param l the list of formal generics. May not be empty.
-   *
-   * @param open true iff the list is open, i.e., followed by an ellipsis.
    */
-  public FormalGenerics(List<Generic> l,
-                        AbstractFeature f)
+  public FormalGenerics(List<Generic> l)
   {
-    if (PRECONDITIONS) require
-      (l.size() > 0 || f == null,
-       l.size() == 0 || f != null);
-
     list = l;
-    _feature = f;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * feature
-   *
-   * @return
-   */
-  public AbstractFeature feature()
-  {
-    return _feature;
-  }
 
 
   /**
@@ -273,7 +248,7 @@ public class FormalGenerics extends ANY
             // placeholder for the actual generics.
             for (Generic g : list)
               {
-                result.add(new Type((HasSourcePosition) _feature, g));
+                result.add(new Type((HasSourcePosition) g.typeParameter(), g));
               }
           }
         asActuals_ = result;
