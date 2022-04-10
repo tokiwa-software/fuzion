@@ -654,13 +654,12 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | byte          | 00CTkkkk  k = kind, T = has type parameters, C = is intrinsic constructor
+.6+| true  .6+| 1      | byte          | 00C0kkkk  k = kind, C = is intrinsic constructor
                        | Name          | name
                        | int           | arg count
                        | int           | name id
                        | Pos           | source code position
                        | int           | outer feature index, 0 for outer()==universe
-   | T=1      | 1      | TypeArgs      | optional type arguments
    | hasRT    | 1      | Type          | optional result type,
                                        hasRT = !isConstructor && !isChoice
 .2+| true NYI! !isField? !isIntrinsc
@@ -697,8 +696,6 @@ Feature
    *   |        |        | Pos           | source code position                          |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | int           | outer feature index, 0 for outer()==universe  |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | T=1    | 1      | TypeArgs      | optional type arguments                       |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
@@ -842,23 +839,9 @@ Feature
   {
     return featureOuterPos(at) + 4;
   }
-  int featureTypeArgsPos(int at)
-  {
-    if (PRECONDITIONS) require
-      ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0);
-
-    return featureOuterNextPos(at);
-  }
   int featureResultTypePos(int at)
   {
-    if ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0)
-      {
-        return typeArgsNextPos(featureTypeArgsPos(at));
-      }
-    else
-      {
-        return featureOuterNextPos(at);
-      }
+    return featureOuterNextPos(at);
   }
   boolean featureHasResultType(int at)
   {
@@ -989,119 +972,6 @@ Feature
   int featureNextPos(int at)
   {
     return innerFeaturesNextPos(featureInnerFeaturesPos(at));
-  }
-
-
-  /*
-
---asciidoc--
-
-TypeArgs
-^^^^^^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-.3+| true     | 1      | int           | num type ags n
-              |        | bool          | isOpen
-              | n      | TypeArg       | type arguments
-|====
-
---asciidoc--
-
-   *   +---------------------------------------------------------------------------------+
-   *   | TypeArgs                                                                        |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | int           | num type ags n                                |
-   *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | bool          | isOpen                                        |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | n      | TypeArg       | type arguments                                |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-
-  int typeArgsCountPos(int at)
-  {
-    return at;
-  }
-  int typeArgsCount(int at)
-  {
-    return data().getInt(typeArgsCountPos(at));
-  }
-  int typeArgsOpenPos(int at)
-  {
-    return typeArgsCountPos(at) + 4;
-  }
-  boolean typeArgsOpen(int at)
-  {
-    return data().get(typeArgsOpenPos(at)) != 0;
-  }
-  int typeArgsListPos(int at)   // works also if list is empty
-  {
-    return typeArgsOpenPos(at) + 1;
-  }
-  int typeArgsNextPos(int at)
-  {
-    var d = data();
-    var n = typeArgsCount(at);
-    var i = typeArgsListPos(at);
-    while (n > 0)
-      {
-        i = typeArgNextPos(i);
-        n--;
-      }
-    return i;
-  }
-
-
-  /*
---asciidoc--
-
-TypeArg
-^^^^^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-.2+| true  .2+| 1      | Name          | type arg name
-                       | Type          | constraint
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | TypeArg                                                                         |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Name          | type arg name                                 |
-   *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | Type          | constraint                                    |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-
-  int typeArgNamePos(int at)
-  {
-    return at;
-  }
-  String typeArgName(int at)
-  {
-    return name(typeArgNamePos(at));
-  }
-  int typeArgConstraintPos(int at)
-  {
-    return nameNextPos(typeArgNamePos(at));
-  }
-  AbstractType typeArgConstraint(int at)
-  {
-    return type(typeArgConstraintPos(at));
-  }
-  int typeArgNextPos(int at)
-  {
-    return typeNextPos(typeArgConstraintPos(at));
   }
 
 

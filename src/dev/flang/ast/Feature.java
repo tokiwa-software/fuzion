@@ -184,13 +184,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * The formal generic arguments of this feature
-   */
-  private FormalGenerics _generics;
-  public FormalGenerics generics() { return _generics; }
-
-
-  /**
    * The formal arguments of this feature
    */
   private List<Feature> _arguments;
@@ -681,24 +674,6 @@ public class Feature extends AbstractFeature implements Stmnt
       }
     a1.addAll(a);
     a = a1;
-
-    // Recreate FormalGenerics from typeParameters
-    // NYI: Remove, FormalGenerics should use AbstractFeature.typeArguments() instead of its own list of Generics.
-    var l = new List<Generic>();
-    var open = false;
-    for (var a0 : a)
-      {
-        if (a0.isTypeParameter())
-          {
-            l.add(new Generic(a0, l.size()));
-            open = open || a0.impl() == Impl.TYPE_PARAMETER_OPEN;
-          }
-      }
-    if (l.size() > 0)
-      {
-        g = new FormalGenerics(l, open);
-      }
-    this._generics  = g;
 
     this._arguments = a;
     this._featureName = FeatureName.get(n, valueArguments().size());
@@ -2159,7 +2134,7 @@ public class Feature extends AbstractFeature implements Stmnt
       Consts.modifierToString(_modifiers)+
       _returnType + " "+
       _featureName.baseName()+
-      _generics+
+      generics()+
       (_arguments.isEmpty() ? "" : "("+_arguments+")")+
       (_inherits.isEmpty() ? "" : " : "+_inherits)+
       _contract+

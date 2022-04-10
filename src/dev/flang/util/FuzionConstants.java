@@ -186,9 +186,9 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Flag OR'ed to kind for routines with generic type parameters.
+   * Flag OR'ed to kind, unused
    */
-  public static final int MIR_FILE_KIND_HAS_TYPE_PAREMETERS = 0x10;
+  public static final int MIR_FILE_KIND_UNUSED = 0x10;
 
 
   /**

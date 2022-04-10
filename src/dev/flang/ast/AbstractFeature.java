@@ -131,6 +131,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   private List<AbstractFeature> _typeArguments = null;
 
 
+  /**
+   * The formal generic arguments of this feature, cached result of generics()
+   */
+  private FormalGenerics _generics;
+
+
   /*-----------------------------  methods  -----------------------------*/
 
   /**
@@ -988,7 +994,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   public abstract FeatureName featureName();
-  public abstract FormalGenerics generics();
   public abstract List<AbstractCall> inherits();
   public abstract AbstractFeature outer();
   public abstract List<AbstractFeature> arguments();
@@ -1111,6 +1116,35 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
           }
       }
     return _typeArguments;
+  }
+
+
+  /**
+   * The formal generic arguments of this feature
+   */
+  public FormalGenerics generics()
+  {
+    if (_generics == null)
+      {
+        // Recreate FormalGenerics from typeParameters
+        // NYI: Remove, FormalGenerics should use AbstractFeature.typeArguments() instead of its own list of Generics.
+        if (typeArguments().isEmpty())
+          {
+            _generics = FormalGenerics.NONE;
+          }
+        else
+          {
+            var l = new List<Generic>();
+            var open = false;
+            for (var a0 : typeArguments())
+              {
+                l.add(new Generic(a0, l.size()));
+                open = open || a0.isOpenTypeParameter();
+              }
+            _generics = new FormalGenerics(l, open, this);
+          }
+      }
+    return _generics;
   }
 
 }

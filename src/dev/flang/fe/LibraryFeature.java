@@ -437,46 +437,6 @@ public class LibraryFeature extends AbstractFeature
   }
 
 
-  /**
-   * The formal generic arguments of this feature
-   */
-  public FormalGenerics generics()
-  {
-    var result = _generics;
-    if (result == null)
-      {
-        if ((_libModule.featureKind(_index) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) == 0)
-          {
-            result = FormalGenerics.NONE;
-          }
-        else
-          {
-            var tai = _libModule.featureTypeArgsPos(_index);
-            var n = _libModule.typeArgsCount(tai);
-            if (n > 0)
-              {
-                // Recreate FormalGenerics from typeParameters
-                var l = new List<Generic>();
-                var open = false;
-                for (var a0 : typeArguments())
-                  {
-                    var g =new Generic(a0, l.size());
-                    l.add(g);
-                    open = open || a0.isOpenTypeParameter();
-                  }
-                result = new FormalGenerics(l, open, this);
-              }
-            else
-              {
-                result = FormalGenerics.NONE;
-              }
-          }
-        _generics = result;
-      }
-    return result;
-  }
-
-
   public FeatureName featureName()
   {
     var result = _featureName;
