@@ -90,11 +90,6 @@ public class FormalGenerics extends ANY
        l.size() == 0 || f != null);
 
     list = l;
-    for (Generic g: l)
-      {
-        g.setFormalGenerics(this);
-      }
-
     _feature = f;
   }
 

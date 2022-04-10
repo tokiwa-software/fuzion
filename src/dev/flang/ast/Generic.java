@@ -53,12 +53,6 @@ public class Generic extends ANY
 
 
   /**
-   * The formal generics declaration that contains this generic.
-   */
-  private FormalGenerics _formalGenerics;
-
-
-  /**
    * The type parameter this generic corresponds to
    */
   private AbstractFeature _typeParameter;
@@ -86,25 +80,6 @@ public class Generic extends ANY
 
 
   /**
-   * setFormalGenerics
-   *
-   * @param f
-   *
-   * @param open true for a generic that can be repeated 0 or more times.
-   */
-  public void setFormalGenerics(FormalGenerics f)
-  {
-    if (PRECONDITIONS) require
-      (_formalGenerics == null);
-
-    _formalGenerics = f;
-
-    if (POSTCONDITIONS) ensure
-      (_formalGenerics == f);
-  }
-
-
-  /**
    * true for a formal generic that can be repeated zero or more times, i.e.,
    * the last formal generic in an open formal generics list.
    */
@@ -121,10 +96,7 @@ public class Generic extends ANY
    */
   public FormalGenerics formalGenerics()
   {
-    if (PRECONDITIONS) require
-      (_formalGenerics != null);
-
-    return _formalGenerics;
+    return feature().generics();
   }
 
 
@@ -135,10 +107,7 @@ public class Generic extends ANY
    */
   public AbstractFeature feature()
   {
-    if (PRECONDITIONS) require
-      (_formalGenerics != null);
-
-    return _formalGenerics.feature();
+    return typeParameter().outer();
   }
 
 
@@ -192,7 +161,7 @@ public class Generic extends ANY
   {
     if (PRECONDITIONS) require
       (!isOpen(),
-       Errors.count() > 0 || _formalGenerics.sizeMatches(actualGenerics));
+       Errors.count() > 0 || formalGenerics().sizeMatches(actualGenerics));
 
     int i = index();
     var actuals = actualGenerics.iterator();
@@ -224,9 +193,9 @@ public class Generic extends ANY
   {
     if (PRECONDITIONS) require
       (isOpen(),
-       _formalGenerics.sizeMatches(actualGenerics));
+       formalGenerics().sizeMatches(actualGenerics));
 
-    var formals = _formalGenerics.list.iterator();
+    var formals = formalGenerics().list.iterator();
     var actuals = actualGenerics.iterator();
 
     // fist, skip all formal/actual generics until we reached the last formal:
