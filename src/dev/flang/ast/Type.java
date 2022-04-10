@@ -294,7 +294,7 @@ public class Type extends AbstractType
       (g != null);
 
     this.pos = pos;
-    this.name  = g._name;
+    this.name  = g.name();
     this._generics = NONE;
     this._outer = null;
     this.feature = null;

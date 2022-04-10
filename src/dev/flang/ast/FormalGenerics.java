@@ -212,14 +212,14 @@ public class FormalGenerics extends ANY
     while ((result == null) && it.hasNext())
       {
         Generic g = (Generic) it.next();
-        if (g._name.equals(name))
+        if (g.name().equals(name))
           {
             result = g;
           }
       }
 
     if (POSTCONDITIONS) ensure
-      ((result == null) || (result._name.equals(name)));
+      ((result == null) || (result.name().equals(name)));
     // result == null ==> for all g in generics: !g.name.equals(name)
 
     return result;

@@ -902,7 +902,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 result = genericArgument().feature().compareTo(other.genericArgument().feature());
                 if (result == 0)
                   {
-                    result = genericArgument()._name.compareTo(other.genericArgument()._name); // NYI: compare generic, not generic.name!
+                    result = genericArgument().name().compareTo(other.genericArgument().name()); // NYI: compare generic, not generic.name!
                   }
               }
           }

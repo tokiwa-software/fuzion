@@ -53,12 +53,6 @@ public class Generic extends ANY
 
 
   /**
-   * the name of this formal generic parameter
-   */
-  final String _name;
-
-
-  /**
    * the constraint on this generic paremter, null for the implicit Object
    * constraint.
    */
@@ -117,7 +111,6 @@ public class Generic extends ANY
   public Generic(AbstractFeature typeParameter, int index)
   {
     _index = index;
-    _name = typeParameter.featureName().baseName();
     _constraint = null;
     _select = -1;
     _selectFrom = null;
@@ -145,7 +138,6 @@ public class Generic extends ANY
        select >= 0);
 
     _index = original._index + select;
-    _name = original._name + "." + select;
     _constraint = original._constraint;
     _formalGenerics = original._formalGenerics;
     _select = select;
@@ -242,7 +234,8 @@ public class Generic extends ANY
    */
   public String name()
   {
-    return _name;
+    var n = typeParameter().featureName().baseName();
+    return _select < 0 ? n : n + "." + _select;
   }
 
 
@@ -374,7 +367,7 @@ public class Generic extends ANY
    */
   public String toString()
   {
-    return _name;
+    return name();
   }
 
 
