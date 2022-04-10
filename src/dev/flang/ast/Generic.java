@@ -47,12 +47,6 @@ public class Generic extends ANY
 
 
   /**
-   * The index in the formal generics declaration, starting at 0
-   */
-  final int _index;
-
-
-  /**
    * The type parameter this generic corresponds to
    */
   private AbstractFeature _typeParameter;
@@ -69,9 +63,8 @@ public class Generic extends ANY
    *
    * @param index the index in the formal generics declaration, starting at 0
    */
-  public Generic(AbstractFeature typeParameter, int index)
+  public Generic(AbstractFeature typeParameter)
   {
-    _index = index;
     _typeParameter = typeParameter;
   }
 
@@ -148,7 +141,16 @@ public class Generic extends ANY
    */
   public int index()
   {
-    return _index;
+    var result = 0;
+    for (var tp : feature().typeArguments())
+      {
+        if (tp == typeParameter())
+          {
+            return result;
+          }
+        result++;
+      }
+    throw new Error("Generic.index() failed for " + this);
   }
 
 
