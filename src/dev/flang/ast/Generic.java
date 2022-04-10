@@ -53,13 +53,6 @@ public class Generic extends ANY
 
 
   /**
-   * the constraint on this generic paremter, null for the implicit Object
-   * constraint.
-   */
-  AbstractType _constraint;
-
-
-  /**
    * The formal generics declaration that contains this generic.
    */
   private FormalGenerics _formalGenerics;
@@ -111,14 +104,9 @@ public class Generic extends ANY
   public Generic(AbstractFeature typeParameter, int index)
   {
     _index = index;
-    _constraint = null;
     _select = -1;
     _selectFrom = null;
     _typeParameter = typeParameter;
-    if (!typeParameter.state().atLeast(Feature.State.RESOLVED))
-      {
-        _constraint = ((Feature)typeParameter).returnType().functionReturnType();
-      }
   }
 
 
@@ -138,7 +126,6 @@ public class Generic extends ANY
        select >= 0);
 
     _index = original._index + select;
-    _constraint = original._constraint;
     _formalGenerics = original._formalGenerics;
     _select = select;
     _selectFrom = original;
