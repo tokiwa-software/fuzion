@@ -170,6 +170,7 @@ class Intrinsics extends ANY
       case "i16.infix >>"        :
       case "i32.infix >>"        :
       case "i64.infix >>"        : return outer.shr(A0).ret();
+      case "i32.infix >>>"       : return outer.castTo("uint32_t").shr(A0).ret();
       case "i8.infix &"          :
       case "i16.infix &"         :
       case "i32.infix &"         :

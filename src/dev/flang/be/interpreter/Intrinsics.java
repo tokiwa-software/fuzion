@@ -547,6 +547,7 @@ public class Intrinsics extends ANY
     else if (n.equals("i32.infix |"     )) { result = (args) -> new i32Value (              (args.get(0).i32Value() |   args.get(1).i32Value())); }
     else if (n.equals("i32.infix ^"     )) { result = (args) -> new i32Value (              (args.get(0).i32Value() ^   args.get(1).i32Value())); }
     else if (n.equals("i32.infix >>"    )) { result = (args) -> new i32Value (              (args.get(0).i32Value() >>  args.get(1).i32Value())); }
+    else if (n.equals("i32.infix >>>"   )) { result = (args) -> new i32Value (              (args.get(0).i32Value() >>> args.get(1).i32Value())); }
     else if (n.equals("i32.infix <<"    )) { result = (args) -> new i32Value (              (args.get(0).i32Value() <<  args.get(1).i32Value())); }
     else if (n.equals("i32.infix =="    )) { result = (args) -> new boolValue(              (args.get(0).i32Value() ==  args.get(1).i32Value())); }
     else if (n.equals("i32.infix !="    )) { result = (args) -> new boolValue(              (args.get(0).i32Value() !=  args.get(1).i32Value())); }

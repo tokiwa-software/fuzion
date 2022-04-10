@@ -76,6 +76,9 @@ i32(val i32) : wrappingInteger<i32>, hasInterval<i32>, i32s is
   redef infix >> (other i32) i32 is intrinsic
   redef infix << (other i32) i32 is intrinsic
 
+  # shift right (unsigned)
+  redef infix >>> (other i32) i32 is intrinsic
+
   # comparison
   redef infix == (other i32) bool is intrinsic
   redef infix != (other i32) bool is intrinsic
