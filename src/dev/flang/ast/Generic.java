@@ -59,13 +59,6 @@ public class Generic extends ANY
 
 
   /**
-   * true for a formal generic that can be repeated zero or more times, i.e.,
-   * the last formal generic in an open formal generics list.
-   */
-  private boolean _isOpen;
-
-
-  /**
    * The type parameter this generic corresponds to
    */
   private AbstractFeature _typeParameter;
@@ -99,17 +92,15 @@ public class Generic extends ANY
    *
    * @param open true for a generic that can be repeated 0 or more times.
    */
-  public void setFormalGenerics(FormalGenerics f, boolean open)
+  public void setFormalGenerics(FormalGenerics f)
   {
     if (PRECONDITIONS) require
       (_formalGenerics == null);
 
     _formalGenerics = f;
-    _isOpen = open;
 
     if (POSTCONDITIONS) ensure
-      (_formalGenerics == f,
-       _isOpen == open);
+      (_formalGenerics == f);
   }
 
 
@@ -119,7 +110,7 @@ public class Generic extends ANY
    */
   public boolean isOpen()
   {
-    return _isOpen;
+    return typeParameter().isOpenTypeParameter();
   }
 
 

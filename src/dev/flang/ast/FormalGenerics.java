@@ -51,7 +51,7 @@ public class FormalGenerics extends ANY
   /**
    * Convenience constant for an empty formal generics instance.
    */
-  public static final FormalGenerics NONE = new FormalGenerics(new List<>(), false, null);
+  public static final FormalGenerics NONE = new FormalGenerics(new List<>(), null);
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -64,15 +64,6 @@ public class FormalGenerics extends ANY
    * isOpen.
    */
   public final List<Generic> list;
-
-
-  /**
-   * true iff this is an open list that with an arbitrary number of actual
-   * formal generic arguments.  This means that the last formal generic can be
-   * repeated 0.. times, the actual arguments must hence have at least
-   * list.size()-1 elements.
-   */
-  final boolean isOpen;
 
 
   /**
@@ -92,7 +83,6 @@ public class FormalGenerics extends ANY
    * @param open true iff the list is open, i.e., followed by an ellipsis.
    */
   public FormalGenerics(List<Generic> l,
-                        boolean open,
                         AbstractFeature f)
   {
     if (PRECONDITIONS) require
@@ -100,10 +90,9 @@ public class FormalGenerics extends ANY
        l.size() == 0 || f != null);
 
     list = l;
-    isOpen = open;
     for (Generic g: l)
       {
-        g.setFormalGenerics(this, open && g == l.getLast());
+        g.setFormalGenerics(this);
       }
 
     _feature = f;
@@ -129,7 +118,7 @@ public class FormalGenerics extends ANY
    */
   public boolean isOpen()
   {
-    return isOpen;
+    return !list.isEmpty() && list.getLast().isOpen();
   }
 
 
@@ -150,7 +139,7 @@ public class FormalGenerics extends ANY
       {
         return true;
       }
-    else if (isOpen)
+    else if (isOpen())
       {
         return (list.size()-1) <= actualGenerics.size();
       }
@@ -310,15 +299,15 @@ public class FormalGenerics extends ANY
    */
   public String sizeText()
   {
-    int sz = isOpen ? list.size() - 1
-                    : list.size();
+    int sz = isOpen() ? list.size() - 1
+                      : list.size();
     return
-      isOpen    && (sz == 0) ? "any number of generic arguments"
-      :  isOpen && (sz == 1) ? "at least one generic argument"
-      :  isOpen && (sz >  1) ? "at least " + sz + " generic arguments"
-      : !isOpen && (sz == 0) ? "no generic arguments"
-      : !isOpen && (sz == 1) ? "one generic argument"
-      :                        "" + sz + " generic arguments" ;
+      isOpen()    && (sz == 0) ? "any number of generic arguments"
+      :  isOpen() && (sz == 1) ? "at least one generic argument"
+      :  isOpen() && (sz >  1) ? "at least " + sz + " generic arguments"
+      : !isOpen() && (sz == 0) ? "no generic arguments"
+      : !isOpen() && (sz == 1) ? "one generic argument"
+      :                          "" + sz + " generic arguments" ;
   }
 
 
@@ -329,8 +318,8 @@ public class FormalGenerics extends ANY
    */
   public String toString()
   {
-    return !isOpen && list.isEmpty() ? ""
-                                     : "<" + list + (isOpen ? "..." : "") + ">";
+    return !isOpen() && list.isEmpty() ? ""
+                                       : "<" + list + (isOpen() ? "..." : "") + ">";
   }
 
 }
