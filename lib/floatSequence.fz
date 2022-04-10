@@ -1,0 +1,97 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature floatSequence
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# NYI
+# mode
+# Mean (geometric harmonic)
+# quartile
+# ...
+
+# floatSequence -- a Sequence whose elements inherit from numeric
+#
+floatSequence<A: float<A>>(from Sequence<A>) : Sequence<A> is
+
+  # create a list from this Sequence.
+  #
+  redef asList => from.asList
+
+  # the arithmetic mean of the sequence
+  # https://en.wikipedia.org/wiki/Arithmetic_mean
+  average option<A> is
+    if isEmpty
+      nil
+    else
+      count := (mapSequence<A> (_ -> first.one)).fold first.sum
+      sum := fold first.sum
+      sum / count
+
+
+  # the variance of the sequence
+  # https://en.wikipedia.org/wiki/Variance
+  variance option<A> is
+    match average
+      nil => nil
+      avg A =>
+        count := (mapSequence<A> (_ -> first.one)).fold first.sum
+        sum := (mapSequence<A> (x -> (x - avg)**first.two)).fold first.sum
+        sum / count
+
+
+  # the standard deviation of the sequence
+  # https://en.wikipedia.org/wiki/Standard_deviation
+  std_dev option<A> is
+    match variance
+      nil => nil
+      variance A =>
+        first.sqrt variance
+
+
+  # minimum value in the sequence
+  min option<A> is
+    if isEmpty
+      nil
+    else
+      reduce first ((r,t) -> if r<=t then r else t)
+
+
+  # maximum value in the sequence
+  max option<A> is
+    if isEmpty
+      nil
+    else
+      reduce first ((r,t) -> if r<=t then t else r)
+
+
+  # the median of the sequence
+  # https://en.wikipedia.org/wiki/Median
+  median option<A> is
+    if isEmpty
+      nil
+    else
+      arr := sortedArray<A> floatSequence.this
+      if arr.length % 2 == 1
+        arr[arr.length / 2]
+      else
+        (arr[(arr.length / 2) - 1] + arr[(arr.length / 2)]) / (first.two)
