@@ -107,53 +107,6 @@ public class Generic extends ANY
 
 
   /**
-   * Constructor for an unconstraint formal generic parameter.
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param index the index in the formal generics declaration, starting at 0
-   *
-   * @param name the name of the generic parameter
-   */
-  public Generic(SourcePosition pos, int index, String name)
-  {
-    this(pos, index, name, null);
-
-    if (PRECONDITIONS) require
-      (pos != null,
-       index >= 0,
-       name != null);
-  }
-
-
-  /**
-   * Constructor for a constrainted formal generic parameter.
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param index the index in the formal generics declaration, starting at 0
-   *
-   * @param name the name of the generic parameter
-   *
-   * @param constraint the constraint on the generic paremter, null for the
-   * implicit Object constraint.
-   */
-  public Generic(SourcePosition pos, int index, String name, AbstractType constraint)
-  {
-    if (PRECONDITIONS) require
-      (pos != null,
-       index >= 0,
-       name != null);
-
-    _index = index;
-    _name = name;
-    _constraint = constraint;
-    _select = -1;
-    _selectFrom = null;
-  }
-
-
-  /**
    * Constructor for a constrainted formal generic parameter from a type
    * parameter feature.
    *
@@ -163,10 +116,11 @@ public class Generic extends ANY
    */
   public Generic(AbstractFeature typeParameter, int index)
   {
-    this(typeParameter.pos(),
-         index,
-         typeParameter.featureName().baseName(),
-         null);
+    _index = index;
+    _name = typeParameter.featureName().baseName();
+    _constraint = null;
+    _select = -1;
+    _selectFrom = null;
     _typeParameter = typeParameter;
     if (!typeParameter.state().atLeast(Feature.State.RESOLVED))
       {
