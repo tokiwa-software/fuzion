@@ -280,6 +280,3 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
   redef items Sequence<tuple<CTK,CTV>> is
     # NYI take snapshot
     root.asList
-
-
-  redef asString => "$root"
