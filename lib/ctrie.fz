@@ -93,12 +93,12 @@ CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
 
 
   # a container node
-  private CNode(bmp i32, array array<Branch>, gen Gen) is
-    updated(pos i32, node Branch) =>
-      CNode bmp (array.put pos node) gen
+  private CNode(bmp u32, array array<Branch>, gen Gen) is
+    updated(pos u32, node Branch) =>
+      CNode bmp (array.put pos.as_i32 node) gen
 
-    inserted(pos, flag i32, sn SNode) =>
-      CNode (bmp|flag) (array.insert pos sn).asArray gen
+    inserted(pos, flag u32, sn SNode) =>
+      CNode (bmp|flag) (array.insert pos.as_i32 sn).asArray gen
 
     redef asString => "CNode($bmp, [{array.map<string>(x -> x.asString).fold (strings.concat ", ")}])"
 
@@ -146,7 +146,7 @@ CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
     redef asString => "not found"
 
   # 2^5 = 32
-  private W:=5
+  private W := u32 5
   private root := INode (CNode 0 [] Gen) Gen
 
 
@@ -157,30 +157,30 @@ CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
         x V => "$x"
 
 
-  private hash(h u64) i32 is
-    h.hash.as_i32
+  private hash(h u64) u32 is
+    h.hash.as_u32
 
 
-  private flagpos(hash i32, lev i32, bmp i32) tuple<i32, i32> is
-    idx := (hash >>> lev) & 0x1F
-    flag := 1 << idx
+  private flagpos(hash u32, lev u32, bmp u32) tuple<u32, u32> is
+    idx := (hash >> lev) & 0x1F
+    flag := u32 1 << idx
     mask := flag -° 1
-    pos := (bmp & mask).onesCount
+    pos := (bmp & mask).onesCount.as_u32
     (flag, pos)
 
 
-  private clean(nd option<INode>, lev i32) =>
+  private clean(nd option<INode>, lev u32) =>
     say "NYI clean"
     # match nd.main
     #   cn CNode =>
 
 
-  private dual(x, y SNode, lev i32, gen Gen) MainNode is
+  private dual(x, y SNode, lev u32, gen Gen) MainNode is
     # NYI why 35??
     if lev < 35
-      xidx := ((hash x.k.hash) >>> lev) & 0x1f
-      yidx := ((hash y.k.hash) >>> lev) & 0x1f
-      bmp := (1 << xidx) | (1 << yidx)
+      xidx := ((hash x.k.hash) >> lev) & 0x1f
+      yidx := ((hash y.k.hash) >> lev) & 0x1f
+      bmp := (u32 1 << xidx) | (u32 1 << yidx)
       if xidx == yidx
         subinode := INode (dual x y (lev + W) gen) gen
         CNode bmp [subinode] gen
@@ -207,14 +207,14 @@ CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
         v
 
 
-  private ilookup(i INode, k K, lev i32, parent option<INode>) choice<RESTART,NOTFOUND,V> is
+  private ilookup(i INode, k K, lev u32, parent option<INode>) choice<RESTART,NOTFOUND,V> is
     match i.main
       cn CNode =>
         (flag, pos) := flagpos hash(k.hash) lev cn.bmp
         if (cn.bmp & flag) == 0
           NOTFOUND
         else
-          match cn.array[pos]
+          match cn.array[pos.as_i32]
             sin INode =>
               ilookup sin k (lev + W) i
             sn SNode =>
@@ -239,7 +239,7 @@ CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
         unit
 
 
-  private iinsert(i INode, k K, v V, lev i32, parent option<INode>) choice<RESTART,OK> is
+  private iinsert(i INode, k K, v V, lev u32, parent option<INode>) choice<RESTART,OK> is
     match i.main
       cn CNode =>
         (flag, pos) := flagpos hash(k.hash) lev cn.bmp
@@ -250,7 +250,7 @@ CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
           else
             RESTART
         else
-          match cn.array[pos]
+          match cn.array[pos.as_i32]
             sin INode =>
               iinsert sin k v (lev+W) i
             sn SNode =>
