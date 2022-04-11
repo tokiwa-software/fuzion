@@ -1431,30 +1431,30 @@ public class Call extends AbstractCall
    */
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
-    if (!forFun && _type != Types.t_ERROR)
+    if (!forFun)
       {
-        int fsz = resolvedFormalArgumentTypes.length;
-        if (_actuals.size() ==  fsz)
+        int count = 0;
+        ListIterator<Expr> i = _actuals.listIterator();
+        while (i.hasNext())
           {
-            int count = 0;
-            ListIterator<Expr> i = _actuals.listIterator();
-            while (i.hasNext())
-              {
-                Expr actl = i.next();
-                var frmlT = resolvedFormalArgumentTypes[count];
-                if (CHECKS) check
-                  (frmlT != null,
-                   frmlT != Types.t_ERROR || Errors.count() > 0);
-                i.set(actl.propagateExpectedType(res, outer, frmlT));
-                count++;
-              }
+            Expr actl = i.next();
+            var frmlT = _type == Types.t_ERROR || count >= resolvedFormalArgumentTypes.length
+              ? Types.t_ERROR
+              : resolvedFormalArgumentTypes[count];
+            if (CHECKS) check
+              (frmlT != null,
+               frmlT != Types.t_ERROR || Errors.count() > 0);
+            i.set(actl.propagateExpectedType(res, outer, frmlT));
+            count++;
           }
 
-        // NYI: Need to check why this is needed, it does not make sense to
-        // propagate the target's type to target. But if removed,
-        // tests/reg_issue16_chainedBool/ fails with C backend:
-        target = target.propagateExpectedType(res, outer, target.typeForFeatureResultTypeInferencing());
-
+        if (_type != Types.t_ERROR)
+          {
+            // NYI: Need to check why this is needed, it does not make sense to
+            // propagate the target's type to target. But if removed,
+            // tests/reg_issue16_chainedBool/ fails with C backend:
+            target = target.propagateExpectedType(res, outer, target.typeForFeatureResultTypeInferencing());
+          }
       }
   }
 
