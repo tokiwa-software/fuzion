@@ -60,9 +60,6 @@ integer(I integer<I>.type) : numeric<I> is
       safety: other.sign >= 0
   is abstract
 
-  # shift right (unsigned)
-  infix >>> (other I) I is abstract
-
   # greatest common divisor of this and b
   #
   # note that this assumes zero to be divisible by any positive integer.
