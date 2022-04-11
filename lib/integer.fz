@@ -61,7 +61,7 @@ integer(I integer<I>.type) : numeric<I> is
   is abstract
 
   # shift right (unsigned)
-  infix >>> (other T) T is abstract
+  infix >>> (other I) I is abstract
 
   # greatest common divisor of this and b
   #
