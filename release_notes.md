@@ -9,7 +9,7 @@
   - added support for effects: New expression '<type>.env' permits access to
     current instance of an effect
 
-  - unicode punctiations are now allowed as codepoints within operators
+  - unicode punctuations are now allowed as codepoints within operators
 
 - fz
 

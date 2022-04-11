@@ -23,10 +23,12 @@
 #
 # -----------------------------------------------------------------------
 
-# hashMap -- an immutable hash map from keys K to values V
+# hashMap -- an immutable hash map from keys HK to values V
 #
-hashMap<K : hasHash<K>, V>(ks array<K>,
-                           vs array<V>) : map<K, V>
+hashMap(HK hasHash<HK>.type,
+        redef V type,
+        ks array<HK>,
+        vs array<V>) : map<HK, V>
   pre
     ks.length == vs.length
 
@@ -46,7 +48,7 @@ is
 
   # calculate the index of k within contents array in case of no conflict
   #
-  at (k K) => (k.hash.low32bits.castTo_i32 & 0.max) % allocatedSize
+  at (k HK) => (k.hash.low32bits.castTo_i32 & 0.max) % allocatedSize
 
 
   # in case of a collision at given position,
@@ -61,7 +63,7 @@ is
   /* NYI: local */
   contents :=
     for
-      mcontents := marray <option<tuple<K,V>>> allocatedSize nil, mcontents
+      mcontents := marray <option<tuple<HK,V>>> allocatedSize nil, mcontents
       k in ks
       v in vs
     do
@@ -98,7 +100,7 @@ is
 
   # get the value k is mapped to
   #
-  index [] (k K) option<V> is
+  index [] (k HK) option<V> is
 
     retrieve (at i32) option<V> is
       match contents[at]
@@ -119,13 +121,13 @@ is
 
   # get a stream of all key/value pairs in this map
   #
-  items Sequence<tuple<K,V>> is
-    res : Sequence<tuple<K,V>> is
+  items Sequence<tuple<HK,V>> is
+    res : Sequence<tuple<HK,V>> is
       redef asStream =>
         contents
           .asStream
           .filter         (o -> o??)
-          .map<tuple<K,V>>(o -> match o
+          .map<tuple<HK,V>>(o -> match o
                                   nil     => panic "filter failed"
                                   t tuple => t)
     res
@@ -134,6 +136,6 @@ is
 # hashMap -- convenience routine to create an empty instance of hashMap
 #
 #
-hashMap<K : hasHash<K>, V> => (hashMap
-                                 Sequences.empty<K>.asArray
+hashMap<HK : hasHash<HK>, V> => (hashMap
+                                 Sequences.empty<HK>.asArray
                                  Sequences.empty<V>.asArray)

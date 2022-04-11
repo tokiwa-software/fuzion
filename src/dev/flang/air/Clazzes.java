@@ -180,6 +180,7 @@ public class Clazzes extends ANY
   public static final OnDemandClazz object      = new OnDemandClazz(() -> Types.resolved.t_object           );
   public static final OnDemandClazz string      = new OnDemandClazz(() -> Types.resolved.t_string           );
   public static final OnDemandClazz conststring = new OnDemandClazz(() -> Types.resolved.t_conststring      , true /* needed? */);
+  public static final OnDemandClazz type        = new OnDemandClazz(() -> Types.resolved.t_type             );
   public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
   public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     );
   public static Clazz constStringInternalArray;  // field conststring.internalArray

@@ -29,33 +29,33 @@
 # from numeric plus a devision remainder operation %, bitwise logical operations,
 # shift operations and gcd. Also, integers can be used to build fractions.
 #
-integer<T : integer<T>> : numeric<T> is
+integer(I integer<I>.type) : numeric<I> is
 
   # division remainder
-  redef infix % (other T) T
+  redef infix % (other I) I
     pre
       safety: other != zero
   is abstract
 
   # test divisibility by other
-  infix %% (other T) bool
+  infix %% (other I) bool
     pre
       safety: other != zero
   is
     thiz % other == zero
 
   # bitwise operations
-  infix &  (other T) T is abstract
-  infix |  (other T) T is abstract
-  infix ^  (other T) T is abstract
+  infix &  (other I) I is abstract
+  infix |  (other I) I is abstract
+  infix ^  (other I) I is abstract
 
   # shift operations
-  infix >> (other T) T
+  infix >> (other I) I
     pre
       safety: other.sign >= 0
   is abstract
 
-  infix << (other T) T
+  infix << (other I) I
     pre
       safety: other.sign >= 0
   is abstract
@@ -66,7 +66,7 @@ integer<T : integer<T>> : numeric<T> is
   # greatest common divisor of this and b
   #
   # note that this assumes zero to be divisible by any positive integer.
-  gcd(b T) T
+  gcd(b I) I
     pre
       safety: sign >= 0,
       safety: b.sign >= 0
@@ -77,10 +77,11 @@ integer<T : integer<T>> : numeric<T> is
       b.gcd(thiz % b)  # tail recursion
 
   # create a fraction
-  infix /-/ (other T) => fraction thiz other
+  infix /-/ (other I) => fraction thiz other
 
   # create a fraction via unicode fraction slash \u2044 '⁄ '
-  infix ⁄ (other T) => integer.this /-/ other
+  infix ⁄ (other I) => integer.this /-/ other
+
 
   # convert this to a decimal number in a string.  If negative, add "-" as
   # the first character.
@@ -111,7 +112,7 @@ integer<T : integer<T>> : numeric<T> is
           else
             p := -? thiz
             match p
-              v T   => ("-" + v .asString base).utf8.asStream
+              v I   => ("-" + v .asString base).utf8.asStream
               _ nil => (("-" + (-(thiz / b)).asString base) + (-(thiz % b)).asString base).utf8.asStream
 
 

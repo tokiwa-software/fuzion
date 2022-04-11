@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# orderedMap -- an immutable map from ordered keys K to values V
+# orderedMap -- an immutable map from ordered keys OK to values V
 #
 # Lookup performance is O(log size) since it uses binary search in a
 # sorted array.  When deterministic performance is desired, an ordered map
@@ -32,8 +32,10 @@
 # performance of creation of the map is in O(n log n) where n is
 # keys.length.
 #
-orderedMap<K : ordered<K>, V>(ks array<K>,
-                              vs array<V>) : map<K, V>
+orderedMap(OK ordered<OK>.type,
+           redef V type,
+           ks array<OK>,
+           vs array<V>) : map<OK, V>
   pre
     ks.length == vs.length
 
@@ -56,19 +58,19 @@ is
   #
   # performance is O(log size).
   #
-  index [] (k K) option<V> is
+  index [] (k OK) option<V> is
     sortedEntries.find (e -> ks[e.i] <> k)
                  .map<V> (i -> sortedEntries[i].val)
 
 
   # get a stream of all key/value pairs in this map
   #
-  items Sequence<tuple<K,V>> is sortedEntries.map<tuple<K,V>> (e -> (e.key, e.val))
+  items Sequence<tuple<OK,V>> is sortedEntries.map<tuple<OK,V>> (e -> (e.key, e.val))
 
 
   # add mapping from k to v
   #
-  add(k K, v V) orderedMap<K,V> is
+  add(k OK, v V) orderedMap<OK,V> is
     match index[](k)
       nil =>
         (orderedMap
@@ -94,6 +96,6 @@ is
 # orderedMap -- convenience routine to create an empty instance of orderedMap
 #
 #
-orderedMap<K : ordered<K>, V> => (orderedMap
-                                    Sequences.empty<K>.asArray
+orderedMap<OK : ordered<OK>, V> => (orderedMap
+                                    Sequences.empty<OK>.asArray
                                     Sequences.empty<V>.asArray)

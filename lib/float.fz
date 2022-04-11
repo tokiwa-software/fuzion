@@ -29,7 +29,7 @@
 # float is the abstract parent of concrete floating point features such as
 # f32 or f64.
 #
-float<T: float<T>> : numeric<T>, floats<T> is
+float(redef F float<F>.type) : numeric<F>, floats<F> is
 
 
   # preconditions for basic operations: true if the operation's result is
@@ -38,18 +38,18 @@ float<T: float<T>> : numeric<T>, floats<T> is
   #
   redef prefix +! bool is true
   redef prefix -! bool is true
-  redef infix +! (other T) bool is true
-  redef infix -! (other T) bool is true
-  redef infix *! (other T) bool is true
-  redef infix /! (other T) bool is true
-  redef infix %! (other T) bool is true
-  redef infix **!(other T) bool is true
+  redef infix +! (other F) bool is true
+  redef infix -! (other F) bool is true
+  redef infix *! (other F) bool is true
+  redef infix /! (other F) bool is true
+  redef infix %! (other F) bool is true
+  redef infix **!(other F) bool is true
 
 
 # floats -- unit type defining features related to float but not requiring
 # an instance
 #
-floats<T: float<T>> : numerics<T> is
+floats(F float<F>.type) : numerics<F> is
 
   # number of bytes required to store this value
   #
@@ -77,7 +77,7 @@ floats<T: float<T>> : numerics<T> is
   NaN => quietNaN
 
   # is not a number?
-  isNaN(val T) bool is abstract
+  isNaN(val F) bool is abstract
 
   negativeInfinity => -one / zero
 
@@ -87,55 +87,55 @@ floats<T: float<T>> : numerics<T> is
   infinity => positiveInfinity
 
   # eulers number 2.72..
-  ℇ T is abstract
+  ℇ F is abstract
 
   # pi 3.14...
-  π T is abstract
+  π F is abstract
 
   minExp i32 is abstract
   maxExp i32 is abstract
-  minPositive T is abstract
-  max T is abstract
-  epsilon T is abstract
+  minPositive F is abstract
+  max F is abstract
+  epsilon F is abstract
 
 
-  squareRoot(val T) T is abstract
+  squareRoot(val F) F is abstract
   # square root
-  sqrt(val T) => squareRoot val
+  sqrt(val F) => squareRoot val
 
 
   # exponentiation, logarithm
 
-  exp (val T) T is abstract
-  log (val T) T is abstract
+  exp (val F) F is abstract
+  log (val F) F is abstract
 
 
   # trigonometric
 
-  sin (val T) T is abstract
-  cos (val T) T is abstract
-  tan (val T) T is abstract
-  asin(val T) T is abstract
-  acos(val T) T is abstract
-  atan(val T) T is abstract
-  atan2(y T, x T) T is abstract
+  sin (val F) F is abstract
+  cos (val F) F is abstract
+  tan (val F) F is abstract
+  asin(val F) F is abstract
+  acos(val F) F is abstract
+  atan(val F) F is abstract
+  atan2(y F, x F) F is abstract
 
 
   # hyperbolicus
 
-  sinh (val T) T is abstract
-  cosh (val T) T is abstract
-  tanh (val T) T is abstract
+  sinh (val F) F is abstract
+  cosh (val F) F is abstract
+  tanh (val F) F is abstract
 
 
   # arcus hyperbolicus
 
-  asinh(val T) T is
+  asinh(val F) F is
     # ln(x+sqrt(x^2+1))
     log (val + sqrt (val ** two + one))
-  acosh(val T) T is
+  acosh(val F) F is
     # ln(x+sqrt(x^2-1))
     log (val + sqrt (val ** two - one))
-  atanh(val T) T is
+  atanh(val F) F is
     # 1/2*ln((1+x)/(1-x))
     log ((one + val)/(one - val)) / two

@@ -17,29 +17,20 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature onewayMonad
+#  Source code of Fuzion standard library feature Type
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# onewayMonad -- hear feature of all one-way monads.
+# Type -- parent feature of all type features
 #
-# onewayMonad is the heir feature of all one-way monads. A one-way monad is
-# a monadic feature that can be accessed only throuh the environment and
-# that will be replaced in the environment whenever a new instance is created.
+# type features 'f.type' are declared implicitly for every feature f.
+# Type features do not contain state, they are unit types.
 #
-onewayMonad(
+Type ref is
 
-  redef A type,
 
-  OMA onewayMonad<A, OMA>.type,
-
-  # action to be performed, may include code to run while this effect is installed.
+  # name of this type
   #
-  redef r effectModes
-  ) : monad<A, OMA>, effect r
-is
-
-onewayMonads(redef A type,
-             OMA onewayMonad<A, OMA>.type) : monads<A, OMA> is
+  name string is intrinsic

@@ -1099,6 +1099,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           (Errors.count() > 0 || fo != null);
 
         result =
+          field.isTypeParameter() ? Clazzes.type.get() :
           fo == null ? Clazzes.error.get() :
           field.isOuterRef() && fo.isOuterRefAdrOfValue()     ? actualClazz(Types.t_ADDRESS) :
           field.isOuterRef() && fo.isOuterRefCopyOfValue() ||
@@ -1241,14 +1242,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
         for (var i = 0; i < n; i++)
           {
             var a = c.actuals().get(i);
-            if (i >= cf.arguments().size())
+            if (i >= cf.valueArguments().size())
               {
                 if (CHECKS) check
                   (Errors.count() > 0);
               }
             else
               {
-                var cfa = cf.arguments().get(i);
+                var cfa = cf.valueArguments().get(i);
                 var ccc = lookup(cfa, Call.NO_GENERICS, Clazzes.isUsedAt(f));
                 if (c.parentCallArgFieldIds_ < 0)
                   {
@@ -1844,6 +1845,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         return _outer.inheritedOuterRefClazz(_outer._outer, null, f, _outer.feature(), null);
       }
+    else if (f.isTypeParameter())
+      {
+        return Clazzes.type.get();
+      }
     else
       {
         var ft = f.resultType();
@@ -1993,7 +1998,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       case Routine   :
         {
           var args = new ArrayList<Clazz>();
-          for (var a : f.arguments())
+          for (var a : f.valueArguments())
             {
               if (Clazzes.isUsed(a, this))
                 {

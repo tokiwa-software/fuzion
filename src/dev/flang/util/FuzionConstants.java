@@ -176,25 +176,25 @@ public class FuzionConstants extends ANY
   /**
    * feature kind value for constructor routines
    */
-  public static final int MIR_FILE_KIND_CONSTRUCTOR_VALUE = 5;
-  public static final int MIR_FILE_KIND_CONSTRUCTOR_REF   = 6;
+  public static final int MIR_FILE_KIND_CONSTRUCTOR_VALUE = 7;
+  public static final int MIR_FILE_KIND_CONSTRUCTOR_REF   = 8;
 
   /**
    * The bits of feature kind that are not flags
    */
-  public static final int MIR_FILE_KIND_MASK    = 0x7;
+  public static final int MIR_FILE_KIND_MASK    = 0xf;
 
 
   /**
    * Flag OR'ed to kind for routines with generic type parameters.
    */
-  public static final int MIR_FILE_KIND_HAS_TYPE_PAREMETERS = 0x08;
+  public static final int MIR_FILE_KIND_HAS_TYPE_PAREMETERS = 0x10;
 
 
   /**
    * Flag OR'ed to kind for intrinsics that create an instance of their result ref type.
    */
-  public static final int MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR = 0x10;
+  public static final int MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR = 0x20;
 
 
   /**

@@ -29,8 +29,9 @@
 # one-dimensional immutable arrays with an additional access function with
 # three index parameters.
 #
-array3<T>(length0, length1, length2 i32,
-          init3 (i32, i32, i32) -> T)
+array3(redef T type,
+       length0, length1, length2 i32,
+       init3 (i32, i32, i32) -> T)
  : array<T> (fuzion.sys.array<T> length0*length1*length2)
   pre
     safety: length0 >= 0,

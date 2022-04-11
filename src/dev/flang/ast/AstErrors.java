@@ -132,6 +132,20 @@ public class AstErrors extends ANY
   {
     return code(f.qualifiedName() + fg);
   }
+  public static String sfn(List<AbstractFeature> fs)
+  {
+    int c = 0;
+    StringBuilder sb = new StringBuilder();
+    for (var f : fs)
+      {
+        c++;
+        sb.append(c == 1         ? "" :
+                  c == fs.size() ? " and "
+                                 : ", ");
+        sb.append(s(f));
+      }
+    return sb.toString();
+  }
   static String s(List<AbstractType> l)
   {
     return type(l.toString());
@@ -392,7 +406,7 @@ public class AstErrors extends ANY
                                              AbstractType frmlT,
                                              Expr value)
   {
-    var frmls = calledFeature.arguments().iterator();
+    var frmls = calledFeature.valueArguments().iterator();
     AbstractFeature frml = null;
     int c;
     for (c = 0; c <= count && frmls.hasNext(); c++)
@@ -478,7 +492,7 @@ public class AstErrors extends ANY
     int fsz = call.resolvedFormalArgumentTypes.length;
     boolean ferror = false;
     StringBuilder fstr = new StringBuilder();
-    var fargs = call.calledFeature().arguments().iterator();
+    var fargs = call.calledFeature().valueArguments().iterator();
     AbstractFeature farg = null;
     for (var t : call.resolvedFormalArgumentTypes)
       {
@@ -988,12 +1002,13 @@ public class AstErrors extends ANY
       }
   }
 
-  static void constraintMustNotBeGenericArgument(Generic g)
+  public static void constraintMustNotBeGenericArgument(AbstractFeature tp)
   {
-    error(g._pos,
-          "Constraint for generic argument must not be generic type parameter",
-          "Affected generic argument: " + st(g._name) + "\n" +
-          "_constraint: " + s(g.constraint()) + " declared at " + g.constraint().genericArgument()._pos);
+    error(tp.pos(),
+          "Constraint for type parameter must not be a type parameter",
+          "Affected type parameter: " + s(tp) + "\n" +
+          "_constraint: " + s(tp.resultType()) + "\n" +
+          "To solve this, change the type provided, e.g. to the unconstraint " + st("type") + ".\n");
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)

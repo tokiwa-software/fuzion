@@ -25,7 +25,7 @@
 
 # Set -- an abstract set of values V
 #
-Set<T: hasEquals<T>> ref : Sequence<T> is
+Set(E hasEquals<E>.type) ref : Sequence<E> is
 
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
@@ -35,17 +35,17 @@ Set<T: hasEquals<T>> ref : Sequence<T> is
 
   # does this set contain the given value?
   #
-  contains (e T) bool is abstract
+  contains (e E) bool is abstract
 
 
   # list representation of values in this set
   #
-  redef asList list<T> is abstract
+  redef asList list<E> is abstract
 
 
   # add new element k to this set.
   #
-  add (k T) Set<T> is abstract
+  add (k E) Set<E> is abstract
 
 
   redef asString =>

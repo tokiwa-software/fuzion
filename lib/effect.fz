@@ -84,7 +84,7 @@ is
 
 # helper instance for effect.aboratable to wrap call to f() into a ()->unit
 #
-private effect_call<R>(f () -> R) ref : Function<unit> is
+private effect_call(redef R type, f () -> R) ref : Function<unit> is
   res option<R> := nil
   call =>
     set res := f()

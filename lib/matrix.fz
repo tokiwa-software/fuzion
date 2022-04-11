@@ -27,7 +27,7 @@
 #
 # matrix provides matrix operations based on an arbitray numeric type
 #
-matrix<T : numeric<T>> (e array2<T>) : numeric<matrix<T>>, matrices<T>
+matrix(redef M numeric<M>.type, e array2<M>) : numeric<matrix<M>>, matrices<M>
 is
 
 # private:
@@ -43,10 +43,10 @@ is
 
   # basic operations
   redef prefix + => a
-  redef infix +  (b matrix<T>) => matrix (array2<T> e.length0 e.length1 i,j->e[i,j]+b.e[i,j])
-  redef infix -  (b matrix<T>) => matrix (array2<T> e.length0 e.length1 i,j->e[i,j]-b.e[i,j])
-  redef infix *  (b matrix<T>) =>
-    matrix (array2<T> e.length0 b.e.length1
+  redef infix +  (b matrix<M>) => matrix (array2<M> e.length0 e.length1 i,j->e[i,j]+b.e[i,j])
+  redef infix -  (b matrix<M>) => matrix (array2<M> e.length0 e.length1 i,j->e[i,j]-b.e[i,j])
+  redef infix *  (b matrix<M>) =>
+    matrix (array2<M> e.length0 b.e.length1
       (i,j ->
         for
           v := e[0,0].zero, v+f
@@ -55,14 +55,14 @@ is
         else
           v
         ))
-  redef infix /  (b matrix<T>) matrix<T>
+  redef infix /  (b matrix<M>) matrix<M>
     pre
       safety: false
   is
     panic "'matrix.infix /' not defined."
 
   # comparison
-  redef infix == (b matrix<T>) =>
+  redef infix == (b matrix<M>) =>
     for
       x in e
       y in a.e
@@ -71,16 +71,16 @@ is
     else
       true
 
-  redef infix != (b matrix<T>) => !(a = b)
+  redef infix != (b matrix<M>) => !(a = b)
 
   # NYI: total order
-  redef infix <  (b matrix<T>) => panic "matrix does not define a total order"
-  redef infix <= (b matrix<T>) => panic "matrix does not define a total order"
-  redef infix >  (b matrix<T>) => panic "matrix does not define a total order"
-  redef infix >= (b matrix<T>) => panic "matrix does not define a total order"
+  redef infix <  (b matrix<M>) => panic "matrix does not define a total order"
+  redef infix <= (b matrix<M>) => panic "matrix does not define a total order"
+  redef infix >  (b matrix<M>) => panic "matrix does not define a total order"
+  redef infix >= (b matrix<M>) => panic "matrix does not define a total order"
 
-  transpose matrix<T> is
-    matrix (array2<T> e.length1 e.length0 i,j->e[j,i])
+  transpose matrix<M> is
+    matrix (array2<M> e.length1 e.length0 i,j->e[j,i])
 
   redef asString => e.asString
 
@@ -97,7 +97,7 @@ is
 # matrices is a unit type defining features related to matrix but not
 # requiring an instance.
 #
-matrices<E : numeric<E>> : numerics<matrix<E>> is
+matrices(M numeric<M>.type) : numerics<matrix<M>> is
 
   redef name => "matrix"
 

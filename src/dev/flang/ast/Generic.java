@@ -69,7 +69,7 @@ public class Generic extends ANY
    * the constraint on this generic paremter, null for the implicit Object
    * constraint.
    */
-  private AbstractType _constraint;
+  AbstractType _constraint;
 
 
   /**
@@ -102,6 +102,12 @@ public class Generic extends ANY
    * Otherwise, this is null.
    */
   private final Generic _selectFrom;
+
+
+  /**
+   * The type parameter this generic corresponds to
+   */
+  private AbstractFeature _typeParameter;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -156,6 +162,28 @@ public class Generic extends ANY
 
 
   /**
+   * Constructor for a constrainted formal generic parameter from a type
+   * parameter feature.
+   *
+   * @param typeParameter the type parameter this is made from
+   *
+   * @param index the index in the formal generics declaration, starting at 0
+   */
+  public Generic(AbstractFeature typeParameter, int index)
+  {
+    this(typeParameter.pos(),
+         index,
+         typeParameter.featureName().baseName(),
+         null);
+    _typeParameter = typeParameter;
+    if (!typeParameter.state().atLeast(Feature.State.RESOLVED))
+      {
+        _constraint = ((Feature)typeParameter).returnType().functionReturnType();
+      }
+  }
+
+
+  /**
    * Constructor used by select() to create a Generic that selects on particular
    * actual generic passed to an open generic argument.
    *
@@ -177,52 +205,11 @@ public class Generic extends ANY
     _formalGenerics = original._formalGenerics;
     _select = select;
     _selectFrom = original;
+    _typeParameter = _typeParameter;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * visit all the features, expressions, statements within this feature.
-   *
-   * @param v the visitor instance that defines an action to be performed on
-   * visited objects.
-   *
-   * @param outer the feature surrounding this expression.
-   */
-  public void visit(FeatureVisitor v, AbstractFeature outer)
-  {
-    if (_constraint != null)
-      {
-        _constraint = _constraint.visit(v, outer);
-      }
-    v.action(this, outer);
-  }
-
-
-  /**
-   * determine the static type of all expressions and declared features in this feature
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   *
-   * @param outer the root feature that contains this statement.
-   */
-  public void resolveTypes(Resolution res, AbstractFeature outer)
-  {
-    if (PRECONDITIONS) require
-      (outer == feature());
-
-    if (_constraint != null)
-      {
-        _constraint = _constraint.resolve(res, outer);
-        if (_constraint.isGenericArgument())
-          {
-            AstErrors.constraintMustNotBeGenericArgument(this);
-          }
-      }
-  }
 
 
   /**
@@ -294,8 +281,9 @@ public class Generic extends ANY
     if (PRECONDITIONS) require
       (feature().state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-    var result = (_constraint == null) ? Types.resolved.t_object
-                                       : _constraint;
+    AbstractType result =_typeParameter.state().atLeast(Feature.State.RESOLVED_TYPES)
+      ? _typeParameter.resultType()
+      : ((Feature) _typeParameter).returnType().functionReturnType();
 
     if (POSTCONDITIONS) ensure
       (result != null);
@@ -422,6 +410,15 @@ public class Generic extends ANY
        i >= 0);
 
     return new Type(_pos, new Generic(this, i));
+  }
+
+
+  /**
+   * The type parameter corresponding to this generic.
+   */
+  public AbstractFeature typeParameter()
+  {
+    return _typeParameter;
   }
 
 
