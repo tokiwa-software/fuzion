@@ -42,11 +42,11 @@
 # NYI compress
 # NYI snapshots
 #
-CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
+CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
 
   # a linked list node
   private LNode(sn SNode, next option<LNode>) ref is
-    lookup(k K) choice<RESTART,NOTFOUND,V> is
+    lookup(k CTK) choice<RESTART,NOTFOUND,CTV> is
       if sn.k = k
         sn.v
       else
@@ -54,7 +54,7 @@ CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
           nil      => NOTFOUND
           ln LNode => ln.lookup k
 
-    inserted(k K, v V) LNode is
+    inserted(k CTK, v CTV) LNode is
       LNode (SNode k v) (LNode sn next)
 
     redef asString => "LNode($sn, $next)"
@@ -73,7 +73,7 @@ CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
 
 
   # a single node
-  private SNode(k K, v V) is
+  private SNode(k CTK, v CTV) is
     redef asString => "SNode($k, $v)"
 
     asList => [(k,v)].asList
@@ -102,7 +102,7 @@ CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
 
     redef asString => "CNode($bmp, [{array.map<string>(x -> x.asString).fold (strings.concat ", ")}])"
 
-    asList => array.flatMapSequence<tuple<K,V>>(b -> b.asList).asList
+    asList => array.flatMapSequence<tuple<CTK,CTV>>(b -> b.asList).asList
 
 
   private Gen is
@@ -150,13 +150,6 @@ CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
   private root := INode (CNode 0 [] Gen) Gen
 
 
-  LookupResult : choice<NOTFOUND, V> is
-    redef asString =>
-      match LookupResult.this
-        x NOTFOUND => "$x"
-        x V => "$x"
-
-
   private hash(h u64) u32 is
     h.hash.as_u32
 
@@ -194,20 +187,19 @@ CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
 
 
   # lookup key k
-  # if not found result is NOTFOUND
-  lookup(k K) LookupResult is
+  lookup(k CTK) option<CTV> is
     r := root
     res := ilookup r k 0 nil
     match res
       r RESTART =>
         lookup k
       NOTFOUND =>
-        NOTFOUND
-      v V =>
+        nil
+      v CTV =>
         v
 
 
-  private ilookup(i INode, k K, lev u32, parent option<INode>) choice<RESTART,NOTFOUND,V> is
+  private ilookup(i INode, k CTK, lev u32, parent option<INode>) choice<RESTART,NOTFOUND,CTV> is
     match i.main
       cn CNode =>
         (flag, pos) := flagpos hash(k.hash) lev cn.bmp
@@ -231,7 +223,7 @@ CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
 
   # add key value
   # if key is already present value is updated
-  add(k K, v V) unit is
+  add(k CTK, v CTV) unit is
     match iinsert root k v 0 nil
       r RESTART =>
         add k v
@@ -239,7 +231,7 @@ CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
         unit
 
 
-  private iinsert(i INode, k K, v V, lev u32, parent option<INode>) choice<RESTART,OK> is
+  private iinsert(i INode, k CTK, v CTV, lev u32, parent option<INode>) choice<RESTART,OK> is
     match i.main
       cn CNode =>
         (flag, pos) := flagpos hash(k.hash) lev cn.bmp
@@ -276,8 +268,16 @@ CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
         else
           RESTART
 
-  # create a list from this HashMap.
-  redef asList =>
+
+  redef size i32 is
+    items.count
+
+
+  redef index [] (k CTK) option<CTV> is
+    lookup k
+
+
+  redef items Sequence<tuple<CTK,CTV>> is
     # NYI take snapshot
     root.asList
 
