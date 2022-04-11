@@ -35,15 +35,16 @@
 # Complexity (acording to the paper):
 # insert, lookup, remove                     : O(log n)
 # snapshot, amortized size retrieval, clear  : O(1)
-
+#
 # NYI (atomic) CAS
 # NYI gen handling
 # NYI remove
 # NYI compress
-# NYI snapshots: iterator, size, clear
+# NYI snapshots
+#
+CTrie<K: hasHash<K>, V> : Sequence<tuple<K,V>> is
 
-CTrie<K: hasHash<K>, V> is
-
+  # a linked list node
   private LNode(sn SNode, next option<LNode>) ref is
     lookup(k K) choice<RESTART,NOTFOUND,V> is
       if sn.k = k
@@ -55,24 +56,43 @@ CTrie<K: hasHash<K>, V> is
 
     inserted(k K, v V) LNode is
       LNode (SNode k v) (LNode sn next)
+
     redef asString => "LNode($sn, $next)"
 
+    asList =>
+      match next
+          nil      => sn.asList
+          ln LNode => sn.asList ++ ln.asList
 
+
+  # a T node
   private TNode(sn SNode) is
     redef asString => "TNode($sn)"
 
+    asList => sn.asList
 
+
+  # a single node
   private SNode(k K, v V) is
     redef asString => "SNode($k, $v)"
 
+    asList => [(k,v)].asList
 
+
+  # an i or a single node
   private Branch: choice<INode,SNode> is
     redef asString =>
       match Branch.this
         iNode INode => "$iNode"
         sNode SNode => "$sNode"
 
+    asList =>
+      match Branch.this
+        iNode INode => iNode.asList
+        sNode SNode => sNode.asList
 
+
+  # a container node
   private CNode(bmp i32, array array<Branch>, gen Gen) is
     updated(pos i32, node Branch) =>
       CNode bmp (array.put pos node) gen
@@ -82,11 +102,14 @@ CTrie<K: hasHash<K>, V> is
 
     redef asString => "CNode($bmp, [{array.map<string>(x -> x.asString).fold (strings.concat ", ")}])"
 
+    asList => array.flatMapSequence<tuple<K,V>>(b -> b.asList).asList
+
 
   private Gen is
     redef asString => "Gen"
 
 
+  # a container, T or linked list node
   private MainNode: choice<CNode,TNode,LNode> is
     redef asString =>
       match MainNode.this
@@ -94,7 +117,14 @@ CTrie<K: hasHash<K>, V> is
         tNode TNode => "$tNode"
         lNode LNode => "$lNode"
 
+    asList =>
+      match MainNode.this
+        cNode CNode => cNode.asList
+        tNode TNode => tNode.asList
+        lNode LNode => lNode.asList
 
+
+  # an i node
   private INode(main MainNode, gen Gen) ref is
     # compare and swap
     CAS(old_n MainNode, new_n MainNode) bool is
@@ -104,7 +134,11 @@ CTrie<K: hasHash<K>, V> is
       # else
       set main := new_n
       true
+
     redef asString => "INode($main, $gen)"
+
+    asList => main.asList
+
 
   private RESTART is
   private OK is
@@ -124,9 +158,6 @@ CTrie<K: hasHash<K>, V> is
 
 
   private hash(h u64) i32 is
-    # h2 := h ^ (h >>> 20) ^ (h >>> 12)
-    # h2 ^ (h2 >>> 7) ^ (h2 >>> 4)
-    # FIX ME better collision behaviour?
     h.hash.as_i32
 
 
@@ -162,6 +193,8 @@ CTrie<K: hasHash<K>, V> is
       LNode (SNode x.k x.v) (LNode (SNode y.k y.v) nil)
 
 
+  # lookup key k
+  # if not found result is NOTFOUND
   lookup(k K) LookupResult is
     r := root
     res := ilookup r k 0 nil
@@ -196,10 +229,12 @@ CTrie<K: hasHash<K>, V> is
         ln.lookup(k)
 
 
-  insert(k K, v V) unit is
+  # add key value
+  # if key is already present value is updated
+  add(k K, v V) unit is
     match iinsert root k v 0 nil
       r RESTART =>
-        insert k v
+        add k v
       OK =>
         unit
 
@@ -240,6 +275,11 @@ CTrie<K: hasHash<K>, V> is
           OK
         else
           RESTART
+
+  # create a list from this HashMap.
+  redef asList =>
+    # NYI take snapshot
+    root.asList
 
 
   redef asString => "$root"
