@@ -910,6 +910,17 @@ public class AstErrors extends ANY
           solution);
   }
 
+  static void expectedActualTypeInCall(SourcePosition pos,
+                                       AbstractFeature typeParameter)
+  {
+    var calledFeature = typeParameter.outer();
+    error(pos,
+          "Expected actual type parameter in call",
+          "Call to " + s(calledFeature) + " expects type parameter " + s(typeParameter) + " at this position.\n" +
+          "To solve this, provide a type such as " + type("i32") + " or " + type("Object") + " as an argument to this call.\n");
+  }
+
+
   public static void ambiguousType(SourcePosition pos,
                                    String t,
                                    List<AbstractFeature> possibilities)

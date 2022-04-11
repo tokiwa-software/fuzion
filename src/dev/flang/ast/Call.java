@@ -710,13 +710,11 @@ public class Call extends AbstractCall
           {
             var fo = calledFeatureCandidates(targetFeature, res, thiz);
             FeatureName calledName = FeatureName.get(name, _actuals.size());
-            calledFeature_ = fo.filter(pos(),
-                                       calledName,
-                                       ff ->  (ff.hasOpenGenericsArgList()               /* actual generics might come from type inference */
-                                               || forFun                                 /* a fun-declaration "fun a.b.f" */
-                                               || ff.featureName().argCount() == 0 && hasParentheses() /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
-                                               ));
-            if (calledFeature_ == null)
+            var cf = fo.filter(pos(),
+                               calledName,
+                               ff ->  mayMatchArgList(ff) || isSpecialWrtArgs(ff));
+            calledFeature_ = cf;
+            if (cf == null)
               {
                 findChainedBooleans(res, thiz);
                 if (calledFeature_ == null) // nothing found, so flag error
@@ -724,12 +722,92 @@ public class Call extends AbstractCall
                     AstErrors.calledFeatureNotFound(this, calledName, targetFeature);
                   }
               }
+            else if (_actuals.size() != cf.valueArguments().size() && mayMatchArgList(cf) && !isSpecialWrtArgs(cf))
+              {
+                splitOffTypeArgs();
+              }
           }
       }
 
     if (POSTCONDITIONS) ensure
       (Errors.count() > 0 || calledFeature() != null,
        Errors.count() > 0 || target          != null);
+  }
+
+
+  /**
+   * For a call of the form
+   *
+   *   array i32 10 i->i*i
+   *
+   * split the actuals list (i32, 10, i->i*i) into generics (i32) and actuals
+   * (10, i->i*i).
+   */
+  void splitOffTypeArgs()
+  {
+    var g = new List<AbstractType>();
+    var a = new List<Expr>();
+    var i = 0;
+    for (var aa : _actuals)
+      {
+        if (i <  calledFeature_.typeArguments().size())
+          {
+            var ta = calledFeature_.typeArguments().get(i);
+            g.add(aa.asType(ta));
+          }
+        else
+          {
+            a.add(aa);
+          }
+        i++;
+      }
+    generics = g;
+    _actuals = a;
+  }
+
+
+  /**
+   * Check if this expression can also be parsed as a type and return that type. Otherwise,
+   * report an error (AstErrors.expectedActualTypeInCall).
+   *
+   * @param tp the type parameter this expression is assigned to
+   *
+   * @return the Type corresponding to this, Type.t_ERROR in case of an error.
+   */
+  Type asType(AbstractFeature tp)
+  {
+    return new Type(pos(), name, generics,
+                    target == null ? null : target.asType(tp));
+  }
+
+
+  /**
+   * Check if this call when the calledFeature_ would be ff needs special
+   * handling of the argument count.  This is the case for open generics, "fun
+   * a.b.f" calls and implicit calls using f() for f returning Function value.
+   *
+   * @param ff the called feature candidate.
+   *
+   * @return true iff ff may be the called feature due to the special cases
+   * listed above.
+   */
+  private boolean isSpecialWrtArgs(AbstractFeature ff)
+  {
+    return ff.hasOpenGenericsArgList()               /* actual generics might come from type inference */
+      || forFun                                      /* a fun-declaration "fun a.b.f" */
+      || ff.featureName().argCount() == 0 && hasParentheses(); /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
+  }
+
+
+  private boolean mayMatchArgList(AbstractFeature ff)
+  {
+    var asz = _actuals.size();
+    var fvsz = ff.valueArguments().size();
+    var ftsz = ff.typeArguments().size();
+
+    var result = fvsz == asz ||
+      generics.isEmpty() && (fvsz + ftsz == asz);
+    return result;
   }
 
 
