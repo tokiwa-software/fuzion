@@ -1329,7 +1329,7 @@ public class AstErrors extends ANY
           foundAt);
   }
 
-  static void faildToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<Generic> missing)
+  static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<Generic> missing)
   {
     error(pos,
           "Failed to infer actual generic parameters",

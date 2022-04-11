@@ -1344,7 +1344,7 @@ public class Call extends AbstractCall
       }
     if (!missing.isEmpty())
       {
-        AstErrors.faildToInferActualGeneric(pos(),cf, missing);
+        AstErrors.failedToInferActualGeneric(pos(),cf, missing);
       }
   }
 
