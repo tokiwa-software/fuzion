@@ -55,27 +55,6 @@
 #
 CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
 
-  # a linked list node
-  private LNode(sn SNode, next option<LNode>) ref is
-    lookup(k CTK) choice<RESTART,NOTFOUND,CTV> is
-      if sn.k = k
-        sn.v
-      else
-        match next
-          nil      => NOTFOUND
-          ln LNode => ln.lookup k
-
-    inserted(k CTK, v CTV) LNode is
-      LNode (SNode k v) (LNode sn next)
-
-    redef asString => "LNode($sn, $next)"
-
-    asList =>
-      match next
-          nil      => sn.asList
-          ln LNode => sn.asList ++ ln.asList
-
-
   # a tomb node
   # "a T-node is the last value assigned to an I-node"
   private TNode(sn SNode) is
@@ -122,18 +101,18 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
 
 
   # a container, T or linked list node
-  private MainNode: choice<CNode,TNode,LNode> is
+  private MainNode: choice<CNode,TNode,list<SNode>> is
     redef asString =>
       match MainNode.this
         cNode CNode => "$cNode"
         tNode TNode => "$tNode"
-        lNode LNode => "$lNode"
+        lNode list<SNode> => "$lNode"
 
     asList =>
       match MainNode.this
         cNode CNode => cNode.asList
         tNode TNode => tNode.asList
-        lNode LNode => lNode.asList
+        lNode list<SNode> => lNode.map<tuple<CTK,CTV>>(sn -> (sn.k, sn.v))
 
 
   # an indirection node
@@ -180,7 +159,7 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
                                            match m.main
                                             // resurrect
                                             tn TNode => tn.sn
-                                            ln LNode => m
+                                            ln list<SNode> => m
                                             cn CNode => m
                                          sn SNode => sn
                                     )
@@ -201,7 +180,7 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
       m := nd.get.main
       match m
         c CNode => nd.get.CAS(m, toCompressed(c, lev))
-        l LNode =>
+        l list<SNode> =>
         t TNode =>
     unit
 
@@ -221,7 +200,7 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
         else
           CNode bmp [y, x] gen
     else
-      LNode (SNode x.k x.v) (LNode (SNode y.k y.v) nil)
+      [(SNode x.k x.v), (SNode y.k y.v)].asList
 
 
   # lookup key k
@@ -255,8 +234,10 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
       tn TNode =>
         clean parent (lev - W)
         RESTART
-      ln LNode =>
-        ln.lookup(k)
+      ln list<SNode> =>
+        match ln.dropWhile(sn -> sn.k /= k).head
+          nil => NOTFOUND
+          sn SNode => sn.v
 
 
   # add key value
@@ -300,8 +281,8 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
       tn TNode =>
         clean parent (lev - W)
         RESTART
-      ln LNode =>
-        if i.CAS ln (ln.inserted k v)
+      ln list<SNode> =>
+        if i.CAS ln ([(SNode k v)] ++ ln)
           OK
         else
           RESTART
