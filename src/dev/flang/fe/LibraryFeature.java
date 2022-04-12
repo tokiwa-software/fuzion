@@ -396,7 +396,7 @@ public class LibraryFeature extends AbstractFeature
   public AbstractType createThisType()
   {
     if (PRECONDITIONS) require
-      (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField());
+      (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField() || isTypeParameter());
 
     var o = outer();
     var ot = o == null ? null : o.thisType();
