@@ -65,21 +65,21 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
           ln LNode => sn.asList ++ ln.asList
 
 
-  # a T node
+  # a tomb node
   private TNode(sn SNode) is
     redef asString => "TNode($sn)"
 
     asList => sn.asList
 
 
-  # a single node
+  # a singleton node
   private SNode(k CTK, v CTV) is
     redef asString => "SNode($k, $v)"
 
     asList => [(k,v)].asList
 
 
-  # an i or a single node
+  # an i or a singleton node
   private Branch: choice<INode,SNode> is
     redef asString =>
       match Branch.this
@@ -124,7 +124,7 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
         lNode LNode => lNode.asList
 
 
-  # an i node
+  # an indirection node
   private INode(main MainNode, gen Gen) ref is
     # compare and swap
     CAS(old_n MainNode, new_n MainNode) bool is
