@@ -42,6 +42,17 @@
 # NYI compress
 # NYI snapshots
 #
+# glossary:
+# CTK => ctrie key
+# CTV => ctrie value
+# k   => key
+# v   => value
+# gen => generation
+# lev => level
+# bmp => bitmap
+# idx => index
+# W   => 2^W-way branching factor
+#
 CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
 
   # a linked list node
@@ -66,6 +77,7 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
 
 
   # a tomb node
+  # "a T-node is the last value assigned to an I-node"
   private TNode(sn SNode) is
     redef asString => "TNode($sn)"
 
@@ -162,10 +174,36 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
     (flag, pos)
 
 
+  private toCompressed(cn CNode, lev u32) =>
+    narr := cn.array.map<Branch> (n -> match n
+                                         m INode =>
+                                           match m.main
+                                            // resurrect
+                                            tn TNode => tn.sn
+                                            ln LNode => m
+                                            cn CNode => m
+                                         sn SNode => sn
+                                    )
+    toContracted (CNode cn.bmp narr cn.gen) lev
+
+
+  private toContracted(cn CNode, lev u32) MainNode is
+    if (lev > 0) & (cn.array.length == 1)
+      match cn.array[0]
+        sn SNode => TNode sn
+        i INode => cn
+    else
+      cn
+
+
   private clean(nd option<INode>, lev u32) =>
-    say "NYI clean"
-    # match nd.main
-    #   cn CNode =>
+    if nd??
+      m := nd.get.main
+      match m
+        c CNode => nd.get.CAS(m, toCompressed(c, lev))
+        l LNode =>
+        t TNode =>
+    unit
 
 
   private dual(x, y SNode, lev u32, gen Gen) MainNode is
@@ -267,6 +305,14 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
           OK
         else
           RESTART
+
+  # NYI
+  # remove(k CTK) =>
+  #   res := iremove root k 0 nil
+  #   match res
+  #     r RESTART =>
+
+
 
 
   redef size i32 is
