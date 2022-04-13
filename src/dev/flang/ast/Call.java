@@ -1281,8 +1281,6 @@ public class Call extends AbstractCall
     int sz = cf.generics().list.size();
     boolean[] conflict = new boolean[sz]; // The generics that had conflicting types
     String [] foundAt  = new String [sz]; // detail message for conflicts giving types and their location
-    ListIterator<Expr> aargs = _actuals.listIterator();
-    int count = 1; // argument count, for error messages
 
     generics = new List<>();
     for (Generic g : cf.generics().list)
@@ -1293,44 +1291,7 @@ public class Call extends AbstractCall
           }
       }
 
-    for (var frml : cf.valueArguments())
-      {
-        if (CHECKS) check
-          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
-
-        var t = frml.resultTypeIfPresent(res, NO_GENERICS);
-        var g = t.isGenericArgument() ? t.genericArgument() : null;
-        if (g != null && g.feature() == cf && g.isOpen())
-          {
-            foundAt[g.index()] = "open"; // set to something not null to avoid missing argument error below
-            while (aargs.hasNext())
-              {
-                count++;
-                Expr actual = resolveTypeForNextActual(aargs, res, outer);
-                var actualType = actual.typeForFeatureResultTypeInferencing();
-                if (actualType == null)
-                  {
-                    actualType = Types.t_ERROR;
-                    AstErrors.failedToInferOpenGenericArg(pos(), count, actual);
-                  }
-                generics.add(actualType);
-              }
-          }
-        else if (aargs.hasNext())
-          {
-            count++;
-            Expr actual = resolveTypeForNextActual(aargs, res, outer);
-            var actualType = actual.typeForGenericsTypeInfereing();
-            if (actualType != null)
-              {
-                inferGeneric(res, t, actualType, actual.pos(), conflict, foundAt);
-              }
-            else if (actual instanceof Function af)
-              {
-                inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
-              }
-          }
-      }
+    inferGenericsFromArgs(res, outer, conflict, foundAt);
 
     List<Generic> missing = new List<Generic>();
     for (Generic g : cf.generics().list)
@@ -1353,6 +1314,68 @@ public class Call extends AbstractCall
         AstErrors.failedToInferActualGeneric(pos(),cf, missing);
       }
   }
+
+
+  /**
+   * infer the missing generic arguments to this call by inspecting the types of
+   * the actual arguments.
+   *
+   * This is called during resolveTypes, so we have to be careful since type
+   * information is not generally available yet.
+   *
+   * @param res the resolution instance.
+   *
+   * @param outer the root feature that contains this statement.
+   */
+  void inferGenericsFromArgs(Resolution res, AbstractFeature outer, boolean[] conflict, String[] foundAt)
+  {
+    var cf = calledFeature_;
+    int count = 1; // argument count, for error messages
+    ListIterator<Expr> aargs = _actuals.listIterator();
+    var va = cf.valueArguments();
+    for (var frml : va)
+      {
+        if (CHECKS) check
+          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+
+        if (true)
+          {
+            var t = frml.resultTypeIfPresent(res, NO_GENERICS);
+            var g = t.isGenericArgument() ? t.genericArgument() : null;
+            if (g != null && g.feature() == cf && g.isOpen())
+              {
+                foundAt[g.index()] = "open"; // set to something not null to avoid missing argument error below
+                while (aargs.hasNext())
+                  {
+                    count++;
+                    Expr actual = resolveTypeForNextActual(aargs, res, outer);
+                    var actualType = actual.typeForFeatureResultTypeInferencing();
+                    if (actualType == null)
+                      {
+                        actualType = Types.t_ERROR;
+                        AstErrors.failedToInferOpenGenericArg(pos(), count, actual);
+                      }
+                    generics.add(actualType);
+                  }
+              }
+            else if (aargs.hasNext())
+              {
+                count++;
+                Expr actual = resolveTypeForNextActual(aargs, res, outer);
+                var actualType = actual.typeForGenericsTypeInfereing();
+                if (actualType != null)
+                  {
+                    inferGeneric(res, t, actualType, actual.pos(), conflict, foundAt);
+                  }
+                else if (actual instanceof Function af)
+                  {
+                    inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
+                  }
+              }
+          }
+      }
+  }
+
 
 
   /**
