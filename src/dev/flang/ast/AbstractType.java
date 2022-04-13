@@ -214,6 +214,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
 
 
   /**
+   * Check if this or any of its generic arguments is Types.t_UNDEFINED.
+   *
+   * @param exceptFirstGenericArg if true, the first generic argument may be
+   * Types.t_UNDEFINED.  This is used in a lambda 'x -> f x' of type
+   * 'Function<R,X>' when 'R' is unknown and to be inferred.
+   */
+  public boolean containsUndefined(boolean exceptFirst)
+  {
+    return false;
+  }
+
+
+  /**
    * Check if a value of static type actual can be assigned to a field of static
    * type this.  This performs static type checking, i.e., the types may still
    * be or depend on generic parameters.

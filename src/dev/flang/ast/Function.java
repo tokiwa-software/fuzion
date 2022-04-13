@@ -400,6 +400,31 @@ public class Function extends ExprWithPos
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
+    propagateExpectedType2(res, outer, t, false);
+    return this;
+  }
+
+
+  /**
+   * Special version of propagateExpetedType(res, outer, t) tries to infer the
+   * result type of a lambda.
+   *
+   * @param res this is called during type inference, res gives the resolution
+   * instance.
+   *
+   * @param outer the feature that contains this expression
+   *
+   * @param t the expected type.
+   *
+   * @param inferResultType true if the result type of this lambda should be
+   * inferred.
+   *
+   * @return the result type provided that inferResultType and the result type
+   * could be inferred, null otherwise.
+   */
+  public AbstractType propagateExpectedType2(Resolution res, AbstractFeature outer, AbstractType t, boolean inferResultType)
+  {
+    AbstractType result = null;
     if (_call == null)
       {
         if (t != Types.t_ERROR && t.featureOfType() != Types.resolved.f_function)
@@ -446,8 +471,9 @@ public class Function extends ExprWithPos
           }
         if (t != Types.t_ERROR)
           {
-            Feature f = new Feature(pos(), new FunctionReturnType(gs.get(0)), new List<String>("call"), a, _inherits, _contract,
-                                    new Impl(_expr.pos(), _expr, Impl.Kind.Routine));
+            var rt = inferResultType ? NoType.INSTANCE      : new FunctionReturnType(gs.get(0));
+            var im = inferResultType ? Impl.Kind.RoutineDef : Impl.Kind.Routine;
+            var f = new Feature(pos(), rt, new List<String>("call"), a, _inherits, _contract, new Impl(_expr.pos(), _expr, im));
             this._feature = f;
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
@@ -464,11 +490,19 @@ public class Function extends ExprWithPos
                                    new Contract(null,null,null),
                                    new Impl(pos(), new Block(pos(), statements), Impl.Kind.Routine));
             res._module.findDeclarations(_wrapper, outer);
+            if (inferResultType)
+              {
+                _wrapper.scheduleForResolution(res);
+                res.resolveTypes();
+                result = f.resultType();
+                gs.set(0, result);
+              }
+
             _call = new Call(pos(), new Current(pos(), outer.thisType()), _wrapper).resolveTypes(res, outer);
           }
         _type = t;
       }
-    return this;
+    return result;
   }
 
 

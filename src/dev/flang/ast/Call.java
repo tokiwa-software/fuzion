@@ -724,7 +724,7 @@ public class Call extends AbstractCall
               }
             else if (_actuals.size() != cf.valueArguments().size() && mayMatchArgList(cf) && !isSpecialWrtArgs(cf))
               {
-                splitOffTypeArgs();
+                splitOffTypeArgs(thiz);
               }
           }
       }
@@ -743,7 +743,7 @@ public class Call extends AbstractCall
    * split the actuals list (i32, 10, i->i*i) into generics (i32) and actuals
    * (10, i->i*i).
    */
-  void splitOffTypeArgs()
+  void splitOffTypeArgs(AbstractFeature outer)
   {
     var g = new List<AbstractType>();
     var a = new List<Expr>();
@@ -753,7 +753,7 @@ public class Call extends AbstractCall
         if (i <  calledFeature_.typeArguments().size())
           {
             var ta = calledFeature_.typeArguments().get(i);
-            g.add(aa.asType(ta));
+            g.add(aa.asType(outer, ta));
           }
         else
           {
@@ -770,14 +770,18 @@ public class Call extends AbstractCall
    * Check if this expression can also be parsed as a type and return that type. Otherwise,
    * report an error (AstErrors.expectedActualTypeInCall).
    *
+   * @param outer the outer feature containing this expression
+   *
    * @param tp the type parameter this expression is assigned to
    *
    * @return the Type corresponding to this, Type.t_ERROR in case of an error.
    */
-  Type asType(AbstractFeature tp)
+  Type asType(AbstractFeature outer, AbstractFeature tp)
   {
-    return new Type(pos(), name, generics,
-                    target == null ? null : target.asType(tp));
+    var result = new Type(pos(), name, generics,
+                          target == null ? null : target.asType(outer, tp));
+    result.findGenerics(tp.outer());
+    return result;
   }
 
 
@@ -1275,24 +1279,31 @@ public class Call extends AbstractCall
   {
     var cf = calledFeature_;
     int sz = cf.generics().list.size();
-    AbstractType[] found    = new AbstractType[sz]; // The generics that could be inferred
-    boolean[]      conflict = new boolean[sz]; // The generics that had conflicting types
-    String []      foundAt  = new String [sz]; // detail message for conflicts giving types and their location
-    List<AbstractType> inferredOpen = null;  // if open generics could be inferred, these are the actual open generics
+    boolean[] conflict = new boolean[sz]; // The generics that had conflicting types
+    String [] foundAt  = new String [sz]; // detail message for conflicts giving types and their location
     ListIterator<Expr> aargs = _actuals.listIterator();
     int count = 1; // argument count, for error messages
+
+    generics = new List<>();
+    for (Generic g : cf.generics().list)
+      {
+        if (!g.isOpen())
+          {
+            generics.add(Types.t_UNDEFINED);
+          }
+      }
+
     for (var frml : cf.valueArguments())
       {
         if (CHECKS) check
           (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
         var t = frml.resultTypeIfPresent(res, NO_GENERICS);
-        if (t.isGenericArgument() &&
-            t.genericArgument().feature() == cf &&
-            t.genericArgument().isOpen())
+        var g = t.isGenericArgument() ? t.genericArgument() : null;
+        if (g != null && g.feature() == cf && g.isOpen())
           {
-            inferredOpen = new List<>();
-            while (aargs.hasNext() && inferredOpen != null)
+            foundAt[g.index()] = "open"; // set to something not null to avoid missing argument error below
+            while (aargs.hasNext())
               {
                 count++;
                 Expr actual = resolveTypeForNextActual(aargs, res, outer);
@@ -1302,7 +1313,7 @@ public class Call extends AbstractCall
                     actualType = Types.t_ERROR;
                     AstErrors.failedToInferOpenGenericArg(pos(), count, actual);
                   }
-                inferredOpen.add(actualType);
+                generics.add(actualType);
               }
           }
         else if (aargs.hasNext())
@@ -1312,36 +1323,31 @@ public class Call extends AbstractCall
             var actualType = actual.typeForGenericsTypeInfereing();
             if (actualType != null)
               {
-                inferGeneric(res, t, actualType, actual.pos(), found, conflict, foundAt);
+                inferGeneric(res, t, actualType, actual.pos(), conflict, foundAt);
+              }
+            else if (actual instanceof Function af)
+              {
+                inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
               }
           }
       }
-    generics = new List<>();
+
     List<Generic> missing = new List<Generic>();
     for (Generic g : cf.generics().list)
       {
         int i = g.index();
-        var t = found[i];
-        if (g.isOpen() && inferredOpen != null)
-          {
-            generics.addAll(inferredOpen);
-          }
-        else if (g.isOpen() || t == null)
+        if ( g.isOpen() && foundAt[i] == null ||
+            !g.isOpen() && generics.get(i) == Types.t_UNDEFINED)
           {
             missing.add(g);
-            t = Types.t_ERROR;
+            generics.set(i, Types.t_ERROR);
           }
         else if (conflict[i])
           {
             AstErrors.incompatibleTypesDuringTypeInference(pos(), g, foundAt[i]);
-            t = Types.t_ERROR;
-          }
-
-        if (!g.isOpen())
-          {
-            generics.add(t);
           }
       }
+
     if (!missing.isEmpty())
       {
         AstErrors.failedToInferActualGeneric(pos(),cf, missing);
@@ -1360,15 +1366,12 @@ public class Call extends AbstractCall
    *
    * @param pos source code position of the expression actualType was derived from
    *
-   * @param found set of generics that could be inferred. Will receive any newly
-   * inferred generics
-   *
    * @param conflict set of generics that caused conflicts
    *
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
    */
-  private void inferGeneric(Resolution res, AbstractType formalType, AbstractType actualType, SourcePosition pos, AbstractType[] found, boolean[] conflict, String[] foundAt)
+  private void inferGeneric(Resolution res, AbstractType formalType, AbstractType actualType, SourcePosition pos, boolean[] conflict, String[] foundAt)
   {
     if (formalType.isGenericArgument())
       {
@@ -1376,11 +1379,11 @@ public class Call extends AbstractCall
         if (g.feature() == calledFeature_)
           { // we found a use of a generic type, so record it:
             var i = g.index();
-            if (found[i] == null || actualType.isAssignableFromOrContainsError(found[i]))
+            if (foundAt[i] == null || actualType.isAssignableFromOrContainsError(generics.get(i)))
               {
-                found[i] = actualType;
+                generics.set(i, actualType);
               }
-            conflict[i] = conflict[i] || !found[i].isAssignableFromOrContainsError(actualType);
+            conflict[i] = conflict[i] || !generics.get(i).isAssignableFromOrContainsError(actualType);
             foundAt [i] = (foundAt[i] == null ? "" : foundAt[i]) + actualType + " found at " + pos.show() + "\n";
           }
       }
@@ -1398,7 +1401,7 @@ public class Call extends AbstractCall
                     inferGeneric(res,
                                  formalType.generics().get(i),
                                  actualType.generics().get(i),
-                                 pos, found, conflict, foundAt);
+                                 pos, conflict, foundAt);
                   }
               }
           }
@@ -1406,7 +1409,7 @@ public class Call extends AbstractCall
           {
             for (var ct : formalType.choiceGenerics())
               {
-                inferGeneric(res, ct, actualType, pos, found, conflict, foundAt);
+                inferGeneric(res, ct, actualType, pos, conflict, foundAt);
               }
           }
         else if (aft != null)
@@ -1417,13 +1420,60 @@ public class Call extends AbstractCall
                 if (pt != null)
                   {
                     var apt = actualType.actualType(pt);
-                    inferGeneric(res, formalType, apt, pos, found, conflict, foundAt);
+                    inferGeneric(res, formalType, apt, pos, conflict, foundAt);
                   }
               }
           }
       }
   }
 
+
+  /**
+   * Perform type inference for result type of lambda
+   *
+   * @param res the resolution instance.
+   *
+   * @param outer the feature containing this call
+   *
+   * @param formalType the (possibly generic) formal type
+   *
+   * @param actualType the actual type
+   *
+   * @param pos source code position of the expression actualType was derived from
+   *
+   * @param conflict set of generics that caused conflicts
+   *
+   * @param foundAt the position of the expressions from which actual generics
+   * were taken.
+   */
+  private void inferGenericLambdaResult(Resolution res,
+                                        AbstractFeature outer,
+                                        AbstractType formalType,
+                                        Function af,
+                                        SourcePosition pos,
+                                        boolean[] conflict,
+                                        String[] foundAt)
+  {
+    if (!formalType.isGenericArgument() &&
+        formalType.featureOfType() == Types.resolved.f_function &&
+        formalType.generics().get(0).isGenericArgument()
+        )
+      {
+        var rg = formalType.generics().get(0).genericArgument();
+        var ri = rg.index();
+        var cf = calledFeature_;
+        if (rg.feature() == cf && foundAt[ri] == null)
+          {
+            var at = targetTypeOrConstraint(res).actualType(formalType).actualType(cf, generics);
+            if (!at.containsUndefined(true))
+              {
+                var rt = af.propagateExpectedType2(res, outer, at, true);
+                generics.set(ri, rt);
+                foundAt[ri] = (foundAt[ri] == null ? "" : foundAt[ri]) + rt + " found at " + pos.show() + "\n";
+              }
+          }
+      }
+  }
 
   /**
    * determine the static type of all expressions and declared features in this feature

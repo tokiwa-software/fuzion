@@ -869,6 +869,33 @@ public class Type extends AbstractType
     return result;
   }
 
+
+  /**
+   * Check if this or any of its generic arguments is Types.t_UNDEFINED.
+   *
+   * @param exceptFirstGenericArg if true, the first generic argument may be
+   * Types.t_UNDEFINED.  This is used in a lambda 'x -> f x' of type
+   * 'Function<R,X>' when 'R' is unknown and to be inferred.
+   */
+  public boolean containsUndefined(boolean exceptFirst)
+  {
+    boolean result = false;
+    if (this == Types.t_UNDEFINED)
+      {
+        result = true;
+      }
+    else if (!_generics.isEmpty())
+      {
+        for (var t: _generics)
+          {
+            result = result || !exceptFirst && t.containsUndefined(false);
+            exceptFirst = false;
+          }
+      }
+
+    return result;
+  }
+
 }
 
 /* end of file */
