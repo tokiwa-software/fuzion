@@ -32,7 +32,7 @@
 # reference implementation in Scala: https://github.com/axel22/Ctries/
 # on wikipedia: https://en.wikipedia.org/wiki/Ctrie
 #
-# Complexity (acording to the paper):
+# Complexity (according to the paper):
 # insert, lookup, remove                     : O(log n)
 # snapshot, amortized size retrieval, clear  : O(1)
 #
