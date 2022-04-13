@@ -416,6 +416,8 @@ public class Impl extends ANY
         case FieldDef   : result = " := " + _initialValue.getClass() + ": " +_initialValue; break;
         case FieldActual: result = " typefrom(" + _initialValue.pos() + ")";                break;
         case Field      : result = "";                                                      break;
+        case TypeParameter:     result = "type";                                            break;
+        case TypeParameterOpen: result = "type...";                                         break;
         case RoutineDef : result = " => " + _code.toString();                               break;
         case Routine    : result = " is " + _code.toString();                               break;
         case Abstract   : result = "is abstract";                                           break;
