@@ -55,14 +55,9 @@ f32(val f32) : float<f32>, f32s is
 
 
   # conversion
-  as_i64 i64
-    pre
-      safety: f32.this >= from_i64 i64.min && f32.this <= from_i64 i64.max
-    is
-      as_f64.as_i64
-  as_f64 f64
-    is
-      panic "NYI: f32.as_f64"
+  as_i64 => as_f64.as_i64
+
+  as_f64 f64 is intrinsic
 
 
   # casting bit representation to u32
@@ -93,7 +88,6 @@ f32s : floats<f32> is
   significandBits => 24
   exponentBits => 8
 
-  from_i64(v i64) f32 is intrinsic
 
   redef isNaN(val f32) bool is intrinsic
 
