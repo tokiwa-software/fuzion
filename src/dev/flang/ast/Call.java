@@ -1291,7 +1291,21 @@ public class Call extends AbstractCall
           }
       }
 
-    inferGenericsFromArgs(res, outer, conflict, foundAt);
+    var va = cf.valueArguments();
+    var checked = new boolean[va.size()];
+    int last, next = 0;
+    do
+      {
+        last = next;
+        inferGenericsFromArgs(res, outer, checked, conflict, foundAt);
+        next = 0;
+        for (var b : foundAt)
+          {
+            next = next + (b != null ? 1 : 0);
+          }
+      }
+    while (last < next);
+
 
     List<Generic> missing = new List<Generic>();
     for (Generic g : cf.generics().list)
@@ -1326,24 +1340,34 @@ public class Call extends AbstractCall
    * @param res the resolution instance.
    *
    * @param outer the root feature that contains this statement.
+   *
+   * @param checked boolean array for all cf.valuedArguments() that have been
+   * checked already.
+   *
+   * @param conflict set of generics that caused conflicts
+   *
+   * @param foundAt the position of the expressions from which actual generics
+   * were taken.
    */
-  void inferGenericsFromArgs(Resolution res, AbstractFeature outer, boolean[] conflict, String[] foundAt)
+  void inferGenericsFromArgs(Resolution res, AbstractFeature outer, boolean[] checked, boolean[] conflict, String[] foundAt)
   {
     var cf = calledFeature_;
     int count = 1; // argument count, for error messages
     ListIterator<Expr> aargs = _actuals.listIterator();
     var va = cf.valueArguments();
+    var vai = 0;
     for (var frml : va)
       {
         if (CHECKS) check
           (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-        if (true)
+        if (!checked[vai])
           {
             var t = frml.resultTypeIfPresent(res, NO_GENERICS);
             var g = t.isGenericArgument() ? t.genericArgument() : null;
             if (g != null && g.feature() == cf && g.isOpen())
               {
+                checked[vai] = true;
                 foundAt[g.index()] = "open"; // set to something not null to avoid missing argument error below
                 while (aargs.hasNext())
                   {
@@ -1366,13 +1390,15 @@ public class Call extends AbstractCall
                 if (actualType != null)
                   {
                     inferGeneric(res, t, actualType, actual.pos(), conflict, foundAt);
+                    checked[vai] = true;
                   }
                 else if (actual instanceof Function af)
                   {
-                    inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
+                    checked[vai] = inferGenericLambdaResult(res, outer, t, af, actual.pos(), conflict, foundAt);
                   }
               }
           }
+        vai++;
       }
   }
 
@@ -1469,14 +1495,15 @@ public class Call extends AbstractCall
    * @param foundAt the position of the expressions from which actual generics
    * were taken.
    */
-  private void inferGenericLambdaResult(Resolution res,
-                                        AbstractFeature outer,
-                                        AbstractType formalType,
-                                        Function af,
-                                        SourcePosition pos,
-                                        boolean[] conflict,
-                                        String[] foundAt)
+  private boolean inferGenericLambdaResult(Resolution res,
+                                           AbstractFeature outer,
+                                           AbstractType formalType,
+                                           Function af,
+                                           SourcePosition pos,
+                                           boolean[] conflict,
+                                           String[] foundAt)
   {
+    var result = false;
     if (!formalType.isGenericArgument() &&
         formalType.featureOfType() == Types.resolved.f_function &&
         formalType.generics().get(0).isGenericArgument()
@@ -1493,9 +1520,11 @@ public class Call extends AbstractCall
                 var rt = af.propagateExpectedType2(res, outer, at, true);
                 generics.set(ri, rt);
                 foundAt[ri] = (foundAt[ri] == null ? "" : foundAt[ri]) + rt + " found at " + pos.show() + "\n";
+                result = true;
               }
           }
       }
+    return result;
   }
 
   /**
