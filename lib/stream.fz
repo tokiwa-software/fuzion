@@ -89,7 +89,7 @@ stream(redef T type) ref : Sequence<T> is
 
   # create new stream from all elements for which predicate f is true
   #
-  filterStream(f T -> bool) stream<T> is filter0 f
+  redef filter(f T -> bool) Sequence<T> is filter0 f
   filter0(f T -> bool) ref : stream<T> is
     cache T := ?  # NYI: should be option<T>
     cacheOk := false

@@ -127,9 +127,9 @@ is
         contents
           .asList
           .filter         (o -> o??)
-          .map<tuple<HK,V>>(o -> match o
-                                  nil     => panic "filter failed"
-                                  t tuple => t)
+          .mapSequence<tuple<HK,V>>(o -> match o
+                                           nil     => panic "filter failed"
+                                           t tuple => t)
     res
 
 
