@@ -120,7 +120,7 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
 
   # an indirection node
   private INode(main MainNode, gen Gen) ref is
-    # compare and swap
+    # compare and set
     CAS(old_n MainNode, new_n MainNode) bool is
       # NYI this must be atomic
       # if(main.hash != old_n.hash)
