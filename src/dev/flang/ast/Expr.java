@@ -233,6 +233,24 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   }
 
 
+
+  /**
+   * Check if this expression can also be parsed as a type and return that type. Otherwise,
+   * report an error (AstErrors.expectedActualTypeInCall).
+   *
+   * @param outer the outer feature containing this expression
+   *
+   * @param tp the type parameter this expression is assigned to
+   *
+   * @return the Type corresponding to this, Type.t_ERROR in case of an error.
+   */
+  Type asType(AbstractFeature outer, AbstractFeature tp)
+  {
+    AstErrors.expectedActualTypeInCall(pos(), tp);
+    return Types.t_ERROR;
+  }
+
+
   protected Expr addFieldForResult(Resolution res, AbstractFeature outer, AbstractType t)
   {
     var result = this;

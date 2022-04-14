@@ -128,10 +128,6 @@ public class AstErrors extends ANY
   {
     return expr(s);
   }
-  static String s(AbstractFeature f, FormalGenerics fg)
-  {
-    return code(f.qualifiedName() + fg);
-  }
   public static String sfn(List<AbstractFeature> fs)
   {
     int c = 0;
@@ -540,7 +536,7 @@ public class AstErrors extends ANY
           "Wrong number of generic arguments",
           "Wrong number of actual generic arguments in " + detail1 + ":\n" +
           detail2 +
-          "expected " + fg.sizeText() + (fg == FormalGenerics.NONE ? "" : " for " + s(fg.feature(), fg) + "") + "\n" +
+          "expected " + fg.sizeText() + (fg == FormalGenerics.NONE ? "" : " for " + s(fg) + "") + "\n" +
           "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
   }
 
@@ -659,7 +655,7 @@ public class AstErrors extends ANY
     error(pos,
           "" + skw("match") + " subject type must not be a type parameter",
           "Matched type: " + s(t) + "\n" +
-          "which is a type parameter declared at " + t.genericArgument()._pos.show());
+          "which is a type parameter declared at " + t.genericArgument().typeParameter().pos().show());
 
   }
 
@@ -914,6 +910,17 @@ public class AstErrors extends ANY
           solution);
   }
 
+  static void expectedActualTypeInCall(SourcePosition pos,
+                                       AbstractFeature typeParameter)
+  {
+    var calledFeature = typeParameter.outer();
+    error(pos,
+          "Expected actual type parameter in call",
+          "Call to " + s(calledFeature) + " expects type parameter " + s(typeParameter) + " at this position.\n" +
+          "To solve this, provide a type such as " + type("i32") + " or " + type("Object") + " as an argument to this call.\n");
+  }
+
+
   public static void ambiguousType(SourcePosition pos,
                                    String t,
                                    List<AbstractFeature> possibilities)
@@ -1028,7 +1035,7 @@ public class AstErrors extends ANY
           "In a type >>a.b<<, the outer type >>a<< must not be a formal generic argument.\n" +
           "Type used: " + s(t) + "\n" +
           "Formal generic used " + s(t.outer()) + "\n" +
-          "Formal generic declared in " + t.outer().genericArgument()._pos.show() + "\n");
+          "Formal generic declared in " + t.outer().genericArgument().typeParameter().pos().show() + "\n");
   }
 
   static void formalGenericWithGenericArgs(SourcePosition pos, Type t, Generic generic)
@@ -1038,7 +1045,7 @@ public class AstErrors extends ANY
           "In a type with generic arguments >>A<B><<, the base type >>A<< must not be a formal generic argument.\n" +
           "Type used: " + s(t) + "\n" +
           "Formal generic used " + s(generic) + "\n" +
-          "Formal generic declared in " + generic._pos.show() + "\n");
+          "Formal generic declared in " + generic.typeParameter().pos().show() + "\n");
   }
 
   static void refToChoice(SourcePosition pos)
@@ -1322,7 +1329,7 @@ public class AstErrors extends ANY
           foundAt);
   }
 
-  static void faildToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<Generic> missing)
+  static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<Generic> missing)
   {
     error(pos,
           "Failed to infer actual generic parameters",

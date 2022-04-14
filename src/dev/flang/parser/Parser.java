@@ -250,18 +250,23 @@ field       : visibility
     Visi v = visibility();
     int m = modifiers();
     List<List<String>> n = featNames();
-    FormalGenerics g = formGens();
+    var g = formGens();
     var a = (current() == Token.t_lparen) && fork().skipType() ? new List<Feature>() : formArgsOpt();
     ReturnType r = returnType();
     var hasType = r != NoType.INSTANCE;
     var i = inherits();
     Contract c = contract(true);
+    if (!g.isEmpty())
+      {
+        g.addAll(a);
+        a = g;
+        g = new List<>();
+      }
     Impl p =
-      g == FormalGenerics.NONE &&
       a.isEmpty()              &&
       i.isEmpty()                 ? implFldOrRout(hasType)
                                   : implRout();
-    return new FList(pos, v,m,r,n,g,a,i,c,p);
+    return new FList(pos, v,m,r,n,a,i,c,p);
   }
 
 
@@ -705,19 +710,22 @@ genericList : e=generic  ( COMMA genericList
                          )
             ;
    */
-  FormalGenerics formGens()
+  List<Feature> formGens()
   {
-    FormalGenerics result = FormalGenerics.NONE;
+    List<Feature> result = new List<>();
     if (splitSkip("<"))
       {
         if (!isOperator('>'))
           {
-            List<Generic> lg = new List<>(generic(0));
-            while (skipComma())
+            do
               {
-                lg.add(generic(lg.size()));
+                result.add(generic());
               }
-            result = new FormalGenerics(lg, splitSkip("..."));
+            while (skipComma());
+            if (splitSkip("..."))
+              {
+                Errors.error(posObject(), "did not expect ...","");
+              }
           }
         matchOperator(">", "formGens");
       }
@@ -779,21 +787,13 @@ generic     : IDENT
               )
             ;
    */
-  Generic generic(int index)
+  Feature generic()
   {
-    Generic g;
     SourcePosition pos = posObject();
     String i = identifierOrError();
     match(Token.t_ident, "generic");
-    if (skipColon())
-      {
-        g = new Generic(pos, index, i, type());
-      }
-    else
-      {
-        g = new Generic(pos, index, i);
-      }
-    return g;
+    var t = skipColon() ? type() : new Type("Object");
+    return new Feature(pos, Consts.VISIBILITY_LOCAL, 0, t, i, Contract.EMPTY_CONTRACT, Impl.TYPE_PARAMETER);
   }
 
 
@@ -2799,12 +2799,10 @@ nextValue   : COMMA exprAtMinIndent
           }
       }
     Feature f1 = new Feature(pos,v1,m1,r1,new List<>(n1),
-                             FormalGenerics.NONE,
                              new List<Feature>(),
                              new List<>(),
                              c1,p1);
     Feature f2 = new Feature(pos,v2,m2,r2,new List<>(n2),
-                             FormalGenerics.NONE,
                              new List<Feature>(),
                              new List<>(),
                              c2,p2);

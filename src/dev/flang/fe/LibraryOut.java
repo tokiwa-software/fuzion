@@ -123,6 +123,10 @@ class LibraryOut extends DataOut
     innerFeatures(sm._universe);
     sourceFiles();
     fixUps();
+    sm._options.verbosePrintln(2, "" +
+                               _offsetsForFeature.size() + " features " +
+                               _offsetsForType.size() + " types and " +
+                               _sourceFiles.size() + " source files includes in fum file.");
   }
 
 
@@ -254,8 +258,6 @@ class LibraryOut extends DataOut
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | int           | outer feature index, 0 for outer()==universe  |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | T=1    | 1      | TypeArgs      | optional type arguments                       |
-   *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -286,28 +288,6 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    *   |        | 1      | InnerFeatures | inner features of this feature                |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *
-   *   +---------------------------------------------------------------------------------+
-   *   | TypeArgs                                                                        |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | int           | num type ags n                                |
-   *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | bool          | isOpen                                        |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | n      | TypeArg       | type arguments                                |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *
-   *   +---------------------------------------------------------------------------------+
-   *   | TypeArg                                                                         |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Name          | type arg name                                 |
-   *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | Type          | constraint                                    |
-   *   +--------+--------+---------------+-----------------------------------------------+
    */
   void feature(Feature f)
   {
@@ -322,10 +302,6 @@ class LibraryOut extends DataOut
        f.isConstructor() || k < FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
     if (CHECKS) check
       (Errors.count() > 0 || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
-    if (f.generics() != FormalGenerics.NONE)
-      {
-        k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS;
-      }
     if (f.isIntrinsicConstructor())
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR;
@@ -348,18 +324,6 @@ class LibraryOut extends DataOut
     else
       {
         writeInt(0);
-      }
-    if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0)
-      {
-        if (CHECKS) check
-          (f.generics().list.size() > 0);
-        writeInt(f.generics().list.size());
-        writeBool(f.generics().isOpen());
-        for (var g : f.generics().list)
-          {
-            writeName(g.name());
-            type(g.constraint());
-          }
       }
     if (CHECKS) check
       (f.valueArguments().size() == f.featureName().argCount());

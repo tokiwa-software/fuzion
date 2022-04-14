@@ -184,13 +184,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * The formal generic arguments of this feature
-   */
-  private FormalGenerics _generics;
-  public FormalGenerics generics() { return _generics; }
-
-
-  /**
    * The formal arguments of this feature
    */
   private List<Feature> _arguments;
@@ -345,7 +338,6 @@ public class Feature extends AbstractFeature implements Stmnt
          0,
          ValueType.INSTANCE,
          new List<String>(FuzionConstants.UNIVERSE_NAME),
-         FormalGenerics.NONE,
          new List<Feature>(),
          new List<>(),
          Contract.EMPTY_CONTRACT,
@@ -392,7 +384,6 @@ public class Feature extends AbstractFeature implements Stmnt
                        0,
                        r,
                        new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),
-                       FormalGenerics.NONE,
                        new List<Feature>(),
                        i,
                        c,
@@ -491,7 +482,6 @@ public class Feature extends AbstractFeature implements Stmnt
          0,
          t == null ? NoType.INSTANCE : new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
          new List<String>(qname),
-         FormalGenerics.NONE,
          new List<Feature>(),
          new List<>(),
          null,
@@ -533,7 +523,6 @@ public class Feature extends AbstractFeature implements Stmnt
          m,
          new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
          new List<String>(n),
-         FormalGenerics.NONE,
          new List<Feature>(),
          new List<>(),
          c,
@@ -603,7 +592,6 @@ public class Feature extends AbstractFeature implements Stmnt
          0,
          r,
          qname,
-         FormalGenerics.NONE,
          a,
          i,
          c,
@@ -624,8 +612,6 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @param qname the name of this feature
    *
-   * @param g the generic parameters
-   *
    * @param a the arguments
    *
    * @param i the inherits calls
@@ -639,7 +625,6 @@ public class Feature extends AbstractFeature implements Stmnt
                  int m,
                  ReturnType r,
                  List<String> qname,
-                 FormalGenerics g,
                  List<Feature> a,
                  List<AbstractCall> i,
                  Contract c,
@@ -664,42 +649,6 @@ public class Feature extends AbstractFeature implements Stmnt
       }
     this._qname     = qname;
 
-    // Copy FormalGenerics.list to args array a
-    // NYI: Remove, the parser could do this!
-    var a1 = new List<Feature>();
-    for (var g0 : g.list)
-      {
-        var s = g0._name;
-        var t = g0._constraint;
-        if (t == null)
-          {
-            t = new Type("Object");
-          }
-        var mp = g0.isOpen() ? Impl.TYPE_PARAMETER_OPEN
-                             : Impl.TYPE_PARAMETER;
-        a1.add(new Feature(g0._pos, Consts.VISIBILITY_LOCAL, 0, t, s, Contract.EMPTY_CONTRACT, mp));
-      }
-    a1.addAll(a);
-    a = a1;
-
-    // Recreate FormalGenerics from typeParameters
-    // NYI: Remove, FormalGenerics should use AbstractFeature.typeArguments() instead of its own list of Generics.
-    var l = new List<Generic>();
-    var open = false;
-    for (var a0 : a)
-      {
-        if (a0.isTypeParameter())
-          {
-            l.add(new Generic(a0, l.size()));
-            open = open || a0.impl() == Impl.TYPE_PARAMETER_OPEN;
-          }
-      }
-    if (l.size() > 0)
-      {
-        g = new FormalGenerics(l, open);
-      }
-    this._generics  = g;
-
     this._arguments = a;
     this._featureName = FeatureName.get(n, valueArguments().size());
     this._inherits   = (i.isEmpty() &&
@@ -714,8 +663,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
     this._contract = c == null ? Contract.EMPTY_CONTRACT : c;
     this._impl = p;
-
-    g.setFeature(this);
   }
 
 
@@ -2159,7 +2106,7 @@ public class Feature extends AbstractFeature implements Stmnt
       Consts.modifierToString(_modifiers)+
       _returnType + " "+
       _featureName.baseName()+
-      _generics+
+      generics()+
       (_arguments.isEmpty() ? "" : "("+_arguments+")")+
       (_inherits.isEmpty() ? "" : " : "+_inherits)+
       _contract+

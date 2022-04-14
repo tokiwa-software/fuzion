@@ -47,118 +47,12 @@ public class Generic extends ANY
 
 
   /**
-   * The sourcecode position of this feature declaration, used for error
-   * messages.
-   */
-  public final SourcePosition _pos;
-
-
-  /**
-   * The index in the formal generics declaration, starting at 0
-   */
-  final int _index;
-
-
-  /**
-   * the name of this formal generic parameter
-   */
-  final String _name;
-
-
-  /**
-   * the constraint on this generic paremter, null for the implicit Object
-   * constraint.
-   */
-  AbstractType _constraint;
-
-
-  /**
-   * The formal generics declaration that contains this generic.
-   */
-  private FormalGenerics _formalGenerics;
-
-
-  /**
-   * true for a formal generic that can be repeated zero or more times, i.e.,
-   * the last formal generic in an open formal generics list.
-   */
-  private boolean _isOpen;
-
-
-  /**
-   * In case this is a generic that selects a particular argument of an open
-   * generic, this gives the index of that argument in the actual generics for
-   * the open generic.
-   *
-   * Otherwise, this is -1.
-   */
-  private final int _select;
-
-
-  /**
-   * In case this is a generic that selects a particular argument of an open
-   * generic, this gives the original open generic.
-   *
-   * Otherwise, this is null.
-   */
-  private final Generic _selectFrom;
-
-
-  /**
    * The type parameter this generic corresponds to
    */
   private AbstractFeature _typeParameter;
 
 
   /*--------------------------  constructors  ---------------------------*/
-
-
-  /**
-   * Constructor for an unconstraint formal generic parameter.
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param index the index in the formal generics declaration, starting at 0
-   *
-   * @param name the name of the generic parameter
-   */
-  public Generic(SourcePosition pos, int index, String name)
-  {
-    this(pos, index, name, null);
-
-    if (PRECONDITIONS) require
-      (pos != null,
-       index >= 0,
-       name != null);
-  }
-
-
-  /**
-   * Constructor for a constrainted formal generic parameter.
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param index the index in the formal generics declaration, starting at 0
-   *
-   * @param name the name of the generic parameter
-   *
-   * @param constraint the constraint on the generic paremter, null for the
-   * implicit Object constraint.
-   */
-  public Generic(SourcePosition pos, int index, String name, AbstractType constraint)
-  {
-    if (PRECONDITIONS) require
-      (pos != null,
-       index >= 0,
-       name != null);
-
-    _pos = pos;
-    _index = index;
-    _name = name;
-    _constraint = constraint;
-    _select = -1;
-    _selectFrom = null;
-  }
 
 
   /**
@@ -169,68 +63,13 @@ public class Generic extends ANY
    *
    * @param index the index in the formal generics declaration, starting at 0
    */
-  public Generic(AbstractFeature typeParameter, int index)
+  public Generic(AbstractFeature typeParameter)
   {
-    this(typeParameter.pos(),
-         index,
-         typeParameter.featureName().baseName(),
-         null);
     _typeParameter = typeParameter;
-    if (!typeParameter.state().atLeast(Feature.State.RESOLVED))
-      {
-        _constraint = ((Feature)typeParameter).returnType().functionReturnType();
-      }
-  }
-
-
-  /**
-   * Constructor used by select() to create a Generic that selects on particular
-   * actual generic passed to an open generic argument.
-   *
-   * @param original the original open generic argument
-   *
-   * @param select the index of the actual argument that is selected, 0 for the
-   * first actual argument.
-   */
-  private Generic(Generic original, int select)
-  {
-    if (PRECONDITIONS) require
-      (original.isOpen(),
-       select >= 0);
-
-    _pos = original._pos;
-    _index = original._index + select;
-    _name = original._name + "." + select;
-    _constraint = original._constraint;
-    _formalGenerics = original._formalGenerics;
-    _select = select;
-    _selectFrom = original;
-    _typeParameter = _typeParameter;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * setFormalGenerics
-   *
-   * @param f
-   *
-   * @param open true for a generic that can be repeated 0 or more times.
-   */
-  public void setFormalGenerics(FormalGenerics f, boolean open)
-  {
-    if (PRECONDITIONS) require
-      (_formalGenerics == null);
-
-    _formalGenerics = f;
-    _isOpen = open;
-
-    if (POSTCONDITIONS) ensure
-      (_formalGenerics == f,
-       _isOpen == open);
-  }
 
 
   /**
@@ -239,7 +78,7 @@ public class Generic extends ANY
    */
   public boolean isOpen()
   {
-    return _isOpen;
+    return typeParameter().isOpenTypeParameter();
   }
 
 
@@ -250,10 +89,7 @@ public class Generic extends ANY
    */
   public FormalGenerics formalGenerics()
   {
-    if (PRECONDITIONS) require
-      (_formalGenerics != null);
-
-    return _formalGenerics;
+    return feature().generics();
   }
 
 
@@ -264,10 +100,7 @@ public class Generic extends ANY
    */
   public AbstractFeature feature()
   {
-    if (PRECONDITIONS) require
-      (_formalGenerics != null);
-
-    return _formalGenerics.feature();
+    return typeParameter().outer();
   }
 
 
@@ -297,7 +130,7 @@ public class Generic extends ANY
    */
   public String name()
   {
-    return _name;
+    return typeParameter().featureName().baseName();
   }
 
 
@@ -308,49 +141,34 @@ public class Generic extends ANY
    */
   public int index()
   {
-    return _index;
+    var result = 0;
+    for (var tp : feature().typeArguments())
+      {
+        if (tp == typeParameter())
+          {
+            return result;
+          }
+        result++;
+      }
+    throw new Error("Generic.index() failed for " + this);
   }
 
 
   /**
    * Replace this formal generic by the corresponding actual generic.
    *
-   * @param actualGenerics the actual generics that replace this.
+   * @param actuals the actual generics that replace this.
    */
-  public AbstractType replace(List<AbstractType> actualGenerics)
+  public AbstractType replace(List<AbstractType> actuals)
   {
     if (PRECONDITIONS) require
       (!isOpen(),
-       Errors.count() > 0 || _formalGenerics.sizeMatches(actualGenerics));
+       Errors.count() > 0 || formalGenerics().sizeMatches(actuals));
 
-    AbstractType result;
-    if (_select >= 0)
-      {
-        var openTypes = _selectFrom.replaceOpen(actualGenerics);
-        result = _select < openTypes.size()
-          ? openTypes.get(_select)
-          : // This is not an error, we can run into this situation, e.g., for
-            // the values of a tuple for all the actual clazzes of tuple with
-            // fewer actual generic arguments than the max size of a tuple. In
-            // this case, the types of all the unused select fields will be
-            // t_unit.
-            Types.resolved.t_unit;
-      }
-    else
-      {
-        result = null;
-        int i = index();
-        var actuals = actualGenerics.iterator();
-        while (i > 0 && actuals.hasNext())
-          {
-            actuals.next();
-            i--;
-          }
-        if (CHECKS) check
-          (Errors.count() > 0 || actuals.hasNext());
-        result = actuals.hasNext() ? actuals.next() : Types.t_ERROR;
-      }
-    return result;
+    int i = index();
+    if (CHECKS) check
+      (Errors.count() > 0 || actuals.size() > i);
+    return actuals.size() > index() ? actuals.get(index()) : Types.t_ERROR;
   }
 
 
@@ -362,54 +180,23 @@ public class Generic extends ANY
    * actual generics are <a,b,c,d>, then the actual generics for the open
    * argument C are c, d.
    *
-   * @param actualGenerics the actual generics list
+   * @param actuals the actual generics list
    *
-   * @return the part of actualGenerics that this is replaced by, May be an
+   * @return the part of actuals that this is replaced by, May be an
    * empty list or an arbitrarily long list.
    */
-  public List<AbstractType> replaceOpen(List<AbstractType> actualGenerics)
+  public List<AbstractType> replaceOpen(List<AbstractType> actuals)
   {
     if (PRECONDITIONS) require
       (isOpen(),
-       _formalGenerics.sizeMatches(actualGenerics));
+       formalGenerics().sizeMatches(actuals));
 
-    var formals = _formalGenerics.list.iterator();
-    var actuals = actualGenerics.iterator();
-
-    // fist, skip all formal/actual generics until we reached the last formal:
-    Generic formal = formals.next();
-    while (formals.hasNext())
-      {
-        if (CHECKS) check
-          (formal != this);
-        actuals.next();
-        formal = formals.next();
-      }
     if (CHECKS) check
-      (formal == this);
+      (formalGenerics().list.getLast() == this);
 
-    // Now, return the tail of actuals:
-    return actuals.hasNext() ? new List<>(actuals)
-                             : Type.NONE;
-  }
-
-
-  /**
-   * For an open generic, create a Type that selects one given actual generic
-   * argument.
-   *
-   * @param i the index of the actual generic argument, must be >= 0.
-   *
-   * @return a Type that represents the given actual generic argument or t_unit
-   * if the index is >= the number of actual generic arguments.
-   */
-  public Type select(int i)
-  {
-    if (PRECONDITIONS) require
-      (isOpen(),
-       i >= 0);
-
-    return new Type(_pos, new Generic(this, i));
+    var result = new List<AbstractType>();
+    result.addAll(actuals.subList(formalGenerics().list.size()-1, actuals.size()));
+    return result;
   }
 
 
@@ -429,7 +216,7 @@ public class Generic extends ANY
    */
   public String toString()
   {
-    return _name;
+    return name();
   }
 
 

@@ -25,7 +25,7 @@
 
 # Function -- generic function with arbitrary number of arguments and result
 #
-Function<R,A...> ref is
+Function(R type, A type...) ref is
 
   call(a A) R is abstract
 
