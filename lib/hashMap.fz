@@ -125,7 +125,6 @@ is
     res : Sequence<tuple<HK,V>> is
       redef asList =>
         contents
-          .asList
           .filter         (o -> o??)
           .mapSequence<tuple<HK,V>>(o -> match o
                                            nil     => panic "filter failed"
