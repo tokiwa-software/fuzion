@@ -94,13 +94,6 @@ public class Interpreter extends ANY
 
 
   /**
-   * Current call stack, for debugging output
-   */
-  public static Stack<AbstractCall> _callStack = new Stack<>();
-  public static Stack<Clazz> _callStackFrames = new Stack<>();
-
-
-  /**
    * Helper for callStack() to show one single frame
    *
    * @param frame the clazz of the entry to show
@@ -151,10 +144,12 @@ public class Interpreter extends ANY
     Clazz lastFrame = null;
     AbstractCall lastCall = null;
     int repeat = 0;
-    for (var i = _callStack.size()-1; i >= 0; i--)
+    var s = FuzionThread.current()._callStack;
+    var sf = FuzionThread.current()._callStackFrames;
+    for (var i = s.size()-1; i >= 0; i--)
       {
-        Clazz frame = i<_callStackFrames.size() ? _callStackFrames.get(i) : null;
-        var call = _callStack.get(i);
+        Clazz frame = i<sf.size() ? sf.get(i) : null;
+        var call = s.get(i);
         if (frame == lastFrame && call == lastCall)
           {
             repeat++;
@@ -299,7 +294,7 @@ public class Interpreter extends ANY
            c.sid_ >= 0);
 
         ArrayList<Value> args = executeArgs(c, staticClazz, cur);
-        _callStack.push(c);
+        FuzionThread.current()._callStack.push(c);
 
         var d = staticClazz.getRuntimeData(c.sid_ + 0);
         if (d instanceof Clazz innerClazz)
@@ -325,7 +320,7 @@ public class Interpreter extends ANY
             ca = (Callable) ((DynamicBinding)cl._dynamicBinding).callable(c.calledFeature());
           }
         result = ca.call(args);
-        _callStack.pop();
+        FuzionThread.current()._callStack.pop();
       }
 
     else if (s instanceof AbstractCurrent)
@@ -617,11 +612,11 @@ public class Interpreter extends ANY
     else if (s instanceof Env v)
       {
         Clazz vClazz = staticClazz.getRuntimeClazz(v._clazzId);
-        result = Intrinsics._effects_.get(vClazz);
+        result = FuzionThread.current()._effects.get(vClazz);
         if (result == null)
           {
             Errors.fatal("*** effect for " + vClazz + " not present in current environment\n" +
-                         "    available are " + Intrinsics._effects_.keySet() + "\n" +
+                         "    available are " + FuzionThread.current()._effects.keySet() + "\n" +
                          callStack());
           }
       }
@@ -841,7 +836,7 @@ public class Interpreter extends ANY
        );
 
     cur.checkStaticClazz(staticClazz);
-    _callStackFrames.push(staticClazz);
+    FuzionThread.current()._callStackFrames.push(staticClazz);
 
     if (CHECKS) check
       (Clazzes.isUsedAtAll(thiz));
@@ -939,7 +934,7 @@ public class Interpreter extends ANY
           }
       }
     // NYI: Also check postconditions for all features this redefines!
-    _callStackFrames.pop();
+    FuzionThread.current()._callStackFrames.pop();
 
     return thiz.isConstructor() ? cur
                                 : getField(thiz.resultField(), staticClazz, cur);

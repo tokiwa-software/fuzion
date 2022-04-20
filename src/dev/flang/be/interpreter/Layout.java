@@ -52,7 +52,7 @@ class Layout extends ANY
   /**
    * Determine the size of an instance of the given clazz.
    */
-  static Layout get(Clazz c)
+  static synchronized Layout get(Clazz c)
   {
     var l = (Layout) c._backendData; // _layouts_.get(c);
     if (l == null)

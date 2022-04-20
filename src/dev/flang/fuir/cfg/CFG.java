@@ -409,6 +409,8 @@ public class CFG extends ANY
       case "fuzion.sys.array.get"       : return;
       case "fuzion.sys.env_vars.has0"   : return;
       case "fuzion.sys.env_vars.get0"   : return;
+      case "fuzion.sys.thread.spawn0"   : return; // NYI!
+      case "fuzion.std.nano_sleep"      : return;
       case "fuzion.std.nano_time"       : return;
 
       case "effect.replace"      : return;

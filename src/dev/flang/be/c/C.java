@@ -210,6 +210,7 @@ public class C extends ANY
        "#include <assert.h>\n"+
        "#include <time.h>\n"+
        "#include <setjmp.h>\n"+
+       "#include <pthread.h>\n"+
        "\n");
     cf.print
       (CStmnt.decl("int", _names.GLOBAL_ARGC));
@@ -249,8 +250,8 @@ public class C extends ANY
                .mapToInt(cl -> _intrinsics.effectType(this, cl))
                .distinct()
                .forEach(cl -> cf.print(CStmnt.seq(CStmnt.decl("__thread", _types.clazz(cl), _names.env(cl)),
-                                                  CStmnt.decl("bool"                      , _names.envInstalled(cl)),
-                                                  CStmnt.decl("jmp_buf*"                  , _names.envJmpBuf(cl)))));
+                                                  CStmnt.decl("__thread", "bool"          , _names.envInstalled(cl)),
+                                                  CStmnt.decl("__thread", "jmp_buf*"      , _names.envJmpBuf(cl)))));
            }
        });
     cf.println("int main(int argc, char **argv) { ");

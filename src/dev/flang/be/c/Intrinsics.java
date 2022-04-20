@@ -443,6 +443,30 @@ class Intrinsics extends ANY
                             c.constString(str, CExpr.call("strlen",new List<>(str)), tmp),
                             tmp.castTo(c._types.clazz(rc)).ret());
         }
+      case "fuzion.sys.thread.spawn0":
+        {
+          var oc = c._fuir.clazzActualGeneric(cl, 0);
+          var call = c._fuir.lookupCall(oc);
+          if (c._fuir.clazzNeedsCode(call))
+            {
+              var pt = new CIdent("pt");
+              var res = new CIdent("res");
+              return CStmnt.seq(CExpr.decl("pthread_t *", pt),
+                                CExpr.decl("int", res),
+                                pt.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("pthread_t")))),
+                                CExpr.iff(pt.eq(CNames.NULL),
+                                          CStmnt.seq(CExpr.fprintfstderr("*** malloc(%lu) failed\n", CExpr.sizeOfType("pthread_t")),
+                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))),
+                                res.assign(CExpr.call("pthread_create", new List<>(pt,
+                                                                                   CNames.NULL,
+                                                                                   CExpr.ident(c._names.function(call, false)).adrOf().castTo("void *(*)(void *)"),
+                                                                                   A0.castTo("void *")))),
+                                CExpr.iff(res.ne(CExpr.int32const(0)),
+                                          CStmnt.seq(CExpr.fprintfstderr("*** pthread_create failed with return code %d\n",res),
+                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))));
+              // NYI: free(pt)!
+            }
+        }
       case "fuzion.std.nano_time":
         {
           var result = new CIdent("result");

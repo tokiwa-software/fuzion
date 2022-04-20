@@ -74,14 +74,6 @@ public class Intrinsics extends ANY
   /*------------------------  static variables  -------------------------*/
 
 
-  /**
-   * Currently installed one-way monads.
-   *
-   * NYI: This should be thread-local eventually.
-   */
-  static TreeMap<Clazz, Value> _effects_ = new TreeMap<>();
-
-
   /*-------------------------  static methods  --------------------------*/
 
 
@@ -475,6 +467,19 @@ public class Intrinsics extends ANY
       {
         result = (args) -> Interpreter.value(System.getenv(utf8ByteArrayDataToString(args.get(1))));
       }
+    else if (n.equals("fuzion.sys.thread.spawn0"))
+      {
+        result = (args) ->
+          {
+            var call = Types.resolved.f_function_call;
+            var oc = innerClazz.argumentFields()[0].resultClazz();
+            var ic = oc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+            var al = new ArrayList<Value>();
+            al.add(args.get(1));
+            new Thread(() -> interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al)).start();
+            return new Instance(Clazzes.c_unit.get());
+          };
+      }
     else if (n.equals("safety"      ))
       {
         result = (args) -> new boolValue(Interpreter._options_.fuzionSafety());
@@ -753,7 +758,7 @@ public class Intrinsics extends ANY
         result = (args) ->
           {
             var cl = innerClazz.actualGenerics()[0];
-            return new boolValue(_effects_.get(cl) != null /* NOTE not containsKey since cl may map to null! */ );
+            return new boolValue(FuzionThread.current()._effects.get(cl) != null /* NOTE not containsKey since cl may map to null! */ );
           };
       }
     else
@@ -794,12 +799,12 @@ public class Intrinsics extends ANY
         var cl = innerClazz._outer;
         switch (n)
           {
-          case "effect.replace": check(_effects_.get(cl) != null); _effects_.put(cl, m   );   break;
-          case "effect.default": if (_effects_.get(cl) == null) {  _effects_.put(cl, m   ); } break;
+          case "effect.replace": check(FuzionThread.current()._effects.get(cl) != null); FuzionThread.current()._effects.put(cl, m   );   break;
+          case "effect.default": if (FuzionThread.current()._effects.get(cl) == null) {  FuzionThread.current()._effects.put(cl, m   ); } break;
           case "effect.abortable" :
             {
-              var prev = _effects_.get(cl);
-              _effects_.put(cl, m);
+              var prev = FuzionThread.current()._effects.get(cl);
+              FuzionThread.current()._effects.put(cl, m);
               var call = Types.resolved.f_function_call;
               var oc = innerClazz.actualGenerics()[0]; //innerClazz.argumentFields()[0].resultClazz();
               var ic = oc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
@@ -818,7 +823,7 @@ public class Intrinsics extends ANY
                     throw a;
                   }
               } finally {
-                _effects_.put(cl, prev);
+                FuzionThread.current()._effects.put(cl, prev);
               }
             }
           case "effect.abort": throw new Abort(cl);
