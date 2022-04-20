@@ -51,8 +51,7 @@ factors is
   say
 
   yak "factors filtering and printing a stream: "
-  (1..n).filter(fun (x i32) => n %% x).print
-  say
+  say (1..n).filter(fun (x i32) => n %% x)
 
   yak "factors using pipes to filter and print a stream: "
   (1..n) & (fun (x i32) => n %% x) | fun print
