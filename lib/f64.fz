@@ -55,14 +55,24 @@ f64(val f64) : float<f64>, f64s is
 
 
   # conversion
-  as_i64 i64
+
+  # NaN is converted to 0
+  # anything greater than i64.max as well as  ∞ is i64.max
+  # anything lower   than i64.min as well as -∞ is i64.min
+  as_i64_lax i64 is intrinsic
+
+
+  fits_in_i64 =>
+    f64.this >= i64s.min.as_f64 && f64.this <= i64s.max.as_f64
+
+
+  as_i64
     pre
-      safety: f64.this >= f64s.from_i64 i64.min && f64.this <= from_i64 i64.max
-    is
-      panic "NYI: f64.as_i64"
-  as_f32 f32
-    is
-      panic "NYI: f64.as_f32"
+      safety: fits_in_i64
+    => as_i64_lax
+
+
+  as_f32 f32 is intrinsic
 
 
   # casting bit representation to u64
@@ -93,8 +103,6 @@ f64s : floats<f64> is
   significandBits => 53
   exponentBits => 11
 
-
-  from_i64(v i64) f64 is intrinsic
 
   redef isNaN(val f64) bool is intrinsic
 
