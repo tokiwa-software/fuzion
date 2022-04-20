@@ -331,6 +331,18 @@ class Intrinsics extends ANY
       case "f64.infix >"         : return outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
       case "f32.infix >="        :
       case "f64.infix >="        : return outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "f32.as_f64"          : return outer.castTo("fzT_1f64").ret();
+      case "f64.as_f32"          : return outer.castTo("fzT_1f32").ret();
+      case "f64.as_i64_lax"      :
+                                    // workaround for clang warning: "integer literal is too large to be represented in a signed integer type"
+                                    var i64Min = (new CIdent("9223372036854775807")).neg().sub(new CIdent("1"));
+                                    var i64Max =  new CIdent("9223372036854775807");
+                                    return CStmnt.seq(
+                                              CExpr.iff(CExpr.call("isnan", new List<>(outer)).ne(new CIdent("0")), new CIdent("0").ret()),
+                                              CExpr.iff(outer.ge(i64Max.castTo("fzT_1f64")), i64Max.castTo("fzT_1i64").ret()),
+                                              CExpr.iff(outer.le(i64Min.castTo("fzT_1f64")), i64Min.castTo("fzT_1i64").ret()),
+                                              outer.castTo("fzT_1i64").ret()
+                                            );
       case "f32.castTo_u32"      : return outer.adrOf().castTo("fzT_1u32*").deref().ret();
       case "f64.castTo_u64"      : return outer.adrOf().castTo("fzT_1u64*").deref().ret();
       case "f32.asString"        :

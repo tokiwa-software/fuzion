@@ -93,4 +93,28 @@ floating_point_math is
   generic_tests f32s.zero
   generic_tests f64s.zero
 
+
+  # fits_in_i64
+  chck !f64s.positiveInfinity.fits_in_i64                                      "f64: ∞    not representable by i64"
+  chck !f64s.negativeInfinity.fits_in_i64                                      "f64: -∞   not representable by i64"
+  chck !f64s.NaN.fits_in_i64                                                   "f64: NaN  not representable by i64"
+  chck f64s.zero.fits_in_i64                                                   "f64: 0    is  representable by i64"
+
+  # as_i64
+  chck (f64s.π.as_i64 == 3)                                                    "f64:  π  as_i64        =  3"
+  chck ((-f64s.π).as_i64 == -3)                                                "f64: -π  as_i64        = -3"
+  chck (f64s.positiveInfinity.as_i64_lax == i64.max)                           "f64:  ∞  as_i64_lax    = i64.max"
+  chck (f64s.negativeInfinity.as_i64_lax == i64.min)                           "f64: -∞  as_i64_lax    = i64.min"
+  chck (f64s.NaN.as_i64_lax == 0)                                              "f64: NaN as_i64_lax    = 0"
+
+  # as_f64
+  chck ((f32s.π.as_f64.as_f32 == f32s.π))                                      "f32:  π  as_f64.as_f32 = f32s.π"
+  chck (f32s.positiveInfinity.as_f64 == f64s.positiveInfinity)                 "f32:  ∞  as_f64        = f64s.∞ "
+  chck (f64s.isNaN f32s.NaN.as_f64)                                            "f32: NaN as_f64 isNaN "
+
+  # as_f32
+  chck (f64s.π.as_f32 == f32s.π)                                               "f64:  π  as_f32        = f32s.π "
+  chck (f64s.positiveInfinity.as_f32 == f32s.positiveInfinity)                 "f64:  ∞  as_f32        = f32s.∞ "
+  chck (f32s.isNaN f64s.NaN.as_f32)                                            "f64: NaN as_f32 isNaN "
+
   fuzion.std.exit exitCode

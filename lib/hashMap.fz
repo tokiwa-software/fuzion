@@ -123,13 +123,12 @@ is
   #
   items Sequence<tuple<HK,V>> is
     res : Sequence<tuple<HK,V>> is
-      redef asStream =>
+      redef asList =>
         contents
-          .asStream
           .filter         (o -> o??)
-          .map<tuple<HK,V>>(o -> match o
-                                  nil     => panic "filter failed"
-                                  t tuple => t)
+          .mapSequence<tuple<HK,V>>(o -> match o
+                                           nil     => panic "filter failed"
+                                           t tuple => t)
     res
 
 
