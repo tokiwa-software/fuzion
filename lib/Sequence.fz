@@ -80,11 +80,11 @@ Sequence<T> ref is
     => asList.forceHead
 
 
-  # get the head of this list or default
+  # get the head of this list or default if sequence is empty
   #
   first(default T)
     =>
-      if isEmpty then default else asList.forceHead
+      if isEmpty then default else first
 
 
   # get the last element of this list, panic if list is empty
@@ -96,6 +96,13 @@ Sequence<T> ref is
     pre
       debug: !isEmpty
    => asList.last
+
+
+  # get the last element of this list or default if sequence is empty
+  #
+  last(default T)
+    =>
+    if isEmpty then default else last
 
 
   # collect the contents of this Sequence into an array
