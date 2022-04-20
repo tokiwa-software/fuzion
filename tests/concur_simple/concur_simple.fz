@@ -33,7 +33,7 @@
 #
 concur_simple : time.durations =>
 
-  N := 10
+  N := 5
   t1 := ms 60
   t2 := ms 120
   t3 := ms 180
