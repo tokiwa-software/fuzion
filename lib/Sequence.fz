@@ -299,6 +299,15 @@ Sequence<T> ref is
   zip<U,V>(b Sequence<U>, f (T,U)->V) => asList.zip0 b.asList f
 
 
+  # the nth element in the sequence,
+  nth(n i32) option<T>
+    pre n >= 0
+  is
+    match drop n
+      nil => nil
+      c Cons => c.head
+
+
 # Sequences -- unit type defining features related to Sequence but not requiring
 # an instance
 #
