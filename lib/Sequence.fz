@@ -126,7 +126,7 @@ Sequence<T> ref is
 
   # create a new stream and filter its elements using predicate f
   #
-  filter   (f T -> bool) stream<T> is asStream.filter f
+  filter   (f T -> bool) Sequence<T> is asList.filter f
 
 
   # create a new stream and filter its elements using predicate f, infix operator

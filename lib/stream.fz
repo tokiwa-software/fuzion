@@ -89,7 +89,7 @@ stream(redef T type) ref : Sequence<T> is
 
   # create new stream from all elements for which predicate f is true
   #
-  redef filter(f T -> bool) stream<T> is filter0 f
+  redef filter(f T -> bool) Sequence<T> is filter0 f
   filter0(f T -> bool) ref : stream<T> is
     cache T := ?  # NYI: should be option<T>
     cacheOk := false
@@ -104,20 +104,6 @@ stream(redef T type) ref : Sequence<T> is
       while !cacheOk && stream.this.hasNext
         set cache := stream.this.next
         set cacheOk := f(cache)
-
-
-  # create a new stream from all elements for which predicate f is true, infix
-  # operator synonyme of filter.
-  #
-  redef infix |& (f T -> bool) stream<T> is filter(f)
-
-
-  # create a new stream from all elements for which predicate f is true, infix
-  # operator synonyme of filter.
-  #
-  # NYI: What is better, 'infix |&' or 'infix &', or something else?
-  #
-  redef infix & (f T -> bool) => filter f
 
 
   # check if predicate f holds for all elements produced by this stream
