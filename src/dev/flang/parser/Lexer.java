@@ -540,7 +540,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Has there been an ingore()d token before current()?  With the default
+   * Has there been an ignore()d token before current()?  With the default
    * implementation of ignore(), this checks if there was whitespace or a
    * comment before this token.
    *
@@ -553,7 +553,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Is the next token after current() an ingore()d token?  With the default
+   * Is the next token after current() an ignore()d token?  With the default
    * implementation of ignore(), this checks if there follows whitespace or
    * a comment after this token.
    *
@@ -568,7 +568,7 @@ public class Lexer extends SourceFile
 
 
   /**
-   * Set the minimun indentation to the position of startPos.  The token at
+   * Set the minimum indentation to the position of startPos.  The token at
    * startPos is excluded from the limit, so it will be returned by current(),
    * while later tokens at the same indentation level will be replaced by
    * t_indentationLimit.
