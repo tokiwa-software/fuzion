@@ -412,7 +412,7 @@ string ref : hasHash<string>, ordered<string>, strings is
     (searchableSequence utf8).countMatches substring.utf8
 
 
-  # is c an ASCII white-space character?  Used by split.
+  # is c an ASCII white-space character?
   #
   private isAsciiWhiteSpace(c u8) =>
     (c =  9 ||  // HT
@@ -474,6 +474,22 @@ string ref : hasHash<string>, ordered<string>, strings is
 #   fromBytes s2
 
     strings.fromBytes s2
+
+
+  # remove leading white space from this string
+  #
+  trimStart =>
+# NYI: This causes fz to crash:
+#   fromBytes ...
+    strings.fromBytes (utf8.dropWhile (fun isAsciiWhiteSpace))
+
+
+  # remove trailing white space from this string
+  #
+  trimEnd =>
+# NYI: This causes fz to crash:
+#   fromBytes ...
+    strings.fromBytes (utf8.asList.reverse.dropWhile (fun isAsciiWhiteSpace)).reverse
 
 
   # is this part of given set
