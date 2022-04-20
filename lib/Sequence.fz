@@ -286,15 +286,12 @@ Sequence<T> ref is
 
 
   # the nth element in the sequence,
-  # starting at 1
   nth(n i32) option<T>
-    pre n > 0
+    pre n >= 0
   is
-    tail := drop (n-1)
-    if tail.isEmpty
-      nil
-    else
-      tail.first
+    match drop n
+      nil => nil
+      c Cons => c.head
 
 
 # Sequences -- unit type defining features related to Sequence but not requiring
