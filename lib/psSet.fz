@@ -100,11 +100,8 @@ is
   # add all elements of the given Sequence to this set
   #
   addAll (s Sequence<K>) ref psSet<K> is  # NYI: 'ref' due to lack of 'like this'
-    for
-      res ref psSet<K> := psSet.this, res.add k
-      k in s
-    else
-      res
+    this_ref ref psSet<K> := psSet.this
+    s.reduce this_ref ((r,k) -> r.add k)
 
 
   # number of entries in this set.  May be undefined, i.e., a range of
