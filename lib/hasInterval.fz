@@ -97,7 +97,7 @@ hasInterval(H hasInterval<H>.type) : integer<H> is
         cons (head H) :  Cons<H, list<H>> is
           tail list<H> is
             (lower+?step ? nil    => nil
-                         | next H => (next..upper:step).asList.asList)
+                         | next H => (next..upper:step).asList)
         if (step > zero && lower <= upper ||
             step < zero && lower >= upper    )
           cons lower
