@@ -41,7 +41,7 @@ looptest is
   #
   # so we put '-2*i' in parentheses:
   #
-  a := array<i32> 100 (fun (i i32) => if (i % 23 == 0) (-2*i) else i*i)
+  a := array<i32> 100 (i -> if (i % 23 == 0) (-2*i) else i*i)
 
   say "testLoop0: plain while loop"
   testLoop0(data array<i32>, isWhatWeWant fun (i32) bool) is
@@ -56,13 +56,13 @@ looptest is
     if !found
       say "Not found! ix is $ix"
 
-  yak "searching first smaller   -50: "; testLoop0 a (fun (i i32) => i <    -50)
-  yak "searching first smaller  -100: "; testLoop0 a (fun (i i32) => i <   -100)
-  yak "searching first larger     10: "; testLoop0 a (fun (i i32) => i >     10)
-  yak "searching first larger    100: "; testLoop0 a (fun (i i32) => i >    100)
-  yak "searching first larger   1000: "; testLoop0 a (fun (i i32) => i >   1000)
-  yak "searching first larger  10000: "; testLoop0 a (fun (i i32) => i >  10000)
-  yak "searching first larger 100000: "; testLoop0 a (fun (i i32) => i > 100000)
+  yak "searching first smaller   -50: "; testLoop0 a (i -> i <    -50)
+  yak "searching first smaller  -100: "; testLoop0 a (i -> i <   -100)
+  yak "searching first larger     10: "; testLoop0 a (i -> i >     10)
+  yak "searching first larger    100: "; testLoop0 a (i -> i >    100)
+  yak "searching first larger   1000: "; testLoop0 a (i -> i >   1000)
+  yak "searching first larger  10000: "; testLoop0 a (i -> i >  10000)
+  yak "searching first larger 100000: "; testLoop0 a (i -> i > 100000)
 
   say "testLoop1: plain while-until loop"
   testLoop1(data array<i32>, isWhatWeWant fun (i32) bool) is
@@ -75,13 +75,13 @@ looptest is
     else
       say "Not found! ix is $ix"
 
-  yak "searching first smaller   -50: "; testLoop1 a (fun (i i32) => i <    -50)
-  yak "searching first smaller  -100: "; testLoop1 a (fun (i i32) => i <   -100)
-  yak "searching first larger     10: "; testLoop1 a (fun (i i32) => i >     10)
-  yak "searching first larger    100: "; testLoop1 a (fun (i i32) => i >    100)
-  yak "searching first larger   1000: "; testLoop1 a (fun (i i32) => i >   1000)
-  yak "searching first larger  10000: "; testLoop1 a (fun (i i32) => i >  10000)
-  yak "searching first larger 100000: "; testLoop1 a (fun (i i32) => i > 100000)
+  yak "searching first smaller   -50: "; testLoop1 a (i -> i <    -50)
+  yak "searching first smaller  -100: "; testLoop1 a (i -> i <   -100)
+  yak "searching first larger     10: "; testLoop1 a (i -> i >     10)
+  yak "searching first larger    100: "; testLoop1 a (i -> i >    100)
+  yak "searching first larger   1000: "; testLoop1 a (i -> i >   1000)
+  yak "searching first larger  10000: "; testLoop1 a (i -> i >  10000)
+  yak "searching first larger 100000: "; testLoop1 a (i -> i > 100000)
 
   say "testLoop2: loop with index variables"
   testLoop2(data array<i32>, isWhatWeWant fun (i32) bool) is
@@ -93,13 +93,13 @@ looptest is
     else
       say "Not found! ix is $ix"
 
-  yak "searching first smaller   -50: "; testLoop2 a (fun (i i32) => i <    -50)
-  yak "searching first smaller  -100: "; testLoop2 a (fun (i i32) => i <   -100)
-  yak "searching first larger     10: "; testLoop2 a (fun (i i32) => i >     10)
-  yak "searching first larger    100: "; testLoop2 a (fun (i i32) => i >    100)
-  yak "searching first larger   1000: "; testLoop2 a (fun (i i32) => i >   1000)
-  yak "searching first larger  10000: "; testLoop2 a (fun (i i32) => i >  10000)
-  yak "searching first larger 100000: "; testLoop2 a (fun (i i32) => i > 100000)
+  yak "searching first smaller   -50: "; testLoop2 a (i -> i <    -50)
+  yak "searching first smaller  -100: "; testLoop2 a (i -> i <   -100)
+  yak "searching first larger     10: "; testLoop2 a (i -> i >     10)
+  yak "searching first larger    100: "; testLoop2 a (i -> i >    100)
+  yak "searching first larger   1000: "; testLoop2 a (i -> i >   1000)
+  yak "searching first larger  10000: "; testLoop2 a (i -> i >  10000)
+  yak "searching first larger 100000: "; testLoop2 a (i -> i > 100000)
 
   say "testLoop3: loop with index variables, variant and invariant"
   testLoop3(data array<i32>, isWhatWeWant fun (i32) bool) is
@@ -113,13 +113,13 @@ looptest is
     else
       say "Not found! ix is $ix"
 
-  yak "searching first smaller   -50: "; testLoop3 a (fun (i i32) => i <    -50)
-  yak "searching first smaller  -100: "; testLoop3 a (fun (i i32) => i <   -100)
-  yak "searching first larger     10: "; testLoop3 a (fun (i i32) => i >     10)
-  yak "searching first larger    100: "; testLoop3 a (fun (i i32) => i >    100)
-  yak "searching first larger   1000: "; testLoop3 a (fun (i i32) => i >   1000)
-  yak "searching first larger  10000: "; testLoop3 a (fun (i i32) => i >  10000)
-  yak "searching first larger 100000: "; testLoop3 a (fun (i i32) => i > 100000)
+  yak "searching first smaller   -50: "; testLoop3 a (i -> i <    -50)
+  yak "searching first smaller  -100: "; testLoop3 a (i -> i <   -100)
+  yak "searching first larger     10: "; testLoop3 a (i -> i >     10)
+  yak "searching first larger    100: "; testLoop3 a (i -> i >    100)
+  yak "searching first larger   1000: "; testLoop3 a (i -> i >   1000)
+  yak "searching first larger  10000: "; testLoop3 a (i -> i >  10000)
+  yak "searching first larger 100000: "; testLoop3 a (i -> i > 100000)
 
   say "testLoop4: loop with index variables, empty body"
   testLoop4(data array<i32>, isWhatWeWant fun (i32) bool) is
@@ -132,13 +132,13 @@ looptest is
     else
       say "Not found! ix is $ix"
 
-  yak "searching first smaller   -50: "; testLoop4 a (fun (i i32) => i <    -50)
-  yak "searching first smaller  -100: "; testLoop4 a (fun (i i32) => i <   -100)
-  yak "searching first larger     10: "; testLoop4 a (fun (i i32) => i >     10)
-  yak "searching first larger    100: "; testLoop4 a (fun (i i32) => i >    100)
-  yak "searching first larger   1000: "; testLoop4 a (fun (i i32) => i >   1000)
-  yak "searching first larger  10000: "; testLoop4 a (fun (i i32) => i >  10000)
-  yak "searching first larger 100000: "; testLoop4 a (fun (i i32) => i > 100000)
+  yak "searching first smaller   -50: "; testLoop4 a (i -> i <    -50)
+  yak "searching first smaller  -100: "; testLoop4 a (i -> i <   -100)
+  yak "searching first larger     10: "; testLoop4 a (i -> i >     10)
+  yak "searching first larger    100: "; testLoop4 a (i -> i >    100)
+  yak "searching first larger   1000: "; testLoop4 a (i -> i >   1000)
+  yak "searching first larger  10000: "; testLoop4 a (i -> i >  10000)
+  yak "searching first larger 100000: "; testLoop4 a (i -> i > 100000)
 
   say "testLoop5: loop with index variables, no while and empty body"
   testLoop5(data array<i32>, isWhatWeWant fun (i32) bool) is
@@ -151,13 +151,13 @@ looptest is
       else
         say "Not found! ix is $ix"
 
-  yak "searching first smaller   -50: "; testLoop5 a (fun (i i32) => i <    -50)
-  yak "searching first smaller  -100: "; testLoop5 a (fun (i i32) => i <   -100)
-  yak "searching first larger     10: "; testLoop5 a (fun (i i32) => i >     10)
-  yak "searching first larger    100: "; testLoop5 a (fun (i i32) => i >    100)
-  yak "searching first larger   1000: "; testLoop5 a (fun (i i32) => i >   1000)
-  yak "searching first larger  10000: "; testLoop5 a (fun (i i32) => i >  10000)
-  yak "searching first larger 100000: "; testLoop5 a (fun (i i32) => i > 100000)
+  yak "searching first smaller   -50: "; testLoop5 a (i -> i <    -50)
+  yak "searching first smaller  -100: "; testLoop5 a (i -> i <   -100)
+  yak "searching first larger     10: "; testLoop5 a (i -> i >     10)
+  yak "searching first larger    100: "; testLoop5 a (i -> i >    100)
+  yak "searching first larger   1000: "; testLoop5 a (i -> i >   1000)
+  yak "searching first larger  10000: "; testLoop5 a (i -> i >  10000)
+  yak "searching first larger 100000: "; testLoop5 a (i -> i > 100000)
 
   say "testLoop6: loop which returns a string"
   testLoop6(data array<i32>, isWhatWeWant fun (i32) bool) =>
@@ -170,13 +170,13 @@ looptest is
       element
     else
       -999999
-  yak "searching first smaller   -50: "; yak (testLoop6 a (fun (i i32) => i <    -50)); say
-  yak "searching first smaller  -100: "; yak (testLoop6 a (fun (i i32) => i <   -100)); say
-  yak "searching first larger     10: "; yak (testLoop6 a (fun (i i32) => i >     10)); say
-  yak "searching first larger    100: "; yak (testLoop6 a (fun (i i32) => i >    100)); say
-  yak "searching first larger   1000: "; yak (testLoop6 a (fun (i i32) => i >   1000)); say
-  yak "searching first larger  10000: "; yak (testLoop6 a (fun (i i32) => i >  10000)); say
-  yak "searching first larger 100000: "; yak (testLoop6 a (fun (i i32) => i > 100000)); say
+  yak "searching first smaller   -50: "; yak (testLoop6 a (i -> i <    -50)); say
+  yak "searching first smaller  -100: "; yak (testLoop6 a (i -> i <   -100)); say
+  yak "searching first larger     10: "; yak (testLoop6 a (i -> i >     10)); say
+  yak "searching first larger    100: "; yak (testLoop6 a (i -> i >    100)); say
+  yak "searching first larger   1000: "; yak (testLoop6 a (i -> i >   1000)); say
+  yak "searching first larger  10000: "; yak (testLoop6 a (i -> i >  10000)); say
+  yak "searching first larger 100000: "; yak (testLoop6 a (i -> i > 100000)); say
 
   say "testLoop7: loop return 3333 on success and 4444 in else branch"
   testLoop7(data array<i32>, isWhatWeWant fun (i32) bool) i32 is
@@ -187,8 +187,8 @@ looptest is
       3333
     else
       4444
-  chck (testLoop7(a, fun (i i32) => i >    100) == 3333) "testLoop7 returns 3333 in until branch"
-  chck (testLoop7(a, fun (i i32) => i >  10000) == 4444) "testLoop7 returns 4444 in else branch"
+  chck (testLoop7(a, (i -> i >    100)) == 3333) "testLoop7 returns 3333 in until branch"
+  chck (testLoop7(a, (i -> i >  10000)) == 4444) "testLoop7 returns 4444 in else branch"
 
   say "testLoop8: loop return success index as default and 4444 in else branch"
   testLoop8(data array<i32>, isWhatWeWant fun (i32) bool) i32 is
@@ -199,8 +199,8 @@ looptest is
       ix
     else
       4444
-  chck (testLoop8(a, fun (i i32) => i >    100) ==   11) "testLoop8 returns   11 in index branch"
-  chck (testLoop8(a, fun (i i32) => i >  10000) == 4444) "testLoop8 returns 4444 in else branch"
+  chck (testLoop8(a, (i -> i >    100)) ==   11) "testLoop8 returns   11 in index branch"
+  chck (testLoop8(a, (i -> i >  10000)) == 4444) "testLoop8 returns 4444 in else branch"
 
   say "testLoop9: loop return 3333 on success, index as default"
   testLoop9(data array<i32>, isWhatWeWant fun (i32) bool) i32 is
@@ -211,8 +211,8 @@ looptest is
       3333
     else
       ix
-  chck (testLoop9(a, fun (i i32) => i >    100) == 3333) "testLoop9 returns 3333 in until branch"
-  chck (testLoop9(a, fun (i i32) => i >  10000) ==  100) "testLoop9 returns  100 in index branch"
+  chck (testLoop9(a, (i -> i >    100)) == 3333) "testLoop9 returns 3333 in until branch"
+  chck (testLoop9(a, (i -> i >  10000)) ==  100) "testLoop9 returns  100 in index branch"
 
   say "testLoop10: loop return 4444 on else branch, no success possible"
   testLoop10(data array<i32>, isWhatWeWant fun (i32) bool) i32 is
@@ -221,15 +221,15 @@ looptest is
       element := data[ix]
     else
       4444
-  chck (testLoop10(a, fun (i i32) => i >    100) == 4444) "testLoop10 returns 4444 in else branch"
-  chck (testLoop10(a, fun (i i32) => i >  10000) == 4444) "testLoop10 returns 4444 in else branch"
+  chck (testLoop10(a, (i -> i >    100)) == 4444) "testLoop10 returns 4444 in else branch"
+  chck (testLoop10(a, (i -> i >  10000)) == 4444) "testLoop10 returns 4444 in else branch"
 
   say "testLoop11: loop returns last index"
   testLoop11(data array<i32>, isWhatWeWant fun (i32) bool) i32 is
     for ix := 0, ix + 1
     while ix < data.length
-  chck (testLoop11(a, fun (i i32) => i >    100) ==  100) "testLoop11 returns 100 in index branch"
-  chck (testLoop11(a, fun (i i32) => i >  10000) ==  100) "testLoop11 returns 100 in index branch"
+  chck (testLoop11(a, (i -> i >    100)) ==  100) "testLoop11 returns 100 in index branch"
+  chck (testLoop11(a, (i -> i >  10000)) ==  100) "testLoop11 returns 100 in index branch"
 
   say "testLoop12: loop returns found or not"
   testLoop12(data array<i32>, isWhatWeWant fun (i32) bool) bool is
@@ -237,8 +237,8 @@ looptest is
       ix := 0, ix + 1
       found := false, found || isWhatWeWant data[ix-1]
     while ix < data.length
-  chck (testLoop12(a, fun (i i32) => i >    100) <=>  true) "testLoop12 returns true  in index branch"
-  chck (testLoop12(a, fun (i i32) => i >  10000) <=> false) "testLoop12 returns false in index branch"
+  chck (testLoop12(a, (i -> i >    100)) <=>  true) "testLoop12 returns true  in index branch"
+  chck (testLoop12(a, (i -> i >  10000)) <=> false) "testLoop12 returns false in index branch"
 
   say "testLoop13: sum up the elements"
   testLoop13(data array<i32>) i32 is
