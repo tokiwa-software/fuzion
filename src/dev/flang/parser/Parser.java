@@ -434,7 +434,7 @@ qual        : name ( dot qual
    */
   List<String> qual(boolean mayBeAtMinIndent)
   {
-    List<String> result = new List<>(name(mayBeAtMinIndent));
+    List<String> result = new List<>(name(mayBeAtMinIndent, false));
     while (skipDot())
       {
         result.add(name());
@@ -461,9 +461,9 @@ name        : IDENT                            // all parts of name must be in s
    */
   String name()
   {
-    return name(false);
+    return name(false, false);
   }
-  String name(boolean mayBeAtMinIndent)
+  String name(boolean mayBeAtMinIndent, boolean ignoreError)
   {
     String result = Errors.ERROR_STRING;
     int pos = pos();
@@ -481,32 +481,34 @@ name        : IDENT                            // all parts of name must be in s
               next();
               if (skip('?'))
                 {
-                  if (!skipColon())
+                  if (skipColon())
+                    {
+                      result = "ternary ? :";
+                    }
+                  else if (!ignoreError)
                     {
                       syntaxError(pos, "':' after 'ternary ?'", "name");
                     }
                 }
-              else
+              else if (!ignoreError)
                 {
                   syntaxError(pos, "'? :' after 'ternary'", "name");
                 }
-              result = "ternary ? :";
               break;
             }
           case t_index  :
             {
               next();
-              match(Token.t_lcrochet, "name: index");
-              if (isOperator(".."))
+              if (!ignoreError || current() == Token.t_lcrochet)
                 {
-                  next();
-                  result = "index [..]";
+                  match(Token.t_lcrochet, "name: index");
+                  var dotdot = skip("..");
+                  if (!ignoreError || current() == Token.t_rcrochet)
+                    {
+                      match(Token.t_rcrochet, "name: index");
+                      result = dotdot ? "index [..]" : "index [ ]";
+                    }
                 }
-              else
-                {
-                  result = "index [ ]";
-                }
-              match(Token.t_rcrochet, "name: index");
               break;
             }
           case t_set    :
@@ -515,18 +517,20 @@ name        : IDENT                            // all parts of name must be in s
               if (current() == Token.t_lcrochet)
                 {
                   match(Token.t_lcrochet, "name: set");
-                  match(Token.t_rcrochet, "name: set");
-                  result = "index [ ] =";
+                  if (!ignoreError || current() == Token.t_rcrochet)
+                    {
+                      match(Token.t_rcrochet, "name: set");
+                      result = "index [ ] =";
+                    }
                 }
               else if (current() == Token.t_ident)
                 {
                   result = identifier() + " =";
                   match(Token.t_ident, "name: set");
                 }
-              else
+              else if (!ignoreError)
                 {
                   syntaxError(pos, "'[ ]' or identifier after 'set'", "name");
-                  result = Errors.ERROR_STRING;
                 }
               break;
             }
@@ -534,7 +538,7 @@ name        : IDENT                            // all parts of name must be in s
           }
         sameLine(oldLine);
       }
-    else
+    else if (!ignoreError)
       {
         syntaxError(pos, "identifier name, infix/prefix/postfix operator, 'ternary ? :', 'index' or 'set' name", "name");
       }
@@ -568,7 +572,6 @@ name        : IDENT                            // all parts of name must be in s
   }
 
 
-
   /**
    * Check if the current position has a name and skip it.
    *
@@ -579,7 +582,7 @@ name        : IDENT                            // all parts of name must be in s
     boolean result = isNamePrefix();
     if (result)
       {
-        name();
+        return name(false, true) != Errors.ERROR_STRING;
       }
     return result;
   }
