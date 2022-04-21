@@ -43,6 +43,15 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
 # list<A> : nil | Cons A, list A is     -- NYI: sum type syntax, optional '<', '>'
 # list A : nil | Cons A, list A is      -- NYI: sum type syntax, optional '<', '>' (2x)
 
+
+  # create a list from this Sequence.
+  #
+  # A list is immutable, so it can be reused and shared between threads.
+  # Compared to a stream, a list may require more (heap) allocation.
+  #
+  redef asList list<A> is list.this
+
+
   # is this list empty?
   #
   redef isEmpty => list.this ? nil  => true
