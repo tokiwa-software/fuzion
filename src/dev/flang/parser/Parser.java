@@ -951,8 +951,10 @@ typeType    : "type"
    */
   FormalOrActual skipFormArgsNotActualArgs()
   {
+    var ps = posObject();
     var result = new FormalOrActual[] { FormalOrActual.both };
-    skipBracketTermWithNLs(PARENS, () -> {
+    var sr = current() != Token.t_lparen ||
+      skipBracketTermWithNLs(PARENS, () -> {
         if (current() != Token.t_rparen)
           {
             do
@@ -996,12 +998,15 @@ typeType    : "type"
               }
             while (skipComma());
           }
-        if (!skip(Token.t_rparen))
+        if (current() != Token.t_rparen)
           {
             result[0] = FormalOrActual.actual;
+            return false;
           }
-        return false;
+        return true;
       });
+    if (CHECKS) check
+      (sr || result[0] != FormalOrActual.both); // in case skipBracketTerm failed, we better have a decision.
     return result[0];
   }
 
