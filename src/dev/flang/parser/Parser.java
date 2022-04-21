@@ -359,9 +359,9 @@ visiFlag    : "export" visiList
             | "protected"
             | "public"
             ;
-visiList    : e=visi ( COMMA visiList
-                     |
-                     )
+visiList    : visi ( COMMA visiList
+                   |
+                   )
             ;
   */
   Visi visibility()
@@ -700,14 +700,14 @@ formGens    : "<" formGensBody ">"
             | "<" ">"
             |
             ;
-formGensBody: l=genericList ( "..."
-                            |
-                            )
+formGensBody: genericList ( "..."
+                          |
+                          )
             |
             ;
-genericList : e=generic  ( COMMA genericList
-                         |
-                         )
+genericList : generic  ( COMMA genericList
+                       |
+                       )
             ;
    */
   List<Feature> formGens()
@@ -2144,7 +2144,7 @@ op          : OPERATOR
    * Parse fun
    *
 fun         : "fun" function
-            | "fun" c=call
+            | "fun" call
             ;
    */
   Expr fun()
@@ -2174,7 +2174,7 @@ function    : formArgsOpt
               contract
               ( block
               | "is" block
-              | ARROW e=block
+              | ARROW block
               )
             ;
    */
@@ -2524,7 +2524,7 @@ brblock     : BRACEL stmnts BRACER
    * Parse stmnts
    *
 stmnts      :
-            | s=stmnt semiOrFlatLF l=stmnts (semiOrFlatLF | )
+            | stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
             ;
    */
   List<Stmnt> stmnts()
@@ -3383,7 +3383,7 @@ implRout    : block
             | "is" "intrinsic"
             | "is" "intrinsic_constructor"
             | "is" block
-            | ARROW e=block
+            | ARROW block
             | "of" block
             | fullStop
             ;
@@ -3569,9 +3569,9 @@ onetype     : "ref" simpletype
             | "fun" funArgsOpt typeOpt
             | simpletype "->" simpletype
             | funArgs "->" simpletype
-            | t=simpletype
+            | simpletype
             ;
-funArgs     : LPAREN a=typeList RPAREN
+funArgs     : LPAREN typeList RPAREN
             ;
 funArgsOpt  : funArgs
             |
