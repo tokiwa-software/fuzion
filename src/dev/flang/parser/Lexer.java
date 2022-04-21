@@ -774,7 +774,6 @@ public class Lexer extends SourceFile
   }
 
 
-
   /**
    * Advance to the next token that is not ignore()d.
    */
@@ -1911,7 +1910,7 @@ HEX_TAIL    : "." HEX_DIGITS
       }
     else if (current() == Token.t_spaceLimit)
       {
-        Errors.whiteSpaceNotAllowedHere(sourcePos(pos), detail);
+        Errors.whiteSpaceNotAllowedHere(sourcePos(pos()), detail);
       }
     else
       {
