@@ -3675,6 +3675,7 @@ typeOpt     : type
    * if none.
    *
 simpletype  : name actualGens typeTail
+            | name typePars typeTail
             ;
 typeTail    : dot simpletype
             |
@@ -3684,7 +3685,14 @@ typeTail    : dot simpletype
   {
     do
       {
-        lhs = new Type(posObject(), name(), actualGens(), lhs);
+        var p = posObject();
+        var n = name();
+        var a = actualGens();
+        if (a.isEmpty())
+          {
+            a = typePars();
+          }
+        lhs = new Type(p, n, a, lhs);
       }
     while (!isDotEnvOrType() && skipDot());
     return lhs;
@@ -3718,7 +3726,135 @@ typeTail    : dot simpletype
   boolean skipSimpletype()
   {
     boolean result = false;
-    return skipName() && skipActualGens() && (isDotEnvOrType() || !skipDot() || skipSimpletype());
+    return skipName() && skipActualGens() && skipTypePars() && (isDotEnvOrType() || !skipDot() || skipSimpletype());
+  }
+
+
+  /**
+   * Parse typePars
+   *
+typePars    : typeInParens typePars
+            | "(" typeList ")"
+            |
+            ;
+   */
+  List<AbstractType> typePars()
+  {
+    if (ignoredTokenBefore() || current() != Token.t_lparen)
+      {
+        var res = new List<AbstractType>();
+        while (isTypePrefix())
+          {
+            res.add(typeInParens());
+          }
+        return res;
+      }
+    else
+      {
+        return bracketTermWithNLs(PARENS, "typePars",
+                                  () -> typeList(),
+                                  () -> new List<>());
+      }
+  }
+
+
+  /**
+   * Parse typeInParens
+   *
+   * This is a little tricky since a lambda '()->i32' or '(u8,bool)->f64' is a type,
+   * while '(u8)', '((()->i32))' or '((((u8,bool)->f64)))' are types in parentheses.
+   *
+typeInParens: "(" typeInParens ")"
+            | type         // no white space except enclosed in { }, [ ], or ( ).
+            ;
+   */
+  AbstractType typeInParens()
+  {
+    AbstractType result;
+    if (current() == Token.t_lparen)
+      {
+        var pos = pos();
+        var l = bracketTermWithNLs(PARENS, "typeInParens",
+                                   () -> typeList(),
+                                   () -> new List<AbstractType>());
+        if (isOperator("->"))
+          {
+            matchOperator("->", "onetype");
+            result = Type.funType(posObject(pos), type(), l);
+          }
+        else if (l.size() == 1)
+          {
+            result = l.get(0);
+          }
+        else
+          {
+            syntaxError(pos, "exaclty one type", "typeInParens");
+            result = Types.t_ERROR;
+          }
+      }
+    else
+      {
+        var eas = endAtSpace(pos());
+        result = type();
+        endAtSpace(eas);
+      }
+    return result;
+  }
+
+
+  /**
+   * Check if the current position has typePars and skip them.
+   *
+   * @return true iff the next token(s) form typePars, otherwise no typePars
+   * was found and the parser/lexer is at an undefined position.
+   */
+  boolean skipTypePars()
+  {
+    if (ignoredTokenBefore() || current() != Token.t_lparen)
+      {
+        while (skipTypeInParens())
+          {
+          }
+        return true;
+      }
+    else
+      {
+        var f = fork();
+        if (f.skipBracketTermWithNLs(PARENS, ()->f.skipTypeList()))
+          {
+            skipBracketTermWithNLs(PARENS, ()->skipTypeList());
+            return true;
+          }
+      }
+    return false;
+  }
+
+
+  /**
+   * Check if the current position has typeInParens and skip them.
+   *
+   * @return true if a typeInPaens was skipped
+   */
+  boolean skipTypeInParens()
+  {
+    if (isTypePrefix())
+      {
+        var f = fork();
+        f.endAtSpace(pos());
+        if (f.skipType())
+          {
+            var eas = endAtSpace(pos());
+            skipType();
+            endAtSpace(eas);
+            return true;
+          }
+      }
+    var f = fork();
+    if (f.skipBracketTermWithNLs(PARENS, ()->f.skipTypeList()))
+      {
+        return skipBracketTermWithNLs(PARENS, ()->skipTypeList());
+      }
+    return false;
   }
 
 
