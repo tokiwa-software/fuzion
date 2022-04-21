@@ -3607,14 +3607,9 @@ typeOpt     : type
           ? Type.funType(pos, type(), a)
           : Type.funType(pos, new Type("unit"), a);
       }
-    else if (skip(Token.t_lparen))
+    else if (current() == Token.t_lparen)
       {
-        var a = Type.NONE;
-        if (current() != Token.t_rparen)
-          {
-            a = typeList();
-          }
-        match(Token.t_rparen, "funTypeArgs");
+        var a = bracketTermWithNLs(PARENS, "funArgs", () -> current() != Token.t_rparen ? typeList() : Type.NONE);
         matchOperator("->", "onetype");
         result = Type.funType(pos, type(), a);
       }
@@ -3656,16 +3651,18 @@ typeOpt     : type
           }
         result = result && !isTypePrefix() || skipType();
       }
-    else if (skip(Token.t_lparen))
-      {
-        result = ((current() == Token.t_rparen) || skipTypeList()) &&
-          skip(Token.t_rparen) &&
-          skip("->") &&
-          skipType();
-      }
     else
       {
-        result = skipSimpletype() && (!skip("->") || skipSimpletype());
+        var f = fork();
+        if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList()))
+          {
+            skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList());
+            result = skip("->") && skipType();
+          }
+        else
+          {
+            result = skipSimpletype() && (!skip("->") || skipSimpletype());
+          }
       }
     return result;
   }
