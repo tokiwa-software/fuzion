@@ -55,7 +55,12 @@ f32(val f32) : float<f32>, f32s is
 
 
   # conversion
-  as_i64 => as_f64.as_i64
+  redef as_i64 => as_f64.as_i64
+
+
+  redef from_i64(val i64) f32 is
+    val.as_f32
+
 
   as_f64 f64 is intrinsic
 
