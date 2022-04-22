@@ -57,12 +57,7 @@ float(redef F float<F>.type) : numeric<F>, floats<F> is
   # NYI this could be made faster, see here:
   # https://cs.opensource.google/go/go/+/refs/tags/go1.18.1:src/math/floor.go;l=79
   round i64 is
-    truncated := from_i64 thiz.as_i64
-    fraction := if truncated != zero then thiz % truncated else thiz % one
-    if fraction.abs >= one / two
-      (truncated + (if thiz > zero then one else -one)).as_i64
-    else
-      truncated.as_i64
+    sign.as_i64 * (abs + (one/two)).as_i64
 
 
 # floats -- unit type defining features related to float but not requiring
