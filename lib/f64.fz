@@ -66,7 +66,7 @@ f64(val f64) : float<f64>, f64s is
     f64.this >= i64s.min.as_f64 && f64.this <= i64s.max.as_f64
 
 
-  as_i64
+  redef as_i64
     pre
       safety: fits_in_i64
     => as_i64_lax
@@ -116,6 +116,9 @@ f64s : floats<f64> is
   redef minPositive f64 is intrinsic
   redef max f64 is intrinsic
   redef epsilon f64 is intrinsic
+
+  redef from_i64(val i64) f64 is
+    val.as_f64
 
   redef squareRoot(val f64) f64 is intrinsic
 

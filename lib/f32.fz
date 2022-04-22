@@ -55,7 +55,8 @@ f32(val f32) : float<f32>, f32s is
 
 
   # conversion
-  as_i64 => as_f64.as_i64
+  redef as_i64 => as_f64.as_i64
+
 
   as_f64 f64 is intrinsic
 
@@ -100,6 +101,9 @@ f32s : floats<f32> is
   redef minPositive f32 is intrinsic
   redef max f32 is intrinsic
   redef epsilon f32 is intrinsic
+
+  redef from_i64(val i64) f32 is
+    val.as_f32
 
   redef squareRoot(val f32) f32 is intrinsic
 

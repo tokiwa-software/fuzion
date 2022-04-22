@@ -46,6 +46,20 @@ float(redef F float<F>.type) : numeric<F>, floats<F> is
   redef infix **!(other F) bool is true
 
 
+  # convert a float value to i64 dropping any fraction.
+  # the value must be in the range of i64
+  as_i64 i64 is abstract
+
+
+  # round floating point number
+  # ties to away (0.5 => 1; -0.5 => -1; etc.)
+  #
+  # NYI this could be made faster, see here:
+  # https://cs.opensource.google/go/go/+/refs/tags/go1.18.1:src/math/floor.go;l=79
+  round i64 is
+    sign.as_i64 * (abs + (one/two)).as_i64
+
+
 # floats -- unit type defining features related to float but not requiring
 # an instance
 #
@@ -97,6 +111,15 @@ floats(F float<F>.type) : numerics<F> is
   minPositive F is abstract
   max F is abstract
   epsilon F is abstract
+
+
+  # conversion
+
+  # convert an i64 value to a floating point value
+  #
+  # if the value cannot be represented exactly, the result is either
+  # the nearest higher or nearest lower value
+  from_i64(val i64) F is abstract
 
 
   squareRoot(val F) F is abstract
