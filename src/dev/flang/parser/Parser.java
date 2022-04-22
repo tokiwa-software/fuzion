@@ -1223,11 +1223,10 @@ callList    : call ( COMMA callList
   /**
    * Parse call
    *
-call        : name ( actualGens actualArgs callTail
-                   | dot ( NUM_LITERAL callTail
-                         | call
-                         )
-                   )
+call        : name actuals callTail
+            ;
+actuals     : actualGens actualArgs
+            | dot NUM_LITERAL
             ;
    */
   Call call(Expr target)
@@ -1236,18 +1235,17 @@ call        : name ( actualGens actualArgs callTail
     var line = line();
     String n = name();
     Call result;
+    var skippedDot = false;
     if (skipDot())
       {
         if (current() == Token.t_numliteral)
           {
-            var select = skipNumLiteral();
-            result = new Call(pos, target, n, select == null ? "0" : select.plainInteger());
-            result = callTail(result);
+            result = new Call(pos, target, n, skipNumLiteral().plainInteger());
           }
         else
           {
             result = new Call(pos, target, n);
-            result = call(result);
+            skippedDot = true;
           }
       }
     else
@@ -1257,8 +1255,8 @@ call        : name ( actualGens actualArgs callTail
         var g = (!isActualGens()) ? Call.NO_GENERICS : actualGens();
         var l = actualArgs(line);
         result = new Call(pos, target, n, g, l);
-        result = callTail(result);
       }
+    result = callTail(skippedDot, result);
     return result;
   }
 
@@ -1299,22 +1297,27 @@ indexCall   : ( LBRACKET exprList RBRACKET
   /**
    * Parse callTail
    *
-callTail    : ( indexCall
-              |
-              )
-              ( dot call
-              |
-              )
+   * @param skippedDot true if a dot was already skipDot()ed.
+   *
+   * @param target the target of the call
+   *
+callTail    : indexCallOpt dotCallOpt
+            ;
+indexCallOpt: indexCall
+            |
+            ;
+dotCallOpt  : dot call
+            |
             ;
    */
-  Call callTail(Call target)
+  Call callTail(boolean skippedDot, Call target)
   {
-    Call result = target;
-    if (!ignoredTokenBefore() && current() == Token.t_lcrochet)
+    var result = target;
+    if (!skippedDot && !ignoredTokenBefore() && current() == Token.t_lcrochet)
       {
         result = indexCall(result);
       }
-    if (skipDot())
+    if (skippedDot || skipDot())
       {
         result = call(result);
       }
@@ -3217,6 +3220,7 @@ qualThis    : name ( dot name )* dot "this"
       }
     return result;
   }
+
 
   /**
    * Parse env
