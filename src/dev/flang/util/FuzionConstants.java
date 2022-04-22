@@ -95,6 +95,12 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Name of type features.
+   */
+  public static final String TYPE_NAME = INTERNAL_NAME_PREFIX + "type";
+
+
+  /**
    * Field introduced in, e.g.,
    *
    *   x := if a then 0 else 1

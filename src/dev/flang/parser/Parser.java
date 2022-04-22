@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import dev.flang.ast.*;
 
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -1223,7 +1224,10 @@ callList    : call ( COMMA callList
   /**
    * Parse call
    *
-call        : name actuals callTail
+call        : nameOrType actuals callTail
+            ;
+nameOrType  : name
+            | "type"
             ;
 actuals     : actualGens actualArgs
             | dot NUM_LITERAL
@@ -1233,7 +1237,7 @@ actuals     : actualGens actualArgs
   {
     SourcePosition pos = posObject();
     var line = line();
-    String n = name();
+    String n = skip(Token.t_type) ? FuzionConstants.TYPE_NAME : name();
     Call result;
     var skippedDot = false;
     if (skipDot())
