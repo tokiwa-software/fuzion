@@ -951,7 +951,6 @@ typeType    : "type"
    */
   FormalOrActual skipFormArgsNotActualArgs()
   {
-    var ps = posObject();
     var result = new FormalOrActual[] { FormalOrActual.both };
     var sr = current() != Token.t_lparen ||
       skipBracketTermWithNLs(PARENS, () -> {
