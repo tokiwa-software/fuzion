@@ -779,7 +779,7 @@ public class Call extends AbstractCall
   AbstractType asType(AbstractFeature outer, AbstractFeature tp)
   {
     AbstractType result = new Type(pos(), name, generics,
-                                   target == null ? null : target.asType(outer, tp));
+                                   target == null || target instanceof Universe ? null : target.asType(outer, tp));
     return result.visit(Feature.findGenerics, outer);
   }
 
