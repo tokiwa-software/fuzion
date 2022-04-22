@@ -920,6 +920,15 @@ public class AstErrors extends ANY
           "To solve this, provide a type such as " + type("i32") + " or " + type("Object") + " as an argument to this call.\n");
   }
 
+  static void expectedTypeExpression(SourcePosition pos, Expr e)
+  {
+    error(pos,
+          "Expected type in 'xyz.type' expression",
+          "Expression of the form 'xyz.type' must use a type for 'xyz'\n" +
+          "Expression found: " + s(e) + "\n"+
+          "To solve this, provide a type such as " + type("i32") + " or " + type("Object") + " instead of " + s(e) + ".\n");
+  }
+
 
   public static void ambiguousType(SourcePosition pos,
                                    String t,

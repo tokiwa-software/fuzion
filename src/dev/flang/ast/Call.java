@@ -700,8 +700,25 @@ public class Call extends AbstractCall
        ? thiz.outer().state().atLeast(Feature.State.RESOLVED_DECLARATIONS)
        : thiz        .state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-    if (calledFeature_ == null &&
-        name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
+    if (calledFeature_ == null && name == FuzionConstants.TYPE_NAME)
+      {
+        if (CHECKS) check
+          (target != null,
+           _actuals.size() == 0,
+           generics.size() == 0);
+
+        AbstractType t = target.asType(thiz, null).resolve(res, thiz);
+        if (t.isGenericArgument())
+          {
+            Errors.fatal(pos(), "NYI: 'A.type' for generic argument type not supported yet.", null);
+          }
+        else
+          {
+            calledFeature_ = t.typeFeature(res);
+          }
+        target = new Universe();
+      }
+    else if (calledFeature_ == null && name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
       {
         var targetFeature = targetFeature(res, thiz);
         if (CHECKS) check
@@ -945,7 +962,9 @@ public class Call extends AbstractCall
            }
        },
        outer);
-    if (target != null)
+    if (target != null &&
+        // for 'xyz.type' target is 'xyz', which is never called, so do not visit it:
+        name != FuzionConstants.TYPE_NAME)
       {
         target = target.visit(v, outer);
       }

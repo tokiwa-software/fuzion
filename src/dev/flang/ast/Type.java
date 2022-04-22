@@ -188,7 +188,7 @@ public class Type extends AbstractType
    *
    * @param o
    */
-  public Type(HasSourcePosition pos, String n, List<AbstractType> g, Type o)
+  public Type(HasSourcePosition pos, String n, List<AbstractType> g, AbstractType o)
   {
     this(pos, n,g,o,null, RefOrVal.LikeUnderlyingFeature);
   }

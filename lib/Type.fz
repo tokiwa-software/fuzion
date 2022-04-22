@@ -31,6 +31,13 @@
 Type ref is
 
 
-  # name of this type
+  # name of this type, including type parameters, e.g. 'option (list i32)'.
   #
-  name string is intrinsic
+  name string is abstract
+
+
+  # string representation of this type to be used for debugging.
+  #
+  # result has the form "Type of '<name>'", but this might change in the future
+  #
+  redef asString => "Type of '$name'"

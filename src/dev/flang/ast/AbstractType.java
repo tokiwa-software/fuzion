@@ -30,6 +30,7 @@ import java.util.Set;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -938,6 +939,85 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
   public abstract Generic genericArgument();
+
+
+  /**
+   * For every Type 't', the corresponding type feature 't.type'.
+   *
+   * NYI: These are currently created on-demand only. They cannot be saved in a .fum file.
+   *
+   * @param res Resolution instance used to resolve this for types.
+   *
+   * @return The feature describing this type.
+   */
+  AbstractFeature _typeFeature = null;
+  public AbstractFeature typeFeature(Resolution res)
+  {
+    var it = Types.intern(this);
+    if (it != this)
+      {
+        return it.typeFeature(res);
+      }
+    if (_typeFeature == null)
+      {
+        var f = featureOfType();
+        var p = f.pos();
+        // redef name => "<type name>"
+        var n = new Feature(p, Consts.VISIBILITY_PUBLIC, Consts.MODIFIER_REDEFINE, NoType.INSTANCE, new List<>("name"), new List<Feature>(),
+                            new List<>(), new Contract(null, null, null),
+                            new Impl(p, new StrConst(p, asString(), false), Impl.Kind.RoutineDef));
+        // type.#type : Type is
+        //   redef name => "<type name>"
+        var tf = new Feature(p, f.visibility(), 0, NoType.INSTANCE, new List<>(f.qualifiedName()+"."+FuzionConstants.TYPE_NAME), new List<Feature>(),
+                             new List<>(new Call(p, "Type")),
+                             new Contract(null,null,null),
+                             new Impl(p, new Block(p, new List<>(n)), Impl.Kind.Routine));
+        _typeFeature = tf;
+        res._module.findDeclarations(tf, f.universe());
+        tf.scheduleForResolution(res);
+      }
+    return _typeFeature;
+  }
+
+
+  /**
+   * Get a String representation of this Type.
+   *
+   * Note that this does not work for instances of Type before they were
+   * resolved.  Use toString() for creating strings early in the front end
+   * phase.
+   */
+  public String asString()
+  {
+    if (PRECONDITIONS) require
+      (checkedForGeneric());
+
+    String result;
+
+    if (isGenericArgument())
+      {
+        var ga = genericArgument();
+        result = ga.feature().qualifiedName() + "." + ga.name() + (this.isRef() ? " (boxed)" : "");
+      }
+    else
+      {
+        var o = outer();
+        String outer = o != null && !o.featureOfType().isUniverse() ? o.asString() + "." : "";
+        result = outer
+              + (isRef() != featureOfType().isThisRef() ? (isRef() ? "ref " : "value ") : "" )
+              + featureOfType().featureName().baseName();
+      }
+    for (var g : generics())
+      {
+        var gs = g.asString();
+        if (gs.indexOf(" ") >= 0)
+          {
+            gs = "(" + gs + ")";
+          }
+        result = result + " " + gs;
+      }
+    return result;
+  }
 
 }
 

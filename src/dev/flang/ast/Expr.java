@@ -240,13 +240,21 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
    *
    * @param outer the outer feature containing this expression
    *
-   * @param tp the type parameter this expression is assigned to
+   * @param tp the type parameter this expression is assigned to, null if used
+   * in 'xyz.type' expression.
    *
    * @return the Type corresponding to this, Type.t_ERROR in case of an error.
    */
   AbstractType asType(AbstractFeature outer, AbstractFeature tp)
   {
-    AstErrors.expectedActualTypeInCall(pos(), tp);
+    if (tp == null)
+      {
+        AstErrors.expectedTypeExpression(pos(), this);
+      }
+    else
+      {
+        AstErrors.expectedActualTypeInCall(pos(), tp);
+      }
     return Types.t_ERROR;
   }
 
