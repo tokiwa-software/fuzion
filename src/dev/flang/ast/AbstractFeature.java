@@ -519,7 +519,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     var result = resultTypeRaw(generics);
     if (result != null && result instanceof Type rt)
       {
-        rt.findGenerics(outer());
+        result = rt.visit(Feature.findGenerics,outer());
       }
     return result;
   }

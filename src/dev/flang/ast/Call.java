@@ -776,12 +776,11 @@ public class Call extends AbstractCall
    *
    * @return the Type corresponding to this, Type.t_ERROR in case of an error.
    */
-  Type asType(AbstractFeature outer, AbstractFeature tp)
+  AbstractType asType(AbstractFeature outer, AbstractFeature tp)
   {
-    var result = new Type(pos(), name, generics,
-                          target == null ? null : target.asType(outer, tp));
-    result.findGenerics(tp.outer());
-    return result;
+    AbstractType result = new Type(pos(), name, generics,
+                                   target == null ? null : target.asType(outer, tp));
+    return result.visit(Feature.findGenerics, outer);
   }
 
 

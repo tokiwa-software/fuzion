@@ -244,7 +244,7 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
    *
    * @return the Type corresponding to this, Type.t_ERROR in case of an error.
    */
-  Type asType(AbstractFeature outer, AbstractFeature tp)
+  AbstractType asType(AbstractFeature outer, AbstractFeature tp)
   {
     AstErrors.expectedActualTypeInCall(pos(), tp);
     return Types.t_ERROR;
