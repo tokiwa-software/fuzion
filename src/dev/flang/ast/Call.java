@@ -799,7 +799,7 @@ public class Call extends AbstractCall
   {
     return ff.hasOpenGenericsArgList()               /* actual generics might come from type inference */
       || forFun                                      /* a fun-declaration "fun a.b.f" */
-      || ff.featureName().argCount() == 0 && hasParentheses(); /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
+      || ff.arguments().size()==0 && hasParentheses(); /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
   }
 
 
