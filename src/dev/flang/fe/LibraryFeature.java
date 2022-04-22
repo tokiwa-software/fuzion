@@ -46,6 +46,7 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
 import dev.flang.ast.Cond;
+import dev.flang.ast.Consts;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
@@ -60,6 +61,7 @@ import dev.flang.ast.Tag;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 import dev.flang.ast.Unbox;
+import dev.flang.ast.Visi;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -209,6 +211,15 @@ public class LibraryFeature extends AbstractFeature
   public boolean isIntrinsicConstructor()
   {
     return isIntrinsic() && _libModule.featureIsIntrinsicConstructor(_index);
+  }
+
+
+  /**
+   * Visibility of this feature
+   */
+  public Visi visibility()
+  {
+    return Consts.VISIBILITY_PUBLIC;  // NYI, visibility of LibraryFeature
   }
 
 

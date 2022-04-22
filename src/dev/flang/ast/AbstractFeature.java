@@ -993,6 +993,11 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
+  /**
+   * Visibility of this feature
+   */
+  public abstract Visi visibility();
+
   public abstract FeatureName featureName();
   public abstract List<AbstractCall> inherits();
   public abstract AbstractFeature outer();
