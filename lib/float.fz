@@ -46,9 +46,9 @@ float(redef F float<F>.type) : numeric<F>, floats<F> is
   redef infix **!(other F) bool is true
 
 
+  # convert a float value to i64 dropping any fraction.
+  # the value must be in the range of i64
   as_i64 i64 is abstract
-
-  from_i64(val i64) F is abstract
 
 
   # round floating point number
@@ -116,6 +116,15 @@ floats(F float<F>.type) : numerics<F> is
   minPositive F is abstract
   max F is abstract
   epsilon F is abstract
+
+
+  # conversion
+
+  # convert an i64 value to a floating point value
+  #
+  # if the value cannot be represented exactly, the result is either
+  # the nearest higher or nearest lower value
+  from_i64(val i64) F is abstract
 
 
   squareRoot(val F) F is abstract
