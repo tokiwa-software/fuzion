@@ -961,20 +961,29 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     if (_typeFeature == null)
       {
         var f = featureOfType();
-        var p = f.pos();
-        // redef name => "<type name>"
-        var n = new Feature(p, Consts.VISIBILITY_PUBLIC, Consts.MODIFIER_REDEFINE, NoType.INSTANCE, new List<>("name"), new List<Feature>(),
-                            new List<>(), new Contract(null, null, null),
-                            new Impl(p, new StrConst(p, asString(), false), Impl.Kind.RoutineDef));
-        // type.#type : Type is
-        //   redef name => "<type name>"
-        var tf = new Feature(p, f.visibility(), 0, NoType.INSTANCE, new List<>(f.qualifiedName()+"."+FuzionConstants.TYPE_NAME), new List<Feature>(),
-                             new List<>(new Call(p, "Type")),
-                             new Contract(null,null,null),
-                             new Impl(p, new Block(p, new List<>(n)), Impl.Kind.Routine));
-        _typeFeature = tf;
-        res._module.findDeclarations(tf, f.universe());
-        tf.scheduleForResolution(res);
+        if (f == null || f == Types.f_ERROR)
+          {
+            if (CHECKS) check
+              (Errors.count() > 0);
+            _typeFeature = Types.f_ERROR;
+          }
+        else
+          {
+            var p = f.pos();
+            // redef name => "<type name>"
+            var n = new Feature(p, Consts.VISIBILITY_PUBLIC, Consts.MODIFIER_REDEFINE, NoType.INSTANCE, new List<>("name"), new List<Feature>(),
+                                new List<>(), new Contract(null, null, null),
+                                new Impl(p, new StrConst(p, asString(), false), Impl.Kind.RoutineDef));
+            // type.#type : Type is
+            //   redef name => "<type name>"
+            var tf = new Feature(p, f.visibility(), 0, NoType.INSTANCE, new List<>(f.qualifiedName()+"."+FuzionConstants.TYPE_NAME), new List<Feature>(),
+                                 new List<>(new Call(p, "Type")),
+                                 new Contract(null,null,null),
+                                 new Impl(p, new Block(p, new List<>(n)), Impl.Kind.Routine));
+            _typeFeature = tf;
+            res._module.findDeclarations(tf, f.universe());
+            tf.scheduleForResolution(res);
+          }
       }
     return _typeFeature;
   }

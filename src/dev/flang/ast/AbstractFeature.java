@@ -181,7 +181,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       (state().atLeast(Feature.State.LOADED));
 
     AbstractFeature r = this;
-    while (!r.isUniverse())
+    while (!r.isUniverse() && r != Types.f_ERROR)
       {
         r = r.outer();
       }
