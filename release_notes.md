@@ -1,3 +1,146 @@
+## 2022-04-23: V0.072
+
+- Front End
+
+  - improved type inference for results of lambdas: Code like
+    ```
+      l.map<T> (x -> f x)
+    ```
+    no longer need '<T>', i.e.,
+    ```
+      l.map (x -> f x)
+    ```
+    suffices.
+
+- Fuzion language
+
+  - Added new expression `xyz.type` to get access to a unit type value corresponding to
+    type `xyz`. This is planned to work for type parameters allowing features to be defined
+    for types that can be used in generic code without to have an instance of that type (e.g.,
+    to call a constructor for a value).
+
+  - type parameters can now be declared with the normal parameters, i.e., instead of
+    ```
+      f<A : xyz, B>(v A, w B) is ...
+    ```
+    one can write
+    ```
+      f(A xyz.type, B type, v A, w B) is ...
+    ```
+    also, calls of the form `f<T1,T2> a b` can now be written `f T1 T2 a b`.
+
+    Type of the form
+    ```
+      list<map<string, i32>>
+    ```
+    can now be written as
+    ```
+      list(map string i32)
+    ```
+    The old syntax will eventually be removed.
+
+  - match statement now supports matching `*`, which creates a default branch.
+
+  - calls of the form `f a,b,c` are no longer supported, has be be either `f a b
+    c` or `f(a,b,c)`.
+
+  - full stop can now be used for empty constructors, e.g.
+    ```
+      red is
+      green is
+      blue is
+    ```
+    can now be written as
+    ```
+      red.
+      green.
+      blue.
+    ```
+    or even
+    ```
+      red, green, blue.
+    ```
+  - syntax sugar for choice: a declaration of a choice had the form
+    ```
+      red is
+      green is
+      blue is
+      point(x,y i32) is
+
+      colorOrPoint : choice<red, green, blue, point> is
+    ```
+    Now, this can be done using `of` as follows
+    ```
+      colorOrPoint : choice of
+        red is
+        green is
+        blue is
+        point(x,y i32) is
+    ```
+    or even
+    ```
+      colorOrPoint : choice of
+        red, green, blue.
+        point(x,y i32).
+    ```
+
+- stdlib
+
+  - result of `list T h t`is now `list<T>` which is convenient in declaring lazy
+    lists as in
+    ```
+      ones => list 1 ()->ones
+    ```
+    for an endless list of `1`s.
+
+  - added `numericSequence` and `floatSequence` with operations like `average`,
+    `std_dev`, etc.
+
+  - added `float.round`
+
+  - added `ctrie` data structure
+
+  - added `Type` as parent feature for types.
+
+  - added `list.flatMap` and `Sequence.flatMapSequence`
+
+  - added `Sequence.first` with default value argument, `Sequence.nth` to get
+    n-th element. Sequence is not used more often for iteration, replaces
+    'stream'.
+
+  - added `string.trimStart` and `string.trimEnd`
+
+  - default random provider can now be seeded with an u64 given in env var
+    `FUZION_RANDOM_SEED`.
+
+  - added effects
+
+    - `panic`
+    - `exit`
+    - `envi.vars` to access environment variables.
+    - `envi.args` to access command line arguments.
+    - `concur.thread` to spawn threads
+
+  - joined floats/bitsets/codepoints/matrices.fz into
+    float/bitset/codepoint/matrix.fz. These will eventually be defined in
+    float/bitset/codepoint/matrix.type.
+
+  - move `sys` to `fuzion/sys`, this is the location for low-level intrinsics
+
+  - removed InitArray, no longer needed since we have array syntax sugar
+    `[1,2,3]`.
+
+  - rename `searchableList` as `searchableSequence` since it is a `Sequence`.
+
+  - added `time.nano` for short delays and high-res timer, `time.duration` for
+    time spans
+
+- fum/fuir:
+
+  - generics are no longer part of the Fuzion module file or the Fuzion
+    intermediate representation. Instead, these are argument features.
+
+
 ## 2022-04-01: V0.071
 
 - Social media
