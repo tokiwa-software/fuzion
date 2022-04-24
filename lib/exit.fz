@@ -27,10 +27,12 @@
 #
 exit (
 
-  # the provider this effect uses to exit
-  p exitProvider,
+  # the handler this effect uses to exit
+  p exitHandler,
 
-  redef r effectModes
+  redef r effectModes,
+
+  _ unit
   ) : effect r
 is
 
@@ -40,7 +42,7 @@ is
 
 
 # exit with no argument returns exit.env, the currently installed
-# exit provider.
+# exit handler.
 #
 exit =>
   exit_type.installDefault
@@ -53,9 +55,15 @@ exit =>
 exit(code i32) => exit.exit code
 
 
-# exitProvider -- abstract exit
+# install given exit handler and run code with it.
 #
-exitProvider ref is
+exit(handler exitHandler, code ()->unit) =>
+  exit handler (effectMode.inst code) unit
+
+
+# exitHandler -- abstract exit
+#
+exitHandler ref is
 
   # exit with the given message
   #
@@ -68,11 +76,11 @@ exit_type is
 
   installDefault is
     if !(effects.exists<exit>)
-      _ := exit defaultExitProvider effectMode.default
+      _ := exit defaultExitHandler effectMode.default unit
 
-  # default exit provider using io.err and exit with return code 1
+  # default exit handler using io.err and exit with return code 1
   #
-  defaultExitProvider : exitProvider is
+  defaultExitHandler : exitHandler is
 
     # exit with the given message and exit with return code 1
     #
