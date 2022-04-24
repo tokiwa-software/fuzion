@@ -127,67 +127,67 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # parse this string as a signed 32-bit integer value
   #
-  parseI32       => parseI32 10
-  parseI32Binary => parseI32 2
-  parseI32Octal  => parseI32 8
-  parseI32Hex    => parseI32 16
-  parseI32 (base i32) outcome<i32>
+  parse_i32       => parse_i32 10
+  parse_i32_binary => parse_i32 2
+  parse_i32_octal  => parse_i32 8
+  parse_i32_hex    => parse_i32 16
+  parse_i32 (base i32) outcome<i32>
     pre 1 < base <= 36
   is
-    parseInteger<i32> base
+    parse_integer<i32> base
 
 
   # parse this string as an unsigned 32-bit integer value
   #
-  parseU32       => parseU32 10
-  parseU32Binary => parseU32 2
-  parseU32Octal  => parseU32 8
-  parseU32Hex    => parseU32 16
-  parseU32 (base u32) outcome<u32>
+  parse_u32       => parse_u32 10
+  parse_u32_binary => parse_u32 2
+  parse_u32_octal  => parse_u32 8
+  parse_u32_hex    => parse_u32 16
+  parse_u32 (base u32) outcome<u32>
     pre u32 1 < base <= 36
   is
-    parseInteger<u32> base
+    parse_integer<u32> base
 
 
   # parse this string as a signed 64-bit integer value
   #
-  parseI64       => parseI64 10
-  parseI64Binary => parseI64 2
-  parseI64Octal  => parseI64 8
-  parseI64Hex    => parseI64 16
-  parseI64 (base i64) outcome<i64>
+  parse_i64       => parse_i64 10
+  parse_i64_binary => parse_i64 2
+  parse_i64_octal  => parse_i64 8
+  parse_i64_hex    => parse_i64 16
+  parse_i64 (base i64) outcome<i64>
     pre i64 1 < base <= 36
   is
-    parseInteger<i64> base
+    parse_integer<i64> base
 
 
   # parse this string as an unsigned 64-bit integer value
   #
-  parseU64       => parseU64 10
-  parseU64Binary => parseU64 2
-  parseU64Octal  => parseU64 8
-  parseU64Hex    => parseU64 16
-  parseU64 (base u64) outcome<u64>
+  parse_u64       => parse_u64 10
+  parse_u64_binary => parse_u64 2
+  parse_u64_octal  => parse_u64 8
+  parse_u64_hex    => parse_u64 16
+  parse_u64 (base u64) outcome<u64>
     pre u64 1 < base <= 36
   is
-    parseInteger<u64> base
+    parse_integer<u64> base
 
 
   # parse this string as an int value of arbitrary size
   #
-  parseInt       => parseInt int(10)
-  parseIntBinary => parseInt int(2)
-  parseIntOctal  => parseInt int(8)
-  parseIntHex    => parseInt int(16)
-  parseInt (base int) outcome<int>
+  parse_int       => parse_int int(10)
+  parse_int_binary => parse_int int(2)
+  parse_int_octal  => parse_int int(8)
+  parse_int_hex    => parse_int int(16)
+  parse_int (base int) outcome<int>
     pre (int 1) < base <= int 36
   is
-    parseInteger<int> base
+    parse_integer<int> base
 
 
   # parse this string as a integer value given as type parameter
   #
-  parseInteger<T: integer<T>> (
+  parse_integer<T: integer<T>> (
 
     # base gives the base of the integer, must be between 2 and 36, inclusive.
     base T
@@ -202,14 +202,14 @@ string ref : hasHash<string>, ordered<string>, strings is
       c := s.next
       negate := c = minusChar
       d := if (negate || c = plusChar) zeroChar else c
-      parseInteger<T> base negate base.zero d s
+      parse_integer<T> base negate base.zero d s
     else
       parseError "empty string"
 
 
-  # recursive helper for parseInteger<T>(T)
+  # recursive helper for parse_integer<T>(T)
   #
-  private parseInteger<T: integer<T>>(
+  private parse_integer<T: integer<T>>(
 
     # base gives the base, between 2 and 36
     base T,
@@ -250,7 +250,7 @@ string ref : hasHash<string>, ordered<string>, strings is
           v := if (neg) hi -? t
                else     hi +? t
           if s.hasNext
-            parseInteger<T> base neg v s.next s
+            parse_integer<T> base neg v s.next s
           else
             v ? nil => parseError "numerical overflow"
               | u T => u

@@ -190,7 +190,7 @@ simpleRandomProviders is
   default =>
     match envir.vars.get random_seed_env_var
      s string =>
-       match s.parseU64
+       match s.parse_u64
          seed u64 => simpleRandomProvider seed 98765432109876543
          e error  => panic "Failed to parse value in env var '$random_seed_env_var': $e"
      nil      => timeSeeded
