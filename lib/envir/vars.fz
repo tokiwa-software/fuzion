@@ -37,9 +37,15 @@ private vars (
   ) : effect r
 is
 
-  # If set, get the environment variable corresponding to v
+  # If set, get the environment variable corresponding to v.
   #
   get(v string) => p.get v
+
+
+  # If set, get the environment variable corresponding to v.
+  # Otherwise, return default
+  #
+  get(v string, default string) => (get v).get default
 
 
 # short-hand for creating and installing vars effect using
