@@ -1324,7 +1324,6 @@ public class Call extends AbstractCall
       }
     while (last < next);
 
-
     List<Generic> missing = new List<Generic>();
     for (Generic g : cf.generics().list)
       {
@@ -1536,7 +1535,10 @@ public class Call extends AbstractCall
             if (!at.containsUndefined(true))
               {
                 var rt = af.propagateExpectedType2(res, outer, at, true);
-                generics.set(ri, rt);
+                if (rt != null)
+                  {
+                    generics.set(ri, rt);
+                  }
                 foundAt[ri] = (foundAt[ri] == null ? "" : foundAt[ri]) + rt + " found at " + pos.show() + "\n";
                 result = true;
               }
