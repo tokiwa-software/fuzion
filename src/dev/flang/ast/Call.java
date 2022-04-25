@@ -795,7 +795,17 @@ public class Call extends AbstractCall
    */
   AbstractType asType(AbstractFeature outer, AbstractFeature tp)
   {
-    AbstractType result = new Type(pos(), name, generics,
+    var g = generics;
+    if (!_actuals.isEmpty())
+      {
+        g = new List<AbstractType>();
+        g.addAll(generics);
+        for (var a : _actuals)
+          {
+            g.add(a.asType(outer, tp));
+          }
+      }
+    AbstractType result = new Type(pos(), name, g,
                                    target == null || target instanceof Universe ? null : target.asType(outer, tp));
     return result.visit(Feature.findGenerics, outer);
   }
