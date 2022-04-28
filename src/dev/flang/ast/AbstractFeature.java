@@ -1151,6 +1151,31 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     return _generics;
   }
 
+
+  /**
+   * Return the index of this type parameter within the type arguments of its
+   * outer feature.
+   *
+   * @return the index such that formalGenerics.get(result)) this
+   */
+  public int typeParameterIndex()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    var result = 0;
+    for (var tp : outer().typeArguments())
+      {
+        if (tp == this)
+          {
+            return result;
+          }
+        result++;
+      }
+    throw new Error("AbstractFeature.typeParameterIndex() failed for " + this);
+  }
+
+
 }
 
 /* end of file */
