@@ -192,9 +192,9 @@ public class FuzionConstants extends ANY
 
 
   /**
-   * Flag OR'ed to kind, unused
+   * Flag OR'ed to kind, true if feature for type 'f.type' was added.
    */
-  public static final int MIR_FILE_KIND_UNUSED = 0x10;
+  public static final int MIR_FILE_KIND_HAS_TYPE_FEATURE = 0x10;
 
 
   /**

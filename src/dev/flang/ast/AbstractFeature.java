@@ -33,6 +33,7 @@ import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -412,6 +413,85 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
        );
 
     return result;
+  }
+
+
+  /**
+   * For every Type 't', the corresponding type feature 't.type'.
+   *
+   * @param res Resolution instance used to resolve this for types.
+   *
+   * @return The feature describing this type.
+   */
+  AbstractFeature _typeFeature = null;
+  static int _typeFeatureId_ = 0;
+  public AbstractFeature typeFeature(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(Feature.State.FINDING_DECLARATIONS),
+       res != null);
+
+    if (!hasTypeFeature())
+      {
+        var o = outer() == null || outer().isUniverse() ? universe() : outer().typeFeature(res);
+        var name = featureName().baseName() + "." + FuzionConstants.TYPE_NAME;
+        if (!isConstructor() && !isChoice())
+          {
+            System.out.println("type feature of non-constructor: "+qualifiedName());
+            name = name + "_" + (_typeFeatureId_++);
+          }
+        var p = pos();
+        // redef name := "<type name>"
+        var n = new Feature(p, Consts.VISIBILITY_PUBLIC, Consts.MODIFIER_REDEFINE, new Type("string"), "name", new Contract(null, null, null), Impl.FIELD);
+        // type.#type : Type is
+        //   redef name => "<type name>"
+        var tf = new Feature(p, visibility(), 0, NoType.INSTANCE, new List<>(name), new List<Feature>(),
+                             new List<>(new Call(p, "Type")), // NYI: inherit from this' parents typeFeatures!
+                             new Contract(null,null,null),
+                             new Impl(p, new Block(p, new List<>(n)), Impl.Kind.Routine));
+        _typeFeature = tf;
+        res._module.findDeclarations(tf, o);
+        tf.scheduleForResolution(res);
+        res.resolveDeclarations(tf);
+      }
+    return typeFeature();
+  }
+
+
+  /**
+   * Check if a typeFeature exists already, either because this feature was
+   * loaded from a library .fum file that includes a typeFeature, or because one
+   * was created explicitly using typeFeature(res).
+   */
+  public boolean hasTypeFeature()
+  {
+    if (_typeFeature == null)
+      {
+        _typeFeature = existingTypeFeature();
+      }
+    return _typeFeature != null;
+  }
+
+
+  /**
+   * Return existing typeFeature.
+   */
+  public AbstractFeature typeFeature()
+  {
+    if (PRECONDITIONS) require
+      (hasTypeFeature());
+
+    return _typeFeature;
+  }
+
+
+  /**
+   * If we have an existing type feature (store in a .fum library file), return that
+   * type feature. return null otherwise.
+   */
+  public AbstractFeature existingTypeFeature()
+  {
+    return null;
   }
 
 

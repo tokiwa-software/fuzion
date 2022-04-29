@@ -364,6 +364,16 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * If we have an existing type feature (store in a .fum library file), return that
+   * type feature. return null otherwise.
+   */
+  public AbstractFeature existingTypeFeature()
+  {
+    return _libModule.featureHasTypeFeature(_index) ? _libModule.featureTypeFeature(_index) : null;
+  }
+
+
+  /**
    * Get inner feature with given name, ignoring the argument count.
    *
    * @param name the name of the feature within this.
@@ -407,7 +417,7 @@ public class LibraryFeature extends AbstractFeature
   public AbstractType createThisType()
   {
     if (PRECONDITIONS) require
-      (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField());
+      (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField() || isTypeParameter());
 
     var o = outer();
     var ot = o == null ? null : o.thisType();

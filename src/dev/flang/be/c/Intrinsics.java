@@ -583,14 +583,31 @@ class Intrinsics extends ANY
         }
 
       default:
-        var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
-        Errors.warning(msg);
-        return CStmnt.seq(CExpr.call("fprintf",
-                                       new List<>(new CIdent("stderr"),
-                                                  CExpr.string("*** error: NYI: %s\n"),
-                                                  CExpr.string(msg))),
-                          CExpr.call("exit", new List<>(CExpr.int32const(1))));
-
+        var at = c._fuir.clazzTypeParameterActualType(cl);
+        if (at >= 0)
+          {
+            // intrinsic is a type parameter, so create type instance:
+            //
+            // NYI: this does not work yet. Eventually. type instances should become
+            // unit types so this should not be needed at all.
+            var res = c._names.newTemp();
+            CIdent tname = new CIdent("tname");
+            var rcl = c._fuir.clazzResultClazz(cl);
+            return CStmnt.seq(c.declareAllocAndInitClazzId(rcl, res),
+                              c.constString(c._fuir.clazzAsStringNew(at).getBytes(StandardCharsets.UTF_8), tname),
+                              res.deref().field(new CIdent("fields")).field(new CIdent("fzF_0_name")).assign(tname.castTo("void*")),
+                              res.ret());
+          }
+        else
+          {
+            var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
+            Errors.warning(msg);
+            return CStmnt.seq(CExpr.call("fprintf",
+                                         new List<>(new CIdent("stderr"),
+                                                    CExpr.string("*** error: NYI: %s\n"),
+                                                    CExpr.string(msg))),
+                              CExpr.call("exit", new List<>(CExpr.int32const(1))));
+          }
       }
   }
 

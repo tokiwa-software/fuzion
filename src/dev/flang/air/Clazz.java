@@ -1099,7 +1099,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           (Errors.count() > 0 || fo != null);
 
         result =
-          field.isTypeParameter() ? Clazzes.type.get() :
+          field.isTypeParameter() ? resultClazz() :
           fo == null ? Clazzes.error.get() :
           field.isOuterRef() && fo.isOuterRefAdrOfValue()     ? actualClazz(Types.t_ADDRESS) :
           field.isOuterRef() && fo.isOuterRefCopyOfValue() ||
@@ -1832,6 +1832,44 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * For a type parameter, return the actual type.
+   */
+  public Clazz typeParameterActualType()
+  {
+    if (PRECONDITIONS) require
+      (feature().isTypeParameter());
+
+    var f = feature();
+
+    if (_outer.feature() != f.outer())
+      {
+        throw new Error("NYI: cannot find actual generic for '"+f.qualifiedName()+"' in heir outer clazz '" + _outer + "'.");
+      }
+    return _outer.actualGenerics()[f.typeParameterIndex()];
+  }
+
+
+  /**
+   * For a clazz a.b.c the corresponding type clazz a.b.c.type, which is,
+   * actually, a.type.b.type.c.type.
+   */
+  Clazz typeClazz()
+  {
+    var cf = _type.featureOfType();
+    if (cf.isUniverse())
+      {
+        return this;
+      }
+    else
+      {
+        var tf = cf.typeFeature();
+        return Clazzes.create(tf.thisType().asRef(),
+                              _outer == null ? Clazzes.universe.get() : _outer.typeClazz());
+      }
+  }
+
+
+  /**
    * Determine the clazz of the result of calling this clazz.
    *
    * @return the result clazz.
@@ -1850,7 +1888,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else if (f.isTypeParameter())
       {
-        return Clazzes.type.get();
+        return typeParameterActualType().typeClazz();
       }
     else
       {

@@ -654,7 +654,7 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | byte          | 00C0kkkk  k = kind, C = is intrinsic constructor
+.6+| true  .6+| 1      | byte          | 00CYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor
                        | Name          | name
                        | int           | arg count
                        | int           | name id
@@ -684,7 +684,8 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 00CTkkkk  k = kind, T = has type parameters   |
+   *   | true   | 1      | byte          | 0YCYkkkk  k = kind                            |
+   *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
@@ -696,6 +697,8 @@ Feature
    *   |        |        | Pos           | source code position                          |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | int           | outer feature index, 0 for outer()==universe  |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | Y=1    | 1      | int           | type feature index                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
@@ -768,6 +771,10 @@ Feature
   {
     return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR) != 0);
   }
+  boolean featureHasTypeFeature(int at)
+  {
+    return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE) != 0);
+  }
   int featureNamePos(int at)
   {
     var i = featureKindPos(at) + 1;
@@ -839,9 +846,23 @@ Feature
   {
     return featureOuterPos(at) + 4;
   }
-  int featureResultTypePos(int at)
+  int featureTypeFeaturePos(int at)
   {
     return featureOuterNextPos(at);
+  }
+  AbstractFeature featureTypeFeature(int at)
+  {
+    if (PRECONDITIONS) require
+      (featureHasTypeFeature(at));
+    return feature(data().getInt(featureTypeFeaturePos(at)));
+  }
+  int featureTypeFeatureNextPos(int at)
+  {
+    return featureTypeFeaturePos(at) + (featureHasTypeFeature(at) ? 4 : 0);
+  }
+  int featureResultTypePos(int at)
+  {
+    return featureTypeFeatureNextPos(at);
   }
   boolean featureHasResultType(int at)
   {

@@ -708,15 +708,15 @@ public class Call extends AbstractCall
            generics.size() == 0);
 
         AbstractType t = target.asType(thiz, null).resolve(res, thiz);
-        if (t.isGenericArgument())
+        calledFeature_ = Types.resolved.f_Types_get;
+        generics = new List<>(t);
+        var tc = new Call(pos(), new Universe(), Types.resolved.f_Types);
+        tc.resolveTypes(res, thiz);
+        target = tc;
+        if (!t.isGenericArgument())
           {
-            Errors.fatal(pos(), "NYI: 'A.type' for generic argument type not supported yet.", null);
+            var tf = t.featureOfType().typeFeature(res);
           }
-        else
-          {
-            calledFeature_ = t.typeFeature(res);
-          }
-        target = new Universe();
       }
     else if (calledFeature_ == null && name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
       {
@@ -1140,6 +1140,13 @@ public class Call extends AbstractCall
               }
           }
       }
+    for (var g : generics)
+      {
+        if (!g.isGenericArgument())
+          {
+            g.featureOfType().typeFeature(res);
+          }
+      }
   }
 
 
@@ -1268,7 +1275,19 @@ public class Call extends AbstractCall
             t = types.get(_select);
           }
       }
-    _type = t.resolve(res, tt.featureOfType());
+    if (calledFeature_.isTypeParameter())
+      {
+        if (_select >= 0 || calledFeature_.isOpenTypeParameter())
+          {
+            throw new Error("NYI: Calling open type parameter");
+          }
+        // NYI: The result type should eventually be t.resolve(res, tt.featureOfType()).type()
+        _type = Types.resolved.f_Type.thisType();
+      }
+    else
+      {
+        _type = t.resolve(res, tt.featureOfType());
+      }
   }
 
 

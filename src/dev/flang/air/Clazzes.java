@@ -180,7 +180,6 @@ public class Clazzes extends ANY
   public static final OnDemandClazz object      = new OnDemandClazz(() -> Types.resolved.t_object           );
   public static final OnDemandClazz string      = new OnDemandClazz(() -> Types.resolved.t_string           );
   public static final OnDemandClazz conststring = new OnDemandClazz(() -> Types.resolved.t_conststring      , true /* needed? */);
-  public static final OnDemandClazz type        = new OnDemandClazz(() -> Types.resolved.t_type             );
   public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
   public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     );
   public static Clazz constStringInternalArray;  // field conststring.internalArray
@@ -849,6 +848,21 @@ public class Clazzes extends ANY
                 propagateExpectedClazz(a, afs[i].resultClazz(), outerClazz);
               }
             i++;
+          }
+
+        var f = innerClazz.feature();
+        if (f.kind() == AbstractFeature.Kind.TypeParameter)
+          {
+            var tpc = innerClazz.resultClazz();
+            do
+              {
+                addUsedFeature(tpc.feature(), c.pos());
+                tpc.instantiated(c.pos());
+                var name = tpc.lookup(Types.resolved.f_Type_name, dev.flang.ast.Call.NO_GENERICS, Clazzes.isUsedAt(tpc.feature()));
+                addUsedFeature(name.feature(), c.pos());
+                tpc = tpc._outer;
+              }
+            while (tpc != null && !tpc.feature().isUniverse());
           }
       }
   }
