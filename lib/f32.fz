@@ -70,6 +70,27 @@ f32(val f32) : float<f32>, f32s is
     castTo_u32.hash
 
 
+  # the fraction of the floating point number
+  redef fract f32 is
+    if f32s.isNaN val
+      NaN
+    else if val < 0
+      -(-val).fract
+    else if val < 1
+      val
+    else
+      bits := castTo_u32
+      fract_bits := significandBits.as_u32 - 1
+      bias := (u32 2 ** (exponentBits.as_u32 - 1) - 1)
+      mask := u32 2 ** exponentBits.as_u32 - 1
+      e := ((bits >> fract_bits) & mask) - bias
+      if (e < fract_bits)
+        x := bits & (u32s.max << (fract_bits - e))
+        val - x.castTo_f32
+      else
+        0.0
+
+
   # convert this to a string.
   #
   redef asString string is intrinsic
