@@ -84,6 +84,27 @@ f64(val f64) : float<f64>, f64s is
     castTo_u64.hash
 
 
+  # the fraction of this floating point number
+  redef fract f64 is
+    if f64s.isNaN val
+      NaN
+    else if val < 0
+      -(-val).fract
+    else if val < 1
+      val
+    else
+      bits := castTo_u64
+      fract_bits := significandBits.as_u64 - 1
+      bias := (u64 2 ** (exponentBits.as_u64 - 1) - 1)
+      mask := u64 2 ** exponentBits.as_u64 - 1
+      e := ((bits >> fract_bits) & mask) - bias
+      if (e < fract_bits)
+        x := bits & (u64s.max << (fract_bits - e))
+        val - x.castTo_f64
+      else
+        0.0
+
+
   # convert this to a string.
   #
   redef asString string is intrinsic
