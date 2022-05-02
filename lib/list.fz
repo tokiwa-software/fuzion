@@ -241,9 +241,6 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
     match list.this
       _ nil => t
       c Cons =>
-        match t
-          nil => list.this
-          c2 Cons =>
             ref : Cons<A, list<A>>
               head => c.head
               tail => c.tail.concat t
