@@ -123,15 +123,14 @@ class Intrinsics extends ANY
         }
       case "fuzion.std.exit"     : return CExpr.call("exit", new List<>(A0));
       case "fuzion.std.out.write":
-      case "fuzion.std.err.write": var cid = new CIdent("c");
-                                   return CStmnt.seq(CStmnt.decl("char",cid),
-                                                       cid.assign(A0.castTo("char")),
-                                                       CExpr.call("fwrite",
-                                                                  new List<>(cid.adrOf(),
-                                                                             CExpr.int32const(1),
-                                                                             CExpr.int32const(1),
-                                                                             outOrErr(in))));
-
+      // How do I print a non-null-terminated strings: https://stackoverflow.com/a/25111267
+      case "fuzion.std.err.write": return CExpr.call("fwrite",
+                                                                new List<>(
+                                                                  A0.castTo("void *"),
+                                                                  CExpr.sizeOfType("char"),
+                                                                  A1,
+                                                                  outOrErr(in)
+                                                                ));
       case "fuzion.std.out.flush":
       case "fuzion.std.err.flush": return CExpr.call("fflush", new List<>(outOrErr(in)));
 
