@@ -713,10 +713,6 @@ public class Call extends AbstractCall
         var tc = new Call(pos(), new Universe(), Types.resolved.f_Types);
         tc.resolveTypes(res, thiz);
         target = tc;
-        if (!t.isGenericArgument())
-          {
-            var tf = t.featureOfType().typeFeature(res);
-          }
       }
     else if (calledFeature_ == null && name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
       {
@@ -765,12 +761,15 @@ public class Call extends AbstractCall
     var g = new List<AbstractType>();
     var a = new List<Expr>();
     var i = 0;
-    for (var aa : _actuals)
+    ListIterator<Expr> ai = _actuals.listIterator();
+    while (ai.hasNext())
       {
+        var aa = ai.next();
         if (i <  calledFeature_.typeArguments().size())
           {
             var ta = calledFeature_.typeArguments().get(i);
             g.add(aa.asType(outer, ta));
+            ai.set(null);  // make sure visit() no longer visits this
           }
         else
           {
@@ -968,7 +967,11 @@ public class Call extends AbstractCall
        {
          while (i.hasNext())
            {
-             i.set(i.next().visit(v, outer));
+             var a = i.next();
+             if (a != null) // splitOffTypeArgs might have set this to null
+               {
+                 i.set(a.visit(v, outer));
+               }
            }
        },
        outer);
@@ -1140,13 +1143,6 @@ public class Call extends AbstractCall
               }
           }
       }
-    for (var g : generics)
-      {
-        if (!g.isGenericArgument())
-          {
-            g.featureOfType().typeFeature(res);
-          }
-      }
   }
 
 
@@ -1240,6 +1236,16 @@ public class Call extends AbstractCall
    */
   private void resolveType(Resolution res, AbstractType t, AbstractFeature outer)
   {
+    /* make sure '.type' features are declared for all actual generics: */
+    for (var g : generics)
+      {
+        g.resolve(res, outer);
+        if (!g.isGenericArgument())
+          {
+            g.featureOfType().typeFeature(res);
+          }
+      }
+
     var tt = targetTypeOrConstraint(res);
     if (_select < 0 && t.isOpenGeneric())
       {
