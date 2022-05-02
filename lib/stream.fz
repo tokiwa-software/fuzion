@@ -32,20 +32,25 @@ stream(redef T type) ref : Sequence<T> is
 
   # create a list from this stream
   #
+  asList0 option<some<list<T>>> := nil
   redef asList list<T> is
-    fromStream list<T> is
-      if hasNext
-        h := next;
-        ref : Cons<T,list<T>>
-          memoizedTail option<some<list<T>>> := nil
-          head => h
-          tail =>
-            if !memoizedTail.exists
-              set memoizedTail := some fromStream
-            memoizedTail.get.val
-      else
-        nil
-    fromStream
+    if !asList0.exists
+      set asList0 := some fromStream
+    asList0.get.val
+
+  # this must not be called more than once!
+  private fromStream list<T> is
+    if hasNext
+      h := next
+      ref : Cons<T,list<T>>
+        memoizedTail option<some<list<T>>> := nil
+        head => h
+        tail =>
+          if !memoizedTail.exists
+            set memoizedTail := some fromStream
+          memoizedTail.get.val
+    else
+      nil
 
 
   # create a stream of T.
