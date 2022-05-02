@@ -91,9 +91,9 @@ floating_point_math is
 
     # round
     a_half := a.one / a.two
-    chck (a_half.round             ==  1)                                      "{a.name}: round  1/2 =  1"
-    chck (-a_half.round            == -1)                                      "{a.name}: round -1/2 = -1"
-    chck (-(a.one + a_half).round  == -2)                                      "{a.name}: round -3/2 = -2"
+    chck (a_half.round             ==  a.one)                                      "{a.name}: round  1/2 =  1"
+    chck (-a_half.round            == -a.one)                                      "{a.name}: round -1/2 = -1"
+    chck (-(a.one + a_half).round  == -a.two)                                      "{a.name}: round -3/2 = -2"
 
 
   generic_tests f32s.zero
