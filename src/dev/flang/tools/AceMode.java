@@ -192,10 +192,6 @@ public class AceMode extends ANY
 
         const CustomHighlightRules = function CustomHighlightRules()
         {
-          var keywordMapper = this.createKeywordMapper({
-            "keyword": "%s",
-          }, "text", false);
-
           this.$rules = {
             "start": [
               {
@@ -203,8 +199,8 @@ public class AceMode extends ANY
                 regex: /(#|\\/\\/).*$/,
               },
               {
-                regex: "\\\\w+\\\\b",
-                token: keywordMapper
+                token: 'keyword',
+                regex: /\\b(%s)\\b/
               },
               {
                 token: "string.quoted.double",
@@ -218,21 +214,20 @@ public class AceMode extends ANY
                     regex: /\\\\./
                 }, {
                     token: "variable.other",
-                    regex: /\\$[A-Za-z0-9_]+/
+                    regex: /\\$[A-Za-z_]+[A-Za-z0-9_]*/
                 }, {
                     defaultToken: "string.quoted.double"
                 }]
               },
               {
-                token: "numbers",
-                regex: /\\d+(?:[.](\\d)*)?|[.]\\d+/
-              }],
-
-            "static-method": [{
-              token: "support.function",
-              regex: /\\w+/,
-              next: "start"
-            }]
+                token: 'keyword.operator',
+                regex: /:=|=>|->/
+              },
+              {
+                token: 'constant.numeric',
+                regex: /\\b((0(x|b|d|o)[0-9a-fA-F_]*)|(([0-9_]+\\.?[0-9_]*)|(\\.[0-9_]+))((e|E|p|P)(\\+|-)?[0-9_]+)?)\\b/
+              }
+            ]
           };
           this.normalizeRules();
         };
