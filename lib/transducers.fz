@@ -39,22 +39,41 @@
 transducers is
 
   # filter values based on evaluation of predicate
-  filter<R,T>(predicate T -> bool) ((R,T) -> R) -> (R,T) -> R is
-    red -> (res, val) -> if(predicate val) red.call res val else res
+  filter<R,T>(predicate T -> bool) ref transducer<R,R,T,T> is
+    ref : transducer<R,R,T,T>
+      redef call(red reducing_fn<R,T>) ref reducing_fn<R,T> is
+        ref : reducing_fn<R,T>
+          redef call(res R, val T) R is
+            if predicate val then red.call res val else res
+
 
   # map values from T to U
-  map<R,T,U>(mapper T -> U) ((R,U) -> R) -> (R,T) -> R is
-    red -> (res, val) -> red.call res (mapper val)
+  map<R,T,U>(mapper T -> U) ref transducer<R,R,T,U> is
+    ref : transducer<R,R,T,U>
+      redef call(red reducing_fn<R,U>) ref reducing_fn<R,T> is
+        ref : reducing_fn<R,T>
+          redef call(res R, val T) R is
+            red.call res (mapper val)
+
 
   # count amount of values
-  # NYI statefulness is easy to misuse
-  count<T>() ((i32,i32) -> i32) -> (i32,T) -> i32 is
-    c := 0
-    red -> (res, val) ->
-                        set c := c + 1
-                        c
+  count<T>() ref transducer<i32,i32,T,i32> is
+    ref : transducer<i32,i32,T,i32>
+      redef call(red reducing_fn<i32,i32>) ref reducing_fn<i32,T> is
+        ref : reducing_fn<i32,T>
+          redef call(res i32, val T) i32 is
+            res + 1
 
   # compose NYI not needed if Function provides composition
   # f ° g
-  compose<R1,R2,R3,T,U,V>(f ((R3,T) -> R3) -> (R1,U) -> R1, g ((R2,V) -> R2) -> (R3,T) -> R3) ((R2,V) -> R2) -> (R1,U) -> R1 is
-    red -> f (g red)
+  compose<R1,R2,R3,T,U,V>(f transducer<R1,R3,U,T>, g transducer<R3,R2,T,V>) transducer<R1,R2,U,V> is
+    ref : transducer<R1,R2,U,V>
+      redef call(red reducing_fn<R2,V>) ref reducing_fn<R1,U> is
+        f.call (g.call red)
+
+
+reducing_fn<R, T> ref : Function<R,R,T> is
+  redef call(res R, val T) R is abstract
+
+transducer<R1, R2, T, U> ref : Function<reducing_fn<R1,T>, reducing_fn<R2,U>> is
+  redef call(red reducing_fn<R2,U>) reducing_fn<R1,T> is abstract

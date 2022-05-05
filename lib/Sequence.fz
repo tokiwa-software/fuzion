@@ -262,21 +262,27 @@ Sequence<T> ref is
 
   # takes a transducer xf, a reducer f and an initial value
   # returns the result of applying the reducer xf f to the Sequence
-  transduce<R,U,V>(xf ((U,V) -> U) -> (R,T) -> R, f (U,V) -> U, init R) =>
-    red := xf f
+  transduce<R,U,V>(xf transducer<R,U,T,V>, f reducing_fn<U,V>, init R) R is
+    red := xf.call f
     for
-      res := init, red res el
+      res := init, red.call res el
       el in Sequence.this do
     else
       res
 
   # transduce with noop reducing fn
-  transduce<R,U>(xf ((U,U) -> U) -> (R,T) -> R, default R) =>
-    transduce<R,U,U> xf ((x,r) -> r) default
+  transduce<R,U>(xf transducer<R,U,T,U>, default R) R is
+    no_op := ref : reducing_fn<U,U>
+      redef call(res, val U) U is
+        val
+    transduce<R,U,U> xf no_op default
 
   # transduce into new sequence
-  transduce<R>(xf ((Sequence<R>,R) -> Sequence<R>) -> (Sequence<R>,T) -> Sequence<R>) =>
-    transduce xf ((u,v) -> u ++ [v]) Sequences.empty<R>
+  transduce<R>(xf transducer<Sequence<R>,Sequence<R>,T,R>) =>
+    seq_red := ref : reducing_fn<Sequence<R>,R>
+      redef call(u Sequence<R>, v R) Sequence<R> is
+        u ++ [v]
+    transduce xf seq_red Sequences.empty<R>
 
 # Sequences -- unit type defining features related to Sequence but not requiring
 # an instance
