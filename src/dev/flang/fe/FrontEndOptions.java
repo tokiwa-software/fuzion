@@ -133,6 +133,10 @@ public class FrontEndOptions extends FuzionOptions
                     inputFile = p;
                     main = null;
                   }
+                else
+                  {
+                    Errors.fatal("file does not exist: " + p, "");
+                  }
               }
           }
       }

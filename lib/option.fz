@@ -23,8 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-# option represents an optional value of type T
+# option -- feature wrapping a value or nothing
 #
+# option represents an optional value of type T
 #
 option<T> :
   choice<T, nil>,
@@ -119,6 +120,14 @@ is
       option.this ? v T => v
                   | nil => default
 
+  # unwraps an option if it exists, returns default value otherwise. default
+  # is evaluated lazily.
+  #
+  lazyGet(default ()->T)
+    =>
+      option.this ? v T => v
+                  | nil => default()
+
 
 # option with 1 argument provides an short-hand to wrap a value into an option
 #
@@ -135,7 +144,7 @@ option<T> (o option<T>) => o
 
 # type related to option declaring features not requiring an instance of option
 #
-options<A> : monads<A, option<A>> is
+options(redef A type) : monads<A, option<A>> is
 
 
   # return function

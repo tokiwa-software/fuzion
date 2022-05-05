@@ -45,6 +45,7 @@ import dev.flang.ast.Box;
 import dev.flang.ast.Call;
 import dev.flang.ast.Check;
 import dev.flang.ast.Constant;
+import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FormalGenerics;
@@ -122,6 +123,10 @@ class LibraryOut extends DataOut
     innerFeatures(sm._universe);
     sourceFiles();
     fixUps();
+    sm._options.verbosePrintln(2, "" +
+                               _offsetsForFeature.size() + " features " +
+                               _offsetsForType.size() + " types and " +
+                               _sourceFiles.size() + " source files includes in fum file.");
   }
 
 
@@ -181,7 +186,7 @@ class LibraryOut extends DataOut
           {
             if (CHECKS) check
               (Errors.count() > 0 ||
-               added.size() == 0 // a choice has no arguments, no result, no outer ref
+               added.size() == f.typeArguments().size() // a choice has no arguments, no result, no outer ref, but type args
                );
             var ct = f.choiceTag();
             innerFeatures.add(ct);
@@ -240,7 +245,9 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters |
+   *   | true   | 1      | byte          | 0YCYkkkk  k = kind                            |
+   *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
+   *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -252,7 +259,7 @@ class LibraryOut extends DataOut
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | int           | outer feature index, 0 for outer()==universe  |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | T=1    | 1      | TypeArgs      | optional type arguments                       |
+   *   | Y=1    | 1      | int           | type feature index                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
@@ -284,28 +291,6 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    *   |        | 1      | InnerFeatures | inner features of this feature                |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *
-   *   +---------------------------------------------------------------------------------+
-   *   | TypeArgs                                                                        |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | int           | num type ags n                                |
-   *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | bool          | isOpen                                        |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | n      | TypeArg       | type arguments                                |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *
-   *   +---------------------------------------------------------------------------------+
-   *   | TypeArg                                                                         |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Name          | type arg name                                 |
-   *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | Type          | constraint                                    |
-   *   +--------+--------+---------------+-----------------------------------------------+
    */
   void feature(Feature f)
   {
@@ -320,9 +305,13 @@ class LibraryOut extends DataOut
        f.isConstructor() || k < FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_VALUE);
     if (CHECKS) check
       (Errors.count() > 0 || f.isRoutine() || f.isChoice() || f.isIntrinsic() || f.isAbstract() || f.generics() == FormalGenerics.NONE);
-    if (f.generics() != FormalGenerics.NONE)
+    if (f.isIntrinsicConstructor())
       {
-        k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS;
+        k = k | FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR;
+      }
+    if (f.hasTypeFeature())
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE;
       }
     var n = f.featureName();
     write(k);
@@ -343,21 +332,12 @@ class LibraryOut extends DataOut
       {
         writeInt(0);
       }
-    if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0)
+    if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE) != 0)
       {
-        if (CHECKS) check
-          (f.generics().list.size() > 0);
-        writeInt(f.generics().list.size());
-        writeBool(f.generics().isOpen());
-        for (var g : f.generics().list)
-          {
-            _offsetsForGeneric.put(g, offset());
-            writeName(g.name());
-            type(g.constraint());
-          }
+        writeOffset(f.typeFeature());
       }
     if (CHECKS) check
-      (f.arguments().size() == f.featureName().argCount());
+      (f.valueArguments().size() == f.featureName().argCount());
     if (!f.isConstructor() && !f.isChoice())
       {
         type(f.resultType());
@@ -416,7 +396,7 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-2 | 1      | int           | index of type                                 |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | tk==-1 | 1      | int           | index of generic argument                     |
+   *   | tk==-1 | 1      | int           | index of type parameter feature               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -451,7 +431,7 @@ class LibraryOut extends DataOut
             if (CHECKS) check
               (!t.isRef());
             writeInt(-1);
-            writeOffset(t.genericArgument());
+            writeOffset(t.genericArgument().typeParameter());
           }
         else
           {
@@ -804,6 +784,20 @@ class LibraryOut extends DataOut
    */
         type(t.type());
       }
+    else if (s instanceof Env e)
+      {
+        lastPos = exprKindAndPos(IR.ExprKind.Env, lastPos, s.pos());
+  /*
+   *   +---------------------------------------------------------------------------------+
+   *   | Env                                                                             |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Type          | The type of this env                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+        type(e.type());
+      }
     else if (s instanceof Nop)
       {
       }
@@ -948,24 +942,6 @@ class LibraryOut extends DataOut
 
 
   /**
-   * Generics that are referenced before being defined and hence need a fixup:
-   */
-  ArrayList<Generic> _fixUpsG = new ArrayList<>();
-
-
-  /**
-   * Positions of fixups for generics
-   */
-  ArrayList<Integer> _fixUpsGAt = new ArrayList<>();
-
-
-  /**
-   * Generic offsets in this file
-   */
-  Map<Generic, Integer> _offsetsForGeneric = new HashMap<>();
-
-
-  /**
    * Features that are referenced before being defined and hence need a fixup:
    */
   ArrayList<AbstractFeature> _fixUpsF = new ArrayList<>();
@@ -1008,22 +984,6 @@ class LibraryOut extends DataOut
 
 
   /**
-   * Write offset of given generic, create fixup if not known yet.
-   */
-  void writeOffset(Generic g)
-  {
-    var o = _offsetsForGeneric.get(g);
-    var v = o == null ? -1 : (int) o;
-    if (o == null)
-      {
-        _fixUpsG.add(g);
-        _fixUpsGAt.add(offset());
-      }
-    writeInt(v);
-  }
-
-
-  /**
    * Write offset of given feature, create fixup if not known yet.
    */
   void writeOffset(AbstractFeature f)
@@ -1060,15 +1020,6 @@ class LibraryOut extends DataOut
    */
   private void fixUps()
   {
-    for (var i = 0; i<_fixUpsG.size(); i++)
-      {
-        var g  = _fixUpsG  .get(i);
-        var at = _fixUpsGAt.get(i);
-        var o = _offsetsForGeneric.get(g);
-        if (CHECKS) check
-          (o != null);
-        writeIntAt(at, o);
-      }
     for (var i = 0; i<_fixUpsF.size(); i++)
       {
         var g  = _fixUpsF  .get(i);

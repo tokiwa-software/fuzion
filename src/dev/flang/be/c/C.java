@@ -111,6 +111,12 @@ public class C extends ANY
   final CTypes _types;
 
 
+  /**
+   * C intrinsics
+   */
+  final Intrinsics _intrinsics;
+
+
   /*---------------------------  consructors  ---------------------------*/
 
 
@@ -128,6 +134,7 @@ public class C extends ANY
     _fuir = fuir;
     _names = new CNames(fuir);
     _types = new CTypes(_fuir, _names);
+    _intrinsics = new Intrinsics();
     Errors.showAndExit();
   }
 
@@ -163,7 +170,8 @@ public class C extends ANY
       }
     Errors.showAndExit();
 
-    var command = new List<String>("clang", "-O3", "-o", name, cname);
+    // NYI link libmath only when needed
+    var command = new List<String>("clang", "-O3", "-lm", "-o", name, cname);
     _options.verbosePrintln(" * " + command.toString("", " ", ""));;
     try
       {
@@ -194,11 +202,34 @@ public class C extends ANY
       ("#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+
        "#include <unistd.h>\n"+
+       "#include <stdbool.h>\n"+
        "#include <stdint.h>\n"+
+       "#include <string.h>\n"+
+       "#include <math.h>\n"+
+       "#include <float.h>\n"+
        "#include <assert.h>\n"+
+       "#include <time.h>\n"+
+       "#include <setjmp.h>\n"+
+       "#include <pthread.h>\n"+
        "\n");
-
+    cf.print
+      (CStmnt.decl("int", _names.GLOBAL_ARGC));
+    cf.print
+      (CStmnt.decl("char **", _names.GLOBAL_ARGV));
+    var o = CExpr.ident("of");
+    var s = CExpr.ident("sz");
+    var r = new CIdent("r");
+    cf.print
+      (CStmnt.lineComment("helper to clone a (stack) instance to the heap"));
+    cf.print
+      (CStmnt.functionDecl("void *",
+                           CNames.HEAP_CLONE,
+                           new List<>("void *", "of", "size_t", "sz"),
+                           CStmnt.seq(new List<>(CStmnt.decl(null, "void *", r, CExpr.call("malloc", new List<>(s))),
+                                                 CExpr.call("memcpy", new List<>(r, o, s)),
+                                                 r.ret()))));
     var ordered = _types.inOrder();
+
     Stream.of(CompilePhase.values()).forEachOrdered
       ((p) ->
        {
@@ -207,8 +238,27 @@ public class C extends ANY
              cf.print(p.compile(this, c));
            }
          cf.println("");
+
+         // thread local effect environments
+         if (p == CompilePhase.STRUCTS)
+           {
+             ordered
+               .stream()
+               .filter(cl -> _fuir.clazzNeedsCode(cl) &&
+                       _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic  &&
+                       _intrinsics.isEffect(this, cl))
+               .mapToInt(cl -> _intrinsics.effectType(this, cl))
+               .distinct()
+               .forEach(cl -> cf.print(CStmnt.seq(CStmnt.decl("__thread", _types.clazz(cl), _names.env(cl)),
+                                                  CStmnt.decl("__thread", "bool"          , _names.envInstalled(cl)),
+                                                  CStmnt.decl("__thread", "jmp_buf*"      , _names.envJmpBuf(cl)))));
+           }
        });
-    cf.println("int main(int argc, char **args) { " + _names.function(_fuir.mainClazzId(), false) + "(); }");
+    cf.println("int main(int argc, char **argv) { ");
+    cf.print(CStmnt.seq(_names.GLOBAL_ARGC.assign(new CIdent("argc")),
+                        _names.GLOBAL_ARGV.assign(new CIdent("argv")),
+                        CExpr.call(_names.function(_fuir.mainClazzId(), false), new List<>())));
+    cf.println("}");
   }
 
 
@@ -475,9 +525,7 @@ public class C extends ANY
               var val = pop(stack, vc);
               var t = _names.newTemp();
               o = CStmnt.seq(CStmnt.lineComment("Box " + _fuir.clazzAsString(vc)),
-                             CStmnt.decl(_types.clazz(rc), t),
-                             t.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType(_names.struct(rc))))),
-                             t.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(rc)),
+                             declareAllocAndInitClazzId(rc, t),
                              assign(fields(t, rc), val, vc));
               push(stack, rc, t);
             }
@@ -540,6 +588,8 @@ public class C extends ANY
             case c_u16  -> CExpr.uint16const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getChar ());
             case c_u32  -> CExpr.uint32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getInt  ());
             case c_u64  -> CExpr.uint64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getLong ());
+            case c_f32  -> CExpr.   f32const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getFloat());
+            case c_f64  -> CExpr.   f64const(ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN).getDouble());
             case c_conststring ->
             {
               var tmp = _names.newTemp();
@@ -661,6 +711,18 @@ public class C extends ANY
           push(stack, newcl, res);
           break;
         }
+      case Env:
+        {
+          var ecl = _fuir.envClazz(cl, c, i);
+          var res = _names.env(ecl);
+          var evi = _names.envInstalled(ecl);
+          o = CStmnt.iff(evi.not(),
+                         CStmnt.seq(CExpr.fprintfstderr("*** effect %s not present in current environment\n",
+                                                        CExpr.string(_fuir.clazzAsString(ecl))),
+                                    CExpr.exit(1)));
+          push(stack, ecl, res);
+          break;
+        }
       case Dup:
         {
           var v = stack.pop();
@@ -699,19 +761,67 @@ public class C extends ANY
 
   /**
    * Create code to create a constant string and assign it to a new temp
-   * variable. Return an CExpr that reads this variable.
+   * variable.
    */
   CStmnt constString(byte[] bytes, CIdent tmp)
   {
+    return constString(CExpr.string(bytes),
+                       CExpr.int32const(bytes.length),
+                       tmp);
+  }
+
+
+  /**
+   * Create code to declare local var 'tmp', malloc an instance of clazz 'cl',
+   * assign it to 'tmp' and, for a ref clazz, init the CLAZZ_ID field.
+   */
+  CStmnt declareAllocAndInitClazzId(int cl, CIdent tmp)
+  {
+    var t = _names.struct(cl);
+    return CStmnt.seq(CStmnt.decl(t + "*", tmp),
+                      tmp.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType(t)))),
+                      _fuir.clazzIsRef(cl) ? tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(cl)) : CStmnt.EMPTY);
+  }
+
+
+  /**
+   * Create code to create a constant string and assign it to a new temp
+   * variable.
+   *
+   * @param bytes C code resulting in char* to bytes of this string
+   *
+   * @param len length of this string, in bytes
+   *
+   * @param tmp local vad the new string should be assigned to
+   */
+  CStmnt constString(CExpr bytes, CExpr len, CIdent tmp)
+  {
+    var cs            = _fuir.clazz_conststring();
     var internalArray = _names.fieldName(_fuir.clazz_conststring_internalArray());
-    var data          = _names.fieldName(_fuir.clazz_sysArray_u8_data());
-    var length        = _names.fieldName(_fuir.clazz_sysArray_u8_length());
-    var sysArray = fields(tmp, _fuir.clazz_conststring()).field(internalArray);
-    return CStmnt.seq(CStmnt.decl("fzT__R1conststring *", tmp),
-                      tmp.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("fzT__R1conststring")))),
-                      tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(_fuir.clazz_conststring())),
-                      sysArray.field(data  ).assign(CExpr.string(bytes).castTo("void *")),
-                      sysArray.field(length).assign(CExpr.int32const(bytes.length)));
+    var data          = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
+    var length        = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
+    var sysArray = fields(tmp, cs).field(internalArray);
+    return CStmnt.seq(declareAllocAndInitClazzId(cs, tmp),
+                      sysArray.field(data  ).assign(bytes.castTo("void *")),
+                      sysArray.field(length).assign(len));
+  }
+
+
+  // NYI this conversion should be done in Fuzion
+  CStmnt floatToConstString(CExpr expr, CIdent tmp)
+  {
+    // NYI how much do we need?
+    var bufferSize = 50;
+    var res = new CIdent("float_as_string_result");
+    var usedChars = new CIdent("used_chars");
+    var malloc = CExpr.call("malloc",
+      new List<>(CExpr.sizeOfType("char").mul(CExpr.int32const(bufferSize))));
+    var sprintf = CExpr.call("sprintf", new List<>(res, CExpr.string("%.21g"), expr));
+
+    return CStmnt.seq(CStmnt.decl("char*", res, malloc),
+                      CStmnt.decl("int", usedChars, sprintf),
+                      res.assign(CExpr.call("realloc", new List<>(res, usedChars))),
+                      constString(res, usedChars, tmp));
   }
 
 
@@ -862,10 +972,13 @@ public class C extends ANY
         var a = tc == _fuir.clazzUniverse() ? _names.UNIVERSE : pop(stack, tc);
         if (or != -1)
           {
-            var a2 = _fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
             var rc = _fuir.clazzResultClazz(or);
-            var a3 = tc != rc ? a2.castTo(_types.clazzField(or)) : a2;
-            return new List<>(a3);
+            var a2 =_fuir.clazzFieldIsAdrOfValue(or) ? a.adrOf() : a;
+            var esc = _fuir.clazzOuterRefEscapes(cc);
+            var a3 = esc && a.isLocalVar() ? CExpr.call(CNames.HEAP_CLONE._name, new List<>(a2, a.sizeOfExpr()))
+                                           : a2;
+            var a4 = esc || tc != rc ? a3.castTo(_types.clazzField(or)) : a3;
+            return new List<>(a4);
           }
       }
     return new List<>();
@@ -957,7 +1070,7 @@ public class C extends ANY
             {
               l.add(CStmnt.lineComment("code for clazz#"+_names.clazzId(cl).code()+" "+_fuir.clazzAsString(cl)+":"));
               var o = ck == FUIR.FeatureKind.Routine ? codeForRoutine(cl, false)
-                                                     : new Intrinsics().code(this, cl);
+                                                     : _intrinsics.code(this, cl);
               l.add(cFunctionDecl(cl, false, o));
             }
           }
@@ -985,11 +1098,7 @@ public class C extends ANY
       (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine || pre);
 
     _names._tempVarId = 0;  // reset counter for unique temp variables for function results
-    var l = new List<CStmnt>();
-    var t = _names.struct(cl);
-    l.add(CStmnt.decl(t + "*", _names.CURRENT, CExpr.call("malloc", new List<>(CExpr.sizeOfType(t)))));
-    l.add(_fuir.clazzIsRef(cl) ? _names.CURRENT.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(cl)) : CStmnt.EMPTY);
-
+    var l = new List<CStmnt>(declareAllocAndInitClazzId(cl, _names.CURRENT));
     var cur = _fuir.clazzIsRef(cl) ? fields(_names.CURRENT, cl)
                                    : _names.CURRENT.deref();
     var vcl = _fuir.clazzAsValue(cl);

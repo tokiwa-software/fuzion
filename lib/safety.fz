@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# pedantic -- condition qualifier for conditions that are required for safety
+# safety -- condition qualifier for conditions that are required for safety
 #
 # safety is a condition qualifier that is used for conditions that are
 # absolutely required to ensure safety.

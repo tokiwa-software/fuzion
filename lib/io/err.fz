@@ -1,0 +1,71 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature err
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# err -- effect providing an output stream
+#
+private err (
+  redef p canPrint,
+
+  # action to be taken: install or default?
+  redef r effectModes,
+
+  _ unit
+  ) : printEffect p r
+is
+
+
+# short-hand for creating and installing err effect
+#
+err(rr ()->unit) => err defaultPrintToErr rr
+
+
+# short-hand for creating and installing err effect
+#
+err(p canPrint, rr ()->unit) =>
+  err p (effectMode.inst rr) unit
+  unit
+
+
+# short-hand for accessing err effect in current environment
+#
+err =>
+  errs.installDefault
+  io.err.env
+
+
+defaultPrintToErr : canPrint is
+
+  print(s Object) => fuzion.std.err.print s
+
+
+# unit type feature defining features related to err but not requiring an
+# instance.
+#
+errs is
+
+  # install default effect err using defaultPrint
+  installDefault unit is
+    if !(effects.exists<io.err>)
+      _ := err defaultPrintToErr effectMode.default unit

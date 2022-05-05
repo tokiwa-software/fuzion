@@ -43,6 +43,7 @@ import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Call; // NYI: remove dependency!
 import dev.flang.ast.Consts; // NYI: remove dependency!
+import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
@@ -157,7 +158,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Will instances of this class be created?
    */
-  public boolean isInstantiated_ = false;
+  private boolean isInstantiated_ = false;
 
 
   /**
@@ -176,10 +177,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Is there a non-dynamic call to this clazz?  If so, it has to be considered
-   * called even if the outer clazz is not instantiated.  NYI: check why!
+   * Has this been found to be the static target type of a call to an outer
+   * clazz.
    */
-  boolean _isCalledDirectly = false;
+  boolean _isCalledAsOuter = false;
 
 
   /**
@@ -464,10 +465,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   void registerAsHeir()
   {
-    if (isRef())
-      {
-        registerAsHeir(this);
-      }
+    registerAsHeir(this);
   }
 
   /**
@@ -476,16 +474,13 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   private void registerAsHeir(Clazz parent)
   {
-    if (parent._heirs == null)
+    parent.heirs().add(this);
+    for (var p: parents())
       {
-        parent._heirs = new TreeSet<>();
-        parent._heirs.add(parent);
-      }
-    parent._heirs.add(this);
-    for (var p: parent.feature().inherits())
-      {
-        var pc = parent.actualClazz(p.type().asRef());
-        registerAsHeir(pc);
+        if (!p.heirs().contains(this))
+          {
+            registerAsHeir(p);
+          }
       }
   }
 
@@ -498,15 +493,51 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public Set<Clazz> heirs()
   {
-    if (PRECONDITIONS) require
-      (isRef());
-
     if (_heirs == null)
       {
         _heirs = new TreeSet<>();
         _heirs.add(this);
       }
     return _heirs;
+  }
+
+
+  /**
+   * Set of direct parent clazzes this inherits from.
+   */
+  private Set<Clazz> directParents()
+  {
+    var result = new TreeSet<Clazz>();
+    result.add(this);
+    for (var p: feature().inherits())
+      {
+        var pt = p.type();
+        var pc = actualClazz(isRef() ? pt.asRef() : pt.asValue());
+        if (CHECKS) check
+          (isRef() == pc.isRef());
+        result.add(pc);
+      }
+    return result;
+  }
+
+
+  /**
+   * Set of parents of this clazz, including this itself.
+   *
+   * @return the heirs including this.
+   */
+  public Set<Clazz> parents()
+  {
+    var result = new TreeSet<Clazz>();
+    result.add(this);
+    for (var p : directParents())
+      {
+        if (!result.contains(p))
+          {
+            result.addAll(p.parents());
+          }
+      }
+    return result;
   }
 
 
@@ -700,20 +731,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * Do we need f (or its redefinition) to be present in this clazz' dynamic binding data?
-   */
-  boolean isAddedToDynamicBinding(AbstractFeature f)
-  {
-    return
-      isRef() &&
-      Clazzes.isUsed(f, this) &&
-      (f.isField() ||
-       Clazzes.isCalledDynamically0(f))
-      ;
-  }
-
-
-  /**
    * Layout this clazz. In case a cyclic nesting of value fields is detected,
    * report an error.
    */
@@ -815,31 +832,71 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * Check if this clazz is a value type that is used as an outer instance that
+   * requires dynamic binding when called.
+   */
+  public boolean isDynamicOuterRef()
+  {
+    if (!isRef())
+      {
+        if (isUsedAsDynamicOuterRef())
+          {
+            return true;
+          }
+        for (var p : parents())
+          {
+            if (p != this && p.isUsedAsDynamicOuterRef())
+              {
+                return true;
+              }
+          }
+      }
+    return false;
+  }
+
+
+  /**
+   * Is this clazz the static clazz of a target of a call to a dynamic outer
+   * ref.  This is slightly different to isDynamicOuterRef() which is also true
+   * for all heirs.
+   */
+  public boolean isUsedAsDynamicOuterRef()
+  {
+    return this._isCalledAsOuter && hasInstantiatedHeirs();
+  }
+
+
+  /**
    * Create dynamic binding data for this clazz in case it is a ref.
    */
   private void createDynamicBinding()
   {
-    if (isRef())
+    if (this._type != Types.t_ADDRESS &&
+        (isUsedAsDynamicOuterRef() || isRef()))
       {
-        // NYI: Inheritance must be done differently: We should
-        // (recursively) traverse all parents and hand down features from
-        // each parent to this clazz to find the actual FeatureName of the
-        // feature after inheritance. For each parent for which the feature
-        // is called, we need to set up a table in this tree that contains
-        // the inherited feature or its redefinition.
+        // NYI: This should be removed, but this still finds some clazzes that findAllClasses() missed. Need to check why.
         for (AbstractFeature f: _module.allInnerAndInheritedFeatures(feature()))
           {
-            // if (isInstantiated_) -- NYI: if not instantiated, we do not need to add f to dynamic binding, but we seem to need its side-effects
-            if (isAddedToDynamicBinding(f))
-              {
-                if (Clazzes.isCalledDynamically(f) &&
-                    this._type != Types.t_ADDRESS /* NYI: better something like this.isInstantiated() */
-                    )
-                  {
-                    lookup(f, Call.NO_GENERICS, Clazzes.isUsedAt(f));
-                  }
-              }
+            lookupIfInstantiated(f);
           }
+      }
+  }
+
+
+  /**
+   * Check if f might be called dynamically on an instance of this and if so,
+   * look up the actual feature that is called at mark it as used.
+   */
+  private void lookupIfInstantiated(AbstractFeature f)
+  {
+    if (PRECONDITIONS) require
+      (this._type != Types.t_ADDRESS);
+
+    if (Clazzes.isCalledDynamically(f) &&
+        (isRef() || isDynamicOuterRef()) &&
+        isInstantiated())
+      {
+        var innerClazz = lookup(f, Call.NO_GENERICS, Clazzes.isUsedAt(f));
       }
   }
 
@@ -982,14 +1039,6 @@ public class Clazz extends ANY implements Comparable<Clazz>
             AbstractType t = af.thisType().actualType(af, actualGenerics);
             t = actualType(t);
             innerClazz = Clazzes.clazzWithSpecificOuter(t, select, this);
-            if (p != null)
-              {
-                if (!isInheritanceCall)
-                  {
-                    innerClazz.called(p);
-                    innerClazz.instantiated(p);
-                  }
-              }
             if (actualGenerics.isEmpty())
               {
                 if (select < 0)
@@ -1007,6 +1056,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
               }
             if (CHECKS) check
               (innerClazz._type == Types.t_ERROR || innerClazz._type.featureOfType() == af);
+          }
+      }
+    if (innerClazz != null && p != null && !isInheritanceCall)
+      {
+        innerClazz.called(p);
+        if (!isInheritanceCall)
+          {
+            innerClazz.instantiated(p);
           }
       }
 
@@ -1042,6 +1099,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           (Errors.count() > 0 || fo != null);
 
         result =
+          field.isTypeParameter() ? resultClazz() :
           fo == null ? Clazzes.error.get() :
           field.isOuterRef() && fo.isOuterRefAdrOfValue()     ? actualClazz(Types.t_ADDRESS) :
           field.isOuterRef() && fo.isOuterRefCopyOfValue() ||
@@ -1184,14 +1242,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
         for (var i = 0; i < n; i++)
           {
             var a = c.actuals().get(i);
-            if (i >= cf.arguments().size())
+            if (i >= cf.valueArguments().size())
               {
                 if (CHECKS) check
                   (Errors.count() > 0);
               }
             else
               {
-                var cfa = cf.arguments().get(i);
+                var cfa = cf.valueArguments().get(i);
                 var ccc = lookup(cfa, Call.NO_GENERICS, Clazzes.isUsedAt(f));
                 if (c.parentCallArgFieldIds_ < 0)
                   {
@@ -1217,33 +1275,32 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   void findAllClasses()
   {
-    var f = feature();
-    inspectCode(new StatementVisitor()
+    if (this._type != Types.t_ADDRESS)
       {
-        public void action (Stmnt s)
-        {
-          if      (s instanceof Unbox          u) { Clazzes.findClazzes(u, Clazz.this); }
-          else if (s instanceof AbstractAssign a) { Clazzes.findClazzes(a, Clazz.this); }
-          else if (s instanceof AbstractCall   c) { Clazzes.findClazzes(c, Clazz.this); }
-          else if (s instanceof If             i) { Clazzes.findClazzes(i, Clazz.this); }
-          else if (s instanceof InlineArray    i) { Clazzes.findClazzes(i, Clazz.this); }
-          else if (s instanceof AbstractMatch  m) { Clazzes.findClazzes(m, Clazz.this); }
-          else if (s instanceof Tag            t) { Clazzes.findClazzes(t, Clazz.this); }
-        }
-        public void action(AbstractCase c)
-        {
-          Clazzes.findClazzes(c, Clazz.this);
-        }
-      },
-                f);
-    for (AbstractFeature ff: _module.allInnerAndInheritedFeatures(f))
-      {
-        if (Clazzes.isUsed(ff, this) &&
-            this._type != Types.t_ADDRESS // NYI: would be better is isUSED would return false for ADDRESS
-            && isAddedToDynamicBinding(ff))
+        var f = feature();
+        inspectCode(new StatementVisitor()
           {
-            Clazzes.whenCalledDynamically(ff,
-                                          () -> { var innerClazz = lookup(ff, Call.NO_GENERICS, Clazzes.isUsedAt(ff)); });
+            public void action (Stmnt s)
+            {
+              if      (s instanceof Unbox          u) { Clazzes.findClazzes(u, Clazz.this); }
+              else if (s instanceof AbstractAssign a) { Clazzes.findClazzes(a, Clazz.this); }
+              else if (s instanceof AbstractCall   c) { Clazzes.findClazzes(c, Clazz.this); }
+              else if (s instanceof If             i) { Clazzes.findClazzes(i, Clazz.this); }
+              else if (s instanceof InlineArray    i) { Clazzes.findClazzes(i, Clazz.this); }
+              else if (s instanceof Env            b) { Clazzes.findClazzes(b, Clazz.this); }
+              else if (s instanceof AbstractMatch  m) { Clazzes.findClazzes(m, Clazz.this); }
+              else if (s instanceof Tag            t) { Clazzes.findClazzes(t, Clazz.this); }
+            }
+            public void action(AbstractCase c)
+            {
+              Clazzes.findClazzes(c, Clazz.this);
+            }
+          },
+          f);
+
+        for (AbstractFeature ff: _module.allInnerAndInheritedFeatures(f))
+          {
+            Clazzes.whenCalledDynamically(ff, () -> lookupIfInstantiated(ff));
           }
       }
   }
@@ -1505,19 +1562,57 @@ public class Clazz extends ANY implements Comparable<Clazz>
                     r.run();
                   }
               }
-          }
-
-        if (feature().isIntrinsic())
-          { // value instances returned from intrinsics are recored to be
-            // instantiated.  (ref instances are excluded since returning, e.g.,
-            // a 'ref string' does not mean that we really have an instance of
-            // string, but more likely an instance of a heir of string).
-            var rc = resultClazz();
-            if (!rc.isRef())
+            if (feature().isIntrinsic())
               {
-                rc.instantiated(at);
+                intrinsicCalled(at);
               }
           }
+      }
+  }
+
+
+  /**
+   * Find clazzes required by intrinsic method that has been found be to called.
+   *
+   * This includes results of intrinsic contructors are any specifc clazzes
+   * required for specific instrinsics, e.g., clazzes called from the intrinsic.
+   *
+   * @param at position that the intrinsic has been found to be called.
+   */
+  void intrinsicCalled(HasSourcePosition at)
+  {
+    if (PRECONDITIONS) require
+      (feature().isIntrinsic(),
+       isCalled());
+
+    // value instances returned from intrinsics are automatically
+    // recorded to be instantiated, refs only if intrinsic is marked as
+    // 'intrinsic_constructor'.
+    var rc = resultClazz();
+    if (rc.isChoice())
+      {
+        if (feature().isIntrinsicConstructor())
+          {
+            for (var cg : rc.choiceGenerics())
+              {
+                cg.instantiated(at);
+              }
+          }
+      }
+    else if (!rc.isRef() || feature().isIntrinsicConstructor())
+      {
+        rc.instantiated(at);
+      }
+
+    switch (feature().qualifiedName())
+      {
+      case "effect.abortable":
+        argumentFields()[0].resultClazz().lookup(Types.resolved.f_function_call, Call.NO_GENERICS, at);
+        break;
+      case "fuzion.sys.thread.spawn0":
+        argumentFields()[0].resultClazz().lookup(Types.resolved.f_function_call, Call.NO_GENERICS, at);
+        break;
+      default: break;
       }
   }
 
@@ -1532,7 +1627,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (at != null);
 
-    if (!isInstantiated_)
+    if (!isInstantiated_ && !isVoidType())
       {
         isInstantiated_ = true;
         instantiationPos_ = at;
@@ -1545,7 +1640,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isCalled()
   {
-    return (isCalled_ && isOuterInstantiated() || _isCalledDirectly) && !feature().isAbstract() &&
+    return isCalled_ && isOuterInstantiated() && !feature().isAbstract() &&
       (_argumentFields == null || /* this may happen when creating deterḿining isUnitType() on cyclic value type, will cause an error during layout() */
        !isAbsurd());
   }
@@ -1596,18 +1691,15 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * @return true iff this is a ref and there exists a heir of this that is
    * instantiated.
    */
-  private boolean isRefWithInstantiatedHeirs()
+  public boolean hasInstantiatedHeirs()
   {
     var result = false;
-    if (isRef())
+    for (var h : heirs())
       {
-        for (var h : heirs())
-          {
-            h._checkingInstantiatedHeirs++;
-            result = result
-              || h != this && h.isInstantiated();
-            h._checkingInstantiatedHeirs--;
-          }
+        h._checkingInstantiatedHeirs++;
+        result = result
+          || h != this && h.isInstantiated();
+        h._checkingInstantiatedHeirs--;
       }
     return result;
   }
@@ -1619,9 +1711,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isInstantiated()
   {
-    return this == Clazzes.sysArray_u8 ||
+    return this == Clazzes.fuzionSysArray_u8 ||
       this == Clazzes.conststring.get() ||
-      _checkingInstantiatedHeirs>0 || (isOuterInstantiated() || isChoice() || _outer.isRefWithInstantiatedHeirs()) && isInstantiated_;
+      _checkingInstantiatedHeirs>0 || (isOuterInstantiated() || isChoice() || _outer.isRef() && _outer.hasInstantiatedHeirs()) && isInstantiated_;
   }
 
 
@@ -1640,7 +1732,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   private boolean allOutersInstantiated2()
   {
-    return (isInstantiated() || isRefWithInstantiatedHeirs()) && (_outer == null || _outer.allOutersInstantiated2());
+    return (isInstantiated() || isRef() && hasInstantiatedHeirs()) && (_outer == null || _outer.allOutersInstantiated2());
   }
 
 
@@ -1740,6 +1832,44 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * For a type parameter, return the actual type.
+   */
+  public Clazz typeParameterActualType()
+  {
+    if (PRECONDITIONS) require
+      (feature().isTypeParameter());
+
+    var f = feature();
+
+    if (_outer.feature() != f.outer())
+      {
+        throw new Error("NYI: cannot find actual generic for '"+f.qualifiedName()+"' in heir outer clazz '" + _outer + "'.");
+      }
+    return _outer.actualGenerics()[f.typeParameterIndex()];
+  }
+
+
+  /**
+   * For a clazz a.b.c the corresponding type clazz a.b.c.type, which is,
+   * actually, a.type.b.type.c.type.
+   */
+  Clazz typeClazz()
+  {
+    var cf = _type.featureOfType();
+    if (cf.isUniverse())
+      {
+        return this;
+      }
+    else
+      {
+        var tf = cf.typeFeature();
+        return Clazzes.create(tf.thisType().asRef(),
+                              _outer == null ? Clazzes.universe.get() : _outer.typeClazz());
+      }
+  }
+
+
+  /**
    * Determine the clazz of the result of calling this clazz.
    *
    * @return the result clazz.
@@ -1755,6 +1885,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
     else if (f.isOuterRef())
       {
         return _outer.inheritedOuterRefClazz(_outer._outer, null, f, _outer.feature(), null);
+      }
+    else if (f.isTypeParameter())
+      {
+        return typeParameterActualType().typeClazz();
       }
     else
       {
@@ -1806,7 +1940,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
              */
             int goBack = depth(f) - depth(t.featureOfType()) + 1;
             var innerBase = this;
-            while (goBack > 0)
+            while (goBack > 0 &&
+                   innerBase._outer != null // NYI: this sometimes overflows if chain of outer's is shorter then f's outers.  This whole code is broken and needs to be rewritten!
+                   )
               {
                 innerBase = innerBase._outer;
                 goBack--;
@@ -1903,7 +2039,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       case Routine   :
         {
           var args = new ArrayList<Clazz>();
-          for (var a : f.arguments())
+          for (var a : f.valueArguments())
             {
               if (Clazzes.isUsed(a, this))
                 {
@@ -2040,7 +2176,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         return g.replaceOpen(_type.generics());
       }
-    else if (!feature().isUniverse())
+    else if (_outer != null)
       {
         return _outer.replaceOpen(ft);
       }

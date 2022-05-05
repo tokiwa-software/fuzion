@@ -128,9 +128,19 @@ public class AstErrors extends ANY
   {
     return expr(s);
   }
-  static String s(AbstractFeature f, FormalGenerics fg)
+  public static String sfn(List<AbstractFeature> fs)
   {
-    return code(f.qualifiedName() + fg);
+    int c = 0;
+    StringBuilder sb = new StringBuilder();
+    for (var f : fs)
+      {
+        c++;
+        sb.append(c == 1         ? "" :
+                  c == fs.size() ? " and "
+                                 : ", ");
+        sb.append(s(f));
+      }
+    return sb.toString();
   }
   static String s(List<AbstractType> l)
   {
@@ -170,11 +180,65 @@ public class AstErrors extends ANY
   {
     error(s.pos(),
           "Statements other than feature declarations not allowed here",
-          "Statements require a surrounding features declaration.  The statements " +
+          "Statements require a surrounding feature declaration.  The statements " +
           "are executed when that surrounding feature is called.  Without a surrounding " +
           "feature, is it not clear when and in which order statements should be executed. " +
           "The only exception to this is the main source file given as an argument directly " +
           "to the 'fz' command.");
+  }
+
+
+  public static void featureOfMustInherit(SourcePosition pos, SourcePosition ofPos)
+  {
+    error(pos,
+          "Feature declaration that is implemented using " + code("of") + " must have inherit clause. ",
+          "Feature implementation starting at " + ofPos.show() + "\n" +
+          "To slve this, you may add an inherits clause like " + code(": choice ") + " before " + code("of") + "\n");
+  }
+
+
+  public static void featureOfMustContainOnlyDeclarations(Stmnt s, SourcePosition ofPos)
+  {
+    error(s.pos(),
+          "Feature implementation using " + code("of") + " must contain only feature declarations. ",
+          "Declaration started at " + ofPos.show() + "\n"
+          );
+  }
+
+
+  public static void featureOfMustContainOnlyUnqualifiedNames(Feature f, SourcePosition ofPos)
+  {
+    error(f.pos(),
+          "Feature implementation using " + code("of") + " must contain only unqualified declarations. ",
+          "Qualified feature name " + sqn(f._qname) + " is not permitted.\n" +
+          "Declaration started at " + ofPos.show() + "\n" +
+          "To solve this, you may replace the qualified name " + sqn(f._qname) + " by an unqualified name such as " +
+          ss(f._qname.size() > 0 ? f._qname.getLast() : "feature_name") + ".\n");
+  }
+
+
+  public static void featureOfMustNotHaveFormalGenerics(Feature f, SourcePosition ofPos)
+  {
+    error(f.pos(),
+          "Feature implementation using " + code("of") + " must contain only features without type parameters. ",
+          "Type parameters " + s(f.generics()) + " is not permitted.\n" +
+          "Declaration started at " + ofPos.show() + "\n" +
+          "To solve this, you may remove the formal generics " + s(f.generics()) + ".\n");
+  }
+
+
+  public static void featureOfMustContainOnlyConstructors(Feature f, SourcePosition ofPos)
+  {
+    error(f.pos(),
+          "Feature implementation using " + code("of") + " must contain only constructors. ",
+          "Feature " + sqn(f._qname) + " is not a constructor.\n" +
+          "Declaration started at " + ofPos.show() + "\n" +
+          (f.impl().kind_ == Impl.Kind.RoutineDef
+           ? ("To solve this, you may replace " + code("=>") + " by " + code("is") + " and " +
+              "ensure that the code results in a value of type " + st("unit") + " " +
+              "in the declaration of " + sqn(f._qname) + ".\n")
+           : ("To solve this, you may remove the return type " + s(f._returnType) + " " +
+              "from the declaration of " + sqn(f._qname) + ".\n")));
   }
 
 
@@ -338,7 +402,7 @@ public class AstErrors extends ANY
                                              AbstractType frmlT,
                                              Expr value)
   {
-    var frmls = calledFeature.arguments().iterator();
+    var frmls = calledFeature.valueArguments().iterator();
     AbstractFeature frml = null;
     int c;
     for (c = 0; c <= count && frmls.hasNext(); c++)
@@ -424,10 +488,12 @@ public class AstErrors extends ANY
     int fsz = call.resolvedFormalArgumentTypes.length;
     boolean ferror = false;
     StringBuilder fstr = new StringBuilder();
-    var fargs = call.calledFeature().arguments().iterator();
+    var fargs = call.calledFeature().valueArguments().iterator();
     AbstractFeature farg = null;
     for (var t : call.resolvedFormalArgumentTypes)
       {
+        if (CHECKS) check
+          (t != null);
         ferror = t == Types.t_ERROR;
         fstr.append(fstr.length
                     () > 0 ? ", " : "");
@@ -470,7 +536,7 @@ public class AstErrors extends ANY
           "Wrong number of generic arguments",
           "Wrong number of actual generic arguments in " + detail1 + ":\n" +
           detail2 +
-          "expected " + fg.sizeText() + (fg == FormalGenerics.NONE ? "" : " for " + s(fg.feature(), fg) + "") + "\n" +
+          "expected " + fg.sizeText() + (fg == FormalGenerics.NONE ? "" : " for " + s(fg) + "") + "\n" +
           "found " + (actualGenerics.size() == 0 ? "none" : "" + actualGenerics.size() + ": " + s(actualGenerics) + "" ) + ".\n");
   }
 
@@ -589,7 +655,7 @@ public class AstErrors extends ANY
     error(pos,
           "" + skw("match") + " subject type must not be a type parameter",
           "Matched type: " + s(t) + "\n" +
-          "which is a type parameter declared at " + t.genericArgument()._pos.show());
+          "which is a type parameter declared at " + t.genericArgument().typeParameter().pos().show());
 
   }
 
@@ -601,21 +667,40 @@ public class AstErrors extends ANY
 
   }
 
-  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, AbstractType t, List<AbstractType> choiceGenerics)
+  static void repeatedMatch(SourcePosition pos, SourcePosition[] earlierPos, AbstractType typeOrNull, List<AbstractType> choiceGenerics)
   {
+    StringBuilder earlierPosString = new StringBuilder();
+    TreeSet<SourcePosition> processed = new TreeSet<>();
+    for (var ep : earlierPos)
+      {
+        if (!processed.contains(ep))
+          {
+            processed.add(ep);
+            if (earlierPosString.length() > 0)
+              {
+                earlierPosString.append(", and at \n");
+              }
+            earlierPosString.append(ep.show());
+          }
+      }
     error(pos,
-          "" + skw("case") + " clause matches type that had been matched already",
-          "Matched type: " + s(t) + "\n" +
-          "Originally matched at " + earlierPos.show() + "\n" +
+          "" + skw("case") + " clause matches type that had been matched already.",
+          caseMatches(typeOrNull) +
+          "Originally matched at " + earlierPosString + ".\n" +
           subjectTypes(choiceGenerics));
   }
 
+  static void repeatedMatch(SourcePosition pos, SourcePosition earlierPos, AbstractType t, List<AbstractType> choiceGenerics)
+  {
+    repeatedMatch(pos, new SourcePosition[] { earlierPos }, t, choiceGenerics);
+  }
 
-  static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType t, List<AbstractType> choiceGenerics)
+
+  static void matchCaseDoesNotMatchAny(SourcePosition pos, AbstractType typeOrNull, List<AbstractType> choiceGenerics)
   {
     error(pos,
-          "" + skw("case") + " clause in " + skw("match") + " statement does not match any type of the subject",
-          "Case matches type " + s(t) + "\n" +
+          "" + skw("case") + " clause in " + skw("match") + " statement does not match any type of the subject.",
+          caseMatches(typeOrNull) +
           subjectTypes(choiceGenerics));
   }
 
@@ -623,7 +708,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "" + skw("case") + " clause in " + skw("match") + " statement matches several types of the subject",
-          "Case matches type " + s(t) + "\n" +
+          caseMatches(t) +
           subjectTypes(choiceGenerics) +
           "matches are " + typeListConjunction(matches));
   }
@@ -670,11 +755,21 @@ public class AstErrors extends ANY
     return mt.toString();
   }
 
+  private static String typeOrAnyType(AbstractType typeOrNull)
+  {
+    return typeOrNull == null ? "any type" : "type " + s(typeOrNull);
+
+  }
+  private static String caseMatches(AbstractType typeOrNull)
+  {
+    return "Case matches " + typeOrAnyType(typeOrNull) + ".\n";
+  }
+
   private static String subjectTypes(List<AbstractType> choiceGenerics)
   {
     return choiceGenerics.isEmpty()
-      ? "Subject type is an empty choice type that cannot match any case\n"
-      : "Subject type is one of " + typeListAlternatives(choiceGenerics) + "\n";
+      ? "Subject type is an empty choice type that cannot match any case.\n"
+      : "Subject type is one of " + typeListAlternatives(choiceGenerics) + ".\n";
   }
 
   public static void internallyReferencedFeatureNotUnique(SourcePosition pos, String qname, Collection<AbstractFeature> set)
@@ -815,6 +910,26 @@ public class AstErrors extends ANY
           solution);
   }
 
+  static void expectedActualTypeInCall(SourcePosition pos,
+                                       AbstractFeature typeParameter)
+  {
+    var calledFeature = typeParameter.outer();
+    error(pos,
+          "Expected actual type parameter in call",
+          "Call to " + s(calledFeature) + " expects type parameter " + s(typeParameter) + " at this position.\n" +
+          "To solve this, provide a type such as " + type("i32") + " or " + type("Object") + " as an argument to this call.\n");
+  }
+
+  static void expectedTypeExpression(SourcePosition pos, Expr e)
+  {
+    error(pos,
+          "Expected type in 'xyz.type' expression",
+          "Expression of the form 'xyz.type' must use a type for 'xyz'\n" +
+          "Expression found: " + s(e) + "\n"+
+          "To solve this, provide a type such as " + type("i32") + " or " + type("Object") + " instead of " + s(e) + ".\n");
+  }
+
+
   public static void ambiguousType(SourcePosition pos,
                                    String t,
                                    List<AbstractFeature> possibilities)
@@ -903,12 +1018,13 @@ public class AstErrors extends ANY
       }
   }
 
-  static void constraintMustNotBeGenericArgument(Generic g)
+  public static void constraintMustNotBeGenericArgument(AbstractFeature tp)
   {
-    error(g._pos,
-          "Constraint for generic argument must not be generic type parameter",
-          "Affected generic argument: " + st(g._name) + "\n" +
-          "_constraint: " + s(g.constraint()) + " declared at " + g.constraint().genericArgument()._pos);
+    error(tp.pos(),
+          "Constraint for type parameter must not be a type parameter",
+          "Affected type parameter: " + s(tp) + "\n" +
+          "_constraint: " + s(tp.resultType()) + "\n" +
+          "To solve this, change the type provided, e.g. to the unconstraint " + st("type") + ".\n");
   }
 
   static void loopElseBlockRequiresWhileOrIterator(SourcePosition pos, Expr elseBlock)
@@ -928,7 +1044,7 @@ public class AstErrors extends ANY
           "In a type >>a.b<<, the outer type >>a<< must not be a formal generic argument.\n" +
           "Type used: " + s(t) + "\n" +
           "Formal generic used " + s(t.outer()) + "\n" +
-          "Formal generic declared in " + t.outer().genericArgument()._pos.show() + "\n");
+          "Formal generic declared in " + t.outer().genericArgument().typeParameter().pos().show() + "\n");
   }
 
   static void formalGenericWithGenericArgs(SourcePosition pos, Type t, Generic generic)
@@ -938,7 +1054,7 @@ public class AstErrors extends ANY
           "In a type with generic arguments >>A<B><<, the base type >>A<< must not be a formal generic argument.\n" +
           "Type used: " + s(t) + "\n" +
           "Formal generic used " + s(generic) + "\n" +
-          "Formal generic declared in " + generic._pos.show() + "\n");
+          "Formal generic declared in " + generic.typeParameter().pos().show() + "\n");
   }
 
   static void refToChoice(SourcePosition pos)
@@ -1222,7 +1338,7 @@ public class AstErrors extends ANY
           foundAt);
   }
 
-  static void faildToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<Generic> missing)
+  static void failedToInferActualGeneric(SourcePosition pos, AbstractFeature cf, List<Generic> missing)
   {
     error(pos,
           "Failed to infer actual generic parameters",
@@ -1351,6 +1467,13 @@ public class AstErrors extends ANY
           msg,
           "Incompatible result types in different branches:\n" +
           typesMsg);
+  }
+
+  static void lossOfPrecision(SourcePosition pos, String _originalString, int _base, AbstractType type_)
+  {
+    error(pos,
+      "Loss of precision for: " + _originalString,
+      "Expected number given in base " + _base + " to fit into " + type_ + " without loss of precision.");
   }
 }
 

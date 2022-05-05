@@ -136,9 +136,10 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * the visibility of this feature
+   * The visibility of this feature
    */
   private Visi _visibility;
+  public Visi visibility() { return _visibility; }
 
 
   /**
@@ -181,13 +182,6 @@ public class Feature extends AbstractFeature implements Stmnt
    * to have FeatureNames with different ids for these two x's.
    */
   private FeatureName _featureName;
-
-
-  /**
-   * The formal generic arguments of this feature
-   */
-  private FormalGenerics _generics;
-  public FormalGenerics generics() { return _generics; }
 
 
   /**
@@ -345,7 +339,6 @@ public class Feature extends AbstractFeature implements Stmnt
          0,
          ValueType.INSTANCE,
          new List<String>(FuzionConstants.UNIVERSE_NAME),
-         FormalGenerics.NONE,
          new List<Feature>(),
          new List<>(),
          Contract.EMPTY_CONTRACT,
@@ -392,7 +385,6 @@ public class Feature extends AbstractFeature implements Stmnt
                        0,
                        r,
                        new List<String>(FuzionConstants.ANONYMOUS_FEATURE_PREFIX + (uniqueAnonymousFeatureId++)),
-                       FormalGenerics.NONE,
                        new List<Feature>(),
                        i,
                        c,
@@ -491,7 +483,6 @@ public class Feature extends AbstractFeature implements Stmnt
          0,
          t == null ? NoType.INSTANCE : new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
          new List<String>(qname),
-         FormalGenerics.NONE,
          new List<Feature>(),
          new List<>(),
          null,
@@ -517,6 +508,43 @@ public class Feature extends AbstractFeature implements Stmnt
    * @param n the name of this argument, never qualified
    *
    * @param c the contract
+   *
+   * @param i Impl.FIELD or Impl.TYPE_PARAMETER
+   */
+  public Feature(SourcePosition pos,
+                 Visi v,
+                 int m,
+                 AbstractType t,
+                 String n,
+                 Contract c,
+                 Impl i)
+  {
+    this(pos,
+         v,
+         m,
+         new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
+         new List<String>(n),
+         new List<Feature>(),
+         new List<>(),
+         c,
+         i);
+  }
+
+
+  /**
+   * Constructor for internally generated fields
+   *
+   * @param pos the sourcecode position, used for error messages.
+   *
+   * @param v the visibility
+   *
+   * @param m the modifiers
+   *
+   * @param t the result type
+   *
+   * @param n the name of this argument, never qualified
+   *
+   * @param c the contract
    */
   public Feature(SourcePosition pos,
                  Visi v,
@@ -525,16 +553,7 @@ public class Feature extends AbstractFeature implements Stmnt
                  String n,
                  Contract c)
   {
-    this(pos,
-         v,
-         m,
-         new FunctionReturnType(t), /* NYI: try to avoid creation of ReturnType here, set actualtype directly? */
-         new List<String>(n),
-         FormalGenerics.NONE,
-         new List<Feature>(),
-         new List<>(),
-         c,
-         Impl.FIELD);
+    this(pos, v, m, t, n, c, Impl.FIELD);
   }
 
 
@@ -574,7 +593,6 @@ public class Feature extends AbstractFeature implements Stmnt
          0,
          r,
          qname,
-         FormalGenerics.NONE,
          a,
          i,
          c,
@@ -595,8 +613,6 @@ public class Feature extends AbstractFeature implements Stmnt
    *
    * @param qname the name of this feature
    *
-   * @param g the generic parameters
-   *
    * @param a the arguments
    *
    * @param i the inherits calls
@@ -610,7 +626,6 @@ public class Feature extends AbstractFeature implements Stmnt
                  int m,
                  ReturnType r,
                  List<String> qname,
-                 FormalGenerics g,
                  List<Feature> a,
                  List<AbstractCall> i,
                  Contract c,
@@ -634,9 +649,9 @@ public class Feature extends AbstractFeature implements Stmnt
         n = FuzionConstants.UNDERSCORE_PREFIX + underscoreId++;
       }
     this._qname     = qname;
-    this._generics  = g;
+
     this._arguments = a;
-    this._featureName = FeatureName.get(n, a.size());
+    this._featureName = FeatureName.get(n, valueArguments().size());
     this._inherits   = (i.isEmpty() &&
                         (p.kind_ != Impl.Kind.FieldActual) &&
                         (p.kind_ != Impl.Kind.FieldDef   ) &&
@@ -649,8 +664,6 @@ public class Feature extends AbstractFeature implements Stmnt
 
     this._contract = c == null ? Contract.EMPTY_CONTRACT : c;
     this._impl = p;
-
-    g.setFeature(this);
   }
 
 
@@ -764,7 +777,9 @@ public class Feature extends AbstractFeature implements Stmnt
       ? Kind.Choice
       : switch (_impl.kind_) {
           case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
-          case Routine, RoutineDef                                -> Kind.Routine;
+          case TypeParameter                                      -> Kind.TypeParameter;
+          case TypeParameterOpen                                  -> Kind.OpenTypeParameter;
+          case Routine, RoutineDef, Of                            -> Kind.Routine;
           case Abstract                                           -> Kind.Abstract;
           case Intrinsic                                          -> Kind.Intrinsic;
         };
@@ -778,6 +793,17 @@ public class Feature extends AbstractFeature implements Stmnt
   {
     return _impl.kind_;
   }
+
+
+  /**
+   * Is this an intrinsic feature that creates an instance of its result ref
+   * type?
+   */
+  public boolean isIntrinsicConstructor()
+  {
+    return _impl == Impl.INTRINSIC_CONSTRUCTOR;
+  }
+
 
   /**
    * get the initial value of this feature.
@@ -883,7 +909,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public boolean resultInternal()
   {
-    return _impl.kind_ == Impl.Kind.RoutineDef;
+    return _impl.kind_ == Impl.Kind.RoutineDef; // NYI: should be true if result is not used
   }
 
 
@@ -970,7 +996,6 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public void visit(FeatureVisitor v)
   {
-    _generics.visit(v, this);
     for (var c: _inherits)
       {
         Expr nc = c.visit(v, this);
@@ -1222,7 +1247,6 @@ public class Feature extends AbstractFeature implements Stmnt
     public Stmnt        action(Feature      f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
                                                                         return f.resolveTypes(res, f.outer() ); }
     public Function     action(Function     f, AbstractFeature outer) {        f.resolveTypes(res, outer); return f; }
-    public void         action(Generic      g, AbstractFeature outer) {        g.resolveTypes(res, outer); }
     public void         action(Match        m, AbstractFeature outer) {        m.resolveTypes(res, outer); }
     public Expr         action(This         t, AbstractFeature outer) { return t.resolveTypes(res, outer); }
     public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve     (res, outer); }
@@ -2083,7 +2107,7 @@ public class Feature extends AbstractFeature implements Stmnt
       Consts.modifierToString(_modifiers)+
       _returnType + " "+
       _featureName.baseName()+
-      _generics+
+      generics()+
       (_arguments.isEmpty() ? "" : "("+_arguments+")")+
       (_inherits.isEmpty() ? "" : " : "+_inherits)+
       _contract+
@@ -2180,15 +2204,17 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   boolean hasThisType()
   {
-    return _impl != Impl.INTRINSIC && _impl != Impl.ABSTRACT
-      && !isField();
+    return
+      _impl.kind_ != Impl.Kind.Intrinsic &&
+      _impl.kind_ != Impl.Kind.Abstract  &&
+      !isField();
   }
 
 
   public FeatureName featureName()
   {
     if (CHECKS) check
-      (_arguments.size() == _featureName.argCount());
+                  (valueArguments().size() == _featureName.argCount());
     return _featureName;
   }
 
@@ -2307,10 +2333,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public AbstractFeature outerRef()
   {
     if (PRECONDITIONS) require
-      (isUniverse() || (this == Types.f_ERROR) || outer() != null,
-       (this == Types.f_ERROR) ||
-       _state.atLeast(State.RESOLVED_DECLARATIONS) &&
-       (!_state.atLeast(State.CHECKING_TYPES2) || outerRef_ != null || !hasOuterRef()));
+      (_state.atLeast(State.RESOLVED_DECLARATIONS));
 
     Feature result = outerRef_;
 

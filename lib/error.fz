@@ -31,7 +31,7 @@
 error (
 
   # the message describing the error. Should usually be a single line not
-  # folloed by a linefeed.
+  # followed by a linefeed.
   #
   msg string
 

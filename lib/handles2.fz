@@ -1,0 +1,202 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature handles2
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# handles2 provide a means to create handles that refer to update-able
+# cells.
+#
+# handles is a state monad.  It provides features to create several
+# handles that refer to modifiable value and features to 'get', 'put' or
+# 'update' this value.
+#
+# For performance, this implementation uses mutable state. It can consequently
+# only be used as a one-way monad.
+#
+private handles2<T,X>(
+  # the inner value of this monad
+  v X,
+
+  lastOpt option<handle2<T>>,
+
+  # action to be taken: plain monad, install or replace?
+  redef r effectModes
+  ) : onewayMonad<X, handles2<T,X>> r
+is
+
+  # create a new instance with one additional handle
+  #
+  # the new handle can be accessed by 'result.last'
+  #
+  new (
+    # initial value refered to by the new handle
+    w T
+    ) handles2<T,X>
+  post
+    result.hasLast
+  is
+    handles2<T,X> v (handle2 w unit) mode
+
+
+  # has one element been created using 'new'?
+  #
+  hasLast => lastOpt??
+
+
+  # return the last handle that was created by 'new'
+  #
+  last
+    pre
+      hasLast
+   =>
+    lastOpt.get
+
+
+  # a one-way feature to create a new handle and update the monad
+  # in the current environment
+  #
+  /* env */
+  create (
+    # initial value refered to by the new handle
+    w T
+    )
+   =>
+    (new w).last
+
+
+  # get the value refered to by a given handle
+  #
+  get (
+    # a handle created by 'new'
+    h handle2<T>
+    )
+   =>
+    h.get
+
+
+  # create a new instance with new value refered to by a given handle
+  #
+  put (
+    # a handle created by 'new'
+    h handle2<T>,
+
+    # the new value to be stored with 'h'
+    w T)
+  pre
+    match mode
+      effectMode.plain   => false  # must be used as onewayMonad only
+      effectMode.default => false
+      effectMode.abort   => false
+      effectMode.inst, effectMode.repl => true
+   =>
+    h.put w
+    handles2<T,X> v lastOpt mode
+
+
+  # create a new instance with the value refered to by a given handle read and
+  # updated.
+  #
+  update (
+    # a handle created by 'new'
+    h handle2<T>,
+
+    # function calculcating the new value from the old value
+    f T->T
+    )
+  pre
+    match mode
+      effectMode.plain   => false  # must be used as onewayMonad only
+      effectMode.default => false
+      effectMode.abort   => false
+      effectMode.inst, effectMode.repl => true
+   =>
+    h.put (f h.get)
+    handles2<T,X> v lastOpt mode
+
+
+  infix >>= (f X -> handles2<T,X>) => bind<X> f
+
+  bind <B> (f X -> handles2<T,B>) handles2<T,B> is
+    handles2<T,B> (f v).v lastOpt effectMode.plain
+
+  return<B> (w B) => handles2<T,B> w lastOpt effectMode.plain
+
+# short-hand for creating and installing an empty set of handles2 of given type.
+#
+handles2<T>(rr ()->unit) =>
+  handles2<T,unit> unit nil (effectMode.inst rr)
+  unit
+
+# short-hand for creating an empty set of handles2 of given type.
+#
+handles2_<T> => handles2<T,unit> unit nil effectMode.plain
+
+
+# short-hand for accessing handles monad for given type in current environment
+#
+handles2<T> =>
+  handles2_type<T>.installDefault
+  handles2<T,unit>.env
+
+
+# handle value created by 'handles2.new'
+#
+private handle2<T>(
+
+  # get value stored in this handle
+  #
+  get T,
+
+  # additional dummy arg to distinguish this from handles2(v)
+  private _ unit
+
+  ) ref
+is
+
+  # set value stored in this handle to new_val
+  #
+  put(new_val T) is
+    set get := new_val
+    handles2<T,unit>.env.replace
+
+  # update value stored in this handle using f.
+  #
+  update(f T->T) =>
+    set get := f get
+    handles2<T,unit>.env.replace
+    get
+
+# unit type containing features related to handles but nor requiring an instance
+#
+handles2_type<T> is
+
+  # install default instance of handles2
+  #
+  installDefault unit is
+    handles2<T,unit> unit nil effectMode.default
+    unit
+
+
+# create a new handle2 using the handles2 instance from the current environment
+#
+handle2<T>(v T) => handles2<T>.create v

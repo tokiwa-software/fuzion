@@ -243,6 +243,41 @@ abstract class CExpr extends CStmnt
 
 
   /**
+   * Create a C expression from a f32 constant
+   *
+   * @return the resulting expression
+   */
+  public static CExpr f32const(float value)
+  {
+    return new CExpr()
+    {
+      void code(CString sb)
+      {
+        sb.append(String.valueOf(value));
+      }
+      int precedence() { return 0; }
+    };
+  }
+
+  /**
+   * Create a C expression from a f64 constant
+   *
+   * @return the resulting expression
+   */
+  public static CExpr f64const(double value)
+  {
+    return new CExpr()
+    {
+      void code(CString sb)
+      {
+        sb.append(String.valueOf(value));
+      }
+      int precedence() { return 0; }
+    };
+  }
+
+
+  /**
    * Create a C expression for a C string
    *
    * @param s the C string, containing one byte per char.
@@ -652,7 +687,7 @@ abstract class CExpr extends CStmnt
    */
   CExpr sizeOfExpr()
   {
-    return new Unary(this, "sizeof");
+    return new Unary(this, "sizeof ");
   }
 
 
@@ -841,8 +876,22 @@ abstract class CExpr extends CStmnt
           inner.code(sb);
           sb.append("/* ").append(s).append(" */");
         }
+        boolean isLocalVar()
+        {
+          return inner.isLocalVar();
+        }
       };
   }
+
+
+  /**
+   * Is this a local variable?
+   */
+  boolean isLocalVar()
+  {
+    return false;
+  }
+
 
   /**
    * Create String for debugging-output.

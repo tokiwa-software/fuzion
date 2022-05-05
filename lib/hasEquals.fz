@@ -31,15 +31,15 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-hasEquals<T: hasEquals<T>> is
+hasEquals<HE: hasEquals<HE>> is
 
   # equality check for immutable values
   #
-  infix = (o T) bool is abstract
+  infix = (o HE) bool is abstract
 
   # unequality check for immutable values
   #
-  infix /= (o T) bool
+  infix /= (o HE) bool
     post
       result <=> !(hasEquals.this = o)
   is
@@ -47,4 +47,4 @@ hasEquals<T: hasEquals<T>> is
 
   # alternative unicode operator for 'infix /='
   #
-  infix ≠ (o T) => hasEquals.this /= o
+  infix ≠ (o HE) => hasEquals.this /= o

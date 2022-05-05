@@ -30,195 +30,27 @@ SRC = $(FZ_SRC)/src
 BUILD_DIR = ./build
 CLASSES_DIR = $(BUILD_DIR)/classes
 
-JAVA_FILES_UTIL = \
-          $(SRC)/dev/flang/util/ANY.java \
-          $(SRC)/dev/flang/util/Callable.java \
-          $(SRC)/dev/flang/util/DataOut.java \
-          $(SRC)/dev/flang/util/Errors.java \
-          $(SRC)/dev/flang/util/FuzionOptions.java \
-          $(SRC)/dev/flang/util/FuzionConstants.java \
-          $(SRC)/dev/flang/util/HasSourcePosition.java \
-          $(SRC)/dev/flang/util/HexDump.java \
-          $(SRC)/dev/flang/util/Intervals.java \
-          $(SRC)/dev/flang/util/List.java \
-          $(SRC)/dev/flang/util/Map2Int.java \
-          $(SRC)/dev/flang/util/MapComparable2Int.java \
-          $(SRC)/dev/flang/util/Profiler.java \
-          $(SRC)/dev/flang/util/SourceDir.java \
-          $(SRC)/dev/flang/util/SourceFile.java \
-          $(SRC)/dev/flang/util/SourcePosition.java \
-          $(SRC)/dev/flang/util/Terminal.java \
-          $(SRC)/dev/flang/util/UnicodeData.java \
-          $(SRC)/dev/flang/util/YesNo.java \
+JAVA_FILE_TOOLS_VERSION_IN =  $(SRC)/dev/flang/tools/Version.java.in
+JAVA_FILE_TOOLS_VERSION    =  $(BUILD_DIR)/generated/src/dev/flang/tools/Version.java
 
-JAVA_FILES_UTIL_UNICODE = \
-          $(SRC)/dev/flang/util/unicode/ParseUnicodeData.java \
-
-JAVA_FILES_AST = \
-          $(SRC)/dev/flang/ast/AbstractAssign.java \
-          $(SRC)/dev/flang/ast/AbstractBlock.java \
-          $(SRC)/dev/flang/ast/AbstractCall.java \
-          $(SRC)/dev/flang/ast/AbstractCase.java \
-          $(SRC)/dev/flang/ast/AbstractConstant.java \
-          $(SRC)/dev/flang/ast/AbstractCurrent.java \
-          $(SRC)/dev/flang/ast/AbstractFeature.java \
-          $(SRC)/dev/flang/ast/AbstractMatch.java \
-          $(SRC)/dev/flang/ast/AbstractType.java \
-          $(SRC)/dev/flang/ast/Assign.java \
-          $(SRC)/dev/flang/ast/AstErrors.java \
-          $(SRC)/dev/flang/ast/Block.java \
-          $(SRC)/dev/flang/ast/BoolConst.java \
-          $(SRC)/dev/flang/ast/Box.java \
-          $(SRC)/dev/flang/ast/Call.java \
-          $(SRC)/dev/flang/ast/Case.java \
-          $(SRC)/dev/flang/ast/Check.java \
-          $(SRC)/dev/flang/ast/Cond.java \
-          $(SRC)/dev/flang/ast/Consts.java \
-          $(SRC)/dev/flang/ast/Constant.java \
-          $(SRC)/dev/flang/ast/Contract.java \
-          $(SRC)/dev/flang/ast/Current.java \
-          $(SRC)/dev/flang/ast/Destructure.java \
-          $(SRC)/dev/flang/ast/Expr.java \
-          $(SRC)/dev/flang/ast/ExprWithPos.java \
-          $(SRC)/dev/flang/ast/Feature.java \
-          $(SRC)/dev/flang/ast/FeatureName.java \
-          $(SRC)/dev/flang/ast/FeatureVisitor.java \
-          $(SRC)/dev/flang/ast/FeaturesAndOuter.java \
-          $(SRC)/dev/flang/ast/FormalGenerics.java \
-          $(SRC)/dev/flang/ast/Function.java \
-          $(SRC)/dev/flang/ast/FunctionReturnType.java \
-          $(SRC)/dev/flang/ast/Generic.java \
-          $(SRC)/dev/flang/ast/If.java \
-          $(SRC)/dev/flang/ast/InlineArray.java \
-          $(SRC)/dev/flang/ast/Impl.java \
-          $(SRC)/dev/flang/ast/IncompatibleResultsOnBranches.java \
-          $(SRC)/dev/flang/ast/Loop.java \
-          $(SRC)/dev/flang/ast/Match.java \
-          $(SRC)/dev/flang/ast/Nop.java \
-          $(SRC)/dev/flang/ast/NoType.java \
-          $(SRC)/dev/flang/ast/NumLiteral.java \
-          $(SRC)/dev/flang/ast/Old.java \
-          $(SRC)/dev/flang/ast/RefType.java \
-          $(SRC)/dev/flang/ast/Resolution.java \
-          $(SRC)/dev/flang/ast/ReturnType.java \
-          $(SRC)/dev/flang/ast/SrcModule.java \
-          $(SRC)/dev/flang/ast/StatementVisitor.java \
-          $(SRC)/dev/flang/ast/Stmnt.java \
-          $(SRC)/dev/flang/ast/StrConst.java \
-          $(SRC)/dev/flang/ast/Tag.java \
-          $(SRC)/dev/flang/ast/This.java \
-          $(SRC)/dev/flang/ast/Type.java \
-          $(SRC)/dev/flang/ast/Types.java \
-          $(SRC)/dev/flang/ast/Unbox.java \
-          $(SRC)/dev/flang/ast/Universe.java \
-          $(SRC)/dev/flang/ast/ValueType.java \
-          $(SRC)/dev/flang/ast/Visi.java \
-
-JAVA_FILES_PARSER = \
-          $(SRC)/dev/flang/parser/FList.java \
-          $(SRC)/dev/flang/parser/Lexer.java \
-          $(SRC)/dev/flang/parser/Operator.java \
-          $(SRC)/dev/flang/parser/OpExpr.java \
-          $(SRC)/dev/flang/parser/Parser.java \
-
-JAVA_FILES_IR = \
-          $(SRC)/dev/flang/ir/IR.java \
-
-JAVA_FILES_MIR = \
-          $(SRC)/dev/flang/mir/MIR.java \
-          $(SRC)/dev/flang/mir/MirModule.java \
-
-JAVA_FILES_FE = \
-          $(SRC)/dev/flang/fe/DFA.java \
-          $(SRC)/dev/flang/fe/FeErrors.java \
-          $(SRC)/dev/flang/fe/FrontEnd.java \
-          $(SRC)/dev/flang/fe/FrontEndOptions.java \
-          $(SRC)/dev/flang/fe/GenericType.java \
-          $(SRC)/dev/flang/fe/LibraryCall.java \
-          $(SRC)/dev/flang/fe/LibraryFeature.java \
-          $(SRC)/dev/flang/fe/LibraryModule.java \
-          $(SRC)/dev/flang/fe/LibraryOut.java \
-          $(SRC)/dev/flang/fe/LibraryType.java \
-          $(SRC)/dev/flang/fe/Module.java \
-          $(SRC)/dev/flang/fe/NormalType.java \
-          $(SRC)/dev/flang/fe/SourceModule.java \
-
-JAVA_FILES_AIR = \
-          $(SRC)/dev/flang/air/AIR.java \
-          $(SRC)/dev/flang/air/AirErrors.java \
-          $(SRC)/dev/flang/air/Clazz.java \
-          $(SRC)/dev/flang/air/Clazzes.java \
-
-JAVA_FILES_ME = \
-          $(SRC)/dev/flang/me/MiddleEnd.java \
-
-JAVA_FILES_FUIR = \
-          $(SRC)/dev/flang/fuir/FUIR.java \
-
-JAVA_FILES_OPT = \
-          $(SRC)/dev/flang/opt/Optimizer.java \
-
-JAVA_FILES_BE_INTERPRETER = \
-          $(SRC)/dev/flang/be/interpreter/ArrayData.java \
-          $(SRC)/dev/flang/be/interpreter/BackendCallable.java \
-          $(SRC)/dev/flang/be/interpreter/Callable.java \
-          $(SRC)/dev/flang/be/interpreter/ChoiceIdAsRef.java \
-          $(SRC)/dev/flang/be/interpreter/DynamicBinding.java \
-          $(SRC)/dev/flang/be/interpreter/Instance.java \
-          $(SRC)/dev/flang/be/interpreter/Interpreter.java \
-          $(SRC)/dev/flang/be/interpreter/JavaInterface.java \
-          $(SRC)/dev/flang/be/interpreter/JavaRef.java \
-          $(SRC)/dev/flang/be/interpreter/Layout.java \
-          $(SRC)/dev/flang/be/interpreter/LValue.java \
-          $(SRC)/dev/flang/be/interpreter/Intrinsics.java \
-          $(SRC)/dev/flang/be/interpreter/Value.java \
-          $(SRC)/dev/flang/be/interpreter/boolValue.java \
-          $(SRC)/dev/flang/be/interpreter/i8Value.java \
-          $(SRC)/dev/flang/be/interpreter/i16Value.java \
-          $(SRC)/dev/flang/be/interpreter/i32Value.java \
-          $(SRC)/dev/flang/be/interpreter/i64Value.java \
-          $(SRC)/dev/flang/be/interpreter/u8Value.java \
-          $(SRC)/dev/flang/be/interpreter/u16Value.java \
-          $(SRC)/dev/flang/be/interpreter/u32Value.java \
-          $(SRC)/dev/flang/be/interpreter/u64Value.java \
-          $(SRC)/dev/flang/be/interpreter/f32Value.java \
-          $(SRC)/dev/flang/be/interpreter/f64Value.java \
-
-JAVA_FILES_BE_C = \
-          $(SRC)/dev/flang/be/c/C.java \
-          $(SRC)/dev/flang/be/c/CConstants.java \
-          $(SRC)/dev/flang/be/c/CExpr.java \
-          $(SRC)/dev/flang/be/c/CFile.java \
-          $(SRC)/dev/flang/be/c/CIdent.java \
-          $(SRC)/dev/flang/be/c/CNames.java \
-          $(SRC)/dev/flang/be/c/COptions.java \
-          $(SRC)/dev/flang/be/c/CStmnt.java \
-          $(SRC)/dev/flang/be/c/CString.java \
-          $(SRC)/dev/flang/be/c/CTypes.java \
-          $(SRC)/dev/flang/be/c/Intrinsics.java \
-
-JAVA_FILE_TOOLS_VERSION_IN = \
-	  $(SRC)/dev/flang/tools/Version.java.in
-
-JAVA_FILE_TOOLS_VERSION = \
-	  $(BUILD_DIR)/generated/src/dev/flang/tools/Version.java
-
-JAVA_FILES_TOOLS = \
-          $(SRC)/dev/flang/tools/Fuzion.java \
-          $(SRC)/dev/flang/tools/Latex.java \
-          $(SRC)/dev/flang/tools/AceMode.java \
-          $(SRC)/dev/flang/tools/Pretty.java \
-          $(SRC)/dev/flang/tools/Tool.java \
-	  $(JAVA_FILE_TOOLS_VERSION)
-
-JAVA_FILES_TOOLS_FZJAVA = \
-          $(SRC)/dev/flang/tools/fzjava/ForClass.java \
-          $(SRC)/dev/flang/tools/fzjava/FZJava.java \
-          $(SRC)/dev/flang/tools/fzjava/FZJavaOptions.java \
-          $(SRC)/dev/flang/tools/fzjava/FeatureWriter.java \
-
-JAVA_FILES_MISC_LOGO =\
-          $(SRC)/dev/flang/misc/logo/FuzionLogo.java
+JAVA_FILES_UTIL           = $(wildcard $(SRC)/dev/flang/util/*.java          )
+JAVA_FILES_UTIL_UNICODE   = $(wildcard $(SRC)/dev/flang/util/unicode/*.java  )
+JAVA_FILES_AST            = $(wildcard $(SRC)/dev/flang/ast/*.java           )
+JAVA_FILES_PARSER         = $(wildcard $(SRC)/dev/flang/parser/*.java        )
+JAVA_FILES_IR             = $(wildcard $(SRC)/dev/flang/ir/*.java            )
+JAVA_FILES_MIR            = $(wildcard $(SRC)/dev/flang/mir/*.java           )
+JAVA_FILES_FE             = $(wildcard $(SRC)/dev/flang/fe/*.java            )
+JAVA_FILES_AIR            = $(wildcard $(SRC)/dev/flang/air/*.java           )
+JAVA_FILES_ME             = $(wildcard $(SRC)/dev/flang/me/*.java            )
+JAVA_FILES_FUIR           = $(wildcard $(SRC)/dev/flang/fuir/*.java          )
+JAVA_FILES_FUIR_CFG       = $(wildcard $(SRC)/dev/flang/fuir/cfg/*.java          )
+JAVA_FILES_OPT            = $(wildcard $(SRC)/dev/flang/opt/*.java           )
+JAVA_FILES_BE_INTERPRETER = $(wildcard $(SRC)/dev/flang/be/interpreter/*.java)
+JAVA_FILES_BE_C           = $(wildcard $(SRC)/dev/flang/be/c/*.java          )
+JAVA_FILES_BE_EFFECTS     = $(wildcard $(SRC)/dev/flang/be/effects/*.java    )
+JAVA_FILES_TOOLS          = $(wildcard $(SRC)/dev/flang/tools/*.java         ) $(JAVA_FILE_TOOLS_VERSION)
+JAVA_FILES_TOOLS_FZJAVA   = $(wildcard $(SRC)/dev/flang/tools/fzjava/*.java  )
+JAVA_FILES_MISC_LOGO      = $(wildcard $(SRC)/dev/flang/misc/logo/*.java     )
 
 CLASS_FILES_UTIL           = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
 CLASS_FILES_UTIL_UNICODE   = $(CLASSES_DIR)/dev/flang/util/unicode/__marker_for_make__
@@ -230,9 +62,11 @@ CLASS_FILES_FE             = $(CLASSES_DIR)/dev/flang/fe/__marker_for_make__
 CLASS_FILES_AIR            = $(CLASSES_DIR)/dev/flang/air/__marker_for_make__
 CLASS_FILES_ME             = $(CLASSES_DIR)/dev/flang/me/__marker_for_make__
 CLASS_FILES_FUIR           = $(CLASSES_DIR)/dev/flang/fuir/__marker_for_make__
+CLASS_FILES_FUIR_CFG       = $(CLASSES_DIR)/dev/flang/fuir/cfg/__marker_for_make__
 CLASS_FILES_OPT            = $(CLASSES_DIR)/dev/flang/opt/__marker_for_make__
 CLASS_FILES_BE_INTERPRETER = $(CLASSES_DIR)/dev/flang/be/interpreter/__marker_for_make__
 CLASS_FILES_BE_C           = $(CLASSES_DIR)/dev/flang/be/c/__marker_for_make__
+CLASS_FILES_BE_EFFECTS     = $(CLASSES_DIR)/dev/flang/be/effects/__marker_for_make__
 CLASS_FILES_TOOLS          = $(CLASSES_DIR)/dev/flang/tools/__marker_for_make__
 CLASS_FILES_TOOLS_FZJAVA   = $(CLASSES_DIR)/dev/flang/tools/fzjava/__marker_for_make__
 CLASS_FILES_MISC_LOGO      = $(CLASSES_DIR)/dev/flang/misc/logo/__marker_for_make__
@@ -241,6 +75,9 @@ JFREE_SVG_URL = https://repo1.maven.org/maven2/org/jfree/org.jfree.svg/5.0.1/org
 JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
 
 FUZION_EBNF = $(BUILD_DIR)/fuzion.ebnf
+
+FZ_SRC_LIB = $(FZ_SRC)/lib
+FUZION_FILES_LIB = $(shell find $(FZ_SRC_LIB) -name "*.fz")
 
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
 MOD_JAVA_BASE         = $(BUILD_DIR)/modules/java.base/__marker_for_make__
@@ -259,7 +96,9 @@ ALL = \
 	$(MOD_JAVA_DATATRANSFER) \
 	$(MOD_JAVA_DESKTOP) \
 	$(BUILD_DIR)/tests \
-	$(BUILD_DIR)/examples
+	$(BUILD_DIR)/examples \
+        $(BUILD_DIR)/README.md \
+        $(BUILD_DIR)/release_notes.md \
 
 DOCUMENTATION = \
 	$(BUILD_DIR)/doc/fumfile.html     # fum file format documentation created with asciidoc
@@ -274,6 +113,9 @@ all: $(ALL)
 # phony target to compile all java sources
 .PHONY: javac
 javac: $(CLASS_FILES_TOOLS) $(CLASS_FILES_TOOLS_FZJAVA)
+
+$(BUILD_DIR)/%.md: $(FZ_SRC)/%.md
+	cp $^ $@
 
 $(FUZION_EBNF): $(SRC)/dev/flang/parser/Parser.java
 	mkdir -p $(@D)
@@ -337,6 +179,11 @@ $(CLASS_FILES_FUIR): $(JAVA_FILES_FUIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR)
 	touch $@
 
+$(CLASS_FILES_FUIR_CFG): $(JAVA_FILES_FUIR_CFG) $(CLASS_FILES_UTIL) $(CLASS_FILES_FUIR)
+	mkdir -p $(CLASSES_DIR)
+	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_CFG)
+	touch $@
+
 $(CLASS_FILES_OPT): $(JAVA_FILES_OPT) $(CLASS_FILES_AIR) $(CLASS_FILES_FUIR)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_OPT)
@@ -352,7 +199,12 @@ $(CLASS_FILES_BE_C): $(JAVA_FILES_BE_C) $(CLASS_FILES_FUIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_C)
 	touch $@
 
-$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_BE_INTERPRETER)
+$(CLASS_FILES_BE_EFFECTS): $(JAVA_FILES_BE_EFFECTS) $(CLASS_FILES_FUIR_CFG)
+	mkdir -p $(CLASSES_DIR)
+	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_EFFECTS)
+	touch $@
+
+$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_INTERPRETER)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS)
 	touch $@
@@ -393,10 +245,10 @@ $(BUILD_DIR)/assets/logo_bleed_cropmark.svg: $(CLASS_FILES_MISC_LOGO)
 	rm -f $@.tmp.pdf
 	touch $@
 
-$(BUILD_DIR)/lib: $(FZ_SRC)/lib
+$(BUILD_DIR)/lib: $(FUZION_FILES_LIB)
 	rm -rf $@
 	mkdir -p $(@D)
-	cp -rf $^ $@
+	cp -rf $(FZ_SRC_LIB) $@
 
 $(BUILD_DIR)/bin/fz: $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib
 	mkdir -p $(@D)
@@ -501,21 +353,37 @@ logo: $(BUILD_DIR)/assets/logo.svg $(BUILD_DIR)/assets/logo_bleed.svg $(BUILD_DI
 run_tests: run_tests_int run_tests_c
 
 # phony target to run Fuzion tests using interpreter and report number of failures
-.PHONY .SILENT: run_tests_int
+.PHONY .SILENT .IGNORE: run_tests_int
 run_tests_int: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(BUILD_DIR)/tests
 	echo -n "testing interpreter: "
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) int
 
 # phony target to run Fuzion tests using c backend and report number of failures
-.PHONY .SILENT: run_tests_c
+.PHONY .SILENT .IGNORE: run_tests_c
 run_tests_c: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(BUILD_DIR)/tests
 	echo -n "testing C backend: "; \
 	$(FZ_SRC)/bin/run_tests.sh $(BUILD_DIR) c
 
+# phony target to run Fuzion tests and report number of failures
+.PHONY: run_tests_parallel
+run_tests_parallel: run_tests_int_parallel run_tests_c_parallel
+
+# phony target to run Fuzion tests using interpreter and report number of failures
+.PHONY .SILENT: run_tests_int_parallel
+run_tests_int_parallel: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(BUILD_DIR)/tests
+	echo -n "testing interpreter: "
+	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) int
+
+# phony target to run Fuzion tests using c backend and report number of failures
+.PHONY .SILENT: run_tests_c_parallel
+run_tests_c_parallel: $(BUILD_DIR)/bin/fz $(MOD_BASE) $(BUILD_DIR)/tests
+	echo -n "testing C backend: "; \
+	$(FZ_SRC)/bin/run_tests_parallel.sh $(BUILD_DIR) c
+
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
-	find $(FZ_SRC) -name "*~" -exec rm {} \;
+	find $(FZ_SRC) -name "*~" -type f -exec rm {} \;
 
 .PHONY: release
 release: clean all
@@ -526,3 +394,13 @@ release: clean all
 .PHONY: shellcheck
 shellcheck:
 	shellcheck $(SHELL_SCRIPTS) $(shell find . -iname '*.sh' -not -path "./build/*")
+
+# show readme in browser, requires 'sudo apt install grip'
+.PHONY: show_readme
+show_readme:
+	grip -b README.md
+
+# show release notes in browser, requires 'sudo apt install grip'
+.PHONY: show_release_notes
+show_release_notes:
+	grip -b release_notes.md

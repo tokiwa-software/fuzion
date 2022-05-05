@@ -287,7 +287,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     if (main != null && Errors.count() == 0)
       {
-        if (main.arguments().size() != 0)
+        if (main.valueArguments().size() != 0)
           {
             FeErrors.mainFeatureMustNotHaveArguments(main);
           }
@@ -351,6 +351,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     try
       {
         return p.getFileName().toString().endsWith(".fz") &&
+          !Files.isDirectory(p) &&
           Files.isReadable(p) &&
           (_inputFile == null || _inputFile == SourceFile.STDIN || !Files.isSameFile(_inputFile, p));
       }
@@ -805,8 +806,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var existing = df.get(fn);
     if (existing != null)
       {
-        if (f                  .implKind() == Impl.Kind.FieldDef &&
-            ((Feature)existing).implKind() == Impl.Kind.FieldDef    ) // NYI: Cast!
+        if (f       .implKind() == Impl.Kind.FieldDef &&
+            existing.implKind() == Impl.Kind.FieldDef    )
           {
             var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
             fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
@@ -1166,6 +1167,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
         if (!Types.resolved.t_unit.isAssignableFrom(rt))
           {
             AstErrors.constructorResultMustBeUnit(cod);
+          }
+      }
+
+    if (f.isTypeParameter())
+      {
+        if (f.resultType().isGenericArgument())
+          {
+            AstErrors.constraintMustNotBeGenericArgument(f);
           }
       }
   }

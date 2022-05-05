@@ -55,20 +55,20 @@ choice_negative is
     x := MyChoice  // 8. should flag an error: cannot instanciate choice
 
   multi1 is
-    A : choice<i32,bool>, choice<string,f64> is // 9. should flag an error: choice type must inherit exaclty once from choice
+    A : choice<i32,bool>, choice<string,f64> is // 9. should flag an error: choice type must inherit exactly once from choice
 
   multi2 is
     A : choice<i32,bool> is
     B : choice<string,f64> is
-    C : A, B is // 10. should flag an error: choice type must inherit exaclty once from choice
+    C : A, B is // 10. should flag an error: choice type must inherit exactly once from choice
 
   multi3 is
     A : choice<i32,bool> is
-    B : A, choice<string,f64> is // 11. should flag an error: choice type must inherit exaclty once from choice
+    B : A, choice<string,f64> is // 11. should flag an error: choice type must inherit exactly once from choice
 
   multi4 is
     A : choice<i32,bool> is
-    B : choice<string,f64>, A is // 12. should flag an error: choice type must inherit exaclty once from choice
+    B : choice<string,f64>, A is // 12. should flag an error: choice type must inherit exactly once from choice
 
   nofields1 is
     A : choice<i32, string, bool> is

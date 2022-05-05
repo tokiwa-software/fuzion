@@ -1,0 +1,380 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature CTrie
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# A Fuzion implementation of CTrie invented by Aleksandar Prokopec
+# CTrie is a non-blocking concurrent hash trie
+#
+# reference paper: Concurrent Tries with Efficient Non-Blocking Snapshots
+# https://aleksandar-prokopec.com/resources/docs/ctries-snapshot.pdf
+#
+# reference implementation in Scala: https://github.com/axel22/Ctries/
+# on wikipedia: https://en.wikipedia.org/wiki/Ctrie
+#
+# Complexity (according to the paper):
+# insert, lookup, remove                     : O(log n)
+# snapshot, amortized size retrieval, clear  : O(1)
+#
+# NYI (atomic) CAS
+# NYI gen handling
+# NYI snapshots
+#
+# glossary:
+# CTK => ctrie key
+# CTV => ctrie value
+# k   => key
+# v   => value
+# gen => generation
+# lev => level
+# bmp => bitmap
+# idx => index
+# W   => 2^W-way branching factor
+#
+CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
+
+  # a tomb node
+  # "a T-node is the last value assigned to an I-node"
+  private TNode(sn SNode) is
+    redef asString => "TNode($sn)"
+
+    asList => sn.asList
+
+
+  # a singleton node
+  private SNode(k CTK, v CTV) is
+    redef asString => "SNode($k, $v)"
+
+    asList => [(k,v)].asList
+
+
+  # an i or a singleton node
+  private Branch: choice<INode,SNode> is
+    redef asString =>
+      match Branch.this
+        iNode INode => "$iNode"
+        sNode SNode => "$sNode"
+
+    asList =>
+      match Branch.this
+        iNode INode => iNode.asList
+        sNode SNode => sNode.asList
+
+
+  # a container node
+  private CNode(bmp u32, array array<Branch>, gen Gen) is
+    updated(pos u32, node Branch) =>
+      CNode bmp (array.put pos.as_i32 node) gen
+
+    inserted(pos, flag u32, sn SNode) =>
+      CNode (bmp | flag) (array.insert pos.as_i32 sn).asArray gen
+
+    removed(pos, flag u32) =>
+      # NYI delete/remove should be in stdlib
+      tmp := array.take pos.as_i32 ++ array.drop (pos + 1).as_i32
+      CNode (bmp ^ flag) tmp.asArray gen
+
+    redef asString => "CNode($bmp, [{array.map<string>(x -> x.asString).fold (strings.concat ", ")}])"
+
+    asList => array.flatMapSequence<tuple<CTK,CTV>>(b -> b.asList).asList
+
+
+  private Gen is
+    redef asString => "Gen"
+
+
+  # a container, T or linked list node
+  private MainNode: choice<CNode,TNode,list<SNode>> is
+    redef asString =>
+      match MainNode.this
+        cNode CNode => "$cNode"
+        tNode TNode => "$tNode"
+        lNode list<SNode> => "$lNode"
+
+    asList =>
+      match MainNode.this
+        cNode CNode => cNode.asList
+        tNode TNode => tNode.asList
+        lNode list<SNode> => lNode.map<tuple<CTK,CTV>>(sn -> (sn.k, sn.v))
+
+
+  # an indirection node
+  private INode(main MainNode, gen Gen) ref is
+    # compare and set
+    CAS(old_n MainNode, new_n MainNode) bool is
+      # NYI this must be atomic
+      # if(main.hash != old_n.hash)
+      #   false
+      # else
+      set main := new_n
+      true
+
+    redef asString => "INode($main, $gen)"
+
+    asList => main.asList
+
+
+  private RESTART is
+  private OK is
+  NOTFOUND is
+    redef asString => "not found"
+
+  # 2^5 = 32
+  private W := u32 5
+  private root := INode (CNode 0 [] Gen) Gen
+
+
+  private hash(h u64) u32 is
+    h.hash.as_u32
+
+
+  private flagpos(hash u32, lev u32, bmp u32) tuple<u32, u32> is
+    idx := (hash >> lev) & 0x1F
+    flag := u32 1 << idx
+    mask := flag -° 1
+    pos := (bmp & mask).onesCount.as_u32
+    (flag, pos)
+
+
+  private toCompressed(cn CNode, lev u32) =>
+    narr := cn.array.map<Branch> (n -> match n
+                                         m INode =>
+                                           match m.main
+                                            // resurrect
+                                            tn TNode => tn.sn
+                                            ln list<SNode> => m
+                                            cn CNode => m
+                                         sn SNode => sn
+                                    )
+    toContracted (CNode cn.bmp narr cn.gen) lev
+
+
+  private toContracted(cn CNode, lev u32) MainNode is
+    if (lev > 0) & (cn.array.length == 1)
+      match cn.array[0]
+        sn SNode => TNode sn
+        i INode => cn
+    else
+      cn
+
+
+  private clean(nd option<INode>, lev u32) =>
+    if nd??
+      m := nd.get.main
+      match m
+        c CNode => nd.get.CAS(m, toCompressed(c, lev))
+        l list<SNode> =>
+        t TNode =>
+    unit
+
+
+  private cleanParent(parent option<INode>, i INode, hash, lev u32) =>
+    if parent??
+      match parent.get.main
+        cn CNode =>
+          (flag, pos) := flagpos hash lev cn.bmp
+          if (cn.bmp & flag) != 0
+            sub := cn.array[pos.as_i32]
+            match sub
+              iNode INode =>
+                # NYI is same object?
+                if iNode.hashCode == i.hashCode
+                  match i.main
+                    tn TNode =>
+                      ncn := cn.updated pos tn.sn
+                      if parent.get.CAS cn (toContracted ncn lev)
+                        cleanParent parent i hash lev
+                    cn CNode =>
+                    l list<SNode> =>
+              sn SNode =>
+        tn TNode =>
+        l list<SNode> =>
+
+
+  private dual(x, y SNode, lev u32, gen Gen) MainNode is
+    # NYI why 35??
+    if lev < 35
+      xidx := ((hash x.k.hash) >> lev) & 0x1f
+      yidx := ((hash y.k.hash) >> lev) & 0x1f
+      bmp := (u32 1 << xidx) | (u32 1 << yidx)
+      if xidx == yidx
+        subinode := INode (dual x y (lev + W) gen) gen
+        CNode bmp [subinode] gen
+      else
+        if (xidx < yidx)
+          CNode bmp [x, y] gen
+        else
+          CNode bmp [y, x] gen
+    else
+      [(SNode x.k x.v), (SNode y.k y.v)].asList
+
+
+  # lookup key k
+  lookup(k CTK) option<CTV> is
+    r := root
+    res := ilookup r k 0 nil
+    match res
+      r RESTART =>
+        lookup k
+      NOTFOUND =>
+        nil
+      v CTV =>
+        v
+
+
+  private ilookup(i INode, k CTK, lev u32, parent option<INode>) choice<RESTART,NOTFOUND,CTV> is
+    match i.main
+      cn CNode =>
+        (flag, pos) := flagpos (hash k.hash) lev cn.bmp
+        if (cn.bmp & flag) == 0
+          NOTFOUND
+        else
+          match cn.array[pos.as_i32]
+            sin INode =>
+              ilookup sin k (lev + W) i
+            sn SNode =>
+              if sn.k = k
+                sn.v
+              else
+                NOTFOUND
+      tn TNode =>
+        clean parent (lev - W)
+        RESTART
+      ln list<SNode> => find ln k
+
+
+  private find(ln list<SNode>, k CTK) choice<RESTART, NOTFOUND, CTV> is
+    match ln.dropWhile(sn -> sn.k /= k).head
+          nil => NOTFOUND
+          sn SNode => sn.v
+
+
+  # add key value
+  # if key is already present value is updated
+  add(k CTK, v CTV) unit is
+    match iinsert root k v 0 nil
+      r RESTART =>
+        add k v
+      OK =>
+        unit
+
+
+  private iinsert(i INode, k CTK, v CTV, lev u32, parent option<INode>) choice<RESTART,OK> is
+    match i.main
+      cn CNode =>
+        (flag, pos) := flagpos (hash k.hash) lev cn.bmp
+        if (cn.bmp & flag) == 0
+          ncn := cn.inserted pos flag (SNode k v)
+          if i.CAS cn ncn
+            OK
+          else
+            RESTART
+        else
+          match cn.array[pos.as_i32]
+            sin INode =>
+              iinsert sin k v (lev+W) i
+            sn SNode =>
+              if sn.k /= k
+                nin := INode (dual sn (SNode k v) (lev + W) Gen) Gen
+                ncn := cn.updated pos nin
+                if i.CAS cn ncn
+                  OK
+                else
+                  RESTART
+              else
+                ncn := cn.updated pos (SNode k v)
+                if i.CAS cn ncn
+                  OK
+                else
+                  RESTART
+      tn TNode =>
+        clean parent (lev - W)
+        RESTART
+      ln list<SNode> =>
+        if i.CAS ln ([(SNode k v)] ++ ln)
+          OK
+        else
+          RESTART
+
+
+  remove(k CTK) choice<NOTFOUND, CTV> is
+    match iremove root k 0 nil
+      r RESTART => remove k
+      n NOTFOUND => n
+      v CTV => v
+
+
+  private iremove(i INode, k CTK, lev u32, parent option<INode>) choice<RESTART, NOTFOUND, CTV> is
+    match i.main
+      cn CNode =>
+        (flag, pos) := flagpos (hash k.hash) lev cn.bmp
+        if (cn.bmp & flag) == 0
+          NOTFOUND
+        else
+          res choice<RESTART, NOTFOUND, CTV> := match cn.array[pos.as_i32]
+            sin INode =>
+              iremove sin k (lev + W) i
+            sn SNode =>
+              if sn.k /= k
+                NOTFOUND
+              else
+                ncn  := cn.removed pos flag
+                cntr := toContracted ncn lev
+                if i.CAS cn cntr
+                  sn.v
+                else
+                  RESTART
+          match res
+            v CTV =>
+              match i.main
+                t TNode => cleanParent parent i hash(k.hash) (lev - W)
+                l list<SNode> =>
+                c CNode =>
+            n NOTFOUND =>
+            r RESTART =>
+          res
+      tn TNode =>
+        clean parent (lev - W)
+        RESTART
+      ln list<SNode> =>
+        fln := ln
+          .filter(sn -> sn.k /= k)
+          .asList
+        nln MainNode := if fln.count == 1 then TNode fln.first else fln
+        if i.CAS ln nln
+          find ln k
+        else
+          RESTART
+
+
+  redef size i32 is
+    items.count
+
+
+  redef index [] (k CTK) option<CTV> is
+    lookup k
+
+
+  redef items Sequence<tuple<CTK,CTV>> is
+    # NYI take snapshot
+    root.asList

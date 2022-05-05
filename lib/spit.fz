@@ -23,6 +23,10 @@
 #
 # -----------------------------------------------------------------------
 
+# spit -- shortcut for stdout.print
+#
+# NYI: remove?
+#
 # A handy shortcut for stdout.print, output string representation of
 # an object, do not add a line break at the end.
 #

@@ -33,42 +33,39 @@ primes is
       if !a[i]
         yak "$i "
         for
-          j := i, j + i;
+          j := i, j + i
         while j <= n
-          a[j] := true;
+          a[j] := true
     unit # NYI: the loop returns the last value of index variable 'i'. Loops should not force such an automatic result upon us.
   say "Primes using loop:"; primes 1000; say
 
   primes2(n i32) is   // sieve using streams
-    a := marray n+1, false
+    a := marray n+1 false
     (2..n).forAll (i ->
-      {
         if !a[i]
           yak "$i "
-          (1..n).forWhile (j -> a[i*j] := true; (i*j+i) <= n)
-      })
+          (1..n).forWhile (j ->
+              a[i*j] := true;
+              (i*j+i) <= n
+            )
+      )
   say "Primes using streams:"; primes2 1000; say
 
   primes3(n i32) is   // sieve using streams and filters
-    a := marray n+1, false
-    (2..n).filter(i -> !a[i]).forAll(i ->
-      {
+    a := marray n+1 false
+    (2..n)
+      .filter (i -> !a[i])
+      .forAll (i ->
           yak "$i "
-          (1..n/i).forAll (j -> a[i*j] := true);
-         /* NYI: with more syntactic sugar, this could become:
-
-          (1..n/i).forAll(j => a[i*j] := true);
-          */
-      })
+          (1..n/i).forAll (j -> a[i*j] := true)
+        )
   say "Primes using streams and filters:"; primes3 1000; say
 
   primes4(n i32) is  // sieve using pipes
-    a := marray n+1, false
+    a := marray n+1 false
 
     (2..n) |& (i -> !a[i]) | i ->
-      {
-          yak "$i "
-          (1..n/i) | j -> a[i*j] := true
-      }
+      yak "$i "
+      (1..n/i) | j -> a[i*j] := true
 
   say "Primes using pipes:"; primes4 1000; say

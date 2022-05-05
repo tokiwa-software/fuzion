@@ -59,6 +59,7 @@ import dev.flang.ast.AbstractMatch; // NYI: remove dependency! Use dev.flang.fui
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Box; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Check; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.Env; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Expr; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -90,13 +91,6 @@ public class Interpreter extends ANY
    * the backend.
    */
   static FuzionOptions _options_;
-
-
-  /**
-   * Current call stack, for debugging output
-   */
-  public static Stack<AbstractCall> _callStack = new Stack<>();
-  public static Stack<Clazz> _callStackFrames = new Stack<>();
 
 
   /**
@@ -150,10 +144,12 @@ public class Interpreter extends ANY
     Clazz lastFrame = null;
     AbstractCall lastCall = null;
     int repeat = 0;
-    for (var i = _callStack.size()-1; i >= 0; i--)
+    var s = FuzionThread.current()._callStack;
+    var sf = FuzionThread.current()._callStackFrames;
+    for (var i = s.size()-1; i >= 0; i--)
       {
-        Clazz frame = i<_callStackFrames.size() ? _callStackFrames.get(i) : null;
-        var call = _callStack.get(i);
+        Clazz frame = i<sf.size() ? sf.get(i) : null;
+        var call = s.get(i);
         if (frame == lastFrame && call == lastCall)
           {
             repeat++;
@@ -180,7 +176,7 @@ public class Interpreter extends ANY
   /**
    * The intermediate representation of the code we are interpreting.
    */
-  final FUIR _fuir;
+  public final FUIR _fuir;
 
 
   /*---------------------------  consructors  ---------------------------*/
@@ -298,13 +294,13 @@ public class Interpreter extends ANY
            c.sid_ >= 0);
 
         ArrayList<Value> args = executeArgs(c, staticClazz, cur);
-        _callStack.push(c);
+        FuzionThread.current()._callStack.push(c);
 
         var d = staticClazz.getRuntimeData(c.sid_ + 0);
         if (d instanceof Clazz innerClazz)
           {
             var tclazz = (Clazz) staticClazz.getRuntimeData(c.sid_ + 1);
-            var dyn = tclazz.isRef() && c.isDynamic();
+            var dyn = (tclazz.isRef() || c.target().isCallToOuterRef() && tclazz.isUsedAsDynamicOuterRef()) && c.isDynamic();
             d = callable(dyn, innerClazz, tclazz);
             if (d == null)
               {
@@ -319,11 +315,12 @@ public class Interpreter extends ANY
           }
         else // if (d == "dyn")
           {
-            var cl = ((Instance) args.get(0)).clazz();
+            var v = (ValueWithClazz) args.get(0);
+            Clazz cl = v.clazz();
             ca = (Callable) ((DynamicBinding)cl._dynamicBinding).callable(c.calledFeature());
           }
         result = ca.call(args);
-        _callStack.pop();
+        FuzionThread.current()._callStack.pop();
       }
 
     else if (s instanceof AbstractCurrent)
@@ -419,7 +416,7 @@ public class Interpreter extends ANY
             tag = getField(sf.choiceTag(), staticSubjectClazz, sub).i32Value();
           }
         Clazz subjectClazz = tag < 0
-          ? ((Instance) refVal).clazz()
+          ? ((ValueWithClazz) refVal).clazz()
           : staticSubjectClazz.getChoiceClazz(tag);
 
         var it = m.cases().iterator();
@@ -523,10 +520,13 @@ public class Interpreter extends ANY
                   {
                     // see tests/redef_args and issue #86 for a case where this lookup is needed:
                     f = vc.lookup(f, dev.flang.ast.Call.NO_GENERICS, Clazzes.isUsedAt(f)).feature();
-                    Value v = getField(f, vc, val);
-                    // NYI: Check that this works well for internal fields such as choice tags.
-                    // System.out.println("Box "+vc+" => "+rc+" copying "+f.qualifiedName()+" "+v);
-                    setField(f, -1, rc, result, v);
+                    if (Clazzes.isUsed(f, vc))
+                      {
+                        Value v = getField(f, vc, val);
+                        // NYI: Check that this works well for internal fields such as choice tags.
+                        // System.out.println("Box "+vc+" => "+rc+" copying "+f.qualifiedName()+" "+v);
+                        setField(f, -1, rc, result, v);
+                      }
                   }
               }
             if (vc.isChoice())
@@ -597,16 +597,28 @@ public class Interpreter extends ANY
         Clazz sac = staticClazz.getRuntimeClazz(i._arrayClazzId + 1);
         var sa = new Instance(sac);
         int l = i._elements.size();
-        var arrayData = Intrinsics.sysArrayAlloc(l, sac);
-        setField(Types.resolved.f_sys_array_data  , -1, sac, sa, arrayData);
-        setField(Types.resolved.f_sys_array_length, -1, sac, sa, new i32Value(l));
+        var arrayData = Intrinsics.fuzionSysArrayAlloc(l, sac);
+        setField(Types.resolved.f_fuzion_sys_array_data  , -1, sac, sa, arrayData);
+        setField(Types.resolved.f_fuzion_sys_array_length, -1, sac, sa, new i32Value(l));
         for (int x = 0; x < l; x++)
           {
             var v = execute(i._elements.get(x), staticClazz, cur);
-            Intrinsics.sysArraySetEl(arrayData, x, v, sac);
+            Intrinsics.fuzionSysArraySetEl(arrayData, x, v, sac);
           }
         result = new Instance(ac);
         setField(Types.resolved.f_array_internalArray, -1, ac, result, sa);
+      }
+
+    else if (s instanceof Env v)
+      {
+        Clazz vClazz = staticClazz.getRuntimeClazz(v._clazzId);
+        result = FuzionThread.current()._effects.get(vClazz);
+        if (result == null)
+          {
+            Errors.fatal("*** effect for " + vClazz + " not present in current environment\n" +
+                         "    available are " + FuzionThread.current()._effects.keySet() + "\n" +
+                         callStack());
+          }
       }
 
     else
@@ -652,12 +664,12 @@ public class Interpreter extends ANY
   {
     Clazz cl = Clazzes.conststring.get();
     Instance result = new Instance(cl);
-    var saCl = Clazzes.sysArray_u8;
+    var saCl = Clazzes.fuzionSysArray_u8;
     Instance sa = new Instance(saCl);
     byte[] bytes = str.getBytes(StandardCharsets.UTF_8);
-    setField(Types.resolved.f_sys_array_length, -1, saCl, sa, new i32Value(bytes.length));
+    setField(Types.resolved.f_fuzion_sys_array_length, -1, saCl, sa, new i32Value(bytes.length));
     var arrayData = new ArrayData(bytes);
-    setField(Types.resolved.f_sys_array_data, -1, saCl, sa, arrayData);
+    setField(Types.resolved.f_fuzion_sys_array_data, -1, saCl, sa, arrayData);
     setField(Types.resolved.f_array_internalArray, -1, cl, result, sa);
 
     return result;
@@ -780,7 +792,7 @@ public class Interpreter extends ANY
               break;
             }
           case Intrinsic:
-            result = Intrinsics.call(innerClazz);
+            result = Intrinsics.call(this, innerClazz);
             break;
           case Choice: // NYI: why choice here?
           case Routine:
@@ -793,6 +805,17 @@ public class Interpreter extends ANY
                 result = (args) -> callOnInstance(f, innerClazz, new Instance(innerClazz), args);
               }
             break;
+          case TypeParameter:
+            {
+              result = (args) -> {
+                var rc = innerClazz.resultClazz();
+                var r = new Instance(rc);
+                var name = rc.lookup(Types.resolved.f_Type_name, dev.flang.ast.Call.NO_GENERICS, Clazzes.isUsedAt(rc.feature()));
+                setField(name.feature(), -1,  rc, r, value(innerClazz.typeParameterActualType()._type.asString()));
+                return r;
+              };
+              break;
+            }
           default:
             throw new Error("unhandled switch case: "+f.kind());
           }
@@ -815,18 +838,18 @@ public class Interpreter extends ANY
   {
     if (PRECONDITIONS) require
       (thiz.isRoutine(),
-       args.size() == thiz.arguments().size() + 1 || thiz.hasOpenGenericsArgList() /* e.g. in call tuple<i32>(42) */
+       args.size() == thiz.valueArguments().size() + 1 || thiz.hasOpenGenericsArgList() /* e.g. in call tuple<i32>(42) */
        );
 
     cur.checkStaticClazz(staticClazz);
-    _callStackFrames.push(staticClazz);
+    FuzionThread.current()._callStackFrames.push(staticClazz);
 
     if (CHECKS) check
       (Clazzes.isUsedAtAll(thiz));
 
     setOuter(thiz, staticClazz, cur, args.get(0));
     int aix = 1;
-    for (var a : thiz.arguments())
+    for (var a : thiz.valueArguments())
       {
         if (a.isOpenGenericField())
           {
@@ -917,7 +940,7 @@ public class Interpreter extends ANY
           }
       }
     // NYI: Also check postconditions for all features this redefines!
-    _callStackFrames.pop();
+    FuzionThread.current()._callStackFrames.pop();
 
     return thiz.isConstructor() ? cur
                                 : getField(thiz.resultField(), staticClazz, cur);
@@ -1031,7 +1054,7 @@ public class Interpreter extends ANY
   {
     return
       v instanceof Instance                                            /* a normal ref type     */ ||
-      v instanceof ArrayData                                           /* sys.array.data        */ ||
+      v instanceof ArrayData                                           /* fuzion.sys.array.data */ ||
       v instanceof LValue                                              /* ref type as LValue    */ ||
       v instanceof ChoiceIdAsRef && thiz.isChoice()                    /* a boxed choice tag    */ ||
       (v instanceof i8Value ||
@@ -1147,7 +1170,7 @@ public class Interpreter extends ANY
       {
         curValue = (curValue instanceof LValue lv) ? loadRefField(thiz, lv)
                                                    : curValue;
-        clazz = ((Instance) curValue).clazz();
+        clazz = ((ValueWithClazz) curValue).clazz();
       }
     off = Layout.get(clazz).offset0(thiz, select);
 

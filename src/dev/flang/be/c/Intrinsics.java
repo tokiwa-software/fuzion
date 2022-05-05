@@ -75,6 +75,22 @@ class Intrinsics extends ANY
 
 
   /**
+   * Get the proper output file handle 'stdout' or 'stderr' depending on the
+   * prefix of the intrinsic feature name in.
+   *
+   * @param in name of an intrinsic feature in fuzion.std.out or fuzion.std.err.
+   *
+   * @return CIdent of 'stdout' or 'stderr'
+   */
+  private CIdent outOrErr(String in)
+  {
+    if      (in.startsWith("fuzion.std.out.")) { return new CIdent("stdout"); }
+    else if (in.startsWith("fuzion.std.err.")) { return new CIdent("stderr"); }
+    else                                       { throw new Error("outOrErr called on "+in); }
+  }
+
+
+  /**
    * Create code for intrinsic feature
    *
    * @param c the C backend
@@ -83,6 +99,7 @@ class Intrinsics extends ANY
    */
   CStmnt code(C c, int cl)
   {
+    var rc = c._fuir.clazzResultClazz(cl);
     var or = c._fuir.clazzOuterRef(cl);
     var outer =
       or == -1                                         ? null :
@@ -90,22 +107,33 @@ class Intrinsics extends ANY
       c._fuir.clazzIsRef(c._fuir.clazzResultClazz(or)) ? CNames.OUTER.deref().field(CNames.FIELDS_IN_REF_CLAZZ)
                                                        : CNames.OUTER;
 
-    switch (c._fuir.clazzIntrinsicName(cl))
+    var in = c._fuir.clazzIntrinsicName(cl);
+    switch (in)
       {
       case "safety"              : return (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
       case "debug"               : return (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret();
       case "debugLevel"          : return (CExpr.int32const(c._options.fuzionDebugLevel())).ret();
+      case "fuzion.std.args.count": return c._names.GLOBAL_ARGC.ret();
+      case "fuzion.std.args.get" :
+        {
+          var tmp = new CIdent("tmp");
+          var str = c._names.GLOBAL_ARGV.index(A0);
+          return CStmnt.seq(c.constString(str,CExpr.call("strlen",new List<>(str)), tmp),
+                            tmp.castTo(c._types.clazz(rc)).ret());
+        }
       case "fuzion.std.exit"     : return CExpr.call("exit", new List<>(A0));
-      case "fuzion.std.out.write": var cid = new CIdent("c");
+      case "fuzion.std.out.write":
+      case "fuzion.std.err.write": var cid = new CIdent("c");
                                    return CStmnt.seq(CStmnt.decl("char",cid),
                                                        cid.assign(A0.castTo("char")),
                                                        CExpr.call("fwrite",
                                                                   new List<>(cid.adrOf(),
                                                                              CExpr.int32const(1),
                                                                              CExpr.int32const(1),
-                                                                             new CIdent("stdout"))));
+                                                                             outOrErr(in))));
 
-      case "fuzion.std.out.flush": return CExpr.call("fflush", new List<>(new CIdent("stdout")));
+      case "fuzion.std.out.flush":
+      case "fuzion.std.err.flush": return CExpr.call("fflush", new List<>(outOrErr(in)));
 
         /* NYI: The C standard does not guarentee wrap-around semantics for signed types, need
          * to check if this is the case for the C compilers used for Fuzion.
@@ -263,13 +291,116 @@ class Intrinsics extends ANY
       case "u8.castTo_i8"        : return outer.castTo("fzT_1i8").ret();
       case "u16.castTo_i16"      : return outer.castTo("fzT_1i16").ret();
       case "u32.castTo_i32"      : return outer.castTo("fzT_1i32").ret();
+      case "u32.castTo_f32"      : return outer.adrOf().castTo("fzT_1f32*").deref().ret();
       case "u64.castTo_i64"      : return outer.castTo("fzT_1i64").ret();
+      case "u64.castTo_f64"      : return outer.adrOf().castTo("fzT_1f64*").deref().ret();
       case "u16.low8bits"        : return outer.and(CExpr.uint16const(0xFF)).castTo("fzT_1u8").ret();
       case "u32.low8bits"        : return outer.and(CExpr.uint32const(0xFF)).castTo("fzT_1u8").ret();
       case "u64.low8bits"        : return outer.and(CExpr.uint64const(0xFFL)).castTo("fzT_1u8").ret();
       case "u32.low16bits"       : return outer.and(CExpr.uint32const(0xFFFF)).castTo("fzT_1u16").ret();
       case "u64.low16bits"       : return outer.and(CExpr.uint64const(0xFFFFL)).castTo("fzT_1u16").ret();
       case "u64.low32bits"       : return outer.and(CExpr.uint64const(0xffffFFFFL)).castTo("fzT_1u32").ret();
+      case "i32.as_f64"          :
+      case "i64.as_f64"          :
+      case "u32.as_f64"          :
+      case "u64.as_f64"          : return outer.castTo("fzT_1f64").ret();
+
+      case "f32.prefix -"        :
+      case "f64.prefix -"        : return outer.neg().ret();
+      case "f32.infix +"         :
+      case "f64.infix +"         : return outer.add(A0).ret();
+      case "f32.infix -"         :
+      case "f64.infix -"         : return outer.sub(A0).ret();
+      case "f32.infix *"         :
+      case "f64.infix *"         : return outer.mul(A0).ret();
+      case "f32.infix /"         :
+      case "f64.infix /"         : return outer.div(A0).ret();
+      case "f32.infix %"         :
+      case "f64.infix %"         : return CExpr.call("fmod", new List<>(outer, A0)).ret();
+      case "f32.infix **"        :
+      case "f64.infix **"        : return CExpr.call("pow", new List<>(outer, A0)).ret();
+      case "f32.infix =="        :
+      case "f64.infix =="        : return outer.eq(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "f32.infix !="        :
+      case "f64.infix !="        : return outer.ne(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "f32.infix <"         :
+      case "f64.infix <"         : return outer.lt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "f32.infix <="        :
+      case "f64.infix <="        : return outer.le(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "f32.infix >"         :
+      case "f64.infix >"         : return outer.gt(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "f32.infix >="        :
+      case "f64.infix >="        : return outer.ge(A0).cond(c._names.FZ_TRUE, c._names.FZ_FALSE).ret();
+      case "f32.as_f64"          : return outer.castTo("fzT_1f64").ret();
+      case "f64.as_f32"          : return outer.castTo("fzT_1f32").ret();
+      case "f64.as_i64_lax"      :
+                                    // workaround for clang warning: "integer literal is too large to be represented in a signed integer type"
+                                    var i64Min = (new CIdent("9223372036854775807")).neg().sub(new CIdent("1"));
+                                    var i64Max =  new CIdent("9223372036854775807");
+                                    return CStmnt.seq(
+                                              CExpr.iff(CExpr.call("isnan", new List<>(outer)).ne(new CIdent("0")), new CIdent("0").ret()),
+                                              CExpr.iff(outer.ge(i64Max.castTo("fzT_1f64")), i64Max.castTo("fzT_1i64").ret()),
+                                              CExpr.iff(outer.le(i64Min.castTo("fzT_1f64")), i64Min.castTo("fzT_1i64").ret()),
+                                              outer.castTo("fzT_1i64").ret()
+                                            );
+      case "f32.castTo_u32"      : return outer.adrOf().castTo("fzT_1u32*").deref().ret();
+      case "f64.castTo_u64"      : return outer.adrOf().castTo("fzT_1u64*").deref().ret();
+      case "f32.asString"        :
+      case "f64.asString"        :
+        {
+          var res = new CIdent("res");
+          return CStmnt.seq(c.floatToConstString(outer, res),
+                            res.castTo(c._types.clazz(rc)).ret());
+        }
+      /* The C standard library follows the convention that floating-point numbers x × 2exp have 0.5 ≤ x < 1,
+       * while the IEEE 754 standard text uses the convention 1 ≤ x < 2.
+       * This convention in C is not just used for DBL_MAX_EXP, but also for functions such as frexp.
+       * source: https://github.com/rust-lang/rust/issues/88734
+       */
+      case "f32s.minExp"         : return CExpr.ident("FLT_MIN_EXP").sub(new CIdent("1")).ret();
+      case "f32s.maxExp"         : return CExpr.ident("FLT_MAX_EXP").sub(new CIdent("1")).ret();
+      case "f32s.minPositive"    : return CExpr.ident("FLT_MIN").ret();
+      case "f32s.max"            : return CExpr.ident("FLT_MAX").ret();
+      case "f32s.epsilon"        : return CExpr.ident("FLT_EPSILON").ret();
+      case "f64s.minExp"         : return CExpr.ident("DBL_MIN_EXP").sub(new CIdent("1")).ret();
+      case "f64s.maxExp"         : return CExpr.ident("DBL_MAX_EXP").sub(new CIdent("1")).ret();
+      case "f64s.minPositive"    : return CExpr.ident("DBL_MIN").ret();
+      case "f64s.max"            : return CExpr.ident("DBL_MAX").ret();
+      case "f64s.epsilon"        : return CExpr.ident("DBL_EPSILON").ret();
+      case "f32s.isNaN"          :
+      case "f64s.isNaN"          : return CStmnt.seq(
+                                      CStmnt.iff(
+                                        CExpr.call("isnan", new List<>(A0)).ne(new CIdent("0")),
+                                        c._names.FZ_TRUE.ret()
+                                      ),
+                                      c._names.FZ_FALSE.ret()
+                                    );
+      case "f32s.squareRoot"     : return CExpr.call("sqrtf",  new List<>(A0)).ret();
+      case "f64s.squareRoot"     : return CExpr.call("sqrt",   new List<>(A0)).ret();
+      case "f32s.exp"            : return CExpr.call("expf",   new List<>(A0)).ret();
+      case "f64s.exp"            : return CExpr.call("exp",    new List<>(A0)).ret();
+      case "f32s.log"            : return CExpr.call("logf",   new List<>(A0)).ret();
+      case "f64s.log"            : return CExpr.call("log",    new List<>(A0)).ret();
+      case "f32s.sin"            : return CExpr.call("sinf",   new List<>(A0)).ret();
+      case "f64s.sin"            : return CExpr.call("sin",    new List<>(A0)).ret();
+      case "f32s.cos"            : return CExpr.call("cosf",   new List<>(A0)).ret();
+      case "f64s.cos"            : return CExpr.call("cos",    new List<>(A0)).ret();
+      case "f32s.tan"            : return CExpr.call("tanf",   new List<>(A0)).ret();
+      case "f64s.tan"            : return CExpr.call("tan",    new List<>(A0)).ret();
+      case "f32s.asin"           : return CExpr.call("asinf", new List<>(A0)).ret();
+      case "f64s.asin"           : return CExpr.call("asin",  new List<>(A0)).ret();
+      case "f32s.acos"           : return CExpr.call("acosf", new List<>(A0)).ret();
+      case "f64s.acos"           : return CExpr.call("acos",  new List<>(A0)).ret();
+      case "f32s.atan"           : return CExpr.call("atanf", new List<>(A0)).ret();
+      case "f64s.atan"           : return CExpr.call("atan",  new List<>(A0)).ret();
+      case "f32s.atan2"          : return CExpr.call("atan2f", new List<>(A0, A1)).ret();
+      case "f64s.atan2"          : return CExpr.call("atan2",  new List<>(A0, A1)).ret();
+      case "f32s.sinh"           : return CExpr.call("sinhf",  new List<>(A0)).ret();
+      case "f64s.sinh"           : return CExpr.call("sinh",   new List<>(A0)).ret();
+      case "f32s.cosh"           : return CExpr.call("coshf",  new List<>(A0)).ret();
+      case "f64s.cosh"           : return CExpr.call("cosh",   new List<>(A0)).ret();
+      case "f32s.tanh"           : return CExpr.call("tanhf",  new List<>(A0)).ret();
+      case "f64s.tanh"           : return CExpr.call("tanh",   new List<>(A0)).ret();
 
       case "Object.hashCode"     :
         {
@@ -281,43 +412,252 @@ class Intrinsics extends ANY
       case "Object.asString"     :
         {
           var res = new CIdent("res");
-          return CStmnt.seq(c.constString("NYI: Object.asString".getBytes(StandardCharsets.UTF_8), res),
-                            res.castTo("fzT__Rstring*").ret());
+          var clname = c._fuir.clazzAsString(c._fuir.clazzOuterClazz(cl));
+          var instname = "instance[" + clname + "]";
+          var instchars = instname.getBytes(StandardCharsets.UTF_8);
+          return CStmnt.seq(c.constString(instchars, res),
+                            res.castTo(c._types.clazz(rc)).ret());
 
         }
 
-      case "sys.array.alloc"     :
+      case "fuzion.sys.array.alloc"     :
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return CExpr.call("malloc",
                             new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(A0))).ret();
         }
-      case "sys.array.setel"     :
+      case "fuzion.sys.array.setel"     :
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return c._types.hasData(gc)
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).assign(A2)
             : CStmnt.EMPTY;
         }
-      case "sys.array.get"       :
+      case "fuzion.sys.array.get"       :
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
           return c._types.hasData(gc)
             ? A0.castTo(c._types.clazz(gc) + "*").index(A1).ret()
             : CStmnt.EMPTY;
         }
+      case "fuzion.sys.env_vars.has0":
+        {
+          return CStmnt.seq(CStmnt.iff(CExpr.call("getenv",new List<>(A0.castTo("char*"))).ne(CNames.NULL),
+                                       c._names.FZ_TRUE.ret()),
+                            c._names.FZ_FALSE.ret());
+        }
+      case "fuzion.sys.env_vars.get0":
+        {
+          var tmp = new CIdent("tmp");
+          var str = new CIdent("str");
+          return CStmnt.seq(CStmnt.decl("char *", str),
+                            str.assign(CExpr.call("getenv",new List<>(A0.castTo("char*")))),
+                            c.constString(str, CExpr.call("strlen",new List<>(str)), tmp),
+                            tmp.castTo(c._types.clazz(rc)).ret());
+        }
+      case "fuzion.sys.thread.spawn0":
+        {
+          var oc = c._fuir.clazzActualGeneric(cl, 0);
+          var call = c._fuir.lookupCall(oc);
+          if (c._fuir.clazzNeedsCode(call))
+            {
+              var pt = new CIdent("pt");
+              var res = new CIdent("res");
+              return CStmnt.seq(CExpr.decl("pthread_t *", pt),
+                                CExpr.decl("int", res),
+                                pt.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("pthread_t")))),
+                                CExpr.iff(pt.eq(CNames.NULL),
+                                          CStmnt.seq(CExpr.fprintfstderr("*** malloc(%lu) failed\n", CExpr.sizeOfType("pthread_t")),
+                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))),
+                                res.assign(CExpr.call("pthread_create", new List<>(pt,
+                                                                                   CNames.NULL,
+                                                                                   CExpr.ident(c._names.function(call, false)).adrOf().castTo("void *(*)(void *)"),
+                                                                                   A0.castTo("void *")))),
+                                CExpr.iff(res.ne(CExpr.int32const(0)),
+                                          CStmnt.seq(CExpr.fprintfstderr("*** pthread_create failed with return code %d\n",res),
+                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))));
+              // NYI: free(pt)!
+            }
+        }
+      case "fuzion.std.nano_time":
+        {
+          var result = new CIdent("result");
+          var onFailure = CStmnt.seq(
+            CExpr.fprintfstderr("*** clock_gettime failed\n"),
+            CExpr.call("exit", new List<>(new CIdent("1")){})
+          );
+          return CStmnt.seq(
+              CStmnt.decl("struct timespec", result),
+              CExpr.iff(
+                  CExpr.call(
+                    "clock_gettime",
+                    new List<>(new CIdent("CLOCK_MONOTONIC"), result.adrOf()){}
+                  ).ne(new CIdent("0")),
+                  onFailure
+                ),
+              result.field(new CIdent("tv_sec"))
+                .mul(CExpr.uint64const(1_000_000_000))
+                .add(result.field(new CIdent("tv_nsec")))
+                .ret()
+            );
+        }
+      case "fuzion.std.nano_sleep":
+        {
+          var req = new CIdent("req");
+          var sec = A0.div(CExpr.int64const(1_000_000_000));
+          var nsec = A0.sub(sec.mul(CExpr.int64const(1_000_000_000)));
+          return CStmnt.seq(CStmnt.decl("struct timespec",req,CExpr.compoundLiteral("struct timespec",
+                                                                                    sec.code() + "," +
+                                                                                    nsec.code())),
+                            /* NYI: while: */ CExpr.call("nanosleep",new List<>(req.adrOf(),req.adrOf())));
+        }
+
+      case "effect.replace":
+      case "effect.default":
+      case "effect.abortable":
+      case "effect.abort":
+        {
+          var ecl = effectType(c, cl);
+          var ev  = c._names.env(ecl);
+          var evi = c._names.envInstalled(ecl);
+          var evj = c._names.envJmpBuf(ecl);
+          var o   = c._names.OUTER;
+          var e   = c._fuir.clazzIsRef(ecl) ? o : o.deref();
+          return
+            switch (in)
+              {
+              case "effect.replace" ->                                  ev.assign(e)                            ;
+              case "effect.default" -> CStmnt.iff(evi.not(), CStmnt.seq(ev.assign(e), evi.assign(CIdent.TRUE )));
+              case "effect.abortable" ->
+                {
+                  var oc = c._fuir.clazzActualGeneric(cl, 0);
+                  var call = c._fuir.lookupCall(oc);
+                  if (c._fuir.clazzNeedsCode(call))
+                    {
+                      var jmpbuf = new CIdent("jmpbuf");
+                      var oldev  = new CIdent("old_ev");
+                      var oldevi = new CIdent("old_evi");
+                      var oldevj = new CIdent("old_evj");
+                      yield CStmnt.seq(CStmnt.decl(c._types.clazz(ecl), oldev , ev ),
+                                       CStmnt.decl("bool"             , oldevi, evi),
+                                       CStmnt.decl("jmp_buf*"         , oldevj, evj),
+                                       CStmnt.decl("jmp_buf", jmpbuf),
+                                       ev.assign(e),
+                                       evi.assign(CIdent.TRUE ),
+                                       evj.assign(jmpbuf.adrOf()),
+                                       CStmnt.iff(CExpr.call("setjmp",new List<>(jmpbuf)).eq(CExpr.int32const(0)),
+                                                  CExpr.call(c._names.function(call, false), new List<>(A0))),
+                                       /* NYI: this is a bit radical: we copy back the value from env to the outer instance, i.e.,
+                                        * the outer instance is no longer immutable and we might run into difficulties if
+                                        * the outer instance is used otherwise.
+                                        *
+                                        * It might be better to store the adr of a a value type effect in ev. Then we do not
+                                        * have to copy anything back, but we would have to copy the value in case of effect.replace
+                                        * and effect.default.
+                                        */
+                                       e.assign(ev),
+                                       ev .assign(oldev ),
+                                       evi.assign(oldevi),
+                                       evj.assign(oldevj));
+                    }
+                  else
+                    {
+                      yield CStmnt.seq(CExpr.fprintfstderr("*** C backend no code for class '%s'\n",
+                                                           CExpr.string(c._fuir.clazzAsString(call))),
+                                       CExpr.call("exit", new List<>(CExpr.int32const(1))));
+                    }
+                }
+              case "effect.abort"   ->
+                CStmnt.seq(CStmnt.iff(evi, CExpr.call("longjmp",new List<>(evj.deref(), CExpr.int32const(1)))),
+                           CExpr.fprintfstderr("*** C backend support for %s missing\n",
+                                               CExpr.string(c._fuir.clazzIntrinsicName(cl))),
+                           CExpr.exit(1));
+              default -> throw new Error("unexpected intrinsic '" + in + "'.");
+              };
+        }
+      case "effects.exists":
+        {
+          var ecl = c._fuir.clazzActualGeneric(cl, 0);
+          var evi = c._names.envInstalled(ecl);
+          return CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
+        }
 
       default:
-        var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
-        Errors.warning(msg);
-        return CStmnt.seq(CExpr.call("fprintf",
-                                       new List<>(new CIdent("stderr"),
-                                                  CExpr.string("*** error: NYI: %s\n"),
-                                                  CExpr.string(msg))),
-                          CExpr.call("exit", new List<>(CExpr.int32const(1))));
-
+        var at = c._fuir.clazzTypeParameterActualType(cl);
+        if (at >= 0)
+          {
+            // intrinsic is a type parameter, so create type instance:
+            //
+            // NYI: this does not work yet. Eventually. type instances should become
+            // unit types so this should not be needed at all.
+            var res = c._names.newTemp();
+            CIdent tname = new CIdent("tname");
+            var rcl = c._fuir.clazzResultClazz(cl);
+            return CStmnt.seq(c.declareAllocAndInitClazzId(rcl, res),
+                              c.constString(c._fuir.clazzAsStringNew(at).getBytes(StandardCharsets.UTF_8), tname),
+                              res.deref().field(new CIdent("fields")).field(new CIdent("fzF_0_name")).assign(tname.castTo("void*")),
+                              res.ret());
+          }
+        else
+          {
+            var msg = "code for intrinsic " + c._fuir.clazzIntrinsicName(cl) + " is missing";
+            Errors.warning(msg);
+            return CStmnt.seq(CExpr.call("fprintf",
+                                         new List<>(new CIdent("stderr"),
+                                                    CExpr.string("*** error: NYI: %s\n"),
+                                                    CExpr.string(msg))),
+                              CExpr.call("exit", new List<>(CExpr.int32const(1))));
+          }
       }
   }
+
+
+  /**
+   * Is cl one of the instrinsics in effect that changes the effect in
+   * the current environment?
+   *
+   * @param c the C backend
+   *
+   * @param cl the id of the intrinsic clazz
+   *
+   * @return true for effect.install and similar features.
+   */
+  boolean isEffect(C c, int cl)
+  {
+    if (PRECONDITIONS) require
+      (c._fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
+
+    return switch(c._fuir.clazzIntrinsicName(cl))
+      {
+      case "effect.replace",
+           "effect.default",
+           "effect.abortable",
+           "effect.abort" -> true;
+      default -> false;
+      };
+  }
+
+
+  /**
+   * For an intrinstic in effect that changes the effect in the
+   * current environment, return the type of the environment.  This type is used
+   * to distinguish different environments.
+   *
+   * @param c the C backend
+   *
+   * @param cl the id of the intrinsic clazz
+   *
+   * @return the type of the outer feature of cl
+   */
+  int effectType(C c, int cl)
+  {
+    if (PRECONDITIONS) require
+      (isEffect(c, cl));
+
+    var or = c._fuir.clazzOuterRef(cl);
+    return c._fuir.clazzResultClazz(or);
+  }
+
 
 
   /**

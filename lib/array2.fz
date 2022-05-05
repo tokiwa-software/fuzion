@@ -23,15 +23,16 @@
 #
 # -----------------------------------------------------------------------
 
-# array(length0, length1)
+# array(length0, length1) -- two-dimensional immutable array
 #
 # array provides two-dimensional immutable arrays. These are actually
 # one-dimensional immutable arrays with an additional access function with
 # two index parameters.
 #
-array2<T>(length0, length1 i32,
-          init2 (i32, i32) -> T)
- : array<T> (sys.array<T> length0*length1)
+array2(redef T type,
+       length0, length1 i32,
+       init2 (i32, i32) -> T)
+ : array<T> (fuzion.sys.array<T> length0*length1)
   pre
     safety: length0 >= 0,
     safety: length1 >= 0,
@@ -50,7 +51,7 @@ is
 
   for i1 in indices0 do
     for i2 in indices1 do
-      internalArray[i1 * length1 + i2] := init2 i1, i2
+      internalArray[i1 * length1 + i2] := init2 i1 i2
 
   index [ ] (i1, i2 i32) T
     pre

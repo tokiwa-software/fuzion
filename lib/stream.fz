@@ -28,24 +28,29 @@
 # NYI: Check if stream should be replaced by a lazy list, which is a choice
 # of either nil or a tuple (head, tail). This should avoid the need to store
 # mutable state.
-stream<T> ref : Sequence<T> is
+stream(redef T type) ref : Sequence<T> is
 
   # create a list from this stream
   #
+  asList0 option<some<list<T>>> := nil
   redef asList list<T> is
-    fromStream list<T> is
-      if hasNext
-        h := next;
-        ref : Cons<T,list<T>>
-          memoizedTail option<some<list<T>>> := nil
-          head => h
-          tail =>
-            if !memoizedTail.exists
-              set memoizedTail := some fromStream
-            memoizedTail.get.val
-      else
-        nil
-    fromStream
+    if !asList0.exists
+      set asList0 := some fromStream
+    asList0.get.val
+
+  # this must not be called more than once!
+  private fromStream list<T> is
+    if hasNext
+      h := next
+      ref : Cons<T,list<T>>
+        memoizedTail option<some<list<T>>> := nil
+        head => h
+        tail =>
+          if !memoizedTail.exists
+            set memoizedTail := some fromStream
+          memoizedTail.get.val
+    else
+      nil
 
 
   # create a stream of T.
@@ -89,7 +94,7 @@ stream<T> ref : Sequence<T> is
 
   # create new stream from all elements for which predicate f is true
   #
-  redef filter(f T -> bool) stream<T> is filter0 f
+  redef filter(f T -> bool) Sequence<T> is filter0 f
   filter0(f T -> bool) ref : stream<T> is
     cache T := ?  # NYI: should be option<T>
     cacheOk := false
@@ -104,20 +109,6 @@ stream<T> ref : Sequence<T> is
       while !cacheOk && stream.this.hasNext
         set cache := stream.this.next
         set cacheOk := f(cache)
-
-
-  # create a new stream from all elements for which predicate f is true, infix
-  # operator synonyme of filter.
-  #
-  redef infix |& (f T -> bool) stream<T> is filter(f)
-
-
-  # create a new stream from all elements for which predicate f is true, infix
-  # operator synonyme of filter.
-  #
-  # NYI: What is better, 'infix |&' or 'infix &', or something else?
-  #
-  redef infix & (f T -> bool) => filter f
 
 
   # check if predicate f holds for all elements produced by this stream
@@ -170,16 +161,14 @@ stream<T> ref : Sequence<T> is
   #
   redef count i32 is
     # NYI: check if this works: map<i32>(x -> 1).fold i32.sum
-    res := 0
-    forAll (x -> set res := res + 1)
-    res
+    asList.map<i32>(x -> 1).fold i32.sum
 
 
   # collect all items from this stream into an array
   #
   redef asArray array<T> is
     for
-      a := (marray 0 (sys.array<T> 0) unit), a.add x
+      a := (marray 0 (fuzion.sys.array<T> 0) unit), a.add x
     while hasNext
       x := next
     else
@@ -231,7 +220,7 @@ stream<T> ref : Sequence<T> is
   #
   # e.g., to sum the elements of a stream of i32, use s.fold i32.sum
   #
-  redef fold (m Monoid<T>) => fold m.e, m
+  redef fold (m Monoid<T>) => fold m.e m
 
 
   # fold the elements of this stream using the given monoid m and initial value s.
@@ -240,7 +229,7 @@ stream<T> ref : Sequence<T> is
   #
   fold (s T, m Monoid<T>) =>
     for
-      r := s, m.op r, next
+      r := s, m.op r next
     while hasNext
     else
       r

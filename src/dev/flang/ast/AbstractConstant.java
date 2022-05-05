@@ -31,7 +31,7 @@ import dev.flang.util.SourcePosition;
 
 /**
  * AbstractConstant represents a constant in the source code such as '3.14', 'true',
- * '"Hello"'.  This class might be loaded from a libraray or parsed in sources.
+ * '"Hello"'.  This class might be loaded from a library or parsed in sources.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */

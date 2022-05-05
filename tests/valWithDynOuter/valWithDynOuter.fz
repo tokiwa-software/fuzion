@@ -1,0 +1,149 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test valWithDynOuter
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# A test value types that have inner features that depend on their outer
+# feature, while this outer feature v is also a value type that gets replaced
+# by different actual value- and ref-types that are heirs of v.
+#
+valWithDynOuter is
+
+  exitCode := 0
+
+  chck(s, expected string) =>
+    if s = expected
+      say "PASSED: $s"
+    else
+      say "FAILED: $s /= $expected"
+      set exitCode := 1
+
+  # test if e.y produces expected as result
+  #
+  # e is of type v.e, which is a value type whose outer type is also
+  # a value type. Neverthelesse, the outer type 'v' will be replaced
+  # by different other outer types producing
+  #
+  test(e v.e, expected string) =>
+    s := e.y
+    chck s expected
+
+  test_mut(e v.e, expected string) =>
+    e.mut
+    s := e.y
+    chck s expected
+
+  v (f string) is
+    a => "v"
+    x => "$f-$a:v.x"
+    e is
+      y => ".$x."
+      mut unit is
+        set f := f+f
+    g => e
+
+  w : v "w" is
+    redef a => "w"
+    redef x => "$f-$a:w.x"
+
+  t : v "t" is
+    redef a => "t"
+    redef x => "$f-$a:t.x"
+
+/* NYI: this does not compile yet
+
+  u : v "u" is
+    redef a => "u"
+    redef e v.e is
+      y => "-$x-"
+      tt ref v := t
+      tt.e
+*/
+
+  s ref : v "s" is
+    redef a => "s"
+    redef x => "$f-$a:s.x"
+
+  # 'normal' test:
+  #
+  # heir features of the outer feature
+  #
+  test (v "v1").e ".v1-v:v.x."
+  test w.g ".w-w:w.x."
+  rv ref v := v "v2"
+  test rv.g ".v2-v:v.x."
+  rw ref v := w
+  test rw.g ".w-w:w.x."
+  test s.g ".s-s:s.x."
+
+  # extend 'outer's lifespan
+  #
+  # inner feature e extends outer feature's lifespan
+  #
+  q1 v.e is (v "v1").e
+  test q1 ".v1-v:v.x."
+  q2 v.e is w.g
+  test q2 ".w-w:w.x."
+  q3 v.e is
+    rv ref v := v "v2"
+    rv.g
+  test q3 ".v2-v:v.x."
+  q4 v.e is
+    rw ref v := w
+    rw.g
+  test q4 ".w-w:w.x."
+  q5 v.e is s.g
+  test q5 ".s-s:s.x."
+
+  # mutating test
+  #
+  # inner feature e mutates outer feature
+  #
+  o := v "v1"
+  chck o.f "v1"
+  test_mut o.e ".v1v1-v:v.x."
+  chck o.f "v1v1"
+
+  o := w
+  chck o.f "w"
+  test_mut o.g ".ww-w:w.x."
+  chck o.f "ww"
+
+  rv2 ref v := v "v2"
+  o := rv2
+  chck o.f "v2"
+  test_mut rv2.g ".v2v2-v:v.x."
+  chck o.f "v2v2"
+
+  rw2 ref v := w
+  o := rw2
+  chck o.f "w"
+  test_mut rw2.g ".ww-w:w.x."
+  chck o.f "ww"
+
+  o := s
+  chck o.f "s"
+  test_mut o.g ".ss-s:s.x."
+  chck o.f "ss"
+
+  fuzion.std.exit exitCode

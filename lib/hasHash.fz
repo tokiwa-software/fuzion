@@ -28,13 +28,13 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-hasHash<T: hasEquals<T>> : hasEquals<T>
+hasHash(redef HE hasEquals<HE>.type) : hasEquals<HE>
 
 /* NYI: quantor intrinsics not supported yet:
 
   inv
-    analysis: quantors.forAll2<T,T> fun(a, b T) => (a = b) : (a.hash = b.hash),
-    analysis: quantors.forAll2<T,T> fun(a, b T) => (a.hash ≠ b.hash) : (a ≠ b) /* implied by previous condition */
+    analysis: quantors.forAll2<HE,HE> fun(a, b HE) => (a = b) : (a.hash = b.hash),
+    analysis: quantors.forAll2<HE,HE> fun(a, b HE) => (a.hash ≠ b.hash) : (a ≠ b) /* implied by previous condition */
 */
 
 is

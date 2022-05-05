@@ -91,19 +91,17 @@ is
   infix ⋃ (other ref psSet<K>) => psSet (psm ⋃ other.psm) unit  # NYI: 'ref' due to lack of 'like this'
 
 
+  # intersection of two psSets
+  infix ⋂ (other ref psSet<K>) =>
+    s := (psSet.this ⋃ other).filter (x -> psSet.this.has x && other.has x)
+    psSet<K>.addAll s
+
+
   # add all elements of the given Sequence to this set
   #
   addAll (s Sequence<K>) ref psSet<K> is  # NYI: 'ref' due to lack of 'like this'
-    addAllFromStream s.asStream
-
-
-  # add all elements of the given stream to this set
-  #
-  addAllFromStream (s stream<K>) ref psSet<K> is  # NYI: 'ref' due to lack of 'like this'
-    if s.hasNext
-      add(s.next).addAllFromStream s
-    else
-      psSet.this
+    this_ref ref psSet<K> := psSet.this
+    s.reduce this_ref ((r,k) -> r.add k)
 
 
   # number of entries in this set.  May be undefined, i.e., a range of

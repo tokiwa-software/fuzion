@@ -95,6 +95,12 @@ public class FuzionConstants extends ANY
 
 
   /**
+   * Name of type features.
+   */
+  public static final String TYPE_NAME = INTERNAL_NAME_PREFIX + "type";
+
+
+  /**
    * Field introduced in, e.g.,
    *
    *   x := if a then 0 else 1
@@ -176,19 +182,26 @@ public class FuzionConstants extends ANY
   /**
    * feature kind value for constructor routines
    */
-  public static final int MIR_FILE_KIND_CONSTRUCTOR_VALUE = 5;
-  public static final int MIR_FILE_KIND_CONSTRUCTOR_REF   = 6;
+  public static final int MIR_FILE_KIND_CONSTRUCTOR_VALUE = 7;
+  public static final int MIR_FILE_KIND_CONSTRUCTOR_REF   = 8;
 
   /**
    * The bits of feature kind that are not flags
    */
-  public static final int MIR_FILE_KIND_MASK    = 0x7;
+  public static final int MIR_FILE_KIND_MASK    = 0xf;
 
 
   /**
-   * Flag OR'ed to kind for routines with generic type parameters.
+   * Flag OR'ed to kind, true if feature for type 'f.type' was added.
    */
-  public static final int MIR_FILE_KIND_HAS_TYPE_PAREMETERS = 8;
+  public static final int MIR_FILE_KIND_HAS_TYPE_FEATURE = 0x10;
+
+
+  /**
+   * Flag OR'ed to kind for intrinsics that create an instance of their result ref type.
+   */
+  public static final int MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR = 0x20;
+
 
   /**
    * Fuzion home directory as used in module files instead of absolute or
