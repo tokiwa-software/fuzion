@@ -72,8 +72,8 @@ transducers is
         f.call (g.call red)
 
 
-reducing_fn<R, T> ref : Function<R,R,T> is
-  redef call(res R, val T) R is abstract
+reducing_fn<RR, T> ref : Function<RR,RR,T> is
+  redef call(res RR, val T) RR is abstract
 
 transducer<R1, R2, T, U> ref : Function<reducing_fn<R1,T>, reducing_fn<R2,U>> is
   redef call(red reducing_fn<R2,U>) reducing_fn<R1,T> is abstract
