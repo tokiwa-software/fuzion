@@ -33,7 +33,7 @@
 # human(age i32) is
 # ages := map<i32, human, i32> (x -> x.age)
 # gt_ten := filter<i32, i32> (x -> x > 10)
-# xf := (compose (compose ages gt_ten) count<i32>)
+# xf := ages ° gt_ten ° count<i32>
 # res := [human(4), human(12), human(30)].transduce xf 0
 # say res # expected output is 2
 transducers is
@@ -64,12 +64,6 @@ transducers is
           redef call(res i32, val T) i32 is
             res + 1
 
-  # compose NYI not needed if Function provides composition
-  # f ° g
-  compose<R1,R2,R3,T,U,V>(f transducer<R1,R3,U,T>, g transducer<R3,R2,T,V>) transducer<R1,R2,U,V> is
-    ref : transducer<R1,R2,U,V>
-      redef call(red reducing_fn<R2,V>) ref reducing_fn<R1,U> is
-        f.call (g.call red)
 
 
 reducing_fn<RR, T> ref : Function<RR,RR,T> is
@@ -77,3 +71,10 @@ reducing_fn<RR, T> ref : Function<RR,RR,T> is
 
 transducer<R1, R2, T, U> ref : Function<reducing_fn<R1,T>, reducing_fn<R2,U>> is
   redef call(red reducing_fn<R2,U>) reducing_fn<R1,T> is abstract
+
+  # compose NYI not needed if Function provides composition
+  infix ° <R3,V>(o transducer<R2,R3,U,V>) transducer<R1,R3,T,V> is
+    ref : transducer<R1,R3,T,V>
+      redef call(re reducing_fn<R3,V>) ref reducing_fn<R1,T> is
+        a := (o.call re)
+        transducer.this.call a
