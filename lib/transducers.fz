@@ -72,8 +72,7 @@ transducer<R1, R2, T, U> ref : Function<reducing_fn<R1,T>, reducing_fn<R2,U>> is
   redef call(red reducing_fn<R2,U>) reducing_fn<R1,T> is abstract
 
   # compose NYI not needed if Function provides composition
-  infix ° <R3,V>(o transducer<R2,R3,U,V>) transducer<R1,R3,T,V> is
-    ref : transducer<R1,R3,T,V>
-      redef call(re reducing_fn<R3,V>) ref reducing_fn<R1,T> is
-        a := (o.call re)
-        transducer.this.call a
+  infix ∘ <R3,V>(o transducer<R3,R1,V,T>) transducer<R3,R2,V,U> is
+    ref : transducer<R3,R2,V,U>
+      redef call(re reducing_fn<R2,U>) ref reducing_fn<R3,V> is
+        o.call (transducer.this.call re)
