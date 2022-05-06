@@ -309,12 +309,14 @@ Sequence<T> ref is
     else
       res
 
-  # apply transducer with noop reducing fn
-  apply<R,U>(xf transducer<R,U,T,U>, default R) R is
+  # return last value of transducer application
+  # example: [values...].apply (map_xf ° filter_xf ° count<i32>) 0
+  apply<R,U>(xf transducer<R,U,T,U>, init R) R is
     no_op := ref : reducing_fn<U,U>
       redef call(res, val U) U is
         val
-    apply<R,U,U> xf no_op default
+    apply<R,U,U> xf no_op init
+
 
   # apply transducer
   apply<R>(xf transducer<Sequence<R>,Sequence<R>,T,R>) =>
