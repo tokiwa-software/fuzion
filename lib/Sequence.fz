@@ -301,7 +301,7 @@ Sequence<T> ref is
 
   # takes a transducer xf, a reducer f and an initial value
   # returns the result of applying the reducer xf f to the Sequence
-  transduce<R,U,V>(xf transducer<R,U,T,V>, f reducing_fn<U,V>, init R) R is
+  apply<R,U,V>(xf transducer<R,U,T,V>, f reducing_fn<U,V>, init R) R is
     red := xf.call f
     for
       res := init, red.call res el
@@ -309,19 +309,19 @@ Sequence<T> ref is
     else
       res
 
-  # transduce with noop reducing fn
-  transduce<R,U>(xf transducer<R,U,T,U>, default R) R is
+  # apply transducer with noop reducing fn
+  apply<R,U>(xf transducer<R,U,T,U>, default R) R is
     no_op := ref : reducing_fn<U,U>
       redef call(res, val U) U is
         val
-    transduce<R,U,U> xf no_op default
+    apply<R,U,U> xf no_op default
 
-  # transduce into new sequence
-  transduce<R>(xf transducer<Sequence<R>,Sequence<R>,T,R>) =>
+  # apply transducer
+  apply<R>(xf transducer<Sequence<R>,Sequence<R>,T,R>) =>
     seq_red := ref : reducing_fn<Sequence<R>,R>
       redef call(u Sequence<R>, v R) Sequence<R> is
         u ++ [v]
-    transduce xf seq_red Sequences.empty<R>
+    apply xf seq_red Sequences.empty<R>
 
 
   # the nth element in the sequence,

@@ -34,7 +34,7 @@
 # ages := map<i32, human, i32> (x -> x.age)
 # gt_ten := filter<i32, i32> (x -> x > 10)
 # xf := ages ° gt_ten ° count<i32>
-# res := [human(4), human(12), human(30)].transduce xf 0
+# res := [human(4), human(12), human(30)].apply xf 0
 # say res # expected output is 2
 transducers is
 
