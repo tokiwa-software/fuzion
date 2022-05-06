@@ -31,28 +31,27 @@
 # usage example:
 #
 # human(age i32) is
-# ages := map<i32, human, i32> (x -> x.age)
-# gt_ten := filter<i32, i32> (x -> x > 10)
+# ages := map<human, i32> (x -> x.age)
+# gt_ten := filter<i32> (x -> x > 10)
 # xf := ages ° gt_ten ° count<i32>
 # res := [human(4), human(12), human(30)].apply xf 0
-# say res # expected output is 2
 transducers is
 
   # filter values based on evaluation of predicate
-  filter<R,T>(predicate T -> bool) ref transducer<R,R,T,T> is
-    ref : transducer<R,R,T,T>
-      redef call(red reducing_fn<R,T>) ref reducing_fn<R,T> is
-        ref : reducing_fn<R,T>
-          redef call(res R, val T) R is
+  filter<T>(predicate T -> bool) ref transducer<T,T,T,T> is
+    ref : transducer<T,T,T,T>
+      redef call(red reducing_fn<T,T>) ref reducing_fn<T,T> is
+        ref : reducing_fn<T,T>
+          redef call(res T, val T) T is
             if predicate val then red.call res val else res
 
 
   # map values from T to U
-  map<R,T,U>(mapper T -> U) ref transducer<R,R,T,U> is
-    ref : transducer<R,R,T,U>
-      redef call(red reducing_fn<R,U>) ref reducing_fn<R,T> is
-        ref : reducing_fn<R,T>
-          redef call(res R, val T) R is
+  map<T,U>(mapper T -> U) ref transducer<U,U,T,U> is
+    ref : transducer<U,U,T,U>
+      redef call(red reducing_fn<U,U>) ref reducing_fn<U,T> is
+        ref : reducing_fn<U,T>
+          redef call(res U, val T) U is
             red.call res (mapper val)
 
 
