@@ -479,7 +479,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
       (() ->
        {
          var q = inner._qname;
-         var o = lookupFeatureForType(inner.pos(), q.get(at), outer);
+         var n = q.get(at);
+         var o = n == FuzionConstants.TYPE_NAME
+           ? outer.typeFeature(_res)
+           : lookupFeatureForType(inner.pos(), n, outer);
          if (at < q.size()-2)
            {
              setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
