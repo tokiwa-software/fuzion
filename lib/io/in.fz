@@ -24,10 +24,14 @@
 # -----------------------------------------------------------------------
 
 
-stdin(
+# stdin -- effect providing several features
+# for consuming the given byteInputHandler
+#
+private stdin(
     ip byteInputHandler,
     # action to be taken: plain nomad, install or replace?
-    redef r effectModes
+    redef r effectModes,
+    _ unit
   ) : effect r is
 
 
@@ -35,7 +39,7 @@ stdin(
   # install next instance of byteInputHandler,
   # 'stdin.env' will provide the new instance.
   #
-  private next => stdin ip.next mode
+  private next => stdin ip.next mode unit
 
   nextByte =>
     next.ip.get
@@ -75,7 +79,7 @@ stdin(
 
   # read n codepoints from stdin
   read(n i32) string is
-    tmp ref : string is
+    tmp : string is
       redef utf8 Sequence<u8> is byte_stream
                                                             # asArray, since we don't want this to be lazy
     strings.fromCodepoints (tmp.asCodepoints.asStream.take n).asArray
@@ -92,7 +96,12 @@ stdin(
     strings.fromBytes arr
 
 
-# invoke installDefault and return stdin installed in env
+# short-hand for creating and installing stdin effect
+stdin(h byteInputHandler, f () -> unit) =>
+  stdin h (effectMode.inst f) unit
+  unit
+
+# short-hand for accessing stdin effect in current environment
 stdin =>
   stdins.installDefault
   stdin.env
@@ -101,7 +110,7 @@ stdin =>
 stdins is
   installDefault is
     if !(effects.exists<io.stdin>)
-      _ := stdin (defaultInputHandler 0) effectMode.default
+      _ := stdin (defaultInputHandler 0) effectMode.default unit
 
 
 byteInputHandler ref is
