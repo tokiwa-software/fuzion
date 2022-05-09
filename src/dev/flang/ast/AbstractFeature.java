@@ -455,7 +455,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         var name = featureName().baseName() + "." + FuzionConstants.TYPE_NAME;
         if (!isConstructor() && !isChoice())
           {
-            System.out.println("type feature of non-constructor: "+qualifiedName());
             name = name + "_" + (_typeFeatureId_++);
           }
         var p = pos();
