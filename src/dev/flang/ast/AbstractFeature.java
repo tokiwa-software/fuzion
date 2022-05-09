@@ -496,7 +496,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         for (var pc: inherits())
           {
             var c = pc.calledFeature().typeCall(p,
-                                                true ? new List<>() : pc.generics(), // NYI: Support generics in parent types!
+                                                true ? new List<>() : pc.generics(), // NYI (see #284): Support generics in parent types!
                                                 res);
             inh.add(c);
           }
