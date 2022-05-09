@@ -1287,8 +1287,12 @@ public class Call extends AbstractCall
           {
             throw new Error("NYI: Calling open type parameter");
           }
-        // NYI: The result type should eventually be t.resolve(res, tt.featureOfType()).type()
-        _type = Types.resolved.f_Type.thisType();
+        var tptype = t.resolve(res, tt.featureOfType());
+        if (!tptype.isGenericArgument() && tptype.compareTo(Types.resolved.t_object) != 0)
+          {
+            tptype = tptype.featureOfType().typeFeature(res).thisType();
+          }
+        _type = tptype;
       }
     else if (name == FuzionConstants.TYPE_NAME && calledFeature_ == Types.resolved.f_Types_get)
       {
