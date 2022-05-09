@@ -779,7 +779,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param outer the declaring feature
    *
-   * @param fn feature name of f (NYI: check if fn is redundant with f.featureName)
+   * @param fn feature name of f (NYI (see #286): check if fn is redundant with f.featureName)
    *
    * @param f the declared or inherited feature.
    */
