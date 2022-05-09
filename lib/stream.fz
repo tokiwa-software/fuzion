@@ -53,6 +53,16 @@ stream(redef T type) ref : Sequence<T> is
       nil
 
 
+  redef take (n i32) =>
+    for
+      a := (marray 0 (fuzion.sys.array<T> 0) unit), a.add x
+      i in (1..n)
+    while hasNext
+      x := next
+    else
+      (a.take i).asList
+
+
   # create a stream of T.
   #
   # A stream contains mutable state, so it cannot be reused or shared

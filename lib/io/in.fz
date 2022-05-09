@@ -41,6 +41,57 @@ stdin(
     next.ip.get
 
 
+  private eof u8 :=  0
+  private line_feed u8 := 10
+
+
+  # stream of bytes read from stdin until and excluding EOF
+  private byte_stream stream<u8> is
+
+    val outcome<u8> := error "not initialized"
+
+    init =>
+      if val.isError
+        set val := stdin.nextByte
+
+    reset =>
+      set val := error "not initialized"
+
+    ref: stream<u8>
+      redef hasNext bool is
+        init
+        match val
+          error => fuzion.std.panic "this should not be possible"
+          v u8 =>
+            v != eof
+      redef next u8 is
+        init
+        match val
+          error => fuzion.std.panic "this should not be possible"
+          v u8 =>
+            reset
+            v
+
+
+  # read n codepoints from stdin
+  read(n i32) string is
+    tmp ref : string is
+      redef utf8 Sequence<u8> is byte_stream
+                                                            # asArray, since we don't want this to be lazy
+    strings.fromCodepoints (tmp.asCodepoints.asStream.take n).asArray
+
+
+  # read line from stdin
+  read_line string is
+    # NYI next line should be this but does not work in c backend currently
+    # strings.fromBytes bytes.takeWhile(b -> b != line_feed).asArray
+                                                  # asArray, since we don't want this to be lazy
+    arr := byte_stream
+      .takeWhile(b -> b != 10)
+      .asArray
+    strings.fromBytes arr
+
+
 # invoke installDefault and return stdin installed in env
 stdin =>
   stdins.installDefault
