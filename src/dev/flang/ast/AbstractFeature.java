@@ -437,6 +437,36 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * For a type feature, create the inheritance call for a parent type feature.
+   *
+   * @param p the source position
+   *
+   * @param typeParameters the type parameters passed to the call
+   *
+   * @param res Resolution instance used to resolve types in this call.
+   *
+   * @return instance of Call to be used for the parent call in typeFeature().
+   */
+  private Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res)
+  {
+    var o = outer();
+    var oc = o == null || o.isUniverse()
+      ? new Universe()
+      : outer().typeCall(p, new List<>(), res);
+    var tf = typeFeature(res);
+    var c = new Call(p,
+                     tf.featureName().baseName(),
+                     typeParameters,
+                     Call.NO_PARENTHESES,
+                     oc,
+                     tf,
+                     tf.thisType());
+    c.resolveTypes(res, this);
+    return c;
+  }
+
+
+  /**
    * For every Type 't', the corresponding type feature 't.type'.
    *
    * @param res Resolution instance used to resolve this for types.
@@ -460,10 +490,22 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
         var p = pos();
         // redef name := "<type name>"
         var n = new Feature(p, Consts.VISIBILITY_PUBLIC, Consts.MODIFIER_REDEFINE, new Type("string"), "name", new Contract(null, null, null), Impl.FIELD);
-        // type.#type : Type is
+        // type.#type : p1.#type, p2.#type is
         //   redef name => "<type name>"
+        var inh = new List<AbstractCall>();
+        for (var pc: inherits())
+          {
+            var c = pc.calledFeature().typeCall(p,
+                                                true ? new List<>() : pc.generics(), // NYI: Support generics in parent types!
+                                                res);
+            inh.add(c);
+          }
+        if (inh.isEmpty())
+          {
+            inh.add(new Call(p, "Type"));
+          }
         var tf = new Feature(p, visibility(), 0, NoType.INSTANCE, new List<>(name), new List<Feature>(),
-                             new List<>(new Call(p, "Type")), // NYI: inherit from this' parents typeFeatures!
+                             inh,
                              new Contract(null,null,null),
                              new Impl(p, new Block(p, new List<>(n)), Impl.Kind.Routine));
         _typeFeature = tf;
