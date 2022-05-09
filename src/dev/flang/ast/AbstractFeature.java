@@ -79,6 +79,20 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   }
 
 
+  /*------------------------  static variables  -------------------------*/
+
+
+  /**
+   * Counter for assigning unique names to typeFeature() results. This is
+   * currently used only for non-constructors since they do not create a type
+   * name.
+   *
+   * NYI: This might create name clashes since equal ids might be assigned to
+   * type features in different modules.
+   */
+  static int _typeFeatureId_ = 0;
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
@@ -135,6 +149,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * The formal generic arguments of this feature, cached result of generics()
    */
   private FormalGenerics _generics;
+
+
+  /**
+   * cached result of typeFeature()
+   */
+  private AbstractFeature _typeFeature = null;
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -423,8 +443,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @return The feature describing this type.
    */
-  AbstractFeature _typeFeature = null;
-  static int _typeFeatureId_ = 0;
   public AbstractFeature typeFeature(Resolution res)
   {
     if (PRECONDITIONS) require
