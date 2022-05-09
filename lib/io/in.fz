@@ -1,0 +1,68 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature stdin
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+
+stdin(
+    ip byteInputHandler,
+    # action to be taken: plain nomad, install or replace?
+    redef r effectModes
+  ) : effect r is
+
+
+  # for a stdin instance installed in the current environment,
+  # install next instance of byteInputHandler,
+  # 'stdin.env' will provide the new instance.
+  #
+  private next => stdin ip.next mode
+
+  nextByte =>
+    next.ip.get
+
+
+# invoke installDefault and return stdin installed in env
+stdin =>
+  stdins.installDefault
+  stdin.env
+
+# unit feature providing static helpers
+stdins is
+  installDefault is
+    if !(effects.exists<io.stdin>)
+      _ := stdin (defaultInputHandler 0) effectMode.default
+
+
+byteInputHandler ref is
+
+  next byteInputHandler is abstract
+
+  get u8 is abstract
+
+
+# the default input handler reading bytes via fuzion.stdin.nextByte
+defaultInputHandler(byte u8) : byteInputHandler is
+
+  next byteInputHandler is defaultInputHandler fuzion.stdin.nextByte
+
+  get => byte

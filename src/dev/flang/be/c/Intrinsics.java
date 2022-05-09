@@ -134,6 +134,12 @@ class Intrinsics extends ANY
 
       case "fuzion.std.out.flush":
       case "fuzion.std.err.flush": return CExpr.call("fflush", new List<>(outOrErr(in)));
+      case "fuzion.stdin.nextByte" : var cIdent = new CIdent("c");
+                                      return CStmnt.seq(
+                                        CExpr.decl("char", cIdent, CExpr.call("getchar", new List<>())),
+                                        CExpr.iff(cIdent.eq(new CIdent("EOF")),CExpr.uint8const(0).ret()),
+                                        cIdent.ret()
+                                      );
 
         /* NYI: The C standard does not guarentee wrap-around semantics for signed types, need
          * to check if this is the case for the C compilers used for Fuzion.

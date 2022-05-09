@@ -42,6 +42,7 @@ import dev.flang.util.List;
 import java.lang.reflect.Array;
 
 import java.io.PrintStream;
+import java.io.IOException;
 
 import java.nio.charset.StandardCharsets;
 
@@ -151,6 +152,21 @@ public class Intrinsics extends ANY
             return Value.EMPTY_VALUE;
           };
       }
+    else if (n.equals("fuzion.stdin.nextByte"))
+    {
+      result = (args) ->
+        {
+          try
+            {
+              var nextByte = System.in.readNBytes(1);
+              return nextByte.length == 0 ? new u8Value(0) : new u8Value(Byte.toUnsignedInt(nextByte[0]));
+            }
+            catch (IOException e)
+            {
+              return new u8Value(0);
+            }
+        };
+    }
     else if (n.equals("fuzion.std.out.flush") ||
              n.equals("fuzion.std.err.flush"))
       {
