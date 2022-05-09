@@ -31,48 +31,52 @@
 # usage example:
 #
 # human(age i32) is
-# ages := map<human, i32> (x -> x.age)
-# gt_ten := filter<i32> (x -> x > 10)
-# xf := ages ° gt_ten ° count<i32>
-# res := [human(4), human(12), human(30)].apply xf 0
+# ages := map<Sequence<i32>, human, i32> (x -> x.age)
+# gt_ten := filter<Sequence<i32>, i32> (x -> x > 10)
+# xf := ages ∘ gt_ten
+# say ([human(4), human(12), human(30)].into xf)
 transducers is
 
-  # filter values based on evaluation of predicate
-  filter<T>(predicate T -> bool) ref transducer<T,T,T,T> is
-    ref : transducer<T,T,T,T>
-      redef call(red reducing_fn<T,T>) ref reducing_fn<T,T> is
-        ref : reducing_fn<T,T>
-          redef call(res T, val T) T is
+  # a transducer filtering values based on evaluation of predicate
+  filter<TAcc,T>(predicate T -> bool) transducer<TAcc,T,T> is
+    ref : transducer<TAcc,T,T>
+      redef call(red reducing_fn<TAcc,T>) =>
+        ref : reducing_fn<TAcc,T>
+          redef call(res TAcc, val T) =>
             if predicate val then red.call res val else res
 
 
-  # map values from T to U
-  map<T,U>(mapper T -> U) ref transducer<U,U,T,U> is
-    ref : transducer<U,U,T,U>
-      redef call(red reducing_fn<U,U>) ref reducing_fn<U,T> is
-        ref : reducing_fn<U,T>
-          redef call(res U, val T) U is
+  # a transducer mappping values from T to U
+  map<TAcc,T,U>(mapper T -> U) transducer<TAcc,U,T> is
+    ref : transducer<TAcc,U,T>
+      redef call(red reducing_fn<TAcc,U>) =>
+        ref : reducing_fn<TAcc,T>
+          redef call(res TAcc, val T) =>
             red.call res (mapper val)
 
 
-  # count amount of values
-  count<T>() ref transducer<i32,i32,T,i32> is
-    ref : transducer<i32,i32,T,i32>
-      redef call(red reducing_fn<i32,i32>) ref reducing_fn<i32,T> is
-        ref : reducing_fn<i32,T>
-          redef call(res i32, val T) i32 is
-            res + 1
+  # left-to-right composition of transducers
+  compose<TAcc,A,B,C>(a transducer<TAcc,B,C>, b transducer<TAcc,A,B>) =>
+    a ∘ b
+
+  # NYI: cat, mapcat, remove, take, takeWhile, drop, dropWhile, takeEveryNth,
+  # replace, keep, keepIndexed, dedupe, randomSample, partitionBy, partitionAll,...
 
 
+reducing_fn<TAcc, T> ref : Function<TAcc,TAcc,T> is
 
-reducing_fn<RR, T> ref : Function<RR,RR,T> is
-  redef call(res RR, val T) RR is abstract
+  # the actual reducing function
+  redef call(res TAcc, val T) TAcc is abstract
 
-transducer<R1, R2, T, U> ref : Function<reducing_fn<R1,T>, reducing_fn<R2,U>> is
-  redef call(red reducing_fn<R2,U>) reducing_fn<R1,T> is abstract
 
-  # compose NYI not needed if Function provides composition
-  infix ∘ <R3,V>(o transducer<R3,R1,V,T>) transducer<R3,R2,V,U> is
-    ref : transducer<R3,R2,V,U>
-      redef call(re reducing_fn<R2,U>) ref reducing_fn<R3,V> is
-        o.call (transducer.this.call re)
+# TAcc result     type
+# B    input      type
+# C    transduced type
+transducer<TAcc,B,C> ref : Function<reducing_fn<TAcc,C>, reducing_fn<TAcc,B>> is
+  redef call(rf reducing_fn<TAcc,B>) reducing_fn<TAcc,C> is abstract
+
+  # left-to-right composition of transducers
+  infix ∘ <A>(o transducer<TAcc,A,B>) =>
+    ref : transducer<TAcc,A,C>
+      redef call(re reducing_fn<TAcc,A>) =>
+        transducer.this.call (o.call re)
