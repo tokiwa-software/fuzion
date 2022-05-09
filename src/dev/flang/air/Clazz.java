@@ -903,8 +903,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * find redefinition of a given feature in this clazz. NYI: This will have to
-   * take the whole inheritance chain into account and the parent view that is
-   * being filled with live into account:
+   * take the whole inheritance chain into account including the parent view that is
+   * being filled with live:
    */
   private AbstractFeature findRedefinition(AbstractFeature f)
   {
