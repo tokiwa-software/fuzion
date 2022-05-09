@@ -514,7 +514,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         var pt = p.type();
         var pc = actualClazz(isRef() ? pt.asRef() : pt.asValue());
         if (CHECKS) check
-          (isRef() == pc.isRef());
+          (Errors.count() > 0 || isRef() == pc.isRef());
         result.add(pc);
       }
     return result;
@@ -1843,7 +1843,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
     if (_outer.feature() != f.outer())
       {
-        throw new Error("NYI: cannot find actual generic for '"+f.qualifiedName()+"' in heir outer clazz '" + _outer + "'.");
+        if (Errors.count() == 0)
+          {
+            throw new Error("NYI: cannot find actual generic for '"+f.qualifiedName()+"' in heir outer clazz '" + _outer + "'.");
+          }
+        else
+          {
+            return Clazzes.error.get();
+          }
       }
     return _outer.actualGenerics()[f.typeParameterIndex()];
   }
