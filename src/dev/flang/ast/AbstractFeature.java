@@ -87,8 +87,8 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * currently used only for non-constructors since they do not create a type
    * name.
    *
-   * NYI: This might create name clashes since equal ids might be assigned to
-   * type features in different modules.
+   * NYI (see #285): This might create name clashes since equal ids might be
+   * assigned to type features in different modules.
    */
   static int _typeFeatureId_ = 0;
 
