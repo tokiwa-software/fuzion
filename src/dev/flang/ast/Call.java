@@ -1295,7 +1295,7 @@ public class Call extends AbstractCall
         _type = tptype;
       }
     else if (name == FuzionConstants.TYPE_NAME && calledFeature_ == Types.resolved.f_Types_get)
-      {
+      { // NYI (see #282): special handling could maybe be avoided?
         var gt = generics.get(0);
         if (gt.isGenericArgument())
           {

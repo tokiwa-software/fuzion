@@ -1898,7 +1898,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         return typeParameterActualType().typeClazz();
       }
     else if (feature() == Types.resolved.f_Types_get)
-      // NYI: Would be nice if this would not need special handlng but would
+      // NYI (see #282): Would be nice if this would not need special handlng but would
       // work in general for any feature with type parameters that returns one
       // of this type parameters as its result using '=>'.
       {
