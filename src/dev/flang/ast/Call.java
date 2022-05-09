@@ -1285,7 +1285,7 @@ public class Call extends AbstractCall
       {
         if (_select >= 0 || calledFeature_.isOpenTypeParameter())
           {
-            throw new Error("NYI: Calling open type parameter");
+            throw new Error("NYI (see #283): Calling open type parameter");
           }
         var tptype = t.resolve(res, tt.featureOfType());
         if (!tptype.isGenericArgument() && tptype.compareTo(Types.resolved.t_object) != 0)
@@ -1306,7 +1306,7 @@ public class Call extends AbstractCall
             _type = gt.featureOfType().typeFeature(res).resultTypeIfPresent(res, t.generics());
             if (_type == null)
               {
-                throw new Error("NYI: resolveTypes for .type: resultType not present at "+pos().show());
+                throw new Error("NYI (see #283): resolveTypes for .type: resultType not present at "+pos().show());
               }
           }
       }
