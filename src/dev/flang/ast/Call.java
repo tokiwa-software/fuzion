@@ -1290,6 +1290,22 @@ public class Call extends AbstractCall
         // NYI: The result type should eventually be t.resolve(res, tt.featureOfType()).type()
         _type = Types.resolved.f_Type.thisType();
       }
+    else if (name == FuzionConstants.TYPE_NAME && calledFeature_ == Types.resolved.f_Types_get)
+      {
+        var gt = generics.get(0);
+        if (gt.isGenericArgument())
+          {
+            _type = t.resolve(res, tt.featureOfType());
+          }
+        else
+          {
+            _type = gt.featureOfType().typeFeature(res).resultTypeIfPresent(res, t.generics());
+            if (_type == null)
+              {
+                throw new Error("NYI: resolveTypes for .type: resultType not present at "+pos().show());
+              }
+          }
+      }
     else
       {
         _type = t.resolve(res, tt.featureOfType());
