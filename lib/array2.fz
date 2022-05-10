@@ -48,6 +48,12 @@ is
   #
   indices1 => 0..length1-1
 
+  # all pairs of indices: (0,0), (0,1), (0,2), .. (length0-1, length1-1)
+  #
+  indexPairs =>
+    indices0.flatMapSequence (tuple i32 i32) (i ->
+      indices1.map j->(i,j))
+
 
   for i1 in indices0 do
     for i2 in indices1 do
