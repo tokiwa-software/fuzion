@@ -31,39 +31,39 @@
 # usage example:
 #
 # human(age i32) is
-# ages := map<Sequence<i32>, human, i32> (x -> x.age)
-# gt_ten := filter<Sequence<i32>, i32> (x -> x > 10)
+# ages := map (Sequence i32) human i32 (x -> x.age)
+# gt_ten := filter (Sequence i32) i32 (x -> x > 10)
 # xf := ages ∘ gt_ten
-# say ([human(4), human(12), human(30)].into xf)
+# say ([human(4), human(12), human(30)].into xf) # [12,30]
 transducers is
 
   # a transducer filtering values based on evaluation of predicate
-  filter<TAcc,T>(predicate T -> bool) transducer<TAcc,T,T> is
-    ref : transducer<TAcc,T,T>
-      redef call(red reducing_fn<TAcc,T>) =>
-        ref : reducing_fn<TAcc,T>
+  filter(TAcc,T type, predicate T -> bool) transducer(TAcc,T,T) is
+    ref : transducer(TAcc,T,T)
+      redef call(red reducing_fn(TAcc,T)) =>
+        ref : reducing_fn(TAcc,T)
           redef call(res TAcc, val T) =>
             if predicate val then red.call res val else res
 
 
   # a transducer mappping values from T to U
-  map<TAcc,T,U>(mapper T -> U) transducer<TAcc,U,T> is
-    ref : transducer<TAcc,U,T>
-      redef call(red reducing_fn<TAcc,U>) =>
-        ref : reducing_fn<TAcc,T>
+  map(TAcc,T,U type, mapper T -> U) transducer(TAcc,U,T) is
+    ref : transducer(TAcc,U,T)
+      redef call(red reducing_fn(TAcc,U)) =>
+        ref : reducing_fn(TAcc,T)
           redef call(res TAcc, val T) =>
             red.call res (mapper val)
 
 
   # left-to-right composition of transducers
-  compose<TAcc,A,B,C>(a transducer<TAcc,B,C>, b transducer<TAcc,A,B>) =>
+  compose(TAcc,A,B,C type, a transducer(TAcc,B,C), b transducer(TAcc,A,B)) =>
     a ∘ b
 
   # NYI: cat, mapcat, remove, take, takeWhile, drop, dropWhile, takeEveryNth,
   # replace, keep, keepIndexed, dedupe, randomSample, partitionBy, partitionAll,...
 
 
-reducing_fn<TAcc, T> ref : Function<TAcc,TAcc,T> is
+reducing_fn(TAcc,T type) ref : Function<TAcc,TAcc,T> is
 
   # the actual reducing function
   redef call(res TAcc, val T) TAcc is abstract
@@ -72,11 +72,11 @@ reducing_fn<TAcc, T> ref : Function<TAcc,TAcc,T> is
 # TAcc result     type
 # B    input      type
 # C    transduced type
-transducer<TAcc,B,C> ref : Function<reducing_fn<TAcc,C>, reducing_fn<TAcc,B>> is
-  redef call(rf reducing_fn<TAcc,B>) reducing_fn<TAcc,C> is abstract
+transducer(TAcc,B,C type) ref : Function(reducing_fn(TAcc,C), reducing_fn(TAcc,B)) is
+  redef call(rf reducing_fn(TAcc,B)) reducing_fn(TAcc,C) is abstract
 
   # left-to-right composition of transducers
-  infix ∘ <A>(o transducer<TAcc,A,B>) =>
-    ref : transducer<TAcc,A,C>
-      redef call(re reducing_fn<TAcc,A>) =>
+  infix ∘ (A type, o transducer(TAcc,A,B)) =>
+    ref : transducer(TAcc,A,C)
+      redef call(re reducing_fn(TAcc,A)) =>
         transducer.this.call (o.call re)

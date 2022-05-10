@@ -301,7 +301,7 @@ Sequence<T> ref is
 
   # takes a transducer xf, a reducer f and an initial value
   # returns the result of applying the reducer xf f to the Sequence
-  transduce<TAcc,U>(xf transducer<TAcc,U,T>, rf reducing_fn<TAcc,U>, init TAcc) TAcc is
+  transduce(TAcc,U type, xf transducer(TAcc,U,T), rf reducing_fn(TAcc,U), init TAcc) TAcc is
     red := xf.call rf
     for
       res := init, red.call res el
@@ -314,17 +314,17 @@ Sequence<T> ref is
   #
   # example usage:
   # human(age i32) is
-  # ages := map<Sequence<i32>, human, i32> (x -> x.age)
-  # gt_ten := filter<Sequence<i32>, i32> (x -> x > 10)
+  # ages := map (Sequence i32) human i32 (x -> x.age)
+  # gt_ten := filter (Sequence i32) i32 (x -> x > 10)
   # xf := ages ∘ gt_ten
   # say ([human(4), human(12), human(30)].into xf) # [12,30]
-  into<TAcc>(xf transducer<Sequence<TAcc>,TAcc,T>) Sequence<TAcc> is
-    rf := ref : reducing_fn<Sequence<TAcc>,TAcc>
-      redef call(res Sequence<TAcc>, val TAcc) Sequence<TAcc> is
+  into(TAcc type, xf transducer(Sequence(TAcc),TAcc,T)) Sequence(TAcc) is
+    rf := ref : reducing_fn((Sequence TAcc),TAcc)
+      redef call(res Sequence(TAcc), val TAcc) Sequence(TAcc) is
         res ++ [val]
     red := xf.call rf
     for
-      res := Sequences.empty<TAcc>, red.call res el
+      res := Sequences.empty(TAcc) , red.call res el
       el in Sequence.this do
     else
       res
