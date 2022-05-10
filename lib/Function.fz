@@ -40,3 +40,14 @@ Function(R type, A type...) ref is
 #
 #  # short-hand infix operation for composition
 #  infix ∘ (f fun (B) A) => compose f
+
+
+# Functions -- unit type containing features related to functions but not requiring an instance
+#
+Functions is
+
+  # compose f ∘ g
+  #
+  compose(A,B,C type,
+          f A -> B,
+          g B -> C) A -> C is a -> g (f a)
