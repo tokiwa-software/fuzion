@@ -454,15 +454,13 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       ? new Universe()
       : outer().typeCall(p, new List<>(), res);
     var tf = typeFeature(res);
-    var c = new Call(p,
-                     tf.featureName().baseName(),
-                     typeParameters,
-                     Call.NO_PARENTHESES,
-                     oc,
-                     tf,
-                     tf.thisType());
-    c.resolveTypes(res, this);
-    return c;
+    return new Call(p,
+                    tf.featureName().baseName(),
+                    typeParameters,
+                    Call.NO_PARENTHESES,
+                    oc,
+                    tf,
+                    tf.thisType());
   }
 
 
