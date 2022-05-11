@@ -17,13 +17,13 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test tupletest
+#  Source code of Fuzion test transducertest
 #
 #  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-transducertest :transducers is
+transducertest : transducers is
 
   exitCode := 0
 
@@ -34,23 +34,20 @@ transducertest :transducers is
       say "FAILED: $msg"
       set exitCode := 1
 
-  xf_filter := filter<Sequence<i32>,i32>(x -> x > 3)
-  r := (1..5).transduce xf_filter
-  chck (r.count == 2) "filter transducer"
+  xf_filter := filter (Sequence i32) i32 (x -> x > 3)
+  r := (1..5).into xf_filter
+  chck ((comparable_sequence r) = (comparable_sequence [4, 5]))                            "filter transducer"
 
-  xf_map := map<Sequence<bool>,i32, bool>(x -> x > 3)
-  r := (1..5).transduce xf_map
-  chck (r.count == 5) "map transducer"
 
-  xf_count := count<bool>
-  r := (1..5).map<bool>(x -> false).transduce xf_count 0
-  chck (r == 5) "count transducer"
+  xf_map := map (Sequence bool) i32 bool (x -> x > 3)
+  r := (1..5).into xf_map
+  chck ((comparable_sequence r) = (comparable_sequence [false, false, false, true, true])) "map transducer"
+
 
   human(age i32) is
-  ages := map<i32, human, i32> (x -> x.age)
-  gt_ten := filter<i32, i32> (x -> x > 10)
-  xf := (compose (compose ages gt_ten) count<i32>)
-  m := [human(4), human(12), human(30)].transduce xf 0
-  chck (m == 2) "compose transducers"
+  ages := map (Sequence i32) human i32 (x -> x.age)
+  gt_ten := filter (Sequence i32) i32 (x -> x > 10)
+  r := [human(4), human(12), human(30)].into (ages ∘ gt_ten)
+  chck ((comparable_sequence r) = (comparable_sequence [12, 30]))                          "compose transducers"
 
   fuzion.std.exit exitCode
