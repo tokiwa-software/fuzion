@@ -38,45 +38,45 @@
 transducers is
 
   # a transducer filtering values based on evaluation of predicate
-  filter(TAcc,T type, predicate T -> bool) transducer(TAcc,T,T) is
-    ref : transducer(TAcc,T,T)
-      call(red reducing_fn(TAcc,T)) =>
-        ref : reducing_fn(TAcc,T)
-          call(res TAcc, val T) =>
+  filter(TA,T type, predicate T -> bool) Transducer(TA,T,T) is
+    ref : Transducer(TA,T,T)
+      call(red Reducing_Fn(TA,T)) =>
+        ref : Reducing_Fn(TA,T)
+          call(res TA, val T) =>
             if predicate val then red.call res val else res
 
 
   # a transducer mappping values from T to U
-  map(TAcc,T,U type, mapper T -> U) transducer(TAcc,U,T) is
-    ref : transducer(TAcc,U,T)
-      call(red reducing_fn(TAcc,U)) =>
-        ref : reducing_fn(TAcc,T)
-          call(res TAcc, val T) =>
+  map(TA,T,U type, mapper T -> U) Transducer(TA,U,T) is
+    ref : Transducer(TA,U,T)
+      call(red Reducing_Fn(TA,U)) =>
+        ref : Reducing_Fn(TA,T)
+          call(res TA, val T) =>
             red.call res (mapper val)
 
 
   # left-to-right composition of transducers
-  compose(TAcc,A,B,C type, a transducer(TAcc,B,C), b transducer(TAcc,A,B)) =>
+  compose(TA,A,B,C type, a Transducer(TA,B,C), b Transducer(TA,A,B)) =>
     a ∘ b
 
   # NYI: cat, mapcat, remove, take, takeWhile, drop, dropWhile, takeEveryNth,
   # replace, keep, keepIndexed, dedupe, randomSample, partitionBy, partitionAll,...
 
 # a reducing function takes a previous result and a value and returns a new result
-reducing_fn(TAcc,T type) ref : Function<TAcc,TAcc,T> is
+Reducing_Fn(TA,T type) ref : Function<TA,TA,T> is
 
     # NYI redef call abstract is currently necessary because of bug in c backend
-    redef call(res TAcc, val T) TAcc is abstract
+    redef call(res TA, val T) TA is abstract
 
-# TAcc result     type
+# TA result     type
 # B    input      type
 # C    transduced type
-transducer(TAcc,B,C type) ref : Function(reducing_fn(TAcc,C), reducing_fn(TAcc,B)) is
+Transducer(TA,B,C type) ref : Function(Reducing_Fn(TA,C), Reducing_Fn(TA,B)) is
 
   # NYI redef call abstract is currently necessary because of bug in c backend
-  redef call(rf reducing_fn(TAcc,B)) reducing_fn(TAcc,C) is abstract
+  redef call(rf Reducing_Fn(TA,B)) Reducing_Fn(TA,C) is abstract
   # left-to-right composition of transducers
-  infix ∘ (A type, o transducer(TAcc,A,B)) =>
-    ref : transducer(TAcc,A,C)
-      redef call(re reducing_fn(TAcc,A)) =>
-        transducer.this.call (o.call re)
+  infix ∘ (A type, o Transducer(TA,A,B)) =>
+    ref : Transducer(TA,A,C)
+      redef call(re Reducing_Fn(TA,A)) =>
+        Transducer.this.call (o.call re)
