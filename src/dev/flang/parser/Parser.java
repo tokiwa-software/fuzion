@@ -282,7 +282,7 @@ field       : visibility
     return
       isNonEmptyVisibilityPrefix() ||
       isModifiersPrefix() ||
-      isNamePrefix() && fork().skipFeaturePrefix();
+      (isNamePrefix() || current() == Token.t_type) && fork().skipFeaturePrefix();
   }
 
 
@@ -298,19 +298,9 @@ field       : visibility
       {
         return true;
       }
-    if (!isNamePrefix())
+    if (!skipQual())
       {
         return false;
-      }
-    int pos = pos();
-    skipName();
-    while (skipDot())
-      {
-        if (!isNamePrefix())
-          {
-            return false;
-          }
-        skipName();
       }
     if (skipComma())
       {
@@ -428,19 +418,53 @@ visi        : COLON qual
   /**
    * Parse qualified name
    *
-qual        : name ( dot qual
-                   |
-                   )
+qual        : name
+            | name dot qual
+            | type dot qual
             ;
    */
   List<String> qual(boolean mayBeAtMinIndent)
   {
-    List<String> result = new List<>(name(mayBeAtMinIndent, false));
-    while (skipDot())
+    List<String> result = new List<>();
+    do
       {
-        result.add(name());
+        if (skip(mayBeAtMinIndent, Token.t_type))
+          {
+            result.add(FuzionConstants.TYPE_NAME);
+            if (!isDot())
+              {
+                matchOperator(".", "qual");
+                result.add(Errors.ERROR_STRING);
+              }
+          }
+        else
+          {
+            result.add(name(mayBeAtMinIndent, false));
+          }
+        mayBeAtMinIndent = false;
       }
+    while (skipDot());
     return result;
+  }
+
+
+  /**
+   * Check if the current position is a 'qual'. If so, skip the 'qual'.
+   *
+   * @return true iff the next token(s) form 'qual', otherwise no 'qual' was
+   * found and the parser/lexer is at an undefined position.
+   */
+  boolean skipQual()
+  {
+    if (skip(Token.t_type))
+      {
+        return skipDot() && skipQual();
+      }
+    else if (skipName())
+      {
+        return !skipDot() || skipQual();
+      }
+    return false;
   }
 
 
@@ -3987,7 +4011,14 @@ dot         : "."      // either preceded by white space or not followed by whit
    */
   boolean isDot()
   {
-    return !isFullStop() && isOperator('.');
+    var result = false;
+    if (!isFullStop())
+      {
+        var oldLine = sameLine(-1);
+        result = isOperator('.');
+        sameLine(oldLine);
+      }
+    return result;
   }
 
 

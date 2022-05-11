@@ -1285,10 +1285,30 @@ public class Call extends AbstractCall
       {
         if (_select >= 0 || calledFeature_.isOpenTypeParameter())
           {
-            throw new Error("NYI: Calling open type parameter");
+            throw new Error("NYI (see #283): Calling open type parameter");
           }
-        // NYI: The result type should eventually be t.resolve(res, tt.featureOfType()).type()
-        _type = Types.resolved.f_Type.thisType();
+        var tptype = t.resolve(res, tt.featureOfType());
+        if (!tptype.isGenericArgument() && tptype.compareTo(Types.resolved.t_object) != 0)
+          {
+            tptype = tptype.featureOfType().typeFeature(res).thisType();
+          }
+        _type = tptype;
+      }
+    else if (name == FuzionConstants.TYPE_NAME && calledFeature_ == Types.resolved.f_Types_get)
+      { // NYI (see #282): special handling could maybe be avoided?
+        var gt = generics.get(0);
+        if (gt.isGenericArgument())
+          {
+            _type = t.resolve(res, tt.featureOfType());
+          }
+        else
+          {
+            _type = gt.featureOfType().typeFeature(res).resultTypeIfPresent(res, t.generics());
+            if (_type == null)
+              {
+                throw new Error("NYI (see #283): resolveTypes for .type: resultType not present at "+pos().show());
+              }
+          }
       }
     else
       {

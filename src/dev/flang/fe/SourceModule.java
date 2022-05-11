@@ -479,7 +479,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
       (() ->
        {
          var q = inner._qname;
-         var o = lookupFeatureForType(inner.pos(), q.get(at), outer);
+         var n = q.get(at);
+         var o = n == FuzionConstants.TYPE_NAME
+           ? outer.typeFeature(_res)
+           : lookupFeatureForType(inner.pos(), n, outer);
          if (at < q.size()-2)
            {
              setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
@@ -758,41 +761,63 @@ public class SourceModule extends Module implements SrcModule, MirModule
       {
         var fn = e.getKey();
         var f = e.getValue();
-        var doi = declaredOrInheritedFeatures(outer);
-        var existing = doi.get(fn);
-        if (existing == null)
-          {
-            if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) != 0)
-              {
-                AstErrors.redefineModifierDoesNotRedefine(f);
-              }
-          }
-        else if (existing == f)
-          {
-          }
-        else if (existing.outer() == outer)
-          {
-            // This cannot happen, this case was already handled in addDeclaredInnerFeature:
-            throw new Error();
-          }
-        else if (existing.generics() != FormalGenerics.NONE)
-          {
-            AstErrors.cannotRedefineGeneric(f.pos(), outer, existing);
-          }
-        else if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
-          {
-            AstErrors.redefineModifierMissing(f.pos(), outer, existing);
-          }
-        else
-          {
-            f.redefines().add(existing);
-          }
-        doi.put(fn, f);
+        addToDeclaredOrInheritedFeatures(outer, fn, f);
         if (f instanceof Feature ff)
           {
             ff.scheduleForResolution(_res);
           }
       }
+  }
+
+
+  /**
+   * Add f with name fn to the declaredOrInherited features of outer.
+   *
+   * In case a declared feature exists in declaredOrInheritedFeatures_ (because
+   * it was inherited), check if the declared feature redefines the inherited
+   * feature. Otherwise, report an error message.
+   *
+   * @param outer the declaring feature
+   *
+   * @param fn feature name of f (NYI (see #286): check if fn is redundant with f.featureName)
+   *
+   * @param f the declared or inherited feature.
+   */
+  private void addToDeclaredOrInheritedFeatures(AbstractFeature outer, FeatureName fn, AbstractFeature f)
+  {
+    check
+      (fn.equals(f.featureName()));
+
+    var doi = declaredOrInheritedFeatures(outer);
+    var existing = doi.get(fn);
+    if (existing == null)
+      {
+        if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) != 0)
+          {
+            AstErrors.redefineModifierDoesNotRedefine(f);
+          }
+      }
+    else if (existing == f)
+      {
+      }
+    else if (existing.outer() == outer)
+      {
+        // This cannot happen, this case was already handled in addDeclaredInnerFeature:
+        throw new Error();
+      }
+    else if (existing.generics() != FormalGenerics.NONE)
+      {
+        AstErrors.cannotRedefineGeneric(f.pos(), outer, existing);
+      }
+    else if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
+      {
+        AstErrors.redefineModifierMissing(f.pos(), outer, existing);
+      }
+    else
+      {
+        f.redefines().add(existing);
+      }
+    doi.put(fn, f);
   }
 
 
@@ -843,13 +868,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     addDeclaredInnerFeature(outer, fn, f);
     if (outer instanceof Feature of && of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
       {
-        if (CHECKS) check
-          (Errors.count() > 0 ||
-           outer.isChoice() && f.isField() ||
-           outer.isUniverse() ||
-           !declaredOrInheritedFeatures(outer).containsKey(fn));
-
-        declaredOrInheritedFeatures(outer).put(fn, f);
+        addToDeclaredOrInheritedFeatures(outer, fn, f);
         if (!outer.isChoice() || !f.isField())  // A choice does not inherit any fields
           {
             addToHeirs(outer, fn, f);

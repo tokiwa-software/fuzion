@@ -1,0 +1,119 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature stdin
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+
+stdin(
+    ip byteInputHandler,
+    # action to be taken: plain nomad, install or replace?
+    redef r effectModes
+  ) : effect r is
+
+
+  # for a stdin instance installed in the current environment,
+  # install next instance of byteInputHandler,
+  # 'stdin.env' will provide the new instance.
+  #
+  private next => stdin ip.next mode
+
+  nextByte =>
+    next.ip.get
+
+
+  private eof u8 :=  0
+  private line_feed u8 := 10
+
+
+  # stream of bytes read from stdin until and excluding EOF
+  private byte_stream stream<u8> is
+
+    val outcome<u8> := error "not initialized"
+
+    init =>
+      if val.isError
+        set val := stdin.nextByte
+
+    reset =>
+      set val := error "not initialized"
+
+    ref: stream<u8>
+      redef hasNext bool is
+        init
+        match val
+          error => fuzion.std.panic "this should not be possible"
+          v u8 =>
+            v != eof
+      redef next u8 is
+        init
+        match val
+          error => fuzion.std.panic "this should not be possible"
+          v u8 =>
+            reset
+            v
+
+
+  # read n codepoints from stdin
+  read(n i32) string is
+    tmp ref : string is
+      redef utf8 Sequence<u8> is byte_stream
+                                                            # asArray, since we don't want this to be lazy
+    strings.fromCodepoints (tmp.asCodepoints.asStream.take n).asArray
+
+
+  # read line from stdin
+  read_line string is
+    # NYI next line should be this but does not work in c backend currently
+    # strings.fromBytes bytes.takeWhile(b -> b != line_feed).asArray
+                                                  # asArray, since we don't want this to be lazy
+    arr := byte_stream
+      .takeWhile(b -> b != 10)
+      .asArray
+    strings.fromBytes arr
+
+
+# invoke installDefault and return stdin installed in env
+stdin =>
+  stdins.installDefault
+  stdin.env
+
+# unit feature providing static helpers
+stdins is
+  installDefault is
+    if !(effects.exists<io.stdin>)
+      _ := stdin (defaultInputHandler 0) effectMode.default
+
+
+byteInputHandler ref is
+
+  next byteInputHandler is abstract
+
+  get u8 is abstract
+
+
+# the default input handler reading bytes via fuzion.stdin.nextByte
+defaultInputHandler(byte u8) : byteInputHandler is
+
+  next byteInputHandler is defaultInputHandler fuzion.stdin.nextByte
+
+  get => byte
