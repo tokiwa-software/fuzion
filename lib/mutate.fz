@@ -43,7 +43,7 @@
 #
 #   v := mut 42
 #
-# NYI: syntax sugar to reat mutable field using
+# NYI: syntax sugar to read mutable field using
 #
 #   w := v + 1
 #
