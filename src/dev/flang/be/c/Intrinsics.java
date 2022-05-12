@@ -553,6 +553,29 @@ public class Intrinsics extends ANY
           var evi = c._names.envInstalled(ecl);
           return CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
         });
+
+    IntrinsicCode noJava = (c,cl,outer,in) ->
+      CStmnt.seq(CExpr.fprintfstderr("*** C backend support does not support Java interface (yet).\n"),
+                 CExpr.exit(1));
+    put("fuzion.java.JavaObject.isNull"  , noJava);
+    put("fuzion.java.arrayGet"           , noJava);
+    put("fuzion.java.arrayLength"        , noJava);
+    put("fuzion.java.arrayToJavaObject0" , noJava);
+    put("fuzion.java.boolToJavaObject"   , noJava);
+    put("fuzion.java.callC0"             , noJava);
+    put("fuzion.java.callS0"             , noJava);
+    put("fuzion.java.callV0"             , noJava);
+    put("fuzion.java.f32ToJavaObject"    , noJava);
+    put("fuzion.java.f64ToJavaObject"    , noJava);
+    put("fuzion.java.getField0"          , noJava);
+    put("fuzion.java.getStaticField0"    , noJava);
+    put("fuzion.java.i16ToJavaObject"    , noJava);
+    put("fuzion.java.i32ToJavaObject"    , noJava);
+    put("fuzion.java.i64ToJavaObject"    , noJava);
+    put("fuzion.java.i8ToJavaObject"     , noJava);
+    put("fuzion.java.javaStringToString" , noJava);
+    put("fuzion.java.stringToJavaObject0", noJava);
+    put("fuzion.java.u16ToJavaObject"    , noJava);
   }
 
 
