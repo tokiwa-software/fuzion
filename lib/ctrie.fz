@@ -189,8 +189,8 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
 
 
   private cleanParent(parent option<INode>, i INode, hash, lev u32) =>
-    if parent??
-      match parent.get.main
+    parent >>= (p ->
+      match p.main
         cn CNode =>
           (flag, pos) := flagpos hash lev cn.bmp
           if (cn.bmp & flag) != 0
@@ -202,13 +202,15 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
                   match i.main
                     tn TNode =>
                       ncn := cn.updated pos tn.sn
-                      if parent.get.CAS cn (toContracted ncn lev)
-                        cleanParent parent i hash lev
+                      if !(p.CAS cn (toContracted ncn lev))
+                        cleanParent p i hash lev
                     cn CNode =>
                     l list<SNode> =>
               sn SNode =>
         tn TNode =>
         l list<SNode> =>
+      nil
+      )
 
 
   private dual(x, y SNode, lev u32, gen Gen) MainNode is
@@ -311,7 +313,7 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
         clean parent (lev - W)
         RESTART
       ln list<SNode> =>
-        if i.CAS ln ([(SNode k v)] ++ ln)
+        if i.CAS ln ([SNode k v] ++ ln)
           OK
         else
           RESTART
