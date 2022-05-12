@@ -162,8 +162,7 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
                                            match m.main
                                             // resurrect
                                             tn TNode => tn.sn
-                                            ln list<SNode> => m
-                                            cn CNode => m
+                                            * => m
                                          sn SNode => sn
                                     )
     toContracted (CNode cn.bmp narr cn.gen) lev
@@ -183,8 +182,7 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
       m := nd.get.main
       match m
         c CNode => nd.get.CAS(m, toCompressed(c, lev))
-        l list<SNode> =>
-        t TNode =>
+        * =>
     unit
 
 
@@ -204,11 +202,9 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
                       ncn := cn.updated pos tn.sn
                       if !(p.CAS cn (toContracted ncn lev))
                         cleanParent p i hash lev
-                    cn CNode =>
-                    l list<SNode> =>
-              sn SNode =>
-        tn TNode =>
-        l list<SNode> =>
+                    * =>
+              * =>
+        * =>
       nil
       )
 
@@ -350,10 +346,8 @@ CTrie<CTK: hasHash<CTK>, CTV> : map<CTK, CTV> is
             v CTV =>
               match i.main
                 t TNode => cleanParent parent i hash(k.hash) (lev - W)
-                l list<SNode> =>
-                c CNode =>
-            n NOTFOUND =>
-            r RESTART =>
+                * =>
+            * =>
           res
       tn TNode =>
         clean parent (lev - W)
