@@ -573,6 +573,8 @@ class Fuzion extends Tool
         else
           {
             long feTime = System.currentTimeMillis();
+            feTime -= prepTime;
+            prepTime -= jvmStartTime;
             options.verbosePrintln(1, "Elapsed time for phases: prep "+prepTime+"ms, fe "+feTime+"ms");
           }
       };
