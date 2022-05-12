@@ -36,6 +36,7 @@ import dev.flang.fe.Module;
 import dev.flang.util.Errors;
 
 import java.util.TreeSet;
+import java.util.Set;
 
 
 /**
@@ -50,6 +51,9 @@ class CheckIntrinsics extends ANY
   {
     var all = new TreeSet<String>();
     getAll(all, fe, fe._universe);
+
+    var c = dev.flang.be.c.Intrinsics.supportedIntrinsics();
+    checkIntrinsics(all, c, "C backend");
   }
 
 
@@ -67,6 +71,35 @@ class CheckIntrinsics extends ANY
       }
   }
 
+
+  /**
+   * For the required intrinsic set 'all' check if 'implemented' is equal.
+   * Report warnings for missing or additional entries in 'implemented' for
+   * 'where'.
+   *
+   * @param all set of names of required intrinsics
+   *
+   * @param implemented set of names of implemented intrinsics
+   *
+   * @param where module that provides impelmented intrinsics, e.g., "C backend".
+   */
+  void checkIntrinsics(Set<String> all, Set<String> implemented, String where)
+  {
+    for (var a : all)
+      {
+        if (!implemented.contains(a))
+          {
+            Errors.warning(where + " does not implement intrinsic '" + a + "'.");
+          }
+      }
+    for (var a : implemented)
+      {
+        if (!all.contains(a))
+          {
+            Errors.warning(where + " implement intrinsic '" + a + "', even though this is never used.");
+          }
+      }
+  }
 
 }
 

@@ -29,6 +29,7 @@ package dev.flang.be.c;
 import java.nio.charset.StandardCharsets;
 
 import java.util.TreeMap;
+import java.util.Set;
 
 import dev.flang.fuir.FUIR;
 
@@ -42,7 +43,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-class Intrinsics extends ANY
+public class Intrinsics extends ANY
 {
 
   /*----------------------------  interfaces  ---------------------------*/
@@ -579,6 +580,15 @@ class Intrinsics extends ANY
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Get the names of all intrinsics supported by this backend.
+   */
+  public static Set<String> supportedIntrinsics()
+  {
+    return _intrinsics_.keySet();
+  }
 
 
   /**
