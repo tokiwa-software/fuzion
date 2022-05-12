@@ -122,6 +122,17 @@ class Fuzion extends Tool
         return true;
       }
     },
+    saveBaseLib("-XsaveBaseLib")
+    {
+      boolean needsSources()
+      {
+        return true;
+      }
+      boolean needsMain()
+      {
+        return false;
+      }
+    },
     undefined;
 
     /**
@@ -531,35 +542,38 @@ class Fuzion extends Tool
               }
           }
       }
-    if (_saveBaseLib != null && _backend != Backend.undefined)
+    if (_saveBaseLib != null)
       {
-        fatal("no backend may be specified in conjunction with -XsaveBaseLib");
+        if (_backend == Backend.undefined)
+          {
+            _backend = Backend.saveBaseLib;
+          }
+        else
+          {
+            fatal("no backend may be specified in conjunction with -XsaveBaseLib");
+          }
+      }
+    else if (_backend == Backend.saveBaseLib)
+      {
+        _saveBaseLib = Path.of("base.fum");
       }
     if (_backend == Backend.undefined)
       {
         _backend = Backend.interpreter;
       }
-    if (_main == null && !_readStdin && _saveBaseLib == null && _backend.needsMain())
+    if (_main == null && !_readStdin && _backend.needsMain())
       {
         fatal("missing main feature name in command line args");
-      }
-    if (_saveBaseLib != null && _main != null)
-      {
-        fatal("no main feature '" + _main + "' may be given if -XsaveBaseLib is set");
       }
     if (!_backend.needsMain() && _main != null)
       {
         fatal("no main feature '" + _main + "' may be given for backend '" + _backend + "'");
       }
-    if (_saveBaseLib != null && _readStdin)
-      {
-        fatal("no '-' to read from stdin may be given if -XsaveBaseLib is set");
-      }
     if (!_backend.needsMain() && _readStdin)
       {
         fatal("no '-' to read from stdin may be given for backend '" + _backend + "'");
       }
-    if (_eraseInternalNamesInLib != null && _saveBaseLib == null)
+    if (_eraseInternalNamesInLib != null && _backend == Backend.saveBaseLib)
       {
         fatal("-XeraseInternalNamesInLib may only be specified when creating a library using -XsaveBaseLib");
       }
