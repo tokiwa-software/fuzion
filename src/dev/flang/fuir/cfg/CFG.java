@@ -316,9 +316,13 @@ public class CFG extends ANY
       case "i8.as_i32"           : return;
       case "i16.as_i32"          : return;
       case "i32.as_i64"          : return;
+      case "i32.as_f64"          : return;
+      case "i64.as_f64"          : return;
       case "u8.as_i32"           : return;
       case "u16.as_i32"          : return;
       case "u32.as_i64"          : return;
+      case "u32.as_f64"          : return;
+      case "u64.as_f64"          : return;
       case "i8.castTo_u8"        : return;
       case "i16.castTo_u16"      : return;
       case "i32.castTo_u32"      : return;
@@ -362,6 +366,9 @@ public class CFG extends ANY
       case "f64.infix >"         : return;
       case "f32.infix >="        : return;
       case "f64.infix >="        : return;
+      case "f32.as_f64"          : return;
+      case "f64.as_f32"          : return;
+      case "f64.as_i64_lax"      : return;
       case "f32.castTo_u32"      : return;
       case "f64.castTo_u64"      : return;
       case "f32.asString"        : return;
@@ -425,8 +432,18 @@ public class CFG extends ANY
       case "effect.abort"        : return;
       case "effects.exists"      : return;
       default:
-        var msg = "code for intrinsic " + _fuir.clazzIntrinsicName(cl) + " is missing";
-        Errors.warning(msg);
+        {
+          var at = _fuir.clazzTypeParameterActualType(cl);
+          if (at >= 0)
+            {
+              // intrinsic is a type parameter
+            }
+          else
+            {
+              var msg = "code for intrinsic " + _fuir.clazzIntrinsicName(cl) + " is missing";
+              Errors.warning(msg);
+            }
+        }
       }
   }
 

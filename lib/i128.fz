@@ -26,10 +26,10 @@
 # i128 -- 128-bit signed integer values
 #
 i128(hi i64, lo u64) : wrappingInteger<i128>, hasInterval<i128>, i128s is
-  redef infix + (other i128) i128 is intrinsic  # NYI
-  redef infix - (other i128) i128 is intrinsic  # NYI
-  redef infix * (other i128) i128 is intrinsic  # NYI
-  redef infix / (other i128) i128 is intrinsic  # NYI
+  redef infix + (other i128) i128 is panic "NYI: i128 is not supported"
+  redef infix - (other i128) i128 is panic "NYI: i128 is not supported"
+  redef infix * (other i128) i128 is panic "NYI: i128 is not supported"
+  redef infix / (other i128) i128 is panic "NYI: i128 is not supported"
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
   # from hasInterval is abstract, fz should not complain about this conflict.
