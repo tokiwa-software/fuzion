@@ -106,4 +106,19 @@ states<T, S> is
 
 # short-hand for accessing state monad for given type in current environment
 #
-state<S> => state<unit,S>.env
+state_of(S type) => state<unit,S>.env
+
+
+# short-hand for getting state monad for given type in current environment
+#
+state_get(S type) => (state_of S).get
+
+
+# short-hand for modifying state monad for given type in current environment
+#
+state_modify(S type, f S->S) => (state_of S).modify f
+
+
+# short-hand for setting state monad for given type in current environment
+#
+state_put(S type, new S) => (state_of S).put new
