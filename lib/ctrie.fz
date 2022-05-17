@@ -37,7 +37,6 @@
 # snapshot, amortized size retrieval, clear  : O(1)
 #
 # NYI (atomic) CAS
-# NYI gen should not be i32 to avoid overflow
 #
 # glossary:
 # CTK => ctrie key
@@ -82,6 +81,8 @@ private Branch<CTK,CTV> : choice<INode<CTK,CTV>,SNode<CTK,CTV>> is
 
 # a container node
 private CNode<CTK,CTV>(bmp u32, array array<Branch<CTK,CTV>>) is
+
+  # copy of this cnode with updated node at pos
   updated(pos u32, node Branch<CTK,CTV>) =>
     CNode bmp (array.put pos.as_i32 node)
 
@@ -195,9 +196,12 @@ private INode<CTK,CTV>(data MainNode<CTK,CTV>) ref : hasEquals<INode<CTK,CTV>> i
   asList list<tuple<CTK, CTV>> is data.asList
 
 
+# a linked list node
+# NYI instead of Sequence we should use data structure with O(1) append.
 LNode<CTK,CTV>(from Sequence<SNode<CTK,CTV>>) : Sequence<SNode<CTK,CTV>> is
   redef asList => from.asList
 
+# the ctrie
 private CTrie<CTK: hasHash<CTK>, CTV>(root choice<INode<CTK,CTV>, RDCSS_Descriptor>, read_only bool) : map<CTK, CTV>
 is
 
@@ -259,6 +263,8 @@ is
   private hash(h u64) u32 is
     h.hash.as_u32
 
+
+  # returns flag and the position in the CNode for given params
   private flagpos(hash u32, lev u32, bmp u32) tuple<u32, u32> is
     idx := (hash >> lev) & 0x1F
     flag := u32 1 << idx
@@ -499,7 +505,7 @@ is
 
   private copyToNewGen(i INode<CTK,CTV>) INode<CTK,CTV> is
     m := i.GCAS_READ CTrie.this
-    INode (MainNode m.data (i.data.gen + 1))
+    INode (MainNode m.data (i.data.gen +° 1))
 
   # take a snapshot of the ctrie
   snapshot(read_only bool) CTrie<CTK, CTV> is
