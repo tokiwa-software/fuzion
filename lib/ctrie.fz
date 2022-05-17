@@ -94,6 +94,15 @@ private CNode<CTK,CTV>(bmp u32, array array<Branch<CTK,CTV>>) is
     tmp := array.take pos.as_i32 ++ array.drop (pos + 1).as_i32
     CNode (bmp ^ flag) tmp.asArray
 
+  renewed(new_gen i32, ct ref CTrie<CTK,CTV>) =>
+    copy := array.map<Branch<CTK,CTV>>((x) ->
+      match x
+        i INode => i.copy_to_gen new_gen ct
+        sn SNode => sn
+      ).asArray
+    CNode bmp copy
+
+
   redef asString => "CNode($bmp, [{array.map<string>(x -> x.asString).fold (strings.concat ", ")}])"
 
   asList => array.flatMapSequence<tuple<CTK,CTV>>(b -> b.asList).asList
@@ -178,15 +187,15 @@ private INode<CTK,CTV>(data MainNode<CTK,CTV>) ref : hasEquals<INode<CTK,CTV>> i
       nil => m
       * => (GCAS_Commit m ct)
 
-  GCAS(o MainNode<CTK,CTV>, n MainNode<CTK,CTV>, ct ref CTrie<CTK,CTV>) =>
+  GCAS(o MainNode<CTK,CTV>, n MainNode<CTK,CTV>, ct ref CTrie<CTK,CTV>) choice<RESTART, OK> is
     n.set_prev o
     if(CAS o n)
       GCAS_Commit n ct
       match n.prev
-        nil => true
-        * => false
+        nil => OK
+        * => RESTART
     else
-      false
+      RESTART
 
   private copy_to_gen(new_gen i32, ct ref CTrie<CTK,CTV>) INode<CTK,CTV> is
     m := GCAS_READ ct
@@ -203,8 +212,11 @@ private INode<CTK,CTV>(data MainNode<CTK,CTV>) ref : hasEquals<INode<CTK,CTV>> i
 
 # a linked list node
 # NYI instead of Sequence we should use data structure with O(1) append.
-LNode<CTK,CTV>(from Sequence<SNode<CTK,CTV>>) : Sequence<SNode<CTK,CTV>> is
+private LNode<CTK,CTV>(from Sequence<SNode<CTK,CTV>>) : Sequence<SNode<CTK,CTV>> is
   redef asList => from.asList
+
+private RESTART is
+private OK is
 
 # the ctrie
 private CTrie<CTK: hasHash<CTK>, CTV>(root choice<INode<CTK,CTV>, RDCSS_Descriptor>, read_only bool) : map<CTK, CTV>
@@ -257,8 +269,6 @@ is
     else
       false
 
-  private RESTART is
-  private OK is
   NOTFOUND is
     redef asString => "not found"
 
@@ -328,8 +338,9 @@ is
                   match i.GCAS_READ(CTrie.this).data
                     tn TNode<CTK,CTV> =>
                       ncn := cn.updated pos tn.sn
-                      if !(p.GCAS m (contract ncn lev gen) CTrie.this)
-                        clean_parent p i hash lev gen
+                      match (p.GCAS m (contract ncn lev gen) CTrie.this)
+                        RESTART => clean_parent p i hash lev gen
+                        OK =>
                     * =>
               * =>
         * =>
@@ -420,11 +431,8 @@ is
       cn CNode<CTK,CTV> =>
         (flag, pos) := flagpos (hash k.hash) lev cn.bmp
         if (cn.bmp & flag) = 0
-          ncn := cn.inserted pos flag (SNode k v)
-          if i.GCAS m (MainNode ncn gen) CTrie.this
-            OK
-          else
-            RESTART
+          ncn := (if m.gen = gen then cn else cn.renewed gen CTrie.this).inserted pos flag (SNode k v)
+          i.GCAS m (MainNode ncn gen) CTrie.this
         else
           match cn.array[pos.as_i32]
             sin INode =>
@@ -433,24 +441,15 @@ is
               if sn.k /= k
                 nin := INode (dual sn (SNode k v) (lev + W) i.data.gen)
                 ncn := cn.updated pos nin
-                if i.GCAS m (MainNode ncn gen) CTrie.this
-                  OK
-                else
-                  RESTART
+                i.GCAS m (MainNode ncn gen) CTrie.this
               else
                 ncn := cn.updated pos (SNode k v)
-                if i.GCAS m (MainNode ncn gen) CTrie.this
-                  OK
-                else
-                  RESTART
+                i.GCAS m (MainNode ncn gen) CTrie.this
       tn TNode =>
         clean parent (lev - W) gen
         RESTART
       ln LNode =>
-        if i.GCAS m (MainNode (LNode ([SNode k v] ++ ln)) i.data.gen) CTrie.this
-          OK
-        else
-          RESTART
+        i.GCAS m (MainNode (LNode ([SNode k v] ++ ln)) i.data.gen) CTrie.this
 
 
   # remove key from ctrie
@@ -479,10 +478,9 @@ is
               else
                 ncn  := cn.removed pos flag
                 cntr := contract ncn lev gen
-                if i.GCAS m cntr CTrie.this
-                  sn.v
-                else
-                  RESTART
+                match (i.GCAS m cntr CTrie.this)
+                  OK => sn.v
+                  RESTART => RESTART
           match res
             v CTV =>
               match (i.GCAS_READ(CTrie.this)).data
@@ -496,10 +494,9 @@ is
       ln LNode =>
         fln := LNode ln.filter(sn -> sn.k /= k)
         nln MainNode<CTK,CTV> := if fln.count = 1 then MainNode (TNode fln.first) i.data.gen else MainNode fln i.data.gen
-        if i.GCAS m nln CTrie.this
-          find ln k
-        else
-          RESTART
+        match (i.GCAS m nln CTrie.this)
+          OK => find ln k
+          RESTART => RESTART
 
   redef size i32 is
     items.count
