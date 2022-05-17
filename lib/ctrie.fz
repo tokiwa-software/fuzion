@@ -188,6 +188,11 @@ private INode<CTK,CTV>(data MainNode<CTK,CTV>) ref : hasEquals<INode<CTK,CTV>> i
     else
       false
 
+  private copy_to_gen(new_gen i32, ct ref CTrie<CTK,CTV>) INode<CTK,CTV> is
+    m := GCAS_READ ct
+    # increase the generation of node by one
+    INode (MainNode m.data new_gen)
+
   infix = (o INode<CTK,CTV>) bool is
     INode.this.hashCode = o.hashCode
 
@@ -503,16 +508,13 @@ is
   redef index [] (k CTK) option<CTV> is
     lookup k
 
-  private copyToNewGen(i INode<CTK,CTV>) INode<CTK,CTV> is
-    m := i.GCAS_READ CTrie.this
-    INode (MainNode m.data (i.data.gen +° 1))
-
   # take a snapshot of the ctrie
   snapshot(read_only bool) CTrie<CTK, CTV> is
     r := RDCSS_READ_ROOT
     expmain := r.GCAS_READ CTrie.this
-    if(RDCSS_ROOT (RDCSS_Descriptor r expmain (copyToNewGen r)))
-      CTrie<CTK,CTV> (copyToNewGen r) read_only
+    if(RDCSS_ROOT (RDCSS_Descriptor r expmain (r.copy_to_gen (r.data.gen +° 1) CTrie.this)))
+      # new ctrie by increasing gen of root by one
+      CTrie<CTK,CTV> (r.copy_to_gen (r.data.gen +° 1) CTrie.this) read_only
     else
       snapshot read_only
 
