@@ -395,7 +395,7 @@ public class Intrinsics extends ANY
     put("fuzion.sys.array.alloc", (c,cl,outer,in) ->
         {
           var gc = c._fuir.clazzActualGeneric(cl, 0);
-          return CExpr.call("malloc",
+          return CExpr.call("GC_MALLOC",
                             new List<>(CExpr.sizeOfType(c._types.clazz(gc)).mul(A0))).ret();
         });
     put("fuzion.sys.array.setel", (c,cl,outer,in) ->
@@ -438,7 +438,7 @@ public class Intrinsics extends ANY
               var res = new CIdent("res");
               return CStmnt.seq(CExpr.decl("pthread_t *", pt),
                                 CExpr.decl("int", res),
-                                pt.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("pthread_t")))),
+                                pt.assign(CExpr.call("GC_MALLOC", new List<>(CExpr.sizeOfType("pthread_t")))),
                                 CExpr.iff(pt.eq(CNames.NULL),
                                           CStmnt.seq(CExpr.fprintfstderr("*** malloc(%lu) failed\n", CExpr.sizeOfType("pthread_t")),
                                                      CExpr.call("exit", new List<>(CExpr.int32const(1))))),

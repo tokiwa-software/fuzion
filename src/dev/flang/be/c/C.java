@@ -171,7 +171,7 @@ public class C extends ANY
     Errors.showAndExit();
 
     // NYI link libmath only when needed
-    var command = new List<String>("clang", "-O3", "-lm", "-o", name, cname);
+    var command = new List<String>("clang", "-O3", "-lgc", "-lm", "-o", name, cname);
     _options.verbosePrintln(" * " + command.toString("", " ", ""));;
     try
       {
@@ -199,7 +199,8 @@ public class C extends ANY
   private void createCode(CFile cf)
   {
     cf.print
-      ("#include <stdlib.h>\n"+
+      ("#include <gc.h>\n"+
+       "#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+
        "#include <unistd.h>\n"+
        "#include <stdbool.h>\n"+
@@ -225,7 +226,7 @@ public class C extends ANY
       (CStmnt.functionDecl("void *",
                            CNames.HEAP_CLONE,
                            new List<>("void *", "of", "size_t", "sz"),
-                           CStmnt.seq(new List<>(CStmnt.decl(null, "void *", r, CExpr.call("malloc", new List<>(s))),
+                           CStmnt.seq(new List<>(CStmnt.decl(null, "void *", r, CExpr.call("GC_MALLOC", new List<>(s))),
                                                  CExpr.call("memcpy", new List<>(r, o, s)),
                                                  r.ret()))));
     var ordered = _types.inOrder();
@@ -255,6 +256,7 @@ public class C extends ANY
            }
        });
     cf.println("int main(int argc, char **argv) { ");
+    cf.println("GC_INIT(); /* Optional on Linux/X86 */");
     cf.print(CStmnt.seq(_names.GLOBAL_ARGC.assign(new CIdent("argc")),
                         _names.GLOBAL_ARGV.assign(new CIdent("argv")),
                         CExpr.call(_names.function(_fuir.mainClazzId(), false), new List<>())));
@@ -779,7 +781,7 @@ public class C extends ANY
   {
     var t = _names.struct(cl);
     return CStmnt.seq(CStmnt.decl(t + "*", tmp),
-                      tmp.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType(t)))),
+                      tmp.assign(CExpr.call("GC_MALLOC", new List<>(CExpr.sizeOfType(t)))),
                       _fuir.clazzIsRef(cl) ? tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(cl)) : CStmnt.EMPTY);
   }
 
@@ -814,13 +816,13 @@ public class C extends ANY
     var bufferSize = 50;
     var res = new CIdent("float_as_string_result");
     var usedChars = new CIdent("used_chars");
-    var malloc = CExpr.call("malloc",
+    var malloc = CExpr.call("GC_MALLOC",
       new List<>(CExpr.sizeOfType("char").mul(CExpr.int32const(bufferSize))));
     var sprintf = CExpr.call("sprintf", new List<>(res, CExpr.string("%.21g"), expr));
 
     return CStmnt.seq(CStmnt.decl("char*", res, malloc),
                       CStmnt.decl("int", usedChars, sprintf),
-                      res.assign(CExpr.call("realloc", new List<>(res, usedChars))),
+                      res.assign(CExpr.call("GC_REALLOC", new List<>(res, usedChars))),
                       constString(res, usedChars, tmp));
   }
 
