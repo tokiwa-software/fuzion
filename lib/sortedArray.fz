@@ -139,10 +139,10 @@ is
   is
     binarySearch(l, r i32) option<i32> is
       m := (l + r) / 2
-      if l > r                          then nil
+      if l > r                                     then nil
       else if !lessOrEqual key sortedArray.this[m] then binarySearch m+1 r
       else if !lessOrEqual sortedArray.this[m] key then binarySearch l m-1
-      else                                   m
+      else                                              m
 
     binarySearch 0 length-1
 

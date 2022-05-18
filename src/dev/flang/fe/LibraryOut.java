@@ -245,7 +245,8 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 00CTkkkk  k = kind, T = has type parameters   |
+   *   | true   | 1      | byte          | 0YCYkkkk  k = kind                            |
+   *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
    *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
@@ -257,6 +258,8 @@ class LibraryOut extends DataOut
    *   |        |        | Pos           | source code position                          |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | int           | outer feature index, 0 for outer()==universe  |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | Y=1    | 1      | int           | type feature index                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
@@ -306,6 +309,10 @@ class LibraryOut extends DataOut
       {
         k = k | FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR;
       }
+    if (f.hasTypeFeature())
+      {
+        k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE;
+      }
     var n = f.featureName();
     write(k);
     var bn = n.baseName();
@@ -324,6 +331,10 @@ class LibraryOut extends DataOut
     else
       {
         writeInt(0);
+      }
+    if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE) != 0)
+      {
+        writeOffset(f.typeFeature());
       }
     if (CHECKS) check
       (f.valueArguments().size() == f.featureName().argCount());

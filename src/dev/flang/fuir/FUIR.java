@@ -380,6 +380,7 @@ public class FUIR extends IR
       case Intrinsic  -> FeatureKind.Intrinsic;
       case Abstract   -> FeatureKind.Abstract;
       case Choice     -> FeatureKind.Choice;
+      case TypeParameter -> FeatureKind.Intrinsic;
       default         -> throw new Error ("Unexpected feature kind: "+ff.kind());
       };
   }
@@ -569,6 +570,27 @@ public class FUIR extends IR
 
 
   /**
+   * If cl is a type parameter, return the type parameter's actual type.
+   *
+   * @param cl a clazz id
+   *
+   * @return if cl is a type parameter, clazz id of cl's actual type or -1 if cl
+   * is not a type parameter.
+   */
+  public int clazzTypeParameterActualType(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    var at = -1;
+    if (cc.feature().isTypeParameter())
+      {
+        var atc = cc.typeParameterActualType();
+        at = _clazzIds.get(atc);
+      }
+    return at;
+  }
+
+
+  /**
    * Is a clazz cl's clazzOuterRef() a value type that survives the call to
    * cl?  If this is the case, we need to heap allocate the outer ref.
    *
@@ -655,6 +677,17 @@ public class FUIR extends IR
     return cl == -1
       ? "-- no clazz --"
       : _clazzIds.get(cl).toString();
+  }
+
+
+  // String representation of clazz, for debugging and type names
+  //
+  // NYI: This should eventually replace clazzAsString.
+  public String clazzAsStringNew(int cl)
+  {
+    return cl == -1
+      ? "-- no clazz --"
+      : _clazzIds.get(cl)._type.asString();
   }
 
 

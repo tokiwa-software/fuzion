@@ -421,7 +421,7 @@ public class Resolution extends ANY
   /**
    * Make sure feature f is in state RESOLVED_DECLARATIONS. This is used for
    * recursive resolution during RESOLVING_TYPES when declarations in a
-   * reference feature are needed.
+   * referenced feature are needed.
    *
    * @param f the feature to be resolved
    */

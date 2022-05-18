@@ -17,16 +17,12 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature f128
+#  Source code of Fuzion test Makefile
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# f128 -- 128 bit floating point values
-#
-f128(val f128) is
-  infix + (other f128) f128 is panic "NYI: f128 is not supported"
-  infix - (other f128) f128 is panic "NYI: f128 is not supported"
-  infix * (other f128) f128 is panic "NYI: f128 is not supported"
-  infix / (other f128) f128 is panic "NYI: f128 is not supported"
+NAME = stdintest
+
+include ../simple_inp.mk

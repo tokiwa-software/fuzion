@@ -17,16 +17,34 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature f128
+#  Source code of Fuzion test Makefile to be included for simple tests which require stdin
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# f128 -- 128 bit floating point values
+# A simple tests compares the actual output with the expected output
 #
-f128(val f128) is
-  infix + (other f128) f128 is panic "NYI: f128 is not supported"
-  infix - (other f128) f128 is panic "NYI: f128 is not supported"
-  infix * (other f128) f128 is panic "NYI: f128 is not supported"
-  infix / (other f128) f128 is panic "NYI: f128 is not supported"
+# expected variables
+#
+#  NAME -- the name of the main feature to be tested
+#  FUZION -- the fz command
+#  FUZION_OPTIONS -- options to be passed to $(FUZION)
+
+FUZION_OPTIONS ?=
+FUZION ?= ../../bin/fz
+FILE = $(NAME).fz
+STDIN = $(NAME).fz.stdin
+FUZION_RUN = $(FUZION) $(FUZION_OPTIONS)
+
+int:
+	cat $(STDIN) | ../check_simple_example.sh "$(FUZION_RUN)" $(FILE) || exit 1
+
+c:
+	cat $(STDIN) | ../check_simple_example_c.sh "$(FUZION_RUN)" $(FILE) || exit 1
+
+record:
+	cat $(STDIN) | ../record_simple_example.sh "$(FUZION_RUN)" $(FILE)
+
+record_c:
+	cat $(STDIN) | ../record_simple_example_c.sh "$(FUZION_RUN)" $(FILE)

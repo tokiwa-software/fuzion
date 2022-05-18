@@ -134,7 +134,6 @@ public class Types extends ANY
     private final AbstractType t_fuzion;
     public final AbstractType t_string;
     public final AbstractType t_conststring;
-    public final AbstractType t_type;
     public final AbstractType t_unit;
 
     /* void will be used as the initial result type of tail recursive calls of
@@ -166,6 +165,10 @@ public class Types extends ANY
     public final AbstractFeature f_fuzion_sys_array;
     public final AbstractFeature f_fuzion_sys_array_length;
     public final AbstractFeature f_fuzion_sys_array_data;
+    public final AbstractFeature f_Type;
+    public final AbstractFeature f_Type_name;
+    public final AbstractFeature f_Types;
+    public final AbstractFeature f_Types_get;
     public static interface CreateType
     {
       AbstractType type(String name, boolean isRef);
@@ -197,7 +200,6 @@ public class Types extends ANY
       t_fuzion        = ct.type("fuzion"      , false);
       t_string        = ct.type("string"      , false);
       t_conststring   = ct.type("conststring" , false);
-      t_type          = ct.type("Type"        , false);
       t_object        = ct.type("Object"      , false);
       t_unit          = ct.type("unit"        , false);
       t_void          = ct.type("void"        , false);
@@ -222,6 +224,10 @@ public class Types extends ANY
       f_fuzion_sys_array           = f_fuzion_sys.get(mod, "array");
       f_fuzion_sys_array_data      = f_fuzion_sys_array.get(mod, "data");
       f_fuzion_sys_array_length    = f_fuzion_sys_array.get(mod, "length");
+      f_Type                       = universe.get(mod, "Type");
+      f_Type_name                  = f_Type.get(mod, "name");
+      f_Types                      = universe.get(mod, "Types");
+      f_Types_get                  = f_Types.get(mod, "get");
       resolved = this;
       t_ADDRESS  .resolveArtificialType(universe.get(mod, "Object"));
       t_UNDEFINED.resolveArtificialType(universe);
@@ -244,7 +250,6 @@ public class Types extends ANY
       t_fuzion     .featureOfType().resolveTypes(res);
       t_string     .featureOfType().resolveTypes(res);
       t_conststring.featureOfType().resolveTypes(res);
-      t_type       .featureOfType().resolveTypes(res);
       t_object     .featureOfType().resolveTypes(res);
       t_unit       .featureOfType().resolveTypes(res);
       t_void       .featureOfType().resolveTypes(res);

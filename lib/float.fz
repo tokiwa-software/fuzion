@@ -51,14 +51,37 @@ float(redef F float<F>.type) : numeric<F>, floats<F> is
   as_i64 i64 is abstract
 
 
+  fract F is abstract
+
+
   # round floating point number
   # ties to away (0.5 => 1; -0.5 => -1; etc.)
   #
   # NYI this could be made faster, see here:
   # https://cs.opensource.google/go/go/+/refs/tags/go1.18.1:src/math/floor.go;l=79
-  round i64 is
-    sign.as_i64 * (abs + (one/two)).as_i64
+  round F is
+    if thiz < zero
+      -(-thiz).round
+    else if fract == zero
+      thiz
+    else
+      (thiz + one/two).floor
 
+
+  # floor: the greatest integer lower or equal to this
+  floor F is
+    if fract < zero
+      thiz - fract - one
+    else
+      thiz - fract
+
+
+  # ceiling: the smallest integer greater or equal to this
+  ceil F is
+    if fract < zero
+      thiz - fract
+    else
+      thiz - fract + one
 
 # floats -- unit type defining features related to float but not requiring
 # an instance

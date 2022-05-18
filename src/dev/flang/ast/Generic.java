@@ -141,16 +141,7 @@ public class Generic extends ANY
    */
   public int index()
   {
-    var result = 0;
-    for (var tp : feature().typeArguments())
-      {
-        if (tp == typeParameter())
-          {
-            return result;
-          }
-        result++;
-      }
-    throw new Error("Generic.index() failed for " + this);
+    return typeParameter().typeParameterIndex();
   }
 
 

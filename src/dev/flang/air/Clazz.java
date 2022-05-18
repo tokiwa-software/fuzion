@@ -360,10 +360,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
   void dependencies()
   {
     _choiceGenerics = determineChoiceGenerics();
-    _resultClazz = determineResultClazz();
     _resultField = determineResultField();
     _argumentFields = determineArgumentFields();
     _actualGenerics = determineActualGenerics();
+    _resultClazz = determineResultClazz();
     _outerRef = determineOuterRef();
     _choiceTag = determineChoiceTag();
     _asValue = determineAsValue();
@@ -514,7 +514,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         var pt = p.type();
         var pc = actualClazz(isRef() ? pt.asRef() : pt.asValue());
         if (CHECKS) check
-          (isRef() == pc.isRef());
+          (Errors.count() > 0 || isRef() == pc.isRef());
         result.add(pc);
       }
     return result;
@@ -903,8 +903,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * find redefinition of a given feature in this clazz. NYI: This will have to
-   * take the whole inheritance chain into account and the parent view that is
-   * being filled with live into account:
+   * take the whole inheritance chain into account including the parent view that is
+   * being filled with live:
    */
   private AbstractFeature findRedefinition(AbstractFeature f)
   {
@@ -1099,7 +1099,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           (Errors.count() > 0 || fo != null);
 
         result =
-          field.isTypeParameter() ? Clazzes.type.get() :
+          field.isTypeParameter() ? resultClazz() :
           fo == null ? Clazzes.error.get() :
           field.isOuterRef() && fo.isOuterRefAdrOfValue()     ? actualClazz(Types.t_ADDRESS) :
           field.isOuterRef() && fo.isOuterRefCopyOfValue() ||
@@ -1832,6 +1832,51 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * For a type parameter, return the actual type.
+   */
+  public Clazz typeParameterActualType()
+  {
+    if (PRECONDITIONS) require
+      (feature().isTypeParameter());
+
+    var f = feature();
+
+    if (_outer.feature() != f.outer())
+      {
+        if (Errors.count() == 0)
+          {
+            throw new Error("NYI: cannot find actual generic for '"+f.qualifiedName()+"' in heir outer clazz '" + _outer + "'.");
+          }
+        else
+          {
+            return Clazzes.error.get();
+          }
+      }
+    return _outer.actualGenerics()[f.typeParameterIndex()];
+  }
+
+
+  /**
+   * For a clazz a.b.c the corresponding type clazz a.b.c.type, which is,
+   * actually, a.type.b.type.c.type.
+   */
+  Clazz typeClazz()
+  {
+    var cf = _type.featureOfType();
+    if (cf.isUniverse())
+      {
+        return this;
+      }
+    else
+      {
+        var tf = cf.typeFeature();
+        return Clazzes.create(tf.thisType().asRef(),
+                              _outer == null ? Clazzes.universe.get() : _outer.typeClazz());
+      }
+  }
+
+
+  /**
    * Determine the clazz of the result of calling this clazz.
    *
    * @return the result clazz.
@@ -1850,7 +1895,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
     else if (f.isTypeParameter())
       {
-        return Clazzes.type.get();
+        return typeParameterActualType().typeClazz();
+      }
+    else if (feature() == Types.resolved.f_Types_get)
+      // NYI (see #282): Would be nice if this would not need special handlng but would
+      // work in general for any feature with type parameters that returns one
+      // of this type parameters as its result using '=>'.
+      {
+        return actualGenerics()[0].typeClazz();
       }
     else
       {

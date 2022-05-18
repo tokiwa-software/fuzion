@@ -366,7 +366,7 @@ string ref : hasHash<string>, ordered<string>, strings is
       .fold strings.concat
 
 
-  # create substring of this string consisting of codepoints from (inclusive) .. codepontLength (exclusive).
+  # create substring of this string consisting of codepoints from (inclusive) .. codepointLength (exclusive).
   #
   substring(from i32) string
     pre

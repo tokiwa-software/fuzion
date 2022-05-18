@@ -708,15 +708,11 @@ public class Call extends AbstractCall
            generics.size() == 0);
 
         AbstractType t = target.asType(thiz, null).resolve(res, thiz);
-        if (t.isGenericArgument())
-          {
-            Errors.fatal(pos(), "NYI: 'A.type' for generic argument type not supported yet.", null);
-          }
-        else
-          {
-            calledFeature_ = t.typeFeature(res);
-          }
-        target = new Universe();
+        calledFeature_ = Types.resolved.f_Types_get;
+        generics = new List<>(t);
+        var tc = new Call(pos(), new Universe(), Types.resolved.f_Types);
+        tc.resolveTypes(res, thiz);
+        target = tc;
       }
     else if (calledFeature_ == null && name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
       {
@@ -765,12 +761,15 @@ public class Call extends AbstractCall
     var g = new List<AbstractType>();
     var a = new List<Expr>();
     var i = 0;
-    for (var aa : _actuals)
+    ListIterator<Expr> ai = _actuals.listIterator();
+    while (ai.hasNext())
       {
+        var aa = ai.next();
         if (i <  calledFeature_.typeArguments().size())
           {
             var ta = calledFeature_.typeArguments().get(i);
             g.add(aa.asType(outer, ta));
+            ai.set(null);  // make sure visit() no longer visits this
           }
         else
           {
@@ -795,7 +794,17 @@ public class Call extends AbstractCall
    */
   AbstractType asType(AbstractFeature outer, AbstractFeature tp)
   {
-    AbstractType result = new Type(pos(), name, generics,
+    var g = generics;
+    if (!_actuals.isEmpty())
+      {
+        g = new List<AbstractType>();
+        g.addAll(generics);
+        for (var a : _actuals)
+          {
+            g.add(a.asType(outer, tp));
+          }
+      }
+    AbstractType result = new Type(pos(), name, g,
                                    target == null || target instanceof Universe ? null : target.asType(outer, tp));
     return result.visit(Feature.findGenerics, outer);
   }
@@ -958,7 +967,11 @@ public class Call extends AbstractCall
        {
          while (i.hasNext())
            {
-             i.set(i.next().visit(v, outer));
+             var a = i.next();
+             if (a != null) // splitOffTypeArgs might have set this to null
+               {
+                 i.set(a.visit(v, outer));
+               }
            }
        },
        outer);
@@ -1223,6 +1236,16 @@ public class Call extends AbstractCall
    */
   private void resolveType(Resolution res, AbstractType t, AbstractFeature outer)
   {
+    /* make sure '.type' features are declared for all actual generics: */
+    for (var g : generics)
+      {
+        g.resolve(res, outer);
+        if (!g.isGenericArgument())
+          {
+            g.featureOfType().typeFeature(res);
+          }
+      }
+
     var tt = targetTypeOrConstraint(res);
     if (_select < 0 && t.isOpenGeneric())
       {
@@ -1258,7 +1281,39 @@ public class Call extends AbstractCall
             t = types.get(_select);
           }
       }
-    _type = t.resolve(res, tt.featureOfType());
+    if (calledFeature_.isTypeParameter())
+      {
+        if (_select >= 0 || calledFeature_.isOpenTypeParameter())
+          {
+            throw new Error("NYI (see #283): Calling open type parameter");
+          }
+        var tptype = t.resolve(res, tt.featureOfType());
+        if (!tptype.isGenericArgument() && tptype.compareTo(Types.resolved.t_object) != 0)
+          {
+            tptype = tptype.featureOfType().typeFeature(res).thisType();
+          }
+        _type = tptype;
+      }
+    else if (name == FuzionConstants.TYPE_NAME && calledFeature_ == Types.resolved.f_Types_get)
+      { // NYI (see #282): special handling could maybe be avoided?
+        var gt = generics.get(0);
+        if (gt.isGenericArgument())
+          {
+            _type = t.resolve(res, tt.featureOfType());
+          }
+        else
+          {
+            _type = gt.featureOfType().typeFeature(res).resultTypeIfPresent(res, t.generics());
+            if (_type == null)
+              {
+                throw new Error("NYI (see #283): resolveTypes for .type: resultType not present at "+pos().show());
+              }
+          }
+      }
+    else
+      {
+        _type = t.resolve(res, tt.featureOfType());
+      }
   }
 
 
@@ -1323,7 +1378,6 @@ public class Call extends AbstractCall
           }
       }
     while (last < next);
-
 
     List<Generic> missing = new List<Generic>();
     for (Generic g : cf.generics().list)
@@ -1536,7 +1590,10 @@ public class Call extends AbstractCall
             if (!at.containsUndefined(true))
               {
                 var rt = af.propagateExpectedType2(res, outer, at, true);
-                generics.set(ri, rt);
+                if (rt != null)
+                  {
+                    generics.set(ri, rt);
+                  }
                 foundAt[ri] = (foundAt[ri] == null ? "" : foundAt[ri]) + rt + " found at " + pos.show() + "\n";
                 result = true;
               }

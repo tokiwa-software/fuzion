@@ -33,6 +33,7 @@ import java.util.TreeSet;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -76,6 +77,20 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       return values()[ordinal];
     }
   }
+
+
+  /*------------------------  static variables  -------------------------*/
+
+
+  /**
+   * Counter for assigning unique names to typeFeature() results. This is
+   * currently used only for non-constructors since they do not create a type
+   * name.
+   *
+   * NYI (see #285): This might create name clashes since equal ids might be
+   * assigned to type features in different modules.
+   */
+  static int _typeFeatureId_ = 0;
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -134,6 +149,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * The formal generic arguments of this feature, cached result of generics()
    */
   private FormalGenerics _generics;
+
+
+  /**
+   * cached result of typeFeature()
+   */
+  private AbstractFeature _typeFeature = null;
 
 
   /*-----------------------------  methods  -----------------------------*/
@@ -412,6 +433,122 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
        );
 
     return result;
+  }
+
+
+  /**
+   * For a type feature, create the inheritance call for a parent type feature.
+   *
+   * @param p the source position
+   *
+   * @param typeParameters the type parameters passed to the call
+   *
+   * @param res Resolution instance used to resolve types in this call.
+   *
+   * @return instance of Call to be used for the parent call in typeFeature().
+   */
+  private Call typeCall(SourcePosition p, List<AbstractType> typeParameters, Resolution res)
+  {
+    var o = outer();
+    var oc = o == null || o.isUniverse()
+      ? new Universe()
+      : outer().typeCall(p, new List<>(), res);
+    var tf = typeFeature(res);
+    return new Call(p,
+                    tf.featureName().baseName(),
+                    typeParameters,
+                    Call.NO_PARENTHESES,
+                    oc,
+                    tf,
+                    tf.thisType());
+  }
+
+
+  /**
+   * For every Type 't', the corresponding type feature 't.type'.
+   *
+   * @param res Resolution instance used to resolve this for types.
+   *
+   * @return The feature describing this type.
+   */
+  public AbstractFeature typeFeature(Resolution res)
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(Feature.State.FINDING_DECLARATIONS),
+       res != null);
+
+    if (!hasTypeFeature())
+      {
+        var o = outer() == null || outer().isUniverse() ? universe() : outer().typeFeature(res);
+        var name = featureName().baseName() + "." + FuzionConstants.TYPE_NAME;
+        if (!isConstructor() && !isChoice())
+          {
+            name = name + "_" + (_typeFeatureId_++);
+          }
+        var p = pos();
+        // redef name := "<type name>"
+        var n = new Feature(p, Consts.VISIBILITY_PUBLIC, Consts.MODIFIER_REDEFINE, new Type("string"), "name", new Contract(null, null, null), Impl.FIELD);
+        // type.#type : p1.#type, p2.#type is
+        //   redef name => "<type name>"
+        var inh = new List<AbstractCall>();
+        for (var pc: inherits())
+          {
+            var c = pc.calledFeature().typeCall(p,
+                                                true ? new List<>() : pc.generics(), // NYI (see #284): Support generics in parent types!
+                                                res);
+            inh.add(c);
+          }
+        if (inh.isEmpty())
+          {
+            inh.add(new Call(p, "Type"));
+          }
+        var tf = new Feature(p, visibility(), 0, NoType.INSTANCE, new List<>(name), new List<Feature>(),
+                             inh,
+                             new Contract(null,null,null),
+                             new Impl(p, new Block(p, new List<>(n)), Impl.Kind.Routine));
+        _typeFeature = tf;
+        res._module.findDeclarations(tf, o);
+        tf.scheduleForResolution(res);
+        res.resolveDeclarations(tf);
+      }
+    return typeFeature();
+  }
+
+
+  /**
+   * Check if a typeFeature exists already, either because this feature was
+   * loaded from a library .fum file that includes a typeFeature, or because one
+   * was created explicitly using typeFeature(res).
+   */
+  public boolean hasTypeFeature()
+  {
+    return _typeFeature != null || existingTypeFeature() != null;
+  }
+
+
+  /**
+   * Return existing typeFeature.
+   */
+  public AbstractFeature typeFeature()
+  {
+    if (PRECONDITIONS) require
+      (hasTypeFeature());
+
+    if (_typeFeature == null)
+      {
+        _typeFeature = existingTypeFeature();
+      }
+    return _typeFeature;
+  }
+
+
+  /**
+   * If we have an existing type feature (store in a .fum library file), return that
+   * type feature. return null otherwise.
+   */
+  public AbstractFeature existingTypeFeature()
+  {
+    return null;
   }
 
 
@@ -1150,6 +1287,31 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       }
     return _generics;
   }
+
+
+  /**
+   * Return the index of this type parameter within the type arguments of its
+   * outer feature.
+   *
+   * @return the index such that formalGenerics.get(result)) this
+   */
+  public int typeParameterIndex()
+  {
+    if (PRECONDITIONS) require
+      (isTypeParameter());
+
+    var result = 0;
+    for (var tp : outer().typeArguments())
+      {
+        if (tp == this)
+          {
+            return result;
+          }
+        result++;
+      }
+    throw new Error("AbstractFeature.typeParameterIndex() failed for " + this);
+  }
+
 
 }
 

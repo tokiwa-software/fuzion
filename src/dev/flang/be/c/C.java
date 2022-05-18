@@ -525,9 +525,7 @@ public class C extends ANY
               var val = pop(stack, vc);
               var t = _names.newTemp();
               o = CStmnt.seq(CStmnt.lineComment("Box " + _fuir.clazzAsString(vc)),
-                             CStmnt.decl(_types.clazz(rc), t),
-                             t.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType(_names.struct(rc))))),
-                             t.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(rc)),
+                             declareAllocAndInitClazzId(rc, t),
                              assign(fields(t, rc), val, vc));
               push(stack, rc, t);
             }
@@ -774,6 +772,19 @@ public class C extends ANY
 
 
   /**
+   * Create code to declare local var 'tmp', malloc an instance of clazz 'cl',
+   * assign it to 'tmp' and, for a ref clazz, init the CLAZZ_ID field.
+   */
+  CStmnt declareAllocAndInitClazzId(int cl, CIdent tmp)
+  {
+    var t = _names.struct(cl);
+    return CStmnt.seq(CStmnt.decl(t + "*", tmp),
+                      tmp.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType(t)))),
+                      _fuir.clazzIsRef(cl) ? tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(cl)) : CStmnt.EMPTY);
+  }
+
+
+  /**
    * Create code to create a constant string and assign it to a new temp
    * variable.
    *
@@ -790,9 +801,7 @@ public class C extends ANY
     var data          = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_data());
     var length        = _names.fieldName(_fuir.clazz_fuzionSysArray_u8_length());
     var sysArray = fields(tmp, cs).field(internalArray);
-    return CStmnt.seq(CStmnt.decl(_types.clazz(cs), tmp),
-                      tmp.assign(CExpr.call("malloc", new List<>(tmp.deref().sizeOfExpr()))),
-                      tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(cs)),
+    return CStmnt.seq(declareAllocAndInitClazzId(cs, tmp),
                       sysArray.field(data  ).assign(bytes.castTo("void *")),
                       sysArray.field(length).assign(len));
   }
@@ -1089,11 +1098,7 @@ public class C extends ANY
       (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine || pre);
 
     _names._tempVarId = 0;  // reset counter for unique temp variables for function results
-    var l = new List<CStmnt>();
-    var t = _names.struct(cl);
-    l.add(CStmnt.decl(t + "*", _names.CURRENT, CExpr.call("malloc", new List<>(CExpr.sizeOfType(t)))));
-    l.add(_fuir.clazzIsRef(cl) ? _names.CURRENT.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(cl)) : CStmnt.EMPTY);
-
+    var l = new List<CStmnt>(declareAllocAndInitClazzId(cl, _names.CURRENT));
     var cur = _fuir.clazzIsRef(cl) ? fields(_names.CURRENT, cl)
                                    : _names.CURRENT.deref();
     var vcl = _fuir.clazzAsValue(cl);

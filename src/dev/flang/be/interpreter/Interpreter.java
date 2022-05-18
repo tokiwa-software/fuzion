@@ -807,7 +807,18 @@ public class Interpreter extends ANY
             break;
           case TypeParameter:
             {
-              result = (args) -> { throw new Error("NYI: cannot call type parameter (yet)"); };
+              result = (args) -> {
+                var rc = innerClazz.resultClazz();
+                var r = new Instance(rc);
+                var or = rc.feature().outerRef();
+                if (or != null && Clazzes.isUsedAtAll(or))
+                  {
+                    setOuter(rc.feature(), rc, r, new Instance(rc._outer));
+                  }
+                var name = rc.lookup(Types.resolved.f_Type_name, dev.flang.ast.Call.NO_GENERICS, Clazzes.isUsedAt(rc.feature()));
+                setField(name.feature(), -1,  rc, r, value(innerClazz.typeParameterActualType()._type.asString()));
+                return r;
+              };
               break;
             }
           default:
