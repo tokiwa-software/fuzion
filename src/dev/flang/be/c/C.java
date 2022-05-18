@@ -170,8 +170,8 @@ public class C extends ANY
       }
     Errors.showAndExit();
 
-    // NYI link libmath only when needed
-    var command = new List<String>("clang", "-O3", "-lm", "-o", name, cname);
+    // NYI link libmath, libpthread only when needed
+    var command = new List<String>("clang", "-O3", "-lm", "-lpthread", "-o", name, cname);
     _options.verbosePrintln(" * " + command.toString("", " ", ""));;
     try
       {
