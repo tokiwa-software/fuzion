@@ -85,6 +85,7 @@ public class Intrinsics extends ANY
     put("fuzion.std.out.write" ,
         "fuzion.std.err.write" , (c,cl,outer,in) ->
         {
+          // How do I print a non-null-terminated strings: https://stackoverflow.com/a/25111267
           return CExpr.call("fwrite",
                               new List<>(
                                 A0.castTo("void *"),
