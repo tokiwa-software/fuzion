@@ -220,7 +220,8 @@ private RESTART is
 private OK is
 
 # the ctrie
-private CTrie<CTK: hasHash<CTK>, CTV>(root choice<INode<CTK,CTV>, RDCSS_Descriptor>, read_only bool) : map<CTK, CTV>
+# NYI marking ctrie as ref see issue https://github.com/tokiwa-software/fuzion/issues/304
+private CTrie<CTK: hasHash<CTK>, CTV>(root choice<INode<CTK,CTV>, RDCSS_Descriptor>, read_only bool) ref : map<CTK, CTV>
 is
 
   private CAS_ROOT(ov, nv choice<INode<CTK,CTV>, RDCSS_Descriptor>) =>
