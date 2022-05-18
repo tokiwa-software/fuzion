@@ -30,11 +30,20 @@ ctrie_test is
   removed := psSet 0..100:2
   readded := psSet 0..100:3
 
+  # snapshot
+  no_items := ctrie.items
+
   for k in all do
     ctrie.add k "v$k"
 
+  # snapshot
+  all_items := ctrie.items
+
   for k in removed do
     ctrie.remove k
+
+  # snapshot
+  half_of_items := ctrie.items
 
   for k in readded do
     ctrie.add k "v$k"
@@ -51,6 +60,15 @@ ctrie_test is
 
   if ctrie.size /= yes.size
     panic "ctrie size is incorrect"
+
+  if no_items.count /= 0
+    panic "no items count should be zero"
+
+  if all_items.count /= 101
+    panic "all items count should be 101"
+
+  if half_of_items.count /= 50
+    panic "half of items should be 50"
 
   say "all 😀"
 

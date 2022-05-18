@@ -37,6 +37,7 @@
 # snapshot, amortized size retrieval, clear  : O(1)
 #
 # NYI (atomic) CAS
+# NYI insertif
 #
 # glossary:
 # CTK => ctrie key
@@ -395,7 +396,12 @@ is
         else
           match cn.array[pos.as_i32]
             sin INode =>
-              ilookup sin k (lev + W) i gen
+              if read_only || gen = sin.data.gen
+                ilookup sin k (lev + W) i gen
+              else
+                match i.GCAS m (MainNode (cn.renewed gen CTrie.this) gen) CTrie.this
+                  OK => ilookup i k lev parent gen
+                  RESTART => RESTART
             sn SNode =>
               if sn.k = k
                 sn.v
@@ -436,11 +442,16 @@ is
         else
           match cn.array[pos.as_i32]
             sin INode =>
-              iinsert sin k v (lev+W) i gen
+              if m.gen = gen
+                iinsert sin k v (lev+W) i gen
+              else
+                match (i.GCAS m (MainNode (cn.renewed gen CTrie.this) gen) CTrie.this)
+                  OK => iinsert i k v lev parent gen
+                  RESTART => RESTART
             sn SNode =>
               if sn.k /= k
                 nin := INode (dual sn (SNode k v) (lev + W) i.data.gen)
-                ncn := cn.updated pos nin
+                ncn := (if m.gen = gen then cn else cn.renewed gen CTrie.this).updated pos nin
                 i.GCAS m (MainNode ncn gen) CTrie.this
               else
                 ncn := cn.updated pos (SNode k v)
@@ -471,7 +482,12 @@ is
         else
           res choice<RESTART, NOTFOUND, CTV> := match cn.array[pos.as_i32]
             sin INode =>
-              iremove sin k (lev + W) i gen
+              if sin.data.gen = gen
+                iremove sin k (lev + W) i gen
+              else
+                match (i.GCAS m (MainNode (cn.renewed gen CTrie.this) gen) CTrie.this)
+                  OK => iremove i k lev parent gen
+                  RESTART => RESTART
             sn SNode =>
               if sn.k /= k
                 NOTFOUND
