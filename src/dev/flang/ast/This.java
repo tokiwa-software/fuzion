@@ -115,10 +115,6 @@ public class This extends ExprWithPos
    * resolution.
    *
    * @param pos the sourcecode position, used for error messages.
-   *
-   * @param cur the current feature that contains this this expression
-   *
-   * @param f the outer feature whose instance we want to access.
    */
   public This(SourcePosition pos)
   {

@@ -241,6 +241,11 @@ Sequence<T> ref is
   asString (sep string) => asList.asString sep
 
 
+  # call 'asString' on the elements
+  #
+  as_strings => mapSequence c->c.asString
+
+
   # map the Sequence to a new Sequence applying function f to all elements
   #
   # This performs a lazy mapping, f is called only when the elements

@@ -40,16 +40,16 @@ quantors is
   # longer need this code duplication here:
   #   forAll<A...>(f Function<bool, A>) bool is intrinsic
   #
-  forAll  <A0                           >(f Function<bool, A0                                    >) bool is intrinsic
-  forAll2 <A0,A1                        >(f Function<bool, A0, A1                                >) bool is intrinsic
-  forAll3 <A0,A1,A2                     >(f Function<bool, A0, A1, A2                            >) bool is intrinsic
-  forAll4 <A0,A1,A2,A3                  >(f Function<bool, A0, A1, A2, A3                        >) bool is intrinsic
-  forAll5 <A0,A1,A2,A3,A4               >(f Function<bool, A0, A1, A2, A3, A4                    >) bool is intrinsic
-  forAll6 <A0,A1,A2,A3,A4,A5            >(f Function<bool, A0, A1, A2, A3, A4, A5                >) bool is intrinsic
-  forAll7 <A0,A1,A2,A3,A4,A5,A6         >(f Function<bool, A0, A1, A2, A3, A4, A5, A6            >) bool is intrinsic
-  forAll8 <A0,A1,A2,A3,A4,A5,A6,A7      >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7        >) bool is intrinsic
-  forAll9 <A0,A1,A2,A3,A4,A5,A6,A7,A8   >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8    >) bool is intrinsic
-  forAll10<A0,A1,A2,A3,A4,A5,A6,A7,A8,A9>(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9>) bool is intrinsic
+  forAll  <A0                           >(f Function<bool, A0                                    >) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll2 <A0,A1                        >(f Function<bool, A0, A1                                >) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll3 <A0,A1,A2                     >(f Function<bool, A0, A1, A2                            >) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll4 <A0,A1,A2,A3                  >(f Function<bool, A0, A1, A2, A3                        >) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll5 <A0,A1,A2,A3,A4               >(f Function<bool, A0, A1, A2, A3, A4                    >) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll6 <A0,A1,A2,A3,A4,A5            >(f Function<bool, A0, A1, A2, A3, A4, A5                >) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll7 <A0,A1,A2,A3,A4,A5,A6         >(f Function<bool, A0, A1, A2, A3, A4, A5, A6            >) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll8 <A0,A1,A2,A3,A4,A5,A6,A7      >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7        >) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll9 <A0,A1,A2,A3,A4,A5,A6,A7,A8   >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8    >) bool is fuzion.std.panic "quantors are for analysis only"
+  forAll10<A0,A1,A2,A3,A4,A5,A6,A7,A8,A9>(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9>) bool is fuzion.std.panic "quantors are for analysis only"
 
   # short-hand forAll using '∀' symbol
   prefix ∀ <A>(f Function<bool, A>) => forAll f
@@ -63,16 +63,16 @@ quantors is
   # longer need this code duplication here:
   #   exists<A...>(f Function<bool, A>) bool is intrinsic
   #
-  exists  <A0                           >(f Function<bool, A0                                    >) bool is intrinsic
-  exists2 <A0,A1                        >(f Function<bool, A0, A1                                >) bool is intrinsic
-  exists3 <A0,A1,A2                     >(f Function<bool, A0, A1, A2                            >) bool is intrinsic
-  exists4 <A0,A1,A2,A3                  >(f Function<bool, A0, A1, A2, A3                        >) bool is intrinsic
-  exists5 <A0,A1,A2,A3,A4               >(f Function<bool, A0, A1, A2, A3, A4                    >) bool is intrinsic
-  exists6 <A0,A1,A2,A3,A4,A5            >(f Function<bool, A0, A1, A2, A3, A4, A5                >) bool is intrinsic
-  exists7 <A0,A1,A2,A3,A4,A5,A6         >(f Function<bool, A0, A1, A2, A3, A4, A5, A6            >) bool is intrinsic
-  exists8 <A0,A1,A2,A3,A4,A5,A6,A7      >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7        >) bool is intrinsic
-  exists9 <A0,A1,A2,A3,A4,A5,A6,A7,A8   >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8    >) bool is intrinsic
-  exists10<A0,A1,A2,A3,A4,A5,A6,A7,A8,A9>(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9>) bool is intrinsic
+  exists  <A0                           >(f Function<bool, A0                                    >) bool is fuzion.std.panic "quantors are for analysis only"
+  exists2 <A0,A1                        >(f Function<bool, A0, A1                                >) bool is fuzion.std.panic "quantors are for analysis only"
+  exists3 <A0,A1,A2                     >(f Function<bool, A0, A1, A2                            >) bool is fuzion.std.panic "quantors are for analysis only"
+  exists4 <A0,A1,A2,A3                  >(f Function<bool, A0, A1, A2, A3                        >) bool is fuzion.std.panic "quantors are for analysis only"
+  exists5 <A0,A1,A2,A3,A4               >(f Function<bool, A0, A1, A2, A3, A4                    >) bool is fuzion.std.panic "quantors are for analysis only"
+  exists6 <A0,A1,A2,A3,A4,A5            >(f Function<bool, A0, A1, A2, A3, A4, A5                >) bool is fuzion.std.panic "quantors are for analysis only"
+  exists7 <A0,A1,A2,A3,A4,A5,A6         >(f Function<bool, A0, A1, A2, A3, A4, A5, A6            >) bool is fuzion.std.panic "quantors are for analysis only"
+  exists8 <A0,A1,A2,A3,A4,A5,A6,A7      >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7        >) bool is fuzion.std.panic "quantors are for analysis only"
+  exists9 <A0,A1,A2,A3,A4,A5,A6,A7,A8   >(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8    >) bool is fuzion.std.panic "quantors are for analysis only"
+  exists10<A0,A1,A2,A3,A4,A5,A6,A7,A8,A9>(f Function<bool, A0, A1, A2, A3, A4, A5, A6, A7, A8, A9>) bool is fuzion.std.panic "quantors are for analysis only"
 
   # short-hand exists using '∃' symbol
   prefix ∃ <A>(f Function<bool, A>) => exists f

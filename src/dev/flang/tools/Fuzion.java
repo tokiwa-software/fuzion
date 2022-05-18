@@ -106,6 +106,33 @@ class Fuzion extends Tool
         return new String(""); /* tricky: empty string != "" */
       }
     },
+    checkIntrinsics("-XXcheckIntrinsics")
+    {
+      boolean needsSources()
+      {
+        return false;
+      }
+      boolean needsMain()
+      {
+        return false;
+      }
+      boolean processFrontEnd(FrontEnd fe)
+      {
+        new CheckIntrinsics(fe);
+        return true;
+      }
+    },
+    saveBaseLib("-XsaveBaseLib")
+    {
+      boolean needsSources()
+      {
+        return true;
+      }
+      boolean needsMain()
+      {
+        return false;
+      }
+    },
     undefined;
 
     /**
@@ -159,6 +186,31 @@ class Fuzion extends Tool
     String usage()
     {
       return "";
+    }
+
+    /**
+     * Does this backend require the front end to load sources?
+     */
+    boolean needsSources()
+    {
+      return true;
+    }
+
+    /**
+     * Does this backend require a main feature or main file or '-' for stdin?
+     */
+    boolean needsMain()
+    {
+      return true;
+    }
+
+    /**
+     * If this backend processes the front end data directly, this method will
+     * do that and return true.
+     */
+    boolean processFrontEnd(FrontEnd fe)
+    {
+      return false;
     }
   }
 
@@ -490,33 +542,44 @@ class Fuzion extends Tool
               }
           }
       }
-    if (_main == null && !_readStdin && _saveBaseLib == null)
+    if (_saveBaseLib != null)
+      {
+        if (_backend == Backend.undefined)
+          {
+            _backend = Backend.saveBaseLib;
+          }
+        else
+          {
+            fatal("no backend may be specified in conjunction with -XsaveBaseLib");
+          }
+      }
+    else if (_backend == Backend.saveBaseLib)
+      {
+        _saveBaseLib = Path.of("base.fum");
+      }
+    if (_backend == Backend.undefined)
+      {
+        _backend = Backend.interpreter;
+      }
+    if (_main == null && !_readStdin && _backend.needsMain())
       {
         fatal("missing main feature name in command line args");
       }
-    if (_saveBaseLib != null && _main != null)
+    if (!_backend.needsMain() && _main != null)
       {
-        fatal("no main feature '" + _main + "' may be given if -XsaveBaseLib is set");
+        fatal("no main feature '" + _main + "' may be given for backend '" + _backend + "'");
       }
-    if (_saveBaseLib != null && _readStdin)
+    if (!_backend.needsMain() && _readStdin)
       {
-        fatal("no '-' to read from stdin may be given if -XsaveBaseLib is set");
+        fatal("no '-' to read from stdin may be given for backend '" + _backend + "'");
       }
-    if (_saveBaseLib != null && _backend != Backend.undefined)
-      {
-        fatal("no backend may be specified in conjunction with -XsaveBaseLib");
-      }
-    if (_eraseInternalNamesInLib != null && _saveBaseLib == null)
+    if (_eraseInternalNamesInLib != null && _backend == Backend.saveBaseLib)
       {
         fatal("-XeraseInternalNamesInLib may only be specified when creating a library using -XsaveBaseLib");
       }
     if (_main != null && _readStdin)
       {
         fatal("cannot process main feature name together with stdin input");
-      }
-    if (_backend == Backend.undefined)
-      {
-        _backend = Backend.interpreter;
       }
     if (_fuzionHome == null)
       {
@@ -532,7 +595,8 @@ class Fuzion extends Tool
                                           _debugLevel,
                                           _safety,
                                           _readStdin,
-                                          _main);
+                                          _main,
+                                          _backend.needsSources());
         if (_backend == Backend.c)
           {
             options.setTailRec();
@@ -540,7 +604,7 @@ class Fuzion extends Tool
         long jvmStartTime = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime();
         long prepTime = System.currentTimeMillis();
         var fe = new FrontEnd(options);
-        if (_saveBaseLib == null)
+        if (_saveBaseLib == null && !_backend.processFrontEnd(fe))
           {
             var mir = fe.createMIR();
             long feTime = System.currentTimeMillis();
@@ -573,6 +637,8 @@ class Fuzion extends Tool
         else
           {
             long feTime = System.currentTimeMillis();
+            feTime -= prepTime;
+            prepTime -= jvmStartTime;
             options.verbosePrintln(1, "Elapsed time for phases: prep "+prepTime+"ms, fe "+feTime+"ms");
           }
       };

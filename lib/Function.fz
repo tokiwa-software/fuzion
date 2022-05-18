@@ -27,7 +27,10 @@
 #
 Function(R type, A type...) ref is
 
+  # call this function on given arguments A...
+  #
   call(a A) R is abstract
+
 
 # NYI: function composition: This needs a solution for either restricing A...
 # to a single argument or for converting a tuple result into A...
@@ -40,3 +43,29 @@ Function(R type, A type...) ref is
 #
 #  # short-hand infix operation for composition
 #  infix ∘ (f fun (B) A) => compose f
+
+
+# NYI: would be nice to have schönfinkeling defined here, could work like this:
+#
+#  curry(x A.0) Function(R, A.1...) is
+#    curried Function(R, A1...) is
+#      call(a A1...) is Function.this.call x a...
+#    curried
+#
+# --or, with different syntax sugar--
+#
+#  curry(x A.0) R->A.1... is x,a... -> call x a...
+#
+# where A.1... is the tail of type argument A (might be empty), and A.0 is the first element,
+# void (or unit?) if it does not exist.
+
+
+# Functions -- unit type containing features related to functions but not requiring an instance
+#
+Functions is
+
+  # compose g ∘ f
+  #
+  compose(A,B,C type,
+          g B -> C,
+          f A -> B) A -> C is a -> g (f a)

@@ -137,7 +137,7 @@ public abstract class Module extends ANY
    *
    * @param outer the declaring feature
    */
-  abstract SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer);
+  public abstract SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer);
 
 
   /**

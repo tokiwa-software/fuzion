@@ -454,15 +454,13 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       ? new Universe()
       : outer().typeCall(p, new List<>(), res);
     var tf = typeFeature(res);
-    var c = new Call(p,
-                     tf.featureName().baseName(),
-                     typeParameters,
-                     Call.NO_PARENTHESES,
-                     oc,
-                     tf,
-                     tf.thisType());
-    c.resolveTypes(res, this);
-    return c;
+    return new Call(p,
+                    tf.featureName().baseName(),
+                    typeParameters,
+                    Call.NO_PARENTHESES,
+                    oc,
+                    tf,
+                    tf.thisType());
   }
 
 
@@ -524,11 +522,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   public boolean hasTypeFeature()
   {
-    if (_typeFeature == null)
-      {
-        _typeFeature = existingTypeFeature();
-      }
-    return _typeFeature != null;
+    return _typeFeature != null || existingTypeFeature() != null;
   }
 
 
@@ -540,6 +534,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
     if (PRECONDITIONS) require
       (hasTypeFeature());
 
+    if (_typeFeature == null)
+      {
+        _typeFeature = existingTypeFeature();
+      }
     return _typeFeature;
   }
 
