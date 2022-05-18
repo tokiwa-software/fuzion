@@ -148,7 +148,7 @@ public class Intrinsics extends ANY
         var s = outOrErr(n);
         result = (args) ->
           {
-            s.write(args.get(1).u8Value());
+            s.writeBytes((byte[])args.get(1).arrayData()._array);
             return Value.EMPTY_VALUE;
           };
       }
