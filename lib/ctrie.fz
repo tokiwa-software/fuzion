@@ -61,6 +61,7 @@ private TNode<CTK,CTV>(sn SNode<CTK,CTV>) is
 
 
 # a singleton node
+# the node type containing actual data
 private SNode<CTK,CTV>(k CTK, v CTV) is
   redef asString => "SNode($k, $v)"
 
@@ -81,20 +82,25 @@ private Branch<CTK,CTV> : choice<INode<CTK,CTV>,SNode<CTK,CTV>> is
 
 
 # a container node
+# consists of a bitmap of filled spaces and an array of child nodes
 private CNode<CTK,CTV>(bmp u32, array array<Branch<CTK,CTV>>) is
 
-  # copy of this cnode with updated node at pos
+  # update a child node and return a new cnode
   updated(pos u32, node Branch<CTK,CTV>) =>
     CNode bmp (array.put pos.as_i32 node)
 
+  # insert a child node and return a new cnode
   inserted(pos, flag u32, sn SNode<CTK,CTV>) =>
     CNode (bmp | flag) (array.insert pos.as_i32 sn).asArray
 
+  # remove a child node and return a new cnode
   removed(pos, flag u32) =>
     # NYI delete/remove should be in stdlib
     tmp := array.take pos.as_i32 ++ array.drop (pos + 1).as_i32
     CNode (bmp ^ flag) tmp.asArray
 
+
+  # create copy of this cnode and children
   renewed(new_gen i32, ct ref CTrie<CTK,CTV>) =>
     copy := array.map<Branch<CTK,CTV>>((x) ->
       match x
@@ -110,7 +116,7 @@ private CNode<CTK,CTV>(bmp u32, array array<Branch<CTK,CTV>>) is
 
 
 # a container, T or linked list node
-# NYI should inhert from choice but nesting of choices leads to bugs currently
+# NYI should probably inhert from choice but nesting of choices leads to bugs currently, see: https://github.com/tokiwa-software/fuzion/issues/213
 private MainNode<CTK,CTV>(data choice<CNode<CTK,CTV>,TNode<CTK,CTV>,LNode<CTK,CTV>>, gen i32) ref : hasEquals<MainNode<CTK,CTV>> is
   redef asString =>
     match data
@@ -118,16 +124,22 @@ private MainNode<CTK,CTV>(data choice<CNode<CTK,CTV>,TNode<CTK,CTV>,LNode<CTK,CT
       tNode TNode => "$tNode"
       lNode LNode => "$lNode"
 
+  # NYI
   infix = (o MainNode<CTK,CTV>) bool is
     MainNode.this.hashCode = o.hashCode
 
-  asList =>
+  asList
+  pre match prev
+    nil => true
+    * => false
+   =>
     match data
       cNode CNode => cNode.asList
       tNode TNode => tNode.asList
       lNode LNode => lNode.mapSequence<tuple<CTK,CTV>>(sn -> (sn.k, sn.v))
 
 
+  # a previous node that gets set during a generational aware compare and set
   prev choice<FNode<CTK,CTV>, MainNode<CTK,CTV>, nil> := nil
   set_prev(m MainNode<CTK,CTV>) unit
   pre match prev
@@ -136,6 +148,7 @@ private MainNode<CTK,CTV>(data choice<CNode<CTK,CTV>,TNode<CTK,CTV>,LNode<CTK,CT
   is
     set prev := m
 
+  # compare and set `prev`
   CAS_PREV(o,n choice<FNode<CTK,CTV>, MainNode<CTK,CTV>, nil>) =>
     # NYI
     match n
@@ -182,12 +195,14 @@ private INode<CTK,CTV>(data MainNode<CTK,CTV>) ref : hasEquals<INode<CTK,CTV>> i
           m.CAS_PREV n (FNode n)
           GCAS_Commit data ct
 
+  # read `data`, if prev is set commit first
   private GCAS_READ(ct ref CTrie<CTK,CTV>) MainNode<CTK,CTV> is
     m := data
     match m.prev
       nil => m
       * => (GCAS_Commit m ct)
 
+  # generation aware compare and set
   GCAS(o MainNode<CTK,CTV>, n MainNode<CTK,CTV>, ct ref CTrie<CTK,CTV>) choice<RESTART, OK> is
     n.set_prev o
     if(CAS o n)
@@ -198,17 +213,24 @@ private INode<CTK,CTV>(data MainNode<CTK,CTV>) ref : hasEquals<INode<CTK,CTV>> i
     else
       RESTART
 
+
+  # copy this node to a new generation
   private copy_to_gen(new_gen i32, ct ref CTrie<CTK,CTV>) INode<CTK,CTV> is
     m := GCAS_READ ct
     # increase the generation of node by one
     INode (MainNode m.data new_gen)
 
+  # NYI
   infix = (o INode<CTK,CTV>) bool is
     INode.this.hashCode = o.hashCode
 
   redef asString => "INode($data)"
 
-  asList list<tuple<CTK, CTV>> is data.asList
+  asList list<tuple<CTK, CTV>>
+  pre match data.prev
+    nil => true
+    * => false
+  is data.asList
 
 
 # a linked list node
@@ -274,11 +296,14 @@ is
   NOTFOUND is
     redef asString => "not found"
 
-  # 2^5 = 32
+
+  # the width of the branching factor, 2^5 = 32
   private W := u32 5
 
+
+  # convert u64 hash to u32 hash
   private hash(h u64) u32 is
-    h.hash.as_u32
+    h.low32bits
 
 
   # returns flag and the position in the CNode for given params
@@ -515,10 +540,13 @@ is
           OK => find ln k
           RESTART => RESTART
 
+
+  # the size of the ctrie
   redef size i32 is
     items.count
 
 
+  # lookup an element with bracket syntax
   redef index [] (k CTK) option<CTV> is
     lookup k
 
@@ -532,6 +560,8 @@ is
     else
       snapshot read_only
 
+
+  # a snapshot of the ctrie as sequence auf key-value tuples
   redef items Sequence<tuple<CTK,CTV>> is
     (snapshot true)
       .RDCSS_READ_ROOT
