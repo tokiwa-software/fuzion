@@ -1,3 +1,38 @@
+## 2022-05-18: V0.073
+
+- Fuzion language
+
+  - add support for calling type parameters, i.e., in a feature `f(X type)`, it
+    is now possible to call `X` as in `say X`.  The result is an instance of
+    feature `Type`.
+
+  - add support to declare inner feature in type feature, e.g.
+    ```
+      i32.type.blabla is say "this is blabla in i32.type"
+    ```
+  - type features now inherit from the type features of corresponding to the
+    plain features their corresponding plain feature inherits from.
+
+- stdlib
+
+  - added `fract`, `floor`, `ceil` to `float`.
+
+  - fixed `stream.asList` to work if called repeatedly.
+
+  - fixed `print` and `println` to stdout/stderr to print the whole string
+    atomically at once, i.e., no longer split it up into single characters.
+
+  - added `io.stdin`.
+
+  - added `Functions.compose`.
+
+  - added effect `mutate`. A mutable field `f` with initial value `v` can now be
+    created using `f := mut v`
+
+- fum/fuir:
+
+  - add support for type parameters in .fum file
+
 ## 2022-04-23: V0.072
 
 - Front End
