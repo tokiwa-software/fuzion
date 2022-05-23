@@ -1148,6 +1148,10 @@ public class Feature extends AbstractFeature implements Stmnt
                     cyclicInheritanceError(p, i);
                   }
               }
+            if (!parent.isConstructor() && !parent.isChoice() /* choice is handled in choiceTypeCheckAndInternalFields */)
+              {
+                AstErrors.parentMustBeConstructor(p.pos(), this, parent);
+              }
           }
         _state = State.RESOLVED_INHERITANCE;
         res.scheduleForDeclarations(this);

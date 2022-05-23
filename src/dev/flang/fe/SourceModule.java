@@ -673,7 +673,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         if (CHECKS) check
           (Errors.count() > 0 || cf != null);
 
-        if (cf != null)
+        if (cf != null && cf.isConstructor() || cf.isChoice())
           {
             data(cf)._heirs.add(outer);
             _res.resolveDeclarations(cf);

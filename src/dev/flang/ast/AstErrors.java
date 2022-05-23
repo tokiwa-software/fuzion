@@ -1172,7 +1172,17 @@ public class AstErrors extends ANY
     error(pos,
           "Cannot inherit from choice feature",
           "Choice must be leaf.");
+  }
 
+  static void parentMustBeConstructor(SourcePosition pos, Feature heir, AbstractFeature parent)
+  {
+    error(pos,
+          "Cannot inherit from non-constructor feature",
+          "The parents of feature "+s(heir)+" include "+s(parent)+", which is not a constructor but a "+
+          "'" + parent.kind() + "'.\n"+
+          "Parent declared at " + parent.pos().show() +
+          "To solve this, you might remove the inheritance cal to " + s(parent) + " or you could change " + s(parent) +
+          " into a constructor, i.e., a feature without explicit result type declared using "+code("is")+".");
   }
 
   static void recursiveInheritance(SourcePosition pos, Feature f, String cycle)

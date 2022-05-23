@@ -234,7 +234,7 @@ inheritance is
     cnt_A_y := 0
     cnt_C_y := 0
     A is
-      x => y
+      x is rx := y
       y i32 is
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
@@ -249,11 +249,10 @@ inheritance is
         say i
         chck i=1 "call to y in arguments must be performed on heir instance"
 
-      # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
-      B ref : x, y, C, D y is
+      B ref : x, C, D y is
 
     A.B
-    chck cnt_A_y=2 "inherits calls to x and y must be performed in outer feature A"
+    chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
     chck cnt_C_y=1 "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args
 
@@ -269,7 +268,7 @@ inheritance is
     cnt_A_y := 0
     cnt_C_y := 0
     A ref is
-      x => y
+      x is rx := y
       y i32 is
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
@@ -284,11 +283,10 @@ inheritance is
         say i
         chck i=1 "call to y in arguments must be performed on heir instance"
 
-      # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
-      B ref : x, y, C, D x is
+      B ref : x, C, D y is
 
     A.B
-    chck cnt_A_y=2 "inherits calls to x and y must be performed in outer feature A"
+    chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
     chck cnt_C_y=1 "C.y must be called exactly once as argument to parent D(y)"
   call_inherited_from_parent_args2
 
@@ -316,7 +314,7 @@ inheritance is
     cnt_A_y := 0
     cnt_C_y := 0
     A is
-      x => y
+      x is rx := y
       y i32 is
         set cnt_A_y := cnt_A_y + 1
         say "inherit.A.y"
@@ -331,11 +329,10 @@ inheritance is
         say i
         chck i=1 "call to y in arguments must be performed on heir instance"
 
-      # NYI: B inherits from x, y, which are functions and not constructors. This should be forbidden
-      B ref : x, y, C, D x is
+      B ref : x, C, D y is
 
     A.B
-    chck cnt_A_y=2 "inherits calls to x and y must be performed in outer feature A"
+    chck cnt_A_y=1 "inherits calls to x must be performed in outer feature A"
     chck cnt_C_y=1 "C.y must be called exactly once via x as argument to parent D(x)"
   call_inherited_from_parent_args3
 
