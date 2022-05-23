@@ -571,26 +571,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Add inner to the set of declared inner features of outer using the given
-   * feature name fn.
-   *
-   * Note that inner must be declared in this module, but outer may be defined
-   * in a different module.  E.g. #universe is declared in stdlib, while an
-   * inner feature 'main' may be declared in the application's module.
-   *
-   * @param outer the declaring feature
-   *
-   * @param fn the name of the declared feature
-   *
-   * @param inner the inner feature.
-   */
-  void addDeclaredInnerFeature(AbstractFeature outer, FeatureName fn, Feature inner)
-  {
-    declaredFeatures(outer).put(fn, inner);
-  }
-
-
-  /**
    * Get declared features for given outer Feature as seen by this module.
    * Result is never null.
    *
@@ -816,6 +796,17 @@ public class SourceModule extends Module implements SrcModule, MirModule
   }
 
 
+  /**
+   * Add inner to the set of declared inner features of outer.
+   *
+   * Note that inner must be declared in this module, but outer may be defined
+   * in a different module.  E.g. #universe is declared in stdlib, while an
+   * inner feature 'main' may be declared in the application's module.
+   *
+   * @param outer the declaring feature
+   *
+   * @param f the inner feature.
+   */
   void addDeclaredInnerFeature(AbstractFeature outer, Feature f)
   {
     if (PRECONDITIONS) require
@@ -860,7 +851,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
               }
           }
       }
-    addDeclaredInnerFeature(outer, fn, f);
+    df.put(fn, f);
     if (outer instanceof Feature of && of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
       {
         addToDeclaredOrInheritedFeatures(outer, f);
