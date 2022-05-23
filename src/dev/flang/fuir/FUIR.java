@@ -1539,6 +1539,8 @@ hw25 is
             result[i] = resultL.get(i);
           }
       }
+    if(POSTCONDITIONS) ensure
+      (result.length > 0);
     return result;
   }
 
