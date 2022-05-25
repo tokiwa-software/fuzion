@@ -148,7 +148,7 @@ public class Intrinsics extends ANY
         var s = outOrErr(n);
         result = (args) ->
           {
-            s.write(args.get(1).u8Value());
+            s.writeBytes((byte[])args.get(1).arrayData()._array);
             return Value.EMPTY_VALUE;
           };
       }
@@ -159,11 +159,11 @@ public class Intrinsics extends ANY
           try
             {
               var nextByte = System.in.readNBytes(1);
-              return nextByte.length == 0 ? new u8Value(0) : new u8Value(Byte.toUnsignedInt(nextByte[0]));
+              return nextByte.length == 0 ? new i32Value(-1) : new i32Value(Byte.toUnsignedInt(nextByte[0]));
             }
             catch (IOException e)
             {
-              return new u8Value(0);
+              return new i32Value(-1);
             }
         };
     }

@@ -118,9 +118,27 @@ public class FrontEnd extends ANY
 
 
   /**
-   * The module we are compiling.
+   * The options argument
    */
-  private SourceModule _module;
+  public final FrontEndOptions _options;
+
+
+  /**
+   * The universe.
+   */
+  public final AbstractFeature _universe;
+
+
+  /**
+   * The base module if it was loade from base.fum, null otherwise.
+   */
+  public final LibraryModule _baseModule;
+
+
+  /**
+   * The module we are compiling. null if !options._loadSources or Errors.count() != 0
+   */
+  private final SourceModule _module;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -131,10 +149,12 @@ public class FrontEnd extends ANY
    */
   public FrontEnd(FrontEndOptions options)
   {
+    _options = options;
     Types.reset();
     var universe = new Universe();
+    _universe = universe;
 
-    var sourcePaths = sourcePaths(options);
+    var sourcePaths = sourcePaths();
     var sourceDirs = new SourceDir[sourcePaths.length + options._modules.size()];
     for (int i = 0; i < sourcePaths.length; i++)
       {
@@ -146,30 +166,16 @@ public class FrontEnd extends ANY
       }
     LibraryModule[] dependsOn;
     var save = options._saveBaseLib;
-    if (save == null)
-      {
-        var b = options._fuzionHome.resolve("modules").resolve("base.fum");
-        try (var ch = (FileChannel) Files.newByteChannel(b, EnumSet.of(StandardOpenOption.READ)))
-          {
-            var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
-            var stdlib = new LibraryModule("base", data, new LibraryModule[0], universe);
-            dependsOn = new LibraryModule[] { stdlib };
-          }
-        catch (IOException io)
-          {
-            Errors.error("FrontEnd I/O error when reading module file",
-                         "While trying to read file '"+ b + "' received '" + io + "'");
-            dependsOn = null;
-          }
-      }
-    else
-      {
-        dependsOn = new LibraryModule[] { };
-      }
-    if (Errors.count() == 0)
+    _baseModule = save == null ? baseModule() : null;
+    dependsOn = _baseModule == null ? new LibraryModule[] { } : new LibraryModule[] { _baseModule };
+    if (options._loadSources && Errors.count() == 0)
       {
         _module = new SourceModule(options, sourceDirs, inputFile(options), options._main, dependsOn, universe);
         _module.createASTandResolve();
+      }
+    else
+      {
+        _module = null;
       }
     if (save != null && Errors.count() == 0)
       {
@@ -181,13 +187,33 @@ public class FrontEnd extends ANY
   /**
    * Get all the paths to use to read source code from
    */
-  private Path[] sourcePaths(FrontEndOptions options)
+  private Path[] sourcePaths()
   {
     return
-      (options._saveBaseLib != null  ) ? new Path[] { options._fuzionHome.resolve("lib") } :
-      (options._readStdin         ||
-       options._inputFile != null    ) ? new Path[] { }
-                                       : new Path[] { Path.of(".") };
+      (_options._saveBaseLib != null  ) ? new Path[] { _options._fuzionHome.resolve("lib") } :
+      (_options._readStdin         ||
+       _options._inputFile != null    ) ? new Path[] { }
+                                        : new Path[] { Path.of(".") };
+  }
+
+
+  /**
+   * Load Base module for given options.
+   */
+  private LibraryModule baseModule()
+  {
+    var b = _options._fuzionHome.resolve("modules").resolve("base.fum");
+    try (var ch = (FileChannel) Files.newByteChannel(b, EnumSet.of(StandardOpenOption.READ)))
+      {
+        var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
+        return new LibraryModule("base", data, new LibraryModule[0], _universe);
+      }
+    catch (IOException io)
+      {
+        Errors.error("FrontEnd I/O error when reading module file",
+                     "While trying to read file '"+ b + "' received '" + io + "'");
+        return null;
+      }
   }
 
 

@@ -226,7 +226,7 @@ public class LibraryModule extends Module
    *
    * @param outer the declaring feature
    */
-  SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
+  public SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
   {
     var result = new TreeMap<FeatureName, AbstractFeature>();
     if (outer instanceof LibraryFeature lf && lf._libModule == this)
@@ -371,7 +371,7 @@ public class LibraryModule extends Module
   {
     for (var p : outer.inherits())
       {
-        var cf = p.calledFeature().libraryFeature();
+        var cf = p.calledFeature();
         if (CHECKS) check
           (Errors.count() > 0 || cf != null);
 

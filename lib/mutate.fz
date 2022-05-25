@@ -1,0 +1,116 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature mut
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# mutate -- an effect that permits creation and mutation of mutable values.
+#
+# This effect is typically used to work with mutable values. You can create
+# a mutable value as follows
+#
+#   v := mutate.env.new i32 42
+#
+# and then modify it using
+#
+#   v <- 666
+#
+# To read it, call 'get' as in
+#
+#   say "v is {v.get}"
+#
+# Convenience feature 'mut' and type inference allow the creation to be
+# written as
+#
+#   v := mut 42
+#
+# NYI: syntax sugar to read mutable field using
+#
+#   w := v + 1
+#
+# instead of
+#
+#   w := v.get + 1
+#
+# is not supported yet.
+#
+private /* NYI: type:pub */ mutate(
+
+  # action to be taken: plain monad, install or replace?
+  redef r effectModes
+  ) : effect r
+is
+
+
+  # create a new mutable value with the given initial value and update the
+  # 'mutate' effect in the current environment
+  #
+  private new (
+    T type,
+
+    # initial value, will be updated by 'put' or 'infix <-'.
+    get T
+    )
+  is
+
+
+    # update mutable field with new value
+    #
+    put (
+      # the new value to be stored with 'h'
+      to T)
+     =>
+      mutate effectMode.repl
+      set get := to
+
+
+    # infix operator for put, OCaml/F#-style syntax
+    #
+    infix <- (to T) => put to
+
+
+    # update mutable field using a function of the old value
+    #
+    update (
+      # function calculcating the new value from the old value
+      f T->T
+      )
+     =>
+      put (f get)
+
+
+  # install default instance of mutate
+  #
+  type.installDefault =>
+    _ := mutate effectMode.default
+
+
+# short-hand for accessing mut effect in current environment
+#
+mut =>
+  mutate.type.installDefault
+  mutate.env
+
+
+# create a new mutable value of type T with initial value v
+#
+mut(T type, v T) => mut.new T v

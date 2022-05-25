@@ -64,8 +64,8 @@ Function(R type, A type...) ref is
 #
 Functions is
 
-  # compose f ∘ g
+  # compose g ∘ f
   #
   compose(A,B,C type,
-          f A -> B,
-          g B -> C) A -> C is a -> g (f a)
+          g B -> C,
+          f A -> B) A -> C is a -> g (f a)
