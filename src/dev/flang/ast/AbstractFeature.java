@@ -1166,7 +1166,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       }
     else if (set.isEmpty())
       {
-        AstErrors.internallyReferencedFeatureNotFound(pos(), name, this, name);
+        check
+          (this != Types.f_ERROR || Errors.count() > 0);
+        if (this != Types.f_ERROR)
+          {
+            AstErrors.internallyReferencedFeatureNotFound(pos(), name, this, name);
+          }
       }
     else
       { // NYI: This might happen if the user adds additional features
