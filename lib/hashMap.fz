@@ -132,9 +132,15 @@ is
     res
 
 
-# hashMap -- convenience routine to create an empty instance of hashMap
+# hashMaps -- unit type feature declaring features related to haspMap
 #
+# NYI: move to hashMap.type
 #
-hashMap<HK : hasHash<HK>, V> => (hashMap
-                                 Sequences.empty<HK>.asArray
-                                 Sequences.empty<V>.asArray)
+hashMaps<HK : hasHash<HK>, V> is
+
+
+  # empty -- convenience routine to create an empty instance of hashMap
+  #
+  empty => (hashMap
+            Sequences.empty<HK>.asArray
+            Sequences.empty<V>.asArray)
