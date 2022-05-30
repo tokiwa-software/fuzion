@@ -47,7 +47,7 @@ is
     infix <= (other entry) => ks[i] <= ks[other.i]
     key => ks[i]
     val => vs[i]
-  sortedEntries := sortedArray<entry> ((0..ks.length-1).mapSequence<entry> (i -> entry i)).asArray
+  sortedEntries := sortedArrayOf ((0..ks.length-1).mapSequence<entry> (i -> entry i)).asArray
 
   # number of entries in this map
   #
