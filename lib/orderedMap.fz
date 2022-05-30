@@ -75,7 +75,7 @@ is
       nil =>
         (orderedMap
           (ks++[k]).asArray
-          (vs++(marray<V> 1 v)).asArray)
+          (vs++[v]).asArray)
       V =>
         va := array<V> size (i -> if ks[i]=k then v else vs[i])
         (orderedMap ks va)
