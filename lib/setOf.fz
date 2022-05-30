@@ -28,10 +28,3 @@
 # This feature creates an instance of a Set.
 #
 setOf<K : ordered<K>> (vs Sequence<K>) Set<K> is psSet vs
-
-
-# setOf -- routine to initialize an empty set of ordered elements
-#
-# This feature creates an instance of a Set.
-#
-setOf<K : ordered<K>> Set<K> is psSet<K>
