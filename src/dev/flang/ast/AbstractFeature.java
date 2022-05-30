@@ -164,6 +164,18 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
+   * Is this base-lib's choice-feature?
+   */
+  boolean isBaseChoice()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+
+    return (featureName().baseName().equals("choice") && featureName().argCount() == 1 && outer().isUniverse());
+  }
+
+
+  /**
    * What is this Feature's kind?
    *
    * @return Routine, Field, Intrinsic, Abstract or Choice.

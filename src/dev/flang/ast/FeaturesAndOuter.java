@@ -96,20 +96,23 @@ public class FeaturesAndOuter extends ANY
       {
         var ff = f.getValue();
         var fn = f.getKey();
-        if (fn.equalsExceptId(name))  /* an exact match, so use it: */
+        if (!ff.isChoice() || ff.isBaseChoice() /* suppress call to choice type (e.g. bool : choice TRUE FALSE), expect for (inheritance) calls to 'choice'*/)
           {
-            if (CHECKS) check
-              (Errors.count() > 0 || !match || fn.argCount() == 0);
-            if (!match)
+            if (fn.equalsExceptId(name))  /* an exact match, so use it: */
               {
-                found = new List<>();
-                match = true;
+                if (CHECKS) check
+                  (Errors.count() > 0 || !match || fn.argCount() == 0);
+                if (!match)
+                  {
+                    found = new List<>();
+                    match = true;
+                  }
+                found.add(ff);
               }
-            found.add(ff);
-          }
-        else if (!match && isCandidate.test(ff))
-          { /* no exact match, but we have a candidate to check later: */
-            found.add(ff);
+            else if (!match && isCandidate.test(ff))
+              { /* no exact match, but we have a candidate to check later: */
+                found.add(ff);
+              }
           }
       }
     return switch (found.size())

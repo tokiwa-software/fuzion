@@ -651,7 +651,7 @@ public class Feature extends AbstractFeature implements Stmnt
     this._qname     = qname;
 
     this._arguments = a;
-    this._featureName = FeatureName.get(n, valueArguments().size());
+    this._featureName = FeatureName.get(n, arguments().size());
     this._inherits   = (i.isEmpty() &&
                         (p.kind_ != Impl.Kind.FieldActual) &&
                         (p.kind_ != Impl.Kind.FieldDef   ) &&
@@ -773,7 +773,8 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public Kind kind()
   {
-    return state().atLeast(State.RESOLVING_TYPES) && isChoiceAfterTypesResolved()
+    return state().atLeast(State.RESOLVING_TYPES) && isChoiceAfterTypesResolved() ||
+          !state().atLeast(State.RESOLVING_TYPES) && isChoiceBeforeTypesResolved()
       ? Kind.Choice
       : switch (_impl.kind_) {
           case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
@@ -955,6 +956,36 @@ public class Feature extends AbstractFeature implements Stmnt
               }
           }
       }
+  }
+
+
+  /**
+   * Is this a choice-type, i.e., is it 'choice' or does it directly inherit from 'choice'?
+   */
+  boolean isChoiceBeforeTypesResolved()
+  {
+    if (state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+      {
+        if (isBaseChoice())
+          {
+            return true;
+          }
+        else
+          {
+            for (var p: inherits())
+              {
+                if (CHECKS) check
+                  (Errors.count() > 0 || p.calledFeature() != null);
+
+                var pf = p.calledFeature();
+                if (pf != null && pf.isBaseChoice())
+                  {
+                    return true;
+                  }
+              }
+          }
+      }
+    return false;
   }
 
 
@@ -2218,7 +2249,8 @@ public class Feature extends AbstractFeature implements Stmnt
   public FeatureName featureName()
   {
     if (CHECKS) check
-                  (valueArguments().size() == _featureName.argCount());
+      (arguments().size() == _featureName.argCount());
+
     return _featureName;
   }
 

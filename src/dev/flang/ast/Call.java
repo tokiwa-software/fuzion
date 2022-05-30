@@ -723,19 +723,22 @@ public class Call extends AbstractCall
           {
             var fo = calledFeatureCandidates(targetFeature, res, thiz);
             FeatureName calledName = FeatureName.get(name, _actuals.size());
-            var cf = fo.filter(pos(),
-                               calledName,
-                               ff ->  mayMatchArgList(ff) || isSpecialWrtArgs(ff));
-            calledFeature_ = cf;
-            if (cf == null)
+            calledFeature_ = fo.filter(pos(), calledName, ff -> mayMatchArgList(ff) || ff.hasOpenGenericsArgList());
+            if (calledFeature_ == null)
               {
-                findChainedBooleans(res, thiz);
-                if (calledFeature_ == null) // nothing found, so flag error
+                calledFeature_ = fo.filter(pos(), calledName, ff -> isSpecialWrtArgs(ff));
+                if (calledFeature_ == null)
                   {
-                    AstErrors.calledFeatureNotFound(this, calledName, targetFeature);
+                    findChainedBooleans(res, thiz);
+                    if (calledFeature_ == null) // nothing found, so flag error
+                      {
+                        AstErrors.calledFeatureNotFound(this, calledName, targetFeature);
+                      }
                   }
               }
-            else if (_actuals.size() != cf.valueArguments().size() && mayMatchArgList(cf) && !isSpecialWrtArgs(cf))
+            else if (generics.isEmpty() &&
+                     _actuals.size() != calledFeature_.valueArguments().size() &&
+                     !calledFeature_.hasOpenGenericsArgList())
               {
                 splitOffTypeArgs(thiz);
               }
@@ -822,8 +825,7 @@ public class Call extends AbstractCall
    */
   private boolean isSpecialWrtArgs(AbstractFeature ff)
   {
-    return ff.hasOpenGenericsArgList()               /* actual generics might come from type inference */
-      || forFun                                      /* a fun-declaration "fun a.b.f" */
+    return forFun                                      /* a fun-declaration "fun a.b.f" */
       || ff.arguments().size()==0 && hasParentheses(); /* maybe an implicit call to a Function / Routine, see resolveImmediateFunctionCall() */
   }
 
