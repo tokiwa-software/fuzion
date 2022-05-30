@@ -242,7 +242,7 @@ O(n log n).
 
     if size /= 0
       join fill-1 1 0 0
-    array r
+    array r unit unit unit
 
 
   # get a stream of all key/value pairs in this map

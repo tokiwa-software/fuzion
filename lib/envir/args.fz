@@ -32,7 +32,7 @@ private args (
   redef r effectModes,
 
   _ unit
-  ) : array(all.internalArray), effect r
+  ) : array string all.internalArray unit unit unit, effect r
 is
 
 

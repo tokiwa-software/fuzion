@@ -322,7 +322,10 @@ public class InlineArray extends ExprWithPos
             stmnts.add(setElement);
           }
         var readSysArrayVar = new Call(pos(), null, sysArrayName                ).resolveTypes(res, outer);
-        var sysArrArgs      = new List<Expr>(readSysArrayVar);
+        var unit1           = new Call(pos(), null, "unit"                      ).resolveTypes(res, outer);
+        var unit2           = new Call(pos(), null, "unit"                      ).resolveTypes(res, outer);
+        var unit3           = new Call(pos(), null, "unit"                      ).resolveTypes(res, outer);
+        var sysArrArgs      = new List<Expr>(readSysArrayVar,unit1,unit2, unit3);
         var arrayCall       = new Call(pos(), null, "array"     , eT, sysArrArgs).resolveTypes(res, outer);
         stmnts.add(arrayCall);
         result = new Block(pos(), stmnts);
