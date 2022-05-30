@@ -93,9 +93,15 @@ is
       r
 
 
-# orderedMap -- convenience routine to create an empty instance of orderedMap
+# orderedMaps -- unit type feature declaring features related to orderedMap
 #
+# NYI: move to orderedMap.type
 #
-orderedMap<OK : ordered<OK>, V> => (orderedMap
-                                    Sequences.empty<OK>.asArray
-                                    Sequences.empty<V>.asArray)
+orderedMaps<OK : ordered<OK>, V> is
+
+
+  # create an empty instance of orderedMap
+  #
+  empty => (orderedMap
+            Sequences.empty<OK>.asArray
+            Sequences.empty<V>.asArray)
