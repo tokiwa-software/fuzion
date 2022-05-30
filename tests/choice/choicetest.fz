@@ -62,7 +62,7 @@ choicetest is
       Quarter => 25
 
   say "creating array:"
-  a := marray<Coin> 10 Penny
+  a := (marrays Coin).new 10 Penny
   a[0] := Penny
   a[1] := Penny
   a[2] := Penny

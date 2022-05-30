@@ -25,6 +25,8 @@
 
 # marray -- one-dimensional mutable array
 #
+# NYI: marray should be rewritten using effects.
+#
 marray
   (
    # type of elements stored in this array
@@ -34,10 +36,7 @@ marray
    length i32,
 
    # contents of the marray
-   private data fuzion.sys.array<T>,
-
-   # just to distinguish constructor from marray<T>(i32, T)
-   _ unit
+   private data fuzion.sys.array<T>
    ) : Sequence<T>
 
   pre
@@ -80,7 +79,7 @@ is
           newData[i] := data[i]
         newData
     d[length] := o
-    marray<T> length+1 d unit
+    marray<T> length+1 d
 
 
   # infix operator synonyme for add
@@ -123,23 +122,28 @@ is
       fold i+1 (m.op s marray.this[i]) m
 
 
-# This feature provides a convenient constructor for marray<T>(length,
-# fuzion.sys.array<T>, unit).
+# marrays -- unit type feature declaring features related to marray
 #
-marray<T>
-  (
-   # length of the marray to crate
-   length i32,
+# NYI: move to marray.type
+#
+marrays(T type)  is
 
-   # initial value for elements
-   init T
+  # This feature provides a convenient constructor for marray<T>(length,
+  # fuzion.sys.array<T>, unit).
+  #
+  new
+   (# length of the marray to crate
+    length i32,
 
-  ) marray<T>
+    # initial value for elements
+    init T
 
-is
-  data := fuzion.sys.array<T> length
+   ) marray<T>
 
-  for x in 0..length-1 do
-    data[x] := init
+  is
+    data := fuzion.sys.array<T> length
 
-  marray length data unit
+    for x in 0..length-1 do
+      data[x] := init
+
+    marray length data

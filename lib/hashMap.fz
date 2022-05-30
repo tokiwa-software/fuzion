@@ -63,7 +63,7 @@ is
   /* NYI: local */
   contents :=
     for
-      mcontents := marray <option<tuple<HK,V>>> allocatedSize nil, mcontents
+      mcontents := (marrays (option (tuple HK V))).new allocatedSize nil, mcontents
       k in ks
       v in vs
     do
