@@ -90,34 +90,36 @@ public class FeaturesAndOuter extends ANY
    */
   AbstractFeature filter(SourcePosition pos, FeatureName name, java.util.function.Predicate<AbstractFeature> isCandidate)
   {
+    AbstractFeature foundChoice = null;
     var match = false;
     var found = new List<AbstractFeature>();
     for (var f : features.entrySet())
       {
         var ff = f.getValue();
         var fn = f.getKey();
-        if (!ff.isChoice() || ff.isBaseChoice() /* suppress call to choice type (e.g. bool : choice TRUE FALSE), expect for (inheritance) calls to 'choice'*/)
+        if (ff.isChoice() && !ff.isBaseChoice() /* suppress call to choice type (e.g. bool : choice TRUE FALSE), expect for (inheritance) calls to 'choice'*/)
           {
-            if (fn.equalsExceptId(name))  /* an exact match, so use it: */
+            foundChoice = ff;
+          }
+        else if (fn.equalsExceptId(name))  /* an exact match, so use it: */
+          {
+            if (CHECKS) check
+              (Errors.count() > 0 || !match || fn.argCount() == 0);
+            if (!match)
               {
-                if (CHECKS) check
-                  (Errors.count() > 0 || !match || fn.argCount() == 0);
-                if (!match)
-                  {
-                    found = new List<>();
-                    match = true;
-                  }
-                found.add(ff);
+                found = new List<>();
+                match = true;
               }
-            else if (!match && isCandidate.test(ff))
-              { /* no exact match, but we have a candidate to check later: */
-                found.add(ff);
-              }
+            found.add(ff);
+          }
+        else if (!match && isCandidate.test(ff))
+          { /* no exact match, but we have a candidate to check later: */
+            found.add(ff);
           }
       }
     return switch (found.size())
       {
-      case 0 -> null;
+      case 0 -> foundChoice; // in case we found a matching choice, return it to create a proper error ('Cannot call choice feature').
       case 1 -> found.get(0);
       default ->
       {
