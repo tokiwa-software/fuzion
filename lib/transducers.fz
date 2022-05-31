@@ -1,0 +1,67 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature Sequence
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# transducers map one reducing function to another
+#
+# see https://clojure.org/reference/transducers
+# for in depth information about transducers
+#
+# usage example:
+#
+# human(age i32) is
+# ages := map (Sequence i32) human i32 (x -> x.age)
+# gt_ten := filter (Sequence i32) i32 (x -> x > 10)
+# xf := ages ∘ gt_ten
+# say ([human(4), human(12), human(30)].into xf) # [12,30]
+transducers is
+
+  # a transducer filtering values based on evaluation of predicate
+  filter(TA,T type, predicate T -> bool) Transducer(TA,T,T) is
+    Transducer(TA,T,T, (red) -> (res, val) -> if predicate val then red.call res val else res)
+
+
+  # a transducer mappping values from T to U
+  map(TA,T,U type, mapper T -> U) Transducer(TA,U,T) is
+    Transducer(TA,U,T, ((red) -> ((res, val) -> red.call res (mapper val))))
+
+
+  # left-to-right composition of transducers
+  compose(TA,A,B,C type, a Transducer(TA,B,C), b Transducer(TA,A,B)) =>
+    a ∘ b
+
+  # NYI: cat, mapcat, remove, take, takeWhile, drop, dropWhile, takeEveryNth,
+  # replace, keep, keepIndexed, dedupe, randomSample, partitionBy, partitionAll,...
+
+
+# TA   result     type
+# B    input      type
+# C    transduced type
+Transducer(TA,B,C type, td ((TA,B) -> TA) ->  (TA,C) -> TA) is
+  call(rf (TA,B) -> TA) =>
+    td rf
+
+  # left-to-right composition of transducers
+  infix ∘ (A type, o Transducer(TA,A,B)) =>
+    Transducer(TA,A,C,((re) -> Transducer.this.call (o.call re)))

@@ -66,13 +66,9 @@ abstract class CStmnt extends ANY
   /**
    * C typedef such as 'typedef struct s t'
    *
-   * @param modifier a modifier, e.g., "static", null for none.
-   *
    * @param type the type of the defined entity
    *
-   * @param ident the name of the defined entity
-   *
-   * @param init initial value or null if none.
+   * @param name the name of the defined entity
    *
    * @return corresponding CStmnt
    */

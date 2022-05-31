@@ -165,9 +165,9 @@ public class CTypes extends ANY
    * Check if the given special clazz specifies a scalar type in the C code,
    * i.e, standard numeric types i32, u64, etc. If so, return that C type.
    *
-   * @param sc a SpeicalClazzes value or null
+   * @param sc a SpecialClazzes value or null
    *
-   * @return the C scalar type corresponding to cl, null if cl is not scaler or
+   * @return the C scalar type corresponding to cl, null if cl is not scalar or
    * null.
    */
   String scalar(FUIR.SpecialClazzes sc)
