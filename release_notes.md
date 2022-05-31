@@ -1,3 +1,24 @@
+## 2022-05-31: V0.074
+
+- Fuzion language
+
+  - Overloading with type parameters now works as follows: A feature f with
+    m type parameters and n value parameters can be called with m+n actual
+    arguments (m types and n values) or, if the types can be inferred from the
+    value parameters, with just n actual value arguments.
+
+    If an overloaded f with n formal arguments (type or value) exists, a call
+    with n actual arguments with always call this f with n formal arguments.
+
+- fz command
+
+  - bug fixes for #113, #297, #300
+
+- base lib
+
+  - some changes towards using type parameter arguments instead of generics
+    using '<' / '>'
+
 ## 2022-05-18: V0.073
 
 - Fuzion language
