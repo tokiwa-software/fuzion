@@ -808,7 +808,10 @@ public class Call extends AbstractCall
           }
       }
     AbstractType result = new Type(pos(), name, g,
-                                   target == null || target instanceof Universe ? null : target.asType(outer, tp));
+                                   target == null             ||
+                                   target instanceof Universe ||
+                                   target instanceof Current     ? null
+                                                                 : target.asType(outer, tp));
     return result.visit(Feature.findGenerics, outer);
   }
 
