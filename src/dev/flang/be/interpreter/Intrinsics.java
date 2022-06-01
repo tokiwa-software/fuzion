@@ -492,7 +492,9 @@ public class Intrinsics extends ANY
             var ic = oc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
             var al = new ArrayList<Value>();
             al.add(args.get(1));
-            new Thread(() -> interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al)).start();
+            var t = new Thread(() -> interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al));
+            t.setDaemon(true);
+            t.start();
             return new Instance(Clazzes.c_unit.get());
           };
       }
