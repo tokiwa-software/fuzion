@@ -729,6 +729,9 @@ public class Call extends AbstractCall
                 calledFeature_ = fo.filter(pos(), calledName, ff -> isSpecialWrtArgs(ff));
                 if (calledFeature_ == null)
                   {
+                    _gotCalledFeature = true;
+                    _whenGotCalledFeature.forEach(x -> x.run());
+                    _whenGotCalledFeature.clear();
                     findChainedBooleans(res, thiz);
                     if (calledFeature_ == null) // nothing found, so flag error
                       {
@@ -744,11 +747,38 @@ public class Call extends AbstractCall
               }
           }
       }
+    _gotCalledFeature = true;
+    _whenGotCalledFeature.forEach(x -> x.run());
+    _whenGotCalledFeature.clear();
 
     if (POSTCONDITIONS) ensure
       (Errors.count() > 0 || calledFeature() != null,
        Errors.count() > 0 || target          != null);
   }
+
+  ArrayList<Runnable> _whenGotCalledFeature = new ArrayList<>();
+  boolean _gotCalledFeature = false;
+
+
+  /**
+   * Perform an action as soon as calledFeature_ is set. This is used to delay
+   * action on actuals until after type parameters are split off from the actual
+   * value parameters.
+   *
+   * @param r the action
+   */
+  void whenGotCalledFeature(Runnable r)
+  {
+    if (_gotCalledFeature)
+      {
+        r.run();
+      }
+    else
+      {
+        _whenGotCalledFeature.add(r);
+      }
+  }
+
 
 
   /**
@@ -970,14 +1000,21 @@ public class Call extends AbstractCall
     v.visitActuals
       (() ->
        {
-         while (i.hasNext())
-           {
-             var a = i.next();
-             if (a != null) // splitOffTypeArgs might have set this to null
-               {
-                 i.set(a.visit(v, outer));
-               }
-           }
+         // Delay action until after calledFeature_ is set.
+         //
+         // NYI: Cleanup: It should be sufficient to delay this action in case v instanceof Feature.ResolveTypes.
+         whenGotCalledFeature
+           (() ->
+            {
+              while (i.hasNext())
+                {
+                  var a = i.next();
+                  if (a != null) // splitOffTypeArgs might have set this to null
+                    {
+                      i.set(a.visit(v, outer));
+                    }
+                }
+            });
        },
        outer);
     if (target != null &&
@@ -1208,9 +1245,6 @@ public class Call extends AbstractCall
     int count = 0;
     for (var frml : fargs)
       {
-        if (CHECKS) check
-          (Errors.count() > 0 || frml.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
-
         int argnum = count;  // effectively final copy of count
         frml.whenResolvedTypes
           (() ->
