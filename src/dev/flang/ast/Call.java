@@ -700,52 +700,59 @@ public class Call extends AbstractCall
        ? thiz.outer().state().atLeast(Feature.State.RESOLVED_DECLARATIONS)
        : thiz        .state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
-    if (calledFeature_ == null && name == FuzionConstants.TYPE_NAME)
+    if (calledFeature_ == null)
       {
-        if (CHECKS) check
-          (target != null,
-           _actuals.size() == 0,
-           generics.size() == 0);
-
-        AbstractType t = target.asType(thiz, null).resolve(res, thiz);
-        calledFeature_ = Types.resolved.f_Types_get;
-        generics = new List<>(t);
-        var tc = new Call(pos(), new Universe(), Types.resolved.f_Types);
-        tc.resolveTypes(res, thiz);
-        target = tc;
-      }
-    else if (calledFeature_ == null && name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
-      {
-        var targetFeature = targetFeature(res, thiz);
-        if (CHECKS) check
-          (Errors.count() > 0 || targetFeature != null);
-        if (targetFeature != null && targetFeature != Types.f_ERROR)
+        var actualsResolved = false;
+        if (name == FuzionConstants.TYPE_NAME)
           {
-            var fo = calledFeatureCandidates(targetFeature, res, thiz);
-            FeatureName calledName = FeatureName.get(name, _actuals.size());
-            calledFeature_ = fo.filter(pos(), calledName, ff -> mayMatchArgList(ff) || ff.hasOpenGenericsArgList());
-            if (calledFeature_ != null &&
-                generics.isEmpty() &&
-                _actuals.size() != calledFeature_.valueArguments().size() &&
-                !calledFeature_.hasOpenGenericsArgList())
+            if (CHECKS) check
+              (target != null,
+               _actuals.size() == 0,
+               generics.size() == 0);
+
+            AbstractType t = target.asType(thiz, null).resolve(res, thiz);
+            calledFeature_ = Types.resolved.f_Types_get;
+            generics = new List<>(t);
+            var tc = new Call(pos(), new Universe(), Types.resolved.f_Types);
+            tc.resolveTypes(res, thiz);
+            target = tc;
+          }
+        else if (name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
+          {
+            var targetFeature = targetFeature(res, thiz);
+            if (CHECKS) check
+              (Errors.count() > 0 || targetFeature != null);
+            if (targetFeature != null && targetFeature != Types.f_ERROR)
               {
-                splitOffTypeArgs(thiz);
-              }
-            var w = _whenGotCalledFeature;
-            _whenGotCalledFeature = null;
-            w.forEach(x -> x.run());
-            if (calledFeature_ == null)
-              {
-                calledFeature_ = fo.filter(pos(), calledName, ff -> isSpecialWrtArgs(ff));
+                var fo = calledFeatureCandidates(targetFeature, res, thiz);
+                FeatureName calledName = FeatureName.get(name, _actuals.size());
+                calledFeature_ = fo.filter(pos(), calledName, ff -> mayMatchArgList(ff) || ff.hasOpenGenericsArgList());
+                if (calledFeature_ != null &&
+                    generics.isEmpty() &&
+                    _actuals.size() != calledFeature_.valueArguments().size() &&
+                    !calledFeature_.hasOpenGenericsArgList())
+                  {
+                    splitOffTypeArgs(thiz);
+                  }
+                resolveTypesOfActuals(res,thiz);
+                actualsResolved = true;
                 if (calledFeature_ == null)
                   {
-                    findChainedBooleans(res, thiz);
-                    if (calledFeature_ == null) // nothing found, so flag error
+                    calledFeature_ = fo.filter(pos(), calledName, ff -> isSpecialWrtArgs(ff));
+                    if (calledFeature_ == null)
                       {
-                        AstErrors.calledFeatureNotFound(this, calledName, targetFeature);
+                        findChainedBooleans(res, thiz);
+                        if (calledFeature_ == null) // nothing found, so flag error
+                          {
+                            AstErrors.calledFeatureNotFound(this, calledName, targetFeature);
+                          }
                       }
                   }
               }
+          }
+        if (!actualsResolved)
+          {
+            resolveTypesOfActuals(res,thiz);
           }
       }
 
@@ -754,28 +761,24 @@ public class Call extends AbstractCall
        Errors.count() > 0 || target          != null);
   }
 
-  ArrayList<Runnable> _whenGotCalledFeature = new ArrayList<>();
 
-
-  /**
-   * Perform an action as soon as calledFeature_ is set. This is used to delay
-   * action on actuals until after type parameters are split off from the actual
-   * value parameters.
-   *
-   * @param r the action
-   */
-  void whenGotCalledFeature(Runnable r)
+  void resolveTypesOfActuals(Resolution res, AbstractFeature outer)
   {
-    if (_whenGotCalledFeature == null)
-      {
-        r.run();
-      }
-    else
-      {
-        _whenGotCalledFeature.add(r);
-      }
+    var v = new Feature.ResolveTypes(res);
+    ListIterator<Expr> i = _actuals.listIterator(); // _actuals can change during resolveTypes, so create iterator early
+    outer.whenResolvedTypes
+      (() ->
+       {
+         while (i.hasNext())
+           {
+             var a = i.next();
+             if (a != null) // splitOffTypeArgs might have set this to null
+               {
+                 i.set(a.visit(v, outer));
+               }
+               }
+       });
   }
-
 
 
   /**
@@ -993,21 +996,15 @@ public class Call extends AbstractCall
             i.set(i.next().visit(v, outer));
           }
       }
-    ListIterator<Expr> i = _actuals.listIterator(); // _actuals can change during resolveTypes, so create iterator early
-    v.visitActuals
-      (() ->
-       {
-         while (i.hasNext())
-           {
-             var a = i.next();
-             if (a != null) // splitOffTypeArgs might have set this to null
-               {
-                 i.set(a.visit(v, outer));
-               }
-           }
-       },
-       this,
-       outer);
+    if (v.doVisitActuals())
+      {
+        ListIterator<Expr> i = _actuals.listIterator(); // _actuals can change during resolveTypes, so create iterator early
+        while (i.hasNext())
+          {
+            var a = i.next();
+            i.set(a.visit(v, outer));
+          }
+      }
     if (target != null &&
         // for 'xyz.type' target is 'xyz', which is never called, so do not visit it:
         name != FuzionConstants.TYPE_NAME)

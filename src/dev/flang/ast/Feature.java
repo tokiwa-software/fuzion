@@ -1286,21 +1286,7 @@ public class Feature extends AbstractFeature implements Stmnt
     public Expr         action(This         t, AbstractFeature outer) { return t.resolveTypes(res, outer); }
     public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve     (res, outer); }
 
-    /**
-     * visitActuals delays type resolution for actual arguments within a feature
-     * until the feature's type was resolved.  The reason is that the feature's
-     * type does not depend on the actual arguments, but the actual arguments
-     * might depend directly or indirectly on the feature's type.
-     */
-    void visitActuals(Runnable r, Call call, AbstractFeature outer)
-    {
-      outer.whenResolvedTypes
-        (() ->
-         {
-           // Delay action until after calledFeature_ is set.
-           call.whenGotCalledFeature(r);
-         });
-    }
+    public boolean doVisitActuals() { return false; }
   }
 
 
