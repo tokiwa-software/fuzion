@@ -731,7 +731,7 @@ public class Call extends AbstractCall
               {
                 splitOffTypeArgs(thiz);
               }
-            gotCalledFeature();
+            resolveTypesOfActuals(res,thiz);
             if (calledFeature_ == null)
               {
                 calledFeature_ = fo.filter(pos(), calledName, ff -> isSpecialWrtArgs(ff));
@@ -746,7 +746,7 @@ public class Call extends AbstractCall
               }
           }
       }
-    gotCalledFeature();
+    resolveTypesOfActuals(res,thiz);
 
     if (POSTCONDITIONS) ensure
       (Errors.count() > 0 || calledFeature() != null,
@@ -754,37 +754,30 @@ public class Call extends AbstractCall
   }
 
 
-  ArrayList<Runnable> _whenGotCalledFeature = new ArrayList<>();
+  boolean _actualsResolved = false;
 
-  void gotCalledFeature()
+  void resolveTypesOfActuals(Resolution res, AbstractFeature outer)
   {
-    var w = _whenGotCalledFeature;
-    if (w != null)
+    if (!_actualsResolved)
       {
-        _whenGotCalledFeature = null;
-        w.forEach(x -> x.run());
+        _actualsResolved = true;
+
+        var v = new Feature.ResolveTypes(res);
+        ListIterator<Expr> i = _actuals.listIterator(); // _actuals can change during resolveTypes, so create iterator early
+        outer.whenResolvedTypes
+          (() ->
+           {
+             while (i.hasNext())
+               {
+                 var a = i.next();
+                 if (a != null) // splitOffTypeArgs might have set this to null
+                   {
+                     i.set(a.visit(v, outer));
+                   }
+               }
+           });
       }
   }
-
-  /**
-   * Perform an action as soon as calledFeature_ is set. This is used to delay
-   * action on actuals until after type parameters are split off from the actual
-   * value parameters.
-   *
-   * @param r the action
-   */
-  void whenGotCalledFeature(Runnable r)
-  {
-    if (_whenGotCalledFeature == null)
-      {
-        r.run();
-      }
-    else
-      {
-        _whenGotCalledFeature.add(r);
-      }
-  }
-
 
 
   /**
@@ -1002,21 +995,15 @@ public class Call extends AbstractCall
             i.set(i.next().visit(v, outer));
           }
       }
-    ListIterator<Expr> i = _actuals.listIterator(); // _actuals can change during resolveTypes, so create iterator early
-    v.visitActuals
-      (() ->
-       {
-         while (i.hasNext())
-           {
-             var a = i.next();
-             if (a != null) // splitOffTypeArgs might have set this to null
-               {
-                 i.set(a.visit(v, outer));
-               }
-           }
-       },
-       this,
-       outer);
+    if (v.doVisitActuals())
+      {
+        ListIterator<Expr> i = _actuals.listIterator(); // _actuals can change during resolveTypes, so create iterator early
+        while (i.hasNext())
+          {
+            var a = i.next();
+            i.set(a.visit(v, outer));
+          }
+      }
     if (target != null &&
         // for 'xyz.type' target is 'xyz', which is never called, so do not visit it:
         name != FuzionConstants.TYPE_NAME)
