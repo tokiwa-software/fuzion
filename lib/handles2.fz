@@ -37,7 +37,7 @@ private handles2<T,X>(
   # the inner value of this monad
   v X,
 
-  lastOpt option<handle2<T>>,
+  lastOpt option<handle2_0<T>>,
 
   # action to be taken: plain monad, install or replace?
   redef r effectModes
@@ -55,7 +55,7 @@ is
   post
     result.hasLast
   is
-    handles2<T,X> v (handle2 w unit) mode
+    handles2<T,X> v (handle2_0 w) mode
 
 
   # has one element been created using 'new'?
@@ -88,7 +88,7 @@ is
   #
   get (
     # a handle created by 'new'
-    h handle2<T>
+    h handle2_0<T>
     )
    =>
     h.get
@@ -98,7 +98,7 @@ is
   #
   put (
     # a handle created by 'new'
-    h handle2<T>,
+    h handle2_0<T>,
 
     # the new value to be stored with 'h'
     w T)
@@ -118,7 +118,7 @@ is
   #
   update (
     # a handle created by 'new'
-    h handle2<T>,
+    h handle2_0<T>,
 
     # function calculcating the new value from the old value
     f T->T
@@ -161,15 +161,11 @@ handles2<T> =>
 
 # handle value created by 'handles2.new'
 #
-private handle2<T>(
+private handle2_0<T>(
 
   # get value stored in this handle
   #
-  get T,
-
-  # additional dummy arg to distinguish this from handles2(v)
-  private _ unit
-
+  get T
   ) ref
 is
 

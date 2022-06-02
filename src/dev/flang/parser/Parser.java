@@ -224,38 +224,54 @@ semi        : SEMI semi
   /**
    * Parse a feature:
    *
-feature     : routine
-            | field
+feature     : modAndNames routOrField
             ;
-routine     : visibility
+modAndNames : visibility
               modifiers
               featNames
-              formGens
+            ;
+   */
+  FList feature()
+  {
+    var pos = posObject();
+    var v = visibility();
+    var m = modifiers();
+    var n = featNames();
+    return routOrField(pos, new List<Feature>(), v, m, n, 0);
+  }
+
+
+  /**
+   * Parse routOrField:
+   *
+   * Note that this fork()s the parser repeatedly in case several feature names
+   * are declared given as parament n.
+   *
+   *
+routOrField : routine
+            | field
+            ;
+routine     : formGens
               formArgsOpt
               returnType
               inherits
               contract
               implRout
             ;
-field       : visibility
-              modifiers
-              featNames
-              returnType
+field       : returnType
               contract
               implFldOrRout
             ;
    */
-  FList feature()
+  FList routOrField(SourcePosition pos, List<Feature> l, Visi v, int m, List<List<String>> n, int i)
   {
-    SourcePosition pos = posObject();
-    Visi v = visibility();
-    int m = modifiers();
-    List<List<String>> n = featNames();
+    var name = n.get(i);
+    var p2 = (i+1 < n.size()) ? fork() : null;
     var g = formGens();
-    var a = (current() == Token.t_lparen) && fork().skipType() ? new List<Feature>() : formArgsOpt();
+    var a = formArgsOpt();
     ReturnType r = returnType();
     var hasType = r != NoType.INSTANCE;
-    var i = inherits();
+    var inh = inherits();
     Contract c = contract(true);
     if (!g.isEmpty())
       {
@@ -264,10 +280,133 @@ field       : visibility
         g = new List<>();
       }
     Impl p =
-      a.isEmpty()              &&
-      i.isEmpty()                 ? implFldOrRout(hasType)
-                                  : implRout();
-    return new FList(pos, v,m,r,n,a,i,c,p);
+      a  .isEmpty() &&
+      inh.isEmpty()    ? implFldOrRout(hasType)
+                       : implRout();
+    p = handleImplKindOf(pos, p, i == 0, l, inh);
+    l.add(new Feature(pos, v,m,r,name,a,inh,c,p));
+    return p2 == null
+      ? new FList(l)
+      : p2.routOrField(pos, l, v, m, n, i+1);
+  }
+
+
+  /**
+   * When parsing feature Implementation, convert 'of' syntax sugar as follows:
+   *
+   *   a,b,c : choice of
+   *     x is p
+   *     y is q
+   *     z is r
+    *
+   * into
+   *
+   *   x is p
+   *   y is q
+   *   z is r
+   *   a : choice x y z is
+   *   b : choice x y z is
+   *   c : choice x y z is
+   *
+   *
+   * @param pos position of this feature (of 'a')
+   *
+   * @param p the Impl that was parsed
+   *
+   * @param first true if this was called for the first name ('a'), false for
+   * later ones ('b', 'c').
+   *
+   * @param l list of features declared. Inner features ('x', 'y', 'z') will be
+   * added to l if first is true.
+   *
+   * @param inh the inheritance call list.
+   */
+  Impl handleImplKindOf(SourcePosition pos, Impl p, boolean first, List<Feature> l, List<AbstractCall> inh)
+  {
+    if (p.kind_ == Impl.Kind.Of)
+      {
+        var ng = new List<AbstractType>();
+        addFeaturesFromBlock(first, l, p._code, ng, p);
+        if (inh.isEmpty())
+          {
+            AstErrors.featureOfMustInherit(pos, p.pos);
+          }
+        else
+          {
+            var ic = inh.getLast();
+            if (!ic.generics().isEmpty())
+              {
+                ic.generics().addAll(ng);
+              }
+            else
+              {
+                ((Call)ic).generics = ng;
+              }
+          }
+        p = new Impl(p.pos, new Block(p.pos, new List<>()), Impl.Kind.Routine);
+      }
+    return p;
+  }
+
+
+  /**
+   * For a feature declaration of the form
+   *
+   *   a, b, c : choice of x, y, z.
+   *
+   * add features x, y, z to list and the types to g.
+   *
+   * @param first true if this is called for the first ('a') out of several
+   * feature names.
+   *
+   * @param list list of features the inner features ('x', 'y', 'z') will be
+   * added to provided that first is true.
+   *
+   * @param s the statements containing the feature declarations to be added, in
+   * this case "x, y, z."
+   *
+   * @param g the list of type to be callected, will be added as generic
+   * arguments to 'choice' in this example
+   *
+   * @param p Impl that contains the position of 'of' for error messages.
+   */
+  private void addFeaturesFromBlock(boolean first, List<Feature> list, Stmnt s, List<AbstractType> g, Impl p)
+  {
+    if (s instanceof Block b)
+      {
+        b.statements_.forEach(x -> addFeaturesFromBlock(first, list, x, g, p));
+      }
+    else if (s instanceof Feature f)
+      {
+        boolean ok = true;
+        if (f._qname.size() > 1)
+          {
+            AstErrors.featureOfMustContainOnlyUnqualifiedNames(f, p.pos);
+            ok = false;
+          }
+        if (!f.generics().list.isEmpty())
+          {
+            AstErrors.featureOfMustNotHaveFormalGenerics(f, p.pos);
+            ok = false;
+          }
+        if (!f.isConstructor())
+          {
+            AstErrors.featureOfMustContainOnlyConstructors(f, p.pos);
+            ok = false;
+          }
+        if (ok)
+          {
+            if (first)
+              {
+                list.add(f);
+              }
+            g.add(new Type(f.pos(), f.featureName().baseName(), new List<>(), null));
+          }
+      }
+    else
+      {
+        AstErrors.featureOfMustContainOnlyDeclarations(s, p.pos);
+      }
   }
 
 
@@ -834,9 +973,9 @@ formArgsOpt : formArgs
    */
   List<Feature> formArgsOpt()
   {
-    return (current() == Token.t_lparen)
-      ? formArgs()
-      : new List<>();
+    return  current() != Token.t_lparen || fork().skipType()
+      ? new List<Feature>()
+      : formArgs();
   }
 
 

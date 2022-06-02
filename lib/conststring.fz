@@ -28,7 +28,7 @@
 # conststring cannot be called directly, instances are created implicitly by the
 # backend.
 #
-conststring (cannotBeCalled void) ref : string, array<u8> (fuzion.sys.array<u8> -1) is
+conststring (cannotBeCalled void) ref : string, array u8 (fuzion.sys.array u8 -1) unit unit unit is
 
   redef utf8 Sequence<u8> is conststring.this
 

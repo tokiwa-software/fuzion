@@ -27,5 +27,5 @@
 # NYI name std.in does not work right now since in is reserved keyword
 public fuzion.stdin is
 
-  # returns 0 if EOF, next byte of stdin otherwhise
-  private nextByte u8 is intrinsic
+  # read next byte of stdin, less than zero on error/EOF
+  private nextByte i32 is intrinsic

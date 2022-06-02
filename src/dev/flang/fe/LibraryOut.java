@@ -337,7 +337,7 @@ class LibraryOut extends DataOut
         writeOffset(f.typeFeature());
       }
     if (CHECKS) check
-      (f.valueArguments().size() == f.featureName().argCount());
+      (f.arguments().size() == f.featureName().argCount());
     if (!f.isConstructor() && !f.isChoice())
       {
         type(f.resultType());

@@ -304,6 +304,35 @@ Sequence<T> ref is
   zip<U,V>(b Sequence<U>, f (T,U)->V) => asList.zip0 b.asList f
 
 
+  # takes a transducer xf, a reducer f and an initial value
+  # returns the result of applying the reducer xf f to the Sequence
+  transduce(TA,U type, xf Transducer(TA,U,T), rf (TA,U) -> TA, init TA) TA is
+    red := xf.call rf
+    for
+      res := init, red.call res el
+      el in Sequence.this do
+    else
+      res
+
+
+  # apply transducer to sequence, returning a sequence of results
+  #
+  # example usage:
+  # human(age i32) is
+  # ages := map (Sequence i32) human i32 (x -> x.age)
+  # gt_ten := filter (Sequence i32) i32 (x -> x > 10)
+  # xf := ages ∘ gt_ten
+  # say ([human(4), human(12), human(30)].into xf) # [12,30]
+  into(TA type, xf Transducer(Sequence(TA),TA,T)) Sequence(TA) is
+    red := xf.call ((res,val) -> res ++ [val])
+    for
+      res := Sequences.empty(TA) , red.call res el
+      el in Sequence.this do
+    else
+      res
+
+
+
   # the nth element in the sequence,
   nth(n i32) option<T>
     pre n >= 0

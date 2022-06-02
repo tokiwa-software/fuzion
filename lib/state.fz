@@ -29,7 +29,10 @@
 # in a way orthogonal to the actual compuation.
 #
 #
-state<T, S> (
+state(
+
+  # types of contained and the state value
+  T, S type,
 
   # the contained value
   val T,
@@ -38,19 +41,19 @@ state<T, S> (
   get S,
 
   redef r effectModes
-  ) ref : onewayMonad<T, state<T,S>> r
+  ) ref : onewayMonad T (state T S) r
 is
 
   # monadic operator
   #
-  redef infix >>= (f T -> state<T, S>) => state.this.bind<T> f
+  redef infix >>= (f T -> state T S) => state.this.bind T f
 
 
   # monadic operator
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  bind <B> (f T -> state<B, S>) state<B, S> is
+  bind (B type, f T -> state B S) state B S is
     f val
 
 
@@ -61,7 +64,7 @@ is
 
   # map this using f
   #
-  map <B> (f T -> B) state<B, S> is
+  map (B type, f T -> B) state B S is
     state (f val) get mode
 
 
@@ -87,23 +90,38 @@ is
 # state with 1 argument is short hand for a state containing unit and
 # initialValue
 #
-state<S> (initialValue S) => state unit initialValue effectMode.plain
+state(S type, initialValue S) => state unit initialValue effectMode.plain
 
 # install new state monad for type S and run r within that state monad
 #
 # return result of r.
 #
-state<S,R>(initialValue S, r ()->R) =>
+state(S, R type, initialValue S, r ()->R) =>
   res R := ?
-  (state<unit, S> unit initialValue (effectMode.inst ()->set res := r.call))
+  state unit S unit initialValue (effectMode.inst ()->set res := r.call)
   res
 
 
 # type related to state declaring features not requiring an instance of state
 #
-states<T, S> is
+states(T, S type) is
 
 
 # short-hand for accessing state monad for given type in current environment
 #
-state<S> => state<unit,S>.env
+state_of(S type) => state<unit,S>.env
+
+
+# short-hand for getting state monad for given type in current environment
+#
+state_get(S type) => (state_of S).get
+
+
+# short-hand for modifying state monad for given type in current environment
+#
+state_modify(S type, f S->S) => (state_of S).modify f
+
+
+# short-hand for setting state monad for given type in current environment
+#
+state_put(S type, new S) => (state_of S).put new

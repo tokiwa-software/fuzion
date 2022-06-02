@@ -39,21 +39,22 @@ sum<T: numeric<T>> (l Sequence<T>)
   # NYI: the following code to get T's sum monoid does not work for l.isEmpty,
   # it should be something like
   #
-  #  m := T.sum
+  #  l.fold T.sum
   #
   n := l.asList.forceHead
-  sum n l
+  sum0 n l
 
 
-# sum -- generic sum of the elements of a Sequence of numeric.
+# sum0 -- generic sum of the elements of a Sequence of numeric with type parameter.
 #
 # This allows summing the elements of a list, as in
 #
 #   l := [1,2,3]
-#   say (sum i32 l)     # '6'
+#   say (sum0 i32 l)     # '6'
 #
+# NYI: When we move numerics.sum to numeric.type.sum, we should not need this any longer.
 #
-sum<U: numerics<T>, T: numeric<T>> (
+sum0<U: numerics<T>, T: numeric<T>> (
   # the numeric type we are summing, unit value
   n U,
   l Sequence<T>

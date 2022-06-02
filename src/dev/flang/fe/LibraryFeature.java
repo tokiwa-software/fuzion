@@ -274,20 +274,9 @@ public class LibraryFeature extends AbstractFeature
         _arguments = new List<AbstractFeature>();
         var i = innerFeatures();
         var n = _libModule.featureArgCount(_index);
-        var j = 0;
-        while (j < i.size())
+        for (var j = 0; j < i.size() && j < n; j++)
           {
-            var a = i.get(j);
-            if (a.isTypeParameter())
-              {
-                _arguments.add(a);
-              }
-            else if (n > 0)
-              {
-                _arguments.add(a);
-                n--;
-              }
-            j++;
+            _arguments.add(i.get(j));
           }
       }
     return _arguments;

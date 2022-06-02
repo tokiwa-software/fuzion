@@ -217,7 +217,7 @@ public class Types extends ANY
       f_function      = universe.get(mod, FUNCTION_NAME);
       f_function_call = f_function.get(mod, "call");
       f_safety        = universe.get(mod, "safety");
-      f_array         = universe.get(mod, "array", 1);
+      f_array         = universe.get(mod, "array", 5);
       f_array_internalArray = f_array.get(mod, "internalArray");
       f_fuzion                     = universe.get(mod, "fuzion");
       f_fuzion_sys                 = f_fuzion.get(mod, "sys");

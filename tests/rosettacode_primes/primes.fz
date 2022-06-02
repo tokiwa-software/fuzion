@@ -27,7 +27,7 @@ primes is
 
   primes(n i32) is // sieve using loops
     for
-      a := marray n+1 false, a
+      a := (marrays bool).new n+1 false, a
       i := 2, i + 1
     while i <= n
       if !a[i]
@@ -40,7 +40,7 @@ primes is
   say "Primes using loop:"; primes 1000; say
 
   primes2(n i32) is   // sieve using streams
-    a := marray n+1 false
+    a := (marrays bool).new n+1 false
     (2..n).forAll (i ->
         if !a[i]
           yak "$i "
@@ -52,7 +52,7 @@ primes is
   say "Primes using streams:"; primes2 1000; say
 
   primes3(n i32) is   // sieve using streams and filters
-    a := marray n+1 false
+    a := (marrays bool).new n+1 false
     (2..n)
       .filter (i -> !a[i])
       .forAll (i ->
@@ -62,7 +62,7 @@ primes is
   say "Primes using streams and filters:"; primes3 1000; say
 
   primes4(n i32) is  // sieve using pipes
-    a := marray n+1 false
+    a := (marrays bool).new n+1 false
 
     (2..n) |& (i -> !a[i]) | i ->
       yak "$i "

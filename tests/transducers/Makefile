@@ -17,29 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature bench
+#  Source code of Fuzion test Makefile
 #
-#  Author: Michael Lill (michael.lill@tokiwa.software)
+#  Author: Michael (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# benchmark f for nano_seconds
-# returns: iterations per second
-#
-bench(f ()->unit, nano_seconds u64, warm_up_nano_seconds u64) f64 is
-  start := fuzion.std.nano_time
-
-  is_warmup => fuzion.std.nano_time - start < warm_up_nano_seconds
-
-  for iter := (u64 0), if (is_warmup) iter else iter + 1
-  while fuzion.std.nano_time - start < warm_up_nano_seconds + nano_seconds
-  do
-    f.call
-  else
-    iter.as_f64 / (nano_seconds.as_f64 * 1E-9)
-
-# benchmark f for milli_seconds (1s warm up)
-# returns: iterations per second
-#
-bench(f ()->unit, milli_seconds i32) f64 is
-  bench f (milli_seconds.as_u64 * 1E6) (u64 1E9)
+NAME = transducertest
+include ../positive.mk

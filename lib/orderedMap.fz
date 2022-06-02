@@ -47,7 +47,7 @@ is
     infix <= (other entry) => ks[i] <= ks[other.i]
     key => ks[i]
     val => vs[i]
-  sortedEntries := sortedArray<entry> ((0..ks.length-1).mapSequence<entry> (i -> entry i)).asArray
+  sortedEntries := sortedArrayOf ((0..ks.length-1).mapSequence<entry> (i -> entry i)).asArray
 
   # number of entries in this map
   #
@@ -75,7 +75,7 @@ is
       nil =>
         (orderedMap
           (ks++[k]).asArray
-          (vs++(marray<V> 1 v)).asArray)
+          (vs++[v]).asArray)
       V =>
         va := array<V> size (i -> if ks[i]=k then v else vs[i])
         (orderedMap ks va)
@@ -93,9 +93,15 @@ is
       r
 
 
-# orderedMap -- convenience routine to create an empty instance of orderedMap
+# orderedMaps -- unit type feature declaring features related to orderedMap
 #
+# NYI: move to orderedMap.type
 #
-orderedMap<OK : ordered<OK>, V> => (orderedMap
-                                    Sequences.empty<OK>.asArray
-                                    Sequences.empty<V>.asArray)
+orderedMaps<OK : ordered<OK>, V> is
+
+
+  # create an empty instance of orderedMap
+  #
+  empty => (orderedMap
+            Sequences.empty<OK>.asArray
+            Sequences.empty<V>.asArray)

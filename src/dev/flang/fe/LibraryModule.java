@@ -371,7 +371,7 @@ public class LibraryModule extends Module
   {
     for (var p : outer.inherits())
       {
-        var cf = p.calledFeature().libraryFeature();
+        var cf = p.calledFeature();
         if (CHECKS) check
           (Errors.count() > 0 || cf != null);
 
