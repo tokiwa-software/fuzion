@@ -1304,6 +1304,8 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVED_DECLARATIONS));
 
+    var old_state = _state;
+
     if (_state == State.RESOLVED_DECLARATIONS)
       {
         _state = State.RESOLVING_TYPES;
@@ -1333,7 +1335,8 @@ public class Feature extends AbstractFeature implements Stmnt
       }
 
     if (POSTCONDITIONS) ensure
-      (_state.atLeast(State.RESOLVED_TYPES));
+      (old_state == State.RESOLVING_TYPES && _state == old_state /* recursive attempt to resolve types */ ||
+       _state.atLeast(State.RESOLVING_TYPES));
   }
 
 
