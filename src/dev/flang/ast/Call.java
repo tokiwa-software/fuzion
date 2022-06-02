@@ -1714,6 +1714,8 @@ public class Call extends AbstractCall
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
     if (!forFun &&
+        _type != Types.t_ERROR &&
+        resolvedFormalArgumentTypes != null &&
         _actuals.size() == resolvedFormalArgumentTypes.length /* this will cause an error in checkTypes() */ )
       {
         int count = 0;
@@ -1721,9 +1723,7 @@ public class Call extends AbstractCall
         while (i.hasNext())
           {
             Expr actl = i.next();
-            var frmlT = _type == Types.t_ERROR || count >= resolvedFormalArgumentTypes.length
-              ? Types.t_ERROR
-              : resolvedFormalArgumentTypes[count];
+            var frmlT = resolvedFormalArgumentTypes[count];
             if (CHECKS) check
               (frmlT != null,
                frmlT != Types.t_ERROR || Errors.count() > 0);
@@ -1731,7 +1731,7 @@ public class Call extends AbstractCall
             count++;
           }
 
-        if (_type != Types.t_ERROR && target != null)
+        if (target != null)
           {
             // NYI: Need to check why this is needed, it does not make sense to
             // propagate the target's type to target. But if removed,
