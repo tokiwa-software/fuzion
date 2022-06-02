@@ -724,14 +724,19 @@ public class Call extends AbstractCall
             var fo = calledFeatureCandidates(targetFeature, res, thiz);
             FeatureName calledName = FeatureName.get(name, _actuals.size());
             calledFeature_ = fo.filter(pos(), calledName, ff -> mayMatchArgList(ff) || ff.hasOpenGenericsArgList());
+            if (calledFeature_ != null &&
+                generics.isEmpty() &&
+                _actuals.size() != calledFeature_.valueArguments().size() &&
+                !calledFeature_.hasOpenGenericsArgList())
+              {
+                splitOffTypeArgs(thiz);
+              }
+            gotCalledFeature();
             if (calledFeature_ == null)
               {
                 calledFeature_ = fo.filter(pos(), calledName, ff -> isSpecialWrtArgs(ff));
                 if (calledFeature_ == null)
                   {
-                    _gotCalledFeature = true;
-                    _whenGotCalledFeature.forEach(x -> x.run());
-                    _whenGotCalledFeature.clear();
                     findChainedBooleans(res, thiz);
                     if (calledFeature_ == null) // nothing found, so flag error
                       {
@@ -739,26 +744,27 @@ public class Call extends AbstractCall
                       }
                   }
               }
-            else if (generics.isEmpty() &&
-                     _actuals.size() != calledFeature_.valueArguments().size() &&
-                     !calledFeature_.hasOpenGenericsArgList())
-              {
-                splitOffTypeArgs(thiz);
-              }
           }
       }
-    _gotCalledFeature = true;
-    _whenGotCalledFeature.forEach(x -> x.run());
-    _whenGotCalledFeature.clear();
+    gotCalledFeature();
 
     if (POSTCONDITIONS) ensure
       (Errors.count() > 0 || calledFeature() != null,
        Errors.count() > 0 || target          != null);
   }
 
-  ArrayList<Runnable> _whenGotCalledFeature = new ArrayList<>();
-  boolean _gotCalledFeature = false;
 
+  ArrayList<Runnable> _whenGotCalledFeature = new ArrayList<>();
+
+  void gotCalledFeature()
+  {
+    var w = _whenGotCalledFeature;
+    if (w != null)
+      {
+        _whenGotCalledFeature = null;
+        w.forEach(x -> x.run());
+      }
+  }
 
   /**
    * Perform an action as soon as calledFeature_ is set. This is used to delay
@@ -769,7 +775,7 @@ public class Call extends AbstractCall
    */
   void whenGotCalledFeature(Runnable r)
   {
-    if (_gotCalledFeature)
+    if (_whenGotCalledFeature == null)
       {
         r.run();
       }
@@ -1736,7 +1742,7 @@ public class Call extends AbstractCall
             count++;
           }
 
-        if (_type != Types.t_ERROR)
+        if (_type != Types.t_ERROR && target != null)
           {
             // NYI: Need to check why this is needed, it does not make sense to
             // propagate the target's type to target. But if removed,
