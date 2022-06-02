@@ -1713,7 +1713,8 @@ public class Call extends AbstractCall
    */
   public void propagateExpectedType(Resolution res, AbstractFeature outer)
   {
-    if (!forFun)
+    if (!forFun &&
+        _actuals.size() == resolvedFormalArgumentTypes.length /* this will cause an error in checkTypes() */ )
       {
         int count = 0;
         ListIterator<Expr> i = _actuals.listIterator();
