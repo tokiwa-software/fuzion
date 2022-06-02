@@ -1000,22 +1000,16 @@ public class Call extends AbstractCall
     v.visitActuals
       (() ->
        {
-         // Delay action until after calledFeature_ is set.
-         //
-         // NYI: Cleanup: It should be sufficient to delay this action in case v instanceof Feature.ResolveTypes.
-         whenGotCalledFeature
-           (() ->
-            {
-              while (i.hasNext())
-                {
-                  var a = i.next();
-                  if (a != null) // splitOffTypeArgs might have set this to null
-                    {
-                      i.set(a.visit(v, outer));
-                    }
-                }
-            });
+         while (i.hasNext())
+           {
+             var a = i.next();
+             if (a != null) // splitOffTypeArgs might have set this to null
+               {
+                 i.set(a.visit(v, outer));
+               }
+           }
        },
+       this,
        outer);
     if (target != null &&
         // for 'xyz.type' target is 'xyz', which is never called, so do not visit it:

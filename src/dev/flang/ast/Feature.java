@@ -1292,9 +1292,14 @@ public class Feature extends AbstractFeature implements Stmnt
      * type does not depend on the actual arguments, but the actual arguments
      * might depend directly or indirectly on the feature's type.
      */
-    void visitActuals(Runnable r, AbstractFeature outer)
+    void visitActuals(Runnable r, Call call, AbstractFeature outer)
     {
-      outer.whenResolvedTypes(r);
+      outer.whenResolvedTypes
+        (() ->
+         {
+           // Delay action until after calledFeature_ is set.
+           call.whenGotCalledFeature(r);
+         });
     }
   }
 

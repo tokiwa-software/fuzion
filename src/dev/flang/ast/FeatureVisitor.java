@@ -83,7 +83,7 @@ public abstract class FeatureVisitor extends ANY
    * call can redefine this method.  This is used for type resolution to delay
    * resolution or actual arguments until the outer feature's type was resolved.
    */
-  void visitActuals(Runnable r, AbstractFeature outer) { r.run(); }
+  void visitActuals(Runnable r, Call call, AbstractFeature outer) { r.run(); }
 
   /**
    * This can be redefined to suppress visiting Assigns that were created for
