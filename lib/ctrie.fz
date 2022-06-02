@@ -556,7 +556,7 @@ is
     expmain := r.GCAS_READ CTrie.this
     if(RDCSS_ROOT (RDCSS_Descriptor r expmain (r.copy_to_gen (r.data.gen +° 1) CTrie.this)))
       # new ctrie by increasing gen of root by one
-      CTrie<CTK,CTV> (r.copy_to_gen (r.data.gen +° 1) CTrie.this) read_only
+      CTrie CTK CTV (r.copy_to_gen (r.data.gen +° 1) CTrie.this) read_only
     else
       snapshot read_only
 
@@ -569,4 +569,4 @@ is
 
 # initialize a new ctrie
 CTrie<CTK: hasHash<CTK>, CTV> =>
-  CTrie<CTK, CTV> (INode (MainNode (CNode<CTK,CTV> 0 []) 0)) false
+  CTrie CTK CTV (INode (MainNode (CNode<CTK,CTV> 0 []) 0)) false
