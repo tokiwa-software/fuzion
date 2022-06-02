@@ -845,7 +845,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public FeatureName handDown(SrcModule module, AbstractFeature f, FeatureName fn, AbstractCall p, AbstractFeature heir)
   {
     if (PRECONDITIONS) require
-      (module == null || module.declaredOrInheritedFeatures(this).get(fn) == f,
+      (module == null || module.declaredOrInheritedFeatures(this).get(fn) == f || f.hasOpenGenericsArgList(),
        this != heir);
 
     if (f.outer() == p.calledFeature()) // NYI: currently does not support inheriting open generic over several levels
