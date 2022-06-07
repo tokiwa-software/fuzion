@@ -807,7 +807,11 @@ public class SourceFile extends ANY
    */
   public int codePointInLine(int pos, int line)
   {
-    return pos - lineStartPos(line) + 1;
+    int c = 1;
+    for (int i = lineStartPos(line); i < pos; i = i + sizeFromCpAndSize(decodeCodePointAndSize(i))){
+      c++;
+    }
+    return c;
   }
 
 
