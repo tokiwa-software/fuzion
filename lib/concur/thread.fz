@@ -37,7 +37,7 @@ is
 
   # spawn a new thread
   #
-  spawn(code ()->unit) =>
+  spawn(code ()->Object) =>
     p.spawn code
     _ := thread p mode
 
@@ -56,7 +56,7 @@ threadProvider ref is
 
   # spawn a new thread using given code
   #
-  spawn(code ()->unit) unit is abstract
+  spawn(code ()->Object) unit is abstract
 
 
 # type related to thread declaring features not requiring an instance of thread
@@ -74,4 +74,4 @@ defaultThread : threadProvider is
 
   # spawn a new thread using given code
   #
-  spawn(code ()->unit) => fuzion.sys.thread.spawn code
+  spawn(code ()->Object) => fuzion.sys.thread.spawn code
