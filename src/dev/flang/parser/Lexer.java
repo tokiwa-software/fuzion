@@ -917,7 +917,7 @@ public class Lexer extends SourceFile
    * Advance to the next token. The next token might be an ignored token, i.e,
    * white space or a comment.
    */
-  void nextRaw()
+  public void nextRaw()
   {
     _curPos = bytePos();
     int p = curCodePoint();

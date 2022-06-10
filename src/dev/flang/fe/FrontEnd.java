@@ -151,6 +151,8 @@ public class FrontEnd extends ANY
   {
     _options = options;
     Types.reset();
+    Errors.reset();
+    FeatureName.reset();
     var universe = new Universe();
     _universe = universe;
 
