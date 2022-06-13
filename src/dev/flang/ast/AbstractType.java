@@ -791,7 +791,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return true iff this is a fun type
    */
-  boolean isFunType()
+  public boolean isFunType()
   {
     return
       !isGenericArgument() &&
