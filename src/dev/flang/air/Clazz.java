@@ -360,9 +360,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
   void dependencies()
   {
     _choiceGenerics = determineChoiceGenerics();
-    _resultField = determineResultField();
     _argumentFields = determineArgumentFields();
     _actualGenerics = determineActualGenerics();
+    _resultField = determineResultField();
     _resultClazz = determineResultClazz();
     _outerRef = determineOuterRef();
     _choiceTag = determineChoiceTag();
@@ -1884,6 +1884,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private Clazz determineResultClazz()
   {
     var f = feature();
+    var of = _outer != null ? _outer.feature() : null;
 
     if (f.isConstructor())
       {
@@ -1897,12 +1898,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         return typeParameterActualType().typeClazz();
       }
-    else if (feature() == Types.resolved.f_Types_get)
+    else if (f  == Types.resolved.f_Types_get ||
+             of == Types.resolved.f_Types_get && f == of.resultField())
       // NYI (see #282): Would be nice if this would not need special handlng but would
       // work in general for any feature with type parameters that returns one
       // of this type parameters as its result using '=>'.
       {
-        return actualGenerics()[0].typeClazz();
+        var ag = (f == Types.resolved.f_Types_get ? this : _outer).actualGenerics();
+        return ag[0].typeClazz();
       }
     else
       {
