@@ -807,8 +807,9 @@ public class SourceFile extends ANY
    */
   public int codePointInLine(int pos, int line)
   {
-    if(PRECONDITIONS)
-      require(line > 0);
+    if (PRECONDITIONS) require
+      (line > 0);
+
     int c = 1;
     for (int i = lineStartPos(line); i < pos; i = i + sizeFromCpAndSize(decodeCodePointAndSize(i)))
       {
@@ -825,7 +826,7 @@ public class SourceFile extends ANY
   public int codePointInLine(int pos)
   {
     int line = lineNum(pos);
-    if(line == 0)
+    if (line == 0)
       {
         return BEGINNING_OF_FILE;
       }
