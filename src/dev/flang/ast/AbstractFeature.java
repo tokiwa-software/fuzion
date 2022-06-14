@@ -519,7 +519,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   public boolean hasTypeFeature()
   {
-    return _typeFeature != null || existingTypeFeature() != null;
+    return _typeFeature != null || existingTypeFeature() != null || this == Types.f_ERROR;
   }
 
 
@@ -533,7 +533,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
     if (_typeFeature == null)
       {
-        _typeFeature = existingTypeFeature();
+        _typeFeature = this == Types.f_ERROR ? this : existingTypeFeature();
       }
     return _typeFeature;
   }
