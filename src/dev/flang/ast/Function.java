@@ -620,7 +620,7 @@ public class Function extends ExprWithPos
       }
     else
       {
-        _inheritsCall.generics = generics(res);
+        _inheritsCall._generics = generics(res);
         Call inheritsCall2 = _inheritsCall.resolveTypes(res, outer);
         // Call.resolveType returns something differnt than this only for an
         // immediate function call, which is never the case in an inherits

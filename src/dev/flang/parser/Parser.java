@@ -340,7 +340,7 @@ field       : returnType
               }
             else
               {
-                ((Call)ic).generics = ng;
+                ((Call)ic)._generics = ng;
               }
           }
         p = new Impl(p.pos, new Block(p.pos, new List<>()), Impl.Kind.Routine);

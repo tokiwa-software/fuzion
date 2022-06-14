@@ -691,18 +691,18 @@ class LibraryOut extends DataOut
           }
         if (cf.generics().isOpen())
           {
-            n = c.generics.size();
+            n = c._generics.size();
             writeInt(n);
           }
         else
           {
             n = cf.generics().list.size();
             if (CHECKS) check
-              (c.generics.size() == n);
+              (c._generics.size() == n);
           }
         for (int i = 0; i < n; i++)
           {
-            type(c.generics.get(i));
+            type(c._generics.get(i));
           }
         if (CHECKS) check
           (cf.resultType().isOpenGeneric() == (c.select() >= 0));

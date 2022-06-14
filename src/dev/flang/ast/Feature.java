@@ -951,7 +951,7 @@ public class Feature extends AbstractFeature implements Stmnt
               {
                 if (p instanceof Call cp)
                   {
-                    cp.generics = new List<AbstractType>(Types.t_ERROR);
+                    cp._generics = new List<AbstractType>(Types.t_ERROR);
                   }
               }
           }
