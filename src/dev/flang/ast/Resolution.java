@@ -427,6 +427,9 @@ public class Resolution extends ANY
    */
   public void resolveDeclarations(AbstractFeature af)
   {
+    if (PRECONDITIONS) require
+      (af.state().atLeast(Feature.State.LOADED));
+
     if (af instanceof Feature f)
       {
         f.scheduleForResolution(this);
@@ -436,6 +439,26 @@ public class Resolution extends ANY
 
     if (POSTCONDITIONS) ensure
       (af.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+  }
+
+
+  /**
+   * Make sure feature f is in state RESOLVED_TYPES. This is used for
+   * recursive resolution of artificially added features during
+   * RESOLVING_TYPES.
+   *
+   * @param f the feature to be resolved
+   */
+  void resolveTypes(Feature f)
+  {
+    if (PRECONDITIONS) require
+      (f.state().atLeast(Feature.State.LOADED));
+
+    resolveDeclarations(f);
+    f.resolveTypes(this);
+
+    if (POSTCONDITIONS) ensure
+      (f.state().atLeast(Feature.State.RESOLVED_TYPES));
   }
 
 }

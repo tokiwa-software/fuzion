@@ -492,8 +492,8 @@ public class Function extends ExprWithPos
             res._module.findDeclarations(_wrapper, outer);
             if (inferResultType)
               {
-                _wrapper.scheduleForResolution(res);
-                res.resolveTypes();
+                res.resolveDeclarations(_wrapper);
+                res.resolveTypes(f);
                 result = f.resultType();
                 gs.set(0, result);
               }
