@@ -236,23 +236,30 @@ public class Types extends ANY
     Resolved(Resolution res, AbstractFeature universe)
     {
       this(res._module, (name, ref) -> Type.type(res, ref, name, universe), universe);
-      res.resolveTypes(t_i8         .featureOfType());
-      res.resolveTypes(t_i16        .featureOfType());
-      res.resolveTypes(t_i32        .featureOfType());
-      res.resolveTypes(t_i64        .featureOfType());
-      res.resolveTypes(t_u8         .featureOfType());
-      res.resolveTypes(t_u16        .featureOfType());
-      res.resolveTypes(t_u32        .featureOfType());
-      res.resolveTypes(t_u64        .featureOfType());
-      res.resolveTypes(t_f32        .featureOfType());
-      res.resolveTypes(t_f64        .featureOfType());
-      res.resolveTypes(t_bool       .featureOfType());
-      res.resolveTypes(t_fuzion     .featureOfType());
-      res.resolveTypes(t_string     .featureOfType());
-      res.resolveTypes(t_conststring.featureOfType());
-      res.resolveTypes(t_object     .featureOfType());
-      res.resolveTypes(t_unit       .featureOfType());
-      res.resolveTypes(t_void       .featureOfType());
+
+      var internalTypes = new AbstractType[] {
+        t_i8         ,
+        t_i16        ,
+        t_i32        ,
+        t_i64        ,
+        t_u8         ,
+        t_u16        ,
+        t_u32        ,
+        t_u64        ,
+        t_f32        ,
+        t_f64        ,
+        t_bool       ,
+        t_fuzion     ,
+        t_string     ,
+        t_conststring,
+        t_object     ,
+        t_unit       ,
+        t_void       };
+
+      for (var t : internalTypes)
+        {
+          res.resolveTypes(t.featureOfType());
+        }
     }
   }
 
