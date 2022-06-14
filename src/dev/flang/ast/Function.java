@@ -588,7 +588,7 @@ public class Function extends ExprWithPos
                      : new Type("unit"));
         for (var a : f.arguments())
           {
-            a.resolveTypes(res);
+            res.resolveTypes(a);
             generics.add(a.resultType());
           }
       }

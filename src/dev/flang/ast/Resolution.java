@@ -449,16 +449,19 @@ public class Resolution extends ANY
    *
    * @param f the feature to be resolved
    */
-  void resolveTypes(Feature f)
+  void resolveTypes(AbstractFeature af)
   {
     if (PRECONDITIONS) require
-      (f.state().atLeast(Feature.State.LOADED));
+      (af.state().atLeast(Feature.State.LOADED));
 
-    resolveDeclarations(f);
-    f.resolveTypes(this);
+    if (af instanceof Feature f)
+      {
+        resolveDeclarations(f);
+        f.resolveTypes(this);
+      }
 
     if (POSTCONDITIONS) ensure
-      (f.state().atLeast(Feature.State.RESOLVED_TYPES));
+      (af.state().atLeast(Feature.State.RESOLVED_TYPES));
   }
 
 }
