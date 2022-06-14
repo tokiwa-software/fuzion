@@ -8,7 +8,7 @@
     value parameters, with just n actual value arguments.
 
     If an overloaded f with n formal arguments (type or value) exists, a call
-    with n actual arguments with always call this f with n formal arguments.
+    with n actual arguments will always call this f with n formal arguments.
 
 - fz command
 
@@ -31,7 +31,7 @@
     ```
       i32.type.blabla is say "this is blabla in i32.type"
     ```
-  - type features now inherit from the type features of corresponding to the
+  - type features now inherit from the type features corresponding to the
     plain features their corresponding plain feature inherits from.
 
 - stdlib
