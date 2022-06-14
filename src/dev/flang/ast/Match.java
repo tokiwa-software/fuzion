@@ -152,7 +152,7 @@ public class Match extends AbstractMatch
       {
         AstErrors.matchSubjectMustNotBeTypeParameter(_subject.pos(), st);
       }
-    if (st.featureOfType() instanceof Feature stf) { stf.resolveTypes(res); }
+    res.resolveTypes(st.featureOfType());
     if (!st.isChoice())
       {
         AstErrors.matchSubjectMustBeChoice(_subject.pos(), st);

@@ -1538,7 +1538,7 @@ public class Call extends AbstractCall
     else
       {
         var fft = formalType.featureOfType();
-        if (fft instanceof Feature ffft) { ffft.resolveTypes(res); } // NYI: Cast!
+        res.resolveTypes(fft);
         var aft = actualType.isGenericArgument() ? null : actualType.featureOfType();
         if (fft == aft)
           {

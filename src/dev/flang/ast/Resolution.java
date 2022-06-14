@@ -367,7 +367,7 @@ public class Resolution extends ANY
           }
 
         Feature f = forType.removeFirst();
-        f.resolveTypes(this);
+        f.internalResolveTypes(this);
       }
     else if (!moreThanTypes)
       {
@@ -457,7 +457,7 @@ public class Resolution extends ANY
     if (af instanceof Feature f)
       {
         resolveDeclarations(f);
-        f.resolveTypes(this);
+        f.internalResolveTypes(this);
       }
 
     if (POSTCONDITIONS) ensure

@@ -236,23 +236,23 @@ public class Types extends ANY
     Resolved(Resolution res, AbstractFeature universe)
     {
       this(res._module, (name, ref) -> Type.type(res, ref, name, universe), universe);
-      t_i8         .featureOfType().resolveTypes(res);
-      t_i16        .featureOfType().resolveTypes(res);
-      t_i32        .featureOfType().resolveTypes(res);
-      t_i64        .featureOfType().resolveTypes(res);
-      t_u8         .featureOfType().resolveTypes(res);
-      t_u16        .featureOfType().resolveTypes(res);
-      t_u32        .featureOfType().resolveTypes(res);
-      t_u64        .featureOfType().resolveTypes(res);
-      t_f32        .featureOfType().resolveTypes(res);
-      t_f64        .featureOfType().resolveTypes(res);
-      t_bool       .featureOfType().resolveTypes(res);
-      t_fuzion     .featureOfType().resolveTypes(res);
-      t_string     .featureOfType().resolveTypes(res);
-      t_conststring.featureOfType().resolveTypes(res);
-      t_object     .featureOfType().resolveTypes(res);
-      t_unit       .featureOfType().resolveTypes(res);
-      t_void       .featureOfType().resolveTypes(res);
+      res.resolveTypes(t_i8         .featureOfType());
+      res.resolveTypes(t_i16        .featureOfType());
+      res.resolveTypes(t_i32        .featureOfType());
+      res.resolveTypes(t_i64        .featureOfType());
+      res.resolveTypes(t_u8         .featureOfType());
+      res.resolveTypes(t_u16        .featureOfType());
+      res.resolveTypes(t_u32        .featureOfType());
+      res.resolveTypes(t_u64        .featureOfType());
+      res.resolveTypes(t_f32        .featureOfType());
+      res.resolveTypes(t_f64        .featureOfType());
+      res.resolveTypes(t_bool       .featureOfType());
+      res.resolveTypes(t_fuzion     .featureOfType());
+      res.resolveTypes(t_string     .featureOfType());
+      res.resolveTypes(t_conststring.featureOfType());
+      res.resolveTypes(t_object     .featureOfType());
+      res.resolveTypes(t_unit       .featureOfType());
+      res.resolveTypes(t_void       .featureOfType());
     }
   }
 

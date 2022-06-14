@@ -617,20 +617,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * Type resolution for a feature f: For all expressions and statements in f's
-   * inheritance clause, contract, and implementation, determine the static type
-   * of the expression. Were needed, perform type inference. Schedule f for
-   * syntactic sugar resolution.
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   */
-  void resolveTypes(Resolution res)
-  {
-  }
-
-
-  /**
    * In case this has not been resolved for types yet, do so. Next, try to
    * determine the result type of this feature. If the type is not explicit, but
    * needs to be inferenced, the result might still be null. Inferenced types
@@ -647,8 +633,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     if (!state().atLeast(Feature.State.RESOLVING_TYPES))
       {
-        res.resolveDeclarations(this);
-        resolveTypes(res);
+        res.resolveTypes(this);
       }
     var result = resultTypeRaw(generics);
     if (result != null && result instanceof Type rt)
