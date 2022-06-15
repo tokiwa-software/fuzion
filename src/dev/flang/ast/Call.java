@@ -585,9 +585,8 @@ public class Call extends AbstractCall
     var cb = chainedBoolTarget(res, thiz);
     if (cb != null && _actuals.size() == 1)
       {
-        var rt = new Feature.ResolveTypes(res);
         var b = cb._actuals.get(0);
-        b.visit(rt, thiz);
+        res.resolveType(b, thiz);
         String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
         var tmp = new Feature(res,
                               pos(),
@@ -603,9 +602,9 @@ public class Call extends AbstractCall
           };
         var as = new Assign(res, pos(), tmp, b, thiz);
         cb._actuals = new List<Expr>(new Block(b.pos(),new List<Stmnt>(as, t1)));
-        t1    .visit(rt, thiz);
-        result.visit(rt, thiz);
-        as    .visit(rt, thiz);
+        res.resolveType(t1    , thiz);
+        res.resolveType(result, thiz);
+        res.resolveType(as    , thiz);
         _actuals = new List<Expr>(result);
         calledFeature_ = Types.resolved.f_bool_AND;
         name = calledFeature_.featureName().baseName();
@@ -764,7 +763,6 @@ public class Call extends AbstractCall
 
   void resolveTypesOfActuals(Resolution res, AbstractFeature outer)
   {
-    var v = new Feature.ResolveTypes(res);
     ListIterator<Expr> i = _actuals.listIterator(); // _actuals can change during resolveTypes, so create iterator early
     outer.whenResolvedTypes
       (() ->
@@ -774,9 +772,9 @@ public class Call extends AbstractCall
              var a = i.next();
              if (a != null) // splitOffTypeArgs might have set this to null
                {
-                 i.set(a.visit(v, outer));
+                 i.set(res.resolveType(a, outer));
                }
-               }
+           }
        });
   }
 
@@ -1358,7 +1356,7 @@ public class Call extends AbstractCall
   private Expr resolveTypeForNextActual(ListIterator<Expr> aargs, Resolution res, AbstractFeature outer)
   {
     Expr actual = aargs.next();
-    actual = actual.visit(new Feature.ResolveTypes(res), outer);
+    actual = res.resolveType(actual, outer);
     aargs.set(actual);
     return actual;
   }
