@@ -586,7 +586,7 @@ public class Call extends AbstractCall
     if (cb != null && _actuals.size() == 1)
       {
         var b = cb._actuals.get(0);
-        res.resolveType(b, thiz);
+        b = res.resolveType(b, thiz);
         String tmpName = FuzionConstants.CHAINED_BOOL_TMP_PREFIX + (_chainedBoolTempId_++);
         var tmp = new Feature(res,
                               pos(),
@@ -594,17 +594,17 @@ public class Call extends AbstractCall
                               b.type(),
                               tmpName,
                               thiz);
-        Call t1 = new Call(pos(), new Current(pos(), thiz.thisType()), tmp, -1);
-        Call t2 = new Call(pos(), new Current(pos(), thiz.thisType()), tmp, -1);
-        var result = new Call(pos(), t2, name, _actuals)
+        Expr t1 = new Call(pos(), new Current(pos(), thiz.thisType()), tmp, -1);
+        Expr t2 = new Call(pos(), new Current(pos(), thiz.thisType()), tmp, -1);
+        Expr result = new Call(pos(), t2, name, _actuals)
           {
             boolean isChainedBoolRHS() { return true; }
           };
-        var as = new Assign(res, pos(), tmp, b, thiz);
+        Stmnt as = new Assign(res, pos(), tmp, b, thiz);
+        t1 = res.resolveType(t1    , thiz);
+        as = res.resolveType(as    , thiz);
+        result = res.resolveType(result, thiz);
         cb._actuals = new List<Expr>(new Block(b.pos(),new List<Stmnt>(as, t1)));
-        res.resolveType(t1    , thiz);
-        res.resolveType(result, thiz);
-        res.resolveType(as    , thiz);
         _actuals = new List<Expr>(result);
         calledFeature_ = Types.resolved.f_bool_AND;
         name = calledFeature_.featureName().baseName();
