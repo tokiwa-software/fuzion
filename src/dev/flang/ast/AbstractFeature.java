@@ -851,6 +851,9 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * Due to open generics, even the number of types may change through
    * inheritance.
    *
+   * @param res resolution instance, required only when run in front end phase,
+   * null otherwise.
+   *
    * @param a an array of types to be handed down
    *
    * @param heir a feature that inhertis from outer()
@@ -886,7 +889,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                   }
                 else
                   {
-                    FormalGenerics.resolve(res, c.generics(), heir);
+                    if (res != null)
+                      {
+                        FormalGenerics.resolve(res, c.generics(), heir);
+                      }
                     ti = ti.actualType(c.calledFeature(), c.generics());
                     a[i] = Types.intern(ti);
                   }
