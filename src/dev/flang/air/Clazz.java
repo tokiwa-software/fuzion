@@ -2200,7 +2200,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     else
       {
         if (CHECKS) check
-          (Errors.count() >= 0);
+          (Errors.count() > 0);
         return new List<>();
       }
   }
