@@ -574,7 +574,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
     if (t.isOpenGeneric())
       {
-        var types = replaceOpen(t);
+        var types = replaceOpen(t, feature());
         if (CHECKS) check
           (Errors.count() > 0 || select >= 0 && select < types.size());
         t = 0 <= select && select < types.size() ? types.get(select) : Types.t_ERROR;
@@ -2185,27 +2185,45 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * For an open generic type ft find the actual type parameters within this
    * clazz.  The resulting list could be empty.
+   *
+   * @param ft the type that is an open generic
+   *
+   * @param fouter the outer feature where ft is used. This might be a heir of
+   * _outer.feature() in case ft is the result type of an inherited feature.
    */
-  public List<AbstractType> replaceOpen(AbstractType ft)
+  List<AbstractType> replaceOpen(AbstractType ft, AbstractFeature fouter)
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 || ft.isOpenGeneric());
 
-    var g = ft.isOpenGeneric() ? ft.genericArgument() : null;
-    if (g != null && feature().generics() == g.formalGenerics())
+    List<AbstractType> types;
+    var inh = _outer == null ? null : _outer.feature().tryFindInheritanceChain(fouter.outer());
+    if (inh != null &&
+        inh.size() > 0)
       {
-        return g.replaceOpen(_type.generics());
+        var typesa = new AbstractType[] { ft };
+        typesa = fouter.handDown(null, typesa, _outer.feature());
+        types = new List<AbstractType>();
+        for (var t : typesa)
+          {
+            types.add(t);
+          }
+      }
+    else if (ft.isOpenGeneric() && feature().generics() == ft.genericArgument().formalGenerics())
+      {
+        types = ft.genericArgument().replaceOpen(_type.generics());
       }
     else if (_outer != null)
       {
-        return _outer.replaceOpen(ft);
+        types = _outer.replaceOpen(ft, fouter);
       }
     else
       {
         if (CHECKS) check
           (Errors.count() > 0);
-        return new List<>();
+        types = new List<>();
       }
+    return types;
   }
 
 
@@ -2220,7 +2238,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (Errors.count() > 0 || a != Types.f_ERROR || a.resultType().isOpenGeneric());
 
-    return a == Types.f_ERROR ? 0 : replaceOpen(a.resultType()).size();
+    return a == Types.f_ERROR ? 0 : replaceOpen(a.resultType(), a.outer()).size();
   }
 
 
