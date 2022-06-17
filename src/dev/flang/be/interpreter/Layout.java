@@ -181,7 +181,7 @@ class Layout extends ANY
                 int[] a = (int[]) _offsets0.get(f.feature());
                 if (a == null)
                   {
-                    a = new int[_clazz.replaceOpen(f.feature().resultType()).size()];
+                    a = new int[_clazz.replaceOpenCount(f.feature())];
                     _offsets0.put(f.feature(), a);
                   }
                 a[f._select] = _size - Integer.MIN_VALUE;

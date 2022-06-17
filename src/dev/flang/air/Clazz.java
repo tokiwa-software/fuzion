@@ -1010,7 +1010,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             innerClazzes = (Clazz[]) _inner.get(f);
             if (innerClazzes == null)
               {
-                innerClazzes = new Clazz[replaceOpen(f.resultType()).size()];
+                innerClazzes = new Clazz[replaceOpenCount(f)];
                 _inner.put(f, innerClazzes);
               }
             if (CHECKS) check
@@ -2065,8 +2065,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
                 {
                   if (a.isOpenGenericField())
                     {
-                      var types = replaceOpen(a.resultType());
-                      for (var i = 0; i < types.size(); i++)
+                      var n = replaceOpenCount(a);
+                      for (var i = 0; i < n; i++)
                         {
                           args.add(lookup(a, i, Call.NO_GENERICS, Clazzes.isUsedAt(a), false));
                         }
@@ -2208,6 +2208,22 @@ public class Clazz extends ANY implements Comparable<Clazz>
       }
   }
 
+
+  /**
+   * For a feature with an open generic result type, find the number of actual
+   * instances existing in this clazz.
+   *
+   * @param a an inner feature of this of open generic type.
+   */
+  public int replaceOpenCount(AbstractFeature a)
+  {
+    if (PRECONDITIONS) require
+      (Errors.count() > 0 || a != Types.f_ERROR || a.resultType().isOpenGeneric());
+
+    return a == Types.f_ERROR ? 0 : replaceOpen(a.resultType()).size();
+  }
+
+
   /**
    * Set of fields in this clazz, including inherited and artificially added fields.
    *
@@ -2239,8 +2255,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
                   {
                     if (f.isOpenGenericField())
                       {
-                        var types = replaceOpen(f.resultType());
-                        for (var i = 0; i < types.size(); i++)
+                        var n = replaceOpenCount(f);
+                        for (var i = 0; i < n; i++)
                           {
                             fields.add(lookup(f, i, Call.NO_GENERICS, Clazzes.isUsedAt(f), false));
                           }
