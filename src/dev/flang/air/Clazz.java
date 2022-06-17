@@ -602,7 +602,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (t != null,
        Errors.count() > 0 || !t.isOpenGeneric());
 
-    return actualClazz(t, -1);
+    return actualClazz0(t, -1);
   }
 
 
@@ -611,12 +611,15 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * formal generics arguments will first be replaced via actualType(t), and the
    * Clazz will be created from the result.
    *
+   * NYI: This should be private, it is used only by actualClazz() and at one
+   * location in be/interpreter that should be removed.
+   *
    * @param t the original type
    *
    * @param select specifies the actual type parameter in case
    * t.isOpenGeneric().
    */
-  public Clazz actualClazz(AbstractType t, int select)
+  public Clazz actualClazz0(AbstractType t, int select)
   {
     if (PRECONDITIONS) require
       (t != null,
@@ -1104,7 +1107,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           field.isOuterRef() && fo.isOuterRefAdrOfValue()     ? actualClazz(Types.t_ADDRESS) :
           field.isOuterRef() && fo.isOuterRefCopyOfValue() ||
           !field.isOuterRef() && field != fo.resultField() // NYI: use lookup/resultClazz for all fields
-                                                           ? actualClazz(field.resultType(), select)
+                                                           ? actualClazz0(field.resultType(), select)
                                                            : lookup(field, Call.NO_GENERICS, Clazzes.isUsedAt(field)).resultClazz();
         if (select < 0)
           {
