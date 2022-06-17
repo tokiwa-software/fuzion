@@ -28,6 +28,7 @@ package dev.flang.air;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -2046,42 +2047,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Determine the argument fields of this routine.
    *
-   * @return the argument fields array or null if this is not a routine.
+   * @return the argument fields array or NO_CLAZZES if this is not a routine.
    */
   private Clazz[] determineArgumentFields()
   {
-    Clazz[] result = NO_CLAZZES;
-    var f = feature();
-    switch (f.kind())
-      {
-      case Abstract  :
-      case Intrinsic :
-      case Routine   :
-        {
-          var args = new ArrayList<Clazz>();
-          for (var a : f.valueArguments())
-            {
-              if (Clazzes.isUsed(a, this))
-                {
-                  if (a.isOpenGenericField())
-                    {
-                      var n = replaceOpenCount(a);
-                      for (var i = 0; i < n; i++)
-                        {
-                          args.add(lookup(a, i, Call.NO_GENERICS, Clazzes.isUsedAt(a), false));
-                        }
-                    }
-                  else if (this != Clazzes.c_void.get())
-                    {
-                      args.add(lookup(a, Call.NO_GENERICS, Clazzes.isUsedAt(a)));
-                    }
-                }
-            }
-          result = args.size() == 0 ? NO_CLAZZES : args.toArray(new Clazz[args.size()]);
-          break;
-        }
-      }
-    return result;
+    return actualFields(feature().valueArguments());
   }
 
 
@@ -2243,50 +2213,61 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * From a set of inner features of this clazz, extract used fields and create
+   * the corresponding clazzes for these fields.
+   *
+   * Fields with open generic result type will be replaced by 0 or more clazzes
+   * depending on the number of actual type parameters the open generic is
+   * replaced with.
+   *
+   * @param feats a collection of features the fields will be extracted from.
+   *
+   * @return NO_CLAZZES in case there are no fields remaining, an array of
+   * fields otherwise.
+   */
+  Clazz[] actualFields(Collection<AbstractFeature> feats)
+  {
+    var fields = new List<Clazz>();
+    for (var field: feats)
+      {
+        if (this != Clazzes.c_void.get() &&
+            field.isField() &&
+            field == findRedefinition(field) && // NYI: proper field redefinition handling missing, see tests/redef_args/*
+            Clazzes.isUsed(field, this))
+          {
+            if (field.isOpenGenericField())
+              {
+                var n = replaceOpenCount(field);
+                for (var i = 0; i < n; i++)
+                  {
+                    fields.add(lookup(field, i, Call.NO_GENERICS, Clazzes.isUsedAt(field), false));
+                  }
+              }
+            else if (this != Clazzes.c_void.get())
+              {
+                fields.add(lookup(field, Call.NO_GENERICS, Clazzes.isUsedAt(field)));
+              }
+          }
+      }
+    return fields.size() == 0 ? NO_CLAZZES : fields.toArray(new Clazz[fields.size()]);
+  }
+
+
+  /**
    * Set of fields in this clazz, including inherited and artificially added fields.
    *
-   * @return the set of fields, empty array if none. null before this clazz was
-   * layouted or for a clazz that cannot be instantiated (instrinsic, abstract,
-   * field, etc.).
+   * @return the set of fields, NO_CLAZZES if none. Never null.
    */
   public Clazz[] fields()
   {
     if (_fields == null)
       {
-        if (isChoice() ||
-            feature().isIntrinsic()
-            /* NYI: would be good to add isRef() here and create _fields only for value types */
-            )
-          {
-            _fields = NO_CLAZZES;
-          }
-        else
-          {
-            var fields = new List<Clazz>();
-            for (var f: _module.allInnerAndInheritedFeatures(feature()))
-              {
-                if (f.isField() &&
-                    Clazzes.isUsed(f, this) &&
-                    this != Clazzes.c_void.get() &&
-                    f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
-                    )
-                  {
-                    if (f.isOpenGenericField())
-                      {
-                        var n = replaceOpenCount(f);
-                        for (var i = 0; i < n; i++)
-                          {
-                            fields.add(lookup(f, i, Call.NO_GENERICS, Clazzes.isUsedAt(f), false));
-                          }
-                      }
-                    else
-                      {
-                        fields.add(lookup(f, Call.NO_GENERICS, Clazzes.isUsedAt(f)));
-                      }
-                  }
-              }
-            _fields = fields.toArray(new Clazz[fields.size()]);
-          }
+        _fields =
+          isChoice()              ||
+          feature().isIntrinsic() ||
+          false && isRef() /* NYI: would be good to add isRef() here and create _fields only for value types, does not work with C backend yet */
+          ? NO_CLAZZES
+          : actualFields(_module.allInnerAndInheritedFeatures(feature()));
       }
     return isRef() ? NO_CLAZZES : _fields;
   }
