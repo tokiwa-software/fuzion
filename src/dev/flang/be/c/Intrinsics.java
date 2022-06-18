@@ -441,7 +441,7 @@ public class Intrinsics extends ANY
                                 CExpr.decl("int", res),
                                 pt.assign(CExpr.call("malloc", new List<>(CExpr.sizeOfType("pthread_t")))),
                                 CExpr.iff(pt.eq(CNames.NULL),
-                                          CStmnt.seq(CExpr.fprintfstderr("*** malloc(%lu) failed\n", CExpr.sizeOfType("pthread_t")),
+                                          CStmnt.seq(CExpr.fprintfstderr("*** malloc(%zu) failed\n", CExpr.sizeOfType("pthread_t")),
                                                      CExpr.call("exit", new List<>(CExpr.int32const(1))))),
                                 res.assign(CExpr.call("pthread_create", new List<>(pt,
                                                                                    CNames.NULL,
