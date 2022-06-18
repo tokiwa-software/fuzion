@@ -348,6 +348,29 @@ public class C extends ANY
 
 
   /**
+   * In case of an unexpected situation such as code that should be unreachable,
+   * this should be used to print a corresponding error and exit(1).
+   *
+   * @param msg the message to be shown, may include %-escapes for additional args
+   *
+   * @param args the additional args to be fprintf-ed into msg.
+   *
+   * @return the C statement to report the error and exit(1).
+   */
+  CStmnt reportErrorInCode(String msg, CExpr... args)
+  {
+    var msg2 = "*** %s:%d: " + msg + "\n";
+    var args2 = new List<CExpr>(CIdent.FILE, CIdent.LINE);
+    for (var a : args)
+      {
+        args2.add(a);
+      }
+    return CStmnt.seq(CExpr.fprintfstderr(msg2, args2.toArray(new CExpr[args2.size()])),
+                      CExpr.exit(1));
+  }
+
+
+  /**
    * Create code to access (call or write) a feature.
    *
    * @param cl clazz id
@@ -390,12 +413,9 @@ public class C extends ANY
           }
         if (ccs.length == 0)
           {
-            ol.add(CStmnt.seq(CExpr.fprintfstderr("*** %s:%d no targets for dynamic access of %s within %s\n",
-                                                  CIdent.FILE,
-                                                  CIdent.LINE,
-                                                  CExpr.string(_fuir.clazzAsString(cc0)),
-                                                  CExpr.string(_fuir.clazzAsString(cl ))),
-                              CExpr.exit(1)));
+            ol.add(reportErrorInCode("no targets for dynamic access of %s within %s",
+                                     CExpr.string(_fuir.clazzAsString(cc0)),
+                                     CExpr.string(_fuir.clazzAsString(cl ))));
           }
         var cazes = new List<CStmnt>();
         CStmnt acc = CStmnt.EMPTY;
@@ -436,12 +456,10 @@ public class C extends ANY
           {
             var id = tvar.deref().field(_names.CLAZZ_ID);
             acc = CStmnt.suitch(id, cazes,
-                                CStmnt.seq(CExpr.fprintfstderr("*** %s:%d unhandled dynamic target %d in access of %s within %s\n",
-                                                               CIdent.FILE, CIdent.LINE,
-                                                               id,
-                                                               CExpr.string(_fuir.clazzAsString(cc0)),
-                                                               CExpr.string(_fuir.clazzAsString(cl ))),
-                                           CExpr.exit(1)));
+                                reportErrorInCode("unhandled dynamic target %d in access of %s within %s",
+                                                  id,
+                                                  CExpr.string(_fuir.clazzAsString(cc0)),
+                                                  CExpr.string(_fuir.clazzAsString(cl ))));
           }
         ol.add(acc);
         result = CStmnt.seq(ol);
@@ -460,12 +478,9 @@ public class C extends ANY
       }
     else
       {
-        result = CStmnt.seq(CExpr.fprintfstderr("*** %s:%d no code generated for static access to %s within %s\n",
-                                                CIdent.FILE,
-                                                CIdent.LINE,
-                                                CExpr.string(_fuir.clazzAsString(cc0)),
-                                                CExpr.string(_fuir.clazzAsString(cl ))),
-                            CExpr.exit(1));
+        result = reportErrorInCode("no code generated for static access to %s within %s",
+                                   CExpr.string(_fuir.clazzAsString(cc0)),
+                                   CExpr.string(_fuir.clazzAsString(cl )));
         stack.push(null);  // push void, i.e., stop code generation here
       }
     if (isCall && (res != null || _fuir.clazzIsVoidType(rt) && !containsVoid(stack)))
@@ -668,8 +683,7 @@ public class C extends ANY
           if (rcases.size() >= 2)
             { // more than two reference cases: we have to create separate switch of clazzIds for refs
               var id = refEntry.deref().field(_names.CLAZZ_ID);
-              var notFound = CStmnt.seq(CExpr.fprintfstderr("*** %s:%d Unexpected reference type %d found in match\n", CIdent.FILE, CIdent.LINE, id),
-                                        CExpr.exit(1));
+              var notFound = reportErrorInCode("unexpected reference type %d found in match", id);
               tdefault = CStmnt.suitch(id, rcases, notFound);
             }
           o = CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault));
