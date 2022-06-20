@@ -725,7 +725,7 @@ public class Call extends AbstractCall
               {
                 var fo = calledFeatureCandidates(targetFeature, res, thiz);
                 FeatureName calledName = FeatureName.get(name, _actuals.size());
-                calledFeature_ = fo.filter(pos(), calledName, ff -> mayMatchArgList(ff) || ff.hasOpenGenericsArgList());
+                calledFeature_ = fo.filter(pos(), calledName, ff -> mayMatchArgList(ff) || ff.hasOpenGenericsArgList() /* remove? */);
                 if (calledFeature_ != null &&
                     _generics.isEmpty() &&
                     _actuals.size() != calledFeature_.valueArguments().size() &&
@@ -791,16 +791,34 @@ public class Call extends AbstractCall
   {
     var g = new List<AbstractType>();
     var a = new List<Expr>();
+    var ts = calledFeature_.typeArguments();
+    var tn = ts.size();
+    var ti = 0;
+    var vs = calledFeature_.valueArguments();
+    var vn = vs.size();
     var i = 0;
     ListIterator<Expr> ai = _actuals.listIterator();
     while (ai.hasNext())
       {
         var aa = ai.next();
-        if (i <  calledFeature_.typeArguments().size())
+
+        // check that ts[ti] is open type parameter only iff ti == tn-1, ie.,
+        // only the last type parameter may be open
+        if (CHECKS) check
+          (ti >= tn-1 ||
+           ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter    ,
+           ti != tn-1 ||
+           ts.get(ti).kind() == AbstractFeature.Kind.TypeParameter     ||
+           ts.get(ti).kind() == AbstractFeature.Kind.OpenTypeParameter);
+
+        if (_actuals.size() - i > vn)
           {
-            var ta = calledFeature_.typeArguments().get(i);
-            g.add(aa.asType(outer, ta));
+            g.add(aa.asType(outer, ts.get(ti)));
             ai.set(null);  // make sure visit() no longer visits this
+            if (ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
+              {
+                ti++;
+              }
           }
         else
           {
@@ -868,7 +886,9 @@ public class Call extends AbstractCall
     var ftsz = ff.typeArguments().size();
 
     var result = fvsz == asz ||
-      _generics.isEmpty() && (fvsz + ftsz == asz);
+      _generics.isEmpty() && (fvsz + ftsz == asz) ||
+      _generics.isEmpty() && asz >= fvsz + ftsz -1 &&
+      ff.typeArguments().stream().anyMatch(ta -> ta.kind() == AbstractFeature.Kind.OpenTypeParameter);
     return result;
   }
 
