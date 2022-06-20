@@ -32,7 +32,7 @@ private stdin(
     # action to be taken: plain nomad, install or replace?
     redef r effectModes,
     _ unit
-  ) : effect r is
+  ) : stdins, effect r is
 
 
   # for a stdin instance installed in the current environment,
@@ -43,9 +43,6 @@ private stdin(
 
   nextByte =>
     next.ip.get
-
-
-  private line_feed u8 := 10
 
 
   # stream of bytes read from stdin until and excluding EOF
@@ -91,12 +88,9 @@ private stdin(
 
   # read line from stdin
   read_line string is
-    # NYI next line should be this but does not work in c backend currently
-    # strings.fromBytes bytes.takeWhile(b -> b != line_feed).asArray
-                                                  # asArray, since we don't want this to be lazy
     arr := byte_stream
-      .takeWhile(b -> b != 10)
-      .asArray
+      .takeWhile(b -> b != line_feed)
+      .asArray                         # asArray, since we don't want this to be lazy
     strings.fromBytes arr
 
 
@@ -115,6 +109,10 @@ stdins is
   installDefault is
     if !(effects.exists<io.stdin>)
       _ := stdin (defaultInputHandler (error "not initialized")) effectMode.default unit
+
+  # end-of-line marker
+  #
+  line_feed => u8 10
 
 
 byteInputHandler ref is
