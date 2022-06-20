@@ -36,17 +36,12 @@ import dev.flang.air.Clazzes;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class LValue extends Value
+public class LValue extends ValueWithClazz
 {
 
 
   /*----------------------------  variables  ----------------------------*/
 
-
-  /**
-   * The clazz of this LValue, only for debugging
-   */
-  private Clazz clazz;
 
   /**
    * The instance (stack of heap) containing this LValue
@@ -72,11 +67,12 @@ public class LValue extends Value
    */
   public LValue(Clazz c, Instance cont, int off)
   {
+    super(c);
+
     if (PRECONDITIONS) require
       (cont != null,
        off >= 0 || c.isUnitType());
 
-    this.clazz = c;
     this.container = cont;
     this.offset = off;
   }
@@ -238,7 +234,7 @@ public class LValue extends Value
   void storeNonRef(LValue slot, int size)
   {
     if (PRECONDITIONS)
-      require(size == Layout.get(clazz).size());
+      require(size == Layout.get(_clazz).size());
 
     container.storeNonRef(slot, size, offset);
   }
@@ -256,11 +252,11 @@ public class LValue extends Value
   {
     if (expected.isRef())
       {
-        throw new Error("LValue (" + clazz + " not allowed for dynamic clazz " + expected);
+        throw new Error("LValue (" + _clazz + " not allowed for dynamic clazz " + expected);
       }
-    if (expected != clazz)
+    if (expected != _clazz)
       {
-        throw new Error("Runtime clazz "+clazz+" does not equal static "+expected);
+        throw new Error("Runtime clazz "+_clazz+" does not equal static "+expected);
       }
   }
 
@@ -272,7 +268,7 @@ public class LValue extends Value
   Instance instance()
   {
     if (PRECONDITIONS) require
-      (clazz.isRef());
+      (_clazz.isRef());
 
     return (Instance) container.refs[offset];
   }
@@ -295,12 +291,12 @@ public class LValue extends Value
    */
   public String toString()
   {
-    return "lvalue[" + container + "@" + offset + "(" + clazz + ")]" +
-      (clazz == Clazzes.i32.getIfCreated() ? " (" + i32Value() + ")" :
-       clazz == Clazzes.u32.getIfCreated() ? " (" + u32Value() + ")" :
-       clazz == Clazzes.i64.getIfCreated() ? " (" + i64Value() + ")" :
-       clazz == Clazzes.u64.getIfCreated() ? " (" + u64Value() + ")" :
-       clazz == Clazzes.bool.getIfCreated() ? " (" + boolValue() + ")" : "");
+    return "lvalue[" + container + "@" + offset + "(" + _clazz + ")]" +
+      (_clazz == Clazzes.i32.getIfCreated() ? " (" + i32Value() + ")" :
+       _clazz == Clazzes.u32.getIfCreated() ? " (" + u32Value() + ")" :
+       _clazz == Clazzes.i64.getIfCreated() ? " (" + i64Value() + ")" :
+       _clazz == Clazzes.u64.getIfCreated() ? " (" + u64Value() + ")" :
+       _clazz == Clazzes.bool.getIfCreated() ? " (" + boolValue() + ")" : "");
   }
 
 }

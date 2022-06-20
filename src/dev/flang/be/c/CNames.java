@@ -109,6 +109,32 @@ public class CNames extends ANY
 
 
   /**
+   * Prefix for helper functions
+   */
+  private static final String HELPER_PREFIX = "fzH_";
+
+
+  /**
+   * Prefix for thread local env variable that stores the current effect.
+   */
+  private static final String ENV_PREFIX = "fzEnv_";
+
+
+  /**
+   * Prefix for thread local env variable that stores the bool flag whether
+   * there is a current effect installed.
+   */
+  private static final String ENV_INSTALLED_PREFIX = "fzEnvInstalled_";
+
+
+  /**
+   * Prefix for thread local env variable that stores the setjmp/longjmp buffer
+   * to abort an installed effect
+   */
+  private static final String ENV_JMPBUF_PREFIX = "fzEnvJmpBuf_";
+
+
+  /**
    * C identifier of argument variable that refers to a clazz' outer instance.
    */
   static final CExpr OUTER = new CIdent("fzouter");
@@ -144,6 +170,29 @@ public class CNames extends ANY
    */
   static final CIdent CHOICE_REF_ENTRY_NAME = new CIdent("vref");
 
+
+  /**
+   * Name of helper function to clone a stack allocated instance on the heap.
+   */
+  static final CIdent HEAP_CLONE = new CIdent(HELPER_PREFIX + "heapClone");
+
+
+  /**
+   * C symbol "NULL"
+   */
+  static final CExpr NULL = new CIdent("NULL");
+
+
+  /**
+   * global C variable to hold argc
+   */
+  static final CIdent GLOBAL_ARGC = new CIdent("fzG_argc");
+
+
+  /**
+   * global C variable to hold argv
+   */
+  static final CIdent GLOBAL_ARGV = new CIdent("fzG_argv");
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -421,9 +470,9 @@ public class CNames extends ANY
   /**
    * Create a name for a new local temp variable.
    */
-  CIdent newTemp()
+  CLocal newTemp()
   {
-    return new CIdent(TEMP_VAR_PREFIX + (_tempVarId++));
+    return new CLocal(TEMP_VAR_PREFIX + (_tempVarId++));
   }
 
 
@@ -436,6 +485,42 @@ public class CNames extends ANY
   {
     var index = _fuir.fieldIndex(field);
     return new CIdent(FIELD_PREFIX + index + "_" + mangle(_fuir.clazzBaseName(field)));
+
+  }
+
+
+  /**
+   * The name of the thread local env variable for the given effect type.
+   *
+   * @param cl clazz id for a effect type.
+   */
+  CIdent env(int cl)
+  {
+    return new CIdent(ENV_PREFIX + clazzId2num(cl));
+  }
+
+
+  /**
+   * The name of the thread local env variable that stores the bool flag whether
+   * there is a current effect installed.
+   *
+   * @param cl clazz id for an effect type.
+   */
+  CIdent envInstalled(int cl)
+  {
+    return new CIdent(ENV_INSTALLED_PREFIX + clazzId2num(cl));
+  }
+
+
+  /**
+   * The name of the thread local env variable that stores the setjmp/longjmp
+   * buffer to abort an installed effect.
+   *
+   * @param cl clazz id for a effect type.
+   */
+  CIdent envJmpBuf(int cl)
+  {
+    return new CIdent(ENV_JMPBUF_PREFIX + clazzId2num(cl));
   }
 
 }

@@ -28,9 +28,10 @@
 # complex provides complex numbers based on a numeric type (e.g. f64, i32).
 # A complex number consists of a real and an imaginary part.
 #
-complex<T : numeric<T>> (real,    # real part
-                         imag T   # imaginary part
-                         ) : numeric<complex<T>>, complexes<T>
+complex (C numeric<C>.type,
+         real,    # real part
+         imag C   # imaginary part
+         ) : numeric<complex<C>>, complexes<C>
 is
 
 # private:
@@ -46,10 +47,10 @@ is
 
   # basic operations
   redef prefix + => a
-  redef infix +  (b complex<T>) => complex a.real+b.real a.imag+b.imag
-  redef infix -  (b complex<T>) => complex a.real-b.real a.imag-b.imag
-  redef infix *  (b complex<T>) => complex a.real*b.real-a.imag*b.imag a.real*b.imag+a.imag*b.real
-  redef infix /  (b complex<T>) complex<T>
+  redef infix +  (b complex<C>) => complex a.real+b.real a.imag+b.imag
+  redef infix -  (b complex<C>) => complex a.real-b.real a.imag-b.imag
+  redef infix *  (b complex<C>) => complex a.real*b.real-a.imag*b.imag a.real*b.imag+a.imag*b.real
+  redef infix /  (b complex<C>) complex<C>
     pre
       safety: b != zero
   is
@@ -57,14 +58,14 @@ is
     complex (a.real*b.real+a.imag*b.imag)/n (a.imag*b.real-a.real*b.imag)/n
 
   # comparison
-  redef infix == (b complex<T>) => a.real  = b.real && a.imag  = b.imag
-  redef infix != (b complex<T>) => a.real != b.real || a.imag != b.imag
+  redef infix == (b complex<C>) => a.real  = b.real && a.imag  = b.imag
+  redef infix != (b complex<C>) => a.real != b.real || a.imag != b.imag
 
   # NYI: total order ignoring imag
-  redef infix <  (b complex<T>) => a.real <  b.real
-  redef infix <= (b complex<T>) => a.real <= b.real
-  redef infix >  (b complex<T>) => a.real >  b.real
-  redef infix >= (b complex<T>) => a.real >= b.real
+  redef infix <  (b complex<C>) => a.real <  b.real
+  redef infix <= (b complex<C>) => a.real <= b.real
+  redef infix >  (b complex<C>) => a.real >  b.real
+  redef infix >= (b complex<C>) => a.real >= b.real
 
   abs² => real*real+imag*imag
 
@@ -104,8 +105,8 @@ complexes<E : numeric<E>> : numerics<complex<E>> is
   #   redef one  => complex E.one  E.zero
   #
   # dummy implementations:
-  # redef zero => fuzion.std.panic "NYI: complexes.zero not implemented, needs to instantiate type arg E"
-  # redef one  => fuzion.std.panic "NYI: complexes.one not implemented, needs to instantiate type arg E"
+  # redef zero => panic "NYI: complexes.zero not implemented, needs to instantiate type arg E"
+  # redef one  => panic "NYI: complexes.one not implemented, needs to instantiate type arg E"
 
 
 # complex -- returns value of unit type complexes

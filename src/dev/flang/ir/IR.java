@@ -35,6 +35,7 @@ import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.Block; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Check; // NYI: remove dependency
+import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.Feature; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
@@ -112,6 +113,7 @@ public class IR extends ANY
     Match,
     Outer,
     Tag,
+    Env,
     Pop,
     Unit;
 
@@ -276,6 +278,10 @@ public class IR extends ANY
         toStack(l, t._value);
         l.add(t);
       }
+    else if (s instanceof Env v)
+      {
+        l.add(v);
+      }
     else if (s instanceof Nop)
       {
       }
@@ -367,6 +373,10 @@ public class IR extends ANY
     else if (e instanceof Tag)
       {
         result = ExprKind.Tag;
+      }
+    else if (e instanceof Env)
+      {
+        result = ExprKind.Env;
       }
     else if (e instanceof AbstractConstant ||
              e instanceof InlineArray         )

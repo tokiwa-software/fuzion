@@ -31,7 +31,7 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-ordered<T: ordered<T>> : partiallyOrdered<T>
+ordered(O ordered<O>.type) : partiallyOrdered<O>
 
 /* NYI: quantor intrinsics not supported yet:
 
@@ -43,15 +43,15 @@ is
 
   # does this come strictly after other?
   #
-  infix >  (other T) bool is !(orderedThis <= other)
+  infix >  (other O) bool is !(orderedThis <= other)
 
   # does this come strictly before other?
   #
-  infix <  (other T) bool is  !(orderedThis >= other)
+  infix <  (other O) bool is  !(orderedThis >= other)
 
   # does this come after other?
   #
-  infix >= (other T) bool is other <= orderedThis
+  infix >= (other O) bool is other <= orderedThis
 
   # three-way comparison between this and other.
   #
@@ -59,7 +59,7 @@ is
   # result is > 0 if this > other
   # result is = 0 if this = other
   #
-  infix <> (other T) i32 is
+  infix <> (other O) i32 is
     if      orderedThis < other then -1
     else if orderedThis > other then +1
     else                        0

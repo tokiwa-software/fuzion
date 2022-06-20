@@ -40,6 +40,7 @@ import java.util.TreeSet;
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.AstErrors;
+import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
@@ -225,7 +226,7 @@ public class LibraryModule extends Module
    *
    * @param outer the declaring feature
    */
-  SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
+  public SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
   {
     var result = new TreeMap<FeatureName, AbstractFeature>();
     if (outer instanceof LibraryFeature lf && lf._libModule == this)
@@ -370,7 +371,7 @@ public class LibraryModule extends Module
   {
     for (var p : outer.inherits())
       {
-        var cf = p.calledFeature().libraryFeature();
+        var cf = p.calledFeature();
         if (CHECKS) check
           (Errors.count() > 0 || cf != null);
 
@@ -439,75 +440,19 @@ public class LibraryModule extends Module
    */
   Generic genericArgument(int offset)
   {
-    return findGenericArgument(offset, universe(), FuzionConstants.MIR_FILE_FIRST_FEATURE_OFFSET);
-  }
-
-
-  /**
-   * Helper for genericArgument to find the Generic instance defined at offset
-   * in the InnerFeatures starting at position 'at' in this file.
-   *
-   * @param offset the offset of the Generic
-   *
-   * @param f the outer feature
-   *
-   * @param at the start of the InnerFeatures to search
-   */
-  private Generic findGenericArgument(int offset, AbstractFeature f, int at)
-  {
-    if (PRECONDITIONS) require
-      (f != null,
-       at <= offset,
-       offset < data().limit(),
-       at >= 0,
-       at < data().limit());
-
-    Generic result = null;
-    var sz = data().getInt(at);
-    if (CHECKS) check
-      (at+4+sz <= data().limit());
-    var i = at+4;
-    if (i <= offset && offset < i+sz)
+    var tp = feature(offset);
+    var o = tp.outer();
+    for (var g : o.generics().list)
       {
-        while (result == null)
+        if (g.typeParameter() == tp)
           {
-            var o = libraryFeature(i);
-            if (((featureKind(i) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0) &&
-                offset > i &&
-                offset <= featureResultTypePos(i))
-              {
-                var tai = featureTypeArgsPos(i);
-                var n = typeArgsCount(tai);
-                var j = typeArgsListPos(tai);
-                var ix = 0;
-                while (result == null && ix < n)
-                  {
-                    if (j == offset)
-                      {
-                        result = o.generics().list.get(ix);
-                      }
-                    j = typeArgNextPos(j);
-                    ix++;
-                  }
-              }
-            else
-              {
-                if (CHECKS) check
-                  (o != null);
-                var inner = featureInnerFeaturesPos(i);
-                if (inner <= offset && offset <= featureNextPos(i))
-                  {
-                    result = findGenericArgument(offset, o, inner);
-                  }
-              }
-            i = featureNextPos(i);
-            if (CHECKS) check
-              (result != null || i <= offset);
+            return g;
           }
       }
-    return result;
+    check
+      (false);
+    throw new Error();
   }
-
 
 
   /**
@@ -541,7 +486,7 @@ public class LibraryModule extends Module
             LibraryType res;
             if (k < 0)
               {
-                res = new GenericType(this, at, DUMMY_POS, genericArgument(typeGeneric(at)));
+                res = new GenericType(this, at, DUMMY_POS, genericArgument(typeTypeParameter(at)));
               }
             else
               {
@@ -709,13 +654,12 @@ Feature
 [options="header",cols="1,1,2,5"]
 |====
    |cond.     | repeat | type          | what
-.6+| true  .6+| 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters
+.6+| true  .6+| 1      | byte          | 00CYkkkk  k = kind, Y = has Type feature (i.e., 'f.type'), C = is intrinsic constructor
                        | Name          | name
                        | int           | arg count
                        | int           | name id
                        | Pos           | source code position
                        | int           | outer feature index, 0 for outer()==universe
-   | T=1      | 1      | TypeArgs      | optional type arguments
    | hasRT    | 1      | Type          | optional result type,
                                        hasRT = !isConstructor && !isChoice
 .2+| true NYI! !isField? !isIntrinsc
@@ -740,7 +684,9 @@ Feature
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | cond.  | repeat | type          | what                                          |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | byte          | 0000Tkkk  kkk = kind, T = has type parameters |
+   *   | true   | 1      | byte          | 0YCYkkkk  k = kind                            |
+   *   |        |        |               |           Y = has Type feature (i.e. 'f.type')|
+   *   |        |        |               |           C = is intrinsic constructor        |
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | Name          | name                                          |
    *   |        |        +---------------+-----------------------------------------------+
@@ -752,7 +698,7 @@ Feature
    *   |        |        +---------------+-----------------------------------------------+
    *   |        |        | int           | outer feature index, 0 for outer()==universe  |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | T=1    | 1      | TypeArgs      | optional type arguments                       |
+   *   | Y=1    | 1      | int           | type feature index                            |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | hasRT  | 1      | Type          | optional result type,                         |
    *   |        |        |               | hasRT = !isConstructor && !isChoice           |
@@ -820,6 +766,14 @@ Feature
   {
     var k = featureKind(at) & FuzionConstants.MIR_FILE_KIND_MASK;
     return k == FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF;
+  }
+  boolean featureIsIntrinsicConstructor(int at)
+  {
+    return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_IS_INTRINSIC_CONSTRUCTOR) != 0);
+  }
+  boolean featureHasTypeFeature(int at)
+  {
+    return ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE) != 0);
   }
   int featureNamePos(int at)
   {
@@ -892,23 +846,23 @@ Feature
   {
     return featureOuterPos(at) + 4;
   }
-  int featureTypeArgsPos(int at)
+  int featureTypeFeaturePos(int at)
+  {
+    return featureOuterNextPos(at);
+  }
+  AbstractFeature featureTypeFeature(int at)
   {
     if (PRECONDITIONS) require
-      ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0);
-
-    return featureOuterNextPos(at);
+      (featureHasTypeFeature(at));
+    return feature(data().getInt(featureTypeFeaturePos(at)));
+  }
+  int featureTypeFeatureNextPos(int at)
+  {
+    return featureTypeFeaturePos(at) + (featureHasTypeFeature(at) ? 4 : 0);
   }
   int featureResultTypePos(int at)
   {
-    if ((featureKind(at) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) != 0)
-      {
-        return typeArgsNextPos(featureTypeArgsPos(at));
-      }
-    else
-      {
-        return featureOuterNextPos(at);
-      }
+    return featureTypeFeatureNextPos(at);
   }
   boolean featureHasResultType(int at)
   {
@@ -1043,119 +997,6 @@ Feature
 
 
   /*
-
---asciidoc--
-
-TypeArgs
-^^^^^^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-.3+| true     | 1      | int           | num type ags n
-              |        | bool          | isOpen
-              | n      | TypeArg       | type arguments
-|====
-
---asciidoc--
-
-   *   +---------------------------------------------------------------------------------+
-   *   | TypeArgs                                                                        |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | int           | num type ags n                                |
-   *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | bool          | isOpen                                        |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | n      | TypeArg       | type arguments                                |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-
-  int typeArgsCountPos(int at)
-  {
-    return at;
-  }
-  int typeArgsCount(int at)
-  {
-    return data().getInt(typeArgsCountPos(at));
-  }
-  int typeArgsOpenPos(int at)
-  {
-    return typeArgsCountPos(at) + 4;
-  }
-  boolean typeArgsOpen(int at)
-  {
-    return data().get(typeArgsOpenPos(at)) != 0;
-  }
-  int typeArgsListPos(int at)   // works also if list is empty
-  {
-    return typeArgsOpenPos(at) + 1;
-  }
-  int typeArgsNextPos(int at)
-  {
-    var d = data();
-    var n = typeArgsCount(at);
-    var i = typeArgsListPos(at);
-    while (n > 0)
-      {
-        i = typeArgNextPos(i);
-        n--;
-      }
-    return i;
-  }
-
-
-  /*
---asciidoc--
-
-TypeArg
-^^^^^^^
-
-[options="header",cols="1,1,2,5"]
-|====
-   |cond.     | repeat | type          | what
-
-.2+| true  .2+| 1      | Name          | type arg name
-                       | Type          | constraint
-|====
-
---asciidoc--
-   *   +---------------------------------------------------------------------------------+
-   *   | TypeArg                                                                         |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | cond.  | repeat | type          | what                                          |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   *   | true   | 1      | Name          | type arg name                                 |
-   *   |        |        +---------------+-----------------------------------------------+
-   *   |        |        | Type          | constraint                                    |
-   *   +--------+--------+---------------+-----------------------------------------------+
-   */
-
-  int typeArgNamePos(int at)
-  {
-    return at;
-  }
-  String typeArgName(int at)
-  {
-    return name(typeArgNamePos(at));
-  }
-  int typeArgConstraintPos(int at)
-  {
-    return nameNextPos(typeArgNamePos(at));
-  }
-  AbstractType typeArgConstraint(int at)
-  {
-    return type(typeArgConstraintPos(at));
-  }
-  int typeArgNextPos(int at)
-  {
-    return typeNextPos(typeArgConstraintPos(at));
-  }
-
-
-  /*
 --asciidoc--
 
 Name
@@ -1215,7 +1056,7 @@ Type
    | tk==-4   | 1      | unit          | ADDRESS
    | tk==-3   | 1      | unit          | type of universe
    | tk==-2   | 1      | int           | index of type
-   | tk==-1   | 1      | int           | index of generic argument
+   | tk==-1   | 1      | int           | index of type parameter feature
 .4+| tk>=0    | 1      | int           | index of feature of type
               | 1      | bool          | isRef
               | tk     | Type          | actual generics
@@ -1236,7 +1077,7 @@ Type
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk==-2 | 1      | int           | index of type                                 |
    *   +--------+--------+---------------+-----------------------------------------------+
-   *   | tk==-1 | 1      | int           | index of generic argument                     |
+   *   | tk==-1 | 1      | int           | index of type parameter feature               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | tk>=0  | 1      | int           | index of feature of type                      |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -1280,19 +1121,19 @@ Type
 
     return data().getInt(typeIndexPos(at));
   }
-  int typeGenericPos(int at)
+  int typeTypeParameterPos(int at)
   {
     if (PRECONDITIONS) require
       (typeKind(at) == -1);
 
     return at+4;
   }
-  int typeGeneric(int at)
+  int typeTypeParameter(int at)
   {
     if (PRECONDITIONS) require
       (typeKind(at) == -1);
 
-    return data().getInt(typeGenericPos(at));
+    return data().getInt(typeTypeParameterPos(at));
   }
   int typeFeaturePos(int at)
   {
@@ -1360,7 +1201,7 @@ Type
       }
     else if (k == -1)
       {
-        return typeGenericPos(at) + 4;
+        return typeTypeParameterPos(at) + 4;
       }
     else
       {
@@ -1450,6 +1291,7 @@ Expression
    | k==Cal   | 1      | Call          | feature call
    | k==Mat   | 1      | Match         | match statement
    | k==Tag   | 1      | Tag           | tag expression
+   | k==Env   | 1      | Env           | env expression
 |====
 
 --asciidoc--
@@ -1474,6 +1316,8 @@ Expression
    *   | k==Mat | 1      | Match         | match statement                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | k==Tag | 1      | Tag           | tag expression                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | k==Env | 1      | Env           | env expression                                |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
   int expressionKindPos(int at)
@@ -1521,6 +1365,7 @@ Expression
       case Match   -> matchNextPos(eAt);
       case Call    -> callNextPos (eAt);
       case Tag     -> tagNextPos  (eAt);
+      case Env     -> envNextPos  (eAt);
       case Pop     -> eAt;
       case Unit    -> eAt;
       default      -> throw new Error("unexpected expression kind "+k+" at "+at+" in "+this);
@@ -1841,7 +1686,7 @@ Call
     var f = libraryFeature(callCalledFeature(at));
     return f.hasOpenGenericsArgList()
       ? callNumArgsRaw(at)
-      : f.arguments().size();
+      : f.valueArguments().size();
   }
   int callNumTypeParametersPos(int at)
   {
@@ -1870,7 +1715,7 @@ Call
     var f = libraryFeature(callCalledFeature(at));
     return f.generics().isOpen()
       ? callNumTypeParametersRaw(at)
-      : f.generics().list.size();
+      : f.typeArguments().size();
   }
   int callTypeParametersPos(int at)
   {
@@ -2098,6 +1943,44 @@ Tag
   int tagNextPos(int at)
   {
     return typeNextPos(tagTypePos(at));
+  }
+
+
+
+  /*
+
+--asciidoc--
+
+Env
+^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+   | true     | 1      | Type          | type of resulting env value
+|====
+
+--asciidoc--
+   *   +---------------------------------------------------------------------------------+
+   *   | Env                                                                             |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Type          | type of resulting env value                   |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+  int envTypePos(int at)
+  {
+    return at;
+  }
+  AbstractType envType(int at)
+  {
+    return type(envTypePos(at));
+  }
+  int envNextPos(int at)
+  {
+    return typeNextPos(envTypePos(at));
   }
 
 

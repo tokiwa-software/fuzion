@@ -28,10 +28,13 @@ package dev.flang.parser;
 
 import dev.flang.ast.AbstractCall;
 import dev.flang.ast.AbstractFeature;
+import dev.flang.ast.AbstractType;
+import dev.flang.ast.AstErrors;
+import dev.flang.ast.Block;
+import dev.flang.ast.Call;
 import dev.flang.ast.Contract;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureVisitor;
-import dev.flang.ast.FormalGenerics;
 import dev.flang.ast.Impl;
 import dev.flang.ast.ReturnType;
 import dev.flang.ast.Stmnt;
@@ -60,7 +63,7 @@ public class FList extends ANY implements Stmnt
   /**
    * The features in this list
    */
-  final List<Feature> _list = new List<Feature>();
+  final List<Feature> _list;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -68,41 +71,10 @@ public class FList extends ANY implements Stmnt
 
   /**
    * Constructor
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param v
-   *
-   * @param m
-   *
-   * @param r
-   *
-   * @param qnames
-   *
-   * @param g
-   *
-   * @param a
-   *
-   * @param i
-   *
-   * @param c
-   *
-   * @param p
    */
-  public FList(SourcePosition pos,
-               Visi v,
-               int m,
-               ReturnType r,
-               List<List<String>> qnames,
-               FormalGenerics g,
-               List<Feature> a,
-               List<AbstractCall> i,
-               Contract c,
-               Impl p) {
-    for (List<String> n : qnames)
-      {
-        _list.add(new Feature(pos, v,m,r,n,g,a,i,c,p));
-      }
+  public FList(List<Feature> l)
+  {
+    _list = l;
   }
 
 

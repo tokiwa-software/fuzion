@@ -72,16 +72,13 @@ public class Box extends Expr
    *
    * @param value the value instance
    *
-   * @param s Stmnt that is the target of the boxed value
-   *
-   * @param arg in case s is Call, this is the index of the actual argument
-   * that is the target of the boxed value
+   * @param frmlT formal type the Expr should result in
    */
   public Box(Expr value, AbstractType frmlT)
   {
     if (PRECONDITIONS) require
       (value != null,
-       !value.type().isRef() || value.isCallToOuterRef());
+       frmlT.isGenericArgument() || !value.type().isRef() || value.isCallToOuterRef());
 
     this._value = value;
     var t = value.type();

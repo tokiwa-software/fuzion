@@ -43,6 +43,7 @@ import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
 import dev.flang.ast.Box; // NYI: remove dependency!
+import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
@@ -81,6 +82,7 @@ public class Clazzes extends ANY
    */
   private static final Map<Clazz, Clazz> clazzes = new TreeMap<>();
   private static final Map<AbstractType, Clazz> _clazzesForTypes_ = new TreeMap<>();
+
 
   /**
    * All clazzes found so far that have not been analyzed yet for clazzes that
@@ -181,9 +183,9 @@ public class Clazzes extends ANY
   public static final OnDemandClazz c_unit      = new OnDemandClazz(() -> Types.resolved.t_unit             );
   public static final OnDemandClazz error       = new OnDemandClazz(() -> Types.t_ERROR                     );
   public static Clazz constStringInternalArray;  // field conststring.internalArray
-  public static Clazz sysArray_u8;               // result clazz of conststring.internalArray
-  public static Clazz sysArray_u8_data;          // field sys.array<u8>.data
-  public static Clazz sysArray_u8_length;        // field sys.array<u8>.length
+  public static Clazz fuzionSysArray_u8;         // result clazz of conststring.internalArray
+  public static Clazz fuzionSysArray_u8_data;    // field fuzion.sys.array<u8>.data
+  public static Clazz fuzionSysArray_u8_length;  // field fuzion.sys.array<u8>.length
 
 
   /**
@@ -396,7 +398,7 @@ public class Clazzes extends ANY
         main.called(SourcePosition.builtIn);
         main.instantiated(SourcePosition.builtIn);
       }
-    for (var c : new OnDemandClazz[] { universe, i32, u32, i64, u64 })
+    for (var c : new OnDemandClazz[] { universe, i32, u32, i64, u64, f32, f64 })
       {
         c.get().called(SourcePosition.builtIn);
         c.get().instantiated(SourcePosition.builtIn);
@@ -406,10 +408,10 @@ public class Clazzes extends ANY
         c.get().instantiated(SourcePosition.builtIn);
       }
     constStringInternalArray = conststring.get().lookup(Types.resolved.f_array_internalArray, AbstractCall.NO_GENERICS, SourcePosition.builtIn);
-    sysArray_u8 = constStringInternalArray.resultClazz();
-    sysArray_u8.instantiated(SourcePosition.builtIn);
-    sysArray_u8_data   = sysArray_u8.lookup(Types.resolved.f_sys_array_data  , AbstractCall.NO_GENERICS, SourcePosition.builtIn);
-    sysArray_u8_length = sysArray_u8.lookup(Types.resolved.f_sys_array_length, AbstractCall.NO_GENERICS, SourcePosition.builtIn);
+    fuzionSysArray_u8 = constStringInternalArray.resultClazz();
+    fuzionSysArray_u8.instantiated(SourcePosition.builtIn);
+    fuzionSysArray_u8_data   = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_data  , AbstractCall.NO_GENERICS, SourcePosition.builtIn);
+    fuzionSysArray_u8_length = fuzionSysArray_u8.lookup(Types.resolved.f_fuzion_sys_array_length, AbstractCall.NO_GENERICS, SourcePosition.builtIn);
 
     while (!clazzesToBeVisited.isEmpty())
       {
@@ -506,6 +508,10 @@ public class Clazzes extends ANY
    */
   static void calledDynamically(AbstractFeature f)
   {
+    if (PRECONDITIONS) require
+      (isUsedAtAll(f),
+       f.generics().list.isEmpty());
+
     if (!_calledDynamically_.contains(f))
       {
         _calledDynamically_.add(f);
@@ -814,7 +820,12 @@ public class Clazzes extends ANY
 
     var tclazz  = clazz(c.target(), outerClazz);
     var cf      = c.calledFeature();
-    var dynamic = c.isDynamic() && tclazz.isRef();
+    var callToOuterRef = c.target().isCallToOuterRef();
+    boolean dynamic = c.isDynamic() && (tclazz.isRef() || callToOuterRef);
+    if (callToOuterRef)
+      {
+        tclazz._isCalledAsOuter = true;
+      }
     if (dynamic)
       {
         calledDynamically(cf);
@@ -828,32 +839,6 @@ public class Clazzes extends ANY
           }
         outerClazz.setRuntimeData(c.sid_ + 0, innerClazz);
         outerClazz.setRuntimeData(c.sid_ + 1, tclazz    );
-
-        if (!dynamic)
-          {
-            whenCalled(outerClazz,
-                       () ->
-                       {
-                         var ic = innerClazz.isCalled();
-                         innerClazz._isCalledDirectly = true;  // NYI: Check why this is needed
-                         if (!c.isInheritanceCall())
-                           {
-                             innerClazz.instantiated(c);
-                           }
-                         if (!ic && innerClazz.isCalled())
-                           {
-                             var l = _whenCalled_.remove(innerClazz);
-                             if (l != null)
-                               {
-                                 for (var r : l)
-                                   {
-                                     r.run();
-                                   }
-                               }
-                           }
-                       });
-          }
-
         var afs = innerClazz.argumentFields();
         var i = 0;
         for (var a : c.actuals())
@@ -863,6 +848,21 @@ public class Clazzes extends ANY
                 propagateExpectedClazz(a, afs[i].resultClazz(), outerClazz);
               }
             i++;
+          }
+
+        var f = innerClazz.feature();
+        if (f.kind() == AbstractFeature.Kind.TypeParameter)
+          {
+            var tpc = innerClazz.resultClazz();
+            do
+              {
+                addUsedFeature(tpc.feature(), c.pos());
+                tpc.instantiated(c.pos());
+                var name = tpc.lookup(Types.resolved.f_Type_name, dev.flang.ast.Call.NO_GENERICS, Clazzes.isUsedAt(tpc.feature()));
+                addUsedFeature(name.feature(), c.pos());
+                tpc = tpc._outer;
+              }
+            while (tpc != null && !tpc.feature().isUniverse());
           }
       }
   }
@@ -973,6 +973,20 @@ public class Clazzes extends ANY
 
 
   /**
+   * Find all static clazzes for this Env and store them in outerClazz.
+   */
+  public static void findClazzes(Env v, Clazz outerClazz)
+  {
+    Clazz ac = clazz(v, outerClazz);
+    if (v._clazzId < 0)
+      {
+        v._clazzId = getRuntimeClazzId();
+      }
+    outerClazz.setRuntimeClazz(v._clazzId, ac);
+  }
+
+
+  /**
    * Determine the result clazz of an Expr.
    *
    * NYI: Temporary solution, will be replaced by dynamic calls.
@@ -1062,6 +1076,11 @@ public class Clazzes extends ANY
     else if (e instanceof InlineArray ia)
       {
         result = outerClazz.actualClazz(ia.type());
+      }
+
+    else if (e instanceof Env v)
+      {
+        result = outerClazz.actualClazz(v.type());
       }
 
     else
@@ -1261,28 +1280,6 @@ public class Clazzes extends ANY
     f._usedAt = at;
   }
 
-
-  /**
-   * Has f been found to be called dynamically?
-   *
-   * NYI: remove, redundant with isCalledDynamically.
-   */
-  public static boolean isCalledDynamically0(AbstractFeature f)
-  {
-    return f._calledDynamically;
-  }
-
-
-  /**
-   * Add f to the set of dynamically called features, record at as the position
-   * of the first use.
-   *
-   * NYI: remove, redundant with isCalledDynamically.
-   */
-  public static void setCalledDynamically0(AbstractFeature f)
-  {
-    f._calledDynamically = true;
-  }
 
 }
 

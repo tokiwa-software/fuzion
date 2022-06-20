@@ -90,13 +90,19 @@ public class FrontEndOptions extends FuzionOptions
   final boolean _eraseInternalNamesInLib;
 
 
+  /**
+   * Should we load any source files after we loaded the base library?
+   */
+  final boolean _loadSources;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Costructor initializing fields as given.
    */
-  public FrontEndOptions(int verbose, Path fuzionHome, Path saveBaseLib, boolean eraseInternalNamesInLib, List<String> modules, int fuzionDebugLevel, boolean fuzionSafety, boolean readStdin, String main)
+  public FrontEndOptions(int verbose, Path fuzionHome, Path saveBaseLib, boolean eraseInternalNamesInLib, List<String> modules, int fuzionDebugLevel, boolean fuzionSafety, boolean readStdin, String main, boolean loadSources)
   {
     super(verbose,
           fuzionDebugLevel,
@@ -133,12 +139,17 @@ public class FrontEndOptions extends FuzionOptions
                     inputFile = p;
                     main = null;
                   }
+                else
+                  {
+                    Errors.fatal("file does not exist: " + p, "");
+                  }
               }
           }
       }
     _inputFile = inputFile;
     _modules = modules;
     _main = main;
+    _loadSources = loadSources;
   }
 
 

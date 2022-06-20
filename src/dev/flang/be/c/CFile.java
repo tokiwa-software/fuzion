@@ -158,11 +158,7 @@ public class CFile extends ANY
   public void print(CStmnt s)
   {
     var sb = new CString();
-    s.code(sb);
-    if (s.needsSemi())
-      {
-        sb.append(";\n");
-      }
+    s.codeSemi(sb);
     print(sb.toString());
   }
 

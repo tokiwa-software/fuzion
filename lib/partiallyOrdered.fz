@@ -32,7 +32,7 @@
 # NYI: the compiler should check that features inheriting from this are
 # actually immutable.
 #
-partiallyOrdered<T: partiallyOrdered<T>> : hasEquals<T>
+partiallyOrdered(P partiallyOrdered<P>.type) : hasEquals<P>
 
 /* NYI: quantor intrinsics not supported yet:
 
@@ -44,17 +44,17 @@ partiallyOrdered<T: partiallyOrdered<T>> : hasEquals<T>
 
 is
 
-  # get value of type T.
+  # get value of type P.
   #
   # NYI: Once Eiffel-style 'like this' works, we can use 'like this' instead of
   # T and no longer need this feature.
   #
-  orderedThis T is abstract
+  orderedThis P is abstract
 
   # does this come before other?
   #
-  infix <= (other T) bool is abstract
+  infix <= (other P) bool is abstract
 
   # equality check for immutable values
   #
-  infix = (o T) => orderedThis <= o && o <= orderedThis
+  infix = (o P) => orderedThis <= o && o <= orderedThis

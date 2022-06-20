@@ -42,6 +42,8 @@ import dev.flang.ast.AbstractFeature; // NYI: remove dependency
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
+import dev.flang.ast.Call; // NYI: remove dependency
+import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
 import dev.flang.ast.InlineArray; // NYI: remove dependency
@@ -113,6 +115,8 @@ public class FUIR extends IR
     c_u16         { Clazz getIfCreated() { return Clazzes.u16        .getIfCreated(); } },
     c_u32         { Clazz getIfCreated() { return Clazzes.u32        .getIfCreated(); } },
     c_u64         { Clazz getIfCreated() { return Clazzes.u64        .getIfCreated(); } },
+    c_f32         { Clazz getIfCreated() { return Clazzes.f32        .getIfCreated(); } },
+    c_f64         { Clazz getIfCreated() { return Clazzes.f64        .getIfCreated(); } },
     c_bool        { Clazz getIfCreated() { return Clazzes.bool       .getIfCreated(); } },
     c_TRUE        { Clazz getIfCreated() { return Clazzes.c_TRUE     .getIfCreated(); } },
     c_FALSE       { Clazz getIfCreated() { return Clazzes.c_FALSE    .getIfCreated(); } },
@@ -376,6 +380,7 @@ public class FUIR extends IR
       case Intrinsic  -> FeatureKind.Intrinsic;
       case Abstract   -> FeatureKind.Abstract;
       case Choice     -> FeatureKind.Choice;
+      case TypeParameter -> FeatureKind.Intrinsic;
       default         -> throw new Error ("Unexpected feature kind: "+ff.kind());
       };
   }
@@ -565,6 +570,53 @@ public class FUIR extends IR
 
 
   /**
+   * If cl is a type parameter, return the type parameter's actual type.
+   *
+   * @param cl a clazz id
+   *
+   * @return if cl is a type parameter, clazz id of cl's actual type or -1 if cl
+   * is not a type parameter.
+   */
+  public int clazzTypeParameterActualType(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    var at = -1;
+    if (cc.feature().isTypeParameter())
+      {
+        var atc = cc.typeParameterActualType();
+        at = _clazzIds.get(atc);
+      }
+    return at;
+  }
+
+
+  /**
+   * Is a clazz cl's clazzOuterRef() a value type that survives the call to
+   * cl?  If this is the case, we need to heap allocate the outer ref.
+   *
+   * @param cl a clazz id
+   *
+   * @return true if cl's may be kept alive longer than through its original
+   * constructor call since inner instances stay alive.
+   */
+  public boolean clazzOuterRefEscapes(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    var or = cc.outerRef();
+    var cco = cc._outer;
+    if (or == null || cco.isUnitType())
+      {
+        return false;
+      }
+    else
+      {
+        var rc = or.resultClazz();
+        return !rc.isRef() && !rc.feature().isBuiltInPrimitive();
+      }
+  }
+
+
+  /**
    * Get the id of clazz Object.
    *
    * @return clazz id of clazz Object
@@ -625,6 +677,17 @@ public class FUIR extends IR
     return cl == -1
       ? "-- no clazz --"
       : _clazzIds.get(cl).toString();
+  }
+
+
+  // String representation of clazz, for debugging and type names
+  //
+  // NYI: This should eventually replace clazzAsString.
+  public String clazzAsStringNew(int cl)
+  {
+    return cl == -1
+      ? "-- no clazz --"
+      : _clazzIds.get(cl)._type.asString();
   }
 
 
@@ -732,7 +795,7 @@ hw25 is
             code.add(or);  // field clazz means assignment to field
           }
         if (CHECKS) check
-          (p.actuals().size() == p.calledFeature().arguments().size());
+          (p.actuals().size() == p.calledFeature().valueArguments().size());
         for (var i = 0; i < p.actuals().size(); i++)
           {
             var a = p.actuals().get(i);
@@ -878,7 +941,7 @@ hw25 is
       {
       case Abstract : return false;
       case Choice   : return false;
-      case Intrinsic: return !cc.isAbsurd();
+      case Intrinsic:
       case Routine  :
       case Field    :
         return (cc.isInstantiated() || cc.feature().isOuterRef()) && cc != Clazzes.conststring.getIfCreated() && !cc.isAbsurd();
@@ -925,25 +988,25 @@ hw25 is
 
 
   /**
-   * Get the id of clazz sys.array<u8>.data
+   * Get the id of clazz fuzion.sys.array<u8>.data
    *
    * @param the id of connststring.internalArray or -1 if that clazz was not created.
    */
-  public int clazz_sysArray_u8_data()
+  public int clazz_fuzionSysArray_u8_data()
   {
-    var cc = Clazzes.sysArray_u8_data;
+    var cc = Clazzes.fuzionSysArray_u8_data;
     return cc == null ? -1 : _clazzIds.get(cc);
   }
 
 
   /**
-   * Get the id of clazz sys.array<u8>.length
+   * Get the id of clazz fuzion.sys.array<u8>.length
    *
    * @param the id of connststring.internalArray or -1 if that clazz was not created.
    */
-  public int clazz_sysArray_u8_length()
+  public int clazz_fuzionSysArray_u8_length()
   {
-    var cc = Clazzes.sysArray_u8_length;
+    var cc = Clazzes.fuzionSysArray_u8_length;
     return cc == null ? -1 : _clazzIds.get(cc);
   }
 
@@ -1002,6 +1065,23 @@ hw25 is
     var t = (Tag) _codeIds.get(c).get(ix);
     var ncl = (Clazz) outerClazz.getRuntimeData(t._valAndTaggedClazzId + 1);
     return ncl == null ? -1 : _clazzIds.get(ncl);
+  }
+
+  /**
+   * For outer clazz cl with an Env instruction in code c at ix, return the type
+   * of the env value.
+   */
+  public int envClazz(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Env);
+
+    var outerClazz = _clazzIds.get(cl);
+    var v = (Env) _codeIds.get(c).get(ix);
+    var vcl = (Clazz) outerClazz.getRuntimeData(v._clazzId);
+    return vcl == null ? -1 : _clazzIds.get(vcl);
   }
 
   public int boxValueClazz(int cl, int c, int ix)
@@ -1160,6 +1240,8 @@ hw25 is
     var innerClazzes = new List<Clazz>();
     for (var clz : tclazz.heirs())
       {
+        if (CHECKS) check
+          (clz.isRef() == tclazz.isRef());
         var in = (Clazz) clz._inner.get(f);  // NYI: cast would fail for open generic field
         if (in != null && clazzNeedsCode(in))
           {
@@ -1457,6 +1539,8 @@ hw25 is
             result[i] = resultL.get(i);
           }
       }
+    if(POSTCONDITIONS) ensure
+      (result.length > 0);
     return result;
   }
 
@@ -1482,6 +1566,22 @@ hw25 is
 
     var s = _codeIds.get(c).get(ix+1+cix);
     return ((NumLiteral)s).intValue().intValueExact();
+  }
+
+
+  /**
+   * For a clazz that is a heir of 'Function', find the corresponding inner
+   * clazz for 'call'.  This is used for code generation of intrinsic
+   * 'abortable' that has to create code to call 'call'.
+   *
+   * @param cl index of a clazz that is a heir of 'Function'.
+   */
+  public int lookupCall(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    var call = Types.resolved.f_function_call;
+    var ic = cc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+    return _clazzIds.get(ic);
   }
 
 }

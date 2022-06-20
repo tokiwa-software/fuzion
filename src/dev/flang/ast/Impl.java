@@ -46,9 +46,14 @@ public class Impl extends ANY
 
   public static final Impl FIELD = new Impl(Kind.Field);
 
+  public static final Impl TYPE_PARAMETER = new Impl(Kind.TypeParameter);
+  public static final Impl TYPE_PARAMETER_OPEN = new Impl(Kind.TypeParameterOpen);
+
   public static final Impl ABSTRACT = new Impl(Kind.Abstract);
 
   public static final Impl INTRINSIC = new Impl(Kind.Intrinsic);
+
+  public static final Impl INTRINSIC_CONSTRUCTOR = new Impl(Kind.Intrinsic);
 
   /**
    * A dummy Impl instance used in case of parsing error.
@@ -87,10 +92,13 @@ public class Impl extends ANY
     FieldActual,  // an argument field with type defined by actual argument
     FieldIter,    // a field f declared as an iterator index in a loop (eg., for f in myset { print(f); } )
     Field,        // a field
+    TypeParameter,// a type parameter Field
+    TypeParameterOpen,// an open (list) type parameter Field
     RoutineDef,   // normal feature with code and implicit result type
     Routine,      // normal feature with code
     Abstract,     // an abstract feature
-    Intrinsic     // an intrinsic feature
+    Intrinsic,    // an intrinsic feature
+    Of            // Syntacitic sugar 'enum : choice of red, green, blue is', exists only during parsing
   };
 
   /**
@@ -165,7 +173,8 @@ public class Impl extends ANY
       {
         if (CHECKS) check
           (kind == Kind.Routine    ||
-           kind == Kind.RoutineDef    );
+           kind == Kind.RoutineDef ||
+           kind == Kind.Of            );
         this._code = e;
         this._initialValue = null;
       }
@@ -405,12 +414,15 @@ public class Impl extends ANY
         {
         case FieldInit  : result = " = "  + _initialValue.getClass() + ": " +_initialValue; break;
         case FieldDef   : result = " := " + _initialValue.getClass() + ": " +_initialValue; break;
-        case FieldActual: result = " typefrom(" + _initialValue.pos() + ")";               break;
-        case Field      : result = "";                                                    break;
-        case RoutineDef : result = " => " + _code.toString();                             break;
-        case Routine    : result =          _code.toString();                             break;
-        case Abstract   : result = "is abstract";                                         break;
-        case Intrinsic  : result = "is intrinsic";                                        break;
+        case FieldActual: result = " typefrom(" + _initialValue.pos() + ")";                break;
+        case Field      : result = "";                                                      break;
+        case TypeParameter:     result = "type";                                            break;
+        case TypeParameterOpen: result = "type...";                                         break;
+        case RoutineDef : result = " => " + _code.toString();                               break;
+        case Routine    : result = " is " + _code.toString();                               break;
+        case Abstract   : result = "is abstract";                                           break;
+        case Intrinsic  : result = "is intrinsic";                                          break;
+        case Of         : result = "of " + _code.toString();                                break;
         default: throw new Error("Unexpected Kind: "+kind_);
         }
     }

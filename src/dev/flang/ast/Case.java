@@ -70,7 +70,7 @@ public class Case extends AbstractCase
    * List of types to be matched against. null if we match against type or match
    * everything.
    */
-  final List<AbstractType> _types;
+  List<AbstractType> _types;
   public List<AbstractType> types() { return _types; }
 
 
@@ -222,14 +222,14 @@ public class Case extends AbstractCase
   boolean resolveType(Resolution res, List<AbstractType> cgs, AbstractFeature outer, SourcePosition[] matched)
   {
     boolean result = true;
-    if (_field != null)
+    if (_field != null)  // matching 'x type'
       {
         var t = _field.returnType().functionReturnType();
         var rt = resolveType(res, t, cgs, outer, matched);
         _field._returnType = new FunctionReturnType(rt);
         result &= rt != Types.t_ERROR;
       }
-    if (_types != null)
+    else if (_types != null)  // maching 'type1, type2, type3'
       {
         var ti = _types.listIterator();
         while (ti.hasNext())
@@ -238,6 +238,31 @@ public class Case extends AbstractCase
             var rt = resolveType(res, t, cgs, outer, matched);
             ti.set(rt);
             result &= rt != Types.t_ERROR;
+          }
+      }
+    else  // matching '*'
+      {
+        _types = new List<>();
+        int i = 0;
+        for (var cg : cgs)
+          {
+            if (matched[i] == null)
+              {
+                _types.add(cg);
+                matched[i] = pos();
+              }
+            i++;
+          }
+        if (_types.isEmpty())
+          {
+            if (cgs.isEmpty())
+              {
+                AstErrors.matchCaseDoesNotMatchAny(pos(), null, cgs);
+              }
+            else
+              {
+                AstErrors.repeatedMatch(pos(), matched, null, cgs);
+              }
           }
       }
     return result;
@@ -270,14 +295,20 @@ public class Case extends AbstractCase
       {
         t = t.resolve(res, outer);
       }
+    var hasErrors = t.containsError();
+    check
+      (!hasErrors || Errors.count() > 0);
     for (var cg : cgs)
       {
         if (inferGenerics  && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
             !inferGenerics && t.compareTo(cg) == 0                    /* match exactly */ )
           {
             t = cg;
+            hasErrors = hasErrors || t.containsError();
+            check
+              (!hasErrors || Errors.count() > 0);
             matches.add(cg);
-            if (matched[i] != null)
+            if (matched[i] != null && !hasErrors)
               {
                 AstErrors.repeatedMatch(pos(), matched[i], t, cgs);
               }
@@ -285,26 +316,19 @@ public class Case extends AbstractCase
           }
         i++;
       }
-    if (matches.size() != 1)
+    if (matches.isEmpty())
       {
-        if (matches.isEmpty())
+        if (!hasErrors)
           {
-            if (t == Types.t_ERROR)
-              {
-                if (CHECKS) check
-                  (Errors.count() > 0);
-              }
-            else
-              {
-                AstErrors.matchCaseDoesNotMatchAny(pos(), original_t, cgs);
-                t = Types.t_ERROR;
-              }
+            AstErrors.matchCaseDoesNotMatchAny(pos(), original_t, cgs);
           }
-        else
-          {
-            AstErrors.matchCaseMatchesSeveral(pos(), original_t, cgs, matches);
-          }
+        t = Types.t_ERROR;
       }
+    else if (!hasErrors && matches.size() != 1)
+      {
+        AstErrors.matchCaseMatchesSeveral(pos(), original_t, cgs, matches);
+      }
+
     return t;
   }
 

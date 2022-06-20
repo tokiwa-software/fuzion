@@ -23,6 +23,8 @@
 #
 # -----------------------------------------------------------------------
 
+# java.io.PrintStream -- NYI: remove?
+#
 public java.io.PrintStream(forbiddenToCallDirectly void) ref : fuzion.java.JavaObject(Object) is
 
   public println(s string) unit is

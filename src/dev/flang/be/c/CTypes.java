@@ -165,9 +165,9 @@ public class CTypes extends ANY
    * Check if the given special clazz specifies a scalar type in the C code,
    * i.e, standard numeric types i32, u64, etc. If so, return that C type.
    *
-   * @param sc a SpeicalClazzes value or null
+   * @param sc a SpecialClazzes value or null
    *
-   * @return the C scalar type corresponding to cl, null if cl is not scaler or
+   * @return the C scalar type corresponding to cl, null if cl is not scalar or
    * null.
    */
   String scalar(FUIR.SpecialClazzes sc)
@@ -182,6 +182,12 @@ public class CTypes extends ANY
       case c_u16 -> "uint16_t";
       case c_u32 -> "uint32_t";
       case c_u64 -> "uint64_t";
+      // "AFAIK there's no standardized way to get fixed-width floating point types as of now -
+      // I think because, unlike integer types, float and double are more or less everywhere the
+      // same (32 bit float, 64 bit double, with separate types for "strange" FP types)."
+      // https://stackoverflow.com/a/8965960
+      case c_f32 -> "float";
+      case c_f64 -> "double";
       default    -> null;
       };
   }

@@ -30,6 +30,7 @@ import java.util.Set;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.HasSourcePosition;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -208,6 +209,19 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * Check if this or any of its generic arguments is Types.t_ERROR.
    */
   public boolean containsError()
+  {
+    return false;
+  }
+
+
+  /**
+   * Check if this or any of its generic arguments is Types.t_UNDEFINED.
+   *
+   * @param exceptFirstGenericArg if true, the first generic argument may be
+   * Types.t_UNDEFINED.  This is used in a lambda 'x -> f x' of type
+   * 'Function<R,X>' when 'R' is unknown and to be inferred.
+   */
+  public boolean containsUndefined(boolean exceptFirst)
   {
     return false;
   }
@@ -659,7 +673,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    * otherwise the type that results by replacing all formal generic parameters
    * of this in t by the corresponding type from actualGenerics.
    */
-  public AbstractType actualType_(AbstractFeature f, List<AbstractType> actualGenerics)
+  private AbstractType actualType_(AbstractFeature f, List<AbstractType> actualGenerics)
   {
     /* NYI: Performance: This requires time in O(this.depth *
      * f.inheritanceDepth), i.e. it is in O(n²)!  Caching is used to alleviate
@@ -777,7 +791,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
    *
    * @return true iff this is a fun type
    */
-  boolean isFunType()
+  public boolean isFunType()
   {
     return
       !isGenericArgument() &&
@@ -902,7 +916,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                 result = genericArgument().feature().compareTo(other.genericArgument().feature());
                 if (result == 0)
                   {
-                    result = genericArgument()._name.compareTo(other.genericArgument()._name); // NYI: compare generic, not generic.name!
+                    result = genericArgument().name().compareTo(other.genericArgument().name()); // NYI: compare generic, not generic.name!
                   }
               }
           }
@@ -910,7 +924,7 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
     return result;
   }
 
-  String name()
+  public String name()
   {
     return isGenericArgument() ? genericArgument().name() : featureOfType().featureName().baseName();
   }
@@ -925,6 +939,46 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   public abstract boolean isGenericArgument();
   public abstract AbstractType outer();
   public abstract Generic genericArgument();
+
+
+  /**
+   * Get a String representation of this Type.
+   *
+   * Note that this does not work for instances of Type before they were
+   * resolved.  Use toString() for creating strings early in the front end
+   * phase.
+   */
+  public String asString()
+  {
+    if (PRECONDITIONS) require
+      (checkedForGeneric());
+
+    String result;
+
+    if (isGenericArgument())
+      {
+        var ga = genericArgument();
+        result = ga.feature().qualifiedName() + "." + ga.name() + (this.isRef() ? " (boxed)" : "");
+      }
+    else
+      {
+        var o = outer();
+        String outer = o != null && !o.featureOfType().isUniverse() ? o.asString() + "." : "";
+        result = outer
+              + (isRef() != featureOfType().isThisRef() ? (isRef() ? "ref " : "value ") : "" )
+              + featureOfType().featureName().baseName();
+      }
+    for (var g : generics())
+      {
+        var gs = g.asString();
+        if (gs.indexOf(" ") >= 0)
+          {
+            gs = "(" + gs + ")";
+          }
+        result = result + " " + gs;
+      }
+    return result;
+  }
 
 }
 

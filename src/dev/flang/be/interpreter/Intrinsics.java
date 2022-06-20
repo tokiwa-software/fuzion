@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.be.interpreter;
 
 import dev.flang.ast.AbstractType; // NYI: remove dependency! Use dev.flang.fuir instead.
+import dev.flang.ast.Call; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Consts; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -39,7 +40,16 @@ import dev.flang.util.Errors;
 import dev.flang.util.List;
 
 import java.lang.reflect.Array;
+
+import java.io.PrintStream;
+import java.io.IOException;
+
 import java.nio.charset.StandardCharsets;
+
+import java.util.ArrayList;
+import java.util.TreeMap;
+
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -62,8 +72,42 @@ public class Intrinsics extends ANY
   /*----------------------------  variables  ----------------------------*/
 
 
+  /*------------------------  static variables  -------------------------*/
+
+
   /*-------------------------  static methods  --------------------------*/
 
+
+  /**
+   * Get the proper output file handle 'stdout' or 'stderr' depending on the
+   * prefix of the intrinsic feature name in.
+   *
+   * @param in name of an intrinsic feature in fuzion.std.out or fuzion.std.err.
+   *
+   * @return CIdent of 'stdout' or 'stderr'
+   */
+  private static PrintStream outOrErr(String in)
+  {
+    if      (in.startsWith("fuzion.std.out.")) { return System.out; }
+    else if (in.startsWith("fuzion.std.err.")) { return System.err; }
+    else                                       { throw new Error("outOrErr called on "+in); }
+  }
+
+
+  /**
+   * Create a Java string from 0-terminated given byte array.
+   */
+  private static String utf8ByteArrayDataToString(Value internalArray)
+  {
+    var strA = internalArray.arrayData();
+    var ba = (byte[]) strA._array;
+    var l = 0;
+    while (l < ba.length && ba[l] != 0)
+      {
+        l++;
+      }
+    return new String(ba, 0, l, StandardCharsets.UTF_8);
+  }
 
   /**
    * Create a Callable to call an intrinsic feature.
@@ -72,7 +116,7 @@ public class Intrinsics extends ANY
    *
    * @return a Callable instance to execute the intrinsic call.
    */
-  public static Callable call(Clazz innerClazz)
+  public static Callable call(Interpreter interpreter, Clazz innerClazz)
   {
     if (PRECONDITIONS) require
       (innerClazz.feature().isIntrinsic());
@@ -81,19 +125,55 @@ public class Intrinsics extends ANY
     var f = innerClazz.feature();
     String n = f.qualifiedName();
     // NYI: We must check the argument count in addition to the name!
-    if (n.equals("fuzion.std.out.write"))
+    if      (n.equals("fuzion.std.args.count"))  { result = (args) -> new i32Value(1); /* NYI: args after cmd name not supported yet */  }
+    else if (n.equals("fuzion.std.args.get"  ))
       {
         result = (args) ->
           {
-            System.out.write(args.get(1).u8Value());
+            var i = args.get(1).i32Value();
+            var fuir = interpreter._fuir;
+            if (i == 0)
+              {
+                return  Interpreter.value(fuir.clazzAsString(fuir.mainClazzId()));
+              }
+            else
+              {
+                return  Interpreter.value("argument#"+i); /* NYI: args after cmd name not supported yet */
+              }
+          };
+      }
+    else if (n.equals("fuzion.std.out.write") ||
+             n.equals("fuzion.std.err.write"))
+      {
+        var s = outOrErr(n);
+        result = (args) ->
+          {
+            s.writeBytes((byte[])args.get(1).arrayData()._array);
             return Value.EMPTY_VALUE;
           };
       }
-    else if (n.equals("fuzion.std.out.flush"))
+    else if (n.equals("fuzion.stdin.nextByte"))
+    {
+      result = (args) ->
+        {
+          try
+            {
+              var nextByte = System.in.readNBytes(1);
+              return nextByte.length == 0 ? new i32Value(-1) : new i32Value(Byte.toUnsignedInt(nextByte[0]));
+            }
+            catch (IOException e)
+            {
+              return new i32Value(-1);
+            }
+        };
+    }
+    else if (n.equals("fuzion.std.out.flush") ||
+             n.equals("fuzion.std.err.flush"))
       {
+        var s = outOrErr(n);
         result = (args) ->
           {
-            System.out.flush();
+            s.flush();
             return Value.EMPTY_VALUE;
           };
       }
@@ -163,11 +243,11 @@ public class Intrinsics extends ANY
             var sigI    =                      (Instance) args.get(a++);
             var thizI   = !virtual    ? null : (Instance) args.get(a++);
 
-            var argz = args.get(a); // of type sys.array<JavaObject>, we need to get field argz.data
+            var argz = args.get(a); // of type fuzion.sys.array<JavaObject>, we need to get field argz.data
             var argfields = innerClazz.argumentFields();
             var argsArray = argfields[argfields.length - 1];
             var sac = argsArray.resultClazz();
-            var argzData = Interpreter.getField(Types.resolved.f_sys_array_data, sac, argz);
+            var argzData = Interpreter.getField(Types.resolved.f_fuzion_sys_array_data, sac, argz);
 
             String clName =                          (String) JavaInterface.instanceToJavaObject(clNameI);
             String name   = nameI   == null ? null : (String) JavaInterface.instanceToJavaObject(nameI  );
@@ -229,9 +309,7 @@ public class Intrinsics extends ANY
                 System.err.println("*** error: unsafe feature "+n+" disabled");
                 System.exit(1);
               }
-            var strA = args.get(1).arrayData();
-            var ba = (byte[]) strA._array;
-            String str = new String(ba, StandardCharsets.UTF_8);
+            var str = utf8ByteArrayDataToString(args.get(1));
             Clazz resultClazz = innerClazz.resultClazz();
             return JavaInterface.javaObjectToInstance(str, resultClazz);
           };
@@ -369,32 +447,55 @@ public class Intrinsics extends ANY
             return JavaInterface.javaObjectToInstance(jb, resultClazz);
           };
       }
-    else if (n.equals("sys.array.alloc"))
+    else if (n.equals("fuzion.sys.array.alloc"))
       {
         result = (args) ->
           {
-            return sysArrayAlloc(/* size */ args.get(1).i32Value(),
-                                 /* type */ innerClazz._outer);
+            return fuzionSysArrayAlloc(/* size */ args.get(1).i32Value(),
+                                       /* type */ innerClazz._outer);
           };
       }
-    else if (n.equals("sys.array.get"))
+    else if (n.equals("fuzion.sys.array.get"))
       {
         result = (args) ->
           {
-            return sysArrayGet(/* data  */ ((ArrayData)args.get(1)),
-                               /* index */ args.get(2).i32Value(),
-                               /* type  */ innerClazz._outer);
+            return fuzionSysArrayGet(/* data  */ ((ArrayData)args.get(1)),
+                                     /* index */ args.get(2).i32Value(),
+                                     /* type  */ innerClazz._outer);
           };
       }
-    else if (n.equals("sys.array.setel"))
+    else if (n.equals("fuzion.sys.array.setel"))
       {
         result = (args) ->
           {
-            sysArraySetEl(/* data  */ ((ArrayData)args.get(1)),
-                          /* index */ args.get(2).i32Value(),
-                          /* value */ args.get(3),
-                          /* type  */ innerClazz._outer);
+            fuzionSysArraySetEl(/* data  */ ((ArrayData)args.get(1)),
+                                /* index */ args.get(2).i32Value(),
+                                /* value */ args.get(3),
+                                /* type  */ innerClazz._outer);
             return Value.EMPTY_VALUE;
+          };
+      }
+    else if (n.equals("fuzion.sys.env_vars.has0"))
+      {
+        result = (args) -> new boolValue(System.getenv(utf8ByteArrayDataToString(args.get(1))) != null);
+      }
+    else if (n.equals("fuzion.sys.env_vars.get0"))
+      {
+        result = (args) -> Interpreter.value(System.getenv(utf8ByteArrayDataToString(args.get(1))));
+      }
+    else if (n.equals("fuzion.sys.thread.spawn0"))
+      {
+        result = (args) ->
+          {
+            var call = Types.resolved.f_function_call;
+            var oc = innerClazz.argumentFields()[0].resultClazz();
+            var ic = oc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+            var al = new ArrayList<Value>();
+            al.add(args.get(1));
+            var t = new Thread(() -> interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al));
+            t.setDaemon(true);
+            t.start();
+            return new Instance(Clazzes.c_unit.get());
           };
       }
     else if (n.equals("safety"      ))
@@ -538,7 +639,8 @@ public class Intrinsics extends ANY
     else if (n.equals("u32.low8bits"    )) { result = (args) -> new u8Value  (       0xff & (                           args.get(0).u32Value())); }
     else if (n.equals("u32.low16bits"   )) { result = (args) -> new u16Value (     0xffff & (                           args.get(0).u32Value())); }
     else if (n.equals("u32.castTo_i32"  )) { result = (args) -> new i32Value (              (                           args.get(0).u32Value())); }
-    else if (n.equals("u32.as_f64"      )) { result = (args) -> new f64Value ((double)      (                           args.get(0).u32Value())); }
+    else if (n.equals("u32.as_f64"      )) { result = (args) -> new f64Value ((double)      Integer.toUnsignedLong(     args.get(0).u32Value())); }
+    else if (n.equals("u32.castTo_f32"  )) { result = (args) -> new f32Value (              Float.intBitsToFloat(       args.get(0).u32Value())); }
     else if (n.equals("u32.prefix -°"   )) { result = (args) -> new u32Value (              (                       -   args.get(0).u32Value())); }
     else if (n.equals("u32.infix +°"    )) { result = (args) -> new u32Value (              (args.get(0).u32Value() +   args.get(1).u32Value())); }
     else if (n.equals("u32.infix -°"    )) { result = (args) -> new u32Value (              (args.get(0).u32Value() -   args.get(1).u32Value())); }
@@ -560,7 +662,8 @@ public class Intrinsics extends ANY
     else if (n.equals("u64.low16bits"   )) { result = (args) -> new u16Value (     0xffff & ((int)                      args.get(0).u64Value())); }
     else if (n.equals("u64.low32bits"   )) { result = (args) -> new u32Value ((int)         (                           args.get(0).u64Value())); }
     else if (n.equals("u64.castTo_i64"  )) { result = (args) -> new i64Value (              (                           args.get(0).u64Value())); }
-    else if (n.equals("u64.as_f64"      )) { result = (args) -> new f64Value (2.0 *        ((args.get(0).u64Value()>>>1) & 0x7fffffffffffffffL)); }
+    else if (n.equals("u64.as_f64"      )) { result = (args) -> new f64Value (Double.parseDouble(Long.toUnsignedString(args.get(0).u64Value()))); }
+    else if (n.equals("u64.castTo_f64"  )) { result = (args) -> new f64Value (              Double.longBitsToDouble(    args.get(0).u64Value())); }
     else if (n.equals("u64.prefix -°"   )) { result = (args) -> new u64Value (              (                       -   args.get(0).u64Value())); }
     else if (n.equals("u64.infix +°"    )) { result = (args) -> new u64Value (              (args.get(0).u64Value() +   args.get(1).u64Value())); }
     else if (n.equals("u64.infix -°"    )) { result = (args) -> new u64Value (              (args.get(0).u64Value() -   args.get(1).u64Value())); }
@@ -591,6 +694,7 @@ public class Intrinsics extends ANY
     else if (n.equals("f32.infix <="    )) { result = (args) -> new boolValue(                (args.get(0).f32Value() <= args.get(1).f32Value())); }
     else if (n.equals("f32.infix >"     )) { result = (args) -> new boolValue(                (args.get(0).f32Value() >  args.get(1).f32Value())); }
     else if (n.equals("f32.infix >="    )) { result = (args) -> new boolValue(                (args.get(0).f32Value() >= args.get(1).f32Value())); }
+    else if (n.equals("f32.as_f64"      )) { result = (args) -> new f64Value((double)                                    args.get(0).f32Value() ); }
     else if (n.equals("f32.castTo_u32"  )) { result = (args) -> new u32Value (    Float.floatToIntBits(                  args.get(0).f32Value())); }
     else if (n.equals("f32.asString"    )) { result = (args) -> Interpreter.value(Float.toString      (                  args.get(0).f32Value())); }
     else if (n.equals("f64.prefix -"    )) { result = (args) -> new f64Value (                (                       -  args.get(0).f64Value())); }
@@ -599,19 +703,85 @@ public class Intrinsics extends ANY
     else if (n.equals("f64.infix *"     )) { result = (args) -> new f64Value (                (args.get(0).f64Value() *  args.get(1).f64Value())); }
     else if (n.equals("f64.infix /"     )) { result = (args) -> new f64Value (                (args.get(0).f64Value() /  args.get(1).f64Value())); }
     else if (n.equals("f64.infix %"     )) { result = (args) -> new f64Value (                (args.get(0).f64Value() %  args.get(1).f64Value())); }
-    else if (n.equals("f64.infix **"    )) { result = (args) -> new f64Value ((float) Math.pow(args.get(0).f64Value(),   args.get(1).f64Value())); }
+    else if (n.equals("f64.infix **"    )) { result = (args) -> new f64Value (        Math.pow(args.get(0).f64Value(),   args.get(1).f64Value())); }
     else if (n.equals("f64.infix =="    )) { result = (args) -> new boolValue(                (args.get(0).f64Value() == args.get(1).f64Value())); }
     else if (n.equals("f64.infix !="    )) { result = (args) -> new boolValue(                (args.get(0).f64Value() != args.get(1).f64Value())); }
     else if (n.equals("f64.infix <"     )) { result = (args) -> new boolValue(                (args.get(0).f64Value() <  args.get(1).f64Value())); }
     else if (n.equals("f64.infix <="    )) { result = (args) -> new boolValue(                (args.get(0).f64Value() <= args.get(1).f64Value())); }
     else if (n.equals("f64.infix >"     )) { result = (args) -> new boolValue(                (args.get(0).f64Value() >  args.get(1).f64Value())); }
     else if (n.equals("f64.infix >="    )) { result = (args) -> new boolValue(                (args.get(0).f64Value() >= args.get(1).f64Value())); }
+    else if (n.equals("f64.as_i64_lax"  )) { result = (args) -> new i64Value((long)                                      args.get(0).f64Value() ); }
+    else if (n.equals("f64.as_f32"      )) { result = (args) -> new f32Value((float)                                     args.get(0).f64Value() ); }
     else if (n.equals("f64.castTo_u64"  )) { result = (args) -> new u64Value (    Double.doubleToLongBits(               args.get(0).f64Value())); }
     else if (n.equals("f64.asString"    )) { result = (args) -> Interpreter.value(Double.toString       (                args.get(0).f64Value())); }
+    else if (n.equals("f32s.isNaN"      )) { result = (args) -> new boolValue(                               Float.isNaN(args.get(1).f32Value())); }
+    else if (n.equals("f64s.isNaN"      )) { result = (args) -> new boolValue(                              Double.isNaN(args.get(1).f64Value())); }
+    else if (n.equals("f32s.acos"       )) { result = (args) -> new f32Value ((float)           Math.acos(               args.get(1).f32Value())); }
+    else if (n.equals("f32s.asin"       )) { result = (args) -> new f32Value ((float)           Math.asin(               args.get(1).f32Value())); }
+    else if (n.equals("f32s.atan"       )) { result = (args) -> new f32Value ((float)           Math.atan(               args.get(1).f32Value())); }
+    else if (n.equals("f32s.atan2"      )) { result = (args) -> new f32Value ((float)  Math.atan2(args.get(1).f32Value(),args.get(2).f32Value())); }
+    else if (n.equals("f32s.cos"        )) { result = (args) -> new f32Value ((float)           Math.cos(                args.get(1).f32Value())); }
+    else if (n.equals("f32s.cosh"       )) { result = (args) -> new f32Value ((float)           Math.cosh(               args.get(1).f32Value())); }
+    else if (n.equals("f32s.epsilon"    )) { result = (args) -> new f32Value (                  Math.ulp(                (float)1));               }
+    else if (n.equals("f32s.exp"        )) { result = (args) -> new f32Value ((float)           Math.exp(                args.get(1).f32Value())); }
+    else if (n.equals("f32s.log"        )) { result = (args) -> new f32Value ((float)           Math.log(                args.get(1).f32Value())); }
+    else if (n.equals("f32s.max"        )) { result = (args) -> new f32Value (                                           Float.MAX_VALUE);         }
+    else if (n.equals("f32s.maxExp"     )) { result = (args) -> new i32Value (                                           Float.MAX_EXPONENT);      }
+    else if (n.equals("f32s.minPositive")) { result = (args) -> new f32Value (                                           Float.MIN_NORMAL);        }
+    else if (n.equals("f32s.minExp"     )) { result = (args) -> new i32Value (                                           Float.MIN_EXPONENT);      }
+    else if (n.equals("f32s.sin"        )) { result = (args) -> new f32Value ((float)          Math.sin(                 args.get(1).f32Value())); }
+    else if (n.equals("f32s.sinh"       )) { result = (args) -> new f32Value ((float)          Math.sinh(                args.get(1).f32Value())); }
+    else if (n.equals("f32s.squareRoot" )) { result = (args) -> new f32Value ((float)          Math.sqrt(        (double)args.get(1).f32Value())); }
+    else if (n.equals("f32s.tan"        )) { result = (args) -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())); }
+    else if (n.equals("f32s.tanh"       )) { result = (args) -> new f32Value ((float)          Math.tan(                 args.get(1).f32Value())); }
+    else if (n.equals("f64s.acos"       )) { result = (args) -> new f64Value (                 Math.acos(                args.get(1).f64Value())); }
+    else if (n.equals("f64s.asin"       )) { result = (args) -> new f64Value (                 Math.asin(                args.get(1).f64Value())); }
+    else if (n.equals("f64s.atan"       )) { result = (args) -> new f64Value (                 Math.atan(                args.get(1).f64Value())); }
+    else if (n.equals("f64s.atan2"      )) { result = (args) -> new f64Value (         Math.atan2(args.get(1).f64Value(),args.get(2).f64Value())); }
+    else if (n.equals("f64s.cos"        )) { result = (args) -> new f64Value (                 Math.cos(                 args.get(1).f64Value())); }
+    else if (n.equals("f64s.cosh"       )) { result = (args) -> new f64Value (                 Math.cosh(                args.get(1).f64Value())); }
+    else if (n.equals("f64s.epsilon"    )) { result = (args) -> new f64Value (                 Math.ulp(                 (double)1));              }
+    else if (n.equals("f64s.exp"        )) { result = (args) -> new f64Value (                 Math.exp(                 args.get(1).f64Value())); }
+    else if (n.equals("f64s.log"        )) { result = (args) -> new f64Value (                 Math.log(                 args.get(1).f64Value())); }
+    else if (n.equals("f64s.max"        )) { result = (args) -> new f64Value (                                               Double.MAX_VALUE);    }
+    else if (n.equals("f64s.maxExp"     )) { result = (args) -> new i32Value (                                               Double.MAX_EXPONENT); }
+    else if (n.equals("f64s.minPositive")) { result = (args) -> new f64Value (                                               Double.MIN_NORMAL);   }
+    else if (n.equals("f64s.minExp"     )) { result = (args) -> new i32Value (                                               Double.MIN_EXPONENT); }
+    else if (n.equals("f64s.sin"        )) { result = (args) -> new f64Value (                 Math.sin(                 args.get(1).f64Value())); }
+    else if (n.equals("f64s.sinh"       )) { result = (args) -> new f64Value (                 Math.sinh(                args.get(1).f64Value())); }
+    else if (n.equals("f64s.squareRoot" )) { result = (args) -> new f64Value (                 Math.sqrt(                args.get(1).f64Value())); }
+    else if (n.equals("f64s.tan"        )) { result = (args) -> new f64Value (                 Math.tan(                 args.get(1).f64Value())); }
+    else if (n.equals("f64s.tanh"       )) { result = (args) -> new f64Value (                 Math.tan(                 args.get(1).f64Value())); }
     else if (n.equals("Object.hashCode" )) { result = (args) -> new i32Value (args.get(0).toString().hashCode()); }
-    else if (n.equals("Object.asString" )) { result = (args) -> Interpreter.value(args.get(0).toString());
-      // NYI: This could be more useful by giving the object's class, an id, public fields, etc.
+    else if (n.equals("Object.asString" )) { result = (args) -> Interpreter.value("instance[" + innerClazz._outer.toString() + "]"); }
+    else if (n.equals("fuzion.std.nano_time"  )) { result = (args) -> new u64Value (System.nanoTime()); }
+    else if (n.equals("fuzion.std.nano_sleep" )) {
+      result = (args) ->
+        {
+          var d = args.get(1).u64Value();
+          try
+            {
+              TimeUnit.NANOSECONDS.sleep(d < 0 ? Long.MAX_VALUE : d);
+            }
+          catch (InterruptedException ie)
+            {
+              throw new Error("unexpected interrupt", ie);
+            }
+          return new Instance(Clazzes.c_unit.get());
+        };
     }
+    else if (n.equals("effect.replace" ) ||
+             n.equals("effect.default" ) ||
+             n.equals("effect.abortable")||
+             n.equals("effect.abort"   )    ) {  result = effect(interpreter, n, innerClazz);  }
+    else if (n.equals("effects.exists"))
+      {
+        result = (args) ->
+          {
+            var cl = innerClazz.actualGenerics()[0];
+            return new boolValue(FuzionThread.current()._effects.get(cl) != null /* NOTE not containsKey since cl may map to null! */ );
+          };
+      }
     else
       {
         Errors.fatal(f.pos(),
@@ -620,6 +790,68 @@ public class Intrinsics extends ANY
         result = (args) -> Value.NO_VALUE;
       }
     return result;
+  }
+
+  static class Abort extends Error
+  {
+    Clazz _effect;
+    Abort(Clazz effect)
+    {
+      super();
+      this._effect = effect;
+    }
+  }
+
+
+  /**
+   * Create code for one-way monad intrinsics.
+   *
+   * @param n qualified name of the intrinsic to be called.
+   *
+   * @param innerClazz the frame clazz of the called feature
+   *
+   * @return a Callable instance to execute the intrinsic call.
+   */
+  static Callable effect(Interpreter interpreter, String n, Clazz innerClazz)
+  {
+    return (args) ->
+      {
+        var m = args.get(0);
+        var cl = innerClazz._outer;
+        switch (n)
+          {
+          case "effect.replace": check(FuzionThread.current()._effects.get(cl) != null); FuzionThread.current()._effects.put(cl, m   );   break;
+          case "effect.default": if (FuzionThread.current()._effects.get(cl) == null) {  FuzionThread.current()._effects.put(cl, m   ); } break;
+          case "effect.abortable" :
+            {
+              var prev = FuzionThread.current()._effects.get(cl);
+              FuzionThread.current()._effects.put(cl, m);
+              var call = Types.resolved.f_function_call;
+              var oc = innerClazz.actualGenerics()[0]; //innerClazz.argumentFields()[0].resultClazz();
+              var ic = oc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
+              var al = new ArrayList<Value>();
+              al.add(args.get(1));
+              try {
+                var ignore = interpreter.callOnInstance(ic.feature(), ic, new Instance(ic), al);
+                return new boolValue(true);
+              } catch (Abort a) {
+                if (a._effect == cl)
+                  {
+                    return new boolValue(false);
+                  }
+                else
+                  {
+                    throw a;
+                  }
+              } finally {
+                FuzionThread.current()._effects.put(cl, prev);
+              }
+            }
+          case "effect.abort": throw new Abort(cl);
+          default: throw new Error("unexected effect intrinsic '"+n+"'");
+          }
+        return Value.EMPTY_VALUE;
+      };
   }
 
 
@@ -637,8 +869,8 @@ public class Intrinsics extends ANY
       }
   }
 
-  static ArrayData sysArrayAlloc(int sz,
-                                 Clazz arrayClazz)
+  static ArrayData fuzionSysArrayAlloc(int sz,
+                                       Clazz arrayClazz)
   {
     // NYI: Properly determine generic argument type of array
     var elementType = elementType(arrayClazz);
@@ -654,10 +886,10 @@ public class Intrinsics extends ANY
     else                                                        { return new ArrayData(new Value  [sz]); }
   }
 
-  static void sysArraySetEl(ArrayData ad,
-                            int x,
-                            Value v,
-                            Clazz arrayClazz)
+  static void fuzionSysArraySetEl(ArrayData ad,
+                                  int x,
+                                  Value v,
+                                  Clazz arrayClazz)
   {
     // NYI: Properly determine generic argument type of array
     var elementType = elementType(arrayClazz);
@@ -675,9 +907,9 @@ public class Intrinsics extends ANY
   }
 
 
-  static Value sysArrayGet(ArrayData ad,
-                           int x,
-                           Clazz arrayClazz)
+  static Value fuzionSysArrayGet(ArrayData ad,
+                                 int x,
+                                 Clazz arrayClazz)
   {
     // NYI: Properly determine generic argument type of array
     var elementType = elementType(arrayClazz);

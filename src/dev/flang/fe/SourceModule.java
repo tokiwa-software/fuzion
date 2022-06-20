@@ -287,7 +287,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     if (main != null && Errors.count() == 0)
       {
-        if (main.arguments().size() != 0)
+        if (main.valueArguments().size() != 0)
           {
             FeErrors.mainFeatureMustNotHaveArguments(main);
           }
@@ -351,6 +351,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     try
       {
         return p.getFileName().toString().endsWith(".fz") &&
+          !Files.isDirectory(p) &&
           Files.isReadable(p) &&
           (_inputFile == null || _inputFile == SourceFile.STDIN || !Files.isSameFile(_inputFile, p));
       }
@@ -478,7 +479,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
       (() ->
        {
          var q = inner._qname;
-         var o = lookupFeatureForType(inner.pos(), q.get(at), outer);
+         var n = q.get(at);
+         var o = n == FuzionConstants.TYPE_NAME
+           ? outer.typeFeature(_res)
+           : lookupFeatureForType(inner.pos(), n, outer);
          if (at < q.size()-2)
            {
              setOuterAndAddInnerForQualifiedRec(inner, at+1, o);
@@ -567,26 +571,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Add inner to the set of declared inner features of outer using the given
-   * feature name fn.
-   *
-   * Note that inner must be declared in this module, but outer may be defined
-   * in a different module.  E.g. #universe is declared in stdlib, while an
-   * inner feature 'main' may be declared in the application's module.
-   *
-   * @param outer the declaring feature
-   *
-   * @param fn the name of the declared feature
-   *
-   * @param inner the inner feature.
-   */
-  void addDeclaredInnerFeature(AbstractFeature outer, FeatureName fn, Feature inner)
-  {
-    declaredFeatures(outer).put(fn, inner);
-  }
-
-
-  /**
    * Get declared features for given outer Feature as seen by this module.
    * Result is never null.
    *
@@ -665,11 +649,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     for (var p : outer.inherits())
       {
-        var cf = p.calledFeature().libraryFeature();
+        var cf = p.calledFeature();
         if (CHECKS) check
           (Errors.count() > 0 || cf != null);
 
-        if (cf != null)
+        if (cf != null && cf.isConstructor() || cf.isChoice())
           {
             data(cf)._heirs.add(outer);
             _res.resolveDeclarations(cf);
@@ -755,38 +739,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var s = declaredFeatures(outer);
     for (var e : s.entrySet())
       {
-        var fn = e.getKey();
         var f = e.getValue();
-        var doi = declaredOrInheritedFeatures(outer);
-        var existing = doi.get(fn);
-        if (existing == null)
-          {
-            if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) != 0)
-              {
-                AstErrors.redefineModifierDoesNotRedefine(f);
-              }
-          }
-        else if (existing == f)
-          {
-          }
-        else if (existing.outer() == outer)
-          {
-            // This cannot happen, this case was already handled in addDeclaredInnerFeature:
-            throw new Error();
-          }
-        else if (existing.generics() != FormalGenerics.NONE)
-          {
-            AstErrors.cannotRedefineGeneric(f.pos(), outer, existing);
-          }
-        else if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
-          {
-            AstErrors.redefineModifierMissing(f.pos(), outer, existing);
-          }
-        else
-          {
-            f.redefines().add(existing);
-          }
-        doi.put(fn, f);
+        addToDeclaredOrInheritedFeatures(outer, f);
         if (f instanceof Feature ff)
           {
             ff.scheduleForResolution(_res);
@@ -795,6 +749,64 @@ public class SourceModule extends Module implements SrcModule, MirModule
   }
 
 
+  /**
+   * Add f with name fn to the declaredOrInherited features of outer.
+   *
+   * In case a declared feature exists in declaredOrInheritedFeatures_ (because
+   * it was inherited), check if the declared feature redefines the inherited
+   * feature. Otherwise, report an error message.
+   *
+   * @param outer the declaring feature
+   *
+   * @param f the declared or inherited feature.
+   */
+  private void addToDeclaredOrInheritedFeatures(AbstractFeature outer, AbstractFeature f)
+  {
+    var fn = f.featureName();
+    var doi = declaredOrInheritedFeatures(outer);
+    var existing = doi.get(fn);
+    if (existing == null)
+      {
+        if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) != 0)
+          {
+            AstErrors.redefineModifierDoesNotRedefine(f);
+          }
+      }
+    else if (existing == f)
+      {
+      }
+    else if (existing.outer() == outer)
+      {
+        // This cannot happen, this case was already handled in addDeclaredInnerFeature:
+        throw new Error();
+      }
+    else if (existing.generics() != FormalGenerics.NONE)
+      {
+        AstErrors.cannotRedefineGeneric(f.pos(), outer, existing);
+      }
+    else if (f instanceof Feature ff && (ff._modifiers & Consts.MODIFIER_REDEFINE) == 0 && !existing.isAbstract())
+      {
+        AstErrors.redefineModifierMissing(f.pos(), outer, existing);
+      }
+    else
+      {
+        f.redefines().add(existing);
+      }
+    doi.put(fn, f);
+  }
+
+
+  /**
+   * Add inner to the set of declared inner features of outer.
+   *
+   * Note that inner must be declared in this module, but outer may be defined
+   * in a different module.  E.g. #universe is declared in stdlib, while an
+   * inner feature 'main' may be declared in the application's module.
+   *
+   * @param outer the declaring feature
+   *
+   * @param f the inner feature.
+   */
   void addDeclaredInnerFeature(AbstractFeature outer, Feature f)
   {
     if (PRECONDITIONS) require
@@ -805,8 +817,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var existing = df.get(fn);
     if (existing != null)
       {
-        if (f                  .implKind() == Impl.Kind.FieldDef &&
-            ((Feature)existing).implKind() == Impl.Kind.FieldDef    ) // NYI: Cast!
+        if (f       .implKind() == Impl.Kind.FieldDef &&
+            existing.implKind() == Impl.Kind.FieldDef    )
           {
             var existingFields = FeatureName.getAll(df, fn.baseName(), 0);
             fn = FeatureName.get(fn.baseName(), 0, existingFields.size());
@@ -839,16 +851,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
               }
           }
       }
-    addDeclaredInnerFeature(outer, fn, f);
+    df.put(fn, f);
     if (outer instanceof Feature of && of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
       {
-        if (CHECKS) check
-          (Errors.count() > 0 ||
-           outer.isChoice() && f.isField() ||
-           outer.isUniverse() ||
-           !declaredOrInheritedFeatures(outer).containsKey(fn));
-
-        declaredOrInheritedFeatures(outer).put(fn, f);
+        addToDeclaredOrInheritedFeatures(outer, f);
         if (!outer.isChoice() || !f.isField())  // A choice does not inherit any fields
           {
             addToHeirs(outer, fn, f);
@@ -1166,6 +1172,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
         if (!Types.resolved.t_unit.isAssignableFrom(rt))
           {
             AstErrors.constructorResultMustBeUnit(cod);
+          }
+      }
+
+    if (f.isTypeParameter())
+      {
+        if (f.resultType().isGenericArgument())
+          {
+            AstErrors.constraintMustNotBeGenericArgument(f);
           }
       }
   }

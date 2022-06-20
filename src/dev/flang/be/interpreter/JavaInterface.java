@@ -295,9 +295,21 @@ public class JavaInterface extends ANY
     else
       {
         var result = new Instance(resultClazz);
-        if (result.refs.length > 0 /* better check that result is heir of fuzion.java.JavaObject */ )
+        for (var e : Layout.get(resultClazz)._offsets0.entrySet())
           {
-            result.refs[0] = new JavaRef(o);
+            var f = e.getKey();
+            var off = (Integer) e.getValue();
+            var v = switch (f.featureName().baseName())
+              {
+              case "javaRef"   -> new JavaRef(o);
+              case "forbidden" -> Value.NO_VALUE;
+              default -> f.isOuterRef() ? new Instance(resultClazz._outer)
+                                        : (Value) (Object) new Object() { { if (true) throw new Error("unexpected field in fuzion.java.Array: "+f.qualifiedName()); }};
+              };
+            if (v != Value.NO_VALUE)
+              {
+                result.refs[off] = v;
+              }
           }
         return result;
       }
@@ -325,10 +337,10 @@ public class JavaInterface extends ANY
 
 
   /**
-   * Convert an instance of 'sys.array<Object>' to a Java Object[] with
+   * Convert an instance of 'fuzion.sys.array<Object>' to a Java Object[] with
    * the corresponding Java values.
    *
-   * @param v a value of type ArrayData as it is stored in 'sys.array.data'.
+   * @param v a value of type ArrayData as it is stored in 'fuzion.sys.array.data'.
    *
    * @return corresponding Java array.
    */
@@ -358,7 +370,7 @@ public class JavaInterface extends ANY
    * constructor call
    *
    * @param args array of arguments to be passed to the method or constructor,
-   * must be of type array data, i.e., the value in sys.array<JavaObject>.data.
+   * must be of type array data, i.e., the value in fuzion.sys.array<JavaObject>.data.
    *
    * @param resultClazz the result type of the constructed instance
    */

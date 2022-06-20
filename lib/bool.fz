@@ -36,16 +36,19 @@
 # value of type 'bool'.
 #
 #
-bool : choice<FALSE, TRUE> is
+bool : choice<FALSE, TRUE>, hasEquals<bool> is
 
   # not
-  prefix ! bool is intrinsic
+  prefix ! bool is
+    if bool.this then FALSE else TRUE
 
   # or with lazy evaluation
-  infix ||  (lazy other bool) bool is intrinsic
+  infix ||  (lazy other bool) bool is
+    fuzion.std.panic "bool.infix || is handled by front end"
 
   # and with lazy evaluation
-  infix &&  (lazy other bool) bool is intrinsic
+  infix &&  (lazy other bool) bool is
+    fuzion.std.panic "bool.infix && is handled by front end"
 
   # or
   infix |   (other bool) => bool.this || other
@@ -60,11 +63,16 @@ bool : choice<FALSE, TRUE> is
   # ('true <=> false <=> false' evaluates to 'true')
   infix <=> (other bool) => if bool.this other else !other
 
+  # equality check implementation for inherited hasEquals
+  infix = (other bool) bool is
+    bool.this <=> other
+
   # xor
   infix ^   (other bool) => if bool.this (!other) else  other
 
   # implies
-  infix :   (lazy other bool) bool is intrinsic  # !bool.this || other
+  infix :   (lazy other bool) bool is
+    fuzion.std.panic "bool.infix : is handled by front end"
 
   # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
   ternary ? : <T>(lazy a, b T) => if bool.this a else b

@@ -1,0 +1,52 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test concur_simple
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# test for basic threads
+#
+# A simple test for concur.thread.spawn
+#
+# NOTE: This test is brittle on a loaded system, it depends on timing and on no
+# threads being delayed for more then a few ms during test run.  Disable this
+# test on systems with unstable performance!
+#
+concur_simple : time.durations =>
+
+  N := 5
+  t1 := ms 60
+  t2 := ms 120
+  t3 := ms 180
+
+  count(s string, t0, t time.duration) =>
+    time.nano.sleep t0
+    for i in 0..N do
+      time.nano.sleep t
+      yak s
+
+  concur.thread.spawn (()->count "/"  (ms 20) t1)
+  concur.thread.spawn (()->count "\\" (ms 40) t2)
+  concur.thread.spawn (()->count "."  (ms 60) t3)
+
+  time.nano.sleep (ms t3.millis*N.as_u64+500)
+  say

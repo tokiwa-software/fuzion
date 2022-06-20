@@ -184,7 +184,6 @@ public class Destructure extends ANY implements Stmnt
                                        0,
                                        new FunctionReturnType(Types.t_UNDEFINED), // NoType.INSTANCE,
                                        new List<String>(name),
-                                       FormalGenerics.NONE,
                                        new List<Feature>(),
                                        new List<>(),
                                        new Contract(null, null, null),
@@ -305,7 +304,7 @@ public class Destructure extends ANY implements Stmnt
         Iterator<String> names = _names.iterator();
         Iterator<Feature> fields = _fields == null ? null : _fields.iterator();
         List<String> fieldNames = new List<>();
-        for (var f : t.featureOfType().arguments())
+        for (var f : t.featureOfType().valueArguments())
           {
             // NYI: check if f is visible
             var tf = f.resultTypeIfPresent(res, Type.NONE);

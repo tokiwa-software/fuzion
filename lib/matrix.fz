@@ -27,7 +27,7 @@
 #
 # matrix provides matrix operations based on an arbitray numeric type
 #
-matrix<T : numeric<T>> (e array2<T>) : numeric<matrix<T>>, matrices<T>
+matrix(redef M numeric<M>.type, e array2<M>) : numeric<matrix<M>>, matrices<M>
 is
 
 # private:
@@ -43,10 +43,10 @@ is
 
   # basic operations
   redef prefix + => a
-  redef infix +  (b matrix<T>) => matrix (array2<T> e.length0 e.length1 i,j->e[i,j]+b.e[i,j])
-  redef infix -  (b matrix<T>) => matrix (array2<T> e.length0 e.length1 i,j->e[i,j]-b.e[i,j])
-  redef infix *  (b matrix<T>) =>
-    matrix (array2<T> e.length0 b.e.length1
+  redef infix +  (b matrix<M>) => matrix (array2<M> e.length0 e.length1 i,j->e[i,j]+b.e[i,j])
+  redef infix -  (b matrix<M>) => matrix (array2<M> e.length0 e.length1 i,j->e[i,j]-b.e[i,j])
+  redef infix *  (b matrix<M>) =>
+    matrix (array2<M> e.length0 b.e.length1
       (i,j ->
         for
           v := e[0,0].zero, v+f
@@ -55,14 +55,14 @@ is
         else
           v
         ))
-  redef infix /  (b matrix<T>) matrix<T>
+  redef infix /  (b matrix<M>) matrix<M>
     pre
       safety: false
   is
-    fuzion.std.panic "'matrix.infix /' not defined."
+    panic "'matrix.infix /' not defined."
 
   # comparison
-  redef infix == (b matrix<T>) =>
+  redef infix == (b matrix<M>) =>
     for
       x in e
       y in a.e
@@ -71,22 +71,42 @@ is
     else
       true
 
-  redef infix != (b matrix<T>) => !(a = b)
+  redef infix != (b matrix<M>) => !(a = b)
 
   # NYI: total order
-  redef infix <  (b matrix<T>) => fuzion.std.panic "matrix does not define a total order"
-  redef infix <= (b matrix<T>) => fuzion.std.panic "matrix does not define a total order"
-  redef infix >  (b matrix<T>) => fuzion.std.panic "matrix does not define a total order"
-  redef infix >= (b matrix<T>) => fuzion.std.panic "matrix does not define a total order"
+  redef infix <  (b matrix<M>) => panic "matrix does not define a total order"
+  redef infix <= (b matrix<M>) => panic "matrix does not define a total order"
+  redef infix >  (b matrix<M>) => panic "matrix does not define a total order"
+  redef infix >= (b matrix<M>) => panic "matrix does not define a total order"
 
-  transpose matrix<T> is
-    matrix (array2<T> e.length1 e.length0 i,j->e[j,i])
+  transpose matrix<M> is
+    matrix (array2<M> e.length1 e.length0 i,j->e[j,i])
 
   redef asString => e.asString
 
   # NYI: these three should be implemented in matrices, not here:
-  redef zero => fuzion.std.panic "matrix.zero not implemented"
-  redef one  => fuzion.std.panic "matrix.one not implemented"
+  redef zero => panic "matrix.zero not implemented"
+  redef one  => panic "matrix.one not implemented"
 
   # NYI: 'matrix' misses imlementaton of many abstract features from
   # 'numeric'. Maybe 'matrix' should not inherit from 'numeric' at all?
+
+
+# matrices -- unit type defining features related to matrix
+#
+# matrices is a unit type defining features related to matrix but not
+# requiring an instance.
+#
+matrices(M numeric<M>.type) : numerics<matrix<M>> is
+
+  redef name => "matrix"
+
+  # NYI: There is currently no easy way to get hold of an instance of the unit
+  # type corresponding to E.
+  #
+  #   redef zero => matrix E.zero E.zero
+  #   redef one  => matrix E.one  E.zero
+  #
+  # dummy implementations:
+  redef zero => panic "NYI: matrices.zero not implemented, needs to instantiate type arg E"
+  redef one  => panic "NYI: matrices.one not implemented, needs to instantiate type arg E"

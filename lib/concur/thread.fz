@@ -1,0 +1,77 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature concur.thread
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# thread -- effect that provides concurrent thread
+#
+thread (
+
+  # the provider this effect uses to spawn threads
+  p threadProvider,
+
+  redef r effectModes
+  ) : effect r
+is
+
+
+  # spawn a new thread
+  #
+  spawn(code ()->unit) =>
+    p.spawn code
+    _ := thread p mode
+
+
+# thread with no argument returns thread.env, i.e., the currently installed
+# source of thread concurrency.
+#
+thread =>
+  thread_type.installDefault
+  thread.env
+
+
+# threadProvider -- abstract source of concurrency
+#
+threadProvider ref is
+
+  # spawn a new thread using given code
+  #
+  spawn(code ()->unit) unit is abstract
+
+
+# type related to thread declaring features not requiring an instance of thread
+#
+thread_type is
+
+  installDefault is
+    if !(effects.exists<thread>)
+      _ := thread defaultThread effectMode.default
+
+
+# default concurrency provider
+#
+defaultThread : threadProvider is
+
+  # spawn a new thread using given code
+  #
+  spawn(code ()->unit) => fuzion.sys.thread.spawn code

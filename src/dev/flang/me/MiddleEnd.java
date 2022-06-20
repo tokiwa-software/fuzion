@@ -153,8 +153,8 @@ public class MiddleEnd extends ANY
     markUsed(universe.get(m, "conststring")                   , SourcePosition.builtIn);
     markUsed(universe.get(m, "conststring").get(m, "isEmpty" ), SourcePosition.builtIn);  // NYI: check why this is not found automatically
     markUsed(universe.get(m, "conststring").get(m, "asString"), SourcePosition.builtIn);  // NYI: check why this is not found automatically
-    markUsed(Types.resolved.f_sys_array_data              , SourcePosition.builtIn);
-    markUsed(Types.resolved.f_sys_array_length            , SourcePosition.builtIn);
+    markUsed(Types.resolved.f_fuzion_sys_array_data           , SourcePosition.builtIn);
+    markUsed(Types.resolved.f_fuzion_sys_array_length         , SourcePosition.builtIn);
     markUsed(universe.get(m, "unit")          , SourcePosition.builtIn);
     markUsed(universe.get(m, "void")          , SourcePosition.builtIn);
   }
@@ -208,10 +208,6 @@ public class MiddleEnd extends ANY
    */
   void markUsed(AbstractFeature f, boolean dynamically, HasSourcePosition usedAt)
   {
-    if (dynamically)
-      {
-        Clazzes.setCalledDynamically0(f);
-      }
     if (!Clazzes.isUsedAtAll(f))
       {
         Clazzes.addUsedFeature(f, usedAt);
@@ -327,6 +323,7 @@ public class MiddleEnd extends ANY
               {
                 AbstractFeature f = t.featureOfType();
                 markUsed(f, t);  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
+                markUsed(f.typeFeature(), t);
               }
           }
       }

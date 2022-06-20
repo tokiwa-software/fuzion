@@ -1,0 +1,81 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature panic
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# panic -- effect that terminates a computation in panic
+#
+panic (
+
+  # the provider this effect uses to panic
+  p panicProvider,
+
+  redef r effectModes
+  ) : effect r
+is
+
+  # panic with the given message
+  #
+  panic(msg string) => p.panic msg
+
+
+# panic with no argument returns panic.env, the currently installed
+# panic provider.
+#
+panic =>
+  panic_type.installDefault
+  panic.env
+
+
+# panic with a msg argument calls panic.panic msg, i.e., it uses the
+# current panic efffect to panic with the given message.
+#
+panic(msg string) => panic.panic msg
+
+
+# panicProvider -- abstract panic
+#
+panicProvider ref is
+
+  # panic with the given message
+  #
+  panic(msg string) void is abstract
+
+
+# type related to panic declaring features not requiring an instance of panic
+#
+panic_type is
+
+  installDefault is
+    if !(effects.exists<panic>)
+      _ := panic defaultPanicProvider effectMode.default
+
+  # default panic provider using io.err and exit with return code 1
+  #
+  defaultPanicProvider : panicProvider is
+
+    # panic with the given message and exit with return code 1
+    #
+    panic(msg string) =>
+      io.err.println "*** panic: $msg"
+      exit 1

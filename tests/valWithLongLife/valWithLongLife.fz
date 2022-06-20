@@ -1,0 +1,55 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test valWithDynOuter
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# A test fore value types that have inner features that depend on their outer
+# feature and that expand the lifespan of the outer feature's instance until
+# after the call to the outer feature
+#
+valWithLongLife is
+
+  exitCode := 0
+
+  chck(s, expected string) =>
+    if s = expected
+      say "PASSED: $s"
+    else
+      say "FAILED: $s /= $expected"
+      set exitCode := 1
+
+
+  v (f string, id i32) is
+    e (eid u8) is
+      redef asString => "{v.this.asString}-$eid"
+    redef asString => f+id
+
+  g(f string, id i32, eid u8) => (v f id).e eid
+
+  a := g "a" 1 11
+  b := g "b" 2 22
+  c := g "c" 3 33
+
+  chck "a1-11 b2-22 c3-33" "$a $b $c"
+
+  fuzion.std.exit exitCode

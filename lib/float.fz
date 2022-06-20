@@ -29,7 +29,7 @@
 # float is the abstract parent of concrete floating point features such as
 # f32 or f64.
 #
-float<T: float<T>> : numeric<T>, hasInterval<T>, floats<T> is
+float(redef F float<F>.type) : numeric<F>, floats<F> is
 
 
   # preconditions for basic operations: true if the operation's result is
@@ -38,9 +38,150 @@ float<T: float<T>> : numeric<T>, hasInterval<T>, floats<T> is
   #
   redef prefix +! bool is true
   redef prefix -! bool is true
-  redef infix +! (other T) bool is true
-  redef infix -! (other T) bool is true
-  redef infix *! (other T) bool is true
-  redef infix /! (other T) bool is true
-  redef infix %! (other T) bool is true
-  redef infix **!(other T) bool is true
+  redef infix +! (other F) bool is true
+  redef infix -! (other F) bool is true
+  redef infix *! (other F) bool is true
+  redef infix /! (other F) bool is true
+  redef infix %! (other F) bool is true
+  redef infix **!(other F) bool is true
+
+
+  # convert a float value to i64 dropping any fraction.
+  # the value must be in the range of i64
+  as_i64 i64 is abstract
+
+
+  fract F is abstract
+
+
+  # round floating point number
+  # ties to away (0.5 => 1; -0.5 => -1; etc.)
+  #
+  # NYI this could be made faster, see here:
+  # https://cs.opensource.google/go/go/+/refs/tags/go1.18.1:src/math/floor.go;l=79
+  round F is
+    if thiz < zero
+      -(-thiz).round
+    else if fract == zero
+      thiz
+    else
+      (thiz + one/two).floor
+
+
+  # floor: the greatest integer lower or equal to this
+  floor F is
+    if fract < zero
+      thiz - fract - one
+    else
+      thiz - fract
+
+
+  # ceiling: the smallest integer greater or equal to this
+  ceil F is
+    if fract < zero
+      thiz - fract
+    else
+      thiz - fract + one
+
+# floats -- unit type defining features related to float but not requiring
+# an instance
+#
+floats(F float<F>.type) : numerics<F> is
+
+  # number of bytes required to store this value
+  #
+  bytes i32 is abstract
+
+  # number of bits required to store this value
+  #
+  size => 8*bytes
+
+  # number of bits used for mantissa, including leading '1' that is not actually
+  # stored
+  #
+  significandBits i32 is abstract
+
+  # number of bits used for exponent
+  #
+  exponentBits i32 is abstract
+
+  exponentRange => -minExp..maxExp
+
+  # non signaling not a number
+  quietNaN => zero / zero
+
+  # not a number
+  NaN => quietNaN
+
+  # is not a number?
+  isNaN(val F) bool is abstract
+
+  negativeInfinity => -one / zero
+
+  positiveInfinity => one / zero
+
+  # infinity
+  infinity => positiveInfinity
+
+  # eulers number 2.72..
+  ℇ F is abstract
+
+  # pi 3.14...
+  π F is abstract
+
+  minExp i32 is abstract
+  maxExp i32 is abstract
+  minPositive F is abstract
+  max F is abstract
+  epsilon F is abstract
+
+
+  # conversion
+
+  # convert an i64 value to a floating point value
+  #
+  # if the value cannot be represented exactly, the result is either
+  # the nearest higher or nearest lower value
+  from_i64(val i64) F is abstract
+
+
+  squareRoot(val F) F is abstract
+  # square root
+  sqrt(val F) => squareRoot val
+
+
+  # exponentiation, logarithm
+
+  exp (val F) F is abstract
+  log (val F) F is abstract
+
+
+  # trigonometric
+
+  sin (val F) F is abstract
+  cos (val F) F is abstract
+  tan (val F) F is abstract
+  asin(val F) F is abstract
+  acos(val F) F is abstract
+  atan(val F) F is abstract
+  atan2(y F, x F) F is abstract
+
+
+  # hyperbolicus
+
+  sinh (val F) F is abstract
+  cosh (val F) F is abstract
+  tanh (val F) F is abstract
+
+
+  # arcus hyperbolicus
+
+  asinh(val F) F is
+    # ln(x+sqrt(x^2+1))
+    log (val + sqrt (val ** two + one))
+  acosh(val F) F is
+    # ln(x+sqrt(x^2-1))
+    log (val + sqrt (val ** two - one))
+  atanh(val F) F is
+    # 1/2*ln((1+x)/(1-x))
+    log ((one + val)/(one - val)) / two

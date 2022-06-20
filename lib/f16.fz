@@ -26,7 +26,7 @@
 # f16 -- 16 bit floating point values
 #
 f16(val f16) is
-  infix + (other f16) f16 is intrinsic
-  infix - (other f16) f16 is intrinsic
-  infix * (other f16) f16 is intrinsic
-  infix / (other f16) f16 is intrinsic
+  infix + (other f16) f16 is panic "NYI: f16 is not supported"
+  infix - (other f16) f16 is panic "NYI: f16 is not supported"
+  infix * (other f16) f16 is panic "NYI: f16 is not supported"
+  infix / (other f16) f16 is panic "NYI: f16 is not supported"

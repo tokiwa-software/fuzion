@@ -25,7 +25,7 @@
 
 # searchablelist -- a list whose elements inherit from hasEquals
 #
-# In contrast to searchableList, this uses choice type 'list' and not ref
+# In contrast to searchableSequence, this uses choice type 'list' and not ref
 # type 'Sequence', so it is more efficient.
 #
 #

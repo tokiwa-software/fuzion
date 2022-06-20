@@ -184,6 +184,7 @@ public class SourceFile extends ANY
     if (PRECONDITIONS) require
       (fileName != null);
 
+    _fileName = fileName;
     byte[] sf;
     try
       {
@@ -198,7 +199,6 @@ public class SourceFile extends ANY
         sf = new byte[0];
       }
 
-    _fileName = fileName;
     _bytes = sf;
     _pos = 0;
     _cur = BAD_CODEPOINT;
@@ -807,7 +807,14 @@ public class SourceFile extends ANY
    */
   public int codePointInLine(int pos, int line)
   {
-    return pos - lineStartPos(line) + 1;
+    if(PRECONDITIONS)
+      require(line > 0);
+    int c = 1;
+    for (int i = lineStartPos(line); i < pos; i = i + sizeFromCpAndSize(decodeCodePointAndSize(i)))
+      {
+        c++;
+      }
+    return c;
   }
 
 
@@ -817,7 +824,12 @@ public class SourceFile extends ANY
    */
   public int codePointInLine(int pos)
   {
-    return codePointInLine(pos, lineNum(pos));
+    int line = lineNum(pos);
+    if(line == 0)
+      {
+        return BEGINNING_OF_FILE;
+      }
+    return codePointInLine(pos, line);
   }
 
 

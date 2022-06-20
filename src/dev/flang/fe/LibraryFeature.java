@@ -46,7 +46,9 @@ import dev.flang.ast.AbstractType;
 import dev.flang.ast.BoolConst;
 import dev.flang.ast.Box;
 import dev.flang.ast.Cond;
+import dev.flang.ast.Consts;
 import dev.flang.ast.Contract;
+import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
 import dev.flang.ast.FeatureName;
@@ -59,6 +61,7 @@ import dev.flang.ast.Tag;
 import dev.flang.ast.Type;
 import dev.flang.ast.Types;
 import dev.flang.ast.Unbox;
+import dev.flang.ast.Visi;
 
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -202,6 +205,25 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
+   * Is this an intrinsic feature that creates an instance of its result ref
+   * type?
+   */
+  public boolean isIntrinsicConstructor()
+  {
+    return isIntrinsic() && _libModule.featureIsIntrinsicConstructor(_index);
+  }
+
+
+  /**
+   * Visibility of this feature
+   */
+  public Visi visibility()
+  {
+    return Consts.VISIBILITY_PUBLIC;  // NYI, visibility of LibraryFeature
+  }
+
+
+  /**
    * Find the outer feature of this festure.
    */
   public AbstractFeature outer()
@@ -252,10 +274,9 @@ public class LibraryFeature extends AbstractFeature
         _arguments = new List<AbstractFeature>();
         var i = innerFeatures();
         var n = _libModule.featureArgCount(_index);
-        while (_arguments.size() < n)
+        for (var j = 0; j < i.size() && j < n; j++)
           {
-            var a = i.get(_arguments.size());
-            _arguments.add(a);
+            _arguments.add(i.get(j));
           }
       }
     return _arguments;
@@ -273,7 +294,7 @@ public class LibraryFeature extends AbstractFeature
     if (result == null && hasResultField())
       {
         var i = innerFeatures();
-        var n = _libModule.featureArgCount(_index);
+        var n = arguments().size();
         result = i.get(n);
         _resultField = result;
       }
@@ -296,7 +317,7 @@ public class LibraryFeature extends AbstractFeature
     if (result == null && hasOuterRef())
       {
         var i = innerFeatures();
-        var n = _libModule.featureArgCount(_index) + (hasResultField() ? 1 : 0);
+        var n = arguments().size() + (hasResultField() ? 1 : 0);
         result = i.get(n);
         _outerRef = result;
       }
@@ -321,13 +342,23 @@ public class LibraryFeature extends AbstractFeature
     if (isChoice())
       {
         var i = innerFeatures();
-        result = i.get(0);  // first entry is outer ref.
+        result = i.get(arguments().size());  // first entry after arguments is the choice tag
       }
 
     if (CHECKS) check
       (isChoice() == (result != null));
 
     return result;
+  }
+
+
+  /**
+   * If we have an existing type feature (store in a .fum library file), return that
+   * type feature. return null otherwise.
+   */
+  public AbstractFeature existingTypeFeature()
+  {
+    return _libModule.featureHasTypeFeature(_index) ? _libModule.featureTypeFeature(_index) : null;
   }
 
 
@@ -375,7 +406,7 @@ public class LibraryFeature extends AbstractFeature
   public AbstractType createThisType()
   {
     if (PRECONDITIONS) require
-      (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField());
+      (isRoutine() || isAbstract() || isIntrinsic() || isChoice() || isField() || isTypeParameter());
 
     var o = outer();
     var ot = o == null ? null : o.thisType();
@@ -413,58 +444,6 @@ public class LibraryFeature extends AbstractFeature
       {
         return _libModule.type(_libModule.featureResultTypePos(_index));
       }
-  }
-
-
-  /**
-   * The formal generic arguments of this feature
-   */
-  public FormalGenerics generics()
-  {
-    var result = _generics;
-    if (result == null)
-      {
-        if ((_libModule.featureKind(_index) & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_PAREMETERS) == 0)
-          {
-            result = FormalGenerics.NONE;
-          }
-        else
-          {
-            var tai = _libModule.featureTypeArgsPos(_index);
-            var n = _libModule.typeArgsCount(tai);
-            if (n > 0)
-              {
-                var list = new List<Generic>();
-                var isOpen = _libModule.typeArgsOpen(tai);
-                var tali = _libModule.typeArgsListPos(tai);
-                var i = 0;
-                while (i < n)
-                  {
-                    var gn = _libModule.typeArgName(tali);
-                    var gp = LibraryModule.DUMMY_POS;
-                    var tali0 = tali;
-                    var i0 = i;
-                    var g = new Generic(gp, i, gn, null)
-                      {
-                        public AbstractType constraint()
-                        {
-                          return _libModule.typeArgConstraint(tali0);
-                        }
-                      };
-                    list.add(g);
-                    tali = _libModule.typeArgNextPos(tali);
-                    i++;
-                  }
-                result = new FormalGenerics(list, isOpen, this);
-              }
-            else
-              {
-                result = FormalGenerics.NONE;
-              }
-          }
-        _generics = result;
-      }
-    return result;
   }
 
 
@@ -708,6 +687,12 @@ public class LibraryFeature extends AbstractFeature
               var val = s.pop();
               var taggedType = _libModule.tagType(iat);
               x = new Tag(val, taggedType);
+              break;
+            }
+          case Env:
+            {
+              var envType = _libModule.envType(iat);
+              x = new Env(LibraryModule.DUMMY_POS, envType);
               break;
             }
           case Unit:

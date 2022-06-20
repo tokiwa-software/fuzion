@@ -48,9 +48,10 @@ public class FeErrors extends AstErrors
 
   public static void mainFeatureMustNotHaveArguments(AbstractFeature m)
   {
+    var a = m.valueArguments();
     error(m.pos(),
           "Main feature must not have arguments",
-          "Main feature has " + argumentsString(m.arguments().size()) + m.arguments().size()+", but should have no arguments to be used as main feature in an application\n" +
+          "Main feature has " + argumentsString(a.size()) + " (" + sfn(a) + "), but should have no arguments to be used as main feature in an application\n" +
           "To solve this, remove the arguments from feature " + s(m) + "\n");
   }
 
@@ -89,11 +90,6 @@ public class FeErrors extends AstErrors
   public static void mainFeatureMustNotBeChoice(AbstractFeature m)
   {
     mainFeatureMustNot(m, "be choice");
-  }
-
-  static void mainFeatureMustNotHaveGenericArguments(AbstractFeature m)
-  {
-    mainFeatureMustNot(m, "have generic arguments");
   }
 
   static void fieldNotInitialized(MIR mir, SourcePosition pos, int af)
