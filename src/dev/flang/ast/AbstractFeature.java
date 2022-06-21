@@ -96,21 +96,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   /*----------------------------  variables  ----------------------------*/
 
 
-
-  /**
-   * NYI: to be removed: Temporary mapping from Feature to corresponding
-   * libraryFeature (if it exists) and back to the ast.Feature.
-   *
-   * As long as the duality of ast.Feature/fe.LibraryFeature exists, a check for
-   * feature equality should be done using sameAs.
-   */
-  public AbstractFeature _libraryFeature = null; // NYI: remove when USE_FUM is default
-  public AbstractFeature libraryFeature() // NYI: remove
-  {
-    return _libraryFeature == null ? this : _libraryFeature;
-  }
-
-
   /**
    * For a Feature that can be called and hasThisType() is true, this will be
    * set to the frame type during resolution.  This type uses the formal
@@ -176,6 +161,18 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public boolean isChoice() { return kind() == Kind.Choice; }
   public boolean isTypeParameter() { return switch (kind()) { case TypeParameter, OpenTypeParameter -> true; default -> false; }; }
   public boolean isOpenTypeParameter() { return kind() == Kind.OpenTypeParameter; }
+
+
+  /**
+   * Is this base-lib's choice-feature?
+   */
+  boolean isBaseChoice()
+  {
+    if (PRECONDITIONS) require
+      (state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
+
+    return (featureName().baseName().equals("choice") && featureName().argCount() == 1 && outer().isUniverse());
+  }
 
 
   /**
@@ -522,7 +519,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   public boolean hasTypeFeature()
   {
-    return _typeFeature != null || existingTypeFeature() != null;
+    return _typeFeature != null || existingTypeFeature() != null || this == Types.f_ERROR;
   }
 
 
@@ -536,7 +533,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
     if (_typeFeature == null)
       {
-        _typeFeature = existingTypeFeature();
+        _typeFeature = this == Types.f_ERROR ? this : existingTypeFeature();
       }
     return _typeFeature;
   }
@@ -620,20 +617,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * Type resolution for a feature f: For all expressions and statements in f's
-   * inheritance clause, contract, and implementation, determine the static type
-   * of the expression. Were needed, perform type inference. Schedule f for
-   * syntactic sugar resolution.
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   */
-  void resolveTypes(Resolution res)
-  {
-  }
-
-
-  /**
    * In case this has not been resolved for types yet, do so. Next, try to
    * determine the result type of this feature. If the type is not explicit, but
    * needs to be inferenced, the result might still be null. Inferenced types
@@ -650,8 +633,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     if (!state().atLeast(Feature.State.RESOLVING_TYPES))
       {
-        res.resolveDeclarations(this);
-        resolveTypes(res);
+        res.resolveTypes(this);
       }
     var result = resultTypeRaw(generics);
     if (result != null && result instanceof Type rt)
@@ -848,7 +830,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   public FeatureName handDown(SrcModule module, AbstractFeature f, FeatureName fn, AbstractCall p, AbstractFeature heir)
   {
     if (PRECONDITIONS) require
-      (module == null || module.declaredOrInheritedFeatures(this).get(fn) == f,
+      (module == null || module.declaredOrInheritedFeatures(this).get(fn) == f || f.hasOpenGenericsArgList(),
        this != heir);
 
     if (f.outer() == p.calledFeature()) // NYI: currently does not support inheriting open generic over several levels
@@ -868,6 +850,9 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * Due to open generics, even the number of types may change through
    * inheritance.
+   *
+   * @param res resolution instance, required only when run in front end phase,
+   * null otherwise.
    *
    * @param a an array of types to be handed down
    *
@@ -904,7 +889,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                   }
                 else
                   {
-                    FormalGenerics.resolve(res, c.generics(), heir);
+                    if (res != null)
+                      {
+                        FormalGenerics.resolve(res, c.generics(), heir);
+                      }
                     ti = ti.actualType(c.calledFeature(), c.generics());
                     a[i] = Types.intern(ti);
                   }
@@ -1181,7 +1169,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       }
     else if (set.isEmpty())
       {
-        AstErrors.internallyReferencedFeatureNotFound(pos(), name, this, name);
+        check
+          (this != Types.f_ERROR || Errors.count() > 0);
+        if (this != Types.f_ERROR)
+          {
+            AstErrors.internallyReferencedFeatureNotFound(pos(), name, this, name);
+          }
       }
     else
       { // NYI: This might happen if the user adds additional features

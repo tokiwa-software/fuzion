@@ -242,7 +242,7 @@ O(n log n).
 
     if size /= 0
       join fill-1 1 0 0
-    array r
+    array r unit unit unit
 
 
   # get a stream of all key/value pairs in this map
@@ -361,11 +361,17 @@ O(n log n).
   infix ⋃ (other ref psMap<PK, V>) => union other  # NYI: 'ref' due to lack of 'like this'
 
 
-# psMap -- a partially sorted map
+# psMaps -- unit type feature declaring features related to psMap
 #
-# This feature creates an empty instance of psMap.
+# NYI: move to psMap.type
 #
-psMap<PK : ordered<PK>, V> => psMap (fuzion.sys.array<tuple<PK,V>> 0) 0 0
+psMaps<PK : ordered<PK>, V> is
+
+  # empty -- an empty partially sorted map
+  #
+  # This feature creates an empty instance of psMap.
+  #
+  empty => psMap (fuzion.sys.array<tuple<PK,V>> 0) 0 0
 
 
 # psMap -- routine to initialize a partially sorted map from two Sequences
@@ -379,7 +385,7 @@ psMap<PK : ordered<PK>, V> (
     vs Sequence<V>)
  =>
   for
-    r := psMap<PK,V>, r.add k v
+    r := (psMaps PK V).empty, r.add k v
     k in ks
     v in vs
   else

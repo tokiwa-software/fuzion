@@ -55,7 +55,7 @@ stream(redef T type) ref : Sequence<T> is
 
   redef take (n i32) =>
     for
-      a := (marray 0 (fuzion.sys.array<T> 0) unit), a.add x
+      a := marray 0 (fuzion.sys.array<T> 0), a.add x
       i in (1..n)
     while hasNext
       x := next
@@ -178,7 +178,7 @@ stream(redef T type) ref : Sequence<T> is
   #
   redef asArray array<T> is
     for
-      a := (marray 0 (fuzion.sys.array<T> 0) unit), a.add x
+      a := marray 0 (fuzion.sys.array<T> 0), a.add x
     while hasNext
       x := next
     else

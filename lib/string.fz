@@ -49,7 +49,7 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # concatenate string with string representation of another object
   infix + (other Object) string is
-    ma := marray<Object> 2 string.this
+    ma := (marrays Object).new 2 string.this
     ma[1] := other
     strings.fromArray ma
 

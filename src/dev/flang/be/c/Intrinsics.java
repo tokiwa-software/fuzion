@@ -85,24 +85,25 @@ public class Intrinsics extends ANY
     put("fuzion.std.out.write" ,
         "fuzion.std.err.write" , (c,cl,outer,in) ->
         {
-          var cid = new CIdent("c");
-          return CStmnt.seq(CStmnt.decl("char",cid),
-                            cid.assign(A0.castTo("char")),
-                            CExpr.call("fwrite",
-                                       new List<>(cid.adrOf(),
-                                                  CExpr.int32const(1),
-                                                  CExpr.int32const(1),
-                                                  outOrErr(in))));
+          // How do I print a non-null-terminated strings: https://stackoverflow.com/a/25111267
+          return CExpr.call("fwrite",
+                              new List<>(
+                                A0.castTo("void *"),
+                                CExpr.sizeOfType("char"),
+                                A1,
+                                outOrErr(in)
+                              ));
         });
     put("fuzion.std.out.flush" ,
         "fuzion.std.err.flush" , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
     put("fuzion.stdin.nextByte", (c,cl,outer,in) ->
         {
           var cIdent = new CIdent("c");
-          return CStmnt.seq(CExpr.decl("char", cIdent, CExpr.call("getchar", new List<>())),
-                            CExpr.iff(cIdent.eq(new CIdent("EOF")),CExpr.uint8const(0).ret()),
-                            cIdent.ret()
-                            );
+          return CStmnt.seq(
+            CExpr.decl("int", cIdent, CExpr.call("getchar", new List<>())),
+            CExpr.iff(cIdent.eq(new CIdent("EOF")),CExpr.int32const(-1).ret()),
+            cIdent.castTo("fzT_1i32").ret()
+          );
         });
 
         /* NYI: The C standard does not guarentee wrap-around semantics for signed types, need
@@ -440,7 +441,7 @@ public class Intrinsics extends ANY
                                 CExpr.decl("int", res),
                                 pt.assign(CExpr.call("GC_MALLOC", new List<>(CExpr.sizeOfType("pthread_t")))),
                                 CExpr.iff(pt.eq(CNames.NULL),
-                                          CStmnt.seq(CExpr.fprintfstderr("*** malloc(%lu) failed\n", CExpr.sizeOfType("pthread_t")),
+                                          CStmnt.seq(CExpr.fprintfstderr("*** malloc(%zu) failed\n", CExpr.sizeOfType("pthread_t")),
                                                      CExpr.call("exit", new List<>(CExpr.int32const(1))))),
                                 res.assign(CExpr.call("pthread_create", new List<>(pt,
                                                                                    CNames.NULL,

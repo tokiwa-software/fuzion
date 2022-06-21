@@ -153,7 +153,7 @@ class Layout extends ANY
             // NYI: Ugly special handling, clean up:
             var fc =
               ff.isOuterRef() && ff.outer().isOuterRefAdrOfValue()  ? f.actualClazz(Types.t_ADDRESS) :
-              ff.isOuterRef() && ff.outer().isOuterRefCopyOfValue() ? f._outer.actualClazz(ff.resultType(), f._select)
+              ff.isOuterRef() && ff.outer().isOuterRefCopyOfValue() ? f._outer.actualClazz0(ff.resultType(), f._select)
                                                                     : f.resultClazz();
             int fsz;
             if        (fc.isRef()) { fsz = 1;
@@ -181,7 +181,7 @@ class Layout extends ANY
                 int[] a = (int[]) _offsets0.get(f.feature());
                 if (a == null)
                   {
-                    a = new int[_clazz.replaceOpen(f.feature().resultType()).size()];
+                    a = new int[_clazz.replaceOpenCount(f.feature())];
                     _offsets0.put(f.feature(), a);
                   }
                 a[f._select] = _size - Integer.MIN_VALUE;

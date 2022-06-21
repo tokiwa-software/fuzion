@@ -56,7 +56,7 @@ sortedArray
 
   )
 
-  : array<T> (sort from.asArray 1).internalArray
+  : array T (sort from.asArray 1).internalArray unit unit unit
 
 is
 
@@ -191,7 +191,7 @@ is
 #
 # See sortedArray(from, lessOrEqual) for details
 #
-sortedArray<T: ordered<T>>
+sortedArrayOf<T: ordered<T>>
   (
   # orginal, unsorted Sequence
   from Sequence<T>

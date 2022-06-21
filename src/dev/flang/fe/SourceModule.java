@@ -571,26 +571,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Add inner to the set of declared inner features of outer using the given
-   * feature name fn.
-   *
-   * Note that inner must be declared in this module, but outer may be defined
-   * in a different module.  E.g. #universe is declared in stdlib, while an
-   * inner feature 'main' may be declared in the application's module.
-   *
-   * @param outer the declaring feature
-   *
-   * @param fn the name of the declared feature
-   *
-   * @param inner the inner feature.
-   */
-  void addDeclaredInnerFeature(AbstractFeature outer, FeatureName fn, Feature inner)
-  {
-    declaredFeatures(outer).put(fn, inner);
-  }
-
-
-  /**
    * Get declared features for given outer Feature as seen by this module.
    * Result is never null.
    *
@@ -669,11 +649,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
   {
     for (var p : outer.inherits())
       {
-        var cf = p.calledFeature().libraryFeature();
+        var cf = p.calledFeature();
         if (CHECKS) check
           (Errors.count() > 0 || cf != null);
 
-        if (cf != null)
+        if (cf != null && cf.isConstructor() || cf.isChoice())
           {
             data(cf)._heirs.add(outer);
             _res.resolveDeclarations(cf);
@@ -759,9 +739,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var s = declaredFeatures(outer);
     for (var e : s.entrySet())
       {
-        var fn = e.getKey();
         var f = e.getValue();
-        addToDeclaredOrInheritedFeatures(outer, fn, f);
+        addToDeclaredOrInheritedFeatures(outer, f);
         if (f instanceof Feature ff)
           {
             ff.scheduleForResolution(_res);
@@ -779,15 +758,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param outer the declaring feature
    *
-   * @param fn feature name of f (NYI (see #286): check if fn is redundant with f.featureName)
-   *
    * @param f the declared or inherited feature.
    */
-  private void addToDeclaredOrInheritedFeatures(AbstractFeature outer, FeatureName fn, AbstractFeature f)
+  private void addToDeclaredOrInheritedFeatures(AbstractFeature outer, AbstractFeature f)
   {
-    check
-      (fn.equals(f.featureName()));
-
+    var fn = f.featureName();
     var doi = declaredOrInheritedFeatures(outer);
     var existing = doi.get(fn);
     if (existing == null)
@@ -821,6 +796,17 @@ public class SourceModule extends Module implements SrcModule, MirModule
   }
 
 
+  /**
+   * Add inner to the set of declared inner features of outer.
+   *
+   * Note that inner must be declared in this module, but outer may be defined
+   * in a different module.  E.g. #universe is declared in stdlib, while an
+   * inner feature 'main' may be declared in the application's module.
+   *
+   * @param outer the declaring feature
+   *
+   * @param f the inner feature.
+   */
   void addDeclaredInnerFeature(AbstractFeature outer, Feature f)
   {
     if (PRECONDITIONS) require
@@ -865,10 +851,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
               }
           }
       }
-    addDeclaredInnerFeature(outer, fn, f);
+    df.put(fn, f);
     if (outer instanceof Feature of && of.state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
       {
-        addToDeclaredOrInheritedFeatures(outer, fn, f);
+        addToDeclaredOrInheritedFeatures(outer, f);
         if (!outer.isChoice() || !f.isField())  // A choice does not inherit any fields
           {
             addToHeirs(outer, fn, f);

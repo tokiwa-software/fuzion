@@ -36,7 +36,7 @@
 # value of type 'bool'.
 #
 #
-bool : choice<FALSE, TRUE> is
+bool : choice<FALSE, TRUE>, hasEquals<bool> is
 
   # not
   prefix ! bool is
@@ -62,6 +62,10 @@ bool : choice<FALSE, TRUE> is
   # a == b == c for booleans might not behave as expected
   # ('true <=> false <=> false' evaluates to 'true')
   infix <=> (other bool) => if bool.this other else !other
+
+  # equality check implementation for inherited hasEquals
+  infix = (other bool) bool is
+    bool.this <=> other
 
   # xor
   infix ^   (other bool) => if bool.this (!other) else  other

@@ -367,7 +367,7 @@ public class Resolution extends ANY
           }
 
         Feature f = forType.removeFirst();
-        f.resolveTypes(this);
+        f.internalResolveTypes(this);
       }
     else if (!moreThanTypes)
       {
@@ -427,6 +427,9 @@ public class Resolution extends ANY
    */
   public void resolveDeclarations(AbstractFeature af)
   {
+    if (PRECONDITIONS) require
+      (af.state().atLeast(Feature.State.LOADED));
+
     if (af instanceof Feature f)
       {
         f.scheduleForResolution(this);
@@ -438,4 +441,61 @@ public class Resolution extends ANY
       (af.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
   }
 
+
+  /**
+   * Make sure feature f is in state RESOLVED_TYPES. This is used for
+   * recursive resolution of artificially added features during
+   * RESOLVING_TYPES.
+   *
+   * @param f the feature to be resolved
+   */
+  void resolveTypes(AbstractFeature af)
+  {
+    if (PRECONDITIONS) require
+      (af.state().atLeast(Feature.State.LOADED));
+
+    if (af instanceof Feature f)
+      {
+        resolveDeclarations(f);
+        f.internalResolveTypes(this);
+      }
+
+    if (POSTCONDITIONS) ensure
+      (af.state().atLeast(Feature.State.RESOLVED_TYPES));
+  }
+
+
+  /**
+   * Resolve the type of statement s within outer
+   *
+   * @param s a statement
+   *
+   * @param outer the outer feature that contains s
+   *
+   * @return s or a new statement that replaces s after type resolution.
+   */
+  Stmnt resolveType(Stmnt s, AbstractFeature outer)
+  {
+    var rt = new Feature.ResolveTypes(this);
+    return s.visit(rt, outer);
+  }
+
+
+  /**
+   * Resolve the type of expression s within outer
+   *
+   * @param s an expression
+   *
+   * @param outer the outer feature that contains s
+   *
+   * @return s or a new expression that replaces s after type resolution.
+   */
+  Expr resolveType(Expr s, AbstractFeature outer)
+  {
+    var rt = new Feature.ResolveTypes(this);
+    return s.visit(rt, outer);
+  }
+
 }
+
+/* end of file */

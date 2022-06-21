@@ -76,7 +76,7 @@ numericSequence<N: numeric<N>>(from Sequence<N>) : Sequence<N> is
     if isEmpty
       nil
     else
-      arr := sortedArray<N> numericSequence.this
+      arr := sortedArrayOf numericSequence.this
       if arr.length % 2 == 1
         arr[arr.length / 2]
       else

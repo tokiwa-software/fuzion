@@ -63,7 +63,7 @@ is
     if has k
       psSet.this
     else
-      psSet (psm.add k unit) unit
+      psSet K (psm.add k unit) unit
 
 
   # create a sorted array from the elements of this set
@@ -88,13 +88,13 @@ is
 
   # union of two psSets
   #
-  infix ⋃ (other ref psSet<K>) => psSet (psm ⋃ other.psm) unit  # NYI: 'ref' due to lack of 'like this'
+  infix ⋃ (other ref psSet<K>) => psSet K (psm ⋃ other.psm) unit  # NYI: 'ref' due to lack of 'like this'
 
 
   # intersection of two psSets
   infix ⋂ (other ref psSet<K>) =>
     s := (psSet.this ⋃ other).filter (x -> psSet.this.has x && other.has x)
-    psSet<K>.addAll s
+    (psSets K).empty.addAll s
 
 
   # add all elements of the given Sequence to this set
@@ -120,7 +120,7 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 
   # an empty psSet
   #
-  empty => psSet<K>
+  empty => (psSets K).empty
 
 
   # monoid of psSet with infix ⋃ operation.
@@ -131,15 +131,21 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
     redef e => empty
 
 
-# psSet -- a partially sorted set based on psMap
+# psSets -- unit type feature declaring features related to psSet
 #
-# This feature creates an empty instance of psSet.
+# NYI: move to psSet.type
 #
-psSet<K : ordered<K>> => psSet psMap<K,unit> unit
+psSets<K : ordered<K>> is
+
+  # psSet -- a partially sorted set based on psMap
+  #
+  # This feature creates an empty instance of psSet.
+  #
+  empty => psSet K (psMaps<K,unit>).empty unit
 
 
 # psSet -- routine to initialize a partially sorted set from one Sequence
 #
 # This feature creates a pre-initialized instance of psSet.
 #
-psSet<K : ordered<K>> (vs Sequence<K>) => psSet<K>.addAll vs
+psSet<K : ordered<K>> (vs Sequence<K>) => (psSets K).empty.addAll vs

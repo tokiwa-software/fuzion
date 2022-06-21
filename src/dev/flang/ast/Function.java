@@ -492,8 +492,8 @@ public class Function extends ExprWithPos
             res._module.findDeclarations(_wrapper, outer);
             if (inferResultType)
               {
-                _wrapper.scheduleForResolution(res);
-                res.resolveTypes();
+                res.resolveDeclarations(_wrapper);
+                res.resolveTypes(f);
                 result = f.resultType();
                 gs.set(0, result);
               }
@@ -588,7 +588,7 @@ public class Function extends ExprWithPos
                      : new Type("unit"));
         for (var a : f.arguments())
           {
-            a.resolveTypes(res);
+            res.resolveTypes(a);
             generics.add(a.resultType());
           }
       }
@@ -620,7 +620,7 @@ public class Function extends ExprWithPos
       }
     else
       {
-        _inheritsCall.generics = generics(res);
+        _inheritsCall._generics = generics(res);
         Call inheritsCall2 = _inheritsCall.resolveTypes(res, outer);
         // Call.resolveType returns something differnt than this only for an
         // immediate function call, which is never the case in an inherits

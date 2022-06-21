@@ -573,7 +573,7 @@ class Fuzion extends Tool
       {
         fatal("no '-' to read from stdin may be given for backend '" + _backend + "'");
       }
-    if (_eraseInternalNamesInLib != null && _backend == Backend.saveBaseLib)
+    if (_eraseInternalNamesInLib != null && _backend != Backend.saveBaseLib)
       {
         fatal("-XeraseInternalNamesInLib may only be specified when creating a library using -XsaveBaseLib");
       }

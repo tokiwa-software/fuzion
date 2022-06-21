@@ -651,7 +651,7 @@ public class Feature extends AbstractFeature implements Stmnt
     this._qname     = qname;
 
     this._arguments = a;
-    this._featureName = FeatureName.get(n, valueArguments().size());
+    this._featureName = FeatureName.get(n, arguments().size());
     this._inherits   = (i.isEmpty() &&
                         (p.kind_ != Impl.Kind.FieldActual) &&
                         (p.kind_ != Impl.Kind.FieldDef   ) &&
@@ -773,7 +773,8 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public Kind kind()
   {
-    return state().atLeast(State.RESOLVING_TYPES) && isChoiceAfterTypesResolved()
+    return state().atLeast(State.RESOLVING_TYPES) && isChoiceAfterTypesResolved() ||
+          !state().atLeast(State.RESOLVING_TYPES) && isChoiceBeforeTypesResolved()
       ? Kind.Choice
       : switch (_impl.kind_) {
           case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
@@ -950,11 +951,41 @@ public class Feature extends AbstractFeature implements Stmnt
               {
                 if (p instanceof Call cp)
                   {
-                    cp.generics = new List<AbstractType>(Types.t_ERROR);
+                    cp._generics = new List<AbstractType>(Types.t_ERROR);
                   }
               }
           }
       }
+  }
+
+
+  /**
+   * Is this a choice-type, i.e., is it 'choice' or does it directly inherit from 'choice'?
+   */
+  boolean isChoiceBeforeTypesResolved()
+  {
+    if (state().atLeast(Feature.State.RESOLVED_DECLARATIONS))
+      {
+        if (isBaseChoice())
+          {
+            return true;
+          }
+        else
+          {
+            for (var p: inherits())
+              {
+                if (CHECKS) check
+                  (Errors.count() > 0 || p.calledFeature() != null);
+
+                var pf = p.calledFeature();
+                if (pf != null && pf.isBaseChoice())
+                  {
+                    return true;
+                  }
+              }
+          }
+      }
+    return false;
   }
 
 
@@ -1148,6 +1179,10 @@ public class Feature extends AbstractFeature implements Stmnt
                     cyclicInheritanceError(p, i);
                   }
               }
+            if (!parent.isConstructor() && !parent.isChoice() /* choice is handled in choiceTypeCheckAndInternalFields */)
+              {
+                AstErrors.parentMustBeConstructor(p.pos(), this, parent);
+              }
           }
         _state = State.RESOLVED_INHERITANCE;
         res.scheduleForDeclarations(this);
@@ -1242,25 +1277,16 @@ public class Feature extends AbstractFeature implements Stmnt
         res = r;
       }
     public void         action(AbstractAssign a, AbstractFeature outer) {        a.resolveTypes(res, outer); }
-    public Call         action(Call         c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
-    public Stmnt        action(Destructure  d, AbstractFeature outer) { return d.resolveTypes(res, outer); }
-    public Stmnt        action(Feature      f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
-                                                                        return f.resolveTypes(res, f.outer() ); }
-    public Function     action(Function     f, AbstractFeature outer) {        f.resolveTypes(res, outer); return f; }
-    public void         action(Match        m, AbstractFeature outer) {        m.resolveTypes(res, outer); }
-    public Expr         action(This         t, AbstractFeature outer) { return t.resolveTypes(res, outer); }
-    public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve     (res, outer); }
+    public Call         action(Call           c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
+    public Stmnt        action(Destructure    d, AbstractFeature outer) { return d.resolveTypes(res, outer); }
+    public Stmnt        action(Feature        f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
+                                                                          return f.resolveTypes(res, f.outer() ); }
+    public Function     action(Function       f, AbstractFeature outer) {        f.resolveTypes(res, outer); return f; }
+    public void         action(Match          m, AbstractFeature outer) {        m.resolveTypes(res, outer); }
+    public Expr         action(This           t, AbstractFeature outer) { return t.resolveTypes(res, outer); }
+    public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.resolve     (res, outer); }
 
-    /**
-     * visitActuals delays type resolution for actual arguments within a feature
-     * until the feature's type was resolved.  The reason is that the feature's
-     * type does not depend on the actual arguments, but the actual arguments
-     * might depend directly or indirectly on the feature's type.
-     */
-    void visitActuals(Runnable r, AbstractFeature outer)
-    {
-      outer.whenResolvedTypes(r);
-    }
+    public boolean doVisitActuals() { return false; }
   }
 
 
@@ -1270,13 +1296,18 @@ public class Feature extends AbstractFeature implements Stmnt
    * of the expression. Were needed, perform type inference. Schedule f for
    * syntactic sugar resolution.
    *
+   * NOTE: This is called by Resoltion.java. To force a feature is in state
+   * RESOLVED_TYPES, use Resolution.resolveTypes(f).
+   *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    */
-  void resolveTypes(Resolution res)
+  void internalResolveTypes(Resolution res)
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVED_DECLARATIONS));
+
+    var old_state = _state;
 
     if (_state == State.RESOLVED_DECLARATIONS)
       {
@@ -1307,7 +1338,8 @@ public class Feature extends AbstractFeature implements Stmnt
       }
 
     if (POSTCONDITIONS) ensure
-      (_state.atLeast(State.RESOLVED_TYPES));
+      (old_state == State.RESOLVING_TYPES && _state == old_state /* recursive attempt to resolve types */ ||
+       _state.atLeast(State.RESOLVING_TYPES));
   }
 
 
@@ -2214,7 +2246,8 @@ public class Feature extends AbstractFeature implements Stmnt
   public FeatureName featureName()
   {
     if (CHECKS) check
-                  (valueArguments().size() == _featureName.argCount());
+      (arguments().size() == _featureName.argCount());
+
     return _featureName;
   }
 

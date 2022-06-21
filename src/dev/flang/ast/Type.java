@@ -721,9 +721,12 @@ public class Type extends AbstractType
   {
     if (PRECONDITIONS) require
       (outerfeat != null,
-       outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS),
-       checkedForGeneric);
+       outerfeat.state().atLeast(Feature.State.RESOLVED_DECLARATIONS));
 
+    if (!checkedForGeneric)
+      {
+        findGenerics(outerfeat);
+      }
     if (!isGenericArgument())
       {
         var of = outerfeat;
