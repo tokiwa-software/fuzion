@@ -292,6 +292,20 @@ public class IR extends ANY
 
 
   /**
+   * Get size of given code
+   *
+   * @param c an index of a code block
+   *
+   * @return the size of code block c, i.e., withinCode(c, 0..result-1) <==> true.
+   */
+  public int codeSize(int c)
+  {
+    var code = _codeIds.get(c);
+    return code.size();
+  }
+
+
+  /**
    * Check if index ix is within code block c.
    *
    * @param c an index of a code block

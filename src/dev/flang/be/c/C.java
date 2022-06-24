@@ -39,6 +39,8 @@ import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
 
+import dev.flang.fuir.analysis.Escape;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -94,6 +96,12 @@ public class C extends ANY
 
 
   /**
+   * The escape analysis.
+   */
+  final Escape _escape;
+
+
+  /**
    * The options set for the compilation.
    */
   final COptions _options;
@@ -132,6 +140,7 @@ public class C extends ANY
   {
     _options = opt;
     _fuir = fuir;
+    _escape = new Escape(fuir);
     _names = new CNames(fuir);
     _types = new CTypes(_fuir, _names);
     _intrinsics = new Intrinsics();
@@ -1146,7 +1155,10 @@ public class C extends ANY
                        : current(cl).ret()                              // a constructor, return current instance
               );
       }
-    return CStmnt.seq(l);
+    return CStmnt.seq(CStmnt.lineComment(pre                       ? "for precondition only, need to check if it may escape" :
+                                         _escape.doesCurEscape(cl) ? "instance may escape, so we need malloc here"
+                                                                   : "instance does not escape, NYI: use stack allocation, not malloc"),
+                      l);
   }
 
 
