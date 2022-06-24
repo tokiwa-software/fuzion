@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import dev.flang.fuir.FUIR;
 
 import dev.flang.fuir.analysis.Escape;
+import dev.flang.fuir.analysis.TailCall;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -96,6 +97,12 @@ public class C extends ANY
 
 
   /**
+   * The tail call analysis.
+   */
+  final TailCall _tailCall;
+
+
+  /**
    * The escape analysis.
    */
   final Escape _escape;
@@ -140,6 +147,7 @@ public class C extends ANY
   {
     _options = opt;
     _fuir = fuir;
+    _tailCall = new TailCall(fuir);
     _escape = new Escape(fuir);
     _names = new CNames(fuir);
     _types = new CTypes(_fuir, _names);
@@ -435,7 +443,7 @@ public class C extends ANY
             var stk = (Stack<CExpr>) stackWithArgs.clone();
             if (isCall)
               {
-                var cal = call(tc, cc, stk, false);
+                var cal = call(cl, stk, c, i, cc, false);
                 var as = CStmnt.EMPTY;
                 if (!containsVoid(stk))
                   {
@@ -477,7 +485,7 @@ public class C extends ANY
       {
         if (isCall)
           {
-            result = call(tc, cc0, stack, false);
+            result = call(cl, stack, c, i, cc0, false);
             res = containsVoid(stack) ? null : pop(stack, rt);
           }
         else
@@ -568,12 +576,11 @@ public class C extends ANY
         }
       case Call:
         {
-          var tc = _fuir.accessTargetClazz(cl, c, i);
           var cc0 = _fuir.accessedClazz  (cl, c, i);
           var ol = new List<CStmnt>();
           if (_fuir.clazzContract(cc0, FUIR.ContractKind.Pre, 0) != -1)
             {
-              ol.add(call(tc, cc0, (Stack<CExpr>) stack.clone(), true));
+              ol.add(call(cl, (Stack<CExpr>) stack.clone(), c, i, cc0, true));
             }
           if (!_fuir.callPreconditionOnly(cl, c, i))
             {
@@ -905,18 +912,23 @@ public class C extends ANY
   /**
    * Create C code for a statically bound call.
    *
-   * @param tc clazz id of the outer clazz of the called clazz
-   *
-   * @param cc clazz that is called
+   * @param cl clazz id of clazz containing the call
    *
    * @param stack the stack containing the current arguments waiting to be used
+   *
+   * @param c the code block to compile
+   *
+   * @param i the index of the call within c
+   *
+   * @param cc clazz that is called
    *
    * @param pre true to call the precondition of cl instead of cl.
    *
    * @return the code to perform the call
    */
-  CStmnt call(int tc, int cc, Stack<CExpr> stack, boolean pre)
+  CStmnt call(int cl, Stack<CExpr> stack, int c, int i, int cc, boolean pre)
   {
+    var tc = _fuir.accessTargetClazz(cl, c, i);
     CStmnt result = CStmnt.EMPTY;
     var rt = _fuir.clazzResultClazz(cc);
     switch (pre ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
@@ -931,19 +943,31 @@ public class C extends ANY
           var a = args(tc, cc, stack, _fuir.clazzArgCount(cc));
           if (_fuir.clazzNeedsCode(cc))
             {
-              var call = CExpr.call(_names.function(cc, pre), a);
-              result = call;
-              if (!pre)
+              if (!pre                               &&  // not calling pre-condition
+                  cc == cl                           &&  // calling myself
+                  _tailCall.callIsTailCall(cl, c, i) &&  // as a tail call
+                  !_escape.doesCurEscape(cl)             // and current instance did not escape
+                  )
+                { // then we can do tail recursion optimization!
+                  result = tailRecursion(cl, tc, a);
+                  stack.push(null); // make stack contain void to stop any further code generation
+                }
+              else
                 {
-                  CExpr res = _fuir.clazzIsVoidType(rt) ? null : CExpr.UNIT;
-                  if (_types.hasData(rt))
+                  var call = CExpr.call(_names.function(cc, pre), a);
+                  result = call;
+                  if (!pre)
                     {
-                      var tmp = _names.newTemp();
-                      res = tmp;
-                      result = CStmnt.seq(CStmnt.decl(_types.clazz(rt), tmp),
-                                          res.assign(call));
+                      CExpr res = _fuir.clazzIsVoidType(rt) ? null : CExpr.UNIT;
+                      if (_types.hasData(rt))
+                        {
+                          var tmp = _names.newTemp();
+                          res = tmp;
+                          result = CStmnt.seq(CStmnt.decl(_types.clazz(rt), tmp),
+                                              res.assign(call));
+                        }
+                      push(stack, rt, res);
                     }
-                  push(stack, rt, res);
                 }
             }
           if (SHOW_STACK_ON_CALL) System.out.println("After call to "+_fuir.clazzAsString(cc)+": "+stack);
@@ -957,6 +981,40 @@ public class C extends ANY
       default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.clazzKind(cc));
       }
     return result;
+  }
+
+
+  /**
+   * Create code for a tail recursive call to the current clazz.
+   *
+   * @param cl clazz id of clazz containing the call
+   *
+   * @param tc the target clazz (type of outer) in this call
+   *
+   * @param a list of actual arguments to the tail recursive call.
+   */
+  CStmnt tailRecursion(int cl, int tc, List<CExpr> a)
+  {
+    var cur = _fuir.clazzIsRef(cl) ? fields(_names.CURRENT, cl)
+                                   : _names.CURRENT.deref();
+    var vcl = _fuir.clazzAsValue(cl);
+    var ac = _fuir.clazzArgCount(vcl);
+    var aii = _types.hasData(tc) ? 1 : 0;
+    var l = new List<CStmnt>();
+    for (int ai = 0; ai < ac; ai++)
+      {
+        var at = _fuir.clazzArgClazz(vcl, ai);
+        if (_types.hasData(at))
+          {
+            var target = _types.isScalar(vcl)
+              ? cur
+              : cur.field(_names.fieldName(_fuir.clazzArg(vcl, ai)));
+            l.add(assign(new CIdent("arg" + ai), a.get(aii), at));
+                          aii = aii + 1;
+          }
+      }
+    l.add(CStmnt.gowto("start"));
+    return CStmnt.seq(l);
   }
 
 
@@ -1121,9 +1179,9 @@ public class C extends ANY
       (_fuir.clazzKind(cl) == FUIR.FeatureKind.Routine || pre);
 
     _names._tempVarId = 0;  // reset counter for unique temp variables for function results
-    var l = new List<CStmnt>(declareAllocAndInitClazzId(cl, _names.CURRENT));
     var cur = _fuir.clazzIsRef(cl) ? fields(_names.CURRENT, cl)
                                    : _names.CURRENT.deref();
+    var l = new List<CStmnt>();
     var vcl = _fuir.clazzAsValue(cl);
     var ac = _fuir.clazzArgCount(vcl);
     for (int i = 0; i < ac; i++)
@@ -1158,7 +1216,8 @@ public class C extends ANY
     return CStmnt.seq(CStmnt.lineComment(pre                       ? "for precondition only, need to check if it may escape" :
                                          _escape.doesCurEscape(cl) ? "instance may escape, so we need malloc here"
                                                                    : "instance does not escape, NYI: use stack allocation, not malloc"),
-                      l);
+                      declareAllocAndInitClazzId(cl, _names.CURRENT),
+                      CStmnt.seq(l).label("start"));
   }
 
 
