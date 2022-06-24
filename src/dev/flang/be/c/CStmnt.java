@@ -486,6 +486,51 @@ abstract class CStmnt extends ANY
   }
 
 
+
+  /**
+   * An goto statement
+   *
+   * @param l the label to go to
+   *
+   * @return the goto statment
+   */
+  static CStmnt gowto(String l)
+  {
+    return new CStmnt()
+      {
+        void code(CString sb)
+        {
+          sb.append("goto " + l);
+        }
+    };
+  }
+
+
+
+  /**
+   * Add labell l before this statement, such that is is posible to 'goto $l'.
+   *
+   * @param l identifier to be used as a label for this.
+   */
+  CStmnt label(String l)
+  {
+    var orig = this;
+    return new CStmnt()
+      {
+        void code(CString sb)
+        {
+          sb.append("\n"+l+":\n{\n");
+          orig.codeSemi(sb.indent());
+          sb.append("}\n");
+        }
+        boolean needsSemi()
+        {
+          return false;
+        }
+    };
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
