@@ -339,7 +339,7 @@ public class C extends ANY
     for (int i = 0; !containsVoid(stack) && _fuir.withinCode(c, i); i = i + _fuir.codeSizeAt(c, i))
       {
         var s = _fuir.codeAt(c, i);
-        l.add(CStmnt.lineComment("Code for statement " + s));
+        l.add(CStmnt.lineComment(String.format("%4d: %s", i, _fuir.codeAtAsString(cl, c, i))));
         l.add(createCode(cl, stack, c, i, s));
         if (SHOW_STACK_AFTER_STMNT) System.out.println("After " + s +" in "+_fuir.clazzAsString(cl)+": "+stack);
       }

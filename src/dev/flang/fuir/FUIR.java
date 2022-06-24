@@ -36,6 +36,7 @@ import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
+import dev.flang.ast.AbstractBlock; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.AbstractConstant; // NYI: remove dependency
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency
@@ -43,6 +44,7 @@ import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Call; // NYI: remove dependency
+import dev.flang.ast.Current; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
@@ -835,7 +837,6 @@ hw25 is
   }
 
 
-
   /**
    * Get access to the code of a clazz of kind Routine
    *
@@ -1015,6 +1016,13 @@ hw25 is
 
 
 
+  /**
+   * Get the expr at the given index in given code block
+   *
+   * @param c the code block id
+   *
+   * @param ix an index within the code block
+   */
   public ExprKind codeAt(int c, int ix)
   {
     if (PRECONDITIONS) require
@@ -1582,6 +1590,55 @@ hw25 is
     var call = Types.resolved.f_function_call;
     var ic = cc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
     return _clazzIds.get(ic);
+  }
+
+
+  /**
+   * Get a string representation of the expr at the given index in given code
+   * block.  Useful for debugging.
+   *
+   * @param cl index of the clazz containing the code block.
+   *
+   * @param c the code block
+   *
+   * @param ix an index within the code block
+   */
+  public String codeAtAsString(int cl, int c, int ix)
+  {
+    return switch (codeAt(c,ix))
+      {
+      case AdrOf   -> "AdrOf";
+      case Assign  -> "Assign to " + clazzAsString(accessedClazz(cl, c, ix));
+      case Box     -> "Box";
+      case Unbox   -> "Unbox";
+      case Call    -> "Call to " + clazzAsString(accessedClazz(cl, c, ix));
+      case Current -> "Current";
+      case Comment -> "Comment";
+      case Const   -> "Const";
+      case Dup     -> "Dup";
+      case Match   -> "Match";
+      case Outer   -> "Outer";
+      case Tag     -> "Tag";
+      case Env     -> "Env";
+      case Pop     -> "Pop";
+      case Unit    -> "Unit";
+      };
+  }
+
+
+  /**
+   * Print the contents of the given code block to System.out, for debugging.
+   *
+   * @param cl index of the clazz containing the code block.
+   *
+   * @param c the code block
+   */
+  public void dumpCode(int cl, int c)
+  {
+    for (var ix = 0; withinCode(c, ix); ix = ix + codeSizeAt(c, ix))
+      {
+        System.out.printf("%d.%4d: %s", c, ix, codeAtAsString(cl, c, ix));
+      }
   }
 
 }
