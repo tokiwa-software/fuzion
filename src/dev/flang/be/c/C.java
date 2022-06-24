@@ -692,8 +692,8 @@ public class C extends ANY
       case Tag:
         {
           var valuecl = _fuir.tagValueClazz(cl, c, i);  // static clazz of value
-          var value   = pop(stack, valuecl);            // value assigned to field
-          var newcl   = _fuir.tagNewClazz  (cl, c, i);  // static clazz of assigned field
+          var value   = pop(stack, valuecl);            // value that will be tagged
+          var newcl   = _fuir.tagNewClazz  (cl, c, i);  // static clazz of result
           int tagNum  = _fuir.clazzChoiceTag(newcl, valuecl);
           var res     = _names.newTemp();
           var tag     = res.field(_names.TAG_NAME);
