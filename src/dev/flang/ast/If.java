@@ -404,6 +404,18 @@ public class If extends ExprWithPos
 
 
   /**
+   * Get (or create empty) else block for this if.
+   *
+   * @return an else block.
+   */
+  public Expr elseBlock()
+  {
+    return
+      elseBlock != null ? elseBlock :
+      elseIf    != null ? elseIf    : new Block(pos(), new List<>());
+  }
+
+  /**
    * toString
    *
    * @return

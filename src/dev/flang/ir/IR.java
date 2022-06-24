@@ -232,23 +232,8 @@ public class IR extends ANY
         // if is converted to If, blockId, elseBlockId
         toStack(l, i.cond);
         l.add(i);
-        List<Object> block = toStack(i.block);
-        l.add(new NumLiteral(_codeIds.add(block)));
-        Stmnt elseBlock;
-        if (i.elseBlock != null)
-          {
-            elseBlock = i.elseBlock;
-          }
-        else if (i.elseIf != null)
-          {
-            elseBlock = i.elseIf;
-          }
-        else
-          {
-            elseBlock = new Block(i.pos(), new List<>());
-          }
-        List<Object> elseBlockCode = toStack(elseBlock);
-        l.add(new NumLiteral(_codeIds.add(elseBlockCode)));
+        l.add(new NumLiteral(_codeIds.add(toStack(i.block      ))));
+        l.add(new NumLiteral(_codeIds.add(toStack(i.elseBlock()))));
       }
     else if (s instanceof AbstractCall c)
       {
