@@ -57,7 +57,7 @@ public class CFG extends ANY
 
 
   /**
-   * The intermediate code we are compiling.
+   * The intermediate code we are analysing.
    */
   public final FUIR _fuir;
 
