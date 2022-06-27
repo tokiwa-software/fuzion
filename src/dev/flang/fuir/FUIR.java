@@ -1637,7 +1637,7 @@ hw25 is
   {
     for (var ix = 0; withinCode(c, ix); ix = ix + codeSizeAt(c, ix))
       {
-        System.out.printf("%d.%4d: %s", c, ix, codeAtAsString(cl, c, ix));
+        System.out.printf("%d.%4d: %s\n", c, ix, codeAtAsString(cl, c, ix));
       }
   }
 
