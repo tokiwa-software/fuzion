@@ -152,6 +152,22 @@ public class FUIR extends IR
   final Map2Int<Clazz> _clazzIds = new MapComparable2Int(CLAZZ_BASE);
 
 
+  /**
+   * Cached results for clazzCode(), required to ensure that code indices are
+   * unique, i.e., comparing the code index is equivalent to comparing the clazz
+   * ids.
+   */
+  private final TreeMap<Integer, Integer> _clazzCode = new TreeMap<>();
+
+
+  /**
+   * Cached results for clazzContract(), required to ensure that code indices are
+   * unique, i.e., comparing the code index is equivalent to comparing the clazz
+   * ids.
+   */
+  private final TreeMap<Long, Integer> _clazzContract = new TreeMap<>();
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -849,11 +865,17 @@ hw25 is
     if (PRECONDITIONS) require
       (clazzKind(cl) == FeatureKind.Routine);
 
-    var cc = _clazzIds.get(cl);
-    var ff = cc.feature();
-    var code = prolog(cc);
-    addCode(cc, code, ff);
-    return _codeIds.add(code);
+    var res = _clazzCode.get(cl);
+    if (res == null)
+      {
+        var cc = _clazzIds.get(cl);
+        var ff = cc.feature();
+        var code = prolog(cc);
+        addCode(cc, code, ff);
+        res = _codeIds.add(code);
+        _clazzCode.put(cl, res);
+      }
+    return res;
   }
 
 
@@ -899,16 +921,33 @@ hw25 is
           }
         i++;
       }
+    var res = -1;
     if (cond != null && i < cond.size())
       {
-        var code = prolog(cc);
-        toStack(code, cond.get(i).cond);
-        return _codeIds.add(code);
+        // create 64-bit key from cl, ck and ix as follows:
+        //
+        //  key = cl (32 bits) : -ix    for ck == Pre
+        //  key = cl (32 bits) : +ix    for ck == Post
+        //
+        var key = ((long) cl << 32) | ((ck.ordinal()*2-1) * (i+1)) & 0xffffffffL;
+
+        // lets verify we did not lose any information, i.e, we can extract cl, ix and ck:
+        if (CHECKS) check
+          (cl == key >> 32,
+           ck == ((key << 32 < 0) ? ContractKind.Pre : ContractKind.Post),
+           i == (int) (key & 0xffffffff) * ((ck.ordinal()*2-1))-1);
+
+        var resBoxed = _clazzContract.get(key);
+        if (resBoxed == null)
+          {
+            var code = prolog(cc);
+            toStack(code, cond.get(i).cond);
+            resBoxed = _codeIds.add(code);
+            _clazzContract.put(key, resBoxed);
+          }
+        res = resBoxed;
       }
-    else
-      {
-        return -1;
-      }
+    return res;
   }
 
 
