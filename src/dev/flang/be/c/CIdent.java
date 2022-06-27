@@ -49,13 +49,6 @@ class CIdent extends CExpr
   final static CIdent FALSE = new CIdent("false");
 
 
-  /**
-   * In generated code for a clazz: C function argument for target (outer)
-   * reference.
-   */
-  final static CIdent OUTER = new CIdent("fzouter");
-
-
   /*----------------------------  variables  ----------------------------*/
 
 

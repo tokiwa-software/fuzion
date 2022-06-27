@@ -602,7 +602,7 @@ public class C extends ANY
         }
       case Outer:
         {
-          push(stack, cl, _names.OUTER);
+          push(stack, cl, CNames.OUTER);
           break;
         }
       case Const:
@@ -1007,7 +1007,7 @@ public class C extends ANY
     if (_types.hasData(tc) && !_tailCall.firstArgIsOuter(cl, c, i))
       {
         l.add(CStmnt.lineComment("tail recursion with changed target"));
-        l.add(assign(CIdent.OUTER, a.get(0), tc));
+        l.add(assign(CNames.OUTER, a.get(0), tc));
       }
     else
       {
@@ -1105,7 +1105,7 @@ public class C extends ANY
     if (or != -1)
       {
         argts.add(_types.clazzField(or));
-        argns.add(CIdent.OUTER);
+        argns.add(CNames.OUTER);
       }
     var ac = _fuir.clazzArgCount(cl);
     for (int i = 0; i < ac; i++)
