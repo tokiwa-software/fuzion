@@ -950,7 +950,7 @@ public class C extends ANY
                   !_escape.doesCurEscape(cl)             // and current instance did not escape
                   )
                 { // then we can do tail recursion optimization!
-                  result = tailRecursion(cl, tc, a);
+                  result = tailRecursion(cl, c, i, tc, a);
                   stack.push(null); // make stack contain void to stop any further code generation
                 }
               else
@@ -990,18 +990,32 @@ public class C extends ANY
    *
    * @param cl clazz id of clazz containing the call
    *
+   * @param c the code block to compile
+   *
+   * @param i the index of the call within c
+   *
    * @param tc the target clazz (type of outer) in this call
    *
    * @param a list of actual arguments to the tail recursive call.
    */
-  CStmnt tailRecursion(int cl, int tc, List<CExpr> a)
+  CStmnt tailRecursion(int cl, int c, int i, int tc, List<CExpr> a)
   {
     var cur = _fuir.clazzIsRef(cl) ? fields(_names.CURRENT, cl)
                                    : _names.CURRENT.deref();
+
+    var l = new List<CStmnt>();
+    if (_types.hasData(tc) && !_tailCall.firstArgIsOuter(cl, c, i))
+      {
+        l.add(CStmnt.lineComment("tail recursion with changed target"));
+        l.add(assign(CIdent.OUTER, a.get(0), tc));
+      }
+    else
+      {
+        l.add(CStmnt.lineComment("tail recursion on same target"));
+      }
     var vcl = _fuir.clazzAsValue(cl);
     var ac = _fuir.clazzArgCount(vcl);
     var aii = _types.hasData(tc) ? 1 : 0;
-    var l = new List<CStmnt>();
     for (int ai = 0; ai < ac; ai++)
       {
         var at = _fuir.clazzArgClazz(vcl, ai);

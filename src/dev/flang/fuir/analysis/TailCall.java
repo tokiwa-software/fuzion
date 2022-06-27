@@ -110,8 +110,7 @@ public class TailCall extends ANY
 
     var c2 = _fuir.clazzCode(cl);
     return _fuir.codeSize(c2) > 0 &&
-      isTailCall(cl, c2, _fuir.codeSize(c2)-1, c, ix, _fuir.clazzResultField(cl)) &&
-      firstArgIsOuter(cl, c, ix);
+      isTailCall(cl, c2, _fuir.codeSize(c2)-1, c, ix, _fuir.clazzResultField(cl));
   }
 
 
@@ -125,7 +124,7 @@ public class TailCall extends ANY
    *
    * @param ix index of the call
    */
-  private boolean firstArgIsOuter(int cl, int c, int ix)
+  public boolean firstArgIsOuter(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
       (ix >= 0,
