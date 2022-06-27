@@ -233,15 +233,16 @@ public class C extends ANY
       (CStmnt.decl("int", _names.GLOBAL_ARGC));
     cf.print
       (CStmnt.decl("char **", _names.GLOBAL_ARGV));
-    var o = CExpr.ident("of");
-    var s = CExpr.ident("sz");
+    var o = new CIdent("of");
+    var s = new CIdent("sz");
     var r = new CIdent("r");
     cf.print
       (CStmnt.lineComment("helper to clone a (stack) instance to the heap"));
     cf.print
       (CStmnt.functionDecl("void *",
                            CNames.HEAP_CLONE,
-                           new List<>("void *", "of", "size_t", "sz"),
+                           new List<>("void *", "size_t"),
+                           new List<>(o, s),
                            CStmnt.seq(new List<>(CStmnt.decl(null, "void *", r, CExpr.call("malloc", new List<>(s))),
                                                  CExpr.call("memcpy", new List<>(r, o, s)),
                                                  r.ret()))));
@@ -1009,7 +1010,7 @@ public class C extends ANY
             var target = _types.isScalar(vcl)
               ? cur
               : cur.field(_names.fieldName(_fuir.clazzArg(vcl, ai)));
-            l.add(assign(new CIdent("arg" + ai), a.get(aii), at));
+            l.add(assign(CIdent.arg(ai), a.get(aii), at));
                           aii = aii + 1;
           }
       }
@@ -1084,12 +1085,13 @@ public class C extends ANY
     var resultType = pre || !_types.hasData(res)
       ? "void"
       : _types.clazz(res);
-    var args = new List<String>();
+    var argts = new List<String>();
+    var argns = new List<CIdent>();
     var or = _fuir.clazzOuterRef(cl);
     if (or != -1)
       {
-        args.add(_types.clazzField(or));
-        args.add("fzouter");
+        argts.add(_types.clazzField(or));
+        argns.add(CIdent.OUTER);
       }
     var ac = _fuir.clazzArgCount(cl);
     for (int i = 0; i < ac; i++)
@@ -1097,11 +1099,11 @@ public class C extends ANY
         var at = _fuir.clazzArgClazz(cl, i);
         if (_types.hasData(at))
           {
-            args.add(_types.clazz(at));
-            args.add("arg" + i);
+            argts.add(_types.clazz(at));
+            argns.add(CIdent.arg(i));
           }
       }
-    return CStmnt.functionDecl(resultType, new CIdent(_names.function(cl, pre)), args, body);
+    return CStmnt.functionDecl(resultType, new CIdent(_names.function(cl, pre)), argts, argns, body);
   }
 
 
@@ -1193,7 +1195,7 @@ public class C extends ANY
             var target = _types.isScalar(vcl)
               ? cur
               : cur.field(_names.fieldName(af));
-            l.add(assign(target, new CIdent("arg" + i), at));
+            l.add(assign(target, CIdent.arg(i), at));
           }
       }
     if (pre)
