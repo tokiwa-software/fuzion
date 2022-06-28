@@ -2264,7 +2264,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         _fields =
           isChoice()              ||
-          feature().isIntrinsic() ||
+          // note that intrinsics may have fields that are used in the intrinsic's pre-condition!
           false && isRef() /* NYI: would be good to add isRef() here and create _fields only for value types, does not work with C backend yet */
           ? NO_CLAZZES
           : actualFields(_module.allInnerAndInheritedFeatures(feature()));
