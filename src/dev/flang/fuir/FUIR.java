@@ -830,30 +830,6 @@ hw25 is
 
 
   /**
-   * Code for a routine or precondition prolog.
-   *
-   * This adds code to initialize outer reference, must be done at the
-   * beginning of every routine and precondition.
-   *
-   * @param cc the routine we are creating code for.
-   */
-  private List<Object> prolog(Clazz cc)
-  {
-    List<Object> code = new List<>();
-    var vcc = cc.asValue();
-    var or = vcc.outerRef();
-    var cco = cc._outer;
-    if (or != null && !cco.isUnitType())
-      {
-        code.add(ExprKind.Outer);
-        code.add(ExprKind.Current);
-        code.add(or);
-      }
-    return code;
-  }
-
-
-  /**
    * Get access to the code of a clazz of kind Routine
    *
    * @param cl a clazz id
@@ -870,7 +846,7 @@ hw25 is
       {
         var cc = _clazzIds.get(cl);
         var ff = cc.feature();
-        var code = prolog(cc);
+        var code = new List<Object>();
         addCode(cc, code, ff);
         res = _codeIds.add(code);
         _clazzCode.put(cl, res);
@@ -940,7 +916,7 @@ hw25 is
         var resBoxed = _clazzContract.get(key);
         if (resBoxed == null)
           {
-            var code = prolog(cc);
+            var code = new List<Object>();
             toStack(code, cond.get(i).cond);
             resBoxed = _codeIds.add(code);
             _clazzContract.put(key, resBoxed);
@@ -1656,7 +1632,6 @@ hw25 is
       case Const   -> "Const";
       case Dup     -> "Dup";
       case Match   -> "Match";
-      case Outer   -> "Outer";
       case Tag     -> "Tag";
       case Env     -> "Env";
       case Pop     -> "Pop";
@@ -1827,7 +1802,6 @@ hw25 is
           ix = skipBack(cl, c, ix);
           yield ix;
         }
-      case Outer   -> codeIndex(c, ix, -1);
       case Tag     -> skipBack(cl, c, codeIndex(c, ix, -1));
       case Env     -> codeIndex(c, ix, -1);
       case Pop     -> skipBack(cl, c, codeIndex(c, ix, -1));

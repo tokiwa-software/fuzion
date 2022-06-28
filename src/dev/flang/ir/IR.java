@@ -111,7 +111,6 @@ public class IR extends ANY
     Const,
     Dup,
     Match,
-    Outer,
     Tag,
     Env,
     Pop,

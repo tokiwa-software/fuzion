@@ -500,7 +500,6 @@ public class CFG extends ANY
         }
       case Comment: break;
       case Current: break;
-      case Outer  : break;
       case Const  : break;
       case Match  :
         {

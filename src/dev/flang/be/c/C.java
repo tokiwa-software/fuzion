@@ -600,11 +600,6 @@ public class C extends ANY
           push(stack, cl, current(cl));
           break;
         }
-      case Outer:
-        {
-          push(stack, _fuir.clazzOuterClazz(cl), CNames.OUTER);
-          break;
-        }
       case Const:
         {
           var constCl = _fuir.constClazz(c, i);
@@ -1211,6 +1206,16 @@ public class C extends ANY
             l.add(assign(target, CIdent.arg(i), at));
           }
       }
+
+    // copy outer ref argument to outer ref field:
+    var or = _fuir.clazzOuterRef(cl);
+    if (or != -1)
+      {
+        var rt = _fuir.clazzResultClazz(or);
+        var af = accessField(current(cl), cl, or);
+        l.add(assign(af, CNames.OUTER, rt));
+      }
+
     if (pre)
       {
         l.add(preOrPostCondition(cl, FUIR.ContractKind.Pre));

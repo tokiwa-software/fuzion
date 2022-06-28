@@ -224,11 +224,6 @@ public class Escape extends ANY
               stack.push(true);
               break;
             }
-          case Outer:
-            {
-              stack.push(false);
-              break;
-            }
           case Const:
             {
               var constCl = _fuir.constClazz(c, i);
