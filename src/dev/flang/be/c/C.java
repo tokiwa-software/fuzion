@@ -602,7 +602,7 @@ public class C extends ANY
         }
       case Outer:
         {
-          push(stack, cl, CNames.OUTER);
+          push(stack, _fuir.clazzOuterClazz(cl), CNames.OUTER);
           break;
         }
       case Const:
