@@ -869,7 +869,7 @@ public class C extends ANY
    */
   CStmnt assignField(Stack<CExpr> stack, int tc, int tt, int f)
   {
-    var af = accessField(stack, tc, f);
+    var af = accessField(pop(stack, tc), tc, f);
     var rt = _fuir.clazzResultClazz(f);
     var value = pop(stack, rt);
     if (_fuir.clazzIsRef(rt))
@@ -883,7 +883,7 @@ public class C extends ANY
   /**
    * Create code to access a field
    *
-   * @param stack the stack containing the value and the target instance
+   * @param t the target instance containing the field
    *
    * @param tc the static target clazz
    *
@@ -892,10 +892,9 @@ public class C extends ANY
    * @return the code to access field f, null if type is 'void', CExpr.UNIT if
    * type is 'unit'.
    */
-  CExpr accessField(Stack<CExpr> stack, int tc, int f)
+  CExpr accessField(CExpr t, int tc, int f)
   {
     var rt = _fuir.clazzResultClazz(f);
-    var t = pop(stack, tc);
     if (CHECKS) check
       (t != null || !_types.hasData(rt) || tc == _fuir.clazzUniverse());
     var occ   = _fuir.clazzOuterClazz(f);
@@ -976,7 +975,7 @@ public class C extends ANY
         }
       case Field:
         {
-          push(stack, rt, accessField(stack, tc, cc));
+          push(stack, rt, accessField(pop(stack, tc), tc, cc));
           break;
         }
       default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.clazzKind(cc));
