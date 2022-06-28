@@ -1251,11 +1251,11 @@ public class C extends ANY
   {
     var l = new List<CStmnt>();
     var stack = new Stack<CExpr>();
-    for (int p, i = 0;
-         !containsVoid(stack) && (p = _fuir.clazzContract(cl, ck, i)) != -1;
+    for (var i = 0;
+         !containsVoid(stack) && _fuir.clazzContract(cl, ck, i) != -1;
          i++)
       {
-        l.add(createCode(cl, stack, p));
+        l.add(createCode(cl, stack, _fuir.clazzContract(cl, ck, i)));
         if (!containsVoid(stack))
           {
             var cc = stack.pop();
