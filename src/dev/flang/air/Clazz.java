@@ -2292,7 +2292,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           }
         i++;
       }
-    throw new Error("Clazz.fieldIndex() did not find field " + this);
+    throw new Error("Clazz.fieldIndex() did not find field " + this + " in " + _outer);
   }
 
 
