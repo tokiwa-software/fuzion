@@ -106,6 +106,7 @@ is
     match mode
       effectMode.plain   => false  # must be used as onewayMonad only
       effectMode.default => false
+      effectMode.new     => false
       effectMode.abort   => false
       effectMode.inst, effectMode.repl => true
    =>
@@ -127,6 +128,7 @@ is
     match mode
       effectMode.plain   => false  # must be used as onewayMonad only
       effectMode.default => false
+      effectMode.new     => false
       effectMode.abort   => false
       effectMode.inst, effectMode.repl => true
    =>
