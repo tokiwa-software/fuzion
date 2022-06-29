@@ -509,7 +509,7 @@ public class Clazzes extends ANY
   static void calledDynamically(AbstractFeature f)
   {
     if (PRECONDITIONS) require
-      (isUsedAtAll(f),
+      (Errors.count() > 0 || isUsedAtAll(f),
        f.generics().list.isEmpty());
 
     if (!_calledDynamically_.contains(f))
