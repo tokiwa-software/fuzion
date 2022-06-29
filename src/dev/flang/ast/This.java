@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.Iterator;
 
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -242,14 +243,19 @@ public class This extends ExprWithPos
         while (cur != f)
           {
             var or = cur.outerRef();
-            Expr c = new Call(pos(), or.featureName().baseName(), Call.NO_GENERICS, Expr.NO_EXPRS, getOuter, or, null)
-              .resolveTypes(res, outer);
-            if (cur.isOuterRefAdrOfValue())
+            if (CHECKS) check
+              (Errors.count() > 0 || (or != null));
+            if (or != null)
               {
-                c = new Unbox(c, cur.outer().thisType(), cur.outer())
-                  { public SourcePosition pos() { return This.this.pos(); } };
+                Expr c = new Call(pos(), or.featureName().baseName(), Call.NO_GENERICS, Expr.NO_EXPRS, getOuter, or, null)
+                  .resolveTypes(res, outer);
+                if (cur.isOuterRefAdrOfValue())
+                  {
+                    c = new Unbox(c, cur.outer().thisType(), cur.outer())
+                      { public SourcePosition pos() { return This.this.pos(); } };
+                  }
+                getOuter = c;
               }
-            getOuter = c;
             cur = cur.outer();
           }
       }
