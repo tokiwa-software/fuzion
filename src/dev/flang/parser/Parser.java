@@ -2425,10 +2425,18 @@ match       : "match" exprInLine BRACEL cases BRACER
         match(Token.t_match, "match");
         Expr e = exprInLine();
         boolean gotLBrace = skip(true, Token.t_lbrace);
+        var start = posObject();
+        var cpos = posObject();
         var c = cases(true);
+        var end = posObject();
         if (gotLBrace)
           {
             match(true, Token.t_rbrace, "match");
+          }
+        if (c.isEmpty())
+          {
+            AstErrors.matchCasesMissing(cpos, pos);
+            return new Block(pos, new List<>());
           }
         return new Match(pos, e, c);
       });

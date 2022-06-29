@@ -650,6 +650,14 @@ public class AstErrors extends ANY
       }
   }
 
+  public static void matchCasesMissing(SourcePosition pos, SourcePosition mpos)
+  {
+    error(pos,
+          "" + skw("match") + " expression requires at least one case",
+          "Match statement at " + mpos.show() + "\n" +
+          "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
+  }
+
   static void matchSubjectMustNotBeTypeParameter(SourcePosition pos, AbstractType t)
   {
     error(pos,
