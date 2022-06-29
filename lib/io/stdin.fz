@@ -30,7 +30,7 @@
 private stdin(
     ip byteInputHandler,
     # action to be taken: plain nomad, install or replace?
-    redef r effectModes,
+    redef r effectMode.val,
     _ unit
   ) : stdins, effect r is
 

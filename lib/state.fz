@@ -40,7 +40,7 @@ state(
   # the current state
   get S,
 
-  redef r effectModes
+  redef r effectMode.val
   ) ref : onewayMonad T (state T S) r
 is
 

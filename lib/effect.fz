@@ -32,7 +32,7 @@
 effect (
   # action to be performed, may include code to run while this effect is installed.
   #
-  r effectModes
+  r effectMode.val
   )
 is
 
@@ -44,7 +44,7 @@ is
     _ effectMode.default => default
     _ effectMode.new     =>
 
-  mode effectModes is
+  mode effectMode.val is
     match r
       effectMode.plain => effectMode.plain
       effectMode.inst, effectMode.repl, effectMode.abort, effectMode.default, effectMode.new => effectMode.repl
@@ -114,24 +114,18 @@ effects is
   # has an effect of the given type been installed?
   exists<E> bool is intrinsic
 
+
+# effect mode is an enum that determines how an instance of effect is used
+#
 effectMode is
-  plain is
-  inst(f ()->unit) is  # NYI: remove and use 'new' instead, see io.stdin.fz
-  repl is
-  abort is
-  default is
-  new is
 
-effectModes : choice<effectMode.plain,
-                     effectMode.inst,
-                     effectMode.repl,
-                     effectMode.abort,
-                     effectMode.default,
-                     effectMode.new>
-is
-
-
-
+  val : choice of
+    plain,             # a plain effect, not installed as 'env'
+    repl,              # effect instance replaces previous one in 'env'
+    abort,             # effect instance aborts, jump back to where 'env' was installed
+    default,           # install as default. NYI: remove and use 'new' instead, see io.stdin.fz
+    new.               # a new effect to be installed
+    inst(f ()->unit).  # install and run 'f'. NYI: remove and use 'new' instead, see io.stdin.fz
 
 
 effect : effect (effectMode.inst code)

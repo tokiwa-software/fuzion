@@ -30,7 +30,7 @@ random (
   # the provider this effect uses to create random numbers
   p randomProvider,
 
-  redef r effectModes
+  redef r effectMode.val
   ) : effect r
 is
 

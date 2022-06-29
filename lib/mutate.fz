@@ -56,7 +56,7 @@
 private /* NYI: type:pub */ mutate(
 
   # action to be taken: plain monad, install or replace?
-  redef r effectModes
+  redef r effectMode.val
   ) : effect r
 is
 

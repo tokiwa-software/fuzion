@@ -37,7 +37,7 @@ onewayMonad(
 
   # action to be performed, may include code to run while this effect is installed.
   #
-  redef r effectModes
+  redef r effectMode.val
   ) : monad<A, OMA>, effect r
 is
 

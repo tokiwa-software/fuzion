@@ -31,7 +31,7 @@ private vars (
   p varsProvider,
 
   # action to be taken: plain, install or replace?
-  redef r effectModes,
+  redef r effectMode.val,
 
   _ unit
   ) : effect r

@@ -30,7 +30,7 @@ thread (
   # the provider this effect uses to spawn threads
   p threadProvider,
 
-  redef r effectModes
+  redef r effectMode.val
   ) : effect r
 is
 
