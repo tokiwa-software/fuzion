@@ -3963,7 +3963,7 @@ typeInParens: "(" typeInParens ")"
           }
         else
           {
-            syntaxError(pos, "exaclty one type", "typeInParens");
+            syntaxError(pos, "exactly one type", "typeInParens");
             result = Types.t_ERROR;
           }
       }
