@@ -1165,7 +1165,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isAssignableFrom(Clazz other)
   {
-    return (this==other) || isRef() && this._type.isAssignableFrom(other._type);
+    return this._type.isAssignableFrom(other._type);
   }
 
 
