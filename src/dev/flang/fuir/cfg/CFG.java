@@ -127,12 +127,12 @@ public class CFG extends ANY
 
 
   /**
-   * Create code for given clazz cl.
+   * Create call graph for given routine cl
    *
-   * @param cl id of clazz to generate code for
+   * @param cl id of clazz to create call graph for
    *
-   * @param pre true to create code for cl's precondition, false to create code
-   * for cl itself.
+   * @param pre true to creating call graph for cl's precondition, false for cl
+   * itself.
    */
   void createCallGraphForRoutine(int cl, boolean pre)
   {
@@ -151,9 +151,9 @@ public class CFG extends ANY
 
 
   /**
-   * Create code for given intrinsic clazz cl.
+   * Create call graph for given intrinsic clazz cl.
    *
-   * @param cl id of clazz to generate code for
+   * @param cl id of clazz to create call graph for
    *
    */
   void createCallGraphForIntrinsic(int cl)
