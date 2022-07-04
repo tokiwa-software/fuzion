@@ -1069,40 +1069,50 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   public AbstractFeature lookupFeatureForType(SourcePosition pos, String name, AbstractFeature o)
   {
-    AbstractFeature result = null;
-    var type_fs = new List<AbstractFeature>();
-    var nontype_fs = new List<AbstractFeature>();
-    var orig_o = o;
-    do
-      {
-        var fs = lookupFeatures(o, name).values();
-        for (var f : fs)
-          {
-            if (f.isConstructor() || f.isChoice())
-              {
-                type_fs.add(f);
-                result = f;
-              }
-            else
-              {
-                nontype_fs.add(f);
-              }
-          }
-        if (type_fs.size() > 1)
-          {
-            AstErrors.ambiguousType(pos, name, type_fs);
-            result = Types.f_ERROR;
-          }
-        o = o.outer();
-      }
-    while (result == null && o != null);
+    if (PRECONDITIONS) require
+      (Errors.count() > 0 || o != Types.f_ERROR);
 
-    if (result == null)
+    AbstractFeature result = null;
+    if (o == Types.f_ERROR)
       {
         result = Types.f_ERROR;
-        if (name != Types.ERROR_NAME)
+      }
+    else
+      {
+        var type_fs = new List<AbstractFeature>();
+        var nontype_fs = new List<AbstractFeature>();
+        var orig_o = o;
+        do
           {
-            AstErrors.typeNotFound(pos, name, orig_o, nontype_fs);
+            var fs = lookupFeatures(o, name).values();
+            for (var f : fs)
+              {
+                if (f.isConstructor() || f.isChoice())
+                  {
+                    type_fs.add(f);
+                    result = f;
+                  }
+                else
+                  {
+                    nontype_fs.add(f);
+                  }
+              }
+            if (type_fs.size() > 1)
+              {
+                AstErrors.ambiguousType(pos, name, type_fs);
+                result = Types.f_ERROR;
+              }
+            o = o.outer();
+          }
+        while (result == null && o != null);
+
+        if (result == null)
+          {
+            result = Types.f_ERROR;
+            if (name != Types.ERROR_NAME)
+              {
+                AstErrors.typeNotFound(pos, name, orig_o, nontype_fs);
+              }
           }
       }
     return result;
