@@ -339,7 +339,7 @@ public class AstErrors extends ANY
           frmlT.compareTo(Types.resolved.t_u8 ) == 0  ? "u8"   :
           frmlT.compareTo(Types.resolved.t_u16) == 0  ? "u16"  :
           frmlT.compareTo(Types.resolved.t_u32) == 0  ? "u32"  :
-          frmlT.compareTo(Types.resolved.t_u64) == 0  ? "u64"  : "**error**";
+          frmlT.compareTo(Types.resolved.t_u64) == 0  ? "u64"  : ERROR_STRING;
         remedy = "To solve this, you could convert the value using + " + ss(".as_" + fs) + ".\n";
       }
     else
