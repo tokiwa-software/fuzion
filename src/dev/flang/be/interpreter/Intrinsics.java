@@ -247,7 +247,7 @@ public class Intrinsics extends ANY
             var argfields = innerClazz.argumentFields();
             var argsArray = argfields[argfields.length - 1];
             var sac = argsArray.resultClazz();
-            var argzData = Interpreter.getField(Types.resolved.f_fuzion_sys_array_data, sac, argz);
+            var argzData = Interpreter.getField(Types.resolved.f_fuzion_sys_array_data, sac, argz, false);
 
             String clName =                          (String) JavaInterface.instanceToJavaObject(clNameI);
             String name   = nameI   == null ? null : (String) JavaInterface.instanceToJavaObject(nameI  );
