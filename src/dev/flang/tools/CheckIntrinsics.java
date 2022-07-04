@@ -30,6 +30,12 @@ import dev.flang.util.ANY;
 
 import dev.flang.ast.AbstractFeature;
 
+import dev.flang.be.c.Intrinsics;
+
+import dev.flang.fuir.analysis.DFA;
+
+import dev.flang.fuir.cfg.CFG;
+
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.Module;
 
@@ -56,6 +62,8 @@ class CheckIntrinsics extends ANY
     checkIntrinsics(all, c, "C backend");
     var dfa = dev.flang.fuir.analysis.DFA.supportedIntrinsics();
     checkIntrinsics(all, dfa, "DFA");
+    var cfg = dev.flang.fuir.cfg.CFG.supportedIntrinsics();
+    checkIntrinsics(all, cfg, "CFG");
   }
 
 
