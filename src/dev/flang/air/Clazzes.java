@@ -641,14 +641,15 @@ public class Clazzes extends ANY
   static int getRuntimeClazzIds(int count)
   {
     if (PRECONDITIONS) require
-      (runtimeClazzIdCount() <= Integer.MAX_VALUE - count);
+      (runtimeClazzIdCount() <= Integer.MAX_VALUE - count,
+       count >= 0);
 
     int result = runtimeClazzIdCount_;
     runtimeClazzIdCount_ = result + count;
 
     if (POSTCONDITIONS) ensure
-                          (result >= 0,
-                           result < runtimeClazzIdCount());
+      (result >= 0,
+       result + count <= runtimeClazzIdCount());
 
     return result;
   }
