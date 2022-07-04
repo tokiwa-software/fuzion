@@ -98,18 +98,6 @@ public class DFA extends ANY
 
 
   /**
-   * Map from clazz cl to set of clazzes that are called by cl
-   */
-  public Graph<Integer> _callGraph = new Graph<>();
-
-
-  /**
-   * All clazzes that are called
-   */
-  TreeSet<Integer> _calledClazzes = new TreeSet<>();
-
-
-  /**
    * Flag to detect changes during current iteration of the fix-point algorithm.
    * If this remains false during one iteration we have reached a fix-point.
    */
@@ -650,7 +638,7 @@ public class DFA extends ANY
 
 
   /**
-   * Create call graph for call to a feature
+   * Add call
    *
    * @param cl clazz id of the call
    *
@@ -660,33 +648,9 @@ public class DFA extends ANY
    */
   void call(int cl, int cc, boolean pre)
   {
-    if (_fuir.clazzNeedsCode(cc))
-      {
-        addToCallGraph(cl, cc, pre);
-      }
+    // NYI: DFA
   }
 
-
-  /**
-   * Add edge from cl to cc to call graph
-   *
-   * @param cl the caller clazz
-   *
-   * @param cc the callee clazz
-   *
-   * @param pre true iff cc's precondition is called, not cc itself.
-   */
-  void addToCallGraph(int cl, int cc, boolean pre)
-  {
-    if (pre)
-      {
-        // NYI:
-      }
-    else
-      {
-        _instances.add(new Instance(cc));
-      }
-  }
 
 
   /**
@@ -698,6 +662,7 @@ public class DFA extends ANY
    */
   public void addEffect(int cl, int ecl)
   {
+    // NYI: DFA
   }
 
 
