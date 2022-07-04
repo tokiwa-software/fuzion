@@ -211,12 +211,21 @@ public class This extends ExprWithPos
     if (qual_ != null)
       {
         int d = getThisDepth(outer);
-        AbstractFeature f = outer;
-        for (int i=0; i<d; i++)
+        if (d < 0)
           {
-            f = f.outer();
+            if (CHECKS) check
+              (Errors.count() > 0);
+            this.feature_ = Types.f_ERROR;
           }
-        this.feature_ = f;
+        else
+          {
+            var f = outer;
+            for (int i=0; i<d; i++)
+              {
+                f = f.outer();
+              }
+            this.feature_ = f;
+          }
       }
     else
       {
@@ -240,7 +249,7 @@ public class This extends ExprWithPos
          */
         var cur = cur_ == null ? outer : cur_;
         getOuter = new Current(pos(), cur.thisType());
-        while (cur != f)
+        while (f != Types.f_ERROR && cur != f)
           {
             var or = cur.outerRef();
             if (CHECKS) check
