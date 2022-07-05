@@ -50,17 +50,24 @@ public class COptions extends FuzionOptions
   final String _binaryName;
 
 
+  /**
+   * Should the boehm garbage collector be used?
+   */
+  final boolean _useBoehmGC;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Costructor initializing fields as given.
    */
-  public COptions(FuzionOptions fo, String binaryName)
+  public COptions(FuzionOptions fo, String binaryName, boolean useBoehmGC)
   {
     super(fo);
 
     _binaryName = binaryName;
+    _useBoehmGC = useBoehmGC;
   }
 
 

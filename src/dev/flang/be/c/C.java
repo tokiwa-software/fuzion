@@ -170,8 +170,14 @@ public class C extends ANY
       }
     Errors.showAndExit();
 
+    var command = new List<String>("clang", "-O3");
+    if(_options._useBoehmGC)
+      {
+        command.addAll("-lgc");
+      }
     // NYI link libmath, libpthread only when needed
-    var command = new List<String>("clang", "-O3", "-lgc", "-lm", "-lpthread", "-o", name, cname);
+    command.addAll("-lm", "-lpthread", "-o", name, cname);
+
     _options.verbosePrintln(" * " + command.toString("", " ", ""));;
     try
       {
@@ -199,7 +205,7 @@ public class C extends ANY
   private void createCode(CFile cf)
   {
     cf.print
-      ("#include <gc.h>\n"+
+      ((_options._useBoehmGC ? "#include <gc.h>\n" : "")+
        "#include <stdlib.h>\n"+
        "#include <stdio.h>\n"+
        "#include <unistd.h>\n"+
@@ -226,7 +232,7 @@ public class C extends ANY
       (CStmnt.functionDecl("void *",
                            CNames.HEAP_CLONE,
                            new List<>("void *", "of", "size_t", "sz"),
-                           CStmnt.seq(new List<>(CStmnt.decl(null, "void *", r, CExpr.call("GC_MALLOC", new List<>(s))),
+                           CStmnt.seq(new List<>(CStmnt.decl(null, "void *", r, CExpr.call(malloc(), new List<>(s))),
                                                  CExpr.call("memcpy", new List<>(r, o, s)),
                                                  r.ret()))));
     var ordered = _types.inOrder();
@@ -256,7 +262,10 @@ public class C extends ANY
            }
        });
     cf.println("int main(int argc, char **argv) { ");
-    cf.println("GC_INIT(); /* Optional on Linux/X86 */");
+    if(_options._useBoehmGC)
+      {
+        cf.println("GC_INIT(); /* Optional on Linux/X86 */");
+      }
     cf.print(CStmnt.seq(_names.GLOBAL_ARGC.assign(new CIdent("argc")),
                         _names.GLOBAL_ARGV.assign(new CIdent("argv")),
                         CExpr.call(_names.function(_fuir.mainClazzId(), false), new List<>())));
@@ -793,11 +802,9 @@ public class C extends ANY
    */
   CStmnt declareAllocAndInitClazzId(int cl, CIdent tmp)
   {
-    // NYI we need to manually call GC_FREE for effects when thread finishes that the effect belongs to
-    var malloc = _fuir.clazzInheritsEffect(cl)?  "GC_MALLOC_UNCOLLECTABLE" : "GC_MALLOC";
     var t = _names.struct(cl);
     return CStmnt.seq(CStmnt.decl(t + "*", tmp),
-                      tmp.assign(CExpr.call(malloc, new List<>(CExpr.sizeOfType(t)))),
+                      tmp.assign(CExpr.call(malloc(cl), new List<>(CExpr.sizeOfType(t)))),
                       _fuir.clazzIsRef(cl) ? tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(cl)) : CStmnt.EMPTY);
   }
 
@@ -832,13 +839,13 @@ public class C extends ANY
     var bufferSize = 50;
     var res = new CIdent("float_as_string_result");
     var usedChars = new CIdent("used_chars");
-    var malloc = CExpr.call("GC_MALLOC",
+    var malloc = CExpr.call(malloc(),
       new List<>(CExpr.sizeOfType("char").mul(CExpr.int32const(bufferSize))));
     var sprintf = CExpr.call("sprintf", new List<>(res, CExpr.string("%.21g"), expr));
 
     return CStmnt.seq(CStmnt.decl("char*", res, malloc),
                       CStmnt.decl("int", usedChars, sprintf),
-                      res.assign(CExpr.call("GC_REALLOC", new List<>(res, usedChars))),
+                      res.assign(CExpr.call(realloc(), new List<>(res, usedChars))),
                       constString(res, usedChars, tmp));
   }
 
@@ -1233,6 +1240,44 @@ public class C extends ANY
   {
     return _fuir.clazzIsRef(type) ? refOrVal.deref().field(_names.FIELDS_IN_REF_CLAZZ)
                                   : refOrVal;
+  }
+
+  /**
+   * @return the name of malloc function that is used
+   */
+  String malloc()
+  {
+    return _options._useBoehmGC ? "GC_MALLOC" : "malloc";
+  }
+
+
+  /**
+   * Boehm GC does not scan thread locals
+   * see: https://github.com/ivmai/bdwgc/issues/191
+   *
+   * Consequently for effects which are stored in thread locals we use
+   * GC_MALLOC_UNCOLLECTABLE instead of GC_MALLOC.
+   *
+   * @param cl
+   * @return the name of malloc function that is used
+   */
+  String malloc(int cl)
+  {
+    if(!_options._useBoehmGC)
+      {
+        return malloc();
+      }
+    // NYI we need to manually call GC_FREE for effects when thread finishes that the effect belongs to
+    return _fuir.clazzInheritsEffect(cl) ? "GC_MALLOC_UNCOLLECTABLE" : malloc();
+  }
+
+
+  /**
+   * @return the name of realloc function that is used
+   */
+  String realloc()
+  {
+    return _options._useBoehmGC ? "GC_REALLOC" : "realloc";
   }
 
 }
