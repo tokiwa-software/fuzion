@@ -26,11 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
 import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
@@ -328,6 +325,33 @@ public class FUIR extends IR
   {
     var cc = _clazzIds.get(cl);
     return cc.isChoiceOfOnlyRefs();
+  }
+
+
+  /**
+   * Is the class an effect?
+   * @param cl
+   * @return
+   */
+  public boolean clazzInheritsEffect(int cl)
+  {
+    return inheritsRecursive(_clazzIds.get(cl).feature())
+      .map(ac -> ac.calledFeature())
+      .anyMatch(af -> af.qualifiedName().equals("effect"));
+  }
+
+
+  /**
+   * All directly or indirectly inherited Features
+   * @param feature
+   * @return
+   */
+  private Stream<AbstractCall> inheritsRecursive(AbstractFeature feature)
+  {
+    return Stream.concat(
+      feature.inherits().stream(),
+      feature.inherits().stream().flatMap(c -> inheritsRecursive(c.calledFeature()))
+    );
   }
 
 
@@ -1583,6 +1607,7 @@ hw25 is
     var ic = cc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
     return _clazzIds.get(ic);
   }
+
 
 }
 

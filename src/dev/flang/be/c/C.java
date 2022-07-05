@@ -793,9 +793,11 @@ public class C extends ANY
    */
   CStmnt declareAllocAndInitClazzId(int cl, CIdent tmp)
   {
+    // NYI we need to manually call GC_FREE for effects when thread finishes that the effect belongs to
+    var malloc = _fuir.clazzInheritsEffect(cl)?  "GC_MALLOC_UNCOLLECTABLE" : "GC_MALLOC";
     var t = _names.struct(cl);
     return CStmnt.seq(CStmnt.decl(t + "*", tmp),
-                      tmp.assign(CExpr.call("GC_MALLOC", new List<>(CExpr.sizeOfType(t)))),
+                      tmp.assign(CExpr.call(malloc, new List<>(CExpr.sizeOfType(t)))),
                       _fuir.clazzIsRef(cl) ? tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(cl)) : CStmnt.EMPTY);
   }
 
