@@ -261,11 +261,11 @@ $(BUILD_DIR)/bin/fz: $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/bin/fz $@
 	chmod +x $@
-	./$@ -XXcheckIntrinsics
 
 $(MOD_BASE): $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz
 	mkdir -p $(@D)
 	$(BUILD_DIR)/bin/fz -XsaveBaseLib=$@
+	$(BUILD_DIR)/bin/fz -XXcheckIntrinsics
 
 $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
