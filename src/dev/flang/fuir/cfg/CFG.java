@@ -555,7 +555,7 @@ public class CFG extends ANY
           var cc0 = _fuir.accessedClazz  (cl, c, i);
           if (_fuir.clazzContract(cc0, FUIR.ContractKind.Pre, 0) != -1)
             {
-             call(cl, cc0, true);
+              call(cl, cc0, true);
             }
           if (!_fuir.callPreconditionOnly(cl, c, i))
             {
