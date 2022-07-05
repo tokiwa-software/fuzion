@@ -293,18 +293,17 @@ public class C extends ANY
   void push(Stack<CExpr> stack, int cl, CExpr val)
   {
     if (PRECONDITIONS) require
-      (!_types.hasData(cl)                               || val != null && val != CExpr.UNIT,
-        _types.hasData(cl) ||  _fuir.clazzIsVoidType(cl) ||                val == CExpr.UNIT,
-                              !_fuir.clazzIsVoidType(cl) || val == null,
+      (_types.hasData(cl) || _fuir.clazzIsVoidType(cl) || val == CExpr.UNIT,
+       _fuir.clazzIsVoidType(cl) == (val == null),
        !containsVoid(stack));
 
-    if (_types.hasData(cl) || _fuir.clazzIsVoidType(cl))
+    if (cl != _fuir.clazzUniverse() && !_fuir.clazzIsUnitType(cl))
       {
         stack.push(val);
       }
 
     if (POSTCONDITIONS) ensure
-      (!_types.hasData(cl) || stack.get(stack.size()-1) == val,
+      (cl == _fuir.clazzUniverse() || _fuir.clazzIsUnitType(cl) || stack.get(stack.size()-1) == val,
        !_fuir.clazzIsVoidType(cl) || containsVoid(stack));
   }
 
@@ -322,10 +321,12 @@ public class C extends ANY
   CExpr pop(Stack<CExpr> stack, int cl)
   {
     if (PRECONDITIONS) require
-      (!_types.hasData(cl) || stack.size() > 0,
+      (cl == _fuir.clazzUniverse() || _fuir.clazzIsUnitType(cl) || stack.size() > 0,
        !containsVoid(stack));
 
-    return _types.hasData(cl) ? stack.pop() : CExpr.UNIT;
+    return
+      cl != _fuir.clazzUniverse() &&
+      !_fuir.clazzIsUnitType(cl)     ? stack.pop() : CExpr.UNIT;
   }
 
 
@@ -404,7 +405,7 @@ public class C extends ANY
   CStmnt access(int cl, Stack<CExpr> stack, int c, int i)
   {
     CStmnt result;
-    CExpr res = null;
+    CExpr res = CExpr.UNIT;
     var isCall = _fuir.codeAt(c, i) == FUIR.ExprKind.Call;
     var cc0 = _fuir.accessedClazz  (cl, c, i);
     var tc = _fuir.accessTargetClazz(cl, c, i);
@@ -450,7 +451,7 @@ public class C extends ANY
                   {
                     var rti = _fuir.clazzResultClazz(cc);
                     var rv = pop(stk, rti);
-                    if (rv != null && res != null)
+                    if (rv != null && res != CExpr.UNIT)
                       {
                         if (rt != rti && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
                           {
@@ -501,9 +502,10 @@ public class C extends ANY
                                    CExpr.string(_fuir.clazzAsString(cl )));
         stack.push(null);  // push void, i.e., stop code generation here
       }
-    if (isCall && (res != null || _fuir.clazzIsVoidType(rt) && !containsVoid(stack)))
+    if (isCall && !containsVoid(stack))
       {
-        var rres = _types.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
+        var rres = _fuir.clazzIsVoidType(rt) ? null :
+          _types.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
         push(stack, rt, rres);
       }
     return result;
@@ -757,7 +759,7 @@ public class C extends ANY
           break;
         }
       case Pop:
-        { // Handled within Call
+        {
           break;
         }
       default:
@@ -777,7 +779,7 @@ public class C extends ANY
   CStmnt assign(CExpr target, CExpr value, int type)
   {
     if (PRECONDITIONS) require
-      (_types.hasData(type) == (value != CExpr.UNIT));
+      (!_types.hasData(type) || (value != CExpr.UNIT));
 
     return _types.hasData(type)
       ? target.assign(value)
