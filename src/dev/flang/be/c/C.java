@@ -424,7 +424,7 @@ public class C extends ANY
         var tt0 = _types.clazz(tc);
         ol.add(CStmnt.decl(tt0, tvar, target.castTo(tt0)));
         stackWithArgs.set(stack.size(), tvar);
-        if (isCall && _types.hasData(rt) && (!_fuir.withinCode(c, i+1) || _fuir.codeAt(c, i+1) != FUIR.ExprKind.Pop))
+        if (isCall && _types.hasData(rt))
           {
             var resvar = _names.newTemp();
             res = resvar;
