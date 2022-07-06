@@ -1,3 +1,26 @@
+## 2022-07-04: V0.075
+
+- C backend
+
+  - tail recursive calls are now optimized using a goto to the beginning of the
+    feature's code.
+
+- FUIR
+
+  - added analysis to detect tail calls and escape analysis for 'this' instance.
+    The analysis results are used for tail recursion optimization in the C
+    backend.
+
+- fzjava
+
+  - fixed passing of arrays of references when calling Java code from Fuzion
+    features.
+
+- throughout
+
+  - many bug fixes
+
+
 ## 2022-05-31: V0.074
 
 - Fuzion language

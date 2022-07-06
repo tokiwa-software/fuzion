@@ -40,7 +40,7 @@ private handles2<T,X>(
   lastOpt option<handle2_0<T>>,
 
   # action to be taken: plain monad, install or replace?
-  redef r effectModes
+  redef r effectMode.val
   ) : onewayMonad<X, handles2<T,X>> r
 is
 
@@ -106,6 +106,7 @@ is
     match mode
       effectMode.plain   => false  # must be used as onewayMonad only
       effectMode.default => false
+      effectMode.new     => false
       effectMode.abort   => false
       effectMode.inst, effectMode.repl => true
    =>
@@ -127,6 +128,7 @@ is
     match mode
       effectMode.plain   => false  # must be used as onewayMonad only
       effectMode.default => false
+      effectMode.new     => false
       effectMode.abort   => false
       effectMode.inst, effectMode.repl => true
    =>

@@ -137,7 +137,7 @@ public class CNames extends ANY
   /**
    * C identifier of argument variable that refers to a clazz' outer instance.
    */
-  static final CExpr OUTER = new CIdent("fzouter");
+  static final CIdent OUTER = new CIdent("fzouter");
 
 
   /**

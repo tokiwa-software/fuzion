@@ -68,7 +68,7 @@ public class Intrinsics extends ANY
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
   static
   {
-    put("safety", (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
+    put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug"                , (c,cl,outer,in) -> (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debugLevel"           , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());
@@ -592,6 +592,15 @@ public class Intrinsics extends ANY
   private static void put(String n1, String n2, String n3, String n4, IntrinsicCode c) { put(n1, c); put(n2, c); put(n3, c); put(n4, c); }
 
 
+  /**
+   * Get the names of all intrinsics supported by this backend.
+   */
+  public static Set<String> supportedIntrinsics()
+  {
+    return _intrinsics_.keySet();
+  }
+
+
   /*---------------------------  constructors  --------------------------*/
 
 
@@ -604,15 +613,6 @@ public class Intrinsics extends ANY
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * Get the names of all intrinsics supported by this backend.
-   */
-  public static Set<String> supportedIntrinsics()
-  {
-    return _intrinsics_.keySet();
-  }
 
 
   /**

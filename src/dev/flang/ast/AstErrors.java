@@ -339,7 +339,7 @@ public class AstErrors extends ANY
           frmlT.compareTo(Types.resolved.t_u8 ) == 0  ? "u8"   :
           frmlT.compareTo(Types.resolved.t_u16) == 0  ? "u16"  :
           frmlT.compareTo(Types.resolved.t_u32) == 0  ? "u32"  :
-          frmlT.compareTo(Types.resolved.t_u64) == 0  ? "u64"  : "**error**";
+          frmlT.compareTo(Types.resolved.t_u64) == 0  ? "u64"  : ERROR_STRING;
         remedy = "To solve this, you could convert the value using + " + ss(".as_" + fs) + ".\n";
       }
     else
@@ -648,6 +648,14 @@ public class AstErrors extends ANY
               "If condition must be assignable to type " + s(Types.resolved.t_bool) + "",
               "Actual type is " + s(type) + "");
       }
+  }
+
+  public static void matchCasesMissing(SourcePosition pos, SourcePosition mpos)
+  {
+    error(pos,
+          "" + skw("match") + " expression requires at least one case",
+          "Match statement at " + mpos.show() + "\n" +
+          "To solve this, add a case.  If a case exists, check that the indentation is deeper than that of the surrounding " + skw("match") + " expression");
   }
 
   static void matchSubjectMustNotBeTypeParameter(SourcePosition pos, AbstractType t)

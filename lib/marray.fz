@@ -40,7 +40,7 @@ marray
    ) : Sequence<T>
 
   pre
-    debug: length <= data.length
+    safety: length >= 0 && length <= data.length
 
 is
 

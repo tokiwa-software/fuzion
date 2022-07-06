@@ -148,14 +148,19 @@ public class Match extends AbstractMatch
   public void resolveTypes(Resolution res, AbstractFeature outer)
   {
     var st = _subject.type();
-    if (st.isGenericArgument())
+    if (CHECKS) check
+      (Errors.count() > 0 || st != Types.t_ERROR);
+    if (st != Types.t_ERROR)
       {
-        AstErrors.matchSubjectMustNotBeTypeParameter(_subject.pos(), st);
-      }
-    res.resolveTypes(st.featureOfType());
-    if (!st.isChoice())
-      {
-        AstErrors.matchSubjectMustBeChoice(_subject.pos(), st);
+        if (st.isGenericArgument())
+          {
+            AstErrors.matchSubjectMustNotBeTypeParameter(_subject.pos(), st);
+          }
+        res.resolveTypes(st.featureOfType());
+        if (!st.isChoice())
+          {
+            AstErrors.matchSubjectMustBeChoice(_subject.pos(), st);
+          }
       }
     var cgs = st.choiceGenerics();
     if (CHECKS) check

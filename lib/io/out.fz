@@ -29,7 +29,7 @@ private out (
   redef p canPrint,
 
   # action to be taken: install or default?
-  redef r effectModes,
+  redef r effectMode.val,
 
   _ unit
   ) : printEffect p r

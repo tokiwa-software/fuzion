@@ -30,7 +30,7 @@
 private stdin(
     ip byteInputHandler,
     # action to be taken: plain nomad, install or replace?
-    redef r effectModes,
+    redef r effectMode.val,
     _ unit
   ) : stdins, effect r is
 
@@ -96,7 +96,8 @@ private stdin(
 
 # short-hand for creating and installing stdin effect
 stdin(h byteInputHandler, f () -> unit) =>
-  stdin h (effectMode.inst f) unit
+  s := stdin h effectMode.new unit
+  s.use0 f
   unit
 
 # short-hand for accessing stdin effect in current environment
@@ -108,11 +109,12 @@ stdin =>
 stdins is
   installDefault is
     if !(effects.exists<io.stdin>)
-      _ := stdin (defaultInputHandler (error "not initialized")) effectMode.default unit
+      s := stdin (defaultInputHandler (error "not initialized")) effectMode.new unit
+      s.default
 
   # end-of-line marker
   #
-  line_feed => u8 10
+  line_feed := u8 10
 
 
 byteInputHandler ref is
