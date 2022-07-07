@@ -26,22 +26,21 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis;
 
-import java.util.TreeMap;
+import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.List;
 
 
 /**
- * Instance represents an abstract instance of a feature handled by the DFA
- * Analysis. An Abstract instance may consist of abstract values as well as
- * context information, taint information, etc.
+ * Call represents a call
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Instance extends Value implements Comparable<Instance>
+public class Call implements Comparable<Call>
 {
 
 
@@ -55,35 +54,57 @@ public class Instance extends Value implements Comparable<Instance>
 
 
   /**
-   * The clazz this is an instance of.
-   */
-  int _clazz;
-
-
-  /**
    * The DFA instance we are working with.
    */
   DFA _dfa;
 
 
   /**
-   * Map from fields to the values that have been assigned to the fields.
+   * The clazz this is an instance of.
    */
-  TreeMap<Integer, Value> _fields = new TreeMap<>();
+  int _cc;
+
+  /**
+   * Is this a call to _cc's precondition?
+   */
+  boolean _pre;
+
+
+  /**
+   * Arguments passed to the call.
+   */
+  List<Value> _args;
+
+
+  /**
+   * 'this' instance created by this call.
+   */
+  Instance _instance;
+
+
+  /**
+   * result value returned from this call.
+   */
+  Value _result;
 
 
   /*---------------------------  consructors  ---------------------------*/
 
 
   /**
-   * Create Instance of given clazz
+   * Create Call
    *
-   * @param clazz the clazz this is an instance of.
+   * @param cc called clazz
+   *
+   * @param pre true if calling precondition
    */
-  public Instance(DFA dfa, int clazz)
+  public Call(DFA dfa, int cc, boolean pre, List<Value> args)
   {
-    _clazz = clazz;
     _dfa = dfa;
+    _cc = cc;
+    _pre = pre;
+    _args = args;
+    _instance = dfa.newInstance(cc);
   }
 
 
@@ -91,48 +112,46 @@ public class Instance extends Value implements Comparable<Instance>
 
 
   /**
-   * Compare this to another instance.
+   * Compare this to another Call.
    */
-  public int compareTo(Instance other)
+  public int compareTo(Call other)
   {
-    return
-      _clazz < other._clazz ? -1 :
-      _clazz > other._clazz ? +1 : 0;
-  }
-
-
-  /**
-   * Add v to the set of values of given field within this instance.
-   */
-  public void setField(int field, Value v)
-  {
-    var oldv = _fields.get(field);
-    if (oldv != null)
+    var r =
+      _cc   <   other._cc  ? -1 :
+      _cc   >   other._cc  ? +1 :
+      _pre  && !other._pre ? -1 :
+      !_pre &&  other._pre ? +1 : 0;
+    for (var i = 0; r == 0 && i < _args.size(); i++)
       {
-        v = oldv.join(v);
+        r = Value.compare(_args.get(i), other._args.get(i));
       }
-    _fields.put(field, v);
+    return r;
   }
 
 
   /**
-   * Get set of values of given field within this instance.
+   * Return the result value returned by this call.
    */
-  public Value readField(int target, int field)
+  public Value result()
   {
-    if (PRECONDITIONS) require
-      (_clazz == target);
-
-    var v = _fields.get(field);
-    if (v == null)
+    if (_result == null)
       {
-        if (_dfa._reportResults)
+        var rf = _dfa._fuir.clazzResultField(_cc);
+        if (_pre)
           {
-            System.err.println("*** reading uninitialized field " + _dfa._fuir.clazzAsString(field));
+            _result = Value.UNIT;
           }
-        v = Value.UNIT;
+        else if (rf == -1)
+          {
+            _result = _dfa.newInstance(_cc);
+          }
+        else
+          {
+            var rt = _dfa._fuir.clazzResultClazz(_cc);
+            _result = _dfa._fuir.clazzIsVoidType(rt) ? null : _instance.readField(_cc, rf);
+          }
       }
-    return v;
+    return _result;
   }
 
 
@@ -141,7 +160,13 @@ public class Instance extends Value implements Comparable<Instance>
    */
   public String toString()
   {
-    return _dfa._fuir.clazzAsString(_clazz);
+    var sb = new StringBuilder();
+    sb.append(_pre ? "precondition of " : "").append(_dfa._fuir.clazzAsString(_cc));
+    for (var a : _args)
+      {
+        sb.append(" ").append(a);
+      }
+    return sb.toString();
   }
 
 }
