@@ -130,7 +130,7 @@ public class C extends ANY
      */
     public CStmnt assign(int cl, int c, int i, CExpr tvalue, CExpr avalue)
     {
-      return access(cl, c, i, tvalue, new List<CExpr>(avalue))._v1;
+      return access(cl, c, i, tvalue, new List<>(avalue))._v1;
     }
 
 
@@ -189,7 +189,7 @@ public class C extends ANY
      */
     public Pair<CExpr, CStmnt> current(int cl)
     {
-      return new Pair<CExpr, CStmnt>(C.this.current(cl), CStmnt.EMPTY);
+      return new Pair<>(C.this.current(cl), CStmnt.EMPTY);
     }
 
 
@@ -225,7 +225,7 @@ public class C extends ANY
           yield CExpr.dummy(_fuir.clazzAsString(constCl));
         }
         };
-      return new Pair<CExpr, CStmnt>(r, o);
+      return new Pair<>(r, o);
     }
 
 
@@ -335,7 +335,7 @@ public class C extends ANY
                          _fuir.clazzIsChoiceOfOnlyRefs(newcl) ? CStmnt.EMPTY : tag.assign(CExpr.int32const(tagNum)),
                          C.this.assign(entry, value, valuecl));
 
-      return new Pair<CExpr, CStmnt>(res, o);
+      return new Pair<>(res, o);
     }
 
 
@@ -350,7 +350,7 @@ public class C extends ANY
                          CStmnt.seq(CExpr.fprintfstderr("*** effect %s not present in current environment\n",
                                                         CExpr.string(_fuir.clazzAsString(ecl))),
                                     CExpr.exit(1)));
-      return new Pair<CExpr, CStmnt>(res, o);
+      return new Pair<>(res, o);
     }
 
 
