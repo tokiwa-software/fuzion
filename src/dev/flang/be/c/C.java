@@ -130,7 +130,7 @@ public class C extends ANY
      */
     public CStmnt assign(int cl, int c, int i, CExpr tvalue, CExpr avalue)
     {
-      return access(cl, c, i, tvalue, new List<CExpr>(avalue))._v0;
+      return access(cl, c, i, tvalue, new List<CExpr>(avalue))._v1;
     }
 
 
@@ -149,14 +149,14 @@ public class C extends ANY
       if (_fuir.clazzContract(cc0, FUIR.ContractKind.Pre, 0) != -1)
         {
           var callpair = C.this.call(cl, tvalue, args, c, i, cc0, true);
-          ol.add(callpair._v0);
+          ol.add(callpair._v1);
         }
       var res = CExpr.UNIT;
       if (!_fuir.callPreconditionOnly(cl, c, i))
         {
           var r = access(cl, c, i, tvalue, args);
-          ol.add(r._v0);
-          res = r._v1;
+          ol.add(r._v1);
+          res = r._v0;
         }
       return new Pair<>(res, CStmnt.seq(ol));
     }
@@ -631,9 +631,10 @@ public class C extends ANY
    * @param args the arguments of this call, or, in case of an assignment, a
    * list of one element containing value to be assigned.
    *
-   * @return statement to perform the given access
+   * @return pair of expression containing result value and statement to perform
+   * the given access
    */
-  Pair<CStmnt, CExpr> access(int cl, int c, int i, CExpr tvalue, List<CExpr> args)
+  Pair<CExpr, CStmnt> access(int cl, int c, int i, CExpr tvalue, List<CExpr> args)
   {
     CStmnt result;
     CExpr res = CExpr.UNIT;
@@ -674,19 +675,16 @@ public class C extends ANY
             if (isCall)
               {
                 var calpair = call(cl, tvalue, args, c, i, cc, false);
-                var cal = calpair._v0;
+                var rv  = calpair._v0;
+                var cal = calpair._v1;
                 var as = CStmnt.EMPTY;
-                if (calpair._v1 != null)
+                if (rv != null && res != CExpr.UNIT)
                   {
-                    var rv = calpair._v1;
-                    if (rv != null && res != CExpr.UNIT)
+                    if (rt != rti && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
                       {
-                        if (rt != rti && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
-                          {
-                            rv = rv.castTo(_types.clazz(rt));
-                          }
-                        as = assign(res, rv, rt);
+                        rv = rv.castTo(_types.clazz(rt));
                       }
+                    as = assign(res, rv, rt);
                   }
                 acc = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
                                  cal,
@@ -716,8 +714,8 @@ public class C extends ANY
         if (isCall)
           {
             var callpair = call(cl, tvalue, args, c, i, cc0, false);
-            result = callpair._v0;
-            res = callpair._v1;
+            result = callpair._v1;
+            res = callpair._v0;
           }
         else
           {
@@ -736,7 +734,7 @@ public class C extends ANY
         res = _fuir.clazzIsVoidType(rt) ? null :
           _types.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
       }
-    return new Pair(result, res);
+    return new Pair(res, result);
   }
 
 
@@ -894,7 +892,7 @@ public class C extends ANY
    *
    * @return the code to perform the call
    */
-  Pair<CStmnt, CExpr> call(int cl, CExpr tvalue, List<CExpr> args, int c, int i, int cc, boolean pre)
+  Pair<CExpr, CStmnt> call(int cl, CExpr tvalue, List<CExpr> args, int c, int i, int cc, boolean pre)
   {
     var tc = _fuir.accessTargetClazz(cl, c, i);
     CStmnt result = CStmnt.EMPTY;
@@ -947,7 +945,7 @@ public class C extends ANY
         }
       default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.clazzKind(cc));
       }
-    return new Pair<>(result, resultValue);
+    return new Pair<>(resultValue, result);
   }
 
 
