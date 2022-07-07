@@ -639,7 +639,7 @@ name        : IDENT                            // all parts of name must be in s
           case t_ident  : result = identifier(mayBeAtMinIndent); next(); break;
           case t_infix  :
           case t_prefix :
-          case t_postfix: result = opName();  break;
+          case t_postfix: result = opName(mayBeAtMinIndent);  break;
           case t_ternary:
             {
               next();
@@ -759,11 +759,12 @@ opName      : "infix"   op
             | "prefix"  op
             | "postfix" op
             ;
+   * @param mayBeAtMinIndent
    *
    */
-  String opName()
+  String opName(boolean mayBeAtMinIndent)
   {
-    String inPrePost = current().keyword();
+    String inPrePost = current(mayBeAtMinIndent).keyword();
     next();
     String n = inPrePost + " " + operatorOrError();
     match(Token.t_op, "infix/prefix/postfix name");
