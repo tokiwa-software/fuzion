@@ -2337,7 +2337,16 @@ fun         : "fun" function
       }
     else
       {
-        result = new Function(pos, call(null));
+        var c = call(null);
+        if (c.actuals().size() == 0)
+          {
+            result = new Function(pos, c);
+          }
+        else
+          {
+            syntaxError(c.pos().bytePos(), "call without actual arguments", "fun");
+            result = c;
+          }
       }
     return result;
   }
