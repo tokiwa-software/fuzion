@@ -98,6 +98,12 @@ is
       put (f get)
 
 
+    # creates a copy of the mutable field
+    #
+    copy new T is
+      mut get
+
+
   # install default instance of mutate
   #
   type.installDefault =>
