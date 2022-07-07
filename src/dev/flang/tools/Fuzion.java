@@ -42,6 +42,8 @@ import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
+import dev.flang.fuir.analysis.DFA;
+
 import dev.flang.me.MiddleEnd;
 
 import dev.flang.opt.Optimizer;
@@ -99,6 +101,7 @@ class Fuzion extends Tool
     java       ("-java"),
     classes    ("-classes"),
     llvm       ("-llvm"),
+    dfa        ("-dfa"),
     effects    ("-effects")
     {
       String usage()
@@ -623,6 +626,7 @@ class Fuzion extends Tool
                 }
               case c          : new C(new COptions(options, _binaryName_), fuir).compile(); break;
               case effects    : new Effects(fuir).find(); break;
+              case dfa        : new DFA(fuir).dfa(); break;
               default         : Errors.fatal("backend '" + _backend + "' not supported yet"); break;
               }
             long beTime = System.currentTimeMillis();
