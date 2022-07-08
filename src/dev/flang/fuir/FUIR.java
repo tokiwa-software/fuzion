@@ -1657,6 +1657,20 @@ hw25 is
 
 
   /**
+   * Print the code of the given routine.
+   *
+   * @param cl index of the clazz.
+   */
+  public void dumpCode(int cl)
+  {
+    if (PRECONDITIONS) require
+      (clazzKind(cl) == FeatureKind.Routine);
+
+    dumpCode(cl, clazzCode(cl));
+  }
+
+
+  /**
    * For a given index 'ix' into the code block 'c', go 'delta' expressions
    * further or back (in case 'delta < 0').
    *
