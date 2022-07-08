@@ -300,10 +300,11 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param c the code block to interpret
    *
-   * @return the result of the abstract interpretation, e.g., the generated
-   * code.
+   * @return A Pair consisting of a VALUE that is either
+   * _processor().unitValue() or null (in case cl diverges) and the result of
+   * the abstract interpretation, e.g., the generated code.
    */
-  public RESULT process(int cl, int c)
+  public Pair<VALUE,RESULT> process(int cl, int c)
   {
     var stack = new Stack<VALUE>();
     var l = new List<RESULT>();
@@ -312,7 +313,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         l.add(_processor.statementHeader(cl, c, i));
         l.add(process(cl, stack, c, i));
       }
-    return _processor.sequence(l);
+    var v = containsVoid(stack) ? null : _processor.unitValue();
+    return new Pair<>(v, _processor.sequence(l));
   }
 
 

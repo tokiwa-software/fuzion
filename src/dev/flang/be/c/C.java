@@ -281,7 +281,7 @@ public class C extends ANY
                                                     : CExpr.UNIT;
               sl.add(C.this.assign(f, entry, fclazz));
             }
-          sl.add(_ai.process(cl, _fuir.matchCaseCode(c, i, mc)));
+          sl.add(_ai.process(cl, _fuir.matchCaseCode(c, i, mc))._v1);
           sl.add(CStmnt.BREAK);
           var cazecode = CStmnt.seq(sl);
           tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
@@ -1192,7 +1192,7 @@ public class C extends ANY
       }
     else
       {
-        l.add(_ai.process(cl, _fuir.clazzCode(cl)));
+        l.add(_ai.process(cl, _fuir.clazzCode(cl))._v1);
         l.add(_ai.processContract(cl, FUIR.ContractKind.Post));
       }
     var res = _fuir.clazzResultClazz(cl);
