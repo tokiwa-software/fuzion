@@ -717,7 +717,6 @@ public class DFA extends ANY
     switch (ck)
       {
       case Routine  : analyzeCall(c, false); break;
-      case Intrinsic: analyzeIntrinsic(cl); break;
       }
     if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
       {
@@ -767,39 +766,6 @@ public class DFA extends ANY
         if (r._v0 != null)
           {
             c.returns();
-          }
-      }
-  }
-
-
-  /**
-   * Analyze given intrinsic cl
-   *
-   * @param cl id of clazz to analyze
-   *
-   */
-  void analyzeIntrinsic(int cl)
-  {
-    System.err.println("*** DFA.analyzeIntrisic called");
-    if (PRECONDITIONS) require
-      (_fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
-    var in = _fuir.clazzIntrinsicName(cl);
-    var c = _intrinsics_.get(in);
-    if (c != null)
-      {
-        //        c.analyze(this, cl);
-      }
-    else
-      {
-        var at = _fuir.clazzTypeParameterActualType(cl);
-        if (at >= 0)
-          {
-            // intrinsic is a type parameter
-          }
-        else
-          {
-            var msg = "code for intrinsic " + _fuir.clazzIntrinsicName(cl) + " is missing";
-            Errors.warning(msg);
           }
       }
   }
