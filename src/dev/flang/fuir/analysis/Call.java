@@ -30,6 +30,8 @@ import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
 
+import dev.flang.ir.IR;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.List;
@@ -40,7 +42,7 @@ import dev.flang.util.List;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Call implements Comparable<Call>
+public class Call extends ANY implements Comparable<Call>, Context
 {
 
 
@@ -71,9 +73,16 @@ public class Call implements Comparable<Call>
 
 
   /**
+   * Target value of the call
+   */
+  Value _target;
+
+
+  /**
    * Arguments passed to the call.
    */
   List<Value> _args;
+
 
 
   /**
@@ -83,9 +92,21 @@ public class Call implements Comparable<Call>
 
 
   /**
-   * result value returned from this call.
+   * result value returned from this call.  A value of null means that this call
+   * does not return at all, i.e., the call always diverges.
+   *
+   * A value of Value.UNDEFINED means that the call may return, but the value
+   * still needs to be found.
+   *
+   * Any other value gives the result of the call.
    */
-  Value _result;
+  Value _result = null;
+
+
+  /**
+   * For debugging: Reason that causes this call to be part of the analysis.
+   */
+  Context _context;
 
 
   /*---------------------------  consructors  ---------------------------*/
@@ -94,17 +115,28 @@ public class Call implements Comparable<Call>
   /**
    * Create Call
    *
+   * @param dfa the DFA instance we are analyzing with
+   *
    * @param cc called clazz
    *
    * @param pre true if calling precondition
+   *
+   * @param target is the target value of the call
+   *
+   * @param args are the acutal arguments passed to the call
+   *
+   * @param context for debugging: Reason that causes this call to be part of
+   * the analysis.
    */
-  public Call(DFA dfa, int cc, boolean pre, List<Value> args)
+  public Call(DFA dfa, int cc, boolean pre, Value target, List<Value> args, Context context)
   {
     _dfa = dfa;
     _cc = cc;
     _pre = pre;
+    _target = target;
     _args = args;
-    _instance = dfa.newInstance(cc);
+    _context = context;
+    _instance = dfa.newInstance(cc, this);
   }
 
 
@@ -120,7 +152,7 @@ public class Call implements Comparable<Call>
       _cc   <   other._cc  ? -1 :
       _cc   >   other._cc  ? +1 :
       _pre  && !other._pre ? -1 :
-      !_pre &&  other._pre ? +1 : 0;
+      !_pre &&  other._pre ? +1 : Value.compare(_target, other._target);
     for (var i = 0; r == 0 && i < _args.size(); i++)
       {
         r = Value.compare(_args.get(i), other._args.get(i));
@@ -130,25 +162,47 @@ public class Call implements Comparable<Call>
 
 
   /**
-   * Return the result value returned by this call.
+   * Record the fact that this call returns, i.e., it does not necessarily diverge.
+   */
+  void returns()
+  {
+    if (_result == null)
+      {
+        _result = Value.UNDEFINED;
+        _dfa._changed = true;
+      }
+  }
+
+
+  /**
+   * Return the result value returned by this call.  null in case this call
+   * never returns.
    */
   public Value result()
   {
-    if (_result == null)
+    if (_result == Value.UNDEFINED)
       {
         var rf = _dfa._fuir.clazzResultField(_cc);
         if (_pre)
           {
             _result = Value.UNIT;
           }
+        else if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Intrinsic)
+          {
+            var name = _dfa._fuir.clazzIntrinsicName(_cc);
+            _result = _dfa._intrinsics_.get(name).analyze(this);
+          }
         else if (rf == -1)
           {
-            _result = _dfa.newInstance(_cc);
+            _result = _instance;
           }
         else
           {
-            var rt = _dfa._fuir.clazzResultClazz(_cc);
-            _result = _dfa._fuir.clazzIsVoidType(rt) ? null : _instance.readField(_cc, rf);
+            // should not be possible to return void (_result should be null):
+            if (CHECKS) check
+              (_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(_cc)));
+
+            _result = _instance.readField(_cc, rf);
           }
       }
     return _result;
@@ -168,6 +222,19 @@ public class Call implements Comparable<Call>
       }
     return sb.toString();
   }
+
+
+  /**
+   * Show the context that caused the inclusion of this call into the analysis.
+   */
+  public String showWhy()
+  {
+    var indent = _context.showWhy();
+    System.out.println(indent + "  |");
+    System.out.println(indent + "  +- performs call " + this);
+    return indent + "  ";
+  }
+
 
 }
 

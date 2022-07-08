@@ -67,24 +67,59 @@ public class NumericValue extends Value implements Comparable<NumericValue>
 
 
   /**
-   * The value as a byte buffer.
+   * The value cast to long
    */
-  ByteBuffer _data;
+  long _value;
 
 
   /*---------------------------  consructors  ---------------------------*/
 
 
   /**
-   * Create Instance of given clazz
+   * Create Instance of constant numeric value
+   *
+   * @param dfa the DFA analysis
    *
    * @param clazz the clazz this is an instance of.
+   *
+   * @param data serialized value
    */
   public NumericValue(DFA dfa, int clazz, ByteBuffer data)
   {
     _dfa = dfa;
     _clazz = clazz;
-    _data = data;
+
+    _value = switch (_dfa._fuir.getSpecialId(_clazz))
+      {
+      case c_i8   -> data.get      ();
+      case c_i16  -> data.getShort ();
+      case c_i32  -> data.getInt   ();
+      case c_i64  -> data.getLong  ();
+      case c_u8   -> data.get      () & 0xff;
+      case c_u16  -> data.getChar  ();
+      case c_u32  -> data.getInt   ();
+      case c_u64  -> data.getLong  ();
+      case c_f32  -> Float.floatToIntBits   (data.getFloat ());
+      case c_f64  -> Double.doubleToLongBits(data.getDouble());
+      default     -> { check(false); yield 0; }
+      };
+  }
+
+
+  /**
+   * Create Instance of constant numeric value.
+   *
+   * @param dfa the DFA analysis
+   *
+   * @param clazz the clazz this is an instance of.
+   *
+   * @param v the value, cast to long.
+   */
+  public NumericValue(DFA dfa, int clazz, long v)
+  {
+    _dfa = dfa;
+    _clazz = clazz;
+    _value = v;
   }
 
 
@@ -98,23 +133,25 @@ public class NumericValue extends Value implements Comparable<NumericValue>
   {
     return
       _clazz < other._clazz ? -1 :
-      _clazz > other._clazz ? +1 : _data.compareTo(other._data);
+      _clazz > other._clazz ? +1 :
+      _value < other._value ? -1 :
+      _value > other._value ? -1 : 0;
   }
 
 
   /**
    * Get this' value using the specified type.
    */
-  long   i8 () { _data.rewind(); return _data.get      (); }
-  long   i16() { _data.rewind(); return _data.getShort (); }
-  long   i32() { _data.rewind(); return _data.getInt   (); }
-  long   i64() { _data.rewind(); return _data.getLong  (); }
-  long   u8 () { _data.rewind(); return _data.get      () & 0xff; }
-  long   u16() { _data.rewind(); return _data.getChar  (); }
-  long   u32() { _data.rewind(); return _data.getInt   (); }
-  long   u64() { _data.rewind(); return _data.getLong  (); }
-  float  f32() { _data.rewind(); return _data.getFloat (); }
-  double f64() { _data.rewind(); return _data.getDouble(); }
+  long   i8 () { return _value; }
+  long   i16() { return _value; }
+  long   i32() { return _value; }
+  long   i64() { return _value; }
+  long   u8 () { return _value; }
+  long   u16() { return _value; }
+  long   u32() { return _value; }
+  long   u64() { return _value; }
+  float  f32() { return Float .intBitsToFloat  ((int) _value); }
+  double f64() { return Double.longBitsToDouble(      _value); }
 
 
   /**

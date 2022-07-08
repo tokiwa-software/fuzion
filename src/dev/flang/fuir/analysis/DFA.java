@@ -61,7 +61,7 @@ public class DFA extends ANY
    */
   interface IntrinsicDFA
   {
-    void analyze(DFA dfa, int cl);
+    Value analyze(Call c);
   }
 
 
@@ -258,7 +258,8 @@ public class DFA extends ANY
           if (!found)
             {
               // NYI: proper error reporting
-              System.out.println("NYI: no targets for call to "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue);
+              System.out.println("NYI: in "+_fuir.clazzAsString(cl)+" no targets for call to "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue);
+              Thread.dumpStack();
             }
         }
       else if (_fuir.clazzNeedsCode(cc0))
@@ -327,7 +328,7 @@ public class DFA extends ANY
           {
             if (_fuir.clazzNeedsCode(cc))
               {
-                var ca = newCall(cc, pre, tvalue, args);
+                var ca = newCall(cc, pre, tvalue, args, _current);
                 resultValue = ca.result();
               }
             break;
@@ -391,7 +392,7 @@ public class DFA extends ANY
              c_u64  ,
              c_f32  ,
              c_f64  -> new NumericValue(DFA.this, constCl, ByteBuffer.wrap(d).order(ByteOrder.LITTLE_ENDIAN));
-        case c_conststring -> newInstance(constCl);
+        case c_conststring -> newConstString(d, _current);
         default ->
         {
           Errors.error("Unsupported constant in DFA analysis.",
@@ -661,7 +662,11 @@ public class DFA extends ANY
    */
   public void dfa()
   {
-    var main = newInstance(_fuir.mainClazzId());
+    var callMain = newCall(_fuir.mainClazzId(),
+                           false /* NYI: main's precondition is not analyzed */,
+                           Value.UNIT,
+                           new List<>(),
+                           () -> { System.out.println("program entry point"); return "  "; });
     findFixPoint();
     Errors.showAndExit();
   }
@@ -694,10 +699,10 @@ public class DFA extends ANY
    */
   void iteration()
   {
-    var s = _instances.values().toArray(new Instance[_instances.size()]);
-    for (var i : s)
+    var s = _calls.values().toArray(new Call[_calls.size()]);
+    for (var c : s)
       {
-        analyze(i);
+        analyze(c);
       }
   }
 
@@ -705,18 +710,18 @@ public class DFA extends ANY
   /**
    * analyze call to one instance
    */
-  void analyze(Instance i)
+  void analyze(Call c)
   {
-    var cl = i._clazz;
+    var cl = c._cc;
     var ck = _fuir.clazzKind(cl);
     switch (ck)
       {
-      case Routine  : analyzeRoutine(i, false); break;
+      case Routine  : analyzeCall(c, false); break;
       case Intrinsic: analyzeIntrinsic(cl); break;
       }
     if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
       {
-        analyzeRoutine(i, true);
+        analyzeCall(c, true);
       }
   }
 
@@ -728,12 +733,29 @@ public class DFA extends ANY
    *
    * @param pre true to analyze cl's precondition, false for cl itself.
    */
-  void analyzeRoutine(Instance i, boolean pre)
+  void analyzeCall(Call c, boolean pre)
   {
     if (PRECONDITIONS) require
-      (_fuir.clazzKind(i._clazz) == FUIR.FeatureKind.Routine || pre);
+      (_fuir.clazzKind(c._instance._clazz) == FUIR.FeatureKind.Routine || pre);
 
+    var i = c._instance;
     var cl = i._clazz;
+    check
+      (c._args.size() == _fuir.clazzArgCount(c._cc));
+    for (var a = 0; a < c._args.size(); a++)
+      {
+        var af = _fuir.clazzArg(c._cc, a);
+        var aa = c._args.get(a);
+        i.setField(af, aa);
+      }
+
+    // copy outer ref argument to outer ref field:
+    var or = _fuir.clazzOuterRef(cl);
+    if (or != -1)
+      {
+        i.setField(or, c._target);
+      }
+
     if (pre)
       {
         // NYI: preOrPostCondition(cl, FUIR.ContractKind.Pre);
@@ -741,7 +763,11 @@ public class DFA extends ANY
     else
       {
         var ai = new AbstractInterpreter(_fuir, new Analyze(i));
-        ai.process(cl, _fuir.clazzCode(cl));
+        var r = ai.process(cl, _fuir.clazzCode(cl));
+        if (r._v0 != null)
+          {
+            c.returns();
+          }
       }
   }
 
@@ -754,13 +780,14 @@ public class DFA extends ANY
    */
   void analyzeIntrinsic(int cl)
   {
+    System.err.println("*** DFA.analyzeIntrisic called");
     if (PRECONDITIONS) require
       (_fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
     var in = _fuir.clazzIntrinsicName(cl);
     var c = _intrinsics_.get(in);
     if (c != null)
       {
-        c.analyze(this, cl);
+        //        c.analyze(this, cl);
       }
     else
       {
@@ -780,306 +807,312 @@ public class DFA extends ANY
 
   static
   {
-    put("safety"                         , (dfa, cl) -> { } );
-    put("debug"                          , (dfa, cl) -> { } );
-    put("debugLevel"                     , (dfa, cl) -> { } );
-    put("fuzion.std.args.count"          , (dfa, cl) -> { } );
-    put("fuzion.std.args.get"            , (dfa, cl) -> { } );
-    put("fuzion.std.exit"                , (dfa, cl) -> { } );
-    put("fuzion.std.out.write"           , (dfa, cl) -> { } );
-    put("fuzion.std.err.write"           , (dfa, cl) -> { } );
-    put("fuzion.std.out.flush"           , (dfa, cl) -> { } );
-    put("fuzion.std.err.flush"           , (dfa, cl) -> { } );
-    put("fuzion.stdin.nextByte"          , (dfa, cl) -> { } );
-    put("i8.prefix -°"                   , (dfa, cl) -> { } );
-    put("i16.prefix -°"                  , (dfa, cl) -> { } );
-    put("i32.prefix -°"                  , (dfa, cl) -> { } );
-    put("i64.prefix -°"                  , (dfa, cl) -> { } );
-    put("i8.infix -°"                    , (dfa, cl) -> { } );
-    put("i16.infix -°"                   , (dfa, cl) -> { } );
-    put("i32.infix -°"                   , (dfa, cl) -> { } );
-    put("i64.infix -°"                   , (dfa, cl) -> { } );
-    put("i8.infix +°"                    , (dfa, cl) -> { } );
-    put("i16.infix +°"                   , (dfa, cl) -> { } );
-    put("i32.infix +°"                   , (dfa, cl) -> { } );
-    put("i64.infix +°"                   , (dfa, cl) -> { } );
-    put("i8.infix *°"                    , (dfa, cl) -> { } );
-    put("i16.infix *°"                   , (dfa, cl) -> { } );
-    put("i32.infix *°"                   , (dfa, cl) -> { } );
-    put("i64.infix *°"                   , (dfa, cl) -> { } );
-    put("i8.div"                         , (dfa, cl) -> { } );
-    put("i16.div"                        , (dfa, cl) -> { } );
-    put("i32.div"                        , (dfa, cl) -> { } );
-    put("i64.div"                        , (dfa, cl) -> { } );
-    put("i8.mod"                         , (dfa, cl) -> { } );
-    put("i16.mod"                        , (dfa, cl) -> { } );
-    put("i32.mod"                        , (dfa, cl) -> { } );
-    put("i64.mod"                        , (dfa, cl) -> { } );
-    put("i8.infix <<"                    , (dfa, cl) -> { } );
-    put("i16.infix <<"                   , (dfa, cl) -> { } );
-    put("i32.infix <<"                   , (dfa, cl) -> { } );
-    put("i64.infix <<"                   , (dfa, cl) -> { } );
-    put("i8.infix >>"                    , (dfa, cl) -> { } );
-    put("i16.infix >>"                   , (dfa, cl) -> { } );
-    put("i32.infix >>"                   , (dfa, cl) -> { } );
-    put("i64.infix >>"                   , (dfa, cl) -> { } );
-    put("i8.infix &"                     , (dfa, cl) -> { } );
-    put("i16.infix &"                    , (dfa, cl) -> { } );
-    put("i32.infix &"                    , (dfa, cl) -> { } );
-    put("i64.infix &"                    , (dfa, cl) -> { } );
-    put("i8.infix |"                     , (dfa, cl) -> { } );
-    put("i16.infix |"                    , (dfa, cl) -> { } );
-    put("i32.infix |"                    , (dfa, cl) -> { } );
-    put("i64.infix |"                    , (dfa, cl) -> { } );
-    put("i8.infix ^"                     , (dfa, cl) -> { } );
-    put("i16.infix ^"                    , (dfa, cl) -> { } );
-    put("i32.infix ^"                    , (dfa, cl) -> { } );
-    put("i64.infix ^"                    , (dfa, cl) -> { } );
+    put("safety"                         , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("debug"                          , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("debugLevel"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.std.args.count"          , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.std.args.get"            , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.std.exit"                , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.std.out.write"           , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.std.err.write"           , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.std.out.flush"           , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.std.err.flush"           , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.stdin.nextByte"          , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.prefix -°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.prefix -°"                  , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.prefix -°"                  , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.prefix -°"                  , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.infix -°"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.infix -°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.infix -°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.infix -°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.infix +°"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.infix +°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.infix +°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.infix +°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.infix *°"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.infix *°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.infix *°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.infix *°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.div"                         , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.div"                        , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.div"                        , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.div"                        , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.mod"                         , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.mod"                        , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.mod"                        , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.mod"                        , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.infix <<"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.infix <<"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.infix <<"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.infix <<"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.infix >>"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.infix >>"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.infix >>"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.infix >>"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.infix &"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.infix &"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.infix &"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.infix &"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.infix |"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.infix |"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.infix |"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.infix |"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.infix ^"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.infix ^"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.infix ^"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.infix ^"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
 
-    put("i8.infix =="                    , (dfa, cl) -> { } );
-    put("i16.infix =="                   , (dfa, cl) -> { } );
-    put("i32.infix =="                   , (dfa, cl) -> { } );
-    put("i64.infix =="                   , (dfa, cl) -> { } );
-    put("i8.infix !="                    , (dfa, cl) -> { } );
-    put("i16.infix !="                   , (dfa, cl) -> { } );
-    put("i32.infix !="                   , (dfa, cl) -> { } );
-    put("i64.infix !="                   , (dfa, cl) -> { } );
-    put("i8.infix >"                     , (dfa, cl) -> { } );
-    put("i16.infix >"                    , (dfa, cl) -> { } );
-    put("i32.infix >"                    , (dfa, cl) -> { } );
-    put("i64.infix >"                    , (dfa, cl) -> { } );
-    put("i8.infix >="                    , (dfa, cl) -> { } );
-    put("i16.infix >="                   , (dfa, cl) -> { } );
-    put("i32.infix >="                   , (dfa, cl) -> { } );
-    put("i64.infix >="                   , (dfa, cl) -> { } );
-    put("i8.infix <"                     , (dfa, cl) -> { } );
-    put("i16.infix <"                    , (dfa, cl) -> { } );
-    put("i32.infix <"                    , (dfa, cl) -> { } );
-    put("i64.infix <"                    , (dfa, cl) -> { } );
-    put("i8.infix <="                    , (dfa, cl) -> { } );
-    put("i16.infix <="                   , (dfa, cl) -> { } );
-    put("i32.infix <="                   , (dfa, cl) -> { } );
-    put("i64.infix <="                   , (dfa, cl) -> { } );
+    put("i8.infix =="                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.infix =="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.infix =="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.infix =="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.infix !="                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.infix !="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.infix !="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.infix !="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.infix >"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.infix >"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.infix >"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.infix >"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.infix >="                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.infix >="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.infix >="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.infix >="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.infix <"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.infix <"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.infix <"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.infix <"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.infix <="                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.infix <="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.infix <="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.infix <="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
 
-    put("u8.prefix -°"                   , (dfa, cl) -> { } );
-    put("u16.prefix -°"                  , (dfa, cl) -> { } );
-    put("u32.prefix -°"                  , (dfa, cl) -> { } );
-    put("u64.prefix -°"                  , (dfa, cl) -> { } );
-    put("u8.infix -°"                    , (dfa, cl) -> { } );
-    put("u16.infix -°"                   , (dfa, cl) -> { } );
-    put("u32.infix -°"                   , (dfa, cl) -> { } );
-    put("u64.infix -°"                   , (dfa, cl) -> { } );
-    put("u8.infix +°"                    , (dfa, cl) -> { } );
-    put("u16.infix +°"                   , (dfa, cl) -> { } );
-    put("u32.infix +°"                   , (dfa, cl) -> { } );
-    put("u64.infix +°"                   , (dfa, cl) -> { } );
-    put("u8.infix *°"                    , (dfa, cl) -> { } );
-    put("u16.infix *°"                   , (dfa, cl) -> { } );
-    put("u32.infix *°"                   , (dfa, cl) -> { } );
-    put("u64.infix *°"                   , (dfa, cl) -> { } );
-    put("u8.div"                         , (dfa, cl) -> { } );
-    put("u16.div"                        , (dfa, cl) -> { } );
-    put("u32.div"                        , (dfa, cl) -> { } );
-    put("u64.div"                        , (dfa, cl) -> { } );
-    put("u8.mod"                         , (dfa, cl) -> { } );
-    put("u16.mod"                        , (dfa, cl) -> { } );
-    put("u32.mod"                        , (dfa, cl) -> { } );
-    put("u64.mod"                        , (dfa, cl) -> { } );
-    put("u8.infix <<"                    , (dfa, cl) -> { } );
-    put("u16.infix <<"                   , (dfa, cl) -> { } );
-    put("u32.infix <<"                   , (dfa, cl) -> { } );
-    put("u64.infix <<"                   , (dfa, cl) -> { } );
-    put("u8.infix >>"                    , (dfa, cl) -> { } );
-    put("u16.infix >>"                   , (dfa, cl) -> { } );
-    put("u32.infix >>"                   , (dfa, cl) -> { } );
-    put("u64.infix >>"                   , (dfa, cl) -> { } );
-    put("u8.infix &"                     , (dfa, cl) -> { } );
-    put("u16.infix &"                    , (dfa, cl) -> { } );
-    put("u32.infix &"                    , (dfa, cl) -> { } );
-    put("u64.infix &"                    , (dfa, cl) -> { } );
-    put("u8.infix |"                     , (dfa, cl) -> { } );
-    put("u16.infix |"                    , (dfa, cl) -> { } );
-    put("u32.infix |"                    , (dfa, cl) -> { } );
-    put("u64.infix |"                    , (dfa, cl) -> { } );
-    put("u8.infix ^"                     , (dfa, cl) -> { } );
-    put("u16.infix ^"                    , (dfa, cl) -> { } );
-    put("u32.infix ^"                    , (dfa, cl) -> { } );
-    put("u64.infix ^"                    , (dfa, cl) -> { } );
+    put("u8.prefix -°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.prefix -°"                  , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.prefix -°"                  , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.prefix -°"                  , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.infix -°"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.infix -°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.infix -°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.infix -°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.infix +°"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.infix +°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.infix +°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.infix +°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.infix *°"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.infix *°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.infix *°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.infix *°"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.div"                         , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.div"                        , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.div"                        , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.div"                        , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.mod"                         , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.mod"                        , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.mod"                        , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.mod"                        , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.infix <<"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.infix <<"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.infix <<"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.infix <<"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.infix >>"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.infix >>"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.infix >>"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.infix >>"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.infix &"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.infix &"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.infix &"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.infix &"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.infix |"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.infix |"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.infix |"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.infix |"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.infix ^"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.infix ^"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.infix ^"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.infix ^"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
 
-    put("u8.infix =="                    , (dfa, cl) -> { } );
-    put("u16.infix =="                   , (dfa, cl) -> { } );
-    put("u32.infix =="                   , (dfa, cl) -> { } );
-    put("u64.infix =="                   , (dfa, cl) -> { } );
-    put("u8.infix !="                    , (dfa, cl) -> { } );
-    put("u16.infix !="                   , (dfa, cl) -> { } );
-    put("u32.infix !="                   , (dfa, cl) -> { } );
-    put("u64.infix !="                   , (dfa, cl) -> { } );
-    put("u8.infix >"                     , (dfa, cl) -> { } );
-    put("u16.infix >"                    , (dfa, cl) -> { } );
-    put("u32.infix >"                    , (dfa, cl) -> { } );
-    put("u64.infix >"                    , (dfa, cl) -> { } );
-    put("u8.infix >="                    , (dfa, cl) -> { } );
-    put("u16.infix >="                   , (dfa, cl) -> { } );
-    put("u32.infix >="                   , (dfa, cl) -> { } );
-    put("u64.infix >="                   , (dfa, cl) -> { } );
-    put("u8.infix <"                     , (dfa, cl) -> { } );
-    put("u16.infix <"                    , (dfa, cl) -> { } );
-    put("u32.infix <"                    , (dfa, cl) -> { } );
-    put("u64.infix <"                    , (dfa, cl) -> { } );
-    put("u8.infix <="                    , (dfa, cl) -> { } );
-    put("u16.infix <="                   , (dfa, cl) -> { } );
-    put("u32.infix <="                   , (dfa, cl) -> { } );
-    put("u64.infix <="                   , (dfa, cl) -> { } );
+    put("u8.infix =="                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.infix =="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.infix =="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.infix =="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.infix !="                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.infix !="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.infix !="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.infix !="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.infix >"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.infix >"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.infix >"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.infix >"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.infix >="                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.infix >="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.infix >="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.infix >="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.infix <"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.infix <"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.infix <"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.infix <"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.infix <="                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.infix <="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.infix <="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.infix <="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
 
-    put("i8.as_i32"                      , (dfa, cl) -> { } );
-    put("i16.as_i32"                     , (dfa, cl) -> { } );
-    put("i32.as_i64"                     , (dfa, cl) -> { } );
-    put("i32.as_f64"                     , (dfa, cl) -> { } );
-    put("i64.as_f64"                     , (dfa, cl) -> { } );
-    put("u8.as_i32"                      , (dfa, cl) -> { } );
-    put("u16.as_i32"                     , (dfa, cl) -> { } );
-    put("u32.as_i64"                     , (dfa, cl) -> { } );
-    put("u32.as_f64"                     , (dfa, cl) -> { } );
-    put("u64.as_f64"                     , (dfa, cl) -> { } );
-    put("i8.castTo_u8"                   , (dfa, cl) -> { } );
-    put("i16.castTo_u16"                 , (dfa, cl) -> { } );
-    put("i32.castTo_u32"                 , (dfa, cl) -> { } );
-    put("i64.castTo_u64"                 , (dfa, cl) -> { } );
-    put("u8.castTo_i8"                   , (dfa, cl) -> { } );
-    put("u16.castTo_i16"                 , (dfa, cl) -> { } );
-    put("u32.castTo_i32"                 , (dfa, cl) -> { } );
-    put("u32.castTo_f32"                 , (dfa, cl) -> { } );
-    put("u64.castTo_i64"                 , (dfa, cl) -> { } );
-    put("u64.castTo_f64"                 , (dfa, cl) -> { } );
-    put("u16.low8bits"                   , (dfa, cl) -> { } );
-    put("u32.low8bits"                   , (dfa, cl) -> { } );
-    put("u64.low8bits"                   , (dfa, cl) -> { } );
-    put("u32.low16bits"                  , (dfa, cl) -> { } );
-    put("u64.low16bits"                  , (dfa, cl) -> { } );
-    put("u64.low32bits"                  , (dfa, cl) -> { } );
+    put("i8.as_i32"                      , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.as_i32"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.as_i64"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.as_f64"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.as_f64"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.as_i32"                      , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.as_i32"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.as_i64"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.as_f64"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.as_f64"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i8.castTo_u8"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i16.castTo_u16"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i32.castTo_u32"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("i64.castTo_u64"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u8.castTo_i8"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.castTo_i16"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.castTo_i32"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.castTo_f32"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.castTo_i64"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.castTo_f64"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u16.low8bits"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.low8bits"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.low8bits"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u32.low16bits"                  , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.low16bits"                  , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("u64.low32bits"                  , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
 
-    put("f32.prefix -"                   , (dfa, cl) -> { } );
-    put("f64.prefix -"                   , (dfa, cl) -> { } );
-    put("f32.infix +"                    , (dfa, cl) -> { } );
-    put("f64.infix +"                    , (dfa, cl) -> { } );
-    put("f32.infix -"                    , (dfa, cl) -> { } );
-    put("f64.infix -"                    , (dfa, cl) -> { } );
-    put("f32.infix *"                    , (dfa, cl) -> { } );
-    put("f64.infix *"                    , (dfa, cl) -> { } );
-    put("f32.infix /"                    , (dfa, cl) -> { } );
-    put("f64.infix /"                    , (dfa, cl) -> { } );
-    put("f32.infix %"                    , (dfa, cl) -> { } );
-    put("f64.infix %"                    , (dfa, cl) -> { } );
-    put("f32.infix **"                   , (dfa, cl) -> { } );
-    put("f64.infix **"                   , (dfa, cl) -> { } );
-    put("f32.infix =="                   , (dfa, cl) -> { } );
-    put("f64.infix =="                   , (dfa, cl) -> { } );
-    put("f32.infix !="                   , (dfa, cl) -> { } );
-    put("f64.infix !="                   , (dfa, cl) -> { } );
-    put("f32.infix <"                    , (dfa, cl) -> { } );
-    put("f64.infix <"                    , (dfa, cl) -> { } );
-    put("f32.infix <="                   , (dfa, cl) -> { } );
-    put("f64.infix <="                   , (dfa, cl) -> { } );
-    put("f32.infix >"                    , (dfa, cl) -> { } );
-    put("f64.infix >"                    , (dfa, cl) -> { } );
-    put("f32.infix >="                   , (dfa, cl) -> { } );
-    put("f64.infix >="                   , (dfa, cl) -> { } );
-    put("f32.as_f64"                     , (dfa, cl) -> { } );
-    put("f64.as_f32"                     , (dfa, cl) -> { } );
-    put("f64.as_i64_lax"                 , (dfa, cl) -> { } );
-    put("f32.castTo_u32"                 , (dfa, cl) -> { } );
-    put("f64.castTo_u64"                 , (dfa, cl) -> { } );
-    put("f32.asString"                   , (dfa, cl) -> { } );
-    put("f64.asString"                   , (dfa, cl) -> { } );
+    put("f32.prefix -"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.prefix -"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.infix +"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.infix +"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.infix -"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.infix -"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.infix *"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.infix *"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.infix /"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.infix /"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.infix %"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.infix %"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.infix **"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.infix **"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.infix =="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.infix =="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.infix !="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.infix !="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.infix <"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.infix <"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.infix <="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.infix <="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.infix >"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.infix >"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.infix >="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.infix >="                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.as_f64"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.as_f32"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.as_i64_lax"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.castTo_u32"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.castTo_u64"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32.asString"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64.asString"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
 
-    put("f32s.minExp"                    , (dfa, cl) -> { } );
-    put("f32s.maxExp"                    , (dfa, cl) -> { } );
-    put("f32s.minPositive"               , (dfa, cl) -> { } );
-    put("f32s.max"                       , (dfa, cl) -> { } );
-    put("f32s.epsilon"                   , (dfa, cl) -> { } );
-    put("f32s.isNaN"                     , (dfa, cl) -> { } );
-    put("f64s.isNaN"                     , (dfa, cl) -> { } );
-    put("f64s.minExp"                    , (dfa, cl) -> { } );
-    put("f64s.maxExp"                    , (dfa, cl) -> { } );
-    put("f64s.minPositive"               , (dfa, cl) -> { } );
-    put("f64s.max"                       , (dfa, cl) -> { } );
-    put("f64s.epsilon"                   , (dfa, cl) -> { } );
-    put("f32s.squareRoot"                , (dfa, cl) -> { } );
-    put("f64s.squareRoot"                , (dfa, cl) -> { } );
-    put("f32s.exp"                       , (dfa, cl) -> { } );
-    put("f64s.exp"                       , (dfa, cl) -> { } );
-    put("f32s.log"                       , (dfa, cl) -> { } );
-    put("f64s.log"                       , (dfa, cl) -> { } );
-    put("f32s.sin"                       , (dfa, cl) -> { } );
-    put("f64s.sin"                       , (dfa, cl) -> { } );
-    put("f32s.cos"                       , (dfa, cl) -> { } );
-    put("f64s.cos"                       , (dfa, cl) -> { } );
-    put("f32s.tan"                       , (dfa, cl) -> { } );
-    put("f64s.tan"                       , (dfa, cl) -> { } );
-    put("f32s.asin"                      , (dfa, cl) -> { } );
-    put("f64s.asin"                      , (dfa, cl) -> { } );
-    put("f32s.acos"                      , (dfa, cl) -> { } );
-    put("f64s.acos"                      , (dfa, cl) -> { } );
-    put("f32s.atan"                      , (dfa, cl) -> { } );
-    put("f64s.atan"                      , (dfa, cl) -> { } );
-    put("f32s.atan2"                     , (dfa, cl) -> { } );
-    put("f64s.atan2"                     , (dfa, cl) -> { } );
-    put("f32s.sinh"                      , (dfa, cl) -> { } );
-    put("f64s.sinh"                      , (dfa, cl) -> { } );
-    put("f32s.cosh"                      , (dfa, cl) -> { } );
-    put("f64s.cosh"                      , (dfa, cl) -> { } );
-    put("f32s.tanh"                      , (dfa, cl) -> { } );
-    put("f64s.tanh"                      , (dfa, cl) -> { } );
+    put("f32s.minExp"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.maxExp"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.minPositive"               , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.max"                       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.epsilon"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.isNaN"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.isNaN"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.minExp"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.maxExp"                    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.minPositive"               , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.max"                       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.epsilon"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.squareRoot"                , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.squareRoot"                , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.exp"                       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.exp"                       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.log"                       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.log"                       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.sin"                       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.sin"                       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.cos"                       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.cos"                       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.tan"                       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.tan"                       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.asin"                      , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.asin"                      , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.acos"                      , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.acos"                      , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.atan"                      , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.atan"                      , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.atan2"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.atan2"                     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.sinh"                      , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.sinh"                      , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.cosh"                      , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.cosh"                      , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f32s.tanh"                      , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("f64s.tanh"                      , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
 
-    put("Object.hashCode"                , (dfa, cl) -> { } );
-    put("Object.asString"                , (dfa, cl) -> { } );
-    put("fuzion.sys.array.alloc"         , (dfa, cl) -> { } );
-    put("fuzion.sys.array.setel"         , (dfa, cl) -> { } );
-    put("fuzion.sys.array.get"           , (dfa, cl) -> { } );
-    put("fuzion.sys.env_vars.has0"       , (dfa, cl) -> { } );
-    put("fuzion.sys.env_vars.get0"       , (dfa, cl) -> { } );
-    put("fuzion.sys.thread.spawn0"       , (dfa, cl) -> { } );
-    put("fuzion.std.nano_sleep"          , (dfa, cl) -> { } );
-    put("fuzion.std.nano_time"           , (dfa, cl) -> { } );
+    put("Object.hashCode"                , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("Object.asString"                , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.sys.array.alloc"         , cl -> { cl.showWhy(); return new SysArray(cl._dfa, new byte[0]); } ); // NYI: get length from args
+    put("fuzion.sys.array.setel"         , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.sys.array.get"           , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.sys.env_vars.has0"       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.sys.env_vars.get0"       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.sys.thread.spawn0"       , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.std.nano_sleep"          , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.std.nano_time"           , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
 
-    put("effect.replace"                 , (dfa, cl) -> { } );
-    put("effect.default"                 , (dfa, cl) -> { } );
-    put("effect.abortable"               , (dfa, cl) ->
+    put("effect.replace"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("effect.default"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("effect.abortable"               , cl ->
         {
-          var oc = dfa._fuir.clazzActualGeneric(cl, 0);
-          var call = dfa._fuir.lookupCall(oc);
+          var oc = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
+          var call = cl._dfa._fuir.lookupCall(oc);
           System.err.println("**** DFA handling for effect.abortable missing");
+          return null;
         });
-    put("effect.abort"                   , (dfa, cl) -> { } );
-    put("effects.exists"                 , (dfa, cl) -> { } );
-    put("fuzion.java.JavaObject.isNull"  , (dfa, cl) -> { } );
-    put("fuzion.java.arrayGet"           , (dfa, cl) -> { } );
-    put("fuzion.java.arrayLength"        , (dfa, cl) -> { } );
-    put("fuzion.java.arrayToJavaObject0" , (dfa, cl) -> { } );
-    put("fuzion.java.boolToJavaObject"   , (dfa, cl) -> { } );
-    put("fuzion.java.callC0"             , (dfa, cl) -> { } );
-    put("fuzion.java.callS0"             , (dfa, cl) -> { } );
-    put("fuzion.java.callV0"             , (dfa, cl) -> { } );
-    put("fuzion.java.f32ToJavaObject"    , (dfa, cl) -> { } );
-    put("fuzion.java.f64ToJavaObject"    , (dfa, cl) -> { } );
-    put("fuzion.java.getField0"          , (dfa, cl) -> { } );
-    put("fuzion.java.getStaticField0"    , (dfa, cl) -> { } );
-    put("fuzion.java.i16ToJavaObject"    , (dfa, cl) -> { } );
-    put("fuzion.java.i32ToJavaObject"    , (dfa, cl) -> { } );
-    put("fuzion.java.i64ToJavaObject"    , (dfa, cl) -> { } );
-    put("fuzion.java.i8ToJavaObject"     , (dfa, cl) -> { } );
-    put("fuzion.java.javaStringToString" , (dfa, cl) -> { } );
-    put("fuzion.java.stringToJavaObject0", (dfa, cl) -> { } );
-    put("fuzion.java.u16ToJavaObject"    , (dfa, cl) -> { } );
+    put("effect.abort"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("effects.exists"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.JavaObject.isNull"  , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.arrayGet"           , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.arrayLength"        , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.arrayToJavaObject0" , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.boolToJavaObject"   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.callC0"             , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.callS0"             , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.callV0"             , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.f32ToJavaObject"    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.f64ToJavaObject"    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.getField0"          , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.getStaticField0"    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.i16ToJavaObject"    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.i32ToJavaObject"    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.i64ToJavaObject"    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.i8ToJavaObject"     , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.javaStringToString" , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.stringToJavaObject0", cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("fuzion.java.u16ToJavaObject"    , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
   }
 
 
-   /**
-    * Create instance of given clazz.
-    */
-   Instance newInstance(int cl)
-   {
-    var r = new Instance(this, cl);
+  /**
+   * Create instance of given clazz.
+   *
+   * @param cl the clazz
+   *
+   * @param context for debugging: Reason that causes this instance to be part
+   * of the analysis.
+   */
+  Instance newInstance(int cl, Context context)
+  {
+    var r = new Instance(this, cl, context);
     var e = _instances.get(r);
     if (e == null)
       {
@@ -1093,12 +1126,50 @@ public class DFA extends ANY
 
 
   /**
-   * Create call to given clazz with given target and args.
+   * Create constnat string with given utf8 bytes.
+   *
+   * @param utf8Bytes the string contents
+   *
+   * @param context for debugging: Reason that causes this const string to be
+   * part of the analysis.
    */
-  Call newCall(int cl, boolean pre, Value tvalue, List<Value> args)
+  Instance newConstString(byte[] utf8Bytes, Context context)
   {
-    // NYI: tvalue ignored!
-    var r = new Call(this, cl, pre, args);
+    if (PRECONDITIONS) require
+      (utf8Bytes != null);
+
+    var cs            = _fuir.clazz_conststring();
+    var internalArray = _fuir.clazz_conststring_internalArray();
+    var data          = _fuir.clazz_fuzionSysArray_u8_data();
+    var length        = _fuir.clazz_fuzionSysArray_u8_length();
+    var sysArray      = _fuir.clazzResultClazz(internalArray);
+    var adata = new SysArray(this, utf8Bytes);
+    var r = newInstance(cs, context);
+    var a = newInstance(sysArray, r);
+    a.setField(length, new NumericValue(this, _fuir.clazzResultClazz(length), utf8Bytes.length));
+    a.setField(data  , adata);
+    r.setField(internalArray, a);
+    return r;
+  }
+
+
+  /**
+   * Create call to given clazz with given target and args.
+   *
+   * @param cl the called clazz
+   *
+   * @param pre true iff precondition is called
+   *
+   * @param tvalue the target value on which cl is called
+   *
+   * @param args the arguments passed to the call
+   *
+   * @param context for debugging: Reason that causes this call to be part of
+   * the analysis.
+   */
+  Call newCall(int cl, boolean pre, Value tvalue, List<Value> args, Context context)
+  {
+    var r = new Call(this, cl, pre, tvalue, args, context);
     var e = _calls.get(r);
     if (e == null)
       {
