@@ -359,7 +359,10 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         var af = _fuir.clazzArg(vcl, i);
         var at = _fuir.clazzArgClazz(vcl, i);
         var ai = _processor.arg(cl, i);
-        l.add(_processor.assignStatic(cl, af, at, cur._v0, ai));
+        if (ai != null)
+          {
+            l.add(_processor.assignStatic(cl, af, at, cur._v0, ai));
+          }
       }
   }
 
