@@ -193,6 +193,14 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
+  /**
+   * property-controlled flag to enable debug output.
+   */
+  static final boolean DEBUG =
+    System.getProperty("dev.flang.fuir.analysis.AbstractInterpreter.DEBUG",
+                       "false").equals("true");
+
+
   /*-------------------------  static methods  --------------------------*/
 
 
@@ -458,6 +466,10 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    */
   public RESULT process(int cl, Stack<VALUE> stack, int c, int i)
   {
+    if (DEBUG)
+      {
+        System.out.println("process "+_fuir.clazzAsString(cl)+"."+c+"."+i+":\t"+_fuir.codeAtAsString(cl, c, i)+" stack is "+stack);
+      }
     var s = _fuir.codeAt(c, i);
     switch (s)
       {
