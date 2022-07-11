@@ -118,6 +118,9 @@ public class Instance extends Value implements Comparable<Instance>, Context
    */
   public void setField(int field, Value v)
   {
+    if (PRECONDITIONS) require
+      (v != null);
+
     var oldv = _fields.get(field);
     if (oldv != null)
       {
@@ -130,7 +133,7 @@ public class Instance extends Value implements Comparable<Instance>, Context
   /**
    * Get set of values of given field within this instance.
    */
-  public Value readField(int target, int field)
+  Value readFieldFromInstance(DFA dfa, int target, int field)
   {
     if (PRECONDITIONS) require
       (_clazz == target);
@@ -138,13 +141,13 @@ public class Instance extends Value implements Comparable<Instance>, Context
     var v = _fields.get(field);
     if (v == null)
       {
-        if (_dfa._fuir.clazzIsUnitType(_dfa._fuir.clazzResultClazz(field)))
+        if (dfa._reportResults)
           {
-            v = Value.UNIT; // NYI: Workaround: there are reads of outer ref fields of unit type, but no writes!
-          }
-        else if (_dfa._reportResults)
-          {
-            System.err.println("*** reading uninitialized field " + _dfa._fuir.clazzAsString(field));
+            System.err.println("*** reading uninitialized field " + dfa._fuir.clazzAsString(field));
+            for (var f : _fields.keySet())
+              {
+                System.out.println("values of "+dfa._fuir.clazzAsString(f)+": "+_fields.get(f));
+              }
           }
       }
     return v;

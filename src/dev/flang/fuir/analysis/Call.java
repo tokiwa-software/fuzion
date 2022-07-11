@@ -206,7 +206,7 @@ public class Call extends ANY implements Comparable<Call>, Context
             if (CHECKS) check
               (_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(_cc)));
 
-            _result = _instance.readField(_cc, rf);
+            _result = _instance.readField(_dfa, _cc, rf);
           }
       }
     return _result;

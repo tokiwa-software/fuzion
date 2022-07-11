@@ -363,7 +363,7 @@ public class DFA extends ANY
           }
         case Field:
           {
-            resultValue = tvalue.readField(tc, cc);
+            resultValue = tvalue.readField(DFA.this, tc, cc);
             break;
           }
         default:       throw new Error("This should not happen: Unknown feature kind: " + _fuir.clazzKind(cc));
