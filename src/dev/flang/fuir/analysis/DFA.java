@@ -343,7 +343,7 @@ public class DFA extends ANY
     Pair<Value, Unit> call(int cl, Value tvalue, List<Value> args, int c, int i, int cc, boolean pre)
     {
       var result = _unit_;
-      var resultValue = Value.UNIT;
+      Value resultValue = null;
       var tc = _fuir.accessTargetClazz(cl, c, i);
       var rt = _fuir.clazzResultClazz(cc);
       switch (pre ? FUIR.FeatureKind.Routine : _fuir.clazzKind(cc))
@@ -378,7 +378,7 @@ public class DFA extends ANY
     public Pair<Value, Unit> box(Value val, int vc, int rc)
     {
       System.err.println("NYI: DFA.box");
-      return new Pair<>(Value.UNIT, _unit_);
+      return new Pair<>(null, _unit_);
     }
 
 
@@ -388,7 +388,7 @@ public class DFA extends ANY
     public Pair<Value, Unit> unbox(Value val, int orc)
     {
       System.err.println("NYI: DFA.unbox");
-      return new Pair<>(Value.UNIT, _unit_);
+      return new Pair<>(null, _unit_);
     }
 
 
@@ -442,7 +442,7 @@ public class DFA extends ANY
         {
           Errors.error("Unsupported constant in DFA analysis.",
                        "DFA cannot handle constant of clazz '" + _fuir.clazzAsString(constCl) + "' ");
-          yield Value.UNIT;
+          yield null;
         }
         };
       return new Pair(r, o);
@@ -533,7 +533,7 @@ public class DFA extends ANY
     public Pair<Value, Unit> tag(int cl, int valuecl, Value value, int newcl, int tagNum)
     {
       System.err.println("NYI: DFA.tag");
-      return new Pair<>(Value.UNIT, _unit_);
+      return new Pair<>(null, _unit_);
       /*
       var res     = _names.newTemp();
       var tag     = res.field(_names.TAG_NAME);
@@ -575,7 +575,7 @@ public class DFA extends ANY
     public Pair<Value, Unit> env(int ecl)
     {
       System.err.println("NYI: DFA.env");
-      return new Pair<>(Value.UNIT, _unit_);
+      return new Pair<>(null, _unit_);
       /*
       var res = _names.env(ecl);
       var evi = _names.envInstalled(ecl);
