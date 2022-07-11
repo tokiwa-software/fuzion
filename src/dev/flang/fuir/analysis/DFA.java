@@ -88,14 +88,20 @@ public class DFA extends ANY
      */
     final Instance _current;
 
+    /**
+     * The outer instance of the instance we are analysing.
+     */
+    final Value _outer;
+
 
     /**
      * Create processor for an abstract interpreter doing DFA analysis of the
      * given instance's cod.
      */
-    Analyze(Instance current)
+    Analyze(Instance current, Value outer)
     {
       _current = current;
+      _outer = outer;
     }
 
 
@@ -156,6 +162,28 @@ public class DFA extends ANY
     public Pair<Value, Unit> adrOf(Value v)
     {
       return new Pair<>(v.adrOf(), _unit_);
+    }
+
+
+    /**
+     * Perform an assignment val to field f in instance rt
+     *
+     * @param tc clazz id of the target instance
+     *
+     * @param f clazz id of the assigned field
+     *
+     * @param rt clazz is of the field type
+     *
+     * @param tvalue the target instance
+     *
+     * @param val the new value to be assigned to the field.
+     *
+     * @return resulting code of this assignment.
+     */
+    public Unit assignStatic(int tc, int f, int rt, Value tvalue, Value val)
+    {
+      tvalue.setField(f, val);
+      return _unit_;
     }
 
 
@@ -370,6 +398,23 @@ public class DFA extends ANY
     public Pair<Value, Unit> current(int cl)
     {
       return new Pair<>(_current, _unit_);
+    }
+
+
+    /**
+     * Get the outer instance
+     */
+    public Pair<Value, Unit> outer(int cl)
+    {
+      return new Pair<>(_outer, _unit_);
+    }
+
+    /**
+     * Get the argument #i
+     */
+    public Value arg(int cl, int i)
+    {
+      return null; // NYI:
     }
 
 
@@ -763,7 +808,7 @@ public class DFA extends ANY
       }
     else
       {
-        var ai = new AbstractInterpreter(_fuir, new Analyze(i));
+        var ai = new AbstractInterpreter(_fuir, new Analyze(i, c._target));
         var r = ai.process(cl, _fuir.clazzCode(cl));
         if (r._v0 != null)
           {

@@ -101,6 +101,23 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     public abstract Pair<VALUE, RESULT> adrOf(VALUE v);
 
     /**
+     * Perform an assignment val to field f in instance rt
+     *
+     * @param tc clazz id of the target instance
+     *
+     * @param f clazz id of the assigned field
+     *
+     * @param rt clazz is of the field type
+     *
+     * @param tvalue the target instance
+     *
+     * @param val the new value to be assigned to the field.
+     *
+     * @return resulting code of this assignment.
+     */
+    public abstract RESULT assignStatic(int tc, int f, int rt, VALUE tvalue, VALUE val);
+
+    /**
      * Perform an assignment of avalue to a field in tvalue. The type of tvalue
      * might be dynamic (a refernce). See FUIR.acess*().
      */
@@ -130,6 +147,16 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
      * Get the current instance
      */
     public abstract Pair<VALUE, RESULT> current(int cl);
+
+    /**
+     * Get the outer instance
+     */
+    public abstract Pair<VALUE, RESULT> outer(int cl);
+
+    /**
+     * Get the argument #i
+     */
+    public abstract VALUE arg(int cl, int i);
 
     /**
      * Get a constant value of type constCl with given byte data d.
@@ -294,6 +321,61 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
 
   /**
+   * As part of the prolog of a clazz' code, perform the initialization of the
+   * calzz' outer ref and argument fields with the target and the actual
+   * arguments.
+   *
+   * @param l list that will receive the result
+   *
+   * @param cl the clazz we are interpreting.
+   */
+  void assignOuterAndArgFields(List<RESULT> l, int cl)
+  {
+    var or = _fuir.clazzOuterRef(cl);
+    if (or != -1)
+      {
+        var rt = _fuir.clazzResultClazz(or);
+        var cur = _processor.current(cl);
+        l.add(cur._v1);
+        var out = _processor.outer(cl);
+        l.add(out._v1);
+        l.add(_processor.assignStatic(cl, or, rt, cur._v0, out._v0));
+      }
+
+    var vcl = _fuir.clazzAsValue(cl);
+    var ac = _fuir.clazzArgCount(vcl);
+    for (int i = 0; i < ac; i++)
+      {
+        var cur = _processor.current(cl);
+        l.add(cur._v1);
+        var af = _fuir.clazzArg(vcl, i);
+        var at = _fuir.clazzArgClazz(vcl, i);
+        var ai = _processor.arg(cl, i);
+        l.add(_processor.assignStatic(cl, af, at, cur._v0, ai));
+      }
+  }
+
+
+  /**
+   * Perform abstract interpretation on given clazz
+   *
+   * @param cl clazz id
+   *
+   * @return A Pair consisting of a VALUE that is either
+   * _processor().unitValue() or null (in case cl diverges) and the result of
+   * the abstract interpretation, e.g., the generated code.
+   */
+  public Pair<VALUE,RESULT> process(int cl)
+  {
+    var l = new List<RESULT>();
+    assignOuterAndArgFields(l, cl);
+    var p = process(cl, _fuir.clazzCode(cl));
+    l.add(p._v1);
+    return new Pair(p._v0, _processor.sequence(l));
+  }
+
+
+  /**
    * Perform abstract interpretation on given code
    *
    * @param cl clazz id
@@ -331,6 +413,10 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   public RESULT processContract(int cl, FUIR.ContractKind ck)
   {
     var l = new List<RESULT>();
+    if (ck == FUIR.ContractKind.Pre)
+      {
+        assignOuterAndArgFields(l, cl);
+      }
     for (var ci = 0;
          _fuir.clazzContract(cl, ck, ci) != -1;
          ci++)
