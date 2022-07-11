@@ -1198,15 +1198,7 @@ public class C extends ANY
     var cur = _fuir.clazzIsRef(cl) ? fields(_names.CURRENT, cl)
                                    : _names.CURRENT.deref();
     var l = new List<CStmnt>();
-    if (pre)
-      {
-        l.add(_ai.processContract(cl, FUIR.ContractKind.Pre));
-      }
-    else
-      {
-        l.add(_ai.process(cl)._v1);
-        l.add(_ai.processContract(cl, FUIR.ContractKind.Post));
-      }
+    l.add(_ai.process(cl, pre)._v1);
     var res = _fuir.clazzResultClazz(cl);
     if (!pre && _types.hasData(res))
       {

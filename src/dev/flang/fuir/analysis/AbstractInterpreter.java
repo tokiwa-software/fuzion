@@ -361,15 +361,20 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    *
    * @param cl clazz id
    *
+   * @param pre true to process cl's precondition, false to process cl's code
+   * followed by its postcondition.
+   *
    * @return A Pair consisting of a VALUE that is either
    * _processor().unitValue() or null (in case cl diverges) and the result of
    * the abstract interpretation, e.g., the generated code.
    */
-  public Pair<VALUE,RESULT> process(int cl)
+  public Pair<VALUE,RESULT> process(int cl, boolean pre)
   {
     var l = new List<RESULT>();
     assignOuterAndArgFields(l, cl);
-    var p = process(cl, _fuir.clazzCode(cl));
+    var p = pre
+      ? processContract(cl, FUIR.ContractKind.Pre)
+      : process(cl, _fuir.clazzCode(cl));
     l.add(p._v1);
     return new Pair(p._v0, _processor.sequence(l));
   }
@@ -410,7 +415,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
    * @return the result of the abstract interpretation, e.g., the generated
    * code.
    */
-  public RESULT processContract(int cl, FUIR.ContractKind ck)
+  Pair<VALUE,RESULT> processContract(int cl, FUIR.ContractKind ck)
   {
     var l = new List<RESULT>();
     if (ck == FUIR.ContractKind.Pre)
@@ -433,7 +438,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
             l.add(_processor.contract(cl, ck, stack.pop()));
           }
       }
-    return _processor.sequence(l);
+    return new Pair<>(_processor.unitValue(), _processor.sequence(l));
   }
 
 
