@@ -454,25 +454,38 @@ public class DFA extends ANY
      */
     public Pair<Value, Unit> match(AbstractInterpreter ai, int cl, int c, int i, Value subv)
     {
-      System.err.println("NYI: DFA.match for "+_fuir.codeAtAsString(cl, c, i));
       Value r = null;
       var o = _unit_;
-      /*
       var subjClazz = _fuir.matchStaticSubject(cl, c, i);
-      var sub       = fields(subv, subjClazz);
-      var uniyon    = sub.field(_names.CHOICE_UNION_NAME);
+
+      //var sub       = fields(subv, subjClazz);
+      //var uniyon    = sub.field(_names.CHOICE_UNION_NAME);
       var hasTag    = !_fuir.clazzIsChoiceOfOnlyRefs(subjClazz);
-      var refEntry  = uniyon.field(_names.CHOICE_REF_ENTRY_NAME);
-      var ref       = hasTag ? refEntry                   : _names.newTemp();
-      var getRef    = hasTag ? _unit_               : Unit.decl(_types.clazz(_fuir.clazzObject()), (CIdent) ref, refEntry);
-      var tag       = hasTag ? sub.field(_names.TAG_NAME) : ref.castTo("int64_t");
-      var tcases    = new List<Unit>(); // cases depending on tag value or ref cast to int64
-      var rcases    = new List<Unit>(); // cases depending on clazzId of ref type
-      Unit tdefault = null;
+      //var refEntry  = uniyon.field(_names.CHOICE_REF_ENTRY_NAME);
+      //var ref       = hasTag ? refEntry                   : _names.newTemp();
+      //var getRef    = hasTag ? _unit_               : Unit.decl(_types.clazz(_fuir.clazzObject()), (CIdent) ref, refEntry);
+      //var tag       = hasTag ? subv.field(_names.TAG_NAME) : ref.castTo("int64_t");
+      //var tcases    = new List<Unit>(); // cases depending on tag value or ref cast to int64
+      //var rcases    = new List<Unit>(); // cases depending on clazzId of ref type
+      //Unit tdefault = null;
       for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
         {
-          var ctags = new List<Value>();
-          var rtags = new List<Value>();
+          boolean taken;
+          if (_fuir.getSpecialId(subjClazz) == FUIR.SpecialClazzes.c_bool)
+            {
+              taken =
+                subv == Value.BOOL ||
+                subv == Value.TRUE  && mc == 1 ||
+                subv == Value.FALSE && mc == 0;
+            }
+          else
+            {
+              taken = false;  /* NYI: match for non-bool subject  */
+            }
+
+          /*
+          //var ctags = new List<Value>();
+          //var rtags = new List<Value>();
           var tags = _fuir.matchCaseTags(cl, c, i, mc);
           for (var tagNum : tags)
             {
@@ -505,7 +518,16 @@ public class DFA extends ANY
                                                     : Value.UNIT;
               sl.add(C.this.assign(f, entry, fclazz));
             }
-          sl.add(_ai.process(cl, _fuir.matchCaseCode(c, i, mc)));
+          */
+          if (taken)
+            {
+              var resv = ai.process(cl, _fuir.matchCaseCode(c, i, mc));
+              if (resv._v0 != null)
+                {
+                  r = Value.UNIT;
+                }
+            }
+          /*
           sl.add(Unit.BREAK);
           var cazecode = Unit.seq(sl);
           tcases.add(Unit.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
@@ -514,13 +536,15 @@ public class DFA extends ANY
               rcases.add(Unit.caze(rtags, cazecode));
               tdefault = cazecode;
             }
+          */
         }
+      /*
       if (rcases.size() >= 2)
         { // more than two reference cases: we have to create separate switch of clazzIds for refs
           var id = refEntry.deref().field(_names.CLAZZ_ID);
           var notFound = reportErrorInCode("unexpected reference type %d found in match", id);
           tdefault = Unit.suitch(id, rcases, notFound);
-        }
+          }
       return Unit.seq(getRef, Unit.suitch(tag, tcases, tdefault));
       */
       return new Pair(r, o);
