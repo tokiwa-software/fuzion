@@ -1092,7 +1092,7 @@ public class DFA extends ANY
           return null;
         });
     put("effect.abort"                   , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
-    put("effects.exists"                 , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
+    put("effects.exists"                 , cl -> Value.BOOL /* NYI: check environment stack! */);
     put("fuzion.java.JavaObject.isNull"  , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
     put("fuzion.java.arrayGet"           , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
     put("fuzion.java.arrayLength"        , cl -> { System.out.println("NYI: DFA intrinsic "+cl); return null; } );
