@@ -65,6 +65,10 @@ public class Value extends ANY
       {
         return "true";
       }
+      boolean isBool()
+      {
+        return true;
+      }
     };
 
 
@@ -77,7 +81,28 @@ public class Value extends ANY
       {
         return "false";
       }
+      boolean isBool()
+      {
+        return true;
+      }
     };
+
+
+  /**
+   * Any value of type 'bool'
+   */
+  static Value BOOL = new Value()
+    {
+      public String toString()
+      {
+        return "bool";
+      }
+      boolean isBool()
+      {
+        return true;
+      }
+    };
+
 
 
   /**
@@ -132,6 +157,15 @@ public class Value extends ANY
 
 
   /**
+   * is this a boolean value, TRUE, FALSE, or BOOL?
+   */
+  boolean isBool()
+  {
+    return false;
+  }
+
+
+  /**
    * Get the address of a value.
    */
   public Value adrOf()
@@ -175,6 +209,10 @@ public class Value extends ANY
     else if (v == UNDEFINED)
       {
         return this;
+      }
+    else if (this.isBool() && v.isBool())
+      { // booleans that are not equal:
+        return BOOL;
       }
     else
       {
