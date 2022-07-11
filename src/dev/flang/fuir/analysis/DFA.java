@@ -407,10 +407,11 @@ public class DFA extends ANY
     /**
      * Perform a match on value subv.
      */
-    public Unit match(int cl, int c, int i, Value subv)
+    public Pair<Value, Unit> match(AbstractInterpreter ai, int cl, int c, int i, Value subv)
     {
       System.err.println("NYI: DFA.match for "+_fuir.codeAtAsString(cl, c, i));
-      return _unit_;
+      Value r = null;
+      var o = _unit_;
       /*
       var subjClazz = _fuir.matchStaticSubject(cl, c, i);
       var sub       = fields(subv, subjClazz);
@@ -477,6 +478,7 @@ public class DFA extends ANY
         }
       return Unit.seq(getRef, Unit.suitch(tag, tcases, tdefault));
       */
+      return new Pair(r, o);
     }
 
 

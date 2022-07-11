@@ -232,7 +232,7 @@ public class C extends ANY
     /**
      * Perform a match on value subv.
      */
-    public CStmnt match(int cl, int c, int i, CExpr subv)
+    public Pair<CExpr, CStmnt> match(AbstractInterpreter<CExpr, CStmnt> ai, int cl, int c, int i, CExpr subv)
     {
       var subjClazz = _fuir.matchStaticSubject(cl, c, i);
       var sub       = fields(subv, subjClazz);
@@ -281,7 +281,7 @@ public class C extends ANY
                                                     : CExpr.UNIT;
               sl.add(C.this.assign(f, entry, fclazz));
             }
-          sl.add(_ai.process(cl, _fuir.matchCaseCode(c, i, mc))._v1);
+          sl.add(ai.process(cl, _fuir.matchCaseCode(c, i, mc))._v1);
           sl.add(CStmnt.BREAK);
           var cazecode = CStmnt.seq(sl);
           tcases.add(CStmnt.caze(ctags, cazecode));  // tricky: this a NOP if ctags.isEmpty
@@ -297,7 +297,7 @@ public class C extends ANY
           var notFound = reportErrorInCode("unexpected reference type %d found in match", id);
           tdefault = CStmnt.suitch(id, rcases, notFound);
         }
-      return CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault));
+      return new Pair(CExpr.UNIT, CStmnt.seq(getRef, CStmnt.suitch(tag, tcases, tdefault)));
     }
 
 

@@ -139,7 +139,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     /**
      * Perform a match on value subv.
      */
-    public abstract RESULT match(int cl, int c, int i, VALUE subv);
+    public abstract Pair<VALUE, RESULT> match(AbstractInterpreter<VALUE, RESULT> ai, int cl, int c, int i, VALUE subv);
 
     /**
      * Create a tagged value of type newcl from an untagged value for type valuecl.
@@ -467,7 +467,12 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
         {
           var subjClazz = _fuir.matchStaticSubject(cl, c, i);
           var subv      = pop(stack, subjClazz);
-          return _processor.match(cl, c, i, subv);
+          var r = _processor.match(this, cl, c, i, subv);
+          if (r._v0 == null)
+            {
+              stack.push(null);
+            }
+          return r._v1;
         }
       case Tag:
         {
