@@ -809,7 +809,7 @@ public class DFA extends ANY
     else
       {
         var ai = new AbstractInterpreter(_fuir, new Analyze(i, c._target));
-        var r = ai.process(cl, _fuir.clazzCode(cl));
+        var r = ai.process(cl, false);
         if (r._v0 != null)
           {
             c.returns();
