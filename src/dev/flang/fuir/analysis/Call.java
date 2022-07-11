@@ -100,7 +100,7 @@ public class Call extends ANY implements Comparable<Call>, Context
    *
    * Any other value gives the result of the call.
    */
-  Value _result = null;
+  Value _result;
 
 
   /**
@@ -137,6 +137,15 @@ public class Call extends ANY implements Comparable<Call>, Context
     _args = args;
     _context = context;
     _instance = dfa.newInstance(cc, this);
+    if (_dfa._fuir.clazzKind(cc) == IR.FeatureKind.Intrinsic)
+      {
+        var name = _dfa._fuir.clazzIntrinsicName(_cc);
+        _result = _dfa._intrinsics_.get(name).analyze(this);
+      }
+    else
+      {
+        _result = null;
+      }
   }
 
 
@@ -186,11 +195,6 @@ public class Call extends ANY implements Comparable<Call>, Context
         if (_pre)
           {
             _result = Value.UNIT;
-          }
-        else if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Intrinsic)
-          {
-            var name = _dfa._fuir.clazzIntrinsicName(_cc);
-            _result = _dfa._intrinsics_.get(name).analyze(this);
           }
         else if (rf == -1)
           {
