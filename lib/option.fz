@@ -90,6 +90,13 @@ is
                 | nil => nil
 
 
+  # flat_map this option using f, i.e., map nil to nil and any value v to f v
+  #
+  flat_map (B type, f T -> option B) option B is
+    option.this ? v T => f v
+                | nil => nil
+
+
   # converts option to a string
   #
   # returns the result of $T for an option containing an instance
