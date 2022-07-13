@@ -835,11 +835,15 @@ public class SourceFile extends ANY
   /**
    * Obtain the given position as a SourcePosition object.
    *
-   * @param pos a byte position wihtin this file.
+   * @param pos a byte position within this file.
    */
   public SourcePosition sourcePos(int pos)
   {
     int line = lineNum(pos);
+    if (line == 0)
+      {
+        return new SourcePosition(this, 1, 1);
+      }
     return new SourcePosition(this, line, codePointInLine(pos, line));
   }
 

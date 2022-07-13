@@ -267,6 +267,9 @@ $(MOD_BASE): $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz
 	$(BUILD_DIR)/bin/fz -XsaveBaseLib=$@
 	$(BUILD_DIR)/bin/fz -XXcheckIntrinsics
 
+# keep make from deleting $(MOD_BASE) on ctrl-C:
+.PRECIOUS: $(MOD_BASE)
+
 $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
 	cp -rf $(FZ_SRC)/bin/fzjava $@

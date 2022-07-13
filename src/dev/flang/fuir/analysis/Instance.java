@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis;
 
-import java.util.TreeSet;
+import java.util.TreeMap;
 
 import dev.flang.fuir.FUIR;
 
@@ -41,7 +41,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Instance extends ANY
+public class Instance extends Value implements Comparable<Instance>, Context
 {
 
 
@@ -60,19 +60,118 @@ public class Instance extends ANY
   int _clazz;
 
 
+  /**
+   * The DFA instance we are working with.
+   */
+  DFA _dfa;
+
+
+  /**
+   * Map from fields to the values that have been assigned to the fields.
+   */
+  TreeMap<Integer, Value> _fields = new TreeMap<>();
+
+
+  /**
+   * For debugging: Reason that causes this instance to be part of the analysis.
+   */
+  Context _context;
+
+
   /*---------------------------  consructors  ---------------------------*/
 
 
   /**
    * Create Instance of given clazz
    *
+   * @param dfa the DFA instance we are analyzing with
+   *
    * @param clazz the clazz this is an instance of.
+   *
+   * @param context for debugging: Reason that causes this instance to be part
+   * of the analysis.
    */
-  public Instance(int clazz)
+  public Instance(DFA dfa, int clazz, Context context)
   {
     _clazz = clazz;
+    _dfa = dfa;
+    _context = context;
   }
 
+
+  /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Compare this to another instance.
+   */
+  public int compareTo(Instance other)
+  {
+    return
+      _clazz < other._clazz ? -1 :
+      _clazz > other._clazz ? +1 : 0;
+  }
+
+
+  /**
+   * Add v to the set of values of given field within this instance.
+   */
+  public void setField(int field, Value v)
+  {
+    if (PRECONDITIONS) require
+      (v != null);
+
+    var oldv = _fields.get(field);
+    if (oldv != null)
+      {
+        v = oldv.join(v);
+      }
+    _fields.put(field, v);
+  }
+
+
+  /**
+   * Get set of values of given field within this instance.
+   */
+  Value readFieldFromInstance(DFA dfa, int target, int field)
+  {
+    if (PRECONDITIONS) require
+      (_clazz == target);
+
+    var v = _fields.get(field);
+    if (v == null)
+      {
+        if (dfa._reportResults)
+          {
+            System.err.println("*** reading uninitialized field " + dfa._fuir.clazzAsString(field));
+            for (var f : _fields.keySet())
+              {
+                System.out.println("values of "+dfa._fuir.clazzAsString(f)+": "+_fields.get(f));
+              }
+          }
+      }
+    return v;
+  }
+
+
+  /**
+   * Create human-readable string from this instance.
+   */
+  public String toString()
+  {
+    return _dfa._fuir.clazzAsString(_clazz);
+  }
+
+  /**
+   * Show the context that caused the inclusion of this instance into the analysis.
+   */
+  public String showWhy()
+  {
+    var indent = _context.showWhy();
+    System.out.println(indent + "  |");
+    System.out.println(indent + "  +- creates Instance " + this);
+    return indent + "  ";
+  }
 
 }
 

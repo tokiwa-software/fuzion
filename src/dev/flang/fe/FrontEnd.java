@@ -170,7 +170,7 @@ public class FrontEnd extends ANY
     var save = options._saveBaseLib;
     _baseModule = save == null ? baseModule() : null;
     dependsOn = _baseModule == null ? new LibraryModule[] { } : new LibraryModule[] { _baseModule };
-    if (options._loadSources && Errors.count() == 0)
+    if (options._loadSources)
       {
         _module = new SourceModule(options, sourceDirs, inputFile(options), options._main, dependsOn, universe);
         _module.createASTandResolve();
