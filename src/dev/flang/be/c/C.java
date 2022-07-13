@@ -255,6 +255,17 @@ public class C extends ANY
                                                  r.ret()))));
     var ordered = _types.inOrder();
 
+
+    // declaration of struct that is meant to passed to
+    // the thread start routine
+    cf.print(CStmnt.struct(CNames.fzThreadStartRoutineArg.code(), new List<>(
+      CStmnt.decl("void *", CNames.fzThreadStartRoutineArgFun),
+      CStmnt.decl("void *", CNames.fzThreadStartRoutineArgArg)
+    )));
+    // declaration of the thread start routine
+    cf.print(threadStartRoutine(false));
+
+
     Stream.of(CompilePhase.values()).forEachOrdered
       ((p) ->
        {
@@ -267,27 +278,80 @@ public class C extends ANY
          // thread local effect environments
          if (p == CompilePhase.STRUCTS)
            {
-             ordered
-               .stream()
-               .filter(cl -> _fuir.clazzNeedsCode(cl) &&
-                       _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic  &&
-                       _intrinsics.isEffect(this, cl))
-               .mapToInt(cl -> _intrinsics.effectType(this, cl))
-               .distinct()
-               .forEach(cl -> cf.print(CStmnt.seq(CStmnt.decl("__thread", _types.clazz(cl), _names.env(cl)),
-                                                  CStmnt.decl("__thread", "bool"          , _names.envInstalled(cl)),
-                                                  CStmnt.decl("__thread", "jmp_buf*"      , _names.envJmpBuf(cl)))));
+             cf.print(
+               CStmnt.seq(
+                 CStmnt.struct(CNames.fzThreadEffectsEnvironment.code(),
+                   new List<CStmnt>(
+                     ordered
+                       .stream()
+                       .filter(cl -> _fuir.clazzNeedsCode(cl) &&
+                               _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic &&
+                               _intrinsics.isEffect(this, cl))
+                       .mapToInt(cl -> _intrinsics.effectType(this, cl))
+                       .distinct()
+                       .mapToObj(cl -> Stream.of(
+                                         CStmnt.decl(_types.clazz(cl), _names.env(cl)),
+                                         CStmnt.decl("bool", _names.envInstalled(cl)),
+                                         CStmnt.decl("jmp_buf*", _names.envJmpBuf(cl))
+                                       )
+                       )
+                       .flatMap(x -> x)
+                       .iterator())),
+                 CStmnt.decl("__thread", "struct " + CNames.fzThreadEffectsEnvironment.code() + "*", CNames.fzThreadEffectsEnvironment)
+               )
+             );
            }
        });
+
+    cf.print(threadStartRoutine(true));
+
     cf.println("int main(int argc, char **argv) { ");
-    if(_options._useBoehmGC)
+
+    if (_options._useBoehmGC)
       {
         cf.println("GC_INIT(); /* Optional on Linux/X86 */");
       }
+
+    cf.print(initializeEffectsEnvironment());
+
     cf.print(CStmnt.seq(_names.GLOBAL_ARGC.assign(new CIdent("argc")),
                         _names.GLOBAL_ARGV.assign(new CIdent("argv")),
                         CExpr.call(_names.function(_fuir.mainClazzId(), false), new List<>())));
     cf.println("}");
+  }
+
+
+  /**
+   * initializes the effects environment
+   * then runs the actual code passed to the thread
+   * @param includeBody
+   * @return
+   */
+  private CStmnt threadStartRoutine(boolean includeBody)
+  {
+    var tmp = new CIdent("tmp1");
+    var body = CStmnt.seq(
+      initializeEffectsEnvironment(),
+      CExpr.decl("struct " + CNames.fzThreadStartRoutineArg.code() + "*", tmp),
+      tmp.assign(CIdent.arg(0)),
+      CExpr.call("((void *(*)(void *))" + tmp.code() + "->"+ CNames.fzThreadStartRoutineArgFun.code() + ")", new List<>(tmp.deref().field(CNames.fzThreadStartRoutineArgArg))).ret()
+    );
+    return CStmnt.functionDecl("static void *", CNames.fzThreadStartRoutine, new List<>("void *"), new List<>(CIdent.arg(0)), includeBody ? body : null);
+  }
+
+
+  /**
+   * zeros the struct that holds the effects environment
+   * @return
+   */
+  private CStmnt initializeEffectsEnvironment()
+  {
+    var tmp = new CIdent("tmp0");
+    return CStmnt.seq(
+      CStmnt.decl("struct " + CNames.fzThreadEffectsEnvironment.code(), tmp),
+      CExpr.call("memset", new List<>(tmp.adrOf(), CExpr.int32const(0), CExpr.sizeOfType("struct " + CNames.fzThreadEffectsEnvironment.code()))),
+      CNames.fzThreadEffectsEnvironment.assign(tmp.adrOf())
+    );
   }
 
 
@@ -751,8 +815,8 @@ public class C extends ANY
       case Env:
         {
           var ecl = _fuir.envClazz(cl, c, i);
-          var res = _names.env(ecl);
-          var evi = _names.envInstalled(ecl);
+          var res = _names.fzThreadEffectsEnvironment.deref().field(_names.env(ecl));
+          var evi = _names.fzThreadEffectsEnvironment.deref().field(_names.envInstalled(ecl));
           o = CStmnt.iff(evi.not(),
                          CStmnt.seq(CExpr.fprintfstderr("*** effect %s not present in current environment\n",
                                                         CExpr.string(_fuir.clazzAsString(ecl))),
@@ -816,7 +880,7 @@ public class C extends ANY
   {
     var t = _names.struct(cl);
     return CStmnt.seq(CStmnt.decl(t + "*", tmp),
-                      tmp.assign(CExpr.call(malloc(cl), new List<>(CExpr.sizeOfType(t)))),
+                      tmp.assign(CExpr.call(malloc(), new List<>(CExpr.sizeOfType(t)))),
                       _fuir.clazzIsRef(cl) ? tmp.deref().field(_names.CLAZZ_ID).assign(_names.clazzId(cl)) : CStmnt.EMPTY);
   }
 
@@ -1339,27 +1403,6 @@ public class C extends ANY
   String malloc()
   {
     return _options._useBoehmGC ? "GC_MALLOC" : "malloc";
-  }
-
-
-  /**
-   * Boehm GC does not scan thread locals
-   * see: https://github.com/ivmai/bdwgc/issues/191
-   *
-   * Consequently for effects which are stored in thread locals we use
-   * GC_MALLOC_UNCOLLECTABLE instead of GC_MALLOC.
-   *
-   * @param cl
-   * @return the name of malloc function that is used
-   */
-  String malloc(int cl)
-  {
-    if(!_options._useBoehmGC)
-      {
-        return malloc();
-      }
-    // NYI we need to manually call GC_FREE for effects when thread finishes that the effect belongs to
-    return _fuir.clazzInheritsEffect(cl) ? "GC_MALLOC_UNCOLLECTABLE" : malloc();
   }
 
 

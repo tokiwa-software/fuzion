@@ -437,16 +437,28 @@ public class Intrinsics extends ANY
             {
               var pt = new CIdent("pt");
               var res = new CIdent("res");
+              var arg = new CIdent("arg");
               return CStmnt.seq(CExpr.decl("pthread_t *", pt),
                                 CExpr.decl("int", res),
+                                CExpr.decl("struct " + CNames.fzThreadStartRoutineArg.code() + "*", arg),
+
                                 pt.assign(CExpr.call(c.malloc(), new List<>(CExpr.sizeOfType("pthread_t")))),
                                 CExpr.iff(pt.eq(CNames.NULL),
                                           CStmnt.seq(CExpr.fprintfstderr("*** " + c.malloc() + "(%zu) failed\n", CExpr.sizeOfType("pthread_t")),
                                                      CExpr.call("exit", new List<>(CExpr.int32const(1))))),
+
+                                arg.assign(CExpr.call(c.malloc(), new List<>(CExpr.sizeOfType("struct " + CNames.fzThreadStartRoutineArg.code())))),
+                                CExpr.iff(arg.eq(CNames.NULL),
+                                          CStmnt.seq(CExpr.fprintfstderr("*** " + c.malloc() + "(%zu) failed\n", CExpr.sizeOfType("struct " + CNames.fzThreadStartRoutineArg.code())),
+                                                     CExpr.call("exit", new List<>(CExpr.int32const(1))))),
+
+                                arg.deref().field(CNames.fzThreadStartRoutineArgFun).assign(CExpr.ident(c._names.function(call, false)).adrOf().castTo("void *")),
+                                arg.deref().field(CNames.fzThreadStartRoutineArgArg).assign(A0.castTo("void *")),
+
                                 res.assign(CExpr.call("pthread_create", new List<>(pt,
                                                                                    CNames.NULL,
-                                                                                   CExpr.ident(c._names.function(call, false)).adrOf().castTo("void *(*)(void *)"),
-                                                                                   A0.castTo("void *")))),
+                                                                                   CNames.fzThreadStartRoutine.adrOf(),
+                                                                                   arg))),
                                 CExpr.iff(res.ne(CExpr.int32const(0)),
                                           CStmnt.seq(CExpr.fprintfstderr("*** pthread_create failed with return code %d\n",res),
                                                      CExpr.call("exit", new List<>(CExpr.int32const(1))))));
@@ -491,9 +503,9 @@ public class Intrinsics extends ANY
         "effect.abort"         , (c,cl,outer,in) ->
         {
           var ecl = effectType(c, cl);
-          var ev  = c._names.env(ecl);
-          var evi = c._names.envInstalled(ecl);
-          var evj = c._names.envJmpBuf(ecl);
+          var ev  = c._names.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));
+          var evi = c._names.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
+          var evj = c._names.fzThreadEffectsEnvironment.deref().field(c._names.envJmpBuf(ecl));
           var o   = c._names.OUTER;
           var e   = c._fuir.clazzIsRef(ecl) ? o : o.deref();
           return
@@ -551,7 +563,7 @@ public class Intrinsics extends ANY
     put("effects.exists"       , (c,cl,outer,in) ->
         {
           var ecl = c._fuir.clazzActualGeneric(cl, 0);
-          var evi = c._names.envInstalled(ecl);
+          var evi = c._names.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
           return CStmnt.seq(CStmnt.iff(evi, c._names.FZ_TRUE.ret()), c._names.FZ_FALSE.ret());
         });
 

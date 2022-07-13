@@ -347,33 +347,6 @@ public class FUIR extends IR
 
 
   /**
-   * Is the class an effect?
-   * @param cl
-   * @return
-   */
-  public boolean clazzInheritsEffect(int cl)
-  {
-    return inheritsRecursive(_clazzIds.get(cl).feature())
-      .map(ac -> ac.calledFeature())
-      .anyMatch(af -> af.qualifiedName().equals("effect"));
-  }
-
-
-  /**
-   * All directly or indirectly inherited Features
-   * @param feature
-   * @return
-   */
-  private Stream<AbstractCall> inheritsRecursive(AbstractFeature feature)
-  {
-    return Stream.concat(
-      feature.inherits().stream(),
-      feature.inherits().stream().flatMap(c -> inheritsRecursive(c.calledFeature()))
-    );
-  }
-
-
-  /**
    * Check if field does not store the value directly, but a pointer to the value.
    *
    * @param fcl a clazz id of the field

@@ -195,6 +195,30 @@ public class CNames extends ANY
   static final CIdent GLOBAL_ARGV = new CIdent("fzG_argv");
 
 
+  /**
+   * Prefix for thread related things
+   */
+  private static final String THRD_PREFIX = "fzThrd_";
+
+  /*
+   * the identifier for the thread local effects environment
+   */
+  static final CIdent fzThreadEffectsEnvironment = new CIdent(THRD_PREFIX + "effectsEnvironment");
+
+  /*
+   * the identifier of the function passed to pthread_create
+   */
+  static final CIdent fzThreadStartRoutine       = new CIdent(THRD_PREFIX + "startRoutine");
+
+  /*
+   * the identifier of the struct passed to
+   * the thread start routine and its members.
+   */
+  static final CIdent fzThreadStartRoutineArg    = new CIdent(THRD_PREFIX + "startRoutineArg");
+  static final CIdent fzThreadStartRoutineArgFun = new CIdent(THRD_PREFIX + "startRoutineArgFun");
+  static final CIdent fzThreadStartRoutineArgArg = new CIdent(THRD_PREFIX + "startRoutineArgArg");
+
+
   /*----------------------------  variables  ----------------------------*/
 
 
