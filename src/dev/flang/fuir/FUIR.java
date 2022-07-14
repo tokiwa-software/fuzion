@@ -1823,6 +1823,54 @@ hw25 is
       };
   }
 
+
+  /*-----------------  convenience methods for effects  -----------------*/
+
+
+  /**
+   * Is cl one of the instrinsics in effect that changes the effect in
+   * the current environment?
+   *
+   * @param cl the id of the intrinsic clazz
+   *
+   * @return true for effect.install and similar features.
+   */
+  public boolean isEffect(int cl)
+  {
+    if (PRECONDITIONS) require
+      (clazzKind(cl) == FeatureKind.Intrinsic);
+
+    return switch(clazzIntrinsicName(cl))
+      {
+      case "effect.replace",
+           "effect.default",
+           "effect.abortable",
+           "effect.abort" -> true;
+      default -> false;
+      };
+  }
+
+
+
+  /**
+   * For an intrinstic in effect that changes the effect in the
+   * current environment, return the type of the environment.  This type is used
+   * to distinguish different environments.
+   *
+   * @param cl the id of the intrinsic clazz
+   *
+   * @return the type of the outer feature of cl
+   */
+  public int effectType(int cl)
+  {
+    if (PRECONDITIONS) require
+      (isEffect(cl));
+
+    var or = clazzOuterRef(cl);
+    return clazzResultClazz(or);
+  }
+
+
 }
 
 /* end of file */

@@ -614,8 +614,8 @@ public class C extends ANY
                .stream()
                .filter(cl -> _fuir.clazzNeedsCode(cl) &&
                        _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic  &&
-                       _intrinsics.isEffect(this, cl))
-               .mapToInt(cl -> _intrinsics.effectType(this, cl))
+                       _fuir.isEffect(cl))
+               .mapToInt(cl -> _fuir.effectType(cl))
                .distinct()
                .forEach(cl -> cf.print(CStmnt.seq(CStmnt.decl("__thread", _types.clazz(cl), _names.env(cl)),
                                                   CStmnt.decl("__thread", "bool"          , _names.envInstalled(cl)),
