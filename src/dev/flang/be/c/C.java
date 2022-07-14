@@ -636,8 +636,8 @@ public class C extends ANY
                        .stream()
                        .filter(cl -> _fuir.clazzNeedsCode(cl) &&
                                _fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic &&
-                               _intrinsics.isEffect(this, cl))
-                       .mapToInt(cl -> _intrinsics.effectType(this, cl))
+                               _fuir.isEffect(cl))
+                       .mapToInt(cl -> _fuir.effectType(cl))
                        .distinct()
                        .mapToObj(cl -> Stream.of(
                                          CStmnt.decl(_types.clazz(cl), _names.env(cl)),

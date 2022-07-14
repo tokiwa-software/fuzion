@@ -502,7 +502,7 @@ public class Intrinsics extends ANY
         "effect.abortable"     ,
         "effect.abort"         , (c,cl,outer,in) ->
         {
-          var ecl = effectType(c, cl);
+          var ecl = c._fuir.effectType(cl);
           var ev  = c._names.fzThreadEffectsEnvironment.deref().field(c._names.env(ecl));
           var evi = c._names.fzThreadEffectsEnvironment.deref().field(c._names.envInstalled(ecl));
           var evj = c._names.fzThreadEffectsEnvironment.deref().field(c._names.envJmpBuf(ecl));
@@ -694,54 +694,6 @@ public class Intrinsics extends ANY
           }
       }
   }
-
-
-  /**
-   * Is cl one of the instrinsics in effect that changes the effect in
-   * the current environment?
-   *
-   * @param c the C backend
-   *
-   * @param cl the id of the intrinsic clazz
-   *
-   * @return true for effect.install and similar features.
-   */
-  static boolean isEffect(C c, int cl)
-  {
-    if (PRECONDITIONS) require
-      (c._fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
-
-    return switch(c._fuir.clazzIntrinsicName(cl))
-      {
-      case "effect.replace",
-           "effect.default",
-           "effect.abortable",
-           "effect.abort" -> true;
-      default -> false;
-      };
-  }
-
-
-  /**
-   * For an intrinstic in effect that changes the effect in the
-   * current environment, return the type of the environment.  This type is used
-   * to distinguish different environments.
-   *
-   * @param c the C backend
-   *
-   * @param cl the id of the intrinsic clazz
-   *
-   * @return the type of the outer feature of cl
-   */
-  static int effectType(C c, int cl)
-  {
-    if (PRECONDITIONS) require
-      (isEffect(c, cl));
-
-    var or = c._fuir.clazzOuterRef(cl);
-    return c._fuir.clazzResultClazz(or);
-  }
-
 
 
   /**

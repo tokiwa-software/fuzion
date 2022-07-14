@@ -1003,7 +1003,7 @@ hw25 is
   /**
    * Get the id of clazz fuzion.sys.array<u8>.data
    *
-   * @param the id of connststring.internalArray or -1 if that clazz was not created.
+   * @param the id of fuzion.sys.array<u8>.data or -1 if that clazz was not created.
    */
   public int clazz_fuzionSysArray_u8_data()
   {
@@ -1015,11 +1015,23 @@ hw25 is
   /**
    * Get the id of clazz fuzion.sys.array<u8>.length
    *
-   * @param the id of connststring.internalArray or -1 if that clazz was not created.
+   * @param the id of fuzion.sys.array<u8>.length or -1 if that clazz was not created.
    */
   public int clazz_fuzionSysArray_u8_length()
   {
     var cc = Clazzes.fuzionSysArray_u8_length;
+    return cc == null ? -1 : _clazzIds.get(cc);
+  }
+
+
+  /**
+   * Get the id of clazz u8
+   *
+   * @param the id of u8 or -1 if that clazz was not created.
+   */
+  public int clazz_u8()
+  {
+    var cc = Clazzes.u8.get();
     return cc == null ? -1 : _clazzIds.get(cc);
   }
 
@@ -1819,6 +1831,54 @@ hw25 is
       case Unit    -> codeIndex(c, ix, -1);
       };
   }
+
+
+  /*-----------------  convenience methods for effects  -----------------*/
+
+
+  /**
+   * Is cl one of the instrinsics in effect that changes the effect in
+   * the current environment?
+   *
+   * @param cl the id of the intrinsic clazz
+   *
+   * @return true for effect.install and similar features.
+   */
+  public boolean isEffect(int cl)
+  {
+    if (PRECONDITIONS) require
+      (clazzKind(cl) == FeatureKind.Intrinsic);
+
+    return switch(clazzIntrinsicName(cl))
+      {
+      case "effect.replace",
+           "effect.default",
+           "effect.abortable",
+           "effect.abort" -> true;
+      default -> false;
+      };
+  }
+
+
+
+  /**
+   * For an intrinstic in effect that changes the effect in the
+   * current environment, return the type of the environment.  This type is used
+   * to distinguish different environments.
+   *
+   * @param cl the id of the intrinsic clazz
+   *
+   * @return the type of the outer feature of cl
+   */
+  public int effectType(int cl)
+  {
+    if (PRECONDITIONS) require
+      (isEffect(cl));
+
+    var or = clazzOuterRef(cl);
+    return clazzResultClazz(or);
+  }
+
 
 }
 

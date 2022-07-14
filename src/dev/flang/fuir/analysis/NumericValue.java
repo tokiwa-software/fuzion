@@ -28,13 +28,6 @@ package dev.flang.fuir.analysis;
 
 import java.nio.ByteBuffer;
 
-import java.util.TreeSet;
-
-import dev.flang.fuir.FUIR;
-
-import dev.flang.util.ANY;
-import dev.flang.util.Errors;
-
 
 /**
  * NumericValue represents a numeric value i8..i64, u8..u64, f32..f64.
@@ -69,7 +62,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
   /**
    * The value cast to long
    */
-  long _value;
+  Long _value;
 
 
   /*---------------------------  consructors  ---------------------------*/
@@ -91,17 +84,17 @@ public class NumericValue extends Value implements Comparable<NumericValue>
 
     _value = switch (_dfa._fuir.getSpecialId(_clazz))
       {
-      case c_i8   -> data.get      ();
-      case c_i16  -> data.getShort ();
-      case c_i32  -> data.getInt   ();
-      case c_i64  -> data.getLong  ();
-      case c_u8   -> data.get      () & 0xff;
-      case c_u16  -> data.getChar  ();
-      case c_u32  -> data.getInt   ();
-      case c_u64  -> data.getLong  ();
-      case c_f32  -> Float.floatToIntBits   (data.getFloat ());
-      case c_f64  -> Double.doubleToLongBits(data.getDouble());
-      default     -> { check(false); yield 0; }
+      case c_i8   -> (long) data.get      ();
+      case c_i16  -> (long) data.getShort ();
+      case c_i32  -> (long) data.getInt   ();
+      case c_i64  -> (long) data.getLong  ();
+      case c_u8   -> (long) data.get      () & 0xff;
+      case c_u16  -> (long) data.getChar  ();
+      case c_u32  -> (long) data.getInt   ();
+      case c_u64  ->        data.getLong  ();
+      case c_f32  -> (long) Float .floatToIntBits  (data.getFloat ());
+      case c_f64  ->        Double.doubleToLongBits(data.getDouble());
+      default     -> { check(false); yield null; }
       };
   }
 
@@ -123,6 +116,23 @@ public class NumericValue extends Value implements Comparable<NumericValue>
   }
 
 
+  /**
+   * Create Instance of unknown numeric value
+   *
+   * @param dfa the DFA analysis
+   *
+   * @param clazz the clazz this is an instance of.
+   *
+   * @param v the value, cast to long.
+   */
+  public NumericValue(DFA dfa, int clazz)
+  {
+    _dfa = dfa;
+    _clazz = clazz;
+    _value = null;
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 
@@ -134,8 +144,11 @@ public class NumericValue extends Value implements Comparable<NumericValue>
     return
       _clazz < other._clazz ? -1 :
       _clazz > other._clazz ? +1 :
+      _value == null && other._value != null ? -1 :
+      _value != null && other._value == null ? +1 :
+      _value == null && other._value == null ?  0 :
       _value < other._value ? -1 :
-      _value > other._value ? -1 : 0;
+      _value > other._value ? +1 : 0;
   }
 
 
@@ -150,8 +163,20 @@ public class NumericValue extends Value implements Comparable<NumericValue>
   long   u16() { return _value; }
   long   u32() { return _value; }
   long   u64() { return _value; }
-  float  f32() { return Float .intBitsToFloat  ((int) _value); }
+  float  f32() { return Float .intBitsToFloat  ((int) _value.longValue()); }
   double f64() { return Double.longBitsToDouble(      _value); }
+
+
+  /**
+   * Get set of values of given field within this instance.
+   */
+  Value readFieldFromInstance(DFA dfa, int target, int field)
+  {
+    /* for a numeric value, this can only read the 'val' field, e.g., 'i32.val',
+     * which (recursively) contains the numeric value, so we can just return
+     * this value: */
+    return this;
+  }
 
 
   /**
@@ -164,7 +189,9 @@ public class NumericValue extends Value implements Comparable<NumericValue>
         if (CHECKS) check
           (_clazz == nv._clazz);
 
-        var r = switch (_dfa._fuir.getSpecialId(_clazz))
+        var r =
+          _value == null || nv._value == null ? true :
+          switch (_dfa._fuir.getSpecialId(_clazz))
           {
           case c_i8   -> i8 () == nv.i8 ();
           case c_i16  -> i16() == nv.i16();
@@ -178,11 +205,19 @@ public class NumericValue extends Value implements Comparable<NumericValue>
           case c_f64  -> f64() == nv.f64();
           default -> false;
           };
-        if (!r)
+        if (r)
+          {
+            return this;
+          }
+        else if (_clazz == nv._clazz)
+          {
+            return new NumericValue(_dfa, _clazz);
+          }
+        else
           {
             System.err.println("Value.join could not join numerics "+this+" and "+nv+"!");
+            return this;
           }
-        return this;
       }
     else
       {
@@ -193,25 +228,43 @@ public class NumericValue extends Value implements Comparable<NumericValue>
 
 
   /**
+   * Add v to the set of values of given field within this instance.
+   */
+  public void setField(int field, Value v)
+  {
+    if (_dfa._fuir.clazzOuterClazz(field) == _clazz)
+      {
+        // ok, we are setting 'val' field in numeric type
+      }
+    else
+      {
+        throw new Error("Value.setField called on class " + this + " (" + getClass() + ") to set "+_dfa._fuir.clazzAsString(field)+" expected " + Instance.class);
+      }
+  }
+
+
+  /**
    * Create human-readable string from this instance.
    */
   public String toString()
   {
     return _dfa._fuir.clazzAsString(_clazz) + ":" +
-      switch (_dfa._fuir.getSpecialId(_clazz))
-      {
-      case c_i8   -> i8 ();
-      case c_i16  -> i16();
-      case c_i32  -> i32();
-      case c_i64  -> i64();
-      case c_u8   -> u8 ();
-      case c_u16  -> u16();
-      case c_u32  -> u32();
-      case c_u64  -> u64();
-      case c_f32  -> f32();
-      case c_f64  -> f64();
-      default -> "?!?";
-      };
+      (_value == null
+       ? "--any value--"
+       : switch (_dfa._fuir.getSpecialId(_clazz))
+          {
+          case c_i8   -> "" + i8 ();
+          case c_i16  -> "" + i16();
+          case c_i32  -> "" + i32();
+          case c_i64  -> "" + i64();
+          case c_u8   -> "" + u8 ();
+          case c_u16  -> "" + u16();
+          case c_u32  -> "" + u32();
+          case c_u64  -> "" + u64();
+          case c_f32  -> "" + f32();
+          case c_f64  -> "" + f64();
+          default -> throw new Error("unexpected case");
+          });
   }
 
 }

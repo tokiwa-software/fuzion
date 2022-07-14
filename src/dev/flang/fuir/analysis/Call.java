@@ -20,20 +20,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Instance
+ * Source of class Call
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.fuir.analysis;
 
-import java.util.TreeSet;
-
-import dev.flang.fuir.FUIR;
-
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
-import dev.flang.util.Errors;
 import dev.flang.util.List;
 
 
@@ -62,9 +57,10 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * The clazz this is an instance of.
+   * The clazz this is calling.
    */
   int _cc;
+
 
   /**
    * Is this a call to _cc's precondition?
@@ -88,7 +84,7 @@ public class Call extends ANY implements Comparable<Call>, Context
   /**
    * 'this' instance created by this call.
    */
-  Instance _instance;
+  Value _instance;
 
 
   /**
@@ -101,6 +97,12 @@ public class Call extends ANY implements Comparable<Call>, Context
    * Any other value gives the result of the call.
    */
   Value _result;
+
+
+  /**
+   * The environment, i.e., the effects installed when this call is made.
+   */
+  final Env _env;
 
 
   /**
@@ -128,13 +130,14 @@ public class Call extends ANY implements Comparable<Call>, Context
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
    */
-  public Call(DFA dfa, int cc, boolean pre, Value target, List<Value> args, Context context)
+  public Call(DFA dfa, int cc, boolean pre, Value target, List<Value> args, Env env, Context context)
   {
     _dfa = dfa;
     _cc = cc;
     _pre = pre;
     _target = target;
     _args = args;
+    _env = env;
     _context = context;
     _instance = dfa.newInstance(cc, this);
     if (_dfa._fuir.clazzKind(cc) == IR.FeatureKind.Intrinsic)
@@ -166,6 +169,13 @@ public class Call extends ANY implements Comparable<Call>, Context
       {
         r = Value.compare(_args.get(i), other._args.get(i));
       }
+    if (r == 0)
+      {
+        r =
+          _env == null && other._env == null ?  0 :
+          _env != null && other._env == null ? -1 :
+          _env == null && other._env != null ? +1 : _env.compareTo(other._env);
+      }
     return r;
   }
 
@@ -178,6 +188,10 @@ public class Call extends ANY implements Comparable<Call>, Context
     if (_result == null)
       {
         _result = Value.UNDEFINED;
+        if (!_dfa._changed)
+          {
+            _dfa._changedSetBy = "Call.returns for " + this;
+          }
         _dfa._changed = true;
       }
   }
@@ -214,16 +228,28 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * Create human-readable string from this instance.
+   * Create human-readable string from this call.
    */
   public String toString()
   {
     var sb = new StringBuilder();
-    sb.append(_pre ? "precondition of " : "").append(_dfa._fuir.clazzAsString(_cc));
-    for (var a : _args)
+    sb.append(_pre ? "precondition of " : "")
+      .append(_dfa._fuir.clazzAsString(_cc));
+    if (_target != Value.UNIT)
       {
-        sb.append(" ").append(a);
+        sb.append(" target=")
+          .append(_target);
       }
+    for (var i = 0; i < _args.size(); i++)
+      {
+        var a = _args.get(i);
+        sb.append(" a")
+          .append(i)
+          .append("=")
+          .append(a);
+      }
+    sb.append(" => ")
+      .append(_result == null ? "*** VOID ***" : result());
     return sb.toString();
   }
 
@@ -237,6 +263,45 @@ public class Call extends ANY implements Comparable<Call>, Context
     System.out.println(indent + "  |");
     System.out.println(indent + "  +- performs call " + this);
     return indent + "  ";
+  }
+
+
+  /**
+   * Get effect of given type in this call's environment or the default if none
+   * found.
+   *
+   * @param ecl clazz defining the effect type.
+   *
+   * @return null in case no effect of type ecl was found
+   */
+  Value getEffect(int ecl)
+  {
+    return
+      _env != null ? _env.getEffect(ecl)
+                   : _dfa._defaultEffects.get(ecl);
+  }
+
+
+  /**
+   * Replace effect of given type with a new value.
+   *
+   * NYI: This currently modifies the effect and hence the call. We should check
+   * how this could be avoided or handled better.
+   *
+   * @param ecl clazz defining the effect type.
+   *
+   * @param e new instance of this effect
+   */
+  void replaceEffect(int ecl, Value e)
+  {
+    if (_env != null)
+      {
+        _env.replaceEffect(ecl, e);
+      }
+    else
+      {
+        _dfa.replaceDefaultEffect(ecl, e);
+      }
   }
 
 
