@@ -71,7 +71,8 @@ class Fuzion extends Tool
   static final String FUZION_SAFETY_PROPERTY = "fuzion.safety";
 
 
-  static String _binaryName_ = null;
+  static String  _binaryName_ = null;
+  static boolean _useBoehmGC_ = false;
 
 
   /**
@@ -84,7 +85,7 @@ class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<file>] ";
+        return "[-o=<file>] [-useGC] ";
       }
       boolean handleOption(String o)
       {
@@ -92,6 +93,11 @@ class Fuzion extends Tool
         if (o.startsWith("-o="))
           {
             _binaryName_ = o.substring(3);
+            result = true;
+          }
+        if (o.equals("-useGC"))
+          {
+            _useBoehmGC_ = true;
             result = true;
           }
         return result;
@@ -624,7 +630,7 @@ class Fuzion extends Tool
                   irTime = System.currentTimeMillis();
                   in.run(); break;
                 }
-              case c          : new C(new COptions(options, _binaryName_), fuir).compile(); break;
+              case c          : new C(new COptions(options, _binaryName_, _useBoehmGC_), fuir).compile(); break;
               case effects    : new Effects(fuir).find(); break;
               case dfa        : new DFA(fuir).dfa(); break;
               default         : Errors.fatal("backend '" + _backend + "' not supported yet"); break;

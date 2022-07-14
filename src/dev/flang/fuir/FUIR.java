@@ -26,11 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
 import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
