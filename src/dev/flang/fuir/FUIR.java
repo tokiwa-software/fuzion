@@ -1006,7 +1006,7 @@ hw25 is
   /**
    * Get the id of clazz fuzion.sys.array<u8>.data
    *
-   * @param the id of connststring.internalArray or -1 if that clazz was not created.
+   * @param the id of fuzion.sys.array<u8>.data or -1 if that clazz was not created.
    */
   public int clazz_fuzionSysArray_u8_data()
   {
@@ -1018,7 +1018,7 @@ hw25 is
   /**
    * Get the id of clazz fuzion.sys.array<u8>.length
    *
-   * @param the id of connststring.internalArray or -1 if that clazz was not created.
+   * @param the id of fuzion.sys.array<u8>.length or -1 if that clazz was not created.
    */
   public int clazz_fuzionSysArray_u8_length()
   {
