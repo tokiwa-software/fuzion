@@ -20,11 +20,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class Instance
+ * Source of class Value
  *
  *---------------------------------------------------------------------*/
 
 package dev.flang.fuir.analysis;
+
+import java.util.Comparator;
+
+import java.util.function.Consumer;
 
 import dev.flang.util.ANY;
 
@@ -41,7 +45,45 @@ public class Value extends ANY
   /*-----------------------------  classes  -----------------------------*/
 
 
+  static interface ValueConsumer extends Consumer<Value>
+  {
+  }
+
+
   /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Comparator instance to compare two Values of arbitrary tyes.
+   */
+  static Comparator COMPARATOR = new Comparator<Value>() {
+      /**
+       * compare two values.
+       */
+      public int compare(Value a, Value b)
+      {
+        if      (a == b)                                                       { return 0;                    }
+        else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
+        else if (a == TRUE                    || b == TRUE                   ) { return a == TRUE  ? +1 : -1; }
+        else if (a == FALSE                   || b == FALSE                  ) { return a == FALSE ? +1 : -1; }
+        else if (a instanceof Instance     ai && b instanceof Instance     bi) { return ai.compareTo(bi);     }
+        else if (a instanceof NumericValue an && b instanceof NumericValue bn) { return an.compareTo(bn);     }
+        else if (a instanceof TaggedValue  at && b instanceof TaggedValue  bt) { return at.compareTo(bt);     }
+        else if (a instanceof SysArray     aa && b instanceof SysArray     ba) { return aa.compareTo(ba);     }
+        else if (a instanceof ValueSet     as && b instanceof ValueSet     bs) { return as.compareTo(bs);     }
+        else if (a instanceof Instance    ) { return +1; } else if (b instanceof Instance       ) { return -1; }
+        else if (a instanceof NumericValue) { return +1; } else if (b instanceof NumericValue   ) { return -1; }
+        else if (a instanceof TaggedValue ) { return +1; } else if (b instanceof TaggedValue    ) { return -1; }
+        else if (a instanceof SysArray    ) { return +1; } else if (b instanceof SysArray       ) { return -1; }
+        else if (a instanceof ValueSet    ) { return +1; } else if (b instanceof ValueSet       ) { return -1; }
+        else
+          {
+            System.err.println("Value.compareTo requires support for "+a.getClass()+" and "+b.getClass());
+            return 0;
+          }
+      }
+    };
+
 
 
   /**
@@ -120,6 +162,12 @@ public class Value extends ANY
   /*----------------------------  variables  ----------------------------*/
 
 
+  /**
+   * Cached result of a call to box().
+   */
+  Value _boxed;
+
+
   /*---------------------------  consructors  ---------------------------*/
 
 
@@ -139,17 +187,7 @@ public class Value extends ANY
    */
   public static int compare(Value a, Value b)
   {
-    if      (a == b)                                                       { return 0;                    }
-    else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
-    else if (a == TRUE                    || b == TRUE                   ) { return a == TRUE  ? +1 : -1; }
-    else if (a == FALSE                   || b == FALSE                  ) { return a == FALSE ? +1 : -1; }
-    else if (a instanceof Instance     ai && b instanceof Instance     bi) { return ai.compareTo(bi);     }
-    else if (a instanceof NumericValue an && b instanceof NumericValue bn) { return an.compareTo(bn);     }
-    else
-      {
-        System.err.println("Value.compareTo requires support for "+a.getClass()+" and "+b.getClass());
-        return /* NYI: HACK! Works often, not always: */ (a.hashCode() & 0x7fffFFF) - (b.hashCode() & 0x7fffFFFF);
-      }
+    return COMPARATOR.compare(a,b);
   }
 
 
@@ -201,7 +239,7 @@ public class Value extends ANY
    */
   Value readFieldFromInstance(DFA dfa, int target, int field)
   {
-    System.out.println("*** error: Value.readField called on class " + this + " (" + getClass() + "), expected " + Instance.class);
+    System.out.println("*** error: Value.readField '"+dfa._fuir.clazzAsString(field)+"' called on class " + this + " (" + getClass() + "), expected " + Instance.class);
     return UNIT;
   }
 
@@ -211,7 +249,7 @@ public class Value extends ANY
    */
   public Value join(Value v)
   {
-    if (this == v)
+    if (this == v || compare(this, v) == 0)
       {
         return this;
       }
@@ -223,17 +261,79 @@ public class Value extends ANY
       {
         return this;
       }
-    else if (this.isBool() && v.isBool())
+    else if (this.isBool() && (v   .isBool() || v    instanceof TaggedValue) ||
+             v   .isBool() && (this.isBool() || this instanceof TaggedValue)    )
       { // booleans that are not equal:
         return BOOL;
       }
     else
       {
-        System.err.println("NYI: Value.join: "+this+" and "+v);
-        return this;
+        return joinInstances(v);
       }
   }
 
+
+  /**
+   * Create the union of the values 'this' and 'v'. This is called by join()
+   * after common cases (same instnace, UNDEFINED) have been handled.
+   */
+  public Value joinInstances(Value v)
+  {
+    System.err.println("NYI: Value.join: "+this+" and "+v);
+    return this;
+  }
+
+
+  /**
+   * Box this value. This works both for Instances as well as for value types
+   * such as i32, bool, etc.
+   */
+  Value box(int vc, int rc)
+  {
+    if (_boxed == null)
+      {
+        _boxed = new BoxedValue(this, vc, rc);
+      }
+    return _boxed;
+  }
+
+
+  /**
+   * Unbox this value.
+   */
+  Value unbox(int vc)
+  {
+    System.err.println("NYI: Unbox for "+getClass());
+    return this;
+  }
+
+
+  /**
+   * Wrapp this value into a tagged untion type.
+   *
+   * @param dfa the current analysis conext
+   *
+   * @param cl the current feature
+   *
+   * @tagNum the value of the tag. Unlike the backends, there is no optimization
+   * made to try to not store the tagNum.
+   */
+  Value tag(DFA dfa, int cl, int tagNum)
+  {
+    return new TaggedValue(dfa, cl, this, tagNum);
+  }
+
+
+  /**
+   * Perform c.accept on this and, if this is a set, o all values contained in
+   * the set.
+   *
+   * @param c a consumer to apply to the values.
+   */
+  public void forAll(ValueConsumer c)
+  {
+    c.accept(this);
+  }
 
 }
 

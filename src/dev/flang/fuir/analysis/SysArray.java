@@ -26,8 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis;
 
-import dev.flang.fuir.FUIR;
-
 
 /**
  * Instance represents the result of fuzion.sys.array.alloc
@@ -59,6 +57,12 @@ public class SysArray extends Value implements Comparable<SysArray>
   byte[] _data;
 
 
+  /**
+   * Value of the array elements
+   */
+  Value _elements = null;
+
+
   /*---------------------------  consructors  ---------------------------*/
 
 
@@ -76,10 +80,73 @@ public class SysArray extends Value implements Comparable<SysArray>
 
     _dfa = dfa;
     _data = data;
+    if (true)
+      {
+        if (data.length > 0)
+          {
+            _elements = new NumericValue(dfa, dfa._fuir.clazz_u8());
+          }
+      }
+    else
+      { // NYI: accurate sys array element tracking does not work yet:
+        for (var i = 0; i < data.length; i++)
+          {
+            setel(null, new NumericValue(dfa, dfa._fuir.clazz_u8(), data[i] & 0xff));
+          }
+      }
+  }
+
+  /**
+   * Create SysArray instance
+   *
+   * @param dfa the DFA analysis
+   *
+   * @param el the element values.
+   */
+  public SysArray(DFA dfa, Value el)
+  {
+    _dfa = dfa;
+    _data = new byte[0];
+    _elements = el;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Add el to the set of values of elements at index.
+   */
+  void setel(Value index, Value el)
+  {
+    Value ne;
+    if (_elements == null)
+      {
+        ne = el;
+      }
+    else
+      {
+        ne = _elements.join(el);
+      }
+    if (_elements == null || Value.compare(_elements, ne) != 0)
+      {
+        if (!_dfa._changed)
+          {
+            _dfa._changedSetBy = "elements of SysArray changed: " + _elements + " =>" + ne;
+          }
+        _dfa._changed = true;
+        _elements = ne;
+      }
+  }
+
+
+  /**
+   * Get set of values of elements at index index.
+   */
+  Value get(Value index)
+  {
+    return _elements;
+  }
 
 
   /**
@@ -110,13 +177,22 @@ public class SysArray extends Value implements Comparable<SysArray>
 
 
   /**
-   * Create the union of the values 'this' and 'v'.
+   * Create the union of the values 'this' and 'v'. This is called by join()
+   * after common cases (same instnace, UNDEFINED) have been handled.
    */
-  public Value join(Value v)
+  public Value joinInstances(Value v)
   {
-    return
-      this == v ||
-      v instanceof SysArray vs && compareTo(vs) == 0 ? this : super.join(v);
+    if (v instanceof SysArray sv)
+      {
+        Value ne =
+          _elements == null ? sv._elements :
+          sv._elements == null ? _elements : _elements.join(sv._elements);
+        return new SysArray(_dfa, ne);
+      }
+    else
+      {
+        return new ValueSet(this, v);
+      }
   }
 
 

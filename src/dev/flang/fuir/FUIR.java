@@ -1027,6 +1027,18 @@ hw25 is
   }
 
 
+  /**
+   * Get the id of clazz u8
+   *
+   * @param the id of u8 or -1 if that clazz was not created.
+   */
+  public int clazz_u8()
+  {
+    var cc = Clazzes.u8.get();
+    return cc == null ? -1 : _clazzIds.get(cc);
+  }
+
+
   /*--------------------------  accessing code  -------------------------*/
 
 

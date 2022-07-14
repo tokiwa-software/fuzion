@@ -28,11 +28,6 @@ package dev.flang.fuir.analysis;
 
 import java.util.TreeMap;
 
-import dev.flang.fuir.FUIR;
-
-import dev.flang.util.ANY;
-import dev.flang.util.Errors;
-
 
 /**
  * Instance represents an abstract instance of a feature handled by the DFA
@@ -41,7 +36,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Instance extends Value implements Comparable<Instance>, Context
+public class Instance extends Value implements Comparable<Instance> // , Context
 {
 
 
@@ -69,13 +64,20 @@ public class Instance extends Value implements Comparable<Instance>, Context
   /**
    * Map from fields to the values that have been assigned to the fields.
    */
-  TreeMap<Integer, Value> _fields = new TreeMap<>();
+  final TreeMap<Integer, Value> _fields;
 
 
   /**
    * For debugging: Reason that causes this instance to be part of the analysis.
    */
   Context _context;
+
+
+  /**
+   * Is this instance the result of the IR command 'Box'.  If so, there is a
+   * terrible hack to find the field values.
+   */
+  final boolean _isBoxed;
 
 
   /*---------------------------  consructors  ---------------------------*/
@@ -96,6 +98,26 @@ public class Instance extends Value implements Comparable<Instance>, Context
     _clazz = clazz;
     _dfa = dfa;
     _context = context;
+    _fields = new TreeMap<>();
+    _isBoxed = false;
+  }
+
+
+  /**
+   * Create boxed Instance of given value
+   *
+   * @param original the original value.
+   */
+  Instance(Instance original, int vc, int rc)
+  {
+    if (PRECONDITIONS) require
+      (original._clazz == vc);
+
+    _clazz = rc;
+    _dfa = original._dfa;
+    _context = original._context;
+    _fields = (TreeMap<Integer, Value>) original._fields.clone();
+    _isBoxed = true;
   }
 
 
@@ -139,6 +161,18 @@ public class Instance extends Value implements Comparable<Instance>, Context
       (_clazz == target);
 
     var v = _fields.get(field);
+    if (v == null && _isBoxed)
+      {
+        for (var f : _fields.keySet())
+          { // NYI: HACK: For a boxed value, we read the corresponding value
+            // type field. We should better copy all the fields over from the
+            // value type to the ref type.
+            if (dfa._fuir.clazzAsString(f).equals(dfa._fuir.clazzAsString(field).replace("ref ","")))
+              {
+                v = _fields.get(f);
+              }
+          }
+      }
     if (v == null)
       {
         if (dfa._reportResults)
@@ -146,11 +180,24 @@ public class Instance extends Value implements Comparable<Instance>, Context
             System.err.println("*** reading uninitialized field " + dfa._fuir.clazzAsString(field));
             for (var f : _fields.keySet())
               {
-                System.out.println("values of "+dfa._fuir.clazzAsString(f)+": "+_fields.get(f));
+                if (dfa._fuir.clazzAsString(f).equals(dfa._fuir.clazzAsString(field).replace("ref ","")))
+                  {
+                    System.out.println("NYI: HACK: Using value version instead: "+v);
+                  }
               }
           }
       }
     return v;
+  }
+
+
+  /**
+   * Create the union of the values 'this' and 'v'. This is called by join()
+   * after common cases (same instnace, UNDEFINED) have been handled.
+   */
+  public Value joinInstances(Value v)
+  {
+    return new ValueSet(this, v);
   }
 
 
@@ -164,7 +211,6 @@ public class Instance extends Value implements Comparable<Instance>, Context
 
   /**
    * Show the context that caused the inclusion of this instance into the analysis.
-   */
   public String showWhy()
   {
     var indent = _context.showWhy();
@@ -172,6 +218,20 @@ public class Instance extends Value implements Comparable<Instance>, Context
     System.out.println(indent + "  +- creates Instance " + this);
     return indent + "  ";
   }
+   */
+
+
+  /**
+   * Create a boxed (ref) value of this instance.
+   */
+  Value box(int vc, int rc)
+  {
+    if (CHECKS) check
+      (_clazz == vc);
+
+    return new Instance(this, vc, rc);
+  }
+
 
 }
 
