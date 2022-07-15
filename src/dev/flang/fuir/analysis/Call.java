@@ -98,6 +98,13 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   Value _result;
 
+  /**
+   * NYI: _returns flag should be redundant with _result != null, but it is not.
+   * Need to check how it can happen that _result is set to Value.UNDEFINED and
+   * then reset to null.
+   */
+  boolean _returns = false;
+
 
   /**
    * The environment, i.e., the effects installed when this call is made.
@@ -185,14 +192,18 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   void returns()
   {
-    if (_result == null)
+    if (!_returns)
       {
-        _result = Value.UNDEFINED;
-        if (!_dfa._changed)
+        _returns = true;
+        if (_result == null)
           {
-            _dfa._changedSetBy = "Call.returns for " + this;
+            _result = Value.UNDEFINED;
+            if (!_dfa._changed)
+              {
+                _dfa._changedSetBy = "Call.returns for " + this;
+              }
+            _dfa._changed = true;
           }
-        _dfa._changed = true;
       }
   }
 
