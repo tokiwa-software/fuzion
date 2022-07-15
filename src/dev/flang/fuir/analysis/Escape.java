@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir.analysis;
 
 import java.util.Stack;
+import java.util.TreeMap;
 
 import dev.flang.fuir.FUIR;
 
@@ -62,6 +63,12 @@ public class Escape extends ANY
   public final FUIR _fuir;
 
 
+  /**
+   * Cached results of doesCurEscape() for non-constructors.
+   */
+  private final TreeMap<Integer, Boolean> _doesEscapeCache = new TreeMap<>();
+
+
   /*---------------------------  consructors  ---------------------------*/
 
 
@@ -93,7 +100,29 @@ public class Escape extends ANY
       (_fuir.clazzKind(cl) == IR.FeatureKind.Routine);
 
     return _fuir.clazzResultField(cl) == -1 // a constructor, i.e., current instance is returned!
-      || doesCurEscape(cl, new Stack<Boolean>(), _fuir.clazzCode(cl));
+      || doesCurEscapeCached(cl);
+  }
+
+
+  /**
+   * For non-constructor routine cl, perform escape analysis and cache the
+   * result.
+   *
+   * @param cl a non-constructor routine.
+   */
+  private boolean doesCurEscapeCached(int cl)
+  {
+    if (PRECONDITIONS) require
+      (_fuir.clazzKind(cl) == IR.FeatureKind.Routine,
+       _fuir.clazzResultField(cl) != -1);
+
+    var result = _doesEscapeCache.get(cl);
+    if (result == null)
+      {
+        result = doesCurEscape(cl, new Stack<Boolean>(), _fuir.clazzCode(cl));
+        _doesEscapeCache.put(cl, result);
+      }
+    return result;
   }
 
 
