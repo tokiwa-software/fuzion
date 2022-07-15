@@ -255,7 +255,7 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   void push(Stack<VALUE> stack, int cl, VALUE val)
   {
     if (PRECONDITIONS) require
-      (_fuir.clazzIsVoidType(cl) == (val == null),
+      (!_fuir.clazzIsVoidType(cl) || (val == null),
        !containsVoid(stack));
 
     if (cl != _fuir.clazzUniverse() && !_fuir.clazzIsUnitType(cl))
