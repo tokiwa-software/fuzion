@@ -229,7 +229,7 @@ public class Call extends ANY implements Comparable<Call>, Context
           {
             // should not be possible to return void (_result should be null):
             if (CHECKS) check
-              (_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(_cc)));
+              (!_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(_cc)));
 
             _result = _instance.readField(_dfa, _cc, rf);
           }
