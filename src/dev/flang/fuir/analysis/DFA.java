@@ -704,6 +704,31 @@ public class DFA extends ANY
 
 
   /**
+   * Create a new Instance of FUIR using the information collected during this
+   * DFA analyssis. In particular, Let 'clazzNeedsCode' return false for
+   * routines that were found never to be caled.
+   */
+  public FUIR new_fuir()
+  {
+    dfa();
+    var called = new TreeSet<Integer>();
+    for (var c : _calls.values())
+      {
+        called.add(c._cc);
+      }
+    return new FUIR(_fuir)
+      {
+        public boolean clazzNeedsCode(int cl)
+        {
+          return (called.contains(cl) ||
+                  _writtenFields.contains(cl) ||
+                  _fuir.clazzKind(cl) != FUIR.FeatureKind.Routine) && super.clazzNeedsCode(cl);
+          }
+    };
+  }
+
+
+  /**
    * Perform DFA analysis
    */
   public void dfa()

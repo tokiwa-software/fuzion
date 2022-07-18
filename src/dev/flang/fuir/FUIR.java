@@ -146,7 +146,10 @@ public class FUIR extends IR
   final Clazz _main;
 
 
-  final Map2Int<Clazz> _clazzIds = new MapComparable2Int(CLAZZ_BASE);
+  /**
+   * Mapping from Clazz instances to int ids.
+   */
+  final Map2Int<Clazz> _clazzIds;
 
 
   /**
@@ -154,7 +157,7 @@ public class FUIR extends IR
    * unique, i.e., comparing the code index is equivalent to comparing the clazz
    * ids.
    */
-  private final TreeMap<Integer, Integer> _clazzCode = new TreeMap<>();
+  private final TreeMap<Integer, Integer> _clazzCode;
 
 
   /**
@@ -162,16 +165,40 @@ public class FUIR extends IR
    * unique, i.e., comparing the code index is equivalent to comparing the clazz
    * ids.
    */
-  private final TreeMap<Long, Integer> _clazzContract = new TreeMap<>();
+  private final TreeMap<Long, Integer> _clazzContract;
 
 
   /*--------------------------  constructors  ---------------------------*/
 
 
+  /**
+   * Create FUIR from given Clazz instance.
+   *
+   * @param main the main clazz.
+   */
   public FUIR(Clazz main)
   {
     _main = main;
+    _clazzIds = new MapComparable2Int(CLAZZ_BASE);
+    _clazzCode = new TreeMap<>();
+    _clazzContract = new TreeMap<>();
     Clazzes.findAllClasses(main());
+  }
+
+
+  /**
+   * Clone this FUIR such that modifications can be made by optimizers.  A heir
+   * of FUIR can use this to redefine methods.
+   *
+   * @param original the original FUIR instance that we are cloning.
+   */
+  public FUIR(FUIR original)
+  {
+    super(original);
+    _main = original._main;
+    _clazzIds = original._clazzIds;
+    _clazzCode = original._clazzCode;
+    _clazzContract = original._clazzContract;
   }
 
 
@@ -935,21 +962,7 @@ hw25 is
    */
   public boolean clazzNeedsCode(int cl)
   {
-    return clazzNeedsCode(_clazzIds.get(cl));
-  }
-
-
-  /**
-   * Does the backend need to generate code for this clazz since it might be
-   * called at runtime.  This is true for all features that are called directly
-   * or dynamically in a 'normal' call, i.e., not in an inheritance call.
-   *
-   * An inheritance call is inlined since it works on a different instance, the
-   * instance of the heir class.  Consequently, a clazz resulting from an
-   * inheritance call does not need code for itself.
-   */
-  boolean clazzNeedsCode(Clazz cc)
-  {
+    var cc = _clazzIds.get(cl);
     switch (clazzKind(cc))
       {
       case Abstract : return false;
@@ -1275,7 +1288,7 @@ hw25 is
         if (CHECKS) check
           (clz.isRef() == tclazz.isRef());
         var in = (Clazz) clz._inner.get(f);  // NYI: cast would fail for open generic field
-        if (in != null && clazzNeedsCode(in))
+        if (in != null && clazzNeedsCode(_clazzIds.get(in)))
           {
             innerClazzes.add(clz);
             innerClazzes.add(in);
