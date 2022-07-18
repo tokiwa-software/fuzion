@@ -37,9 +37,10 @@ import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
 
+import dev.flang.fuir.analysis.AbstractInterpreter;
+import dev.flang.fuir.analysis.DFA;
 import dev.flang.fuir.analysis.Escape;
 import dev.flang.fuir.analysis.TailCall;
-import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -494,7 +495,7 @@ public class C extends ANY
            FUIR fuir)
   {
     _options = opt;
-    _fuir = fuir;
+    _fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
     _tailCall = new TailCall(fuir);
     _escape = new Escape(fuir);
     _ai = new AbstractInterpreter(_fuir, new CodeGen());
