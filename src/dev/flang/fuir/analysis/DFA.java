@@ -825,9 +825,9 @@ public class DFA extends ANY
 
   static
   {
-    put("safety"                         , cl -> NYIintrinsicMissing(cl) );
-    put("debug"                          , cl -> NYIintrinsicMissing(cl) );
-    put("debugLevel"                     , cl -> NYIintrinsicMissing(cl) );
+    put("safety"                         , cl -> cl._dfa._options.fuzionSafety() ? Value.TRUE : Value.FALSE );
+    put("debug"                          , cl -> cl._dfa._options.fuzionDebug()  ? Value.TRUE : Value.FALSE );
+    put("debugLevel"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc), cl._dfa._options.fuzionDebugLevel()) );
     put("fuzion.std.args.count"          , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.std.args.get"            , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.std.exit"                , cl -> null );
