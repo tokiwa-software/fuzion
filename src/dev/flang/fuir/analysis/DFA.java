@@ -31,6 +31,7 @@ import java.nio.ByteOrder;
 
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
 
@@ -178,6 +179,7 @@ public class DFA extends ANY
      */
     public Unit assignStatic(int tc, int f, int rt, Value tvalue, Value val)
     {
+      _writtenFields.add(f);
       tvalue.setField(f, val);
       return _unit_;
     }
@@ -312,6 +314,7 @@ public class DFA extends ANY
                   System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
                                      tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
                 }
+              _writtenFields.add(cc);
               tvalue.setField(cc, args.get(0));
             }
           r = Value.UNIT;
@@ -524,6 +527,7 @@ public class DFA extends ANY
                 {
                   if (untagged != null)
                     {
+                      _writtenFields.add(field);
                       _call._instance.setField(field, untagged);
                     }
                 }
@@ -643,6 +647,14 @@ public class DFA extends ANY
    * Calls created during DFA analysis.
    */
   TreeMap<Call, Call> _calls = new TreeMap<>();
+
+
+  /**
+   * All fields that are ever written.  These will be needed even if they are
+   * never readq unless the assignments are actually removed (which is currently
+   * not the case).
+   */
+  TreeSet<Integer> _writtenFields = new TreeSet<>();
 
 
   /**
@@ -792,6 +804,7 @@ public class DFA extends ANY
       {
         var af = _fuir.clazzArg(c._cc, a);
         var aa = c._args.get(a);
+        _writtenFields.add(af);
         i.setField(af, aa);
       }
 
@@ -799,6 +812,7 @@ public class DFA extends ANY
     var or = _fuir.clazzOuterRef(c._cc);
     if (or != -1)
       {
+        _writtenFields.add(or);
         i.setField(or, c._target);
       }
 
@@ -1276,8 +1290,11 @@ public class DFA extends ANY
     var adata = new SysArray(this, utf8Bytes);
     var r = newInstance(cs, context);
     var a = newInstance(sysArray, context);
+    _writtenFields.add(length);
     a.setField(length, new NumericValue(this, _fuir.clazzResultClazz(length), utf8Bytes.length));
+    _writtenFields.add(data);
     a.setField(data  , adata);
+    _writtenFields.add(internalArray);
     r.setField(internalArray, a);
     return r;
   }
