@@ -36,6 +36,7 @@ import dev.flang.fuir.FUIR;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 import dev.flang.util.Pair;
 
@@ -627,6 +628,12 @@ public class DFA extends ANY
 
 
   /**
+   * Options provided to the 'fz' command.
+   */
+  public final FuzionOptions _options;
+
+
+  /**
    * The intermediate code we are analysing.
    */
   public final FUIR _fuir;
@@ -674,10 +681,14 @@ public class DFA extends ANY
   /**
    * Create DFA for given intermediate code.
    *
+   * @param options the options to specify values for intrinsics like 'debug',
+   * 'safety'.
+   *
    * @param fuir the intermediate code.
    */
-  public DFA(FUIR fuir)
+  public DFA(FuzionOptions options, FUIR fuir)
   {
+    _options = options;
     _fuir = fuir;
     Errors.showAndExit();
   }

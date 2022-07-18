@@ -632,7 +632,7 @@ class Fuzion extends Tool
                 }
               case c          : new C(new COptions(options, _binaryName_, _useBoehmGC_), fuir).compile(); break;
               case effects    : new Effects(fuir).find(); break;
-              case dfa        : new DFA(fuir).dfa(); break;
+              case dfa        : new DFA(options, fuir).dfa(); break;
               default         : Errors.fatal("backend '" + _backend + "' not supported yet"); break;
               }
             long beTime = System.currentTimeMillis();
