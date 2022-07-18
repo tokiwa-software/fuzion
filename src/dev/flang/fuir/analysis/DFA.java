@@ -562,7 +562,6 @@ public class DFA extends ANY
      */
     public Unit contract(int cl, FUIR.ContractKind ck, Value cc)
     {
-      System.err.println("NYI: DFA.contract");
       return _unit_;
       /*
       return Unit.iff(cc.field(_names.TAG_NAME).not(),
@@ -758,7 +757,7 @@ public class DFA extends ANY
     var ck = _fuir.clazzKind(cl);
     switch (ck)
       {
-      case Routine  : analyzeCall(c, false); break;
+      case Routine  : analyzeCall(c, c._pre); break;
       }
     if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
       {
@@ -796,18 +795,11 @@ public class DFA extends ANY
         i.setField(or, c._target);
       }
 
-    if (pre)
+    var ai = new AbstractInterpreter(_fuir, new Analyze(c));
+    var r = ai.process(c._cc, pre);
+    if (r._v0 != null)
       {
-        // NYI: preOrPostCondition(cl, FUIR.ContractKind.Pre);
-      }
-    else
-      {
-        var ai = new AbstractInterpreter(_fuir, new Analyze(c));
-        var r = ai.process(c._cc, false);
-        if (r._v0 != null)
-          {
-            c.returns();
-          }
+        c.returns();
       }
   }
 
