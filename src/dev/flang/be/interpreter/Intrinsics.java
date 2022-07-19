@@ -45,7 +45,8 @@ import java.io.PrintStream;
 import java.io.IOException;
 
 import java.nio.charset.StandardCharsets;
-
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeMap;
@@ -177,6 +178,20 @@ public class Intrinsics extends ANY
               s.writeBytes((byte[])args.get(1).arrayData()._array);
               return Value.EMPTY_VALUE;
             };
+        });
+    put("fuzion.std.fileio.readFile", (interpreter, innerClazz)-> args ->
+        {
+          byte[] content;
+          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
+          int pos = (int)args.get(3).i32Value(); //position of the byte in file
+          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8)); //path to the file
+          try {
+            content = Files.readAllBytes(path);
+            return new u8Value(content[pos]);
+          } catch (IOException e) {
+            System.err.println(e);
+            return new u8Value(-1);
+          }
         });
     put("fuzion.std.err.write", (interpreter, innerClazz) ->
         {

@@ -1,0 +1,9 @@
+public fuzion.std.fileio is
+
+    public readFile(path string, pos i32) =>
+        arr := path.utf8.asArray #transform the string to a utf8 byte array
+        readFile arr.internalArray.data arr.length pos
+
+    public readFile(path Object, length i32, position i32) u8 is intrinsic
+
+    public writeFile(path string, content array<u8>) is intrinsic
