@@ -258,13 +258,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       (!_fuir.clazzIsVoidType(cl) || (val == null),
        !containsVoid(stack));
 
-    if (cl != _fuir.clazzUniverse() && !_fuir.clazzIsUnitType(cl))
+    if (!clazzIsUnique(cl))
       {
         stack.push(val);
       }
 
     if (POSTCONDITIONS) ensure
-      (cl == _fuir.clazzUniverse() || _fuir.clazzIsUnitType(cl) || stack.get(stack.size()-1) == val,
+      (clazzIsUnique(cl) || stack.get(stack.size()-1) == val,
        !_fuir.clazzIsVoidType(cl) || containsVoid(stack));
   }
 
@@ -282,13 +282,11 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   VALUE pop(Stack<VALUE> stack, int cl)
   {
     if (PRECONDITIONS) require
-      (cl == _fuir.clazzUniverse() ||
-       _fuir.clazzIsUnitType(cl) || stack.size() > 0,
+      (clazzIsUnique(cl) || stack.size() > 0,
        !containsVoid(stack));
 
     return
-      cl != _fuir.clazzUniverse() &&
-      !_fuir.clazzIsUnitType(cl)     ? stack.pop() : _processor.unitValue();
+      clazzIsUnique(cl) ? _processor.unitValue() : stack.pop();
   }
 
 
