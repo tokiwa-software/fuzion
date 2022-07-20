@@ -102,8 +102,6 @@ public class ValueSet extends Value
             var res = Value.compare(x1, x2);
             if (res != 0)
               {
-                if (toString().equals(other.toString()))
-                  System.out.println("not equals "+this+" "+other+" because "+x1+" != "+x2);
                 return res;
               }
           }
