@@ -229,19 +229,6 @@ public class Instance extends Value implements Comparable<Instance> // , Context
   }
    */
 
-
-  /**
-   * Create a boxed (ref) value of this instance.
-   */
-  Value box(DFA dfa, int vc, int rc)
-  {
-    if (CHECKS) check
-      (_clazz == vc);
-
-    return new Instance(this, vc, rc);
-  }
-
-
 }
 
 /* end of file */

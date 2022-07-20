@@ -1632,6 +1632,34 @@ hw25 is
 
 
   /**
+   * For a given field cl whose outer instance is a value type, find the same
+   * field in the corresponding outer ref type.
+   *
+   * @param cl index of a clazz that is a field.
+   */
+  public int correspondingFieldInRefInstance(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    var rf = cc.correspondingFieldInRefInstance(cc);
+    return _clazzIds.get(rf);
+  }
+
+
+  /**
+   * For a given field cl whose outer instance is a ref type, find the same
+   * field in the corresponding outer value type.
+   *
+   * @param cl index of a clazz that is a field.
+   */
+  public int correspondingFieldInValueInstance(int cl)
+  {
+    var cc = _clazzIds.get(cl);
+    var rf = cc.correspondingFieldInValueInstance(cc);
+    return _clazzIds.get(rf);
+  }
+
+
+  /**
    * Get a string representation of the expr at the given index in given code
    * block.  Useful for debugging.
    *

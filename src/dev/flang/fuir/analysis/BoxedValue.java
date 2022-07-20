@@ -99,7 +99,7 @@ public class BoxedValue extends Value
    */
   Value readFieldFromInstance(DFA dfa, int field)
   {
-    return _original.readFieldFromInstance(dfa, field);
+    return _original.readFieldFromInstance(dfa, dfa._fuir.correspondingFieldInValueInstance(field));
   }
 
 
