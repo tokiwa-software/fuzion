@@ -80,6 +80,18 @@ public class BoxedValue extends Value
 
 
   /**
+   * Compare this to another BoxedValue.
+   */
+  public int compareTo(BoxedValue other)
+  {
+    return
+      _clazz < other._clazz ? -1 :
+      _clazz > other._clazz ? +1 :
+      Value.COMPARATOR.compare(_original, other._original);
+  }
+
+
+  /**
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instnace, UNDEFINED) have been handled.
    */

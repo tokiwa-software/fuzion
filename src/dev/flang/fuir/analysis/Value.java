@@ -68,18 +68,19 @@ public class Value extends ANY
         else if (a == FALSE                   || b == FALSE                  ) { return a == FALSE ? +1 : -1; }
         else if (a instanceof Instance     ai && b instanceof Instance     bi) { return ai.compareTo(bi);     }
         else if (a instanceof NumericValue an && b instanceof NumericValue bn) { return an.compareTo(bn);     }
+        else if (a instanceof BoxedValue   ab && b instanceof BoxedValue   bb) { return ab.compareTo(bb);     }
         else if (a instanceof TaggedValue  at && b instanceof TaggedValue  bt) { return at.compareTo(bt);     }
         else if (a instanceof SysArray     aa && b instanceof SysArray     ba) { return aa.compareTo(ba);     }
         else if (a instanceof ValueSet     as && b instanceof ValueSet     bs) { return as.compareTo(bs);     }
         else if (a instanceof Instance    ) { return +1; } else if (b instanceof Instance       ) { return -1; }
         else if (a instanceof NumericValue) { return +1; } else if (b instanceof NumericValue   ) { return -1; }
+        else if (a instanceof BoxedValue  ) { return +1; } else if (b instanceof BoxedValue     ) { return -1; }
         else if (a instanceof TaggedValue ) { return +1; } else if (b instanceof TaggedValue    ) { return -1; }
         else if (a instanceof SysArray    ) { return +1; } else if (b instanceof SysArray       ) { return -1; }
         else if (a instanceof ValueSet    ) { return +1; } else if (b instanceof ValueSet       ) { return -1; }
         else
           {
-            System.err.println("Value.compareTo requires support for "+a.getClass()+" and "+b.getClass());
-            return 0;
+            throw new Error(getClass().toString()+"compareTo requires support for "+a.getClass()+" and "+b.getClass());
           }
       }
     };
