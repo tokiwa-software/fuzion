@@ -293,9 +293,13 @@ public class Value extends ANY
     var result = _boxed;
     if (result == null)
       {
-        _boxed = new BoxedValue(dfa, this, vc, rc);
+        result = new BoxedValue(dfa, this, vc, rc);
+        if (this != UNIT)
+          {
+            _boxed = result;
+          }
       }
-    return _boxed;
+    return result;
   }
 
 
