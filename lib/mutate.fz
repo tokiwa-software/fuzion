@@ -104,6 +104,10 @@ is
       mut get
 
 
+    redef asString => get.asString
+
+
+
   # install default instance of mutate
   #
   type.installDefault =>
