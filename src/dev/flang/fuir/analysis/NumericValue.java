@@ -230,7 +230,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
   /**
    * Add v to the set of values of given field within this instance.
    */
-  public void setField(int field, Value v)
+  public void setField(DFA dfa, int field, Value v)
   {
     if (_dfa._fuir.clazzOuterClazz(field) == _clazz)
       {

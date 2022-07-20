@@ -139,7 +139,7 @@ public class Instance extends Value implements Comparable<Instance> // , Context
   /**
    * Add v to the set of values of given field within this instance.
    */
-  public void setField(int field, Value v)
+  public void setField(DFA dfa, int field, Value v)
   {
     if (PRECONDITIONS) require
       (v != null);

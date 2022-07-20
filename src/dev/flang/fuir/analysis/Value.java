@@ -90,6 +90,39 @@ public class Value extends ANY
    */
   static Value UNIT = new Value()
     {
+      /**
+       * Add v to the set of values of given field within this instance.
+       */
+      public void setField(DFA dfa, int field, Value v)
+      {
+        if (dfa._fuir.clazzUniverse() == dfa._fuir.clazzOuterClazz(field))
+          {
+            dfa._universe.setField(dfa, field, v);
+          }
+        else
+          {
+            super.setField(dfa, field, v);
+          }
+      }
+
+
+      /**
+       * Get set of values of given field within this value.  This works for unit
+       * type results even if this is not an instance (but a unit type itself).
+       */
+      public Value readField(DFA dfa, int field)
+      {
+        if (dfa._fuir.clazzUniverse() == dfa._fuir.clazzOuterClazz(field))
+          {
+            return dfa._universe.readField(dfa, field);
+          }
+        else
+          {
+            return super.readField(dfa, field);
+          }
+      }
+
+
       public String toString()
       {
         return "UNIT";
@@ -156,9 +189,10 @@ public class Value extends ANY
   /**
    * Add v to the set of values of given field within this instance.
    */
-  public void setField(int field, Value v)
+  public void setField(DFA dfa, int field, Value v)
   {
-    throw new Error("Value.setField called on class " + this + " (" + getClass() + "), expected " + Instance.class);
+    throw new Error("Value.setField for '"+dfa._fuir.clazzAsString(field)+"' called on class " +
+                    this + " (" + getClass() + "), expected " + Instance.class);
   }
 
 
@@ -169,9 +203,8 @@ public class Value extends ANY
   public Value readField(DFA dfa, int field)
   {
     var rt = dfa._fuir.clazzResultClazz(field);
-    return dfa._fuir.clazzIsUnitType(rt)
-      ? Value.UNIT
-      : readFieldFromInstance(dfa, field);
+    return dfa._fuir.clazzIsUnitType(rt) ? Value.UNIT
+                                         : readFieldFromInstance(dfa, field);
   }
 
 

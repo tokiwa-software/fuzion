@@ -180,7 +180,7 @@ public class DFA extends ANY
     public Unit assignStatic(int tc, int f, int rt, Value tvalue, Value val)
     {
       _writtenFields.add(f);
-      tvalue.setField(f, val);
+      tvalue.setField(DFA.this, f, val);
       return _unit_;
     }
 
@@ -315,7 +315,7 @@ public class DFA extends ANY
                                      tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
                 }
               _writtenFields.add(cc);
-              tvalue.setField(cc, args.get(0));
+              tvalue.setField(DFA.this, cc, args.get(0));
             }
           r = Value.UNIT;
         }
@@ -525,7 +525,7 @@ public class DFA extends ANY
                   if (untagged != null)
                     {
                       _writtenFields.add(field);
-                      _call._instance.setField(field, untagged);
+                      _call._instance.setField(DFA.this, field, untagged);
                     }
                 }
               var resv = ai.process(cl, _fuir.matchCaseCode(c, i, mc));
@@ -642,6 +642,12 @@ public class DFA extends ANY
 
 
   /**
+   * Special value for universe.
+   */
+  final Value _universe;
+
+
+  /**
    * Instances created during DFA analysis.
    */
   TreeMap<Instance, Instance> _instances = new TreeMap<>();
@@ -704,6 +710,7 @@ public class DFA extends ANY
     _true  = new TaggedValue(this, bool, Value.UNIT, 1);
     _false = new TaggedValue(this, bool, Value.UNIT, 0);
     _bool  = _true.join(_false);
+    _universe = newInstance(_fuir.clazzUniverse(), null);
     Errors.showAndExit();
   }
 
@@ -838,7 +845,7 @@ public class DFA extends ANY
         var af = _fuir.clazzArg(c._cc, a);
         var aa = c._args.get(a);
         _writtenFields.add(af);
-        i.setField(af, aa);
+        i.setField(this, af, aa);
       }
 
     // copy outer ref argument to outer ref field:
@@ -846,7 +853,7 @@ public class DFA extends ANY
     if (or != -1)
       {
         _writtenFields.add(or);
-        i.setField(or, c._target);
+        i.setField(this, or, c._target);
       }
 
     var ai = new AbstractInterpreter(_fuir, new Analyze(c));
@@ -1338,11 +1345,11 @@ public class DFA extends ANY
     var r = newInstance(cs, context);
     var a = newInstance(sysArray, context);
     _writtenFields.add(length);
-    a.setField(length, new NumericValue(this, _fuir.clazzResultClazz(length), utf8Bytes.length));
+    a.setField(this, length, new NumericValue(this, _fuir.clazzResultClazz(length), utf8Bytes.length));
     _writtenFields.add(data);
-    a.setField(data  , adata);
+    a.setField(this, data  , adata);
     _writtenFields.add(internalArray);
-    r.setField(internalArray, a);
+    r.setField(this, internalArray, a);
     return r;
   }
 
