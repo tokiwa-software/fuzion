@@ -383,7 +383,7 @@ public class DFA extends ANY
      */
     public Pair<Value, Unit> box(Value val, int vc, int rc)
     {
-      var boxed = val.box(vc, rc);
+      var boxed = val.box(DFA.this, vc, rc);
       return new Pair<>(boxed, _unit_);
     }
 

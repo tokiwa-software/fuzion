@@ -289,11 +289,12 @@ public class Value extends ANY
    * Box this value. This works both for Instances as well as for value types
    * such as i32, bool, etc.
    */
-  Value box(int vc, int rc)
+  Value box(DFA dfa, int vc, int rc)
   {
-    if (_boxed == null)
+    var result = _boxed;
+    if (result == null)
       {
-        _boxed = new BoxedValue(this, vc, rc);
+        _boxed = new BoxedValue(dfa, this, vc, rc);
       }
     return _boxed;
   }

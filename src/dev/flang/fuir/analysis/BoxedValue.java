@@ -46,6 +46,8 @@ public class BoxedValue extends Value
   /*----------------------------  variables  ----------------------------*/
 
 
+  DFA _dfa;
+
   /**
    * The clazz this is an instance of.
    */
@@ -66,11 +68,12 @@ public class BoxedValue extends Value
    *
    * @param orignal the unboxed value
    */
-  public BoxedValue(Value original, int vc, int rc)
+  public BoxedValue(DFA dfa, Value original, int vc, int rc)
   {
     if (PRECONDITIONS) require
       (!(original instanceof Instance));
 
+    _dfa = dfa;
     _clazz = rc;
     _original = original;
   }
@@ -115,7 +118,7 @@ public class BoxedValue extends Value
    */
   public String toString()
   {
-    return "boxed:" + _original;
+    return "boxed("+_dfa._fuir.clazzAsString(_clazz)+"):" + _original;
   }
 
 }
