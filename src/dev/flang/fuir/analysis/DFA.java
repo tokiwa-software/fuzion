@@ -364,7 +364,20 @@ public class DFA extends ANY
           }
         case Field:
           {
-            res = tvalue.readField(DFA.this, cc);
+            var resa = new Value[] { null };
+            tvalue.forAll(t ->
+                          {
+                            var r = t.readField(DFA.this, cc);
+                            if (resa[0] == null)
+                              {
+                                resa[0] = r;
+                              }
+                            else
+                              {
+                                resa[0] = resa[0].join(r);
+                              }
+                          });
+            res = resa[0];
             if (_reportResults && _options.verbose(2))
               {
                 System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
