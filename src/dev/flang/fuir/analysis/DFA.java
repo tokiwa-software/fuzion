@@ -462,6 +462,8 @@ public class DFA extends ANY
     {
       Value r = null; // result value null <=> does not return.  Will be set to Value.UNIT if returning case was found.
       var subjClazz0 = _fuir.matchStaticSubject(cl, c, i);
+
+      // NYI: special handling to unbox subject should not be needed if unbox would be called by AbstractInterpreter
       if (_fuir.clazzIsRef(subjClazz0))
         {
           subjClazz0 = _fuir.clazzAsValue(subjClazz0);
