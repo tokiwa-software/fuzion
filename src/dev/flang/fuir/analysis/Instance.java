@@ -148,6 +148,11 @@ public class Instance extends Value implements Comparable<Instance> // , Context
       {
         v = oldv.join(v);
       }
+    if (!_dfa._changed && (oldv == null || Value.COMPARATOR.compare(oldv, v) != 0))
+      {
+        _dfa._changedSetBy = "setField: new values "+v+" (was "+oldv+") for " + this;
+        _dfa._changed = true;
+      }
     _fields.put(field, v);
   }
 
