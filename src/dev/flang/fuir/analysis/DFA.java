@@ -850,13 +850,32 @@ public class DFA extends ANY
   }
 
 
+  /**
+   * Flag to detect and stop (endless) recursion within NYIintrinsiMissing.
+   */
+  static boolean _recursion_in_NYIintrinsicMissing = false;
+
+
+  /**
+   * Report that intrinsic 'cl' is missing and return Value.UNDEFINED.
+   */
   static Value NYIintrinsicMissing(Call cl)
   {
     if (true || cl._dfa._reportResults)
       {
         var name = cl._dfa._fuir.clazzIntrinsicName(cl._cc);
+
+        // NYI: Proper error handling.
         System.out.println("NYI: Support for intrinsic '" + name + "' missing, needed by");
-        cl.showWhy();
+
+        // cl.showWhy() may try to print result values that depend on
+        // intrinsics, so we risk running into an endless recursion here:
+        if (!_recursion_in_NYIintrinsicMissing)
+          {
+            _recursion_in_NYIintrinsicMissing = true;
+            cl.showWhy();
+            _recursion_in_NYIintrinsicMissing = false;
+          }
       }
     return Value.UNDEFINED;
   }
