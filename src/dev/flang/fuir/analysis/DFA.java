@@ -432,7 +432,7 @@ public class DFA extends ANY
       var o = _unit_;
       var r = switch (_fuir.getSpecialId(constCl))
         {
-        case c_bool -> d[0] == 1 ? Value.TRUE : Value.FALSE;
+        case c_bool -> d[0] == 1 ? _true : _false;
         case c_i8   ,
              c_i16  ,
              c_i32  ,
@@ -481,18 +481,7 @@ public class DFA extends ANY
                   var taken = false;
                   Value untagged = null;
                   // NYI: cleanup: remove special handling vor boolean, Value.BOOL/TRUE/FALSE should be instances of TaggedValue
-                  if (_fuir.getSpecialId(subjClazz) == FUIR.SpecialClazzes.c_bool &&
-                      (s == Value.BOOL ||
-                       s == Value.TRUE ||
-                       s == Value.FALSE ))
-                    {
-                      taken =
-                        (s == Value.BOOL) ||
-                        (s == Value.TRUE) && (t == 1) ||
-                        (s == Value.FALSE) && (t == 0);
-                      untagged = taken ? ((t == 1) ? Value.TRUE : Value.FALSE) : null;
-                    }
-                  else if (s instanceof TaggedValue tv)
+                  if (s instanceof TaggedValue tv)
                     {
                       if (tv._tag == t)
                         {
@@ -646,6 +635,13 @@ public class DFA extends ANY
 
 
   /**
+   * Special values of clazz 'bool' for 'true', 'false' and arbitrary bool
+   * values.
+   */
+  final Value _true, _false, _bool;
+
+
+  /**
    * Instances created during DFA analysis.
    */
   TreeMap<Instance, Instance> _instances = new TreeMap<>();
@@ -704,6 +700,10 @@ public class DFA extends ANY
   {
     _options = options;
     _fuir = fuir;
+    var bool = fuir.clazz(FUIR.SpecialClazzes.c_bool);
+    _true  = new TaggedValue(this, bool, Value.UNIT, 1);
+    _false = new TaggedValue(this, bool, Value.UNIT, 0);
+    _bool  = _true.join(_false);
     Errors.showAndExit();
   }
 
@@ -891,8 +891,8 @@ public class DFA extends ANY
 
   static
   {
-    put("safety"                         , cl -> cl._dfa._options.fuzionSafety() ? Value.TRUE : Value.FALSE );
-    put("debug"                          , cl -> cl._dfa._options.fuzionDebug()  ? Value.TRUE : Value.FALSE );
+    put("safety"                         , cl -> cl._dfa._options.fuzionSafety() ? cl._dfa._true : cl._dfa._false );
+    put("debug"                          , cl -> cl._dfa._options.fuzionDebug()  ? cl._dfa._true : cl._dfa._false );
     put("debugLevel"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc), cl._dfa._options.fuzionDebugLevel()) );
     put("fuzion.std.args.count"          , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.std.args.get"            , cl -> NYIintrinsicMissing(cl) );
@@ -947,30 +947,30 @@ public class DFA extends ANY
     put("i32.infix ^"                    , cl -> { return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
     put("i64.infix ^"                    , cl -> { return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
 
-    put("i8.infix =="                    , cl -> Value.BOOL );
-    put("i16.infix =="                   , cl -> Value.BOOL );
-    put("i32.infix =="                   , cl -> Value.BOOL );
-    put("i64.infix =="                   , cl -> Value.BOOL );
-    put("i8.infix !="                    , cl -> Value.BOOL );
-    put("i16.infix !="                   , cl -> Value.BOOL );
-    put("i32.infix !="                   , cl -> Value.BOOL );
-    put("i64.infix !="                   , cl -> Value.BOOL );
-    put("i8.infix >"                     , cl -> Value.BOOL );
-    put("i16.infix >"                    , cl -> Value.BOOL );
-    put("i32.infix >"                    , cl -> Value.BOOL );
-    put("i64.infix >"                    , cl -> Value.BOOL );
-    put("i8.infix >="                    , cl -> Value.BOOL );
-    put("i16.infix >="                   , cl -> Value.BOOL );
-    put("i32.infix >="                   , cl -> Value.BOOL );
-    put("i64.infix >="                   , cl -> Value.BOOL );
-    put("i8.infix <"                     , cl -> Value.BOOL );
-    put("i16.infix <"                    , cl -> Value.BOOL );
-    put("i32.infix <"                    , cl -> Value.BOOL );
-    put("i64.infix <"                    , cl -> Value.BOOL );
-    put("i8.infix <="                    , cl -> Value.BOOL );
-    put("i16.infix <="                   , cl -> Value.BOOL );
-    put("i32.infix <="                   , cl -> Value.BOOL );
-    put("i64.infix <="                   , cl -> Value.BOOL );
+    put("i8.infix =="                    , cl -> cl._dfa._bool );
+    put("i16.infix =="                   , cl -> cl._dfa._bool );
+    put("i32.infix =="                   , cl -> cl._dfa._bool );
+    put("i64.infix =="                   , cl -> cl._dfa._bool );
+    put("i8.infix !="                    , cl -> cl._dfa._bool );
+    put("i16.infix !="                   , cl -> cl._dfa._bool );
+    put("i32.infix !="                   , cl -> cl._dfa._bool );
+    put("i64.infix !="                   , cl -> cl._dfa._bool );
+    put("i8.infix >"                     , cl -> cl._dfa._bool );
+    put("i16.infix >"                    , cl -> cl._dfa._bool );
+    put("i32.infix >"                    , cl -> cl._dfa._bool );
+    put("i64.infix >"                    , cl -> cl._dfa._bool );
+    put("i8.infix >="                    , cl -> cl._dfa._bool );
+    put("i16.infix >="                   , cl -> cl._dfa._bool );
+    put("i32.infix >="                   , cl -> cl._dfa._bool );
+    put("i64.infix >="                   , cl -> cl._dfa._bool );
+    put("i8.infix <"                     , cl -> cl._dfa._bool );
+    put("i16.infix <"                    , cl -> cl._dfa._bool );
+    put("i32.infix <"                    , cl -> cl._dfa._bool );
+    put("i64.infix <"                    , cl -> cl._dfa._bool );
+    put("i8.infix <="                    , cl -> cl._dfa._bool );
+    put("i16.infix <="                   , cl -> cl._dfa._bool );
+    put("i32.infix <="                   , cl -> cl._dfa._bool );
+    put("i64.infix <="                   , cl -> cl._dfa._bool );
 
     put("u8.prefix -°"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("u16.prefix -°"                  , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -1017,30 +1017,30 @@ public class DFA extends ANY
     put("u32.infix ^"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("u64.infix ^"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
-    put("u8.infix =="                    , cl -> Value.BOOL );
-    put("u16.infix =="                   , cl -> Value.BOOL );
-    put("u32.infix =="                   , cl -> Value.BOOL );
-    put("u64.infix =="                   , cl -> Value.BOOL );
-    put("u8.infix !="                    , cl -> Value.BOOL );
-    put("u16.infix !="                   , cl -> Value.BOOL );
-    put("u32.infix !="                   , cl -> Value.BOOL );
-    put("u64.infix !="                   , cl -> Value.BOOL );
-    put("u8.infix >"                     , cl -> Value.BOOL );
-    put("u16.infix >"                    , cl -> Value.BOOL );
-    put("u32.infix >"                    , cl -> Value.BOOL );
-    put("u64.infix >"                    , cl -> Value.BOOL );
-    put("u8.infix >="                    , cl -> Value.BOOL );
-    put("u16.infix >="                   , cl -> Value.BOOL );
-    put("u32.infix >="                   , cl -> Value.BOOL );
-    put("u64.infix >="                   , cl -> Value.BOOL );
-    put("u8.infix <"                     , cl -> Value.BOOL );
-    put("u16.infix <"                    , cl -> Value.BOOL );
-    put("u32.infix <"                    , cl -> Value.BOOL );
-    put("u64.infix <"                    , cl -> Value.BOOL );
-    put("u8.infix <="                    , cl -> Value.BOOL );
-    put("u16.infix <="                   , cl -> Value.BOOL );
-    put("u32.infix <="                   , cl -> Value.BOOL );
-    put("u64.infix <="                   , cl -> Value.BOOL );
+    put("u8.infix =="                    , cl -> cl._dfa._bool );
+    put("u16.infix =="                   , cl -> cl._dfa._bool );
+    put("u32.infix =="                   , cl -> cl._dfa._bool );
+    put("u64.infix =="                   , cl -> cl._dfa._bool );
+    put("u8.infix !="                    , cl -> cl._dfa._bool );
+    put("u16.infix !="                   , cl -> cl._dfa._bool );
+    put("u32.infix !="                   , cl -> cl._dfa._bool );
+    put("u64.infix !="                   , cl -> cl._dfa._bool );
+    put("u8.infix >"                     , cl -> cl._dfa._bool );
+    put("u16.infix >"                    , cl -> cl._dfa._bool );
+    put("u32.infix >"                    , cl -> cl._dfa._bool );
+    put("u64.infix >"                    , cl -> cl._dfa._bool );
+    put("u8.infix >="                    , cl -> cl._dfa._bool );
+    put("u16.infix >="                   , cl -> cl._dfa._bool );
+    put("u32.infix >="                   , cl -> cl._dfa._bool );
+    put("u64.infix >="                   , cl -> cl._dfa._bool );
+    put("u8.infix <"                     , cl -> cl._dfa._bool );
+    put("u16.infix <"                    , cl -> cl._dfa._bool );
+    put("u32.infix <"                    , cl -> cl._dfa._bool );
+    put("u64.infix <"                    , cl -> cl._dfa._bool );
+    put("u8.infix <="                    , cl -> cl._dfa._bool );
+    put("u16.infix <="                   , cl -> cl._dfa._bool );
+    put("u32.infix <="                   , cl -> cl._dfa._bool );
+    put("u64.infix <="                   , cl -> cl._dfa._bool );
 
     put("i8.as_i32"                      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("i16.as_i32"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -1083,18 +1083,18 @@ public class DFA extends ANY
     put("f64.infix %"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32.infix **"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.infix **"                   , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.infix =="                   , cl -> Value.BOOL );
-    put("f64.infix =="                   , cl -> Value.BOOL );
-    put("f32.infix !="                   , cl -> Value.BOOL );
-    put("f64.infix !="                   , cl -> Value.BOOL );
-    put("f32.infix <"                    , cl -> Value.BOOL );
-    put("f64.infix <"                    , cl -> Value.BOOL );
-    put("f32.infix <="                   , cl -> Value.BOOL );
-    put("f64.infix <="                   , cl -> Value.BOOL );
-    put("f32.infix >"                    , cl -> Value.BOOL );
-    put("f64.infix >"                    , cl -> Value.BOOL );
-    put("f32.infix >="                   , cl -> Value.BOOL );
-    put("f64.infix >="                   , cl -> Value.BOOL );
+    put("f32.infix =="                   , cl -> cl._dfa._bool );
+    put("f64.infix =="                   , cl -> cl._dfa._bool );
+    put("f32.infix !="                   , cl -> cl._dfa._bool );
+    put("f64.infix !="                   , cl -> cl._dfa._bool );
+    put("f32.infix <"                    , cl -> cl._dfa._bool );
+    put("f64.infix <"                    , cl -> cl._dfa._bool );
+    put("f32.infix <="                   , cl -> cl._dfa._bool );
+    put("f64.infix <="                   , cl -> cl._dfa._bool );
+    put("f32.infix >"                    , cl -> cl._dfa._bool );
+    put("f64.infix >"                    , cl -> cl._dfa._bool );
+    put("f32.infix >="                   , cl -> cl._dfa._bool );
+    put("f64.infix >="                   , cl -> cl._dfa._bool );
     put("f32.as_f64"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.as_f32"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.as_i64_lax"                 , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -1223,10 +1223,10 @@ public class DFA extends ANY
         });
     put("effect.abort"                   , cl -> NYIintrinsicMissing(cl) );
     put("effects.exists"                 , cl -> cl.getEffect(cl._dfa._fuir.clazzActualGeneric(cl._cc, 0)) != null
-        ? Value.TRUE
-        : Value.BOOL  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
-                       * should reconsider if handling of default effects changes
-                       */
+        ? cl._dfa._true
+        : cl._dfa._bool  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
+                          * should reconsider if handling of default effects changes
+                          */
         );
     put("fuzion.java.JavaObject.isNull"  , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.java.arrayGet"           , cl -> NYIintrinsicMissing(cl) );

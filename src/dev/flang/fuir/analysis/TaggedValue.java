@@ -126,12 +126,6 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
             return new ValueSet(this, v);
           }
       }
-    else if (v == Value.BOOL ||
-             v == Value.TRUE ||
-             v == Value.FALSE)
-      {
-        return Value.BOOL;
-      }
     else
       {
         return new ValueSet(this, v);

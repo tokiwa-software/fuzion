@@ -1039,14 +1039,30 @@ hw25 is
 
 
   /**
+   * Get the id of the given special clazz.
+   *
+   * @param the id of clazz c or -1 if that clazz was not created.
+   */
+  public int clazz(SpecialClazzes c)
+  {
+    addClasses();
+    var cc = c.getIfCreated();
+    if (cc != null)
+      {
+        _clazzIds.add(cc);
+      }
+    return cc == null ? -1 : _clazzIds.get(cc);
+  }
+
+
+  /**
    * Get the id of clazz u8
    *
    * @param the id of u8 or -1 if that clazz was not created.
    */
   public int clazz_u8()
   {
-    var cc = Clazzes.u8.get();
-    return cc == null ? -1 : _clazzIds.get(cc);
+    return clazz(SpecialClazzes.c_u8);
   }
 
 

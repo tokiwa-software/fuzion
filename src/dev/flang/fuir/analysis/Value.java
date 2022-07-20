@@ -64,8 +64,6 @@ public class Value extends ANY
       {
         if      (a == b)                                                       { return 0;                    }
         else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
-        else if (a == TRUE                    || b == TRUE                   ) { return a == TRUE  ? +1 : -1; }
-        else if (a == FALSE                   || b == FALSE                  ) { return a == FALSE ? +1 : -1; }
         else if (a instanceof Instance     ai && b instanceof Instance     bi) { return ai.compareTo(bi);     }
         else if (a instanceof NumericValue an && b instanceof NumericValue bn) { return an.compareTo(bn);     }
         else if (a instanceof BoxedValue   ab && b instanceof BoxedValue   bb) { return ab.compareTo(bb);     }
@@ -97,55 +95,6 @@ public class Value extends ANY
         return "UNIT";
       }
     };
-
-
-  /**
-   * The true value of type 'bool'
-   */
-  static Value TRUE = new Value()
-    {
-      public String toString()
-      {
-        return "true";
-      }
-      boolean isBool()
-      {
-        return true;
-      }
-    };
-
-
-  /**
-   * The false value of type 'bool'
-   */
-  static Value FALSE = new Value()
-    {
-      public String toString()
-      {
-        return "false";
-      }
-      boolean isBool()
-      {
-        return true;
-      }
-    };
-
-
-  /**
-   * Any value of type 'bool'
-   */
-  static Value BOOL = new Value()
-    {
-      public String toString()
-      {
-        return "bool";
-      }
-      boolean isBool()
-      {
-        return true;
-      }
-    };
-
 
 
   /**
@@ -193,15 +142,6 @@ public class Value extends ANY
 
 
   /*-----------------------------  methods  -----------------------------*/
-
-
-  /**
-   * is this a boolean value, TRUE, FALSE, or BOOL?
-   */
-  boolean isBool()
-  {
-    return false;
-  }
 
 
   /**
@@ -260,11 +200,6 @@ public class Value extends ANY
     else if (v == UNDEFINED)
       {
         return this;
-      }
-    else if (this.isBool() && (v   .isBool() || v    instanceof TaggedValue) ||
-             v   .isBool() && (this.isBool() || this instanceof TaggedValue)    )
-      { // booleans that are not equal:
-        return BOOL;
       }
     else
       {
