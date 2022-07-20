@@ -1286,7 +1286,7 @@ public class DFA extends ANY
     return switch (_fuir.getSpecialId(cl))
       {
         case c_i8   ,
-          c_i16  ,
+             c_i16  ,
              c_i32  ,
              c_i64  ,
              c_u8   ,
