@@ -151,6 +151,12 @@ public class Value extends ANY
   Value _boxed;
 
 
+  /**
+   * Cached result of a call to adrOf().
+   */
+  Value _adrOf;
+
+
   /*---------------------------  consructors  ---------------------------*/
 
 
@@ -182,7 +188,11 @@ public class Value extends ANY
    */
   public Value adrOf()
   {
-    throw new Error("adrOf");
+    if (_adrOf == null)
+      {
+        _adrOf = this; // NYI: this is a little lazy, but seems to work for simple cases
+      }
+    return _adrOf;
   }
 
 
