@@ -26,11 +26,14 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis;
 
+import java.nio.charset.StandardCharsets;
+
 import dev.flang.fuir.FUIR;
 
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 
 
@@ -194,7 +197,28 @@ public class Call extends ANY implements Comparable<Call>, Context
     if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Intrinsic)
       {
         var name = _dfa._fuir.clazzIntrinsicName(_cc);
-        result = _dfa._intrinsics_.get(name).analyze(this);
+        var idfa = _dfa._intrinsics_.get(name);
+        if (idfa != null)
+          {
+            result = _dfa._intrinsics_.get(name).analyze(this);
+          }
+        else
+          {
+            var at = _dfa._fuir.clazzTypeParameterActualType(_cc);
+            if (at >= 0)
+              {
+                var rc = _dfa._fuir.clazzResultClazz(_cc);
+                var t = _dfa.newInstance(rc, this);
+                var tname = _dfa.newConstString(_dfa._fuir.clazzAsStringNew(at).getBytes(StandardCharsets.UTF_8), this);
+                // NYI: DFA missing support for Type instance, need to set field t.name to tname.
+                result = t;
+              }
+            else
+              {
+                var msg = "DFA: code to handle intrinsic '" + name + "' is missing";
+                Errors.warning(msg);
+              }
+          }
       }
     else if (_returns)
       {
