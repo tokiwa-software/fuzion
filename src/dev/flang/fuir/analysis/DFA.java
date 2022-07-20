@@ -1357,8 +1357,6 @@ public class DFA extends ANY
     return e;
   }
 
-  Call existingU32 = null;
-
 }
 
 /* end of file */
