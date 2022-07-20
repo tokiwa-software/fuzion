@@ -95,6 +95,15 @@ public class BoxedValue extends Value
 
 
   /**
+   * Get set of values of given field within this instance.
+   */
+  Value readFieldFromInstance(DFA dfa, int field)
+  {
+    return _original.readFieldFromInstance(dfa, field);
+  }
+
+
+  /**
    * Create the union of the values 'this' and 'v'. This is called by join()
    * after common cases (same instnace, UNDEFINED) have been handled.
    */

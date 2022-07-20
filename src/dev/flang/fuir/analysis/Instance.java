@@ -27,6 +27,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.fuir.analysis;
 
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 
 /**
@@ -160,10 +161,10 @@ public class Instance extends Value implements Comparable<Instance> // , Context
   /**
    * Get set of values of given field within this instance.
    */
-  Value readFieldFromInstance(DFA dfa, int target, int field)
+  Value readFieldFromInstance(DFA dfa, int field)
   {
     if (PRECONDITIONS) require
-      (_clazz == target);
+      (_clazz == dfa._fuir.clazzOuterClazz(field));
 
     var v = _fields.get(field);
     if (v == null && _isBoxed)
@@ -182,7 +183,10 @@ public class Instance extends Value implements Comparable<Instance> // , Context
       {
         if (dfa._reportResults)
           {
-            System.err.println("*** reading uninitialized field " + dfa._fuir.clazzAsString(field));
+            System.err.println("*** reading uninitialized field " + field + ": "+ dfa._fuir.clazzAsString(field) + " from instance of " + dfa._fuir.clazzAsString(_clazz) +
+                               (_isBoxed ? " Boxed!" : "") +
+                               "\n" +
+                               "fields available:\n  " + _fields.keySet().stream().map(x -> ""+x+":"+dfa._fuir.clazzAsString(x)).collect(Collectors.joining(",\n  ")));
             for (var f : _fields.keySet())
               {
                 if (dfa._fuir.clazzAsString(f).equals(dfa._fuir.clazzAsString(field).replace("ref ","")))

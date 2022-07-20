@@ -364,7 +364,7 @@ public class DFA extends ANY
           }
         case Field:
           {
-            res = tvalue.readField(DFA.this, _fuir.accessTargetClazz(cl, c, i), cc);
+            res = tvalue.readField(DFA.this, cc);
             if (_reportResults && _options.verbose(2))
               {
                 System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +

@@ -226,22 +226,21 @@ public class Value extends ANY
    * Get set of values of given field within this value.  This works for unit
    * type results even if this is not an instance (but a unit type itself).
    */
-  public Value readField(DFA dfa, int target, int field)
+  public Value readField(DFA dfa, int field)
   {
     var rt = dfa._fuir.clazzResultClazz(field);
     return dfa._fuir.clazzIsUnitType(rt)
       ? Value.UNIT
-      : readFieldFromInstance(dfa, target, field);
+      : readFieldFromInstance(dfa, field);
   }
 
 
   /**
    * Get set of values of given field within this instance.
    */
-  Value readFieldFromInstance(DFA dfa, int target, int field)
+  Value readFieldFromInstance(DFA dfa, int field)
   {
-    System.out.println("*** error: Value.readField '"+dfa._fuir.clazzAsString(field)+"' called on class " + this + " (" + getClass() + "), expected " + Instance.class);
-    return UNIT;
+    throw new Error("Value.readField '"+dfa._fuir.clazzAsString(field)+"' called on class " + this + " (" + getClass() + "), expected " + Instance.class);
   }
 
 
