@@ -1204,16 +1204,11 @@ public class DFA extends ANY
           var ecl = cl._dfa._fuir.effectType(cl._cc);
           var oc = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
           var call = cl._dfa._fuir.lookupCall(oc);
-          System.err.println("**** DFA handling for effect.abortable missing");
 
           if (CHECKS) check
             (cl._dfa._fuir.clazzNeedsCode(call));
 
           var env = cl._env;
-          if (cl._target == null)
-            {
-              System.out.println("for effect.abortable: "+cl+" target is "+cl._target);
-            }
           var newEnv = new Env(cl._dfa, env, ecl, cl._target);
           var ncl = cl._dfa.newCall(call, false, cl._args.get(0), new List<>(), newEnv, cl);
           return Value.UNIT;
