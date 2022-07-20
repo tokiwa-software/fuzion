@@ -151,6 +151,21 @@ public class ValueSet extends Value
   }
 
 
+  /**
+   * Unbox this value.
+   */
+  Value unbox(int vc)
+  {
+    Value result = null;
+    for (var v : _components.values())
+      {
+        var u = v.unbox(vc);
+        result = result == null ? u : new ValueSet(result, u);
+      }
+    return result;
+  }
+
+
 }
 
 /* end of file */
