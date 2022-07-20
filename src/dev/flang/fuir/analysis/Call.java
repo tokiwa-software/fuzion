@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis;
 
+import dev.flang.fuir.FUIR;
+
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
@@ -80,7 +82,6 @@ public class Call extends ANY implements Comparable<Call>, Context
   List<Value> _args;
 
 
-
   /**
    * 'this' instance created by this call.
    */
@@ -88,20 +89,8 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * result value returned from this call.  A value of null means that this call
-   * does not return at all, i.e., the call always diverges.
-   *
-   * A value of Value.UNDEFINED means that the call may return, but the value
-   * still needs to be found.
-   *
-   * Any other value gives the result of the call.
-   */
-  Value _result;
-
-  /**
-   * NYI: _returns flag should be redundant with _result != null, but it is not.
-   * Need to check how it can happen that _result is set to Value.UNDEFINED and
-   * then reset to null.
+   * true means that the call may return, false means the call has not been
+   * found to return, i.e., the result is null (aka void).
    */
   boolean _returns = false;
 
@@ -147,15 +136,6 @@ public class Call extends ANY implements Comparable<Call>, Context
     _env = env;
     _context = context;
     _instance = dfa.newInstance(cc, this);
-    if (_dfa._fuir.clazzKind(cc) == IR.FeatureKind.Intrinsic)
-      {
-        var name = _dfa._fuir.clazzIntrinsicName(_cc);
-        _result = _dfa._intrinsics_.get(name).analyze(this);
-      }
-    else
-      {
-        _result = null;
-      }
   }
 
 
@@ -195,15 +175,11 @@ public class Call extends ANY implements Comparable<Call>, Context
     if (!_returns)
       {
         _returns = true;
-        if (_result == null)
+        if (!_dfa._changed)
           {
-            _result = Value.UNDEFINED;
-            if (!_dfa._changed)
-              {
-                _dfa._changedSetBy = "Call.returns for " + this;
-              }
-            _dfa._changed = true;
+            _dfa._changedSetBy = "Call.returns for " + this;
           }
+        _dfa._changed = true;
       }
   }
 
@@ -214,16 +190,26 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   public Value result()
   {
-    if (_result == Value.UNDEFINED)
+    Value result = null;
+    if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Intrinsic)
+      {
+        var name = _dfa._fuir.clazzIntrinsicName(_cc);
+        result = _dfa._intrinsics_.get(name).analyze(this);
+      }
+    else if (_returns)
       {
         var rf = _dfa._fuir.clazzResultField(_cc);
         if (_pre)
           {
-            _result = Value.UNIT;
+            result = Value.UNIT;
           }
         else if (rf == -1)
           {
-            _result = _instance;
+            result = _instance;
+          }
+        else if (FUIR.SpecialClazzes.c_unit == _dfa._fuir.getSpecialId(_dfa._fuir.clazzResultClazz(rf)))
+          {
+            result = Value.UNIT;
           }
         else
           {
@@ -231,10 +217,10 @@ public class Call extends ANY implements Comparable<Call>, Context
             if (CHECKS) check
               (!_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(_cc)));
 
-            _result = _instance.readField(_dfa, _cc, rf);
+            result = _instance.readField(_dfa, _cc, rf);
           }
       }
-    return _result;
+    return result;
   }
 
 
@@ -259,8 +245,9 @@ public class Call extends ANY implements Comparable<Call>, Context
           .append("=")
           .append(a);
       }
+    var r = result();
     sb.append(" => ")
-      .append(_result == null ? "*** VOID ***" : result());
+      .append(r == null ? "*** VOID ***" : r);
     return sb.toString();
   }
 
