@@ -243,6 +243,18 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
 
   /**
+   * Check if the given clazz has a unique value that doe snot need to be pushed
+   * onto the stack.
+   */
+  boolean clazzHasUniqueValue(int cl)
+  {
+    return cl == _fuir.clazzUniverse() || _fuir.clazzIsUnitType(cl) && !_fuir.clazzIsRef(cl);
+    // NYI: maybe we should restrict this to c_unit only?
+    // return cl == _fuir.clazzUniverse() || FUIR.SpecialClazzes.c_unit != _fuir.getSpecialId(cl);
+  }
+
+
+  /**
    * Push the given value to the stack unless it is of unit or void type or the
    * clazz is -1
    *
@@ -258,13 +270,13 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       (!_fuir.clazzIsVoidType(cl) || (val == null),
        !containsVoid(stack));
 
-    if (!clazzIsUnique(cl))
+    if (!clazzHasUniqueValue(cl))
       {
         stack.push(val);
       }
 
     if (POSTCONDITIONS) ensure
-      (clazzIsUnique(cl) || stack.get(stack.size()-1) == val,
+      (clazzHasUniqueValue(cl) || stack.get(stack.size()-1) == val,
        !_fuir.clazzIsVoidType(cl) || containsVoid(stack));
   }
 
@@ -282,11 +294,11 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   VALUE pop(Stack<VALUE> stack, int cl)
   {
     if (PRECONDITIONS) require
-      (clazzIsUnique(cl) || stack.size() > 0,
+      (clazzHasUniqueValue(cl) || stack.size() > 0,
        !containsVoid(stack));
 
     return
-      clazzIsUnique(cl) ? _processor.unitValue() : stack.pop();
+      clazzHasUniqueValue(cl) ? _processor.unitValue() : stack.pop();
   }
 
 
