@@ -114,7 +114,7 @@ public class JavaInterface extends ANY
 
 
   /**
-   * str2type converts a type descriptor of a field into the correpsonding type.
+   * str2type converts a type descriptor of a field into the corresponding type.
    *
    * @param str a type descriptor, e.g. "Z", "Ljava/lang/String;".
    *
