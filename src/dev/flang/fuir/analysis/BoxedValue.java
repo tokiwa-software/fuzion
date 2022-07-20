@@ -70,9 +70,6 @@ public class BoxedValue extends Value
    */
   public BoxedValue(DFA dfa, Value original, int vc, int rc)
   {
-    if (PRECONDITIONS) require
-      (!(original instanceof Instance));
-
     _dfa = dfa;
     _clazz = rc;
     _original = original;
