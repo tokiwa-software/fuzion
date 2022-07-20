@@ -1228,7 +1228,16 @@ public class DFA extends ANY
           var ncl = cl._dfa.newCall(call, false, cl._args.get(0), new List<>(), newEnv, cl);
           return Value.UNIT;
         });
-    put("effect.abort"                   , cl -> NYIintrinsicMissing(cl) );
+    put("effect.abort"                   , cl ->
+        {
+          var ecl = cl._dfa._fuir.effectType(cl._cc);
+          var new_e = cl._target;
+          cl.replaceEffect(ecl, new_e);
+          // NYI: we might have to do cl.returns() for 'cl' being the
+          // corresponding call to 'effect.abortable' and make sure new_e is
+          // used to create the value produced by the effect.
+          return null;
+        });
     put("effects.exists"                 , cl -> cl.getEffect(cl._dfa._fuir.clazzActualGeneric(cl._cc, 0)) != null
         ? cl._dfa._true
         : cl._dfa._bool  /* NYI: currently, this is never FALSE since a default effect might get installed turning this into TRUE
