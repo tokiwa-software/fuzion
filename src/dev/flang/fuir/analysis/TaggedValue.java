@@ -105,7 +105,7 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
       _clazz < other._clazz ? -1 :
       _clazz > other._clazz ? +1 :
       _tag   < other._tag   ? -1 :
-      _tag   > other._tag   ? -1 : Value.compare(_original, other._original);
+      _tag   > other._tag   ? +1 : Value.compare(_original, other._original);
   }
 
 
