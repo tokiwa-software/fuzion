@@ -1239,6 +1239,7 @@ public class DFA extends ANY
           var env = cl._env;
           var newEnv = new Env(cl._dfa, env, ecl, cl._target);
           var ncl = cl._dfa.newCall(call, false, cl._args.get(0), new List<>(), newEnv, cl);
+          // NYI: result must be null if result of ncl is null (ncl does not return) and effect.abort is not called
           return Value.UNIT;
         });
     put("effect.abort"                   , cl ->
