@@ -1263,11 +1263,20 @@ public class DFA extends ANY
   void replaceDefaultEffect(int ecl, Value e)
   {
     var oe = _defaultEffects.get(ecl);
+    Value ne;
     if (oe == null)
       {
-        throw new Error("replaceDefaultEffect called when there is no default effect!");
+        if (false)
+          {
+            // NYI: Check why this can happen.
+            throw new Error("replaceDefaultEffect called when there is no default effect!");
+          }
+        ne = oe;
       }
-    var ne = e.join(oe);
+    else
+      {
+        ne = e.join(oe);
+      }
     if (Value.compare(oe, ne) != 0)
       {
         _defaultEffects.put(ecl, ne);
