@@ -271,7 +271,7 @@ public class DFA extends ANY
           else
             {
               // NYI: proper error reporting
-              System.out.println("NYI: in "+_fuir.clazzAsString(cl)+" no targets for call to "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue);
+              System.out.println("NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue);
               Thread.dumpStack();
               res = null;
             }
