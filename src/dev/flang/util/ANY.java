@@ -55,7 +55,6 @@ public class ANY
 
   /**
    * `class:method:line` of the condition that failed
-   * @return
    */
   private static String origin(){
     var st = (new Throwable()).getStackTrace();
