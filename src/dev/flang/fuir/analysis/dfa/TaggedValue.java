@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.fuir.analysis;
+package dev.flang.fuir.analysis.dfa;
 
 
 /**

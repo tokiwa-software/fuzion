@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.fuir.analysis;
+package dev.flang.fuir.analysis.dfa;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -34,6 +34,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
+import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;

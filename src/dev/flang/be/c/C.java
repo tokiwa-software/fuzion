@@ -38,7 +38,7 @@ import java.util.stream.Stream;
 import dev.flang.fuir.FUIR;
 
 import dev.flang.fuir.analysis.AbstractInterpreter;
-import dev.flang.fuir.analysis.DFA;
+import dev.flang.fuir.analysis.dfa.DFA;
 import dev.flang.fuir.analysis.Escape;
 import dev.flang.fuir.analysis.TailCall;
 

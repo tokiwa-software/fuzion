@@ -56,7 +56,7 @@ class CheckIntrinsics extends ANY
     checkIntrinsics(all, i, "Interpreter backend");
     var c = dev.flang.be.c.Intrinsics.supportedIntrinsics();
     checkIntrinsics(all, c, "C backend");
-    var dfa = dev.flang.fuir.analysis.DFA.supportedIntrinsics();
+    var dfa = dev.flang.fuir.analysis.dfa.DFA.supportedIntrinsics();
     checkIntrinsics(all, dfa, "DFA");
     var cfg = dev.flang.fuir.cfg.CFG.supportedIntrinsics();
     checkIntrinsics(all, cfg, "CFG");

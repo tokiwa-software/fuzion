@@ -42,7 +42,7 @@ import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
-import dev.flang.fuir.analysis.DFA;
+import dev.flang.fuir.analysis.dfa.DFA;
 
 import dev.flang.me.MiddleEnd;
 
