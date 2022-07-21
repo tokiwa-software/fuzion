@@ -1195,9 +1195,21 @@ public class DFA extends ANY
         });
     put("fuzion.sys.env_vars.has0"       , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.sys.env_vars.get0"       , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.sys.thread.spawn0"       , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.std.nano_sleep"          , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.std.nano_time"           , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.sys.thread.spawn0"       , cl ->
+        {
+          var oc = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
+          var call = cl._dfa._fuir.lookupCall(oc);
+
+          if (CHECKS) check
+            (cl._dfa._fuir.clazzNeedsCode(call));
+
+          // NYI: spawn0 needs to set up an environment representing the new
+          // thread and perform thread-related checks (race-detection. etc.)!
+          var ncl = cl._dfa.newCall(call, false, cl._args.get(0), new List<>(), null /* new enviroment */, cl);
+          return Value.UNIT;
+        });
+    put("fuzion.std.nano_sleep"          , cl -> Value.UNIT );
+    put("fuzion.std.nano_time"           , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
     put("effect.replace"                 , cl ->
         {
