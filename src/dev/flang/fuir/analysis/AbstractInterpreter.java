@@ -243,14 +243,24 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
 
   /**
-   * Check if the given clazz has a unique value that doe snot need to be pushed
+   * Check if the given clazz has a unique value that does not need to be pushed
    * onto the stack.
    */
-  boolean clazzHasUniqueValue(int cl)
+  public static boolean clazzHasUniqueValue(FUIR fuir, int cl)
   {
-    return cl == _fuir.clazzUniverse() || _fuir.clazzIsUnitType(cl) && !_fuir.clazzIsRef(cl);
+    return cl == fuir.clazzUniverse() || fuir.clazzIsUnitType(cl) && !fuir.clazzIsRef(cl);
     // NYI: maybe we should restrict this to c_unit only?
     // return cl == _fuir.clazzUniverse() || FUIR.SpecialClazzes.c_unit != _fuir.getSpecialId(cl);
+  }
+
+
+  /**
+   * Check if the given clazz has a unique value that does not need to be pushed
+   * onto the stack.
+   */
+  public boolean clazzHasUniqueValue(int cl)
+  {
+    return clazzHasUniqueValue(_fuir, cl);
   }
 
 

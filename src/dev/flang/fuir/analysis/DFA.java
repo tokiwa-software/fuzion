@@ -238,58 +238,40 @@ public class DFA extends ANY
      */
     Value access(int cl, int c, int i, Value tvalue, List<Value> args)
     {
-      Value res;
       var cc0 = _fuir.accessedClazz  (cl, c, i);
-
-      if (_fuir.accessIsDynamic(cl, c, i))
+      var ccs = _fuir.accessIsDynamic(cl, c, i) ? _fuir.accessedClazzes(cl, c, i) :
+                _fuir.clazzNeedsCode(cc0)       ? new int[] { _fuir.clazzOuterClazz(cc0), cc0 }
+                                                : new int[0];
+      var found = new boolean[] { false };
+      var resf = new Value[] { null };
+      for (var ccii = 0; ccii < ccs.length; ccii += 2)
         {
-          var ccs = _fuir.accessedClazzes(cl, c, i);
-          var found = new boolean[] { false };
-          var resf = new Value[] { null };
-          for (var ccii = 0; ccii < ccs.length; ccii += 2)
-            {
-              var cci = ccii;
-              var tt = ccs[cci  ];
-              var cc = ccs[cci+1];
-              tvalue.forAll(t -> {
-                  if (t instanceof Instance   ti && ti._clazz == tt ||
-                      t instanceof BoxedValue tb && tb._clazz == tt)
+          var cci = ccii;
+          var tt = ccs[cci  ];
+          var cc = ccs[cci+1];
+          tvalue.forAll(t -> {
+              check
+                (t != Value.UNIT || AbstractInterpreter.clazzHasUniqueValue(_fuir, tt));
+              if (t == Value.UNIT ||
+                  t._clazz == tt ||
+                  // NYI: This is a little too much special handling, must simplify:
+                  !_fuir.accessIsDynamic(cl, c, i) && _fuir.clazzIsRef(t._clazz) && !_fuir.clazzIsOuterRef(cc0))
+                {
+                  found[0] = true;
+                  var r = access0(cl, c, i, t, args, cc);
+                  if (r != null)
                     {
-                      found[0] = true;
-                      var r = access0(cl, c, i, t, args, cc);
-                      if (r != null)
-                        {
-                          resf[0] = resf[0] == null ? r : resf[0].join(r);
-                        }
+                      resf[0] = resf[0] == null ? r : resf[0].join(r);
                     }
-                });
-            }
-          if (found[0])
-            {
-              res = resf[0];
-            }
-          else
-            {
-              // NYI: proper error reporting
-              Errors.error("NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue);
-              res = null;
-            }
+                }
+            });
         }
-      else if (_fuir.clazzNeedsCode(cc0))
+      if (!found[0])
         {
-          res = access0(cl, c, i, tvalue, args, cc0);
-        }
-      else
-        {
+          // NYI: proper error reporting
           Errors.error("NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue);
-          /* NYI: proper error reporting
-        result = reportErrorInCode("no code generated for static access to %s within %s",
-                                   CExpr.string(_fuir.clazzAsString(cc0)),
-                                   CExpr.string(_fuir.clazzAsString(cl )));
-          */
-          res = null;
         }
-      return res;
+      return resf[0];
     }
 
 
