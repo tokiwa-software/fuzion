@@ -264,8 +264,7 @@ public class Value extends ANY
    */
   public Value joinInstances(Value v)
   {
-    System.err.println("NYI: Value.join: "+this+" and "+v);
-    return this;
+    throw new Error("NYI: Value.join: "+this+" and " + v);
   }
 
 
