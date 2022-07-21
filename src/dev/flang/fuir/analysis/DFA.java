@@ -914,14 +914,14 @@ public class DFA extends ANY
     put("safety"                         , cl -> cl._dfa._options.fuzionSafety() ? cl._dfa._true : cl._dfa._false );
     put("debug"                          , cl -> cl._dfa._options.fuzionDebug()  ? cl._dfa._true : cl._dfa._false );
     put("debugLevel"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc), cl._dfa._options.fuzionDebugLevel()) );
-    put("fuzion.std.args.count"          , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.std.args.get"            , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.std.args.count"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.std.args.get"            , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.std.exit"                , cl -> null );
     put("fuzion.std.out.write"           , cl -> Value.UNIT );
     put("fuzion.std.err.write"           , cl -> Value.UNIT );
-    put("fuzion.std.out.flush"           , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.std.err.flush"           , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.stdin.nextByte"          , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.std.out.flush"           , cl -> Value.UNIT );
+    put("fuzion.std.err.flush"           , cl -> Value.UNIT );
+    put("fuzion.stdin.nextByte"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("i8.prefix -°"                   , cl -> { return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
     put("i16.prefix -°"                  , cl -> { return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
     put("i32.prefix -°"                  , cl -> { return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
@@ -1120,8 +1120,8 @@ public class DFA extends ANY
     put("f64.as_i64_lax"                 , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32.castTo_u32"                 , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64.castTo_u64"                 , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
-    put("f32.asString"                   , cl -> NYIintrinsicMissing(cl) );
-    put("f64.asString"                   , cl -> NYIintrinsicMissing(cl) );
+    put("f32.asString"                   , cl -> cl._dfa.newConstString(null, cl) );
+    put("f64.asString"                   , cl -> cl._dfa.newConstString(null, cl) );
 
     put("f32s.minExp"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f32s.maxExp"                    , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
@@ -1162,8 +1162,8 @@ public class DFA extends ANY
     put("f32s.tanh"                      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("f64s.tanh"                      , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
 
-    put("Object.hashCode"                , cl -> NYIintrinsicMissing(cl) );
-    put("Object.asString"                , cl -> NYIintrinsicMissing(cl) );
+    put("Object.hashCode"                , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("Object.asString"                , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.sys.array.alloc"         , cl -> { return new SysArray(cl._dfa, new byte[0]); } ); // NYI: get length from args
     put("fuzion.sys.array.setel"         , cl ->
         { /* NYI: record array modification */
@@ -1193,8 +1193,8 @@ public class DFA extends ANY
               throw new Error("intrinsic fuzion.sys.array.gel: Expected class SysArray, found "+array.getClass()+" "+array);
             }
         });
-    put("fuzion.sys.env_vars.has0"       , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.sys.env_vars.get0"       , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.sys.env_vars.has0"       , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+    put("fuzion.sys.env_vars.get0"       , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.sys.thread.spawn0"       , cl ->
         {
           var oc = cl._dfa._fuir.clazzActualGeneric(cl._cc, 0);
@@ -1368,28 +1368,29 @@ public class DFA extends ANY
 
 
   /**
-   * Create constnat string with given utf8 bytes.
+   * Create constant string with given utf8 bytes.
    *
-   * @param utf8Bytes the string contents
+   * @param utf8Bytes the string contents or null if contents unknown
    *
    * @param context for debugging: Reason that causes this const string to be
    * part of the analysis.
    */
   Value newConstString(byte[] utf8Bytes, Context context)
   {
-    if (PRECONDITIONS) require
-      (utf8Bytes != null);
-
     var cs            = _fuir.clazz_conststring();
     var internalArray = _fuir.clazz_conststring_internalArray();
     var data          = _fuir.clazz_fuzionSysArray_u8_data();
     var length        = _fuir.clazz_fuzionSysArray_u8_length();
     var sysArray      = _fuir.clazzResultClazz(internalArray);
-    var adata = new SysArray(this, utf8Bytes);
+    var adata = utf8Bytes != null ? new SysArray(this, utf8Bytes)
+                                  : new SysArray(this, new NumericValue(this, _fuir.clazz(FUIR.SpecialClazzes.c_u8)));
     var r = newInstance(cs, context);
     var a = newInstance(sysArray, context);
     _writtenFields.add(length);
-    a.setField(this, length, new NumericValue(this, _fuir.clazzResultClazz(length), utf8Bytes.length));
+    a.setField(this,
+               length,
+                utf8Bytes != null ? new NumericValue(this, _fuir.clazzResultClazz(length), utf8Bytes.length)
+                                  : new NumericValue(this, _fuir.clazzResultClazz(length)));
     _writtenFields.add(data);
     a.setField(this, data  , adata);
     _writtenFields.add(internalArray);
