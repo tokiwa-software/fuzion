@@ -88,7 +88,7 @@ public class Value extends ANY
   /**
    * The unit value 'unit', '{}'
    */
-  static Value UNIT = new Value()
+  static Value UNIT = new Value(-1)
     {
       /**
        * Add v to the set of values of given field within this instance.
@@ -133,7 +133,7 @@ public class Value extends ANY
   /**
    * undefined value, used for not initialized fields.
    */
-  static Value UNDEFINED = new Value()
+  static Value UNDEFINED = new Value(-1)
     {
       public String toString()
       {
@@ -143,6 +143,12 @@ public class Value extends ANY
 
 
   /*----------------------------  variables  ----------------------------*/
+
+
+  /**
+   * The clazz this is an instance of.
+   */
+  int _clazz;
 
 
   /**
@@ -163,8 +169,9 @@ public class Value extends ANY
   /**
    * Create Value
    */
-  public Value()
+  public Value(int cl)
   {
+    _clazz = cl;
   }
 
 

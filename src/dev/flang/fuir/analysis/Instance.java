@@ -51,12 +51,6 @@ public class Instance extends Value implements Comparable<Instance> // , Context
 
 
   /**
-   * The clazz this is an instance of.
-   */
-  int _clazz;
-
-
-  /**
    * The DFA instance we are working with.
    */
   DFA _dfa;
@@ -96,7 +90,7 @@ public class Instance extends Value implements Comparable<Instance> // , Context
    */
   public Instance(DFA dfa, int clazz, Context context)
   {
-    _clazz = clazz;
+    super(clazz);
     _dfa = dfa;
     _context = context;
     _fields = new TreeMap<>();
@@ -111,6 +105,8 @@ public class Instance extends Value implements Comparable<Instance> // , Context
    */
   Instance(Instance original, int vc, int rc)
   {
+    super(original._clazz);
+
     if (PRECONDITIONS) require
       (original._clazz == vc);
 

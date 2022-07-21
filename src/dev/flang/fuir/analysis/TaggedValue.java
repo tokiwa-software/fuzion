@@ -52,12 +52,6 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
 
 
   /**
-   * The clazz this is an instance of.
-   */
-  int _clazz;
-
-
-  /**
    * The original, un-tagged value.
    */
   Value _original;
@@ -86,8 +80,9 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
    */
   public TaggedValue(DFA dfa, int nc, Value original, int tag)
   {
+    super(nc);
+
     _dfa = dfa;
-    _clazz = nc;
     _original = original;
     _tag = tag;
   }

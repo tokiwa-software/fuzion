@@ -54,12 +54,6 @@ public class NumericValue extends Value implements Comparable<NumericValue>
 
 
   /**
-   * The clazz of this numeric value.
-   */
-  int _clazz;
-
-
-  /**
    * The value cast to long
    */
   Long _value;
@@ -79,8 +73,9 @@ public class NumericValue extends Value implements Comparable<NumericValue>
    */
   public NumericValue(DFA dfa, int clazz, ByteBuffer data)
   {
+    super(clazz);
+
     _dfa = dfa;
-    _clazz = clazz;
 
     _value = switch (_dfa._fuir.getSpecialId(_clazz))
       {
@@ -110,8 +105,9 @@ public class NumericValue extends Value implements Comparable<NumericValue>
    */
   public NumericValue(DFA dfa, int clazz, long v)
   {
+    super(clazz);
+
     _dfa = dfa;
-    _clazz = clazz;
     _value = v;
   }
 
@@ -127,8 +123,9 @@ public class NumericValue extends Value implements Comparable<NumericValue>
    */
   public NumericValue(DFA dfa, int clazz)
   {
+    super(clazz);
+
     _dfa = dfa;
-    _clazz = clazz;
     _value = null;
   }
 

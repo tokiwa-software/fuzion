@@ -71,6 +71,8 @@ public class ValueSet extends Value
    */
   public ValueSet(Value v1, Value v2)
   {
+    super(-1);
+
     _components = new TreeMap<>(Value.COMPARATOR);
     v1.forAll(x -> _components.put(x,x));
     v2.forAll(x -> _components.put(x,x));

@@ -48,11 +48,6 @@ public class BoxedValue extends Value
 
   DFA _dfa;
 
-  /**
-   * The clazz this is an instance of.
-   */
-  int _clazz;
-
 
   /**
    * The original, non-boxed value.
@@ -70,8 +65,9 @@ public class BoxedValue extends Value
    */
   public BoxedValue(DFA dfa, Value original, int vc, int rc)
   {
+    super(rc);
+
     _dfa = dfa;
-    _clazz = rc;
     _original = original;
   }
 
