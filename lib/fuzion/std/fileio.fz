@@ -1,9 +1,53 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature fuzion.std.fileio
+#
+#
+# -----------------------------------------------------------------------
+
+# fuzion.std.fileio -- fileio presents two simple methods:
+# readFile to retrieve data from a file
+# WriteFile to insert data into a file 
+#
 public fuzion.std.fileio is
 
-    public readFile(path string, pos i32) =>
-        arr := path.utf8.asArray #transform the string to a utf8 byte array
-        readFile arr.internalArray.data arr.length pos
+  # read a file into an array u8.
+  # 
+  # NYI : an equivalent to a Java MappedByteBuffer would be a better solution
+  #
+  public readFile(
+                  # the (relative or absolute) file name, using platform specific path separators  
+                  path string) =>
+    file := array getFileSize(path).as_i32 i->(u8 0)
+    arr := path.utf8.asArray # transforms the path to a utf8 byte array
+    readFile arr.internalArray.data arr.length file.internalArray.data
+    file
 
-    public readFile(path Object, length i32, position i32) u8 is intrinsic
+  public readFile(path Object, pathLength i32, fileArray Object) unit is intrinsic
 
-    public writeFile(path string, content array<u8>) is intrinsic
+  # retrieve the file size in bytes and returns -1 in case of an error
+  #
+  public getFileSize(path string) =>
+    arr := path.utf8.asArray
+    getFileSize arr.internalArray.data arr.length
+
+  public getFileSize(path Object, pathLength i32) i64 is intrinsic
+
+  public writeFile(path string, content array<u8>) is intrinsic # NYI

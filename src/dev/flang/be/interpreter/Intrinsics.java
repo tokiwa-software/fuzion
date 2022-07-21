@@ -42,6 +42,8 @@ import dev.flang.util.List;
 import java.lang.reflect.Array;
 
 import java.io.PrintStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import java.nio.charset.StandardCharsets;
@@ -181,17 +183,34 @@ public class Intrinsics extends ANY
         });
     put("fuzion.std.fileio.readFile", (interpreter, innerClazz)-> args ->
         {
-          byte[] content;
           byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-          int pos = (int)args.get(3).i32Value(); //position of the byte in file
-          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8)); //path to the file
-          try {
-            content = Files.readAllBytes(path);
-            return new u8Value(content[pos]);
-          } catch (IOException e) {
-            System.err.println(e);
-            return new u8Value(-1);
-          }
+          var byteArr = (byte[])args.get(3).arrayData()._array;
+          try
+            {
+              File file = new File(new String(pathBytes , StandardCharsets.UTF_8));
+              FileInputStream fs = new FileInputStream(file);
+              fs.read(byteArr);
+              fs.close();
+              return Value.EMPTY_VALUE;
+            } 
+            catch (Exception e) 
+              {
+                return Value.EMPTY_VALUE; // NYI: need to handle an IO error
+              }
+        });
+    put("fuzion.std.fileio.getFileSize", (interpreter, innerClazz) -> args ->
+        {
+          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
+          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
+          try
+            {
+              long fileLength = Files.size(path);
+              return new i64Value(fileLength);
+            } 
+            catch (Exception e) 
+              {
+                return new i64Value(-1);
+              }
         });
     put("fuzion.std.err.write", (interpreter, innerClazz) ->
         {
