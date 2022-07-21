@@ -271,8 +271,7 @@ public class DFA extends ANY
           else
             {
               // NYI: proper error reporting
-              System.out.println("NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue);
-              Thread.dumpStack();
+              Errors.error("NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue);
               res = null;
             }
         }
@@ -282,7 +281,7 @@ public class DFA extends ANY
         }
       else
         {
-          System.out.println("NYI: DFA call to nowhere for "+_fuir.codeAtAsString(cl, c, i));
+          Errors.error("NYI: in "+_fuir.clazzAsString(cl)+" no targets for "+_fuir.codeAtAsString(cl, c, i)+" target "+tvalue);
           /* NYI: proper error reporting
         result = reportErrorInCode("no code generated for static access to %s within %s",
                                    CExpr.string(_fuir.clazzAsString(cc0)),
@@ -894,7 +893,7 @@ public class DFA extends ANY
         var name = cl._dfa._fuir.clazzIntrinsicName(cl._cc);
 
         // NYI: Proper error handling.
-        System.out.println("NYI: Support for intrinsic '" + name + "' missing, needed by");
+        Errors.error("NYI: Support for intrinsic '" + name + "' missing");
 
         // cl.showWhy() may try to print result values that depend on
         // intrinsics, so we risk running into an endless recursion here:
