@@ -895,6 +895,7 @@ public class DFA extends ANY
     put("safety"                         , cl -> cl._dfa._options.fuzionSafety() ? cl._dfa._true : cl._dfa._false );
     put("debug"                          , cl -> cl._dfa._options.fuzionDebug()  ? cl._dfa._true : cl._dfa._false );
     put("debugLevel"                     , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc), cl._dfa._options.fuzionDebugLevel()) );
+
     put("fuzion.std.args.count"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
     put("fuzion.std.args.get"            , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.std.exit"                , cl -> null );
@@ -903,6 +904,7 @@ public class DFA extends ANY
     put("fuzion.std.out.flush"           , cl -> Value.UNIT );
     put("fuzion.std.err.flush"           , cl -> Value.UNIT );
     put("fuzion.stdin.nextByte"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );
+
     put("i8.prefix -°"                   , cl -> { return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
     put("i16.prefix -°"                  , cl -> { return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
     put("i32.prefix -°"                  , cl -> { return new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)); } );
@@ -1251,6 +1253,7 @@ public class DFA extends ANY
                           * should reconsider if handling of default effects changes
                           */
         );
+
     put("fuzion.java.JavaObject.isNull"  , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.java.arrayGet"           , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.java.arrayLength"        , cl -> NYIintrinsicMissing(cl) );
