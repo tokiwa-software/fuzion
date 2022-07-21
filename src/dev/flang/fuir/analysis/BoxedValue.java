@@ -88,6 +88,22 @@ public class BoxedValue extends Value
 
 
   /**
+   * Add v to the set of values of given field within this instance.
+   */
+  public void setField(DFA dfa, int field, Value v)
+  {
+    if (PRECONDITIONS) require
+      (v != null);
+
+    // NYI: since the boxed value is a clone, this should not modify _original,
+    // but it should modify a clone of _original. Modifying _original is,
+    // however, still sound since it adds values, but does not forget values.
+    _original.setField(dfa, field, v);
+  }
+
+
+
+  /**
    * Get set of values of given field within this instance.
    */
   Value readFieldFromInstance(DFA dfa, int field)
