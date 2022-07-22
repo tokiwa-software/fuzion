@@ -161,10 +161,7 @@ public class Call extends ANY implements Comparable<Call>, Context
       }
     if (r == 0)
       {
-        r =
-          _env == null && other._env == null ?  0 :
-          _env != null && other._env == null ? -1 :
-          _env == null && other._env != null ? +1 : _env.compareTo(other._env);
+        r = Env.compare(_env, other._env);
       }
     return r;
   }
@@ -272,6 +269,10 @@ public class Call extends ANY implements Comparable<Call>, Context
     var r = result();
     sb.append(" => ")
       .append(r == null ? "*** VOID ***" : r);
+    if (_env != null)
+      {
+        sb.append(_env.toString());
+      }
     return sb.toString();
   }
 
