@@ -94,7 +94,7 @@ public class Intrinsics extends ANY
                               ));
         });
     IntrinsicCode noFileIo = (c,cl,outer,in) ->
-      CStmnt.seq(CExpr.fprintfstderr("*** C backend support does not support fileio (yet).\n"),
+      CStmnt.seq(CExpr.fprintfstderr("*** C backend does not support fileio features (yet).\n"),
                  CExpr.exit(1));
     put("fuzion.std.fileio.readFile"   , noFileIo); // NYI
     put("fuzion.std.fileio.getFileSize", noFileIo); // NYI
