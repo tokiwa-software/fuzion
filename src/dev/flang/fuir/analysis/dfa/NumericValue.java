@@ -177,9 +177,10 @@ public class NumericValue extends Value implements Comparable<NumericValue>
 
 
   /**
-   * Create a value set consisting of this value and 'v'.
+   * Create the union of the values 'this' and 'v'. This is called by join()
+   * after common cases (same instance, UNDEFINED) have been handled.
    */
-  public Value join(Value v)
+  public Value joinInstances(Value v)
   {
     if (v instanceof NumericValue nv)
       {
@@ -212,14 +213,12 @@ public class NumericValue extends Value implements Comparable<NumericValue>
           }
         else
           {
-            System.err.println("Value.join could not join numerics "+this+" and "+nv+"!");
-            return this;
+            return super.joinInstances(v);
           }
       }
     else
       {
-        System.err.println("NYI: Value.join: "+this+" and "+v);
-        return this;
+        return super.joinInstances(v);
       }
   }
 
