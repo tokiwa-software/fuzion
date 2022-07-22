@@ -1,0 +1,69 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature fuzion.std.fileio
+#
+#
+# -----------------------------------------------------------------------
+
+# fuzion.std.fileio -- fileio presents two simple methods:
+# readFile to retrieve data from a file
+# WriteFile to insert data into a file 
+#
+public fuzion.std.fileio is
+
+  # read a file into an array u8.
+  # 
+  public readFile(
+                  # the (relative or absolute) file name, using platform specific path separators  
+                  path string) =>
+    file := array getFileSize(path).as_i32 i->(u8 0) # allocating an array the size of the file
+    arr := path.utf8.asArray # transforms the path to a utf8 byte array
+    readFile arr.internalArray.data arr.length file.internalArray.data file.length
+    file
+
+  # intrinsic that fills an array u8 with the file bytes.
+  # 
+  private readFile(
+                   # the internal array data representing the file path in bytes
+                   path Object,
+                   # the length of the internal array representing the path
+                   pathLength i32,
+                   # the internal array data representing the container for the bytes to be read from the file
+                   fileArray Object,
+                   # the length of the array that represents the file bytes
+                   fileArrayLength i32) i64 is intrinsic
+
+  # retrieve the file size in bytes and returns -1 in case of an error
+  #
+  public getFileSize(
+                     # the (relative or absolute) file name, using platform specific path separators
+                     path string) =>
+    arr := path.utf8.asArray
+    getFileSize arr.internalArray.data arr.length
+
+  # intrinsic that returns the file size in bytes or -1 in case of an error
+  #
+  private getFileSize(
+                      # the internal array data representing the file path in bytes
+                      path Object,
+                      # the length of the internal array representing the path
+                      pathLength i32) i64 is intrinsic
+
+  private writeFile(path string, content array<u8>) is intrinsic # NYI
