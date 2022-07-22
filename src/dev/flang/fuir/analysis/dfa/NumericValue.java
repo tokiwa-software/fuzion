@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.fuir.analysis;
+package dev.flang.fuir.analysis.dfa;
 
 import java.nio.ByteBuffer;
 
@@ -54,12 +54,6 @@ public class NumericValue extends Value implements Comparable<NumericValue>
 
 
   /**
-   * The clazz of this numeric value.
-   */
-  int _clazz;
-
-
-  /**
    * The value cast to long
    */
   Long _value;
@@ -79,8 +73,9 @@ public class NumericValue extends Value implements Comparable<NumericValue>
    */
   public NumericValue(DFA dfa, int clazz, ByteBuffer data)
   {
+    super(clazz);
+
     _dfa = dfa;
-    _clazz = clazz;
 
     _value = switch (_dfa._fuir.getSpecialId(_clazz))
       {
@@ -110,8 +105,9 @@ public class NumericValue extends Value implements Comparable<NumericValue>
    */
   public NumericValue(DFA dfa, int clazz, long v)
   {
+    super(clazz);
+
     _dfa = dfa;
-    _clazz = clazz;
     _value = v;
   }
 
@@ -127,8 +123,9 @@ public class NumericValue extends Value implements Comparable<NumericValue>
    */
   public NumericValue(DFA dfa, int clazz)
   {
+    super(clazz);
+
     _dfa = dfa;
-    _clazz = clazz;
     _value = null;
   }
 
@@ -170,7 +167,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
   /**
    * Get set of values of given field within this instance.
    */
-  Value readFieldFromInstance(DFA dfa, int target, int field)
+  Value readFieldFromInstance(DFA dfa, int field)
   {
     /* for a numeric value, this can only read the 'val' field, e.g., 'i32.val',
      * which (recursively) contains the numeric value, so we can just return
@@ -230,7 +227,7 @@ public class NumericValue extends Value implements Comparable<NumericValue>
   /**
    * Add v to the set of values of given field within this instance.
    */
-  public void setField(int field, Value v)
+  public void setField(DFA dfa, int field, Value v)
   {
     if (_dfa._fuir.clazzOuterClazz(field) == _clazz)
       {

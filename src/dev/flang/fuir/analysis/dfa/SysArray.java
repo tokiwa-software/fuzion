@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.fuir.analysis;
+package dev.flang.fuir.analysis.dfa;
 
 
 /**
@@ -75,6 +75,8 @@ public class SysArray extends Value implements Comparable<SysArray>
    */
   public SysArray(DFA dfa, byte[] data)
   {
+    super(dfa._fuir.clazzObject());
+
     if (PRECONDITIONS) require
       (data != null);
 
@@ -105,6 +107,8 @@ public class SysArray extends Value implements Comparable<SysArray>
    */
   public SysArray(DFA dfa, Value el)
   {
+    super(dfa._fuir.clazzObject());
+
     _dfa = dfa;
     _data = new byte[0];
     _elements = el;

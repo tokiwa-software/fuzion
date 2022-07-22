@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.fuir.analysis;
+package dev.flang.fuir.analysis.dfa;
 
 import java.util.TreeMap;
 
@@ -71,6 +71,8 @@ public class ValueSet extends Value
    */
   public ValueSet(Value v1, Value v2)
   {
+    super(-1);
+
     _components = new TreeMap<>(Value.COMPARATOR);
     v1.forAll(x -> _components.put(x,x));
     v2.forAll(x -> _components.put(x,x));
@@ -102,8 +104,6 @@ public class ValueSet extends Value
             var res = Value.compare(x1, x2);
             if (res != 0)
               {
-                if (toString().equals(other.toString()))
-                  System.out.println("not equals "+this+" "+other+" because "+x1+" != "+x2);
                 return res;
               }
           }
@@ -150,6 +150,21 @@ public class ValueSet extends Value
   public Value joinInstances(Value v)
   {
     return new ValueSet(this, v);
+  }
+
+
+  /**
+   * Unbox this value.
+   */
+  Value unbox(int vc)
+  {
+    Value result = null;
+    for (var v : _components.values())
+      {
+        var u = v.unbox(vc);
+        result = result == null ? u : new ValueSet(result, u);
+      }
+    return result;
   }
 
 

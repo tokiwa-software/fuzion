@@ -42,7 +42,7 @@ import dev.flang.be.interpreter.Interpreter;
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
 
-import dev.flang.fuir.analysis.DFA;
+import dev.flang.fuir.analysis.dfa.DFA;
 
 import dev.flang.me.MiddleEnd;
 
@@ -73,6 +73,7 @@ class Fuzion extends Tool
 
   static String  _binaryName_ = null;
   static boolean _useBoehmGC_ = false;
+  static boolean _xdfa_ = false;
 
 
   /**
@@ -85,7 +86,7 @@ class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<file>] [-useGC] ";
+        return "[-o=<file>] [-useGC] [-Xdfa=(on|off)]";
       }
       boolean handleOption(String o)
       {
@@ -95,9 +96,14 @@ class Fuzion extends Tool
             _binaryName_ = o.substring(3);
             result = true;
           }
-        if (o.equals("-useGC"))
+        else if (o.equals("-useGC"))
           {
             _useBoehmGC_ = true;
+            result = true;
+          }
+        else if (o.startsWith("-Xdfa="))
+          {
+            _xdfa_ = parseOnOffArg(o);
             result = true;
           }
         return result;
@@ -630,9 +636,9 @@ class Fuzion extends Tool
                   irTime = System.currentTimeMillis();
                   in.run(); break;
                 }
-              case c          : new C(new COptions(options, _binaryName_, _useBoehmGC_), fuir).compile(); break;
+              case c          : new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_), fuir).compile(); break;
               case effects    : new Effects(fuir).find(); break;
-              case dfa        : new DFA(fuir).dfa(); break;
+              case dfa        : new DFA(options, fuir).dfa(); break;
               default         : Errors.fatal("backend '" + _backend + "' not supported yet"); break;
               }
             long beTime = System.currentTimeMillis();

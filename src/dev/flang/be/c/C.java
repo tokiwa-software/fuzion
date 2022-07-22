@@ -37,9 +37,10 @@ import java.util.stream.Stream;
 
 import dev.flang.fuir.FUIR;
 
+import dev.flang.fuir.analysis.AbstractInterpreter;
+import dev.flang.fuir.analysis.dfa.DFA;
 import dev.flang.fuir.analysis.Escape;
 import dev.flang.fuir.analysis.TailCall;
-import dev.flang.fuir.analysis.AbstractInterpreter;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
@@ -494,7 +495,7 @@ public class C extends ANY
            FUIR fuir)
   {
     _options = opt;
-    _fuir = fuir;
+    _fuir = opt._Xdfa ?  new DFA(opt, fuir).new_fuir() : fuir;
     _tailCall = new TailCall(fuir);
     _escape = new Escape(fuir);
     _ai = new AbstractInterpreter(_fuir, new CodeGen());
@@ -1284,8 +1285,9 @@ public class C extends ANY
       }
     return CStmnt.seq(CStmnt.lineComment(pre                       ? "for precondition only, need to check if it may escape" :
                                          _escape.doesCurEscape(cl) ? "instance may escape, so we need malloc here"
-                                                                   : "instance does not escape, NYI: use stack allocation, not malloc"),
-                      declareAllocAndInitClazzId(cl, _names.CURRENT),
+                                                                   : "instance does not escape, put it on stack"),
+                      _escape.doesCurEscape(cl) ? declareAllocAndInitClazzId(cl, _names.CURRENT)
+                                                : CStmnt.decl(_names.struct(cl), _names.CURRENT),
                       CStmnt.seq(l).label("start"));
   }
 
@@ -1297,10 +1299,10 @@ public class C extends ANY
    */
   CExpr current(int cl)
   {
-    return
-      !_types.hasData(cl) ? CExpr.UNIT :
-      _fuir.clazzIsRef(cl) ? _names.CURRENT
-                           : _names.CURRENT.deref();
+    var res1 = _names.CURRENT;
+    var res2 = _fuir.clazzIsRef(cl)      ? res1 : res1.deref();
+    var res3 = _escape.doesCurEscape(cl) ? res2 : res2.adrOf();
+    return !_types.hasData(cl) ? CExpr.UNIT : res3;
   }
 
 

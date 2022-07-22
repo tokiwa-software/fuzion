@@ -130,7 +130,7 @@ public class IR extends ANY
   }
 
 
-  protected final Map2Int<List<Object>> _codeIds = new Map2Int(CODE_BASE);
+  protected final Map2Int<List<Object>> _codeIds;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -138,6 +138,19 @@ public class IR extends ANY
 
   public IR()
   {
+    _codeIds = new Map2Int(CODE_BASE);
+  }
+
+  /**
+   * Clone this IR such that modifications can be made by optimizers.  A heir of
+   * IR can use this to redefine some methods while reusing the data from
+   * orignal for all the rest.
+   *
+   * @param original the original IR instance that we are cloning.
+   */
+  protected IR(IR original)
+  {
+    _codeIds = original._codeIds;
   }
 
 

@@ -24,11 +24,16 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.fuir.analysis;
+package dev.flang.fuir.analysis.dfa;
+
+import java.nio.charset.StandardCharsets;
+
+import dev.flang.fuir.FUIR;
 
 import dev.flang.ir.IR;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 
 
@@ -80,7 +85,6 @@ public class Call extends ANY implements Comparable<Call>, Context
   List<Value> _args;
 
 
-
   /**
    * 'this' instance created by this call.
    */
@@ -88,15 +92,10 @@ public class Call extends ANY implements Comparable<Call>, Context
 
 
   /**
-   * result value returned from this call.  A value of null means that this call
-   * does not return at all, i.e., the call always diverges.
-   *
-   * A value of Value.UNDEFINED means that the call may return, but the value
-   * still needs to be found.
-   *
-   * Any other value gives the result of the call.
+   * true means that the call may return, false means the call has not been
+   * found to return, i.e., the result is null (aka void).
    */
-  Value _result;
+  boolean _returns = false;
 
 
   /**
@@ -140,15 +139,6 @@ public class Call extends ANY implements Comparable<Call>, Context
     _env = env;
     _context = context;
     _instance = dfa.newInstance(cc, this);
-    if (_dfa._fuir.clazzKind(cc) == IR.FeatureKind.Intrinsic)
-      {
-        var name = _dfa._fuir.clazzIntrinsicName(_cc);
-        _result = _dfa._intrinsics_.get(name).analyze(this);
-      }
-    else
-      {
-        _result = null;
-      }
   }
 
 
@@ -185,9 +175,9 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   void returns()
   {
-    if (_result == null)
+    if (!_returns)
       {
-        _result = Value.UNDEFINED;
+        _returns = true;
         if (!_dfa._changed)
           {
             _dfa._changedSetBy = "Call.returns for " + this;
@@ -203,27 +193,58 @@ public class Call extends ANY implements Comparable<Call>, Context
    */
   public Value result()
   {
-    if (_result == Value.UNDEFINED)
+    Value result = null;
+    if (_dfa._fuir.clazzKind(_cc) == IR.FeatureKind.Intrinsic)
+      {
+        var name = _dfa._fuir.clazzIntrinsicName(_cc);
+        var idfa = _dfa._intrinsics_.get(name);
+        if (idfa != null)
+          {
+            result = _dfa._intrinsics_.get(name).analyze(this);
+          }
+        else
+          {
+            var at = _dfa._fuir.clazzTypeParameterActualType(_cc);
+            if (at >= 0)
+              {
+                var rc = _dfa._fuir.clazzResultClazz(_cc);
+                var t = _dfa.newInstance(rc, this);
+                var tname = _dfa.newConstString(_dfa._fuir.clazzAsStringNew(at).getBytes(StandardCharsets.UTF_8), this);
+                // NYI: DFA missing support for Type instance, need to set field t.name to tname.
+                result = t;
+              }
+            else
+              {
+                var msg = "DFA: code to handle intrinsic '" + name + "' is missing";
+                Errors.warning(msg);
+              }
+          }
+      }
+    else if (_returns)
       {
         var rf = _dfa._fuir.clazzResultField(_cc);
         if (_pre)
           {
-            _result = Value.UNIT;
+            result = Value.UNIT;
           }
         else if (rf == -1)
           {
-            _result = _instance;
+            result = _instance;
+          }
+        else if (FUIR.SpecialClazzes.c_unit == _dfa._fuir.getSpecialId(_dfa._fuir.clazzResultClazz(rf)))
+          {
+            result = Value.UNIT;
           }
         else
           {
             // should not be possible to return void (_result should be null):
             if (CHECKS) check
-              (_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(_cc)));
+              (!_dfa._fuir.clazzIsVoidType(_dfa._fuir.clazzResultClazz(_cc)));
 
-            _result = _instance.readField(_dfa, _cc, rf);
+            result = _instance.readField(_dfa, rf);
           }
       }
-    return _result;
+    return result;
   }
 
 
@@ -248,8 +269,9 @@ public class Call extends ANY implements Comparable<Call>, Context
           .append("=")
           .append(a);
       }
+    var r = result();
     sb.append(" => ")
-      .append(_result == null ? "*** VOID ***" : result());
+      .append(r == null ? "*** VOID ***" : r);
     return sb.toString();
   }
 

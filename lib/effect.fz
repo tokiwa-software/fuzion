@@ -71,7 +71,7 @@ is
   #
   private run<R>(f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effecs' uses DFA */)->R) R is
     res option<R> := nil
-    cf := (effect_call f)
+    cf := effect_call f
     abortable cf
     match cf.res
       nil => def(unit)

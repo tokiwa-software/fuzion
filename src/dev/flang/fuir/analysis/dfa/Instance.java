@@ -24,9 +24,10 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.fuir.analysis;
+package dev.flang.fuir.analysis.dfa;
 
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 
 /**
@@ -47,12 +48,6 @@ public class Instance extends Value implements Comparable<Instance> // , Context
 
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * The clazz this is an instance of.
-   */
-  int _clazz;
 
 
   /**
@@ -95,7 +90,7 @@ public class Instance extends Value implements Comparable<Instance> // , Context
    */
   public Instance(DFA dfa, int clazz, Context context)
   {
-    _clazz = clazz;
+    super(clazz);
     _dfa = dfa;
     _context = context;
     _fields = new TreeMap<>();
@@ -110,6 +105,8 @@ public class Instance extends Value implements Comparable<Instance> // , Context
    */
   Instance(Instance original, int vc, int rc)
   {
+    super(original._clazz);
+
     if (PRECONDITIONS) require
       (original._clazz == vc);
 
@@ -138,7 +135,7 @@ public class Instance extends Value implements Comparable<Instance> // , Context
   /**
    * Add v to the set of values of given field within this instance.
    */
-  public void setField(int field, Value v)
+  public void setField(DFA dfa, int field, Value v)
   {
     if (PRECONDITIONS) require
       (v != null);
@@ -148,6 +145,11 @@ public class Instance extends Value implements Comparable<Instance> // , Context
       {
         v = oldv.join(v);
       }
+    if (!_dfa._changed && (oldv == null || Value.COMPARATOR.compare(oldv, v) != 0))
+      {
+        _dfa._changedSetBy = "setField: new values "+v+" (was "+oldv+") for " + this;
+        _dfa._changed = true;
+      }
     _fields.put(field, v);
   }
 
@@ -155,10 +157,10 @@ public class Instance extends Value implements Comparable<Instance> // , Context
   /**
    * Get set of values of given field within this instance.
    */
-  Value readFieldFromInstance(DFA dfa, int target, int field)
+  Value readFieldFromInstance(DFA dfa, int field)
   {
     if (PRECONDITIONS) require
-      (_clazz == target);
+      (_clazz == dfa._fuir.clazzOuterClazz(field));
 
     var v = _fields.get(field);
     if (v == null && _isBoxed)
@@ -177,7 +179,10 @@ public class Instance extends Value implements Comparable<Instance> // , Context
       {
         if (dfa._reportResults)
           {
-            System.err.println("*** reading uninitialized field " + dfa._fuir.clazzAsString(field));
+            System.err.println("*** reading uninitialized field " + field + ": "+ dfa._fuir.clazzAsString(field) + " from instance of " + dfa._fuir.clazzAsString(_clazz) +
+                               (_isBoxed ? " Boxed!" : "") +
+                               "\n" +
+                               "fields available:\n  " + _fields.keySet().stream().map(x -> ""+x+":"+dfa._fuir.clazzAsString(x)).collect(Collectors.joining(",\n  ")));
             for (var f : _fields.keySet())
               {
                 if (dfa._fuir.clazzAsString(f).equals(dfa._fuir.clazzAsString(field).replace("ref ","")))
@@ -219,19 +224,6 @@ public class Instance extends Value implements Comparable<Instance> // , Context
     return indent + "  ";
   }
    */
-
-
-  /**
-   * Create a boxed (ref) value of this instance.
-   */
-  Value box(int vc, int rc)
-  {
-    if (CHECKS) check
-      (_clazz == vc);
-
-    return new Instance(this, vc, rc);
-  }
-
 
 }
 

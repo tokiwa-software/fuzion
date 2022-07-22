@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.fuir.analysis;
+package dev.flang.fuir.analysis.dfa;
 
 
 /**
@@ -46,10 +46,7 @@ public class BoxedValue extends Value
   /*----------------------------  variables  ----------------------------*/
 
 
-  /**
-   * The clazz this is an instance of.
-   */
-  int _clazz;
+  DFA _dfa;
 
 
   /**
@@ -66,17 +63,53 @@ public class BoxedValue extends Value
    *
    * @param orignal the unboxed value
    */
-  public BoxedValue(Value original, int vc, int rc)
+  public BoxedValue(DFA dfa, Value original, int vc, int rc)
   {
-    if (PRECONDITIONS) require
-      (!(original instanceof Instance));
+    super(rc);
 
-    _clazz = rc;
+    _dfa = dfa;
     _original = original;
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Compare this to another BoxedValue.
+   */
+  public int compareTo(BoxedValue other)
+  {
+    return
+      _clazz < other._clazz ? -1 :
+      _clazz > other._clazz ? +1 :
+      Value.COMPARATOR.compare(_original, other._original);
+  }
+
+
+  /**
+   * Add v to the set of values of given field within this instance.
+   */
+  public void setField(DFA dfa, int field, Value v)
+  {
+    if (PRECONDITIONS) require
+      (v != null);
+
+    // NYI: since the boxed value is a clone, this should not modify _original,
+    // but it should modify a clone of _original. Modifying _original is,
+    // however, still sound since it adds values, but does not forget values.
+    _original.setField(dfa, field, v);
+  }
+
+
+
+  /**
+   * Get set of values of given field within this instance.
+   */
+  Value readFieldFromInstance(DFA dfa, int field)
+  {
+    return _original.readFieldFromInstance(dfa, dfa._fuir.correspondingFieldInValueInstance(field));
+  }
 
 
   /**
@@ -103,7 +136,7 @@ public class BoxedValue extends Value
    */
   public String toString()
   {
-    return "boxed:" + _original;
+    return "boxed("+_dfa._fuir.clazzAsString(_clazz)+"):" + _original;
   }
 
 }

@@ -358,7 +358,7 @@ public abstract class Tool extends ANY
    *
    * @return the string after the first "=" in a, may be empty, may not be null
    */
-  protected String parseString(String a)
+  protected static String parseString(String a)
   {
     if (PRECONDITIONS) require
       (a.indexOf("=") >= 0);
@@ -374,7 +374,7 @@ public abstract class Tool extends ANY
    *
    * @return the path after the first "=" in a.
    */
-  protected Path parsePath(String a)
+  protected static Path parsePath(String a)
   {
     if (PRECONDITIONS) require
       (a.indexOf("=") >= 0);
@@ -390,7 +390,7 @@ public abstract class Tool extends ANY
    *
    * @return true iff a is set to 'on' or an error was reported.
    */
-  protected boolean parseOnOffArg(String a)
+  protected static boolean parseOnOffArg(String a)
   {
     if (PRECONDITIONS) require
       (a.indexOf("=") >= 0);
@@ -418,7 +418,7 @@ public abstract class Tool extends ANY
    *
    * @return the list containing the single elements, e.g. ["abc","def","ghi"]
    */
-  protected List<String> parseStringListArg(String a)
+  protected static List<String> parseStringListArg(String a)
   {
     if (PRECONDITIONS) require
       (a.indexOf("=") >= 0);

@@ -24,7 +24,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  *---------------------------------------------------------------------*/
 
-package dev.flang.fuir.analysis;
+package dev.flang.fuir.analysis.dfa;
 
 
 /**
@@ -49,12 +49,6 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
    * The DFA instance we are working with.
    */
   DFA _dfa;
-
-
-  /**
-   * The clazz this is an instance of.
-   */
-  int _clazz;
 
 
   /**
@@ -86,8 +80,9 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
    */
   public TaggedValue(DFA dfa, int nc, Value original, int tag)
   {
+    super(nc);
+
     _dfa = dfa;
-    _clazz = nc;
     _original = original;
     _tag = tag;
   }
@@ -105,7 +100,7 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
       _clazz < other._clazz ? -1 :
       _clazz > other._clazz ? +1 :
       _tag   < other._tag   ? -1 :
-      _tag   > other._tag   ? -1 : Value.compare(_original, other._original);
+      _tag   > other._tag   ? +1 : Value.compare(_original, other._original);
   }
 
 
@@ -125,12 +120,6 @@ public class TaggedValue extends Value implements Comparable<TaggedValue>
           {
             return new ValueSet(this, v);
           }
-      }
-    else if (v == Value.BOOL ||
-             v == Value.TRUE ||
-             v == Value.FALSE)
-      {
-        return Value.BOOL;
       }
     else
       {

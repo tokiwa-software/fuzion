@@ -2317,6 +2317,42 @@ public class Clazz extends ANY implements Comparable<Clazz>
     return _asValue;
   }
 
+
+  /**
+   * For a given field fc whose outer instance is a value type, find the same
+   * field in the corresponding outer ref type.
+   *
+   * @param fc a field in a value instance
+   */
+  public Clazz correspondingFieldInRefInstance(Clazz fc)
+  {
+    var oc = fc._outer.asRef();
+    var g = new List<AbstractType>();
+    for (var ag : fc.actualGenerics())
+      {
+        g.add(ag._type);
+      }
+    return oc.lookup(fc.feature(), fc._select, g, Clazzes.isUsedAt(fc.feature()), false);
+  }
+
+
+  /**
+   * For a given field fc whose outer instance is a ref type, find the same
+   * field in the corresponding outer value type.
+   *
+   * @param fc a field in a ref instance
+   */
+  public Clazz correspondingFieldInValueInstance(Clazz fc)
+  {
+    var oc = fc._outer.asValue();
+    var g = new List<AbstractType>();
+    for (var ag : fc.actualGenerics())
+      {
+        g.add(ag._type);
+      }
+    return oc.lookup(fc.feature(), fc._select, g, Clazzes.isUsedAt(fc.feature()), false);
+  }
+
 }
 
 /* end of file */

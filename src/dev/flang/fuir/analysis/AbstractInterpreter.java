@@ -243,6 +243,28 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
 
 
   /**
+   * Check if the given clazz has a unique value that does not need to be pushed
+   * onto the stack.
+   */
+  public static boolean clazzHasUniqueValue(FUIR fuir, int cl)
+  {
+    return cl == fuir.clazzUniverse() || fuir.clazzIsUnitType(cl) && !fuir.clazzIsRef(cl);
+    // NYI: maybe we should restrict this to c_unit only?
+    // return cl == _fuir.clazzUniverse() || FUIR.SpecialClazzes.c_unit != _fuir.getSpecialId(cl);
+  }
+
+
+  /**
+   * Check if the given clazz has a unique value that does not need to be pushed
+   * onto the stack.
+   */
+  public boolean clazzHasUniqueValue(int cl)
+  {
+    return clazzHasUniqueValue(_fuir, cl);
+  }
+
+
+  /**
    * Push the given value to the stack unless it is of unit or void type or the
    * clazz is -1
    *
@@ -255,16 +277,16 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   void push(Stack<VALUE> stack, int cl, VALUE val)
   {
     if (PRECONDITIONS) require
-      (_fuir.clazzIsVoidType(cl) == (val == null),
+      (!_fuir.clazzIsVoidType(cl) || (val == null),
        !containsVoid(stack));
 
-    if (cl != _fuir.clazzUniverse() && !_fuir.clazzIsUnitType(cl))
+    if (!clazzHasUniqueValue(cl))
       {
         stack.push(val);
       }
 
     if (POSTCONDITIONS) ensure
-      (cl == _fuir.clazzUniverse() || _fuir.clazzIsUnitType(cl) || stack.get(stack.size()-1) == val,
+      (clazzHasUniqueValue(cl) || stack.get(stack.size()-1) == val,
        !_fuir.clazzIsVoidType(cl) || containsVoid(stack));
   }
 
@@ -282,13 +304,11 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
   VALUE pop(Stack<VALUE> stack, int cl)
   {
     if (PRECONDITIONS) require
-      (cl == _fuir.clazzUniverse() ||
-       _fuir.clazzIsUnitType(cl) || stack.size() > 0,
+      (clazzHasUniqueValue(cl) || stack.size() > 0,
        !containsVoid(stack));
 
     return
-      cl != _fuir.clazzUniverse() &&
-      !_fuir.clazzIsUnitType(cl)     ? stack.pop() : _processor.unitValue();
+      clazzHasUniqueValue(cl) ? _processor.unitValue() : stack.pop();
   }
 
 
