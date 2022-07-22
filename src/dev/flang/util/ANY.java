@@ -26,8 +26,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
-import java.util.HashMap;
-
 /**
  * ANY implements static methods for pre- and post-conditions as in Eiffel.
  *
@@ -56,6 +54,19 @@ public class ANY
 
 
   /**
+   * `class:method:line` of the condition that failed
+   */
+  private static String origin(){
+    var st = (new Throwable()).getStackTrace();
+    if (st.length < 3)
+      {
+        return "Unkown origin.";
+      }
+    return st[2].getClassName() + ":" + st[2].getMethodName() + ":" + st[2].getLineNumber();
+  }
+
+
+  /**
    * require is a static method for pre-conditions as in Eiffel
    *
    * @param cond1 the condition that must hold
@@ -64,7 +75,7 @@ public class ANY
    */
   public static void require(boolean cond1)
   {
-    if (!cond1) throw new Error("require-condition1 failed!");
+    if (!cond1) throw new Error("require-condition1 failed: " + origin());
   }
 
 
@@ -79,8 +90,8 @@ public class ANY
    */
   public static void require(boolean cond1, boolean cond2)
   {
-    if (!cond1) throw new Error("require-condition1 failed!");
-    if (!cond2) throw new Error("require-condition2 failed!");
+    if (!cond1) throw new Error("require-condition1 failed: " + origin());
+    if (!cond2) throw new Error("require-condition2 failed: " + origin());
   }
 
 
@@ -97,9 +108,9 @@ public class ANY
    */
   public static void require(boolean cond1, boolean cond2, boolean cond3)
   {
-    if (!cond1) throw new Error("require-condition1 failed!");
-    if (!cond2) throw new Error("require-condition2 failed!");
-    if (!cond3) throw new Error("require-condition3 failed!");
+    if (!cond1) throw new Error("require-condition1 failed: " + origin());
+    if (!cond2) throw new Error("require-condition2 failed: " + origin());
+    if (!cond3) throw new Error("require-condition3 failed: " + origin());
   }
 
 
@@ -118,10 +129,10 @@ public class ANY
    */
   public static void require(boolean cond1, boolean cond2, boolean cond3, boolean cond4)
   {
-    if (!cond1) throw new Error("require-condition1 failed!");
-    if (!cond2) throw new Error("require-condition2 failed!");
-    if (!cond3) throw new Error("require-condition3 failed!");
-    if (!cond4) throw new Error("require-condition4 failed!");
+    if (!cond1) throw new Error("require-condition1 failed: " + origin());
+    if (!cond2) throw new Error("require-condition2 failed: " + origin());
+    if (!cond3) throw new Error("require-condition3 failed: " + origin());
+    if (!cond4) throw new Error("require-condition4 failed: " + origin());
   }
 
 
@@ -142,11 +153,11 @@ public class ANY
    */
   public static void require(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5)
   {
-    if (!cond1) throw new Error("require-condition1 failed!");
-    if (!cond2) throw new Error("require-condition2 failed!");
-    if (!cond3) throw new Error("require-condition3 failed!");
-    if (!cond4) throw new Error("require-condition4 failed!");
-    if (!cond5) throw new Error("require-condition5 failed!");
+    if (!cond1) throw new Error("require-condition1 failed: " + origin());
+    if (!cond2) throw new Error("require-condition2 failed: " + origin());
+    if (!cond3) throw new Error("require-condition3 failed: " + origin());
+    if (!cond4) throw new Error("require-condition4 failed: " + origin());
+    if (!cond5) throw new Error("require-condition5 failed: " + origin());
   }
 
 
@@ -169,12 +180,12 @@ public class ANY
    */
   public static void require(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6)
   {
-    if (!cond1) throw new Error("require-condition1 failed!");
-    if (!cond2) throw new Error("require-condition2 failed!");
-    if (!cond3) throw new Error("require-condition3 failed!");
-    if (!cond4) throw new Error("require-condition4 failed!");
-    if (!cond5) throw new Error("require-condition5 failed!");
-    if (!cond6) throw new Error("require-condition6 failed!");
+    if (!cond1) throw new Error("require-condition1 failed: " + origin());
+    if (!cond2) throw new Error("require-condition2 failed: " + origin());
+    if (!cond3) throw new Error("require-condition3 failed: " + origin());
+    if (!cond4) throw new Error("require-condition4 failed: " + origin());
+    if (!cond5) throw new Error("require-condition5 failed: " + origin());
+    if (!cond6) throw new Error("require-condition6 failed: " + origin());
   }
 
 
@@ -199,13 +210,13 @@ public class ANY
    */
   public static void require(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6, boolean cond7)
   {
-    if (!cond1) throw new Error("require-condition1 failed!");
-    if (!cond2) throw new Error("require-condition2 failed!");
-    if (!cond3) throw new Error("require-condition3 failed!");
-    if (!cond4) throw new Error("require-condition4 failed!");
-    if (!cond5) throw new Error("require-condition5 failed!");
-    if (!cond6) throw new Error("require-condition6 failed!");
-    if (!cond7) throw new Error("require-condition7 failed!");
+    if (!cond1) throw new Error("require-condition1 failed: " + origin());
+    if (!cond2) throw new Error("require-condition2 failed: " + origin());
+    if (!cond3) throw new Error("require-condition3 failed: " + origin());
+    if (!cond4) throw new Error("require-condition4 failed: " + origin());
+    if (!cond5) throw new Error("require-condition5 failed: " + origin());
+    if (!cond6) throw new Error("require-condition6 failed: " + origin());
+    if (!cond7) throw new Error("require-condition7 failed: " + origin());
   }
 
 
@@ -222,7 +233,7 @@ public class ANY
   public static void ensure(boolean cond1)
   {
     if (!cond1)
-      throw new Error("ensure-condition failed!");
+      throw new Error("ensure-condition failed: " + origin());
   }
 
 
@@ -238,9 +249,9 @@ public class ANY
   public static void ensure(boolean cond1, boolean cond2)
   {
     if (!cond1)
-      throw new Error("ensure-condition1 failed!");
+      throw new Error("ensure-condition1 failed: " + origin());
     if (!cond2)
-      throw new Error("ensure-condition2 failed!");
+      throw new Error("ensure-condition2 failed: " + origin());
   }
 
 
@@ -258,11 +269,11 @@ public class ANY
   public static void ensure(boolean cond1, boolean cond2, boolean cond3)
   {
     if (!cond1)
-      throw new Error("ensure-condition1 failed!");
+      throw new Error("ensure-condition1 failed: " + origin());
     if (!cond2)
-      throw new Error("ensure-condition2 failed!");
+      throw new Error("ensure-condition2 failed: " + origin());
     if (!cond3)
-      throw new Error("ensure-condition3 failed!");
+      throw new Error("ensure-condition3 failed: " + origin());
   }
 
 
@@ -282,13 +293,13 @@ public class ANY
   public static void ensure(boolean cond1, boolean cond2, boolean cond3, boolean cond4)
   {
     if (!cond1)
-      throw new Error("ensure-condition1 failed!");
+      throw new Error("ensure-condition1 failed: " + origin());
     if (!cond2)
-      throw new Error("ensure-condition2 failed!");
+      throw new Error("ensure-condition2 failed: " + origin());
     if (!cond3)
-      throw new Error("ensure-condition3 failed!");
+      throw new Error("ensure-condition3 failed: " + origin());
     if (!cond4)
-      throw new Error("ensure-condition4 failed!");
+      throw new Error("ensure-condition4 failed: " + origin());
   }
 
 
@@ -310,15 +321,15 @@ public class ANY
   public static void ensure(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5)
   {
     if (!cond1)
-      throw new Error("ensure-condition1 failed!");
+      throw new Error("ensure-condition1 failed: " + origin());
     if (!cond2)
-      throw new Error("ensure-condition2 failed!");
+      throw new Error("ensure-condition2 failed: " + origin());
     if (!cond3)
-      throw new Error("ensure-condition3 failed!");
+      throw new Error("ensure-condition3 failed: " + origin());
     if (!cond4)
-      throw new Error("ensure-condition4 failed!");
+      throw new Error("ensure-condition4 failed: " + origin());
     if (!cond5)
-      throw new Error("ensure-condition5 failed!");
+      throw new Error("ensure-condition5 failed: " + origin());
   }
 
 
@@ -342,17 +353,17 @@ public class ANY
   public static void ensure(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6)
   {
     if (!cond1)
-      throw new Error("ensure-condition1 failed!");
+      throw new Error("ensure-condition1 failed: " + origin());
     if (!cond2)
-      throw new Error("ensure-condition2 failed!");
+      throw new Error("ensure-condition2 failed: " + origin());
     if (!cond3)
-      throw new Error("ensure-condition3 failed!");
+      throw new Error("ensure-condition3 failed: " + origin());
     if (!cond4)
-      throw new Error("ensure-condition4 failed!");
+      throw new Error("ensure-condition4 failed: " + origin());
     if (!cond5)
-      throw new Error("ensure-condition5 failed!");
+      throw new Error("ensure-condition5 failed: " + origin());
     if (!cond6)
-      throw new Error("ensure-condition6 failed!");
+      throw new Error("ensure-condition6 failed: " + origin());
   }
 
 
@@ -369,7 +380,7 @@ public class ANY
   public static void check(boolean cond1)
   {
     if (!cond1)
-      throw new Error("check-condition failed!");
+      throw new Error("check-condition failed: " + origin());
   }
 
 
@@ -385,9 +396,9 @@ public class ANY
   public static void check(boolean cond1, boolean cond2)
   {
     if (!cond1)
-      throw new Error("check-condition1 failed!");
+      throw new Error("check-condition1 failed: " + origin());
     if (!cond2)
-      throw new Error("check-condition2 failed!");
+      throw new Error("check-condition2 failed: " + origin());
   }
 
 
@@ -405,11 +416,11 @@ public class ANY
   public static void check(boolean cond1, boolean cond2, boolean cond3)
   {
     if (!cond1)
-      throw new Error("check-condition1 failed!");
+      throw new Error("check-condition1 failed: " + origin());
     if (!cond2)
-      throw new Error("check-condition2 failed!");
+      throw new Error("check-condition2 failed: " + origin());
     if (!cond3)
-      throw new Error("check-condition3 failed!");
+      throw new Error("check-condition3 failed: " + origin());
   }
 
 
@@ -429,13 +440,13 @@ public class ANY
   public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4)
   {
     if (!cond1)
-      throw new Error("check-condition1 failed!");
+      throw new Error("check-condition1 failed: " + origin());
     if (!cond2)
-      throw new Error("check-condition2 failed!");
+      throw new Error("check-condition2 failed: " + origin());
     if (!cond3)
-      throw new Error("check-condition3 failed!");
+      throw new Error("check-condition3 failed: " + origin());
     if (!cond4)
-      throw new Error("check-condition4 failed!");
+      throw new Error("check-condition4 failed: " + origin());
   }
 
 
@@ -458,15 +469,15 @@ public class ANY
   public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5)
   {
     if (!cond1)
-      throw new Error("check-condition1 failed!");
+      throw new Error("check-condition1 failed: " + origin());
     if (!cond2)
-      throw new Error("check-condition2 failed!");
+      throw new Error("check-condition2 failed: " + origin());
     if (!cond3)
-      throw new Error("check-condition3 failed!");
+      throw new Error("check-condition3 failed: " + origin());
     if (!cond4)
-      throw new Error("check-condition4 failed!");
+      throw new Error("check-condition4 failed: " + origin());
     if (!cond5)
-      throw new Error("check-condition5 failed!");
+      throw new Error("check-condition5 failed: " + origin());
   }
 
 
@@ -490,17 +501,17 @@ public class ANY
   public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6)
   {
     if (!cond1)
-      throw new Error("check-condition1 failed!");
+      throw new Error("check-condition1 failed: " + origin());
     if (!cond2)
-      throw new Error("check-condition2 failed!");
+      throw new Error("check-condition2 failed: " + origin());
     if (!cond3)
-      throw new Error("check-condition3 failed!");
+      throw new Error("check-condition3 failed: " + origin());
     if (!cond4)
-      throw new Error("check-condition4 failed!");
+      throw new Error("check-condition4 failed: " + origin());
     if (!cond5)
-      throw new Error("check-condition5 failed!");
+      throw new Error("check-condition5 failed: " + origin());
     if (!cond6)
-      throw new Error("check-condition6 failed!");
+      throw new Error("check-condition6 failed: " + origin());
   }
 
 
@@ -526,19 +537,19 @@ public class ANY
   public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6, boolean cond7)
   {
     if (!cond1)
-      throw new Error("check-condition1 failed!");
+      throw new Error("check-condition1 failed: " + origin());
     if (!cond2)
-      throw new Error("check-condition2 failed!");
+      throw new Error("check-condition2 failed: " + origin());
     if (!cond3)
-      throw new Error("check-condition3 failed!");
+      throw new Error("check-condition3 failed: " + origin());
     if (!cond4)
-      throw new Error("check-condition4 failed!");
+      throw new Error("check-condition4 failed: " + origin());
     if (!cond5)
-      throw new Error("check-condition5 failed!");
+      throw new Error("check-condition5 failed: " + origin());
     if (!cond6)
-      throw new Error("check-condition6 failed!");
+      throw new Error("check-condition6 failed: " + origin());
     if (!cond7)
-      throw new Error("check-condition7 failed!");
+      throw new Error("check-condition7 failed: " + origin());
   }
 
 
@@ -566,21 +577,21 @@ public class ANY
   public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6, boolean cond7, boolean cond8)
   {
     if (!cond1)
-      throw new Error("check-condition1 failed!");
+      throw new Error("check-condition1 failed: " + origin());
     if (!cond2)
-      throw new Error("check-condition2 failed!");
+      throw new Error("check-condition2 failed: " + origin());
     if (!cond3)
-      throw new Error("check-condition3 failed!");
+      throw new Error("check-condition3 failed: " + origin());
     if (!cond4)
-      throw new Error("check-condition4 failed!");
+      throw new Error("check-condition4 failed: " + origin());
     if (!cond5)
-      throw new Error("check-condition5 failed!");
+      throw new Error("check-condition5 failed: " + origin());
     if (!cond6)
-      throw new Error("check-condition6 failed!");
+      throw new Error("check-condition6 failed: " + origin());
     if (!cond7)
-      throw new Error("check-condition7 failed!");
+      throw new Error("check-condition7 failed: " + origin());
     if (!cond8)
-      throw new Error("check-condition8 failed!");
+      throw new Error("check-condition8 failed: " + origin());
   }
 
 
@@ -610,23 +621,23 @@ public class ANY
   public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6, boolean cond7, boolean cond8, boolean cond9)
   {
     if (!cond1)
-      throw new Error("check-condition1 failed!");
+      throw new Error("check-condition1 failed: " + origin());
     if (!cond2)
-      throw new Error("check-condition2 failed!");
+      throw new Error("check-condition2 failed: " + origin());
     if (!cond3)
-      throw new Error("check-condition3 failed!");
+      throw new Error("check-condition3 failed: " + origin());
     if (!cond4)
-      throw new Error("check-condition4 failed!");
+      throw new Error("check-condition4 failed: " + origin());
     if (!cond5)
-      throw new Error("check-condition5 failed!");
+      throw new Error("check-condition5 failed: " + origin());
     if (!cond6)
-      throw new Error("check-condition6 failed!");
+      throw new Error("check-condition6 failed: " + origin());
     if (!cond7)
-      throw new Error("check-condition7 failed!");
+      throw new Error("check-condition7 failed: " + origin());
     if (!cond8)
-      throw new Error("check-condition8 failed!");
+      throw new Error("check-condition8 failed: " + origin());
     if (!cond9)
-      throw new Error("check-condition9 failed!");
+      throw new Error("check-condition9 failed: " + origin());
   }
 
 
@@ -658,25 +669,25 @@ public class ANY
   public static void check(boolean cond1, boolean cond2, boolean cond3, boolean cond4, boolean cond5, boolean cond6, boolean cond7, boolean cond8, boolean cond9, boolean cond10)
   {
     if (!cond1)
-      throw new Error("check-condition1 failed!");
+      throw new Error("check-condition1 failed: " + origin());
     if (!cond2)
-      throw new Error("check-condition2 failed!");
+      throw new Error("check-condition2 failed: " + origin());
     if (!cond3)
-      throw new Error("check-condition3 failed!");
+      throw new Error("check-condition3 failed: " + origin());
     if (!cond4)
-      throw new Error("check-condition4 failed!");
+      throw new Error("check-condition4 failed: " + origin());
     if (!cond5)
-      throw new Error("check-condition5 failed!");
+      throw new Error("check-condition5 failed: " + origin());
     if (!cond6)
-      throw new Error("check-condition6 failed!");
+      throw new Error("check-condition6 failed: " + origin());
     if (!cond7)
-      throw new Error("check-condition7 failed!");
+      throw new Error("check-condition7 failed: " + origin());
     if (!cond8)
-      throw new Error("check-condition8 failed!");
+      throw new Error("check-condition8 failed: " + origin());
     if (!cond9)
-      throw new Error("check-condition9 failed!");
+      throw new Error("check-condition9 failed: " + origin());
     if (!cond10)
-      throw new Error("check-condition10 failed!");
+      throw new Error("check-condition10 failed: " + origin());
   }
 
 
