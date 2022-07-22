@@ -30,24 +30,40 @@ public fuzion.std.fileio is
 
   # read a file into an array u8.
   # 
-  # NYI : an equivalent to a Java MappedByteBuffer would be a better solution
-  #
   public readFile(
                   # the (relative or absolute) file name, using platform specific path separators  
                   path string) =>
-    file := array getFileSize(path).as_i32 i->(u8 0)
+    file := array getFileSize(path).as_i32 i->(u8 0) # allocating an array the size of the file
     arr := path.utf8.asArray # transforms the path to a utf8 byte array
-    readFile arr.internalArray.data arr.length file.internalArray.data
+    readFile arr.internalArray.data arr.length file.internalArray.data file.length
     file
 
-  public readFile(path Object, pathLength i32, fileArray Object) unit is intrinsic
+  # intrinsic that fills an array u8 with the file bytes.
+  # 
+  private readFile(
+                   # the internal array data representing the file path in bytes
+                   path Object,
+                   # the length of the internal array representing the path
+                   pathLength i32,
+                   # the internal array data representing the container for the bytes to be read from the file
+                   fileArray Object,
+                   # the length of the array that represents the file bytes
+                   fileArrayLength i32) i64 is intrinsic
 
   # retrieve the file size in bytes and returns -1 in case of an error
   #
-  public getFileSize(path string) =>
+  public getFileSize(
+                     # the (relative or absolute) file name, using platform specific path separators
+                     path string) =>
     arr := path.utf8.asArray
     getFileSize arr.internalArray.data arr.length
 
-  public getFileSize(path Object, pathLength i32) i64 is intrinsic
+  # intrinsic that returns the file size in bytes or -1 in case of an error
+  #
+  private getFileSize(
+                      # the internal array data representing the file path in bytes
+                      path Object,
+                      # the length of the internal array representing the path
+                      pathLength i32) i64 is intrinsic
 
-  public writeFile(path string, content array<u8>) is intrinsic # NYI
+  private writeFile(path string, content array<u8>) is intrinsic # NYI
