@@ -475,7 +475,6 @@ public class DFA extends ANY
               subv.forAll(s -> {
                   var taken = false;
                   Value untagged = null;
-                  // NYI: cleanup: remove special handling vor boolean, Value.BOOL/TRUE/FALSE should be instances of TaggedValue
                   if (s instanceof TaggedValue tv)
                     {
                       if (tv._tag == t)
@@ -1150,7 +1149,7 @@ public class DFA extends ANY
     put("Object.asString"                , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.sys.array.alloc"         , cl -> { return new SysArray(cl._dfa, new byte[0]); } ); // NYI: get length from args
     put("fuzion.sys.array.setel"         , cl ->
-        { /* NYI: record array modification */
+        {
           var array = cl._args.get(0);
           var index = cl._args.get(1);
           var value = cl._args.get(2);
@@ -1165,7 +1164,7 @@ public class DFA extends ANY
             }
         });
     put("fuzion.sys.array.get"           , cl ->
-        { /* NYI: record array modification */
+        {
           var array = cl._args.get(0);
           var index = cl._args.get(1);
           if (array instanceof SysArray sa)
