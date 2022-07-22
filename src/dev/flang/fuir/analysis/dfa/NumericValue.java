@@ -199,8 +199,8 @@ public class NumericValue extends Value implements Comparable<NumericValue>
           case c_u16  -> u16() == nv.u16();
           case c_u32  -> u32() == nv.u32();
           case c_u64  -> u64() == nv.u64();
-          case c_f32  -> f32() == nv.f32();
-          case c_f64  -> f64() == nv.f64();
+          case c_f32  -> f32() == nv.f32();  // NYI: check if this is correct for NaN etc.
+          case c_f64  -> f64() == nv.f64();  // NYI: check if this is correct for NaN etc.
           default -> false;
           };
         if (r)
