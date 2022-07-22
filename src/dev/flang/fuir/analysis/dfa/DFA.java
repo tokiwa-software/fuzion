@@ -467,20 +467,23 @@ public class DFA extends ANY
       var subjClazz = subjClazz0;
       for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
         {
-          // arrays to permit modification
+          // array to permit modification in lambda
           var takenA    = new boolean[] { false };
-          var untaggedA = new Value  [] { null };
+          var field = _fuir.matchCaseField(cl, c, i, mc);
           for (var t : _fuir.matchCaseTags(cl, c, i, mc))
             {
               subv.forAll(s -> {
-                  var taken = false;
-                  Value untagged = null;
                   if (s instanceof TaggedValue tv)
                     {
                       if (tv._tag == t)
                         {
-                          taken = true;
-                          untagged = tv._original;
+                          var untagged = tv._original;
+                          takenA[0] = true;
+                          if (field != -1)
+                            {
+                              _writtenFields.add(field);
+                              _call._instance.setField(DFA.this, field, untagged);
+                            }
                         }
                     }
                   else
@@ -488,23 +491,10 @@ public class DFA extends ANY
                       throw new Error("DFA encountered Unexpected value in match: " + s.getClass() + " '" + s + "' " +
                                       " for match of type " + _fuir.clazzAsString(subjClazz));
                     }
-                  takenA[0] = takenA[0] || taken;
-                  if (taken && untagged != null)
-                    {
-                      if (untaggedA[0] == null)
-                        {
-                          untaggedA[0] = untagged;
-                        }
-                      else
-                        {
-                          untaggedA[0] = untaggedA[0].join(untagged);
-                        }
-                    }
                 });
 
             }
           var taken = takenA[0];
-          var untagged = untaggedA[0];
           if (_reportResults && _options.verbose(2))
             {
               System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": "+subv+" case "+mc+": "+
@@ -513,15 +503,6 @@ public class DFA extends ANY
 
           if (taken)
             {
-              var field = _fuir.matchCaseField(cl, c, i, mc);
-              if (field != -1)
-                {
-                  if (untagged != null)
-                    {
-                      _writtenFields.add(field);
-                      _call._instance.setField(DFA.this, field, untagged);
-                    }
-                }
               var resv = ai.process(cl, _fuir.matchCaseCode(c, i, mc));
               if (resv._v0 != null)
                 { // if at least one case returns (i.e., result is not null), this match returns.
