@@ -93,6 +93,12 @@ public class Intrinsics extends ANY
                                 outOrErr(in)
                               ));
         });
+    IntrinsicCode noFileIo = (c,cl,outer,in) ->
+      CStmnt.seq(CExpr.fprintfstderr("*** C backend does not support fileio features (yet).\n"),
+                 CExpr.exit(1));
+    put("fuzion.std.fileio.readFile"   , noFileIo); // NYI
+    put("fuzion.std.fileio.getFileSize", noFileIo); // NYI
+    put("fuzion.std.fileio.writeFile"  , noFileIo); // NYI        
     put("fuzion.std.out.flush" ,
         "fuzion.std.err.flush" , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
     put("fuzion.stdin.nextByte", (c,cl,outer,in) ->
