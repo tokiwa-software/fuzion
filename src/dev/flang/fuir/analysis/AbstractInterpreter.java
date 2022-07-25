@@ -407,7 +407,17 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       ? processContract(cl, FUIR.ContractKind.Pre)
       : process(cl, _fuir.clazzCode(cl));
     l.add(p._v1);
-    return new Pair(p._v0, _processor.sequence(l));
+    var res = p._v0;
+    if (!pre)
+      {
+        var post = processContract(cl, FUIR.ContractKind.Post);
+        l.add(post._v1);
+        if (post._v0 == null) // post condition results in void, so we do not return:
+          {
+            res = null;
+          }
+      }
+    return new Pair(res, _processor.sequence(l));
   }
 
 
