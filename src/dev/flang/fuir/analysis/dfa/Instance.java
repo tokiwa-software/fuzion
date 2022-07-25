@@ -29,6 +29,8 @@ package dev.flang.fuir.analysis.dfa;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import dev.flang.util.Errors;
+
 
 /**
  * Instance represents an abstract instance of a feature handled by the DFA
@@ -179,10 +181,11 @@ public class Instance extends Value implements Comparable<Instance> // , Context
       {
         if (dfa._reportResults)
           {
-            System.err.println("*** reading uninitialized field " + field + ": "+ dfa._fuir.clazzAsString(field) + " from instance of " + dfa._fuir.clazzAsString(_clazz) +
-                               (_isBoxed ? " Boxed!" : "") +
-                               "\n" +
-                               "fields available:\n  " + _fields.keySet().stream().map(x -> ""+x+":"+dfa._fuir.clazzAsString(x)).collect(Collectors.joining(",\n  ")));
+            Errors.error("reading uninitialized field " + dfa._fuir.clazzAsString(field) + " from instance of " + dfa._fuir.clazzAsString(_clazz) +
+                         (_isBoxed ? " Boxed!" : "") +
+                         "\n" +
+                         "fields available:\n  " + _fields.keySet().stream().map(x -> ""+x+":"+dfa._fuir.clazzAsString(x)).collect(Collectors.joining(",\n  ")));
+
             for (var f : _fields.keySet())
               {
                 if (dfa._fuir.clazzAsString(f).equals(dfa._fuir.clazzAsString(field).replace("ref ","")))
