@@ -635,6 +635,14 @@ public class DFA extends ANY
 
 
   /**
+   * Calls created during current sub-iteration of the DFA analysis.  These will
+   * be analysed at the end of the current iteration since they most likely add
+   * new information.
+   */
+  TreeSet<Call> _newCalls = new TreeSet<>();
+
+
+  /**
    * Envs created during DFA analysis.
    */
   TreeMap<Env, Env> _envs = new TreeMap<>();
@@ -776,18 +784,25 @@ public class DFA extends ANY
    */
   void iteration()
   {
-    var s = _calls.values().toArray(new Call[_calls.size()]);
-    for (var c : s)
+    var vs = _calls.values();
+    do
       {
-        if (_reportResults && _options.verbose(4))
+        var s = vs.toArray(new Call[vs.size()]);
+        _newCalls = new TreeSet();
+        for (var c : s)
           {
-            System.out.println(("----------------"+c+
-                                "----------------------------------------------------------------------------------------------------")
-                               .substring(0,100));
-            c.showWhy();
+            if (_reportResults && _options.verbose(4))
+              {
+                System.out.println(("----------------"+c+
+                                    "----------------------------------------------------------------------------------------------------")
+                                   .substring(0,100));
+                c.showWhy();
+              }
+            analyze(c);
           }
-        analyze(c);
+        vs = _newCalls;
       }
+    while (!vs.isEmpty());
   }
 
 
@@ -1378,6 +1393,7 @@ public class DFA extends ANY
     var e = _calls.get(r);
     if (e == null)
       {
+        _newCalls.add(r);
         _calls.put(r,r);
         e = r;
         if (SHOW_STACK_ON_CHANGE && !_changed) { System.out.println("new call: "+r); Thread.dumpStack();}
