@@ -789,59 +789,39 @@ public class DFA extends ANY
 
 
   /**
-   * analyze call to one instance
+   * Analyze code for given call
+   *
+   * @param c the call
    */
   void analyze(Call c)
   {
-    var cl = c._cc;
-    var ck = _fuir.clazzKind(cl);
-    switch (ck)
+    if (_fuir.clazzKind(c._cc) == FUIR.FeatureKind.Routine || c._pre)
       {
-      case Routine  : analyzeCall(c, c._pre); break;
-      }
-    if (_fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) != -1)
-      {
-        analyzeCall(c, true);
-      }
-  }
+        var i = c._instance;
+        check
+          (c._args.size() == _fuir.clazzArgCount(c._cc));
+        for (var a = 0; a < c._args.size(); a++)
+          {
+            var af = _fuir.clazzArg(c._cc, a);
+            var aa = c._args.get(a);
+            _writtenFields.add(af);
+            i.setField(this, af, aa);
+          }
 
+        // copy outer ref argument to outer ref field:
+        var or = _fuir.clazzOuterRef(c._cc);
+        if (or != -1)
+          {
+            _writtenFields.add(or);
+            i.setField(this, or, c._target);
+          }
 
-  /**
-   * Analyze code for given routine cl
-   *
-   * @param i the instance we are analyzing.
-   *
-   * @param pre true to analyze cl's precondition, false for cl itself.
-   */
-  void analyzeCall(Call c, boolean pre)
-  {
-    if (PRECONDITIONS) require
-      (_fuir.clazzKind(c._cc) == FUIR.FeatureKind.Routine || pre);
-
-    var i = c._instance;
-    check
-      (c._args.size() == _fuir.clazzArgCount(c._cc));
-    for (var a = 0; a < c._args.size(); a++)
-      {
-        var af = _fuir.clazzArg(c._cc, a);
-        var aa = c._args.get(a);
-        _writtenFields.add(af);
-        i.setField(this, af, aa);
-      }
-
-    // copy outer ref argument to outer ref field:
-    var or = _fuir.clazzOuterRef(c._cc);
-    if (or != -1)
-      {
-        _writtenFields.add(or);
-        i.setField(this, or, c._target);
-      }
-
-    var ai = new AbstractInterpreter(_fuir, new Analyze(c));
-    var r = ai.process(c._cc, pre);
-    if (r._v0 != null)
-      {
-        c.returns();
+        var ai = new AbstractInterpreter(_fuir, new Analyze(c));
+        var r = ai.process(c._cc, c._pre);
+        if (r._v0 != null)
+          {
+            c.returns();
+          }
       }
   }
 
