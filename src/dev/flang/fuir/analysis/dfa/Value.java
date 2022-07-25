@@ -260,11 +260,11 @@ public class Value extends ANY
 
   /**
    * Create the union of the values 'this' and 'v'. This is called by join()
-   * after common cases (same instnace, UNDEFINED) have been handled.
+   * after common cases (same instance, UNDEFINED) have been handled.
    */
   public Value joinInstances(Value v)
   {
-    throw new Error("NYI: Value.join: "+this+" and " + v);
+    throw new Error("Value.joinInstances not possible for " + this + " and " + v);
   }
 
 
@@ -292,8 +292,7 @@ public class Value extends ANY
    */
   Value unbox(int vc)
   {
-    System.err.println("NYI: Unbox for "+getClass());
-    return this;
+    throw new Error("Unbox not possible for " + getClass());
   }
 
 

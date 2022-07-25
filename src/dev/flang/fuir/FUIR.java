@@ -1576,19 +1576,18 @@ hw25 is
     else
       {
         var match = (AbstractMatch) s;
-        var ss = cc.getRuntimeClazz(match.runtimeClazzId_);
         var mc = match.cases().get(cix);
+        var ts = mc.types();
         var f = mc.field();
-        var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc.runtimeClazzId_) : null;
-        int nt = f != null ? 1 : mc.types().size();
+        int nt = f != null ? 1 : ts.size();
         var resultL = new List<Integer>();
         int tag = 0;
-        for (var cg : ss.choiceGenerics())
+        for (var cg : match.subject().type().choiceGenerics())
           {
             for (int tix = 0; tix < nt; tix++)
               {
-                var rc = fc != null ? fc.resultClazz() : cc.getRuntimeClazz(mc.runtimeClazzId_ + tix);
-                if (rc.isAssignableFrom(cg))
+                var t = f != null ? f.resultType() : ts.get(tix);
+                if (t.isAssignableFrom(cg))
                   {
                     resultL.add(tag);
                   }

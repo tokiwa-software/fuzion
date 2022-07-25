@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.analysis.dfa;
 
+import java.util.TreeMap;
+
 import dev.flang.util.ANY;
 
 
@@ -48,9 +50,23 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /**
+   * The call environment used to identify this environment.
+   */
+  Call _call;
+
+
+  /**
    * The DFA instance we are working with.
    */
   DFA _dfa;
+
+
+  /**
+   * Sorted array of types that are present in this environment. This is
+   * currenlty used to uniquely identify and Env instance, i.e., environments
+   * that define the same effect types are joined into one environment.
+   */
+  int[] _types;
 
 
   /**
@@ -78,15 +94,42 @@ public class Env extends ANY implements Comparable<Env>
    * Create Env from given outer adding mapping from effect type et to effect
    * value ev.
    *
+   * @param call a call environment used to distinguish this environment from
+   * others.
+   *
    * @param outer the surrounding effect environment, null if none.
    *
    * @param et the effect type to add to outer
    *
    * @param ev the effect value to add to outer.
    */
-  public Env(DFA dfa, Env outer, int et, Value ev)
+  public Env(Call call, Env outer, int et, Value ev)
   {
-    _dfa = dfa;
+    _call = call;
+    _dfa = call._dfa;
+
+    if (outer == null)
+      {
+        _types = new int[] { et };
+      }
+    else if (outer.hasEffect(et))
+      {
+        _types = outer._types;
+      }
+    else
+      {
+        var ot = outer._types;
+        var ol = ot.length;
+        _types = new int[ol + 1];
+        var left = true;
+        for (int i = 0, j = 0; i < _types.length; i++)
+          {
+            var insert = j == ol || left && ot[j] > et;
+            _types[i] = insert ? et : ot[j];
+            j = j + (insert ? 0 : 1);
+            left = insert ? left : false;
+          }
+      }
     _outer = outer;
     _effectType = et;
     _effectValue = ev;
@@ -97,13 +140,41 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /**
+   * Compare two Env instances that may be null.
+   */
+  static int compare(Env a, Env b)
+  {
+    return
+      a == b    ?  0 :
+      a == null ? -1 :
+      b == null ? +1 : a.compareTo(b);
+  }
+
+
+  /**
    * Compare this env to another Env.
    */
   public int compareTo(Env other)
   {
-    // NYI: need to be able to compare environemnts. CAVEAT: Currently, Env is
-    // mutable due to replaceEffect changing the value!
-    return 0;
+    // NYI: The code to distinguish two environments is currently poor, we just
+    // distinguish enviroments depending on the set types they set, so two
+    // environments that set, e.g., io.out, to different effects will be treated
+    // the same.  This must be improved in a way that gives more accuracy
+    // without state explosion!
+    var ta = _types;
+    var oa = other._types;
+    var res =
+      ta.length < oa.length ? -1 :
+      ta.length > oa.length ? +1 : 0;
+    for (var i=0; res == 0 && i < ta.length; i++)
+      {
+        var tt = ta[i];
+        var ot = oa[i];
+        res =
+          tt < ot ? -1 :
+          tt > ot ? +1 : 0;
+      }
+    return res;
   }
 
 
@@ -112,8 +183,17 @@ public class Env extends ANY implements Comparable<Env>
    */
   public String toString()
   {
-    return "ENV: "+_dfa._fuir.clazzAsString(_effectType)+": "+_effectValue+"\n"+
-      (_outer != null ? _outer.toString() : "");
+    var sb = new StringBuilder();
+    var sep = "";
+    for (var et : _types)
+      {
+        sb.append(sep)
+          .append(_dfa._fuir.clazzAsString(et))
+          .append("->")
+          .append(getEffect(et));
+        sep = ", ";
+      }
+    return sb.toString();
   }
 
 
@@ -135,10 +215,20 @@ public class Env extends ANY implements Comparable<Env>
 
 
   /**
-   * Replace effect of given type with a new value.
+   * Does this environment define the given effect (as non-default effect)?
    *
-   * NYI: This currently modifies the effect and hence the call. We should check
-   * how this could be avoided or handled better.
+   * @param ecl clazz defining the effect type.
+   *
+   * @return true if ecl is defined.
+   */
+  boolean hasEffect(int ecl)
+  {
+    return _effectType == ecl || _outer != null && _outer.hasEffect(ecl);
+  }
+
+
+  /**
+   * Replace effect of given type with a new value.
    *
    * @param ecl clazz defining the effect type.
    *
@@ -169,6 +259,7 @@ public class Env extends ANY implements Comparable<Env>
         _dfa.replaceDefaultEffect(ecl, e);
       }
   }
+
 
 }
 

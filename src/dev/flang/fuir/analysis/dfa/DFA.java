@@ -467,21 +467,23 @@ public class DFA extends ANY
       var subjClazz = subjClazz0;
       for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
         {
-          // arrays to permit modification
+          // array to permit modification in lambda
           var takenA    = new boolean[] { false };
-          var untaggedA = new Value  [] { null };
+          var field = _fuir.matchCaseField(cl, c, i, mc);
           for (var t : _fuir.matchCaseTags(cl, c, i, mc))
             {
               subv.forAll(s -> {
-                  var taken = false;
-                  Value untagged = null;
-                  // NYI: cleanup: remove special handling vor boolean, Value.BOOL/TRUE/FALSE should be instances of TaggedValue
                   if (s instanceof TaggedValue tv)
                     {
                       if (tv._tag == t)
                         {
-                          taken = true;
-                          untagged = tv._original;
+                          var untagged = tv._original;
+                          takenA[0] = true;
+                          if (field != -1)
+                            {
+                              _writtenFields.add(field);
+                              _call._instance.setField(DFA.this, field, untagged);
+                            }
                         }
                     }
                   else
@@ -489,23 +491,10 @@ public class DFA extends ANY
                       throw new Error("DFA encountered Unexpected value in match: " + s.getClass() + " '" + s + "' " +
                                       " for match of type " + _fuir.clazzAsString(subjClazz));
                     }
-                  takenA[0] = takenA[0] || taken;
-                  if (taken && untagged != null)
-                    {
-                      if (untaggedA[0] == null)
-                        {
-                          untaggedA[0] = untagged;
-                        }
-                      else
-                        {
-                          untaggedA[0] = untaggedA[0].join(untagged);
-                        }
-                    }
                 });
 
             }
           var taken = takenA[0];
-          var untagged = untaggedA[0];
           if (_reportResults && _options.verbose(2))
             {
               System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": "+subv+" case "+mc+": "+
@@ -514,15 +503,6 @@ public class DFA extends ANY
 
           if (taken)
             {
-              var field = _fuir.matchCaseField(cl, c, i, mc);
-              if (field != -1)
-                {
-                  if (untagged != null)
-                    {
-                      _writtenFields.add(field);
-                      _call._instance.setField(DFA.this, field, untagged);
-                    }
-                }
               var resv = ai.process(cl, _fuir.matchCaseCode(c, i, mc));
               if (resv._v0 != null)
                 { // if at least one case returns (i.e., result is not null), this match returns.
@@ -652,6 +632,12 @@ public class DFA extends ANY
    * Calls created during DFA analysis.
    */
   TreeMap<Call, Call> _calls = new TreeMap<>();
+
+
+  /**
+   * Envs created during DFA analysis.
+   */
+  TreeMap<Env, Env> _envs = new TreeMap<>();
 
 
   /**
@@ -1150,7 +1136,7 @@ public class DFA extends ANY
     put("Object.asString"                , cl -> cl._dfa.newConstString(null, cl) );
     put("fuzion.sys.array.alloc"         , cl -> { return new SysArray(cl._dfa, new byte[0]); } ); // NYI: get length from args
     put("fuzion.sys.array.setel"         , cl ->
-        { /* NYI: record array modification */
+        {
           var array = cl._args.get(0);
           var index = cl._args.get(1);
           var value = cl._args.get(2);
@@ -1165,7 +1151,7 @@ public class DFA extends ANY
             }
         });
     put("fuzion.sys.array.get"           , cl ->
-        { /* NYI: record array modification */
+        {
           var array = cl._args.get(0);
           var index = cl._args.get(1);
           if (array instanceof SysArray sa)
@@ -1233,7 +1219,7 @@ public class DFA extends ANY
             (cl._dfa._fuir.clazzNeedsCode(call));
 
           var env = cl._env;
-          var newEnv = new Env(cl._dfa, env, ecl, cl._target);
+          var newEnv = cl._dfa.newEnv(cl, env, ecl, cl._target);
           var ncl = cl._dfa.newCall(call, false, cl._args.get(0), new List<>(), newEnv, cl);
           // NYI: result must be null if result of ncl is null (ncl does not return) and effect.abort is not called
           return Value.UNIT;
@@ -1395,8 +1381,13 @@ public class DFA extends ANY
    *
    * @param args the arguments passed to the call
    *
+   * @param env the environment at the call or null if none.
+   *
    * @param context for debugging: Reason that causes this call to be part of
    * the analysis.
+   *
+   * @return cl a new or exsiting call to cl (or its precondition) with the
+   * given target, args and environment.
    */
   Call newCall(int cl, boolean pre, Value tvalue, List<Value> args, Env env, Context context)
   {
@@ -1410,6 +1401,38 @@ public class DFA extends ANY
         if (!_changed)
           {
             _changedSetBy = "DFA.newCall to "+e;
+          }
+        _changed = true;
+      }
+    return e;
+  }
+
+
+  /**
+   * Create new Env for given existing env and effect type  and value pair.
+   *
+   * @param cl the current clazz that installs a new effect
+   *
+   * @param env the previous environemnt.
+   *
+   * @param ecl the effect types
+   *
+   * @param ev the effect value
+   *
+   * @return new or existing Env instance created from env by adding ecl/ev.
+   */
+  Env newEnv(Call cl, Env env, int ecl, Value ev)
+  {
+    var newEnv = new Env(cl, env, ecl, cl._target);
+    var e = _envs.get(newEnv);
+    if (e == null)
+      {
+        _envs.put(newEnv, newEnv);
+        e = newEnv;
+        if (SHOW_STACK_ON_CHANGE && !_changed) { System.out.println("new env: " + e); Thread.dumpStack();}
+        if (!_changed)
+          {
+            _changedSetBy = "DFA.newEnv for " + e;
           }
         _changed = true;
       }
