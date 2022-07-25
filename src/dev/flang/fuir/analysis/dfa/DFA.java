@@ -127,7 +127,7 @@ public class DFA extends ANY
      */
     public Unit statementHeader(int cl, int c, int i)
     {
-      if (_reportResults && _options.verbose(2))
+      if (_reportResults && _options.verbose(9))
         {
           System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i));
         }
@@ -291,7 +291,7 @@ public class DFA extends ANY
         {
           if (!_fuir.clazzIsUnitType(_fuir.clazzResultClazz(cc)))
             {
-              if (_reportResults && _options.verbose(2))
+              if (_reportResults && _options.verbose(9))
                 {
                   System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
                                      tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
@@ -337,7 +337,7 @@ public class DFA extends ANY
               {
                 var ca = newCall(cc, pre, tvalue, args, _call._env, _call);
                 res = ca.result();
-                if (_reportResults && _options.verbose(2))
+                if (_reportResults && _options.verbose(9))
                   {
                     System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " + ca);
                   }
@@ -360,7 +360,7 @@ public class DFA extends ANY
                               }
                           });
             res = resa[0];
-            if (_reportResults && _options.verbose(2))
+            if (_reportResults && _options.verbose(9))
               {
                 System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
                                    tvalue + ".get(" + _fuir.clazzAsString(cc) + ") => " + res);
@@ -495,7 +495,7 @@ public class DFA extends ANY
 
             }
           var taken = takenA[0];
-          if (_reportResults && _options.verbose(2))
+          if (_reportResults && _options.verbose(9))
             {
               System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": "+subv+" case "+mc+": "+
                                  (taken ? "taken" : "not taken"));
@@ -756,12 +756,15 @@ public class DFA extends ANY
         iteration();
       }
     while (_changed && (true || cnt < 100) || false && (cnt < 50));
-    _options.verbosePrintln("DFA done:");
-    _options.verbosePrintln("Instances: " + _instances.values());
-    _options.verbosePrintln("Calls: ");
-    for (var c : _calls.values())
+    if (_options.verbose(3))
       {
-        _options.verbosePrintln("  call: " + c);
+        _options.verbosePrintln(3, "DFA done:");
+        _options.verbosePrintln(3, "Instances: " + _instances.values());
+        _options.verbosePrintln(3, "Calls: ");
+        for (var c : _calls.values())
+          {
+            _options.verbosePrintln(3, "  call: " + c);
+          }
       }
     _reportResults = true;
     iteration();
@@ -776,7 +779,7 @@ public class DFA extends ANY
     var s = _calls.values().toArray(new Call[_calls.size()]);
     for (var c : s)
       {
-        if (_reportResults && _options.verbose(2))
+        if (_reportResults && _options.verbose(4))
           {
             System.out.println(("----------------"+c+
                                 "----------------------------------------------------------------------------------------------------")
