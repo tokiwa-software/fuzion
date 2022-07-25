@@ -39,7 +39,7 @@ import dev.flang.util.Errors;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class Instance extends Value implements Comparable<Instance> // , Context
+public class Instance extends Value implements Comparable<Instance>
 {
 
 
@@ -216,17 +216,6 @@ public class Instance extends Value implements Comparable<Instance> // , Context
   {
     return _dfa._fuir.clazzAsString(_clazz);
   }
-
-  /**
-   * Show the context that caused the inclusion of this instance into the analysis.
-  public String showWhy()
-  {
-    var indent = _context.showWhy();
-    System.out.println(indent + "  |");
-    System.out.println(indent + "  +- creates Instance " + this);
-    return indent + "  ";
-  }
-   */
 
 }
 
