@@ -739,7 +739,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isVoidType()
   {
-    return _type.compareTo(Types.resolved.t_void) == 0;
+    return this == Clazzes.c_void.get();
   }
 
 
