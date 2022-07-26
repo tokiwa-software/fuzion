@@ -295,6 +295,15 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private YesNo _isUnitType = YesNo.dontKnow;
 
 
+  /**
+   * This gives the id this clazz is mapped to in FUIR.
+   *
+   * NYI: Remove once FUIR is based on a .fuir file and not on Clazz instances
+   * and the AST.
+   */
+  public int _idInFUIR = -1;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 

@@ -229,7 +229,21 @@ public class FUIR extends IR
    */
   private int id(Clazz cc)
   {
-    return _clazzIds.get(cc);
+    return cc._idInFUIR;
+  }
+
+
+  /**
+   * Add cl to the set of clazzes in this FUIR and assign an id to to.
+   */
+  private void add(Clazz cl)
+  {
+    var id = _clazzIds.add(cl);
+
+    if (CHECKS) check
+      (cl._idInFUIR == -1 || cl._idInFUIR == id);
+
+    cl._idInFUIR = id;
   }
 
 
@@ -242,7 +256,7 @@ public class FUIR extends IR
             if (cl._type != Types.t_ADDRESS     // NYI: would be better to not create this dummy clazz in the first place
                 )
               {
-                _clazzIds.add(cl);
+                add(cl);
               }
           }
       }
@@ -1067,7 +1081,7 @@ hw25 is
     var cc = c.getIfCreated();
     if (cc != null)
       {
-        _clazzIds.add(cc);
+        add(cc);
       }
     return cc == null ? -1 : id(cc);
   }
