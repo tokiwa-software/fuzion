@@ -41,9 +41,9 @@ for test in $TESTS; do
     echo -n "_"
     echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
   else
-      make "$TARGET" -e -C >"$test"/out.txt "$test" 2>/dev/null \
-          && (echo -n "." && echo "$test: ok"     >>"$BUILD_DIR"/run_tests.results) \
-          || (echo -n "#" && echo "$test: failed" >>"$BUILD_DIR"/run_tests.results)
+    make "$TARGET" -e -C >"$test"/out.txt "$test" 2>/dev/null \
+        && (echo -n "." && echo "$test: ok"     >>"$BUILD_DIR"/run_tests.results) \
+        || (echo -n "#" && echo "$test: failed" >>"$BUILD_DIR"/run_tests.results)
 fi
 done
 
