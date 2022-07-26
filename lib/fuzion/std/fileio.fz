@@ -66,4 +66,26 @@ public fuzion.std.fileio is
                       # the length of the internal array representing the path
                       pathLength i32) i64 is intrinsic
 
-  private writeFile(path string, content array<u8>) is intrinsic # NYI
+  # creates a new file using an array of u8 as content and a string as the file path
+  # it overwrites the file, if it exists, or creates a new one if it does not exist
+  # if the director(y/ies) in the path d(oes/o) not exist, no file shall be created
+  #
+  public writeFile(
+                   # the (relative or absolute) file name, using platform specific path separators
+                   path string,
+                   # the content of the file as an u8 array
+                   content array<u8>) =>
+    arr := path.utf8.asArray
+    writeFile arr.internalArray.data arr.length content.internalArray.data content.length
+
+  # intrinsic to write bytes (internal array data) in a file using the file path
+  #
+  private writeFile(
+                    # the internal array data representing the file path in bytes
+                    path Object,
+                    # the length of the internal array representing the path
+                    pathLength i32,
+                    # the internal array data representing the content bytes to insert in file
+                    content Object,
+                    # the length of the internal array representing the content
+                    contentLength i32) unit is intrinsic
