@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
+import java.util.BitSet;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
@@ -167,6 +168,18 @@ public class FUIR extends IR
    * ids.
    */
   private final TreeMap<Long, Integer> _clazzContract;
+
+
+  /**
+   * Cached 'true' results of 'clazzNeedsCode'
+   */
+  BitSet _needsCode = new BitSet();
+
+
+  /**
+   * Cached 'false' results of 'clazzNeedsCode'
+   */
+  BitSet _doesNotNeedCode = new BitSet();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -995,16 +1008,24 @@ hw25 is
    */
   public boolean clazzNeedsCode(int cl)
   {
-    var cc = clazz(cl);
-    switch (clazzKind(cc))
+    if (_needsCode.get(cl - CLAZZ_BASE))
       {
-      case Abstract : return false;
-      case Choice   : return false;
-      case Intrinsic:
-      case Routine  :
-      case Field    :
-        return (cc.isInstantiated() || cc.feature().isOuterRef()) && cc != Clazzes.conststring.getIfCreated() && !cc.isAbsurd();
-      default: throw new Error("unhandled case: " + clazzKind(cc));
+        return true;
+      }
+    else if (_doesNotNeedCode.get(cl - CLAZZ_BASE))
+      {
+        return false;
+      }
+    else
+      {
+        var cc = clazz(cl);
+        var result = switch (clazzKind(cc))
+          {
+          case Abstract, Choice -> false;
+          case Intrinsic, Routine, Field -> (cc.isInstantiated() || cc.feature().isOuterRef()) && cc != Clazzes.conststring.getIfCreated() && !cc.isAbsurd();
+          };
+        (result ? _needsCode : _doesNotNeedCode).set(cl - CLAZZ_BASE);
+        return result;
       }
   }
 
