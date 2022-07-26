@@ -73,7 +73,7 @@ class Fuzion extends Tool
 
   static String  _binaryName_ = null;
   static boolean _useBoehmGC_ = false;
-  static boolean _xdfa_ = false;
+  static boolean _xdfa_ = true;
 
 
   /**
