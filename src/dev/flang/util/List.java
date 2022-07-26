@@ -26,7 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.util;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 
@@ -37,7 +37,7 @@ import java.util.Iterator;
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
 public class List<T>
-  extends LinkedList<T>
+  extends ArrayList<T>
 {
 
   /*--------------------------  constructors  ---------------------------*/
@@ -211,32 +211,6 @@ public class List<T>
 
 
   /**
-   * addH
-   *
-   * @param o
-   */
-  public void addH(T o)
-  {
-    addFirst(o);
-  }
-
-
-  /**
-   * addAllH
-   *
-   * @param l
-   */
-  public <X extends T> void addAllH(List<X> l)
-  {
-    Object o;
-    while (!l.isEmpty())
-      {
-        addH(l.removeLast());
-      }
-  }
-
-
-  /**
    * addAll adds all elements produced by the given Iterator.
    *
    * @param i an iterator
@@ -261,6 +235,24 @@ public class List<T>
       {
         add(x);
       }
+  }
+
+
+  /**
+   * Get first element of the list.
+   */
+  public T getFirst()
+  {
+    return get(0);
+  }
+
+
+  /**
+   * Get last element of the list.
+   */
+  public T getLast()
+  {
+    return get(size()-1);
   }
 
 }
