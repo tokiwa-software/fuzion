@@ -26,10 +26,11 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.ast;
 
+import java.util.LinkedList;
+
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionOptions;
-import dev.flang.util.List;
 
 
 /**
@@ -143,47 +144,47 @@ public class Resolution extends ANY
   /**
    * List of features scheduled for inheritance resolution
    */
-  final List<Feature> forInheritance = new List<>();
+  final LinkedList<Feature> forInheritance = new LinkedList<>();
 
   /**
    * List of features scheduled for resolution for declarations
    */
-  final List<Feature> forDeclarations = new List<>();
+  final LinkedList<Feature> forDeclarations = new LinkedList<>();
 
   /**
    * List of features scheduled for type resolution
    */
-  final List<Feature> forType = new List<>();
+  final LinkedList<Feature> forType = new LinkedList<>();
 
   /**
    * List of features scheduled for first syntactic sugar resolution
    */
-  final List<Feature> forSyntacticSugar1 = new List<>();
+  final LinkedList<Feature> forSyntacticSugar1 = new LinkedList<>();
 
   /**
    * List of features scheduled for type inference
    */
-  final List<Feature> forTypeInference = new List<>();
+  final LinkedList<Feature> forTypeInference = new LinkedList<>();
 
   /**
    * List of features scheduled for boxing
    */
-  final List<Feature> forBoxing = new List<>();
+  final LinkedList<Feature> forBoxing = new LinkedList<>();
 
   /**
    * List of features scheduled for type checking
    */
-  final List<Feature> forCheckTypes1 = new List<>();
+  final LinkedList<Feature> forCheckTypes1 = new LinkedList<>();
 
   /**
    * List of features scheduled for second syntactic sugar resolution
    */
-  final List<Feature> forSyntacticSugar2 = new List<>();
+  final LinkedList<Feature> forSyntacticSugar2 = new LinkedList<>();
 
   /**
    * List of features scheduled for second pass of type checking
    */
-  final List<Feature> forCheckTypes2 = new List<>();
+  final LinkedList<Feature> forCheckTypes2 = new LinkedList<>();
 
 
   /*--------------------------  constructors  ---------------------------*/

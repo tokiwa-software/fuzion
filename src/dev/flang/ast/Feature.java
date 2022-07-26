@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
@@ -260,14 +261,14 @@ public class Feature extends AbstractFeature implements Stmnt
    * Actions collectected to be executed as soon as this feature has reached
    * State.RESOLVED_DECLARATIONS, see method whenResolvedDeclarations().
    */
-  private List<Runnable> whenResolvedDeclarations = new List<>();
+  private LinkedList<Runnable> whenResolvedDeclarations = new LinkedList<>();
 
 
   /**
    * Actions collectected to be executed as soon as this feature has reached
    * State.RESOLVED_TYPES, see method whenResolvedTypes().
    */
-  private List<Runnable> whenResolvedTypes = new List<>();
+  private LinkedList<Runnable> whenResolvedTypes = new LinkedList<>();
 
 
   /**

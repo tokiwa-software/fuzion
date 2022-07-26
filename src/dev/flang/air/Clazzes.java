@@ -383,7 +383,7 @@ public class Clazzes extends ANY
    */
   public static void findAllClasses(Clazz main)
   {
-    var toLayout = new List<Clazz>();
+    var toLayout = new LinkedList<Clazz>();
     int clazzCount = 0;
 
     // make sure internally referenced clazzes do exist:
