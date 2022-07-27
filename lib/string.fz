@@ -504,6 +504,16 @@ string ref : hasHash<string>, ordered<string>, strings is
   infix ∉ (s Set<string>) => string.this.notElementOf s
 
 
+  # convert this string to upper case
+  upper_case() string : unicode.data is
+    strings.fromCodepoints (asCodepoints.mapSequence (c -> upper_case_mappings[c.val].get c))
+
+
+  # convert this string to lower case
+  lower_case() string : unicode.data is
+    strings.fromCodepoints (asCodepoints.mapSequence (c -> lower_case_mappings[c.val].get c))
+
+
 # strings -- unit type defining features related to string but not
 # requiring an instance
 #
