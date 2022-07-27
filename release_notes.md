@@ -1,3 +1,34 @@
+## 2022-07-27: V0.076
+
+- C backend
+
+  - GC support using the Boehm–Demers–Weiser garbage collector. Use '-useGC'
+    option for the 'fz' command.
+
+  - result of application-wide data-flow analysis is now used to control code
+    generation resulting in smaller binaries and (usually) faster build
+    time. This can be controlled using 'fz' with option '-Xdfa=(on|off)'.
+
+- FUIR
+
+  - Added generic abstract interpreter that provides the basic infrastructure
+    for abstract interpretation.  This abstract interpreter is used for the C
+    backend and will be used for other backend and static analysis such as
+    data-flow analysis.
+
+  - added application-wide data-flow analysis
+
+  - 'fz' command has new option '-dfa' that runs DFA analysis as backend. Should
+    be used with '-verbose=<n>' for 'n>0' to get ouput other than just errors.
+
+- base lib
+
+  - started adding support for file I/O.
+
+  - 'mapOf' now can be used with an array of '(key, value)' tuples
+
+  - 'asString' on mutable value now call asString on the value.
+
 ## 2022-07-04: V0.075
 
 - C backend
