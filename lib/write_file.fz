@@ -1,0 +1,32 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature write_file
+#
+#
+# -----------------------------------------------------------------------
+
+# write_file -- shortcut for io.file.write
+#
+# A handy shortcut for io.file.write, creates a new file using an array of u8 as
+# content and a string as the file path
+# it overwrites the file, if it exists, or creates a new one if it does not exist
+# if the director(y/ies) in the path d(oes/o) not exist, no file shall be created
+#
+write_file(path string, content array<u8>) => io.file.write path content # NYI
