@@ -456,15 +456,6 @@ public class DFA extends ANY
     public Pair<Value, Unit> match(AbstractInterpreter ai, int cl, int c, int i, Value subv)
     {
       Value r = null; // result value null <=> does not return.  Will be set to Value.UNIT if returning case was found.
-      var subjClazz0 = _fuir.matchStaticSubject(cl, c, i);
-
-      // NYI: special handling to unbox subject should not be needed if unbox would be called by AbstractInterpreter
-      if (_fuir.clazzIsRef(subjClazz0))
-        {
-          subjClazz0 = _fuir.clazzAsValue(subjClazz0);
-          subv = subv.unbox(subjClazz0);
-        }
-      var subjClazz = subjClazz0;
       for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
         {
           // array to permit modification in lambda
@@ -489,7 +480,7 @@ public class DFA extends ANY
                   else
                     {
                       throw new Error("DFA encountered Unexpected value in match: " + s.getClass() + " '" + s + "' " +
-                                      " for match of type " + _fuir.clazzAsString(subjClazz));
+                                      " for match of type " + _fuir.clazzAsString(_fuir.matchStaticSubject(cl, c, i)));
                     }
                 });
 

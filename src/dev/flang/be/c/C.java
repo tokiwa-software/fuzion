@@ -269,10 +269,9 @@ public class C extends ANY
     /**
      * Perform a match on value subv.
      */
-    public Pair<CExpr, CStmnt> match(AbstractInterpreter<CExpr, CStmnt> ai, int cl, int c, int i, CExpr subv)
+    public Pair<CExpr, CStmnt> match(AbstractInterpreter<CExpr, CStmnt> ai, int cl, int c, int i, CExpr sub)
     {
       var subjClazz = _fuir.matchStaticSubject(cl, c, i);
-      var sub       = fields(subv, subjClazz);
       var uniyon    = sub.field(_names.CHOICE_UNION_NAME);
       var hasTag    = !_fuir.clazzIsChoiceOfOnlyRefs(subjClazz);
       var refEntry  = uniyon.field(_names.CHOICE_REF_ENTRY_NAME);
