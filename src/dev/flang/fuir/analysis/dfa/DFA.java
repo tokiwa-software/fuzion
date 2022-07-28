@@ -730,7 +730,13 @@ public class DFA extends ANY
             switch (_fuir.clazzKind(cl))
             {
             case Routine, Intrinsic -> called.contains(cl);
-            case Field              -> true /* NYI */ || called.contains(cl) || _writtenFields.contains(cl) || _fuir.clazzIsOuterRef(cl);
+            case Field              ->
+            {
+              var fc = _fuir.correspondingFieldInValueInstance(cl);
+              yield
+                isBuiltInNumeric(_fuir.clazzOuterClazz(fc)) ||
+                _readFields.contains(fc);
+            }
             case Abstract           -> true;
             case Choice             -> true;
             };
