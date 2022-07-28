@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class BoxedValue
+ * Source of class RefValue
  *
  *---------------------------------------------------------------------*/
 
@@ -28,12 +28,12 @@ package dev.flang.fuir.analysis.dfa;
 
 
 /**
- * BoxedValue represents a Value other than Instance that was boxed, i.e., turned
+ * RefValue represents a Value other than Instance that was boxed, i.e., turned
  * into a ref.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class BoxedValue extends Value
+public class RefValue extends Value
 {
 
 
@@ -67,7 +67,7 @@ public class BoxedValue extends Value
    *
    * @param orignal the unboxed value
    */
-  public BoxedValue(DFA dfa, Value original, int vc, int rc)
+  public RefValue(DFA dfa, Value original, int vc, int rc)
   {
     super(rc);
 
@@ -80,9 +80,9 @@ public class BoxedValue extends Value
 
 
   /**
-   * Compare this to another BoxedValue.
+   * Compare this to another RefValue.
    */
-  public int compareTo(BoxedValue other)
+  public int compareTo(RefValue other)
   {
     return
       _clazz < other._clazz ? -1 :
