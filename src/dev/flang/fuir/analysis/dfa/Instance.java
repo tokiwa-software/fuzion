@@ -100,26 +100,6 @@ public class Instance extends Value implements Comparable<Instance>
   }
 
 
-  /**
-   * Create boxed Instance of given value
-   *
-   * @param original the original value.
-   */
-  Instance(Instance original, int vc, int rc)
-  {
-    super(original._clazz);
-
-    if (PRECONDITIONS) require
-      (original._clazz == vc);
-
-    _clazz = rc;
-    _dfa = original._dfa;
-    _context = original._context;
-    _fields = (TreeMap<Integer, Value>) original._fields.clone();
-    _isBoxed = true;
-  }
-
-
   /*-----------------------------  methods  -----------------------------*/
 
 
