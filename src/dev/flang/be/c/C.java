@@ -756,10 +756,17 @@ public class C extends ANY
     var ccs = _fuir.accessedClazzes(cl, c, i);
     if (ccs.length == 0)
       {
-        ol.add(reportErrorInCode("no targets for access of %s within %s",
-                                 CExpr.string(_fuir.clazzAsString(cc0)),
-                                 CExpr.string(_fuir.clazzAsString(cl ))));
-        res = null;
+        if (isCall && (_types.hasData(rt) || _fuir.clazzIsVoidType(rt)))
+          {
+            ol.add(reportErrorInCode("no targets for access of %s within %s",
+                                     CExpr.string(_fuir.clazzAsString(cc0)),
+                                     CExpr.string(_fuir.clazzAsString(cl ))));
+            res = null;
+          }
+        else
+          {
+            ol.add(CStmnt.lineComment("access to " + _fuir.codeAtAsString(cl, c, i) + " eliminated"));
+          }
       }
     else
       {
