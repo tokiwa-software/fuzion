@@ -723,10 +723,14 @@ public class DFA extends ANY
       {
         public boolean clazzNeedsCode(int cl)
         {
-          return (called.contains(cl) ||
-                  _writtenFields.contains(cl) ||
-                  _fuir.clazzKind(cl) != FUIR.FeatureKind.Routine   &&
-                  _fuir.clazzKind(cl) != FUIR.FeatureKind.Intrinsic    ) && super.clazzNeedsCode(cl);
+          return super.clazzNeedsCode(cl) &&
+            switch (_fuir.clazzKind(cl))
+            {
+            case Routine, Intrinsic -> called.contains(cl);
+            case Field              -> true /* NYI */ || called.contains(cl) || _writtenFields.contains(cl) || _fuir.clazzIsOuterRef(cl);
+            case Abstract           -> true;
+            case Choice             -> true;
+            };
         }
         public int[] accessedClazzes(int cl, int c, int ix)
         {
