@@ -1315,6 +1315,34 @@ public class DFA extends ANY
   }
 
 
+
+  /**
+   * Check if given clazz is a built-in numeric clazz: i8..i64, u8..u64, f32 or f64.
+   *
+   * @param cl the clazz
+   *
+   * @return true iff cl is built-in numeric;
+   */
+  boolean isBuiltInNumeric(int cl)
+  {
+    return switch (_fuir.getSpecialId(cl))
+      {
+      case
+        c_i8   ,
+        c_i16  ,
+        c_i32  ,
+        c_i64  ,
+        c_u8   ,
+        c_u16  ,
+        c_u32  ,
+        c_u64  ,
+        c_f32  ,
+        c_f64  -> true;
+      default -> false;
+      };
+  }
+
+
   /**
    * Create instance of given clazz.
    *
@@ -1325,31 +1353,23 @@ public class DFA extends ANY
    */
   Value newInstance(int cl, Context context)
   {
-    var r = switch (_fuir.getSpecialId(cl))
+    Value r;
+    if (isBuiltInNumeric(cl))
       {
-        case c_i8   ,
-             c_i16  ,
-             c_i32  ,
-             c_i64  ,
-             c_u8   ,
-             c_u16  ,
-             c_u32  ,
-             c_u64  ,
-             c_f32  ,
-             c_f64  -> new NumericValue(DFA.this, cl);
-        default ->
-        {
-          if (_fuir.clazzIsRef(cl))
-            {
-              var vc = _fuir.clazzAsValue(cl);
-              yield newInstance(vc, context).box(this, vc, cl, context);
-            }
-          else
-            {
-              yield new Instance(this, cl, context);
-            }
-        }
-      };
+        r = new NumericValue(DFA.this, cl);
+      }
+    else
+      {
+        if (_fuir.clazzIsRef(cl))
+          {
+            var vc = _fuir.clazzAsValue(cl);
+            r = newInstance(vc, context).box(this, vc, cl, context);
+          }
+        else
+          {
+            r = new Instance(this, cl, context);
+          }
+      }
     return cache(r);
   }
 
