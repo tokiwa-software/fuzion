@@ -136,6 +136,7 @@ public class Instance extends Value implements Comparable<Instance>
         _dfa._changedSetBy = "setField: new values "+v+" (was "+oldv+") for " + this;
         _dfa._changed = true;
       }
+    dfa._writtenFields.add(field);
     _fields.put(field, v);
   }
 

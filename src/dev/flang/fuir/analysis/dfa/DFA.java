@@ -180,7 +180,6 @@ public class DFA extends ANY
      */
     public Unit assignStatic(int tc, int f, int rt, Value tvalue, Value val)
     {
-      _writtenFields.add(f);
       tvalue.setField(DFA.this, f, val);
       return _unit_;
     }
@@ -298,7 +297,6 @@ public class DFA extends ANY
                   System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
                                      tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
                 }
-              _writtenFields.add(cc);
               tvalue.setField(DFA.this, cc, args.get(0));
             }
           r = Value.UNIT;
@@ -474,7 +472,6 @@ public class DFA extends ANY
                           takenA[0] = true;
                           if (field != -1)
                             {
-                              _writtenFields.add(field);
                               _call._instance.setField(DFA.this, field, untagged);
                             }
                         }
@@ -844,7 +841,6 @@ public class DFA extends ANY
           {
             var af = _fuir.clazzArg(c._cc, a);
             var aa = c._args.get(a);
-            _writtenFields.add(af);
             i.setField(this, af, aa);
           }
 
@@ -852,7 +848,6 @@ public class DFA extends ANY
         var or = _fuir.clazzOuterRef(c._cc);
         if (or != -1)
           {
-            _writtenFields.add(or);
             i.setField(this, or, c._target);
           }
 
@@ -1416,14 +1411,11 @@ public class DFA extends ANY
                                   : new SysArray(this, new NumericValue(this, _fuir.clazz(FUIR.SpecialClazzes.c_u8)));
     var r = newInstance(cs, context);
     var a = newInstance(sysArray, context);
-    _writtenFields.add(length);
     a.setField(this,
                length,
                 utf8Bytes != null ? new NumericValue(this, _fuir.clazzResultClazz(length), utf8Bytes.length)
                                   : new NumericValue(this, _fuir.clazzResultClazz(length)));
-    _writtenFields.add(data);
     a.setField(this, data  , adata);
-    _writtenFields.add(internalArray);
     r.setField(this, internalArray, a);
     return r;
   }
