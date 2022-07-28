@@ -646,10 +646,16 @@ public class DFA extends ANY
 
   /**
    * All fields that are ever written.  These will be needed even if they are
-   * never readq unless the assignments are actually removed (which is currently
+   * never read unless the assignments are actually removed (which is currently
    * not the case).
    */
   TreeSet<Integer> _writtenFields = new TreeSet<>();
+
+
+  /**
+   * All fields that are ever read.
+   */
+  TreeSet<Integer> _readFields = new TreeSet<>();
 
 
   /**

@@ -124,7 +124,8 @@ public class Instance extends Value implements Comparable<Instance>
   public void setField(DFA dfa, int field, Value v)
   {
     if (PRECONDITIONS) require
-      (v != null);
+      (v != null,
+       dfa._fuir.correspondingFieldInValueInstance(field) == field);
 
     var oldv = _fields.get(field);
     if (oldv != null)
@@ -147,8 +148,10 @@ public class Instance extends Value implements Comparable<Instance>
   Value readFieldFromInstance(DFA dfa, int field)
   {
     if (PRECONDITIONS) require
-      (_clazz == dfa._fuir.clazzOuterClazz(field));
+      (_clazz == dfa._fuir.clazzOuterClazz(field),
+       dfa._fuir.correspondingFieldInValueInstance(field) == field);
 
+    dfa._readFields.add(field);
     var v = _fields.get(field);
     if (v == null && _isBoxed)
       {
