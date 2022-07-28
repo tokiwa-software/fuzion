@@ -93,6 +93,10 @@ public class Instance extends Value implements Comparable<Instance>
   public Instance(DFA dfa, int clazz, Context context)
   {
     super(clazz);
+
+    if (PRECONDITIONS) require
+      (!dfa._fuir.clazzIsRef(clazz));
+
     _dfa = dfa;
     _context = context;
     _fields = new TreeMap<>();

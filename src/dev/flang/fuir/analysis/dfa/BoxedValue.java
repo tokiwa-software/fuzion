@@ -61,6 +61,10 @@ public class BoxedValue extends Value
   /**
    * Create Boxed Value
    *
+   * NYI: There are two cases that we need to distinguish: A boxed clone of a
+   * value instance (so we need to clone original) or a reference to a value
+   * instance (so original is the same instance).
+   *
    * @param orignal the unboxed value
    */
   public BoxedValue(DFA dfa, Value original, int vc, int rc)
@@ -95,10 +99,7 @@ public class BoxedValue extends Value
     if (PRECONDITIONS) require
       (v != null);
 
-    // NYI: since the boxed value is a clone, this should not modify _original,
-    // but it should modify a clone of _original. Modifying _original is,
-    // however, still sound since it adds values, but does not forget values.
-    _original.setField(dfa, field, v);
+    _original.setField(dfa, dfa._fuir.correspondingFieldInValueInstance(field), v);
   }
 
 

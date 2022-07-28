@@ -1339,20 +1339,28 @@ public class DFA extends ANY
              c_f64  -> new NumericValue(DFA.this, cl);
         default ->
         {
-          var r = new Instance(this, cl, context);
-          var e = _instances.get(r);
-          if (e == null)
+          if (_fuir.clazzIsRef(cl))
             {
-              _instances.put(r, r);
-              e = r;
-              if (SHOW_STACK_ON_CHANGE && !_changed) Thread.dumpStack();
-              if (!_changed)
-                {
-                  _changedSetBy = "DFA.newInstance for "+_fuir.clazzAsString(cl);
-                }
-              _changed = true;
+              var vc = _fuir.clazzAsValue(cl);
+              yield newInstance(vc, context).box(this, vc, cl);
             }
-          yield e;
+          else
+            {
+              var r = new Instance(this, cl, context);
+              var e = _instances.get(r);
+              if (e == null)
+                {
+                  _instances.put(r, r);
+                  e = r;
+                  if (SHOW_STACK_ON_CHANGE && !_changed) Thread.dumpStack();
+                  if (!_changed)
+                    {
+                      _changedSetBy = "DFA.newInstance for "+_fuir.clazzAsString(cl);
+                    }
+                  _changed = true;
+                }
+              yield e;
+            }
         }
       };
   }
