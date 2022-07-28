@@ -283,7 +283,7 @@ public class Value extends ANY
       {
         if (_boxed == null)
           {
-            _boxed = new RefValue(dfa, this, vc, rc);
+            _boxed = dfa.cache(new RefValue(dfa, this, vc, rc));
           }
         result = _boxed;
       }

@@ -1350,6 +1350,17 @@ public class DFA extends ANY
             }
         }
       };
+    return cache(r);
+  }
+
+
+  /**
+   * Check if value 'r' exists already. If so, return the existing
+   * one. Otherwise, add 'r' to the set of existing values, set _changed since
+   * the state has changed and return r.
+   */
+  Value cache(Value r)
+  {
     var e = _instances.get(r);
     if (e == null)
       {
@@ -1358,7 +1369,7 @@ public class DFA extends ANY
         if (SHOW_STACK_ON_CHANGE && !_changed) Thread.dumpStack();
         if (!_changed)
           {
-            _changedSetBy = "DFA.newInstance for "+_fuir.clazzAsString(cl);
+            _changedSetBy = "DFA.newInstance for "+_fuir.clazzAsString(r._clazz);
           }
         _changed = true;
       }
