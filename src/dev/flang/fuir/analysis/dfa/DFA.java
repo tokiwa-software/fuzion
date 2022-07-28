@@ -725,7 +725,8 @@ public class DFA extends ANY
         {
           return (called.contains(cl) ||
                   _writtenFields.contains(cl) ||
-                  _fuir.clazzKind(cl) != FUIR.FeatureKind.Routine) && super.clazzNeedsCode(cl);
+                  _fuir.clazzKind(cl) != FUIR.FeatureKind.Routine   &&
+                  _fuir.clazzKind(cl) != FUIR.FeatureKind.Intrinsic    ) && super.clazzNeedsCode(cl);
         }
         public int[] accessedClazzes(int cl, int c, int ix)
         {
