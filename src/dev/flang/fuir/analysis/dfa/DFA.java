@@ -380,7 +380,7 @@ public class DFA extends ANY
      */
     public Pair<Value, Unit> box(Value val, int vc, int rc)
     {
-      var boxed = val.box(DFA.this, vc, rc);
+      var boxed = val.box(DFA.this, vc, rc, _call);
       return new Pair<>(boxed, _unit_);
     }
 
@@ -618,7 +618,7 @@ public class DFA extends ANY
   /**
    * Instances created during DFA analysis.
    */
-  TreeMap<Instance, Instance> _instances = new TreeMap<>();
+  TreeMap<Value, Value> _instances = new TreeMap<>(Value.COMPARATOR);
 
 
   /**
@@ -1325,7 +1325,7 @@ public class DFA extends ANY
    */
   Value newInstance(int cl, Context context)
   {
-    return switch (_fuir.getSpecialId(cl))
+    var r = switch (_fuir.getSpecialId(cl))
       {
         case c_i8   ,
              c_i16  ,
@@ -1342,27 +1342,27 @@ public class DFA extends ANY
           if (_fuir.clazzIsRef(cl))
             {
               var vc = _fuir.clazzAsValue(cl);
-              yield newInstance(vc, context).box(this, vc, cl);
+              yield newInstance(vc, context).box(this, vc, cl, context);
             }
           else
             {
-              var r = new Instance(this, cl, context);
-              var e = _instances.get(r);
-              if (e == null)
-                {
-                  _instances.put(r, r);
-                  e = r;
-                  if (SHOW_STACK_ON_CHANGE && !_changed) Thread.dumpStack();
-                  if (!_changed)
-                    {
-                      _changedSetBy = "DFA.newInstance for "+_fuir.clazzAsString(cl);
-                    }
-                  _changed = true;
-                }
-              yield e;
+              yield new Instance(this, cl, context);
             }
         }
       };
+    var e = _instances.get(r);
+    if (e == null)
+      {
+        _instances.put(r, r);
+        e = r;
+        if (SHOW_STACK_ON_CHANGE && !_changed) Thread.dumpStack();
+        if (!_changed)
+          {
+            _changedSetBy = "DFA.newInstance for "+_fuir.clazzAsString(cl);
+          }
+        _changed = true;
+      }
+    return e;
   }
 
 

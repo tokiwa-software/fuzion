@@ -272,16 +272,20 @@ public class Value extends ANY
    * Box this value. This works both for Instances as well as for value types
    * such as i32, bool, etc.
    */
-  Value box(DFA dfa, int vc, int rc)
+  Value box(DFA dfa, int vc, int rc, Context context)
   {
-    var result = _boxed;
-    if (result == null)
+    Value result;
+    if (this == UNIT)
       {
-        result = new RefValue(dfa, this, vc, rc);
-        if (this != UNIT)
+        result = dfa.newInstance(rc, context);
+      }
+    else
+      {
+        if (_boxed == null)
           {
-            _boxed = result;
+            _boxed = new RefValue(dfa, this, vc, rc);
           }
+        result = _boxed;
       }
     return result;
   }
