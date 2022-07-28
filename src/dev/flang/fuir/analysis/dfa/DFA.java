@@ -255,6 +255,8 @@ public class DFA extends ANY
                 (t != Value.UNIT || AbstractInterpreter.clazzHasUniqueValue(_fuir, tt));
               if (t == Value.UNIT ||
                   t._clazz == tt ||
+                  //!_fuir.accessIsDynamic(cl, c, i) && _fuir.correspondingFieldInValueInstance(tt) == t._clazz ||
+
                   // NYI: This is a little too much special handling, must simplify:
                   !_fuir.accessIsDynamic(cl, c, i) && _fuir.clazzIsRef(t._clazz) && !_fuir.clazzIsOuterRef(cc0))
                 {
@@ -281,6 +283,8 @@ public class DFA extends ANY
      */
     Value access0(int cl, int c, int i, Value tvalue, List<Value> args, int cc)
     {
+      var cs = site(cl, c, i);
+      cs._accesses.add(cc);
       var isCall = _fuir.codeAt(c, i) == FUIR.ExprKind.Call;
       Value r;
       if (isCall)
@@ -626,6 +630,12 @@ public class DFA extends ANY
 
 
   /**
+   * Sites created during DFA analysis.
+   */
+  TreeMap<Site, Site> _sites = new TreeMap<>();
+
+
+  /**
    * Calls created during current sub-iteration of the DFA analysis.  These will
    * be analysed at the end of the current iteration since they most likely add
    * new information.
@@ -718,7 +728,25 @@ public class DFA extends ANY
           return (called.contains(cl) ||
                   _writtenFields.contains(cl) ||
                   _fuir.clazzKind(cl) != FUIR.FeatureKind.Routine) && super.clazzNeedsCode(cl);
-          }
+        }
+        public int[] accessedClazzes(int cl, int c, int ix)
+        {
+          var ccs = super.accessedClazzes(cl, c, ix);
+          var cs = site(cl, c, ix);
+          var nr = new int[ccs.length];
+          int j = 0;
+          for (var cci = 0; cci < ccs.length; cci += 2)
+            {
+              var tt = ccs[cci+0];
+              var cc = ccs[cci+1];
+              if (cs._accesses.contains(cc))
+                {
+                  nr[j++] = tt;
+                  nr[j++] = cc;
+                }
+            }
+          return java.util.Arrays.copyOfRange(nr, 0, j);
+        }
     };
   }
 
@@ -1396,6 +1424,22 @@ public class DFA extends ANY
       }
     return e;
   }
+
+
+  /**
+   * Create instance of 'Site' for given clazz, code block and index.
+   */
+  Site site(int cl, int c, int i)
+    {
+      var cs = new Site(cl, c, i);
+      var res = _sites.get(cs);
+      if (res == null)
+        {
+          _sites.put(cs, cs);
+          res = cs;
+        }
+      return res;
+    }
 
 
   /**
