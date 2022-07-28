@@ -240,9 +240,7 @@ public class DFA extends ANY
     Value access(int cl, int c, int i, Value tvalue, List<Value> args)
     {
       var cc0 = _fuir.accessedClazz  (cl, c, i);
-      var ccs = _fuir.accessIsDynamic(cl, c, i) ? _fuir.accessedClazzes(cl, c, i) :
-                _fuir.clazzNeedsCode(cc0)       ? new int[] { _fuir.clazzOuterClazz(cc0), cc0 }
-                                                : new int[0];
+      var ccs = _fuir.accessedClazzes(cl, c, i);
       var found = new boolean[] { false };
       var resf = new Value[] { null };
       for (var ccii = 0; ccii < ccs.length; ccii += 2)

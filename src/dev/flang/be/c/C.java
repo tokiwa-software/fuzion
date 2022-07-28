@@ -747,34 +747,35 @@ public class C extends ANY
    */
   Pair<CExpr, CStmnt> access(int cl, int c, int i, CExpr tvalue, List<CExpr> args)
   {
-    CStmnt result;
     CExpr res = CExpr.UNIT;
     var isCall = _fuir.codeAt(c, i) == FUIR.ExprKind.Call;
     var cc0 = _fuir.accessedClazz  (cl, c, i);
     var tc = _fuir.accessTargetClazz(cl, c, i);
     var rt = _fuir.clazzResultClazz(cc0); // only needed if isCall
-
-    if (_fuir.accessIsDynamic(cl, c, i))
+    var ol = new List<CStmnt>();
+    var ccs = _fuir.accessedClazzes(cl, c, i);
+    if (ccs.length == 0)
       {
-        var ol = new List<CStmnt>(CStmnt.lineComment("Dynamic access of " + _fuir.clazzAsString(cc0)));
-        var ccs = _fuir.accessedClazzes(cl, c, i);
-        if (CHECKS) check
-          (_types.hasData(tc)); // target in dynamic call cannot be unit type
-        var tvar = _names.newTemp();
-        var tt0 = _types.clazz(tc);
-        ol.add(CStmnt.decl(tt0, tvar, tvalue.castTo(tt0)));
-        tvalue = tvar;
+        ol.add(reportErrorInCode("no targets for access of %s within %s",
+                                 CExpr.string(_fuir.clazzAsString(cc0)),
+                                 CExpr.string(_fuir.clazzAsString(cl ))));
+        res = null;
+      }
+    else
+      {
+        if (_types.hasData(tc) && _fuir.accessIsDynamic(cl, c, i))
+          {
+            ol.add(CStmnt.lineComment("Dynamic access of " + _fuir.clazzAsString(cc0)));
+            var tvar = _names.newTemp();
+            var tt0 = _types.clazz(tc);
+            ol.add(CStmnt.decl(tt0, tvar, tvalue.castTo(tt0)));
+            tvalue = tvar;
+          }
         if (isCall && _types.hasData(rt))
           {
             var resvar = _names.newTemp();
             res = resvar;
             ol.add(CStmnt.decl(_types.clazzField(cc0), resvar));
-          }
-        if (ccs.length == 0)
-          {
-            ol.add(reportErrorInCode("no targets for dynamic access of %s within %s",
-                                     CExpr.string(_fuir.clazzAsString(cc0)),
-                                     CExpr.string(_fuir.clazzAsString(cl ))));
           }
         var cazes = new List<CStmnt>();
         CStmnt acc = CStmnt.EMPTY;
@@ -810,7 +811,7 @@ public class C extends ANY
           }
         if (ccs.length > 2)
           {
-            var id = tvar.deref().field(_names.CLAZZ_ID);
+            var id = tvalue.deref().field(_names.CLAZZ_ID);
             acc = CStmnt.suitch(id, cazes,
                                 reportErrorInCode("unhandled dynamic target %d in access of %s within %s",
                                                   id,
@@ -818,34 +819,14 @@ public class C extends ANY
                                                   CExpr.string(_fuir.clazzAsString(cl ))));
           }
         ol.add(acc);
-        result = CStmnt.seq(ol);
+        res = isCall ?
+          (_fuir.clazzIsVoidType(rt) ? null :
+           _types.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
+                                                                   : res)
+           :  res;
       }
-    else if (_fuir.clazzNeedsCode(cc0))
-      {
-        if (isCall)
-          {
-            var callpair = call(cl, tvalue, args, c, i, cc0, false);
-            result = callpair._v1;
-            res = callpair._v0;
-          }
-        else
-          {
-            result = assignField(tvalue, tc, tc, cc0, args.get(0), rt);
-          }
-      }
-    else
-      {
-        result = reportErrorInCode("no code generated for static access to %s within %s",
-                                   CExpr.string(_fuir.clazzAsString(cc0)),
-                                   CExpr.string(_fuir.clazzAsString(cl )));
-        res = null;
-      }
-    if (res != null && isCall)
-      {
-        res = _fuir.clazzIsVoidType(rt) ? null :
-          _types.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
-      }
-    return new Pair(res, result);
+
+    return new Pair(res, CStmnt.seq(ol));
   }
 
 
