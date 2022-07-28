@@ -763,7 +763,7 @@ public class C extends ANY
       }
     else
       {
-        if (_types.hasData(tc) && _fuir.accessIsDynamic(cl, c, i))
+        if (_types.hasData(tc) && _fuir.accessIsDynamic(cl, c, i) && ccs.length > 2)
           {
             ol.add(CStmnt.lineComment("Dynamic access of " + _fuir.clazzAsString(cc0)));
             var tvar = _names.newTemp();
@@ -771,7 +771,7 @@ public class C extends ANY
             ol.add(CStmnt.decl(tt0, tvar, tvalue.castTo(tt0)));
             tvalue = tvar;
           }
-        if (isCall && _types.hasData(rt))
+        if (isCall && _types.hasData(rt) && ccs.length > 2)
           {
             var resvar = _names.newTemp();
             res = resvar;
@@ -788,19 +788,21 @@ public class C extends ANY
               {
                 var calpair = call(cl, tvalue, args, c, i, cc, false);
                 var rv  = calpair._v0;
-                var cal = calpair._v1;
-                var as = CStmnt.EMPTY;
-                if (rv != null && res != CExpr.UNIT)
+                acc = calpair._v1;
+                if (ccs.length == 2)
+                  {
+                    res = rv;
+                  }
+                else if (_types.hasData(rt) && rv != null)
                   {
                     if (rt != rti && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
                       {
                         rv = rv.castTo(_types.clazz(rt));
                       }
-                    as = assign(res, rv, rt);
+                    acc = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
+                                     acc,
+                                     assign(res, rv, rt));
                   }
-                acc = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
-                                 cal,
-                                 as);
               }
             else
               {
