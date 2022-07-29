@@ -98,7 +98,7 @@ public class Intrinsics extends ANY
                  CExpr.exit(1));
     put("fuzion.std.fileio.readFile"   , noFileIo); // NYI
     put("fuzion.std.fileio.getFileSize", noFileIo); // NYI
-    put("fuzion.std.fileio.writeFile"  , noFileIo); // NYI        
+    put("fuzion.std.fileio.writeFile"  , noFileIo); // NYI
     put("fuzion.std.out.flush" ,
         "fuzion.std.err.flush" , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
     put("fuzion.stdin.nextByte", (c,cl,outer,in) ->
@@ -106,7 +106,14 @@ public class Intrinsics extends ANY
           var cIdent = new CIdent("c");
           return CStmnt.seq(
             CExpr.decl("int", cIdent, CExpr.call("getchar", new List<>())),
-            CExpr.iff(cIdent.eq(new CIdent("EOF")),CExpr.int32const(-1).ret()),
+            CExpr.iff(cIdent.eq(new CIdent("EOF")),
+              CStmnt.seq(
+                // -1 EOF
+                CExpr.iff(CExpr.call("feof", new List<>(CExpr.ident("stdin"))), CExpr.int32const(-1).ret()),
+                // -2 some other error
+                CExpr.int32const(-2).ret()
+              )
+            ),
             cIdent.castTo("fzT_1i32").ret()
           );
         });
