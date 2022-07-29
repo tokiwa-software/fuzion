@@ -91,7 +91,7 @@ private stdin(
           .map (v ->
             match v
               u8 u8 => u8
-              * => panic "not defined"; u8 0)
+              * => panic "not defined")
 
     arr := (tmp.asCodepoints.asStream.take n)
     #  asArray, since we don't want this to be lazy
@@ -120,7 +120,7 @@ private stdin(
       .map (v ->
         match v
           u8 u8 => u8
-          * => panic "not defined"; u8 0)
+          * => panic "not defined")
     #  asArray, since we don't want this to be lazy
       .asArray
 
