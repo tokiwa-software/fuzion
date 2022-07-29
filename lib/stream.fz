@@ -53,7 +53,7 @@ stream(redef T type) ref : Sequence<T> is
       nil
 
 
-  # take n items from stream, less if stream has less than n items
+  # take n items from stream, less if stream has fewer than n items
   #
   redef take (n i32) =>
     for
