@@ -19,12 +19,11 @@
 #
 #  Source code of Fuzion standard library feature file
 #
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# file -- effect related to fileio
+# file -- a unit type that contains effects related to files
 #
 private file is
     # NYI
-  public  write(path string, content array<u8>) => # NYI : only a placeholder to avoid build errors and should be modeled using effects later on
-  public read(path string) => # NYI : only a placeholder to avoid build errors should be modeled using effects later on
