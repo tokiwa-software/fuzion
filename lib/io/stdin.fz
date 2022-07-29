@@ -45,34 +45,6 @@ private stdin(
     next.ip.get
 
 
-  # creates a stream from a generator function and
-  # a function that determines if the produced value is an allowed next value
-  # note: the generator function is called only once for hasNext/next
-  #
-  private stream_from(T type, generator () -> T, allowed_next T -> bool) stream T is
-
-    val := mut (option T nil)
-
-    read =>
-      if val.get.isNil
-        val <- generator()
-
-    reset =>
-      val <- nil
-
-    ref: stream T
-      redef hasNext bool is
-        read
-        match val.get
-          nil => fuzion.std.panic "this should not be possible"
-          v T => allowed_next v
-      redef next T is
-        read
-        match val.get
-          nil => fuzion.std.panic "this should not be possible"
-          v T => reset; v
-
-
   # read n codepoints from stdin
   # may return less than n bytes if end of file is reached
   # or error if stdin can not be read right now
@@ -81,17 +53,12 @@ private stdin(
   is
     any_error := mut (choice error nil) nil
     tmp : string is
-      is_next (choice u8 end_of_file error) -> bool := ((next) ->
-        match next
-          u8 u8 => true
-          end_of_file end_of_file => false
-          error error => any_error <- error; false)
       redef utf8 Sequence u8 is
-        (stream_from (() -> nextByte) is_next)
-          .map (v ->
-            match v
+        streams.generate u8 (() ->
+            match nextByte
               u8 u8 => u8
-              * => panic "not defined")
+              end_of_file end_of_file => nil
+              error error => any_error <- error; nil)
 
     arr := (tmp.asCodepoints.asStream.take n)
     #  asArray, since we don't want this to be lazy
@@ -110,17 +77,11 @@ private stdin(
     any_error := mut (choice error nil) nil
     got_end_of_file := mut false
 
-    is_next (choice u8 end_of_file error) -> bool := ((next) ->
-      match next
-        u8 u8 => u8 != line_feed
-        end_of_file end_of_file => got_end_of_file <- true; false
-        error error => any_error <- error; false)
-
-    bytes := (stream_from (() -> nextByte) is_next)
-      .map (v ->
-        match v
-          u8 u8 => u8
-          * => panic "not defined")
+    bytes := streams.generate u8 (() ->
+      match nextByte
+        u8 u8 => if u8 != line_feed then u8 else nil
+        end_of_file end_of_file => got_end_of_file <- true; nil
+        error error => any_error <- error; nil)
     #  asArray, since we don't want this to be lazy
       .asArray
 
