@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir.cfg;
 
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import dev.flang.fuir.FUIR;
@@ -46,7 +48,37 @@ public class CFG extends ANY
 {
 
 
+  /*----------------------------  interfaces  ---------------------------*/
+
+
+  interface Intrinsic
+  {
+    void createCallGraph(CFG cfg, int cl);
+  }
+
+
   /*-----------------------------  classes  -----------------------------*/
+
+
+  /*----------------------------  constants  ----------------------------*/
+
+
+  static TreeMap<String, Intrinsic> _intrinsics_ = new TreeMap<>();
+
+
+  /*-------------------------  static methods  --------------------------*/
+
+
+  private static void put(String n, Intrinsic c) { _intrinsics_.put(n, c); }
+
+
+  /**
+   * Get the names of all intrinsics supported by this backend.
+   */
+  public static Set<String> supportedIntrinsics()
+  {
+    return _intrinsics_.keySet();
+  }
 
 
   /*----------------------------  constants  ----------------------------*/
@@ -57,7 +89,7 @@ public class CFG extends ANY
 
 
   /**
-   * The intermediate code we are compiling.
+   * The intermediate code we are analysing.
    */
   public final FUIR _fuir;
 
@@ -127,12 +159,12 @@ public class CFG extends ANY
 
 
   /**
-   * Create code for given clazz cl.
+   * Create call graph for given routine cl
    *
-   * @param cl id of clazz to generate code for
+   * @param cl id of clazz to create call graph for
    *
-   * @param pre true to create code for cl's precondition, false to create code
-   * for cl itself.
+   * @param pre true to creating call graph for cl's precondition, false for cl
+   * itself.
    */
   void createCallGraphForRoutine(int cl, boolean pre)
   {
@@ -151,9 +183,9 @@ public class CFG extends ANY
 
 
   /**
-   * Create code for given intrinsic clazz cl.
+   * Create call graph for given intrinsic clazz cl.
    *
-   * @param cl id of clazz to generate code for
+   * @param cl id of clazz to create call graph for
    *
    */
   void createCallGraphForIntrinsic(int cl)
@@ -161,290 +193,323 @@ public class CFG extends ANY
     if (PRECONDITIONS) require
       (_fuir.clazzKind(cl) == FUIR.FeatureKind.Intrinsic);
     var in = _fuir.clazzIntrinsicName(cl);
-    switch (in)
+    var c = _intrinsics_.get(in);
+    if (c != null)
       {
-      case "safety"              : return;
-      case "debug"               : return;
-      case "debugLevel"          : return;
-      case "fuzion.std.args.count": return;
-      case "fuzion.std.args.get" : return;
-      case "fuzion.std.exit"     : return;
-      case "fuzion.std.out.write": return;
-      case "fuzion.std.err.write": return;
-      case "fuzion.std.out.flush": return;
-      case "fuzion.std.err.flush": return;
-      case "i8.prefix -°"        : return;
-      case "i16.prefix -°"       : return;
-      case "i32.prefix -°"       : return;
-      case "i64.prefix -°"       : return;
-      case "i8.infix -°"         : return;
-      case "i16.infix -°"        : return;
-      case "i32.infix -°"        : return;
-      case "i64.infix -°"        : return;
-      case "i8.infix +°"         : return;
-      case "i16.infix +°"        : return;
-      case "i32.infix +°"        : return;
-      case "i64.infix +°"        : return;
-      case "i8.infix *°"         : return;
-      case "i16.infix *°"        : return;
-      case "i32.infix *°"        : return;
-      case "i64.infix *°"        : return;
-      case "i8.div"              : return;
-      case "i16.div"             : return;
-      case "i32.div"             : return;
-      case "i64.div"             : return;
-      case "i8.mod"              : return;
-      case "i16.mod"             : return;
-      case "i32.mod"             : return;
-      case "i64.mod"             : return;
-      case "i8.infix <<"         : return;
-      case "i16.infix <<"        : return;
-      case "i32.infix <<"        : return;
-      case "i64.infix <<"        : return;
-      case "i8.infix >>"         : return;
-      case "i16.infix >>"        : return;
-      case "i32.infix >>"        : return;
-      case "i64.infix >>"        : return;
-      case "i8.infix &"          : return;
-      case "i16.infix &"         : return;
-      case "i32.infix &"         : return;
-      case "i64.infix &"         : return;
-      case "i8.infix |"          : return;
-      case "i16.infix |"         : return;
-      case "i32.infix |"         : return;
-      case "i64.infix |"         : return;
-      case "i8.infix ^"          : return;
-      case "i16.infix ^"         : return;
-      case "i32.infix ^"         : return;
-      case "i64.infix ^"         : return;
-
-      case "i8.infix =="         : return;
-      case "i16.infix =="        : return;
-      case "i32.infix =="        : return;
-      case "i64.infix =="        : return;
-      case "i8.infix !="         : return;
-      case "i16.infix !="        : return;
-      case "i32.infix !="        : return;
-      case "i64.infix !="        : return;
-      case "i8.infix >"          : return;
-      case "i16.infix >"         : return;
-      case "i32.infix >"         : return;
-      case "i64.infix >"         : return;
-      case "i8.infix >="         : return;
-      case "i16.infix >="        : return;
-      case "i32.infix >="        : return;
-      case "i64.infix >="        : return;
-      case "i8.infix <"          : return;
-      case "i16.infix <"         : return;
-      case "i32.infix <"         : return;
-      case "i64.infix <"         : return;
-      case "i8.infix <="         : return;
-      case "i16.infix <="        : return;
-      case "i32.infix <="        : return;
-      case "i64.infix <="        : return;
-
-      case "u8.prefix -°"        : return;
-      case "u16.prefix -°"       : return;
-      case "u32.prefix -°"       : return;
-      case "u64.prefix -°"       : return;
-      case "u8.infix -°"         : return;
-      case "u16.infix -°"        : return;
-      case "u32.infix -°"        : return;
-      case "u64.infix -°"        : return;
-      case "u8.infix +°"         : return;
-      case "u16.infix +°"        : return;
-      case "u32.infix +°"        : return;
-      case "u64.infix +°"        : return;
-      case "u8.infix *°"         : return;
-      case "u16.infix *°"        : return;
-      case "u32.infix *°"        : return;
-      case "u64.infix *°"        : return;
-      case "u8.div"              : return;
-      case "u16.div"             : return;
-      case "u32.div"             : return;
-      case "u64.div"             : return;
-      case "u8.mod"              : return;
-      case "u16.mod"             : return;
-      case "u32.mod"             : return;
-      case "u64.mod"             : return;
-      case "u8.infix <<"         : return;
-      case "u16.infix <<"        : return;
-      case "u32.infix <<"        : return;
-      case "u64.infix <<"        : return;
-      case "u8.infix >>"         : return;
-      case "u16.infix >>"        : return;
-      case "u32.infix >>"        : return;
-      case "u64.infix >>"        : return;
-      case "u8.infix &"          : return;
-      case "u16.infix &"         : return;
-      case "u32.infix &"         : return;
-      case "u64.infix &"         : return;
-      case "u8.infix |"          : return;
-      case "u16.infix |"         : return;
-      case "u32.infix |"         : return;
-      case "u64.infix |"         : return;
-      case "u8.infix ^"          : return;
-      case "u16.infix ^"         : return;
-      case "u32.infix ^"         : return;
-      case "u64.infix ^"         : return;
-
-      case "u8.infix =="         : return;
-      case "u16.infix =="        : return;
-      case "u32.infix =="        : return;
-      case "u64.infix =="        : return;
-      case "u8.infix !="         : return;
-      case "u16.infix !="        : return;
-      case "u32.infix !="        : return;
-      case "u64.infix !="        : return;
-      case "u8.infix >"          : return;
-      case "u16.infix >"         : return;
-      case "u32.infix >"         : return;
-      case "u64.infix >"         : return;
-      case "u8.infix >="         : return;
-      case "u16.infix >="        : return;
-      case "u32.infix >="        : return;
-      case "u64.infix >="        : return;
-      case "u8.infix <"          : return;
-      case "u16.infix <"         : return;
-      case "u32.infix <"         : return;
-      case "u64.infix <"         : return;
-      case "u8.infix <="         : return;
-      case "u16.infix <="        : return;
-      case "u32.infix <="        : return;
-      case "u64.infix <="        : return;
-
-      case "i8.as_i32"           : return;
-      case "i16.as_i32"          : return;
-      case "i32.as_i64"          : return;
-      case "i32.as_f64"          : return;
-      case "i64.as_f64"          : return;
-      case "u8.as_i32"           : return;
-      case "u16.as_i32"          : return;
-      case "u32.as_i64"          : return;
-      case "u32.as_f64"          : return;
-      case "u64.as_f64"          : return;
-      case "i8.castTo_u8"        : return;
-      case "i16.castTo_u16"      : return;
-      case "i32.castTo_u32"      : return;
-      case "i64.castTo_u64"      : return;
-      case "u8.castTo_i8"        : return;
-      case "u16.castTo_i16"      : return;
-      case "u32.castTo_i32"      : return;
-      case "u32.castTo_f32"      : return;
-      case "u64.castTo_i64"      : return;
-      case "u64.castTo_f64"      : return;
-      case "u16.low8bits"        : return;
-      case "u32.low8bits"        : return;
-      case "u64.low8bits"        : return;
-      case "u32.low16bits"       : return;
-      case "u64.low16bits"       : return;
-      case "u64.low32bits"       : return;
-
-      case "f32.prefix -"        : return;
-      case "f64.prefix -"        : return;
-      case "f32.infix +"         : return;
-      case "f64.infix +"         : return;
-      case "f32.infix -"         : return;
-      case "f64.infix -"         : return;
-      case "f32.infix *"         : return;
-      case "f64.infix *"         : return;
-      case "f32.infix /"         : return;
-      case "f64.infix /"         : return;
-      case "f32.infix %"         : return;
-      case "f64.infix %"         : return;
-      case "f32.infix **"        : return;
-      case "f64.infix **"        : return;
-      case "f32.infix =="        : return;
-      case "f64.infix =="        : return;
-      case "f32.infix !="        : return;
-      case "f64.infix !="        : return;
-      case "f32.infix <"         : return;
-      case "f64.infix <"         : return;
-      case "f32.infix <="        : return;
-      case "f64.infix <="        : return;
-      case "f32.infix >"         : return;
-      case "f64.infix >"         : return;
-      case "f32.infix >="        : return;
-      case "f64.infix >="        : return;
-      case "f32.as_f64"          : return;
-      case "f64.as_f32"          : return;
-      case "f64.as_i64_lax"      : return;
-      case "f32.castTo_u32"      : return;
-      case "f64.castTo_u64"      : return;
-      case "f32.asString"        : return;
-      case "f64.asString"        : return;
-
-      case "f32s.minExp"         : return;
-      case "f32s.maxExp"         : return;
-      case "f32s.minPositive"    : return;
-      case "f32s.max"            : return;
-      case "f32s.epsilon"        : return;
-      case "f64s.minExp"         : return;
-      case "f64s.maxExp"         : return;
-      case "f64s.minPositive"    : return;
-      case "f64s.max"            : return;
-      case "f64s.epsilon"        : return;
-      case "f32s.squareRoot"     : return;
-      case "f64s.squareRoot"     : return;
-      case "f32s.exp"            : return;
-      case "f64s.exp"            : return;
-      case "f32s.log"            : return;
-      case "f64s.log"            : return;
-      case "f32s.sin"            : return;
-      case "f64s.sin"            : return;
-      case "f32s.cos"            : return;
-      case "f64s.cos"            : return;
-      case "f32s.tan"            : return;
-      case "f64s.tan"            : return;
-      case "f32s.asin"           : return;
-      case "f64s.asin"           : return;
-      case "f32s.acos"           : return;
-      case "f64s.acos"           : return;
-      case "f32s.atan"           : return;
-      case "f64s.atan"           : return;
-      case "f32s.sinh"           : return;
-      case "f64s.sinh"           : return;
-      case "f32s.cosh"           : return;
-      case "f64s.cosh"           : return;
-      case "f32s.tanh"           : return;
-      case "f64s.tanh"           : return;
-
-      case "Object.hashCode"     : return;
-      case "Object.asString"     : return;
-      case "fuzion.sys.array.alloc"     : return;
-      case "fuzion.sys.array.setel"     : return;
-      case "fuzion.sys.array.get"       : return;
-      case "fuzion.sys.env_vars.has0"   : return;
-      case "fuzion.sys.env_vars.get0"   : return;
-      case "fuzion.sys.thread.spawn0"   : return; // NYI!
-      case "fuzion.std.nano_sleep"      : return;
-      case "fuzion.std.nano_time"       : return;
-
-      case "effect.replace"      : return;
-      case "effect.default"      : return;
-      case "effect.abortable"    :
-        var oc = _fuir.clazzActualGeneric(cl, 0);
-        var call = _fuir.lookupCall(oc);
-        if (_fuir.clazzNeedsCode(call))
-          {
-            addToCallGraph(cl, call, false);
-          }
-      case "effect.abort"        : return;
-      case "effects.exists"      : return;
-      default:
-        {
-          var at = _fuir.clazzTypeParameterActualType(cl);
-          if (at >= 0)
-            {
-              // intrinsic is a type parameter
-            }
-          else
-            {
-              var msg = "code for intrinsic " + _fuir.clazzIntrinsicName(cl) + " is missing";
-              Errors.warning(msg);
-            }
-        }
+        c.createCallGraph(this, cl);
       }
+    else
+      {
+        var at = _fuir.clazzTypeParameterActualType(cl);
+        if (at >= 0)
+          {
+            // intrinsic is a type parameter
+          }
+        else
+          {
+            var msg = "code for intrinsic " + _fuir.clazzIntrinsicName(cl) + " is missing";
+            Errors.warning(msg);
+          }
+      }
+  }
+
+
+  static
+  {
+    put("safety"                         , (cfg, cl) -> { } );
+    put("debug"                          , (cfg, cl) -> { } );
+    put("debugLevel"                     , (cfg, cl) -> { } );
+    put("fuzion.std.args.count"          , (cfg, cl) -> { } );
+    put("fuzion.std.args.get"            , (cfg, cl) -> { } );
+    put("fuzion.std.exit"                , (cfg, cl) -> { } );
+    put("fuzion.std.out.write"           , (cfg, cl) -> { } );
+    put("fuzion.std.err.write"           , (cfg, cl) -> { } );
+    put("fuzion.std.out.flush"           , (cfg, cl) -> { } );
+    put("fuzion.std.err.flush"           , (cfg, cl) -> { } );
+    put("fuzion.stdin.nextByte"          , (cfg, cl) -> { } );
+    put("i8.prefix -°"                   , (cfg, cl) -> { } );
+    put("i16.prefix -°"                  , (cfg, cl) -> { } );
+    put("i32.prefix -°"                  , (cfg, cl) -> { } );
+    put("i64.prefix -°"                  , (cfg, cl) -> { } );
+    put("i8.infix -°"                    , (cfg, cl) -> { } );
+    put("i16.infix -°"                   , (cfg, cl) -> { } );
+    put("i32.infix -°"                   , (cfg, cl) -> { } );
+    put("i64.infix -°"                   , (cfg, cl) -> { } );
+    put("i8.infix +°"                    , (cfg, cl) -> { } );
+    put("i16.infix +°"                   , (cfg, cl) -> { } );
+    put("i32.infix +°"                   , (cfg, cl) -> { } );
+    put("i64.infix +°"                   , (cfg, cl) -> { } );
+    put("i8.infix *°"                    , (cfg, cl) -> { } );
+    put("i16.infix *°"                   , (cfg, cl) -> { } );
+    put("i32.infix *°"                   , (cfg, cl) -> { } );
+    put("i64.infix *°"                   , (cfg, cl) -> { } );
+    put("i8.div"                         , (cfg, cl) -> { } );
+    put("i16.div"                        , (cfg, cl) -> { } );
+    put("i32.div"                        , (cfg, cl) -> { } );
+    put("i64.div"                        , (cfg, cl) -> { } );
+    put("i8.mod"                         , (cfg, cl) -> { } );
+    put("i16.mod"                        , (cfg, cl) -> { } );
+    put("i32.mod"                        , (cfg, cl) -> { } );
+    put("i64.mod"                        , (cfg, cl) -> { } );
+    put("i8.infix <<"                    , (cfg, cl) -> { } );
+    put("i16.infix <<"                   , (cfg, cl) -> { } );
+    put("i32.infix <<"                   , (cfg, cl) -> { } );
+    put("i64.infix <<"                   , (cfg, cl) -> { } );
+    put("i8.infix >>"                    , (cfg, cl) -> { } );
+    put("i16.infix >>"                   , (cfg, cl) -> { } );
+    put("i32.infix >>"                   , (cfg, cl) -> { } );
+    put("i64.infix >>"                   , (cfg, cl) -> { } );
+    put("i8.infix &"                     , (cfg, cl) -> { } );
+    put("i16.infix &"                    , (cfg, cl) -> { } );
+    put("i32.infix &"                    , (cfg, cl) -> { } );
+    put("i64.infix &"                    , (cfg, cl) -> { } );
+    put("i8.infix |"                     , (cfg, cl) -> { } );
+    put("i16.infix |"                    , (cfg, cl) -> { } );
+    put("i32.infix |"                    , (cfg, cl) -> { } );
+    put("i64.infix |"                    , (cfg, cl) -> { } );
+    put("i8.infix ^"                     , (cfg, cl) -> { } );
+    put("i16.infix ^"                    , (cfg, cl) -> { } );
+    put("i32.infix ^"                    , (cfg, cl) -> { } );
+    put("i64.infix ^"                    , (cfg, cl) -> { } );
+
+    put("i8.infix =="                    , (cfg, cl) -> { } );
+    put("i16.infix =="                   , (cfg, cl) -> { } );
+    put("i32.infix =="                   , (cfg, cl) -> { } );
+    put("i64.infix =="                   , (cfg, cl) -> { } );
+    put("i8.infix !="                    , (cfg, cl) -> { } );
+    put("i16.infix !="                   , (cfg, cl) -> { } );
+    put("i32.infix !="                   , (cfg, cl) -> { } );
+    put("i64.infix !="                   , (cfg, cl) -> { } );
+    put("i8.infix >"                     , (cfg, cl) -> { } );
+    put("i16.infix >"                    , (cfg, cl) -> { } );
+    put("i32.infix >"                    , (cfg, cl) -> { } );
+    put("i64.infix >"                    , (cfg, cl) -> { } );
+    put("i8.infix >="                    , (cfg, cl) -> { } );
+    put("i16.infix >="                   , (cfg, cl) -> { } );
+    put("i32.infix >="                   , (cfg, cl) -> { } );
+    put("i64.infix >="                   , (cfg, cl) -> { } );
+    put("i8.infix <"                     , (cfg, cl) -> { } );
+    put("i16.infix <"                    , (cfg, cl) -> { } );
+    put("i32.infix <"                    , (cfg, cl) -> { } );
+    put("i64.infix <"                    , (cfg, cl) -> { } );
+    put("i8.infix <="                    , (cfg, cl) -> { } );
+    put("i16.infix <="                   , (cfg, cl) -> { } );
+    put("i32.infix <="                   , (cfg, cl) -> { } );
+    put("i64.infix <="                   , (cfg, cl) -> { } );
+
+    put("u8.prefix -°"                   , (cfg, cl) -> { } );
+    put("u16.prefix -°"                  , (cfg, cl) -> { } );
+    put("u32.prefix -°"                  , (cfg, cl) -> { } );
+    put("u64.prefix -°"                  , (cfg, cl) -> { } );
+    put("u8.infix -°"                    , (cfg, cl) -> { } );
+    put("u16.infix -°"                   , (cfg, cl) -> { } );
+    put("u32.infix -°"                   , (cfg, cl) -> { } );
+    put("u64.infix -°"                   , (cfg, cl) -> { } );
+    put("u8.infix +°"                    , (cfg, cl) -> { } );
+    put("u16.infix +°"                   , (cfg, cl) -> { } );
+    put("u32.infix +°"                   , (cfg, cl) -> { } );
+    put("u64.infix +°"                   , (cfg, cl) -> { } );
+    put("u8.infix *°"                    , (cfg, cl) -> { } );
+    put("u16.infix *°"                   , (cfg, cl) -> { } );
+    put("u32.infix *°"                   , (cfg, cl) -> { } );
+    put("u64.infix *°"                   , (cfg, cl) -> { } );
+    put("u8.div"                         , (cfg, cl) -> { } );
+    put("u16.div"                        , (cfg, cl) -> { } );
+    put("u32.div"                        , (cfg, cl) -> { } );
+    put("u64.div"                        , (cfg, cl) -> { } );
+    put("u8.mod"                         , (cfg, cl) -> { } );
+    put("u16.mod"                        , (cfg, cl) -> { } );
+    put("u32.mod"                        , (cfg, cl) -> { } );
+    put("u64.mod"                        , (cfg, cl) -> { } );
+    put("u8.infix <<"                    , (cfg, cl) -> { } );
+    put("u16.infix <<"                   , (cfg, cl) -> { } );
+    put("u32.infix <<"                   , (cfg, cl) -> { } );
+    put("u64.infix <<"                   , (cfg, cl) -> { } );
+    put("u8.infix >>"                    , (cfg, cl) -> { } );
+    put("u16.infix >>"                   , (cfg, cl) -> { } );
+    put("u32.infix >>"                   , (cfg, cl) -> { } );
+    put("u64.infix >>"                   , (cfg, cl) -> { } );
+    put("u8.infix &"                     , (cfg, cl) -> { } );
+    put("u16.infix &"                    , (cfg, cl) -> { } );
+    put("u32.infix &"                    , (cfg, cl) -> { } );
+    put("u64.infix &"                    , (cfg, cl) -> { } );
+    put("u8.infix |"                     , (cfg, cl) -> { } );
+    put("u16.infix |"                    , (cfg, cl) -> { } );
+    put("u32.infix |"                    , (cfg, cl) -> { } );
+    put("u64.infix |"                    , (cfg, cl) -> { } );
+    put("u8.infix ^"                     , (cfg, cl) -> { } );
+    put("u16.infix ^"                    , (cfg, cl) -> { } );
+    put("u32.infix ^"                    , (cfg, cl) -> { } );
+    put("u64.infix ^"                    , (cfg, cl) -> { } );
+
+    put("u8.infix =="                    , (cfg, cl) -> { } );
+    put("u16.infix =="                   , (cfg, cl) -> { } );
+    put("u32.infix =="                   , (cfg, cl) -> { } );
+    put("u64.infix =="                   , (cfg, cl) -> { } );
+    put("u8.infix !="                    , (cfg, cl) -> { } );
+    put("u16.infix !="                   , (cfg, cl) -> { } );
+    put("u32.infix !="                   , (cfg, cl) -> { } );
+    put("u64.infix !="                   , (cfg, cl) -> { } );
+    put("u8.infix >"                     , (cfg, cl) -> { } );
+    put("u16.infix >"                    , (cfg, cl) -> { } );
+    put("u32.infix >"                    , (cfg, cl) -> { } );
+    put("u64.infix >"                    , (cfg, cl) -> { } );
+    put("u8.infix >="                    , (cfg, cl) -> { } );
+    put("u16.infix >="                   , (cfg, cl) -> { } );
+    put("u32.infix >="                   , (cfg, cl) -> { } );
+    put("u64.infix >="                   , (cfg, cl) -> { } );
+    put("u8.infix <"                     , (cfg, cl) -> { } );
+    put("u16.infix <"                    , (cfg, cl) -> { } );
+    put("u32.infix <"                    , (cfg, cl) -> { } );
+    put("u64.infix <"                    , (cfg, cl) -> { } );
+    put("u8.infix <="                    , (cfg, cl) -> { } );
+    put("u16.infix <="                   , (cfg, cl) -> { } );
+    put("u32.infix <="                   , (cfg, cl) -> { } );
+    put("u64.infix <="                   , (cfg, cl) -> { } );
+
+    put("i8.as_i32"                      , (cfg, cl) -> { } );
+    put("i16.as_i32"                     , (cfg, cl) -> { } );
+    put("i32.as_i64"                     , (cfg, cl) -> { } );
+    put("i32.as_f64"                     , (cfg, cl) -> { } );
+    put("i64.as_f64"                     , (cfg, cl) -> { } );
+    put("u8.as_i32"                      , (cfg, cl) -> { } );
+    put("u16.as_i32"                     , (cfg, cl) -> { } );
+    put("u32.as_i64"                     , (cfg, cl) -> { } );
+    put("u32.as_f64"                     , (cfg, cl) -> { } );
+    put("u64.as_f64"                     , (cfg, cl) -> { } );
+    put("i8.castTo_u8"                   , (cfg, cl) -> { } );
+    put("i16.castTo_u16"                 , (cfg, cl) -> { } );
+    put("i32.castTo_u32"                 , (cfg, cl) -> { } );
+    put("i64.castTo_u64"                 , (cfg, cl) -> { } );
+    put("u8.castTo_i8"                   , (cfg, cl) -> { } );
+    put("u16.castTo_i16"                 , (cfg, cl) -> { } );
+    put("u32.castTo_i32"                 , (cfg, cl) -> { } );
+    put("u32.castTo_f32"                 , (cfg, cl) -> { } );
+    put("u64.castTo_i64"                 , (cfg, cl) -> { } );
+    put("u64.castTo_f64"                 , (cfg, cl) -> { } );
+    put("u16.low8bits"                   , (cfg, cl) -> { } );
+    put("u32.low8bits"                   , (cfg, cl) -> { } );
+    put("u64.low8bits"                   , (cfg, cl) -> { } );
+    put("u32.low16bits"                  , (cfg, cl) -> { } );
+    put("u64.low16bits"                  , (cfg, cl) -> { } );
+    put("u64.low32bits"                  , (cfg, cl) -> { } );
+
+    put("f32.prefix -"                   , (cfg, cl) -> { } );
+    put("f64.prefix -"                   , (cfg, cl) -> { } );
+    put("f32.infix +"                    , (cfg, cl) -> { } );
+    put("f64.infix +"                    , (cfg, cl) -> { } );
+    put("f32.infix -"                    , (cfg, cl) -> { } );
+    put("f64.infix -"                    , (cfg, cl) -> { } );
+    put("f32.infix *"                    , (cfg, cl) -> { } );
+    put("f64.infix *"                    , (cfg, cl) -> { } );
+    put("f32.infix /"                    , (cfg, cl) -> { } );
+    put("f64.infix /"                    , (cfg, cl) -> { } );
+    put("f32.infix %"                    , (cfg, cl) -> { } );
+    put("f64.infix %"                    , (cfg, cl) -> { } );
+    put("f32.infix **"                   , (cfg, cl) -> { } );
+    put("f64.infix **"                   , (cfg, cl) -> { } );
+    put("f32.infix =="                   , (cfg, cl) -> { } );
+    put("f64.infix =="                   , (cfg, cl) -> { } );
+    put("f32.infix !="                   , (cfg, cl) -> { } );
+    put("f64.infix !="                   , (cfg, cl) -> { } );
+    put("f32.infix <"                    , (cfg, cl) -> { } );
+    put("f64.infix <"                    , (cfg, cl) -> { } );
+    put("f32.infix <="                   , (cfg, cl) -> { } );
+    put("f64.infix <="                   , (cfg, cl) -> { } );
+    put("f32.infix >"                    , (cfg, cl) -> { } );
+    put("f64.infix >"                    , (cfg, cl) -> { } );
+    put("f32.infix >="                   , (cfg, cl) -> { } );
+    put("f64.infix >="                   , (cfg, cl) -> { } );
+    put("f32.as_f64"                     , (cfg, cl) -> { } );
+    put("f64.as_f32"                     , (cfg, cl) -> { } );
+    put("f64.as_i64_lax"                 , (cfg, cl) -> { } );
+    put("f32.castTo_u32"                 , (cfg, cl) -> { } );
+    put("f64.castTo_u64"                 , (cfg, cl) -> { } );
+    put("f32.asString"                   , (cfg, cl) -> { } );
+    put("f64.asString"                   , (cfg, cl) -> { } );
+
+    put("f32s.minExp"                    , (cfg, cl) -> { } );
+    put("f32s.maxExp"                    , (cfg, cl) -> { } );
+    put("f32s.minPositive"               , (cfg, cl) -> { } );
+    put("f32s.max"                       , (cfg, cl) -> { } );
+    put("f32s.epsilon"                   , (cfg, cl) -> { } );
+    put("f32s.isNaN"                     , (cfg, cl) -> { } );
+    put("f64s.isNaN"                     , (cfg, cl) -> { } );
+    put("f64s.minExp"                    , (cfg, cl) -> { } );
+    put("f64s.maxExp"                    , (cfg, cl) -> { } );
+    put("f64s.minPositive"               , (cfg, cl) -> { } );
+    put("f64s.max"                       , (cfg, cl) -> { } );
+    put("f64s.epsilon"                   , (cfg, cl) -> { } );
+    put("f32s.squareRoot"                , (cfg, cl) -> { } );
+    put("f64s.squareRoot"                , (cfg, cl) -> { } );
+    put("f32s.exp"                       , (cfg, cl) -> { } );
+    put("f64s.exp"                       , (cfg, cl) -> { } );
+    put("f32s.log"                       , (cfg, cl) -> { } );
+    put("f64s.log"                       , (cfg, cl) -> { } );
+    put("f32s.sin"                       , (cfg, cl) -> { } );
+    put("f64s.sin"                       , (cfg, cl) -> { } );
+    put("f32s.cos"                       , (cfg, cl) -> { } );
+    put("f64s.cos"                       , (cfg, cl) -> { } );
+    put("f32s.tan"                       , (cfg, cl) -> { } );
+    put("f64s.tan"                       , (cfg, cl) -> { } );
+    put("f32s.asin"                      , (cfg, cl) -> { } );
+    put("f64s.asin"                      , (cfg, cl) -> { } );
+    put("f32s.acos"                      , (cfg, cl) -> { } );
+    put("f64s.acos"                      , (cfg, cl) -> { } );
+    put("f32s.atan"                      , (cfg, cl) -> { } );
+    put("f64s.atan"                      , (cfg, cl) -> { } );
+    put("f32s.atan2"                     , (cfg, cl) -> { } );
+    put("f64s.atan2"                     , (cfg, cl) -> { } );
+    put("f32s.sinh"                      , (cfg, cl) -> { } );
+    put("f64s.sinh"                      , (cfg, cl) -> { } );
+    put("f32s.cosh"                      , (cfg, cl) -> { } );
+    put("f64s.cosh"                      , (cfg, cl) -> { } );
+    put("f32s.tanh"                      , (cfg, cl) -> { } );
+    put("f64s.tanh"                      , (cfg, cl) -> { } );
+
+    put("Object.hashCode"                , (cfg, cl) -> { } );
+    put("Object.asString"                , (cfg, cl) -> { } );
+    put("fuzion.sys.array.alloc"         , (cfg, cl) -> { } );
+    put("fuzion.sys.array.setel"         , (cfg, cl) -> { } );
+    put("fuzion.sys.array.get"           , (cfg, cl) -> { } );
+    put("fuzion.sys.env_vars.has0"       , (cfg, cl) -> { } );
+    put("fuzion.sys.env_vars.get0"       , (cfg, cl) -> { } );
+    put("fuzion.sys.thread.spawn0"       , (cfg, cl) -> { } );
+    put("fuzion.std.nano_sleep"          , (cfg, cl) -> { } );
+    put("fuzion.std.nano_time"           , (cfg, cl) -> { } );
+
+    put("effect.replace"                 , (cfg, cl) -> { } );
+    put("effect.default"                 , (cfg, cl) -> { } );
+    put("effect.abortable"               , (cfg, cl) ->
+        {
+          var oc = cfg._fuir.clazzActualGeneric(cl, 0);
+          var call = cfg._fuir.lookupCall(oc);
+          if (cfg._fuir.clazzNeedsCode(call))
+            {
+              cfg.addToCallGraph(cl, call, false);
+            }
+        });
+    put("effect.abort"                   , (cfg, cl) -> { } );
+    put("effects.exists"                 , (cfg, cl) -> { } );
+    put("fuzion.java.JavaObject.isNull"  , (cfg, cl) -> { } );
+    put("fuzion.java.arrayGet"           , (cfg, cl) -> { } );
+    put("fuzion.java.arrayLength"        , (cfg, cl) -> { } );
+    put("fuzion.java.arrayToJavaObject0" , (cfg, cl) -> { } );
+    put("fuzion.java.boolToJavaObject"   , (cfg, cl) -> { } );
+    put("fuzion.java.callC0"             , (cfg, cl) -> { } );
+    put("fuzion.java.callS0"             , (cfg, cl) -> { } );
+    put("fuzion.java.callV0"             , (cfg, cl) -> { } );
+    put("fuzion.java.f32ToJavaObject"    , (cfg, cl) -> { } );
+    put("fuzion.java.f64ToJavaObject"    , (cfg, cl) -> { } );
+    put("fuzion.java.getField0"          , (cfg, cl) -> { } );
+    put("fuzion.java.getStaticField0"    , (cfg, cl) -> { } );
+    put("fuzion.java.i16ToJavaObject"    , (cfg, cl) -> { } );
+    put("fuzion.java.i32ToJavaObject"    , (cfg, cl) -> { } );
+    put("fuzion.java.i64ToJavaObject"    , (cfg, cl) -> { } );
+    put("fuzion.java.i8ToJavaObject"     , (cfg, cl) -> { } );
+    put("fuzion.java.javaStringToString" , (cfg, cl) -> { } );
+    put("fuzion.java.stringToJavaObject0", (cfg, cl) -> { } );
+    put("fuzion.java.u16ToJavaObject"    , (cfg, cl) -> { } );
   }
 
 
@@ -490,7 +555,7 @@ public class CFG extends ANY
           var cc0 = _fuir.accessedClazz  (cl, c, i);
           if (_fuir.clazzContract(cc0, FUIR.ContractKind.Pre, 0) != -1)
             {
-             call(cl, cc0, true);
+              call(cl, cc0, true);
             }
           if (!_fuir.callPreconditionOnly(cl, c, i))
             {
@@ -500,7 +565,6 @@ public class CFG extends ANY
         }
       case Comment: break;
       case Current: break;
-      case Outer  : break;
       case Const  : break;
       case Match  :
         {

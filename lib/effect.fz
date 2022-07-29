@@ -32,7 +32,7 @@
 effect (
   # action to be performed, may include code to run while this effect is installed.
   #
-  r effectModes
+  r effectMode.val
   )
 is
 
@@ -42,11 +42,12 @@ is
     _ effectMode.repl    => replace
     _ effectMode.abort   => fuzion.std.panic "abort"
     _ effectMode.default => default
+    _ effectMode.new     =>
 
-  mode effectModes is
+  mode effectMode.val is
     match r
-      _ effectMode.plain => effectMode.plain
-      effectMode.inst, effectMode.repl, effectMode.abort, effectMode.default => effectMode.repl
+      effectMode.plain => effectMode.plain
+      effectMode.inst, effectMode.repl, effectMode.abort, effectMode.default, effectMode.new => effectMode.repl
 
   # replace effect in the current context by this
   private replace unit is intrinsic
@@ -70,7 +71,7 @@ is
   #
   private run<R>(f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effecs' uses DFA */)->R) R is
     res option<R> := nil
-    cf := (effect_call f)
+    cf := effect_call f
     abortable cf
     match cf.res
       nil => def(unit)
@@ -81,6 +82,25 @@ is
   # abortable with result == false.
   #
   return void is abort
+
+
+  # install this effect and run code.
+  #
+  # NYI: Currently, there is no direct way to return a result value
+  # from the code.
+  #
+  private use0(
+      # the code to be executed within this effect.  This is typically
+      # redefined as an argument field of a sub-feature of effect.
+      code ()->unit
+     )
+    pre
+      match mode
+        effectMode.new => true
+        * => false
+  is
+    abortable (effect_call code)
+
 
 # helper instance for effect.aboratable to wrap call to f() into a ()->unit
 #
@@ -94,22 +114,18 @@ effects is
   # has an effect of the given type been installed?
   exists<E> bool is intrinsic
 
+
+# effect mode is an enum that determines how an instance of effect is used
+#
 effectMode is
-  plain is
-  inst(f ()->unit) is
-  repl is
-  abort is
-  default is
 
-effectModes : choice<effectMode.plain,
-                     effectMode.inst,
-                     effectMode.repl,
-                     effectMode.abort,
-                     effectMode.default>
-is
-
-
-
+  val : choice of
+    plain,             # a plain effect, not installed as 'env'
+    repl,              # effect instance replaces previous one in 'env'
+    abort,             # effect instance aborts, jump back to where 'env' was installed
+    default,           # install as default. NYI: remove and use 'new' instead, see io.stdin.fz
+    new.               # a new effect to be installed
+    inst(f ()->unit).  # install and run 'f'. NYI: remove and use 'new' instead, see io.stdin.fz
 
 
 effect : effect (effectMode.inst code)

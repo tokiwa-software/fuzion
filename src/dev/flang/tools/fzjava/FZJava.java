@@ -178,7 +178,7 @@ public class FZJava extends Tool
 
   /**
    * Create Fuzion features to interface Java code.  Called after arguments have
-   * been parsted successfully.
+   * been parsed successfully.
    */
   void execute()
   {

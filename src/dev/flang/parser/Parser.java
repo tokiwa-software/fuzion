@@ -340,7 +340,7 @@ field       : returnType
               }
             else
               {
-                ((Call)ic).generics = ng;
+                ((Call)ic)._generics = ng;
               }
           }
         p = new Impl(p.pos, new Block(p.pos, new List<>()), Impl.Kind.Routine);
@@ -639,7 +639,7 @@ name        : IDENT                            // all parts of name must be in s
           case t_ident  : result = identifier(mayBeAtMinIndent); next(); break;
           case t_infix  :
           case t_prefix :
-          case t_postfix: result = opName();  break;
+          case t_postfix: result = opName(mayBeAtMinIndent);  break;
           case t_ternary:
             {
               next();
@@ -759,11 +759,12 @@ opName      : "infix"   op
             | "prefix"  op
             | "postfix" op
             ;
+   * @param mayBeAtMinIndent
    *
    */
-  String opName()
+  String opName(boolean mayBeAtMinIndent)
   {
-    String inPrePost = current().keyword();
+    String inPrePost = current(mayBeAtMinIndent).keyword();
     next();
     String n = inPrePost + " " + operatorOrError();
     match(Token.t_op, "infix/prefix/postfix name");
@@ -2336,7 +2337,16 @@ fun         : "fun" function
       }
     else
       {
-        result = new Function(pos, call(null));
+        var c = call(null);
+        if (c.actuals().size() == 0)
+          {
+            result = new Function(pos, c);
+          }
+        else
+          {
+            syntaxError(c.pos().bytePos(), "call without actual arguments", "fun");
+            result = c;
+          }
       }
     return result;
   }
@@ -2425,10 +2435,18 @@ match       : "match" exprInLine BRACEL cases BRACER
         match(Token.t_match, "match");
         Expr e = exprInLine();
         boolean gotLBrace = skip(true, Token.t_lbrace);
+        var start = posObject();
+        var cpos = posObject();
         var c = cases(true);
+        var end = posObject();
         if (gotLBrace)
           {
             match(true, Token.t_rbrace, "match");
+          }
+        if (c.isEmpty())
+          {
+            AstErrors.matchCasesMissing(cpos, pos);
+            return new Block(pos, new List<>());
           }
         return new Match(pos, e, c);
       });
@@ -3963,7 +3981,7 @@ typeInParens: "(" typeInParens ")"
           }
         else
           {
-            syntaxError(pos, "exaclty one type", "typeInParens");
+            syntaxError(pos, "exactly one type", "typeInParens");
             result = Types.t_ERROR;
           }
       }

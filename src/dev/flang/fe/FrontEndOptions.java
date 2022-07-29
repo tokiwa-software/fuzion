@@ -111,7 +111,7 @@ public class FrontEndOptions extends FuzionOptions
     if (PRECONDITIONS) require
                          (verbose >= 0,
                           fuzionHome != null,
-                          readStdin || main != null || saveBaseLib != null,
+                          readStdin || main != null || saveBaseLib != null || !loadSources,
                           !readStdin || main == null,
                           saveBaseLib == null || !readStdin && main == null,
                           modules != null);

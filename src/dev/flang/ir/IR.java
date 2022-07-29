@@ -111,7 +111,6 @@ public class IR extends ANY
     Const,
     Dup,
     Match,
-    Outer,
     Tag,
     Env,
     Pop,
@@ -131,7 +130,7 @@ public class IR extends ANY
   }
 
 
-  protected final Map2Int<List<Object>> _codeIds = new Map2Int(CODE_BASE);
+  protected final Map2Int<List<Object>> _codeIds;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -139,6 +138,19 @@ public class IR extends ANY
 
   public IR()
   {
+    _codeIds = new Map2Int(CODE_BASE);
+  }
+
+  /**
+   * Clone this IR such that modifications can be made by optimizers.  A heir of
+   * IR can use this to redefine some methods while reusing the data from
+   * orignal for all the rest.
+   *
+   * @param original the original IR instance that we are cloning.
+   */
+  protected IR(IR original)
+  {
+    _codeIds = original._codeIds;
   }
 
 
@@ -232,23 +244,8 @@ public class IR extends ANY
         // if is converted to If, blockId, elseBlockId
         toStack(l, i.cond);
         l.add(i);
-        List<Object> block = toStack(i.block);
-        l.add(new NumLiteral(_codeIds.add(block)));
-        Stmnt elseBlock;
-        if (i.elseBlock != null)
-          {
-            elseBlock = i.elseBlock;
-          }
-        else if (i.elseIf != null)
-          {
-            elseBlock = i.elseIf;
-          }
-        else
-          {
-            elseBlock = new Block(i.pos(), new List<>());
-          }
-        List<Object> elseBlockCode = toStack(elseBlock);
-        l.add(new NumLiteral(_codeIds.add(elseBlockCode)));
+        l.add(new NumLiteral(_codeIds.add(toStack(i.block      ))));
+        l.add(new NumLiteral(_codeIds.add(toStack(i.elseBlock()))));
       }
     else if (s instanceof AbstractCall c)
       {
@@ -303,6 +300,20 @@ public class IR extends ANY
       {
         System.err.println("Missing handling of "+s.getClass()+" in FUIR.toStack");
       }
+  }
+
+
+  /**
+   * Get size of given code
+   *
+   * @param c an index of a code block
+   *
+   * @return the size of code block c, i.e., withinCode(c, 0..result-1) <==> true.
+   */
+  public int codeSize(int c)
+  {
+    var code = _codeIds.get(c);
+    return code.size();
   }
 
 

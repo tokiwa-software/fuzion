@@ -28,6 +28,7 @@ package dev.flang.ast;
 
 import java.util.Iterator;
 
+import dev.flang.util.Errors;
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
@@ -210,12 +211,21 @@ public class This extends ExprWithPos
     if (qual_ != null)
       {
         int d = getThisDepth(outer);
-        AbstractFeature f = outer;
-        for (int i=0; i<d; i++)
+        if (d < 0)
           {
-            f = f.outer();
+            if (CHECKS) check
+              (Errors.count() > 0);
+            this.feature_ = Types.f_ERROR;
           }
-        this.feature_ = f;
+        else
+          {
+            var f = outer;
+            for (int i=0; i<d; i++)
+              {
+                f = f.outer();
+              }
+            this.feature_ = f;
+          }
       }
     else
       {
@@ -239,17 +249,22 @@ public class This extends ExprWithPos
          */
         var cur = cur_ == null ? outer : cur_;
         getOuter = new Current(pos(), cur.thisType());
-        while (cur != f)
+        while (f != Types.f_ERROR && cur != f)
           {
             var or = cur.outerRef();
-            Expr c = new Call(pos(), or.featureName().baseName(), Call.NO_GENERICS, Expr.NO_EXPRS, getOuter, or, null)
-              .resolveTypes(res, outer);
-            if (cur.isOuterRefAdrOfValue())
+            if (CHECKS) check
+              (Errors.count() > 0 || (or != null));
+            if (or != null)
               {
-                c = new Unbox(c, cur.outer().thisType(), cur.outer())
-                  { public SourcePosition pos() { return This.this.pos(); } };
+                Expr c = new Call(pos(), or.featureName().baseName(), Call.NO_GENERICS, Expr.NO_EXPRS, getOuter, or, null)
+                  .resolveTypes(res, outer);
+                if (cur.isOuterRefAdrOfValue())
+                  {
+                    c = new Unbox(c, cur.outer().thisType(), cur.outer())
+                      { public SourcePosition pos() { return This.this.pos(); } };
+                  }
+                getOuter = c;
               }
-            getOuter = c;
             cur = cur.outer();
           }
       }

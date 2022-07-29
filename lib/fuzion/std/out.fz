@@ -36,8 +36,8 @@ public fuzion.std.out is
   public println =>
     write [u8 10]
 
-  private write(sys_arr array<u8>) =>
-    write sys_arr.internalArray.data sys_arr.length
+  private write(arr array<u8>) =>
+    write arr.internalArray.data arr.length
 
   private write(arrayData Object, length i32) unit is intrinsic
   private flush unit is intrinsic

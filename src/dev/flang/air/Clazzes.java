@@ -383,7 +383,7 @@ public class Clazzes extends ANY
    */
   public static void findAllClasses(Clazz main)
   {
-    var toLayout = new List<Clazz>();
+    var toLayout = new LinkedList<Clazz>();
     int clazzCount = 0;
 
     // make sure internally referenced clazzes do exist:
@@ -509,7 +509,7 @@ public class Clazzes extends ANY
   static void calledDynamically(AbstractFeature f)
   {
     if (PRECONDITIONS) require
-      (isUsedAtAll(f),
+      (Errors.count() > 0 || isUsedAtAll(f),
        f.generics().list.isEmpty());
 
     if (!_calledDynamically_.contains(f))
@@ -641,14 +641,15 @@ public class Clazzes extends ANY
   static int getRuntimeClazzIds(int count)
   {
     if (PRECONDITIONS) require
-      (runtimeClazzIdCount() <= Integer.MAX_VALUE - count);
+      (runtimeClazzIdCount() <= Integer.MAX_VALUE - count,
+       count >= 0);
 
     int result = runtimeClazzIdCount_;
     runtimeClazzIdCount_ = result + count;
 
     if (POSTCONDITIONS) ensure
-                          (result >= 0,
-                           result < runtimeClazzIdCount());
+      (result >= 0,
+       result + count <= runtimeClazzIdCount());
 
     return result;
   }

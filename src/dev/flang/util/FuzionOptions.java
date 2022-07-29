@@ -71,7 +71,7 @@ public class FuzionOptions extends ANY
   public FuzionOptions(int verbose, int fuzionDebugLevel, boolean fuzionSafety)
   {
     if (PRECONDITIONS) require
-                         (verbose >= 0);
+      (verbose >= 0);
 
     _verbose = verbose;
     _fuzionDebugLevel = fuzionDebugLevel;

@@ -519,7 +519,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    */
   public boolean hasTypeFeature()
   {
-    return _typeFeature != null || existingTypeFeature() != null;
+    return _typeFeature != null || existingTypeFeature() != null || this == Types.f_ERROR;
   }
 
 
@@ -533,7 +533,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
     if (_typeFeature == null)
       {
-        _typeFeature = existingTypeFeature();
+        _typeFeature = this == Types.f_ERROR ? this : existingTypeFeature();
       }
     return _typeFeature;
   }
@@ -617,20 +617,6 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * Type resolution for a feature f: For all expressions and statements in f's
-   * inheritance clause, contract, and implementation, determine the static type
-   * of the expression. Were needed, perform type inference. Schedule f for
-   * syntactic sugar resolution.
-   *
-   * @param res this is called during type resolution, res gives the resolution
-   * instance.
-   */
-  void resolveTypes(Resolution res)
-  {
-  }
-
-
-  /**
    * In case this has not been resolved for types yet, do so. Next, try to
    * determine the result type of this feature. If the type is not explicit, but
    * needs to be inferenced, the result might still be null. Inferenced types
@@ -647,8 +633,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   {
     if (!state().atLeast(Feature.State.RESOLVING_TYPES))
       {
-        res.resolveDeclarations(this);
-        resolveTypes(res);
+        res.resolveTypes(this);
       }
     var result = resultTypeRaw(generics);
     if (result != null && result instanceof Type rt)
@@ -866,6 +851,9 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    * Due to open generics, even the number of types may change through
    * inheritance.
    *
+   * @param res resolution instance, required only when run in front end phase,
+   * null otherwise.
+   *
    * @param a an array of types to be handed down
    *
    * @param heir a feature that inhertis from outer()
@@ -901,7 +889,10 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
                   }
                 else
                   {
-                    FormalGenerics.resolve(res, c.generics(), heir);
+                    if (res != null)
+                      {
+                        FormalGenerics.resolve(res, c.generics(), heir);
+                      }
                     ti = ti.actualType(c.calledFeature(), c.generics());
                     a[i] = Types.intern(ti);
                   }

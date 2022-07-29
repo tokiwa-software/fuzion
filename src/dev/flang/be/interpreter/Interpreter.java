@@ -413,7 +413,7 @@ public class Interpreter extends ANY
           }
         else
           {
-            tag = getField(sf.choiceTag(), staticSubjectClazz, sub).i32Value();
+            tag = getField(sf.choiceTag(), staticSubjectClazz, sub, false).i32Value();
           }
         Clazz subjectClazz = tag < 0
           ? ((ValueWithClazz) refVal).clazz()
@@ -522,10 +522,12 @@ public class Interpreter extends ANY
                     f = vc.lookup(f, dev.flang.ast.Call.NO_GENERICS, Clazzes.isUsedAt(f)).feature();
                     if (Clazzes.isUsed(f, vc))
                       {
-                        Value v = getField(f, vc, val);
+                        Value v = getField(f, vc, val, true /* allow for uninitialized ref field */);
                         // NYI: Check that this works well for internal fields such as choice tags.
-                        // System.out.println("Box "+vc+" => "+rc+" copying "+f.qualifiedName()+" "+v);
-                        setField(f, -1, rc, result, v);
+                        if (v != null)
+                          {
+                            setField(f, -1, rc, result, v);
+                          }
                       }
                   }
               }
@@ -760,7 +762,7 @@ public class Interpreter extends ANY
                       result = (args) ->
                         {
                           LValue slot = fieldSlot(f, -1, outerClazz, fclazz, args.get(0));
-                          return loadField(f, fclazz, slot);
+                          return loadField(f, fclazz, slot, false);
                         };
                     }
                   else if (true) // NYI: offset might not have been set yet, so for now, cache it dynamically at runtime
@@ -775,7 +777,7 @@ public class Interpreter extends ANY
                                 off = Layout.get(outerClazz).offset(innerClazz);
                               }
                             var slot = args.get(0).at(fclazz, off);
-                            return loadField(f, fclazz, slot);
+                            return loadField(f, fclazz, slot, false);
                           }
                         };
                     }
@@ -785,7 +787,7 @@ public class Interpreter extends ANY
                       result = (args) ->
                         {
                           var slot = args.get(0).at(fclazz, off);
-                          return loadField(f, fclazz, slot);
+                          return loadField(f, fclazz, slot, false);
                         };
                     }
                 }
@@ -948,7 +950,7 @@ public class Interpreter extends ANY
     FuzionThread.current()._callStackFrames.pop();
 
     return thiz.isConstructor() ? cur
-                                : getField(thiz.resultField(), staticClazz, cur);
+                                : getField(thiz.resultField(), staticClazz, cur, false);
   }
 
 
@@ -1021,7 +1023,7 @@ public class Interpreter extends ANY
 
     int offset  = Layout.get(choiceClazz).choiceRefValOffset();
     LValue slot = choice.at(Clazzes.object.get(), offset);
-    return loadRefField(thiz, slot);
+    return loadRefField(thiz, slot, false);
   }
 
 
@@ -1044,7 +1046,7 @@ public class Interpreter extends ANY
 
     Clazz  vclazz = choiceClazz.getChoiceClazz(tag);
     LValue slot   = choice.at(vclazz, Layout.get(choiceClazz).choiceValOffset(tag));
-    return loadField(thiz, vclazz, slot);
+    return loadField(thiz, vclazz, slot, false);
   }
 
 
@@ -1054,8 +1056,11 @@ public class Interpreter extends ANY
    * @param thiz a field
    *
    * @param v a value
+   *
+   * @param allowUninitializedRefField true if a ref field may be not
+   * initialized (e.g., when boxing this).
    */
-  private static boolean valueTypeMatches(AbstractFeature thiz, Value v)
+  private static boolean valueTypeMatches(AbstractFeature thiz, Value v, boolean allowUninitializedRefField)
   {
     return
       v instanceof Instance                                            /* a normal ref type     */ ||
@@ -1072,7 +1077,8 @@ public class Interpreter extends ANY
        v instanceof u64Value ||
        v instanceof f32Value ||
        v instanceof f64Value   ) && thiz.isOuterRef()     /* e.g. outerref in integer.infix /-/ */ ||
-      v == null                  && thiz.isChoice()                /* Nil/Null boxed choice tag */;
+      v == null                  && thiz.isChoice()                /* Nil/Null boxed choice tag */ ||
+      v == null                  && allowUninitializedRefField;
   }
 
 
@@ -1084,8 +1090,11 @@ public class Interpreter extends ANY
    * @return the value that was loaded from the field, of type Instance for
    * normal refs, of type ChoiceIdAsRef, LValue or null for boxed choice tag or
    * ref to outer instance.
+   *
+   * @param allowUninitializedRefField true if a ref field may be not
+   * initialized (e.g., when boxing this).
    */
-  private static Value loadRefField(AbstractFeature thiz, LValue slot)
+  private static Value loadRefField(AbstractFeature thiz, LValue slot, boolean allowUninitializedRefField)
   {
     if (PRECONDITIONS) require
       (slot != null);
@@ -1093,7 +1102,7 @@ public class Interpreter extends ANY
     Value result = slot.container.refs[slot.offset];
 
     if (POSTCONDITIONS) ensure
-      (valueTypeMatches(thiz, result));
+      (valueTypeMatches(thiz, result, allowUninitializedRefField));
 
     return result;
   }
@@ -1112,7 +1121,7 @@ public class Interpreter extends ANY
   {
     if (PRECONDITIONS) require
       (slot != null,
-       valueTypeMatches(thiz, v)
+       valueTypeMatches(thiz, v, false)
        );
 
     slot.container.refs[slot.offset] = v;
@@ -1173,7 +1182,7 @@ public class Interpreter extends ANY
     var clazz = staticClazz;
     if (staticClazz.isRef())
       {
-        curValue = (curValue instanceof LValue lv) ? loadRefField(thiz, lv)
+        curValue = (curValue instanceof LValue lv) ? loadRefField(thiz, lv, false)
                                                    : curValue;
         clazz = ((ValueWithClazz) curValue).clazz();
       }
@@ -1192,21 +1201,24 @@ public class Interpreter extends ANY
    *
    * @param slot reference to instance and offset of the field to be loaded
    *
+   * @param allowUninitializedRefField true if a ref field may be not
+   * initialized (e.g., when boxing this).
+   *
    * @return the value that was loaded from the field, of type Instance for
    * normal refs, of type ChoiceIdAsRef, LValue for non-reference fields or ref
    * to outer instance, LValue or null for boxed choice tag.
    */
-  private static Value loadField(AbstractFeature thiz, Clazz fclazz, LValue slot)
+  private static Value loadField(AbstractFeature thiz, Clazz fclazz, LValue slot, boolean allowUninitializedRefField)
   {
     if (CHECKS) check
       (fclazz != null,
        slot != null);
 
-    Value result = fclazz.isRef() ? loadRefField(thiz, slot)
+    Value result = fclazz.isRef() ? loadRefField(thiz, slot, allowUninitializedRefField)
                                   : slot;
 
     if (POSTCONDITIONS) ensure
-      (valueTypeMatches(thiz, result));
+      (valueTypeMatches(thiz, result, allowUninitializedRefField));
 
     return result;
   }
@@ -1221,11 +1233,17 @@ public class Interpreter extends ANY
    * @param curValue the Instance or LValue of the object that contains the
    * loaded field
    *
+   * @param allowUninitializedRefField When boxing a partially initialized value
+   * (this), some fields may not be initialized yet.
+   *
+   * NYI: Once static analysis detects use of uninitialized data, boxing this
+   * data should be disallowed.
+   *
    * @return the value that was loaded from the field, of type LValue for
    * non-refs, Instance for normal refs, of type ChoiceIdAsRef, LValue or null
    * for boxed choice tag or ref to outer instance.
    */
-  public static Value getField(AbstractFeature thiz, Clazz staticClazz, Value curValue)
+  public static Value getField(AbstractFeature thiz, Clazz staticClazz, Value curValue, boolean allowUninitializedRefField)
   {
     if (PRECONDITIONS) require
       (thiz.isField(),
@@ -1314,12 +1332,13 @@ public class Interpreter extends ANY
       {
         Clazz  fclazz = staticClazz.clazzForFieldX(thiz, -1);
         LValue slot   = fieldSlot(thiz, -1, staticClazz, fclazz, curValue);
-        result = loadField(thiz, fclazz, slot);
+        result = loadField(thiz, fclazz, slot, allowUninitializedRefField);
       }
 
     if (POSTCONDITIONS) ensure
       (   thiz.isChoice()                         // null is used e.g. in Option<T>: choice<T,Null>.
        || result != null                          // otherwise, there must not be any null
+       || allowUninitializedRefField              // unless we explicitly allowed uninitialized data
       );
 
     return result;

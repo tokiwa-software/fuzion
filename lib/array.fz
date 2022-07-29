@@ -217,7 +217,10 @@ array(redef T type,
 # NYI: move this to 'arrays.new' or similar to avoid overloading
 # with 'array(T,internalArray,_,_,_)'.
 #
-array(T type, length i32, init i32 -> T) array<T> is
+array(T type, length i32, init i32 -> T) array<T>
+  pre
+    safety: length >= 0
+is
 
 # private:
   indices => 0..length-1

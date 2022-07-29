@@ -1,0 +1,65 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test issue293
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Regression test for #293: https://github.com/tokiwa-software/fuzion/issues/293
+#
+issue293 is
+  human(age i32) is
+  ages := map (Sequence i32) human i32 (x -> x.age)
+  say (into i32 human [human(4), human(12), human(30)] ages)
+
+  into(TAcc, T type, seq Sequence<T>, xf transducer(Sequence(TAcc),TAcc,T)) Sequence(TAcc) is
+    rf := ref : reducing_fn((Sequence TAcc),TAcc)
+      call(res Sequence(TAcc), val TAcc) Sequence(TAcc) is
+        res ++ [val]
+    red := xf.call rf
+    for
+      res := Sequences.empty(TAcc) , red.call res el
+      el in seq do
+    else
+      res
+
+  # a transducer mappping values from T to U
+  map(TAcc,T,U type, mapper T -> U) transducer(TAcc,U,T) is
+    ref : transducer(TAcc,U,T)
+      call(red reducing_fn(TAcc,U)) =>
+        ref : reducing_fn(TAcc,T)
+          call(res TAcc, val T) =>
+            red.call res (mapper val)
+
+
+  # a reducing function takes a previous result and a value and returns a new result
+  reducing_fn(TAcc,T type) ref : Function<TAcc,TAcc,T> is
+
+    # NYI redef call abstract is currently necessary because of bug in c backend
+    call(res TAcc, val T) TAcc is abstract
+
+  # TAcc result     type
+  # B    input      type
+  # C    transduced type
+  transducer(TAcc,B,C type) ref : Function(reducing_fn(TAcc,C), reducing_fn(TAcc,B)) is
+
+    # NYI redef call abstract is currently necessary because of bug in c backend
+    call(rf reducing_fn(TAcc,B)) reducing_fn(TAcc,C) is abstract

@@ -29,6 +29,7 @@ package dev.flang.ast;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
@@ -260,14 +261,14 @@ public class Feature extends AbstractFeature implements Stmnt
    * Actions collectected to be executed as soon as this feature has reached
    * State.RESOLVED_DECLARATIONS, see method whenResolvedDeclarations().
    */
-  private List<Runnable> whenResolvedDeclarations = new List<>();
+  private LinkedList<Runnable> whenResolvedDeclarations = new LinkedList<>();
 
 
   /**
    * Actions collectected to be executed as soon as this feature has reached
    * State.RESOLVED_TYPES, see method whenResolvedTypes().
    */
-  private List<Runnable> whenResolvedTypes = new List<>();
+  private LinkedList<Runnable> whenResolvedTypes = new LinkedList<>();
 
 
   /**
@@ -903,14 +904,15 @@ public class Feature extends AbstractFeature implements Stmnt
 
   /**
    * Check if the result variable should be internal, i.e., have a name that is
-   * not accessible by source code.  This is true for routines defined usings
-   * '=>" (RoutineDef) and also for internally used routines created for loops.
+   * not accessible by source code.  This is true for routines defined using
+   * '=>" (RoutineDef) that are internally generated, e.g. for loops.
    * In these cases, the result variable of the enclosing outer feature can be
    * accessed without qualification.
    */
   public boolean resultInternal()
   {
-    return _impl.kind_ == Impl.Kind.RoutineDef; // NYI: should be true if result is not used
+    return _impl.kind_ == Impl.Kind.RoutineDef &&
+      _featureName.baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
   }
 
 
@@ -951,7 +953,7 @@ public class Feature extends AbstractFeature implements Stmnt
               {
                 if (p instanceof Call cp)
                   {
-                    cp.generics = new List<AbstractType>(Types.t_ERROR);
+                    cp._generics = new List<AbstractType>(Types.t_ERROR);
                   }
               }
           }
@@ -1033,9 +1035,9 @@ public class Feature extends AbstractFeature implements Stmnt
         if (CHECKS) check
           (c == nc); // NYI: This will fail when doing funny stuff like inherit from bool.infix &&, need to check and handle explicitly
       }
-    _contract.visit(v, this);
     _impl.visit(v, this);
     _returnType.visit(v, this);
+    _contract.visit(v, this);
   }
 
 
@@ -1277,14 +1279,14 @@ public class Feature extends AbstractFeature implements Stmnt
         res = r;
       }
     public void         action(AbstractAssign a, AbstractFeature outer) {        a.resolveTypes(res, outer); }
-    public Call         action(Call         c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
-    public Stmnt        action(Destructure  d, AbstractFeature outer) { return d.resolveTypes(res, outer); }
-    public Stmnt        action(Feature      f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
-                                                                        return f.resolveTypes(res, f.outer() ); }
-    public Function     action(Function     f, AbstractFeature outer) {        f.resolveTypes(res, outer); return f; }
-    public void         action(Match        m, AbstractFeature outer) {        m.resolveTypes(res, outer); }
-    public Expr         action(This         t, AbstractFeature outer) { return t.resolveTypes(res, outer); }
-    public AbstractType action(AbstractType t, AbstractFeature outer) { return t.resolve     (res, outer); }
+    public Call         action(Call           c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
+    public Stmnt        action(Destructure    d, AbstractFeature outer) { return d.resolveTypes(res, outer); }
+    public Stmnt        action(Feature        f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
+                                                                          return f.resolveTypes(res, f.outer() ); }
+    public Function     action(Function       f, AbstractFeature outer) {        f.resolveTypes(res, outer); return f; }
+    public void         action(Match          m, AbstractFeature outer) {        m.resolveTypes(res, outer); }
+    public Expr         action(This           t, AbstractFeature outer) { return t.resolveTypes(res, outer); }
+    public AbstractType action(AbstractType   t, AbstractFeature outer) { return t.resolve     (res, outer); }
 
     public boolean doVisitActuals() { return false; }
   }
@@ -1296,13 +1298,18 @@ public class Feature extends AbstractFeature implements Stmnt
    * of the expression. Were needed, perform type inference. Schedule f for
    * syntactic sugar resolution.
    *
+   * NOTE: This is called by Resoltion.java. To force a feature is in state
+   * RESOLVED_TYPES, use Resolution.resolveTypes(f).
+   *
    * @param res this is called during type resolution, res gives the resolution
    * instance.
    */
-  void resolveTypes(Resolution res)
+  void internalResolveTypes(Resolution res)
   {
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVED_DECLARATIONS));
+
+    var old_state = _state;
 
     if (_state == State.RESOLVED_DECLARATIONS)
       {
@@ -1333,7 +1340,8 @@ public class Feature extends AbstractFeature implements Stmnt
       }
 
     if (POSTCONDITIONS) ensure
-      (_state.atLeast(State.RESOLVED_TYPES));
+      (old_state == State.RESOLVING_TYPES && _state == old_state /* recursive attempt to resolve types */ ||
+       _state.atLeast(State.RESOLVING_TYPES));
   }
 
 

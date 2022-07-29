@@ -26,16 +26,15 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fuir;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
+import java.util.BitSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency
+import dev.flang.ast.AbstractBlock; // NYI: remove dependency
 import dev.flang.ast.AbstractCall; // NYI: remove dependency
 import dev.flang.ast.AbstractConstant; // NYI: remove dependency
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency
@@ -43,6 +42,7 @@ import dev.flang.ast.AbstractMatch; // NYI: remove dependency
 import dev.flang.ast.BoolConst; // NYI: remove dependency
 import dev.flang.ast.Box; // NYI: remove dependency
 import dev.flang.ast.Call; // NYI: remove dependency
+import dev.flang.ast.Current; // NYI: remove dependency
 import dev.flang.ast.Env; // NYI: remove dependency
 import dev.flang.ast.Expr; // NYI: remove dependency
 import dev.flang.ast.If; // NYI: remove dependency
@@ -121,6 +121,7 @@ public class FUIR extends IR
     c_TRUE        { Clazz getIfCreated() { return Clazzes.c_TRUE     .getIfCreated(); } },
     c_FALSE       { Clazz getIfCreated() { return Clazzes.c_FALSE    .getIfCreated(); } },
     c_conststring { Clazz getIfCreated() { return Clazzes.conststring.getIfCreated(); } },
+    c_unit        { Clazz getIfCreated() { return Clazzes.c_unit     .getIfCreated(); } },
 
     // dummy entry to report failure of getSpecialId()
     c_NOT_FOUND   { Clazz getIfCreated() { return null;                               } };
@@ -147,16 +148,71 @@ public class FUIR extends IR
   final Clazz _main;
 
 
-  final Map2Int<Clazz> _clazzIds = new MapComparable2Int(CLAZZ_BASE);
+  /**
+   * Mapping from Clazz instances to int ids.
+   */
+  final Map2Int<Clazz> _clazzIds;
+
+
+  /**
+   * Cached results for clazzCode(), required to ensure that code indices are
+   * unique, i.e., comparing the code index is equivalent to comparing the clazz
+   * ids.
+   */
+  private final TreeMap<Integer, Integer> _clazzCode;
+
+
+  /**
+   * Cached results for clazzContract(), required to ensure that code indices are
+   * unique, i.e., comparing the code index is equivalent to comparing the clazz
+   * ids.
+   */
+  private final TreeMap<Long, Integer> _clazzContract;
+
+
+  /**
+   * Cached 'true' results of 'clazzNeedsCode'
+   */
+  BitSet _needsCode = new BitSet();
+
+
+  /**
+   * Cached 'false' results of 'clazzNeedsCode'
+   */
+  BitSet _doesNotNeedCode = new BitSet();
 
 
   /*--------------------------  constructors  ---------------------------*/
 
 
+  /**
+   * Create FUIR from given Clazz instance.
+   *
+   * @param main the main clazz.
+   */
   public FUIR(Clazz main)
   {
     _main = main;
+    _clazzIds = new MapComparable2Int(CLAZZ_BASE);
+    _clazzCode = new TreeMap<>();
+    _clazzContract = new TreeMap<>();
     Clazzes.findAllClasses(main());
+  }
+
+
+  /**
+   * Clone this FUIR such that modifications can be made by optimizers.  A heir
+   * of FUIR can use this to redefine methods.
+   *
+   * @param original the original FUIR instance that we are cloning.
+   */
+  public FUIR(FUIR original)
+  {
+    super(original);
+    _main = original._main;
+    _clazzIds = original._clazzIds;
+    _clazzCode = original._clazzCode;
+    _clazzContract = original._clazzContract;
   }
 
 
@@ -172,6 +228,38 @@ public class FUIR extends IR
   /*------------------------  accessing classes  ------------------------*/
 
 
+  /**
+   * Get Clazz that given id maps to
+   */
+  private Clazz clazz(int id)
+  {
+    return _clazzIds.get(id);
+  }
+
+
+  /**
+   * Get id of given clazz.
+   */
+  private int id(Clazz cc)
+  {
+    return cc._idInFUIR;
+  }
+
+
+  /**
+   * Add cl to the set of clazzes in this FUIR and assign an id to to.
+   */
+  private void add(Clazz cl)
+  {
+    var id = _clazzIds.add(cl);
+
+    if (CHECKS) check
+      (cl._idInFUIR == -1 || cl._idInFUIR == id);
+
+    cl._idInFUIR = id;
+  }
+
+
   private void addClasses()
   {
     if (_clazzIds.size() == 0)
@@ -181,7 +269,7 @@ public class FUIR extends IR
             if (cl._type != Types.t_ADDRESS     // NYI: would be better to not create this dummy clazz in the first place
                 )
               {
-                _clazzIds.add(cl);
+                add(cl);
               }
           }
       }
@@ -202,12 +290,12 @@ public class FUIR extends IR
   public int mainClazzId()
   {
     addClasses();
-    return _clazzIds.get(_main);
+    return id(_main);
   }
 
   public int clazzNumFields(int cl)
   {
-    return _clazzIds.get(cl).fields().length;
+    return clazz(cl).fields().length;
   }
 
 
@@ -226,9 +314,9 @@ public class FUIR extends IR
       require
         (i >= 0 && i < clazzNumFields(cl));
 
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var fc = cc.fields()[i];
-    return _clazzIds.get(fc);
+    return id(fc);
   }
 
 
@@ -242,7 +330,7 @@ public class FUIR extends IR
    */
   public int clazzNumChoices(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     return cc.isChoice() ? cc.choiceGenerics().size() : -1;
   }
 
@@ -267,9 +355,9 @@ public class FUIR extends IR
       require
         (i >= 0 && i < clazzNumChoices(cl));
 
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var cg = cc.choiceGenerics().get(i);
-    return cg.isRef() || cg.isInstantiated() ? _clazzIds.get(cg) : -1;
+    return cg.isRef() || cg.isInstantiated() ? id(cg) : -1;
   }
 
 
@@ -283,7 +371,7 @@ public class FUIR extends IR
    */
   public int[] clazzInstantiatedHeirs(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var result = new List<Clazz>();
     for (var h : cc.heirs())
       {
@@ -295,7 +383,7 @@ public class FUIR extends IR
     var res = new int[result.size()];
     for (var i = 0; i < result.size(); i++)
       {
-        res[i] = _clazzIds.get(result.get(i));
+        res[i] = id(result.get(i));
         if (CHECKS) check
           (res[i] != -1);
       }
@@ -312,7 +400,7 @@ public class FUIR extends IR
    */
   public boolean clazzIsChoiceWithRefs(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     return cc.isChoiceWithRefs();
   }
 
@@ -326,7 +414,7 @@ public class FUIR extends IR
    */
   public boolean clazzIsChoiceOfOnlyRefs(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     return cc.isChoiceOfOnlyRefs();
   }
 
@@ -342,7 +430,7 @@ public class FUIR extends IR
    */
   public boolean clazzFieldIsAdrOfValue(int fcl)
   {
-    var fc = _clazzIds.get(fcl);
+    var fc = clazz(fcl);
     var f = fc.feature();
     return f.isOuterRef() &&
       !fc.resultClazz().isRef() &&
@@ -359,14 +447,14 @@ public class FUIR extends IR
    */
   public int clazzResultClazz(int cl)
   {
-    var cc = _clazzIds.get(cl);
-    return _clazzIds.get(cc.resultClazz());
+    var cc = clazz(cl);
+    return id(cc.resultClazz());
   }
 
 
   public FeatureKind clazzKind(int cl)
   {
-    return clazzKind(_clazzIds.get(cl));
+    return clazzKind(clazz(cl));
   }
 
 
@@ -387,7 +475,7 @@ public class FUIR extends IR
 
   public String clazzBaseName(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var res = cc.feature().featureName().baseName();
     if (!cc._type.generics().isEmpty())
       {
@@ -411,13 +499,13 @@ public class FUIR extends IR
     if (PRECONDITIONS) require
       (clazzKind(cl) == FeatureKind.Intrinsic);
 
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     return cc.feature().qualifiedName();
   }
 
   public boolean clazzIsRef(int cl)
   {
-    return _clazzIds.get(cl).isRef();
+    return clazz(cl).isRef();
   }
 
 
@@ -430,8 +518,8 @@ public class FUIR extends IR
    */
   public int clazzAsValue(int cl)
   {
-    var cc = _clazzIds.get(cl);
-    return _clazzIds.get(cc.asValue());
+    var cc = clazz(cl);
+    return id(cc.asValue());
   }
 
 
@@ -445,7 +533,7 @@ public class FUIR extends IR
    */
   public int clazzArgCount(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     return cc.argumentFields().length;
   }
 
@@ -466,9 +554,9 @@ public class FUIR extends IR
       (arg >= 0,
        arg < clazzArgCount(cl));
 
-    var c = _clazzIds.get(cl);
+    var c = clazz(cl);
     var rc = c.argumentFields()[arg].resultClazz(); // or .fieldClazz()?
-    return _clazzIds.get(rc);
+    return id(rc);
   }
 
 
@@ -484,9 +572,9 @@ public class FUIR extends IR
    */
   public int clazzArg(int cl, int arg)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var a = cc.argumentFields()[arg];
-    return a == null ? -1 : _clazzIds.get(a);
+    return a == null ? -1 : id(a);
   }
 
 
@@ -497,7 +585,7 @@ public class FUIR extends IR
    */
   public boolean clazzIsChoice(int cl)
   {
-    return _clazzIds.get(cl).isChoice();
+    return clazz(cl).isChoice();
   }
 
 
@@ -511,9 +599,9 @@ public class FUIR extends IR
    */
   public int clazzChoiceTag(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var ct = cc.choiceTag();
-    return ct == null ? -1 : _clazzIds.get(ct);
+    return ct == null ? -1 : id(ct);
   }
 
 
@@ -529,8 +617,8 @@ public class FUIR extends IR
    */
   public int clazzChoiceTag(int cl, int valuecl)
   {
-    var cc = _clazzIds.get(cl);
-    var vc = _clazzIds.get(valuecl);
+    var cc = clazz(cl);
+    var vc = clazz(valuecl);
     return cc.getChoiceTag(vc._type);
   }
 
@@ -545,8 +633,8 @@ public class FUIR extends IR
    */
   public int clazzOuterClazz(int cl)
   {
-    var o = _clazzIds.get(cl)._outer;
-    return o == null ? -1 : _clazzIds.get(o);
+    var o = clazz(cl)._outer;
+    return o == null ? -1 : id(o);
   }
 
 
@@ -559,13 +647,13 @@ public class FUIR extends IR
    */
   public int clazzOuterRef(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var or = cc.outerRef();
     var cco = cc._outer;
     return
       or == null ||
       (cco.isUnitType()) ? -1
-                         : _clazzIds.get(or);
+                         : id(or);
   }
 
 
@@ -579,12 +667,12 @@ public class FUIR extends IR
    */
   public int clazzTypeParameterActualType(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var at = -1;
     if (cc.feature().isTypeParameter())
       {
         var atc = cc.typeParameterActualType();
-        at = _clazzIds.get(atc);
+        at = id(atc);
       }
     return at;
   }
@@ -601,7 +689,7 @@ public class FUIR extends IR
    */
   public boolean clazzOuterRefEscapes(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var or = cc.outerRef();
     var cco = cc._outer;
     if (or == null || cco.isUnitType())
@@ -623,7 +711,7 @@ public class FUIR extends IR
    */
   public int clazzObject()
   {
-    return _clazzIds.get(Clazzes.object.get());
+    return id(Clazzes.object.get());
   }
 
 
@@ -634,7 +722,7 @@ public class FUIR extends IR
    */
   public int clazzUniverse()
   {
-    return _clazzIds.get(Clazzes.universe.get());
+    return id(Clazzes.universe.get());
   }
 
 
@@ -649,7 +737,7 @@ public class FUIR extends IR
    */
   public SpecialClazzes getSpecialId(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var result = SPECIAL_ID.get(cc);
     return result == null ? SpecialClazzes.c_NOT_FOUND : result;
   }
@@ -666,7 +754,7 @@ public class FUIR extends IR
    */
   public boolean clazzIs(int cl, SpecialClazzes c)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     return cc == c.getIfCreated();
   }
 
@@ -676,7 +764,7 @@ public class FUIR extends IR
   {
     return cl == -1
       ? "-- no clazz --"
-      : _clazzIds.get(cl).toString();
+      : clazz(cl).toString();
   }
 
 
@@ -687,7 +775,7 @@ public class FUIR extends IR
   {
     return cl == -1
       ? "-- no clazz --"
-      : _clazzIds.get(cl)._type.asString();
+      : clazz(cl)._type.asString();
   }
 
 
@@ -697,7 +785,7 @@ public class FUIR extends IR
    */
   public boolean clazzIsUnitType(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     return cc.isUnitType();
   }
 
@@ -707,7 +795,7 @@ public class FUIR extends IR
    */
   public boolean clazzIsVoidType(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     return cc.isVoidType();
   }
 
@@ -722,9 +810,9 @@ public class FUIR extends IR
    */
   public int clazzResultField(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var rf = cc.resultField();
-    return rf == null ? -1 : _clazzIds.get(rf);
+    return rf == null ? -1 : id(rf);
   }
 
 
@@ -739,8 +827,8 @@ public class FUIR extends IR
    */
   public int clazzActualGeneric(int cl, int gix)
   {
-    var cc = _clazzIds.get(cl);
-    return _clazzIds.get(cc.actualGenerics()[gix]);
+    var cc = clazz(cl);
+    return id(cc.actualGenerics()[gix]);
   }
 
 
@@ -812,31 +900,6 @@ hw25 is
 
 
   /**
-   * Code for a routine or precondition prolog.
-   *
-   * This adds code to initialize outer reference, must be done at the
-   * beginning of every routine and precondition.
-   *
-   * @param cc the routine we are creating code for.
-   */
-  private List<Object> prolog(Clazz cc)
-  {
-    List<Object> code = new List<>();
-    var vcc = cc.asValue();
-    var or = vcc.outerRef();
-    var cco = cc._outer;
-    if (or != null && !cco.isUnitType())
-      {
-        code.add(ExprKind.Outer);
-        code.add(ExprKind.Current);
-        code.add(or);
-      }
-    return code;
-  }
-
-
-
-  /**
    * Get access to the code of a clazz of kind Routine
    *
    * @param cl a clazz id
@@ -848,11 +911,17 @@ hw25 is
     if (PRECONDITIONS) require
       (clazzKind(cl) == FeatureKind.Routine);
 
-    var cc = _clazzIds.get(cl);
-    var ff = cc.feature();
-    var code = prolog(cc);
-    addCode(cc, code, ff);
-    return _codeIds.add(code);
+    var res = _clazzCode.get(cl);
+    if (res == null)
+      {
+        var cc = clazz(cl);
+        var ff = cc.feature();
+        var code = new List<Object>();
+        addCode(cc, code, ff);
+        res = _codeIds.add(code);
+        _clazzCode.put(cl, res);
+      }
+    return res;
   }
 
 
@@ -880,7 +949,7 @@ hw25 is
        clazzKind(cl) == FeatureKind.Abstract     ,
        ix >= 0);
 
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var ff = cc.feature();
     var ccontract = ff.contract();
     var cond = (ccontract != null && ck == ContractKind.Pre  ? ccontract.req :
@@ -898,16 +967,33 @@ hw25 is
           }
         i++;
       }
+    var res = -1;
     if (cond != null && i < cond.size())
       {
-        var code = prolog(cc);
-        toStack(code, cond.get(i).cond);
-        return _codeIds.add(code);
+        // create 64-bit key from cl, ck and ix as follows:
+        //
+        //  key = cl (32 bits) : -ix    for ck == Pre
+        //  key = cl (32 bits) : +ix    for ck == Post
+        //
+        var key = ((long) cl << 32) | ((ck.ordinal()*2-1) * (i+1)) & 0xffffffffL;
+
+        // lets verify we did not lose any information, i.e, we can extract cl, ix and ck:
+        if (CHECKS) check
+          (cl == key >> 32,
+           ck == ((key << 32 < 0) ? ContractKind.Pre : ContractKind.Post),
+           i == (int) (key & 0xffffffff) * ((ck.ordinal()*2-1))-1);
+
+        var resBoxed = _clazzContract.get(key);
+        if (resBoxed == null)
+          {
+            var code = new List<Object>();
+            toStack(code, cond.get(i).cond);
+            resBoxed = _codeIds.add(code);
+            _clazzContract.put(key, resBoxed);
+          }
+        res = resBoxed;
       }
-    else
-      {
-        return -1;
-      }
+    return res;
   }
 
 
@@ -922,30 +1008,24 @@ hw25 is
    */
   public boolean clazzNeedsCode(int cl)
   {
-    return clazzNeedsCode(_clazzIds.get(cl));
-  }
-
-
-  /**
-   * Does the backend need to generate code for this clazz since it might be
-   * called at runtime.  This is true for all features that are called directly
-   * or dynamically in a 'normal' call, i.e., not in an inheritance call.
-   *
-   * An inheritance call is inlined since it works on a different instance, the
-   * instance of the heir class.  Consequently, a clazz resulting from an
-   * inheritance call does not need code for itself.
-   */
-  boolean clazzNeedsCode(Clazz cc)
-  {
-    switch (clazzKind(cc))
+    if (_needsCode.get(cl - CLAZZ_BASE))
       {
-      case Abstract : return false;
-      case Choice   : return false;
-      case Intrinsic:
-      case Routine  :
-      case Field    :
-        return (cc.isInstantiated() || cc.feature().isOuterRef()) && cc != Clazzes.conststring.getIfCreated() && !cc.isAbsurd();
-      default: throw new Error("unhandled case: " + clazzKind(cc));
+        return true;
+      }
+    else if (_doesNotNeedCode.get(cl - CLAZZ_BASE))
+      {
+        return false;
+      }
+    else
+      {
+        var cc = clazz(cl);
+        var result = switch (clazzKind(cc))
+          {
+          case Abstract, Choice -> false;
+          case Intrinsic, Routine, Field -> (cc.isInstantiated() || cc.feature().isOuterRef()) && cc != Clazzes.conststring.getIfCreated() && !cc.isAbsurd();
+          };
+        (result ? _needsCode : _doesNotNeedCode).set(cl - CLAZZ_BASE);
+        return result;
       }
   }
 
@@ -959,7 +1039,7 @@ hw25 is
    */
   public boolean clazzIsOuterRef(int cl)
   {
-    return _clazzIds.get(cl).feature().isOuterRef();
+    return clazz(cl).feature().isOuterRef();
   }
 
 
@@ -971,7 +1051,7 @@ hw25 is
   public int clazz_conststring()
   {
     var cc = Clazzes.conststring.getIfCreated();
-    return cc == null ? -1 : _clazzIds.get(cc);
+    return cc == null ? -1 : id(cc);
   }
 
 
@@ -983,31 +1063,59 @@ hw25 is
   public int clazz_conststring_internalArray()
   {
     var cc = Clazzes.constStringInternalArray;
-    return cc == null ? -1 : _clazzIds.get(cc);
+    return cc == null ? -1 : id(cc);
   }
 
 
   /**
    * Get the id of clazz fuzion.sys.array<u8>.data
    *
-   * @param the id of connststring.internalArray or -1 if that clazz was not created.
+   * @param the id of fuzion.sys.array<u8>.data or -1 if that clazz was not created.
    */
   public int clazz_fuzionSysArray_u8_data()
   {
     var cc = Clazzes.fuzionSysArray_u8_data;
-    return cc == null ? -1 : _clazzIds.get(cc);
+    return cc == null ? -1 : id(cc);
   }
 
 
   /**
    * Get the id of clazz fuzion.sys.array<u8>.length
    *
-   * @param the id of connststring.internalArray or -1 if that clazz was not created.
+   * @param the id of fuzion.sys.array<u8>.length or -1 if that clazz was not created.
    */
   public int clazz_fuzionSysArray_u8_length()
   {
     var cc = Clazzes.fuzionSysArray_u8_length;
-    return cc == null ? -1 : _clazzIds.get(cc);
+    return cc == null ? -1 : id(cc);
+  }
+
+
+  /**
+   * Get the id of the given special clazz.
+   *
+   * @param the id of clazz c or -1 if that clazz was not created.
+   */
+  public int clazz(SpecialClazzes c)
+  {
+    addClasses();
+    var cc = c.getIfCreated();
+    if (cc != null)
+      {
+        add(cc);
+      }
+    return cc == null ? -1 : id(cc);
+  }
+
+
+  /**
+   * Get the id of clazz u8
+   *
+   * @param the id of u8 or -1 if that clazz was not created.
+   */
+  public int clazz_u8()
+  {
+    return clazz(SpecialClazzes.c_u8);
   }
 
 
@@ -1015,6 +1123,13 @@ hw25 is
 
 
 
+  /**
+   * Get the expr at the given index in given code block
+   *
+   * @param c the code block id
+   *
+   * @param ix an index within the code block
+   */
   public ExprKind codeAt(int c, int ix)
   {
     if (PRECONDITIONS) require
@@ -1048,10 +1163,10 @@ hw25 is
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Tag);
 
-    var outerClazz = _clazzIds.get(cl);
+    var outerClazz = clazz(cl);
     var t = (Tag) _codeIds.get(c).get(ix);
     var vcl = (Clazz) outerClazz.getRuntimeData(t._valAndTaggedClazzId + 0);
-    return vcl == null ? -1 : _clazzIds.get(vcl);
+    return vcl == null ? -1 : id(vcl);
   }
 
   public int tagNewClazz(int cl, int c, int ix)
@@ -1061,10 +1176,10 @@ hw25 is
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Tag);
 
-    var outerClazz = _clazzIds.get(cl);
+    var outerClazz = clazz(cl);
     var t = (Tag) _codeIds.get(c).get(ix);
     var ncl = (Clazz) outerClazz.getRuntimeData(t._valAndTaggedClazzId + 1);
-    return ncl == null ? -1 : _clazzIds.get(ncl);
+    return ncl == null ? -1 : id(ncl);
   }
 
   /**
@@ -1078,10 +1193,10 @@ hw25 is
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Env);
 
-    var outerClazz = _clazzIds.get(cl);
+    var outerClazz = clazz(cl);
     var v = (Env) _codeIds.get(c).get(ix);
     var vcl = (Clazz) outerClazz.getRuntimeData(v._clazzId);
-    return vcl == null ? -1 : _clazzIds.get(vcl);
+    return vcl == null ? -1 : id(vcl);
   }
 
   public int boxValueClazz(int cl, int c, int ix)
@@ -1091,10 +1206,10 @@ hw25 is
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Box);
 
-    var outerClazz = _clazzIds.get(cl);
+    var outerClazz = clazz(cl);
     var b = (Box) _codeIds.get(c).get(ix);
     Clazz vc = (Clazz) outerClazz.getRuntimeData(b._valAndRefClazzId);
-    return _clazzIds.get(vc);
+    return id(vc);
   }
 
   public int boxResultClazz(int cl, int c, int ix)
@@ -1104,10 +1219,10 @@ hw25 is
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Box);
 
-    var outerClazz = _clazzIds.get(cl);
+    var outerClazz = clazz(cl);
     var b = (Box) _codeIds.get(c).get(ix);
     Clazz rc = (Clazz) outerClazz.getRuntimeData(b._valAndRefClazzId+1);
-    return _clazzIds.get(rc);
+    return id(rc);
   }
 
   public int unboxOuterRefClazz(int cl, int c, int ix)
@@ -1117,10 +1232,10 @@ hw25 is
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Unbox);
 
-    var outerClazz = _clazzIds.get(cl);
+    var outerClazz = clazz(cl);
     var u = (Unbox) _codeIds.get(c).get(ix);
     Clazz orc = (Clazz) outerClazz.getRuntimeData(u._refAndValClazzId);
-    return _clazzIds.get(orc);
+    return id(orc);
   }
 
   public int unboxResultClazz(int cl, int c, int ix)
@@ -1130,10 +1245,10 @@ hw25 is
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Unbox);
 
-    var outerClazz = _clazzIds.get(cl);
+    var outerClazz = clazz(cl);
     var u = (Unbox) _codeIds.get(c).get(ix);
     Clazz vc = (Clazz) outerClazz.getRuntimeData(u._refAndValClazzId+1);
-    return _clazzIds.get(vc);
+    return id(vc);
   }
 
 
@@ -1178,7 +1293,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Call   ||
        codeAt(c, ix) == ExprKind.Assign    );
 
-    var outerClazz = _clazzIds.get(cl);
+    var outerClazz = clazz(cl);
     var s = _codeIds.get(c).get(ix);
     Clazz innerClazz =
       (s instanceof AbstractCall   call) ? (Clazz) outerClazz.getRuntimeData(call.sid_ + 0) :
@@ -1186,7 +1301,7 @@ hw25 is
       (s instanceof Clazz          fld ) ? fld :
       (Clazz) (Object) new Object() { { if (true) throw new Error("acccessedClazz found unexpected Stmnt."); } } /* Java is ugly... */;
 
-    return innerClazz == null ? -1 : _clazzIds.get(innerClazz);
+    return innerClazz == null ? -1 : id(innerClazz);
   }
 
 
@@ -1212,7 +1327,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Assign    ,
        accessIsDynamic(cl, c, ix));
 
-    var outerClazz = _clazzIds.get(cl);
+    var outerClazz = clazz(cl);
     var s =  _codeIds.get(c).get(ix);
     Clazz tclazz;
     AbstractFeature f;
@@ -1243,7 +1358,7 @@ hw25 is
         if (CHECKS) check
           (clz.isRef() == tclazz.isRef());
         var in = (Clazz) clz._inner.get(f);  // NYI: cast would fail for open generic field
-        if (in != null && clazzNeedsCode(in))
+        if (in != null && clazzNeedsCode(id(in)))
           {
             innerClazzes.add(clz);
             innerClazzes.add(in);
@@ -1253,7 +1368,7 @@ hw25 is
     var innerClazzIds = new int[innerClazzes.size()];
     for (var i = 0; i < innerClazzes.size(); i++)
       {
-        innerClazzIds[i] = _clazzIds.get(innerClazzes.get(i));
+        innerClazzIds[i] = id(innerClazzes.get(i));
         if (CHECKS) check
           (innerClazzIds[i] != -1);
       }
@@ -1281,7 +1396,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Assign ||
        codeAt(c, ix) == ExprKind.Call  );
 
-    var outerClazz = _clazzIds.get(cl);
+    var outerClazz = clazz(cl);
     var s = _codeIds.get(c).get(ix);
     var res =
       (s instanceof AbstractAssign ass ) ? ((Clazz) outerClazz.getRuntimeData(ass.tid_)).isRef() : // NYI: This should be the same as assignedField._outer
@@ -1319,7 +1434,7 @@ hw25 is
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Call);
 
-    var outerClazz = _clazzIds.get(cl);
+    var outerClazz = clazz(cl);
     var call = (AbstractCall) _codeIds.get(c).get(ix);
     return call.isInheritanceCall();
   }
@@ -1344,7 +1459,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Assign ||
        codeAt(c, ix) == ExprKind.Call  );
 
-    var outerClazz = _clazzIds.get(cl);
+    var outerClazz = clazz(cl);
     var s = _codeIds.get(c).get(ix);
     var tclazz =
       (s instanceof AbstractAssign ass ) ? (Clazz) outerClazz.getRuntimeData(ass.tid_) : // NYI: This should be the same as assignedField._outer
@@ -1352,13 +1467,13 @@ hw25 is
       (s instanceof AbstractCall   call) ? (Clazz) outerClazz.getRuntimeData(call.sid_ + 1) :
       (Clazz) (Object) new Object() { { if (true) throw new Error("acccessTargetClazz found unexpected Stmnt."); } } /* Java is ugly... */;
 
-    return _clazzIds.get(tclazz);
+    return id(tclazz);
   }
 
 
   public int fieldIndex(int field)
   {
-    return _clazzIds.get(field).fieldIndex();
+    return clazz(field).fieldIndex();
   }
 
   /**
@@ -1395,7 +1510,7 @@ hw25 is
         throw new Error("NYI: FUIR support for InlineArray still missing");
       }
     else { throw new Error("Unexpected type for ExprKind.Const: " + t); }
-    return _clazzIds.get(clazz);
+    return id(clazz);
   }
 
 
@@ -1438,12 +1553,12 @@ hw25 is
        withinCode(c, ix),
        codeAt(c, ix) == ExprKind.Match);
 
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var s = _codeIds.get(c).get(ix);
     Clazz ss = s instanceof If
       ? cc.getRuntimeClazz(((If)            s).runtimeClazzId_)
       : cc.getRuntimeClazz(((AbstractMatch) s).runtimeClazzId_);
-    return _clazzIds.get(ss);
+    return id(ss);
   }
 
 
@@ -1469,7 +1584,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Match,
        0 <= cix && cix <= matchCaseCount(c, ix));
 
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var s = _codeIds.get(c).get(ix);
     int result = -1; // no field for If
     if (s instanceof AbstractMatch m)
@@ -1477,7 +1592,7 @@ hw25 is
         var mc = m.cases().get(cix);
         var f = mc.field();
         var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc.runtimeClazzId_) : null;
-        result = fc != null ? _clazzIds.get(fc) : -1;
+        result = fc != null ? id(fc) : -1;
       }
     return result;
   }
@@ -1504,7 +1619,7 @@ hw25 is
        codeAt(c, ix) == ExprKind.Match,
        0 <= cix && cix <= matchCaseCount(c, ix));
 
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var s = _codeIds.get(c).get(ix);
     int[] result;
     if (s instanceof If)
@@ -1514,19 +1629,18 @@ hw25 is
     else
       {
         var match = (AbstractMatch) s;
-        var ss = cc.getRuntimeClazz(match.runtimeClazzId_);
         var mc = match.cases().get(cix);
+        var ts = mc.types();
         var f = mc.field();
-        var fc = f != null && Clazzes.isUsed(f, cc) ? cc.getRuntimeClazz(mc.runtimeClazzId_) : null;
-        int nt = f != null ? 1 : mc.types().size();
+        int nt = f != null ? 1 : ts.size();
         var resultL = new List<Integer>();
         int tag = 0;
-        for (var cg : ss.choiceGenerics())
+        for (var cg : match.subject().type().choiceGenerics())
           {
             for (int tix = 0; tix < nt; tix++)
               {
-                var rc = fc != null ? fc.resultClazz() : cc.getRuntimeClazz(mc.runtimeClazzId_ + tix);
-                if (rc.isAssignableFrom(cg))
+                var t = f != null ? f.resultType() : ts.get(tix);
+                if (t.isAssignableFrom(cg))
                   {
                     resultL.add(tag);
                   }
@@ -1578,11 +1692,303 @@ hw25 is
    */
   public int lookupCall(int cl)
   {
-    var cc = _clazzIds.get(cl);
+    var cc = clazz(cl);
     var call = Types.resolved.f_function_call;
     var ic = cc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
-    return _clazzIds.get(ic);
+    return id(ic);
   }
+
+
+  /**
+   * For a given field cl whose outer instance is a value type, find the same
+   * field in the corresponding outer ref type.
+   *
+   * @param cl index of a clazz that is a field.
+   */
+  public int correspondingFieldInRefInstance(int cl)
+  {
+    var cc = clazz(cl);
+    var rf = cc.correspondingFieldInRefInstance(cc);
+    return id(rf);
+  }
+
+
+  /**
+   * For a given field cl whose outer instance is a ref type, find the same
+   * field in the corresponding outer value type.
+   *
+   * @param cl index of a clazz that is a field.
+   */
+  public int correspondingFieldInValueInstance(int cl)
+  {
+    var cc = clazz(cl);
+    var rf = cc.correspondingFieldInValueInstance(cc);
+    return id(rf);
+  }
+
+
+  /**
+   * Get a string representation of the expr at the given index in given code
+   * block.  Useful for debugging.
+   *
+   * @param cl index of the clazz containing the code block.
+   *
+   * @param c the code block
+   *
+   * @param ix an index within the code block
+   */
+  public String codeAtAsString(int cl, int c, int ix)
+  {
+    return switch (codeAt(c,ix))
+      {
+      case AdrOf   -> "AdrOf";
+      case Assign  -> "Assign to " + clazzAsString(accessedClazz(cl, c, ix));
+      case Box     -> "Box";
+      case Unbox   -> "Unbox";
+      case Call    -> "Call to " + clazzAsString(accessedClazz(cl, c, ix));
+      case Current -> "Current";
+      case Comment -> "Comment";
+      case Const   -> "Const";
+      case Dup     -> "Dup";
+      case Match   -> "Match";
+      case Tag     -> "Tag";
+      case Env     -> "Env";
+      case Pop     -> "Pop";
+      case Unit    -> "Unit";
+      };
+  }
+
+
+  /**
+   * Print the contents of the given code block to System.out, for debugging.
+   *
+   * @param cl index of the clazz containing the code block.
+   *
+   * @param c the code block
+   */
+  public void dumpCode(int cl, int c)
+  {
+    for (var ix = 0; withinCode(c, ix); ix = ix + codeSizeAt(c, ix))
+      {
+        System.out.printf("%d.%4d: %s\n", c, ix, codeAtAsString(cl, c, ix));
+      }
+  }
+
+
+  /**
+   * Print the code of the given routine.
+   *
+   * @param cl index of the clazz.
+   */
+  public void dumpCode(int cl)
+  {
+    if (PRECONDITIONS) require
+      (clazzKind(cl) == FeatureKind.Routine);
+
+    dumpCode(cl, clazzCode(cl));
+  }
+
+
+  /**
+   * For a given index 'ix' into the code block 'c', go 'delta' expressions
+   * further or back (in case 'delta < 0').
+   *
+   * @param c the code block
+   *
+   * @param ix an index in c
+   *
+   * @param delta the number of instructions to go forward or back.
+   */
+  public int codeIndex(int c, int ix, int delta)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix));
+
+    while (delta > 0)
+      {
+        ix = ix + codeSizeAt(c, ix);
+        delta--;
+      }
+    if (delta < 0)
+      {
+        ix = codeIndex2(c, 0, ix, delta);
+      }
+    return ix;
+  }
+
+
+  /**
+   * Helper routine for codeIndex to recursively find the index of expression
+   * 'n' before expression at 'ix' where 'n == -delta' and 'delta < 0'.
+   *
+   * NYI: Performance: This requires time 'O(codeSize(c))', so using this
+   * quickly results in quadratic performance!
+   *
+   * @param c the code block
+   *
+   * @param i current index in c, starting at 0.
+   *
+   * @param ix an index in c
+   *
+   * @param delta the negative number of instructions to go back.
+   *
+   * @return the index of the expression 'n' expressions before 'ix', or a
+   * negative value '-m' if that instruction can be found 'm' recursive calls up.
+   */
+  private int codeIndex2(int c, int i, int ix, int delta)
+  {
+    if (i == ix)
+      {
+        return delta;
+      }
+    else
+      {
+        var r = codeIndex2(c, i + codeSizeAt(c, i), ix, delta);
+        if (r < -1)
+          {
+            return r + 1;
+          }
+        else if (r == -1)
+          {
+            return i;
+          }
+        else
+          {
+            return r;
+          }
+      }
+  }
+
+
+  /**
+   * Helper routine to go back in the code jumping over the whole previous
+   * expression. Say you have the code
+   *
+   *   0: const 1
+   *   1: current
+   *   2: call field 'n'
+   *   3: current
+   *   4: call field 'm'
+   *   5: const 2
+   *   6: call add
+   *   7: sub
+   *   8: mul
+   *
+   * Then 'skip(cl, c, 6)' is 2 (popping 'add current.m 2'), while 'skip(cl, c,
+   * 2)' is 0 (popping 'curent.n').
+   *
+   * 'skip(cl, c, 7)' will result in 7, while 'skip(cl, c, 8)' will result in an
+   * error since there is no expression before 'mul 1 (sub curent.n (add
+   * current.m 2))'.
+   *
+   * @param cl index of the clazz containing the code block.
+   *
+   * @param c the code block
+   *
+   * @param ix an index in c
+   */
+  public int skipBack(int cl, int c, int ix)
+  {
+    return switch (codeAt(c, ix))
+      {
+      case AdrOf   -> skipBack(cl, c, codeIndex(c, ix, -1));
+      case Assign  ->
+        {
+          var tc = accessTargetClazz(cl, c, ix);
+          ix = skipBack(cl, c, codeIndex(c, ix, -1));
+          if (tc != clazzUniverse())
+            {
+              ix = skipBack(cl, c, ix);
+            }
+          yield ix;
+        }
+      case Box     -> skipBack(cl, c, codeIndex(c, ix, -1));
+      case Unbox   -> skipBack(cl, c, codeIndex(c, ix, -1));
+      case Call    ->
+        {
+          var tc = accessTargetClazz(cl, c, ix);
+          var cc = accessedClazz(cl, c, ix);
+          var ac = clazzArgCount(cc);
+          ix = codeIndex(c, ix, -1);
+          for (var i = 0; i < ac; i++)
+            {
+              var acl = clazzArgClazz(cc, ac-1-i);
+              if (clazzResultClazz(acl) != clazzUniverse())
+                {
+                  ix = skipBack(cl, c, ix);
+                }
+            }
+          if (tc != clazzUniverse())
+            {
+              ix = skipBack(cl, c, ix);
+            }
+          yield ix;
+        }
+      case Current -> codeIndex(c, ix, -1);
+      case Comment -> skipBack(cl, c, codeIndex(c, ix, -1));
+      case Const   -> codeIndex(c, ix, -1);
+      case Dup     -> codeIndex(c, ix, -1);
+      case Match   ->
+        {
+          ix = codeIndex(c, ix, -1);
+          ix = skipBack(cl, c, ix);
+          yield ix;
+        }
+      case Tag     -> skipBack(cl, c, codeIndex(c, ix, -1));
+      case Env     -> codeIndex(c, ix, -1);
+      case Pop     -> skipBack(cl, c, codeIndex(c, ix, -1));
+      case Unit    -> codeIndex(c, ix, -1);
+      };
+  }
+
+
+  /*-----------------  convenience methods for effects  -----------------*/
+
+
+  /**
+   * Is cl one of the instrinsics in effect that changes the effect in
+   * the current environment?
+   *
+   * @param cl the id of the intrinsic clazz
+   *
+   * @return true for effect.install and similar features.
+   */
+  public boolean isEffect(int cl)
+  {
+    if (PRECONDITIONS) require
+      (clazzKind(cl) == FeatureKind.Intrinsic);
+
+    return switch(clazzIntrinsicName(cl))
+      {
+      case "effect.replace",
+           "effect.default",
+           "effect.abortable",
+           "effect.abort" -> true;
+      default -> false;
+      };
+  }
+
+
+
+  /**
+   * For an intrinstic in effect that changes the effect in the
+   * current environment, return the type of the environment.  This type is used
+   * to distinguish different environments.
+   *
+   * @param cl the id of the intrinsic clazz
+   *
+   * @return the type of the outer feature of cl
+   */
+  public int effectType(int cl)
+  {
+    if (PRECONDITIONS) require
+      (isEffect(cl));
+
+    var or = clazzOuterRef(cl);
+    return clazzResultClazz(or);
+  }
+
 
 }
 

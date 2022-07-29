@@ -72,6 +72,18 @@ class CIdent extends CExpr
   }
 
 
+  /*--------------------------  static methods  -------------------------*/
+
+
+  /**
+   * Local argument #i
+   */
+  static CIdent arg(int i)
+  {
+    return new CIdent("arg" + i);
+  }
+
+
   /*-----------------------------  methods  -----------------------------*/
 
 

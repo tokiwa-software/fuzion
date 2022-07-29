@@ -28,6 +28,7 @@ package dev.flang.air;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -294,6 +295,15 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private YesNo _isUnitType = YesNo.dontKnow;
 
 
+  /**
+   * This gives the id this clazz is mapped to in FUIR.
+   *
+   * NYI: Remove once FUIR is based on a .fuir file and not on Clazz instances
+   * and the AST.
+   */
+  public int _idInFUIR = -1;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -360,9 +370,9 @@ public class Clazz extends ANY implements Comparable<Clazz>
   void dependencies()
   {
     _choiceGenerics = determineChoiceGenerics();
-    _resultField = determineResultField();
     _argumentFields = determineArgumentFields();
     _actualGenerics = determineActualGenerics();
+    _resultField = determineResultField();
     _resultClazz = determineResultClazz();
     _outerRef = determineOuterRef();
     _choiceTag = determineChoiceTag();
@@ -574,7 +584,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
     if (t.isOpenGeneric())
       {
-        var types = replaceOpen(t);
+        var types = replaceOpen(t, feature());
         if (CHECKS) check
           (Errors.count() > 0 || select >= 0 && select < types.size());
         t = 0 <= select && select < types.size() ? types.get(select) : Types.t_ERROR;
@@ -602,7 +612,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (t != null,
        Errors.count() > 0 || !t.isOpenGeneric());
 
-    return actualClazz(t, -1);
+    return actualClazz0(t, -1);
   }
 
 
@@ -611,12 +621,15 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * formal generics arguments will first be replaced via actualType(t), and the
    * Clazz will be created from the result.
    *
+   * NYI: This should be private, it is used only by actualClazz() and at one
+   * location in be/interpreter that should be removed.
+   *
    * @param t the original type
    *
    * @param select specifies the actual type parameter in case
    * t.isOpenGeneric().
    */
-  public Clazz actualClazz(AbstractType t, int select)
+  public Clazz actualClazz0(AbstractType t, int select)
   {
     if (PRECONDITIONS) require
       (t != null,
@@ -726,7 +739,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isVoidType()
   {
-    return _type.compareTo(Types.resolved.t_void) == 0;
+    return this == Clazzes.c_void.get();
   }
 
 
@@ -1007,7 +1020,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
             innerClazzes = (Clazz[]) _inner.get(f);
             if (innerClazzes == null)
               {
-                innerClazzes = new Clazz[replaceOpen(f.resultType()).size()];
+                innerClazzes = new Clazz[replaceOpenCount(f)];
                 _inner.put(f, innerClazzes);
               }
             if (CHECKS) check
@@ -1104,7 +1117,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           field.isOuterRef() && fo.isOuterRefAdrOfValue()     ? actualClazz(Types.t_ADDRESS) :
           field.isOuterRef() && fo.isOuterRefCopyOfValue() ||
           !field.isOuterRef() && field != fo.resultField() // NYI: use lookup/resultClazz for all fields
-                                                           ? actualClazz(field.resultType(), select)
+                                                           ? actualClazz0(field.resultType(), select)
                                                            : lookup(field, Call.NO_GENERICS, Clazzes.isUsedAt(field)).resultClazz();
         if (select < 0)
           {
@@ -1161,7 +1174,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public boolean isAssignableFrom(Clazz other)
   {
-    return (this==other) || isRef() && this._type.isAssignableFrom(other._type);
+    return this._type.isAssignableFrom(other._type);
   }
 
 
@@ -1653,7 +1666,22 @@ public class Clazz extends ANY implements Comparable<Clazz>
     if (PRECONDITIONS) require
       (_argumentFields != null);
 
-    return this == Clazzes.c_void.getIfCreated() || Arrays.stream(argumentFields()).anyMatch(a -> a.resultClazz().isVoidType());
+    if (false)  // streams version is significantly slower
+      {
+        return Arrays.stream(argumentFields())
+                     .anyMatch(a -> a.resultClazz().isVoidType());
+      }
+    else  // array iteration version is fast:
+      {
+        for (var a : argumentFields())
+          {
+            if (a.resultClazz().isVoidType())
+              {
+                return true;
+              }
+          }
+      }
+    return false;
   }
 
 
@@ -1884,6 +1912,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   private Clazz determineResultClazz()
   {
     var f = feature();
+    var of = _outer != null ? _outer.feature() : null;
 
     if (f.isConstructor())
       {
@@ -1897,12 +1926,14 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         return typeParameterActualType().typeClazz();
       }
-    else if (feature() == Types.resolved.f_Types_get)
+    else if (f  == Types.resolved.f_Types_get ||
+             of == Types.resolved.f_Types_get && f == of.resultField())
       // NYI (see #282): Would be nice if this would not need special handlng but would
       // work in general for any feature with type parameters that returns one
       // of this type parameters as its result using '=>'.
       {
-        return actualGenerics()[0].typeClazz();
+        var ag = (f == Types.resolved.f_Types_get ? this : _outer).actualGenerics();
+        return ag[0].typeClazz();
       }
     else
       {
@@ -2040,42 +2071,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * Determine the argument fields of this routine.
    *
-   * @return the argument fields array or null if this is not a routine.
+   * @return the argument fields array or NO_CLAZZES if this is not a routine.
    */
   private Clazz[] determineArgumentFields()
   {
-    Clazz[] result = NO_CLAZZES;
-    var f = feature();
-    switch (f.kind())
-      {
-      case Abstract  :
-      case Intrinsic :
-      case Routine   :
-        {
-          var args = new ArrayList<Clazz>();
-          for (var a : f.valueArguments())
-            {
-              if (Clazzes.isUsed(a, this))
-                {
-                  if (a.isOpenGenericField())
-                    {
-                      var types = replaceOpen(a.resultType());
-                      for (var i = 0; i < types.size(); i++)
-                        {
-                          args.add(lookup(a, i, Call.NO_GENERICS, Clazzes.isUsedAt(a), false));
-                        }
-                    }
-                  else if (this != Clazzes.c_void.get())
-                    {
-                      args.add(lookup(a, Call.NO_GENERICS, Clazzes.isUsedAt(a)));
-                    }
-                }
-            }
-          result = args.size() == 0 ? NO_CLAZZES : args.toArray(new Clazz[args.size()]);
-          break;
-        }
-      }
-    return result;
+    return actualFields(feature().valueArguments());
   }
 
 
@@ -2179,74 +2179,119 @@ public class Clazz extends ANY implements Comparable<Clazz>
   /**
    * For an open generic type ft find the actual type parameters within this
    * clazz.  The resulting list could be empty.
+   *
+   * @param ft the type that is an open generic
+   *
+   * @param fouter the outer feature where ft is used. This might be a heir of
+   * _outer.feature() in case ft is the result type of an inherited feature.
    */
-  public List<AbstractType> replaceOpen(AbstractType ft)
+  List<AbstractType> replaceOpen(AbstractType ft, AbstractFeature fouter)
   {
     if (PRECONDITIONS) require
       (Errors.count() > 0 || ft.isOpenGeneric());
 
-    var g = ft.isOpenGeneric() ? ft.genericArgument() : null;
-    if (g != null && feature().generics() == g.formalGenerics())
+    List<AbstractType> types;
+    var inh = _outer == null ? null : _outer.feature().tryFindInheritanceChain(fouter.outer());
+    if (inh != null &&
+        inh.size() > 0)
       {
-        return g.replaceOpen(_type.generics());
+        var typesa = new AbstractType[] { ft };
+        typesa = fouter.handDown(null, typesa, _outer.feature());
+        types = new List<AbstractType>();
+        for (var t : typesa)
+          {
+            types.add(t);
+          }
+      }
+    else if (ft.isOpenGeneric() && feature().generics() == ft.genericArgument().formalGenerics())
+      {
+        types = ft.genericArgument().replaceOpen(_type.generics());
       }
     else if (_outer != null)
       {
-        return _outer.replaceOpen(ft);
+        types = _outer.replaceOpen(ft, fouter);
       }
     else
       {
         if (CHECKS) check
-          (Errors.count() >= 0);
-        return new List<>();
+          (Errors.count() > 0);
+        types = new List<>();
       }
+    return types;
   }
+
+
+  /**
+   * For a feature with an open generic result type, find the number of actual
+   * instances existing in this clazz.
+   *
+   * @param a an inner feature of this of open generic type.
+   */
+  public int replaceOpenCount(AbstractFeature a)
+  {
+    if (PRECONDITIONS) require
+      (Errors.count() > 0 || a != Types.f_ERROR || a.resultType().isOpenGeneric());
+
+    return a == Types.f_ERROR ? 0 : replaceOpen(a.resultType(), a.outer()).size();
+  }
+
+
+  /**
+   * From a set of inner features of this clazz, extract used fields and create
+   * the corresponding clazzes for these fields.
+   *
+   * Fields with open generic result type will be replaced by 0 or more clazzes
+   * depending on the number of actual type parameters the open generic is
+   * replaced with.
+   *
+   * @param feats a collection of features the fields will be extracted from.
+   *
+   * @return NO_CLAZZES in case there are no fields remaining, an array of
+   * fields otherwise.
+   */
+  Clazz[] actualFields(Collection<AbstractFeature> feats)
+  {
+    var fields = new List<Clazz>();
+    for (var field: feats)
+      {
+        if (this != Clazzes.c_void.get() &&
+            field.isField() &&
+            field == findRedefinition(field) && // NYI: proper field redefinition handling missing, see tests/redef_args/*
+            Clazzes.isUsed(field, this))
+          {
+            if (field.isOpenGenericField())
+              {
+                var n = replaceOpenCount(field);
+                for (var i = 0; i < n; i++)
+                  {
+                    fields.add(lookup(field, i, Call.NO_GENERICS, Clazzes.isUsedAt(field), false));
+                  }
+              }
+            else if (this != Clazzes.c_void.get())
+              {
+                fields.add(lookup(field, Call.NO_GENERICS, Clazzes.isUsedAt(field)));
+              }
+          }
+      }
+    return fields.size() == 0 ? NO_CLAZZES : fields.toArray(new Clazz[fields.size()]);
+  }
+
 
   /**
    * Set of fields in this clazz, including inherited and artificially added fields.
    *
-   * @return the set of fields, empty array if none. null before this clazz was
-   * layouted or for a clazz that cannot be instantiated (instrinsic, abstract,
-   * field, etc.).
+   * @return the set of fields, NO_CLAZZES if none. Never null.
    */
   public Clazz[] fields()
   {
     if (_fields == null)
       {
-        if (isChoice() ||
-            feature().isIntrinsic()
-            /* NYI: would be good to add isRef() here and create _fields only for value types */
-            )
-          {
-            _fields = NO_CLAZZES;
-          }
-        else
-          {
-            var fields = new List<Clazz>();
-            for (var f: _module.allInnerAndInheritedFeatures(feature()))
-              {
-                if (f.isField() &&
-                    Clazzes.isUsed(f, this) &&
-                    this != Clazzes.c_void.get() &&
-                    f == findRedefinition(f)  // NYI: proper field redefinition handling missing, see tests/redef_args/*
-                    )
-                  {
-                    if (f.isOpenGenericField())
-                      {
-                        var types = replaceOpen(f.resultType());
-                        for (var i = 0; i < types.size(); i++)
-                          {
-                            fields.add(lookup(f, i, Call.NO_GENERICS, Clazzes.isUsedAt(f), false));
-                          }
-                      }
-                    else
-                      {
-                        fields.add(lookup(f, Call.NO_GENERICS, Clazzes.isUsedAt(f)));
-                      }
-                  }
-              }
-            _fields = fields.toArray(new Clazz[fields.size()]);
-          }
+        _fields =
+          isChoice()              ||
+          // note that intrinsics may have fields that are used in the intrinsic's pre-condition!
+          false && isRef() /* NYI: would be good to add isRef() here and create _fields only for value types, does not work with C backend yet */
+          ? NO_CLAZZES
+          : actualFields(_module.allInnerAndInheritedFeatures(feature()));
       }
     return isRef() ? NO_CLAZZES : _fields;
   }
@@ -2271,7 +2316,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
           }
         i++;
       }
-    throw new Error("Clazz.fieldIndex() did not find field " + this);
+    throw new Error("Clazz.fieldIndex() did not find field " + this + " in " + _outer);
   }
 
 
@@ -2294,6 +2339,42 @@ public class Clazz extends ANY implements Comparable<Clazz>
   public Clazz asValue()
   {
     return _asValue;
+  }
+
+
+  /**
+   * For a given field fc whose outer instance is a value type, find the same
+   * field in the corresponding outer ref type.
+   *
+   * @param fc a field in a value instance
+   */
+  public Clazz correspondingFieldInRefInstance(Clazz fc)
+  {
+    var oc = fc._outer.asRef();
+    var g = new List<AbstractType>();
+    for (var ag : fc.actualGenerics())
+      {
+        g.add(ag._type);
+      }
+    return oc.lookup(fc.feature(), fc._select, g, Clazzes.isUsedAt(fc.feature()), false);
+  }
+
+
+  /**
+   * For a given field fc whose outer instance is a ref type, find the same
+   * field in the corresponding outer value type.
+   *
+   * @param fc a field in a ref instance
+   */
+  public Clazz correspondingFieldInValueInstance(Clazz fc)
+  {
+    var oc = fc._outer.asValue();
+    var g = new List<AbstractType>();
+    for (var ag : fc.actualGenerics())
+      {
+        g.add(ag._type);
+      }
+    return oc.lookup(fc.feature(), fc._select, g, Clazzes.isUsedAt(fc.feature()), false);
   }
 
 }

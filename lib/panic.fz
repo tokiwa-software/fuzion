@@ -30,7 +30,7 @@ panic (
   # the provider this effect uses to panic
   p panicProvider,
 
-  redef r effectModes
+  redef r effectMode.val
   ) : effect r
 is
 

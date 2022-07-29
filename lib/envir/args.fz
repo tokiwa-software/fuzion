@@ -29,7 +29,7 @@ private args (
   all array<string>,
 
   # action to be taken: plain, install or replace?
-  redef r effectModes,
+  redef r effectMode.val,
 
   _ unit
   ) : array string all.internalArray unit unit unit, effect r

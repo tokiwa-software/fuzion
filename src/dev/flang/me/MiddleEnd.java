@@ -26,6 +26,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.me;
 
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -55,7 +56,6 @@ import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.HasSourcePosition;
-import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 
@@ -83,7 +83,7 @@ public class MiddleEnd extends ANY
   /**
    * List of features scheduled for feature index resolution
    */
-  final List<AbstractFeature> _forFindingUsedFeatures = new List<>();
+  final LinkedList<AbstractFeature> _forFindingUsedFeatures = new LinkedList<>();
 
 
   /**

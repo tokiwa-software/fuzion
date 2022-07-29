@@ -114,7 +114,6 @@ public class CTypes extends ANY
   }
 
 
-
   /**
    * Create declarations of the C types required for the given clazz.
    *
@@ -124,18 +123,38 @@ public class CTypes extends ANY
    */
   CStmnt types(int cl)
   {
-    switch (_fuir.clazzKind(cl))
+    var res = CStmnt.EMPTY;
+    if (needsTypeDeclaration(cl))
       {
-      case Choice:
-      case Routine:
         var name = _names.struct(cl);
         // special handling of stdlib clazzes known to the compiler
         var stype = scalar(cl);
         var type = stype != null ? stype : "struct " + name;
-        return CStmnt.typedef(type, name);
-      default:
-        return CStmnt.EMPTY;
+        res = CStmnt.typedef(type, name);
       }
+    return res;
+  }
+
+
+  /**
+   * Do we need to declare a type for the given clazz? This is true for choice
+   * and routine, but also for intrinsics if they have a pre-condition, since
+   * the code for the pre-condition is generated and may access the instance
+   * associated with cl.
+   *
+   * @param cl a clazz id.
+   *
+   * @return true iff a type and struct declaration is needed for cl.
+   */
+  private boolean needsTypeDeclaration(int cl)
+  {
+    return switch (_fuir.clazzKind(cl))
+      {
+      case Choice, Routine -> true;
+      case Intrinsic       -> _fuir.clazzContract(cl, FUIR.ContractKind.Pre, 0) >= 0;
+      default              -> false;
+      };
+
   }
 
 
@@ -236,8 +255,8 @@ public class CTypes extends ANY
               {
                 var fcl = _fuir.clazzField(cl, i);
                 var rcl = _fuir.clazzResultClazz(fcl);
-                if (!_fuir.clazzIsRef(rcl) && !_fuir.clazzIsOuterRef(fcl))
-                  {
+                if (!_fuir.clazzIsRef(rcl) && !_fuir.clazzFieldIsAdrOfValue(fcl))
+                  { // fcl is a value typed field, not a ref
                     findDeclarationOrder(rcl, result, visited);
                   }
               }
@@ -267,60 +286,55 @@ public class CTypes extends ANY
    */
   CStmnt structs(int cl)
   {
-    switch (_fuir.clazzKind(cl))
+    CStmnt result = CStmnt.EMPTY;
+    if (needsTypeDeclaration(cl))
       {
-      case Choice:
-      case Routine:
-        {
-          var l = new List<CStmnt>(CStmnt.lineComment("for " + _fuir.clazzAsString(cl)));
-          var els = new List<CStmnt>();
-          if (_fuir.clazzIsRef(cl))
-            {
-              var vcl = _fuir.clazzAsValue(cl);
-              els.add(CStmnt.decl("uint32_t", _names.CLAZZ_ID));
-              els.add(CStmnt.decl(clazz(vcl), _names.FIELDS_IN_REF_CLAZZ));
-            }
-          else if (_fuir.clazzIsChoice(cl))
-            {
-              var ct = _fuir.clazzChoiceTag(cl);
-              if (ct != -1)
-                {
-                  els.add(CStmnt.decl(clazzField(ct), _names.TAG_NAME));
-                }
-              var uls = new List<CStmnt>();
-              for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
-                {
-                  var cc = _fuir.clazzChoice(cl, i);
-                  if (cc != -1 && !_fuir.clazzIsRef(cc))
-                    {
-                      uls.add(CStmnt.decl(clazz(cc), new CIdent(_names.CHOICE_ENTRY_NAME + i)));
-                    }
-                }
-              if (_fuir.clazzIsChoiceWithRefs(cl))
-                {
-                  uls.add(CStmnt.decl(clazz(_fuir.clazzObject()), _names.CHOICE_REF_ENTRY_NAME));
-                }
-              els.add(CStmnt.unyon(uls, _names.CHOICE_UNION_NAME));
-            }
-          else
-            {
-              for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
-                {
-                  var f = _fuir.clazzField(cl, i);
-                  els.add(CStmnt.decl(clazzField(f), _names.fieldName(f)));
-                }
-            }
-          l.add(CStmnt.struct(_names.struct(cl), els));
-          if (cl == _fuir.clazzUniverse())
-            {
-              l.add(CStmnt.decl("static", _names.struct(cl), _names.UNIVERSE));
-            }
-          return CStmnt.seq(l);
-        }
-      default:
-        break;
+        var l = new List<CStmnt>(CStmnt.lineComment("for " + _fuir.clazzAsString(cl)));
+        var els = new List<CStmnt>();
+        if (_fuir.clazzIsRef(cl))
+          {
+            var vcl = _fuir.clazzAsValue(cl);
+            els.add(CStmnt.decl("uint32_t", _names.CLAZZ_ID));
+            els.add(CStmnt.decl(clazz(vcl), _names.FIELDS_IN_REF_CLAZZ));
+          }
+        else if (_fuir.clazzIsChoice(cl))
+          {
+            var ct = _fuir.clazzChoiceTag(cl);
+            if (ct != -1)
+              {
+                els.add(CStmnt.decl(clazzField(ct), _names.TAG_NAME));
+              }
+            var uls = new List<CStmnt>();
+            for (int i = 0; i < _fuir.clazzNumChoices(cl); i++)
+              {
+                var cc = _fuir.clazzChoice(cl, i);
+                if (cc != -1 && !_fuir.clazzIsRef(cc))
+                  {
+                    uls.add(CStmnt.decl(clazz(cc), new CIdent(_names.CHOICE_ENTRY_NAME + i)));
+                  }
+              }
+            if (_fuir.clazzIsChoiceWithRefs(cl))
+              {
+                uls.add(CStmnt.decl(clazz(_fuir.clazzObject()), _names.CHOICE_REF_ENTRY_NAME));
+              }
+            els.add(CStmnt.unyon(uls, _names.CHOICE_UNION_NAME));
+          }
+        else
+          {
+            for (int i = 0; i < _fuir.clazzNumFields(cl); i++)
+              {
+                var f = _fuir.clazzField(cl, i);
+                els.add(CStmnt.decl(clazzField(f), _names.fieldName(f)));
+              }
+          }
+        l.add(CStmnt.struct(_names.struct(cl), els));
+        if (cl == _fuir.clazzUniverse())
+          {
+            l.add(CStmnt.decl("static", _names.struct(cl), _names.UNIVERSE));
+          }
+        result = CStmnt.seq(l);
       }
-    return CStmnt.EMPTY;
+    return result;
   }
 
 }

@@ -43,7 +43,7 @@ private handles<T,X>(
   private ar array<T>,
 
   # action to be taken: plain monad, install or replace?
-  redef r effectModes
+  redef r effectMode.val
   ) : onewayMonad<X, handles<T,X>> r
 is
 

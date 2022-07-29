@@ -33,43 +33,47 @@ CLASSES_DIR = $(BUILD_DIR)/classes
 JAVA_FILE_TOOLS_VERSION_IN =  $(SRC)/dev/flang/tools/Version.java.in
 JAVA_FILE_TOOLS_VERSION    =  $(BUILD_DIR)/generated/src/dev/flang/tools/Version.java
 
-JAVA_FILES_UTIL           = $(wildcard $(SRC)/dev/flang/util/*.java          )
-JAVA_FILES_UTIL_UNICODE   = $(wildcard $(SRC)/dev/flang/util/unicode/*.java  )
-JAVA_FILES_AST            = $(wildcard $(SRC)/dev/flang/ast/*.java           )
-JAVA_FILES_PARSER         = $(wildcard $(SRC)/dev/flang/parser/*.java        )
-JAVA_FILES_IR             = $(wildcard $(SRC)/dev/flang/ir/*.java            )
-JAVA_FILES_MIR            = $(wildcard $(SRC)/dev/flang/mir/*.java           )
-JAVA_FILES_FE             = $(wildcard $(SRC)/dev/flang/fe/*.java            )
-JAVA_FILES_AIR            = $(wildcard $(SRC)/dev/flang/air/*.java           )
-JAVA_FILES_ME             = $(wildcard $(SRC)/dev/flang/me/*.java            )
-JAVA_FILES_FUIR           = $(wildcard $(SRC)/dev/flang/fuir/*.java          )
-JAVA_FILES_FUIR_CFG       = $(wildcard $(SRC)/dev/flang/fuir/cfg/*.java          )
-JAVA_FILES_OPT            = $(wildcard $(SRC)/dev/flang/opt/*.java           )
-JAVA_FILES_BE_INTERPRETER = $(wildcard $(SRC)/dev/flang/be/interpreter/*.java)
-JAVA_FILES_BE_C           = $(wildcard $(SRC)/dev/flang/be/c/*.java          )
-JAVA_FILES_BE_EFFECTS     = $(wildcard $(SRC)/dev/flang/be/effects/*.java    )
-JAVA_FILES_TOOLS          = $(wildcard $(SRC)/dev/flang/tools/*.java         ) $(JAVA_FILE_TOOLS_VERSION)
-JAVA_FILES_TOOLS_FZJAVA   = $(wildcard $(SRC)/dev/flang/tools/fzjava/*.java  )
-JAVA_FILES_MISC_LOGO      = $(wildcard $(SRC)/dev/flang/misc/logo/*.java     )
+JAVA_FILES_UTIL              = $(wildcard $(SRC)/dev/flang/util/*.java          )
+JAVA_FILES_UTIL_UNICODE      = $(wildcard $(SRC)/dev/flang/util/unicode/*.java  )
+JAVA_FILES_AST               = $(wildcard $(SRC)/dev/flang/ast/*.java           )
+JAVA_FILES_PARSER            = $(wildcard $(SRC)/dev/flang/parser/*.java        )
+JAVA_FILES_IR                = $(wildcard $(SRC)/dev/flang/ir/*.java            )
+JAVA_FILES_MIR               = $(wildcard $(SRC)/dev/flang/mir/*.java           )
+JAVA_FILES_FE                = $(wildcard $(SRC)/dev/flang/fe/*.java            )
+JAVA_FILES_AIR               = $(wildcard $(SRC)/dev/flang/air/*.java           )
+JAVA_FILES_ME                = $(wildcard $(SRC)/dev/flang/me/*.java            )
+JAVA_FILES_FUIR              = $(wildcard $(SRC)/dev/flang/fuir/*.java          )
+JAVA_FILES_FUIR_ANALYSIS     = $(wildcard $(SRC)/dev/flang/fuir/analysis/*.java )
+JAVA_FILES_FUIR_ANALYSIS_DFA = $(wildcard $(SRC)/dev/flang/fuir/analysis/dfa/*.java )
+JAVA_FILES_FUIR_CFG          = $(wildcard $(SRC)/dev/flang/fuir/cfg/*.java      )
+JAVA_FILES_OPT               = $(wildcard $(SRC)/dev/flang/opt/*.java           )
+JAVA_FILES_BE_INTERPRETER    = $(wildcard $(SRC)/dev/flang/be/interpreter/*.java)
+JAVA_FILES_BE_C              = $(wildcard $(SRC)/dev/flang/be/c/*.java          )
+JAVA_FILES_BE_EFFECTS        = $(wildcard $(SRC)/dev/flang/be/effects/*.java    )
+JAVA_FILES_TOOLS             = $(wildcard $(SRC)/dev/flang/tools/*.java         ) $(JAVA_FILE_TOOLS_VERSION)
+JAVA_FILES_TOOLS_FZJAVA      = $(wildcard $(SRC)/dev/flang/tools/fzjava/*.java  )
+JAVA_FILES_MISC_LOGO         = $(wildcard $(SRC)/dev/flang/misc/logo/*.java     )
 
-CLASS_FILES_UTIL           = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
-CLASS_FILES_UTIL_UNICODE   = $(CLASSES_DIR)/dev/flang/util/unicode/__marker_for_make__
-CLASS_FILES_AST            = $(CLASSES_DIR)/dev/flang/ast/__marker_for_make__
-CLASS_FILES_PARSER         = $(CLASSES_DIR)/dev/flang/parser/__marker_for_make__
-CLASS_FILES_IR             = $(CLASSES_DIR)/dev/flang/ir/__marker_for_make__
-CLASS_FILES_MIR            = $(CLASSES_DIR)/dev/flang/mir/__marker_for_make__
-CLASS_FILES_FE             = $(CLASSES_DIR)/dev/flang/fe/__marker_for_make__
-CLASS_FILES_AIR            = $(CLASSES_DIR)/dev/flang/air/__marker_for_make__
-CLASS_FILES_ME             = $(CLASSES_DIR)/dev/flang/me/__marker_for_make__
-CLASS_FILES_FUIR           = $(CLASSES_DIR)/dev/flang/fuir/__marker_for_make__
-CLASS_FILES_FUIR_CFG       = $(CLASSES_DIR)/dev/flang/fuir/cfg/__marker_for_make__
-CLASS_FILES_OPT            = $(CLASSES_DIR)/dev/flang/opt/__marker_for_make__
-CLASS_FILES_BE_INTERPRETER = $(CLASSES_DIR)/dev/flang/be/interpreter/__marker_for_make__
-CLASS_FILES_BE_C           = $(CLASSES_DIR)/dev/flang/be/c/__marker_for_make__
-CLASS_FILES_BE_EFFECTS     = $(CLASSES_DIR)/dev/flang/be/effects/__marker_for_make__
-CLASS_FILES_TOOLS          = $(CLASSES_DIR)/dev/flang/tools/__marker_for_make__
-CLASS_FILES_TOOLS_FZJAVA   = $(CLASSES_DIR)/dev/flang/tools/fzjava/__marker_for_make__
-CLASS_FILES_MISC_LOGO      = $(CLASSES_DIR)/dev/flang/misc/logo/__marker_for_make__
+CLASS_FILES_UTIL              = $(CLASSES_DIR)/dev/flang/util/__marker_for_make__
+CLASS_FILES_UTIL_UNICODE      = $(CLASSES_DIR)/dev/flang/util/unicode/__marker_for_make__
+CLASS_FILES_AST               = $(CLASSES_DIR)/dev/flang/ast/__marker_for_make__
+CLASS_FILES_PARSER            = $(CLASSES_DIR)/dev/flang/parser/__marker_for_make__
+CLASS_FILES_IR                = $(CLASSES_DIR)/dev/flang/ir/__marker_for_make__
+CLASS_FILES_MIR               = $(CLASSES_DIR)/dev/flang/mir/__marker_for_make__
+CLASS_FILES_FE                = $(CLASSES_DIR)/dev/flang/fe/__marker_for_make__
+CLASS_FILES_AIR               = $(CLASSES_DIR)/dev/flang/air/__marker_for_make__
+CLASS_FILES_ME                = $(CLASSES_DIR)/dev/flang/me/__marker_for_make__
+CLASS_FILES_FUIR              = $(CLASSES_DIR)/dev/flang/fuir/__marker_for_make__
+CLASS_FILES_FUIR_ANALYSIS     = $(CLASSES_DIR)/dev/flang/fuir/analysis/__marker_for_make__
+CLASS_FILES_FUIR_ANALYSIS_DFA = $(CLASSES_DIR)/dev/flang/fuir/analysis/dfa/__marker_for_make__
+CLASS_FILES_FUIR_CFG          = $(CLASSES_DIR)/dev/flang/fuir/cfg/__marker_for_make__
+CLASS_FILES_OPT               = $(CLASSES_DIR)/dev/flang/opt/__marker_for_make__
+CLASS_FILES_BE_INTERPRETER    = $(CLASSES_DIR)/dev/flang/be/interpreter/__marker_for_make__
+CLASS_FILES_BE_C              = $(CLASSES_DIR)/dev/flang/be/c/__marker_for_make__
+CLASS_FILES_BE_EFFECTS        = $(CLASSES_DIR)/dev/flang/be/effects/__marker_for_make__
+CLASS_FILES_TOOLS             = $(CLASSES_DIR)/dev/flang/tools/__marker_for_make__
+CLASS_FILES_TOOLS_FZJAVA      = $(CLASSES_DIR)/dev/flang/tools/fzjava/__marker_for_make__
+CLASS_FILES_MISC_LOGO         = $(CLASSES_DIR)/dev/flang/misc/logo/__marker_for_make__
 
 JFREE_SVG_URL = https://repo1.maven.org/maven2/org/jfree/org.jfree.svg/5.0.1/org.jfree.svg-5.0.1.jar
 JARS_JFREE_SVG_JAR = $(BUILD_DIR)/jars/org.jfree.svg-5.0.1.jar
@@ -179,6 +183,16 @@ $(CLASS_FILES_FUIR): $(JAVA_FILES_FUIR) $(CLASS_FILES_UTIL) $(CLASS_FILES_IR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR)
 	touch $@
 
+$(CLASS_FILES_FUIR_ANALYSIS): $(JAVA_FILES_FUIR_ANALYSIS) $(CLASS_FILES_UTIL) $(CLASS_FILES_FUIR)
+	mkdir -p $(CLASSES_DIR)
+	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_ANALYSIS)
+	touch $@
+
+$(CLASS_FILES_FUIR_ANALYSIS_DFA): $(JAVA_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_FUIR_ANALYSIS) $(CLASS_FILES_UTIL) $(CLASS_FILES_FUIR)
+	mkdir -p $(CLASSES_DIR)
+	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_ANALYSIS_DFA)
+	touch $@
+
 $(CLASS_FILES_FUIR_CFG): $(JAVA_FILES_FUIR_CFG) $(CLASS_FILES_UTIL) $(CLASS_FILES_FUIR)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_FUIR_CFG)
@@ -194,7 +208,7 @@ $(CLASS_FILES_BE_INTERPRETER): $(JAVA_FILES_BE_INTERPRETER) $(CLASS_FILES_FUIR) 
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_INTERPRETER)
 	touch $@
 
-$(CLASS_FILES_BE_C): $(JAVA_FILES_BE_C) $(CLASS_FILES_FUIR)
+$(CLASS_FILES_BE_C): $(JAVA_FILES_BE_C) $(CLASS_FILES_FUIR) $(CLASS_FILES_FUIR_ANALYSIS_DFA)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_C)
 	touch $@
@@ -204,7 +218,7 @@ $(CLASS_FILES_BE_EFFECTS): $(JAVA_FILES_BE_EFFECTS) $(CLASS_FILES_FUIR_CFG)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_BE_EFFECTS)
 	touch $@
 
-$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_INTERPRETER)
+$(CLASS_FILES_TOOLS): $(JAVA_FILES_TOOLS) $(CLASS_FILES_FE) $(CLASS_FILES_ME) $(CLASS_FILES_OPT) $(CLASS_FILES_BE_C) $(CLASS_FILES_FUIR_ANALYSIS_DFA) $(CLASS_FILES_BE_EFFECTS) $(CLASS_FILES_BE_INTERPRETER)
 	mkdir -p $(CLASSES_DIR)
 	$(JAVAC) -cp $(CLASSES_DIR) -d $(CLASSES_DIR) $(JAVA_FILES_TOOLS)
 	touch $@
@@ -258,6 +272,10 @@ $(BUILD_DIR)/bin/fz: $(FZ_SRC)/bin/fz $(CLASS_FILES_TOOLS) $(BUILD_DIR)/lib
 $(MOD_BASE): $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz
 	mkdir -p $(@D)
 	$(BUILD_DIR)/bin/fz -XsaveBaseLib=$@
+	$(BUILD_DIR)/bin/fz -XXcheckIntrinsics
+
+# keep make from deleting $(MOD_BASE) on ctrl-C:
+.PRECIOUS: $(MOD_BASE)
 
 $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)
