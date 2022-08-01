@@ -1015,7 +1015,7 @@ argType     : typeType
                                     Visi v = visibility();
                                     int m = modifiers();
                                     List<String> n = argNames();
-                                    Type t;
+                                    AbstractType t;
                                     Impl i;
                                     if (current() == Token.t_type)
                                       {
@@ -2544,7 +2544,7 @@ caseStar    : STAR       caseBlock
       {
         String n = identifier();
         match(Token.t_ident, "caze");
-        Type t = type();
+        var t = type();
         result = new Case(pos, t, n, caseBlock());
       }
     else
@@ -3689,9 +3689,9 @@ implFldUndef: ":=" "?"
 type        : onetype ( PIPE onetype ) *
             ;
    */
-  Type type()
+  AbstractType type()
   {
-    Type result = onetype();
+    var result = onetype();
     if (isOperator('|'))
       {
         List<AbstractType> l = new List<>(result);
@@ -3699,7 +3699,7 @@ type        : onetype ( PIPE onetype ) *
           {
             l.add(onetype());
           }
-        result = new Type(result.pos, "choice", l, null);
+        result = new Type(result.pos(), "choice", l, null);
       }
     return result;
   }
@@ -3776,14 +3776,15 @@ typeOpt     : type
             |
             ;
    */
-  Type onetype()
+  AbstractType onetype()
   {
-    Type result;
+    AbstractType result;
     SourcePosition pos = posObject();
     if (skip(Token.t_ref))
       {
-        result = simpletype(null);
-        result.setRef();
+        var r = simpletype(null);
+        r.setRef();
+        result = r;
       }
     else if (skip(Token.t_fun))
       {

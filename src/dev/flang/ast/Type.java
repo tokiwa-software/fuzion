@@ -460,7 +460,7 @@ public class Type extends AbstractType
    *
    * @return a Type instance that represents this function
    */
-  public static Type funType(SourcePosition pos, Type returnType, List<AbstractType> arguments)
+  public static Type funType(SourcePosition pos, AbstractType returnType, List<AbstractType> arguments)
   {
     if (PRECONDITIONS) require
       (returnType != null,
