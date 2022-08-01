@@ -293,7 +293,8 @@ choice_mix is
       say
 
     // check that pipe also works as operator:
-    (1..10) | { fun (i i32) { yak i } }; say
+    (1..10) | i -> yak i
+    say
   alternatives1
 
   alternatives2 unit is // use pipe for choice argument type
