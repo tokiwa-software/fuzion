@@ -56,7 +56,7 @@ private stdin(
       redef utf8 Sequence u8 is
         streams.generate u8 (() ->
             match nextByte
-              u8 u8 => u8
+              b u8 => b
               end_of_file end_of_file => nil
               error error => any_error <- error; nil)
 
@@ -79,7 +79,7 @@ private stdin(
 
     bytes := streams.generate u8 (() ->
       match nextByte
-        u8 u8 => if u8 != line_feed then u8 else nil
+        b u8 => if b != line_feed then b else nil
         end_of_file end_of_file => got_end_of_file <- true; nil
         error error => any_error <- error; nil)
     #  asArray, since we don't want this to be lazy

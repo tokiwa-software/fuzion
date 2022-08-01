@@ -262,10 +262,10 @@ streams is
 
     read =>
       match val.get
-        not_initialized not_initialized =>
+        not_initialized =>
           match supplier()
             t T => val <- t
-            nil nil => val <- depleted
+            nil => val <- depleted
         * =>
       val.get
 
