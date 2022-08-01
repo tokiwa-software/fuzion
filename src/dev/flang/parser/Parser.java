@@ -974,7 +974,7 @@ formArgsOpt : formArgs
    */
   List<Feature> formArgsOpt()
   {
-    return  current() != Token.t_lparen || fork().skipType()
+    return  current() != Token.t_lparen || ignoredTokenBefore() && fork().skipType()
       ? new List<Feature>()
       : formArgs();
   }
@@ -3762,14 +3762,15 @@ type        : onetype ( PIPE onetype ) *
    * Parse onetype
    *
 onetype     : "ref" simpletype
-            | "fun" funArgsOpt typeOpt
+            | "fun" pTypeListOpt typeOpt
             | simpletype "->" simpletype
-            | funArgs "->" simpletype
+            | pTypeList "->" simpletype
+            | pTypeList
             | simpletype
             ;
-funArgs     : LPAREN typeList RPAREN
+pTypeList   : LPAREN typeList RPAREN
             ;
-funArgsOpt  : funArgs
+pTypeListOpt: pTypeList
             |
             ;
 typeOpt     : type
@@ -3803,9 +3804,19 @@ typeOpt     : type
       }
     else if (current() == Token.t_lparen)
       {
-        var a = bracketTermWithNLs(PARENS, "funArgs", () -> current() != Token.t_rparen ? typeList() : Type.NONE);
-        matchOperator("->", "onetype");
-        result = Type.funType(pos, type(), a);
+        var a = bracketTermWithNLs(PARENS, "pTypeList", () -> current() != Token.t_rparen ? typeList() : Type.NONE);
+        if (skip("->"))
+          {
+            result = Type.funType(pos, type(), a);
+          }
+        else if (a.size() == 1)
+          {
+            result = a.getFirst();
+          }
+        else
+          {
+            result = new Type(pos, "tuple", a, null);
+          }
       }
     else
       {
