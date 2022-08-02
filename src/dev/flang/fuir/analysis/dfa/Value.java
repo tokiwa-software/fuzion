@@ -66,13 +66,13 @@ public class Value extends ANY
         else if (a == UNIT                    || b == UNIT                   ) { return a == UNIT  ? +1 : -1; }
         else if (a instanceof Instance     ai && b instanceof Instance     bi) { return ai.compareTo(bi);     }
         else if (a instanceof NumericValue an && b instanceof NumericValue bn) { return an.compareTo(bn);     }
-        else if (a instanceof BoxedValue   ab && b instanceof BoxedValue   bb) { return ab.compareTo(bb);     }
+        else if (a instanceof RefValue     ab && b instanceof RefValue     bb) { return ab.compareTo(bb);     }
         else if (a instanceof TaggedValue  at && b instanceof TaggedValue  bt) { return at.compareTo(bt);     }
         else if (a instanceof SysArray     aa && b instanceof SysArray     ba) { return aa.compareTo(ba);     }
         else if (a instanceof ValueSet     as && b instanceof ValueSet     bs) { return as.compareTo(bs);     }
         else if (a instanceof Instance    ) { return +1; } else if (b instanceof Instance       ) { return -1; }
         else if (a instanceof NumericValue) { return +1; } else if (b instanceof NumericValue   ) { return -1; }
-        else if (a instanceof BoxedValue  ) { return +1; } else if (b instanceof BoxedValue     ) { return -1; }
+        else if (a instanceof RefValue    ) { return +1; } else if (b instanceof RefValue       ) { return -1; }
         else if (a instanceof TaggedValue ) { return +1; } else if (b instanceof TaggedValue    ) { return -1; }
         else if (a instanceof SysArray    ) { return +1; } else if (b instanceof SysArray       ) { return -1; }
         else if (a instanceof ValueSet    ) { return +1; } else if (b instanceof ValueSet       ) { return -1; }
@@ -272,16 +272,20 @@ public class Value extends ANY
    * Box this value. This works both for Instances as well as for value types
    * such as i32, bool, etc.
    */
-  Value box(DFA dfa, int vc, int rc)
+  Value box(DFA dfa, int vc, int rc, Context context)
   {
-    var result = _boxed;
-    if (result == null)
+    Value result;
+    if (this == UNIT)
       {
-        result = new BoxedValue(dfa, this, vc, rc);
-        if (this != UNIT)
+        result = dfa.newInstance(rc, context);
+      }
+    else
+      {
+        if (_boxed == null)
           {
-            _boxed = result;
+            _boxed = dfa.cache(new RefValue(dfa, this, vc, rc));
           }
+        result = _boxed;
       }
     return result;
   }

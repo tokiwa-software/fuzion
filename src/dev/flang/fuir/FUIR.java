@@ -1318,7 +1318,7 @@ hw25 is
    * clazzes at even indices followed by the corresponding inner clazz of the
    * feature to be accessed for this target.
    */
-  public int[] accessedClazzes(int cl, int c, int ix)
+  private int[] accessedClazzesDynamic(int cl, int c, int ix)
   {
     if (PRECONDITIONS) require
       (ix >= 0,
@@ -1373,6 +1373,40 @@ hw25 is
           (innerClazzIds[i] != -1);
       }
     return innerClazzIds;
+  }
+
+
+  /**
+   * Get the possible inner clazzes for a call or assignment to a field
+   *
+   * @param cl index of clazz containing the access
+   *
+   * @param c code block containing the access
+   *
+   * @param ix index of the call
+   *
+   * @return an array with an even number of element pairs with accessed target
+   * clazzes at even indices followed by the corresponding inner clazz of the
+   * feature to be accessed for this target.
+   */
+  public int[] accessedClazzes(int cl, int c, int ix)
+  {
+    if (PRECONDITIONS) require
+      (ix >= 0,
+       withinCode(c, ix),
+       codeAt(c, ix) == ExprKind.Call   ||
+       codeAt(c, ix) == ExprKind.Assign    );
+
+    if (accessIsDynamic(cl, c, ix))
+      {
+        return accessedClazzesDynamic(cl, c, ix);
+      }
+    else
+      {
+        var innerClazz = accessedClazz(cl, c, ix);
+        return clazzNeedsCode(innerClazz) ? new int[] { clazzOuterClazz(innerClazz), innerClazz }
+                                          : new int[0];
+      }
   }
 
 

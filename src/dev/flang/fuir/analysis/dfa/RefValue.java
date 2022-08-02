@@ -20,7 +20,7 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
  *
  * Tokiwa Software GmbH, Germany
  *
- * Source of class BoxedValue
+ * Source of class RefValue
  *
  *---------------------------------------------------------------------*/
 
@@ -28,12 +28,12 @@ package dev.flang.fuir.analysis.dfa;
 
 
 /**
- * BoxedValue represents a Value other than Instance that was boxed, i.e., turned
+ * RefValue represents a Value other than Instance that was boxed, i.e., turned
  * into a ref.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-public class BoxedValue extends Value
+public class RefValue extends Value
 {
 
 
@@ -61,9 +61,13 @@ public class BoxedValue extends Value
   /**
    * Create Boxed Value
    *
+   * NYI: There are two cases that we need to distinguish: A boxed clone of a
+   * value instance (so we need to clone original) or a reference to a value
+   * instance (so original is the same instance).
+   *
    * @param orignal the unboxed value
    */
-  public BoxedValue(DFA dfa, Value original, int vc, int rc)
+  public RefValue(DFA dfa, Value original, int vc, int rc)
   {
     super(rc);
 
@@ -76,9 +80,9 @@ public class BoxedValue extends Value
 
 
   /**
-   * Compare this to another BoxedValue.
+   * Compare this to another RefValue.
    */
-  public int compareTo(BoxedValue other)
+  public int compareTo(RefValue other)
   {
     return
       _clazz < other._clazz ? -1 :
@@ -95,10 +99,7 @@ public class BoxedValue extends Value
     if (PRECONDITIONS) require
       (v != null);
 
-    // NYI: since the boxed value is a clone, this should not modify _original,
-    // but it should modify a clone of _original. Modifying _original is,
-    // however, still sound since it adds values, but does not forget values.
-    _original.setField(dfa, field, v);
+    _original.setField(dfa, dfa._fuir.correspondingFieldInValueInstance(field), v);
   }
 
 

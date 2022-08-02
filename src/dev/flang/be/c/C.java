@@ -269,10 +269,9 @@ public class C extends ANY
     /**
      * Perform a match on value subv.
      */
-    public Pair<CExpr, CStmnt> match(AbstractInterpreter<CExpr, CStmnt> ai, int cl, int c, int i, CExpr subv)
+    public Pair<CExpr, CStmnt> match(AbstractInterpreter<CExpr, CStmnt> ai, int cl, int c, int i, CExpr sub)
     {
       var subjClazz = _fuir.matchStaticSubject(cl, c, i);
-      var sub       = fields(subv, subjClazz);
       var uniyon    = sub.field(_names.CHOICE_UNION_NAME);
       var hasTag    = !_fuir.clazzIsChoiceOfOnlyRefs(subjClazz);
       var refEntry  = uniyon.field(_names.CHOICE_REF_ENTRY_NAME);
@@ -748,34 +747,42 @@ public class C extends ANY
    */
   Pair<CExpr, CStmnt> access(int cl, int c, int i, CExpr tvalue, List<CExpr> args)
   {
-    CStmnt result;
     CExpr res = CExpr.UNIT;
     var isCall = _fuir.codeAt(c, i) == FUIR.ExprKind.Call;
     var cc0 = _fuir.accessedClazz  (cl, c, i);
     var tc = _fuir.accessTargetClazz(cl, c, i);
     var rt = _fuir.clazzResultClazz(cc0); // only needed if isCall
-
-    if (_fuir.accessIsDynamic(cl, c, i))
+    var ol = new List<CStmnt>();
+    var ccs = _fuir.accessedClazzes(cl, c, i);
+    if (ccs.length == 0)
       {
-        var ol = new List<CStmnt>(CStmnt.lineComment("Dynamic access of " + _fuir.clazzAsString(cc0)));
-        var ccs = _fuir.accessedClazzes(cl, c, i);
-        if (CHECKS) check
-          (_types.hasData(tc)); // target in dynamic call cannot be unit type
-        var tvar = _names.newTemp();
-        var tt0 = _types.clazz(tc);
-        ol.add(CStmnt.decl(tt0, tvar, tvalue.castTo(tt0)));
-        tvalue = tvar;
-        if (isCall && _types.hasData(rt))
+        if (isCall && (_types.hasData(rt) || _fuir.clazzIsVoidType(rt)))
+          {
+            ol.add(reportErrorInCode("no targets for access of %s within %s",
+                                     CExpr.string(_fuir.clazzAsString(cc0)),
+                                     CExpr.string(_fuir.clazzAsString(cl ))));
+            res = null;
+          }
+        else
+          {
+            ol.add(CStmnt.lineComment("access to " + _fuir.codeAtAsString(cl, c, i) + " eliminated"));
+          }
+      }
+    else
+      {
+        if (_types.hasData(tc) && _fuir.accessIsDynamic(cl, c, i) && ccs.length > 2)
+          {
+            ol.add(CStmnt.lineComment("Dynamic access of " + _fuir.clazzAsString(cc0)));
+            var tvar = _names.newTemp();
+            var tt0 = _types.clazz(tc);
+            ol.add(CStmnt.decl(tt0, tvar, tvalue.castTo(tt0)));
+            tvalue = tvar;
+          }
+        if (isCall && _types.hasData(rt) && ccs.length > 2)
           {
             var resvar = _names.newTemp();
             res = resvar;
             ol.add(CStmnt.decl(_types.clazzField(cc0), resvar));
-          }
-        if (ccs.length == 0)
-          {
-            ol.add(reportErrorInCode("no targets for dynamic access of %s within %s",
-                                     CExpr.string(_fuir.clazzAsString(cc0)),
-                                     CExpr.string(_fuir.clazzAsString(cl ))));
           }
         var cazes = new List<CStmnt>();
         CStmnt acc = CStmnt.EMPTY;
@@ -788,19 +795,21 @@ public class C extends ANY
               {
                 var calpair = call(cl, tvalue, args, c, i, cc, false);
                 var rv  = calpair._v0;
-                var cal = calpair._v1;
-                var as = CStmnt.EMPTY;
-                if (rv != null && res != CExpr.UNIT)
+                acc = calpair._v1;
+                if (ccs.length == 2)
+                  {
+                    res = rv;
+                  }
+                else if (_types.hasData(rt) && rv != null)
                   {
                     if (rt != rti && _fuir.clazzIsRef(rt)) // NYI: Check why result can be different
                       {
                         rv = rv.castTo(_types.clazz(rt));
                       }
-                    as = assign(res, rv, rt);
+                    acc = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
+                                     acc,
+                                     assign(res, rv, rt));
                   }
-                acc = CStmnt.seq(CStmnt.lineComment("Call calls "+ _fuir.clazzAsString(cc) + " target: " + _fuir.clazzAsString(tt) + ":"),
-                                 cal,
-                                 as);
               }
             else
               {
@@ -811,7 +820,7 @@ public class C extends ANY
           }
         if (ccs.length > 2)
           {
-            var id = tvar.deref().field(_names.CLAZZ_ID);
+            var id = tvalue.deref().field(_names.CLAZZ_ID);
             acc = CStmnt.suitch(id, cazes,
                                 reportErrorInCode("unhandled dynamic target %d in access of %s within %s",
                                                   id,
@@ -819,34 +828,14 @@ public class C extends ANY
                                                   CExpr.string(_fuir.clazzAsString(cl ))));
           }
         ol.add(acc);
-        result = CStmnt.seq(ol);
+        res = isCall ?
+          (_fuir.clazzIsVoidType(rt) ? null :
+           _types.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
+                                                                   : res)
+           :  res;
       }
-    else if (_fuir.clazzNeedsCode(cc0))
-      {
-        if (isCall)
-          {
-            var callpair = call(cl, tvalue, args, c, i, cc0, false);
-            result = callpair._v1;
-            res = callpair._v0;
-          }
-        else
-          {
-            result = assignField(tvalue, tc, tc, cc0, args.get(0), rt);
-          }
-      }
-    else
-      {
-        result = reportErrorInCode("no code generated for static access to %s within %s",
-                                   CExpr.string(_fuir.clazzAsString(cc0)),
-                                   CExpr.string(_fuir.clazzAsString(cl )));
-        res = null;
-      }
-    if (res != null && isCall)
-      {
-        res = _fuir.clazzIsVoidType(rt) ? null :
-          _types.hasData(rt) && _fuir.clazzFieldIsAdrOfValue(cc0) ? res.deref() : res; // NYI: deref an outer ref to value type. Would be nice to have a separate statement for this
-      }
-    return new Pair(res, result);
+
+    return new Pair(res, CStmnt.seq(ol));
   }
 
 

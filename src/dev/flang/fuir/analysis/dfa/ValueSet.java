@@ -30,7 +30,7 @@ import java.util.TreeMap;
 
 
 /**
- * ValueSet represents a set of reference Instance of BoxedValue values.
+ * ValueSet represents a set of reference Instance of RefValue values.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
