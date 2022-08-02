@@ -266,14 +266,14 @@ visibility is
   visi6
 
   visi7 is
-    x := 2;          f := fun => "x is "+x+""
-    x := x*x*x*x;    g := fun => "x is "+x+""
-    x := x.asString; h := fun => "x is "+x+""
-    x := x * 5;      i := fun => "x is "+x+""
-    chck (f().call() == "x is 2") "x is 2"
-    chck (g().call() == "x is 16") "x is 16"
-    chck (h().call() == "x is 16") "x is 16"
-    chck (i().call() == "x is 1616161616") "x is 1616161616"
+    x := 2;          f () -> string := () -> "x is "+x+""
+    x := x*x*x*x;    g () -> string := () -> "x is "+x+""
+    x := x.asString; h () -> string := () -> "x is "+x+""
+    x := x * 5;      i () -> string := () -> "x is "+x+""
+    chck (f.call() == "x is 2") "x is 2"
+    chck (g.call() == "x is 16") "x is 16"
+    chck (h.call() == "x is 16") "x is 16"
+    chck (i.call() == "x is 1616161616") "x is 1616161616"
   visi7
 
   visi8(cond bool) is
