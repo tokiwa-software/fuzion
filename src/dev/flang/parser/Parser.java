@@ -2321,104 +2321,25 @@ op          : OPERATOR
   /**
    * Parse fun
    *
-fun         : "fun" function
-            | "fun" call
+fun         : "fun" call
             ;
    */
   Expr fun()
   {
     Expr result;
-    int p1 = pos();
     SourcePosition pos = posObject();
     match(Token.t_fun, "fun");
-    if (isFunctionPrefix())
+    var c = call(null);
+    if (c.actuals().size() == 0)
       {
-        result = function(pos);
+        result = new Function(pos, c);
       }
     else
       {
-        var c = call(null);
-        if (c.actuals().size() == 0)
-          {
-            result = new Function(pos, c);
-          }
-        else
-          {
-            syntaxError(c.pos().bytePos(), "call without actual arguments", "fun");
-            result = c;
-          }
+        syntaxError(c.pos().bytePos(), "call without actual arguments", "fun");
+        result = c;
       }
     return result;
-  }
-
-
-  /**
-   * Parse function
-   *
-function    : formArgsOpt
-              typeOpt
-              inherits
-              contract
-              ( block
-              | "is" block
-              | ARROW block
-              )
-            ;
-   */
-  Function function(SourcePosition pos)
-  {
-    List<Feature> a = formArgsOpt();
-    ReturnType r = NoType.INSTANCE;
-    if (isType())
-      {
-        r = new FunctionReturnType(type());
-      }
-    var i = inherits();
-    Contract   c = contract();
-    Function result;
-    if (isOperator("=>"))
-      {
-        next();
-        result = new Function(pos, r, a, i, c, (Expr) block(true));
-      }
-    else
-      {
-        if (!skip(Token.t_is) && current() != Token.t_lbrace)
-          {
-            syntaxError(pos(), "'is', '{' or '=>' in inline function declaration", "function");
-          }
-        if (r == NoType.INSTANCE)
-          {
-            r = new FunctionReturnType(new Type("unit"));
-          }
-        result = new Function(pos, r, a, i, c, block(false));
-      }
-    return result;
-  }
-
-
-  /**
-   * Check if the current position starts a function.  Does not change the
-   * position of the parser.
-   *
-   * @return true iff the next token(s) start a function.
-   */
-  boolean isFunctionPrefix()
-  {
-    switch (current()) // even if this is t_lbrace, we want the
-                       // require/invariant/ensure/{ in a "fun { .. }" to be
-                       // indented, so do not use currentAtMinIndent().
-      {
-      case t_lparen   :
-      case t_require  :
-      case t_invariant:
-      case t_ensure   :
-      case t_pre      :
-      case t_post     :
-      case t_inv      :
-      case t_lbrace   : return true;
-      default         : return isOperator("=>") || isTypeFollowedByLBrace();
-      }
   }
 
 
