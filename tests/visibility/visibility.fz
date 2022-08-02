@@ -274,6 +274,14 @@ visibility is
     chck (g.call() == "x is 16") "x is 16"
     chck (h.call() == "x is 16") "x is 16"
     chck (i.call() == "x is 1616161616") "x is 1616161616"
+    x := 2;          f1 => r := "x is "+x+""; r
+    x := x*x*x*x;    g1 => r := "x is "+x+""; r
+    x := x.asString; h1 => r := "x is "+x+""; r
+    x := x * 5;      i1 => r := "x is "+x+""; r
+    chck (f1 == "x is 2") "x is 2"
+    chck (g1 == "x is 16") "x is 16"
+    chck (h1 == "x is 16") "x is 16"
+    chck (i1 == "x is 1616161616") "x is 1616161616"
   visi7
 
   visi8(cond bool) is
