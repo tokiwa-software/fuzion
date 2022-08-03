@@ -242,6 +242,40 @@ public class Intrinsics extends ANY
             return Value.EMPTY_VALUE; // NYI : need to handle an IO error
           }
       });
+    put("fuzion.std.fileio.create_tmp_file0", (interpreter, innerClazz) -> args ->
+      {
+        if (!ENABLE_UNSAFE_INTRINSICS)
+          {
+            System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+            System.exit(1);
+          }
+        try
+          {
+            String pathname =  Files.createTempFile(null, null).toString();
+            return Interpreter.value(pathname);
+          } 
+        catch (IOException e)
+          {
+            return Value.EMPTY_VALUE; // NYI : need to handle an IO error
+          }
+      });
+    put("fuzion.std.fileio.create_tmp_dir0", (interpreter, innerClazz) -> args ->
+      {
+        if (!ENABLE_UNSAFE_INTRINSICS)
+          {
+            System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+            System.exit(1);
+          }
+        try
+          {
+            String pathname =  Files.createTempDirectory(null).toString();
+            return Interpreter.value(pathname);
+          } 
+        catch (IOException e)
+          {
+            return Value.EMPTY_VALUE; // NYI : need to handle an IO error
+          }
+      });
     put("fuzion.std.err.write", (interpreter, innerClazz) ->
         {
           var s = System.err;

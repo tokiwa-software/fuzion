@@ -89,3 +89,22 @@ public fuzion.std.fileio is
                     content Object,
                     # the length of the internal array representing the content
                     contentLength i32) unit is intrinsic
+
+  # creates a temporary file in the default platform location for temporary files
+  # returns the pathname of the created file in case of success or an empty value in case of an error
+  #
+  public create_tmp_file =>
+    create_tmp_file0
+
+  # intrinsic to create the temporary file and return its pathname in case of success or an empty value in case of failure
+  private create_tmp_file0 string is intrinsic
+
+  # creates a temporary directory in the default platform location for temporary files
+  # returns the pathname of the created directory in case of success or an empty value in case of an error
+  #
+  public create_tmp_dir =>
+    create_tmp_dir0
+
+  # intrinsic to create the temporary directory and return its pathname in case of success or an empty value in case of failure
+  #
+  private create_tmp_dir0 string is intrinsic
