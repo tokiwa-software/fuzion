@@ -451,10 +451,6 @@ field       : returnType
       case actual: return false;
       default    : break;
       }
-    if ((current() == Token.t_lparen) && fork().skipType())
-      {
-        return true;
-      }
     switch (skipFormArgsNotActualArgs())
       {
       case formal: return true;
@@ -974,9 +970,22 @@ formArgsOpt : formArgs
    */
   List<Feature> formArgsOpt()
   {
-    return  current() != Token.t_lparen || ignoredTokenBefore() && fork().skipType()
-      ? new List<Feature>()
-      : formArgs();
+    return isEmptyFormArgs() ? new List<Feature>()
+                             : formArgs();
+  }
+
+
+  /**
+   * Parse optional formal argument list. Result is empty List in case no formArgs is found.
+   */
+  boolean isEmptyFormArgs()
+  {
+    return
+      current() != Token.t_lparen ||
+      fork().skipType(false);  // result type such as '(i32)->bool' or
+                               // '(a,b)|(c,d)|()' is parsed as resulttype, but
+                               // a type in parentheses like '(list i32)', '(a,
+                               // b i32)' is parsed as an args list.
   }
 
 
@@ -1117,7 +1126,7 @@ typeType    : "type"
   FormalOrActual skipFormArgsNotActualArgs()
   {
     var result = new FormalOrActual[] { FormalOrActual.both };
-    var sr = current() != Token.t_lparen ||
+    var sr = isEmptyFormArgs() ||
       skipBracketTermWithNLs(PARENS, () -> {
         if (current() != Token.t_rparen)
           {
@@ -1422,7 +1431,7 @@ actuals     : actualGens actualArgs
         // from the actual generics in 'a<b>'.
         var g = (!isActualGens()) ? Call.NO_GENERICS : actualGens();
         var l = actualArgs(line);
-        result = new Call(pos, target, n, g, l);
+        result = new Call(pos, target, n, g, l, null);
       }
     result = callTail(skippedDot, result);
     return result;
@@ -1432,7 +1441,7 @@ actuals     : actualGens actualArgs
   /**
    * Parse indexcall
    *
-indexCall   : ( LBRACKET exprList RBRACKET
+indexCall   : ( LBRACKET actualList RBRACKET
                 ( ":=" exprInLine
                 |
                 )
@@ -1445,15 +1454,15 @@ indexCall   : ( LBRACKET exprList RBRACKET
     do
       {
         SourcePosition pos = posObject();
-        var l = bracketTermWithNLs(CROCHETS, "indexCall", () -> exprList());
+        var l = bracketTermWithNLs(CROCHETS, "indexCall", () -> actualList());
         if (skip(":="))
           {
-            l.add(exprInLine());
-            result = new Call(pos, target, "index [ ] =", null, l);
+            l.add(new Actual(null, exprInLine()));
+            result = new Call(pos, target, "index [ ] =", null, l, null);
           }
         else
           {
-            result = new Call(pos, target, "index [ ]"  , null, l);
+            result = new Call(pos, target, "index [ ]"  , null, l, null);
           }
         target = result;
       }
@@ -1602,16 +1611,16 @@ typeList    : type ( COMMA typeList
    * @param line the line containing the name of the called feature
    *
 actualArgs  : actualsList               // must be in same line as name of called feature
-            | LPAREN exprList RPAREN
+            | LPAREN actualList RPAREN
             | LPAREN RPAREN
             ;
    */
-  List<Expr> actualArgs(int line)
+  List<Actual> actualArgs(int line)
   {
     return (ignoredTokenBefore() || current() != Token.t_lparen)
       ? actualsList(line)
       : bracketTermWithNLs(PARENS, "actualArgs",
-                           () -> exprList(),
+                           () -> actualList(),
                            () -> new List<>());
   }
 
@@ -1698,35 +1707,32 @@ actualArgs  : actualsList               // must be in same line as name of calle
   /**
    * Parse
    *
-exprList    : expr ( COMMA exprList
-                   |
-                   )
+actualList  : actual ( COMMA actualList
+                     |
+                     )
             ;
    */
-  List<Expr> exprList()
+  List<Actual> actualList()
   {
-    List<Expr> result = new List<>(expr());
+    var result = new List<>(actual());
     while (skipComma())
       {
-        result.add(expr());
+        result.add(actual());
       }
     return result;
   }
 
 
   /**
-   * Parse
+   * Parse space separated actual arguments
    *
    * @param line the line containing the name of the called feature
    *
-actualsList : exprUntilSp actualsLst
-            |
-            ;
-actualsLst  : exprUntilSp actualsLst
+actualsList : actualSp actualsList
             |
             ;
    */
-  List<Expr> actualsList(int line)
+  List<Actual> actualsList(int line)
   {
     Indentation in = null;
     if (line() != line && current() != Token.t_lineLimit)
@@ -1735,10 +1741,10 @@ actualsLst  : exprUntilSp actualsLst
         in = new Indentation();
       }
     var oldLine = sameLine(line);
-    List<Expr> result = Call.NO_PARENTHESES;
+    List<Actual> result = Call.NO_PARENTHESES_A;
     if (ignoredTokenBefore() && !endsActuals(in))
       {
-        result = new List<>(exprUntilSpace());
+        result = new List<>(actualSpace());
         var done = false;
         while (!done)
           {
@@ -1752,7 +1758,7 @@ actualsLst  : exprUntilSp actualsLst
             if (!done)
               {
                 var p = pos();
-                result.add(exprUntilSpace());
+                result.add(actualSpace());
                 done = p == pos(); /* make sure we do not get stuck on a syntax error */
               }
           }
@@ -1793,17 +1799,50 @@ bracketTerm : brblock
 
 
   /**
-   * An Expr that ends in white space unless enclosed in { }, [ ], or ( ).
+   * An actual that ends in white space unless enclosed in { }, [ ], or ( ).
    *
-exprUntilSp : expr         // no white space except enclosed in { }, [ ], or ( ).
-            ;
+actualSp : actual         // no white space except enclosed in { }, [ ], or ( ).
+         ;
 
    */
-  Expr exprUntilSpace()
+  Actual actualSpace()
   {
     var eas = endAtSpace(pos());
-    var result = expr();
+    var result = actual();
     endAtSpace(eas);
+    return result;
+  }
+
+
+  /**
+   * An actual argument
+   *
+actual   : expr | type
+         ;
+
+   */
+  Actual actual()
+  {
+    Actual result;
+    var f = fork();
+    var t = f.skipType() ? fork().type() : null;
+    var e = expr();
+    if (t != null && f.pos() == pos())
+      {
+        if (posObject().show().indexOf("ex360.fz:10")>=0)
+          {
+            System.out.println("got type and expression: "+t+" AND "+e+" at "+posObject().show());
+          }
+        result = new Actual(t, e);
+      }
+    else
+      {
+        if (posObject().show().indexOf("ex360.fz:10")>=0)
+          {
+            System.out.println("got only expression: "+e+" at "+posObject().show());
+          }
+        result = new Actual(null, e);
+      }
     return result;
   }
 
@@ -1898,7 +1937,7 @@ expr        : opExpr
             Expr f = expr();
             matchOperator(":", "expr of the form >>a ? b : c<<");
             Expr g = expr();
-            result = new Call(pos, result, "ternary ? :", null, new List<Expr>(f, g));
+            result = new Call(pos, result, "ternary ? :", null, null, new List<Expr>(f, g));
           }
       }
     return result;
@@ -3664,18 +3703,31 @@ type        : onetype ( PIPE onetype ) *
    */
   boolean skipType()
   {
-    if (!skipOneType())
+    return skipType(true);
+  }
+
+
+  /**
+   * Check if the current position can be parsed as a type and skip it if this is the case.
+   *
+   * @param allowTypeInParentheses true iff the type may be surrounded by
+   * parentheses, i.e., '(i32, list bool)', '(stack f64)', '()'.
+   *
+   * @return true iff a type was found and skipped, otherwise no type was found
+   * and the parser/lexer is at an undefined position.
+   */
+  boolean skipType(boolean allowTypeInParentheses)
+  { // we forbide tuples like '(a,b)', '(a)', '()', but we allow lambdas '(a,b)->c' and choice
+    // types '(a,b) | (d,e)'
+
+    var hasForbiddenParentheses = allowTypeInParentheses ? false : !fork().skipOneType(false);
+    var result = skipOneType(true);
+    while (result && skip('|'))
       {
-        return false;
+        result = skipOneType();
+        hasForbiddenParentheses = false;
       }
-    while (skip('|'))
-      {
-        if (!skipOneType())
-          {
-            return false;
-          }
-      }
-    return true;
+    return result && !hasForbiddenParentheses;
   }
 
 
@@ -3757,7 +3809,21 @@ typeOpt     : type
    * @return true iff the next token(s) is a onetype, otherwise no onetype was
    * found and the parser/lexer is at an undefined position.
    */
-  boolean skipOneType()
+  boolean skipOneType() {
+    return skipOneType(true);
+  }
+
+
+  /**
+   * Check if the current position starts a onetype and skip it.
+   *
+   * @param allowTypeInParentheses true iff the type may be surrounded by
+   * parentheses, i.e., '(i32, list bool)', '(stack f64)', '()'.
+   *
+   * @return true iff the next token(s) is a onetype, otherwise no onetype was
+   * found and the parser/lexer is at an undefined position.
+   */
+  boolean skipOneType(boolean allowTypeInParentheses)
   {
     boolean result;
     if (skip(Token.t_ref))
@@ -3782,8 +3848,11 @@ typeOpt     : type
         var f = fork();
         if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList()))
           {
-            skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList());
-            result = skip("->") && skipType();
+            result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList()) && allowTypeInParentheses;
+            if (skip("->"))
+              {
+                result = skipType();
+              }
           }
         else
           {
