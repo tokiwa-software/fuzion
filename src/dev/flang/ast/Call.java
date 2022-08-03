@@ -703,7 +703,7 @@ public class Call extends AbstractCall
       {
         var actualsResolved = false;
         if (name == FuzionConstants.TYPE_NAME)
-          {
+          { /* NYI: would be better to move handling of 'a.b.type' to the parser */
             if (CHECKS) check
               (target != null,
                _actuals.size() == 0,
