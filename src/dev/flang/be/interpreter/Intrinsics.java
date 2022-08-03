@@ -197,8 +197,8 @@ public class Intrinsics extends ANY
               fs.read(byteArr);
               fs.close();
               return Value.EMPTY_VALUE;
-            } 
-          catch (Exception e) 
+            }
+          catch (Exception e)
             {
               return Value.EMPTY_VALUE; // NYI: need to handle an IO error
             }
@@ -216,8 +216,8 @@ public class Intrinsics extends ANY
             {
               long fileLength = Files.size(path);
               return new i64Value(fileLength);
-            } 
-          catch (Exception e) 
+            }
+          catch (Exception e)
             {
               return new i64Value(-1);
             }
@@ -260,7 +260,7 @@ public class Intrinsics extends ANY
             }
             catch (IOException e)
               {
-                return new i32Value(-1);
+                return new i32Value(-2);
               }
         });
     put("fuzion.std.out.flush", (interpreter, innerClazz) ->
