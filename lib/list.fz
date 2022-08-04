@@ -402,6 +402,23 @@ lists is
       nil
 
 
+  # creates a - potentially infinite - list by using given supplier
+  # end of list is reached once supplier returns nil
+  # note that the supplier is called only once for each cons cell construction
+  #
+  generate (T type, supplier () -> option T) list T is
+    # NYI using some to wrap list: see issue #213
+    tail_cache := mut (option (some (list T))) nil
+    tail list T is
+      if tail_cache.get.isNil
+        tail_cache <- some (generate supplier)
+      tail_cache.get.get.val
+
+    match supplier()
+      num T => list T num (() -> tail)
+      nil => nil
+
+
 # convenience routine to create a list from head h and lazy tail t.
 #
 list<T> (h T, t () -> list<T>) list<T> is
