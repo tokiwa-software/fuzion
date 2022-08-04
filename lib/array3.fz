@@ -75,23 +75,25 @@ is
   # and ']'.  Arrays in inner dimensions are grouped using '[' and ']'.
   #
   redef asString =>
-    "[{for
-         s := "", s + c + u
-         i0 in indices0
-         c := "", ","
-         u := "[{for
-                   s2 := "", s2 + c2 + (slice from to)
-                   i1 in indices1
-                   c2 := "", ","
-                   from := ((i0 * length1 + i1) * length2)
-                   to := from + length2
-                 else
-                   s2
-                }]"
-       else
-         s
-      }]"
+    line_sep := strings.line_separator
 
+    dim_1(i i32) =>
+      ("  [" + line_sep
+        + indices1
+            .map(j -> dim_2 i j)
+            .fold strings.concat("," + line_sep)
+        + line_sep + "  ]")
+
+    dim_2(i i32, j i32) =>
+      from := (i * length1 + j) * length2
+      to := from + length2
+      "    " + slice from to
+
+    ("[" + line_sep
+      + indices0
+          .map(i -> dim_1 i)
+          .fold strings.concat("," + line_sep)
+      + line_sep + "]")
 
 
   # get a list of tuples indices and elements in this array
