@@ -982,10 +982,10 @@ formArgsOpt : formArgs
   {
     return
       current() != Token.t_lparen ||
-      fork().skipType(false);  // result type such as '(i32)->bool' or
-                               // '(a,b)|(c,d)|()' is parsed as resulttype, but
-                               // a type in parentheses like '(list i32)', '(a,
-                               // b i32)' is parsed as an args list.
+      fork().skipType(false, true);  // result type such as '(i32)->bool' or
+                                     // '(a,b)|(c,d)|()' is parsed as resulttype, but
+                                     // a type in parentheses like '(list i32)', '(a,
+                                     // b i32)' is parsed as an args list.
   }
 
 
@@ -1606,6 +1606,27 @@ typeList    : type ( COMMA typeList
 
 
   /**
+   * Check if the current position has typeList and skip it.
+   *
+   * @param allowTypeThatIsNotExpression false to forbid types that cannot be
+   * parsed as expressions such as lambdas types with argument types that are
+   * not just argNames.
+   *
+   * @return true iff the next token(s) form typeList, otherwise no typeList was
+   * found and the parser/lexer is at an undefined position.
+   */
+  boolean skipTypeList(boolean allowTypeThatIsNotExpression)
+  {
+    boolean result = skipType(true, allowTypeThatIsNotExpression);
+    while (skipComma())
+      {
+        result = result && skipType(true, allowTypeThatIsNotExpression);
+      }
+    return result;
+  }
+
+
+  /**
    * Parse actualArgs
    *
    * @param line the line containing the name of the called feature
@@ -1824,18 +1845,40 @@ actual   : expr | type
   Actual actual()
   {
     Actual result;
-    var f = fork();
-    var t = f.skipType() ? fork().type() : null;
-    var e = expr();
-    if (t != null && f.pos() == pos())
+    boolean hasType = fork().skipType();
+    // instead of implementing 'isExpr()', which would be complex, we use
+    // 'skipType' with second argument set to false to check if we can parse
+    // an expression.
+    boolean hasExpr = (!hasType ||
+                       fork().skipType(true,
+                                       false  /* disallow types that cannot be parsed as expression */));
+    AbstractType t;
+    Expr e;
+    if (hasExpr && hasType)
       {
-        result = new Actual(t, e);
+        var f = fork();
+        var t0 = f.type();
+        e = expr();
+        // we might have an expr 'a.x+d(4)' while the type parsed is
+        // just 'a.x', so eagerly take the expr in this case:
+        t = f.pos() == pos() ? t0 : null;
+        if (CHECKS) check
+          (f.pos() <= pos());
+      }
+    else if (hasExpr)
+      {
+        t = null;
+        e = expr();
       }
     else
       {
-        result = new Actual(null, e);
+        if (CHECKS) check
+          (hasType);
+
+        t = type();
+        e = null;
       }
-    return result;
+    return new Actual(t, e);
   }
 
 
@@ -2042,6 +2085,21 @@ argNamesOpt : argNames
     return (current() == Token.t_ident)
       ? argNames()
       : new List<>();
+  }
+
+
+  /**
+   * Check if the current position can be parsed as an argNamesOpt and skip it if
+   * this is the case.
+   *
+   * @return true iff an argNamesOpt was found and skipped, otherwise no argNamesOpt
+   * was found and the parser/lexer is at an undefined position.
+   */
+  boolean skipArgNamesOpt()
+  {
+    return (current() == Token.t_ident)
+      ? skipArgNames()
+      : true;
   }
 
 
@@ -3695,7 +3753,7 @@ type        : onetype ( PIPE onetype ) *
    */
   boolean skipType()
   {
-    return skipType(true);
+    return skipType(true, true);
   }
 
 
@@ -3705,18 +3763,22 @@ type        : onetype ( PIPE onetype ) *
    * @param allowTypeInParentheses true iff the type may be surrounded by
    * parentheses, i.e., '(i32, list bool)', '(stack f64)', '()'.
    *
+   * @param allowTypeThatIsNotExpression false to forbid types that cannot be
+   * parsed as expressions such as lambdas types with argument types that are
+   * not just argNames.
+   *
    * @return true iff a type was found and skipped, otherwise no type was found
    * and the parser/lexer is at an undefined position.
    */
-  boolean skipType(boolean allowTypeInParentheses)
+  boolean skipType(boolean allowTypeInParentheses, boolean allowTypeThatIsNotExpression)
   { // we forbide tuples like '(a,b)', '(a)', '()', but we allow lambdas '(a,b)->c' and choice
     // types '(a,b) | (d,e)'
 
-    var hasForbiddenParentheses = allowTypeInParentheses ? false : !fork().skipOneType(false);
-    var result = skipOneType(true);
+    var hasForbiddenParentheses = allowTypeInParentheses ? false : !fork().skipOneType(false, allowTypeThatIsNotExpression);
+    var result = skipOneType(true, allowTypeThatIsNotExpression);
     while (result && skip('|'))
       {
-        result = skipOneType();
+        result = skipOneType(true, allowTypeThatIsNotExpression);
         hasForbiddenParentheses = false;
       }
     return result && !hasForbiddenParentheses;
@@ -3802,7 +3864,7 @@ typeOpt     : type
    * found and the parser/lexer is at an undefined position.
    */
   boolean skipOneType() {
-    return skipOneType(true);
+    return skipOneType(true, true);
   }
 
 
@@ -3812,10 +3874,15 @@ typeOpt     : type
    * @param allowTypeInParentheses true iff the type may be surrounded by
    * parentheses, i.e., '(i32, list bool)', '(stack f64)', '()'.
    *
+   * @param allowTypeThatIsNotExpression false to forbid types that cannot be
+   * parsed as expressions such as lambdas types with argument types that are
+   * not just argNames.
+   *
    * @return true iff the next token(s) is a onetype, otherwise no onetype was
    * found and the parser/lexer is at an undefined position.
    */
-  boolean skipOneType(boolean allowTypeInParentheses)
+  boolean skipOneType(boolean allowTypeInParentheses,
+                      boolean allowTypeThatIsNotExpression)
   {
     boolean result;
     if (skip(Token.t_ref))
@@ -3838,12 +3905,20 @@ typeOpt     : type
     else
       {
         var f = fork();
-        if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList()))
+        var f2 = fork();
+        if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList(allowTypeThatIsNotExpression)))
           {
-            result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList()) && allowTypeInParentheses;
+            result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList(allowTypeThatIsNotExpression)) && allowTypeInParentheses;
             if (skip("->"))
               {
-                result = skipType();
+                result =
+                  // an lambda-expression would allow only arg names
+                  // '(x,y)->..', while a lambda-type can have arbitrary types
+                  // '(list bool, io.file.buffer) -> bool'.
+                  (allowTypeThatIsNotExpression ||
+                   f2.skipBracketTermWithNLs(PARENS,
+                                             () -> f2.current() == Token.t_rparen || f2.skipArgNamesOpt())) &&
+                  skipType();
               }
           }
         else

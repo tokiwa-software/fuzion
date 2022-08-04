@@ -1050,7 +1050,10 @@ public class Call extends AbstractCall
         while (i.hasNext())
           {
             var a = i.next();
-            i.set(a.visit(v, outer));
+            if (a != null)
+              {
+                i.set(a.visit(v, outer));
+              }
           }
       }
     if (target != null &&
