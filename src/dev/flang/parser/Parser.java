@@ -1829,18 +1829,10 @@ actual   : expr | type
     var e = expr();
     if (t != null && f.pos() == pos())
       {
-        if (posObject().show().indexOf("ex360.fz:10")>=0)
-          {
-            System.out.println("got type and expression: "+t+" AND "+e+" at "+posObject().show());
-          }
         result = new Actual(t, e);
       }
     else
       {
-        if (posObject().show().indexOf("ex360.fz:10")>=0)
-          {
-            System.out.println("got only expression: "+e+" at "+posObject().show());
-          }
         result = new Actual(null, e);
       }
     return result;
