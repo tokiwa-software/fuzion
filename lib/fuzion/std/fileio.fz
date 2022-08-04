@@ -89,3 +89,22 @@ public fuzion.std.fileio is
                     content Object,
                     # the length of the internal array representing the content
                     contentLength i32) unit is intrinsic
+
+  # deletes the file/dir found in the path
+  # returns TRUE in case of successful deletion and FALSE in case of failure or error
+  # if the targeted dir has content, then the return value will be FALSE and the deletion will not take place
+  #
+  public delete(
+                # the (relative or absolute) file name, using platform specific path separators
+                path string) =>
+    arr := path.utf8.asArray
+    delete arr.internalArray.data arr.length
+
+  # intrinsic that deletes the file/dir found in the path returning TRUE in case of success
+  # and FALSE in case of failure
+  #
+  private delete(
+                 # the internal array data representing the file/dir path in bytes
+                 path Object,
+                 # the length of the internal array representing the path
+                 path_length i32) bool is intrinsic
