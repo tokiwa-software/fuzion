@@ -56,5 +56,5 @@ stdintest =>
   say "123456: $line2"
 
   # when stdin is empty, read_line should return an empty string
-  say "0: {read_line.codepointLength}"
-  say "0: {(read 1).codepointLength}"
+  say "error: $read_line."
+  say "nothing: {read 1}."
