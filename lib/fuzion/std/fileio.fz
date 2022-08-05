@@ -83,7 +83,6 @@ public fuzion.std.fileio is
 
   # intrinsic to write bytes (internal array data) in a file using the file path
   #
-
   private write(
                 # the internal array data representing the file path in bytes
                 path Object,
