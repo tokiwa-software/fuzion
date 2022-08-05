@@ -233,7 +233,6 @@ public abstract class Expr extends ANY implements Stmnt, HasSourcePosition
   }
 
 
-
   /**
    * Check if this expression can also be parsed as a type and return that type. Otherwise,
    * report an error (AstErrors.expectedActualTypeInCall).

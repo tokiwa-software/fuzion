@@ -181,7 +181,7 @@ public class Intrinsics extends ANY
               return Value.EMPTY_VALUE;
             };
         });
-    put("fuzion.std.fileio.readFile", (interpreter, innerClazz)-> args ->
+    put("fuzion.std.fileio.read", (interpreter, innerClazz)-> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -203,7 +203,7 @@ public class Intrinsics extends ANY
               return Value.EMPTY_VALUE; // NYI: need to handle an IO error
             }
         });
-    put("fuzion.std.fileio.getFileSize", (interpreter, innerClazz) -> args ->
+    put("fuzion.std.fileio.get_file_size", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
             {
@@ -222,7 +222,7 @@ public class Intrinsics extends ANY
               return new i64Value(-1);
             }
         });
-    put("fuzion.std.fileio.writeFile", (interpreter, innerClazz) -> args ->
+    put("fuzion.std.fileio.write", (interpreter, innerClazz) -> args ->
       {
         if (!ENABLE_UNSAFE_INTRINSICS)
           {

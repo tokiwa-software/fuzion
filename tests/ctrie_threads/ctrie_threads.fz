@@ -17,27 +17,32 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test qualified_declaration
+#  Source code of Fuzion test ctrie_threads
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-qualified_declaration is
+ctrie_threads is
 
-  x is
-    y is
-      z is
-        f1(i i32) => i+i
+  ctrie := CTrie<i32, string>
 
-  public x.y.z.f2(i i32) i32 is set result := i*i
-  x.y.z.f3(i i32) i32 is set result := i*i
-  x.y.z.f4(i i32) i32 is i*i
-  x.y.z.f5(i i32) => i*i
+  one := psSet 0..1000
+  two := psSet 500..1500
 
-  1..10 | i -> say ("$i " +
-                    "{x.y.z.f1(i)} " +
-                    "{x.y.z.f2(i)} " +
-                    "{x.y.z.f3(i)} " +
-                    "{x.y.z.f4(i)} " +
-                    "{x.y.z.f5(i)}")
+  run_in_thread(s Set<i32>, num i32) is
+    concur.thread.spawn (() ->
+      for k in s do
+        ctrie.add k "thread$num"
+      say "thread $num finished"
+      unit
+      )
+
+  run_in_thread one 1
+  run_in_thread two 2
+
+  # NYI can not wait for threads to finish currently
+  fuzion.std.nano_sleep 5E9
+
+  if ctrie.size != 2001
+    panic "compare and set in ctrie not implemented yet"

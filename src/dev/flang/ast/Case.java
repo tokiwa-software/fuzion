@@ -104,7 +104,7 @@ public class Case extends AbstractCase
    * @param c code to be executed in case of a match
    */
   public Case(SourcePosition pos,
-              Type t,
+              AbstractType t,
               String n,
               Block c)
   {

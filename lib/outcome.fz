@@ -98,6 +98,14 @@ outcome<T> : choice<T, error /* ...  NYI: this should be open generic! */> is
                  | e error => e
 
 
+  # convert this outcome to an option
+  # if the outcome is an error, the option is empty
+  as_option() option T is
+    match outcome.this
+      t T => t
+      error => nil
+
+
   # converts outcome to a string
   #
   # returns the result of T.asString for a successful outcome, or
@@ -115,7 +123,7 @@ outcome<T> : choice<T, error /* ...  NYI: this should be open generic! */> is
 #
 #   o := outcome x
 #
-# insted of
+# instead of
 #
 #   o outcome<TypeOfX> := x
 #

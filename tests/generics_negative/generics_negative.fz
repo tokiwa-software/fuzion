@@ -88,7 +88,7 @@ generics_negative is
   r1r1a := r1()
   r1r2a := r1 7                  // 16. should flag an error, wrong number of arguments
 
-  r2 Function<unit,i32,bool> := fun (i i32, b bool) is
+  r2 Function<unit,i32,bool> := (i, b) ->
   r2r1 := r2.call()              // 17. should flag an error, wrong number of arguments
   r2r2 := r2.call 3              // 18. should flag an error, wrong number of arguments
   r2r3 := r2.call 3 false

@@ -17,27 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test qualified_declaration
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-qualified_declaration is
-
-  x is
-    y is
-      z is
-        f1(i i32) => i+i
-
-  public x.y.z.f2(i i32) i32 is set result := i*i
-  x.y.z.f3(i i32) i32 is set result := i*i
-  x.y.z.f4(i i32) i32 is i*i
-  x.y.z.f5(i i32) => i*i
-
-  1..10 | i -> say ("$i " +
-                    "{x.y.z.f1(i)} " +
-                    "{x.y.z.f2(i)} " +
-                    "{x.y.z.f3(i)} " +
-                    "{x.y.z.f4(i)} " +
-                    "{x.y.z.f5(i)}")
+NAME = ctrie_test
+include ../positive.mk

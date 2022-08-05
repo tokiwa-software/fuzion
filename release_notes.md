@@ -1,3 +1,37 @@
+## 2022-08-03: V0.077
+
+- Fuzion language
+
+  - added syntax sugar for tuple types like '(i32, list bool)'.
+
+  - allowed types to be put in parentheses, i.e., '(stack i32)' is the same as
+    'stack i32'.  Syntax of '.env' and '.type' will require parentheses, i.e.,
+    instead of 'stack i32 .type' one will have to write '(stack i32).type' and
+    similarly for '.env'.
+
+  - changed parser to allow actual arguments passed to type parameters to be any
+    type, including function types '(i32)->bool' or tuples '(i32, string)'.
+
+  - removed support for lambdas using 'fun' keyword, i.e., instead of 'fun (x
+    i32) -> x+x', you have to write 'x -> x+x'.  Type inference from a lambda is
+    not possible, though.
+
+  - features with empty argument list and a result type that is put in
+    parentheses (usually a tuple) now require an empty argument list '()' since
+    the result type would otherwise be parsed as an argument list.
+
+- C backend
+
+  - use DFA to remove fields and calls to read (removed) unit type fields
+
+  - do not create code for intrinsics that are found to be unreachable during
+    DFA.
+
+- DFA
+
+  - cleanup and minor enhancements
+
+
 ## 2022-07-27: V0.076
 
 - C backend

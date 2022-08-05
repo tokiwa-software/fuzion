@@ -59,6 +59,7 @@ public class Call extends AbstractCall
    * arguments list ("a.b()").
    */
   public static final List<Expr> NO_PARENTHESES = new List<>();
+  public static final List<Actual> NO_PARENTHESES_A = new List<>();
 
 
   /**
@@ -109,6 +110,7 @@ public class Call extends AbstractCall
   /**
    * Actual arguments, set by parser
    */
+  public List<Actual> _actualsNew;
   public List<Expr> _actuals;
   public List<Expr> actuals() { return _actuals; }
 
@@ -194,7 +196,7 @@ public class Call extends AbstractCall
    */
   public Call(SourcePosition pos, String n)
   {
-    this(pos, null,n,null, NO_PARENTHESES);
+    this(pos, null,n,null, null, NO_PARENTHESES);
   }
 
 
@@ -209,7 +211,7 @@ public class Call extends AbstractCall
    */
   public Call(SourcePosition pos, String n, List<Expr> a)
   {
-    this(pos, null,n,null, a);
+    this(pos, null,n,null, null, a);
   }
 
 
@@ -226,7 +228,7 @@ public class Call extends AbstractCall
    */
   public Call(SourcePosition pos, String n, List<AbstractType> g, List<Expr> a)
   {
-    this(pos, null,n,g,a);
+    this(pos, null,n,g,null,a);
   }
 
 
@@ -241,16 +243,39 @@ public class Call extends AbstractCall
    *
    * @param g
    *
+   * @param la list of actual arguments
+   *
    * @param a
    */
   public Call(SourcePosition pos,
-              Expr t, String n, List<AbstractType> g, List<Expr> a)
+              Expr t, String n, List<AbstractType> g /* NYI: remove! */, List<Actual> la, List<Expr> a /* NYI: remove! */)
   {
+    if (la == NO_PARENTHESES_A)
+      {
+        a = NO_PARENTHESES;
+      }
+    if (a == null)
+      {
+        a = new List<Expr>();
+        for (var aa : la)
+          {
+            a.add(aa._expr);
+          }
+      }
+    else if (la == null)
+      {
+        la = new List<>();
+        for (var ae : a)
+          {
+            la.add(new Actual(null, ae));
+          }
+      }
     this._pos = pos;
     this.target = t;
     this.name = n;
     this._select = -1;
     this._generics = (g == null) ? NO_GENERICS : g;
+    this._actualsNew = la;
     this._actuals = a;
   }
 
@@ -269,7 +294,7 @@ public class Call extends AbstractCall
   public Call(SourcePosition pos,
               Expr t, String n, List<Expr> a)
   {
-    this(pos, t, n, null, a);
+    this(pos, t, n, null, null, a);
   }
 
 
@@ -703,7 +728,7 @@ public class Call extends AbstractCall
       {
         var actualsResolved = false;
         if (name == FuzionConstants.TYPE_NAME)
-          {
+          { /* NYI: would be better to move handling of 'a.b.type' to the parser */
             if (CHECKS) check
               (target != null,
                _actuals.size() == 0,
@@ -813,7 +838,12 @@ public class Call extends AbstractCall
 
         if (_actuals.size() - i > vn)
           {
-            g.add(aa.asType(outer, ts.get(ti)));
+            AbstractType t = _actualsNew.get(i)._type;
+            if (t != null)
+              {
+                t.visit(Feature.findGenerics, outer);
+              }
+            g.add(t);
             ai.set(null);  // make sure visit() no longer visits this
             if (ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
               {
