@@ -89,3 +89,20 @@ public fuzion.std.fileio is
                     content Object,
                     # the length of the internal array representing the content
                     contentLength i32) unit is intrinsic
+
+  # returns TRUE if the path is a dir and FALSE if it is not
+  # returns FALSE in case of an error as well
+  #
+  public is_dir(
+                # the (relative or absolute) dir name, using platform specific path separators
+                path string) =>
+    arr := path.utf8.asArray
+    is_dir arr.internalArray.data arr.length
+
+  # intrinsic that returns TRUE if the path is a dir and FALSE if it is not or in case of an error
+  #
+  private is_dir(
+                 # the internal array data representing the dir path in bytes
+                 path Object,
+                 # the length of the internal array representing the path
+                 path_length i32) bool is intrinsic
