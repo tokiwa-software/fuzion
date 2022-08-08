@@ -320,12 +320,12 @@ is
   # compress a container node
   private compress(cn CNode CTK CTV, lev u32, gen i32) =>
     narr := cn.array.map (Branch CTK CTV) (n -> match n
-                                                                         m INode =>
-                                                                           match m.GCAS_READ(CTrie.this).data
-                                                                             // resurrect
-                                                                             tn TNode CTK CTV => tn.sn
-                                                                             * => m
-                                                                         sn SNode => sn)
+                                                  m INode =>
+                                                    match m.GCAS_READ(CTrie.this).data
+                                                      // resurrect
+                                                      tn TNode CTK CTV => tn.sn
+                                                      * => m
+                                                  sn SNode => sn)
     contract (CNode CTK CTV cn.bmp narr) lev gen
 
 
