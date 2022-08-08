@@ -73,13 +73,13 @@ private stdin(
   # read from stdin until end of line or end of file
   # returns an error if stdin is already depleted = end of file
   # NYI read_line should probably filter carriage returns
-  read_line outcome string is
+  read_line outcome string : character_encodings is
     any_error := mut (choice error nil) nil
     got_end_of_file := mut false
 
     bytes := streams.generate u8 (() ->
       match nextByte
-        b u8 => if b != line_feed then b else nil
+        b u8 => if b != ascii.lf then b else nil
         end_of_file end_of_file => got_end_of_file <- true; nil
         error error => any_error <- error; nil)
     #  asArray, since we don't want this to be lazy
@@ -115,10 +115,6 @@ stdins is
     if !(effects.exists<io.stdin>)
       s := stdin (defaultInputHandler (error "not initialized")) effectMode.new unit
       s.default
-
-  # end-of-line marker
-  #
-  line_feed := u8 10
 
 
 byteInputHandler ref is
