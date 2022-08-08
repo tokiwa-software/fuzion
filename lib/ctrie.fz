@@ -327,7 +327,7 @@ is
                                                       * => m
                                                   sn SNode => sn
                                     )
-    contract (CNode<CTK,CTV> cn.bmp narr) lev gen
+    contract (CNode CTK CTV cn.bmp narr) lev gen
 
 
   # contract a container node
