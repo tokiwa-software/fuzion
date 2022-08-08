@@ -72,13 +72,13 @@ is
   # and ']'.  Arrays in inner dimensions are grouped using '[' and ']'.
   #
   redef asString =>
-    "[{for
-         s := "", s + c + (slice i*length1 (i+1)*length1)
-         i in indices0
-         c := "", ","
-       else
-         s
-      }]"
+    line_sep := strings.line_separator
+    ("["
+      + line_sep
+      + indices0
+          .map(i -> "  " + (slice i*length1 (i+1)*length1))
+          .fold(strings.concat("," + line_sep))
+      + line_sep + "]")
 
 
   # get a list of tuples indices and elements in this array

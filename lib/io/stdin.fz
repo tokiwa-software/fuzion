@@ -45,53 +45,57 @@ private stdin(
     next.ip.get
 
 
-  # stream of bytes read from stdin until and excluding EOF
-  private byte_stream stream<u8> is
-
-    val option<outcome<u8>> := nil
-
-    read =>
-      if val.isNil
-        set val := stdin.nextByte
-
-    reset =>
-      set val := nil
-
-    ref: stream<u8>
-      redef hasNext bool is
-        read
-        match val
-          nil => fuzion.std.panic "this should not be possible"
-          v outcome<u8> =>
-            match v
-              error => false
-              v u8 => true
-      redef next u8 is
-        read
-        match val
-          nil => fuzion.std.panic "this should not be possible"
-          v outcome<u8> =>
-            match v
-              error => fuzion.std.panic "no next value in stream"
-              v u8 =>
-                reset
-                v
-
-
   # read n codepoints from stdin
-  read(n i32) string is
+  # may return less than n bytes if end of file is reached
+  # or error if stdin can not be read right now
+  read(n i32) outcome string
+  pre n >= 0
+  is
+    any_error := mut (choice error nil) nil
     tmp : string is
-      redef utf8 Sequence<u8> is byte_stream
-                                                            # asArray, since we don't want this to be lazy
-    strings.fromCodepoints (tmp.asCodepoints.asStream.take n).asArray
+      redef utf8 Sequence u8 is
+        streams.generate u8 (() ->
+            match nextByte
+              b u8 => b
+              end_of_file end_of_file => nil
+              error error => any_error <- error; nil)
+
+    arr := (tmp.asCodepoints.asStream.take n)
+    #  asArray, since we don't want this to be lazy
+      .asArray
+
+    match any_error.get
+      error error => error
+      * =>
+        strings.fromCodepoints arr
 
 
-  # read line from stdin
-  read_line string is
-    arr := byte_stream
-      .takeWhile(b -> b != line_feed)
-      .asArray                         # asArray, since we don't want this to be lazy
-    strings.fromBytes arr
+  # read from stdin until end of line or end of file
+  # returns an error if stdin is already depleted = end of file
+  # NYI read_line should probably filter carriage returns
+  read_line outcome string is
+    any_error := mut (choice error nil) nil
+    got_end_of_file := mut false
+
+    bytes := streams.generate u8 (() ->
+      match nextByte
+        b u8 => if b != line_feed then b else nil
+        end_of_file end_of_file => got_end_of_file <- true; nil
+        error error => any_error <- error; nil)
+    #  asArray, since we don't want this to be lazy
+      .asArray
+
+    match any_error.get
+      error error => error
+      * =>
+        if got_end_of_file.get & bytes.length = 0
+          error "end of file"
+        else
+          strings.fromBytes bytes
+
+
+# type to indicate an `end of file`
+private end_of_file is
 
 
 # short-hand for creating and installing stdin effect
@@ -121,17 +125,20 @@ byteInputHandler ref is
 
   next byteInputHandler is abstract
 
-  get outcome<u8> is abstract
+  # NYI using choice, until open generic for error in outcome is implemented
+  get choice u8 end_of_file error is abstract
 
 
 # the default input handler reading bytes via fuzion.stdin.nextByte
-defaultInputHandler(byte outcome<u8>) : byteInputHandler is
+defaultInputHandler(r choice u8 end_of_file error) : byteInputHandler is
 
   next byteInputHandler is
     v := fuzion.stdin.nextByte
-    if v < 0
+    if v = -1
+      defaultInputHandler end_of_file
+    else if v < -1
       defaultInputHandler (error "an error occurred while reading stdin")
     else
-      defaultInputHandler (outcome v.as_u8)
+      defaultInputHandler v.as_u8
 
-  get => byte
+  get => r
