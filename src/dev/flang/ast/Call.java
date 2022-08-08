@@ -842,8 +842,8 @@ public class Call extends AbstractCall
             if (t != null)
               {
                 t.visit(Feature.findGenerics, outer);
+                g.add(t);
               }
-            g.add(t);
             ai.set(null);  // make sure visit() no longer visits this
             if (ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
               {
