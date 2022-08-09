@@ -1782,6 +1782,10 @@ actualsList : actualSp actualsList
                 var p = pos();
                 result.add(actualSpace());
                 done = p == pos(); /* make sure we do not get stuck on a syntax error */
+                if (in != null)
+                  {
+                    in.next();
+                  }
               }
           }
       }
@@ -2515,6 +2519,10 @@ maybecomma  : comma
           {
             semiOrFlatLF();
           }
+        if (in != null)
+          {
+            in.next();
+          }
       }
     if (in != null)
       {
@@ -2770,6 +2778,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
           {
             semiOrFlatLF();
           }
+        in.next();
       }
     in.end();
     return l;
@@ -2792,7 +2801,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
     int oldSameLine;
     int oldEAS;
     int lastLineNum;    // line number of last call to ok, -1 at beginning
-    int firstIndentPos; // source position of the first element
+    int firstPos;       // source position of the first element
     int firstIndent;    // indentation of the first element
     int oldIndentPos;   // source position of the first element of outer indentation
     int oldIndent;      // indentation outside of this block
@@ -2802,7 +2811,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
     {
       sameLine       = lastPos() >= 0 && lineNum(lastPos()) == line();
       lastLineNum    = -1;
-      firstIndentPos = pos();
+      firstPos = pos();
       pos            = -1;
       if (sameLine)
         {
@@ -2814,13 +2823,37 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
         }
       else
         {
+          firstIndent    = indent(firstPos);
           oldSameLine    = sameLine(-1);
           oldEAS         = endAtSpace(Integer.MAX_VALUE);
-          firstIndent    = indent(firstIndentPos);
-          oldIndentPos   = minIndent(firstIndentPos);
+          oldIndentPos   = minIndent(firstPos);
           oldIndent      = indent(oldIndentPos);
         }
     }
+
+    /**
+     * Check if a previously not indented line will be indented now. This is the
+     * case for code like
+     *
+     *    for i := 0, i+1
+     *        x in arr
+     *
+     * where the first line will be parsed as a 'sameLine', while the second
+     * will be turned into an indented line.
+     */
+    void next()
+    {
+      if (sameLine && current() == Token.t_lineLimit && line() > lineNum(firstPos) && indent(pos()) >= indent(firstPos))
+        {
+          sameLine = false;
+          sameLine(-1);
+          firstIndent    = indent(firstPos);
+          oldEAS   = endAtSpace(Integer.MAX_VALUE);
+          oldIndentPos = minIndent(pos());
+          oldIndent    = indent(oldIndentPos);
+        }
+    }
+
 
     /**
      * Is indentation still ok, i.e, we are still in the same line or in a new
@@ -2847,7 +2880,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
               if (firstIndent < curIndent && !handleSurpriseIndentation() ||
                   firstIndent > curIndent)
                 {
-                  Errors.indentationProblemEncountered(posObject(), posObject(firstIndentPos), parserDetail("stmnts"));
+                  Errors.indentationProblemEncountered(posObject(), posObject(firstPos), parserDetail("stmnts"));
                 }
               minIndent(pos);
               lastLineNum = lineNum(pos);
@@ -2977,6 +3010,7 @@ indexVars   : "for" indexVar (semi indexVars)
       {
         indexVar(indexVars, nextValues);
         semi();
+        in.next();
       }
     in.end();
   }
