@@ -830,7 +830,7 @@ public class Lexer extends SourceFile
 
   /**
    * The current token.  If indentation limit was set and the current token is
-   * indented less than this limit, return Token.t_indentationLimit.
+   * indented less than this limit minus 1, return Token.t_indentationLimit.
    */
   Token currentAtMinIndent()
   {
