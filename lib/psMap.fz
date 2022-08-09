@@ -210,8 +210,9 @@ O(n log n).
 
 
   show unit is
-    for e in asKeyArray
-        sep := "", " "
+    for
+      e in asKeyArray
+      sep := "", " "
     do
       yak (sep + e)
     say

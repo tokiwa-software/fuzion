@@ -75,8 +75,9 @@ choicetest is
   a[9] := Quarter
 
   yak "summing array using loop: "
-  sum := { for i := -1, i+1
-               s := 0, s + value_in_cents a[i]
+  sum := { for
+             i := -1, i+1
+             s := 0, s + value_in_cents a[i]
            until i >= a.length-1
          }
   say sum
