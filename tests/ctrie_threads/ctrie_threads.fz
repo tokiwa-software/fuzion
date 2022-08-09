@@ -17,44 +17,32 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of test stdin
+#  Source code of Fuzion test ctrie_threads
 #
 #  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-stdintest =>
+ctrie_threads is
 
-  read(n i32) => io.stdin.read n
-  read_line => io.stdin.read_line
+  ctrie := CTrie<i32, string>
 
-  a := read 1
-  # read 0 should not lead to nextByte beeing called
-  read 0
-  b := read 1
-  # read 0 should not lead to nextByte beeing called
-  read 0
-  # read 1 utf8
-  smiley := read 1
+  one := psSet 0..1000
+  two := psSet 500..1500
 
-  # printing repeatedly should always yield the same string
-  say "😀: $smiley"
-  say "😀: $smiley"
-  say "b: $b"
-  say "b: $b"
-  say "a: $a"
-  say "a: $a"
+  run_in_thread(s Set<i32>, num i32) is
+    concur.thread.spawn (() ->
+      for k in s do
+        ctrie.add k "thread$num"
+      say "thread $num finished"
+      unit
+      )
 
+  run_in_thread one 1
+  run_in_thread two 2
 
-  line := read_line
-  line2 := read_line
+  # NYI can not wait for threads to finish currently
+  fuzion.std.nano_sleep 5E9
 
-  # printing repeatedly should always yield the same string
-  say "%s😀: $line"
-  say "%s😀: $line"
-  say "123456: $line2"
-  say "123456: $line2"
-
-  # when stdin is empty, read_line should return an empty string
-  say "error: $read_line."
-  say "nothing: {read 1}."
+  if ctrie.size != 2001
+    panic "compare and set in ctrie not implemented yet"
