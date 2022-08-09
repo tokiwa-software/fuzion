@@ -98,7 +98,7 @@ state(S type, initialValue S) => state unit initialValue effectMode.plain
 #
 state(S, R type, initialValue S, r ()->R) =>
   res R := ?
-  state unit S unit initialValue (effectMode.inst ()->set res := r.call)
+  state unit S unit initialValue (effectMode.inst (()->set res := r.call))
   res
 
 
