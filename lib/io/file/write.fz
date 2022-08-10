@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-# write -- effect to write a byte array into a file
+# write -- effect providing writing operations for files
 #
 private write(
     fwh File_Write_Handler,
@@ -31,11 +31,17 @@ private write(
     _ unit
   ) : writes, effect r is
 
-    write(path string, content array u8) =>
+    # takes an array of bytes and writes all of it into the file presented in the path
+    # in case the file does not exist it creates it,
+    # in case the file exists it overwrites it,
+    # this feature works when the directories present in the path exist otherwise nothing will happen
+    #
+    write_all(path string, content array u8) =>
         fwh.write path content
         replace
 
 # short-hand for accessing write effect in current environment
+#
 write =>
   writes.installDefault
   write.env
@@ -43,13 +49,17 @@ write =>
 File_Write_Handler ref is
     write(path string, content array u8) unit is abstract
 
+# the default file writing handler writing bytes into files via fuzion.std.fileio.write
+#
 default_file_write_handler : File_Write_Handler is
     write(path string, content array u8) =>
         fuzion.std.fileio.write path content
 
+# unit type feature defining features related to out but not requiring an
+# instance.
+#
 writes is
     # install default effect io.file.write
     installDefault unit is
         if !(effects.exists io.file.write)
             _ := write default_file_write_handler effectMode.default unit
-
