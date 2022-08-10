@@ -1531,7 +1531,9 @@ public class Feature extends AbstractFeature implements Stmnt
 
     for (var t : choiceGenerics())
       {
-        if (!t.isRef())
+        if (CHECKS) check
+          (Errors.count() > 0 || t != null);
+        if (t != null && !t.isRef())
           {
             if (t == thisType())
               {

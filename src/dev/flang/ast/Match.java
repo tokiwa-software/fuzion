@@ -170,7 +170,13 @@ public class Match extends AbstractMatch
         var i = cgs.listIterator();
         while (i.hasNext())
           {
-            i.set(i.next().resolve(res, outer));
+            var n = i.next();
+            if (CHECKS) check
+              (Errors.count() > 0 || n != null);
+            if (n != null)
+              {
+                i.set(n.resolve(res, outer));
+              }
           }
         SourcePosition[] matched = new SourcePosition[cgs.size()];
         boolean ok = true;
