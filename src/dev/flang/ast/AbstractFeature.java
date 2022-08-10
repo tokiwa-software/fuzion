@@ -535,7 +535,12 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         _typeFeature = this == Types.f_ERROR ? this : existingTypeFeature();
       }
-    return _typeFeature;
+    var result = _typeFeature;
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
   }
 
 
