@@ -4055,8 +4055,10 @@ typeTail    : dot simpletype
    */
   boolean skipSimpletype()
   {
-    boolean result = false;
-    return skipName() && skipActualGens() && skipTypePars() && (isDotEnvOrType() || !skipDot() || skipSimpletype());
+    return
+      skipName() &&
+      (fork().splitSkip("<") ? skipActualGens() : skipTypePars()) &&
+      (isDotEnvOrType() || !skipDot() || skipSimpletype());
   }
 
 
