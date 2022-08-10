@@ -545,7 +545,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
 
 
   /**
-   * If we have an existing type feature (store in a .fum library file), return that
+   * If we have an existing type feature (stored in a .fum library file), return that
    * type feature. return null otherwise.
    */
   public AbstractFeature existingTypeFeature()
