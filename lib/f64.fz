@@ -29,7 +29,7 @@
 # f64 are binary64-numbers as defined in the IEEE 754-2019 standard, see
 # https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
 #
-f64(val f64) : float<f64>, f64s is
+f64(val f64) : float f64, f64s is
 
   redef thiz        => f64.this.val
   redef orderedThis => f64.this.val
@@ -113,7 +113,7 @@ f64(val f64) : float<f64>, f64s is
 # f64s -- unit type defining features related to f64 but not requiring an
 # instance
 #
-f64s : floats<f64> is
+f64s : floats f64 is
 
   redef name => "f64"
 
@@ -157,4 +157,3 @@ f64s : floats<f64> is
   redef sinh(val f64) f64 is intrinsic
   redef cosh(val f64) f64 is intrinsic
   redef tanh(val f64) f64 is intrinsic
-

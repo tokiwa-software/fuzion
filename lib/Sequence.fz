@@ -36,7 +36,7 @@
 # to implement any of these results in an endless recursion when the Sequence
 # is used.
 #
-Sequence<T> ref is
+Sequence(T type) ref is
 
 
   # create a list from this Sequence.
@@ -47,7 +47,7 @@ Sequence<T> ref is
   # Default implementation uses asStream. Heirs must redefine at least
   # one of asList or asStream.
   #
-  asList list<T> is asStream.asList
+  asList list T is asStream.asList
 
 
   # create a stream of T.
@@ -58,7 +58,7 @@ Sequence<T> ref is
   # Default implementation uses asList.  Heirs must redefine at least
   # one of asList or asStream.
   #
-  asStream stream<T> is asList.asStream
+  asStream stream T is asList.asStream
 
 
   # is this list empty?
@@ -69,7 +69,7 @@ Sequence<T> ref is
   # count the number of elements in this Sequence.  Note that this typically
   # runs forever if executed on an endless list
   #
-  count => (mapSequence<i32> (_ -> 1)).fold i32.sum
+  count => (mapSequence i32 (_ -> 1)).fold i32.sum
 
 
   # get the head of this list, panic if list is empty
@@ -107,9 +107,9 @@ Sequence<T> ref is
 
   # collect the contents of this Sequence into an array
   #
-  asArray array<T> is
+  asArray array T is
     s := asStream
-    array<T> count i->s.next
+    array T count i->s.next
 
 
   # create a stream and call 'forAll f' on it
@@ -135,12 +135,12 @@ Sequence<T> ref is
   # create a new stream that contains the first elements of this stream for
   # which 'f e' is false
   #
-  before(f T -> bool) stream<T> is asStream.before f
+  before(f T -> bool) stream T is asStream.before f
 
 
   # create a new stream and filter its elements using predicate f
   #
-  filter   (f T -> bool) Sequence<T> is asList.filter f
+  filter   (f T -> bool) Sequence T is asList.filter f
 
 
   # create a new stream and filter its elements using predicate f, infix operator
@@ -208,24 +208,24 @@ Sequence<T> ref is
   # create a Sequence that consists of all the elements of this Sequence followed
   # by all the elements of s
   #
-  concatSequences (s Sequence<T>) Sequence<T> is asList.concat s.asList
+  concatSequences (s Sequence T) Sequence T is asList.concat s.asList
 
 
   # infix operand synonyme for concatSequences
   #
-  infix ++ (s Sequence<T>) => asList ++ s.asList
+  infix ++ (s Sequence T) => asList ++ s.asList
 
 
   # create a list that repeats the current Sequence indefinitely.  In case 'Sequence.this'
   # is empty, returns 'nil'
   #
-  cycle list<T> is asList.cycle
+  cycle list T is asList.cycle
 
 
   # create a lazy list of all the tails of this list, including the complete list
   # 'list.this' and the empty list 'nil'.
   #
-  tails list<list<T>> is asList.tails
+  tails list (list T) is asList.tails
 
 
   # create a string representation of this list including all the string
@@ -254,15 +254,15 @@ Sequence<T> ref is
   # NYI: As long as covariance for result type is not permitted we cannot
   # call this 'map' since this would clash with, e.g., 'array.map'
   #
-  mapSequence<B>(f T -> B) => asList.map f
+  mapSequence(B type, f T -> B) => asList.map f
 
 
   # NYI "error 1: Cannot redefine feature with generic arguments
   #      To solve this, ask the Fuzion team to remove this restriction :-)"
   #
-  # flatMap<B>(f T -> Sequence<B>) =>
+  # flatMap(B type, f T -> Sequence<B>) =>
   #   asList.flatMap f
-  flatMapSequence<B>(f T -> Sequence<B>) =>
+  flatMapSequence(B type, f T -> Sequence B) =>
     asList.flatMap f
 
 
@@ -270,15 +270,15 @@ Sequence<T> ref is
   #
   # e.g., to sum the elements of a stream of i32, use s.fold i32.sum
   #
-  fold (m Monoid<T>) => asList.fold m.e m
+  fold (m Monoid T) => asList.fold m.e m
 
 
   # reduce this Sequence to R with an initial value init
   # and a reducing function f
-  reduce<R>(init R, f (R,T) -> R) R is
+  reduce(R type, init R, f (R,T) -> R) R is
     match asList
       nil => init
-      c Cons => c.tail.reduce<R> (f init c.head) f
+      c Cons => c.tail.reduce R (f init c.head) f
 
 
   # insert element v at position at
@@ -295,13 +295,13 @@ Sequence<T> ref is
 
 
   # sort this Sequence using total order defined for 'f a[i]'
-  sortBy<O: ordered<O>>(f T->O) => sort (a, b -> f a <= f b)
+  sortBy(O (ordered O).type, f T->O) => sort (a, b -> f a <= f b)
 
 
   # create a new list from the result of applying 'f' to the
   # elements of this list and 'b' in order.
   #
-  zip<U,V>(b Sequence<U>, f (T,U)->V) => asList.zip0 b.asList f
+  zip(U,V type, b Sequence U, f (T,U)->V) => asList.zip0 b.asList f
 
 
   # takes a transducer xf, a reducer f and an initial value
@@ -334,7 +334,7 @@ Sequence<T> ref is
 
 
   # the nth element in the sequence,
-  nth(n i32) option<T>
+  nth(n i32) option T
     pre n >= 0
   is
     match drop n
@@ -350,35 +350,35 @@ Sequences is
 
   # create an empty list
   #
-  empty<T> Sequence<T> is
-    lists.empty<T>
+  empty(T type) Sequence T is
+    lists.empty T
 
 
   # monoid of Sequences with infix concatentation operation.
   #
-  concatMonoid(redef T type) : Monoid<Sequence<T>> is
+  concatMonoid(redef T type) : Monoid (Sequence T) is
 
     # associative operation
     #
-    infix ∙ (a, b Sequence<T>) Sequence<T> is a.concatSequences b
+    infix ∙ (a, b Sequence T) Sequence T is a.concatSequences b
 
     # equality
     #
-    redef infix == (a, b Sequence<T>) =>
+    redef infix == (a, b Sequence T) =>
       fuzion.std.panic "NYI: Sequences.concatMonoid.infix ==, requires T : hasEquals"
 
     # identity element
     #
-    e => empty<T>
+    e => empty T
 
 
   # determine the index of element x within list l.  0 if x is at the head
   # of the list, 1 if it comes directly after head, etc. nil if x is not
   # in the list.
   #
-  indexIn<A: hasEquals<A>>(l Sequence<A>, x A) => (searchableSequence<A> l).indexOf x
+  indexIn(A (hasEquals A).type, l Sequence A, x A) => (searchableSequence A l).indexOf x
 
 
   # get the index of x within this list or nil if it does not exist
   #
-  find<A: hasEquals<A>>(l Sequence<A>, x Sequence<A>) => (searchableSequence<A> l).find x
+  find(A (hasEquals A).type, l Sequence A, x Sequence A) => (searchableSequence A l).find x

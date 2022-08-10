@@ -29,7 +29,7 @@
 # f32 are binary32-numbers as defined in the IEEE 754-2019 standard, see
 # https://ieeexplore.ieee.org/servlet/opac?punumber=8766227
 #
-f32(val f32) : float<f32>, f32s is
+f32(val f32) : float f32, f32s is
 
   redef thiz        => f32.this.val
   redef orderedThis => f32.this.val
@@ -99,7 +99,7 @@ f32(val f32) : float<f32>, f32s is
 # f32s -- unit type defining features related to f32 but not requiring an
 # instance
 #
-f32s : floats<f32> is
+f32s : floats f32 is
 
   redef name => "f32"
 

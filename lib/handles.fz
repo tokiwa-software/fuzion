@@ -30,7 +30,8 @@
 # handles that refer to modifiable value and features to 'get', 'put' or
 # 'update' this value.
 #
-private handles<T,X>(
+private handles(
+  T, X type,
 
   # the inner value of this monad
   v X,
@@ -40,11 +41,11 @@ private handles<T,X>(
   # NYI: As soon as one-way monads are enforced, this array can be implemented
   # using marray, reducing the overhead of an update from O(count) to O(1)!
   #
-  private ar array<T>,
+  private ar array T,
 
   # action to be taken: plain monad, install or replace?
   redef r effectMode.val
-  ) : onewayMonad<X, handles<T,X>> r
+  ) : onewayMonad X (handles T X) r
 is
 
   # number of handles created
@@ -58,12 +59,12 @@ is
   new (
     # initial value refered to by the new handle
     w T
-    ) handles<T,X>
+    ) handles T X
   post
     result.hasLast
   is
-    na := array<T> count+1 (i -> if (i < count) ar[i] else w)
-    handles<T,X> v na mode
+    na := array T count+1 (i -> if (i < count) ar[i] else w)
+    handles T X v na mode
 
 
   # has one element been created using 'new'?
@@ -77,7 +78,7 @@ is
     pre
       hasLast
    =>
-    handle0<T> count-1
+    handle0 T count-1
 
 
   # a one-way feature to create a new handle and update the monad
@@ -96,7 +97,7 @@ is
   #
   get (
     # a handle created by 'new'
-    h handle0<T>
+    h handle0 T
     )
    =>
     ar[h.x]
@@ -106,12 +107,12 @@ is
   #
   put (
     # a handle created by 'new'
-    h handle0<T>,
+    h handle0 T,
 
     # the new value to be stored with 'h'
     w T)
    =>
-    handles<T,X> v (ar.put h.x w) mode
+    handles T X v (ar.put h.x w) mode
 
 
   # create a new instance with the value refered to by a given handle read and
@@ -119,7 +120,7 @@ is
   #
   update (
     # a handle created by 'new'
-    h handle0<T>,
+    h handle0 T,
 
     # function calculcating the new value from the old value
     f T->T
@@ -139,37 +140,37 @@ is
     f T->T
     )
    =>
-    handles<T,X> v (ar.put x (f ar[x])) mode
+    handles T X v (ar.put x (f ar[x])) mode
 
 
-  infix >>= (f X -> handles<T,X>) => bind<X> f
+  infix >>= (f X -> handles T X) => bind X f
 
-  bind <B> (f X -> handles<T,B>) handles<T,B> is
-    handles<T,B> (f v).v ar effectMode.plain
+  bind(B type, f X -> handles T B) handles T B is
+    handles T B (f v).v ar effectMode.plain
 
-  return<B> (w B) => handles<T,B> w ar effectMode.plain
+  return( B type, w B) => handles T B w ar effectMode.plain
 
 # short-hand for creating and installing an empty set of handles of given type.
 #
-handles<T>(rr ()->unit) =>
-  handles<T,unit> unit (array<T> 0 x->do) (effectMode.inst rr)
+handles(T type, rr ()->unit) =>
+  handles T unit unit (array T 0 x->do) (effectMode.inst rr)
   unit
 
 # short-hand for creating an empty set of handles of given type.
 #
-handles_<T> => handles<T,unit> unit (array<T> 0 x->do) effectMode.plain
+handles_(T type) => handles T unit unit (array T 0 x->do) effectMode.plain
 
 
 # short-hand for accessing handles monad for given type in current environment
 #
-handles<T> =>
-  handles_type<T>.installDefault
-  handles<T,unit>.env
+handles(T type) =>
+  (handles_type T).installDefault
+  handles<T, unit>.env
 
 
 # handle value created by 'handles.new'
 #
-private handle0<T>(
+private handle0(T type,
   # the index in 'handles.ar'
   private x i32
   )
@@ -183,26 +184,26 @@ is
   # update value stored in this handle using f.
   #
   update(f T->T) =>
-    handles<T>.update0 x f
+    (handles T).update0 x f
     get
 
   # get value stored in this handle
   #
   get =>
-    handles<T>.ar[x]
+    (handles T).ar[x]
 
 
 # unit type containing features related to handles but nor requiring an instance
 #
-handles_type<T> is
+handles_type(T type) is
 
   # install default instance of handles
   #
   installDefault unit is
-    handles<T,unit> unit (array<T> 0 x->do) effectMode.default
+    handles T unit unit (array T 0 x->do) effectMode.default
     unit
 
 
 # create a new handle using the handles instance from the current environment
 #
-handle<T>(v T) => handles<T>.create v
+handle(T type, v T) => (handles T).create v
