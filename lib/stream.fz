@@ -245,3 +245,41 @@ stream(redef T type) ref : Sequence<T> is
     while hasNext
     else
       r
+
+
+# streams -- unit type defining features related
+# to streams but not requiring an instance
+#
+streams is
+
+  # creates a - potentially infinite - stream by using given supplier
+  # end of stream is reached once supplier returns nil
+  # note that the supplier is called only once for each hasNext/next cycle
+  #
+  generate(T type, supplier () -> option T) stream T is
+
+    not_initialized is
+    depleted is
+    val := mut (choice T not_initialized depleted) not_initialized
+
+    read =>
+      match val.get
+        not_initialized =>
+          match supplier()
+            t T => val <- t
+            nil => val <- depleted
+        * =>
+      val.get
+
+    reset =>
+      val <- not_initialized
+
+    ref: stream T
+      redef hasNext bool is
+        match read
+          v T => true
+          * => false
+      redef next T is
+        match read
+          v T => reset; v
+          * => fuzion.std.panic "there is no next value available"
