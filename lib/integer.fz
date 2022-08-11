@@ -89,7 +89,7 @@ integer(I integer<I>.type) : numeric<I> is
   # convert this to a number using the given base.  If negative, add "-" as
   # the first character.
   #
-  asString(base u32) string
+  asString(base u32) string : character_encodings
     pre
       debug: u32 1 < base <= 36
   is
@@ -103,7 +103,7 @@ integer(I integer<I>.type) : numeric<I> is
               redef hasNext => p.sign > 0
               redef next =>
                 d := (thiz / p % b).to_u32.as_u8
-                r := if (d < 10) strings.zeroChar + d else strings.aChar + (d - u8 10)
+                r := if (d < 10) strings.zeroChar + d else strings.aChar + (d - ascii.lf)
                 set p := p / b
                 r
           else
