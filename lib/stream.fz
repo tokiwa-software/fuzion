@@ -198,9 +198,8 @@ stream(redef T type) ref : Sequence<T> is
   # create a string from the elements of this stream
   #
   redef asString ref string is
-    # NYI: check if this works: map<string>(x-> x.asString).fold strings.concat ", "
-    #
-    stream.this.asString ", "
+    (map string (x -> x.asString))
+      .fold (strings.concat ", ")
 
 
   # create a string representation of this list including all the string

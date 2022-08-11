@@ -26,12 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.air;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency!
 import dev.flang.ast.AbstractBlock; // NYI: remove dependency!
@@ -49,7 +49,6 @@ import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.Old; // NYI: remove dependency!
-import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
@@ -343,7 +342,17 @@ public class Clazzes extends ANY
         // but it might be overkill in some cases. We might rethink this and,
         // e.g. treat clazzes of inherited features with a reference outer clazz
         // the same.
-        var newcl =  new Clazz(actualType, select, outer);
+
+        Clazz newcl;
+        if (wouldCreateCycleInOuters(actualType, outer))
+          {
+            newcl = clazz(actualType);
+          }
+        else
+          {
+            newcl =  new Clazz(actualType, select, outer);
+          }
+
         result = intern(newcl);
         if (result == newcl)
           {
@@ -371,6 +380,17 @@ public class Clazzes extends ANY
        outer == result._outer || true /* NYI: Check why this sometimes does not hold */);
 
     return result;
+  }
+
+
+  /**
+   * Would creating new clazz for actualType and outer result in a cycle?
+   */
+  private static boolean wouldCreateCycleInOuters(AbstractType actualType, Clazz outer)
+  {
+    if (PRECONDITIONS) require
+      (Errors.count() > 0 || !actualType.dependsOnGenerics());
+    return outer != null && outer.selfAndOuters().anyMatch(ou -> actualType.featureOfType().equals(ou.feature()));
   }
 
 
