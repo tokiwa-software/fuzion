@@ -1667,14 +1667,9 @@ actualArgs  : actualsList               // must be in same line as name of calle
    * @return true if the next symbold ends actual arguments or in!=null and the
    * next symbol is not properly indented.
    */
-  boolean endsActuals(Indentation in)
+  boolean endsActuals(boolean atMinIndent)
   {
-    return
-      isOperator('.') ||
-      ((in != null) ? currentAtMinIndent() == Token.t_indentationLimit ||
-                      endsActuals(currentNoLimit()) ||
-                      !in.ok()
-                    : endsActuals(current()));
+    return isOperator('.') || endsActuals(current(atMinIndent));
   }
 
 
@@ -1767,42 +1762,17 @@ actualsList : actualSp actualsList
    */
   List<Actual> actualsList(int line)
   {
-    Indentation in = null;
-    if (line() != line && current() != Token.t_lineLimit)
-      {
-        line = -1;
-        in = new Indentation();
-      }
-    var oldLine = sameLine(line);
     List<Actual> result = Call.NO_PARENTHESES_A;
-    if (ignoredTokenBefore() && !endsActuals(in))
+    if (ignoredTokenBefore() && !endsActuals(false))
       {
+        var in = new Indentation();
         result = new List<>(actualSpace());
-        var done = false;
-        while (!done)
+        in.next();
+        while (!endsActuals(true) && in.ok())
           {
-            if (in == null && line() != line && oldLine == -1)
-              { // indentation starts after the first argument:
-                line = -1;
-                sameLine(-1);
-                in = new Indentation();
-              }
-            done = endsActuals(in);
-            if (!done)
-              {
-                var p = pos();
-                result.add(actualSpace());
-                done = p == pos(); /* make sure we do not get stuck on a syntax error */
-                if (in != null)
-                  {
-                    in.next();
-                  }
-              }
+            result.add(actualSpace());
+            in.next();
           }
-      }
-    sameLine(oldLine);
-    if (in != null)
-      {
         in.end();
       }
     return result;
