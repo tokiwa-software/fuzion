@@ -1418,7 +1418,6 @@ actuals     : actualGens actualArgs
   Call call(Expr target)
   {
     SourcePosition pos = posObject();
-    var line = line();
     String n = skip(Token.t_type) ? FuzionConstants.TYPE_NAME : name();
     Call result;
     var skippedDot = false;
@@ -1439,7 +1438,7 @@ actuals     : actualGens actualArgs
         // we must check isActualGens() to distinguish the less operator in 'a < b'
         // from the actual generics in 'a<b>'.
         var g = (!isActualGens()) ? Call.NO_GENERICS : actualGens();
-        var l = actualArgs(line);
+        var l = actualArgs();
         result = new Call(pos, target, n, g, l, null);
       }
     result = callTail(skippedDot, result);
@@ -1641,17 +1640,15 @@ typeList    : type ( COMMA typeList
   /**
    * Parse actualArgs
    *
-   * @param line the line containing the name of the called feature
-   *
-actualArgs  : actualsList               // must be in same line as name of called feature
+actualArgs  : actualsList
             | LPAREN actualList RPAREN
             | LPAREN RPAREN
             ;
    */
-  List<Actual> actualArgs(int line)
+  List<Actual> actualArgs()
   {
     return (ignoredTokenBefore() || current() != Token.t_lparen)
-      ? actualsList(line)
+      ? actualsList()
       : bracketTermWithNLs(PARENS, "actualArgs",
                            () -> actualList(),
                            () -> new List<>());
@@ -1754,13 +1751,11 @@ actualList  : actual ( COMMA actualList
   /**
    * Parse space separated actual arguments
    *
-   * @param line the line containing the name of the called feature
-   *
 actualsList : actualSp actualsList
             |
             ;
    */
-  List<Actual> actualsList(int line)
+  List<Actual> actualsList()
   {
     List<Actual> result = Call.NO_PARENTHESES_A;
     if (ignoredTokenBefore() && !endsActuals(false))
