@@ -25,16 +25,16 @@
 
 # fuzion.std.out -- unit type grouping routines to print to stdout
 #
-public fuzion.std.out is
+public fuzion.std.out : character_encodings is
 
   public print(s ref Object) =>
     write s.asString.utf8.asArray
 
   public println(s ref Object) =>
-    write (s.asString.utf8 ++ [u8 10]).asArray
+    write (s.asString.utf8 ++ [ascii.lf]).asArray
 
   public println =>
-    write [u8 10]
+    write [ascii.lf]
 
   private write(arr array<u8>) =>
     write arr.internalArray.data arr.length

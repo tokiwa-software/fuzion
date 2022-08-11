@@ -1,0 +1,169 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library ascii
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+ascii is
+
+  ##
+  # byte values of control code defined in ASCII
+  ##
+
+  # Null
+  nul => u8 0
+  # Start of Heading
+  soh => u8 1
+  # Start of Text
+  stx => u8 2
+  # End of Text
+  etx => u8 3
+  # End of Transmission
+  eot => u8 4
+  # Enquiry
+  enq => u8 5
+  # Acknowledgement
+  ack => u8 6
+  # Bell
+  bel => u8 7
+  # Backspace
+  bs  => u8 8
+  # Horizontal Tab
+  ht  => u8 9
+  # Line Feed
+  lf  => u8 10
+  # Vertical Tab
+  vt  => u8 11
+  # Form Feed
+  ff  => u8 12
+  # Carriage Return
+  cr  => u8 13
+  # Shift Out
+  so  => u8 14
+  # Shift In
+  si  => u8 15
+  # Data Link Escape
+  dle => u8 16
+  # Device Control 1 (often XON)
+  dc1 => u8 17
+  # Device Control 2
+  dc2 => u8 18
+  # Device Control 3 (often XOFF)
+  dc3 => u8 19
+  # Device Control 4
+  dc4 => u8 20
+  # Negative Acknowledgement
+  nak => u8 21
+  # Synchronous Idle
+  syn => u8 22
+  # End of Transmission Block
+  etb => u8 23
+  # Cancel
+  can => u8 24
+  # End of Medium
+  em  => u8 25
+  # SUB  Substitute
+  ss  => u8 26
+  # Escape
+  esc => u8 27
+  # File Separator
+  fs  => u8 28
+  # Group Separator
+  gs  => u8 29
+  # Record Separator
+  rs  => u8 30
+  # Unit Separator
+  us  => u8 31
+  # Delete
+  del => u8 127
+
+
+  ##
+  # control codes defined in ASCII as strings
+  ##
+
+  # Null
+  nul_str => strings.fromBytes [nul]
+  # Start of Heading
+  soh_str => strings.fromBytes [soh]
+  # Start of Text
+  stx_str => strings.fromBytes [stx]
+  # End of Text
+  etx_str => strings.fromBytes [etx]
+  # End of Transmission
+  eot_str => strings.fromBytes [eot]
+  # Enquiry
+  enq_str => strings.fromBytes [enq]
+  # Acknowledgement
+  ack_str => strings.fromBytes [ack]
+  # Bell
+  bel_str => strings.fromBytes [bel]
+  # Backspace
+  bs_str  => strings.fromBytes [bs]
+  # Horizontal Tab
+  ht_str  => strings.fromBytes [ht]
+  # Line Feed
+  lf_str  => strings.fromBytes [lf]
+  # Vertical Tab
+  vt_str  => strings.fromBytes [vt]
+  # Form Feed
+  ff_str  => strings.fromBytes [ff]
+  # Carriage Return
+  cr_str  => strings.fromBytes [cr]
+  # Shift Out
+  so_str  => strings.fromBytes [so]
+  # Shift In
+  si_str  => strings.fromBytes [si]
+  # Data Link Escape
+  dle_str => strings.fromBytes [dle]
+  # Device Control 1 (often XON)
+  dc1_str => strings.fromBytes [dc1]
+  # Device Control 2
+  dc2_str => strings.fromBytes [dc2]
+  # Device Control 3 (often XOFF)
+  dc3_str => strings.fromBytes [dc3]
+  # Device Control 4
+  dc4_str => strings.fromBytes [dc4]
+  # Negative Acknowledgement
+  nak_str => strings.fromBytes [nak]
+  # Synchronous Idle
+  syn_str => strings.fromBytes [syn]
+  # End of Transmission Block
+  etb_str => strings.fromBytes [etb]
+  # Cancel
+  can_str => strings.fromBytes [can]
+  # End of Medium
+  em_str  => strings.fromBytes [em]
+  # SUB  Substitute
+  ss_str  => strings.fromBytes [ss]
+  # Escape
+  esc_str => strings.fromBytes [esc]
+  # File Separator
+  fs_str  => strings.fromBytes [fs]
+  # Group Separator
+  gs_str  => strings.fromBytes [gs]
+  # Record Separator
+  rs_str  => strings.fromBytes [rs]
+  # Unit Separator
+  us_str  => strings.fromBytes [us]
+  # Delete
+  del_str => strings.fromBytes [del]
