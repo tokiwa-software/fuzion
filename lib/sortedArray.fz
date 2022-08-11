@@ -42,7 +42,7 @@ sortedArray
 
   # orginal, unsorted Sequence
   #
-  from Sequence<T>,
+  from Sequence T,
 
   # predicate defining total order on T.
   #
@@ -67,11 +67,11 @@ is
   sort
     (
     # array with sub-heaps of heapSize sorted
-    a array<T>,
+    a array T,
 
     # the current heap size, 1 on initial call, must be power of 2
     heapSize i32
-    ) array<T>
+    ) array T
 
     pre
       debug: heapSize >= 0,
@@ -89,7 +89,7 @@ is
       # of array.
       h1 := 0;
 
-      na := array<T> a.length (i ->
+      na := array T a.length (i ->
         # index in current pair of heaps
         hi := i & (heapSize*2-1)
         # reset h1 in case we start new pair of heaps
@@ -128,7 +128,7 @@ is
   # this sortedArray, the index of one of the matching keys will be
   # returned, but is not specified which one.
   #
-  findKey (key T) option<i32>
+  findKey (key T) option i32
     post
       match result
         i i32 => # sortedArray.this[i] = key, but we do not have 'infix =' available, so
@@ -137,7 +137,7 @@ is
                  lessOrEqual sortedArray.this[i] key && lessOrEqual key sortedArray.this[i]
         nil   => true # NYI: analyis: for all i=0..a.length-1, sortedArray.this[i] /= key
   is
-    binarySearch(l, r i32) option<i32> is
+    binarySearch(l, r i32) option i32 is
       m := (l + r) / 2
       if l > r                                     then nil
       else if !lessOrEqual key sortedArray.this[m] then binarySearch m+1 r
@@ -164,14 +164,14 @@ is
     #
     cmp T -> i32
 
-    ) option<i32>
+    ) option i32
 
     post
       match result
         i i32 => (cmp sortedArray.this[i]) = 0
         nil   => true # NYI: analyis: for all i=0..a.length-1, sortedArray.this[i] /= key
   is
-    binarySearch(l, r i32) option<i32> is
+    binarySearch(l, r i32) option i32 is
       m := (l + r) / 2
       if l > r
         nil
@@ -191,11 +191,12 @@ is
 #
 # See sortedArray(from, lessOrEqual) for details
 #
-sortedArrayOf<T: ordered<T>>
+sortedArrayOf
   (
+  T (ordered T).type,
   # orginal, unsorted Sequence
-  from Sequence<T>
-  ) sortedArray<T>
+  from Sequence T
+  ) sortedArray T
 
 is
-  sortedArray<T> from (a,b -> a <= b)
+  sortedArray T from (a,b -> a <= b)

@@ -27,14 +27,14 @@
 #
 # read to retrieve data from a file
 #
-# write to insert data into a file 
+# write to insert data into a file
 #
 public fuzion.std.fileio is
 
   # reads a file and returns the content as an array of u8.
   #
   public read(
-              # the (relative or absolute) file name, using platform specific path separators  
+              # the (relative or absolute) file name, using platform specific path separators
               path string) =>
     file := array get_file_size(path).as_i32 i->(u8 0) # allocating an array the size of the file
     arr := path.utf8.asArray # transforms the path to a utf8 byte array
@@ -42,7 +42,7 @@ public fuzion.std.fileio is
     file
 
   # intrinsic that fills an array u8 with the file bytes.
-  # 
+  #
   private read(
                # the internal array data representing the file path in bytes
                path Object,
@@ -77,7 +77,7 @@ public fuzion.std.fileio is
                # the (relative or absolute) file name, using platform specific path separators
                path string,
                # the content of the file as an u8 array
-               content array<u8>) =>
+               content array u8) =>
     arr := path.utf8.asArray
     write arr.internalArray.data arr.length content.internalArray.data content.length
 

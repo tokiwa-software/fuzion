@@ -17,43 +17,22 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fuzion.sys.envVars
+#  Source code of Fuzion standard library feature cache
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# fuzion.sys.env_vars -- low-level feature to access environment variables
+# cache result of f for cache key T
 #
-private env_vars is
+cache(T type, f () -> T) T is
 
+  # use wrapper type because we do not want to prevent
+  # the use of `state` for type T
+  cache_item(T type, val T) is
 
-  # intrinsic to check if env var with given name exists
-  #
-  # NOTE: parameter s must be 0-terminated char *
-  #
-  private has0(s Object) bool is intrinsic
+  if !(effects.exists (state unit (cache_item T)))
+    _ := state unit (cache_item T) unit (cache_item f()) effectMode.default
 
-
-  # intrinsic to get env var with given name
-  #
-  # NOTE: parameter s must be 0-terminated char *
-  #
-  private get0(s Object) string
-  is intrinsic
-
-
-  # check if env var with given name exists
-  #
-  has(s string) bool is
-    has0 (c_string s)
-
-
-  # intrinsic to get env var with given name
-  #
-  get(s string) option string is
-    a := c_string s
-    if has0 a then
-      get0 a
-    else
-      nil
+  state_get (cache_item T)
+    .val

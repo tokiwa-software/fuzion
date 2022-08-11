@@ -25,7 +25,7 @@
 
 # u128 -- 128-bit unsigned integer values
 #
-u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
+u128(hi, lo u64) : wrappingInteger u128, hasInterval u128, u128s is
 
   #  redef thiz => u128.this  -- NYI: This causes a type error when using C backend
   redef thiz => u128 hi lo
@@ -246,7 +246,7 @@ u128(hi, lo u64) : wrappingInteger<u128>, hasInterval<u128>, u128s is
 # u128s -- unit type defining features related to u128 but not requiring an
 # instance
 #
-u128s : wrappingIntegers<u128> is
+u128s : wrappingIntegers u128 is
 
   redef name => "u128"
 

@@ -28,10 +28,10 @@
 # complex provides complex numbers based on a numeric type (e.g. f64, i32).
 # A complex number consists of a real and an imaginary part.
 #
-complex (C numeric<C>.type,
+complex (C (numeric C).type,
          real,    # real part
          imag C   # imaginary part
-         ) : numeric<complex<C>>, complexes<C>
+         ) : numeric (complex C), complexes C
 is
 
 # private:
@@ -47,10 +47,10 @@ is
 
   # basic operations
   redef prefix + => a
-  redef infix +  (b complex<C>) => complex a.real+b.real a.imag+b.imag
-  redef infix -  (b complex<C>) => complex a.real-b.real a.imag-b.imag
-  redef infix *  (b complex<C>) => complex a.real*b.real-a.imag*b.imag a.real*b.imag+a.imag*b.real
-  redef infix /  (b complex<C>) complex<C>
+  redef infix +  (b complex C) => complex a.real+b.real a.imag+b.imag
+  redef infix -  (b complex C) => complex a.real-b.real a.imag-b.imag
+  redef infix *  (b complex C) => complex a.real*b.real-a.imag*b.imag a.real*b.imag+a.imag*b.real
+  redef infix /  (b complex C) complex C
     pre
       safety: b != zero
   is
@@ -58,14 +58,14 @@ is
     complex (a.real*b.real+a.imag*b.imag)/n (a.imag*b.real-a.real*b.imag)/n
 
   # comparison
-  redef infix == (b complex<C>) => a.real  = b.real && a.imag  = b.imag
-  redef infix != (b complex<C>) => a.real != b.real || a.imag != b.imag
+  redef infix == (b complex C) => a.real  = b.real && a.imag  = b.imag
+  redef infix != (b complex C) => a.real != b.real || a.imag != b.imag
 
   # NYI: total order ignoring imag
-  redef infix <  (b complex<C>) => a.real <  b.real
-  redef infix <= (b complex<C>) => a.real <= b.real
-  redef infix >  (b complex<C>) => a.real >  b.real
-  redef infix >= (b complex<C>) => a.real >= b.real
+  redef infix <  (b complex C) => a.real <  b.real
+  redef infix <= (b complex C) => a.real <= b.real
+  redef infix >  (b complex C) => a.real >  b.real
+  redef infix >= (b complex C) => a.real >= b.real
 
   abs² => real*real+imag*imag
 
@@ -94,7 +94,7 @@ is
 # to https://www.wordhippo.com/what-is/the-plural-of/complex.html, so we
 # use complexes.
 #
-complexes<E : numeric<E>> : numerics<complex<E>> is
+complexes(E (numeric E).type) : numerics (complex E) is
 
   redef name => "complex"
 
@@ -112,11 +112,11 @@ complexes<E : numeric<E>> : numerics<complex<E>> is
 # complex -- returns value of unit type complexes
 #
 # This is a convenience feature that allows using, e.g.,
-# 'complex<i32>.sum' to get the the monoid of (complex, infix +) instead of
+# '(complex i32).sum' to get the the monoid of (complex, infix +) instead of
 # 'complexs.sum'.
 #
 # Since this complex with no arguments is a routine and not a constructor, it
 # does not define a type (which would cause a name clash with complex with two
 # arguments).
 #
-complex<E: numeric<E>> => complexes<E>
+complex(E (numeric E).type) => complexes E

@@ -112,7 +112,7 @@ stdin =>
 # unit feature providing static helpers
 stdins is
   installDefault is
-    if !(effects.exists<io.stdin>)
+    if !effects.exists io.stdin
       s := stdin (defaultInputHandler (error "not initialized")) effectMode.new unit
       s.default
 

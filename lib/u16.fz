@@ -25,7 +25,7 @@
 
 # u16 -- 16-bit unsigned integer values
 #
-u16(val u16) : wrappingInteger<u16>, hasInterval<u16>, u16s is
+u16(val u16) : wrappingInteger u16, hasInterval u16, u16s is
 
   redef thiz => u16.this.val
   redef orderedThis => u16.this.val
@@ -159,7 +159,7 @@ u16(val u16) : wrappingInteger<u16>, hasInterval<u16>, u16s is
 # u16s -- unit type defining features related to u16 but not requiring an
 # instance
 #
-u16s : wrappingIntegers<u16> is
+u16s : wrappingIntegers u16 is
 
   redef name => "u16"
 

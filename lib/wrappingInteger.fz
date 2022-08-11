@@ -28,7 +28,7 @@
 # wrappingInteger is the abstract ancestor of integer numbers that have min and
 # max values and operations with wrap-around semantics.
 #
-wrappingInteger(redef W wrappingInteger<W>.type) : integer<W>, wrappingIntegers<W> is
+wrappingInteger(redef W (wrappingInteger W).type) : integer W, wrappingIntegers W is
 
   # overflow checking
 
@@ -99,10 +99,10 @@ wrappingInteger(redef W wrappingInteger<W>.type) : integer<W>, wrappingIntegers<
   is thiz *° other
 
   # overflow checking operations
-  redef prefix -?          numOption<W> is if wrappedOnNeg        then nil else -thiz
-  redef infix +? (other W) numOption<W> is if wrappedOnAdd(other) then nil else thiz + other
-  redef infix -? (other W) numOption<W> is if wrappedOnSub(other) then nil else thiz - other
-  redef infix *? (other W) numOption<W> is if wrappedOnMul(other) then nil else thiz * other
+  redef prefix -?          numOption W is if wrappedOnNeg        then nil else -thiz
+  redef infix +? (other W) numOption W is if wrappedOnAdd(other) then nil else thiz + other
+  redef infix -? (other W) numOption W is if wrappedOnSub(other) then nil else thiz - other
+  redef infix *? (other W) numOption W is if wrappedOnMul(other) then nil else thiz * other
 
   # saturating  operations
   redef prefix -^          => if wrappedOnNeg if thiz > zero then min else max else - thiz
@@ -145,7 +145,7 @@ wrappingInteger(redef W wrappingInteger<W>.type) : integer<W>, wrappingIntegers<
   #
   # 'zero **? zero' is permitted and results in 'one'.
   #
-  infix **? (other W) numOption<W>
+  infix **? (other W) numOption W
     pre
       safety: other >= zero
   is
@@ -184,7 +184,7 @@ wrappingInteger(redef W wrappingInteger<W>.type) : integer<W>, wrappingIntegers<
 # wrappingIntegers -- unit type defining features related to wrappingInteger
 # but not requiring an instance
 #
-wrappingIntegers(W wrappingInteger<W>.type) : numerics<W> is
+wrappingIntegers(W (wrappingInteger W).type) : numerics W is
 
   min W is abstract
   max W is abstract

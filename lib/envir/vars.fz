@@ -70,7 +70,7 @@ vars_type is
   # install default effect using fuzion.sys.env_vars
   #
   installDefault unit is
-    if !(effects.exists<envir.vars>)
+    if !(effects.exists envir.vars)
       _ := vars defaultVarsProvider effectMode.default unit
 
 
@@ -89,4 +89,4 @@ varsProvider ref is
 
   # If set, get the environment variable corresponding to v
   #
-  get(v string) option<string> is abstract
+  get(v string) option string is abstract

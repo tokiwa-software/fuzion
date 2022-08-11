@@ -27,4 +27,4 @@
 #
 # This feature creates an instance of a Set.
 #
-setOf<K : ordered<K>> (vs Sequence<K>) Set<K> is psSet vs
+setOf(K (ordered K).type, vs Sequence K) Set K is psSet vs

@@ -243,7 +243,11 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         var argCount = arguments().size() + actualGenerics.size() - outer().generics().list.size();
         if (CHECKS) check
-          (argCount >= 0);
+          (Errors.count() > 0 || argCount >= 0);
+        if (argCount < 0)
+          {
+            argCount = 0;
+          }
         result =  FeatureName.get(result.baseName(),
                                   argCount);
       }
