@@ -629,7 +629,7 @@ public class Lexer extends SourceFile
     if (PRECONDITIONS) require
       (fromPos >= 0);
 
-    int result = _endAtSpace;;
+    int result = _endAtSpace;
     _endAtSpace = fromPos;
 
     return result;
