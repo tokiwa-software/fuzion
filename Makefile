@@ -361,7 +361,7 @@ unicode: $(BUILD_DIR)/UnicodeData.java
 	cp $^ $(SRC)/dev/flang/util/UnicodeData.java
 
 # regenerate $(FZ_SRC_LIB)/unicode/data.fz using the latest UnicodeData.txt.
-$(FZ_SRC_LIB)/unicode/data.fz: $(BUILD_DIR)/UnicodeData.txt
+$(FZ_SRC_LIB)/unicode/data.fz: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR)/UnicodeData.txt
 	mkdir -p $(FZ_SRC_LIB)/unicode
 	$(JAVA) -cp $(CLASSES_DIR) dev.flang.util.unicode.ParseUnicodeData -fz $(BUILD_DIR)/UnicodeData.txt >$@
 

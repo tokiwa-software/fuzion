@@ -509,13 +509,13 @@ string ref : hasHash string, ordered string, strings is
 
 
   # convert this string to upper case
-  upper_case() string : unicode.data is
-    strings.fromCodepoints (asCodepoints.mapSequence (c -> upper_case_mappings[c.val].get c))
+  upper_case() string is
+    strings.fromCodepoints (asCodepoints.mapSequence (c -> unicode.mappings.upper_case[c.val].get c))
 
 
   # convert this string to lower case
-  lower_case() string : unicode.data is
-    strings.fromCodepoints (asCodepoints.mapSequence (c -> lower_case_mappings[c.val].get c))
+  lower_case() string is
+    strings.fromCodepoints (asCodepoints.mapSequence (c -> unicode.mappings.lower_case[c.val].get c))
 
 
 # strings -- unit type defining features related to string but not

@@ -376,9 +376,9 @@ public class ParseUnicodeData extends ANY
     System.out.println();
 
     System.out.println("unicode.data is" + "\n\n"
-      + "  lower_case_mappings := " + "mapOf [\n    " + lTable + "]\n\n\n"
-      + "  upper_case_mappings := " + "mapOf [\n    " + uTable + "]\n\n\n"
-      + "  title_casings := " + "mapOf [\n    " + tTable + "]"
+      + "  lower_case_mappings => " + "mapOf [\n    " + lTable + "]\n\n\n"
+      + "  upper_case_mappings => " + "mapOf [\n    " + uTable + "]\n\n\n"
+      + "  title_case_mappings => " + "mapOf [\n    " + tTable + "]"
       );
   }
 

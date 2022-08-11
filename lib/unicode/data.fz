@@ -4,7 +4,7 @@
 
 unicode.data is
 
-  lower_case_mappings := mapOf [
+  lower_case_mappings => mapOf [
     (u32 5031, codepoint 43895),
     (u32 552, codepoint 553),
     (u32 42794, codepoint 42795),
@@ -1440,7 +1440,7 @@ unicode.data is
     (u32 71865, codepoint 71897)]
 
 
-  upper_case_mappings := mapOf [
+  upper_case_mappings => mapOf [
     (u32 66602, codepoint 66562),
     (u32 481, codepoint 480),
     (u32 11469, codepoint 11468),
@@ -2893,7 +2893,7 @@ unicode.data is
     (u32 7927, codepoint 7926)]
 
 
-  title_casings := mapOf [
+  title_case_mappings => mapOf [
     (u32 66602, codepoint 66562),
     (u32 481, codepoint 480),
     (u32 11469, codepoint 11468),
