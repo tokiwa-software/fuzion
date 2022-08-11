@@ -1,0 +1,51 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test indentation
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# indentation tests the Fuzion parser's handling of indentation in different
+# contexts.
+#
+indentation is
+
+  # standard indentation
+  #
+  feature1 is
+    say "1a"
+    say "1b"
+    say "1c"
+
+  # first line of code starts without LF
+  #
+  feature2 is say "2a"
+              say "2b"
+              say "2c"
+
+  # first line of code starts without LF and contains several stmnts
+  #
+  feature3 is say "3a"; say "3b"
+              say "3c"
+
+  _ := feature1
+  _ := feature2
+  _ := feature3

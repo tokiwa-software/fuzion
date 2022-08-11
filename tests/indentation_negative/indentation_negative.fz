@@ -1,0 +1,129 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test indentation_negative
+#
+#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# indentation_negative tests the Fuzion parser's handling of indentation
+# in different contexts for illegal indentation
+#
+indentation_negative is
+
+  case1a is
+
+    # standard indentation, ok
+    #
+    feature1 is
+      say "1aa"
+      say "1ab"
+      say "1ac"
+
+  case1b is
+
+    # standard indentation with outlier to the right
+    #
+    feature1 is
+      say "1ba"
+      say "1bb"
+       say "1bc"  //  1. should flag an error: wrong indentation
+
+  case1c is
+
+    # standard indentation with outlier to the left
+    #
+    feature1 is
+      say "1ca"
+      say "1cb"
+     say "1cc"  //  2. should flag an error: wrong indentation
+
+  case2a is
+
+    # first line of code starts without LF, ok
+    #
+    feature2 is say "2aa"
+                say "2ab"
+                say "2ac"
+
+  case2b is
+
+    # first line of code starts without LF with outlier to the right
+    #
+    feature2 is say "2ba"
+                say "2bb"
+                 say "2bc"  //  3. should flag an error: wrong indentation
+
+  case2c is
+
+    # first line of code starts without LF with outlier to the right
+    #
+    feature2 is say "2ca"
+                say "2cb"
+               say "2cc"  //  4. should flag an error: wrong indentation
+
+  case2d is
+
+    # first line of code starts without LF with rest too far to the right
+    #
+    feature2 is say "2da"
+                 say "2db"  //  5. should flag an error: wrong indentation
+                 say "2dc"  //  6. should flag an error: wrong indentation
+
+  case2e is
+
+    # first line of code starts without LF with rest too far to the left
+    #
+    feature2 is say "2ea"
+               say "2eb"  //  7. should flag an error: wrong indentation
+               say "2ec"  //  8. should flag an error: wrong indentation
+
+  case3a is
+
+    # first line of code starts without LF and contains several stmnts, ok
+    #
+    feature3 is say "3aa"; say "3ab"
+                say "3ac"
+
+  case3b is
+
+    # first line of code starts without LF and contains several stmnts, with outlier to the left
+    #
+    feature3 is say "3ba"; say "3bb"
+               say "3bc"  //  9. should flag an error: wrong indentation
+
+  case3c is
+
+    # first line of code starts without LF and contains several stmnts, with outlier to the right
+    #
+    feature3 is say "3ca"; say "3cb"
+                 say "3cc"  // 10. should flag an error: wrong indentation
+
+  _ := case1a.feature1
+  _ := case1b.feature1
+  _ := case1c.feature1
+  _ := case2a.feature2
+  _ := case2b.feature2
+  _ := case2c.feature2
+  _ := case2d.feature2
+  _ := case2e.feature2
+  _ := case3a.feature3
+  _ := case3b.feature3
+  _ := case3c.feature3
