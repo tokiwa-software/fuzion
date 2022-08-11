@@ -71,14 +71,13 @@ is
   # representations of its contents, separated by ',' and enclosed in '['
   # and ']'.  Arrays in inner dimensions are grouped using '[' and ']'.
   #
-  redef asString =>
-    line_sep := strings.line_separator
+  redef asString : character_encodings =>
     ("["
-      + line_sep
+      + ascii.lf_str
       + indices0
           .map(i -> "  " + (slice i*length1 (i+1)*length1))
-          .fold(strings.concat("," + line_sep))
-      + line_sep + "]")
+          .fold(strings.concat("," + ascii.lf_str))
+      + ascii.lf_str + "]")
 
 
   # get a list of tuples indices and elements in this array

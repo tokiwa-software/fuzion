@@ -2214,7 +2214,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * After type resolution, resultyType returns the result type of this
+   * After type resolution, resultType returns the result type of this
    * feature using the formal generic argument.
    *
    * @return the result type, t_ERROR in case of an error. Never null.

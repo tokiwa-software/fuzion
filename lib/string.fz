@@ -594,6 +594,3 @@ strings is
   capAChar  => "A".utf8.asStream.next
   capZChar  => "Z".utf8.asStream.next
 
-
-  # a line break
-  line_separator => fromBytes [u8 10]

@@ -631,7 +631,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param generics the generics argument to be passed to resultTypeRaw
    *
-   * @return the result type, Types.resulved.t_unit if none and null in case the
+   * @return the result type, Types.resolved.t_unit if none and null in case the
    * type must be inferenced and is not available yet.
    */
   AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)
