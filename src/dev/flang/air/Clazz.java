@@ -117,7 +117,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * If this clazz represents a field of an open generic type, then _select
-   * choses the actual generic parameter to be used as the type of this field.
+   * chooses the actual generic parameter to be used as the type of this field.
    * Otherwise, _select is -1.
    */
   public final int _select;
@@ -1197,7 +1197,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         if (result == 0)
           {
             if (to.isRef() && oo.isRef())
-              { // NYI: If outer is normalized for refs as descibed in the
+              { // NYI: If outer is normalized for refs as described in the
                 // constructor, there should be no need for special handling of
                 // ref types here.
                 result = to._type.compareToIgnoreOuter(oo._type);
