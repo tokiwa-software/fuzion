@@ -54,7 +54,7 @@
 
 # a tomb node
 # "a T-node is the last value assigned to an I-node"
-private TNode(CTK hasHash CTK .type, CTV type, sn SNode CTK CTV) is
+private TNode(CTK (hasHash CTK).type, CTV type, sn SNode CTK CTV) is
   redef asString => "TNode($sn)"
 
   asList => sn.asList
@@ -62,14 +62,14 @@ private TNode(CTK hasHash CTK .type, CTV type, sn SNode CTK CTV) is
 
 # a singleton node
 # the node type containing actual data
-private SNode(CTK hasHash CTK .type, CTV type, k CTK, v CTV) is
+private SNode(CTK (hasHash CTK).type, CTV type, k CTK, v CTV) is
   redef asString => "SNode($k, $v)"
 
   asList => [(k,v)].asList
 
 
 # an indirection or a singleton node
-private Branch(CTK hasHash CTK .type, CTV type) : choice (INode CTK CTV) (SNode CTK CTV) is
+private Branch(CTK (hasHash CTK).type, CTV type) : choice (INode CTK CTV) (SNode CTK CTV) is
   redef asString =>
     match Branch.this
       iNode INode => "$iNode"
@@ -83,7 +83,7 @@ private Branch(CTK hasHash CTK .type, CTV type) : choice (INode CTK CTV) (SNode 
 
 # a container node
 # consists of a bitmap of filled spaces and an array of child nodes
-private CNode(CTK hasHash CTK .type, CTV type, bmp u32, array array (Branch CTK CTV)) is
+private CNode(CTK (hasHash CTK).type, CTV type, bmp u32, array array (Branch CTK CTV)) is
 
   # update a child node and return a new cnode
   updated(pos u32, node Branch CTK CTV) =>
@@ -102,22 +102,24 @@ private CNode(CTK hasHash CTK .type, CTV type, bmp u32, array array (Branch CTK 
 
   # create copy of this cnode and children
   renewed(new_gen i32, ct ref CTrie CTK CTV) =>
-    copy := (array.map (Branch CTK CTV) ((x) ->
-      match x
-        i INode => i.copy_to_gen new_gen ct
-        sn SNode => sn
-      )).asArray
+    copy := array.map (Branch CTK CTV) x->
+                     match x
+                       i INode => i.copy_to_gen new_gen ct
+                       sn SNode => sn
+                 .asArray
     CNode bmp copy
 
 
-  redef asString => "CNode($bmp, [{array.map(x -> x.asString).fold (strings.concat ", ")}])"
+  redef asString => "CNode($bmp, [{array.map string x->x.asString
+                                        .fold (strings.concat ", ")}])"
 
-  asList => (array.flatMapSequence (tuple CTK CTV) (b -> b.asList)).asList
+  asList => array.flatMapSequence (tuple CTK CTV) (b -> b.asList)
+                 .asList
 
 
 # a container, T or linked list node
 # NYI should probably inhert from choice but nesting of choices leads to bugs currently, see: https://github.com/tokiwa-software/fuzion/issues/213
-private MainNode(CTK hasHash CTK .type, CTV type, data choice (CNode CTK CTV) (TNode CTK CTV) (LNode CTK CTV), gen i32) ref : hasEquals (MainNode CTK CTV) is
+private MainNode(CTK (hasHash CTK).type, CTV type, data choice (CNode CTK CTV) (TNode CTK CTV) (LNode CTK CTV), gen i32) ref : hasEquals (MainNode CTK CTV) is
   redef asString =>
     match data
       cNode CNode => "$cNode"
@@ -160,10 +162,10 @@ private MainNode(CTK hasHash CTK .type, CTV type, data choice (CNode CTK CTV) (T
 
 
 # a failed node where the previous indirection node contains a main node
-private FNode(CTK hasHash CTK .type, CTV type, prev MainNode CTK CTV) is
+private FNode(CTK (hasHash CTK).type, CTV type, prev MainNode CTK CTV) is
 
 # an indirection node
-private INode(CTK hasHash CTK .type, CTV type, data MainNode CTK CTV) ref : hasEquals (INode CTK CTV) is
+private INode(CTK (hasHash CTK).type, CTV type, data MainNode CTK CTV) ref : hasEquals (INode CTK CTV) is
 
   # compare and set
   private CAS(old_n, new_n MainNode CTK CTV) bool is
@@ -235,7 +237,7 @@ private INode(CTK hasHash CTK .type, CTV type, data MainNode CTK CTV) ref : hasE
 
 # a linked list node
 # NYI instead of Sequence we should use something like the original implementation ListMap(Scala).
-private LNode(CTK hasHash CTK .type, CTV type, from Sequence (SNode CTK CTV)) : Sequence (SNode CTK CTV)
+private LNode(CTK (hasHash CTK).type, CTV type, from Sequence (SNode CTK CTV)) : Sequence (SNode CTK CTV)
 pre from ∀ (sn -> (from.filter (snn -> sn.k.hash = snn.k.hash)).count = 1)
 is
   redef asList => from.asList
@@ -245,7 +247,7 @@ private OK is
 
 # the ctrie
 # NYI marking ctrie as ref see issue https://github.com/tokiwa-software/fuzion/issues/304
-private CTrie(CTK hasHash CTK .type, CTV type, root choice (INode CTK CTV) RDCSS_Descriptor, read_only bool) ref : map CTK CTV
+private CTrie(CTK (hasHash CTK).type, CTV type, root choice (INode CTK CTV) RDCSS_Descriptor, read_only bool) ref : map CTK CTV
 is
 
   private CAS_ROOT(ov, nv choice (INode CTK CTV) RDCSS_Descriptor) =>
@@ -569,5 +571,5 @@ is
       .asList
 
 # initialize a new ctrie
-CTrie(CTK hasHash CTK .type, CTV type) =>
+CTrie(CTK (hasHash CTK).type, CTV type) =>
   CTrie CTK CTV (INode (MainNode (CNode CTK CTV 0 []) 0)) false
