@@ -34,11 +34,12 @@
 # power of 2, this will trigger the worst-case addition time resutling in
 # O(m*n log² n) for adding an element m times.
 #
-psSet<K : ordered<K>>
-  (psm ref psMap<K,unit>,  # NYI: 'ref' due to lack of 'like this'
-   dummy unit    # just to distinguish this from routine psSet(vs Sequence<K>)
+psSet
+  (K (ordered K).type,
+   psm ref psMap K unit,  # NYI: 'ref' due to lack of 'like this'
+   dummy unit    # just to distinguish this from routine psSet(vs Sequence K)
   )
-  : Set<K>
+  : Set K
 is
 
 
@@ -59,7 +60,7 @@ is
 
   # add new element k to this set.
   #
-  add (k K) ref psSet<K> is  # NYI: 'ref' due to lack of 'like this'
+  add (k K) ref psSet K is  # NYI: 'ref' due to lack of 'like this'
     if has k
       psSet.this
     else
@@ -88,26 +89,26 @@ is
 
   # union of two psSets
   #
-  infix ⋃ (other ref psSet<K>) => psSet K (psm ⋃ other.psm) unit  # NYI: 'ref' due to lack of 'like this'
+  infix ⋃ (other ref psSet K) => psSet K (psm ⋃ other.psm) unit  # NYI: 'ref' due to lack of 'like this'
 
 
   # intersection of two psSets
-  infix ⋂ (other ref psSet<K>) =>
+  infix ⋂ (other ref psSet K) =>
     s := (psSet.this ⋃ other).filter (x -> psSet.this.has x && other.has x)
     (psSets K).empty.addAll s
 
 
   # add all elements of the given Sequence to this set
   #
-  addAll (s Sequence<K>) ref psSet<K> is  # NYI: 'ref' due to lack of 'like this'
-    this_ref ref psSet<K> := psSet.this
+  addAll (s Sequence K) ref psSet K is  # NYI: 'ref' due to lack of 'like this'
+    this_ref ref psSet K := psSet.this
     s.reduce this_ref ((r,k) -> r.add k)
 
 
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  redef sizeOption option<i32> is size
+  redef sizeOption option i32 is size
 
 
   # does this set contain the given value?
@@ -125,9 +126,9 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 
   # monoid of psSet with infix ⋃ operation.
   #
-  union : Monoid<psSet<K>> is
-    redef infix ∙ (a, b psSet<K>) => a ⋃ b
-    redef infix == (a, b psSet<K>) => (a ⋃ b).size = a.size  # NYI: a bit expensive
+  union : Monoid (psSet K) is
+    redef infix ∙ (a, b psSet K) => a ⋃ b
+    redef infix == (a, b psSet K) => (a ⋃ b).size = a.size  # NYI: a bit expensive
     redef e => empty
 
 
@@ -135,17 +136,17 @@ has     -- NYI: 'has' keyword not supported yet, so the following require an ins
 #
 # NYI: move to psSet.type
 #
-psSets<K : ordered<K>> is
+psSets(K (ordered K).type) is
 
   # psSet -- a partially sorted set based on psMap
   #
   # This feature creates an empty instance of psSet.
   #
-  empty => psSet K (psMaps<K,unit>).empty unit
+  empty => psSet K (psMaps K unit).empty unit
 
 
 # psSet -- routine to initialize a partially sorted set from one Sequence
 #
 # This feature creates a pre-initialized instance of psSet.
 #
-psSet<K : ordered<K>> (vs Sequence<K>) => (psSets K).empty.addAll vs
+psSet(K (ordered K).type, vs Sequence K) => (psSets K).empty.addAll vs

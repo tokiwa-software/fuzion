@@ -25,9 +25,9 @@
 
 # bitset -- persistent set of unsigned integers
 #
-bitset : choice <nil,          # empty bitset
-                 u64,          # unit bitset
-                 (array bool)> # general
+bitset : choice nil          # empty bitset
+                u64          # unit bitset
+                (array bool) # general
 is
 
   # test if the given bit is part of this bitset

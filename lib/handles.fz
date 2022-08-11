@@ -170,7 +170,8 @@ handles(T type) =>
 
 # handle value created by 'handles.new'
 #
-private handle0(T type,
+private handle0(
+  T type,
   # the index in 'handles.ar'
   private x i32
   )

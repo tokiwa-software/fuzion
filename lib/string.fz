@@ -25,7 +25,7 @@
 
 # string -- immutable sequences of utf8 encoded unicode characters
 #
-string ref : hasHash<string>, ordered<string>, strings is
+string ref : hasHash string, ordered string, strings is
 
   redef orderedThis => string.this
 
@@ -33,7 +33,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   redef asString => string.this
 
   # any concrete string must implement utf8
-  utf8 Sequence<u8> is abstract
+  utf8 Sequence u8 is abstract
 
   # is this string empty?
   isEmpty => !utf8.asStream.hasNext
@@ -58,8 +58,8 @@ string ref : hasHash<string>, ordered<string>, strings is
   pre
     n >= 0
   is
-    redef utf8 ref : Sequence<u8> is
-      redef asStream ref : stream<u8> is
+    redef utf8 ref : Sequence u8 is
+      redef asStream ref : stream u8 is
         i := 0
         bytes := string.this.utf8.asStream
 
@@ -131,10 +131,10 @@ string ref : hasHash<string>, ordered<string>, strings is
   parse_i32_binary => parse_i32 2
   parse_i32_octal  => parse_i32 8
   parse_i32_hex    => parse_i32 16
-  parse_i32 (base i32) outcome<i32>
+  parse_i32 (base i32) outcome i32
     pre 1 < base <= 36
   is
-    parse_integer<i32> base
+    parse_integer i32 base
 
 
   # parse this string as an unsigned 32-bit integer value
@@ -143,10 +143,10 @@ string ref : hasHash<string>, ordered<string>, strings is
   parse_u32_binary => parse_u32 2
   parse_u32_octal  => parse_u32 8
   parse_u32_hex    => parse_u32 16
-  parse_u32 (base u32) outcome<u32>
+  parse_u32 (base u32) outcome u32
     pre u32 1 < base <= 36
   is
-    parse_integer<u32> base
+    parse_integer u32 base
 
 
   # parse this string as a signed 64-bit integer value
@@ -155,10 +155,10 @@ string ref : hasHash<string>, ordered<string>, strings is
   parse_i64_binary => parse_i64 2
   parse_i64_octal  => parse_i64 8
   parse_i64_hex    => parse_i64 16
-  parse_i64 (base i64) outcome<i64>
+  parse_i64 (base i64) outcome i64
     pre i64 1 < base <= 36
   is
-    parse_integer<i64> base
+    parse_integer i64 base
 
 
   # parse this string as an unsigned 64-bit integer value
@@ -167,10 +167,10 @@ string ref : hasHash<string>, ordered<string>, strings is
   parse_u64_binary => parse_u64 2
   parse_u64_octal  => parse_u64 8
   parse_u64_hex    => parse_u64 16
-  parse_u64 (base u64) outcome<u64>
+  parse_u64 (base u64) outcome u64
     pre u64 1 < base <= 36
   is
-    parse_integer<u64> base
+    parse_integer u64 base
 
 
   # parse this string as an int value of arbitrary size
@@ -179,20 +179,22 @@ string ref : hasHash<string>, ordered<string>, strings is
   parse_int_binary => parse_int int(2)
   parse_int_octal  => parse_int int(8)
   parse_int_hex    => parse_int int(16)
-  parse_int (base int) outcome<int>
+  parse_int (base int) outcome int
     pre (int 1) < base <= int 36
   is
-    parse_integer<int> base
+    parse_integer int base
 
 
   # parse this string as a integer value given as type parameter
   #
-  parse_integer<T: integer<T>> (
+  parse_integer(
+    # the integer type
+    T (integer T).type,
 
     # base gives the base of the integer, must be between 2 and 36, inclusive.
     base T
 
-    ) outcome<T>
+    ) outcome T
 
     pre base.one < base <= base.from_u32 36
 
@@ -202,14 +204,16 @@ string ref : hasHash<string>, ordered<string>, strings is
       c := s.next
       negate := c = minusChar
       d := if (negate || c = plusChar) zeroChar else c
-      parse_integer<T> base negate base.zero d s
+      parse_integer T base negate base.zero d s
     else
       parseError "empty string"
 
 
-  # recursive helper for parse_integer<T>(T)
+  # recursive helper for parse_integer T
   #
-  private parse_integer<T: integer<T>>(
+  private parse_integer(
+    # the integer type
+    T (integer T).type,
 
     # base gives the base, between 2 and 36
     base T,
@@ -218,15 +222,15 @@ string ref : hasHash<string>, ordered<string>, strings is
     neg bool,
 
     # the value of the highest digits already parsed
-    hi numOption<T>,
+    hi numOption T,
 
     # the current character to be parsed
     c u8,
 
     # the remaining characters to be parsed
-    s stream<u8>
+    s stream u8
 
-    ) outcome<T>
+    ) outcome T
 
   is
 
@@ -250,7 +254,7 @@ string ref : hasHash<string>, ordered<string>, strings is
           v := if (neg) hi -? t
                else     hi +? t
           if s.hasNext
-            parse_integer<T> base neg v s.next s
+            parse_integer T base neg v s.next s
           else
             v ? nil => parseError "numerical overflow"
               | u T => u
@@ -264,10 +268,10 @@ string ref : hasHash<string>, ordered<string>, strings is
   # convert this string into a Sequence of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
-  asCodepoints : Sequence<codepoint> is
-    redef asStream ref : stream<codepoint> is
+  asCodepoints : Sequence codepoint is
+    redef asStream ref : stream codepoint is
       s := codepointsAndErrors
-      n option<codepoint> := nil
+      n option codepoint := nil
 
       redef hasNext => s.hasNext
       redef next =>
@@ -277,15 +281,15 @@ string ref : hasHash<string>, ordered<string>, strings is
   # convert this string into a stream of codepoint and errors for encoding problems
   # found in the underlying utf8 bytes
   #
-  codepointsAndErrors stream<outcome<codepoint>> is codepointStream
+  codepointsAndErrors stream (outcome codepoint) is codepointStream
 
 
   # the stream instance returned by asCodepoints
   #
-  private codepointStream : stream<outcome<codepoint>> is  # NYI: better list than stream!
+  private codepointStream : stream (outcome codepoint) is  # NYI: better list than stream!
     s := utf8.asStream
     hasNext => s.hasNext
-    next outcome<codepoint> is
+    next outcome codepoint is
       p := codepoints
       e(msg string) => error "Bad UTF8 encoding found: cannot decode $msg"
 
@@ -362,7 +366,7 @@ string ref : hasHash<string>, ordered<string>, strings is
   is
     codepointsArray
       .slice(from, to)
-      .map<string> (c -> c)  # NYI: this should maybe not be needed since codepoint is a string
+      .map string (c -> c)  # NYI: this should maybe not be needed since codepoint is a string
       .fold strings.concat
 
 
@@ -431,12 +435,12 @@ string ref : hasHash<string>, ordered<string>, strings is
   #
   # The result is a, possibly empty, list of separate non-empty strings.
   #
-  split list<string> is
+  split list string is
     l := utf8.asList.dropWhile (c -> isAsciiWhiteSpace c)
     if l.isEmpty
       nil
     else
-      ref : Cons<string, list<string>>
+      ref : Cons string (list string)
         head =>  strings.fromBytes (l.takeWhile (c -> !isAsciiWhiteSpace c))
         tail => (strings.fromBytes (l.dropWhile (c -> !isAsciiWhiteSpace c))).split
         # NYI using the inherited 'fromBytes' as in
@@ -449,13 +453,13 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # split string at s
   #
-  split(s string) list<string>
+  split(s string) list string
     pre
       !s.isEmpty
     is
     match (find s)
       nil => [string.this].asList
-      idx i32 => ref : Cons<string, list<string>>
+      idx i32 => ref : Cons string (list string)
                    head => substring 0 idx
                    tail =>
                      rest := substring (idx + s.codepointLength) string.this.codepointLength
@@ -494,14 +498,14 @@ string ref : hasHash<string>, ordered<string>, strings is
 
   # is this part of given set
   #
-  elementOf(s Set<string>) => s.contains string.this
-  infix ∈ (s Set<string>) => string.this.elementOf s
+  elementOf(s Set string) => s.contains string.this
+  infix ∈ (s Set string) => string.this.elementOf s
 
 
   # is this not part of given set
   #
-  notElementOf(s Set<string>) => !elementOf s
-  infix ∉ (s Set<string>) => string.this.notElementOf s
+  notElementOf(s Set string) => !elementOf s
+  infix ∉ (s Set string) => string.this.notElementOf s
 
 
 # strings -- unit type defining features related to string but not
@@ -512,7 +516,7 @@ strings is
 
   # monoid of strings with infix + operation.
   #
-  concat : Monoid<string> is
+  concat : Monoid string is
     redef infix ∙ (a, b string) => a + b
     redef infix == (a, b string) => a == b
     redef e => ""
@@ -521,7 +525,7 @@ strings is
   # monoid of strings with infix '+ sep +' operation, i.e., concatenate with
   # given separator
   #
-  concat(sep string) : Monoid<string> is
+  concat(sep string) : Monoid string is
     redef infix ∙ (a, b string) string is if (a.isEmpty || b.isEmpty) a + b else a + sep + b
     redef infix == (a, b string) => a == b
     redef e => ""
@@ -541,12 +545,12 @@ strings is
   # The performance of iterating the utf8 bytes of a string is O(l+n) for an
   # array of length l created by concatenating n sub-strings.
   #
-  fromArray(a marray<Object>) ref : string is
+  fromArray(a marray Object) ref : string is
     redef infix + (other Object) string is
       fromArray (a.add other)
 
-    redef utf8 ref : Sequence<u8> is
-      redef asStream ref : stream<u8> is
+    redef utf8 ref : Sequence u8 is
+      redef asStream ref : stream u8 is
         i := 0
         s := a[i].asString.utf8.asStream
         gotNext := false
@@ -567,14 +571,14 @@ strings is
 
   # create string from the given utf8 bytes
   #
-  fromBytes(utf8Bytes Sequence<u8>) string is
+  fromBytes(utf8Bytes Sequence u8) string is
     ref : string
       redef utf8 => utf8Bytes
 
 
   # create string from the given codepoints
   #
-  fromCodepoints(codePoints Sequence<codepoint>) string is
+  fromCodepoints(codePoints Sequence codepoint) string is
     # NYI: would be nicer if result was created lazily
     for
       res := "", res + cp

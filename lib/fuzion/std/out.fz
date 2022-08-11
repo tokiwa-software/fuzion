@@ -36,7 +36,7 @@ public fuzion.std.out : character_encodings is
   public println =>
     write [ascii.lf]
 
-  private write(arr array<u8>) =>
+  private write(arr array u8) =>
     write arr.internalArray.data arr.length
 
   private write(arrayData Object, length i32) unit is intrinsic

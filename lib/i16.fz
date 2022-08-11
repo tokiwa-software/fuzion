@@ -25,7 +25,7 @@
 
 # i16 -- 16-bit signed integer values
 #
-i16(val i16) : wrappingInteger<i16>, hasInterval<i16>, i16s is
+i16(val i16) : wrappingInteger i16, hasInterval i16, i16s is
 
   redef thiz => i16.this.val
   redef orderedThis => i16.this.val
@@ -161,7 +161,7 @@ i16(val i16) : wrappingInteger<i16>, hasInterval<i16>, i16s is
 # i16s -- unit type defining features related to i16 but not requiring an
 # instance
 #
-i16s : wrappingIntegers<i16> is
+i16s : wrappingIntegers i16 is
 
   redef name => "i16"
 

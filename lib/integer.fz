@@ -29,7 +29,7 @@
 # from numeric plus a devision remainder operation %, bitwise logical operations,
 # shift operations and gcd. Also, integers can be used to build fractions.
 #
-integer(I integer<I>.type) : numeric<I> is
+integer(I (integer I).type) : numeric I is
 
   # division remainder
   redef infix % (other I) I
@@ -94,11 +94,11 @@ integer(I integer<I>.type) : numeric<I> is
       debug: u32 1 < base <= 36
   is
     ref : string
-      redef utf8 ref : Sequence<u8> is
-        redef asStream stream<u8> is
+      redef utf8 ref : Sequence u8 is
+        redef asStream stream u8 is
           b := from_u32 base
           if thiz.sign >= 0
-            ref : stream<u8>
+            ref : stream u8
               p := thiz.highest b
               redef hasNext => p.sign > 0
               redef next =>

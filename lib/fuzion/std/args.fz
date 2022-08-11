@@ -34,4 +34,4 @@ private args =>
   get(i i32) string is intrinsic
 
   # return the arguments in an array
-  array<string> count (i -> get i)
+  array string count (i -> get i)
