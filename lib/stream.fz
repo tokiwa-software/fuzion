@@ -53,6 +53,8 @@ stream(redef T type) ref : Sequence<T> is
       nil
 
 
+  # take n items from stream, less if stream has fewer than n items
+  #
   redef take (n i32) =>
     for
       a := marray 0 (fuzion.sys.array<T> 0), a.add x
@@ -196,9 +198,8 @@ stream(redef T type) ref : Sequence<T> is
   # create a string from the elements of this stream
   #
   redef asString ref string is
-    # NYI: check if this works: map<string>(x-> x.asString).fold strings.concat ", "
-    #
-    stream.this.asString ", "
+    (map string (x -> x.asString))
+      .fold (strings.concat ", ")
 
 
   # create a string representation of this list including all the string
@@ -243,3 +244,41 @@ stream(redef T type) ref : Sequence<T> is
     while hasNext
     else
       r
+
+
+# streams -- unit type defining features related
+# to streams but not requiring an instance
+#
+streams is
+
+  # creates a - potentially infinite - stream by using given supplier
+  # end of stream is reached once supplier returns nil
+  # note that the supplier is called only once for each hasNext/next cycle
+  #
+  generate(T type, supplier () -> option T) stream T is
+
+    not_initialized is
+    depleted is
+    val := mut (choice T not_initialized depleted) not_initialized
+
+    read =>
+      match val.get
+        not_initialized =>
+          match supplier()
+            t T => val <- t
+            nil => val <- depleted
+        * =>
+      val.get
+
+    reset =>
+      val <- not_initialized
+
+    ref: stream T
+      redef hasNext bool is
+        match read
+          v T => true
+          * => false
+      redef next T is
+        match read
+          v T => reset; v
+          * => fuzion.std.panic "there is no next value available"

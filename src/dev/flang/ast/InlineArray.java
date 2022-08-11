@@ -300,9 +300,9 @@ public class InlineArray extends ExprWithPos
       {
         var eT           = new List<AbstractType>(elementType());
         var lengthArgs   = new List<Expr>(new NumLiteral(_elements.size()));
-        var fuzion       = new Call(pos(), null, "fuzion"               ).resolveTypes(res, outer);
-        var sys          = new Call(pos(), fuzion, "sys"                ).resolveTypes(res, outer);
-        var sysArrayCall = new Call(pos(), sys , "array", eT, lengthArgs).resolveTypes(res, outer);
+        var fuzion       = new Call(pos(), null, "fuzion"                     ).resolveTypes(res, outer);
+        var sys          = new Call(pos(), fuzion, "sys"                      ).resolveTypes(res, outer);
+        var sysArrayCall = new Call(pos(), sys , "array", eT, null, lengthArgs).resolveTypes(res, outer);
         var fuzionT      = new Type(pos(), "fuzion", Type.NONE, null);
         var sysT         = new Type(pos(), "sys"   , Type.NONE, fuzionT);
         var sysArrayT    = new Type(pos(), "array", eT, sysT);
@@ -321,12 +321,12 @@ public class InlineArray extends ExprWithPos
             var setElement      = new Call(e.pos(), readSysArrayVar, "index [ ] =", setArgs).resolveTypes(res, outer);
             stmnts.add(setElement);
           }
-        var readSysArrayVar = new Call(pos(), null, sysArrayName                ).resolveTypes(res, outer);
-        var unit1           = new Call(pos(), null, "unit"                      ).resolveTypes(res, outer);
-        var unit2           = new Call(pos(), null, "unit"                      ).resolveTypes(res, outer);
-        var unit3           = new Call(pos(), null, "unit"                      ).resolveTypes(res, outer);
+        var readSysArrayVar = new Call(pos(), null, sysArrayName                      ).resolveTypes(res, outer);
+        var unit1           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
+        var unit2           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
+        var unit3           = new Call(pos(), null, "unit"                            ).resolveTypes(res, outer);
         var sysArrArgs      = new List<Expr>(readSysArrayVar,unit1,unit2, unit3);
-        var arrayCall       = new Call(pos(), null, "array"     , eT, sysArrArgs).resolveTypes(res, outer);
+        var arrayCall       = new Call(pos(), null, "array"     , eT, null, sysArrArgs).resolveTypes(res, outer);
         stmnts.add(arrayCall);
         result = new Block(pos(), stmnts);
       }

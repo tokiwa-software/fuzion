@@ -17,27 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fuzion.std.err
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# fuzion.std.err -- unit type grouping routines to print to stderr
-#
-public fuzion.std.err: character_encodings is
-
-  public print(s ref Object) =>
-    write s.asString.utf8.asArray
-
-  public println(s ref Object) =>
-    write (s.asString.utf8 ++ [ascii.lf]).asArray
-
-  public println =>
-    write [ascii.lf]
-
-  private write(arr array<u8>) =>
-    write arr.internalArray.data arr.length
-
-  private write(arrayData Object, length i32) unit is intrinsic
-  private flush unit is intrinsic
+NAME = ctrie_threads
+include ../positive.mk

@@ -29,11 +29,13 @@ package dev.flang.air;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import dev.flang.ast.AbstractAssign; // NYI: remove dependency!
 import dev.flang.ast.AbstractCall; // NYI: remove dependency!
@@ -41,18 +43,15 @@ import dev.flang.ast.AbstractCase; // NYI: remove dependency!
 import dev.flang.ast.AbstractFeature; // NYI: remove dependency!
 import dev.flang.ast.AbstractMatch; // NYI: remove dependency!
 import dev.flang.ast.AbstractType; // NYI: remove dependency!
-import dev.flang.ast.Box; // NYI: remove dependency!
 import dev.flang.ast.Call; // NYI: remove dependency!
-import dev.flang.ast.Consts; // NYI: remove dependency!
 import dev.flang.ast.Env; // NYI: remove dependency!
 import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
-import dev.flang.ast.FeatureVisitor; // NYI: remove dependency!
-import dev.flang.ast.StatementVisitor; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
-import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.Impl; // NYI: remove dependency!
+import dev.flang.ast.InlineArray; // NYI: remove dependency!
 import dev.flang.ast.SrcModule; // NYI: remove dependency!
+import dev.flang.ast.StatementVisitor; // NYI: remove dependency!
 import dev.flang.ast.Stmnt; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
@@ -117,7 +116,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
   /**
    * If this clazz represents a field of an open generic type, then _select
-   * choses the actual generic parameter to be used as the type of this field.
+   * chooses the actual generic parameter to be used as the type of this field.
    * Otherwise, _select is -1.
    */
   public final int _select;
@@ -311,7 +310,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
    * Constructor
    *
    * @param actualType the actual type this clazz is build on. The actual type
-   * might not be a generic argument.
+   * must not be a generic argument.
    *
    * @param select in case actualType refers to a field whose result type is an
    * open generic parameter, select specifies the actual generic to be used.
@@ -357,10 +356,44 @@ public class Clazz extends ANY implements Comparable<Clazz>
     this._outer = normalizeOuter(actualType, outer);
 
     this._dynamicBinding = null;
+
+    if(POSTCONDITIONS) ensure
+      (!hasCycles());
   }
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Is there any outers that share the same feature?
+   */
+  private boolean hasCycles()
+  {
+    return selfAndOuters().count() != selfAndOuters().map(x -> x.feature()).collect(Collectors.toSet()).size();
+  }
+
+  /**
+   * Returns itself and all outer clazzes
+   * @return
+   */
+  public Stream<Clazz> selfAndOuters()
+  {
+    return selfAndOuters(this);
+  }
+
+  /**
+   * Returns clazz and all outer clazzes of clazz
+   * @return
+   */
+  private Stream<Clazz> selfAndOuters(Clazz clazz)
+  {
+    if (clazz == null)
+      {
+        return Stream.empty();
+      }
+    return Stream.concat(Stream.of(clazz), selfAndOuters(clazz._outer));
+  }
 
 
   /**
@@ -1197,7 +1230,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
         if (result == 0)
           {
             if (to.isRef() && oo.isRef())
-              { // NYI: If outer is normalized for refs as descibed in the
+              { // NYI: If outer is normalized for refs as described in the
                 // constructor, there should be no need for special handling of
                 // ref types here.
                 result = to._type.compareToIgnoreOuter(oo._type);

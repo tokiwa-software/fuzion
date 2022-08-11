@@ -17,27 +17,32 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature fuzion.std.err
+#  Source code of Fuzion test ctrie_threads
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# fuzion.std.err -- unit type grouping routines to print to stderr
-#
-public fuzion.std.err: character_encodings is
+ctrie_threads is
 
-  public print(s ref Object) =>
-    write s.asString.utf8.asArray
+  ctrie := CTrie<i32, string>
 
-  public println(s ref Object) =>
-    write (s.asString.utf8 ++ [ascii.lf]).asArray
+  one := psSet 0..1000
+  two := psSet 500..1500
 
-  public println =>
-    write [ascii.lf]
+  run_in_thread(s Set<i32>, num i32) is
+    concur.thread.spawn (() ->
+      for k in s do
+        ctrie.add k "thread$num"
+      say "thread $num finished"
+      unit
+      )
 
-  private write(arr array<u8>) =>
-    write arr.internalArray.data arr.length
+  run_in_thread one 1
+  run_in_thread two 2
 
-  private write(arrayData Object, length i32) unit is intrinsic
-  private flush unit is intrinsic
+  # NYI can not wait for threads to finish currently
+  fuzion.std.nano_sleep 5E9
+
+  if ctrie.size != 2001
+    panic "compare and set in ctrie not implemented yet"

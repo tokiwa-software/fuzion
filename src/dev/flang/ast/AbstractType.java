@@ -358,7 +358,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             for (var t : actualTypes(featureOfType(), g, generics()))
               {
-                if (Types.intern(t).isAssignableFrom(actual))
+                if (CHECKS) check
+                  (Errors.count() > 0 || t != null);
+                if (t != null &&
+                    Types.intern(t).isAssignableFrom(actual))
                   {
                     result = true;
                   }
@@ -469,7 +472,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             boolean changes = false;
             for (var t: genericsToReplace)
               {
-                changes = changes || t.actualType(f, actualGenerics) != t;
+                if (CHECKS) check
+                  (Errors.count() > 0 || t != null);
+                if (t != null)
+                  {
+                    changes = changes || t.actualType(f, actualGenerics) != t;
+                  }
               }
             if (changes)
               {
@@ -527,7 +535,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               {
                 for (var t: generics())
                   {
-                    if (t.dependsOnGenerics())
+                    if (CHECKS) check
+                      (Errors.count() > 0 || t != null);
+                    if (t != null &&
+                        t.dependsOnGenerics())
                       {
                         result = YesNo.yes;
                       }
@@ -890,7 +901,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                       {
                         var tgt = tg.next();
                         var ogt = og.next();
-                        result = tgt.compareTo(ogt);
+
+                        if (CHECKS) check
+                          (Errors.count() > 0 || tgt != null && ogt != null);
+
+                        if (tgt != null && ogt != null)
+                          {
+                            result = tgt.compareTo(ogt);
+                          }
                       }
                   }
               }

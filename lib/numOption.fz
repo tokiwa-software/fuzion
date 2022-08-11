@@ -88,33 +88,33 @@ is
 
 
   # basic prefix operations
-  prefix +? numOption<T> is numOption.this >>= fun(v T) numOption<T> is +v
-  prefix -? numOption<T> is numOption.this >>= fun(v T) numOption<T> is -?v
+  prefix +? numOption<T> is numOption.this >>= v -> +v
+  prefix -? numOption<T> is numOption.this >>= v -> -?v
 
   # basic infix operations
-  infix +? (other numOption<T>) numOption<T> is numOption.this >>= fun(v T) => other >>= fun(w T) => v +? w
-  infix -? (other numOption<T>) numOption<T> is numOption.this >>= fun(v T) => other >>= fun(w T) => v -? w
-  infix *? (other numOption<T>) numOption<T> is numOption.this >>= fun(v T) => other >>= fun(w T) => v *? w
-  infix **?(other numOption<T>) numOption<T> is numOption.this >>= fun(v T) => other >>= fun(w T) => v **? w
+  infix +? (other numOption<T>) numOption<T> is numOption.this >>= v -> other >>= w -> v +? w
+  infix -? (other numOption<T>) numOption<T> is numOption.this >>= v -> other >>= w -> v -? w
+  infix *? (other numOption<T>) numOption<T> is numOption.this >>= v -> other >>= w -> v *? w
+  infix **?(other numOption<T>) numOption<T> is numOption.this >>= v -> other >>= w -> v **? w
   infix /? (other numOption<T>) numOption<T>
     pre
       safety: !other.isZero
   is
-    numOption.this >>= fun(v T) numOption<T> is other >>= fun(w T) numOption<T> is v / w
+    numOption.this >>= v -> other >>= w -> v / w
 
   infix %? (other numOption<T>) numOption<T>
     pre
       safety: !other.isZero
   is
-    numOption.this >>= fun(v T) numOption<T> is other >>= fun(w T) numOption<T> is v % w
+    numOption.this >>= v -> other >>= w -> v % w
 
   # comparison
-  infix ==? (other numOption<T>) bool is numOption.this >>? fun(v T) => other >>? fun(w T) => v == w
-  infix !=? (other numOption<T>) bool is numOption.this >>? fun(v T) => other >>? fun(w T) => v != w
-  infix <?  (other numOption<T>) bool is numOption.this >>? fun(v T) => other >>? fun(w T) => v <  w
-  infix <=? (other numOption<T>) bool is numOption.this >>? fun(v T) => other >>? fun(w T) => v <= w
-  infix >?  (other numOption<T>) bool is numOption.this >>? fun(v T) => other >>? fun(w T) => v >  w
-  infix >=? (other numOption<T>) bool is numOption.this >>? fun(v T) => other >>? fun(w T) => v >= w
+  infix ==? (other numOption<T>) bool is numOption.this >>? v -> other >>? w -> v == w
+  infix !=? (other numOption<T>) bool is numOption.this >>? v -> other >>? w -> v != w
+  infix <?  (other numOption<T>) bool is numOption.this >>? v -> other >>? w -> v <  w
+  infix <=? (other numOption<T>) bool is numOption.this >>? v -> other >>? w -> v <= w
+  infix >?  (other numOption<T>) bool is numOption.this >>? v -> other >>? w -> v >  w
+  infix >=? (other numOption<T>) bool is numOption.this >>? v -> other >>? w -> v >= w
 
   isZero => sign ==? 0
 

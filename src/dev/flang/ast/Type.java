@@ -383,7 +383,7 @@ public class Type extends AbstractType
     this.pos                = original.pos;
     this._refOrVal          = refOrVal;
     this.name               = original.name;
-    this._generics           = original._generics;
+    this._generics          = original._generics;
     this._outer             = original._outer;
     this.feature            = original.feature;
     this.generic            = original.generic;
@@ -460,7 +460,7 @@ public class Type extends AbstractType
    *
    * @return a Type instance that represents this function
    */
-  public static Type funType(SourcePosition pos, Type returnType, List<AbstractType> arguments)
+  public static Type funType(SourcePosition pos, AbstractType returnType, List<AbstractType> arguments)
   {
     if (PRECONDITIONS) require
       (returnType != null,
@@ -862,7 +862,9 @@ public class Type extends AbstractType
       {
         for (var t: _generics)
           {
-            result = result || t.containsError();
+            if (CHECKS) check
+              (Errors.count() > 0 || t != null);
+            result = result || t == null || t.containsError();
           }
       }
 
@@ -891,7 +893,9 @@ public class Type extends AbstractType
       {
         for (var t: _generics)
           {
-            result = result || !exceptFirst && t.containsUndefined(false);
+            if (CHECKS) check
+              (Errors.count() > 0 || t != null);
+            result = result || !exceptFirst && t != null && t.containsUndefined(false);
             exceptFirst = false;
           }
       }

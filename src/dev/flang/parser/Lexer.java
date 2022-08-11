@@ -666,24 +666,6 @@ public class Lexer extends SourceFile
 
 
   /**
-   * short-hand for bracketTermWithNLs with c==def.
-   */
-  <V> V bracketTermWithNLs(boolean atMinIndent, Parens brackets, String rule, Callable<V> c)
-  {
-    return bracketTermWithNLs(atMinIndent, brackets, rule, c, c);
-  }
-
-
-  /**
-   * short-hand for bracketTermWithNLs with atMinIndent==false.
-   */
-  <V> V bracketTermWithNLs(Parens brackets, String rule, Callable<V> c, Callable<V> def)
-  {
-    return bracketTermWithNLs(false, brackets, rule, c, def);
-  }
-
-
-  /**
    * Parse a term in brackets that may extend over several lines. In case this appears in an
    * expression that must be in the same line, e.g.,
    *
@@ -693,16 +675,6 @@ public class Lexer extends SourceFile
    *
    *   n := a * (b
    *         + c) - d
-   *
-   * @param atMinIndent may the closing bracket be at minIndent?  The opening
-   * bracket may always be at minIndent and if it is, the closing one may be as
-   * well. This parameter is usefule for code like
-   *
-   *   myFeature {
-   *     say "Hello"
-   *   }
-   *
-   * where the opening bracket is not at minIndent, but the closing one is.
    *
    * @param brackets the opening / closing bracket to use
    *
@@ -715,18 +687,18 @@ public class Lexer extends SourceFile
    *
    * @return value returned by c or def, resp.
    */
-  <V> V bracketTermWithNLs(boolean atMinIndent, Parens brackets, String rule, Callable<V> c, Callable<V> def)
+  <V> V bracketTermWithNLs(Parens brackets, String rule, Callable<V> c, Callable<V> def)
   {
     var start = brackets._left;
     var end   = brackets._right;
     var ol = line();
     var startsIndent = pos() == _minIndentStartPos;
-    match(atMinIndent, start, rule);
-    V result = relaxLineAndSpaceLimit(!currentMatches(startsIndent || atMinIndent, end) ? c : def);
+    match(true, start, rule);
+    V result = relaxLineAndSpaceLimit(!currentMatches(true, end) ? c : def);
     var nl = line();
     relaxLineAndSpaceLimit(() ->
                            {
-                             match(startsIndent || atMinIndent, end, rule);
+                             match(true, end, rule);
                              return Void.TYPE; // is there a better unit type in Java?
                            });
     var sl = sameLine(-1);
@@ -830,7 +802,7 @@ public class Lexer extends SourceFile
 
   /**
    * The current token.  If indentation limit was set and the current token is
-   * indented less than this limit, return Token.t_indentationLimit.
+   * indented less than this limit minus 1, return Token.t_indentationLimit.
    */
   Token currentAtMinIndent()
   {

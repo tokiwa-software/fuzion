@@ -34,7 +34,7 @@ is
   # the utf8 encoded bytes for the string representation
   # of this codepoint
   #
-  redef utf8 Sequence<u8> is
+  redef utf8 Sequence u8 is
     if      utf8EncodedInOneByte   .contains val then [ val.low8bits ]
     else if utf8EncodedInTwoBytes  .contains val then [ (u32 0xc0 | (val >>  6) & 0x1f).low8bits,
                                                         (u32 0x80 |  val        & 0x3f).low8bits ]

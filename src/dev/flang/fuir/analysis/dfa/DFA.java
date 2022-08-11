@@ -180,7 +180,6 @@ public class DFA extends ANY
      */
     public Unit assignStatic(int tc, int f, int rt, Value tvalue, Value val)
     {
-      _writtenFields.add(f);
       tvalue.setField(DFA.this, f, val);
       return _unit_;
     }
@@ -240,9 +239,7 @@ public class DFA extends ANY
     Value access(int cl, int c, int i, Value tvalue, List<Value> args)
     {
       var cc0 = _fuir.accessedClazz  (cl, c, i);
-      var ccs = _fuir.accessIsDynamic(cl, c, i) ? _fuir.accessedClazzes(cl, c, i) :
-                _fuir.clazzNeedsCode(cc0)       ? new int[] { _fuir.clazzOuterClazz(cc0), cc0 }
-                                                : new int[0];
+      var ccs = _fuir.accessedClazzes(cl, c, i);
       var found = new boolean[] { false };
       var resf = new Value[] { null };
       for (var ccii = 0; ccii < ccs.length; ccii += 2)
@@ -255,6 +252,8 @@ public class DFA extends ANY
                 (t != Value.UNIT || AbstractInterpreter.clazzHasUniqueValue(_fuir, tt));
               if (t == Value.UNIT ||
                   t._clazz == tt ||
+                  //!_fuir.accessIsDynamic(cl, c, i) && _fuir.correspondingFieldInValueInstance(tt) == t._clazz ||
+
                   // NYI: This is a little too much special handling, must simplify:
                   !_fuir.accessIsDynamic(cl, c, i) && _fuir.clazzIsRef(t._clazz) && !_fuir.clazzIsOuterRef(cc0))
                 {
@@ -281,6 +280,8 @@ public class DFA extends ANY
      */
     Value access0(int cl, int c, int i, Value tvalue, List<Value> args, int cc)
     {
+      var cs = site(cl, c, i);
+      cs._accesses.add(cc);
       var isCall = _fuir.codeAt(c, i) == FUIR.ExprKind.Call;
       Value r;
       if (isCall)
@@ -296,7 +297,6 @@ public class DFA extends ANY
                   System.out.println("DFA for "+_fuir.clazzAsString(cl)+"("+_fuir.clazzArgCount(cl)+" args) at "+c+"."+i+": "+_fuir.codeAtAsString(cl,c,i)+": " +
                                      tvalue + ".set("+_fuir.clazzAsString(cc)+") := " + args.get(0));
                 }
-              _writtenFields.add(cc);
               tvalue.setField(DFA.this, cc, args.get(0));
             }
           r = Value.UNIT;
@@ -378,7 +378,7 @@ public class DFA extends ANY
      */
     public Pair<Value, Unit> box(Value val, int vc, int rc)
     {
-      var boxed = val.box(DFA.this, vc, rc);
+      var boxed = val.box(DFA.this, vc, rc, _call);
       return new Pair<>(boxed, _unit_);
     }
 
@@ -456,15 +456,6 @@ public class DFA extends ANY
     public Pair<Value, Unit> match(AbstractInterpreter ai, int cl, int c, int i, Value subv)
     {
       Value r = null; // result value null <=> does not return.  Will be set to Value.UNIT if returning case was found.
-      var subjClazz0 = _fuir.matchStaticSubject(cl, c, i);
-
-      // NYI: special handling to unbox subject should not be needed if unbox would be called by AbstractInterpreter
-      if (_fuir.clazzIsRef(subjClazz0))
-        {
-          subjClazz0 = _fuir.clazzAsValue(subjClazz0);
-          subv = subv.unbox(subjClazz0);
-        }
-      var subjClazz = subjClazz0;
       for (var mc = 0; mc < _fuir.matchCaseCount(c, i); mc++)
         {
           // array to permit modification in lambda
@@ -481,7 +472,6 @@ public class DFA extends ANY
                           takenA[0] = true;
                           if (field != -1)
                             {
-                              _writtenFields.add(field);
                               _call._instance.setField(DFA.this, field, untagged);
                             }
                         }
@@ -489,7 +479,7 @@ public class DFA extends ANY
                   else
                     {
                       throw new Error("DFA encountered Unexpected value in match: " + s.getClass() + " '" + s + "' " +
-                                      " for match of type " + _fuir.clazzAsString(subjClazz));
+                                      " for match of type " + _fuir.clazzAsString(_fuir.matchStaticSubject(cl, c, i)));
                     }
                 });
 
@@ -625,13 +615,19 @@ public class DFA extends ANY
   /**
    * Instances created during DFA analysis.
    */
-  TreeMap<Instance, Instance> _instances = new TreeMap<>();
+  TreeMap<Value, Value> _instances = new TreeMap<>(Value.COMPARATOR);
 
 
   /**
    * Calls created during DFA analysis.
    */
   TreeMap<Call, Call> _calls = new TreeMap<>();
+
+
+  /**
+   * Sites created during DFA analysis.
+   */
+  TreeMap<Site, Site> _sites = new TreeMap<>();
 
 
   /**
@@ -650,10 +646,16 @@ public class DFA extends ANY
 
   /**
    * All fields that are ever written.  These will be needed even if they are
-   * never readq unless the assignments are actually removed (which is currently
+   * never read unless the assignments are actually removed (which is currently
    * not the case).
    */
   TreeSet<Integer> _writtenFields = new TreeSet<>();
+
+
+  /**
+   * All fields that are ever read.
+   */
+  TreeSet<Integer> _readFields = new TreeSet<>();
 
 
   /**
@@ -724,10 +726,39 @@ public class DFA extends ANY
       {
         public boolean clazzNeedsCode(int cl)
         {
-          return (called.contains(cl) ||
-                  _writtenFields.contains(cl) ||
-                  _fuir.clazzKind(cl) != FUIR.FeatureKind.Routine) && super.clazzNeedsCode(cl);
-          }
+          return super.clazzNeedsCode(cl) &&
+            switch (_fuir.clazzKind(cl))
+            {
+            case Routine, Intrinsic -> called.contains(cl);
+            case Field              ->
+            {
+              var fc = _fuir.correspondingFieldInValueInstance(cl);
+              yield
+                isBuiltInNumeric(_fuir.clazzOuterClazz(fc)) ||
+                _readFields.contains(fc);
+            }
+            case Abstract           -> true;
+            case Choice             -> true;
+            };
+        }
+        public int[] accessedClazzes(int cl, int c, int ix)
+        {
+          var ccs = super.accessedClazzes(cl, c, ix);
+          var cs = site(cl, c, ix);
+          var nr = new int[ccs.length];
+          int j = 0;
+          for (var cci = 0; cci < ccs.length; cci += 2)
+            {
+              var tt = ccs[cci+0];
+              var cc = ccs[cci+1];
+              if (cs._accesses.contains(cc))
+                {
+                  nr[j++] = tt;
+                  nr[j++] = cc;
+                }
+            }
+          return java.util.Arrays.copyOfRange(nr, 0, j);
+        }
     };
   }
 
@@ -822,7 +853,6 @@ public class DFA extends ANY
           {
             var af = _fuir.clazzArg(c._cc, a);
             var aa = c._args.get(a);
-            _writtenFields.add(af);
             i.setField(this, af, aa);
           }
 
@@ -830,7 +860,6 @@ public class DFA extends ANY
         var or = _fuir.clazzOuterRef(c._cc);
         if (or != -1)
           {
-            _writtenFields.add(or);
             i.setField(this, or, c._target);
           }
 
@@ -1293,6 +1322,34 @@ public class DFA extends ANY
   }
 
 
+
+  /**
+   * Check if given clazz is a built-in numeric clazz: i8..i64, u8..u64, f32 or f64.
+   *
+   * @param cl the clazz
+   *
+   * @return true iff cl is built-in numeric;
+   */
+  boolean isBuiltInNumeric(int cl)
+  {
+    return switch (_fuir.getSpecialId(cl))
+      {
+      case
+        c_i8   ,
+        c_i16  ,
+        c_i32  ,
+        c_i64  ,
+        c_u8   ,
+        c_u16  ,
+        c_u32  ,
+        c_u64  ,
+        c_f32  ,
+        c_f64  -> true;
+      default -> false;
+      };
+  }
+
+
   /**
    * Create instance of given clazz.
    *
@@ -1303,36 +1360,47 @@ public class DFA extends ANY
    */
   Value newInstance(int cl, Context context)
   {
-    return switch (_fuir.getSpecialId(cl))
+    Value r;
+    if (isBuiltInNumeric(cl))
       {
-        case c_i8   ,
-             c_i16  ,
-             c_i32  ,
-             c_i64  ,
-             c_u8   ,
-             c_u16  ,
-             c_u32  ,
-             c_u64  ,
-             c_f32  ,
-             c_f64  -> new NumericValue(DFA.this, cl);
-        default ->
-        {
-          var r = new Instance(this, cl, context);
-          var e = _instances.get(r);
-          if (e == null)
-            {
-              _instances.put(r, r);
-              e = r;
-              if (SHOW_STACK_ON_CHANGE && !_changed) Thread.dumpStack();
-              if (!_changed)
-                {
-                  _changedSetBy = "DFA.newInstance for "+_fuir.clazzAsString(cl);
-                }
-              _changed = true;
-            }
-          yield e;
-        }
-      };
+        r = new NumericValue(DFA.this, cl);
+      }
+    else
+      {
+        if (_fuir.clazzIsRef(cl))
+          {
+            var vc = _fuir.clazzAsValue(cl);
+            r = newInstance(vc, context).box(this, vc, cl, context);
+          }
+        else
+          {
+            r = new Instance(this, cl, context);
+          }
+      }
+    return cache(r);
+  }
+
+
+  /**
+   * Check if value 'r' exists already. If so, return the existing
+   * one. Otherwise, add 'r' to the set of existing values, set _changed since
+   * the state has changed and return r.
+   */
+  Value cache(Value r)
+  {
+    var e = _instances.get(r);
+    if (e == null)
+      {
+        _instances.put(r, r);
+        e = r;
+        if (SHOW_STACK_ON_CHANGE && !_changed) Thread.dumpStack();
+        if (!_changed)
+          {
+            _changedSetBy = "DFA.newInstance for "+_fuir.clazzAsString(r._clazz);
+          }
+        _changed = true;
+      }
+    return e;
   }
 
 
@@ -1355,14 +1423,11 @@ public class DFA extends ANY
                                   : new SysArray(this, new NumericValue(this, _fuir.clazz(FUIR.SpecialClazzes.c_u8)));
     var r = newInstance(cs, context);
     var a = newInstance(sysArray, context);
-    _writtenFields.add(length);
     a.setField(this,
                length,
                 utf8Bytes != null ? new NumericValue(this, _fuir.clazzResultClazz(length), utf8Bytes.length)
                                   : new NumericValue(this, _fuir.clazzResultClazz(length)));
-    _writtenFields.add(data);
     a.setField(this, data  , adata);
-    _writtenFields.add(internalArray);
     r.setField(this, internalArray, a);
     return r;
   }
@@ -1405,6 +1470,22 @@ public class DFA extends ANY
       }
     return e;
   }
+
+
+  /**
+   * Create instance of 'Site' for given clazz, code block and index.
+   */
+  Site site(int cl, int c, int i)
+    {
+      var cs = new Site(cl, c, i);
+      var res = _sites.get(cs);
+      if (res == null)
+        {
+          _sites.put(cs, cs);
+          res = cs;
+        }
+      return res;
+    }
 
 
   /**

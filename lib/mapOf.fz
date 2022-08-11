@@ -37,5 +37,5 @@ mapOf<K : ordered<K>,V> (ks array<K>, vs array<V>) map<K,V> is orderedMap ks vs
 #
 # example: mapOf [(key1, value1), (key2, value2)]
 #
-mapOf<K : ordered<K>,V> (kvs array (tuple K V)) map<K,V> is
+mapOf(K (ordered K).type, V type, kvs array (tuple K V)) map K V is
   orderedMap (kvs.map (kv -> kv.values.0)) (kvs.map (kv -> kv.values.1))
