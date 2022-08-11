@@ -1766,9 +1766,8 @@ actualsList : actualSp actualsList
     if (ignoredTokenBefore() && !endsActuals(false))
       {
         var in = new Indentation();
-        result = new List<>(actualSpace());
-        in.next();
-        while (!endsActuals(true) && in.ok())
+        result = new List<>();
+        while (!endsActuals(!result.isEmpty()) && in.ok())
           {
             result.add(actualSpace());
             in.next();

@@ -115,26 +115,20 @@ indentation is
 
   # first none and 4 x one with parentheses
   #
-  /* NYI: does not work yet
   (called
     arg arg arg arg)
-    */
 
   # first none and three and one with parentheses
   #
-  /* NYI: does not work yet
   (called
     arg arg arg
     arg)
-    */
 
   # first none and two and two with parentheses
   #
-  /* NYI: does not work yet
   (called
     arg arg
     arg arg)
-    */
 
   # first none and one and three with parentheses
   #
@@ -144,12 +138,10 @@ indentation is
 
   # first none and two and one and one with parentheses
   #
-  /* NYI: does not work yet
   (called
     arg arg
     arg
     arg)
-    */
 
   # first none and one and two and one with parentheses
   #
