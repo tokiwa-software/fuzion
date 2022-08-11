@@ -54,7 +54,7 @@
 
 # a tomb node
 # "a T-node is the last value assigned to an I-node"
-private TNode<CTK: hasHash<CTK>,CTV>(sn SNode<CTK,CTV>) is
+private TNode(CTK hasHash CTK .type, CTV type, sn SNode CTK CTV) is
   redef asString => "TNode($sn)"
 
   asList => sn.asList
@@ -62,14 +62,14 @@ private TNode<CTK: hasHash<CTK>,CTV>(sn SNode<CTK,CTV>) is
 
 # a singleton node
 # the node type containing actual data
-private SNode<CTK: hasHash<CTK>,CTV>(k CTK, v CTV) is
+private SNode(CTK hasHash CTK .type, CTV type, k CTK, v CTV) is
   redef asString => "SNode($k, $v)"
 
   asList => [(k,v)].asList
 
 
 # an indirection or a singleton node
-private Branch<CTK: hasHash<CTK>,CTV> : choice<INode<CTK,CTV>,SNode<CTK,CTV>> is
+private Branch(CTK hasHash CTK .type, CTV type) : choice (INode CTK CTV) (SNode CTK CTV) is
   redef asString =>
     match Branch.this
       iNode INode => "$iNode"
@@ -83,14 +83,14 @@ private Branch<CTK: hasHash<CTK>,CTV> : choice<INode<CTK,CTV>,SNode<CTK,CTV>> is
 
 # a container node
 # consists of a bitmap of filled spaces and an array of child nodes
-private CNode<CTK: hasHash<CTK>,CTV>(bmp u32, array array<Branch<CTK,CTV>>) is
+private CNode(CTK hasHash CTK .type, CTV type, bmp u32, array array (Branch CTK CTV)) is
 
   # update a child node and return a new cnode
-  updated(pos u32, node Branch<CTK,CTV>) =>
+  updated(pos u32, node Branch CTK CTV) =>
     CNode bmp (array.put pos.as_i32 node)
 
   # insert a child node and return a new cnode
-  inserted(pos, flag u32, sn SNode<CTK,CTV>) =>
+  inserted(pos, flag u32, sn SNode CTK CTV) =>
     CNode (bmp | flag) (array.insert pos.as_i32 sn).asArray
 
   # remove a child node and return a new cnode
@@ -101,23 +101,23 @@ private CNode<CTK: hasHash<CTK>,CTV>(bmp u32, array array<Branch<CTK,CTV>>) is
 
 
   # create copy of this cnode and children
-  renewed(new_gen i32, ct ref CTrie<CTK,CTV>) =>
-    copy := array.map<Branch<CTK,CTV>>((x) ->
+  renewed(new_gen i32, ct ref CTrie CTK CTV) =>
+    copy := (array.map (Branch CTK CTV) ((x) ->
       match x
         i INode => i.copy_to_gen new_gen ct
         sn SNode => sn
-      ).asArray
+      )).asArray
     CNode bmp copy
 
 
-  redef asString => "CNode($bmp, [{array.map<string>(x -> x.asString).fold (strings.concat ", ")}])"
+  redef asString => "CNode($bmp, [{array.map(x -> x.asString).fold (strings.concat ", ")}])"
 
-  asList => array.flatMapSequence<tuple<CTK,CTV>>(b -> b.asList).asList
+  asList => (array.flatMapSequence (tuple CTK CTV) (b -> b.asList)).asList
 
 
 # a container, T or linked list node
 # NYI should probably inhert from choice but nesting of choices leads to bugs currently, see: https://github.com/tokiwa-software/fuzion/issues/213
-private MainNode<CTK: hasHash<CTK>,CTV>(data choice<CNode<CTK,CTV>,TNode<CTK,CTV>,LNode<CTK,CTV>>, gen i32) ref : hasEquals<MainNode<CTK,CTV>> is
+private MainNode(CTK hasHash CTK .type, CTV type, data choice (CNode CTK CTV) (TNode CTK CTV) (LNode CTK CTV), gen i32) ref : hasEquals (MainNode CTK CTV) is
   redef asString =>
     match data
       cNode CNode => "$cNode"
@@ -125,7 +125,7 @@ private MainNode<CTK: hasHash<CTK>,CTV>(data choice<CNode<CTK,CTV>,TNode<CTK,CTV
       lNode LNode => "$lNode"
 
   # NYI
-  infix = (o MainNode<CTK,CTV>) bool is
+  infix = (o MainNode CTK CTV) bool is
     MainNode.this.hashCode = o.hashCode
 
   asList
@@ -136,12 +136,12 @@ private MainNode<CTK: hasHash<CTK>,CTV>(data choice<CNode<CTK,CTV>,TNode<CTK,CTV
     match data
       cNode CNode => cNode.asList
       tNode TNode => tNode.asList
-      lNode LNode => lNode.mapSequence<tuple<CTK,CTV>>(sn -> (sn.k, sn.v))
+      lNode LNode => lNode.mapSequence (sn -> (sn.k, sn.v))
 
 
   # a previous node that gets set during a generational aware compare and set
-  prev choice<FNode<CTK,CTV>, MainNode<CTK,CTV>, nil> := nil
-  set_prev(m MainNode<CTK,CTV>) unit
+  prev choice (FNode CTK CTV) (MainNode CTK CTV) nil := nil
+  set_prev(m MainNode CTK CTV) unit
   pre match prev
         nil => true
         * => false
@@ -149,7 +149,7 @@ private MainNode<CTK: hasHash<CTK>,CTV>(data choice<CNode<CTK,CTV>,TNode<CTK,CTV
     set prev := m
 
   # compare and set `prev`
-  CAS_PREV(o,n choice<FNode<CTK,CTV>, MainNode<CTK,CTV>, nil>) =>
+  CAS_PREV(o,n choice (FNode CTK CTV) (MainNode CTK CTV) nil) =>
     # NYI
     match n
       f FNode =>
@@ -160,13 +160,13 @@ private MainNode<CTK: hasHash<CTK>,CTV>(data choice<CNode<CTK,CTV>,TNode<CTK,CTV
 
 
 # a failed node where the previous indirection node contains a main node
-private FNode<CTK: hasHash<CTK>,CTV>(prev MainNode<CTK,CTV>) is
+private FNode(CTK hasHash CTK .type, CTV type, prev MainNode CTK CTV) is
 
 # an indirection node
-private INode<CTK: hasHash<CTK>,CTV>(data MainNode<CTK,CTV>) ref : hasEquals<INode<CTK,CTV>> is
+private INode(CTK hasHash CTK .type, CTV type, data MainNode CTK CTV) ref : hasEquals (INode CTK CTV) is
 
   # compare and set
-  private CAS(old_n, new_n MainNode<CTK,CTV>) bool is
+  private CAS(old_n, new_n MainNode CTK CTV) bool is
     # NYI this must be atomic
     # if(main.hash != old_n.hash)
     #   false
@@ -175,7 +175,7 @@ private INode<CTK: hasHash<CTK>,CTV>(data MainNode<CTK,CTV>) ref : hasEquals<INo
     true
 
   # completes the generation sensitive compare and set
-  private GCAS_Commit(m MainNode<CTK,CTV>, ct ref CTrie<CTK,CTV>) MainNode<CTK,CTV>is
+  private GCAS_Commit(m MainNode CTK CTV, ct ref CTrie CTK CTV) MainNode CTK CTV is
     # abortably read root and get the current gen
     gen := (ct.RDCSS_READ_ROOT true).data.gen
     match m.prev
@@ -196,14 +196,14 @@ private INode<CTK: hasHash<CTK>,CTV>(data MainNode<CTK,CTV>) ref : hasEquals<INo
           GCAS_Commit data ct
 
   # read `data`, if prev is set commit first
-  private GCAS_READ(ct ref CTrie<CTK,CTV>) MainNode<CTK,CTV> is
+  private GCAS_READ(ct ref CTrie CTK CTV) MainNode CTK CTV is
     m := data
     match m.prev
       nil => m
       * => (GCAS_Commit m ct)
 
   # generation aware compare and set
-  GCAS(o MainNode<CTK,CTV>, n MainNode<CTK,CTV>, ct ref CTrie<CTK,CTV>) choice<RESTART, OK> is
+  GCAS(o MainNode CTK CTV, n MainNode CTK CTV, ct ref CTrie CTK CTV) choice RESTART OK is
     n.set_prev o
     if(CAS o n)
       GCAS_Commit n ct
@@ -215,18 +215,18 @@ private INode<CTK: hasHash<CTK>,CTV>(data MainNode<CTK,CTV>) ref : hasEquals<INo
 
 
   # copy this node to a new generation
-  private copy_to_gen(new_gen i32, ct ref CTrie<CTK,CTV>) INode<CTK,CTV> is
+  private copy_to_gen(new_gen i32, ct ref CTrie CTK CTV) INode CTK CTV is
     m := GCAS_READ ct
     # increase the generation of node by one
     INode (MainNode m.data new_gen)
 
   # NYI
-  infix = (o INode<CTK,CTV>) bool is
+  infix = (o INode CTK CTV) bool is
     INode.this.hashCode = o.hashCode
 
   redef asString => "INode($data)"
 
-  asList list<tuple<CTK, CTV>>
+  asList list (tuple CTK CTV)
   pre match data.prev
     nil => true
     * => false
@@ -235,7 +235,7 @@ private INode<CTK: hasHash<CTK>,CTV>(data MainNode<CTK,CTV>) ref : hasEquals<INo
 
 # a linked list node
 # NYI instead of Sequence we should use something like the original implementation ListMap(Scala).
-private LNode<CTK: hasHash<CTK>,CTV>(from Sequence<SNode<CTK,CTV>>) : Sequence<SNode<CTK,CTV>>
+private LNode(CTK hasHash CTK .type, CTV type, from Sequence (SNode CTK CTV)) : Sequence (SNode CTK CTV)
 pre from ∀ (sn -> (from.filter (snn -> sn.k.hash = snn.k.hash)).count = 1)
 is
   redef asList => from.asList
@@ -245,15 +245,15 @@ private OK is
 
 # the ctrie
 # NYI marking ctrie as ref see issue https://github.com/tokiwa-software/fuzion/issues/304
-private CTrie<CTK: hasHash<CTK>, CTV>(root choice<INode<CTK,CTV>, RDCSS_Descriptor>, read_only bool) ref : map<CTK, CTV>
+private CTrie(CTK hasHash CTK .type, CTV type, root choice (INode CTK CTV) RDCSS_Descriptor, read_only bool) ref : map CTK CTV
 is
 
-  private CAS_ROOT(ov, nv choice<INode<CTK,CTV>, RDCSS_Descriptor>) =>
+  private CAS_ROOT(ov, nv choice (INode CTK CTV) RDCSS_Descriptor) =>
     # NYI CAS
     set root := nv
     true
 
-  private RDCSS_Complete(abort bool) INode<CTK,CTV>
+  private RDCSS_Complete(abort bool) INode CTK CTV
   is
     match root
       n INode => n
@@ -278,7 +278,7 @@ is
 
   # read root
   # if root is currently a descriptor commit the descriptor first
-  private RDCSS_READ_ROOT(abort bool) INode<CTK,CTV>
+  private RDCSS_READ_ROOT(abort bool) INode CTK CTV
   is
     match root
       n INode => n
@@ -286,7 +286,7 @@ is
 
   private RDCSS_READ_ROOT() => RDCSS_READ_ROOT false
 
-  private RDCSS_Descriptor(ov INode<CTK,CTV>, exp MainNode<CTK,CTV>, nv INode<CTK,CTV>) is
+  private RDCSS_Descriptor(ov INode CTK CTV, exp MainNode CTK CTV, nv INode CTK CTV) is
 
   private RDCSS_ROOT(desc RDCSS_Descriptor) =>
     if CAS_ROOT desc.ov desc
@@ -309,7 +309,7 @@ is
 
 
   # returns flag and the position in the CNode for given params
-  private flagpos(hash u32, lev u32, bmp u32) tuple<u32, u32> is
+  private flagpos(hash u32, lev u32, bmp u32) tuple u32 u32 is
     idx := (hash >> lev) & 0x1F
     flag := u32 1 << idx
     mask := flag -° 1
@@ -318,20 +318,19 @@ is
 
 
   # compress a container node
-  private compress(cn CNode<CTK,CTV>, lev u32, gen i32) =>
-    narr := cn.array.map<Branch<CTK,CTV>> (n -> match n
+  private compress(cn CNode CTK CTV, lev u32, gen i32) =>
+    narr := cn.array.map (Branch CTK CTV) (n -> match n
                                                   m INode =>
                                                     match m.GCAS_READ(CTrie.this).data
                                                       // resurrect
-                                                      tn TNode<CTK,CTV> => tn.sn
+                                                      tn TNode CTK CTV => tn.sn
                                                       * => m
-                                                  sn SNode => sn
-                                    )
+                                                  sn SNode => sn)
     contract (CNode CTK CTV cn.bmp narr) lev gen
 
 
   # contract a container node
-  private contract(cn CNode<CTK,CTV>, lev u32, gen i32) MainNode<CTK,CTV> is
+  private contract(cn CNode CTK CTV, lev u32, gen i32) MainNode CTK CTV is
     if (lev > 0) & (cn.array.length = 1)
       match cn.array[0]
         sn SNode => MainNode (TNode sn) gen
@@ -342,30 +341,30 @@ is
 
   # clean an indirection node:
   # compress contained container node
-  private clean(nd option<INode<CTK,CTV>>, lev u32, gen i32) =>
+  private clean(nd option (INode CTK CTV), lev u32, gen i32) =>
     if nd??
       m := nd.get.GCAS_READ(CTrie.this)
       match m.data
-        c CNode<CTK,CTV> => nd.get.GCAS m (compress c lev gen) CTrie.this
+        c CNode CTK CTV => nd.get.GCAS m (compress c lev gen) CTrie.this
         * =>
     unit
 
 
   # turns this: CNode -> INode -> TNode -> SNode
   # into  this: CNode -> SNode
-  private clean_parent(parent option<INode<CTK,CTV>>, i INode<CTK,CTV>, hash, lev u32, gen i32) =>
+  private clean_parent(parent option (INode CTK CTV), i INode CTK CTV, hash, lev u32, gen i32) =>
     parent >>= (p ->
       m := p.GCAS_READ CTrie.this
       match m.data
-        cn CNode<CTK,CTV> =>
+        cn CNode CTK CTV =>
           (flag, pos) := flagpos hash lev cn.bmp
           if (cn.bmp & flag) != 0
             sub := cn.array[pos.as_i32]
             match sub
-              iNode INode<CTK,CTV> =>
+              iNode INode CTK CTV =>
                 if iNode = i
                   match i.GCAS_READ(CTrie.this).data
-                    tn TNode<CTK,CTV> =>
+                    tn TNode CTK CTV =>
                       ncn := cn.updated pos tn.sn
                       match (p.GCAS m (contract ncn lev gen) CTrie.this)
                         RESTART => clean_parent p i hash lev gen
@@ -383,26 +382,26 @@ is
   # MainNode -> LNode -> SNodes
   # or recurse
   # MainNode -> CNode -> INode -> dual x y
-  private dual(x, y SNode<CTK,CTV>, lev u32, gen i32) MainNode<CTK,CTV> is
+  private dual(x, y SNode CTK CTV, lev u32, gen i32) MainNode CTK CTV is
     # NYI why 35??
     if lev < 35
       xidx := ((hash x.k.hash) >> lev) & 0x1f
       yidx := ((hash y.k.hash) >> lev) & 0x1f
       bmp := (u32 1 << xidx) | (u32 1 << yidx)
       if xidx = yidx
-        subinode := INode<CTK,CTV> (dual x y (lev + W) gen)
-        MainNode (CNode<CTK,CTV> bmp [subinode]) gen
+        subinode := INode CTK CTV (dual x y (lev + W) gen)
+        MainNode (CNode CTK CTV bmp [subinode]) gen
       else
         if (xidx < yidx)
-          MainNode (CNode<CTK,CTV> bmp [x, y]) gen
+          MainNode (CNode CTK CTV bmp [x, y]) gen
         else
-          MainNode (CNode<CTK,CTV> bmp [y, x]) gen
+          MainNode (CNode CTK CTV bmp [y, x]) gen
     else
       MainNode (LNode [(SNode x.k x.v), (SNode y.k y.v)]) gen
 
 
   # lookup key k
-  lookup(k CTK) option<CTV> is
+  lookup(k CTK) option CTV is
     r := RDCSS_READ_ROOT
     res := ilookup r k 0 nil r.data.gen
     match res
@@ -414,10 +413,10 @@ is
         v
 
 
-  private ilookup(i INode<CTK,CTV>, k CTK, lev u32, parent option<INode<CTK,CTV>>, gen i32) choice<RESTART,NOTFOUND,CTV> is
+  private ilookup(i INode CTK CTV, k CTK, lev u32, parent option (INode CTK CTV), gen i32) choice RESTART NOTFOUND CTV is
     m := i.GCAS_READ CTrie.this
     match m.data
-      cn CNode<CTK,CTV> =>
+      cn CNode CTK CTV =>
         (flag, pos) := flagpos (hash k.hash) lev cn.bmp
         if (cn.bmp & flag) = 0
           NOTFOUND
@@ -435,14 +434,14 @@ is
                 sn.v
               else
                 NOTFOUND
-      tn TNode<CTK,CTV> =>
+      tn TNode CTK CTV =>
         clean parent (lev - W) gen
         RESTART
-      ln LNode<CTK,CTV> => find ln k
+      ln LNode CTK CTV => find ln k
 
 
   # find k in linked nodes
-  private find(ln LNode<CTK,CTV>, k CTK) choice<RESTART, NOTFOUND, CTV> is
+  private find(ln LNode CTK CTV, k CTK) choice RESTART NOTFOUND CTV is
     match ln.dropWhile(sn -> sn.k /= k).head
           nil => NOTFOUND
           sn SNode => sn.v
@@ -459,10 +458,10 @@ is
         unit
 
 
-  private iinsert(i INode<CTK,CTV>, k CTK, v CTV, lev u32, parent option<INode<CTK,CTV>>, gen i32) choice<RESTART,OK> is
+  private iinsert(i INode CTK CTV, k CTK, v CTV, lev u32, parent option (INode CTK CTV), gen i32) choice RESTART OK is
     m := i.GCAS_READ CTrie.this
     match m.data
-      cn CNode<CTK,CTV> =>
+      cn CNode CTK CTV =>
         (flag, pos) := flagpos (hash k.hash) lev cn.bmp
         if (cn.bmp & flag) = 0
           ncn := (if m.gen = gen then cn else cn.renewed gen CTrie.this).inserted pos flag (SNode k v)
@@ -493,14 +492,14 @@ is
 
   # remove key from ctrie
   # calls iremove which does the actual removal
-  remove(k CTK) choice<NOTFOUND, CTV> is
+  remove(k CTK) choice NOTFOUND CTV is
     r := RDCSS_READ_ROOT
     match iremove r k 0 nil r.data.gen
       r RESTART => remove k
       n NOTFOUND => n
       v CTV => v
 
-  private iremove(i INode<CTK,CTV>, k CTK, lev u32, parent option<INode<CTK,CTV>>, gen i32) choice<RESTART, NOTFOUND, CTV> is
+  private iremove(i INode CTK CTV, k CTK, lev u32, parent option (INode CTK CTV), gen i32) choice RESTART NOTFOUND CTV is
     m := i.GCAS_READ CTrie.this
     match m.data
       cn CNode =>
@@ -508,7 +507,7 @@ is
         if (cn.bmp & flag) = 0
           NOTFOUND
         else
-          res choice<RESTART, NOTFOUND, CTV> := match cn.array[pos.as_i32]
+          res choice RESTART NOTFOUND CTV := match cn.array[pos.as_i32]
             sin INode =>
               if sin.data.gen = gen
                 iremove sin k (lev + W) i gen
@@ -537,7 +536,7 @@ is
         RESTART
       ln LNode =>
         fln := LNode ln.filter(sn -> sn.k /= k)
-        nln MainNode<CTK,CTV> := if fln.count = 1 then MainNode (TNode fln.first) i.data.gen else MainNode fln i.data.gen
+        nln MainNode CTK CTV := if fln.count = 1 then MainNode (TNode fln.first) i.data.gen else MainNode fln i.data.gen
         match (i.GCAS m nln CTrie.this)
           OK => find ln k
           RESTART => RESTART
@@ -549,11 +548,11 @@ is
 
 
   # lookup an element with bracket syntax
-  redef index [] (k CTK) option<CTV> is
+  redef index [] (k CTK) option CTV is
     lookup k
 
   # take a snapshot of the ctrie
-  snapshot(read_only bool) CTrie<CTK, CTV> is
+  snapshot(read_only bool) CTrie CTK CTV is
     r := RDCSS_READ_ROOT
     expmain := r.GCAS_READ CTrie.this
     if(RDCSS_ROOT (RDCSS_Descriptor r expmain (r.copy_to_gen (r.data.gen +° 1) CTrie.this)))
@@ -564,11 +563,11 @@ is
 
 
   # a snapshot of the ctrie as sequence auf key-value tuples
-  redef items Sequence<tuple<CTK,CTV>> is
+  redef items Sequence (tuple CTK CTV) is
     (snapshot true)
       .RDCSS_READ_ROOT
       .asList
 
 # initialize a new ctrie
-CTrie<CTK: hasHash<CTK>, CTV> =>
-  CTrie CTK CTV (INode (MainNode (CNode<CTK,CTV> 0 []) 0)) false
+CTrie(CTK hasHash CTK .type, CTV type) =>
+  CTrie CTK CTV (INode (MainNode (CNode CTK CTV 0 []) 0)) false
