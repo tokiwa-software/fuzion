@@ -47,14 +47,14 @@ is
   redef infix -  (b matrix M) => matrix (array2 M e.length0 e.length1 i,j->e[i,j]-b.e[i,j])
   redef infix *  (b matrix M) =>
     matrix (array2 M e.length0 b.e.length1
-      (i,j ->
-        for
-          v := e[0,0].zero, v+f
-          x in e.indices1
-          f := a.e[i,x]*b.e[x,j]
-        else
-          v
-        ))
+                   (i,j ->
+                     for
+                       v := e[0,0].zero, v+f
+                       x in e.indices1
+                       f := a.e[i,x]*b.e[x,j]
+                     else
+                       v
+                     ))
   redef infix /  (b matrix M) matrix M
     pre
       safety: false
