@@ -272,9 +272,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     var actlT = expr.type();
 
-    if (CHECKS) check
-      (actlT == Types.intern(actlT));
-
     return isAssignableFromOrContainsError(actlT) &&
       (!expr.isCallToOuterRef() && !(expr instanceof Current) || actlT.isRef() || actlT.isChoice());
   }
