@@ -1941,19 +1941,19 @@ expr        : opExpr
   {
     Expr result = opExpr();
     SourcePosition pos = posObject();
-    if (skip('?'))
+    var f0 = fork();
+    if (f0.skip('?') && f0.isCasesAndNotExpr())
       {
-        if (isCasesAndNotExpr())
-          {
-            result = new Match(pos, result, cases(false));
-          }
-        else
-          {
-            Expr f = expr();
-            matchOperator(":", "expr of the form >>a ? b : c<<");
-            Expr g = expr();
-            result = new Call(pos, result, "ternary ? :", null, null, new List<Expr>(f, g));
-          }
+        var i = new Indentation();
+        skip('?');
+        result = new Match(pos, result, cases(i));
+      }
+    else if (skip('?'))
+      {
+        Expr f = expr();
+        matchOperator(":", "expr of the form >>a ? b : c<<");
+        Expr g = expr();
+        result = new Call(pos, result, "ternary ? :", null, null, new List<Expr>(f, g));
       }
     return result;
   }
@@ -2427,7 +2427,7 @@ match       : "match" exprInLine BRACEL cases BRACER
         boolean gotLBrace = skip(true, Token.t_lbrace);
         var start = posObject();
         var cpos = posObject();
-        var c = cases(true);
+        var c = cases(null);
         var end = posObject();
         if (gotLBrace)
           {
@@ -2466,22 +2466,16 @@ maybecomma  : comma
             |
             ;
    */
-  List<AbstractCase> cases(boolean indent)
+  List<AbstractCase> cases(Indentation i)
   {
     List<AbstractCase> result = new List<>();
-    var in = indent ? new Indentation() : (Indentation) null;
-    var sl = -1;
+    var sl = sameLine(-1);
+    var in = i != null ? i : new Indentation();
     var usesBars = false;
-    while ((currentAtMinIndent() == Token.t_lineLimit || !endOfStmnts()) && (in == null || in.ok()))
+    while ((i == null || current() != Token.t_indentationLimit) && !endOfStmnts() && in.ok())
       {
-        if (result.size() == 0 && indent)
+        if (result.size() == (i == null ? 0 : 1))
           {
-            usesBars = skip('|');
-          }
-        else if (result.size() == 1 && !indent)
-          {
-            sl = sameLine(-1);
-            in = new Indentation();
             usesBars = skip('|');
           }
         else if (usesBars)
@@ -2490,23 +2484,14 @@ maybecomma  : comma
           }
         result.add(caze());
         skipComma();
-        if (currentAtMinIndent() == Token.t_lineLimit || !endOfStmnts())
+        if (!endOfStmnts())
           {
             semiOrFlatLF();
           }
-        if (in != null)
-          {
-            in.next();
-          }
+        in.next();
       }
-    if (in != null)
-      {
-        in.end();
-      }
-    if (sl != -1)
-      {
-        sameLine(sl);
-      }
+    in.end();
+    sameLine(sl);
     return result;
   }
 
