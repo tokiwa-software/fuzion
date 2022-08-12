@@ -17,25 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test checkGenericConstraint
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# Regression test for issue #7: https://github.com/tokiwa-software/fuzion/issues/7
-#
-# A simple negative test using incompatible actual type argument
-#
-checkGenericConstraint is
-  m32 is
-    h i32 is 3
-
-  H is
-    h i32 is abstract
-
-  hm<T : H> (x T) is
-    x.h
-    unit
-
-  m := hm<m32> m32     # should produce error, m32 is not compatible to H
+NAME = indentation_negative
+include ../negative.mk
