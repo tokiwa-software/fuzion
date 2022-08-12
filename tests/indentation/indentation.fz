@@ -28,6 +28,12 @@
 #
 indentation is
 
+  # -----------------------------------------------------------------------
+  #
+  # feature code blocks:
+  #
+  # -----------------------------------------------------------------------
+
   # standard indentation
   #
   feature1 is
@@ -49,6 +55,12 @@ indentation is
   _ := feature1
   _ := feature2
   _ := feature3
+
+  # -----------------------------------------------------------------------
+  #
+  # call with actual arguments:
+  #
+  # -----------------------------------------------------------------------
 
   # helper feature used as target for testing indentation of actual args
   #
@@ -257,3 +269,130 @@ indentation is
   (called arg
           arg
           arg arg)
+
+  # -----------------------------------------------------------------------
+  #
+  # 'if' with nested call
+  #
+  # -----------------------------------------------------------------------
+
+  # helper feature for a call with one argument
+  #
+  callWith0Args(a i32)   => panic "expected no arg!"; false
+  callWith0Args          => say "ok"; true
+  callWith1Arg (a i32)   => say "$a"; true
+  callWith1Arg           => panic "expected one arg!"; false
+  callWith2Args(a,b i32) => say "$a $b"; true
+  callWith2Args(a i32)   => panic "expected two args!"; false
+  callWith2Arg           => panic "expected two args!"; false
+
+  # 'if' requires the condition to be in a single line: args in next line are ignored
+  #
+  if callWith0Args
+    arg
+    say "ok"
+  else
+    panic "expected true"
+
+  # 'if' requires the condition to be in a single line
+  #
+  if callWith1Arg arg
+    say "ok"
+  else
+    panic "expected true"
+
+  # 'if' requires the condition to be in a single line, but allows several arguments if vertically aligned
+  #
+  if callWith2Args arg
+                   arg
+    say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can be followed by code
+  #
+  if (callWith0Args) arg
+                     say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can be followed by code
+  #
+  if (callWith0Args) say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines
+  #
+  if (callWith1Arg
+    arg)
+    say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines
+  #
+  if (callWith1Arg
+                   arg)
+                   say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines and be followed by code
+  #
+  if (callWith1Arg
+    arg) say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines
+  #
+  if (callWith2Args
+    arg
+    arg)
+    say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines
+  #
+  if (callWith2Args
+    arg arg)
+    say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines and be followed by code
+  #
+  if (callWith2Args
+    arg
+    arg) say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines and be followed by code
+  #
+  if (callWith2Args arg
+                    arg) say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can extend over several lines and be followed by code
+  #
+  if (callWith2Args arg arg
+    ) say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can be single line and be followed by code
+  #
+  if (callWith2Args arg arg) say "ok"
+  else
+    panic "expected true"
+
+  # 'if'-condition with '('/')' can be single line
+  #
+  if (callWith2Args arg arg)
+    say "ok"
+  else
+    panic "expected true"
