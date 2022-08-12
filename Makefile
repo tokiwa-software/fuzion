@@ -361,9 +361,10 @@ unicode: $(BUILD_DIR)/UnicodeData.java
 	cp $^ $(SRC)/dev/flang/util/UnicodeData.java
 
 # regenerate $(FZ_SRC_LIB)/unicode/data.fz using the latest UnicodeData.txt.
-$(FZ_SRC_LIB)/unicode/data.fz: $(CLASS_FILES_UTIL_UNICODE) $(BUILD_DIR)/UnicodeData.txt
+.phony: unicode_data
+unicode_data: unicode $(CLASS_FILES_UTIL_UNICODE)
 	mkdir -p $(FZ_SRC_LIB)/unicode
-	$(JAVA) -cp $(CLASSES_DIR) dev.flang.util.unicode.ParseUnicodeData -fz $(BUILD_DIR)/UnicodeData.txt >$@
+	$(JAVA) -cp $(CLASSES_DIR) dev.flang.util.unicode.ParseUnicodeData -fz $(BUILD_DIR)/UnicodeData.txt >$(FZ_SRC_LIB)/unicode/data.fz
 
 # phony target to regenerate Fuzion logo.
 # This must be phony since $(SRC)/assets/logo.svg would be a circular dependency
