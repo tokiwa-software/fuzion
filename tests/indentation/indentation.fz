@@ -117,12 +117,6 @@ indentation is
          arg
          arg
 
-  # first two args passed in same line, others in following lines
-  #
-  called arg arg
-         arg
-         arg
-
   # ------  variant 2  ------
 
   # first none and 4 x one
