@@ -2905,7 +2905,7 @@ stmnt       : feature
       isCheckPrefix()       ? checkstmnt()  :
       isAssignPrefix()      ? assign()      :
       isDestructurePrefix() ? destructure() :
-      isFeaturePrefix()     ? feature()     : exprInLine();
+      isFeaturePrefix()     ? feature()     : expr();
   }
 
 
@@ -3356,6 +3356,7 @@ anonymous   : returnType
    */
   Expr anonymous()
   {
+    var sl = sameLine(line());
     SourcePosition pos = posObject();
     ReturnType r = returnType();
     var        i = inherit();
@@ -3363,6 +3364,7 @@ anonymous   : returnType
     Block      b = block();
     var f = Feature.anonymous(pos, r, i, c, b);
     var ca = new Call(pos, f);
+    sameLine(sl);
     return ca;
     // NYI: This would simplify the code (in Feature.findFieldDefInScope that
     // has special handling for c.calledFeature().isAnonymousInnerFeature()) but
