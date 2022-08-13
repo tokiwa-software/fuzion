@@ -616,6 +616,18 @@ public class Lexer extends SourceFile
 
 
   /**
+   * Is parsing restrict to one line?  This is enabled by a call to sameLine()
+   * with a positive argument.
+   *
+   * @return true iff parsing is restricted to current line
+   */
+  boolean isRestrictedToLine()
+  {
+    return _sameLine >= 0;
+  }
+
+
+  /**
    * Restrict parsing until the next occurence of white space.  Symbols after
    * fromPos that are preceded by white space will be replaced by t_spaceLimit.
    *
