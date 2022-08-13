@@ -270,7 +270,7 @@ indentation is
   #
   # -----------------------------------------------------------------------
 
-  # helper feature for a call with one argument
+  # helper feature for a call with zero/one/two arguments
   #
   callWith0Args(a i32)   => panic "expected no arg!"; false
   callWith0Args          => say "ok"; true
@@ -291,14 +291,6 @@ indentation is
   # 'if' requires the condition to be in a single line
   #
   if callWith1Arg arg
-    say "ok"
-  else
-    panic "expected true"
-
-  # 'if' requires the condition to be in a single line, but allows several arguments if vertically aligned
-  #
-  if callWith2Args arg
-                   arg
     say "ok"
   else
     panic "expected true"

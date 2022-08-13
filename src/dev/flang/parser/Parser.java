@@ -2803,7 +2803,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
      */
     void next()
     {
-      if (sameLine && current() == Token.t_lineLimit && (line() > lineNum(firstPos) && indent(pos()) >= indent(firstPos)))
+      if (oldSameLine == -1 && sameLine && current() == Token.t_lineLimit && (line() > lineNum(firstPos) && indent(pos()) >= indent(firstPos)))
         {
           sameLine = false;
           sameLine(-1);
