@@ -2469,10 +2469,9 @@ maybecomma  : comma
   List<AbstractCase> cases(Indentation i)
   {
     List<AbstractCase> result = new List<>();
-    var sl = sameLine(-1);
     var in = i != null ? i : new Indentation();
     var usesBars = false;
-    while ((i == null || current() != Token.t_indentationLimit) && !endOfStmnts() && in.ok())
+    while (!endOfStmnts() && in.ok())
       {
         if (result.size() == (i == null ? 0 : 1))
           {
@@ -2491,7 +2490,6 @@ maybecomma  : comma
         in.next();
       }
     in.end();
-    sameLine(sl);
     return result;
   }
 
@@ -2773,6 +2771,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
       if (lastPos() >= 0 && lineNum(lastPos()) == line())  // code starts without LF, so set line limit to find end of line in next()
         {
           oldSameLine    = sameLine(line());
+          next();
         }
       else
         {

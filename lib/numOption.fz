@@ -36,8 +36,8 @@ is
 
   # Does this option contain a value of type T?
   #
-  exists => numOption.this ? T   => true
-                           | nil => false
+  exists => (numOption.this ? T   => true
+                            | nil => false)
 
 
   # short-hand postfix operator for 'exists'

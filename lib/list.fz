@@ -54,8 +54,8 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
 
   # is this list empty?
   #
-  redef isEmpty => list.this ? nil  => true
-                             | Cons => false
+  redef isEmpty => (list.this ? nil  => true
+                              | Cons => false)
 
 
   # count the elements of this list
@@ -100,8 +100,8 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   forceHead
     pre
       debug: !isEmpty
-    => list.this ? nil    => fuzion.std.panic "list.forceHead called on empty list"
-                 | c Cons => c.head
+    => (list.this ? nil    => fuzion.std.panic "list.forceHead called on empty list"
+                  | c Cons => c.head)
 
 
   # get the tail of this list, panic if list is empty
@@ -109,8 +109,8 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   forceTail
     pre
       debug: !isEmpty
-    => list.this ? nil    => fuzion.std.panic "list.forceTail called on empty list"
-                 | c Cons => c.tail
+    => (list.this ? nil    => fuzion.std.panic "list.forceTail called on empty list"
+                  | c Cons => c.tail)
 
 
   # get the head of this list, panic if list is empty
@@ -179,8 +179,8 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   # Used to fold a list tail-recursively
   #
-  fold (s A, m Monoid A) A is list.this ? nil    => s
-                                         | c Cons => c.tail.fold (m.op s c.head) m
+  fold (s A, m Monoid A) A is (list.this ? nil    => s
+                                         | c Cons => c.tail.fold (m.op s c.head) m)
 
 
   # Lazily take the first n elements of a list, alternatively the whole list if it
@@ -333,8 +333,8 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   redef tails list (list A) is
     ref : Cons (list A) (list (list A))
       head => list.this
-      tail => list.this ? nil    => nil
-                        | c Cons => c.tail.tails
+      tail => (list.this ? nil    => nil
+                         | c Cons => c.tail.tails)
 
   # create stream from this list
   #
@@ -343,8 +343,8 @@ list(A type) : choice nil (Cons A (list A)), Sequence A is
   #
   redef asStream ref : stream A is
     cur := list.this
-    redef hasNext => cur ? Cons => true
-                         | nil  => false
+    redef hasNext => (cur ? Cons => true
+                          | nil  => false)
     redef next =>
       res := cur.forceHead
       set cur := cur.forceTail
