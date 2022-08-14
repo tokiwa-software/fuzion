@@ -1932,7 +1932,7 @@ exprAtMinIndent : block
    *
 expr        : opExpr
               ( QUESTION expr  COLON expr
-              | QUESTION cases
+              | QUESTION casesBars
               |
               )
             ;
@@ -1946,7 +1946,7 @@ expr        : opExpr
       {
         var i = new Indentation();
         skip('?');
-        result = new Match(pos, result, cases(i));
+        result = new Match(pos, result, casesBars(i));
       }
     else if (skip('?'))
       {
@@ -2427,7 +2427,7 @@ match       : "match" exprInLine BRACEL cases BRACER
         boolean gotLBrace = skip(true, Token.t_lbrace);
         var start = posObject();
         var cpos = posObject();
-        var c = cases(null);
+        var c = cases();
         var end = posObject();
         if (gotLBrace)
           {
@@ -2446,47 +2446,60 @@ match       : "match" exprInLine BRACEL cases BRACER
   /**
    * Parse cases
    *
-cases       : caze maybecomma ( '|' casesBars   // NYI: grammar not correct yet.
-                              |     casesNoBars
-                              )
+cases       : '|' casesBars
+            | casesNoBars
             ;
-casesBars   : caze maybecomma ( '|' casesBars
-                              |
-                              )
-            ;
-caseNoBars  : caze maybecomma ( casesNoBars
-                              |
-                              )
-            ;
-# NYI: grammar not correct yet.
-casesNoBars : caseNoBars caseNoBars
-            | caseNoBars
-            ;
-maybecomma  : comma
+casesNoBars : caze semiOrFlatLF casesNoBars
             |
             ;
    */
-  List<AbstractCase> cases(Indentation i)
+  List<AbstractCase> cases()
+  {
+    var in = new Indentation();
+    List<AbstractCase> result;
+    if (skip('|'))
+      {
+        result = casesBars(in);
+      }
+    else
+      {
+        result = new List<AbstractCase>();
+        while (!endOfStmnts() && in.ok())
+          {
+            result.add(caze());
+            if (!endOfStmnts())
+              {
+                semiOrFlatLF();
+              }
+            in.next();
+          }
+        in.end();
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse casesBars
+   *
+   * @param in the Indentation instance created at the position of '?' or at
+   * current position (for a 'match'-statement).
+   *
+casesBars   : caze ( '|' casesBars
+                   |
+                   )
+            ;
+   */
+  List<AbstractCase> casesBars(Indentation in)
   {
     List<AbstractCase> result = new List<>();
-    var in = i != null ? i : new Indentation();
-    var usesBars = false;
     while (!endOfStmnts() && in.ok())
       {
-        if (result.size() == (i == null ? 0 : 1))
-          {
-            usesBars = skip('|');
-          }
-        else if (usesBars)
+        if (!result.isEmpty())
           {
             matchOperator("|", "cases");
           }
         result.add(caze());
-        skipComma();
-        if (!endOfStmnts())
-          {
-            semiOrFlatLF();
-          }
         in.next();
       }
     in.end();
