@@ -488,7 +488,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
           }
         var p = pos();
         // redef name := "<type name>"
-        var n = new Feature(p, Consts.VISIBILITY_PUBLIC, Consts.MODIFIER_REDEFINE, new Type("string"), "name", new Contract(null, null, null), Impl.FIELD);
+        var n = new Feature(p, Consts.VISIBILITY_PUBLIC, Consts.MODIFIER_REDEFINE, new Type("string"), "name", Contract.EMPTY_CONTRACT, Impl.FIELD);
         // type.#type : p1.#type, p2.#type is
         //   redef name => "<type name>"
         var inh = new List<AbstractCall>();
@@ -505,7 +505,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
           }
         var tf = new Feature(p, visibility(), 0, NoType.INSTANCE, new List<>(name), new List<Feature>(),
                              inh,
-                             new Contract(null,null,null),
+                             Contract.EMPTY_CONTRACT,
                              new Impl(p, new Block(p, new List<>(n)), Impl.Kind.Routine));
         _typeFeature = tf;
         res._module.findDeclarations(tf, o);

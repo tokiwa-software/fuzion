@@ -3511,14 +3511,12 @@ env         : simpletype dot "env"
    *
 contract    : require
               ensure
-              invariant
             ;
    */
   Contract contract(boolean atMinIndent)
   {
     return new Contract(requir   (atMinIndent),
-                        ensur    (atMinIndent),
-                        invariant(atMinIndent));
+                        ensur    (atMinIndent));
   }
 
 
