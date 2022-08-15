@@ -128,6 +128,31 @@ public fuzion.std.fileio is
                  # the length of the internal array representing the path
                  path_length i32) bool is intrinsic
 
+  # moves file/dir from an old path to a the new path
+  # can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
+  # returns TRUE in case of success and FALSE in case of failure
+  #
+  public move(
+              # the old (relative or absolute) file name, using platform specific path separators
+              old_path string,
+              # the new (relative or absolute) file name, using platform specific path separators
+              new_path string) =>
+    arr0 := old_path.utf8.asArray
+    arr1 := new_path.utf8.asArray
+    move arr0.internalArray.data arr0.length arr1.internalArray.data arr1.length
+
+  # intrinsic that returns TRUE in case the move was successful and FALSE in case not
+  #
+  private move(
+               # the internal array data representing the old file/dir path in bytes
+               old_path Object,
+               # the length of the internal array representing the old path
+               old_path_length i32,
+               # the internal array data representing the new file/dir path in bytes
+               new_path Object,
+               # the length of the internal array representing the new path
+               new_path_length i32) bool is intrinsic
+
   # creates a directory using the specified path
   # parent directories in the path should exist otherwise, no creation will take place
   #

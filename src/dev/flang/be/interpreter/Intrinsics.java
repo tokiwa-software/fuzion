@@ -280,6 +280,27 @@ public class Intrinsics extends ANY
             return new boolValue(false); // NYI : need to handle an IO error
           }
       });
+    put("fuzion.std.fileio.move", (interpreter, innerClazz) -> args ->
+        {
+          if (!ENABLE_UNSAFE_INTRINSICS)
+            {
+              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+              System.exit(1);
+            }
+          byte[] oldPathBytes = (byte[])args.get(1).arrayData()._array;
+          Path oldPath = Path.of(new String(oldPathBytes, StandardCharsets.UTF_8));
+          byte[] newPathBytes = (byte[])args.get(3).arrayData()._array;
+          Path newPath = Path.of(new String(newPathBytes, StandardCharsets.UTF_8));
+          try
+            {
+              Files.move(oldPath, newPath);
+              return new boolValue(true);
+            }
+          catch (Exception e)
+            {
+              return new boolValue(false); // NYI : need to handle an IO error
+            }
+        });
     put("fuzion.std.fileio.create_dir", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
