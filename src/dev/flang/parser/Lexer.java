@@ -167,7 +167,6 @@ public class Lexer extends SourceFile
     t_post("post"),
     t_inv("inv"),
     t_var("var"),
-    t_old("old"),
     t_match("match"),
     t_fun("fun"),
     t_value("value"),

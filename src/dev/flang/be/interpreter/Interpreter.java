@@ -65,7 +65,6 @@ import dev.flang.ast.If; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Impl; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.InlineArray; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Nop; // NYI: remove dependency! Use dev.flang.fuir instead.
-import dev.flang.ast.Old; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Stmnt; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Tag; // NYI: remove dependency! Use dev.flang.fuir instead.
 import dev.flang.ast.Types; // NYI: remove dependency! Use dev.flang.fuir instead.
@@ -586,11 +585,6 @@ public class Interpreter extends ANY
     else if (s instanceof Nop)
       {
         result = Value.NO_VALUE;
-      }
-
-    else if (s instanceof Old)
-      {
-        throw new Error("NYI: Expr.execute() for " + s.getClass() + " " +s);
       }
 
     else if (s instanceof InlineArray i)

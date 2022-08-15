@@ -2207,7 +2207,6 @@ simpleterm  : bracketTerm
             | fun
             | stringTerm
             | NUM_LITERAL
-            | "old" term
             | match
             | loop
             | ifstmnt
@@ -2239,7 +2238,6 @@ simpleterm  : bracketTerm
                              var eb = l.exponentBase();
                              var o = l._originalString;
                              result = new NumLiteral(posObject(p1), o, b, m, d, e, eb); break;
-          case t_old       : next(); result = new Old(term());                          break;
           case t_match     :         result = match();                                  break;
           case t_for       :
           case t_variant   :
@@ -2347,7 +2345,6 @@ stringTermB : '}any chars&quot;'
       case t_lbrace    :
       case t_fun       :
       case t_numliteral:
-      case t_old       :
       case t_match     : return true;
       default          :
         return
