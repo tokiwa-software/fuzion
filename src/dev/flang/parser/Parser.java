@@ -1932,7 +1932,7 @@ exprAtMinIndent : block
    *
 expr        : opExpr
               ( QUESTION expr  COLON expr
-              | QUESTION cases
+              | QUESTION casesBars
               |
               )
             ;
@@ -1946,7 +1946,7 @@ expr        : opExpr
       {
         var i = new Indentation();
         skip('?');
-        result = new Match(pos, result, cases(i));
+        result = new Match(pos, result, casesBars(i));
       }
     else if (skip('?'))
       {
@@ -2427,7 +2427,7 @@ match       : "match" exprInLine BRACEL cases BRACER
         boolean gotLBrace = skip(true, Token.t_lbrace);
         var start = posObject();
         var cpos = posObject();
-        var c = cases(null);
+        var c = cases();
         var end = posObject();
         if (gotLBrace)
           {
@@ -2446,52 +2446,63 @@ match       : "match" exprInLine BRACEL cases BRACER
   /**
    * Parse cases
    *
-cases       : caze maybecomma ( '|' casesBars   // NYI: grammar not correct yet.
-                              |     casesNoBars
-                              )
+cases       : '|' casesBars
+            | casesNoBars
             ;
-casesBars   : caze maybecomma ( '|' casesBars
-                              |
-                              )
-            ;
-caseNoBars  : caze maybecomma ( casesNoBars
-                              |
-                              )
-            ;
-# NYI: grammar not correct yet.
-casesNoBars : caseNoBars caseNoBars
-            | caseNoBars
-            ;
-maybecomma  : comma
+casesNoBars : caze semiOrFlatLF casesNoBars
             |
             ;
    */
-  List<AbstractCase> cases(Indentation i)
+  List<AbstractCase> cases()
+  {
+    var in = new Indentation();
+    List<AbstractCase> result;
+    if (skip('|'))
+      {
+        result = casesBars(in);
+      }
+    else
+      {
+        result = new List<AbstractCase>();
+        while (!endOfStmnts() && in.ok())
+          {
+            result.add(caze());
+            if (!endOfStmnts())
+              {
+                semiOrFlatLF();
+              }
+            in.next();
+          }
+        in.end();
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse casesBars
+   *
+   * @param in the Indentation instance created at the position of '?' or at
+   * current position (for a 'match'-statement).
+   *
+casesBars   : caze ( '|' casesBars
+                   |
+                   )
+            ;
+   */
+  List<AbstractCase> casesBars(Indentation in)
   {
     List<AbstractCase> result = new List<>();
-    var sl = sameLine(-1);
-    var in = i != null ? i : new Indentation();
-    var usesBars = false;
-    while ((i == null || current() != Token.t_indentationLimit) && !endOfStmnts() && in.ok())
+    while (!endOfStmnts() && in.ok())
       {
-        if (result.size() == (i == null ? 0 : 1))
-          {
-            usesBars = skip('|');
-          }
-        else if (usesBars)
+        if (!result.isEmpty())
           {
             matchOperator("|", "cases");
           }
         result.add(caze());
-        skipComma();
-        if (!endOfStmnts())
-          {
-            semiOrFlatLF();
-          }
         in.next();
       }
     in.end();
-    sameLine(sl);
     return result;
   }
 
@@ -2757,37 +2768,28 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
    */
   class Indentation
   {
-    boolean sameLine;
+    boolean mayIndent;
     int oldSameLine;
-    int oldEAS;
-    int lastLineNum;    // line number of last call to ok, -1 at beginning
-    int firstPos;       // source position of the first element
-    int firstIndent;    // indentation of the first element
-    int oldIndentPos;   // source position of the first element of outer indentation
-    int oldIndent;      // indentation outside of this block
-    int pos;            // pos of last call to ok(), -1 at beginning
+    int firstPos;           // source position of the first element
+    int firstIndent  = -1;  // indentation of the first element,              -1 if indentation has not started (yet)
+    int oldIndentPos = -1;  // original minIndent()  to be restored by end(), -1 if indentation has not started (yet)
+    int oldEAS       = -1;  // original endAtSpace() to be restored by end(), -1 if indentation has not started (yet)
+    int okLineNum    = -1;  // line number of last call to ok(), -1 at beginning
+    int okPos        = -1;  // position    of last call to ok(), -1 at beginning
 
     Indentation()
     {
-      sameLine       = lastPos() >= 0 && lineNum(lastPos()) == line();
-      lastLineNum    = -1;
+      mayIndent      = !isRestrictedToLine();
       firstPos       = pos();
-      pos            = -1;
-      if (sameLine)
+      if (lastPos() >= 0 && lineNum(lastPos()) == line())  // code starts without LF, so set line limit to find end of line in next()
         {
           oldSameLine    = sameLine(line());
-          oldEAS         = -1;
-          firstIndent    = -1;
-          oldIndentPos   = -1;
-          oldIndent      = -1;
+          next();
         }
       else
         {
-          firstIndent    = indent(firstPos);
           oldSameLine    = sameLine(-1);
-          oldEAS         = endAtSpace(Integer.MAX_VALUE);
-          oldIndentPos   = minIndent(firstPos);
-          oldIndent      = indent(oldIndentPos);
+          startIndent();
         }
     }
 
@@ -2803,15 +2805,21 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
      */
     void next()
     {
-      if (sameLine && current() == Token.t_lineLimit && (line() > lineNum(firstPos) && indent(pos()) >= indent(firstPos)))
+      if (mayIndent && current() == Token.t_lineLimit && indent(pos()) >= indent(firstPos))
         {
-          sameLine = false;
-          sameLine(-1);
-          firstIndent    = indent(firstPos);
-          oldEAS   = endAtSpace(Integer.MAX_VALUE);
-          oldIndentPos = minIndent(pos());
-          oldIndent    = indent(oldIndentPos);
+          startIndent();
         }
+    }
+
+    /**
+     * start indentation, used internally by constructor and next().
+     */
+    private void startIndent()
+    {
+      sameLine(-1);
+      firstIndent  = indent(firstPos);
+      oldEAS       = endAtSpace(Integer.MAX_VALUE);
+      oldIndentPos = minIndent(pos());
     }
 
 
@@ -2822,18 +2830,18 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
      */
     boolean ok()
     {
-      var lastPos = pos;
-      pos = pos();
-      var progress = lastPos < pos;
+      var lastPos = okPos;
+      okPos = pos();
+      var progress = lastPos < okPos;
       if (CHECKS) check
         (Errors.count() > 0 || progress);
       var ok = progress;
-      if (ok && !sameLine)
+      if (ok && firstIndent != -1)
         {
-          ok = firstIndent > oldIndent;
-          if (ok && lastLineNum != lineNum(pos))
+          ok = firstIndent > indent(oldIndentPos); // new indentation must be deeper
+          if (ok && okLineNum != lineNum(okPos))
             { // a new line, so check its indentation:
-              var curIndent = indent(pos);
+              var curIndent = indent(okPos);
               // NYI: We currently do not check if there are differences in
               // whitespace, e.g. "\t\t" is a very different indentation than
               // "\ \ ", even though both have a length of 2 bytes.
@@ -2842,8 +2850,8 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
                 {
                   Errors.indentationProblemEncountered(posObject(), posObject(firstPos), parserDetail("stmnts"));
                 }
-              minIndent(pos);
-              lastLineNum = lineNum(pos);
+              minIndent(okPos);
+              okLineNum = lineNum(okPos);
             }
         }
       return ok;
@@ -2854,13 +2862,9 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
      */
     void end()
     {
-      if (sameLine)
+      sameLine(oldSameLine);
+      if (firstIndent != -1)
         {
-          sameLine(oldSameLine);
-        }
-      else
-        {
-          sameLine(oldSameLine);
           endAtSpace(oldEAS);
           minIndent(oldIndentPos);
         }
@@ -2905,7 +2909,7 @@ stmnt       : feature
       isCheckPrefix()       ? checkstmnt()  :
       isAssignPrefix()      ? assign()      :
       isDestructurePrefix() ? destructure() :
-      isFeaturePrefix()     ? feature()     : exprInLine();
+      isFeaturePrefix()     ? feature()     : expr();
   }
 
 
@@ -3356,6 +3360,7 @@ anonymous   : returnType
    */
   Expr anonymous()
   {
+    var sl = sameLine(line());
     SourcePosition pos = posObject();
     ReturnType r = returnType();
     var        i = inherit();
@@ -3363,6 +3368,7 @@ anonymous   : returnType
     Block      b = block();
     var f = Feature.anonymous(pos, r, i, c, b);
     var ca = new Call(pos, f);
+    sameLine(sl);
     return ca;
     // NYI: This would simplify the code (in Feature.findFieldDefInScope that
     // has special handling for c.calledFeature().isAnonymousInnerFeature()) but

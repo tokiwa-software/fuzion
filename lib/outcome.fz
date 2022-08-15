@@ -53,8 +53,8 @@ outcome(T type) : choice T error /* ...  NYI: this should be open generic! */ is
 
   # Does this outcome contain a value of type T?
   #
-  ok => outcome.this ? T     => true
-                     | error => false
+  ok => (outcome.this ? T     => true
+                      | error => false)
 
 
   # short-hand postfix operator for 'ok'

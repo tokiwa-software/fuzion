@@ -616,6 +616,18 @@ public class Lexer extends SourceFile
 
 
   /**
+   * Is parsing restrict to one line?  This is enabled by a call to sameLine()
+   * with a positive argument.
+   *
+   * @return true iff parsing is restricted to current line
+   */
+  boolean isRestrictedToLine()
+  {
+    return _sameLine >= 0;
+  }
+
+
+  /**
    * Restrict parsing until the next occurence of white space.  Symbols after
    * fromPos that are preceded by white space will be replaced by t_spaceLimit.
    *
@@ -963,21 +975,17 @@ LF          : ( '\r'? '\n'
             {
               int last = p;
               p = curCodePoint();
-              if (isNewLine(last,p))
-                {
-                  _curLine++;
-                }
+              token = checkWhiteSpace(last, p);
               while (kind(p) == K_WS)
                 {
                   nextCodePoint();
                   last = p;
                   p = curCodePoint();
-                  if (isNewLine(last,p))
+                  if (token != Token.t_error)
                     {
-                      _curLine++;
+                      token = checkWhiteSpace(last,p);
                     }
                 }
-              token = Token.t_ws;
               break;
             }
           case K_SLASH   :   // '/', introducing a comment or an operator.
@@ -1110,6 +1118,34 @@ IDENT     : ( 'a'..'z'
           }
       }
     _curToken = token;
+  }
+
+
+  /**
+   * Check if given consecutive white space code points are acceptable,
+   * increment _curLine if last/p start a new line.
+   *
+   * @param p1 the first code point
+   *
+   * @param p2 the second code point
+   *
+   * @return Token.t_ws or Token.t_error in case of illegal white space.
+   */
+  Token checkWhiteSpace(int p1, int p2)
+  {
+    var result = Token.t_ws;
+    if (isNewLine(p1, p2))
+      {
+        _curLine++;
+      }
+    else if (p1 != ' ')
+      {
+        Errors.error(sourcePos(),
+                     "Unexpected white space character \\u" + Integer.toHexString(0x1000000+p1).substring(1).toUpperCase() + " found",
+                     null);
+        result = Token.t_error;
+      }
+    return result;
   }
 
 

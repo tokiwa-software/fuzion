@@ -127,3 +127,48 @@ indentation_negative is
   _ := case3a.feature3
   _ := case3b.feature3
   _ := case3c.feature3
+
+  # -----------------------------------------------------------------------
+  #
+  # call with actual arguments:
+  #
+  # -----------------------------------------------------------------------
+
+  # helper feature used as target for testing indentation of actual args
+  #
+  called(a,b,c,d i32) =>
+    say "called $a $b $c $d"
+
+  # helper feature used a actual arg
+  #
+  arg => 42
+
+  # NYI: no negative tests for calls with actuals yet
+
+  # -----------------------------------------------------------------------
+  #
+  # 'if' with nested call
+  #
+  # -----------------------------------------------------------------------
+
+  # helper feature for a call with zero/one/two arguments
+  #
+  callWith0Args(a i32)   => panic "expected no arg!"; false
+  callWith0Args          => say "ok"; true
+  callWith1Arg (a i32)   => say "$a"; true
+  callWith1Arg           => panic "expected one arg!"; false
+  callWith2Args(a,b i32) => say "$a $b"; true
+  callWith2Args(a i32)   => panic "expected two args!"; false
+  callWith2Arg           => panic "expected two args!"; false
+
+  if_with_call1 is
+
+    # 'if' requires the condition to be in a single line, doest not allow vertically aligned arguments
+    #
+    if callWith2Args arg
+                     arg  // this arg is parsed as first stmnt in the then-block
+      say "ok"            // 11. should flag an error: wrong indentation
+    else
+      panic "expected true"
+
+  _ := if_with_call1
