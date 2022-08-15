@@ -55,7 +55,7 @@ default_file_write_handler : File_Write_Handler is
     write(path string, content array u8) =>
         fuzion.std.fileio.write path content
 
-# unit type feature defining features related to write but not requiring an
+# unit type feature defining features related to write effect but not requiring an
 # instance.
 #
 writes is
