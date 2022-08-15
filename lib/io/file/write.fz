@@ -46,6 +46,8 @@ write =>
   writes.installDefault
   write.env
 
+# reference to the writing operations that could take place
+#
 File_Write_Handler ref is
     write(path string, content array u8) unit is abstract
 
