@@ -34,10 +34,10 @@ looptest_negative is
       say "FAILED: $msg"
       set exitCode := 1
 
-  a := array<i32>(100, fun (i i32) => { if (i % 23 == 0) { -2*i } else { i*i } })
+  a := array i32 100 (i -> if (i % 23 == 0) -2*i else i*i)
 
   say "testLoop_neg1: loop return 3333 on success and 4444 in else branch"
-  testLoop_neg1(data array<i32>, isWhatWeWant fun (i32) bool) =>
+  testLoop_neg1(data array i32, isWhatWeWant i32 -> bool) =>
     for
       ix := 0, ix + 1
     while ix < data.length
@@ -48,7 +48,7 @@ looptest_negative is
       "4444"            //  1.b should flag an error: incompatible result types i32 vs. string
 
   say "testLoop_neg2: loop return success index as default and 4444 in else branch"
-  testLoop_neg2(data array<i32>, isWhatWeWant fun (i32) bool) =>
+  testLoop_neg2(data array i32, isWhatWeWant i32 -> bool) =>
     for
       ix := 0, ix + 1
     while ix < data.length
@@ -59,18 +59,18 @@ looptest_negative is
       "4444"            //  2.b should flag an error: incompatible result types i32 vs. string
 
   say "testLoop_neg3: loop return 3333 on success, index as default"
-  testLoop_neg3(data array<i32>, isWhatWeWant fun (i32) bool) =>
+  testLoop_neg3(data array i32, isWhatWeWant i32 -> bool) =>
     for
       ix := 0, ix + 1
     while ix < data.length
       element := data[ix]
     until isWhatWeWant(data[ix])
       "3333"
-  neg3i i32    := testLoop_neg3 a (fun(i i32) => i > 10) //  3.a should flag an error: incompatible result types VOID vs. i32
-  neg3s string := testLoop_neg3 a (fun(i i32) => i > 10) //  3.b should flag an error: incompatible result types VOID vs. string
+  neg3i i32    := testLoop_neg3 a (i -> i > 10) //  3.a should flag an error: incompatible result types VOID vs. i32
+  neg3s string := testLoop_neg3 a (i -> i > 10) //  3.b should flag an error: incompatible result types VOID vs. string
 
   say "testLoop_neg4: loop return 4444 on else branch, no success possible"
-  testLoop_neg4(data array<i32>, isWhatWeWant fun (i32) bool) =>
+  testLoop_neg4(data array i32, isWhatWeWant i32 -> bool) =>
     for
       ix := 0, ix + 1
     while ix < data.length
@@ -79,7 +79,7 @@ looptest_negative is
       "4444"            //  ok
 
   say "testLoop_neg5: loop returns last index"
-  testLoop_neg5(data array<i32>, isWhatWeWant fun (i32) bool) =>
+  testLoop_neg5(data array i32, isWhatWeWant i32 -> bool) =>
     for
       ix := 0, ix + 1   // ok
     while ix < data.length
