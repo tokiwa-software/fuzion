@@ -3771,7 +3771,6 @@ type        : onetype ( PIPE onetype ) *
   {
     switch (current())
       {
-      case t_fun:
       case t_ref:
       case t_lparen: return true;
       default: return isNamePrefix();
@@ -3835,7 +3834,6 @@ type        : onetype ( PIPE onetype ) *
    * Parse onetype
    *
 onetype     : "ref" simpletype
-            | "fun" pTypeListOpt typeOpt
             | simpletype "->" simpletype
             | pTypeList "->" simpletype
             | pTypeList
@@ -3859,21 +3857,6 @@ typeOpt     : type
         var r = simpletype(null);
         r.setRef();
         result = r;
-      }
-    else if (skip(Token.t_fun))
-      {
-        var a = Type.NONE;
-        if (skipLParen())
-          {
-            if (current() != Token.t_rparen)
-              {
-                a = typeList();
-              }
-            match(Token.t_rparen, "funTypeArgs");
-          }
-        result = isTypePrefix()
-          ? Type.funType(pos, type(), a)
-          : Type.funType(pos, new Type("unit"), a);
       }
     else if (current() == Token.t_lparen)
       {
@@ -3934,11 +3917,6 @@ typeOpt     : type
     if (skip(Token.t_ref))
       {
         result = skipSimpletype();
-      }
-    else if (skip(Token.t_fun))
-      {
-        result = skipBracketTermWithNLs(PARENS, () -> skipTypeList(allowTypeThatIsNotExpression))
-          && !isTypePrefix() || skipType();
       }
     else
       {
