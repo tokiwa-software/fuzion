@@ -1,3 +1,6 @@
+## 2022-08-03: V0.079dev
+
+
 ## 2022-08-03: V0.078
 
 - parser
@@ -5,7 +8,8 @@
   - unified handling of indentation for blocks of statements, actual arguments,
     match and .. ? .. | .. expressions, etc.
 
-  - actual arguments may now be indented and broken into several lines as follows
+  - actual arguments may now be indented and broken into several lines as
+    follows
 
       call_with_four_args arg1 arg2 arg3 arg4
 
