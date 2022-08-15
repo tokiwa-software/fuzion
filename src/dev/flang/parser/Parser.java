@@ -3925,16 +3925,8 @@ typeOpt     : type
       }
     else if (skip(Token.t_fun))
       {
-        result = true;
-        if (skipLParen())
-          {
-            if (current() != Token.t_rparen)
-              {
-                skipTypeList();
-              }
-            result = skip(Token.t_rparen);
-          }
-        result = result && !isTypePrefix() || skipType();
+        result = skipBracketTermWithNLs(PARENS, () -> skipTypeList(allowTypeThatIsNotExpression))
+          && !isTypePrefix() || skipType();
       }
     else
       {
