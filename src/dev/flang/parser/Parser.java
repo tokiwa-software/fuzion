@@ -2226,42 +2226,45 @@ simpleterm  : bracketTerm
       {
         result = env();
       }
-    else switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
+    else
       {
-      case t_lbrace    :
-      case t_lparen    :
-      case t_lcrochet  :         result = bracketTerm();                               break;
-      case t_fun       :         result = fun();                                       break;
-      case t_numliteral: var l = skipNumLiteral();
-                         var m = l.mantissaValue();
-                         var b = l.mantissaBase();
-                         var d = l.mantissaDotAt();
-                         var e = l.exponent();
-                         var eb = l.exponentBase();
-                         var o = l._originalString;
-                         result = new NumLiteral(posObject(p1), o, b, m, d, e, eb); break;
-      case t_old       : next(); result = new Old(term()                            ); break;
-      case t_match     :         result = match();                                     break;
-      case t_for       :
-      case t_variant   :
-      case t_while     :
-      case t_do        :         result = loop();                                      break;
-      case t_if        :         result = ifstmnt();                                   break;
-      default          :
-        if (isStartedString(current()))
+        switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
           {
-            result = stringTerm(null);
-          }
-        else
-          {
-            result = callOrFeatOrThis();
-            if (result == null)
+          case t_lbrace    :
+          case t_lparen    :
+          case t_lcrochet  :         result = bracketTerm();                            break;
+          case t_fun       :         result = fun();                                    break;
+          case t_numliteral: var l = skipNumLiteral();
+                             var m = l.mantissaValue();
+                             var b = l.mantissaBase();
+                             var d = l.mantissaDotAt();
+                             var e = l.exponent();
+                             var eb = l.exponentBase();
+                             var o = l._originalString;
+                             result = new NumLiteral(posObject(p1), o, b, m, d, e, eb); break;
+          case t_old       : next(); result = new Old(term());                          break;
+          case t_match     :         result = match();                                  break;
+          case t_for       :
+          case t_variant   :
+          case t_while     :
+          case t_do        :         result = loop();                                   break;
+          case t_if        :         result = ifstmnt();                                break;
+          default          :
+            if (isStartedString(current()))
               {
-                syntaxError(p1, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
-                result = new Call(posObject(), null, Errors.ERROR_STRING);
+                result = stringTerm(null);
               }
+            else
+              {
+                result = callOrFeatOrThis();
+                if (result == null)
+                  {
+                    syntaxError(p1, "term (lbrace, lparen, lcrochet, fun, string, integer, old, match, or name)", "term");
+                    result = new Call(posObject(), null, Errors.ERROR_STRING);
+                  }
+              }
+            break;
           }
-        break;
       }
     if (!ignoredTokenBefore() && current() == Token.t_lcrochet)
       {
