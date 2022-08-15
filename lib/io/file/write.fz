@@ -1,0 +1,67 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature write
+#
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# write -- effect providing writing operations for files
+#
+private write(
+    fwh File_Write_Handler,
+    redef r effectMode.val,
+    _ unit
+  ) : writes, effect r is
+
+    # takes an array of bytes and writes all of it into the file presented in the path
+    # in case the file does not exist it creates it,
+    # in case the file exists it overwrites it,
+    # this feature works when the directories present in the path exist otherwise nothing will happen
+    #
+    write_all(path string, content array u8) =>
+        fwh.write path content
+        replace
+
+# short-hand for accessing write effect in current environment
+#
+write =>
+  writes.installDefault
+  write.env
+
+# reference to the writing operations that could take place
+#
+File_Write_Handler ref is
+    write(path string, content array u8) unit is abstract
+
+# the default file writing handler writing bytes into files via fuzion.std.fileio.write
+#
+default_file_write_handler : File_Write_Handler is
+    write(path string, content array u8) =>
+        fuzion.std.fileio.write path content
+
+# unit type feature defining features related to write effect but not requiring an
+# instance.
+#
+writes is
+    # install default effect io.file.write
+    installDefault unit is
+        if !(effects.exists io.file.write)
+            _ := write default_file_write_handler effectMode.default unit
