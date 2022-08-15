@@ -152,3 +152,20 @@ public fuzion.std.fileio is
                new_path Object,
                # the length of the internal array representing the new path
                new_path_length i32) bool is intrinsic
+
+  # creates a directory using the specified path
+  # parent directories in the path should exist otherwise, no creation will take place
+  #
+  public create_dir(
+                # the (relative or absolute) dir name, using platform specific path separators
+                path string) =>
+    arr := path.utf8.asArray
+    create_dir arr.internalArray.data arr.length
+
+  # intrinsic that returns unit type in case of success or failure during dir creation
+  #
+  private create_dir(
+                 # the internal array data representing the dir path in bytes
+                 path Object,
+                 # the length of the internal array representing the path
+                 path_length i32) unit is intrinsic
