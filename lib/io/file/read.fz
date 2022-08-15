@@ -37,7 +37,6 @@ private read(
   #
   read_all(path string) =>
     ro.read path
-    replace
 
 # short-hand for accessing read effect in current environment
 #
