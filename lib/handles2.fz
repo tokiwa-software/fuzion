@@ -160,7 +160,7 @@ handles2_(T type) => handles2 T unit unit nil effectMode.plain
 #
 handles2(T type) =>
   (handles2_type T).installDefault
-  handles2<T, unit>.env
+  (handles2 T unit).env
 
 
 # handle value created by 'handles2.new'
@@ -178,13 +178,13 @@ is
   #
   put(new_val T) is
     set get := new_val
-    handles2<T, unit>.env.replace
+    (handles2 T unit).env.replace
 
   # update value stored in this handle using f.
   #
   update(f T->T) =>
     set get := f get
-    handles2<T, unit>.env.replace
+    (handles2 T unit).env.replace
     get
 
 # unit type containing features related to handles but nor requiring an instance

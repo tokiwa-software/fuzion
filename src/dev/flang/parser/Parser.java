@@ -2214,6 +2214,7 @@ simpleterm  : bracketTerm
             | match
             | loop
             | ifstmnt
+            | env
             | callOrFeatOrThis
             ;
    */
@@ -2221,7 +2222,11 @@ simpleterm  : bracketTerm
   {
     Expr result;
     int p1 = pos();
-    switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
+    if (isEnvPrefix())    // starts with name or '('
+      {
+        result = env();
+      }
+    else switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
       {
       case t_lbrace    :
       case t_lparen    :
@@ -3332,7 +3337,6 @@ destructrSet: "set" "(" argNames ")" ":=" exprInLine
    *
 callOrFeatOrThis  : anonymous
                   | qualThis
-                  | env
                   | plainLambda
                   | call
                   ;
@@ -3342,7 +3346,6 @@ callOrFeatOrThis  : anonymous
     return
       isAnonymousPrefix()   ? anonymous()   : // starts with value/ref/:/fun/name
       isQualThisPrefix()    ? qualThis()    : // starts with name
-      isEnvPrefix()         ? env()         : // starts with name
       isPlainLambdaPrefix() ? plainLambda() : // x,y,z post result = x*y*z -> x*y*z
       isNamePrefix()        ? call(null)      // starts with name
                             : null;
@@ -3455,11 +3458,14 @@ qualThis    : name ( dot name )* dot "this"
    * Parse env
    *
 env         : simpletype dot "env"
+            | LPAREN type RPAREN dot "env"
             ;
    */
   Env env()
   {
-    var t = simpletype(null);
+    var t = current() == Token.t_lparen
+      ? bracketTermWithNLs(PARENS, "env", ()->type())
+      : simpletype(null);
     skipDot();
     var e = new Env(posObject(), t);
     match(Token.t_env, "env");
@@ -3475,7 +3481,7 @@ env         : simpletype dot "env"
    */
   boolean isEnvPrefix()
   {
-    return isNamePrefix() && fork().skipEnvPrefix();
+    return (isNamePrefix() || current() == Token.t_lparen) && fork().skipEnvPrefix();
   }
 
 
@@ -3487,7 +3493,10 @@ env         : simpletype dot "env"
    */
   boolean skipEnvPrefix()
   {
-    return skipSimpletype() && skipDot() && skip(Token.t_env);
+    return
+      (skipBracketTermWithNLs(PARENS, ()->skipType()) || skipSimpletype())
+      && skipDot()
+      && skip(Token.t_env);
   }
 
 

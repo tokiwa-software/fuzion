@@ -109,7 +109,7 @@ states(T, S type) is
 
 # short-hand for accessing state monad for given type in current environment
 #
-state_of(S type) => state<unit,S>.env
+state_of(S type) => (state unit S).env
 
 
 # short-hand for getting state monad for given type in current environment
