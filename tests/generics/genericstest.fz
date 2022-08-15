@@ -50,7 +50,7 @@ genericstest is
     print is
       // for   -- NYI: must update i in the loop prolog
       i := h
-      while (i ? Node => { true }; Nil => false)  // NYI: This screams for recursion
+      while (i ? Node => { true } | Nil => false)  // NYI: This screams for recursion
         match i
           n Node =>
               say "print el in loop: {n.el}"
@@ -61,7 +61,7 @@ genericstest is
       set result := 0
       // for   -- NYI: must update i in the loop prolog
       i := h
-      while (i ? Node => { true }; Nil => false)   // NYI: This screams for recursion
+      while (i ? Node => { true } | Nil => false)   // NYI: This screams for recursion
         match i
           n Node =>
               set result := result + 1

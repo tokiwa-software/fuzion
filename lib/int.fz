@@ -25,4 +25,4 @@
 
 # int -- signed integer values of arbitrary size
 #
-int (val i64) : integer<int> is # NYI
+int (val i64) : integer int is # NYI

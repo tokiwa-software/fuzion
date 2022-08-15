@@ -51,7 +51,7 @@ private env_vars is
 
   # intrinsic to get env var with given name
   #
-  get(s string) option<string> is
+  get(s string) option string is
     a := c_string s
     if has0 a then
       get0 a

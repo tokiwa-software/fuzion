@@ -30,6 +30,7 @@ import java.nio.file.Path;
 
 import dev.flang.ast.*;
 
+import dev.flang.util.Callable;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
 import dev.flang.util.List;
@@ -57,6 +58,14 @@ public class Parser extends Lexer
 
 
   /*----------------------------  constants  ----------------------------*/
+
+
+  /**
+   * Flag to enable old-stype generics using '<'/'>' instead of type parameters.
+   *
+   * NYI: remove support for generics using '<'/'>'
+   */
+  static boolean OLD_STYLE_GENERICS = !false;
 
 
   /**
@@ -877,7 +886,7 @@ genericList : generic  ( COMMA genericList
   List<Feature> formGens()
   {
     List<Feature> result = new List<>();
-    if (splitSkip("<"))
+    if (OLD_STYLE_GENERICS && splitSkip("<"))
       {
         if (!isOperator('>'))
           {
@@ -911,7 +920,7 @@ genericList : generic  ( COMMA genericList
    */
   FormalOrActual skipFormGensNotActualGens()
   {
-    if (splitSkip("<"))
+    if (OLD_STYLE_GENERICS && splitSkip("<"))
       {
         if (!isOperator('>'))
           {
@@ -982,10 +991,10 @@ formArgsOpt : formArgs
   {
     return
       current() != Token.t_lparen ||
-      fork().skipType(false);  // result type such as '(i32)->bool' or
-                               // '(a,b)|(c,d)|()' is parsed as resulttype, but
-                               // a type in parentheses like '(list i32)', '(a,
-                               // b i32)' is parsed as an args list.
+      fork().skipType(false, true);  // result type such as '(i32)->bool' or
+                                     // '(a,b)|(c,d)|()' is parsed as resulttype, but
+                                     // a type in parentheses like '(list i32)', '(a,
+                                     // b i32)' is parsed as an args list.
   }
 
 
@@ -1409,7 +1418,6 @@ actuals     : actualGens actualArgs
   Call call(Expr target)
   {
     SourcePosition pos = posObject();
-    var line = line();
     String n = skip(Token.t_type) ? FuzionConstants.TYPE_NAME : name();
     Call result;
     var skippedDot = false;
@@ -1430,7 +1438,7 @@ actuals     : actualGens actualArgs
         // we must check isActualGens() to distinguish the less operator in 'a < b'
         // from the actual generics in 'a<b>'.
         var g = (!isActualGens()) ? Call.NO_GENERICS : actualGens();
-        var l = actualArgs(line);
+        var l = actualArgs();
         result = new Call(pos, target, n, g, l, null);
       }
     result = callTail(skippedDot, result);
@@ -1513,20 +1521,23 @@ actualGens  : "<" typeList ">"
   List<AbstractType> actualGens()
   {
     var result = Call.NO_GENERICS;
-    splitOperator("<");
-    if (isOperator('<'))
+    if (OLD_STYLE_GENERICS)
       {
-        result = bracketTermWithNLs(ANGLES, "actualGens", () ->
-                                    {
-                                      var res = Type.NONE;
-                                      splitOperator(">");
-                                      if (!isOperator('>'))
+        splitOperator("<");
+        if (isOperator('<'))
+          {
+            result = bracketTermWithNLs(ANGLES, "actualGens", () ->
                                         {
-                                          res = typeList();
-                                        }
-                                      splitOperator(">");
-                                      return res;
-                                    });
+                                          var res = Type.NONE;
+                                          splitOperator(">");
+                                          if (!isOperator('>'))
+                                            {
+                                              res = typeList();
+                                            }
+                                          splitOperator(">");
+                                          return res;
+                                        });
+          }
       }
     return result;
   }
@@ -1558,7 +1569,7 @@ actualGens  : "<" typeList ">"
   boolean skipActualGens()
   {
     boolean result = true;
-    if (splitSkip("<"))
+    if (OLD_STYLE_GENERICS && splitSkip("<"))
       {
         if (!splitSkip(">"))
           {
@@ -1606,19 +1617,38 @@ typeList    : type ( COMMA typeList
 
 
   /**
+   * Check if the current position has typeList and skip it.
+   *
+   * @param allowTypeThatIsNotExpression false to forbid types that cannot be
+   * parsed as expressions such as lambdas types with argument types that are
+   * not just argNames.
+   *
+   * @return true iff the next token(s) form typeList, otherwise no typeList was
+   * found and the parser/lexer is at an undefined position.
+   */
+  boolean skipTypeList(boolean allowTypeThatIsNotExpression)
+  {
+    boolean result = skipType(true, allowTypeThatIsNotExpression);
+    while (skipComma())
+      {
+        result = result && skipType(true, allowTypeThatIsNotExpression);
+      }
+    return result;
+  }
+
+
+  /**
    * Parse actualArgs
    *
-   * @param line the line containing the name of the called feature
-   *
-actualArgs  : actualsList               // must be in same line as name of called feature
+actualArgs  : actualsList
             | LPAREN actualList RPAREN
             | LPAREN RPAREN
             ;
    */
-  List<Actual> actualArgs(int line)
+  List<Actual> actualArgs()
   {
     return (ignoredTokenBefore() || current() != Token.t_lparen)
-      ? actualsList(line)
+      ? actualsList()
       : bracketTermWithNLs(PARENS, "actualArgs",
                            () -> actualList(),
                            () -> new List<>());
@@ -1634,14 +1664,9 @@ actualArgs  : actualsList               // must be in same line as name of calle
    * @return true if the next symbold ends actual arguments or in!=null and the
    * next symbol is not properly indented.
    */
-  boolean endsActuals(Indentation in)
+  boolean endsActuals(boolean atMinIndent)
   {
-    return
-      isOperator('.') ||
-      ((in != null) ? currentAtMinIndent() == Token.t_indentationLimit ||
-                      endsActuals(currentNoLimit()) ||
-                      !in.ok()
-                    : endsActuals(current()));
+    return isOperator('.') || endsActuals(current(atMinIndent));
   }
 
 
@@ -1726,46 +1751,22 @@ actualList  : actual ( COMMA actualList
   /**
    * Parse space separated actual arguments
    *
-   * @param line the line containing the name of the called feature
-   *
 actualsList : actualSp actualsList
             |
             ;
    */
-  List<Actual> actualsList(int line)
+  List<Actual> actualsList()
   {
-    Indentation in = null;
-    if (line() != line && current() != Token.t_lineLimit)
-      {
-        line = -1;
-        in = new Indentation();
-      }
-    var oldLine = sameLine(line);
     List<Actual> result = Call.NO_PARENTHESES_A;
-    if (ignoredTokenBefore() && !endsActuals(in))
+    if (ignoredTokenBefore() && !endsActuals(false))
       {
-        result = new List<>(actualSpace());
-        var done = false;
-        while (!done)
+        var in = new Indentation();
+        result = new List<>();
+        while (!endsActuals(!result.isEmpty()) && in.ok())
           {
-            if (in == null && line() != line && oldLine == -1)
-              { // indentation starts after the first argument:
-                line = -1;
-                sameLine(-1);
-                in = new Indentation();
-              }
-            done = endsActuals(in);
-            if (!done)
-              {
-                var p = pos();
-                result.add(actualSpace());
-                done = p == pos(); /* make sure we do not get stuck on a syntax error */
-              }
+            result.add(actualSpace());
+            in.next();
           }
-      }
-    sameLine(oldLine);
-    if (in != null)
-      {
         in.end();
       }
     return result;
@@ -1790,7 +1791,7 @@ bracketTerm : brblock
     var c = current();
     switch (c)
       {
-      case t_lbrace  : return brblock(false);
+      case t_lbrace  : return brblock();
       case t_lparen  : return klammer();
       case t_lcrochet: return inlineArray();
       default: throw new Error("Unexpected case: "+c);
@@ -1824,26 +1825,40 @@ actual   : expr | type
   Actual actual()
   {
     Actual result;
-    var f = fork();
-    var t = f.skipType() ? fork().type() : null;
-    var e = expr();
-    if (t != null && f.pos() == pos())
+    boolean hasType = fork().skipType();
+    // instead of implementing 'isExpr()', which would be complex, we use
+    // 'skipType' with second argument set to false to check if we can parse
+    // an expression.
+    boolean hasExpr = (!hasType ||
+                       fork().skipType(true,
+                                       false  /* disallow types that cannot be parsed as expression */));
+    AbstractType t;
+    Expr e;
+    if (hasExpr && hasType)
       {
-        if (posObject().show().indexOf("ex360.fz:10")>=0)
-          {
-            System.out.println("got type and expression: "+t+" AND "+e+" at "+posObject().show());
-          }
-        result = new Actual(t, e);
+        var f = fork();
+        var t0 = f.type();
+        e = expr();
+        // we might have an expr 'a.x+d(4)' while the type parsed is
+        // just 'a.x', so eagerly take the expr in this case:
+        t = f.pos() == pos() ? t0 : null;
+        if (CHECKS) check
+          (f.pos() <= pos());
+      }
+    else if (hasExpr)
+      {
+        t = null;
+        e = expr();
       }
     else
       {
-        if (posObject().show().indexOf("ex360.fz:10")>=0)
-          {
-            System.out.println("got only expression: "+e+" at "+posObject().show());
-          }
-        result = new Actual(null, e);
+        if (CHECKS) check
+          (hasType);
+
+        t = type();
+        e = null;
       }
-    return result;
+    return new Actual(t, e);
   }
 
 
@@ -1907,7 +1922,7 @@ exprAtMinIndent : block
   Expr exprAtMinIndent()
   {
     return
-      currentAtMinIndent() == Token.t_lbrace ? block(true)
+      currentAtMinIndent() == Token.t_lbrace ? block()
                                              : exprInLine();
   }
 
@@ -1917,7 +1932,7 @@ exprAtMinIndent : block
    *
 expr        : opExpr
               ( QUESTION expr  COLON expr
-              | QUESTION cases
+              | QUESTION casesBars
               |
               )
             ;
@@ -1926,19 +1941,19 @@ expr        : opExpr
   {
     Expr result = opExpr();
     SourcePosition pos = posObject();
-    if (skip('?'))
+    var f0 = fork();
+    if (f0.skip('?') && f0.isCasesAndNotExpr())
       {
-        if (isCasesAndNotExpr())
-          {
-            result = new Match(pos, result, cases(false));
-          }
-        else
-          {
-            Expr f = expr();
-            matchOperator(":", "expr of the form >>a ? b : c<<");
-            Expr g = expr();
-            result = new Call(pos, result, "ternary ? :", null, null, new List<Expr>(f, g));
-          }
+        var i = new Indentation();
+        skip('?');
+        result = new Match(pos, result, casesBars(i));
+      }
+    else if (skip('?'))
+      {
+        Expr f = expr();
+        matchOperator(":", "expr of the form >>a ? b : c<<");
+        Expr g = expr();
+        result = new Call(pos, result, "ternary ? :", null, null, new List<Expr>(f, g));
       }
     return result;
   }
@@ -2054,6 +2069,21 @@ argNamesOpt : argNames
 
 
   /**
+   * Check if the current position can be parsed as an argNamesOpt and skip it if
+   * this is the case.
+   *
+   * @return true iff an argNamesOpt was found and skipped, otherwise no argNamesOpt
+   * was found and the parser/lexer is at an undefined position.
+   */
+  boolean skipArgNamesOpt()
+  {
+    return (current() == Token.t_ident)
+      ? skipArgNames()
+      : true;
+  }
+
+
+  /**
    * Parse a simple lambda expression, i.e., one without parentheses around the
    * arguments.
    *
@@ -2066,7 +2096,7 @@ lambda      : contract "->" block
     var i = new List<AbstractCall>(); // inherits() is not supported for lambda, do we need it?
     Contract   c = contract();
     matchOperator("->", "lambda");
-    return new Function(pos, n, i, c, (Expr) block(true));
+    return new Function(pos, n, i, c, (Expr) block());
   }
 
 
@@ -2268,7 +2298,7 @@ stringTermB : '}any chars&quot;'
             next();
             if (isPartialString(t))
               {
-                result = stringTerm(concatString(posObject(), result, block(false)));
+                result = stringTerm(concatString(posObject(), result, block()));
               }
           }
         else
@@ -2397,7 +2427,7 @@ match       : "match" exprInLine BRACEL cases BRACER
         boolean gotLBrace = skip(true, Token.t_lbrace);
         var start = posObject();
         var cpos = posObject();
-        var c = cases(true);
+        var c = cases();
         var end = posObject();
         if (gotLBrace)
           {
@@ -2416,63 +2446,63 @@ match       : "match" exprInLine BRACEL cases BRACER
   /**
    * Parse cases
    *
-cases       : caze maybecomma ( '|' casesBars   // NYI: grammar not correct yet.
-                              |     casesNoBars
-                              )
+cases       : '|' casesBars
+            | casesNoBars
             ;
-casesBars   : caze maybecomma ( '|' casesBars
-                              |
-                              )
-            ;
-caseNoBars  : caze maybecomma ( casesNoBars
-                              |
-                              )
-            ;
-# NYI: grammar not correct yet.
-casesNoBars : caseNoBars caseNoBars
-            | caseNoBars
-            ;
-maybecomma  : comma
+casesNoBars : caze semiOrFlatLF casesNoBars
             |
             ;
    */
-  List<AbstractCase> cases(boolean indent)
+  List<AbstractCase> cases()
+  {
+    var in = new Indentation();
+    List<AbstractCase> result;
+    if (skip('|'))
+      {
+        result = casesBars(in);
+      }
+    else
+      {
+        result = new List<AbstractCase>();
+        while (!endOfStmnts() && in.ok())
+          {
+            result.add(caze());
+            if (!endOfStmnts())
+              {
+                semiOrFlatLF();
+              }
+            in.next();
+          }
+        in.end();
+      }
+    return result;
+  }
+
+
+  /**
+   * Parse casesBars
+   *
+   * @param in the Indentation instance created at the position of '?' or at
+   * current position (for a 'match'-statement).
+   *
+casesBars   : caze ( '|' casesBars
+                   |
+                   )
+            ;
+   */
+  List<AbstractCase> casesBars(Indentation in)
   {
     List<AbstractCase> result = new List<>();
-    var in = indent ? new Indentation() : (Indentation) null;
-    var sl = -1;
-    var usesBars = false;
-    while (!endOfStmnts() && (in == null || in.ok()))
+    while (!endOfStmnts() && in.ok())
       {
-        if (result.size() == 0 && indent)
-          {
-            usesBars = skip('|');
-          }
-        else if (result.size() == 1 && !indent)
-          {
-            sl = sameLine(-1);
-            in = new Indentation();
-            usesBars = skip('|');
-          }
-        else if (usesBars)
+        if (!result.isEmpty())
           {
             matchOperator("|", "cases");
           }
         result.add(caze());
-        skipComma();
-        if (!endOfStmnts())
-          {
-            semiOrFlatLF();
-          }
+        in.next();
       }
-    if (in != null)
-      {
-        in.end();
-      }
-    if (sl != -1)
-      {
-        sameLine(sl);
-      }
+    in.end();
     return result;
   }
 
@@ -2538,7 +2568,7 @@ caseBlock   : ARROW          // if followed by '|'
       }
     else
       {
-        result = block(true);
+        result = block();
       }
     return result;
   }
@@ -2607,7 +2637,7 @@ block       : stmnts
             | brblock
             ;
    */
-  Block block(boolean mayBeAtMinIndent)
+  Block block()
   {
     SourcePosition pos1 = posObject();
     if (current() == Token.t_semicolon)
@@ -2624,17 +2654,16 @@ block       : stmnts
         //
         return new Block(pos1, pos1, new List<>());
       }
-    else if (current(mayBeAtMinIndent) != Token.t_lbrace)
+    else if (currentAtMinIndent() != Token.t_lbrace)
       {
-        return relaxLineAndSpaceLimit(() -> {
-            var l = stmnts();
-            var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
-            return new Block(pos1, pos2, l);
-          });
+        var l = stmnts();
+        var pos2 = l.size() > 0 ? l.getLast().pos() : pos1;
+        return new Block(pos1, pos2, l);
       }
     else
       {
-        return brblock(mayBeAtMinIndent);
+        var startsAtNewLine = lineNum(lastPos()) < line();
+        return brblock();
       }
   }
 
@@ -2645,10 +2674,10 @@ block       : stmnts
 brblock     : BRACEL stmnts BRACER
             ;
    */
-  Block brblock(boolean mayBeAtMinIndent)
+  Block brblock()
   {
     SourcePosition pos1 = posObject();
-    return bracketTermWithNLs(mayBeAtMinIndent, BRACES, "block",
+    return bracketTermWithNLs(BRACES, "block",
                               () -> {
                                 var l = stmnts();
                                 var pos2 = posObject();
@@ -2663,23 +2692,28 @@ brblock     : BRACEL stmnts BRACER
    */
   boolean endOfStmnts()
   {
-    return
-      currentAtMinIndent() == Token.t_indentationLimit ||
-      currentNoLimit() == Token.t_rbrace   ||
-      currentNoLimit() == Token.t_rparen   ||
-      currentNoLimit() == Token.t_rcrochet ||
-      currentNoLimit() == Token.t_until    ||
-      currentNoLimit() == Token.t_else     ||
-      currentNoLimit() == Token.t_eof      ||
-      isContinuedString(currentNoLimit());
+    return switch (currentAtMinIndent())
+      {
+      case
+        t_indentationLimit,
+        t_lineLimit,
+        t_spaceLimit,
+        t_rbrace,
+        t_rparen,
+        t_rcrochet,
+        t_until,
+        t_else,
+        t_eof -> true;
+      default -> isContinuedString(currentNoLimit());
+      };
   }
 
 
   /**
    * Parse stmnts
    *
-stmnts      :
-            | stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
+stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
+            |
             ;
    */
   List<Stmnt> stmnts()
@@ -2694,7 +2728,7 @@ stmnts      :
           if (!l.isEmpty() && l.getLast() instanceof Feature f && f.impl() == Impl.FIELD)
             { // Let's be nice in the common case of a forgotten 'is'
               syntaxError(pos(), "'is' followed by routine code", "stmtns");
-              block(true); // skip the code of the routine.
+              block(); // skip the code of the routine.
               result = true;
             }
           return result;
@@ -2715,6 +2749,7 @@ stmnts      :
           {
             semiOrFlatLF();
           }
+        in.next();
       }
     in.end();
     return l;
@@ -2733,22 +2768,60 @@ stmnts      :
    */
   class Indentation
   {
-    int lastLineNum;    // line number of last call to ok, -1 at beginning
-    int firstIndentPos; // source position of the first element
-    int firstIndent;    // indentation of the first element
-    int oldIndentPos;   // source position of the first element of outer indentation
-    int oldIndent;      // indentation outside of this block
-    int pos;            // pos of last call to ok(), -1 at beginning
+    boolean mayIndent;
+    int oldSameLine;
+    int firstPos;           // source position of the first element
+    int firstIndent  = -1;  // indentation of the first element,              -1 if indentation has not started (yet)
+    int oldIndentPos = -1;  // original minIndent()  to be restored by end(), -1 if indentation has not started (yet)
+    int oldEAS       = -1;  // original endAtSpace() to be restored by end(), -1 if indentation has not started (yet)
+    int okLineNum    = -1;  // line number of last call to ok(), -1 at beginning
+    int okPos        = -1;  // position    of last call to ok(), -1 at beginning
 
     Indentation()
     {
-      lastLineNum = -1;
-      firstIndentPos = pos();
-      firstIndent = indent(firstIndentPos);
-      oldIndentPos = minIndent(firstIndentPos);
-      oldIndent = indent(oldIndentPos);
-      pos = -1;
+      mayIndent      = !isRestrictedToLine();
+      firstPos       = pos();
+      if (lastPos() >= 0 && lineNum(lastPos()) == line())  // code starts without LF, so set line limit to find end of line in next()
+        {
+          oldSameLine    = sameLine(line());
+          next();
+        }
+      else
+        {
+          oldSameLine    = sameLine(-1);
+          startIndent();
+        }
     }
+
+    /**
+     * Check if a previously not indented line will be indented now. This is the
+     * case for code like
+     *
+     *    for i := 0, i+1
+     *        x in arr
+     *
+     * where the first line will be parsed as a 'sameLine', while the second
+     * will be turned into an indented line.
+     */
+    void next()
+    {
+      if (mayIndent && current() == Token.t_lineLimit && indent(pos()) >= indent(firstPos))
+        {
+          startIndent();
+        }
+    }
+
+    /**
+     * start indentation, used internally by constructor and next().
+     */
+    private void startIndent()
+    {
+      sameLine(-1);
+      firstIndent  = indent(firstPos);
+      oldEAS       = endAtSpace(Integer.MAX_VALUE);
+      oldIndentPos = minIndent(pos());
+    }
+
 
     /**
      * Is indentation still ok, i.e, we are still in the same line or in a new
@@ -2757,26 +2830,29 @@ stmnts      :
      */
     boolean ok()
     {
-      var lastPos = pos;
-      pos = pos();
-      var progress = lastPos < pos;
-      var indented = firstIndent > oldIndent;
-      var ok = indented && progress;
+      var lastPos = okPos;
+      okPos = pos();
+      var progress = lastPos < okPos;
       if (CHECKS) check
         (Errors.count() > 0 || progress);
-      if (ok && lastLineNum != lineNum(pos))
-        { // a new line, so check its indentation:
-          var curIndent = indent(pos);
-          // NYI: We currently do not check if there are differences in
-          // whitespace, e.g. "\t\t" is a very different indentation than
-          // "\ \ ", even though both have a length of 2 bytes.
-          if (firstIndent < curIndent && !handleSurpriseIndentation() ||
-              firstIndent > curIndent)
-            {
-              Errors.indentationProblemEncountered(posObject(), posObject(firstIndentPos), parserDetail("stmnts"));
+      var ok = progress;
+      if (ok && firstIndent != -1)
+        {
+          ok = firstIndent > indent(oldIndentPos); // new indentation must be deeper
+          if (ok && okLineNum != lineNum(okPos))
+            { // a new line, so check its indentation:
+              var curIndent = indent(okPos);
+              // NYI: We currently do not check if there are differences in
+              // whitespace, e.g. "\t\t" is a very different indentation than
+              // "\ \ ", even though both have a length of 2 bytes.
+              if (firstIndent < curIndent && !handleSurpriseIndentation() ||
+                  firstIndent > curIndent)
+                {
+                  Errors.indentationProblemEncountered(posObject(), posObject(firstPos), parserDetail("stmnts"));
+                }
+              minIndent(okPos);
+              okLineNum = lineNum(okPos);
             }
-          minIndent(pos);
-          lastLineNum = lineNum(pos);
         }
       return ok;
     }
@@ -2786,7 +2862,12 @@ stmnts      :
      */
     void end()
     {
-      minIndent(oldIndentPos);
+      sameLine(oldSameLine);
+      if (firstIndent != -1)
+        {
+          endAtSpace(oldEAS);
+          minIndent(oldIndentPos);
+        }
     }
 
     /**
@@ -2828,7 +2909,7 @@ stmnt       : feature
       isCheckPrefix()       ? checkstmnt()  :
       isAssignPrefix()      ? assign()      :
       isDestructurePrefix() ? destructure() :
-      isFeaturePrefix()     ? feature()     : exprInLine();
+      isFeaturePrefix()     ? feature()     : expr();
   }
 
 
@@ -2863,7 +2944,7 @@ loopEpilog  : "until" exprAtMinIndent thenPart elseBlockOpt
         var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()      : null;
                                                     var i   = hasFor || v != null ? invariant(true)   : null;
         var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprAtMinIndent() : null;
-        var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block(true)       : null;
+        var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()       : null;
         var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprAtMinIndent() : null;
                                                     var ub  = hasUntil            ? thenPart(true)    : null;
                                                     var els1 =               fork().elseBlockOpt();
@@ -2893,6 +2974,7 @@ indexVars   : "for" indexVar (semi indexVars)
       {
         indexVar(indexVars, nextValues);
         semi();
+        in.next();
       }
     in.end();
   }
@@ -3041,7 +3123,7 @@ thenPart    : "then" block
   {
     var p = pos();
     skip(Token.t_then);
-    var result = block(true);
+    var result = block();
     return emptyBlockIfNoBlockPresent && p == pos() ? null : result;
   }
 
@@ -3068,7 +3150,7 @@ elseBlock   : "else" ( ifstmnt
           }
         else
           {
-            result = block(true);
+            result = block();
           }
       }
 
@@ -3278,13 +3360,15 @@ anonymous   : returnType
    */
   Expr anonymous()
   {
+    var sl = sameLine(line());
     SourcePosition pos = posObject();
     ReturnType r = returnType();
     var        i = inherit();
     Contract   c = contract();
-    Block      b = block(false);
+    Block      b = block();
     var f = Feature.anonymous(pos, r, i, c, b);
     var ca = new Call(pos, f);
+    sameLine(sl);
     return ca;
     // NYI: This would simplify the code (in Feature.findFieldDefInScope that
     // has special handling for c.calledFeature().isAnonymousInnerFeature()) but
@@ -3552,9 +3636,9 @@ implRout    : block
     if      (startRoutine    ) { result = skip(Token.t_abstract             ) ? Impl.ABSTRACT              :
                                           skip(Token.t_intrinsic            ) ? Impl.INTRINSIC             :
                                           skip(Token.t_intrinsic_constructor) ? Impl.INTRINSIC_CONSTRUCTOR :
-                                          new Impl(pos, block(true)      , Impl.Kind.Routine   ); }
-    else if (skip("=>")      ) { result = new Impl(pos, block(true)      , Impl.Kind.RoutineDef); }
-    else if (skip(Token.t_of)) { result = new Impl(pos, block(true)      , Impl.Kind.Of        ); }
+                                          new Impl(pos, block()      , Impl.Kind.Routine   ); }
+    else if (skip("=>")      ) { result = new Impl(pos, block()      , Impl.Kind.RoutineDef); }
+    else if (skip(Token.t_of)) { result = new Impl(pos, block()      , Impl.Kind.Of        ); }
     else if (skipFullStop()  ) { result = new Impl(pos, new Block(pos, pos, new List<>()), Impl.Kind.Routine); }
     else
       {
@@ -3703,7 +3787,7 @@ type        : onetype ( PIPE onetype ) *
    */
   boolean skipType()
   {
-    return skipType(true);
+    return skipType(true, true);
   }
 
 
@@ -3713,18 +3797,22 @@ type        : onetype ( PIPE onetype ) *
    * @param allowTypeInParentheses true iff the type may be surrounded by
    * parentheses, i.e., '(i32, list bool)', '(stack f64)', '()'.
    *
+   * @param allowTypeThatIsNotExpression false to forbid types that cannot be
+   * parsed as expressions such as lambdas types with argument types that are
+   * not just argNames.
+   *
    * @return true iff a type was found and skipped, otherwise no type was found
    * and the parser/lexer is at an undefined position.
    */
-  boolean skipType(boolean allowTypeInParentheses)
+  boolean skipType(boolean allowTypeInParentheses, boolean allowTypeThatIsNotExpression)
   { // we forbide tuples like '(a,b)', '(a)', '()', but we allow lambdas '(a,b)->c' and choice
     // types '(a,b) | (d,e)'
 
-    var hasForbiddenParentheses = allowTypeInParentheses ? false : !fork().skipOneType(false);
-    var result = skipOneType(true);
+    var hasForbiddenParentheses = allowTypeInParentheses ? false : !fork().skipOneType(false, allowTypeThatIsNotExpression);
+    var result = skipOneType(true, allowTypeThatIsNotExpression);
     while (result && skip('|'))
       {
-        result = skipOneType();
+        result = skipOneType(true, allowTypeThatIsNotExpression);
         hasForbiddenParentheses = false;
       }
     return result && !hasForbiddenParentheses;
@@ -3810,7 +3898,7 @@ typeOpt     : type
    * found and the parser/lexer is at an undefined position.
    */
   boolean skipOneType() {
-    return skipOneType(true);
+    return skipOneType(true, true);
   }
 
 
@@ -3820,10 +3908,15 @@ typeOpt     : type
    * @param allowTypeInParentheses true iff the type may be surrounded by
    * parentheses, i.e., '(i32, list bool)', '(stack f64)', '()'.
    *
+   * @param allowTypeThatIsNotExpression false to forbid types that cannot be
+   * parsed as expressions such as lambdas types with argument types that are
+   * not just argNames.
+   *
    * @return true iff the next token(s) is a onetype, otherwise no onetype was
    * found and the parser/lexer is at an undefined position.
    */
-  boolean skipOneType(boolean allowTypeInParentheses)
+  boolean skipOneType(boolean allowTypeInParentheses,
+                      boolean allowTypeThatIsNotExpression)
   {
     boolean result;
     if (skip(Token.t_ref))
@@ -3846,12 +3939,20 @@ typeOpt     : type
     else
       {
         var f = fork();
-        if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList()))
+        var f2 = fork();
+        if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList(allowTypeThatIsNotExpression)))
           {
-            result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList()) && allowTypeInParentheses;
+            result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList(allowTypeThatIsNotExpression)) && allowTypeInParentheses;
             if (skip("->"))
               {
-                result = skipType();
+                result =
+                  // an lambda-expression would allow only arg names
+                  // '(x,y)->..', while a lambda-type can have arbitrary types
+                  // '(list bool, io.file.buffer) -> bool'.
+                  (allowTypeThatIsNotExpression ||
+                   f2.skipBracketTermWithNLs(PARENS,
+                                             () -> f2.current() == Token.t_rparen || f2.skipArgNamesOpt())) &&
+                  skipType();
               }
           }
         else
@@ -3920,8 +4021,10 @@ typeTail    : dot simpletype
    */
   boolean skipSimpletype()
   {
-    boolean result = false;
-    return skipName() && skipActualGens() && skipTypePars() && (isDotEnvOrType() || !skipDot() || skipSimpletype());
+    return
+      skipName() &&
+      (OLD_STYLE_GENERICS && fork().splitSkip("<") ? skipActualGens() : skipTypePars()) &&
+      (isDotEnvOrType() || !skipDot() || skipSimpletype());
   }
 
 

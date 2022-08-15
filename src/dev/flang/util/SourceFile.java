@@ -552,29 +552,20 @@ public class SourceFile extends ANY
   public boolean isNewLine(int lastCodePoint, int curCodePoint)
   {
     // line break, taken from https://en.wikipedia.org/wiki/Newline#Unicode
-    boolean result = false;
-
-    switch (lastCodePoint)
+    return switch (lastCodePoint)
       {
-      case CR:
-        if (curCodePoint == LF)
-          {
-            break;
-          }
-        // fall through
-      case LF:
-      case VT:
-      case FF:
-      case NEL:
-      case LS:
-      case PF:
-      case BEGINNING_OF_FILE:
-        result = curCodePoint != END_OF_FILE;
-        break;
-      default:
-        break;
-      }
-    return result;
+      case
+        CR -> curCodePoint == LF;
+      case
+        LF,
+        VT,
+        FF,
+        NEL,
+        LS,
+        PF,
+        BEGINNING_OF_FILE -> true;
+      default -> false;
+      };
   }
 
 

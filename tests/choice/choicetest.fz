@@ -50,9 +50,9 @@ choicetest is
   is
     value_in_cents() =>
       (Coin.this ? Penny   => 1
-                   Nickel  => 5
-                   Dime    => 10
-                   Quarter => 25)
+                 | Nickel  => 5
+                 | Dime    => 10
+                 | Quarter => 25)
 
   value_in_cents(c Coin) =>
     match c

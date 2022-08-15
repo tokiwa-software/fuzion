@@ -59,7 +59,7 @@ is
   #
   # NYI: uses type parameter T only to simplify C backend
   #
-  private abortable<T: Function<unit>>(f T) unit is intrinsic
+  private abortable(T (Function unit).type, f T) unit is intrinsic
 
   # replace effect in the current context by this and abort current execution
   private abort void is intrinsic
@@ -69,8 +69,8 @@ is
 
   # execute the code of 'f' in the context of this effect
   #
-  private run<R>(f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effecs' uses DFA */)->R) R is
-    res option<R> := nil
+  private run(R type, f () -> R, def (unit /* NYI: unit type only to distingish 'f' and 'def' in static analysis, remove once 'fz -effecs' uses DFA */)->R) R is
+    res option R := nil
     cf := effect_call f
     abortable cf
     match cf.res
@@ -104,15 +104,15 @@ is
 
 # helper instance for effect.aboratable to wrap call to f() into a ()->unit
 #
-private effect_call(redef R type, f () -> R) ref : Function<unit> is
-  res option<R> := nil
+private effect_call(redef R type, f () -> R) ref : Function unit is
+  res option R := nil
   call =>
     set res := f()
 
 effects is
 
   # has an effect of the given type been installed?
-  exists<E> bool is intrinsic
+  exists(E type) bool is intrinsic
 
 
 # effect mode is an enum that determines how an instance of effect is used

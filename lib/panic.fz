@@ -67,7 +67,7 @@ panicProvider ref is
 panic_type is
 
   installDefault is
-    if !(effects.exists<panic>)
+    if !effects.exists panic
       _ := panic defaultPanicProvider effectMode.default
 
   # default panic provider using io.err and exit with return code 1

@@ -1531,7 +1531,9 @@ public class Feature extends AbstractFeature implements Stmnt
 
     for (var t : choiceGenerics())
       {
-        if (!t.isRef())
+        if (CHECKS) check
+          (Errors.count() > 0 || t != null);
+        if (t != null && !t.isRef())
           {
             if (t == thisType())
               {
@@ -2212,7 +2214,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * After type resolution, resultyType returns the result type of this
+   * After type resolution, resultType returns the result type of this
    * feature using the formal generic argument.
    *
    * @return the result type, t_ERROR in case of an error. Never null.

@@ -25,4 +25,4 @@
 
 # uint -- unsigned integer values of arbitrary size
 #
-uint() : integer<uint> is # NYI
+uint() : integer uint is # NYI

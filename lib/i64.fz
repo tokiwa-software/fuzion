@@ -25,7 +25,7 @@
 
 # i64 -- 64-bit signed integer values
 #
-i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
+i64(val i64) : wrappingInteger i64, hasInterval i64, i64s is
 
   redef thiz => i64.this.val
   redef orderedThis => i64.this.val
@@ -184,7 +184,7 @@ i64(val i64) : wrappingInteger<i64>, hasInterval<i64>, i64s is
 # i64s -- unit type defining features related to i64 but not requiring an
 # instance
 #
-i64s : wrappingIntegers<i64> is
+i64s : wrappingIntegers i64 is
 
   redef name => "i64"
 

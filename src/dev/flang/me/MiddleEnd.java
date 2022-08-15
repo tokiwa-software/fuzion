@@ -323,7 +323,13 @@ public class MiddleEnd extends ANY
               {
                 AbstractFeature f = t.featureOfType();
                 markUsed(f, t);  // NYI: needed? If the actual generic type is not called anywhere, maybe it can go
-                markUsed(f.typeFeature(), t);
+                if (CHECKS) check
+                  (Errors.count() > 0 || f.hasTypeFeature());
+
+                if (f.hasTypeFeature())
+                  {
+                    markUsed(f.typeFeature(), t);
+                  }
               }
           }
       }

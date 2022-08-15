@@ -300,8 +300,11 @@ public class Case extends AbstractCase
       (!hasErrors || Errors.count() > 0);
     for (var cg : cgs)
       {
-        if (inferGenerics  && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
-            !inferGenerics && t.compareTo(cg) == 0                    /* match exactly */ )
+        if (CHECKS) check
+          (Errors.count() > 0 || cg != null);
+        if (cg != null &&
+            (inferGenerics  && t.featureOfType() == cg.featureOfType() /* match feature, take generics from cg */ ||
+             !inferGenerics && t.compareTo(cg) == 0                    /* match exactly */ ))
           {
             t = cg;
             hasErrors = hasErrors || t.containsError();
