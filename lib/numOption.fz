@@ -29,9 +29,9 @@
 # value: nil.  Any operation on nil will result in nil for a
 # numeric result or false for a boolean result.
 #
-numOption<T: numeric<T>> :
-  choice<T, nil>,
-  monad<T, numOption<T>>
+numOption(T (numeric T).type) :
+  choice T nil,
+  monad T (numOption T)
 is
 
   # Does this option contain a value of type T?
@@ -69,14 +69,14 @@ is
 
 
   # monadic operator
-  redef infix >>= (f T -> numOption<T>) => numOption.this.bind<T>(f)
+  redef infix >>= (f T -> numOption T) => numOption.this.bind T f
 
 
   # monadic operator
   #
   # Same as non-generic >>=, but also maps to a different type B.
   #
-  bind <B> (f T -> numOption<B>) numOption<B> is
+  bind(B type, f T -> numOption B) numOption B is
     numOption.this ? v T => f(v)
                    | nil => nil
 
@@ -88,41 +88,41 @@ is
 
 
   # basic prefix operations
-  prefix +? numOption<T> is numOption.this >>= v -> +v
-  prefix -? numOption<T> is numOption.this >>= v -> -?v
+  prefix +? numOption T is numOption.this >>= v -> +v
+  prefix -? numOption T is numOption.this >>= v -> -?v
 
   # basic infix operations
-  infix +? (other numOption<T>) numOption<T> is numOption.this >>= v -> other >>= w -> v +? w
-  infix -? (other numOption<T>) numOption<T> is numOption.this >>= v -> other >>= w -> v -? w
-  infix *? (other numOption<T>) numOption<T> is numOption.this >>= v -> other >>= w -> v *? w
-  infix **?(other numOption<T>) numOption<T> is numOption.this >>= v -> other >>= w -> v **? w
-  infix /? (other numOption<T>) numOption<T>
+  infix +? (other numOption T) numOption T is numOption.this >>= v -> other >>= w -> v +? w
+  infix -? (other numOption T) numOption T is numOption.this >>= v -> other >>= w -> v -? w
+  infix *? (other numOption T) numOption T is numOption.this >>= v -> other >>= w -> v *? w
+  infix **?(other numOption T) numOption T is numOption.this >>= v -> other >>= w -> v **? w
+  infix /? (other numOption T) numOption T
     pre
       safety: !other.isZero
   is
     numOption.this >>= v -> other >>= w -> v / w
 
-  infix %? (other numOption<T>) numOption<T>
+  infix %? (other numOption T) numOption T
     pre
       safety: !other.isZero
   is
     numOption.this >>= v -> other >>= w -> v % w
 
   # comparison
-  infix ==? (other numOption<T>) bool is numOption.this >>? v -> other >>? w -> v == w
-  infix !=? (other numOption<T>) bool is numOption.this >>? v -> other >>? w -> v != w
-  infix <?  (other numOption<T>) bool is numOption.this >>? v -> other >>? w -> v <  w
-  infix <=? (other numOption<T>) bool is numOption.this >>? v -> other >>? w -> v <= w
-  infix >?  (other numOption<T>) bool is numOption.this >>? v -> other >>? w -> v >  w
-  infix >=? (other numOption<T>) bool is numOption.this >>? v -> other >>? w -> v >= w
+  infix ==? (other numOption T) bool is numOption.this >>? v -> other >>? w -> v == w
+  infix !=? (other numOption T) bool is numOption.this >>? v -> other >>? w -> v != w
+  infix <?  (other numOption T) bool is numOption.this >>? v -> other >>? w -> v <  w
+  infix <=? (other numOption T) bool is numOption.this >>? v -> other >>? w -> v <= w
+  infix >?  (other numOption T) bool is numOption.this >>? v -> other >>? w -> v >  w
+  infix >=? (other numOption T) bool is numOption.this >>? v -> other >>? w -> v >= w
 
   isZero => sign ==? 0
 
-  sign numOption<i32> is
+  sign numOption i32 is
     numOption.this ? v T => v.sign
                    | nil => nil
 
-  abs numOption<T> is
+  abs numOption T is
     numOption.this >>= v -> if v.sign >= 0 v else -?v
 
   redef asString string is
@@ -141,12 +141,12 @@ is
 #
 #   o numOption<TypeOfX> := x
 #
-numOption<T> (o numOption<T>) => o
+numOption(T (numeric T).type, o numOption T) => o
 
 
 # type related to numOption declaring features not requiring an instance of numOption
 #
-numOptions<T: numeric<T>> : monads<T, numOption<T>> is
+numOptions(T (numeric T).type) : monads T (numOption T) is
 
 
   # return function

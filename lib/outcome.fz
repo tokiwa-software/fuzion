@@ -31,25 +31,25 @@
 # Several error conditions are needed if there are several very different
 # reasons for an operation to fail, e.g.
 #
-#   getData (u User, t Type) outcome<data, IOError, PermissionError> is
+#   getData (u User, t Type) outcome data IOError PermissionError is
 #     if u.allowedToAcces T
 #       (readFile t.fileName)?
 #     else
 #       PermissionError u, t
 #
-#   readFile t Type outcome<data, IOError> is
+#   readFile t Type outcome data IOError is
 #     [..]
 #
-# Note that 'outcome<data, IOError>' is not assignment compatible with
-# 'outcome<data, IOError, PermissionError>', it has to be unwrapped first.
+# Note that 'outcome data IOError' is not assignment compatible with
+# 'outcome data IOError PermissionError', it has to be unwrapped first.
 # This unwrapping, however, requires very little boilerplate, it is done
 # using the '?' on the result of the call to 'readFile': This unwraps
-# 'outcome<data, IOError>' into 'IOError', which would be returned abruptly,
+# 'outcome data IOError' into 'IOError', which would be returned abruptly,
 # and 'data', which would be returned normally. Both are assignment
-# compatible to  'outcome<data, IOError, PermissionError>', so everything
+# compatible to  'outcome data IOError PermissionError', so everything
 # is fine.
 #
-outcome<T> : choice<T, error /* ...  NYI: this should be open generic! */> is
+outcome(T type) : choice T error /* ...  NYI: this should be open generic! */ is
 
   # Does this outcome contain a value of type T?
   #
@@ -125,6 +125,6 @@ outcome<T> : choice<T, error /* ...  NYI: this should be open generic! */> is
 #
 # instead of
 #
-#   o outcome<TypeOfX> := x
+#   o outcome TypeOfX := x
 #
-outcome<T> (o outcome<T>) => o
+outcome(T type, o outcome T) => o

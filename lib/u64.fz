@@ -25,7 +25,7 @@
 
 # u64 -- 64-bit unsigned integer values
 #
-u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
+u64(val u64) : wrappingInteger u64, hasInterval u64, u64s is
 
   redef thiz => u64.this.val
   redef orderedThis => u64.this.val
@@ -198,7 +198,7 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
 # u64s -- unit type defining features related to u64 but not requiring an
 # instance
 #
-u64s : wrappingIntegers<u64> is
+u64s : wrappingIntegers u64 is
 
   redef name => "u64"
 

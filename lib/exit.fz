@@ -75,7 +75,7 @@ exitHandler ref is
 exit_type is
 
   installDefault is
-    if !(effects.exists<exit>)
+    if !effects.exists exit
       _ := exit defaultExitHandler effectMode.default unit
 
   # default exit handler using io.err and exit with return code 1

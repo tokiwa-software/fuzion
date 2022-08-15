@@ -36,8 +36,8 @@ marray
    length i32,
 
    # contents of the marray
-   private data fuzion.sys.array<T>
-   ) : Sequence<T>
+   private data fuzion.sys.array T
+   ) : Sequence T
 
   pre
     safety: length >= 0 && length <= data.length
@@ -67,19 +67,19 @@ is
 
   # create a new marray by adding a new element o at the end of this marray
   #
-  add (o T) marray<T>
+  add (o T) marray T
     post
       debug: result.length = length + 1
       # debug: result[length] = o  -- there is no 'infix =' defined for T
   is
     d := if (data.length > length) data
       else
-        newData := fuzion.sys.array<T> (8.max data.length*2)
+        newData := fuzion.sys.array T (8.max data.length*2)
         for i in indices do
           newData[i] := data[i]
         newData
     d[length] := o
-    marray<T> length+1 d
+    marray T length+1 d
 
 
   # infix operator synonyme for add
@@ -90,29 +90,29 @@ is
   # create immutable array from this
   #
   as_array =>
-    array<T> length (i -> marray.this[i])
+    array T length (i -> marray.this[i])
 
   redef asStream => as_array.asStream
 
 
   # map the array to a new array applying function f to all elements
   #
-  map<B>(f T -> B) array<B> is
-    array<B> marray.this.length (i -> f marray.this[i])
+  map(B type, f T -> B) array B is
+    array B marray.this.length (i -> f marray.this[i])
 
 
   # fold the elements of this array using the given monoid.
   #
   # e.g., to sum the elements of an array of i32, use a.fold i32.sum
   #
-  redef fold (m Monoid<T>) => fold 0 m.e m
+  redef fold (m Monoid T) => fold 0 m.e m
 
 
   # fold the elements of this array using the given monoid and initial value
   #
   # Used to fold an array tail-recursively
   #
-  fold (i i32, s T, m Monoid<T>) T
+  fold (i i32, s T, m Monoid T) T
     pre
       debug: 0 <= i <= length
   is
@@ -128,8 +128,8 @@ is
 #
 marrays(T type)  is
 
-  # This feature provides a convenient constructor for marray<T>(length,
-  # fuzion.sys.array<T>, unit).
+  # This feature provides a convenient constructor for marray T length,
+  # fuzion.sys.array T unit.
   #
   new
    (# length of the marray to crate
@@ -138,10 +138,10 @@ marrays(T type)  is
     # initial value for elements
     init T
 
-   ) marray<T>
+   ) marray T
 
   is
-    data := fuzion.sys.array<T> length
+    data := fuzion.sys.array T length
 
     for x in 0..length-1 do
       data[x] := init

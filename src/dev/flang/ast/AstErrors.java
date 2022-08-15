@@ -85,7 +85,7 @@ public class AstErrors extends ANY
   }
   static String s(AbstractType t)
   {
-    return st(t.toString());
+    return st(t == null ? "--null--" : t.toString());
   }
   static String s(ReturnType rt)
   {

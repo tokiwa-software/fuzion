@@ -61,6 +61,14 @@ public class Parser extends Lexer
 
 
   /**
+   * Flag to enable old-stype generics using '<'/'>' instead of type parameters.
+   *
+   * NYI: remove support for generics using '<'/'>'
+   */
+  static boolean OLD_STYLE_GENERICS = !false;
+
+
+  /**
    * Different kinds of opening / closing brackets
    */
   static Parens PARENS   = new Parens( Token.t_lparen  , Token.t_rparen   );
@@ -878,7 +886,7 @@ genericList : generic  ( COMMA genericList
   List<Feature> formGens()
   {
     List<Feature> result = new List<>();
-    if (splitSkip("<"))
+    if (OLD_STYLE_GENERICS && splitSkip("<"))
       {
         if (!isOperator('>'))
           {
@@ -912,7 +920,7 @@ genericList : generic  ( COMMA genericList
    */
   FormalOrActual skipFormGensNotActualGens()
   {
-    if (splitSkip("<"))
+    if (OLD_STYLE_GENERICS && splitSkip("<"))
       {
         if (!isOperator('>'))
           {
@@ -1410,7 +1418,6 @@ actuals     : actualGens actualArgs
   Call call(Expr target)
   {
     SourcePosition pos = posObject();
-    var line = line();
     String n = skip(Token.t_type) ? FuzionConstants.TYPE_NAME : name();
     Call result;
     var skippedDot = false;
@@ -1431,7 +1438,7 @@ actuals     : actualGens actualArgs
         // we must check isActualGens() to distinguish the less operator in 'a < b'
         // from the actual generics in 'a<b>'.
         var g = (!isActualGens()) ? Call.NO_GENERICS : actualGens();
-        var l = actualArgs(line);
+        var l = actualArgs();
         result = new Call(pos, target, n, g, l, null);
       }
     result = callTail(skippedDot, result);
@@ -1514,20 +1521,23 @@ actualGens  : "<" typeList ">"
   List<AbstractType> actualGens()
   {
     var result = Call.NO_GENERICS;
-    splitOperator("<");
-    if (isOperator('<'))
+    if (OLD_STYLE_GENERICS)
       {
-        result = bracketTermWithNLs(ANGLES, "actualGens", () ->
-                                    {
-                                      var res = Type.NONE;
-                                      splitOperator(">");
-                                      if (!isOperator('>'))
+        splitOperator("<");
+        if (isOperator('<'))
+          {
+            result = bracketTermWithNLs(ANGLES, "actualGens", () ->
                                         {
-                                          res = typeList();
-                                        }
-                                      splitOperator(">");
-                                      return res;
-                                    });
+                                          var res = Type.NONE;
+                                          splitOperator(">");
+                                          if (!isOperator('>'))
+                                            {
+                                              res = typeList();
+                                            }
+                                          splitOperator(">");
+                                          return res;
+                                        });
+          }
       }
     return result;
   }
@@ -1559,7 +1569,7 @@ actualGens  : "<" typeList ">"
   boolean skipActualGens()
   {
     boolean result = true;
-    if (splitSkip("<"))
+    if (OLD_STYLE_GENERICS && splitSkip("<"))
       {
         if (!splitSkip(">"))
           {
@@ -1630,17 +1640,15 @@ typeList    : type ( COMMA typeList
   /**
    * Parse actualArgs
    *
-   * @param line the line containing the name of the called feature
-   *
-actualArgs  : actualsList               // must be in same line as name of called feature
+actualArgs  : actualsList
             | LPAREN actualList RPAREN
             | LPAREN RPAREN
             ;
    */
-  List<Actual> actualArgs(int line)
+  List<Actual> actualArgs()
   {
     return (ignoredTokenBefore() || current() != Token.t_lparen)
-      ? actualsList(line)
+      ? actualsList()
       : bracketTermWithNLs(PARENS, "actualArgs",
                            () -> actualList(),
                            () -> new List<>());
@@ -1656,14 +1664,9 @@ actualArgs  : actualsList               // must be in same line as name of calle
    * @return true if the next symbold ends actual arguments or in!=null and the
    * next symbol is not properly indented.
    */
-  boolean endsActuals(Indentation in)
+  boolean endsActuals(boolean atMinIndent)
   {
-    return
-      isOperator('.') ||
-      ((in != null) ? currentAtMinIndent() == Token.t_indentationLimit ||
-                      endsActuals(currentNoLimit()) ||
-                      !in.ok()
-                    : endsActuals(current()));
+    return isOperator('.') || endsActuals(current(atMinIndent));
   }
 
 
@@ -1748,50 +1751,22 @@ actualList  : actual ( COMMA actualList
   /**
    * Parse space separated actual arguments
    *
-   * @param line the line containing the name of the called feature
-   *
 actualsList : actualSp actualsList
             |
             ;
    */
-  List<Actual> actualsList(int line)
+  List<Actual> actualsList()
   {
-    Indentation in = null;
-    if (line() != line && current() != Token.t_lineLimit)
-      {
-        line = -1;
-        in = new Indentation();
-      }
-    var oldLine = sameLine(line);
     List<Actual> result = Call.NO_PARENTHESES_A;
-    if (ignoredTokenBefore() && !endsActuals(in))
+    if (ignoredTokenBefore() && !endsActuals(false))
       {
-        result = new List<>(actualSpace());
-        var done = false;
-        while (!done)
+        var in = new Indentation();
+        result = new List<>();
+        while (!endsActuals(!result.isEmpty()) && in.ok())
           {
-            if (in == null && line() != line && oldLine == -1)
-              { // indentation starts after the first argument:
-                line = -1;
-                sameLine(-1);
-                in = new Indentation();
-              }
-            done = endsActuals(in);
-            if (!done)
-              {
-                var p = pos();
-                result.add(actualSpace());
-                done = p == pos(); /* make sure we do not get stuck on a syntax error */
-                if (in != null)
-                  {
-                    in.next();
-                  }
-              }
+            result.add(actualSpace());
+            in.next();
           }
-      }
-    sameLine(oldLine);
-    if (in != null)
-      {
         in.end();
       }
     return result;
@@ -1966,19 +1941,19 @@ expr        : opExpr
   {
     Expr result = opExpr();
     SourcePosition pos = posObject();
-    if (skip('?'))
+    var f0 = fork();
+    if (f0.skip('?') && f0.isCasesAndNotExpr())
       {
-        if (isCasesAndNotExpr())
-          {
-            result = new Match(pos, result, cases(false));
-          }
-        else
-          {
-            Expr f = expr();
-            matchOperator(":", "expr of the form >>a ? b : c<<");
-            Expr g = expr();
-            result = new Call(pos, result, "ternary ? :", null, null, new List<Expr>(f, g));
-          }
+        var i = new Indentation();
+        skip('?');
+        result = new Match(pos, result, cases(i));
+      }
+    else if (skip('?'))
+      {
+        Expr f = expr();
+        matchOperator(":", "expr of the form >>a ? b : c<<");
+        Expr g = expr();
+        result = new Call(pos, result, "ternary ? :", null, null, new List<Expr>(f, g));
       }
     return result;
   }
@@ -2452,7 +2427,7 @@ match       : "match" exprInLine BRACEL cases BRACER
         boolean gotLBrace = skip(true, Token.t_lbrace);
         var start = posObject();
         var cpos = posObject();
-        var c = cases(true);
+        var c = cases(null);
         var end = posObject();
         if (gotLBrace)
           {
@@ -2491,22 +2466,16 @@ maybecomma  : comma
             |
             ;
    */
-  List<AbstractCase> cases(boolean indent)
+  List<AbstractCase> cases(Indentation i)
   {
     List<AbstractCase> result = new List<>();
-    var in = indent ? new Indentation() : (Indentation) null;
-    var sl = -1;
+    var sl = sameLine(-1);
+    var in = i != null ? i : new Indentation();
     var usesBars = false;
-    while ((currentAtMinIndent() == Token.t_lineLimit || !endOfStmnts()) && (in == null || in.ok()))
+    while ((i == null || current() != Token.t_indentationLimit) && !endOfStmnts() && in.ok())
       {
-        if (result.size() == 0 && indent)
+        if (result.size() == (i == null ? 0 : 1))
           {
-            usesBars = skip('|');
-          }
-        else if (result.size() == 1 && !indent)
-          {
-            sl = sameLine(-1);
-            in = new Indentation();
             usesBars = skip('|');
           }
         else if (usesBars)
@@ -2515,23 +2484,14 @@ maybecomma  : comma
           }
         result.add(caze());
         skipComma();
-        if (currentAtMinIndent() == Token.t_lineLimit || !endOfStmnts())
+        if (!endOfStmnts())
           {
             semiOrFlatLF();
           }
-        if (in != null)
-          {
-            in.next();
-          }
+        in.next();
       }
-    if (in != null)
-      {
-        in.end();
-      }
-    if (sl != -1)
-      {
-        sameLine(sl);
-      }
+    in.end();
+    sameLine(sl);
     return result;
   }
 
@@ -2811,7 +2771,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
     {
       sameLine       = lastPos() >= 0 && lineNum(lastPos()) == line();
       lastLineNum    = -1;
-      firstPos = pos();
+      firstPos       = pos();
       pos            = -1;
       if (sameLine)
         {
@@ -2843,7 +2803,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
      */
     void next()
     {
-      if (sameLine && current() == Token.t_lineLimit && line() > lineNum(firstPos) && indent(pos()) >= indent(firstPos))
+      if (sameLine && current() == Token.t_lineLimit && (line() > lineNum(firstPos) && indent(pos()) >= indent(firstPos)))
         {
           sameLine = false;
           sameLine(-1);
@@ -4055,8 +4015,10 @@ typeTail    : dot simpletype
    */
   boolean skipSimpletype()
   {
-    boolean result = false;
-    return skipName() && skipActualGens() && skipTypePars() && (isDotEnvOrType() || !skipDot() || skipSimpletype());
+    return
+      skipName() &&
+      (OLD_STYLE_GENERICS && fork().splitSkip("<") ? skipActualGens() : skipTypePars()) &&
+      (isDotEnvOrType() || !skipDot() || skipSimpletype());
   }
 
 

@@ -64,7 +64,7 @@ threadProvider ref is
 thread_type is
 
   installDefault is
-    if !(effects.exists<thread>)
+    if !effects.exists thread
       _ := thread defaultThread effectMode.default
 
 

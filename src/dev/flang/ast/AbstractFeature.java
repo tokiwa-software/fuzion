@@ -243,7 +243,11 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         var argCount = arguments().size() + actualGenerics.size() - outer().generics().list.size();
         if (CHECKS) check
-          (argCount >= 0);
+          (Errors.count() > 0 || argCount >= 0);
+        if (argCount < 0)
+          {
+            argCount = 0;
+          }
         result =  FeatureName.get(result.baseName(),
                                   argCount);
       }
@@ -535,12 +539,17 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
       {
         _typeFeature = this == Types.f_ERROR ? this : existingTypeFeature();
       }
-    return _typeFeature;
+    var result = _typeFeature;
+
+    if (POSTCONDITIONS) ensure
+      (result != null);
+
+    return result;
   }
 
 
   /**
-   * If we have an existing type feature (store in a .fum library file), return that
+   * If we have an existing type feature (stored in a .fum library file), return that
    * type feature. return null otherwise.
    */
   public AbstractFeature existingTypeFeature()
@@ -626,7 +635,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * @param generics the generics argument to be passed to resultTypeRaw
    *
-   * @return the result type, Types.resulved.t_unit if none and null in case the
+   * @return the result type, Types.resolved.t_unit if none and null in case the
    * type must be inferenced and is not available yet.
    */
   AbstractType resultTypeIfPresent(Resolution res, List<AbstractType> generics)

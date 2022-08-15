@@ -33,15 +33,15 @@ is
 
   # mutuable field to receive the error in case raise is called
   #
-  private err option<error> := nil
+  private err option error := nil
 
   # install this effect and execute 'f'. Wrap the result of 'f' into an
   # 'outcome' if 'f' returns normally, otherwise if 'f' is aborted early
   # via a call to 'raise' wrap the 'error' passed to 'raise' into the
   # resulting 'outcome'.
   #
-  on<R>(f ()->R) outcome<R> is
-    (run<outcome<R>> (()->outcome f()) (_)->err.get)
+  on(R type, f ()->R) outcome R is
+    (run (outcome R) (()->outcome f()) (_)->err.get)
 
   # terminate immediately with the given error wrapped in 'outcome'.
   #
@@ -52,14 +52,14 @@ is
 # convenience routine to create a new instance of 'try' and run 'f' in
 # it.
 #
-try<R> (f ()->R) =>
+try(R type, f ()->R) =>
   try.on f
 
 # convenience routine to create a new instance of 'try' and run 'f' in
 # it. Return the result of 'f' directly or panic in case 'f' calls
 # 'try.env.raise'.
 #
-tryOrPanic<R> (f ()->R) outcome<R> is
+tryOrPanic(R type, f ()->R) outcome R is
   match try.on f
     e error => panic $e
     r R => r

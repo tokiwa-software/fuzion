@@ -25,7 +25,7 @@
 
 # numeric -- parent of all numeric features
 #
-numeric(redef T numeric<T>.type) : hasHash<T>, ordered<T>, numerics<T> is
+numeric(redef T (numeric T).type) : hasHash T, ordered T, numerics T is
 
   # get numeric.this value of type T.  This is used for a generic implemention
   # of some features (e.g. prefix -, abs
@@ -103,11 +103,11 @@ numeric(redef T numeric<T>.type) : hasHash<T>, ordered<T>, numerics<T> is
 
 
   # overflow checking operations
-  prefix -? numOption<T> is - thiz
-  infix +? (other T) numOption<T> is thiz + other
-  infix -? (other T) numOption<T> is thiz - other
-  infix *? (other T) numOption<T> is thiz * other
-  infix **?(other T) numOption<T> is abstract
+  prefix -? numOption T is - thiz
+  infix +? (other T) numOption T is thiz + other
+  infix -? (other T) numOption T is thiz - other
+  infix *? (other T) numOption T is thiz * other
+  infix **?(other T) numOption T is abstract
 
   # saturating  operations
   prefix -^  T is - thiz
@@ -167,23 +167,23 @@ numeric(redef T numeric<T>.type) : hasHash<T>, ordered<T>, numerics<T> is
   #
   # NYI: infix operators currently always use dynamic binding on the lhs and pass
   # the rhs as an argument.  If we would support an 'rinfix ∈' that would use the
-  # rhs for dynamic binding and the lhs as argument, we could define '∈' in Set<T>
+  # rhs for dynamic binding and the lhs as argument, we could define '∈' in Set T
   # and it would work for all set types.
   #
-  elementOf(s Set<T>) => s.contains thiz
-  infix ∈ (s Set<T>) => numeric.this.elementOf s
+  elementOf(s Set T) => s.contains thiz
+  infix ∈ (s Set T) => numeric.this.elementOf s
 
 
   # is this not part of given set
   #
-  notElementOf(s Set<T>) => !elementOf s
-  infix ∉ (s Set<T>) => numeric.this.notElementOf s
+  notElementOf(s Set T) => !elementOf s
+  infix ∉ (s Set T) => numeric.this.notElementOf s
 
 
 # numerics -- unit type defining features related to numeric but not
 # requiring an instance
 #
-numerics<T : numeric<T>> is
+numerics(T (numeric T).type) is
 
   # name of this numeric type, e.g., "u64"
   #
@@ -210,7 +210,7 @@ numerics<T : numeric<T>> is
   # monoid of numeric with infix + operation.  Will create sum of all elements it
   # is applied to.
   #
-  sum : Monoid<T> is
+  sum : Monoid T is
     redef infix ∙ (a, b T) T is a + b
     redef infix == (a, b T) bool is a == b
     redef e T is zero
@@ -218,7 +218,7 @@ numerics<T : numeric<T>> is
   # monoid of numeric with infix * operation.  Will create product of all elements
   # it is applied to.
   #
-  product : Monoid<T> is
+  product : Monoid T is
     redef infix ∙ (a, b T) T is a * b
     redef infix == (a, b T) bool is a == b
     redef e T is one
@@ -226,7 +226,7 @@ numerics<T : numeric<T>> is
   # monoid of numeric with infix +^ operation.  Will create sum of all elements it
   # is applied to, stopping at max/min value in case of overflow.
   #
-  sumSaturating : Monoid<T> is
+  sumSaturating : Monoid T is
     redef infix ∙ (a, b T) T is a +^ b
     redef infix == (a, b T) bool is a == b
     redef e T is zero
@@ -234,7 +234,7 @@ numerics<T : numeric<T>> is
   # monoid of numeric with infix *^ operation.  Will create product of all elements
   # it is applied to, stopping at max/min value in case of overflow.
   #
-  productSaturating : Monoid<T> is
+  productSaturating : Monoid T is
     redef infix ∙ (a, b T) T is a *^ b
     redef infix == (a, b T) bool is a == b
     redef e T is one

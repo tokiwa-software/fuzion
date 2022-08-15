@@ -31,28 +31,28 @@ public fuzion.java is
   # read a static field of given name in class with given name.  Wrap result into
   # an instance of T.
   #
-  public getStaticField<T>(clazz string, field string) =>
+  public getStaticField(T type, clazz string, field string) =>
     c := stringToJavaObject clazz
     f := stringToJavaObject field
-    getStaticField0<T> c f
+    getStaticField0 T c f
 
 
   # read a field of given name from given object instance thiz.  Wrap result into
   # an instance of T.
   #
-  public getField<T>(thiz JavaObject, field string) =>
+  public getField(T type, thiz JavaObject, field string) =>
     f := stringToJavaObject field
-    getField0<T> thiz f
+    getField0 T thiz f
 
 
   # intrinsic to read static field
   #
-  private getStaticField0<T>(clazz JavaObject, field JavaObject) T is intrinsic_constructor
+  private getStaticField0(T type, clazz JavaObject, field JavaObject) T is intrinsic_constructor
 
 
   # intrinsic to read instance field
   #
-  private getField0<T>(thiz JavaObject, field JavaObject) T is intrinsic_constructor
+  private getField0(T type, thiz JavaObject, field JavaObject) T is intrinsic_constructor
 
 
   # A Java reference
@@ -64,15 +64,15 @@ public fuzion.java is
 
   # A Java array
   #
-  public Array(redef T type, private redef javaRef Object) ref : Sequence<T>, JavaObject javaRef
+  public Array(redef T type, private redef javaRef Object) ref : Sequence T, JavaObject javaRef
   is
-    length            => arrayLength<T> Array.this
-    index [ ] (i i32) => arrayGet<T>    Array.this i
+    length            => arrayLength T Array.this
+    index [ ] (i i32) => arrayGet    T Array.this i
     redef asList => asList 0
 
     # create list starting at index from
     #
-    asList (from i32) list<T> is
+    asList (from i32) list T is
       if length <= from
         nil
       else
@@ -81,7 +81,7 @@ public fuzion.java is
     # create a cons cell for a list of this array starting at the given
     # index
     #
-    private arrayCons (i i32) : Cons<T, list<T>>
+    private arrayCons (i i32) : Cons T (list T)
       pre
         debug: 0 <= i < length
     is
@@ -106,11 +106,12 @@ public fuzion.java is
   # Call a virtual Java method className.name with given signature signature
   # on instance thiz with given arguments
   #
-  public callVirtual<T>(className string,
-                        name string,
-                        signature string,
-                        thiz JavaObject,
-                        args array<JavaObject>) T
+  public callVirtual(T type,
+                     className string,
+                     name string,
+                     signature string,
+                     thiz JavaObject,
+                     args array JavaObject) T
   pre
     safety: !thiz.isNull
   is
@@ -118,79 +119,84 @@ public fuzion.java is
     n := stringToJavaObject name
     s := stringToJavaObject signature
     a := args.internalArray
-    callV0<T> c n s thiz a
+    callV0 T c n s thiz a
 
 
   # Call a static Java method with given name and signature with given
   # arguments
   #
-  public callStatic<T>(className string,
-                       name string,
-                       signature string,
-                       args array<JavaObject>) T
+  public callStatic(T type,
+                    className string,
+                    name string,
+                    signature string,
+                    args array JavaObject) T
   is
     c := stringToJavaObject className
     n := stringToJavaObject name
     s := stringToJavaObject signature
     a := args.internalArray
-    callS0<T> c n s a
+    callS0 T c n s a
 
 
   # Call a Java constructor with given signature for class with given name
   # with given arguments
   #
-  public callConstructor<T> (className string,
-                             signature string,
-                             args array<JavaObject>) T
+  public callConstructor(T type,
+                         className string,
+                         signature string,
+                         args array JavaObject) T
   is
     c := stringToJavaObject className
     s := stringToJavaObject signature
     a := args.internalArray
-    callC0<T> c s a
+    callC0 T c s a
 
 
   # intrinsic to call given Java instance method
   #
-  private callV0<T>(className JavaObject,
-                    name JavaObject,
-                    signature JavaObject,
-                    thiz JavaObject,
-                    args fuzion.sys.array<JavaObject>) T is intrinsic_constructor
+  private callV0(T type,
+                 className JavaObject,
+                 name JavaObject,
+                 signature JavaObject,
+                 thiz JavaObject,
+                 args fuzion.sys.array JavaObject) T is intrinsic_constructor
 
   # intrinsic to call given Java static method
   #
-  private callS0<T>(className JavaObject,
-                    name JavaObject,
-                    signature JavaObject,
-                    args fuzion.sys.array<JavaObject>) T is intrinsic_constructor
+  private callS0(T type,
+                 className JavaObject,
+                 name JavaObject,
+                 signature JavaObject,
+                 args fuzion.sys.array JavaObject) T is intrinsic_constructor
 
 
   # intrinsic to call given Java constructor
   #
-  private callC0<T>(className JavaObject,
-                    signature JavaObject,
-                    args fuzion.sys.array<JavaObject>) T is intrinsic_constructor
+  private callC0(T type,
+                 className JavaObject,
+                 signature JavaObject,
+                 args fuzion.sys.array JavaObject) T is intrinsic_constructor
 
 
   # intrinsic to get the length of a Java array of arbitrary type
   #
-  private arrayLength<T>(a Array<T>) i32 is intrinsic
+  private arrayLength(T type, a Array T) i32 is intrinsic
 
 
   # intrinsic to get an element of a Java array of arbitrary type
   #
-  private arrayGet<T>(a Array<T>, ix i32) T is intrinsic_constructor
+  private arrayGet(T type, a Array T, ix i32) T is intrinsic_constructor
 
 
   # convert a Sequence to a Java Array object
   #
-  public arrayToJavaObject<T>(a Sequence<T>) Array<T> is
-    arrayToJavaObject0<T> a.asArray.internalArray.data
+  public arrayToJavaObject(T type, a Sequence T) Array T is
+    arrayToJavaObject0 T a.asArray.internalArray.data
 
 
   # intrinsic to convert an array to a Java Array object
   #
-  private arrayToJavaObject0<T>(a Object) Array<T> is intrinsic_constructor
+  private arrayToJavaObject0(T type, a Object) Array T is intrinsic_constructor
 
 
   # convert a string to a Java String object

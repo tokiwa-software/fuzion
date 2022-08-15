@@ -38,7 +38,7 @@
 #
 #
 #
-list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
+list(A type) : choice nil (Cons A (list A)), Sequence A is
 # list<A> : nil | Cons<A, list<A>> is   -- NYI: sum type syntax
 # list<A> : nil | Cons A, list A is     -- NYI: sum type syntax, optional '<', '>'
 # list A : nil | Cons A, list A is      -- NYI: sum type syntax, optional '<', '>' (2x)
@@ -49,7 +49,7 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
   # A list is immutable, so it can be reused and shared between threads.
   # Compared to a stream, a list may require more (heap) allocation.
   #
-  redef asList list<A> is list.this
+  redef asList list A is list.this
 
 
   # is this list empty?
@@ -73,7 +73,7 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
 
   # get the head of this list if it exists
   #
-  head option<A>
+  head option A
   is
     list.this ? nil    => nil
               | c Cons => c.head
@@ -82,7 +82,7 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
   # get the tail of this list if it exists, nil if it does
   # not exist or it is the empty list
   #
-  tail list<A>
+  tail list A
   is
     list.this ? nil    => nil
               | c Cons => c.tail
@@ -139,12 +139,12 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the list.
   #
-  map<B>(f A -> B) list<B> is
+  map(B type, f A -> B) list B is
     match list.this
       _ nil  => nil
       c Cons =>
-        ref : Cons<B, list<B>>
-        // Cons<B, list<B>> with    # NYI: better syntax for anonymous feature
+        ref : Cons B (list B)
+        // Cons B (list B) with    # NYI: better syntax for anonymous feature
           head => f c.head
           tail => c.tail.map f
 
@@ -155,38 +155,38 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
   # This performs a lazy mapping, f is called only when the elements
   # are taken from the list.
   #
-  flatMap<B>(f A -> Sequence<B>) list<B> is
+  flatMap(B type, f A -> Sequence B) list B is
     match list.this
       _ nil  => nil
       c Cons =>
         match (f c.head).asList
           _ nil => nil
           c2 Cons =>
-            ref : Cons<B, list<B>>
-            // Cons<B, list<B>> with    # NYI: better syntax for anonymous feature
+            ref : Cons B (list B)
+            // Cons B (list B) with    # NYI: better syntax for anonymous feature
               head => c2.head
-              tail => c2.tail ++ c.tail.flatMap<B> f
+              tail => c2.tail ++ c.tail.flatMap B f
 
 
   # fold the elements of this list using the given monoid.
   #
   # e.g., to sum the elements of a list of i32, use l.fold i32.sum
   #
-  redef fold (m Monoid<A>) => fold m.e m
+  redef fold (m Monoid A) => fold m.e m
 
 
   # fold the elements of this list using the given monoid and initial value
   #
   # Used to fold a list tail-recursively
   #
-  fold (s A, m Monoid<A>) A is list.this ? nil    => s
+  fold (s A, m Monoid A) A is list.this ? nil    => s
                                          | c Cons => c.tail.fold (m.op s c.head) m
 
 
   # Lazily take the first n elements of a list, alternatively the whole list if it
   # is shorter than n, or the empty list if n <= 0
   #
-  redef take (n i32) list<A>
+  redef take (n i32) list A
   is
     if n <= 0
       nil
@@ -194,21 +194,21 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
       match list.this
         _ nil  => nil
         c Cons =>
-          ref : Cons<A, list<A>>   # NYI: indentation syntax for anonymous not supported
+          ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
             redef head => c.head
             redef tail => if n = 1 then nil else c.tail.take n-1
 
 
   # reverse the order of the elements in this list
   #
-  reverse list<A> is
+  reverse list A is
     reverse nil
 
 
   # recursively reverse the order of the elements in this list
   # and append the already reversed reversedHead
   #
-  reverse (reversedHead list<A>) list<A> is
+  reverse (reversedHead list A) list A is
     list.this ? nil    => reversedHead
               | c Cons => c.tail.reverse (cons c.head reversedHead)
 
@@ -225,38 +225,38 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
   # representations of its contents, separated by 'sep'.
   #
   redef asString (sep string) =>
-    "{map<string>(x -> x.asString).fold (strings.concat sep)}"
+    "{(map string x->x.asString).fold (strings.concat sep)}"
 
 
   # List concatenation, O(count)
   #
-  concatEagerly (t list<A>) list<A> is
+  concatEagerly (t list A) list A is
     list.this ? nil    => t
-              | c Cons => cons<A, list<A>> c.head (c.tail.concat t)
+              | c Cons => cons A (list A) c.head (c.tail.concat t)
 
 
   # Lazy list concatenation, O(1)
   #
-  concat (t list<A>) list<A> is
+  concat (t list A) list A is
     match list.this
       _ nil => t
       c Cons =>
         match t
           nil => list.this
           c2 Cons =>
-            ref : Cons<A, list<A>>
+            ref : Cons A (list A)
               head => c.head
               tail => c.tail.concat t
 
   # infix operand synonyme for concat
   #
-  redef infix ++ (t Sequence<A>) => concat t.asList
+  redef infix ++ (t Sequence A) => concat t.asList
 
 
   # create a list from the tail of list.this dropping n elements (or fewer
   # if the list is shorter than n).
   #
-  redef drop (n i32) list<A> is
+  redef drop (n i32) list A is
     if n <= 0
       list.this
     else
@@ -272,13 +272,13 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
 
   # Lazily take the first elements of a list for which predicate 'p' holds.
   #
-  redef takeWhile (p A -> bool) list<A>
+  redef takeWhile (p A -> bool) list A
   is
     match list.this
       _ nil  => nil
       c Cons =>
         if p c.head
-          ref : Cons<A, list<A>>   # NYI: indentation syntax for anonymous not supported
+          ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
             redef head => c.head
             redef tail => c.tail.takeWhile p
         else
@@ -287,7 +287,7 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
 
   # Lazily drop the first elements of a list for which predicate 'p' holds.
   #
-  redef dropWhile (p A -> bool) list<A>
+  redef dropWhile (p A -> bool) list A
   is
     match list.this
       _ nil  => nil
@@ -300,14 +300,14 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
 
   # Lazily filter the elements of a list.
   #
-  redef filter (p A -> bool) Sequence<A> is
+  redef filter (p A -> bool) Sequence A is
     filter0 p
 
 
-  private filter0 (p A -> bool) list<A> is
+  private filter0 (p A -> bool) list A is
     match dropWhile (a -> !(p a))
       _ nil  => nil
-      c Cons => ref : Cons<A, list<A>>   # NYI: indentation syntax for anonymous not supported
+      c Cons => ref : Cons A (list A)   # NYI: indentation syntax for anonymous not supported
                   redef head => c.head
                   redef tail => c.tail.filter0 p
 
@@ -315,13 +315,13 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
   # create a list that repeats the current list indefinitely.  In case 'list.this'
   # is 'nil', returns 'nil'
   #
-  redef cycle list<A> is
+  redef cycle list A is
     match list.this
       nil    => nil
       c Cons =>
-        cycleCons (h Cons<A, list<A>>) : Cons<A, list<A>> is
+        cycleCons (h Cons A (list A)) : Cons A (list A) is
           head => h.head
-          tail list<A> is
+          tail list A is
             cycleCons (h.tail ? nil    => c
                               | d Cons => d)
         cycleCons c
@@ -330,8 +330,8 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
   # create a lazy list of all the tails of this list, including the complete list
   # 'list.this' and the empty list 'nil'.
   #
-  redef tails list<list<A>> is
-    ref : Cons<list<A>, list<list<A>>>
+  redef tails list (list A) is
+    ref : Cons (list A) (list (list A))
       head => list.this
       tail => list.this ? nil    => nil
                         | c Cons => c.tail.tails
@@ -341,7 +341,7 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
   # In contrast to list's immutable Cons cells, a stream instance is mutable, i.e,
   # it cannot be shared with threads or used in pure functions
   #
-  redef asStream ref : stream<A> is
+  redef asStream ref : stream A is
     cur := list.this
     redef hasNext => cur ? Cons => true
                          | nil  => false
@@ -354,13 +354,13 @@ list(A type) : choice<nil, Cons<A, list<A>>>, Sequence<A> is
   # create a new list from the result of applying 'f' to the
   # elements of this list and 'b' in order.
   #
-  zip0<U,V>(b list<U>, f (A,U)->V) list<V> is
-    list.this ? c1 Cons => b ? c2 Cons =>
-                                 zipCons : Cons<V, list<V>> is
-                                   head => f c1.head c2.head
-                                   tail => c1.tail.zip0<U,V> c2.tail f
-                                 zipCons
-                             | nil    => nil
+  zip0(U, V type, b list U, f (A,U)->V) list V is
+    list.this ? c1 Cons => (b ? c2 Cons =>
+                                  zipCons : Cons V (list V) is
+                                    head => f c1.head c2.head
+                                    tail => c1.tail.zip0 U V c2.tail f
+                                  zipCons
+                              | nil    => nil)
               | nil    => nil
 
 
@@ -373,38 +373,38 @@ lists is
 
   # create an empty list
   #
-  empty<A> list<A> is
+  empty(A type) list A is
     nil
 
 
-  # fmap lifts a function from A to B to a function from list<A> to list<B>
+  # fmap lifts a function from A to B to a function from list A to list B
   #
-  fmap<A, B> (f A -> B) list<A> -> list<B> is
-    l -> l.map<B> f
+  fmap(A, B type, f A -> B) list A -> list B is
+    l -> l.map B f
 
 
   # monoid of lists with infix concatentation operation.
   #
-  concatMonoid<A> : Monoid<list<A>> is
+  concatMonoid(A type) : Monoid (list A) is
 
     # associative operation
     #
-    infix ∙ (a, b list<A>) list<A> is a.concat b
+    infix ∙ (a, b list A) list A is a.concat b
 
     # equality
     #
-    redef infix == (a, b list<A>) =>
+    redef infix == (a, b list A) =>
       fuzion.std.panic "NYI: lists.concatMonoid.infix ==, requires A : hasEquals"
 
     # identity element
     #
-    e list<A> is
+    e list A is
       nil
 
 
 # convenience routine to create a list from head h and lazy tail t.
 #
-list<T> (h T, t () -> list<T>) list<T> is
-  ref : Cons<T,list<T>>
+list(T type, h T, t () -> list T) list T is
+  ref : Cons T (list T)
     head => h
     tail => t()

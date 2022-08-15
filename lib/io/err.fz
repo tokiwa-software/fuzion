@@ -67,5 +67,5 @@ errs is
 
   # install default effect err using defaultPrint
   installDefault unit is
-    if !(effects.exists<io.err>)
+    if !effects.exists io.err
       _ := err defaultPrintToErr effectMode.default unit

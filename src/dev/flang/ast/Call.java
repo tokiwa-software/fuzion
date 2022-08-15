@@ -842,8 +842,8 @@ public class Call extends AbstractCall
             if (t != null)
               {
                 t.visit(Feature.findGenerics, outer);
+                g.add(t);
               }
-            g.add(t);
             ai.set(null);  // make sure visit() no longer visits this
             if (ts.get(ti).kind() != AbstractFeature.Kind.OpenTypeParameter)
               {
@@ -1041,7 +1041,13 @@ public class Call extends AbstractCall
         var i = _generics.listIterator();
         while (i.hasNext())
           {
-            i.set(i.next().visit(v, outer));
+            var n = i.next();
+            if (CHECKS) check
+              (Errors.count() > 0 || n != null);
+            if (n != null)
+              {
+                i.set(n.visit(v, outer));
+              }
           }
       }
     if (v.doVisitActuals())
@@ -1317,10 +1323,15 @@ public class Call extends AbstractCall
     /* make sure '.type' features are declared for all actual generics: */
     for (var g : _generics)
       {
-        g.resolve(res, outer);
-        if (!g.isGenericArgument())
+        if (CHECKS) check
+          (Errors.count() > 0 || g != null);
+        if (g != null)
           {
-            g.featureOfType().typeFeature(res);
+            g.resolve(res, outer);
+            if (!g.isGenericArgument())
+              {
+                g.featureOfType().typeFeature(res);
+              }
           }
       }
 
@@ -1465,7 +1476,12 @@ public class Call extends AbstractCall
             !g.isOpen() && _generics.get(i) == Types.t_UNDEFINED)
           {
             missing.add(g);
-            _generics.set(i, Types.t_ERROR);
+            if (CHECKS) check
+              (Errors.count() > 0 || i < _generics.size());
+            if (i < _generics.size())
+              {
+                _generics.set(i, Types.t_ERROR);
+              }
           }
         else if (conflict[i])
           {
@@ -1888,7 +1904,11 @@ public class Call extends AbstractCall
           {
             var f = fi.next();
             var g = gi.next();
-            if (!f.constraint().constraintAssignableFrom(g))
+
+            if (CHECKS) check
+              (Errors.count() > 0 || f != null && g != null);
+            if (f != null && g != null &&
+                !f.constraint().constraintAssignableFrom(g))
               {
                 AstErrors.incompatibleActualGeneric(pos(), f, g);
               }

@@ -32,7 +32,7 @@
 array2(redef T type,
        length0, length1 i32,
        init2 (i32, i32) -> T)
- : array T (fuzion.sys.array<T> length0*length1) unit unit unit
+ : array T (fuzion.sys.array T length0*length1) unit unit unit
   pre
     safety: length0 >= 0,
     safety: length1 >= 0,
@@ -71,19 +71,18 @@ is
   # representations of its contents, separated by ',' and enclosed in '['
   # and ']'.  Arrays in inner dimensions are grouped using '[' and ']'.
   #
-  redef asString =>
-    line_sep := strings.line_separator
+  redef asString : character_encodings =>
     ("["
-      + line_sep
+      + ascii.lf_str
       + indices0
           .map(i -> "  " + (slice i*length1 (i+1)*length1))
-          .fold(strings.concat("," + line_sep))
-      + line_sep + "]")
+          .fold(strings.concat("," + ascii.lf_str))
+      + ascii.lf_str + "]")
 
 
   # get a list of tuples indices and elements in this array
   #
-  enumerate2 list<tuple<i32, i32, T>> is
+  enumerate2 list (tuple i32 i32 T) /* NYI: '(i32, i32, T)' does not work yet */ is
     if length == 0
       nil
     else
@@ -93,13 +92,13 @@ is
   # create a cons cell for a list of tuples of this array's indices and elements
   # starting at the given indices.
   #
-  enumerate2Cons (i, j i32) : Cons<tuple<i32, i32, T>, list<tuple<i32, i32, T>>>
+  enumerate2Cons (i, j i32) : Cons (i32, i32, T) (list (tuple i32 i32 T))
     pre
       debug: 0 <= i < length0,
       debug: 0 <= j < length1
   is
     head => (i, j, index[] i j)
-    tail list<tuple<i32, i32, T>> is
+    tail list (tuple i32 i32 T) is
       if      j < length1-1 then enumerate2Cons i j+1
       else if i < length0-1 then enumerate2Cons i+1 0
       else                       nil
