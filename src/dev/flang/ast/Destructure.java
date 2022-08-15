@@ -186,7 +186,7 @@ public class Destructure extends ANY implements Stmnt
                                        new List<String>(name),
                                        new List<Feature>(),
                                        new List<>(),
-                                       new Contract(null, null, null),
+                                       Contract.EMPTY_CONTRACT,
                                        Impl.FIELD));
               }
           }

@@ -277,10 +277,6 @@ class LibraryOut extends DataOut
    *   |        | 1      | int           | postcondition count post_n                    |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | post_n | Code          | postcondition code                            |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | int           | invariant count inv_n                         |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | inv_n  | Code          | invariant code                                |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | redefines count r                             |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -356,11 +352,6 @@ class LibraryOut extends DataOut
       }
     writeInt(f.contract().ens.size());
     for (var c : f.contract().ens)
-      {
-        code(c.cond, false);
-      }
-    writeInt(f.contract().inv.size());
-    for (var c : f.contract().inv)
       {
         code(c.cond, false);
       }

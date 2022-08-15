@@ -763,16 +763,14 @@ public class LibraryFeature extends AbstractFeature
       {
         var pre_n  = _libModule.featurePreCondCount (_index);
         var post_n = _libModule.featurePostCondCount(_index);
-        var inv_n  = _libModule.featureInvCondCount (_index);
-        if (pre_n == 0 && post_n == 0 && inv_n == 0)
+        if (pre_n == 0 && post_n == 0)
           {
             _contract = Contract.EMPTY_CONTRACT;
           }
         else
           {
             _contract = new Contract(condList(pre_n , _libModule.featurePreCondPos (_index)),
-                                     condList(post_n, _libModule.featurePostCondPos(_index)),
-                                     condList(inv_n , _libModule.featureInvCondPos (_index)));
+                                     condList(post_n, _libModule.featurePostCondPos(_index)));
           }
       }
     return _contract;

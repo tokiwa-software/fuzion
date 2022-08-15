@@ -48,7 +48,6 @@ import dev.flang.ast.Expr; // NYI: remove dependency!
 import dev.flang.ast.Feature; // NYI: remove dependency!
 import dev.flang.ast.If; // NYI: remove dependency!
 import dev.flang.ast.InlineArray; // NYI: remove dependency!
-import dev.flang.ast.Old; // NYI: remove dependency!
 import dev.flang.ast.Tag; // NYI: remove dependency!
 import dev.flang.ast.Types; // NYI: remove dependency!
 import dev.flang.ast.Unbox; // NYI: remove dependency!
@@ -1063,11 +1062,6 @@ public class Clazzes extends ANY
     else if (e instanceof AbstractMatch m)
       {
         result = outerClazz.actualClazz(m.type());
-      }
-
-    else if (e instanceof Old o)
-      {
-        result = clazz(o.e, outerClazz);
       }
 
     else if (e instanceof Universe)
