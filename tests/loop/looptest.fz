@@ -105,7 +105,7 @@ looptest is
   testLoop3(data array<i32>, isWhatWeWant (i32) -> bool) is
     for ix := 0, ix + 1
     variant data.length - ix
-    invariant (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
+    inv (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
     while ix < data.length
       element := data[ix]
     until isWhatWeWant element
@@ -125,7 +125,7 @@ looptest is
   testLoop4(data array<i32>, isWhatWeWant (i32) -> bool) is
     for ix := 0, ix + 1
     variant data.length - ix
-    invariant (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
+    inv (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
     while ix < data.length
     until isWhatWeWant data[ix]
       say "We found it at $ix: {data[ix]}"
@@ -144,7 +144,7 @@ looptest is
   testLoop5(data array<i32>, isWhatWeWant (i32) -> bool) is
     for ix := 0, ix + 1
     variant data.length - ix
-    invariant (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
+    inv (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
     until ix >= data.length || isWhatWeWant data[ix]
       if (ix < data.length)
         say "We found it at $ix: {data[ix]}"
@@ -163,7 +163,7 @@ looptest is
   testLoop6(data array<i32>, isWhatWeWant (i32) -> bool) =>
     for ix := 0, ix + 1
     variant data.length - ix
-    invariant (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
+    inv (0..ix-1) ∀ (x -> !isWhatWeWant data[x])
     while ix < data.length
       element := data[ix]
     until isWhatWeWant element

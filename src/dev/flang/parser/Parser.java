@@ -1694,9 +1694,6 @@ actualArgs  : actualsList
            t_pre             ,
            t_post            ,
            t_inv             ,
-           t_require         ,
-           t_ensure          ,
-           t_invariant       ,
            t_if              ,
            t_then            ,
            t_else            ,
@@ -3538,9 +3535,6 @@ contract    : require
   {
     switch (currentAtMinIndent())
       {
-      case t_require  :
-      case t_ensure   :
-      case t_invariant:
       case t_pre      :
       case t_post     :
       case t_inv      : return true;
@@ -3559,8 +3553,7 @@ require     : "pre" condList
   List<Cond> requir(boolean atMinIndent)
   {
     List<Cond> result = null;
-    if (skip(atMinIndent, Token.t_require) ||
-        skip(atMinIndent, Token.t_pre    )    )
+    if (skip(atMinIndent, Token.t_pre))
       {
         result = condList();
       }
@@ -3578,8 +3571,7 @@ ensure      : "post" condList
   List<Cond> ensur(boolean atMinIndent)
   {
     List<Cond> result = null;
-    if (skip(atMinIndent, Token.t_ensure) ||
-        skip(atMinIndent, Token.t_post  )    )
+    if (skip(atMinIndent, Token.t_post))
       {
         result = condList();
       }
@@ -3597,8 +3589,7 @@ invariant   : "inv" condList
   List<Cond> invariant(boolean atMinIndent)
   {
     List<Cond> result = null;
-    if (skip(atMinIndent, Token.t_invariant) ||
-        skip(atMinIndent, Token.t_inv      )    )
+    if (skip(atMinIndent, Token.t_inv))
       {
         result = condList();
       }
