@@ -24,14 +24,14 @@
 # -----------------------------------------------------------------------
 
 testLists is
-  List<T> is
+  List(T type) is
     xb is say "B.xb"
     public Node (
       public el T,
       public n, p OptNode) ref : Object is
 
     public Nil is
-    OptNode : choice<Node,Nil> is
+    OptNode : choice Node Nil is
 
     h OptNode := Nil
     add(e T) is
@@ -58,7 +58,7 @@ testLists is
               set i := n.n
           Nil =>
 
-  li List<i32> := List<i32>
+  li List i32 := List i32
   li.add 3
   li.add 4
   li.add 5
@@ -71,7 +71,7 @@ testLists is
 
   Complex(real, imag i32) is
 
-  lc List<Complex> := List<Complex>
+  lc List Complex := List Complex
   lc.add (Complex 3 4)
   lc.add (Complex 4 5)
   lc.add (Complex 5 6)
