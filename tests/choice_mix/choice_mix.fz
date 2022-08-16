@@ -33,11 +33,11 @@ choice_mix is
     set b := y+y
     set c := z+z
 
-  Mix : choice<i32,
-               bool,
-               string,
-               Nil,
-               MyRef> is
+  Mix : choice i32
+               bool
+               string
+               Nil
+               MyRef is
 
   a Mix := 3
   b Mix := true
@@ -184,23 +184,23 @@ choice_mix is
     is
       redefine rgb => alpha * 256*256*256
 
-    p, q, r, s, t choice<red,
-                         green,
-                         blue,
-                         yellow,
-                         magenta,
-                         black,
-                         white,
-                         transparent> := ?
+    p, q, r, s, t choice red
+                         green
+                         blue
+                         yellow
+                         magenta
+                         black
+                         white
+                         transparent := ?
 
-    print(c choice<red,
-                   green,
-                   blue,
-                   yellow,
-                   magenta,
-                   black,
-                   white,
-                   transparent>) unit
+    print(c choice red
+                   green
+                   blue
+                   yellow
+                   magenta
+                   black
+                   white
+                   transparent) unit
     is
       match c
         r red         => say "red {r.rgb}"
@@ -315,24 +315,3 @@ choice_mix is
     test Nil
     test (MyRef 3 4 5)
   alternatives2
-
-
-/* NYI: possible syntactic sugar:
-
-  enum col
-  {
-    red,
-    green,
-    blue
-  }
-
-as sugar for
-
-  col : choice<red, green, blue> is
-  red is
-  green is
-  blue is
-
-?
-
-*/
