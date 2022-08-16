@@ -24,7 +24,7 @@
 # -----------------------------------------------------------------------
 
 ctrie_test is
-  ctrie := CTrie<i32, string>
+  ctrie := CTrie i32 string
 
   all := psSet 0..100
   removed := psSet 0..100:2
@@ -71,4 +71,3 @@ ctrie_test is
     panic "half of items should be 50"
 
   say "all 😀"
-
