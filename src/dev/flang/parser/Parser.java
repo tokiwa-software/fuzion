@@ -3902,7 +3902,7 @@ typeOpt     : type
     boolean result;
     if (skip(Token.t_ref))
       {
-        result = skipSimpletype();
+        result = allowTypeThatIsNotExpression && skipSimpletype();
       }
     else
       {
