@@ -728,13 +728,13 @@ public class Call extends AbstractCall
       {
         var actualsResolved = false;
         if (name == FuzionConstants.TYPE_NAME)
-          { /* NYI: would be better to move handling of 'a.b.type' to the parser */
+          { /* NYI: CLEANUP: Create a new AST class for '.type' expression and remove this code from Call */
             if (CHECKS) check
-              (target != null,
+              (target == null,
                _actuals.size() == 0,
-               _generics.size() == 0);
+               _generics.size() == 1);
 
-            AbstractType t = target.asType(thiz, null).resolve(res, thiz);
+            AbstractType t = _generics.size() == 1 ? _generics.get(0) : target.asType(thiz, null).resolve(res, thiz);
             calledFeature_ = Types.resolved.f_Types_get;
             _generics = new List<>(t);
             var tc = new Call(pos(), new Universe(), Types.resolved.f_Types);

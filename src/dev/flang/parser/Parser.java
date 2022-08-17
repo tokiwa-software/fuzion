@@ -57,6 +57,18 @@ public class Parser extends Lexer
   }
 
 
+  /**
+   * Enum returned by isDotEnvOrTypePrefix and skipDotEnvOrTypePrefix to
+   * indicate if .env or .type expression or something else was found.
+   */
+  static enum EnvOrType
+  {
+    env,
+    type,
+    none
+  }
+
+
   /*----------------------------  constants  ----------------------------*/
 
 
@@ -1409,7 +1421,6 @@ callList    : call ( COMMA callList
 call        : nameOrType actuals callTail
             ;
 nameOrType  : name
-            | "type"
             ;
 actuals     : actualGens actualArgs
             | dot NUM_LITERAL
@@ -1418,7 +1429,7 @@ actuals     : actualGens actualArgs
   Call call(Expr target)
   {
     SourcePosition pos = posObject();
-    String n = skip(Token.t_type) ? FuzionConstants.TYPE_NAME : name();
+    String n = name();
     Call result;
     var skippedDot = false;
     if (skipDot())
@@ -2210,7 +2221,8 @@ simpleterm  : bracketTerm
             | match
             | loop
             | ifstmnt
-            | env
+            | dotEnv
+            | dotType
             | callOrFeatOrThis
             ;
    */
@@ -2218,12 +2230,11 @@ simpleterm  : bracketTerm
   {
     Expr result;
     int p1 = pos();
-    if (isEnvPrefix())    // starts with name or '('
+    switch (isDotEnvOrTypePrefix())    // starts with name or '('
       {
-        result = env();
-      }
-    else
-      {
+      case env : result = dotEnv(); break;
+      case type: result = dotType(); break;
+      case none:
         switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
           {
           case t_lbrace    :
@@ -2260,6 +2271,8 @@ simpleterm  : bracketTerm
               }
             break;
           }
+        break;
+      default: throw new Error("unhandled switch case");
       }
     if (!ignoredTokenBefore() && current() == Token.t_lcrochet)
       {
@@ -3452,13 +3465,13 @@ qualThis    : name ( dot name )* dot "this"
 
 
   /**
-   * Parse env
+   * Parse dotEnv
    *
-env         : simpletype dot "env"
+dotEnv      : simpletype dot "env"
             | LPAREN type RPAREN dot "env"
             ;
    */
-  Env env()
+  Env dotEnv()
   {
     var t = current() == Token.t_lparen
       ? bracketTermWithNLs(PARENS, "env", ()->type())
@@ -3471,14 +3484,35 @@ env         : simpletype dot "env"
 
 
   /**
+   * Parse dotType
+   *
+dotType     : simpletype dot "type"
+            | LPAREN type RPAREN dot "type"
+            ;
+   */
+  Expr dotType()
+  {
+    var t = current() == Token.t_lparen
+      ? bracketTermWithNLs(PARENS, "type", ()->type())
+      : simpletype(null);
+    skipDot();
+    // var type = new Call(posObject(), null, "Types", Call.NO_GENERICS, new List<>(), null);
+    var e = new Call(posObject(), null, FuzionConstants.TYPE_NAME, new List<>(t), new List<>(), null);
+    match(Token.t_type, "type");
+    return e;
+  }
+
+
+  /**
    * Check if the current position starts an env.  Does not change the
    * position of the parser.
    *
    * @return true iff the next token(s) start a env
    */
-  boolean isEnvPrefix()
+  EnvOrType isDotEnvOrTypePrefix()
   {
-    return (isNamePrefix() || current() == Token.t_lparen) && fork().skipEnvPrefix();
+    return (isNamePrefix() || current() == Token.t_lparen) ? fork().skipDotEnvOrTypePrefix()
+      : EnvOrType.none;
   }
 
 
@@ -3488,12 +3522,15 @@ env         : simpletype dot "env"
    *
    * @return true iff the next token(s) start an env.
    */
-  boolean skipEnvPrefix()
+  EnvOrType skipDotEnvOrTypePrefix()
   {
     return
-      (skipBracketTermWithNLs(PARENS, ()->skipType()) || skipSimpletype())
-      && skipDot()
-      && skip(Token.t_env);
+      !((skipBracketTermWithNLs(PARENS, ()->skipType()) || skipSimpletype())
+        && skipDot()
+        ) ? EnvOrType.none :
+      skip(Token.t_env ) ? EnvOrType.env  :
+      skip(Token.t_type) ? EnvOrType.type
+                         : EnvOrType.none;
   }
 
 
