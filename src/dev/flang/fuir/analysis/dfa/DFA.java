@@ -915,6 +915,13 @@ public class DFA extends ANY
     put("fuzion.std.exit"                , cl -> null );
     put("fuzion.std.out.write"           , cl -> Value.UNIT );
     put("fuzion.std.err.write"           , cl -> Value.UNIT );
+    put("fuzion.std.fileio.read"         , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.std.fileio.get_file_size", cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.std.fileio.write"        , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.std.fileio.exists"       , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.std.fileio.delete"       , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.std.fileio.move"         , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.std.fileio.create_dir"   , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.std.out.flush"           , cl -> Value.UNIT );
     put("fuzion.std.err.flush"           , cl -> Value.UNIT );
     put("fuzion.stdin.nextByte"          , cl -> new NumericValue(cl._dfa, cl._dfa._fuir.clazzResultClazz(cl._cc)) );

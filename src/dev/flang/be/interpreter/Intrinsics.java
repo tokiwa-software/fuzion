@@ -223,63 +223,63 @@ public class Intrinsics extends ANY
             }
         });
     put("fuzion.std.fileio.write", (interpreter, innerClazz) -> args ->
-      {
-        if (!ENABLE_UNSAFE_INTRINSICS)
-          {
-            System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-            System.exit(1);
-          }
-        byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-        Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
-        byte[] fileContent = (byte[])args.get(3).arrayData()._array;
-        try
-          {
-            Files.write(path, fileContent);
-            return Value.EMPTY_VALUE;
-          }
-        catch (Exception e)
-          {
-            return Value.EMPTY_VALUE; // NYI : need to handle an IO error
-          }
-      });
+        {
+          if (!ENABLE_UNSAFE_INTRINSICS)
+            {
+              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+              System.exit(1);
+            }
+          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
+          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
+          byte[] fileContent = (byte[])args.get(3).arrayData()._array;
+          try
+            {
+              Files.write(path, fileContent);
+              return Value.EMPTY_VALUE;
+            }
+          catch (Exception e)
+            {
+              return Value.EMPTY_VALUE; // NYI : need to handle an IO error
+            }
+        });
     put("fuzion.std.fileio.exists", (interpreter, innerClazz) -> args ->
-      {
-        if (!ENABLE_UNSAFE_INTRINSICS)
-          {
-            System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-            System.exit(1);
-          }
-        byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-        Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
-        try
-          {
-            boolean b = Files.exists(path);
-            return new boolValue(b);
-          }
-        catch (Exception e)
-          {
-            return new boolValue(false); // NYI : need to handle an IO error
-          }
-      });
+        {
+          if (!ENABLE_UNSAFE_INTRINSICS)
+            {
+              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+              System.exit(1);
+            }
+          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
+          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
+          try
+            {
+              boolean b = Files.exists(path);
+              return new boolValue(b);
+            }
+          catch (Exception e)
+            {
+              return new boolValue(false); // NYI : need to handle an IO error
+            }
+        });
     put("fuzion.std.fileio.delete", (interpreter, innerClazz) -> args ->
-      {
-        if (!ENABLE_UNSAFE_INTRINSICS)
-          {
-            System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
-            System.exit(1);
-          }
-        byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-        Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
-        try
-          {
-            boolean b = Files.deleteIfExists(path);
-            return new boolValue(b);
-          }
-        catch (Exception e)
-          {
-            return new boolValue(false); // NYI : need to handle an IO error
-          }
-      });
+        {
+          if (!ENABLE_UNSAFE_INTRINSICS)
+            {
+              System.err.println("*** error: unsafe feature "+innerClazz+" disabled");
+              System.exit(1);
+            }
+          byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
+          Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
+          try
+            {
+              boolean b = Files.deleteIfExists(path);
+              return new boolValue(b);
+            }
+          catch (Exception e)
+            {
+              return new boolValue(false); // NYI : need to handle an IO error
+            }
+        });
     put("fuzion.std.fileio.move", (interpreter, innerClazz) -> args ->
         {
           if (!ENABLE_UNSAFE_INTRINSICS)
