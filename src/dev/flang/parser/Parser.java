@@ -3477,9 +3477,8 @@ dotEnv      : simpletype dot "env"
       ? bracketTermWithNLs(PARENS, "env", ()->type())
       : simpletype(null);
     skipDot();
-    var e = new Env(posObject(), t);
     match(Token.t_env, "env");
-    return e;
+    return new Env(posObject(), t);
   }
 
 
@@ -3496,10 +3495,8 @@ dotType     : simpletype dot "type"
       ? bracketTermWithNLs(PARENS, "type", ()->type())
       : simpletype(null);
     skipDot();
-    // var type = new Call(posObject(), null, "Types", Call.NO_GENERICS, new List<>(), null);
-    var e = new Call(posObject(), null, FuzionConstants.TYPE_NAME, new List<>(t), new List<>(), null);
     match(Token.t_type, "type");
-    return e;
+    return new DotType(posObject(), t);
   }
 
 
