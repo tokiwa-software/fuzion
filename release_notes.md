@@ -135,7 +135,7 @@
 
   - 'mapOf' now can be used with an array of '(key, value)' tuples
 
-  - 'asString' on mutable value now call asString on the value.
+  - 'asString' on mutable value now calls asString on the value.
 
 ## 2022-07-04: V0.075
 
