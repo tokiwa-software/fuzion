@@ -58,7 +58,7 @@ public class Parser extends Lexer
 
 
   /**
-   * Enum returned by isDotEnvOrTypePrefix and skipDotEnvOrTypePrefix to
+   * Enum returned by isDotEnvOrTypePrefix and skipDotEnvOrType to
    * indicate if .env or .type expression or something else was found.
    */
   static enum EnvOrType
@@ -3508,18 +3508,20 @@ dotType     : simpletype dot "type"
    */
   EnvOrType isDotEnvOrTypePrefix()
   {
-    return (isNamePrefix() || current() == Token.t_lparen) ? fork().skipDotEnvOrTypePrefix()
+    return (isNamePrefix() || current() == Token.t_lparen) ? fork().skipDotEnvOrType()
       : EnvOrType.none;
   }
 
 
   /**
-   * Check if the current position starts an env.  Does not change the
-   * position of the parser.
-   *
-   * @return true iff the next token(s) start an env.
+   * Check if the current position can be parsed as a dotEnv or dotType and skip
+   * it if this is the case.
+
+   * @return true iff a dotEnv or dotType was found and skipped, otherwise no
+   * dotEnv nor dotType was found and the parser/lexer is at an undefined
+   * position.
    */
-  EnvOrType skipDotEnvOrTypePrefix()
+  EnvOrType skipDotEnvOrType()
   {
     return
       !((skipBracketTermWithNLs(PARENS, ()->skipType()) || skipSimpletype())
