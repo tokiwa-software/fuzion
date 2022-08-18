@@ -1172,6 +1172,10 @@ typeType    : "type"
                   {
                     splitSkip("...");
                   }
+                else if (fork().skipDotType())
+                  {
+                    skipDotType();
+                  }
                 else if (!skipType())
                   {
                     result[0] = FormalOrActual.actual;
@@ -3534,6 +3538,22 @@ dotType     : simpletype dot "type"
 
 
   /**
+   * Check if the current position can be parsed as a dotType and skip it if
+   * this is the case.
+
+   * @return true iff a dotType was found and skipped, otherwise no dotType was
+   * found and the parser/lexer is at an undefined position.
+   */
+  boolean skipDotType()
+  {
+    return
+      (skipBracketTermWithNLs(PARENS, ()->skipType()) || skipSimpletype())
+      && skipDot()
+      && skip(Token.t_type);
+  }
+
+
+  /**
    * Parse contract
    */
   Contract contract()
@@ -3859,6 +3879,7 @@ onetype     : "ref" simpletype
             | simpletype "->" simpletype
             | pTypeList "->" simpletype
             | pTypeList
+            | LPAREN type RPARENT typeTail
             | simpletype
             ;
 pTypeList   : LPAREN typeList RPAREN
@@ -3889,7 +3910,7 @@ typeOpt     : type
           }
         else if (a.size() == 1)
           {
-            result = a.getFirst();
+            result = typeTail((Type) a.getFirst());
           }
         else
           {
@@ -3958,6 +3979,10 @@ typeOpt     : type
                                              () -> f2.current() == Token.t_rparen || f2.skipArgNamesOpt())) &&
                   skipType();
               }
+            else
+              {
+                result = result && skipTypeTail();
+              }
           }
         else
           {
@@ -3977,25 +4002,33 @@ typeOpt     : type
 simpletype  : name actualGens typeTail
             | name typePars typeTail
             ;
-typeTail    : dot simpletype
-            |
-            ;
    */
   Type simpletype(Type lhs)
   {
-    do
+    var p = posObject();
+    var n = name();
+    var a = actualGens();
+    if (a.isEmpty())
       {
-        var p = posObject();
-        var n = name();
-        var a = actualGens();
-        if (a.isEmpty())
-          {
-            a = typePars();
-          }
-        lhs = new Type(p, n, a, lhs);
+        a = typePars();
       }
-    while (!isDotEnvOrType() && skipDot());
-    return lhs;
+    lhs = new Type(p, n, a, lhs);
+    return typeTail(lhs);
+  }
+
+
+  /**
+   * Check if the current position is a simpletype and skip it.
+   *
+   * @return true iff the next token(s) is a simpletype, otherwise no simpletype
+   * was found and the parser/lexer is at an undefined position.
+   */
+  boolean skipSimpletype()
+  {
+    return
+      skipName() &&
+      (OLD_STYLE_GENERICS && fork().splitSkip("<") ? skipActualGens() : skipTypePars()) &&
+      skipTypeTail();
   }
 
 
@@ -4018,17 +4051,37 @@ typeTail    : dot simpletype
 
 
   /**
-   * Check if the current position is a simpletype and skip it.
+   * Parse typeTail
    *
-   * @return true iff the next token(s) is a simpletype, otherwise no simpletype
+   * @param lhs the left hand side for this type that was already parsed, null
+   * if none.
+   *
+typeTail    : dot simpletype
+            |
+            ;
+   */
+  Type typeTail(Type lhs)
+  {
+    var result = lhs;
+    if (!isDotEnvOrType() && skipDot())
+      {
+        result = simpletype(lhs);
+      }
+    return result;
+  }
+
+
+
+  /**
+   * Check if the current position is a typeTail and skip it.
+   *
+   * @return true iff the next token(s) is a typeTail, otherwise no typeTail
    * was found and the parser/lexer is at an undefined position.
    */
-  boolean skipSimpletype()
+  boolean skipTypeTail()
   {
     return
-      skipName() &&
-      (OLD_STYLE_GENERICS && fork().splitSkip("<") ? skipActualGens() : skipTypePars()) &&
-      (isDotEnvOrType() || !skipDot() || skipSimpletype());
+      isDotEnvOrType() || !skipDot() || skipSimpletype();
   }
 
 
