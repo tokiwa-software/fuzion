@@ -4134,7 +4134,8 @@ typeInParens: "(" typeInParens ")"
         var l = bracketTermWithNLs(PARENS, "typeInParens",
                                    () -> typeList(),
                                    () -> new List<AbstractType>());
-        if (isOperator("->"))
+        var eas = endAtSpace(pos());
+        if (!ignoredTokenBefore() && isOperator("->"))
           {
             matchOperator("->", "onetype");
             result = Type.funType(posObject(pos), type(), l);
@@ -4142,12 +4143,17 @@ typeInParens: "(" typeInParens ")"
         else if (l.size() == 1)
           {
             result = l.get(0);
+            if (!ignoredTokenBefore())
+              {
+                result = typeTail((Type) result);
+              }
           }
         else
           {
             syntaxError(pos, "exactly one type", "typeInParens");
             result = Types.t_ERROR;
           }
+        endAtSpace(eas);
       }
     else
       {
