@@ -29,7 +29,7 @@
 #
 # write to insert data into a file
 #
-public fuzion.std.fileio is
+public fileio is
 
   # reads a file and returns the content as an array of u8.
   #

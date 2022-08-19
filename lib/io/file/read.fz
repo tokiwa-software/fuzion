@@ -1,0 +1,65 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature read
+#
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# read -- effect providing byte reading operations from files
+#
+private read(
+  ro Read_Operation,
+  redef r effectMode.val,
+  _ unit
+  ) : reads, effect r is
+
+  # reads all bytes from the file in the path
+  # returns a byte array representing the content of the file if it exists
+  # returns an error in case the file in the path does not exist
+  #
+  read_all(path string) =>
+    ro.read path
+
+# short-hand for accessing read effect in current environment
+#
+read => 
+  reads.installDefault
+  read.env
+
+# reference to the reading operations that could take place
+#
+Read_Operation ref is
+  read(path string) array u8 is abstract
+
+# the default file reading operation reading bytes from files via fuzion.std.fileio.read
+#
+default_read_operation : Read_Operation is
+  read(path string) =>
+    fuzion.std.fileio.read path
+
+# unit type feature defining features related to read effect but not requiring an
+# instance.
+#
+reads is
+  # install default effect io.file.read
+  installDefault unit is 
+    if !(effects.exists io.file.read)
+      _ := read default_read_operation effectMode.default unit
