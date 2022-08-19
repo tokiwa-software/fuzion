@@ -73,14 +73,6 @@ public class Parser extends Lexer
 
 
   /**
-   * Flag to enable old-stype generics using '<'/'>' instead of type parameters.
-   *
-   * NYI: remove support for generics using '<'/'>'
-   */
-  static boolean OLD_STYLE_GENERICS = !false;
-
-
-  /**
    * Different kinds of opening / closing brackets
    */
   static Parens PARENS   = new Parens( Token.t_lparen  , Token.t_rparen   );
@@ -898,22 +890,6 @@ genericList : generic  ( COMMA genericList
   List<Feature> formGens()
   {
     List<Feature> result = new List<>();
-    if (OLD_STYLE_GENERICS && splitSkip("<"))
-      {
-        if (!isOperator('>'))
-          {
-            do
-              {
-                result.add(generic());
-              }
-            while (skipComma());
-            if (splitSkip("..."))
-              {
-                Errors.error(posObject(), "did not expect ...","");
-              }
-          }
-        matchOperator(">", "formGens");
-      }
     return result;
   }
 
@@ -932,33 +908,6 @@ genericList : generic  ( COMMA genericList
    */
   FormalOrActual skipFormGensNotActualGens()
   {
-    if (OLD_STYLE_GENERICS && splitSkip("<"))
-      {
-        if (!isOperator('>'))
-          {
-            do
-              {
-                if (!skip(Token.t_ident))
-                  {
-                    return FormalOrActual.actual;
-                  }
-                if (skipColon())
-                  {
-                    return FormalOrActual.formal;
-                  }
-              }
-            while (skipComma());
-            splitOperator("...");
-            if (isOperator("..."))
-              {
-                return FormalOrActual.formal;
-              }
-            if (!skip('>'))
-              {
-                return FormalOrActual.actual;
-              }
-          }
-      }
     return FormalOrActual.both;
   }
 
@@ -1536,24 +1485,6 @@ actualGens  : "<" typeList ">"
   List<AbstractType> actualGens()
   {
     var result = Call.NO_GENERICS;
-    if (OLD_STYLE_GENERICS)
-      {
-        splitOperator("<");
-        if (isOperator('<'))
-          {
-            result = bracketTermWithNLs(ANGLES, "actualGens", () ->
-                                        {
-                                          var res = Type.NONE;
-                                          splitOperator(">");
-                                          if (!isOperator('>'))
-                                            {
-                                              res = typeList();
-                                            }
-                                          splitOperator(">");
-                                          return res;
-                                        });
-          }
-      }
     return result;
   }
 
@@ -1583,14 +1514,7 @@ actualGens  : "<" typeList ">"
    */
   boolean skipActualGens()
   {
-    boolean result = true;
-    if (OLD_STYLE_GENERICS && splitSkip("<"))
-      {
-        if (!splitSkip(">"))
-          {
-            result = skipTypeList() && splitSkip(">");
-          }
-      }
+    boolean result = !true;
     return result;
   }
 
@@ -4029,7 +3953,7 @@ simpletype  : name actualGens typeTail
   {
     return
       skipName() &&
-      (OLD_STYLE_GENERICS && fork().splitSkip("<") ? skipActualGens() : skipTypePars()) &&
+      skipTypePars() &&
       skipTypeTail();
   }
 
