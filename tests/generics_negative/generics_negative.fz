@@ -134,12 +134,12 @@ generics_negative is
 
 
   features_from_separate_source_file is
-    hjkl qwerty<i32>.uiop.asdfg.hjkl := qwerty<i32>.uiop.asdfg.hjkl 42
+    hjkl (qwerty i32).uiop.asdfg.hjkl := (qwerty i32).uiop.asdfg.hjkl 42
     qwerty.uiop.asdfg                                       // 42. should flag an error: missing generic argument to qwerty
-    asdfg1 qwerty<i32>.uiop.asdfg := qwerty.uiop.asdfg      // 43. should flag an error: missing generic argument to qwerty
-    asdfg2 qwerty<i32>.uiop.asdfg := qwerty<i32>.uiop.asdfg
-    uiop qwerty<i32>.uiop := qwerty<i32>.uiop
-    qwert qwerty<i32> := qwerty<i32>
+    asdfg1 (qwerty i32).uiop.asdfg := qwerty.uiop.asdfg      // 43. should flag an error: missing generic argument to qwerty
+    asdfg2 (qwerty i32).uiop.asdfg := (qwerty i32).uiop.asdfg
+    uiop (qwerty i32).uiop := (qwerty i32).uiop
+    qwert qwerty i32 := qwerty i32
     set hjkl := qwert.uiop.asdfg.hjkl                       // 44. should flag an error: missing actual argument to hjkl
     set asdfg1 := uiop.asdfg
     set asdfg2 := uiop.asdfg
@@ -151,10 +151,10 @@ generics_negative is
       B(V,W type, y U) is
         p is
           say "y is $y"
-    x0 A<i32,bool  > := A<i32,bool>
-    x1 A<i32,bool  >.B<string,bool> := A<i32,bool>.B<string,bool> true
-    x2 A<i32,i32   >.B<string,bool> := A<i64,bool>.B<string,bool> true  // 45. should flag an error: incompatible types
-    x3 A<i32,string>.B<string,bool> := x1                               // 46. should flag an error: incompatible types
+    x0 (A i32 bool  ) := A i32 bool
+    x1 ((A i32 bool  ).B string bool) := (A i32 bool).B string bool true
+    x2 ((A i32 i32   ).B string bool) := (A i64 bool).B string bool true  // 45. should flag an error: incompatible types
+    x3 ((A i32 string).B string bool) := x1                               // 46. should flag an error: incompatible types
     x1.p
     x2.p
     x3.p

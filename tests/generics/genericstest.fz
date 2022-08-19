@@ -162,11 +162,7 @@ genericstest is
         p is
           say "y is{y}"
     x0 A i32 bool := A i32 bool
-    /* NYI: this does not work yet
     x1 (A i32 bool).B string bool := (A i32 bool).B string bool true
-    x1.p
-    */
-    x1 A<i32,bool>.B string bool := (A i32 bool).B string bool true
     x1.p
     unit
 
