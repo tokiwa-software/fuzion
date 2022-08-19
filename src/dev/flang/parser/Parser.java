@@ -3967,7 +3967,8 @@ typeOpt     : type
         var f2 = fork();
         if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList(allowTypeThatIsNotExpression)))
           {
-            result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList(allowTypeThatIsNotExpression)) && allowTypeInParentheses;
+            result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList(allowTypeThatIsNotExpression));
+            var p = pos();
             if (skip("->"))
               {
                 result =
@@ -3983,6 +3984,7 @@ typeOpt     : type
               {
                 result = result && skipTypeTail();
               }
+            result = result && (allowTypeInParentheses || p < pos());
           }
         else
           {
