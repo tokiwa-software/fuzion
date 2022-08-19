@@ -264,8 +264,7 @@ modAndNames : visibility
 routOrField : routine
             | field
             ;
-routine     : formGens
-              formArgsOpt
+routine     : formArgsOpt
               returnType
               inherits
               contract
@@ -280,18 +279,11 @@ field       : returnType
   {
     var name = n.get(i);
     var p2 = (i+1 < n.size()) ? fork() : null;
-    var g = formGens();
     var a = formArgsOpt();
     ReturnType r = returnType();
     var hasType = r != NoType.INSTANCE;
     var inh = inherits();
     Contract c = contract(true);
-    if (!g.isEmpty())
-      {
-        g.addAll(a);
-        a = g;
-        g = new List<>();
-      }
     Impl p =
       a  .isEmpty() &&
       inh.isEmpty()    ? implFldOrRout(hasType)
@@ -457,12 +449,6 @@ field       : returnType
     if (skipComma())
       {
         return true;
-      }
-    switch (skipFormGensNotActualGens())
-      {
-      case formal: return true;
-      case actual: return false;
-      default    : break;
       }
     switch (skipFormArgsNotActualArgs())
       {
@@ -867,67 +853,6 @@ featNames   : qual (COMMA featNames
         result.add(qual(true));
       }
     return result;
-  }
-
-
-  /**
-   * Parse formGens
-   *
-formGens    : "<" formGensBody ">"
-            | "<" ">"
-            |
-            ;
-formGensBody: genericList ( "..."
-                          |
-                          )
-            |
-            ;
-genericList : generic  ( COMMA genericList
-                       |
-                       )
-            ;
-   */
-  List<Feature> formGens()
-  {
-    List<Feature> result = new List<>();
-    return result;
-  }
-
-
-  /**
-   * Check if the current position is a formGens or an actualGens.  Changes the
-   * position of the parser: In case the Tokens encountered could be parsed both
-   * as formGens or as actualGens, skip them and return FormalOrActual.both.
-   *
-   * Otherwise, this will stop parsing at an undefined position and return
-   * FormalOrActual.formal or FormalOrActual.actual, depending on whether formal
-   * or actual generics were found.
-   *
-   * @return FormalOrActual.formal/actual if this could be decided,
-   * FormalOrActual.both if both could be parsed.
-   */
-  FormalOrActual skipFormGensNotActualGens()
-  {
-    return FormalOrActual.both;
-  }
-
-
-  /**
-   * Parse generic
-   *
-generic     : IDENT
-              ( COLON type
-              |
-              )
-            ;
-   */
-  Feature generic()
-  {
-    SourcePosition pos = posObject();
-    String i = identifierOrError();
-    match(Token.t_ident, "generic");
-    var t = skipColon() ? type() : new Type("Object");
-    return new Feature(pos, Consts.VISIBILITY_LOCAL, 0, t, i, Contract.EMPTY_CONTRACT, Impl.TYPE_PARAMETER);
   }
 
 
@@ -1375,7 +1300,7 @@ call        : nameOrType actuals callTail
             ;
 nameOrType  : name
             ;
-actuals     : actualGens actualArgs
+actuals     : actualArgs
             | dot NUM_LITERAL
             ;
    */
@@ -1399,11 +1324,8 @@ actuals     : actualGens actualArgs
       }
     else
       {
-        // we must check isActualGens() to distinguish the less operator in 'a < b'
-        // from the actual generics in 'a<b>'.
-        var g = (!isActualGens()) ? Call.NO_GENERICS : actualGens();
         var l = actualArgs();
-        result = new Call(pos, target, n, g, l, null);
+        result = new Call(pos, target, n, Call.NO_GENERICS, l, null);
       }
     result = callTail(skippedDot, result);
     return result;
@@ -1470,51 +1392,6 @@ dotCallOpt  : dot call
       {
         result = call(result);
       }
-    return result;
-  }
-
-
-  /**
-   * Parse actualGens
-   *
-actualGens  : "<" typeList ">"
-            | "<" ">"
-            |
-            ;
-   */
-  List<AbstractType> actualGens()
-  {
-    var result = Call.NO_GENERICS;
-    return result;
-  }
-
-
-  /**
-   * Check if the current position has actualGens.  Does not change the position
-   * of the parser.
-   *
-   * @return true iff the next token(s) form actualGens.
-   */
-  boolean isActualGens()
-  {
-    // NYI: isActualGensPrefix would be sufficient. This currently causes
-    // confusing error message in case of a syntax error late in the actual
-    // generics, as in
-    //
-    //  t := tuple<i32, bool, String, tuple < int < bool >>();
-    return fork().skipActualGens();
-  }
-
-
-  /**
-   * Check if the current position has actualGens and skip them.
-   *
-   * @return true iff the next token(s) form actualGens, otherwise no actualGens
-   * was found and the parser/lexer is at an undefined position.
-   */
-  boolean skipActualGens()
-  {
-    boolean result = !true;
     return result;
   }
 
@@ -3925,19 +3802,14 @@ typeOpt     : type
    * @param lhs the left hand side for this type that was already parsed, null
    * if none.
    *
-simpletype  : name actualGens typeTail
-            | name typePars typeTail
+simpletype  : name typePars typeTail
             ;
    */
   Type simpletype(Type lhs)
   {
     var p = posObject();
     var n = name();
-    var a = actualGens();
-    if (a.isEmpty())
-      {
-        a = typePars();
-      }
+    var a = typePars();
     lhs = new Type(p, n, a, lhs);
     return typeTail(lhs);
   }
