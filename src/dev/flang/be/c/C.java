@@ -611,19 +611,33 @@ public class C extends ANY
     cf.print
       (CStmnt.lineComment("helper to read bytes from a file"));
       cf.print
-        ("void "+CNames.FILEIO_READ._name+"(char* path, void* content, size_t size)\n"+
-          "{FILE *f = fopen(path, \"r\");\n"+
-          "if (f == NULL)\n"+
-          "{printf(\"error happened\");\n"+
-          "exit(0);}\n"+
-          "else {\n"+"size_t reading = fread(content, 1, size, f);\n"+
-          "if (reading == 0)\n"+
-          "printf(\"there is no more bytes to read\");\n"+
-          "else if (reading == size)\n"+ 
-          "printf(\"%d bytes have been read\", size);\n"+
-          "else printf(\"error occured\");\n"+
-          "fclose(f);}}\n"+
-          "\n");
+        ("void "+CNames.FILEIO_READ._name+"""
+        (char* path, void* content, size_t size)
+        {
+          FILE *f = fopen(path, \"r\");
+          if (f == NULL)
+          {
+            fprintf(stderr, \"*** failed to open the file %s \\n\", path);
+            exit(0);
+          }
+          else 
+          {
+            size_t reading = fread(content, 1, size, f);
+            if (reading != size)
+            {
+              if (ferror(f)!=0)
+              {
+                fprintf(stderr, \"*** failed to read the file %s \\n\", path);
+              }
+              else if (feof(f)!=0)
+              {
+                fprintf(stdout, \"reached end of the file %s \\n\", path);
+              }
+            }
+            fclose(f);
+          }
+        }
+        """);
     // end of fileio related intrinsics
 
     // declaration of struct that is meant to passed to
