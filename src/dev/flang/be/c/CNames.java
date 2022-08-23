@@ -115,6 +115,12 @@ public class CNames extends ANY
 
 
   /**
+   * Prefix for helper functions related to File I/O intrinsics
+   */
+  private static final String FILEIO_PREFIX = HELPER_PREFIX + "fileio_";
+
+
+  /**
    * Prefix for thread local env variable that stores the current effect.
    */
   private static final String ENV_PREFIX = "fzEnv_";
@@ -175,6 +181,12 @@ public class CNames extends ANY
    * Name of helper function to clone a stack allocated instance on the heap.
    */
   static final CIdent HEAP_CLONE = new CIdent(HELPER_PREFIX + "heapClone");
+
+
+  /**
+   * Name of helper function to implement the fileio.read intrinsic.
+   */
+  static final CIdent FILEIO_READ = new CIdent(FILEIO_PREFIX + "read");
 
 
   /**

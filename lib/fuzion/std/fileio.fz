@@ -38,7 +38,7 @@ public fileio is
               path string) =>
     file := array get_file_size(path).as_i32 i->(u8 0) # allocating an array the size of the file
     arr := path.utf8.asArray # transforms the path to a utf8 byte array
-    read arr.internalArray.data arr.length file.internalArray.data file.length
+    read arr.internalArray.data file.internalArray.data file.length
     file
 
   # intrinsic that fills an array u8 with the file bytes.
@@ -46,12 +46,10 @@ public fileio is
   private read(
                # the internal array data representing the file path in bytes
                path Object,
-               # the length of the internal array representing the path
-               path_length i32,
                # the internal array data representing the container for the bytes to be read from the file
                file_array Object,
                # the length of the array that represents the file bytes
-               file_array_length i32) i64 is intrinsic
+               file_array_length i32) unit is intrinsic
 
   # retrieves the file size in bytes and returns -1 in case of an error
   #

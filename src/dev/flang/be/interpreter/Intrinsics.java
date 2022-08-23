@@ -189,7 +189,7 @@ public class Intrinsics extends ANY
               System.exit(1);
             }
           byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
-          var byteArr = (byte[])args.get(3).arrayData()._array;
+          var byteArr = (byte[])args.get(2).arrayData()._array;
           try
             {
               File file = new File(new String(pathBytes , StandardCharsets.UTF_8));
