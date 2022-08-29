@@ -294,7 +294,7 @@ public class FormalGenerics extends ANY
   public String toString()
   {
     return !isOpen() && list.isEmpty() ? ""
-                                       : "<" + list + (isOpen() ? "..." : "") + ">";
+                                       : list + (isOpen() ? "..." : "");
   }
 
 }
