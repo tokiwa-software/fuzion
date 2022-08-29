@@ -193,7 +193,7 @@ public class AstErrors extends ANY
     error(pos,
           "Feature declaration that is implemented using " + code("of") + " must have inherit clause. ",
           "Feature implementation starting at " + ofPos.show() + "\n" +
-          "To slve this, you may add an inherits clause like " + code(": choice ") + " before " + code("of") + "\n");
+          "To solve this, you may add an inherits clause like " + code(": choice ") + " before " + code("of") + "\n");
   }
 
 
