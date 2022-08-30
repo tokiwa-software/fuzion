@@ -37,8 +37,8 @@ setOf(K (ordered K).type, vs Sequence K) Set K is psSet vs
 # NYI name clash with feature above
 set_of(K (hasHash K).type, vs Sequence K) Set K is
 
-  private map := CTrie K bool
-  vs.forAll (k -> map.add k true)
+  private map := CTrie K unit
+  vs.forAll (k -> map.add k unit)
 
   ref : Set K
 
