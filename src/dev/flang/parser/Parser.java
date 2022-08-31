@@ -3680,7 +3680,7 @@ onetype     : "ref" simpletype
             | simpletype "->" simpletype
             | pTypeList "->" simpletype
             | pTypeList
-            | LPAREN type RPARENT typeTail
+            | LPAREN type RPAREN typeTail
             | simpletype
             ;
 pTypeList   : LPAREN typeList RPAREN
