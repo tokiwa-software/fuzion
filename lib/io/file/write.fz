@@ -49,7 +49,7 @@ write =>
 # reference to the writing operations that could take place
 #
 File_Write_Handler ref is
-    write(path string, content array u8) unit is abstract
+    write(path string, content array u8) outcome bool is abstract
 
 # the default file writing handler writing bytes into files via fuzion.std.fileio.write
 #

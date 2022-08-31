@@ -235,11 +235,11 @@ public class Intrinsics extends ANY
           try
             {
               Files.write(path, fileContent);
-              return Value.EMPTY_VALUE;
+              return new boolValue(true);
             }
           catch (Exception e)
             {
-              return Value.EMPTY_VALUE; // NYI : need to handle an IO error
+              return new boolValue(false);
             }
         });
     put("fuzion.std.fileio.exists", (interpreter, innerClazz) -> args ->
