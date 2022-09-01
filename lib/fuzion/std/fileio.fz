@@ -94,20 +94,28 @@ public fileio is
                 content_length i32) unit is intrinsic
 
   # checks if the file/directory in the path exists or not
-  # returns TRUE if the file/directory exists and FALSE if it does not or there is an error
+  # exists is wrapped with outcome bool so it returns TRUE if the file/directory exists, FALSE if it does not and error in case of an error
   #
   public exists(
                 # the (relative or absolute) file/directory name, using platform specific path separators
-                path string) =>
+                path string) outcome bool is
     arr := path.utf8.asArray
-    exists arr.internalArray.data arr.length
+    rslt := exists arr.internalArray.data arr.length
+    if rslt = 1
+      true
+    else if rslt = 0
+      false
+    else
+      error "an error occured while performing exists operation on the following file/dir: \"$path\""
 
   # intrinsic that checks the existence of the file/directory in the path
+  # it returns 1 in case the file/dir exists, 0 in case it does not exist and -1 in case of an error
+  #
   private exists(
                  # the internal array data representing the file/directory path in bytes
                  path Object,
                  # the length of the internal array representing the path
-                 path_length i32) bool is intrinsic
+                 path_length i32) i8 is intrinsic
 
   # deletes the file/dir found in the path
   # returns TRUE in case of successful deletion and FALSE in case of failure or error

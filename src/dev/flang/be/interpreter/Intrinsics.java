@@ -254,11 +254,11 @@ public class Intrinsics extends ANY
           try
             {
               boolean b = Files.exists(path);
-              return new boolValue(b);
+              return b ? new i8Value(1) : new i8Value(0);
             }
           catch (Exception e)
             {
-              return new boolValue(false); // NYI : need to handle an IO error
+              return new i8Value(-1);
             }
         });
     put("fuzion.std.fileio.delete", (interpreter, innerClazz) -> args ->
