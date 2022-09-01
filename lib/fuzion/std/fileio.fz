@@ -72,19 +72,18 @@ public fileio is
   # creates a new file using an array of u8 as content and a string as the file path
   # it overwrites the file, if it exists, or creates a new one if it does not exist
   # if the director(y/ies) in the path d(oes/o) not exist, or an error happens during the writing operation an error will be returned
-  # in case of success TRUE will be returned
+  # in case of success a unit type will be the outcome
   #
   public write(
                # the (relative or absolute) file name, using platform specific path separators
                path string,
                # the content of the file as an u8 array
-               content array u8) outcome bool is
+               content array u8) outcome unit is
     arr := path.utf8.asArray
-    rslt := write arr.internalArray.data arr.length content.internalArray.data content.length
-    if !rslt
-      error "an error occured during writing the file: \"$path\""
+    if write arr.internalArray.data arr.length content.internalArray.data content.length
+      unit
     else
-      rslt
+      error "an error occured during writing the file: \"$path\""
 
   # intrinsic to write bytes (internal array data) in a file using the file path
   # returns TRUE in case of success and FALSE in case of failure
