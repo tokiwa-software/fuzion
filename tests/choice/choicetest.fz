@@ -43,16 +43,16 @@ choicetest is
   Quarter is
 
   Coin : choice
-    <Penny,
-     Nickel,
-     Dime,
-     Quarter>
+     Penny
+     Nickel
+     Dime
+     Quarter
   is
     value_in_cents() =>
       (Coin.this ? Penny   => 1
-                   Nickel  => 5
-                   Dime    => 10
-                   Quarter => 25)
+                 | Nickel  => 5
+                 | Dime    => 10
+                 | Quarter => 25)
 
   value_in_cents(c Coin) =>
     match c
@@ -91,4 +91,6 @@ choicetest is
   a.forAll (c -> set sum := sum + c.value_in_cents)
   say sum
 
-  say "summing array using monoid: {a.map<i32>(c -> c.value_in_cents).fold i32.sum}"   # NYI: Should become 'a.map(c => c.value_in_cents).fold i32.sum'
+  say "summing array using monoid: {a.map  (c -> c.value_in_cents)
+                                     .fold i32.sum
+                                   }"

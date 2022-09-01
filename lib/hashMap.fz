@@ -25,10 +25,10 @@
 
 # hashMap -- an immutable hash map from keys HK to values V
 #
-hashMap(HK hasHash<HK>.type,
+hashMap(HK (hasHash HK).type,
         redef V type,
-        ks array<HK>,
-        vs array<V>) : map<HK, V>
+        ks array HK,
+        vs array V) : map HK V
   pre
     ks.length == vs.length
 
@@ -100,9 +100,9 @@ is
 
   # get the value k is mapped to
   #
-  index [] (k HK) option<V> is
+  index [] (k HK) option V is
 
-    retrieve (at i32) option<V> is
+    retrieve (at i32) option V is
       match contents[at]
         nil     => nil
         t tuple =>
@@ -121,14 +121,14 @@ is
 
   # get a stream of all key/value pairs in this map
   #
-  items Sequence<tuple<HK,V>> is
-    res : Sequence<tuple<HK,V>> is
+  items Sequence (tuple HK V) is
+    res : Sequence (tuple HK V) is
       redef asList =>
         contents
-          .filter         (o -> o??)
-          .mapSequence<tuple<HK,V>>(o -> match o
-                                           nil     => panic "filter failed"
-                                           t tuple => t)
+          .filter      (o -> o??)
+          .mapSequence (o -> match o
+                               nil     => panic "filter failed"
+                               t tuple => t)
     res
 
 
@@ -136,11 +136,11 @@ is
 #
 # NYI: move to hashMap.type
 #
-hashMaps<HK : hasHash<HK>, V> is
+hashMaps(HK (hasHash HK).type, V type) is
 
 
   # empty -- convenience routine to create an empty instance of hashMap
   #
   empty => (hashMap
-            Sequences.empty<HK>.asArray
-            Sequences.empty<V>.asArray)
+            (Sequences.empty HK).asArray
+            (Sequences.empty V).asArray)

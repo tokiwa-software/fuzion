@@ -35,13 +35,13 @@ genericstest is
       "FAILED: "
     say (s + msg)
 
-  List<T> is
+  List(T type) is
     public Node(
       public el T,
       public n, p OptNode) ref : Object is
 
     public Nil is
-    OptNode : choice<Node,Nil> is
+    OptNode : choice Node Nil is
 
     h OptNode := Nil
     add(e T) is
@@ -50,7 +50,7 @@ genericstest is
     print is
       // for   -- NYI: must update i in the loop prolog
       i := h
-      while (i ? Node => { true }; Nil => false)  // NYI: This screams for recursion
+      while (i ? Node => { true } | Nil => false)  // NYI: This screams for recursion
         match i
           n Node =>
               say "print el in loop: {n.el}"
@@ -61,14 +61,14 @@ genericstest is
       set result := 0
       // for   -- NYI: must update i in the loop prolog
       i := h
-      while (i ? Node => { true }; Nil => false)   // NYI: This screams for recursion
+      while (i ? Node => { true } | Nil => false)   // NYI: This screams for recursion
         match i
           n Node =>
               set result := result + 1
               set i := n.n
           Nil =>
 
-  li List<i32> := List<i32>
+  li := List i32
   li.add 3
   li.add 4
   li.add 5
@@ -81,10 +81,10 @@ genericstest is
 
   Complex1(real, imag i32) is
 
-  Complex<T>(real, imag T) is
-  Complex2(rr, ii i32) : Complex<i32>(rr, ii) is
+  Complex(T type, real, imag T) is
+  Complex2(rr, ii i32) : Complex rr ii is
 
-  lc0 := List<Complex1>
+  lc0 := List Complex1
   lc0.add (Complex1 3 4)
   lc0.add (Complex1 4 5)
   lc0.add (Complex1 5 6)
@@ -130,7 +130,7 @@ genericstest is
   set a := q  2000; yak "a({a.a}) postfix > is {a>},{a>>},{a>>>},{a>>>>}"
   set a := q 20000; yak "a({a.a}) postfix > is {a>},{a>>},{a>>>},{a>>>>}"
 
-  lc1 := List<Complex2>
+  lc1 := List Complex2
   lc1.add (Complex2 3 4)
   lc1.add (Complex2 4 5)
   lc1.add (Complex2 5 6)
@@ -139,35 +139,30 @@ genericstest is
   say "1: size: {lc1.size}"
 
   // lets see if we can derive actual generics automatically:
-  lc2 := List<Complex <i32>>;
-  lc2.add (Complex<i32> 3 4)
-  lc2.add (Complex<i32> 4 5)
-  lc2.add (Complex<i32> 5 6)
-  lc2.add (Complex<i32> 7 8)
+  lc2 := List (Complex i32)
+  lc2.add (Complex i32 3 4)
+  lc2.add (Complex i32 4 5)
+  lc2.add (Complex i32 5 6)
+  lc2.add (Complex i32 7 8)
   lc2.print
   yak "2: size: {lc2.size}"
 
-/* NYI: this currently does not work:
-
-  // can we inherit paramter fields real, imag?
-  Complex3(redefine real, imag i32) : Complex<i32> real imag is
-  lc3 := List<Complex3>;
+  Complex3(redef real, imag i32) : Complex i32 real imag is
+  lc3 := List Complex3;
   lc3.add (Complex3 3 4)
   lc3.add (Complex3 4 5)
   lc3.add (Complex3 5 6)
   lc3.add (Complex3 7 8)
-  lc3.prin;
+  lc3.print
   yak "3: size: {lc3.size}"
 
-*/
-
   outerGenerics is
-    A<T,U> is
-      B<V,W>(y U) is
+    A(T, U type) is
+      B(V, W type, y U) is
         p is
           say "y is{y}"
-    x0 A<i32,bool  > := A<i32,bool>
-    x1 A<i32,bool  >.B<string,bool> := A<i32,bool>.B<string,bool> true
+    x0 A i32 bool := A i32 bool
+    x1 (A i32 bool).B string bool := (A i32 bool).B string bool true
     x1.p
     unit
 
@@ -178,7 +173,7 @@ genericstest is
     F(A type...) ref is
       f(a A) unit is abstract
 
-    G ref : F<i32,bool,i32> is
+    G ref : F i32 bool i32 is
       redefine f(a0 i32, a1 bool, a2 i32) unit is
        chck a0==a2 "f only called with first and last element equal"
        chck a1     "f only called with a1 true"
@@ -186,7 +181,7 @@ genericstest is
 
     x G := G
     x.f 3 true 3
-    y F<i32,bool,i32> := x
+    y F i32 bool i32 := x
     y.f 5 true 5
     z := G
     z.f 7 true 7

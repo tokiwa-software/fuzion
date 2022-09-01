@@ -29,7 +29,7 @@
 # from numeric plus a devision remainder operation %, bitwise logical operations,
 # shift operations and gcd. Also, integers can be used to build fractions.
 #
-integer(I integer<I>.type) : numeric<I> is
+integer(I (integer I).type) : numeric I is
 
   # division remainder
   redef infix % (other I) I
@@ -89,21 +89,21 @@ integer(I integer<I>.type) : numeric<I> is
   # convert this to a number using the given base.  If negative, add "-" as
   # the first character.
   #
-  asString(base u32) string
+  asString(base u32) string : character_encodings
     pre
       debug: u32 1 < base <= 36
   is
     ref : string
-      redef utf8 ref : Sequence<u8> is
-        redef asStream stream<u8> is
+      redef utf8 ref : Sequence u8 is
+        redef asStream stream u8 is
           b := from_u32 base
           if thiz.sign >= 0
-            ref : stream<u8>
+            ref : stream u8
               p := thiz.highest b
               redef hasNext => p.sign > 0
               redef next =>
                 d := (thiz / p % b).to_u32.as_u8
-                r := if (d < 10) strings.zeroChar + d else strings.aChar + (d - u8 10)
+                r := if (d < 10) strings.zeroChar + d else strings.aChar + (d - ascii.lf)
                 set p := p / b
                 r
           else

@@ -1,3 +1,77 @@
+## 2022-??-??: V0.079dev
+
+
+## 2022-08-15: V0.078
+
+- parser
+
+  - unified handling of indentation for blocks of statements, actual arguments,
+    match and .. ? .. | .. expressions, etc.
+
+  - actual arguments may now be indented and broken into several lines as
+    follows
+
+      call_with_four_args arg1 arg2 arg3 arg4
+
+      call_with_four_args arg1 arg2
+                          arg3 arg4
+
+      call_with_four_args arg1
+                          arg2
+                          arg3
+                          arg4
+
+      call_with_four_args
+        arg1 arg2 arg3 arg4
+
+      call_with_four_args
+        arg1 arg2
+        arg3 arg4
+
+      call_with_four_args
+        arg1
+        arg2
+        arg3
+        arg4
+
+  - fixed several corner cases related to indentation
+
+  - Exceptions to single-line expression as in
+
+      if expr ? a => true
+              | b => false
+        say "true"
+
+    have been removed, now requires parentheses
+
+      if (expr ? a => true
+               | b => false)
+        say "true"
+
+  - 't.env' and 't.type' expression now permit the type 't' to be in parentheses
+    '(t).env' and '(t).type' such that type parameters can be provided '(list
+    i32).type' or '(cache myType).env'.
+
+  - remove support for function types using 'fun' keyword, must use lambda
+    notation such as '(i32, bool) -> string' instead.
+
+- base lib
+
+  - started adding support for file I/O
+
+  - new feature 'ascii' defining ASCII control codes
+
+  - removed use of '<'/'>' for generics in favor of new type parameter syntax.
+
+  - added 'cache' effect to allow a simple caching of results.
+
+- tests
+
+  - added positive and negative tests for indentation: 'indentation' and
+    'indentation_negative', contain many examples of good and bad
+    indentation.
+
+
 ## 2022-08-03: V0.077
 
 - Fuzion language
@@ -61,7 +135,7 @@
 
   - 'mapOf' now can be used with an array of '(key, value)' tuples
 
-  - 'asString' on mutable value now call asString on the value.
+  - 'asString' on mutable value now calls asString on the value.
 
 ## 2022-07-04: V0.075
 

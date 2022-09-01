@@ -326,7 +326,7 @@ public class Function extends ExprWithPos
                                    new List<String>(wrapperName),
                                    NO_FEATURES,
                                    new List<>(_inheritsCall),
-                                   new Contract(null,null,null),
+                                   Contract.EMPTY_CONTRACT,
                                    new Impl(pos(), new Block(pos(), statements), Impl.Kind.Routine));
             res._module.findDeclarations(_wrapper, outer);
             if (inferResultType)
@@ -556,7 +556,7 @@ public class Function extends ExprWithPos
               {
                 String name = "a"+argnum;
                 actual_args.add(new Call(pos(), null, name));
-                formal_args.add(new Feature(pos(), Consts.VISIBILITY_LOCAL, 0, f.resultType(), name, new Contract(null,null,null)));
+                formal_args.add(new Feature(pos(), Consts.VISIBILITY_LOCAL, 0, f.resultType(), name, Contract.EMPTY_CONTRACT));
                 argnum++;
               }
             Call callWithArgs = new Call(pos(), null, call.name, actual_args);
@@ -566,7 +566,7 @@ public class Function extends ExprWithPos
                                         new List<String>("call"),
                                         formal_args,
                                         NO_CALLS,
-                                        new Contract(null,null,null),
+                                        Contract.EMPTY_CONTRACT,
                                         new Impl(pos(), callWithArgs, Impl.Kind.RoutineDef));
 
             // inherits clause for wrapper feature: Function<R,A,B,C,...>
@@ -583,7 +583,7 @@ public class Function extends ExprWithPos
                                            new List<String>(wrapperName),
                                            NO_FEATURES,
                                            inherits,
-                                           new Contract(null,null,null),
+                                           Contract.EMPTY_CONTRACT,
                                            new Impl(pos(), new Block(pos(), statements), Impl.Kind.Routine));
             res._module.findDeclarations(function, call.target.type().featureOfType());
             result = new Call(pos(),

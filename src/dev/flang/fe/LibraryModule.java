@@ -665,12 +665,10 @@ Feature
 .2+| true NYI! !isField? !isIntrinsc
               | 1      | int           | inherits count i
               | i      | Code          | inherits calls
-.6+| true     | 1      | int           | precondition count pre_n
+.4+| true     | 1      | int           | precondition count pre_n
               | pre_n  | Code          | precondition code
               | 1      | int           | postcondition count post_n
               | post_n | Code          | postcondition code
-              | 1      | int           | invariant count inv_n
-              | inv_n  | Code          | invariant code
 .2+| true     | 1      | int           | redefines count r
               | r      | int           | feature offset of redefined feature
    | isRoutine| 1      | Code          | Feature code
@@ -716,10 +714,6 @@ Feature
    *   |        | 1      | int           | postcondition count post_n                    |
    *   |        +--------+---------------+-----------------------------------------------+
    *   |        | post_n | Code          | postcondition code                            |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | int           | invariant count inv_n                         |
-   *   |        +--------+---------------+-----------------------------------------------+
-   *   |        | inv_n  | Code          | invariant code                                |
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | int           | redefines count r                             |
    *   |        +--------+---------------+-----------------------------------------------+
@@ -930,30 +924,10 @@ Feature
     return featurePostCondCountPos(at) + 4;
   }
 
-  int featureInvCondCountPos(int at)
+  int featureRedefinesCountPos(int at)
   {
     var i = featurePostCondPos(at);
     var ic = featurePostCondCount(at);
-    while (ic > 0)
-      {
-        i = codeNextPos(i);
-        ic--;
-      }
-    return i;
-  }
-  int featureInvCondCount(int at)
-  {
-    return data().getInt(featureInvCondCountPos(at));
-  }
-  int featureInvCondPos(int at)
-  {
-    return featureInvCondCountPos(at) + 4;
-  }
-
-  int featureRedefinesCountPos(int at)
-  {
-    var i = featureInvCondPos(at);
-    var ic = featureInvCondCount(at);
     while (ic > 0)
       {
         i = codeNextPos(i);

@@ -162,15 +162,11 @@ public class Lexer extends SourceFile
     t_loop("loop"),
     t_while("while"),
     t_until("until"),
-    t_require("require"),
-    t_ensure("ensure"),
-    t_invariant("invariant"),
     t_variant("variant"),
     t_pre("pre"),
     t_post("post"),
     t_inv("inv"),
     t_var("var"),
-    t_old("old"),
     t_match("match"),
     t_fun("fun"),
     t_value("value"),
@@ -616,6 +612,18 @@ public class Lexer extends SourceFile
 
 
   /**
+   * Is parsing restrict to one line?  This is enabled by a call to sameLine()
+   * with a positive argument.
+   *
+   * @return true iff parsing is restricted to current line
+   */
+  boolean isRestrictedToLine()
+  {
+    return _sameLine >= 0;
+  }
+
+
+  /**
    * Restrict parsing until the next occurence of white space.  Symbols after
    * fromPos that are preceded by white space will be replaced by t_spaceLimit.
    *
@@ -629,7 +637,7 @@ public class Lexer extends SourceFile
     if (PRECONDITIONS) require
       (fromPos >= 0);
 
-    int result = _endAtSpace;;
+    int result = _endAtSpace;
     _endAtSpace = fromPos;
 
     return result;
@@ -666,24 +674,6 @@ public class Lexer extends SourceFile
 
 
   /**
-   * short-hand for bracketTermWithNLs with c==def.
-   */
-  <V> V bracketTermWithNLs(boolean atMinIndent, Parens brackets, String rule, Callable<V> c)
-  {
-    return bracketTermWithNLs(atMinIndent, brackets, rule, c, c);
-  }
-
-
-  /**
-   * short-hand for bracketTermWithNLs with atMinIndent==false.
-   */
-  <V> V bracketTermWithNLs(Parens brackets, String rule, Callable<V> c, Callable<V> def)
-  {
-    return bracketTermWithNLs(false, brackets, rule, c, def);
-  }
-
-
-  /**
    * Parse a term in brackets that may extend over several lines. In case this appears in an
    * expression that must be in the same line, e.g.,
    *
@@ -693,16 +683,6 @@ public class Lexer extends SourceFile
    *
    *   n := a * (b
    *         + c) - d
-   *
-   * @param atMinIndent may the closing bracket be at minIndent?  The opening
-   * bracket may always be at minIndent and if it is, the closing one may be as
-   * well. This parameter is usefule for code like
-   *
-   *   myFeature {
-   *     say "Hello"
-   *   }
-   *
-   * where the opening bracket is not at minIndent, but the closing one is.
    *
    * @param brackets the opening / closing bracket to use
    *
@@ -715,18 +695,18 @@ public class Lexer extends SourceFile
    *
    * @return value returned by c or def, resp.
    */
-  <V> V bracketTermWithNLs(boolean atMinIndent, Parens brackets, String rule, Callable<V> c, Callable<V> def)
+  <V> V bracketTermWithNLs(Parens brackets, String rule, Callable<V> c, Callable<V> def)
   {
     var start = brackets._left;
     var end   = brackets._right;
     var ol = line();
     var startsIndent = pos() == _minIndentStartPos;
-    match(atMinIndent, start, rule);
-    V result = relaxLineAndSpaceLimit(!currentMatches(startsIndent || atMinIndent, end) ? c : def);
+    match(true, start, rule);
+    V result = relaxLineAndSpaceLimit(!currentMatches(true, end) ? c : def);
     var nl = line();
     relaxLineAndSpaceLimit(() ->
                            {
-                             match(startsIndent || atMinIndent, end, rule);
+                             match(true, end, rule);
                              return Void.TYPE; // is there a better unit type in Java?
                            });
     var sl = sameLine(-1);
@@ -830,7 +810,7 @@ public class Lexer extends SourceFile
 
   /**
    * The current token.  If indentation limit was set and the current token is
-   * indented less than this limit, return Token.t_indentationLimit.
+   * indented less than this limit minus 1, return Token.t_indentationLimit.
    */
   Token currentAtMinIndent()
   {
@@ -991,21 +971,17 @@ LF          : ( '\r'? '\n'
             {
               int last = p;
               p = curCodePoint();
-              if (isNewLine(last,p))
-                {
-                  _curLine++;
-                }
+              token = checkWhiteSpace(last, p);
               while (kind(p) == K_WS)
                 {
                   nextCodePoint();
                   last = p;
                   p = curCodePoint();
-                  if (isNewLine(last,p))
+                  if (token != Token.t_error)
                     {
-                      _curLine++;
+                      token = checkWhiteSpace(last,p);
                     }
                 }
-              token = Token.t_ws;
               break;
             }
           case K_SLASH   :   // '/', introducing a comment or an operator.
@@ -1138,6 +1114,34 @@ IDENT     : ( 'a'..'z'
           }
       }
     _curToken = token;
+  }
+
+
+  /**
+   * Check if given consecutive white space code points are acceptable,
+   * increment _curLine if last/p start a new line.
+   *
+   * @param p1 the first code point
+   *
+   * @param p2 the second code point
+   *
+   * @return Token.t_ws or Token.t_error in case of illegal white space.
+   */
+  Token checkWhiteSpace(int p1, int p2)
+  {
+    var result = Token.t_ws;
+    if (isNewLine(p1, p2))
+      {
+        _curLine++;
+      }
+    else if (p1 != ' ')
+      {
+        Errors.error(sourcePos(),
+                     "Unexpected white space character \\u" + Integer.toHexString(0x1000000+p1).substring(1).toUpperCase() + " found",
+                     null);
+        result = Token.t_error;
+      }
+    return result;
   }
 
 

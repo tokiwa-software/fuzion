@@ -201,7 +201,12 @@ public class FormalGenerics extends ANY
             while (i.hasNext())
               {
                 var t = i.next();
-                i.set(t.resolve(res, outer));
+                if (CHECKS) check
+                  (Errors.count() > 0 || t != null);
+                if (t != null)
+                  {
+                    i.set(t.resolve(res, outer));
+                  }
               }
           }
       }

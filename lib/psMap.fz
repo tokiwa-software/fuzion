@@ -43,18 +43,18 @@
 # O(m*n log² n) for adding an element m times.
 #
 # This constructor is for internal use only, to create instance of psMap, use
-# psMap<PK,V> without arguments.
+# psMap PK V without arguments.
 #
 psMap
   (
    # key type
-   PK ordered<PK>.type,
+   PK (ordered PK).type,
 
    # value type
    redef V type,
 
    # the array containg the sorted arrays, see below for details
-   data fuzion.sys.array<tuple<PK,V>>,
+   data fuzion.sys.array (tuple PK V),
 
    # the number of key and value pairs in this map.
    size i32,
@@ -62,7 +62,7 @@ psMap
    # the first index in data that is unused
    fill i32)
 
-   : map<PK, V>
+   : map PK V
 
 is
 
@@ -131,7 +131,7 @@ O(n log n).
 
   # add mapping from k to v
   #
-  add (k PK, v V) psMap<PK, V> is
+  add (k PK, v V) psMap PK V is
     if has k
       panic "NYI: psMap currently does not handle updates for existing key"
     else
@@ -143,18 +143,18 @@ O(n log n).
   # Adding has a cumulative average runtime in O(log size) and a worst-case
   # runtime of O(size)
   #
-  add (kv tuple<PK,V>) psMap<PK, V> is
+  add (kv (tuple PK V)) psMap PK V is
     nsize := size + 1
     ndata := data
     nfill := fill
 
     # join arrays data[ole..ole+sz-1] and ndata[dest..dest+sz-1] to ndata[dest..dest+2*sz-1]
     #
-    join (ole i32, dest i32, sz i32) psMap<PK, V> is
+    join (ole i32, dest i32, sz i32) psMap PK V is
       if (size & sz) = 0
         psMap ndata nsize dest+sz
       else
-        tmp := array<tuple<PK,V>> sz (i -> ndata[dest+i])
+        tmp := array (tuple PK V) sz (i -> ndata[dest+i])
         for
           i1 := 0, if (use1) i1+1 else i1
           i2 := 0, if (use1) i2   else i2+1
@@ -166,7 +166,7 @@ O(n log n).
         join (fill - sz - 2*(fill - ole - sz) - 2*sz) dest 2*sz
 
     if (nsize & size) = 0
-      set ndata := fuzion.sys.array<tuple<PK,V>> (data.length * 2 + (nsize+1) / 2)
+      set ndata := fuzion.sys.array (tuple PK V) (data.length * 2 + (nsize+1) / 2)
       set nfill := 0
     ndata[nfill] := kv
     join fill-1 nfill 1
@@ -174,9 +174,9 @@ O(n log n).
 
   # find the value k is mapped to or nil if k is not part of this map
   #
-  index [] (k PK) option<V> is
+  index [] (k PK) option V is
 
-    binarySearch(l, r i32) option<V> is
+    binarySearch(l, r i32) option V is
       m := (l + r) / 2
       if l > r
         nil
@@ -189,7 +189,7 @@ O(n log n).
 
     # find k in sub-arrays starting at data[at]
     #
-    get (at i32, sz i32, tail i32) option<V> is
+    get (at i32, sz i32, tail i32) option V is
       if sz = 0
         nil
       else
@@ -219,15 +219,15 @@ O(n log n).
 
   # create sorted array of all keys in this map
   #
-  asKeyArray array<PK> is
-    r := fuzion.sys.array<PK> size
+  asKeyArray array PK is
+    r := fuzion.sys.array PK size
 
     # join arrays data[ole..ole+sz-1] and r[dest..dest+rsz-1] to r[dest..dest+sz+rsz-1]
     #
     join (ole i32, sz i32, rsz i32, skip i32) unit is
       if sz <= size
         if (size & sz) /= 0
-          tmp := array<PK> rsz (i -> r[i])
+          tmp := array PK rsz (i -> r[i])
           for
             i1 := 0, if (use1) i1+1 else i1
             i2 := 0, if (use1) i2   else i2+1
@@ -247,16 +247,16 @@ O(n log n).
 
   # get a stream of all key/value pairs in this map
   #
-  redef items Sequence<tuple<PK,V>> is
-    res : Sequence<tuple<PK,V>> is
+  redef items Sequence (tuple PK V) is
+    res : Sequence (tuple PK V) is
       redef asStream =>
-        (asKeyArray.map<tuple<PK,V>> (k -> (k, psMap.this[k].get))).asStream
+        (asKeyArray.map (tuple PK V) (k -> (k, psMap.this[k].get))).asStream
     res
 
 
   # get the lowest key in this map
   #
-  min option<PK> is
+  min option PK is
     if size = 0
       nil
     else
@@ -285,7 +285,7 @@ O(n log n).
 
   # get the highest key in this map
   #
-  max option<PK> is
+  max option PK is
     if size = 0
       nil
     else
@@ -319,14 +319,14 @@ O(n log n).
   # both psMap.this and other, it will be mapped to psMap.this[k] or to other[k],
   # but it is undefined to which of these two.
   #
-  union (other ref psMap<PK, V>) ref psMap<PK,V> is  # NYI: 'ref' due to lack of 'like this'
+  union (other ref psMap PK V) ref psMap PK V is  # NYI: 'ref' due to lack of 'like this'
     if other.size < size
       other ⋃ psMap.this
     else
 
       # helper to add 'psMap.this.data[l..r]' to 'a' and return the resulting map.
       #
-      addAll (a ref psMap<PK,V>, l i32, r i32) ref psMap<PK,V> is  # NYI: 'ref' due to lack of 'like this'
+      addAll (a ref psMap PK V, l i32, r i32) ref psMap PK V is  # NYI: 'ref' due to lack of 'like this'
         if l > r
           a
         else
@@ -338,7 +338,7 @@ O(n log n).
       # 'tail' elements at indices larger or equal to 'at+sz' added recursively as
       # well.
       #
-      addAll (a ref psMap<PK,V>, at i32, sz i32, tail i32) ref psMap<PK,V> is  # NYI: 'ref' due to lack of 'like this'
+      addAll (a ref psMap PK V, at i32, sz i32, tail i32) ref psMap PK V is  # NYI: 'ref' due to lack of 'like this'
         if sz = 0
           a
         else
@@ -358,31 +358,33 @@ O(n log n).
 
   # infix operator synonyme for union of two psMaps
   #
-  infix ⋃ (other ref psMap<PK, V>) => union other  # NYI: 'ref' due to lack of 'like this'
+  infix ⋃ (other ref psMap PK V) => union other  # NYI: 'ref' due to lack of 'like this'
 
 
 # psMaps -- unit type feature declaring features related to psMap
 #
 # NYI: move to psMap.type
 #
-psMaps<PK : ordered<PK>, V> is
+psMaps(PK (ordered PK).type, V type) is
 
   # empty -- an empty partially sorted map
   #
   # This feature creates an empty instance of psMap.
   #
-  empty => psMap (fuzion.sys.array<tuple<PK,V>> 0) 0 0
+  empty => psMap (fuzion.sys.array (tuple PK V) 0) 0 0
 
 
 # psMap -- routine to initialize a partially sorted map from two Sequences
 #
 # This feature creates a pre-initialized instance of psMap.
 #
-psMap<PK : ordered<PK>, V> (
+psMap(
+    PK (ordered PK).type,
+    V type,
     # list of keys in the map
-    ks Sequence<PK>,
+    ks Sequence PK,
     # list of values corresponding to keys in the map
-    vs Sequence<V>)
+    vs Sequence V)
  =>
   for
     r := (psMaps PK V).empty, r.add k v

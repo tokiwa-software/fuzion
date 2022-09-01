@@ -343,7 +343,7 @@ public class Loop extends ANY
                                new List<String>(loopName),
                                formalArguments,
                                Function.NO_CALLS,
-                               new Contract(null,null,null),
+                               Contract.EMPTY_CONTRACT,
                                new Impl(p, block, Impl.Kind.RoutineDef))
       {
         public boolean resultInternal() { return true; }
@@ -482,7 +482,7 @@ public class Loop extends ANY
                                     new List<String>(name),
                                     new List<>(),
                                     Function.NO_CALLS,
-                                    new Contract(null,null,null),
+                                    Contract.EMPTY_CONTRACT,
                                     new Impl(_elsePos, ei == 0 ? _elseBlock0 : _elseBlock1, Impl.Kind.RoutineDef))
           {
             public boolean resultInternal() { return true; }

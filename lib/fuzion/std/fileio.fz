@@ -27,14 +27,14 @@
 #
 # read to retrieve data from a file
 #
-# write to insert data into a file 
+# write to insert data into a file
 #
-public fuzion.std.fileio is
+public fileio is
 
   # reads a file and returns the content as an array of u8.
   #
   public read(
-              # the (relative or absolute) file name, using platform specific path separators  
+              # the (relative or absolute) file name, using platform specific path separators
               path string) =>
     file := array get_file_size(path).as_i32 i->(u8 0) # allocating an array the size of the file
     arr := path.utf8.asArray # transforms the path to a utf8 byte array
@@ -42,7 +42,7 @@ public fuzion.std.fileio is
     file
 
   # intrinsic that fills an array u8 with the file bytes.
-  # 
+  #
   private read(
                # the internal array data representing the file path in bytes
                path Object,
@@ -77,7 +77,7 @@ public fuzion.std.fileio is
                # the (relative or absolute) file name, using platform specific path separators
                path string,
                # the content of the file as an u8 array
-               content array<u8>) =>
+               content array u8) =>
     arr := path.utf8.asArray
     write arr.internalArray.data arr.length content.internalArray.data content.length
 
@@ -130,3 +130,45 @@ public fuzion.std.fileio is
                  path Object,
                  # the length of the internal array representing the path
                  path_length i32) bool is intrinsic
+
+  # moves file/dir from an old path to a the new path
+  # can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
+  # returns TRUE in case of success and FALSE in case of failure
+  #
+  public move(
+              # the old (relative or absolute) file name, using platform specific path separators
+              old_path string,
+              # the new (relative or absolute) file name, using platform specific path separators
+              new_path string) =>
+    arr0 := old_path.utf8.asArray
+    arr1 := new_path.utf8.asArray
+    move arr0.internalArray.data arr0.length arr1.internalArray.data arr1.length
+
+  # intrinsic that returns TRUE in case the move was successful and FALSE in case not
+  #
+  private move(
+               # the internal array data representing the old file/dir path in bytes
+               old_path Object,
+               # the length of the internal array representing the old path
+               old_path_length i32,
+               # the internal array data representing the new file/dir path in bytes
+               new_path Object,
+               # the length of the internal array representing the new path
+               new_path_length i32) bool is intrinsic
+
+  # creates a directory using the specified path
+  # parent directories in the path should exist otherwise, no creation will take place
+  #
+  public create_dir(
+                # the (relative or absolute) dir name, using platform specific path separators
+                path string) =>
+    arr := path.utf8.asArray
+    create_dir arr.internalArray.data arr.length
+
+  # intrinsic that returns unit type in case of success or failure during dir creation
+  #
+  private create_dir(
+                 # the internal array data representing the dir path in bytes
+                 path Object,
+                 # the length of the internal array representing the path
+                 path_length i32) unit is intrinsic

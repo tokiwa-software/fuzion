@@ -63,6 +63,7 @@ public abstract class FeatureVisitor extends ANY
   public void         actionAfter (Block          b, AbstractFeature outer) { }
   public void         action      (AbstractCall   c                       ) { }
   public Expr         action      (Call           c, AbstractFeature outer) { return c; }
+  public Expr         action      (DotType        d, AbstractFeature outer) { return d; }
   public void         actionBefore(AbstractCase   c                       ) { }
   public void         actionAfter (AbstractCase   c                       ) { }
   public void         action      (Cond           c, AbstractFeature outer) { }

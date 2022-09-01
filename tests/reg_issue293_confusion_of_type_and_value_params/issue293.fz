@@ -30,7 +30,7 @@ issue293 is
   ages := map (Sequence i32) human i32 (x -> x.age)
   say (into i32 human [human(4), human(12), human(30)] ages)
 
-  into(TAcc, T type, seq Sequence<T>, xf transducer(Sequence(TAcc),TAcc,T)) Sequence(TAcc) is
+  into(TAcc, T type, seq Sequence T, xf transducer(Sequence(TAcc),TAcc,T)) Sequence(TAcc) is
     rf := ref : reducing_fn((Sequence TAcc),TAcc)
       call(res Sequence(TAcc), val TAcc) Sequence(TAcc) is
         res ++ [val]
@@ -51,7 +51,7 @@ issue293 is
 
 
   # a reducing function takes a previous result and a value and returns a new result
-  reducing_fn(TAcc,T type) ref : Function<TAcc,TAcc,T> is
+  reducing_fn(TAcc, T type) ref : Function TAcc TAcc T is
 
     # NYI redef call abstract is currently necessary because of bug in c backend
     call(res TAcc, val T) TAcc is abstract

@@ -36,7 +36,7 @@
 # value of type 'bool'.
 #
 #
-bool : choice<FALSE, TRUE>, hasEquals<bool> is
+bool : choice FALSE TRUE, hasEquals bool is
 
   # not
   prefix ! bool is
@@ -75,7 +75,7 @@ bool : choice<FALSE, TRUE>, hasEquals<bool> is
     fuzion.std.panic "bool.infix : is handled by front end"
 
   # ternary ? : -- NYI: This will be replaced by a more powerful match syntax
-  ternary ? : <T>(lazy a, b T) => if bool.this a else b
+  ternary ? : (T type, lazy a, b T) => if bool.this a else b
 
   # human readable string
   redef asString => if bool.this "true" else "false"

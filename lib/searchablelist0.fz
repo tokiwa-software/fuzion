@@ -29,9 +29,9 @@
 # type 'Sequence', so it is more efficient.
 #
 #
-searchablelist<A: hasEquals<A>>(from list<A>) : Sequence<A>
-/* : list<A> -- NYI: we might allow inherting from a choice to get a choice
-                     with more restrictions on the type arguments
+searchablelist(A (hasEquals A).type, from list A) : Sequence A
+/* : list A -- NYI: we might allow inherting from a choice to get a choice
+                    with more restrictions on the type arguments
 
   also, if we could add a compile time check for the type of the actual generic
   such as
@@ -52,7 +52,7 @@ is
 
   # does this list start with l?
   #
-  startsWith (l list<A>) bool is
+  startsWith (l list A) bool is
     match l
       nil    => true
       c2 Cons =>
@@ -63,7 +63,7 @@ is
 
   # get the index of l within this list or nil if it does not exist
   #
-  find (l list<A>) option<i32> is
+  find (l list A) option i32 is
     if startsWith l
       0
     else
@@ -74,13 +74,13 @@ is
 
   # replace all occurances of f by r
   #
-  replace (f, r list<A>) =>
+  replace (f, r list A) =>
 
     # tail recursive helper
     #
-    repl (h,        # the head part of from with f already replaced by r
-          t list<A> # the tail that still needs to be searched for f
-         ) list<A>
+    repl (h,       # the head part of from with f already replaced by r
+          t list A # the tail that still needs to be searched for f
+         ) list A
     is
       match (searchablelist t).find f
         nil   => h ++ t
@@ -91,13 +91,13 @@ is
 
   # get the number of matches of l
   #
-  countMatchesOverlapping (l list<A>) i32 is
+  countMatchesOverlapping (l list A) i32 is
     (tails & (t -> (searchablelist t).startsWith l)).count
 
 
   # get the number of non-overlapping matches of l within this
   #
-  countMatches (l list<A>) i32 is
+  countMatches (l list A) i32 is
     match from
       nil     => 0
       c1 Cons => (if (startsWith l) 1 + (searchablelist (drop l.count)).countMatches l

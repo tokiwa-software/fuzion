@@ -30,7 +30,7 @@
 # (string/concat/""), etc.
 #
 #
-Monoid<T> ref
+Monoid(T type) ref
 
 /* NYI: quantor intrinsics not supported yet:
 

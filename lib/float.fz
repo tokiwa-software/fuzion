@@ -29,7 +29,7 @@
 # float is the abstract parent of concrete floating point features such as
 # f32 or f64.
 #
-float(redef F float<F>.type) : numeric<F>, floats<F> is
+float(redef F (float F).type) : numeric F, floats F is
 
 
   # preconditions for basic operations: true if the operation's result is
@@ -86,7 +86,7 @@ float(redef F float<F>.type) : numeric<F>, floats<F> is
 # floats -- unit type defining features related to float but not requiring
 # an instance
 #
-floats(F float<F>.type) : numerics<F> is
+floats(F (float F).type) : numerics F is
 
   # number of bytes required to store this value
   #

@@ -94,13 +94,15 @@ public class Intrinsics extends ANY
                               ));
         });
     IntrinsicCode noFileIo = (c,cl,outer,in) ->
-      CStmnt.seq(CExpr.fprintfstderr("*** C backend does not support fileio features (yet).\n"),
+      CStmnt.seq(CExpr.fprintfstderr("*** C backend does not support this fileio feature (yet).\n"),
                  CExpr.exit(1));
-    put("fuzion.std.fileio.readFile"   , noFileIo); // NYI
-    put("fuzion.std.fileio.getFileSize", noFileIo); // NYI
-    put("fuzion.std.fileio.writeFile"  , noFileIo); // NYI
-    put("fuzion.std.fileio.exists"     , noFileIo); // NYI
-    put("fuzion.std.fileio.delete"     , noFileIo); // NYI
+    put("fuzion.std.fileio.read"         , noFileIo); // NYI
+    put("fuzion.std.fileio.get_file_size", noFileIo); // NYI
+    put("fuzion.std.fileio.write"        , noFileIo); // NYI
+    put("fuzion.std.fileio.exists"       , noFileIo); // NYI
+    put("fuzion.std.fileio.delete"       , noFileIo); // NYI
+    put("fuzion.std.fileio.move"         , noFileIo); // NYI
+    put("fuzion.std.fileio.create_dir"   , noFileIo); // NYI
     put("fuzion.std.out.flush" ,
         "fuzion.std.err.flush" , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
     put("fuzion.stdin.nextByte", (c,cl,outer,in) ->

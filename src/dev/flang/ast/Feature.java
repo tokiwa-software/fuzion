@@ -1280,6 +1280,7 @@ public class Feature extends AbstractFeature implements Stmnt
       }
     public void         action(AbstractAssign a, AbstractFeature outer) {        a.resolveTypes(res, outer); }
     public Call         action(Call           c, AbstractFeature outer) { return c.resolveTypes(res, outer); }
+    public Expr         action(DotType        d, AbstractFeature outer) { return d.resolveTypes(res, outer); }
     public Stmnt        action(Destructure    d, AbstractFeature outer) { return d.resolveTypes(res, outer); }
     public Stmnt        action(Feature        f, AbstractFeature outer) { /* use f.outer() since qualified feature name may result in different outer! */
                                                                           return f.resolveTypes(res, f.outer() ); }
@@ -1531,7 +1532,9 @@ public class Feature extends AbstractFeature implements Stmnt
 
     for (var t : choiceGenerics())
       {
-        if (!t.isRef())
+        if (CHECKS) check
+          (Errors.count() > 0 || t != null);
+        if (t != null && !t.isRef())
           {
             if (t == thisType())
               {
@@ -2212,7 +2215,7 @@ public class Feature extends AbstractFeature implements Stmnt
 
 
   /**
-   * After type resolution, resultyType returns the result type of this
+   * After type resolution, resultType returns the result type of this
    * feature using the formal generic argument.
    *
    * @return the result type, t_ERROR in case of an error. Never null.

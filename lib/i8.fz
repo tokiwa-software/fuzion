@@ -25,7 +25,7 @@
 
 # i8 -- 8-bit signed integer values
 #
-i8(val i8) : wrappingInteger<i8>, hasInterval<i8>, i8s is
+i8(val i8) : wrappingInteger i8, hasInterval i8, i8s is
 
   redef thiz => i8.this.val
   redef orderedThis => i8.this.val
@@ -124,7 +124,7 @@ i8(val i8) : wrappingInteger<i8>, hasInterval<i8>, i8s is
   castTo_u128 u128 is castTo_u8.as_u128   # 3 -> 3, -3 -> 0x0000_0000_0000_0000_0000_0000_0000_00fd
 
   # NYI: max is redefined here only to solve repeated inheritance conflict. Since max inherited
-  # from hasInterval<i8> is abstract, fz should not complain about this conflict.
+  # from hasInterval i8 is abstract, fz should not complain about this conflict.
   redef max => i8 0x7f
 
 
@@ -156,7 +156,7 @@ i8(val i8) : wrappingInteger<i8>, hasInterval<i8>, i8s is
 # i8s -- unit type defining features related to i8 but not requiring an
 # instance
 #
-i8s : wrappingIntegers<i8> is
+i8s : wrappingIntegers i8 is
 
   redef name => "i8"
 
