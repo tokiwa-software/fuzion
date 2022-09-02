@@ -67,7 +67,7 @@ public fileio is
     if size != -1
       size
     else
-      error "an error occured while retrieving the size of the file/dir: \"$path\""
+      error "an error occurred while retrieving the size of the file/dir: \"$path\""
 
   # intrinsic that returns the file size in bytes or -1 in case of an error
   #
