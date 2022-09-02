@@ -57,7 +57,7 @@ public fileio is
                # the length of the array that represents the file bytes
                file_array_length i32) i64 is intrinsic
 
-  # retrieves the file size in bytes and returns -1 in case of an error
+  # retrieves the file size in bytes and returns an outcome of error in case of an error
   #
   public get_file_size(
                        # the (relative or absolute) file name, using platform specific path separators
