@@ -142,7 +142,7 @@ public fileio is
     if move arr0.internalArray.data arr0.length arr1.internalArray.data arr1.length
       unit
     else
-      error "an error occured while performing the following move operation: \"$old_path\" --> \"$new_path\""
+      error "an error occurred while performing the following move operation: \"$old_path\" --> \"$new_path\""
 
   # intrinsic that returns TRUE in case the move was successful and FALSE in case not
   #
