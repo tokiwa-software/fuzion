@@ -83,7 +83,7 @@ public fileio is
     if write arr.internalArray.data arr.length content.internalArray.data content.length
       unit
     else
-      error "an error occured during writing the file: \"$path\""
+      error "an error occurred during writing the file: \"$path\""
 
   # intrinsic to write bytes (internal array data) in a file using the file path
   # returns TRUE in case of success and FALSE in case of failure
