@@ -154,18 +154,22 @@ public fileio is
                new_path_length i32) bool is intrinsic
 
   # creates a directory using the specified path
-  # parent directories in the path should exist otherwise, no creation will take place
+  # parent directories in the path should exist otherwise, no creation will take place and an error will be the outcome
+  # in case of successful creation a unit type will be the outcome
   #
   public create_dir(
                 # the (relative or absolute) dir name, using platform specific path separators
-                path string) =>
+                path string) outcome unit is
     arr := path.utf8.asArray
-    create_dir arr.internalArray.data arr.length
+    if create_dir arr.internalArray.data arr.length
+      unit
+    else
+      error "an error occurred while creating the following directory: \"$path\""
 
-  # intrinsic that returns unit type in case of success or failure during dir creation
+  # intrinsic that returns TRUE in case of success or FALSE in case of failure during dir creation
   #
   private create_dir(
                  # the internal array data representing the dir path in bytes
                  path Object,
                  # the length of the internal array representing the path
-                 path_length i32) unit is intrinsic
+                 path_length i32) bool is intrinsic
