@@ -106,7 +106,7 @@ public fileio is
     else if rslt = 0
       false
     else
-      error "an error occured while performing exists operation on the following file/dir: \"$path\""
+      error "an error occurred while performing exists operation on the following file/dir: \"$path\""
 
   # intrinsic that checks the existence of the file/directory in the path
   # it returns 1 in case the file/dir exists, 0 in case it does not exist and -1 in case of an error
