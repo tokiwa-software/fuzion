@@ -120,7 +120,7 @@ public fileio is
     if delete arr.internalArray.data arr.length
       unit
     else
-      error "an error occured while performing the delete operation on the following file/dir: \"$path\""
+      error "an error occurred while performing the delete operation on the following file/dir: \"$path\""
 
   # intrinsic that deletes the file/dir represented by the path returning TRUE in case of success
   # and FALSE in case of failure
