@@ -157,6 +157,13 @@ array(redef T type,
     array B array.this.length (i -> f array.this[i])
 
 
+  # variant of map which additionally passes the index to
+  # the mapping function f
+  #
+  map_indexed(B type, f (T, i32) -> B) array B is
+    array B array.this.length (i -> f array.this[i] i)
+
+
   # fold the elements of this array using the given monoid.
   #
   # e.g., to sum the elements of an array of i32, use a.fold i32.sum
