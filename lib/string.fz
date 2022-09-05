@@ -127,7 +127,7 @@ string ref : hasHash string, ordered string, strings is
 
   # parse this string as a signed 32-bit integer value
   #
-  parse_i32       => parse_i32 10
+  parse_i32        => parse_i32 10
   parse_i32_binary => parse_i32 2
   parse_i32_octal  => parse_i32 8
   parse_i32_hex    => parse_i32 16
@@ -139,7 +139,7 @@ string ref : hasHash string, ordered string, strings is
 
   # parse this string as an unsigned 32-bit integer value
   #
-  parse_u32       => parse_u32 10
+  parse_u32        => parse_u32 10
   parse_u32_binary => parse_u32 2
   parse_u32_octal  => parse_u32 8
   parse_u32_hex    => parse_u32 16
@@ -151,7 +151,7 @@ string ref : hasHash string, ordered string, strings is
 
   # parse this string as a signed 64-bit integer value
   #
-  parse_i64       => parse_i64 10
+  parse_i64        => parse_i64 10
   parse_i64_binary => parse_i64 2
   parse_i64_octal  => parse_i64 8
   parse_i64_hex    => parse_i64 16
@@ -163,7 +163,7 @@ string ref : hasHash string, ordered string, strings is
 
   # parse this string as an unsigned 64-bit integer value
   #
-  parse_u64       => parse_u64 10
+  parse_u64        => parse_u64 10
   parse_u64_binary => parse_u64 2
   parse_u64_octal  => parse_u64 8
   parse_u64_hex    => parse_u64 16
@@ -175,7 +175,7 @@ string ref : hasHash string, ordered string, strings is
 
   # parse this string as an int value of arbitrary size
   #
-  parse_int       => parse_int int(10)
+  parse_int        => parse_int int(10)
   parse_int_binary => parse_int int(2)
   parse_int_octal  => parse_int int(8)
   parse_int_hex    => parse_int int(16)
