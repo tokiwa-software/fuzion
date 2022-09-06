@@ -68,7 +68,6 @@ is
 
   # return two sequences of equal length
   # by prepending false to the shorter sequence
-  # NYI return type could be sequence?
   private equalize(other nat)
   post result.values.0.count = result.values.1.count
     =>
@@ -201,6 +200,8 @@ is
         .first true
 
 
+  # checks if operations are allowed
+
   prefix -! bool is thiz=zero
   infix +! (other nat) bool is true
   infix -! (other nat) bool is thiz >= other
@@ -209,6 +210,8 @@ is
   infix %! (other nat) bool is true
   infix **!(other nat) bool is true
 
+  # exponentation always works, even though it might be very
+  # slow for large numbers
 
   infix **?(other nat) numOption nat is thiz ** other
   infix **^(other nat) nat is thiz ** other
@@ -224,6 +227,7 @@ is
   redef thiz => nat b
 
 
+  # this nat as an u32
   as_u32 u32
   pre
     bits.count <= 32
@@ -235,7 +239,7 @@ is
         r << 1
       )
 
-
+  # this nat as an i32
   as_i32 i32
   is
     as_u32.as_i32
@@ -344,9 +348,10 @@ is
 
 
 
-  # these all return zero always
-  # execept for division where we need to
+  # all operations are allowed for all ints
+  # except for division where we need to
   # check for division by zero
+
   prefix -! bool is true
   infix +! (other int) bool is true
   infix -! (other int) bool is true
@@ -356,19 +361,17 @@ is
   infix %! (other int) bool is true
 
   infix **!(other int) bool is
-    match other.ns
-      plus => true
-      minus => false # NYI, might be okay sometimes
+    other >= zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
 
   infix **?(other int) numOption int is
     match other.ns
       plus => thiz ** other
-      minus => nil # NYI, might be okay sometimes
+      minus => nil # 0 and 1 ** -other would be okay but we disallow nonetheless
 
   infix **^(other int) int is
     match other.ns
       plus => thiz ** other
-      minus => panic "int.**^" # NYI, might be okay sometimes
+      minus => panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
 
   # are these two ints equal?
   infix == (other int) bool is
