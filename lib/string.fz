@@ -579,12 +579,10 @@ strings is
   # create string from the given codepoints
   #
   fromCodepoints(codePoints Sequence codepoint) string is
-    # NYI: would be nicer if result was created lazily
-    for
-      res := "", res + cp
-      cp in codePoints
-    else
-      res
+    ref : string
+      utf8 Sequence u8 is
+        codePoints
+          .flatMapSequence u8 (x -> x.utf8)
 
 
   # NYI: remove the convenience functions when Fuzion supports char literals
