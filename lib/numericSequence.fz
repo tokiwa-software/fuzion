@@ -86,5 +86,5 @@ numericSequence(N (numeric N).type, from Sequence N) : Sequence N, hasEquals (nu
   # are these numeric sequences equal?
   # i.e. do they only contain equal numbers
   infix = (o numericSequence N) bool is
-    count = o.count &
-      ((zip o a,b->a=b) ∀ x->x)
+    ((zip o a,b->a=b) ∀ x->x)
+      & count = o.count
