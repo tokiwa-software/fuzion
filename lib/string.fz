@@ -58,39 +58,16 @@ string ref : hasHash string, ordered string, strings is
   pre
     n >= 0
   is
-    redef utf8 ref : Sequence u8 is
-      redef asStream ref : stream u8 is
-        i := 0
-        bytes := string.this.utf8.asStream
-
-        redef hasNext => i < n && bytes.hasNext
-        redef next u8 is
-          res := bytes.next
-          if !bytes.hasNext
-            set i := i + 1
-            if i < n
-              set bytes := string.this.utf8.asStream
-          res
+    redef utf8 Sequence u8 is
+      utf8 := string.this.utf8
+      utf8.cycle.take (utf8.count * n)
 
 
   # compare string byte-by-byte with other string
   redef infix = (other string) =>
-    s1 :=       utf8.asStream
-    s2 := other.utf8.asStream
-    while s1.hasNext && s2.hasNext
-    until s1.next    != s2.next
-      false
-    else
-      !s1.hasNext && !s2.hasNext
+    ((utf8.zip other.utf8 a,b->a=b) ∀ x->x)
+      & utf8.count = other.utf8.count
 
-    /* NYI: when lazy evaluation works, this should be possible:
-
-    s1 :=       utf8.asStream
-    s2 := other.utf8.asStream
-    while s1.hasNext == s2.hasNext && (!s1.hasNext || s1.next == s2.next)
-    until !s1.hasNext
-
-    */
 
   infix == (other string) => string.this = other    # NYI: replace by 'infix ='
 
