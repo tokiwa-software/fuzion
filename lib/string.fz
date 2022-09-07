@@ -49,8 +49,22 @@ string ref : hasHash string, ordered string, strings is
 
   # concatenate string with string representation of another object
   infix + (other Object) string is
+
+    /* NYI figure out why stringtest fails with this implementation:
+
     ma := (marrays Object).new 2 string.this
     ma[1] := other
+    strings.fromArray ma
+
+    */
+
+    ma =>
+      if isEmpty
+        (marrays Object).new 1 other
+      else
+        tmp := (marrays Object).new 2 string.this
+        tmp[1] := other
+        tmp
     strings.fromArray ma
 
   # repeat string given number of times
@@ -549,24 +563,8 @@ strings is
     redef infix + (other Object) string is
       fromArray (a.add other)
 
-    redef utf8 ref : Sequence u8 is
-      redef asStream ref : stream u8 is
-        i := 0
-        s := a[i].asString.utf8.asStream
-        gotNext := false
-
-        findNext bool is
-          set gotNext := gotNext || (
-            for hs := s.hasNext
-            while !hs && i+1 < a.length
-              set i := i + 1
-              set s := a[i].asString.utf8.asStream
-            else
-              hs)
-          gotNext
-
-        redef hasNext => findNext
-        redef next    => findNext; set gotNext := false; s.next
+    redef utf8 Sequence u8 is
+      a.flatMapSequence u8 ai->ai.asString.utf8
 
 
   # create string from the given utf8 bytes
