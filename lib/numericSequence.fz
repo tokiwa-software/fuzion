@@ -25,7 +25,7 @@
 
 # numericSequence -- a Sequence whose elements inherit from numeric
 #
-numericSequence(N (numeric N).type, from Sequence N) : Sequence N is
+numericSequence(N (numeric N).type, from Sequence N) : Sequence N, hasEquals (numericSequence N)  is
 
   # create a list from this Sequence.
   #
@@ -81,3 +81,10 @@ numericSequence(N (numeric N).type, from Sequence N) : Sequence N is
         arr[arr.length / 2]
       else
         (arr[(arr.length / 2) - 1] + arr[(arr.length / 2)]) / (first.two)
+
+
+  # are these numeric sequences equal?
+  # i.e. do they only contain equal numbers
+  infix = (o numericSequence N) bool is
+    ((zip o a,b->a=b) ∀ x->x)
+      & count = o.count
