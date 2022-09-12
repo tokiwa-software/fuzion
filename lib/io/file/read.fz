@@ -47,7 +47,7 @@ read =>
 # reference to the reading operations that could take place
 #
 Read_Operation ref is
-  read(path string) array u8 is abstract
+  read(path string) outcome (array u8) is abstract
 
 # the default file reading operation reading bytes from files via fuzion.std.fileio.read
 #

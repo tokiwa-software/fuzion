@@ -35,11 +35,15 @@ public fileio is
   #
   public read(
               # the (relative or absolute) file name, using platform specific path separators
-              path string) =>
-    file := array get_file_size(path).as_i32 i->(u8 0) # allocating an array the size of the file
-    arr := path.utf8.asArray # transforms the path to a utf8 byte array
-    read arr.internalArray.data arr.length file.internalArray.data file.length
-    file
+              path string) outcome (array u8) is 
+    match get_file_size path
+      num i64 =>
+        file := array num.as_i32 i->(u8 0) # allocating an array the size of the file
+        arr := path.utf8.asArray # transforms the path to a utf8 byte array
+        read arr.internalArray.data arr.length file.internalArray.data file.length // NYI: error handling for the read feature
+        file
+      error error =>
+        error
 
   # intrinsic that fills an array u8 with the file bytes.
   #
@@ -53,13 +57,17 @@ public fileio is
                # the length of the array that represents the file bytes
                file_array_length i32) i64 is intrinsic
 
-  # retrieves the file size in bytes and returns -1 in case of an error
+  # retrieves the file size in bytes and returns an outcome of error in case of an error
   #
   public get_file_size(
                        # the (relative or absolute) file name, using platform specific path separators
-                       path string) =>
+                       path string) outcome i64 is
     arr := path.utf8.asArray
-    get_file_size arr.internalArray.data arr.length
+    size := get_file_size arr.internalArray.data arr.length
+    if size != -1
+      size
+    else
+      error "an error occurred while retrieving the size of the file/dir: \"$path\""
 
   # intrinsic that returns the file size in bytes or -1 in case of an error
   #
