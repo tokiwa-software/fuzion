@@ -135,16 +135,19 @@ public fileio is
 
   # moves file/dir from an old path to a the new path
   # can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path
-  # returns TRUE in case of success and FALSE in case of failure
+  # returns a unit type as outcome in case of success and error in case of failure
   #
   public move(
               # the old (relative or absolute) file name, using platform specific path separators
               old_path string,
               # the new (relative or absolute) file name, using platform specific path separators
-              new_path string) =>
+              new_path string) outcome unit is
     arr0 := old_path.utf8.asArray
     arr1 := new_path.utf8.asArray
-    move arr0.internalArray.data arr0.length arr1.internalArray.data arr1.length
+    if move arr0.internalArray.data arr0.length arr1.internalArray.data arr1.length
+      unit
+    else
+      error "an error occurred while performing the following move operation: \"$old_path\" --> \"$new_path\""
 
   # intrinsic that returns TRUE in case the move was successful and FALSE in case not
   #
