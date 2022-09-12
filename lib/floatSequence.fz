@@ -45,3 +45,12 @@ floatSequence(F (float F).type, redef from Sequence F) : numericSequence F from 
       nil => nil
       variance F =>
         first.sqrt variance
+
+
+  # the euclidean norm of this sequence
+  # i.e. the square of the sum of squares of this sequence
+  #
+  euclidean_norm F is
+    # NYI sqrt,two and sum should be accessed via type
+    first.sqrt ((mapSequence (x)->x**first.two).fold first.sum)
+
