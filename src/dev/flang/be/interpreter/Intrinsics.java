@@ -277,7 +277,7 @@ public class Intrinsics extends ANY
             }
           catch (Exception e)
             {
-              return new boolValue(false); // NYI : need to handle an IO error
+              return new boolValue(false);
             }
         });
     put("fuzion.std.fileio.move", (interpreter, innerClazz) -> args ->
