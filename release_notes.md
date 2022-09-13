@@ -1,7 +1,7 @@
-## 2022-08-03: V0.079dev
+## 2022-??-??: V0.079dev
 
 
-## 2022-08-03: V0.078
+## 2022-08-15: V0.078
 
 - parser
 
@@ -135,7 +135,7 @@
 
   - 'mapOf' now can be used with an array of '(key, value)' tuples
 
-  - 'asString' on mutable value now call asString on the value.
+  - 'asString' on mutable value now calls asString on the value.
 
 ## 2022-07-04: V0.075
 

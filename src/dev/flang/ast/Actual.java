@@ -64,8 +64,7 @@ public class Actual extends ANY
   public Actual(AbstractType t, Expr e)
   {
     if (PRECONDITIONS) require
-      (t != null || e != null,
-       e != null  /* NYI: Remove this once types can be in parentheses */);
+      (t != null || e != null);
 
     _type = t;
     _expr = e;

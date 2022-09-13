@@ -727,21 +727,7 @@ public class Call extends AbstractCall
     if (calledFeature_ == null)
       {
         var actualsResolved = false;
-        if (name == FuzionConstants.TYPE_NAME)
-          { /* NYI: would be better to move handling of 'a.b.type' to the parser */
-            if (CHECKS) check
-              (target != null,
-               _actuals.size() == 0,
-               _generics.size() == 0);
-
-            AbstractType t = target.asType(thiz, null).resolve(res, thiz);
-            calledFeature_ = Types.resolved.f_Types_get;
-            _generics = new List<>(t);
-            var tc = new Call(pos(), new Universe(), Types.resolved.f_Types);
-            tc.resolveTypes(res, thiz);
-            target = tc;
-          }
-        else if (name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
+        if (name != Errors.ERROR_STRING)    // If call parsing failed, don't even try
           {
             var targetFeature = targetFeature(res, thiz);
             if (CHECKS) check
@@ -1062,9 +1048,7 @@ public class Call extends AbstractCall
               }
           }
       }
-    if (target != null &&
-        // for 'xyz.type' target is 'xyz', which is never called, so do not visit it:
-        name != FuzionConstants.TYPE_NAME)
+    if (target != null)
       {
         target = target.visit(v, outer);
       }
@@ -1383,8 +1367,11 @@ public class Call extends AbstractCall
           }
         _type = tptype;
       }
-    else if (name == FuzionConstants.TYPE_NAME && calledFeature_ == Types.resolved.f_Types_get)
-      { // NYI (see #282): special handling could maybe be avoided?
+    else if (calledFeature_ == Types.resolved.f_Types_get)
+      { // NYI (see #282): special handling could maybe be avoided? Maybe make
+        // this special handling the normal handlng for all features whose
+        // result type depends on a generic that can be replaced by an actual
+        // generic given in the call?
         var gt = _generics.get(0);
         if (gt.isGenericArgument())
           {

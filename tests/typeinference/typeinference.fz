@@ -36,7 +36,7 @@ typeinference is
     say (s + msg)
 
   typeInferencingFromIf1(b bool) is
-    f choice<i32,string,bool> :=
+    f choice i32 string bool :=
     {
       if      ( b) 3
       else if (!b) false
@@ -47,7 +47,7 @@ typeinference is
   chck (match (typeInferencingFromIf1 false).f { b1 bool => { b1 <=> false }; i32, string  => false }) "typeinference from if 1"
 
   typeInferencingFromIf2(b bool) =>
-    f(x choice<i32,string,bool>) => x;
+    f(x choice i32 string bool) => x;
     f({
         if      ( b) 3
         else if (!b) false
@@ -65,9 +65,9 @@ typeinference is
     C is
     D is
     E is
-    abcde : choice<A,B,C,D,E> is
+    abcde : choice A B C D E is
 
-    f(x abcde) choice<i32,string,bool,E> is
+    f(x abcde) choice i32 string bool E is
       match x
         a A => 3
         B,C => "string"
@@ -90,10 +90,10 @@ typeinference is
     C is
     D is
     E is
-    abcde : choice<A,B,C,D,E> is
+    abcde : choice A B C D E is
 
     test(x abcde) is
-      f(a choice<i32,string,bool,E>) unit is
+      f(a choice i32 string bool E) unit is
       f({
           match x
             a A => 3

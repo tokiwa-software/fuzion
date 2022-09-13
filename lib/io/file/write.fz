@@ -34,11 +34,13 @@ private write(
     # takes an array of bytes and writes all of it into the file presented in the path
     # in case the file does not exist it creates it,
     # in case the file exists it overwrites it,
-    # this feature works when the directories present in the path exist otherwise nothing will happen
+    # this feature works when the directories present in the path exist otherwise an error will be returned
+    # in case of success a unit type will be the outcome otherwise an error will be the outcome
     #
     write_all(path string, content array u8) =>
-        fwh.write path content
+        res := fwh.write path content
         replace
+        res
 
 # short-hand for accessing write effect in current environment
 #
@@ -49,7 +51,7 @@ write =>
 # reference to the writing operations that could take place
 #
 File_Write_Handler ref is
-    write(path string, content array u8) unit is abstract
+    write(path string, content array u8) outcome unit is abstract
 
 # the default file writing handler writing bytes into files via fuzion.std.fileio.write
 #

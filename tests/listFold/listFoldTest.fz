@@ -36,27 +36,27 @@ listFoldTest is
       say "FAILED: $msg"
       set exitCode := 1
 
-  l1 list<i32> := nil
-  l2 list<i32> := cons         9 l1
-  l3 list<i32> := cons        80 l2
-  l4 list<i32> := cons       700 l3
-  l5 list<i32> := cons      6000 l4
-  l6 list<i32> := cons     50000 l5
-  l7 list<i32> := cons    400000 l6
-  l8 list<i32> := cons   3000000 l7
-  l9 list<i32> := cons  20000000 l8
-  lA list<i32> := cons 100000000 l9
+  l1 list i32 := nil
+  l2 list i32 := cons         9 l1
+  l3 list i32 := cons        80 l2
+  l4 list i32 := cons       700 l3
+  l5 list i32 := cons      6000 l4
+  l6 list i32 := cons     50000 l5
+  l7 list i32 := cons    400000 l6
+  l8 list i32 := cons   3000000 l7
+  l9 list i32 := cons  20000000 l8
+  lA list i32 := cons 100000000 l9
 
-  sl1 list<string> := nil
-  sl2 list<string> := cons "dog." sl1
-  sl3 list<string> := cons "lazy " sl2
-  sl4 list<string> := cons "the " sl3
-  sl5 list<string> := cons "over " sl4
-  sl6 list<string> := cons "jumps " sl5
-  sl7 list<string> := cons "fox " sl6
-  sl8 list<string> := cons "brown " sl7
-  sl9 list<string> := cons "quick " sl8
-  slA list<string> := cons "The " sl9
+  sl1 list string := nil
+  sl2 list string := cons "dog." sl1
+  sl3 list string := cons "lazy " sl2
+  sl4 list string := cons "the " sl3
+  sl5 list string := cons "over " sl4
+  sl6 list string := cons "jumps " sl5
+  sl7 list string := cons "fox " sl6
+  sl8 list string := cons "brown " sl7
+  sl9 list string := cons "quick " sl8
+  slA list string := cons "The " sl9
 
   sl := ["The ", "quick ", "brown ", "fox ", "jumps ", "over ", "the ", "lazy ", "dog."].asList;
   say "Fold string list: {sl.fold strings.concat}"
@@ -97,7 +97,7 @@ listFoldTest is
   say "string list 10 is {slA.fold strings.concat}"; chck ((slA.fold strings.concat) == "The quick brown fox jumps over the lazy dog.") "concat slA"
 
   // product mod 11
-  m : Monoid<i32> is
+  m : Monoid i32 is
     infix ∙ (a, b i32) => a * b % 11
     e => 1
 

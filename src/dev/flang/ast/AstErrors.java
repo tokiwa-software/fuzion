@@ -193,7 +193,7 @@ public class AstErrors extends ANY
     error(pos,
           "Feature declaration that is implemented using " + code("of") + " must have inherit clause. ",
           "Feature implementation starting at " + ofPos.show() + "\n" +
-          "To slve this, you may add an inherits clause like " + code(": choice ") + " before " + code("of") + "\n");
+          "To solve this, you may add an inherits clause like " + code(": choice ") + " before " + code("of") + "\n");
   }
 
 
@@ -524,7 +524,7 @@ public class AstErrors extends ANY
    * i.e., "call" or "type".
    *
    * @param detail2 optional extra lines of detail message giving further
-   * information, like "Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n".
+   * information, like "Calling feature: xyz.f\n" or "Type: Stack bool int\n".
    */
   static void wrongNumberOfGenericArguments(FormalGenerics fg,
                                             List<AbstractType> actualGenerics,
@@ -1059,7 +1059,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Formal generic cannot have generic arguments",
-          "In a type with generic arguments >>A<B><<, the base type >>A<< must not be a formal generic argument.\n" +
+          "In a type with generic arguments >>A B<<, the base type >>A<< must not be a formal generic argument.\n" +
           "Type used: " + s(t) + "\n" +
           "Formal generic used " + s(generic) + "\n" +
           "Formal generic declared in " + generic.typeParameter().pos().show() + "\n");

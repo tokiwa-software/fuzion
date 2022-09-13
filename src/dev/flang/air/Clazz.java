@@ -1046,15 +1046,28 @@ public class Clazz extends ANY implements Comparable<Clazz>
       {
         if (select < 0)
           {
-            innerClazz = (Clazz) _inner.get(f);
+            var iC = _inner.get(f);
+            if (CHECKS) check
+              (Errors.count() > 0 || iC == null || iC instanceof Clazz);
+
+            innerClazz =
+              iC == null              ? null :
+              iC instanceof Clazz iCC ? iCC
+                                      : Clazzes.error.get();
           }
         else
           {
-            innerClazzes = (Clazz[]) _inner.get(f);
-            if (innerClazzes == null)
+            var iCs = _inner.get(f);
+            if (CHECKS) check
+              (Errors.count() > 0 || iCs == null || iCs instanceof Clazz[]);
+            if (iCs == null || !(iCs instanceof Clazz[] iCA))
               {
                 innerClazzes = new Clazz[replaceOpenCount(f)];
                 _inner.put(f, innerClazzes);
+              }
+            else
+              {
+                innerClazzes = iCA;
               }
             if (CHECKS) check
               (Errors.count() > 0 || select < innerClazzes.length);

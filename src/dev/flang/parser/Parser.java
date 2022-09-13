@@ -57,15 +57,19 @@ public class Parser extends Lexer
   }
 
 
-  /*----------------------------  constants  ----------------------------*/
-
-
   /**
-   * Flag to enable old-stype generics using '<'/'>' instead of type parameters.
-   *
-   * NYI: remove support for generics using '<'/'>'
+   * Enum returned by isDotEnvOrTypePrefix and skipDotEnvOrType to
+   * indicate if .env or .type expression or something else was found.
    */
-  static boolean OLD_STYLE_GENERICS = !false;
+  static enum EnvOrType
+  {
+    env,
+    type,
+    none
+  }
+
+
+  /*----------------------------  constants  ----------------------------*/
 
 
   /**
@@ -260,8 +264,7 @@ modAndNames : visibility
 routOrField : routine
             | field
             ;
-routine     : formGens
-              formArgsOpt
+routine     : formArgsOpt
               returnType
               inherits
               contract
@@ -276,18 +279,11 @@ field       : returnType
   {
     var name = n.get(i);
     var p2 = (i+1 < n.size()) ? fork() : null;
-    var g = formGens();
     var a = formArgsOpt();
     ReturnType r = returnType();
     var hasType = r != NoType.INSTANCE;
     var inh = inherits();
     Contract c = contract(true);
-    if (!g.isEmpty())
-      {
-        g.addAll(a);
-        a = g;
-        g = new List<>();
-      }
     Impl p =
       a  .isEmpty() &&
       inh.isEmpty()    ? implFldOrRout(hasType)
@@ -453,12 +449,6 @@ field       : returnType
     if (skipComma())
       {
         return true;
-      }
-    switch (skipFormGensNotActualGens())
-      {
-      case formal: return true;
-      case actual: return false;
-      default    : break;
       }
     switch (skipFormArgsNotActualArgs())
       {
@@ -867,110 +857,6 @@ featNames   : qual (COMMA featNames
 
 
   /**
-   * Parse formGens
-   *
-formGens    : "<" formGensBody ">"
-            | "<" ">"
-            |
-            ;
-formGensBody: genericList ( "..."
-                          |
-                          )
-            |
-            ;
-genericList : generic  ( COMMA genericList
-                       |
-                       )
-            ;
-   */
-  List<Feature> formGens()
-  {
-    List<Feature> result = new List<>();
-    if (OLD_STYLE_GENERICS && splitSkip("<"))
-      {
-        if (!isOperator('>'))
-          {
-            do
-              {
-                result.add(generic());
-              }
-            while (skipComma());
-            if (splitSkip("..."))
-              {
-                Errors.error(posObject(), "did not expect ...","");
-              }
-          }
-        matchOperator(">", "formGens");
-      }
-    return result;
-  }
-
-
-  /**
-   * Check if the current position is a formGens or an actualGens.  Changes the
-   * position of the parser: In case the Tokens encountered could be parsed both
-   * as formGens or as actualGens, skip them and return FormalOrActual.both.
-   *
-   * Otherwise, this will stop parsing at an undefined position and return
-   * FormalOrActual.formal or FormalOrActual.actual, depending on whether formal
-   * or actual generics were found.
-   *
-   * @return FormalOrActual.formal/actual if this could be decided,
-   * FormalOrActual.both if both could be parsed.
-   */
-  FormalOrActual skipFormGensNotActualGens()
-  {
-    if (OLD_STYLE_GENERICS && splitSkip("<"))
-      {
-        if (!isOperator('>'))
-          {
-            do
-              {
-                if (!skip(Token.t_ident))
-                  {
-                    return FormalOrActual.actual;
-                  }
-                if (skipColon())
-                  {
-                    return FormalOrActual.formal;
-                  }
-              }
-            while (skipComma());
-            splitOperator("...");
-            if (isOperator("..."))
-              {
-                return FormalOrActual.formal;
-              }
-            if (!skip('>'))
-              {
-                return FormalOrActual.actual;
-              }
-          }
-      }
-    return FormalOrActual.both;
-  }
-
-
-  /**
-   * Parse generic
-   *
-generic     : IDENT
-              ( COLON type
-              |
-              )
-            ;
-   */
-  Feature generic()
-  {
-    SourcePosition pos = posObject();
-    String i = identifierOrError();
-    match(Token.t_ident, "generic");
-    var t = skipColon() ? type() : new Type("Object");
-    return new Feature(pos, Consts.VISIBILITY_LOCAL, 0, t, i, Contract.EMPTY_CONTRACT, Impl.TYPE_PARAMETER);
-  }
-
-
-  /**
    * Parse optional formal argument list. Result is empty List in case no formArgs is found.
    *
 formArgsOpt : formArgs
@@ -1159,6 +1045,10 @@ typeType    : "type"
                 if (skip(Token.t_type))
                   {
                     splitSkip("...");
+                  }
+                else if (fork().skipDotType())
+                  {
+                    skipDotType();
                   }
                 else if (!skipType())
                   {
@@ -1409,16 +1299,15 @@ callList    : call ( COMMA callList
 call        : nameOrType actuals callTail
             ;
 nameOrType  : name
-            | "type"
             ;
-actuals     : actualGens actualArgs
+actuals     : actualArgs
             | dot NUM_LITERAL
             ;
    */
   Call call(Expr target)
   {
     SourcePosition pos = posObject();
-    String n = skip(Token.t_type) ? FuzionConstants.TYPE_NAME : name();
+    String n = name();
     Call result;
     var skippedDot = false;
     if (skipDot())
@@ -1435,11 +1324,8 @@ actuals     : actualGens actualArgs
       }
     else
       {
-        // we must check isActualGens() to distinguish the less operator in 'a < b'
-        // from the actual generics in 'a<b>'.
-        var g = (!isActualGens()) ? Call.NO_GENERICS : actualGens();
         var l = actualArgs();
-        result = new Call(pos, target, n, g, l, null);
+        result = new Call(pos, target, n, Call.NO_GENERICS, l, null);
       }
     result = callTail(skippedDot, result);
     return result;
@@ -1505,76 +1391,6 @@ dotCallOpt  : dot call
     if (skippedDot || skipDot())
       {
         result = call(result);
-      }
-    return result;
-  }
-
-
-  /**
-   * Parse actualGens
-   *
-actualGens  : "<" typeList ">"
-            | "<" ">"
-            |
-            ;
-   */
-  List<AbstractType> actualGens()
-  {
-    var result = Call.NO_GENERICS;
-    if (OLD_STYLE_GENERICS)
-      {
-        splitOperator("<");
-        if (isOperator('<'))
-          {
-            result = bracketTermWithNLs(ANGLES, "actualGens", () ->
-                                        {
-                                          var res = Type.NONE;
-                                          splitOperator(">");
-                                          if (!isOperator('>'))
-                                            {
-                                              res = typeList();
-                                            }
-                                          splitOperator(">");
-                                          return res;
-                                        });
-          }
-      }
-    return result;
-  }
-
-
-  /**
-   * Check if the current position has actualGens.  Does not change the position
-   * of the parser.
-   *
-   * @return true iff the next token(s) form actualGens.
-   */
-  boolean isActualGens()
-  {
-    // NYI: isActualGensPrefix would be sufficient. This currently causes
-    // confusing error message in case of a syntax error late in the actual
-    // generics, as in
-    //
-    //  t := tuple<i32, bool, String, tuple < int < bool >>();
-    return fork().skipActualGens();
-  }
-
-
-  /**
-   * Check if the current position has actualGens and skip them.
-   *
-   * @return true iff the next token(s) form actualGens, otherwise no actualGens
-   * was found and the parser/lexer is at an undefined position.
-   */
-  boolean skipActualGens()
-  {
-    boolean result = true;
-    if (OLD_STYLE_GENERICS && splitSkip("<"))
-      {
-        if (!splitSkip(">"))
-          {
-            result = skipTypeList() && splitSkip(">");
-          }
       }
     return result;
   }
@@ -2210,7 +2026,8 @@ simpleterm  : bracketTerm
             | match
             | loop
             | ifstmnt
-            | env
+            | dotEnv
+            | dotType
             | callOrFeatOrThis
             ;
    */
@@ -2218,12 +2035,11 @@ simpleterm  : bracketTerm
   {
     Expr result;
     int p1 = pos();
-    if (isEnvPrefix())    // starts with name or '('
+    switch (isDotEnvOrTypePrefix())    // starts with name or '('
       {
-        result = env();
-      }
-    else
-      {
+      case env : result = dotEnv(); break;
+      case type: result = dotType(); break;
+      case none:
         switch (current()) // even if this is t_lbrace, we want a term to be indented, so do not use currentAtMinIndent().
           {
           case t_lbrace    :
@@ -2260,6 +2076,8 @@ simpleterm  : bracketTerm
               }
             break;
           }
+        break;
+      default: throw new Error("unhandled switch case");
       }
     if (!ignoredTokenBefore() && current() == Token.t_lcrochet)
       {
@@ -3452,21 +3270,38 @@ qualThis    : name ( dot name )* dot "this"
 
 
   /**
-   * Parse env
+   * Parse dotEnv
    *
-env         : simpletype dot "env"
+dotEnv      : simpletype dot "env"
             | LPAREN type RPAREN dot "env"
             ;
    */
-  Env env()
+  Env dotEnv()
   {
     var t = current() == Token.t_lparen
       ? bracketTermWithNLs(PARENS, "env", ()->type())
       : simpletype(null);
     skipDot();
-    var e = new Env(posObject(), t);
     match(Token.t_env, "env");
-    return e;
+    return new Env(posObject(), t);
+  }
+
+
+  /**
+   * Parse dotType
+   *
+dotType     : simpletype dot "type"
+            | LPAREN type RPAREN dot "type"
+            ;
+   */
+  Expr dotType()
+  {
+    var t = current() == Token.t_lparen
+      ? bracketTermWithNLs(PARENS, "type", ()->type())
+      : simpletype(null);
+    skipDot();
+    match(Token.t_type, "type");
+    return new DotType(posObject(), t);
   }
 
 
@@ -3476,24 +3311,46 @@ env         : simpletype dot "env"
    *
    * @return true iff the next token(s) start a env
    */
-  boolean isEnvPrefix()
+  EnvOrType isDotEnvOrTypePrefix()
   {
-    return (isNamePrefix() || current() == Token.t_lparen) && fork().skipEnvPrefix();
+    return (isNamePrefix() || current() == Token.t_lparen) ? fork().skipDotEnvOrType()
+      : EnvOrType.none;
   }
 
 
   /**
-   * Check if the current position starts an env.  Does not change the
-   * position of the parser.
-   *
-   * @return true iff the next token(s) start an env.
+   * Check if the current position can be parsed as a dotEnv or dotType and skip
+   * it if this is the case.
+
+   * @return true iff a dotEnv or dotType was found and skipped, otherwise no
+   * dotEnv nor dotType was found and the parser/lexer is at an undefined
+   * position.
    */
-  boolean skipEnvPrefix()
+  EnvOrType skipDotEnvOrType()
+  {
+    return
+      !((skipBracketTermWithNLs(PARENS, ()->skipType()) || skipSimpletype())
+        && skipDot()
+        ) ? EnvOrType.none :
+      skip(Token.t_env ) ? EnvOrType.env  :
+      skip(Token.t_type) ? EnvOrType.type
+                         : EnvOrType.none;
+  }
+
+
+  /**
+   * Check if the current position can be parsed as a dotType and skip it if
+   * this is the case.
+
+   * @return true iff a dotType was found and skipped, otherwise no dotType was
+   * found and the parser/lexer is at an undefined position.
+   */
+  boolean skipDotType()
   {
     return
       (skipBracketTermWithNLs(PARENS, ()->skipType()) || skipSimpletype())
       && skipDot()
-      && skip(Token.t_env);
+      && skip(Token.t_type);
   }
 
 
@@ -3823,6 +3680,7 @@ onetype     : "ref" simpletype
             | simpletype "->" simpletype
             | pTypeList "->" simpletype
             | pTypeList
+            | LPAREN type RPAREN typeTail
             | simpletype
             ;
 pTypeList   : LPAREN typeList RPAREN
@@ -3853,7 +3711,7 @@ typeOpt     : type
           }
         else if (a.size() == 1)
           {
-            result = a.getFirst();
+            result = typeTail((Type) a.getFirst());
           }
         else
           {
@@ -3902,7 +3760,7 @@ typeOpt     : type
     boolean result;
     if (skip(Token.t_ref))
       {
-        result = skipSimpletype();
+        result = allowTypeThatIsNotExpression && skipSimpletype();
       }
     else
       {
@@ -3910,7 +3768,8 @@ typeOpt     : type
         var f2 = fork();
         if (f.skipBracketTermWithNLs(PARENS, () -> f.current() == Token.t_rparen || f.skipTypeList(allowTypeThatIsNotExpression)))
           {
-            result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList(allowTypeThatIsNotExpression)) && allowTypeInParentheses;
+            result = skipBracketTermWithNLs(PARENS, () -> current() == Token.t_rparen || skipTypeList(allowTypeThatIsNotExpression));
+            var p = pos();
             if (skip("->"))
               {
                 result =
@@ -3922,6 +3781,11 @@ typeOpt     : type
                                              () -> f2.current() == Token.t_rparen || f2.skipArgNamesOpt())) &&
                   skipType();
               }
+            else
+              {
+                result = result && skipTypeTail();
+              }
+            result = result && (allowTypeInParentheses || p < pos());
           }
         else
           {
@@ -3938,28 +3802,31 @@ typeOpt     : type
    * @param lhs the left hand side for this type that was already parsed, null
    * if none.
    *
-simpletype  : name actualGens typeTail
-            | name typePars typeTail
-            ;
-typeTail    : dot simpletype
-            |
+simpletype  : name typePars typeTail
             ;
    */
   Type simpletype(Type lhs)
   {
-    do
-      {
-        var p = posObject();
-        var n = name();
-        var a = actualGens();
-        if (a.isEmpty())
-          {
-            a = typePars();
-          }
-        lhs = new Type(p, n, a, lhs);
-      }
-    while (!isDotEnvOrType() && skipDot());
-    return lhs;
+    var p = posObject();
+    var n = name();
+    var a = typePars();
+    lhs = new Type(p, n, a, lhs);
+    return typeTail(lhs);
+  }
+
+
+  /**
+   * Check if the current position is a simpletype and skip it.
+   *
+   * @return true iff the next token(s) is a simpletype, otherwise no simpletype
+   * was found and the parser/lexer is at an undefined position.
+   */
+  boolean skipSimpletype()
+  {
+    return
+      skipName() &&
+      skipTypePars() &&
+      skipTypeTail();
   }
 
 
@@ -3982,17 +3849,37 @@ typeTail    : dot simpletype
 
 
   /**
-   * Check if the current position is a simpletype and skip it.
+   * Parse typeTail
    *
-   * @return true iff the next token(s) is a simpletype, otherwise no simpletype
+   * @param lhs the left hand side for this type that was already parsed, null
+   * if none.
+   *
+typeTail    : dot simpletype
+            |
+            ;
+   */
+  Type typeTail(Type lhs)
+  {
+    var result = lhs;
+    if (!isDotEnvOrType() && skipDot())
+      {
+        result = simpletype(lhs);
+      }
+    return result;
+  }
+
+
+
+  /**
+   * Check if the current position is a typeTail and skip it.
+   *
+   * @return true iff the next token(s) is a typeTail, otherwise no typeTail
    * was found and the parser/lexer is at an undefined position.
    */
-  boolean skipSimpletype()
+  boolean skipTypeTail()
   {
     return
-      skipName() &&
-      (OLD_STYLE_GENERICS && fork().splitSkip("<") ? skipActualGens() : skipTypePars()) &&
-      (isDotEnvOrType() || !skipDot() || skipSimpletype());
+      isDotEnvOrType() || !skipDot() || skipSimpletype();
   }
 
 
@@ -4043,7 +3930,8 @@ typeInParens: "(" typeInParens ")"
         var l = bracketTermWithNLs(PARENS, "typeInParens",
                                    () -> typeList(),
                                    () -> new List<AbstractType>());
-        if (isOperator("->"))
+        var eas = endAtSpace(pos());
+        if (!ignoredTokenBefore() && isOperator("->"))
           {
             matchOperator("->", "onetype");
             result = Type.funType(posObject(pos), type(), l);
@@ -4051,12 +3939,17 @@ typeInParens: "(" typeInParens ")"
         else if (l.size() == 1)
           {
             result = l.get(0);
+            if (!ignoredTokenBefore())
+              {
+                result = typeTail((Type) result);
+              }
           }
         else
           {
             syntaxError(pos, "exactly one type", "typeInParens");
             result = Types.t_ERROR;
           }
+        endAtSpace(eas);
       }
     else
       {
