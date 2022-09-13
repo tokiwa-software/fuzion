@@ -179,14 +179,12 @@ string ref : hasHash string, ordered string, strings is
     pre base.one < base <= base.from_u32 36
 
   is
-    s := utf8.asStream
-    if s.hasNext
-      c := s.next
-      negate := c = minusChar
-      d := if (negate || c = plusChar) zeroChar else c
-      parse_integer T base negate base.zero d s
-    else
-      parseError "empty string"
+    match utf8.asList
+      nil => parseError "empty string"
+      c Cons =>
+        negate := c.head = minusChar
+        d := if (negate || c.head = plusChar) zeroChar else c.head
+        parse_integer T base negate base.zero d c.tail
 
 
   # recursive helper for parse_integer T
@@ -208,7 +206,7 @@ string ref : hasHash string, ordered string, strings is
     c u8,
 
     # the remaining characters to be parsed
-    s stream u8
+    s list u8
 
     ) outcome T
 
@@ -233,11 +231,12 @@ string ref : hasHash string, ordered string, strings is
           hi := hi *? base;
           v := if (neg) hi -? t
                else     hi +? t
-          if s.hasNext
-            parse_integer T base neg v s.next s
-          else
-            v ? nil => parseError "numerical overflow"
-              | u T => u
+          match s
+            c Cons =>
+              parse_integer T base neg v c.head c.tail
+            nil =>
+              v ? nil => parseError "numerical overflow"
+                | u T => u
 
 
   # convert this string into an array of codepoints.
