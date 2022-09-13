@@ -76,13 +76,16 @@ string ref : hasHash string, ordered string, strings is
   # This defines a total order over strings that is unrelated to alphabetic order.
   #
   infix <= (other string) =>
-    s1 :=       utf8.asStream     # NYI: can this be made more beautiful using lists?
-    s2 := other.utf8.asStream
-    for
-      b1 := if (s1.hasNext) s1.next.as_i32 else -1
-      b2 := if (s2.hasNext) s2.next.as_i32 else -1
-    until b1 != b2 || b1 < 0
-      b1 <= b2
+    utf8
+      .zip other.utf8 (a,b)->(a,b)
+      .filter (x ->
+        (a, b) := x
+        a != b)
+      .mapSequence (x ->
+        (a, b) := x
+        a <= b)
+      # if all bytes are equal lengths of strings might still differ
+      .first utf8.count<=other.utf8.count
 
 
   # create hash code from a string
