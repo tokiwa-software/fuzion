@@ -49,23 +49,9 @@ string ref : hasHash string, ordered string, strings is
 
   # concatenate string with string representation of another object
   infix + (other Object) string is
+    strings.concat string.this other.asString
 
-    /* NYI figure out why stringtest fails with this implementation:
 
-    ma := (marrays Object).new 2 string.this
-    ma[1] := other
-    strings.fromArray ma
-
-    */
-
-    ma =>
-      if isEmpty
-        (marrays Object).new 1 other
-      else
-        tmp := (marrays Object).new 2 string.this
-        tmp[1] := other
-        tmp
-    strings.fromArray ma
 
   # repeat string given number of times
   infix * (n i32) ref : string
@@ -528,6 +514,13 @@ strings is
     redef infix ∙ (a, b string) string is if (a.isEmpty || b.isEmpty) a + b else a + sep + b
     redef infix == (a, b string) => a == b
     redef e => ""
+
+
+  # concat strings a and b by
+  # concatenating their byte sequences.
+  concat(a, b string) string is
+    ref : string
+      utf8 Sequence u8 is a.utf8 ++ b.utf8
 
 
   # create string by concatenating the results of $a[a.indices].
