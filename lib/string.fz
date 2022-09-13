@@ -36,7 +36,7 @@ string ref : hasHash string, ordered string, strings is
   utf8 Sequence u8 is abstract
 
   # is this string empty?
-  isEmpty => !utf8.asStream.hasNext
+  isEmpty => utf8.isEmpty
 
   # returns true if string is empty or contains whitespace only
   isBlank => utf8 ∀ u -> isAsciiWhiteSpace u
@@ -589,12 +589,12 @@ strings is
 
   # NYI: remove the convenience functions when Fuzion supports char literals
   #
-  minusChar => "-".utf8.asStream.next
-  plusChar  => "+".utf8.asStream.next
-  zeroChar  => "0".utf8.asStream.next
-  nineChar  => "9".utf8.asStream.next
-  aChar     => "a".utf8.asStream.next
-  zChar     => "z".utf8.asStream.next
-  capAChar  => "A".utf8.asStream.next
-  capZChar  => "Z".utf8.asStream.next
+  minusChar => "-".utf8.first
+  plusChar  => "+".utf8.first
+  zeroChar  => "0".utf8.first
+  nineChar  => "9".utf8.first
+  aChar     => "a".utf8.first
+  zChar     => "z".utf8.first
+  capAChar  => "A".utf8.first
+  capZChar  => "Z".utf8.first
 
