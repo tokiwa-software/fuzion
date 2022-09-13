@@ -182,11 +182,6 @@ is
     (b1.zip b2 ((a,b) -> a = b)) ∀ (x->x)
 
 
-  # are these natural numbers different?
-  infix != (other nat) bool is
-    !(thiz == other)
-
-
   # less or equal
   infix <= (other nat) =>
       (b1, b2) := equalize other
@@ -376,9 +371,6 @@ is
   # are these two ints equal?
   infix == (other int) bool is
     ns = other.ns & n = other.n
-
-  infix != (other int) bool is
-    !(thiz == other)
 
   orderedThis int is int ns n
 
