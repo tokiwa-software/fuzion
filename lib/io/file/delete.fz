@@ -1,0 +1,65 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature delete
+#
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# delete -- effect wrapping the file delete operation
+#
+private delete(
+    dop Delete_Operation,
+    redef r effectMode.val,
+    _ unit
+  ) : deletes, effect r is
+
+    # deletes the file/dir represented by the path
+    # returns an outcome of unit in case of success or error in case of failure
+    #
+    delete(path string) =>
+        dop.delete path
+        replace
+
+# short-hand for accessing delete effect in current environment and performing the default delete operation using io.file.delete.delete path
+#
+delete(path string) =>
+  deletes.installDefault
+  delete.env.delete path
+
+# reference to the delete operations that could take place
+#
+Delete_Operation ref is
+    delete(path string) outcome unit is abstract
+
+# the default file/dir delete operation via fuzion.std.fileio.delete
+#
+default_delete_operation : Delete_Operation is
+    delete(path string) =>
+        fuzion.std.fileio.delete path
+
+# unit type feature defining features related to delete effect but not requiring an
+# instance.
+#
+deletes is
+    # install default effect io.file.delete
+    installDefault unit is
+        if !(effects.exists io.file.delete)
+            _ := delete default_delete_operation effectMode.default unit
