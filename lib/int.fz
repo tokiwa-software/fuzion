@@ -19,10 +19,415 @@
 #
 #  Source code of Fuzion standard library feature int
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
+# natural number of arbitrary size, including zero
+# represented by its bit sequence
+nat (b Sequence bool) : hasInterval nat
+is
+
+  bits := b.dropWhile (x -> !x)
+
+  # bitwise operations
+
+  # bitwise and
+  infix & (other nat) nat is
+    (b1, b2) := equalize other
+    nat (b1.zip b2 (x,y)->x&y)
+
+  # bitwise or
+  infix | (other nat) nat is
+    (b1, b2) := equalize other
+    nat (b1.zip b2 (x,y)->x|y)
+
+  # bitwise xor
+  infix ^ (other nat) nat is
+    (b1, b2) := equalize other
+    nat (b1.zip b2 (x,y)->x^y)
+
+
+  # shift operations
+
+  # shift right
+  infix >> (other nat) nat
+  pre other >= zero
+  is
+    nat (bits
+          .reverse
+          .drop other.as_i32
+          .reverse)
+
+  # shift left
+  infix << (other nat) nat
+  pre other >= zero
+  is
+    nat (bits ++ array other.as_i32 _->false)
+
+
+  # return two sequences of equal length
+  # by prepending false to the shorter sequence
+  private equalize(other nat)
+  post result.values.0.count = result.values.1.count
+    =>
+    if other.bits.count < bits.count
+      zeros := (1..bits.count-other.bits.count).map(x -> false)
+      (bits.asList, zeros++other.bits)
+    else
+      zeros := (1..other.bits.count-bits.count).map(x -> false)
+      (zeros++bits, other.bits.asList)
+
+
+  # divide with remainder the two given positive ints
+  # returns the quotient and the remainder
+  # NYI performance: https://cs.opensource.google/go/go/+/refs/tags/go1.19:src/math/big/natdiv.go
+  private divide_with_remainder (divisor nat) tuple nat nat
+  pre divisor > zero
+  is
+    if thiz = zero
+      (zero, zero)
+    else if thiz < divisor
+      (zero, thiz)
+    else if thiz = divisor
+      (one, zero)
+    else
+      bitcount_diff nat := (ints.from_i32 bits.count-divisor.bits.count).n
+      shift := if thiz -! (divisor << bitcount_diff) then bitcount_diff else bitcount_diff-one
+      remainder := if thiz -! (divisor << bitcount_diff) then thiz - (divisor << shift) else thiz - (divisor << shift)
+      (q,rem) := remainder.divide_with_remainder divisor
+      ((one << shift) + q, rem)
+
+
+  # add two natural numbers
+  infix +  (other nat) nat is
+    (b1, b2) := equalize other
+    (d, _, _) := ([false] ++ b1)
+      .asList
+      .reverse
+      .reduce ((lists.empty bool), ([false] ++ b2).asList.reverse, false) (r, t ->
+
+        (bits, rest, carry_over) := r
+
+        true_count := [t, rest.first, carry_over]
+          .filter x->x
+          .count
+
+        ([true_count % 2 = 1] ++ bits, (rest.drop 1), true_count > 1)
+      )
+
+    nat d
+
+
+  # subtract other from this natural number
+  infix - (other nat) nat
+  pre thiz >= other
+  is
+    (b1, b2) := equalize other
+    (r, _) := b1
+      .zip b2 (x, y -> (x,y))
+      .reverse
+      .reduce (lists.empty bool, false) (r,t ->
+        (minuend, subtrahend) := t
+        (res,carry_over) := r
+
+        true_count_minuend := [minuend].filter(x->x).count
+        true_count_subtrahend := [subtrahend, carry_over].filter(x->x).count
+
+        # 0-0=0, 0-1=1, 0-2=0, 1-0=1, 1-1=0, 1-2=1
+        ([(true_count_minuend - true_count_subtrahend).abs % 2 = 1]++res, true_count_minuend < true_count_subtrahend)
+      )
+    nat r
+
+
+  # NYI make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
+  # multiply these natural numbers
+  infix *  (other nat) nat is
+    (b1, b2) := equalize other
+    b1
+      .reverse
+      .asArray
+      .map_indexed ((v,i) ->
+        b2
+          .reverse
+          .asArray
+          .map_indexed ((ov, oi) ->
+            zero_count := i + oi
+            appended_zeros := (1..zero_count).map (c -> false)
+            nat ([v & ov] ++ appended_zeros)
+          )
+        )
+      .flatMapSequence nat (x -> x)
+      .fold sum
+
+
+  # divide these natural numbers
+  infix /  (other nat) nat
+  pre other != zero
+  is
+    (quotient,_) := (divide_with_remainder other)
+    quotient
+
+
+  # modulo
+  # returns the remainder of the division
+  infix %  (other nat) nat is
+    (_,remainder) := (divide_with_remainder other)
+    remainder
+
+
+  # are these natural numbers equal?
+  infix == (other nat) bool is
+    (b1, b2) := equalize other
+    (b1.zip b2 ((a,b) -> a = b)) ∀ (x->x)
+
+
+  # less or equal
+  infix <= (other nat) =>
+      (b1, b2) := equalize other
+      b1
+        # zip the two equally long lists of digits
+        .zip b2 (a, b -> (a,b))
+        # only the first unequal digit is important
+        .filter (t -> (a,b) := t; a /= b)
+        .mapSequence (t -> (a,b) := t; a = false)
+        # default when all digits are equal
+        .first true
+
+
+  # checks if operations are allowed
+
+  prefix -! bool is thiz=zero
+  infix +! (other nat) bool is true
+  infix -! (other nat) bool is thiz >= other
+  infix *! (other nat) bool is true
+  infix /! (other nat) bool is other != zero
+  infix %! (other nat) bool is true
+  infix **!(other nat) bool is true
+
+  # exponentation always works, even though it might be very
+  # slow for large numbers
+
+  infix **?(other nat) numOption nat is thiz ** other
+  infix **^(other nat) nat is thiz ** other
+
+  orderedThis nat is thiz
+
+  redef zero nat is
+    nat [false]
+
+  redef one nat is
+    nat [true]
+
+  redef thiz => nat b
+
+
+  # this nat as an u32
+  as_u32 u32
+  pre
+    bits.count <= 32
+  is
+    bits.reduce (u32 0) ((r,b) ->
+      if b
+        r << 1 | 1
+      else
+        r << 1
+      )
+
+  # this nat as an i32
+  as_i32 i32
+  is
+    as_u32.as_i32
+
+
+  redef asString string is
+    nat.this.asString 10
+
+
 # int -- signed integer values of arbitrary size
 #
-int (val i64) : integer int is # NYI
+int (s sign, n nat) : hasInterval int
+is
+
+  # normalize the sign => no minus zero
+  ns := if n = n.zero then plus else s
+
+  max int is
+    panic "invalid, there is no max int."
+
+
+  redef thiz => int ns n
+
+  name string is
+    "int"
+
+  redef zero int is
+    int plus n.zero
+
+  redef one int is
+    int plus n.one
+
+
+  redef prefix - int is
+    match ns
+      plus => int minus n
+      minus => int plus n
+
+
+  # add this int to other
+  infix +  (other int) int is
+    if ns = other.ns
+      int ns n+other.n
+    else
+      match ns
+        plus => thiz - (-other)
+        minus => other - (-thiz)
+
+
+  # subtract other from this int
+  infix - (other int) int is
+    match other.ns
+      plus =>
+        match ns
+          plus =>
+            if n >= other.n
+              int plus (n - other.n)
+            else
+              int minus (other.n - n)
+          minus => -(-int.this + other)
+      # minus, minus => plus
+      minus => int.this + -other
+
+
+  # the sign of the result of the
+  # multiplication or division of thiz and other
+  private result_sign_mul_div(other int) sign is
+    if ns = other.ns then plus else minus
+
+
+  # multiply this int by other
+  infix *  (other int) int is
+    int (result_sign_mul_div other) n*other.n
+
+
+  # divide this int by other
+  infix /  (other int) int
+  pre other != zero
+  is
+    s sign := result_sign_mul_div other
+    int s n/other.n
+
+
+  # modulo, returns the remainder of the
+  # division of this int by other
+  infix %  (other int) int is
+    int ns n%other.n
+
+
+  # exponentation operator:
+  # this int to the power of other
+  infix ** (other int) int
+  pre other >= zero
+  is
+    if other = zero
+      one
+    else if other = one
+      thiz
+    else
+      is_even := other.n.bits.last = false
+      if is_even
+        tmp := thiz**(other / int 2)
+        tmp * tmp
+      else
+        thiz * (thiz**(other-one))
+
+
+
+  # all operations are allowed for all ints
+  # except for division where we need to
+  # check for division by zero
+
+  prefix -! bool is true
+  infix +! (other int) bool is true
+  infix -! (other int) bool is true
+  infix *! (other int) bool is true
+  infix /! (other int) bool is
+    other != zero
+  infix %! (other int) bool is true
+
+  infix **!(other int) bool is
+    other >= zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
+
+  infix **?(other int) numOption int is
+    match other.ns
+      plus => thiz ** other
+      minus => nil # 0 and 1 ** -other would be okay but we disallow nonetheless
+
+  infix **^(other int) int is
+    match other.ns
+      plus => thiz ** other
+      minus => panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
+
+  # are these two ints equal?
+  infix == (other int) bool is
+    ns = other.ns & n = other.n
+
+  orderedThis int is int ns n
+
+  # is less or equal
+  infix <= (other int) bool is
+    match ns
+      plus =>
+        match other.ns
+          plus => n <= other.n
+          minus => false
+      minus =>
+        match other.ns
+          plus => true
+          minus => other.n <= n
+
+  redef asString string is
+    int.this.asString 10
+
+
+int (val i64) int is
+  ints.from_i64 val
+
+
+ints is
+  # helper feature to init int via an i64
+  from_i64(val i64) int is
+    s sign := if val < 0 then minus else plus
+    n u32 := if val < 0 then (-val).as_u32 else val.as_u32
+    (res,_) :=
+      (0..31)
+        .reduce (lists.empty bool, n) (r, _ ->
+          (l, rest) := r
+          ([(rest & 1) = 1] ++ l, rest>>1)
+        )
+    int s (nat res)
+
+  # helper feature to init int via an i32
+  from_i32(val i32) int is
+    from_i64 val.as_i64
+
+
+plus is
+minus is
+sign : choice plus minus, hasEquals sign is
+  infix = (o sign) bool is
+    match sign.this
+      plus =>
+        match o
+          plus => true
+          minus => false
+      minus =>
+        match o
+          plus => false
+          minus => true
+
+  redef asString string is
+    match sign.this
+      plus => "+"
+      minus => "-"
+
