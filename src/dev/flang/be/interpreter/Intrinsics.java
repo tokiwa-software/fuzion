@@ -196,11 +196,11 @@ public class Intrinsics extends ANY
               FileInputStream fs = new FileInputStream(file);
               fs.read(byteArr);
               fs.close();
-              return Value.EMPTY_VALUE;
+              return new boolValue(true);
             }
           catch (Exception e)
             {
-              return Value.EMPTY_VALUE; // NYI: need to handle an IO error
+              return new boolValue(false);
             }
         });
     put("fuzion.std.fileio.get_file_size", (interpreter, innerClazz) -> args ->

@@ -41,7 +41,8 @@ public fileio is
     read arr.internalArray.data file.internalArray.data file.length
     file
 
-  # intrinsic that fills an array u8 with the file bytes.
+  # intrinsic that fills an array u8 with the file bytes
+  # returns true in case of success and false in case of failure
   #
   private read(
                # the internal array data representing the file path in bytes
@@ -49,7 +50,7 @@ public fileio is
                # the internal array data representing the container for the bytes to be read from the file
                file_array Object,
                # the length of the array that represents the file bytes
-               file_array_length i32) unit is intrinsic
+               file_array_length i32) bool is intrinsic
 
   # retrieves the file size in bytes and returns -1 in case of an error
   #
