@@ -97,6 +97,7 @@ u8(val u8) : wrappingInteger u8, hasInterval u8, u8s is
   as_u32  => as_i32.as_u32
   as_u64  => as_i32.as_u64
   as_u128 => as_i32.as_u128
+  as_int  => int as_i64
 
   castTo_i8 i8 is intrinsic
 
