@@ -332,14 +332,25 @@ Sequence(T type) ref is
       res
 
 
-
-  # the nth element in the sequence,
+  # the nth element in the sequence if it exists, wrapped in an option,
+  # nil otherwise.
+  #
   nth(n i32) option T
-    pre n >= 0
+    pre
+      debug: n >= 0
   is
     match drop n
       nil => nil
       c Cons => c.head
+
+
+  # the nth element in the sequence, must exist
+  #
+  index [] (i i32) T
+    pre
+      safety: 0 <= i < count
+  is
+    (nth i).get
 
 
 # Sequences -- unit type defining features related to Sequence but not requiring

@@ -45,7 +45,7 @@ array(redef T type,
 
   indices => 0..length-1
 
-  index [ ] (i i32) T
+  redef index [ ] (i i32) T
     pre
       safety: 0 <= i < length
   is
