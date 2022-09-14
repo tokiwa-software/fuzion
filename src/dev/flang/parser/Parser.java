@@ -1726,21 +1726,6 @@ exprInLine  : expr             // within one line
 
 
   /**
-   * An expr() that, if it is a block, is permitted to start at minIndent.
-   *
-exprAtMinIndent : block
-                | exprInLine
-                ;
-   */
-  Expr exprAtMinIndent()
-  {
-    return
-      currentAtMinIndent() == Token.t_lbrace ? block()
-                                             : exprInLine();
-  }
-
-
-  /**
    * Parse
    *
 expr        : opExpr
@@ -2716,12 +2701,12 @@ loopProlog  : indexVars "variant" exprInLine
             | indexVars
             |           "variant" exprInLine
             ;
-loopBody    : "while" exprAtMinIndent      block
-            | "while" exprAtMinIndent "do" block
-            |                         "do" block
+loopBody    : "while" exprInLine      block
+            | "while" exprInLine "do" block
+            |                    "do" block
             ;
-loopEpilog  : "until" exprAtMinIndent thenPart elseBlockOpt
-            |                                  elseBlock
+loopEpilog  : "until" exprInLine thenPart elseBlockOpt
+            |                             elseBlock
             ;
    */
   Expr loop()
@@ -2731,12 +2716,12 @@ loopEpilog  : "until" exprAtMinIndent thenPart elseBlockOpt
         List<Feature> indexVars  = new List<>();
         List<Feature> nextValues = new List<>();
         var hasFor   = current() == Token.t_for; if (hasFor) { indexVars(indexVars, nextValues); }
-        var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()      : null;
-                                                    var i   = hasFor || v != null ? invariant(true)   : null;
-        var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprAtMinIndent() : null;
-        var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()       : null;
-        var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprAtMinIndent() : null;
-                                                    var ub  = hasUntil            ? thenPart(true)    : null;
+        var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()    : null;
+                                                    var i   = hasFor || v != null ? invariant(true) : null;
+        var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()    : null;
+        var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
+        var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
+                                                    var ub  = hasUntil            ? thenPart(true)  : null;
                                                     var els1 =               fork().elseBlockOpt();
                                                     var els =                       elseBlockOpt();
 
@@ -2784,7 +2769,7 @@ indexVar    : visibility
             ;
 implFldIter : "in" exprInLine
             ;
-nextValue   : COMMA exprAtMinIndent
+nextValue   : COMMA exprInLine
             |
             ;
    */
@@ -2809,8 +2794,8 @@ nextValue   : COMMA exprAtMinIndent
     if (       skip(Token.t_in) &&
         forked.skip(Token.t_in)    )
       {
-        p1 = new Impl(posObject(),        exprInLine() /* NYI: better exprAtMinIndent() to be same as FieldInit and FIeldDef? */, Impl.Kind.FieldIter);
-        p2 = new Impl(posObject(), forked.exprInLine() /* NYI: better exprAtMinIndent() to be same as FieldInit and FIeldDef? */, Impl.Kind.FieldIter);
+        p1 = new Impl(posObject(),        exprInLine(), Impl.Kind.FieldIter);
+        p2 = new Impl(posObject(), forked.exprInLine(), Impl.Kind.FieldIter);
       }
     else
       {
@@ -2822,7 +2807,7 @@ nextValue   : COMMA exprAtMinIndent
         // iterations:
         if (skipComma())
           {
-            p2 = new Impl(pos, exprAtMinIndent(), p2.kind_);
+            p2 = new Impl(pos, exprInLine(), p2.kind_);
           }
       }
     Feature f1 = new Feature(pos,v1,m1,r1,new List<>(n1),
@@ -3508,7 +3493,7 @@ implFldOrRout   : implRout
   /**
    * Parse implFldInitOrUndef
    *
-implFldInit : ":=" exprAtMinIndent
+implFldInit : ":=" exprInLine
             ;
 implFldUndef: ":=" "?"
             ;
@@ -3527,7 +3512,7 @@ implFldUndef: ":=" "?"
     else
       {
         return new Impl(pos,
-                        exprAtMinIndent(),
+                        exprInLine(),
                         hasType ? Impl.Kind.FieldInit
                                 : Impl.Kind.FieldDef);
       }
