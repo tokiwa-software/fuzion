@@ -97,9 +97,9 @@ state(S type, initialValue S) => state unit initialValue effectMode.plain
 # return result of r.
 #
 state(S, R type, initialValue S, r ()->R) =>
-  res R := ?
+  res option R := nil
   state unit S unit initialValue (effectMode.inst (()->set res := r.call))
-  res
+  res.get
 
 
 # type related to state declaring features not requiring an instance of state
