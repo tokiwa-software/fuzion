@@ -2774,8 +2774,8 @@ nextValue   : COMMA exprInLine
       }
     else
       {
-        p1 =        implFldInitOrUndef(hasType, false);
-        p2 = forked.implFldInitOrUndef(hasType, false);
+        p1 =        implFldInit(hasType);
+        p2 = forked.implFldInit(hasType);
         // up to here, this and forked parse the same, i.e, v1, m1, .. p1 is the
         // same as v2, m2, .. p2.  Now, we check if there is a comma, which
         // means there is a different value for the second and following
@@ -3439,7 +3439,6 @@ implRout    : block
    *
 implFldOrRout   : implRout
                 | implFldInit
-                | implFldUndef
                 |
                 ;
    */
@@ -3455,7 +3454,7 @@ implFldOrRout   : implRout
       }
     else if (isOperator(":="))
       {
-        return implFldInitOrUndef(hasType, true);
+        return implFldInit(hasType);
       }
     else
       {
@@ -3466,31 +3465,22 @@ implFldOrRout   : implRout
 
 
   /**
-   * Parse implFldInitOrUndef
+   * Parse implFldInit
    *
 implFldInit : ":=" exprInLine
             ;
-implFldUndef: ":=" "?"      // NYI: remove this rule!
-            ;
    */
-  Impl implFldInitOrUndef(boolean hasType, boolean maybeUndefined)
+  Impl implFldInit(boolean hasType)
   {
     SourcePosition pos = posObject();
     if (!skip(":="))
       {
         syntaxError(pos(), "':='", "implFldInit");
       }
-    if (maybeUndefined && skip(Token.t_question))
-      {
-        return Impl.FIELD;
-      }
-    else
-      {
-        return new Impl(pos,
-                        exprInLine(),
-                        hasType ? Impl.Kind.FieldInit
-                                : Impl.Kind.FieldDef);
-      }
+    return new Impl(pos,
+                    exprInLine(),
+                    hasType ? Impl.Kind.FieldInit
+                            : Impl.Kind.FieldDef);
   }
 
 
