@@ -25,6 +25,9 @@
 
 choice_negative is
 
+  # any produces a 'void' value that is assignable to anything.
+  any => panic "trying to create void"
+
   cyclic1 is
     A : choice A i32 string is  // 1. should flag an error: cyclic choice
 
@@ -72,17 +75,17 @@ choice_negative is
 
   nofields1 is
     A : choice i32 string bool is
-      x i32 := ? // 13. should flag an error: choice type must not have any fields
+      x i32 := any // 13. should flag an error: choice type must not have any fields
 
   nofields2 is
     A (x i32)  : choice i32 string bool is  // 14. should flag an error: choice type must not have any fields
 
   nofields3 is
-    A is x i32 := ?
+    A is x i32 := any
     B : A, choice i32 string bool is // 15. should flag an error: choice type must not have any fields
 
   nofields4 is
-    A is x i32 := ?
+    A is x i32 := any
     B : choice i32 string bool, A is // 16. should flag an error: choice type must not have any fields
 
   nofields5 is
@@ -103,10 +106,10 @@ choice_negative is
     A : choice i32 i32 is // 20. should flag an error: generic args to choice must be different
 
   args2 is
-    x choice i32 i32 := ? // 21. should flag an error: generic args to choice must be different
+    x choice i32 i32 := any // 21. should flag an error: generic args to choice must be different
 
   args3 is
-    x i32 | i32 := ?  // 22. should flag an error: generic args to choice must be different
+    x i32 | i32 := any  // 22. should flag an error: generic args to choice must be different
 
   args4 is
     S ref is
@@ -116,12 +119,12 @@ choice_negative is
   args5 is
     S ref is
     R ref : S is
-    x choice R S := ?  // 24. should flag an error: generic args to choice must be different
+    x choice R S := any  // 24. should flag an error: generic args to choice must be different
 
   args6 is
     S ref is
     R ref : S is
-    x R | S := ?  // 25. should flag an error: generic args to choice must be different
+    x R | S := any  // 25. should flag an error: generic args to choice must be different
 
   outer1(x i32) is
     A : choice i64 f32 is
@@ -140,7 +143,7 @@ choice_negative is
   impl2 is
     x : choice i64 bool := true  // 29. should flag an error, choice feature must not be field
   impl3 is
-    x bool : choice i64 bool := ?  // 30. should flag an error, choice feature must not be field
+    x bool : choice i64 bool := any  // 30. should flag an error, choice feature must not be field
   impl4 is
     x : choice i64 bool => 3  // 31. should flag an error, choice feature must not contain code
   impl5 is
