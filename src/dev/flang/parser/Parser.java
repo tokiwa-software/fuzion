@@ -1688,8 +1688,7 @@ exprInLine  : expr             // within one line
     Expr result;
     int line = line();
     int oldLine = sameLine(-1);
-    var c = current();
-    switch (c)
+    switch (current())
       {
       case t_lbrace:
       case t_lparen:
