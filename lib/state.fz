@@ -25,8 +25,8 @@
 
 # state -- represent a state using a monad
 #
-# this can be used both a plain or as a oneway monad to store a state
-# in a way orthogonal to the actual compuation.
+# this can be used both as plain or as a oneway monad to store a state
+# in a way orthogonal to the actual computation.
 #
 #
 state(
