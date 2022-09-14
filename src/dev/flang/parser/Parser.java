@@ -2098,7 +2098,7 @@ stringTermB : '}any chars&quot;'
         var t = current();
         if (isString(t))
           {
-            var str = new StrConst(posObject(), string(), false);
+            var str = new StrConst(posObject(), string());
             result = concatString(posObject(), leftString, str);
             next();
             if (isPartialString(t))
