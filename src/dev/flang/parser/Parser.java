@@ -638,7 +638,7 @@ name        : IDENT                            // all parts of name must be in s
           case t_ternary:
             {
               next();
-              if (skip('?'))
+              if (skip(Token.t_question))
                 {
                   if (skipColon())
                     {
@@ -1520,6 +1520,7 @@ actualArgs  : actualsList
            t_stringBD        ,
            t_stringBQ        ,
            t_stringBB        ,
+           t_question        ,
            t_indentationLimit,
            t_lineLimit       ,
            t_spaceLimit      ,
@@ -1739,13 +1740,13 @@ expr        : opExpr
     Expr result = opExpr();
     SourcePosition pos = posObject();
     var f0 = fork();
-    if (f0.skip('?') && f0.isCasesAndNotExpr())
+    if (f0.skip(Token.t_question) && f0.isCasesAndNotExpr())
       {
         var i = new Indentation();
-        skip('?');
+        skip(Token.t_question);
         result = new Match(pos, result, casesBars(i));
       }
-    else if (skip('?'))
+    else if (skip(Token.t_question))
       {
         Expr f = expr();
         matchOperator(":", "expr of the form >>a ? b : c<<");
@@ -1767,13 +1768,9 @@ opExpr      : ( op
   Expr opExpr()
   {
     OpExpr oe = new OpExpr();
-    if (isOpPrefix())
+    while (current() == Token.t_op)
       {
-        do
-          {
-            oe.add(op());
-          }
-        while (isOpPrefix());
+        oe.add(op());
       }
     oe.add(opTail());
     return oe.toExpr();
@@ -1796,13 +1793,13 @@ opTail      : term
   {
     OpExpr oe = new OpExpr();
     oe.add(term());
-    if (isOpPrefix())
+    if (current() == Token.t_op)
       {
         do
           {
             oe.add(op());
           }
-        while (isOpPrefix());
+        while (current() == Token.t_op);
         if (isTermPrefix())
           {
             oe.add(opTail());
@@ -2167,26 +2164,10 @@ op          : OPERATOR
   Operator op()
   {
     if (PRECONDITIONS) require
-      (isOpPrefix());
+      (current() == Token.t_op);
 
     Operator result = new Operator(posObject(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
     match(Token.t_op, "op");
-    return result;
-  }
-
-
-  /**
-   * Check if the current position starts an op.  Does not change the position
-   * of the parser.
-   *
-   * @return true iff the next token(s) start an op.
-   */
-  boolean isOpPrefix()
-  {
-    var result =
-      current() == Token.t_op
-      && !isOperator('?');  // NYI: create a token for '?'.
-
     return result;
   }
 
@@ -3489,7 +3470,7 @@ implFldOrRout   : implRout
    *
 implFldInit : ":=" exprInLine
             ;
-implFldUndef: ":=" "?"
+implFldUndef: ":=" "?"      // NYI: remove this rule!
             ;
    */
   Impl implFldInitOrUndef(boolean hasType, boolean maybeUndefined)
@@ -3499,7 +3480,7 @@ implFldUndef: ":=" "?"
       {
         syntaxError(pos(), "':='", "implFldInit");
       }
-    if (maybeUndefined && skip('?'))
+    if (maybeUndefined && skip(Token.t_question))
       {
         return Impl.FIELD;
       }
