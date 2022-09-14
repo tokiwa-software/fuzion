@@ -2648,9 +2648,6 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
           if (ok && okLineNum != lineNum(okPos))
             { // a new line, so check its indentation:
               var curIndent = indent(okPos);
-              // NYI: We currently do not check if there are differences in
-              // whitespace, e.g. "\t\t" is a very different indentation than
-              // "\ \ ", even though both have a length of 2 bytes.
               if (firstIndent != curIndent)
                 {
                   Errors.indentationProblemEncountered(posObject(), posObject(firstPos), parserDetail("stmnts"));
