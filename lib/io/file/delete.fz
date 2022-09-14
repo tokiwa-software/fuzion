@@ -27,16 +27,16 @@
 #
 private delete(
     dop Delete_Operation,
-    redef r effectMode.val,
-    _ unit
+    redef r effectMode.val
   ) : deletes, effect r is
 
     # deletes the file/dir represented by the path
     # returns an outcome of unit in case of success or error in case of failure
     #
     delete(path string) =>
-        dop.delete path
+        tmp := dop.delete path
         replace
+        tmp
 
 # short-hand for accessing delete effect in current environment and performing the default delete operation using io.file.delete.delete path
 #
@@ -62,4 +62,4 @@ deletes is
     # install default effect io.file.delete
     installDefault unit is
         if !(effects.exists io.file.delete)
-            _ := delete default_delete_operation effectMode.default unit
+            _ := delete default_delete_operation effectMode.default
