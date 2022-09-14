@@ -19,10 +19,227 @@
 #
 #  Source code of Fuzion standard library feature uint
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# uint -- unsigned integer values of arbitrary size
-#
-uint() : integer uint is # NYI
+# unsigned integer of arbitrary size, including zero
+# represented by its bit sequence
+uint (b Sequence bool) : hasInterval uint
+is
+
+  bits := b.dropWhile (x -> !x)
+
+  # bitwise operations
+
+  # bitwise and
+  infix & (other uint) uint is
+    (b1, b2) := equalize other
+    uint (b1.zip b2 (x,y)->x&y)
+
+  # bitwise or
+  infix | (other uint) uint is
+    (b1, b2) := equalize other
+    uint (b1.zip b2 (x,y)->x|y)
+
+  # bitwise xor
+  infix ^ (other uint) uint is
+    (b1, b2) := equalize other
+    uint (b1.zip b2 (x,y)->x^y)
+
+
+  # shift operations
+
+  # shift right
+  infix >> (other uint) uint
+  pre other >= zero
+  is
+    uint (bits
+          .reverse
+          .drop other.as_i32
+          .reverse)
+
+  # shift left
+  infix << (other uint) uint
+  pre other >= zero
+  is
+    uint (bits ++ array other.as_i32 _->false)
+
+
+  # return two sequences of equal length
+  # by prepending false to the shorter sequence
+  private equalize(other uint)
+  post result.values.0.count = result.values.1.count
+    =>
+    if other.bits.count < bits.count
+      zeros := (1..bits.count-other.bits.count).map(x -> false)
+      (bits.asList, zeros++other.bits)
+    else
+      zeros := (1..other.bits.count-bits.count).map(x -> false)
+      (zeros++bits, other.bits.asList)
+
+
+  # divide with remainder the two given positive ints
+  # returns the quotient and the remainder
+  # NYI performance: https://cs.opensource.google/go/go/+/refs/tags/go1.19:src/math/big/natdiv.go
+  private divide_with_remainder (divisor uint) tuple uint uint
+  pre divisor > zero
+  is
+    if thiz = zero
+      (zero, zero)
+    else if thiz < divisor
+      (zero, thiz)
+    else if thiz = divisor
+      (one, zero)
+    else
+      bitcount_diff uint := (ints.from_i32 bits.count-divisor.bits.count).n
+      shift := if thiz -! (divisor << bitcount_diff) then bitcount_diff else bitcount_diff-one
+      remainder := if thiz -! (divisor << bitcount_diff) then thiz - (divisor << shift) else thiz - (divisor << shift)
+      (q,rem) := remainder.divide_with_remainder divisor
+      ((one << shift) + q, rem)
+
+
+  # add two unsigned ints
+  infix +  (other uint) uint is
+    (b1, b2) := equalize other
+    (d, _, _) := ([false] ++ b1)
+      .asList
+      .reverse
+      .reduce ((lists.empty bool), ([false] ++ b2).asList.reverse, false) (r, t ->
+
+        (bits, rest, carry_over) := r
+
+        true_count := [t, rest.first, carry_over]
+          .filter x->x
+          .count
+
+        ([true_count % 2 = 1] ++ bits, (rest.drop 1), true_count > 1)
+      )
+
+    uint d
+
+
+  # subtract other from this unsigned int
+  infix - (other uint) uint
+  pre thiz >= other
+  is
+    (b1, b2) := equalize other
+    (r, _) := b1
+      .zip b2 (x, y -> (x,y))
+      .reverse
+      .reduce (lists.empty bool, false) (r,t ->
+        (minuend, subtrahend) := t
+        (res,carry_over) := r
+
+        true_count_minuend := [minuend].filter(x->x).count
+        true_count_subtrahend := [subtrahend, carry_over].filter(x->x).count
+
+        # 0-0=0, 0-1=1, 0-2=0, 1-0=1, 1-1=0, 1-2=1
+        ([(true_count_minuend - true_count_subtrahend).abs % 2 = 1]++res, true_count_minuend < true_count_subtrahend)
+      )
+    uint r
+
+
+  # NYI make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
+  # multiply these unsigned ints
+  infix *  (other uint) uint is
+    (b1, b2) := equalize other
+    b1
+      .reverse
+      .asArray
+      .map_indexed ((v,i) ->
+        b2
+          .reverse
+          .asArray
+          .map_indexed ((ov, oi) ->
+            zero_count := i + oi
+            appended_zeros := (1..zero_count).map (c -> false)
+            uint ([v & ov] ++ appended_zeros)
+          )
+        )
+      .flatMapSequence uint (x -> x)
+      .fold sum
+
+
+  # divide these unsigned ints
+  infix /  (other uint) uint
+  pre other != zero
+  is
+    (quotient,_) := (divide_with_remainder other)
+    quotient
+
+
+  # modulo
+  # returns the remainder of the division
+  infix %  (other uint) uint is
+    (_,remainder) := (divide_with_remainder other)
+    remainder
+
+
+  # are these unsigned integers equal?
+  infix == (other uint) bool is
+    (b1, b2) := equalize other
+    (b1.zip b2 ((a,b) -> a = b)) ∀ (x->x)
+
+
+  # less or equal
+  infix <= (other uint) =>
+      (b1, b2) := equalize other
+      b1
+        # zip the two equally long lists of digits
+        .zip b2 (a, b -> (a,b))
+        # only the first unequal digit is important
+        .filter (t -> (a,b) := t; a /= b)
+        .mapSequence (t -> (a,b) := t; a = false)
+        # default when all digits are equal
+        .first true
+
+
+  # checks if operations are allowed
+
+  prefix -! bool is thiz=zero
+  infix +! (other uint) bool is true
+  infix -! (other uint) bool is thiz >= other
+  infix *! (other uint) bool is true
+  infix /! (other uint) bool is other != zero
+  infix %! (other uint) bool is true
+  infix **!(other uint) bool is true
+
+  # exponentation always works, even though it might be very
+  # slow for large numbers
+
+  infix **?(other uint) numOption uint is thiz ** other
+  infix **^(other uint) uint is thiz ** other
+
+  orderedThis uint is thiz
+
+  redef zero uint is
+    uint [false]
+
+  redef one uint is
+    uint [true]
+
+  redef thiz => uint b
+
+
+  # this uint as an u32
+  as_u32 u32
+  pre
+    bits.count <= 32
+  is
+    bits.reduce (u32 0) ((r,b) ->
+      if b
+        r << 1 | 1
+      else
+        r << 1
+      )
+
+  # this uint as an i32
+  as_i32 i32
+  is
+    as_u32.as_i32
+
+
+  redef asString string is
+    uint.this.asString 10
+

@@ -353,6 +353,13 @@ Sequence(T type) ref is
     (nth i).get
 
 
+  # adds the corresponding index to
+  # every element in the sequence
+  #
+  indexed list (tuple i32 T) is
+    zip (0..) (a,b -> (b, a))
+
+
 # Sequences -- unit type defining features related to Sequence but not requiring
 # an instance
 #
