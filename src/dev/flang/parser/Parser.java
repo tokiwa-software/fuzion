@@ -2328,26 +2328,21 @@ caseStar    : STAR       caseBlock
    */
   Case caze()
   {
-    Case result = null;
     SourcePosition pos = posObject();
     if (skip('*'))
       {
-        result = new Case(pos, caseBlock());
+        return new Case(pos, caseBlock());
       }
     else if (isCaseFldDcl())
       {
         String n = identifier();
-        match(Token.t_ident, "caze");
-        var t = type();
-        result = new Case(pos, t, n, caseBlock());
+        match(Token.t_ident, "caseFldDcl");
+        return new Case(pos, type(), n, caseBlock());
       }
     else
       {
-        var l = typeList();
-        result = new Case(pos, l, caseBlock());
+        return new Case(pos, typeList(), caseBlock());
       }
-    // NYI: Cleanup: new abstract class CaseCondition with three implementations: star, fieldDecl, typeList.
-    return result;
   }
 
 
