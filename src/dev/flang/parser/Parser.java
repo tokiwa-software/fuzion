@@ -2539,21 +2539,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
   List<Stmnt> stmnts()
   {
     List<Stmnt> l = new List<>();
-    var in = new Indentation()
-      {
-        boolean handleSurpriseIndentation()
-        {
-          var result = false;
-          // NYI: check if this case may still occur:
-          if (!l.isEmpty() && l.getLast() instanceof Feature f && f.impl() == Impl.FIELD)
-            { // Let's be nice in the common case of a forgotten 'is'
-              syntaxError(pos(), "'is' followed by routine code", "stmtns");
-              block(); // skip the code of the routine.
-              result = true;
-            }
-          return result;
-        }
-      };
+    var in = new Indentation();
     while (!endOfStmnts() && in.ok())
       {
         Stmnt s = stmnt();
@@ -2665,8 +2651,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
               // NYI: We currently do not check if there are differences in
               // whitespace, e.g. "\t\t" is a very different indentation than
               // "\ \ ", even though both have a length of 2 bytes.
-              if (firstIndent < curIndent && !handleSurpriseIndentation() ||
-                  firstIndent > curIndent)
+              if (firstIndent != curIndent)
                 {
                   Errors.indentationProblemEncountered(posObject(), posObject(firstPos), parserDetail("stmnts"));
                 }
@@ -2689,18 +2674,6 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
           minIndent(oldIndentPos);
         }
     }
-
-    /**
-     * Special handler called when line with deeper indentation is found by ok().
-     *
-     * @return true iff this was handled and can be ignored, false to produce a
-     * syntax error.
-     */
-    boolean handleSurpriseIndentation()
-    {
-      return false;
-    }
-
   }
 
 
