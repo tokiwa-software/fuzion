@@ -27,8 +27,7 @@
 #
 private write(
     fwh File_Write_Handler,
-    redef r effectMode.val,
-    _ unit
+    redef r effectMode.val
   ) : writes, effect r is
 
     # takes an array of bytes and writes all of it into the file presented in the path
@@ -38,9 +37,9 @@ private write(
     # in case of success a unit type will be the outcome otherwise an error will be the outcome
     #
     write_all(path string, content array u8) =>
-        res := fwh.write path content
+        tmp := fwh.write path content
         replace
-        res
+        tmp
 
 # short-hand for accessing write effect in current environment
 #
@@ -66,4 +65,4 @@ writes is
     # install default effect io.file.write
     installDefault unit is
         if !(effects.exists io.file.write)
-            _ := write default_file_write_handler effectMode.default unit
+            _ := write default_file_write_handler effectMode.default
