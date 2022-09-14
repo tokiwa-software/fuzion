@@ -27,14 +27,15 @@
 #
 private stat(
   ps Provided_Stat,
-  redef r effectMode.val,
-  _ unit
+  redef r effectMode.val
   ) : stats, effect r is
 
   # retrieves the file size in bytes as an i64 value and returns -1 in case of an error
   #
   size(path string) =>
-    ps.size path
+    tmp := ps.size path
+    replace
+    tmp
 
 # short-hand for accessing stat effect in current environment
 #
@@ -60,4 +61,4 @@ stats is
   # install default effect io.file.stat
   installDefault unit is 
     if !(effects.exists io.file.stat)
-      _ := stat default_provided_stat effectMode.default unit
+      _ := stat default_provided_stat effectMode.default
