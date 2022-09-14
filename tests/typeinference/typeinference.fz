@@ -37,22 +37,19 @@ typeinference is
 
   typeInferencingFromIf1(b bool) is
     f choice i32 string bool :=
-    {
       if      ( b) 3
       else if (!b) false
       else         "string"
-    }
 
   chck (match (typeInferencingFromIf1 true ).f { i1 i32  => { i1==3        }; string, bool => false }) "typeinference from if 1"
   chck (match (typeInferencingFromIf1 false).f { b1 bool => { b1 <=> false }; i32, string  => false }) "typeinference from if 1"
 
   typeInferencingFromIf2(b bool) =>
     f(x choice i32 string bool) => x;
-    f({
-        if      ( b) 3
-        else if (!b) false
-        else         "string"
-      })
+    f (if      ( b) 3
+       else if (!b) false
+       else         "string"
+      )
 
   chck (match (typeInferencingFromIf2 true ) { i2 i32  => { i2 == 3      }; string, bool => false }) "typeinference from if 2"
   chck (match (typeInferencingFromIf2 false) { b2 bool => { b2 <=> false }; i32, string  => false }) "typeinference from if 2"
@@ -94,12 +91,11 @@ typeinference is
 
     test(x abcde) is
       f(a choice i32 string bool E) unit is
-      f({
-          match x
+      f (match x
             a A => 3
             B,C => "string"
             d D => false
             e E => e
-        })
+        )
 
   fuzion.std.exit exitCode
