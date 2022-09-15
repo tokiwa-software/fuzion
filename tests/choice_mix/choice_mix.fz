@@ -28,10 +28,9 @@ choice_mix is
   Nil is
   MyObj ref is
   MyRef(x,y,z i32) ref : MyObj is
-    a,b,c i32 := ?
-    set a := x+x
-    set b := y+y
-    set c := z+z
+    a i32 := x+x
+    b i32 := y+y
+    c i32 := z+z
 
   Mix : choice i32
                bool
@@ -105,7 +104,7 @@ choice_mix is
       Nil    => say "Nil:    "
       MyRef  => say "MyRef:  "
 
-  v00 Mix := ?
+  v00 Mix := 42
 
   show00 =>
     yak "show00 "
@@ -191,7 +190,7 @@ choice_mix is
                          magenta
                          black
                          white
-                         transparent := ?
+                         transparent := red
 
     print(c choice red
                    green
@@ -245,7 +244,7 @@ choice_mix is
                 | magenta
                 | black
                 | white
-                | transparent := ?
+                | transparent := red
 
     print(c red
           | green

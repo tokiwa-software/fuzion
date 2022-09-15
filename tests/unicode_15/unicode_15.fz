@@ -17,69 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test forwardref_negative
+#  Source code of Fuzion test unicode version 15
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-forwardref_negative is
-
-  cyclic1 is
-    a := z // 1. should flag an error, forward reference to uninitialized field
-    b := a
-    c := b
-    d := c
-    e := d
-    f := e
-    g := f
-    h := g
-    i := h
-    j := i
-    k := j
-    l := k
-    m := l
-    n := m
-    o := n
-    p := o
-    q := p
-    r := q
-    s := r
-    t := s
-    u := t
-    v := u
-    w := v
-    x := w
-    y := x
-    z := 1
-  cyclic1
-
-  cyclic2 is
-    a := z // 2. should flag an error, forward reference to uninitialized field
-    b := a
-    c := b
-    d := c
-    e := d
-    f := e
-    g := f
-    h := g
-    i := h
-    j := i
-    k := j
-    l := k
-    m := l
-    n := m
-    o := n
-    p := o
-    q := p
-    r := q
-    s := r
-    t := s
-    u := t
-    v := u
-    w := v
-    x := w
-    y := x
-    z := 1
-  cyclic2
-  unit
+unicode_15 is
+  say "🪿 is a goose"

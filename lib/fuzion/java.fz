@@ -66,8 +66,8 @@ public fuzion.java is
   #
   public Array(redef T type, private redef javaRef Object) ref : Sequence T, JavaObject javaRef
   is
-    length            => arrayLength T Array.this
-    index [ ] (i i32) => arrayGet    T Array.this i
+    length                  => arrayLength T Array.this
+    redef index [ ] (i i32) => arrayGet    T Array.this i
     redef asList => asList 0
 
     # create list starting at index from

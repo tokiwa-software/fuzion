@@ -25,14 +25,17 @@
 
 generics_negative is
 
+  # any produces a 'void' value that is assignable to anything.
+  any => panic "trying to create void"
+
   opengenerics1 (A type...) is
   opengenerics2 (A type, B type...) is
   opengenerics3 (A type, B type, C type...) is
 
   opengenerics4 (A type, B type, C type...) is
-    a A := ?;
-    b B := ?;
-    c C := ?; // 4. should flag an error, open generic cannot be field type.
+    a A := any;
+    b B := any;
+    c C := any; // 4. should flag an error, open generic cannot be field type.
 
   opengenerics5a (A type, B type, C type...) is
     f1(a A) is
@@ -100,20 +103,20 @@ generics_negative is
 
   opengenerics23 A B C is
     f(a A.i32) i32 is 3          // 23. should flag an error: generic used as outer type
-    x A i32 := ?                 // 24. should flag an error: generic must not have generic args
+    x A i32 := any               // 24. should flag an error: generic must not have generic args
 
   opengenerics24 is
-    x1 Function := ?             // 25. should flag an error: not enough generics
+    x1 Function := any           // 25. should flag an error: not enough generics
     x1.call()       // should be ignored by compiler after previous errors
     x1()            // should be ignored by compiler after previous errors
-    x2 Function i32 bool := ?
+    x2 Function i32 bool := any
     i2a i32  := x2.call true
     j2a i32  := x2.call 3         // 26. should flag an error: wrong argument type
     b2a bool := x2.call true      // 27. should flag an error: wrong type in assignment
     i2b i32  := x2 true
     j2b i32  := x2 3              // 28. should flag an error: wrong argument type
     b2b bool := x2 true           // 29. should flag an error: wrong type in assignment
-    x3 Function unit i32 bool := ?
+    x3 Function unit i32 bool := any
     x3.call 3 true
     x3.call false false          // 30. should flag an error: wrong argument type
     x3.call 3 3                  // 31. should flag an error: wrong argument type
@@ -126,11 +129,11 @@ generics_negative is
     x3 3                         // 37. should flag an error: wrong argument count
 
     g A B C is
-    x4 g := ?                      // 38. should flag an error: not enough generics
-    x5 g i32 := ?                   // 39. should flag an error: not enough generics
-    x6 g i32 i32 := ?               // 40. should flag an error: not enough generics
-    x7 g i32 i32 i32 := ?
-    x8 g i32 i32 i32 i32 := ?       // 41. should flag an error: too many generics
+    x4 g := any                  // 38. should flag an error: not enough generics
+    x5 g i32 := any              // 39. should flag an error: not enough generics
+    x6 g i32 i32 := any          // 40. should flag an error: not enough generics
+    x7 g i32 i32 i32 := any
+    x8 g i32 i32 i32 i32 := any  // 41. should flag an error: too many generics
 
 
   features_from_separate_source_file is

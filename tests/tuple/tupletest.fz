@@ -96,7 +96,7 @@ tupletest is
 # (one13 i32)    := tuple i32 (42); p "one13 is $one13" // one-tuple using destructure and explicit type
 # (one14 i32)    := tuple i32 (42); p "one14 is $one14" // one-tuple using destructure and inferring generic
 # (one15 i32)    :=           (42); p "one15 is $one15" // one-tuple using destructure and tuple syntax sugar
-  one16, one17, one18 i32 := ?
+  one16, one17, one18 i32 := 42
 # set (one16)    := tuple i32 (42); p "one16 is $one16" // one-tuple using destructure and explicit type
 # set (one17)    := tuple i32 (42); p "one17 is $one17" // one-tuple using destructure and inferring generic
 # set (one18)    :=           (42); p "one18 is $one18" // one-tuple using destructure and tuple syntax sugar
@@ -126,7 +126,7 @@ tupletest is
 # (two13a, two13b i32) := tuple i32 i32  4 2 ; p "two13 is $two13a, $two13b" // two-tuple using destructure and explicit types
   (two14a, two14b i32) := tuple          4 2 ; p "two14 is $two14a, $two14b" // two-tuple using destructure and inferring generic
   (two15a, two15b i32) :=               (4,2); p "two15 is $two15a, $two15b" // two-tuple using destructure and tuple syntax sugar
-  two16a, two16b, two17a, two17b, two18a, two18b i32 := ?
+  two16a, two16b, two17a, two17b, two18a, two18b i32 := 42
 #  set (two16a, two16b) := tuple i32 i32  4 2 ; p "two16 is $two16a, $two16b" // two-tuple using destructure and explicit types
   set (two17a, two17b) := tuple          4 2 ; p "two17 is $two17a, $two17b" // two-tuple using destructure and inferring generic
   set (two18a, two18b) :=               (4,2); p "two18 is $two18a, $two18b" // two-tuple using destructure and tuple syntax sugar
@@ -172,8 +172,8 @@ tupletest is
   chck t10a1=3 "t10a1"
   chck !t10a2  "t10a2"
 
-  t10b1 i32 := ?
-  t10b2 bool := ?
+  t10b1 i32 := 42
+  t10b2 bool := false
   ib (i i32, b bool) is
   set (t10b1, t10b2) := ib 33 true
   p "tuple t10b1/2 = ib is {t10b1}, {t10b2}"
@@ -200,7 +200,7 @@ tupletest is
   chck t11a.values.1=25  "second must be 25"
   chck t11a.values.2=125 "third must be 125"
 
-  t12a1,t12a2,t12a3 i32 := ?
+  t12a1,t12a2,t12a3 i32 := 42
   set (t12a1,t12a2,t12a3) := t11 4
   chck t12a1=4   "first must be 4"
   chck t12a2=16  "second must be 16"
@@ -221,7 +221,7 @@ tupletest is
   chck t12g2=49  "second must be 49"
   chck t12g3=343 "third must be 343"
 
-  t12h1, t12h2, t12h3 i32 := ?
+  t12h1, t12h2, t12h3 i32 := 42
   set (_,_,t12h3) := t11 8; chck t12h3=512 "t12h3 must be 512"
   set (_,t12h2,_) := t11 8; chck t12h2=64  "t12h2 must be 64"
   set (t12h1,_,_) := t11 8; chck t12h1=8   "t12h1 must be 8"
@@ -241,8 +241,8 @@ tupletest is
   (_,_) := (12, 23)
   (_,_) := (true, 23)
 
-  t13a1, t13a3 i32 := ?
-  t13a2 bool := ?
+  t13a1, t13a3 i32 := 42
+  t13a2 bool := false
   set (t13a1,_,_) := (01, 12, 23); chck t13a1=01 "t13a1 must be 01"
 # set (_,t13a2,_) := (01, 12, 23); // 24. should flag an error, illegal type
   set (_,_,t13a3) := (01, 12, 23); chck t13a3=23 "t13a3 must be 23"
@@ -256,8 +256,8 @@ tupletest is
   (_,t13d2,_) := (01, 12, 23); chck t13d2=12 "t13d2 must be 12"
   (_,_,t13d3) := (01, 12, 23); chck t13d3=23 "t13d3 must be 23"
 
-  t14a1, t14a3 i32 := ?
-  t14a2 bool := ?
+  t14a1, t14a3 i32 := 42
+  t14a2 bool := false
   set (t14a1,_,_) := (01, true, 23); chck t14a1=01 "t14a1 must be 01"
   set (_,t14a2,_) := (01, true, 23); chck t14a2    "t14a2 must be true"
   set (_,_,t14a3) := (01, true, 23); chck t14a3=23 "t14a3 must be 23"
@@ -271,8 +271,8 @@ tupletest is
   (_,t14d2,_) := (01, true, 23); chck t14d2    "t14d2 must be true"
   (_,_,t14d3) := (01, true, 23); chck t14d3=23 "t14d3 must be 23"
 
-  t15a1, t15a3 i32 := ?
-  t15a2 bool := ?
+  t15a1, t15a3 i32 := 42
+  t15a2 bool := false
   set (t15a1,_,_) := (01, true, 23); chck t15a1=01 "t15a1 must be 01"
   set (_,t15a2,_) := (01, true, 23); chck t15a2    "t15a2 must be true"
   set (_,_,t15a3) := (01, true, 23); chck t15a3=23 "t15a3 must be 23"

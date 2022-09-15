@@ -135,6 +135,7 @@ public class Lexer extends SourceFile
     t_lcrochet,    // [
     t_rcrochet,    // ]
     t_semicolon,   // ;
+    t_question,    // ?
     t_numliteral,  // 123
     t_ident,       // abc
     t_stringQQ,    // "abc"
@@ -276,6 +277,7 @@ public class Lexer extends SourceFile
             case t_lcrochet          : result = "left crochet '['"                           ; break;
             case t_rcrochet          : result = "right crochet ']'"                          ; break;
             case t_semicolon         : result = "semicolon ';'"                              ; break;
+            case t_question          : result = "question mark '?'"                          ; break;
             case t_numliteral        : result = "numeric literal"                            ; break;
             case t_ident             : result = "identifier"                                 ; break;
             case t_stringQQ          : result = "string constant"                            ; break;
@@ -932,7 +934,7 @@ public class Lexer extends SourceFile
               token =
                 !SHARP_COMMENT_ONLY_IF_IN_COL_1 ||
                 codePointInLine(_curPos) == 1      ? skipUntilEOL() // comment until end of line
-                                                   : skipOp();
+                                                   : skipOp(Token.t_op);
               break;
             }
           /**
@@ -957,7 +959,7 @@ OPERATOR  : ( '!'
           */
           case K_OP      :   // '+'|'-'|'*'|'%'|'|'|'~'|'!'|'$'|'&'|'@'|':'|'<'|'>'|'='|'^'|'.')+;
             {
-              token = skipOp();
+              token = skipOp(p == '?' ? Token.t_question : Token.t_op);
               break;
             }
           /**
@@ -989,7 +991,7 @@ LF          : ( '\r'? '\n'
               p = curCodePoint();
               token = kind(p) == K_SLASH ? skipUntilEOL() : // comment until end of line
                       p == '*'           ? skipComment()
-                                         : skipOp();
+                                         : skipOp(Token.t_op);
               break;
             }
           /**
@@ -1878,15 +1880,16 @@ HEX_TAIL    : "." HEX_DIGITS
    *
    * @return Token.t_op
    */
-  private Token skipOp()
+  private Token skipOp(Token res)
   {
     int p = curCodePoint();
     while (kind(p) == K_OP || kind(p) == K_SHARP || kind(p) == K_SLASH)
       {
+        res = Token.t_op;
         nextCodePoint();
         p = curCodePoint();
       }
-    return Token.t_op;
+    return res;
   }
 
 

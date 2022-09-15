@@ -638,7 +638,7 @@ name        : IDENT                            // all parts of name must be in s
           case t_ternary:
             {
               next();
-              if (skip('?'))
+              if (skip(Token.t_question))
                 {
                   if (skipColon())
                     {
@@ -1520,6 +1520,7 @@ actualArgs  : actualsList
            t_stringBD        ,
            t_stringBQ        ,
            t_stringBB        ,
+           t_question        ,
            t_indentationLimit,
            t_lineLimit       ,
            t_spaceLimit      ,
@@ -1688,8 +1689,7 @@ exprInLine  : expr             // within one line
     Expr result;
     int line = line();
     int oldLine = sameLine(-1);
-    var c = current();
-    switch (c)
+    switch (current())
       {
       case t_lbrace:
       case t_lparen:
@@ -1726,21 +1726,6 @@ exprInLine  : expr             // within one line
 
 
   /**
-   * An expr() that, if it is a block, is permitted to start at minIndent.
-   *
-exprAtMinIndent : block
-                | exprInLine
-                ;
-   */
-  Expr exprAtMinIndent()
-  {
-    return
-      currentAtMinIndent() == Token.t_lbrace ? block()
-                                             : exprInLine();
-  }
-
-
-  /**
    * Parse
    *
 expr        : opExpr
@@ -1755,13 +1740,13 @@ expr        : opExpr
     Expr result = opExpr();
     SourcePosition pos = posObject();
     var f0 = fork();
-    if (f0.skip('?') && f0.isCasesAndNotExpr())
+    if (f0.skip(Token.t_question) && f0.isCasesAndNotExpr())
       {
         var i = new Indentation();
-        skip('?');
+        skip(Token.t_question);
         result = new Match(pos, result, casesBars(i));
       }
-    else if (skip('?'))
+    else if (skip(Token.t_question))
       {
         Expr f = expr();
         matchOperator(":", "expr of the form >>a ? b : c<<");
@@ -1783,13 +1768,9 @@ opExpr      : ( op
   Expr opExpr()
   {
     OpExpr oe = new OpExpr();
-    if (isOpPrefix())
+    while (current() == Token.t_op)
       {
-        do
-          {
-            oe.add(op());
-          }
-        while (isOpPrefix());
+        oe.add(op());
       }
     oe.add(opTail());
     return oe.toExpr();
@@ -1812,13 +1793,13 @@ opTail      : term
   {
     OpExpr oe = new OpExpr();
     oe.add(term());
-    if (isOpPrefix())
+    if (current() == Token.t_op)
       {
         do
           {
             oe.add(op());
           }
-        while (isOpPrefix());
+        while (current() == Token.t_op);
         if (isTermPrefix())
           {
             oe.add(opTail());
@@ -2114,7 +2095,7 @@ stringTermB : '}any chars&quot;'
         var t = current();
         if (isString(t))
           {
-            var str = new StrConst(posObject(), "\""+string()+"\"" /* NYI: remove "\"" */);
+            var str = new StrConst(posObject(), string());
             result = concatString(posObject(), leftString, str);
             next();
             if (isPartialString(t))
@@ -2183,26 +2164,10 @@ op          : OPERATOR
   Operator op()
   {
     if (PRECONDITIONS) require
-      (isOpPrefix());
+      (current() == Token.t_op);
 
     Operator result = new Operator(posObject(), operator(), ignoredTokenBefore(), ignoredTokenAfter());
     match(Token.t_op, "op");
-    return result;
-  }
-
-
-  /**
-   * Check if the current position starts an op.  Does not change the position
-   * of the parser.
-   *
-   * @return true iff the next token(s) start an op.
-   */
-  boolean isOpPrefix()
-  {
-    var result =
-      current() == Token.t_op
-      && !isOperator('?');  // NYI: create a token for '?'.
-
     return result;
   }
 
@@ -2344,26 +2309,21 @@ caseStar    : STAR       caseBlock
    */
   Case caze()
   {
-    Case result = null;
     SourcePosition pos = posObject();
     if (skip('*'))
       {
-        result = new Case(pos, caseBlock());
+        return new Case(pos, caseBlock());
       }
     else if (isCaseFldDcl())
       {
         String n = identifier();
-        match(Token.t_ident, "caze");
-        var t = type();
-        result = new Case(pos, t, n, caseBlock());
+        match(Token.t_ident, "caseFldDcl");
+        return new Case(pos, type(), n, caseBlock());
       }
     else
       {
-        var l = typeList();
-        result = new Case(pos, l, caseBlock());
+        return new Case(pos, typeList(), caseBlock());
       }
-    // NYI: Cleanup: new abstract class CaseCondition with three implementations: star, fieldDecl, typeList.
-    return result;
   }
 
 
@@ -2539,21 +2499,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
   List<Stmnt> stmnts()
   {
     List<Stmnt> l = new List<>();
-    var in = new Indentation()
-      {
-        boolean handleSurpriseIndentation()
-        {
-          var result = false;
-          // NYI: check if this case may still occur:
-          if (!l.isEmpty() && l.getLast() instanceof Feature f && f.impl() == Impl.FIELD)
-            { // Let's be nice in the common case of a forgotten 'is'
-              syntaxError(pos(), "'is' followed by routine code", "stmtns");
-              block(); // skip the code of the routine.
-              result = true;
-            }
-          return result;
-        }
-      };
+    var in = new Indentation();
     while (!endOfStmnts() && in.ok())
       {
         Stmnt s = stmnt();
@@ -2662,11 +2608,7 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
           if (ok && okLineNum != lineNum(okPos))
             { // a new line, so check its indentation:
               var curIndent = indent(okPos);
-              // NYI: We currently do not check if there are differences in
-              // whitespace, e.g. "\t\t" is a very different indentation than
-              // "\ \ ", even though both have a length of 2 bytes.
-              if (firstIndent < curIndent && !handleSurpriseIndentation() ||
-                  firstIndent > curIndent)
+              if (firstIndent != curIndent)
                 {
                   Errors.indentationProblemEncountered(posObject(), posObject(firstPos), parserDetail("stmnts"));
                 }
@@ -2689,18 +2631,6 @@ stmnts      : stmnt semiOrFlatLF stmnts (semiOrFlatLF | )
           minIndent(oldIndentPos);
         }
     }
-
-    /**
-     * Special handler called when line with deeper indentation is found by ok().
-     *
-     * @return true iff this was handled and can be ignored, false to produce a
-     * syntax error.
-     */
-    boolean handleSurpriseIndentation()
-    {
-      return false;
-    }
-
   }
 
 
@@ -2746,12 +2676,12 @@ loopProlog  : indexVars "variant" exprInLine
             | indexVars
             |           "variant" exprInLine
             ;
-loopBody    : "while" exprAtMinIndent      block
-            | "while" exprAtMinIndent "do" block
-            |                         "do" block
+loopBody    : "while" exprInLine      block
+            | "while" exprInLine "do" block
+            |                    "do" block
             ;
-loopEpilog  : "until" exprAtMinIndent thenPart elseBlockOpt
-            |                                  elseBlock
+loopEpilog  : "until" exprInLine thenPart elseBlockOpt
+            |                             elseBlock
             ;
    */
   Expr loop()
@@ -2761,12 +2691,12 @@ loopEpilog  : "until" exprAtMinIndent thenPart elseBlockOpt
         List<Feature> indexVars  = new List<>();
         List<Feature> nextValues = new List<>();
         var hasFor   = current() == Token.t_for; if (hasFor) { indexVars(indexVars, nextValues); }
-        var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()      : null;
-                                                    var i   = hasFor || v != null ? invariant(true)   : null;
-        var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprAtMinIndent() : null;
-        var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()       : null;
-        var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprAtMinIndent() : null;
-                                                    var ub  = hasUntil            ? thenPart(true)    : null;
+        var hasVar   = skip(true, Token.t_variant); var v   = hasVar              ? exprInLine()    : null;
+                                                    var i   = hasFor || v != null ? invariant(true) : null;
+        var hasWhile = skip(true, Token.t_while  ); var w   = hasWhile            ? exprInLine()    : null;
+        var hasDo    = skip(true, Token.t_do     ); var b   = hasWhile || hasDo   ? block()         : null;
+        var hasUntil = skip(true, Token.t_until  ); var u   = hasUntil            ? exprInLine()    : null;
+                                                    var ub  = hasUntil            ? thenPart(true)  : null;
                                                     var els1 =               fork().elseBlockOpt();
                                                     var els =                       elseBlockOpt();
 
@@ -2814,7 +2744,7 @@ indexVar    : visibility
             ;
 implFldIter : "in" exprInLine
             ;
-nextValue   : COMMA exprAtMinIndent
+nextValue   : COMMA exprInLine
             |
             ;
    */
@@ -2839,20 +2769,20 @@ nextValue   : COMMA exprAtMinIndent
     if (       skip(Token.t_in) &&
         forked.skip(Token.t_in)    )
       {
-        p1 = new Impl(posObject(),        exprInLine() /* NYI: better exprAtMinIndent() to be same as FieldInit and FIeldDef? */, Impl.Kind.FieldIter);
-        p2 = new Impl(posObject(), forked.exprInLine() /* NYI: better exprAtMinIndent() to be same as FieldInit and FIeldDef? */, Impl.Kind.FieldIter);
+        p1 = new Impl(posObject(),        exprInLine(), Impl.Kind.FieldIter);
+        p2 = new Impl(posObject(), forked.exprInLine(), Impl.Kind.FieldIter);
       }
     else
       {
-        p1 =        implFldInitOrUndef(hasType, false);
-        p2 = forked.implFldInitOrUndef(hasType, false);
+        p1 =        implFldInit(hasType);
+        p2 = forked.implFldInit(hasType);
         // up to here, this and forked parse the same, i.e, v1, m1, .. p1 is the
         // same as v2, m2, .. p2.  Now, we check if there is a comma, which
         // means there is a different value for the second and following
         // iterations:
         if (skipComma())
           {
-            p2 = new Impl(pos, exprAtMinIndent(), p2.kind_);
+            p2 = new Impl(pos, exprInLine(), p2.kind_);
           }
       }
     Feature f1 = new Feature(pos,v1,m1,r1,new List<>(n1),
@@ -3509,7 +3439,6 @@ implRout    : block
    *
 implFldOrRout   : implRout
                 | implFldInit
-                | implFldUndef
                 |
                 ;
    */
@@ -3525,7 +3454,7 @@ implFldOrRout   : implRout
       }
     else if (isOperator(":="))
       {
-        return implFldInitOrUndef(hasType, true);
+        return implFldInit(hasType);
       }
     else
       {
@@ -3536,31 +3465,22 @@ implFldOrRout   : implRout
 
 
   /**
-   * Parse implFldInitOrUndef
+   * Parse implFldInit
    *
-implFldInit : ":=" exprAtMinIndent
-            ;
-implFldUndef: ":=" "?"
+implFldInit : ":=" exprInLine
             ;
    */
-  Impl implFldInitOrUndef(boolean hasType, boolean maybeUndefined)
+  Impl implFldInit(boolean hasType)
   {
     SourcePosition pos = posObject();
     if (!skip(":="))
       {
         syntaxError(pos(), "':='", "implFldInit");
       }
-    if (maybeUndefined && skip('?'))
-      {
-        return Impl.FIELD;
-      }
-    else
-      {
-        return new Impl(pos,
-                        exprAtMinIndent(),
-                        hasType ? Impl.Kind.FieldInit
-                                : Impl.Kind.FieldDef);
-      }
+    return new Impl(pos,
+                    exprInLine(),
+                    hasType ? Impl.Kind.FieldInit
+                            : Impl.Kind.FieldDef);
   }
 
 
