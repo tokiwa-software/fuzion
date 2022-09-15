@@ -126,6 +126,9 @@ i32(val i32) : wrappingInteger i32, hasInterval i32, i32s is
       debug: thiz >= 0
     is
       u128 0 as_i64.as_u64
+  as_int int is
+    int as_i64
+
 
   # casting bit representation to unsigned
   low8bits    u8   is castTo_u32.low8bits   # 0x1234_5678 ->        0x78, -0x1234_5678 -> 0x88

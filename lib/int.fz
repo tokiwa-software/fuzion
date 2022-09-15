@@ -186,6 +186,16 @@ ints is
         )
     int s (uint res)
 
+  # helper feature to init int via a u64
+  from_u64(val u64) int is
+    (res,_) :=
+      (0..63)
+        .reduce (lists.empty bool, val) (r, _ ->
+          (l, rest) := r
+          ([(rest & 1) = 1] ++ l, rest>>1)
+        )
+    int plus (uint res)
+
   # helper feature to init int via an i32
   from_i32(val i32) int is
     from_i64 val.as_i64

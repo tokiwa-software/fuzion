@@ -1,0 +1,67 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature move
+#
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# move -- effect wrapping the file move operation
+#
+private move(
+    mop Move_Operation,
+    redef r effectMode.val,
+    _ unit
+  ) : moves, effect r is
+
+    # moves the file/dir from old_path to new_path
+    # returns an outcome of unit in case of success or error in case of failure
+    #
+    move(old_path string, new_path string) =>
+        tmp := mop.move old_path new_path
+        replace
+        tmp
+
+# short-hand for accessing move effect in current environment and performing the default move operation using 
+# io.file.move.move old_path new_path
+#
+move(old_path string, new_path string) =>
+  moves.installDefault
+  move.env.move old_path new_path
+
+# reference to the move operations that could take place
+#
+Move_Operation ref is
+    move(old_path string, new_path string) outcome unit is abstract
+
+# the default file/dir move operation via fuzion.std.fileio.move
+#
+default_move_operation : Move_Operation is
+    move(old_path string, new_path string) =>
+        fuzion.std.fileio.move old_path new_path
+
+# unit type feature defining features related to move effect but not requiring an
+# instance.
+#
+moves is
+    # install default effect io.file.move
+    installDefault unit is
+        if !(effects.exists io.file.move)
+            _ := move default_move_operation effectMode.default unit

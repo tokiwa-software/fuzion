@@ -115,6 +115,8 @@ i8(val i8) : wrappingInteger i8, hasInterval i8, i8s is
       debug: thiz >= zero
     is
       castTo_u128
+  as_int int is
+    int as_i64
 
   # casting to unsigned, adding 1<<8 if negative
   castTo_u8   u8   is intrinsic           # 3 -> 3, -3 -> 0xfd
