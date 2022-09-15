@@ -25,10 +25,10 @@
 
 # unsigned integer of arbitrary size, including zero
 # represented by its bit sequence
-uint (b Sequence bool, _ unit) : hasInterval uint
+uint (b Sequence u32, _ unit) : hasInterval uint
 is
 
-  bits := b.dropWhile (x -> !x)
+  data := b.dropWhile (x -> x = 0)
 
   # bitwise operations
 
@@ -52,18 +52,42 @@ is
 
   # shift right
   infix >> (other uint) uint
-  pre other >= zero
+  pre other <= uint i32s.max.as_u64
   is
-    uint (bits
-          .reverse
-          .drop other.as_i32
-          .reverse) unit
+    if other = zero
+      thiz
+    else if other >= uint 32
+      (uint (data
+        .reverse
+        .drop (other / (uint 32)).as_i32) unit) >> (other % (uint 32))
+    else
+      shift := other.as_u32
+      (l,_) := data
+        .reduce (lists.empty u32, u32 0) (r,t ->
+          (res, carry_over) := r
+          next := t>>shift | carry_over
+          (res ++ [next], t << (u32 32)-shift)
+        )
+      uint l unit
+
 
   # shift left
   infix << (other uint) uint
-  pre other >= zero
   is
-    uint (bits ++ array other.as_i32 _->false) unit
+    if other = zero
+      thiz
+    else if other >= uint 32
+      uint (data ++ zeros (other / (uint 32)).as_i32) unit << other % (uint 32)
+    else
+      shift := other.as_u32
+      (l,carry_over) := data
+        .reverse
+        .reduce (lists.empty u32, u32 0) (r,t ->
+          (res, carry_over) := r
+          next := t<<shift | carry_over
+          ([next] ++ res, t >> ((u32 32)-shift))
+        )
+      uint ([carry_over] ++ l) unit
 
 
   # return two sequences of equal length
@@ -71,12 +95,10 @@ is
   private equalize(other uint)
   post result.values.0.count = result.values.1.count
     =>
-    if other.bits.count < bits.count
-      zeros := (1..bits.count-other.bits.count).map(x -> false)
-      (bits.asList, zeros++other.bits)
+    if other.data.count < data.count
+      (data.asList, zeros data.count-other.data.count ++ other.data)
     else
-      zeros := (1..other.bits.count-bits.count).map(x -> false)
-      (zeros++bits, other.bits.asList)
+      (zeros other.data.count-data.count ++ data, other.data.asList)
 
 
   # divide with remainder the two given positive ints
@@ -92,28 +114,35 @@ is
     else if thiz = divisor
       (one, zero)
     else
-      bitcount_diff uint := (ints.from_i32 bits.count-divisor.bits.count).n
-      shift := if thiz -! (divisor << bitcount_diff) then bitcount_diff else bitcount_diff-one
-      remainder := if thiz -! (divisor << bitcount_diff) then thiz - (divisor << shift) else thiz - (divisor << shift)
+      highest_bit_diff uint := highest_bit - divisor.highest_bit
+      shift := if thiz -! (divisor << highest_bit_diff) then highest_bit_diff else highest_bit_diff-one
+      remainder := thiz - (divisor << shift)
       (q,rem) := remainder.divide_with_remainder divisor
       ((one << shift) + q, rem)
+
+
+  # the highest 1 bit in this integer
+  #
+  highest_bit uint
+  is
+    if uint.this = zero
+      zero
+    else
+      uint ((data.count.as_u32 - 1) * 32 + data.first.highest_bit).as_u64
 
 
   # add two unsigned ints
   infix +  (other uint) uint is
     (b1, b2) := equalize other
-    (d, _, _) := ([false] ++ b1)
-      .asList
+    (d, _, _) := ([u32 0] ++ b1)
       .reverse
-      .reduce ((lists.empty bool), ([false] ++ b2).asList.reverse, false) (r, t ->
+      .reduce ((lists.empty u32), ([u32 0] ++ b2).reverse, u64 0) (r, t ->
 
         (bits, rest, carry_over) := r
 
-        true_count := [t, rest.first, carry_over]
-          .filter x->x
-          .count
+        sum := t.as_u64 + rest.first.as_u64 + carry_over
 
-        ([true_count % 2 = 1] ++ bits, (rest.drop 1), true_count > 1)
+        ([sum.low32bits] ++ bits, (rest.drop 1), (sum>>32))
       )
 
     uint d unit
@@ -123,22 +152,26 @@ is
   infix - (other uint) uint
   pre thiz >= other
   is
+    two_pow_32 := ((u64 1)<<32)
     (b1, b2) := equalize other
     (r, _) := b1
       .zip b2 (x, y -> (x,y))
       .reverse
-      .reduce (lists.empty bool, false) (r,t ->
+      .reduce (lists.empty u32, u64 0) (r,t ->
         (minuend, subtrahend) := t
-        (res,carry_over) := r
+        (res, carry_over) := r
 
-        true_count_minuend := [minuend].filter(x->x).count
-        true_count_subtrahend := [subtrahend, carry_over].filter(x->x).count
+        difference := two_pow_32 + minuend.as_u64 - subtrahend.as_u64 - carry_over
 
-        # 0-0=0, 0-1=1, 0-2=0, 1-0=1, 1-1=0, 1-2=1
-        ([(true_count_minuend - true_count_subtrahend).abs % 2 = 1]++res, true_count_minuend < true_count_subtrahend)
+        ([difference.low32bits] ++ res, if difference >= two_pow_32 then u64 0 else u64 1)
       )
     uint r unit
 
+
+  # return an array of length n
+  # initialized with u32 zeros.
+  private zeros(n i32) =>
+    array n (_ -> u32 0)
 
   # NYI make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
   # multiply these unsigned ints
@@ -146,15 +179,16 @@ is
     (b1, b2) := equalize other
     b1
       .reverse
-      .asArray
-      .map_indexed ((v,i) ->
+      .indexed
+      .mapSequence ((x) ->
+        (i, v) := x
         b2
           .reverse
-          .asArray
-          .map_indexed ((ov, oi) ->
-            zero_count := i + oi
-            appended_zeros := (1..zero_count).map (c -> false)
-            uint ([v & ov] ++ appended_zeros) unit
+          .indexed
+          .mapSequence (ox ->
+            (oi,ov) := ox
+            tmp := v.as_u64 * ov.as_u64
+            uint ([(tmp>>32).low32bits , tmp.low32bits] ++ zeros i+oi) unit
           )
         )
       .flatMapSequence uint (x -> x)
@@ -194,21 +228,24 @@ is
 
   # are these unsigned integers equal?
   infix == (other uint) bool is
-    (b1, b2) := equalize other
-    (b1.zip b2 ((a,b) -> a = b)) ∀ (x->x)
+    data.count = other.data.count &
+      ((data.zip other.data (a,b -> a = b)) ∀ (x->x))
 
 
   # less or equal
   infix <= (other uint) =>
-      (b1, b2) := equalize other
-      b1
+    if data.count = other.data.count
+      data
         # zip the two equally long lists of digits
-        .zip b2 (a, b -> (a,b))
-        # only the first unequal digit is important
-        .filter (t -> (a,b) := t; a /= b)
-        .mapSequence (t -> (a,b) := t; a = false)
-        # default when all digits are equal
+        .zip other.data (a,b -> (a,b))
+        # skip to first unequal
+        .dropWhile (x -> (a,b) := x; a = b)
+        # compare
+        .mapSequence (x -> (a,b) := x; a <= b)
+        # fallback, if all are equal
         .first true
+    else
+      data.count < other.data.count
 
 
   # checks if operations are allowed
@@ -230,10 +267,10 @@ is
   orderedThis uint is thiz
 
   redef zero uint is
-    uint [false] unit
+    uint [u32 0] unit
 
   redef one uint is
-    uint [true] unit
+    uint [u32 1] unit
 
   redef thiz => uint b unit
 
@@ -241,14 +278,9 @@ is
   # this uint as an u32
   as_u32 u32
   pre
-    bits.count <= 32
+    data.count <= 1
   is
-    bits.reduce (u32 0) ((r,b) ->
-      if b
-        r << 1 | 1
-      else
-        r << 1
-      )
+    data.first (u32 0)
 
   # this uint as an i32
   as_i32 i32
@@ -266,11 +298,4 @@ uint (val u64) uint is
 uints is
   # helper feature to init uint via a u64
   from_u64(val u64) uint is
-    (res,_) :=
-      (0..63)
-        .reduce (lists.empty bool, val) (r, _ ->
-          (l, rest) := r
-          ([(rest & 1) = 1] ++ l, rest>>1)
-        )
-    uint res unit
-
+    uint [(val>>32).low32bits , val.low32bits] unit
