@@ -84,9 +84,9 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
-   * Path to save the base library module to, null if not saving the standard lib.
+   * true to load base library (false if we are creating it)
    */
-  final Path _saveBaseLib;
+  final boolean _loadBaseLib;
 
 
   /**
@@ -110,7 +110,7 @@ public class FrontEndOptions extends FuzionOptions
    */
   public FrontEndOptions(int verbose,
                          Path fuzionHome,
-                         Path saveBaseLib,
+                         boolean loadBaseLib,
                          boolean eraseInternalNamesInLib,
                          List<String> modules,
                          int fuzionDebugLevel,
@@ -127,13 +127,11 @@ public class FrontEndOptions extends FuzionOptions
     if (PRECONDITIONS) require
                          (verbose >= 0,
                           fuzionHome != null,
-                          readStdin || main != null || saveBaseLib != null || !loadSources,
                           !readStdin || main == null,
-                          saveBaseLib == null || !readStdin && main == null,
                           modules != null);
 
     _fuzionHome = fuzionHome;
-    _saveBaseLib = saveBaseLib;
+    _loadBaseLib = loadBaseLib;
     _eraseInternalNamesInLib = eraseInternalNamesInLib;
     _sourceDirs = sourceDirs;
     _readStdin = readStdin;
