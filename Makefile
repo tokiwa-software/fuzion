@@ -84,6 +84,7 @@ FZ_SRC_LIB = $(FZ_SRC)/lib
 FUZION_FILES_LIB = $(shell find $(FZ_SRC_LIB) -name "*.fz")
 
 MOD_BASE              = $(BUILD_DIR)/modules/base.fum
+MOD_TERMINAL          = $(BUILD_DIR)/modules/terminal.fum
 MOD_JAVA_BASE         = $(BUILD_DIR)/modules/java.base/__marker_for_make__
 MOD_JAVA_XML          = $(BUILD_DIR)/modules/java.xml/__marker_for_make__
 MOD_JAVA_DATATRANSFER = $(BUILD_DIR)/modules/java.datatransfer/__marker_for_make__
@@ -276,6 +277,11 @@ $(MOD_BASE): $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz
 
 # keep make from deleting $(MOD_BASE) on ctrl-C:
 .PRECIOUS: $(MOD_BASE)
+
+$(MOD_TERMINAL): $(MOB_BASE) $(BUILD_DIR)/bin/fz $(FZ_SRC)/modules/terminal/src/terminal.fz
+	mkdir -p $(@D)
+	$(BUILD_DIR)/bin/fz -sourceDirs=$(FZ_SRC)/modules/terminal/src test_terminal
+	$(BUILD_DIR)/bin/fz -sourceDirs=$(FZ_SRC)/modules/terminal/src -saveLib=$@
 
 $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	mkdir -p $(@D)

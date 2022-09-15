@@ -1,0 +1,2 @@
+test_terminal is
+  say (terminal.red + terminal.bold + "red and bold" + terminal.reset)

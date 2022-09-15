@@ -1016,9 +1016,16 @@ class LibraryOut extends DataOut
         var g  = _fixUpsF  .get(i);
         var at = _fixUpsFAt.get(i);
         var o = _offsetsForFeature.get(g);
-        if (CHECKS) check
-          (o != null);
-        writeIntAt(at, o);
+        if (o == null)
+          {
+            System.out.println("NYI: writing module depending on other module not supported yet, missing offset for " + g.qualifiedName() + "!");
+          }
+        else
+          {
+            if (CHECKS) check
+              (o != null);
+            writeIntAt(at, o);
+          }
       }
     for (var i = 0; i<_fixUpsSourcePositions.size(); i++)
       {
