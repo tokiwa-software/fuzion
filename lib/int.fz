@@ -108,18 +108,9 @@ is
   infix ** (other int) int
   pre other >= zero
   is
-    if other = zero
-      one
-    else if other = one
-      thiz
-    else
-      is_even := other.n.bits.last = false
-      if is_even
-        tmp := thiz**(other / int 2)
-        tmp * tmp
-      else
-        thiz * (thiz**(other-one))
-
+    match s
+      plus => int plus (n ** other.n)
+      minus => int minus (n ** other.n)
 
 
   # all operations are allowed for all ints
@@ -177,24 +168,12 @@ ints is
   # helper feature to init int via an i64
   from_i64(val i64) int is
     s sign := if val < 0 then minus else plus
-    n u32 := if val < 0 then (-val).as_u32 else val.as_u32
-    (res,_) :=
-      (0..31)
-        .reduce (lists.empty bool, n) (r, _ ->
-          (l, rest) := r
-          ([(rest & 1) = 1] ++ l, rest>>1)
-        )
-    int s (uint res)
+    n u64 := if val < 0 then (-val).as_u64 else val.as_u64
+    int s (uints.from_u64 n)
 
   # helper feature to init int via a u64
   from_u64(val u64) int is
-    (res,_) :=
-      (0..63)
-        .reduce (lists.empty bool, val) (r, _ ->
-          (l, rest) := r
-          ([(rest & 1) = 1] ++ l, rest>>1)
-        )
-    int plus (uint res)
+    int plus (uints.from_u64 val)
 
   # helper feature to init int via an i32
   from_i32(val i32) int is
