@@ -172,6 +172,20 @@ public class FrontEndOptions extends FuzionOptions
 
   /*-----------------------------  methods  -----------------------------*/
 
+
+  /**
+   * Get all the paths to use to read source code from
+   */
+  Path[] sourcePaths()
+  {
+    return
+      (_readStdin         ||
+       _inputFile != null ||
+       !_sourceDirs.isEmpty()) ? _sourceDirs.stream().map(x -> Path.of(x)).toArray(Path[]::new)
+                               : new Path[] { Path.of(".") };
+  }
+
+
 }
 
 /* end of file */

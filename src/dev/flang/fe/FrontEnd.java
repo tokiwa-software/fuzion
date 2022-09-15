@@ -155,7 +155,7 @@ public class FrontEnd extends ANY
     var universe = new Universe();
     _universe = universe;
 
-    var sourcePaths = sourcePaths();
+    var sourcePaths = options.sourcePaths();
     var sourceDirs = new SourceDir[sourcePaths.length + options._modules.size()];
     for (int i = 0; i < sourcePaths.length; i++)
       {
@@ -177,19 +177,6 @@ public class FrontEnd extends ANY
       {
         _module = null;
       }
-  }
-
-
-  /**
-   * Get all the paths to use to read source code from
-   */
-  private Path[] sourcePaths()
-  {
-    return
-      (_options._readStdin         ||
-       _options._inputFile != null ||
-       !_options._sourceDirs.isEmpty()) ? _options._sourceDirs.stream().map(x -> Path.of(x)).toArray(Path[]::new)
-                                        : new Path[] { Path.of(".") };
   }
 
 
