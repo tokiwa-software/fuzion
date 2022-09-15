@@ -105,6 +105,7 @@ u16(val u16) : wrappingInteger u16, hasInterval u16, u16s is
   as_u32  => thiz.as_i32.as_u32
   as_u64  => thiz.as_i32.as_u64
   as_u128 => thiz.as_i32.as_u128
+  as_int  => int as_i64
 
   low8bits u8 is intrinsic
   castTo_i16 i16 is intrinsic

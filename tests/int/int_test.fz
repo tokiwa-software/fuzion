@@ -50,4 +50,15 @@ int_test is
         chck (int m**n = (int m ** int n)) "m $m ** n $n"
 
 
+  # test `as_int`
+  chck ((i8 -3) .as_int = int -3) "i8.as_int"
+  chck ((i16 -3).as_int = int -3) "i16.as_int"
+  chck ((i32 -3).as_int = int -3) "i32.as_int"
+  chck ((i64 -3).as_int = int -3) "i64.as_int"
+  chck ((u8 3)  .as_int = int 3 ) "i8.as_int"
+  chck ((u16 3) .as_int = int 3 ) "i16.as_int"
+  chck ((u32 3) .as_int = int 3 ) "i32.as_int"
+  chck ((u64 3) .as_int = int 3 ) "i64.as_int"
+
+
   fuzion.std.exit exitCode

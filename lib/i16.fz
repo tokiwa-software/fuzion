@@ -120,6 +120,8 @@ i16(val i16) : wrappingInteger i16, hasInterval i16, i16s is
       debug: thiz >= zero
     is
       castTo_u128
+  as_int int is
+    int as_i64
 
   # casting to unsigned, adding 1<<16 if negative
   low8bits    u8   is castTo_u16.as_u8     # 0x1234 ->   0x34, -0x1234 -> 0xcc
