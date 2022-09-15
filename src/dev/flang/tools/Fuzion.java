@@ -41,11 +41,12 @@ import dev.flang.be.c.COptions;
 
 import dev.flang.be.effects.Effects;
 
-import dev.flang.be.interpreter.Intrinsics;
 import dev.flang.be.interpreter.Interpreter;
 
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
+
+import dev.flang.fuir.FUIR;
 
 import dev.flang.fuir.analysis.dfa.DFA;
 
@@ -56,6 +57,7 @@ import dev.flang.opt.Optimizer;
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionOptions;
 
 
 /**
@@ -86,7 +88,13 @@ class Fuzion extends Tool
    */
   static enum Backend
   {
-    interpreter("-interpreter"),
+    interpreter("-interpreter")
+    {
+      void process(FuzionOptions options, FUIR fuir)
+      {
+        new Interpreter(options, fuir).run();
+      }
+    },
     c          ("-c")
     {
       String usage()
@@ -113,17 +121,30 @@ class Fuzion extends Tool
           }
         return result;
       }
-    }
-    ,
+      void process(FuzionOptions options, FUIR fuir)
+      {
+        new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_), fuir).compile();
+      }
+    },
     java       ("-java"),
     classes    ("-classes"),
     llvm       ("-llvm"),
-    dfa        ("-dfa"),
+    dfa        ("-dfa")
+    {
+      void process(FuzionOptions options, FUIR fuir)
+      {
+        new DFA(options, fuir).dfa();
+      }
+    },
     effects    ("-effects")
     {
       String usage()
       {
         return new String(""); /* tricky: empty string != "" */
+      }
+      void process(FuzionOptions options, FUIR fuir)
+      {
+        new Effects(fuir).find();
       }
     },
     checkIntrinsics("-XXcheckIntrinsics")
@@ -136,10 +157,9 @@ class Fuzion extends Tool
       {
         return false;
       }
-      boolean processFrontEnd(Fuzion f, FrontEnd fe)
+      void processFrontEnd(Fuzion f, FrontEnd fe)
       {
         new CheckIntrinsics(fe);
-        return true;
       }
     },
     saveLib("-saveLib=")
@@ -170,7 +190,7 @@ class Fuzion extends Tool
       {
         return false;
       }
-      boolean processFrontEnd(Fuzion f, FrontEnd fe)
+      void processFrontEnd(Fuzion f, FrontEnd fe)
       {
         /*
          * Save _module to a module file
@@ -190,7 +210,6 @@ class Fuzion extends Tool
                              "While trying to write file '"+ p + "' received '" + io + "'");
               }
           }
-        return true;
       }
     },
     undefined;
@@ -280,9 +299,17 @@ class Fuzion extends Tool
      * If this backend processes the front end data directly, this method will
      * do that and return true.
      */
-    boolean processFrontEnd(Fuzion f, FrontEnd fe)
+    void processFrontEnd(Fuzion f, FrontEnd fe)
     {
-      return false;
+      var mir = fe.createMIR();                                                       f.timer("createeMIR");
+      var air = new MiddleEnd(fe._options, mir, fe.module() /* NYI: remove */).air(); f.timer("me");
+      var fuir = new Optimizer(fe._options, air).fuir();                              f.timer("ir");
+      process(fe._options, fuir);
+    }
+
+    void process(FuzionOptions options, FUIR fuir)
+    {
+      Errors.fatal("backend '" + this + "' not supported yet");
     }
   }
 
@@ -666,6 +693,7 @@ class Fuzion extends Tool
                                           _modules,
                                           _debugLevel,
                                           _safety,
+                                          _enableUnsafeIntrinsics,
                                           _sourceDirs,
                                           _readStdin,
                                           _main,
@@ -674,49 +702,40 @@ class Fuzion extends Tool
           {
             options.setTailRec();
           }
-        long jvmStartTime = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime();
-        long prepTime = System.currentTimeMillis();
+        timer("prep");
         var fe = new FrontEnd(options);
-        if (!_backend.processFrontEnd(this, fe))
-          {
-            var mir = fe.createMIR();
-            long feTime = System.currentTimeMillis();
-            var air = new MiddleEnd(options, mir, fe.module() /* NYI: remove */).air();
-            long meTime = System.currentTimeMillis();
-            var fuir = new Optimizer(options, air).fuir();
-            long irTime = System.currentTimeMillis();
-            switch (_backend)
-              {
-              case interpreter:
-                {
-                  Intrinsics.ENABLE_UNSAFE_INTRINSICS = _enableUnsafeIntrinsics;  // NYI: Add to Fuzion IR or BE Config
-                  var in = new Interpreter(options, fuir);
-                  irTime = System.currentTimeMillis();
-                  in.run(); break;
-                }
-              case c          : new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_), fuir).compile(); break;
-              case effects    : new Effects(fuir).find(); break;
-              case dfa        : new DFA(options, fuir).dfa(); break;
-              default         : Errors.fatal("backend '" + _backend + "' not supported yet"); break;
-              }
-            long beTime = System.currentTimeMillis();
-
-            beTime -= irTime;
-            irTime -= meTime;
-            meTime -= feTime;
-            feTime -= prepTime;
-            prepTime -= jvmStartTime;
-            options.verbosePrintln(1, "Elapsed time for phases: prep "+prepTime+"ms, fe "+feTime+"ms, me "+meTime+"ms, ir "+irTime+"ms, be "+beTime+"ms");
-          }
-        else
-          {
-            long feTime = System.currentTimeMillis();
-            feTime -= prepTime;
-            prepTime -= jvmStartTime;
-            options.verbosePrintln(1, "Elapsed time for phases: prep "+prepTime+"ms, fe "+feTime+"ms");
-          }
+        timer("fe");
+        _backend.processFrontEnd(this, fe);
+        timer("be");
+        options.verbosePrintln(1, "Elapsed time for phases: " + _times);
       };
   }
+
+
+  /**
+   * To be called whenever a major task was completed. Will record the time
+   * since last call to timer together with name to be printed when verbose
+   * output is activated.
+   */
+  void timer(String name)
+  {
+    var t = System.currentTimeMillis();
+    var delta = t - _timer;
+    _timer = t;
+    _times.append(_times.length() == 0 ? "" : ", ").append(name).append(" ").append(delta).append("ms");
+  }
+
+  /**
+   * Time required for phases recorded by timer().
+   */
+  StringBuilder _times = new StringBuilder();
+
+
+  /**
+   * Last time timer() was called, in System.currentTimeMillis();
+   */
+  long _timer = java.lang.management.ManagementFactory.getRuntimeMXBean().getStartTime();
+
 
 }
 

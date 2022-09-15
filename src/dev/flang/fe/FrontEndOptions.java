@@ -115,6 +115,7 @@ public class FrontEndOptions extends FuzionOptions
                          List<String> modules,
                          int fuzionDebugLevel,
                          boolean fuzionSafety,
+                         boolean enableUnsafeIntrinsics,
                          List<String> sourceDirs,
                          boolean readStdin,
                          String main,
@@ -122,7 +123,8 @@ public class FrontEndOptions extends FuzionOptions
   {
     super(verbose,
           fuzionDebugLevel,
-          fuzionSafety);
+          fuzionSafety,
+          enableUnsafeIntrinsics);
 
     if (PRECONDITIONS) require
                          (verbose >= 0,

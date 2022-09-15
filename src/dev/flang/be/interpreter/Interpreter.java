@@ -186,6 +186,7 @@ public class Interpreter extends ANY
    */
   public Interpreter(FuzionOptions options, FUIR fuir)
   {
+    Intrinsics.ENABLE_UNSAFE_INTRINSICS = options.enableUnsafeIntrinsics();  // NYI: Add to Fuzion IR or BE Config
     _options_ = options;
     _fuir = fuir;
     Errors.showAndExit();

@@ -57,6 +57,13 @@ public class FuzionOptions extends ANY
   final int _fuzionDebugLevel;
 
 
+  /**
+   * Flag to enable intrinsic functions such as fuzion.java.callVirtual. These are
+   * not allowed if run in a web playground.
+   */
+  final boolean _enableUnsafeIntrinsics;
+
+
   private boolean _tailRecursionInsteadOfLoops; // NYI: move to FrontendOptions
   public void setTailRec() { _tailRecursionInsteadOfLoops = true; }
   public boolean tailRecursionInsteadOfLoops() { return _tailRecursionInsteadOfLoops; }
@@ -68,7 +75,7 @@ public class FuzionOptions extends ANY
   /**
    * Costructor initializing fields as given.
    */
-  public FuzionOptions(int verbose, int fuzionDebugLevel, boolean fuzionSafety)
+  public FuzionOptions(int verbose, int fuzionDebugLevel, boolean fuzionSafety, boolean enableUnsafeIntrinsics)
   {
     if (PRECONDITIONS) require
       (verbose >= 0);
@@ -76,6 +83,7 @@ public class FuzionOptions extends ANY
     _verbose = verbose;
     _fuzionDebugLevel = fuzionDebugLevel;
     _fuzionSafety = fuzionSafety;
+    _enableUnsafeIntrinsics = enableUnsafeIntrinsics;
 
   }
 
@@ -87,7 +95,8 @@ public class FuzionOptions extends ANY
   {
     this(fo.verbose(),
          fo.fuzionDebugLevel(),
-         fo.fuzionSafety());
+         fo.fuzionSafety(),
+         fo.enableUnsafeIntrinsics());
   }
 
 
@@ -152,6 +161,11 @@ public class FuzionOptions extends ANY
   public boolean fuzionDebug()
   {
     return fuzionDebugLevel() > 0;
+  }
+
+  public boolean enableUnsafeIntrinsics()
+  {
+    return _enableUnsafeIntrinsics;
   }
 
 
