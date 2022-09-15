@@ -284,6 +284,12 @@ class Fuzion extends Tool
 
 
   /**
+   * List of source directories added using '-sourceDir'.
+   */
+  List<String> _sourceDirs = new List<>();
+
+
+  /**
    * Default result of safety:
    */
   boolean _safety = Boolean.valueOf(System.getProperty(FUZION_SAFETY_PROPERTY, "true"));
@@ -358,7 +364,7 @@ class Fuzion extends Tool
   protected String USAGE0()
   {
     return
-      "Usage: " + _cmd + " [-h|--help|-version] [" + _allBackendArgs_ + "] " + STD_OPTIONS + "[-modules={<m>,..} [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] (<main> | <srcfile>.fz | -)  --or--\n" +
+      "Usage: " + _cmd + " [-h|--help|-version] [" + _allBackendArgs_ + "] " + STD_OPTIONS + "[-modules={<m>,..} [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] [-sourceDirs={<path>,..}] (<main> | <srcfile>.fz | -)  --or--\n" +
       _allBackendExtraUsage_.toString().replace("@CMD@", _cmd) +
       "       " + _cmd + " -pretty " + STD_OPTIONS + " ({<file>} | -)\n" +
       "       " + _cmd + " -latex " + STD_OPTIONS + "\n" +
@@ -540,6 +546,7 @@ class Fuzion extends Tool
             else if (a.matches("-debug(=\\d+|)"              )) { _debugLevel              = parsePositiveIntArg(a, 1); }
             else if (a.startsWith("-safety="                 )) { _safety                  = parseOnOffArg(a);          }
             else if (a.startsWith("-unsafeIntrinsics="       )) { _enableUnsafeIntrinsics  = parseOnOffArg(a);          }
+            else if (a.startsWith("-sourceDirs="             )) { _sourceDirs.addAll(parseStringListArg(a));            }
             else if (_backend.handleOption(a))
               {
               }
@@ -609,6 +616,7 @@ class Fuzion extends Tool
                                           _modules,
                                           _debugLevel,
                                           _safety,
+                                          _sourceDirs,
                                           _readStdin,
                                           _main,
                                           _backend.needsSources());

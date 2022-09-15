@@ -48,6 +48,12 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
+   * Directories to load source files from.
+   */
+  final List<String> _sourceDirs;
+
+
+  /**
    * Read code from stdin?
    */
   final boolean _readStdin;
@@ -102,7 +108,17 @@ public class FrontEndOptions extends FuzionOptions
   /**
    * Costructor initializing fields as given.
    */
-  public FrontEndOptions(int verbose, Path fuzionHome, Path saveBaseLib, boolean eraseInternalNamesInLib, List<String> modules, int fuzionDebugLevel, boolean fuzionSafety, boolean readStdin, String main, boolean loadSources)
+  public FrontEndOptions(int verbose,
+                         Path fuzionHome,
+                         Path saveBaseLib,
+                         boolean eraseInternalNamesInLib,
+                         List<String> modules,
+                         int fuzionDebugLevel,
+                         boolean fuzionSafety,
+                         List<String> sourceDirs,
+                         boolean readStdin,
+                         String main,
+                         boolean loadSources)
   {
     super(verbose,
           fuzionDebugLevel,
@@ -119,6 +135,7 @@ public class FrontEndOptions extends FuzionOptions
     _fuzionHome = fuzionHome;
     _saveBaseLib = saveBaseLib;
     _eraseInternalNamesInLib = eraseInternalNamesInLib;
+    _sourceDirs = sourceDirs;
     _readStdin = readStdin;
     Path inputFile = null;
     if (main != null)

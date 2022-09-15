@@ -194,7 +194,8 @@ public class FrontEnd extends ANY
     return
       (_options._saveBaseLib != null  ) ? new Path[] { _options._fuzionHome.resolve("lib") } :
       (_options._readStdin         ||
-       _options._inputFile != null    ) ? new Path[] { }
+       _options._inputFile != null ||
+       !_options._sourceDirs.isEmpty()) ? _options._sourceDirs.stream().map(x -> Path.of(x)).toArray(Path[]::new)
                                         : new Path[] { Path.of(".") };
   }
 
