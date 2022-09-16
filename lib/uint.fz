@@ -28,6 +28,9 @@
 uint (b Sequence u32, _ unit) : hasInterval uint
 is
 
+  # the actually relevant data of this uint.
+  # irrelevant zeros at start are dropped.
+  # zero is represented by the empty list.
   data := b.dropWhile (x -> x = 0)
 
   # bitwise operations
@@ -59,7 +62,7 @@ is
     else if other >= uint 32
       (uint (data
         .reverse
-        .drop (other / (uint 32)).as_i32) unit) >> (other % (uint 32))
+        .drop (other.as_i32 / 32)) unit) >> (other % (uint 32))
     else
       shift := other.as_u32
       (l,_) := data
@@ -73,11 +76,12 @@ is
 
   # shift left
   infix << (other uint) uint
+  pre other <= uint i32s.max.as_u64
   is
     if other = zero
       thiz
     else if other >= uint 32
-      uint (data ++ zeros (other / (uint 32)).as_i32) unit << other % (uint 32)
+      uint (data ++ zeros (other.as_i32 / 32)) unit << other % (uint 32)
     else
       shift := other.as_u32
       (l,carry_over) := data
@@ -91,7 +95,7 @@ is
 
 
   # return two sequences of equal length
-  # by prepending false to the shorter sequence
+  # by prepending zero(s) to the shorter sequence
   private equalize(other uint)
   post result.values.0.count = result.values.1.count
     =>
@@ -114,6 +118,11 @@ is
     else if thiz = divisor
       (one, zero)
     else
+      # The here idea is to shift the divisor left as
+      # far as possible so that the subtraction of this and
+      # the shifted divisor is still positive.
+      # This is done recursively and the results
+      # are added up.
       highest_bit_diff uint := highest_bit - divisor.highest_bit
       shift := if thiz -! (divisor << highest_bit_diff) then highest_bit_diff else highest_bit_diff-one
       remainder := thiz - (divisor << shift)
@@ -122,7 +131,9 @@ is
 
 
   # the highest 1 bit in this integer
-  #
+  # example: uint 0 => 0
+  # example: uint 1 => 1
+  # example: uint 8 => 4
   highest_bit uint
   is
     if uint.this = zero
@@ -172,6 +183,7 @@ is
   # initialized with u32 zeros.
   private zeros(n i32) =>
     array n (_ -> u32 0)
+
 
   # NYI make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
   # multiply these unsigned ints
@@ -258,7 +270,7 @@ is
   infix %! (other uint) bool is true
   infix **!(other uint) bool is true
 
-  # exponentation always works, even though it might be very
+  # exponentation always works, even though it might be
   # slow for large numbers
 
   infix **?(other uint) numOption uint is thiz ** other
@@ -284,6 +296,7 @@ is
 
   # this uint as an i32
   as_i32 i32
+  pre as_u32 <= i32s.max.as_u32
   is
     as_u32.as_i32
 
