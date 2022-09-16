@@ -28,11 +28,6 @@ package dev.flang.fe;
 
 import java.nio.ByteBuffer;
 
-import java.nio.file.Path;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.TreeSet;
 import java.util.TreeMap;
 
@@ -102,6 +97,8 @@ class LibraryOut extends ANY
   private DataOut _data = new DataOut();
 
 
+  private FixUps _fixUps = new FixUps(_data);
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -131,10 +128,10 @@ class LibraryOut extends ANY
     _data.write(FuzionConstants.MIR_FILE_MAGIC);
     innerFeatures(sm._universe);
     sourceFiles();
-    fixUps();
+    _fixUps.fixUps(this);
     sm._options.verbosePrintln(2, "" +
-                               _offsetsForFeature.size() + " features " +
-                               _offsetsForType.size() + " types and " +
+                               _fixUps.featureCount() + " features " +
+                               _fixUps.typeCount() + " types and " +
                                _sourceFiles.size() + " source files includes in fum file.");
   }
 
@@ -308,7 +305,7 @@ class LibraryOut extends ANY
    */
   void feature(Feature f)
   {
-    _offsetsForFeature.put(f, _data.offset());
+    _fixUps.add(f);
     var k =
       !f.isConstructor() ? f.kind().ordinal() :
       f.isThisRef()      ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
@@ -339,7 +336,7 @@ class LibraryOut extends ANY
     pos(f.pos());
     if (!f.outer().isUniverse())
       {
-        writeOffset(f.outer());
+        _fixUps.writeOffset(f.outer());
       }
     else
       {
@@ -347,7 +344,7 @@ class LibraryOut extends ANY
       }
     if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE) != 0)
       {
-        writeOffset(f.typeFeature());
+        _fixUps.writeOffset(f.typeFeature());
       }
     if (CHECKS) check
       (f.arguments().size() == f.featureName().argCount());
@@ -376,7 +373,7 @@ class LibraryOut extends ANY
     _data.writeInt(r.size());
     for(var rf : r)
       {
-        writeOffset(rf);
+        _fixUps.writeOffset(rf);
       }
     if (f.isRoutine())
       {
@@ -417,7 +414,7 @@ class LibraryOut extends ANY
    */
   void type(AbstractType t)
   {
-    var off = offset(t);
+    var off = _fixUps.offset(t);
     if (off >= 0)
       {
         _data.writeInt(-2);     // NYI: optimization: maybe write just one integer, e.g., -index-2
@@ -433,13 +430,13 @@ class LibraryOut extends ANY
       }
     else
       {
-        addOffset(t, _data.offset());
+        _fixUps.addOffset(t, _data.offset());
         if (t.isGenericArgument())
           {
             if (CHECKS) check
               (!t.isRef());
             _data.writeInt(-1);
-            writeOffset(t.genericArgument().typeParameter());
+            _fixUps.writeOffset(t.genericArgument().typeParameter());
           }
         else
           {
@@ -448,7 +445,7 @@ class LibraryOut extends ANY
             if (CHECKS) check
               (makeRef || t.isRef() == t.featureOfType().isThisRef());
             _data.writeInt(t.generics().size());
-            writeOffset(t.featureOfType());
+            _fixUps.writeOffset(t.featureOfType());
             _data.writeBool(makeRef);
             for (var gt : t.generics())
               {
@@ -560,7 +557,7 @@ class LibraryOut extends ANY
    *   | true   | 1      | int           | assigned field index                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-        writeOffset(a._assignedField);
+        _fixUps.writeOffset(a._assignedField);
       }
     else if (s instanceof Unbox u)
       {
@@ -689,7 +686,7 @@ class LibraryOut extends ANY
    *   | c()    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-        writeOffset(c.calledFeature());
+        _fixUps.writeOffset(c.calledFeature());
         type(c.type());
         int n;
         var cf = c.calledFeature();
@@ -761,7 +758,7 @@ class LibraryOut extends ANY
             if (f != null)
               {
                 _data.writeInt(-1);
-                writeOffset(f);
+                _fixUps.writeOffset(f);
               }
             else
               {
@@ -840,7 +837,7 @@ class LibraryOut extends ANY
    * This replaces absolute paths that start with sourcePath by a path relative
    * to $FUZION.
    */
-  private String fileName(SourceFile sf)
+  String fileName(SourceFile sf)
   {
     var sp = _sourceModule._options.sourcePaths();
     var sd = sp.length == 1 ? sp[0] : null;
@@ -897,8 +894,7 @@ class LibraryOut extends ANY
    */
     if (!pos.isBuiltIn())
       {
-        _fixUpsSourcePositions.add(pos);
-        _fixUpsSourcePositionsAt.add(_data.offset());
+        _fixUps.addSourcePosition(pos);
         var sf = pos._sourceFile;
         _sourceFiles.put(fileName(sf), sf);
       }
@@ -941,155 +937,11 @@ class LibraryOut extends ANY
         var n = fileName(sf);
         _data.writeName(n);
         _data.writeInt(sf.byteLength());
-        _sourceFilePositions.put(n, _data.offset());
+        _fixUps.addSourceFilePosition(n);
         _data.write(sf.bytes());
       }
   }
 
-
-  /*--------------------------  fixup handling  -------------------------*/
-
-
-  /**
-   * Features that are referenced before being defined and hence need a fixup:
-   */
-  ArrayList<AbstractFeature> _fixUpsF = new ArrayList<>();
-
-
-  /**
-   * Positions of fixups for features
-   */
-  ArrayList<Integer> _fixUpsFAt = new ArrayList<>();
-
-
-  /**
-   * Feature offsets in this file
-   */
-  Map<AbstractFeature, Integer> _offsetsForFeature = new TreeMap<>();
-
-
-  /**
-   * Type offsets in this file
-   */
-  Map<AbstractType, Integer> _offsetsForType = new TreeMap<>();
-
-
-  /**
-   * SourcePositions that need fixup.
-   */
-  ArrayList<SourcePosition> _fixUpsSourcePositions = new ArrayList<>();
-
-
-  /**
-   * offsets of SourcePositions that need fixup.
-   */
-  ArrayList<Integer> _fixUpsSourcePositionsAt = new ArrayList<>();
-
-
-  /**
-   * source file position offsets in this file.
-   */
-  Map<String, Integer> _sourceFilePositions = new TreeMap<>();
-
-
-  /**
-   * Write offset of given feature, create fixup if not known yet.
-   */
-  void writeOffset(AbstractFeature f)
-  {
-    int v;
-    if (f.isUniverse())
-      {
-        v = 0;
-      }
-    else if (f == null)
-      {
-        v = -1;
-      }
-    else
-      {
-        var o = _offsetsForFeature.get(f);
-        if (o == null)
-          {
-            _fixUpsF.add(f);
-            _fixUpsFAt.add(_data.offset());
-            v = -1;
-          }
-        else
-          {
-            v = (int) o;
-          }
-      }
-    _data.writeInt(v);
-  }
-
-
-  /**
-   * Perform fixups
-   */
-  private void fixUps()
-  {
-    for (var i = 0; i<_fixUpsF.size(); i++)
-      {
-        var g  = _fixUpsF  .get(i);
-        var at = _fixUpsFAt.get(i);
-        var o = _offsetsForFeature.get(g);
-        if (o == null)
-          {
-            if (g instanceof LibraryFeature gl)
-              {
-                System.out.println("Writing offset for " + g.qualifiedName() + " from " + gl._libModule + "@" + gl._index + " ==> "+_data.offset()+"+"+gl._index);
-              }
-            else
-              {
-                System.out.println("NYI: writing module depending on other module not supported yet, missing offset for " + g.qualifiedName() + "!");
-              }
-          }
-        else
-          {
-            if (CHECKS) check
-              (o != null);
-            _data.writeIntAt(at, o);
-          }
-      }
-    for (var i = 0; i<_fixUpsSourcePositions.size(); i++)
-      {
-        var p  = _fixUpsSourcePositions  .get(i);
-        var at = _fixUpsSourcePositionsAt.get(i);
-        var sf = p._sourceFile;
-        var n = fileName(sf);
-        var o = _sourceFilePositions.get(n) + p.bytePos();
-        if (CHECKS) check
-          (o > 0);
-        _data.writeIntAt(at, o);
-      }
-  }
-
-
-  /**
-   * Record offset as the offset of type t.
-   *
-   * @param t a type that was or will be written out
-   *
-   * @param offset of t in the offset in the .fum/MIR file
-   */
-  void addOffset(AbstractType t, int offset)
-  {
-    if (PRECONDITIONS) require
-      (offset(t) == -1);
-
-    _offsetsForType.put(t, offset);
-  }
-
-
-  /**
-   * Get the offset that was previously recored for type t, or -1 if no offset
-   * was record (i.e., t has not been written yet).
-   */
-  int offset(AbstractType t)
-  {
-    return _offsetsForType.getOrDefault(t, -1);
-  }
 
 }
 
