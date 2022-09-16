@@ -96,7 +96,25 @@ public class Intrinsics extends ANY
     IntrinsicCode noFileIo = (c,cl,outer,in) ->
       CStmnt.seq(CExpr.fprintfstderr("*** C backend does not support this fileio feature (yet).\n"),
                  CExpr.exit(1));
-    put("fuzion.std.fileio.read"         , noFileIo); // NYI
+    put("fuzion.std.fileio.read"         , (c,cl,outer,in) ->
+        {
+          var fileIdent = new CIdent("f");
+          var readingIdent = new CIdent("reading");
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
+            // Testing if fopen was successful
+            CExpr.iff(fileIdent.eq(new CIdent("NULL")), c._names.FZ_FALSE.ret()),
+            CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, fileIdent))),
+            CExpr.decl("bool", resultIdent, CExpr.string("true")),
+            // If EOF is reached then the operation was successful otherwise FALSE will be returned
+            CExpr.iff(CExpr.notEq(readingIdent, A2), resultIdent.assign(CExpr.notEq(CExpr.call("feof", new List<>(fileIdent)), CExpr.int8const(0)))),
+            CExpr.call("fclose", new List<>(fileIdent)),
+            CExpr.iff(resultIdent, c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
     put("fuzion.std.fileio.get_file_size", noFileIo); // NYI
     put("fuzion.std.fileio.write"        , noFileIo); // NYI
     put("fuzion.std.fileio.exists"       , noFileIo); // NYI

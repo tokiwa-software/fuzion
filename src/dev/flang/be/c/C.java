@@ -605,7 +605,6 @@ public class C extends ANY
                                                  r.ret()))));
     var ordered = _types.inOrder();
 
-
     // declaration of struct that is meant to passed to
     // the thread start routine
     cf.print(CStmnt.struct(CNames.fzThreadStartRoutineArg.code(), new List<>(
