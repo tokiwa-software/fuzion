@@ -97,8 +97,6 @@ class LibraryOut extends ANY
   private FixUps _data = new FixUps();
 
 
-  private FixUps _fixUps = _data;
-
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -128,10 +126,10 @@ class LibraryOut extends ANY
     _data.write(FuzionConstants.MIR_FILE_MAGIC);
     innerFeatures(sm._universe);
     sourceFiles();
-    _fixUps.fixUps(this);
+    _data.fixUps(this);
     sm._options.verbosePrintln(2, "" +
-                               _fixUps.featureCount() + " features " +
-                               _fixUps.typeCount() + " types and " +
+                               _data.featureCount() + " features " +
+                               _data.typeCount() + " types and " +
                                _sourceFiles.size() + " source files includes in fum file.");
   }
 
@@ -305,7 +303,7 @@ class LibraryOut extends ANY
    */
   void feature(Feature f)
   {
-    _fixUps.add(f);
+    _data.add(f);
     var k =
       !f.isConstructor() ? f.kind().ordinal() :
       f.isThisRef()      ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
@@ -336,7 +334,7 @@ class LibraryOut extends ANY
     pos(f.pos());
     if (!f.outer().isUniverse())
       {
-        _fixUps.writeOffset(f.outer());
+        _data.writeOffset(f.outer());
       }
     else
       {
@@ -344,7 +342,7 @@ class LibraryOut extends ANY
       }
     if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE) != 0)
       {
-        _fixUps.writeOffset(f.typeFeature());
+        _data.writeOffset(f.typeFeature());
       }
     if (CHECKS) check
       (f.arguments().size() == f.featureName().argCount());
@@ -373,7 +371,7 @@ class LibraryOut extends ANY
     _data.writeInt(r.size());
     for(var rf : r)
       {
-        _fixUps.writeOffset(rf);
+        _data.writeOffset(rf);
       }
     if (f.isRoutine())
       {
@@ -414,7 +412,7 @@ class LibraryOut extends ANY
    */
   void type(AbstractType t)
   {
-    var off = _fixUps.offset(t);
+    var off = _data.offset(t);
     if (off >= 0)
       {
         _data.writeInt(-2);     // NYI: optimization: maybe write just one integer, e.g., -index-2
@@ -430,13 +428,13 @@ class LibraryOut extends ANY
       }
     else
       {
-        _fixUps.addOffset(t, _data.offset());
+        _data.addOffset(t, _data.offset());
         if (t.isGenericArgument())
           {
             if (CHECKS) check
               (!t.isRef());
             _data.writeInt(-1);
-            _fixUps.writeOffset(t.genericArgument().typeParameter());
+            _data.writeOffset(t.genericArgument().typeParameter());
           }
         else
           {
@@ -445,7 +443,7 @@ class LibraryOut extends ANY
             if (CHECKS) check
               (makeRef || t.isRef() == t.featureOfType().isThisRef());
             _data.writeInt(t.generics().size());
-            _fixUps.writeOffset(t.featureOfType());
+            _data.writeOffset(t.featureOfType());
             _data.writeBool(makeRef);
             for (var gt : t.generics())
               {
@@ -557,7 +555,7 @@ class LibraryOut extends ANY
    *   | true   | 1      | int           | assigned field index                          |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-        _fixUps.writeOffset(a._assignedField);
+        _data.writeOffset(a._assignedField);
       }
     else if (s instanceof Unbox u)
       {
@@ -686,7 +684,7 @@ class LibraryOut extends ANY
    *   | c()    |        |               |                                               |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
-        _fixUps.writeOffset(c.calledFeature());
+        _data.writeOffset(c.calledFeature());
         type(c.type());
         int n;
         var cf = c.calledFeature();
@@ -758,7 +756,7 @@ class LibraryOut extends ANY
             if (f != null)
               {
                 _data.writeInt(-1);
-                _fixUps.writeOffset(f);
+                _data.writeOffset(f);
               }
             else
               {
@@ -894,7 +892,7 @@ class LibraryOut extends ANY
    */
     if (!pos.isBuiltIn())
       {
-        _fixUps.addSourcePosition(pos);
+        _data.addSourcePosition(pos);
         var sf = pos._sourceFile;
         _sourceFiles.put(fileName(sf), sf);
       }
@@ -937,7 +935,7 @@ class LibraryOut extends ANY
         var n = fileName(sf);
         _data.writeName(n);
         _data.writeInt(sf.byteLength());
-        _fixUps.addSourceFilePosition(n);
+        _data.addSourceFilePosition(n);
         _data.write(sf.bytes());
       }
   }
