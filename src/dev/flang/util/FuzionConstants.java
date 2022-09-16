@@ -169,6 +169,12 @@ public class FuzionConstants extends ANY
   public static final String DESTRUCTURE_PREFIX = INTERNAL_NAME_PREFIX + "destructure";
 
 
+  /**
+   * Suffix added to module files.
+   */
+  public static final String MODULE_FILE_SUFFIX = ".fum";
+
+
   /*-----------------  special values used in MIR file  -----------------*/
 
 

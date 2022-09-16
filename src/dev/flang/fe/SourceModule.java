@@ -1201,9 +1201,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /**
    * Create a ByteBuffer containing the .mir file binary data for this module.
    */
-  public ByteBuffer data()
+  public ByteBuffer data(String name)
   {
-    return new LibraryOut(this).buffer();
+    return new LibraryOut(this, name).buffer();
   }
 
 

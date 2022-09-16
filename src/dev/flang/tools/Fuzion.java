@@ -57,6 +57,7 @@ import dev.flang.opt.Optimizer;
 import dev.flang.util.ANY;
 import dev.flang.util.List;
 import dev.flang.util.Errors;
+import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
 
 
@@ -198,16 +199,25 @@ class Fuzion extends Tool
         if (Errors.count() == 0)
           {
             var p = f._saveLib;
-            var data = fe.module().data();
-            System.out.println(" + " + p);
-            try (var os = Files.newOutputStream(p))
+            var n = p.getFileName().toString();
+            var sfx = FuzionConstants.MODULE_FILE_SUFFIX;
+            if (n.endsWith(sfx))
               {
-                Channels.newChannel(os).write(data);
+                n = n.substring(0, n.length() - sfx.length());
               }
-            catch (IOException io)
+            var data = fe.module().data(n);
+            if (data != null)
               {
-                Errors.error("-saveLib: I/O error when writing module file",
-                             "While trying to write file '"+ p + "' received '" + io + "'");
+                System.out.println(" + " + p);
+                try (var os = Files.newOutputStream(p))
+                  {
+                    Channels.newChannel(os).write(data);
+                  }
+                catch (IOException io)
+                  {
+                    Errors.error("-saveLib: I/O error when writing module file",
+                                 "While trying to write file '"+ p + "' received '" + io + "'");
+                  }
               }
           }
       }

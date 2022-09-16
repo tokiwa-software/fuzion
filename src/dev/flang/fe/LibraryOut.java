@@ -31,6 +31,9 @@ import java.nio.ByteBuffer;
 import java.util.TreeSet;
 import java.util.TreeMap;
 
+import java.security.SecureRandom;
+import java.security.NoSuchAlgorithmException;
+
 import dev.flang.ast.AbstractAssign;
 import dev.flang.ast.AbstractBlock;
 import dev.flang.ast.AbstractCurrent;
@@ -103,7 +106,7 @@ class LibraryOut extends ANY
   /**
    * Constructor to write library for given SourceModule.
    */
-  LibraryOut(SourceModule sm)
+  LibraryOut(SourceModule sm, String name)
   {
     super();
 
@@ -117,20 +120,46 @@ class LibraryOut extends ANY
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | byte[]        | MIR_FILE_MAGIC                                |
    *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | Name          | module name                                   |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | u128          | module version                                |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | int           | number modules this module depends on n       |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | n      | ModuleRef     | reference to another module                   |
+   *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | InnerFeatures | inner Features                                |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | SourceFiles   | source code files                             |
    *   +--------+--------+---------------+-----------------------------------------------+
    */
 
-    _data.write(FuzionConstants.MIR_FILE_MAGIC);
+    // first, write features just to collect referenced modules
     innerFeatures(sm._universe);
-    sourceFiles();
-    _data.fixUps(this);
-    sm._options.verbosePrintln(2, "" +
-                               _data.featureCount() + " features " +
-                               _data.typeCount() + " types and " +
-                               _sourceFiles.size() + " source files includes in fum file.");
+    var rm = _data.referencedModules();
+    _data = null;
+
+    // now that we know the referenced modules, we start over:
+    var v = version();
+    if (v != null)
+      {
+        _data = new FixUps();
+        _data.write(FuzionConstants.MIR_FILE_MAGIC);
+        _data.writeName(name);
+        _data.write(v);
+        _data.writeInt(rm.size());
+        for (var m : rm)
+          {
+            moduleRef(m);
+          }
+        innerFeatures(sm._universe);
+        sourceFiles();
+        _data.fixUps(this);
+        sm._options.verbosePrintln(2, "" +
+                                   _data.featureCount() + " features " +
+                                   _data.typeCount() + " types and " +
+                                   _sourceFiles.size() + " source files includes in fum file.");
+      }
   }
 
 
@@ -138,11 +167,56 @@ class LibraryOut extends ANY
 
 
   /**
-   * Create a ByteBuffer instance from the data of this library.
+   * Create a version number of this module file.  Currently, the version is
+   * just a cryptographically strong random number.
+   */
+  byte[] version()
+  {
+    var alg = "DRBG"; // or "SHA1PRNG"? NYI: Choose best algorithm here!
+    try
+      {
+        var result = new byte[16];
+        var r = SecureRandom.getInstance(alg);
+        r.nextBytes(result);
+        return result;
+      }
+    catch (NoSuchAlgorithmException e)
+      {
+        Errors.error("failed to produce secure random using algorithm '" + alg + "': " + e);
+        return null;
+      }
+  }
+
+
+  /**
+   * Create a ByteBuffer instance from the data of this library, null if not
+   * data available (due to an error).
    */
   ByteBuffer buffer()
   {
-    return _data.buffer();
+    return _data != null ? _data.buffer() : null;
+  }
+
+
+  /**
+   * Collect the binary data for a ModuleRef
+   *
+   * Data format for module references:
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | ModuleRef                                                                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Name          | module name                                   |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | u128          | module version                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+  void moduleRef(LibraryModule m)
+  {
+    _data.writeName(m._name);
+    _data.write(m.version());
   }
 
 

@@ -285,7 +285,7 @@ public class LibraryModule extends Module
    */
   List<AbstractFeature> features()
   {
-    return innerFeatures(startPos());
+    return innerFeatures(innerFeaturesPos());
   }
 
 
@@ -552,7 +552,15 @@ Module File
 |====
    |cond.     | repeat | type          | what
 
-.2+|true      | 1      | byte[]        | MIR_FILE_MAGIC
+.6+|true      | 1      | byte[]        | MIR_FILE_MAGIC
+
+              | 1      | Name          | module name
+
+              | 1      | u128          | module version
+
+              | 1      | int           | number modules this module depends on n
+
+              | n      | ModuleRef     | reference to another module
 
               | 1      | InnerFeatures | inner Features
 
@@ -569,6 +577,14 @@ Module File
    *   +--------+--------+---------------+-----------------------------------------------+
    *   | true   | 1      | byte[]        | MIR_FILE_MAGIC                                |
    *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | Name          | module name                                   |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | u128          | module version                                |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | int           | number modules this module depends on n       |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | n      | ModuleRef     | reference to another module                   |
+   *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | InnerFeatures | inner Features                                |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | SourceFiles   | source code files                             |
@@ -579,6 +595,126 @@ Module File
   {
     return FuzionConstants.MIR_FILE_MAGIC.length;
   }
+  int namePos()
+  {
+    return startPos();
+  }
+  String name()
+  {
+    return name(namePos());
+  }
+  int nameNextPos()
+  {
+    return nameNextPos(namePos());
+  }
+  int versionPos()
+  {
+    return nameNextPos();
+  }
+  byte[] version(int at)
+  {
+    var r = new byte[16];
+    for (int i = 0; i<r.length; i++)
+      {
+        r[i] = _data.get(at);
+        at++;
+      }
+    return r;
+  }
+  byte[] version()
+  {
+    return version(versionPos());
+  }
+  int versionNextPos()
+  {
+    return versionPos() + 16;
+  }
+  int moduleRefsCountPos()
+  {
+    return versionNextPos();
+  }
+  int moduleRefsCount()
+  {
+    return _data.getInt(moduleRefsCountPos());
+  }
+  int moduleRefsPos()
+  {
+    return moduleRefsCountPos() + 4;
+  }
+  int moduleRefsNextPos()
+  {
+    var at = moduleRefsPos();
+    var n = moduleRefsCount();
+    for (int i = 0; i < n; i++)
+      {
+        at = moduleRefNextPos(at);
+      }
+    return at;
+  }
+  int innerFeaturesPos()
+  {
+    return moduleRefsNextPos();
+  }
+
+
+  /*
+--asciidoc--
+
+ModuleRef
+^^^^^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+.2+| true     | 1      | Name          | module name
+
+              | 1      | u128          | module version
+|====
+
+--asciidoc--
+
+   *   +---------------------------------------------------------------------------------+
+   *   | ModuleRef                                                                       |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | Name          | module name                                   |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | u128          | module version                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *
+   */
+
+  int moduleRefNamePos(int at)
+  {
+    return at;
+  }
+  String moduleRefName(int at)
+  {
+    return name(moduleRefNamePos(at));
+  }
+  int moduleRefNameNextPos(int at)
+  {
+    return nameNextPos(at);
+  }
+  int moduleRefVersionPos(int at)
+  {
+    return moduleRefNameNextPos(at);
+  }
+  byte[] moduleRefVersion(int at)
+  {
+    return version(moduleRefVersionPos(at));
+  }
+  int moduleRefVersionNextPos(int at)
+  {
+    return moduleRefVersionPos(at) + 16;
+  }
+  int moduleRefNextPos(int at)
+  {
+    return moduleRefVersionNextPos(at);
+  }
+
 
   /*
 --asciidoc--
@@ -1987,7 +2123,7 @@ SourceFiles
    */
   int sourceFilesPos()
   {
-    return innerFeaturesNextPos(startPos());
+    return innerFeaturesNextPos(innerFeaturesPos());
   }
   int sourceFilesCountPos()
   {
@@ -2116,7 +2252,11 @@ SourceFile
   {
     var hd = new HexDump(_data);
     hd.mark(0, FuzionConstants.MIR_FILE_MAGIC_EXPLANATION);
-    hd.mark(startPos(), "InnerFeatures");
+    hd.mark(namePos(), "module name");
+    hd.mark(versionPos(), "module version");
+    hd.mark(moduleRefsCountPos(), "module refs count");
+    hd.mark(moduleRefsPos(), "module refs");
+    hd.mark(innerFeaturesPos(), "InnerFeatures");
     dump(hd, features());
     hd.mark(sourceFilesPos(), "SourceFiles");
     var n = sourceFilesCount();
