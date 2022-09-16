@@ -25,7 +25,7 @@
 
 # unsigned integer of arbitrary size, including zero
 # represented by its bit sequence
-uint (b Sequence bool) : hasInterval uint
+uint (b Sequence bool, _ unit) : hasInterval uint
 is
 
   bits := b.dropWhile (x -> !x)
@@ -35,17 +35,17 @@ is
   # bitwise and
   infix & (other uint) uint is
     (b1, b2) := equalize other
-    uint (b1.zip b2 (x,y)->x&y)
+    uint (b1.zip b2 (x,y)->x&y) unit
 
   # bitwise or
   infix | (other uint) uint is
     (b1, b2) := equalize other
-    uint (b1.zip b2 (x,y)->x|y)
+    uint (b1.zip b2 (x,y)->x|y) unit
 
   # bitwise xor
   infix ^ (other uint) uint is
     (b1, b2) := equalize other
-    uint (b1.zip b2 (x,y)->x^y)
+    uint (b1.zip b2 (x,y)->x^y) unit
 
 
   # shift operations
@@ -57,13 +57,13 @@ is
     uint (bits
           .reverse
           .drop other.as_i32
-          .reverse)
+          .reverse) unit
 
   # shift left
   infix << (other uint) uint
   pre other >= zero
   is
-    uint (bits ++ array other.as_i32 _->false)
+    uint (bits ++ array other.as_i32 _->false) unit
 
 
   # return two sequences of equal length
@@ -116,7 +116,7 @@ is
         ([true_count % 2 = 1] ++ bits, (rest.drop 1), true_count > 1)
       )
 
-    uint d
+    uint d unit
 
 
   # subtract other from this unsigned int
@@ -137,7 +137,7 @@ is
         # 0-0=0, 0-1=1, 0-2=0, 1-0=1, 1-1=0, 1-2=1
         ([(true_count_minuend - true_count_subtrahend).abs % 2 = 1]++res, true_count_minuend < true_count_subtrahend)
       )
-    uint r
+    uint r unit
 
 
   # NYI make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
@@ -154,7 +154,7 @@ is
           .map_indexed ((ov, oi) ->
             zero_count := i + oi
             appended_zeros := (1..zero_count).map (c -> false)
-            uint ([v & ov] ++ appended_zeros)
+            uint ([v & ov] ++ appended_zeros) unit
           )
         )
       .flatMapSequence uint (x -> x)
@@ -174,6 +174,22 @@ is
   infix %  (other uint) uint is
     (_,remainder) := (divide_with_remainder other)
     remainder
+
+
+  # exponentation operator:
+  # this uint to the power of other
+  infix ** (other uint) uint
+  is
+    if other = zero
+      one
+    else if other = one
+      thiz
+    else
+      if other %% (uint 2)
+        tmp := thiz**(other / uint 2)
+        tmp * tmp
+      else
+        thiz * (thiz**(other-one))
 
 
   # are these unsigned integers equal?
@@ -214,12 +230,12 @@ is
   orderedThis uint is thiz
 
   redef zero uint is
-    uint [false]
+    uint [false] unit
 
   redef one uint is
-    uint [true]
+    uint [true] unit
 
-  redef thiz => uint b
+  redef thiz => uint b unit
 
 
   # this uint as an u32
@@ -242,4 +258,19 @@ is
 
   redef asString string is
     uint.this.asString 10
+
+
+uint (val u64) uint is
+  uints.from_u64 val
+
+uints is
+  # helper feature to init uint via a u64
+  from_u64(val u64) uint is
+    (res,_) :=
+      (0..63)
+        .reduce (lists.empty bool, val) (r, _ ->
+          (l, rest) := r
+          ([(rest & 1) = 1] ++ l, rest>>1)
+        )
+    uint res unit
 

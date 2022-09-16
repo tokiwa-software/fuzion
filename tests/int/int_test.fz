@@ -38,16 +38,31 @@ int_test is
   for m in (i64 -5)..5 do
     for n in (i64 -5)..5 do
 
-      chck (m=n  = (int m  = int n)) "m $m  = n $n"
-      chck (m<=n = (int m <= int n)) "m $m <= n $n"
-      chck (int m+n = (int m + int n)) "m $m + n $n"
-      chck (int m-n = (int m - int n)) "m $m - n $n"
-      chck (int m*n = (int m * int n)) "m $m * n $n"
+      chck (m=n  = (int m  = int n)) "int: m $m  = n $n"
+      chck (m<=n = (int m <= int n)) "int: m $m <= n $n"
+      chck (int m+n = (int m + int n)) "int: m $m + n $n"
+      chck (int m-n = (int m - int n)) "int: m $m - n $n"
+      chck (int m*n = (int m * int n)) "int: m $m * n $n"
       if n != 0
-        chck (int m/n = (int m / int n)) "m $m / n $n"
-        chck (int m%n = (int m % int n)) "m $m % n $n"
+        chck (int m/n = (int m / int n)) "int: m $m / n $n"
+        chck (int m%n = (int m % int n)) "int: m $m % n $n"
       if n >= 0
-        chck (int m**n = (int m ** int n)) "m $m ** n $n"
+        chck (int m**n = (int m ** int n)) "int: m $m ** n $n"
+
+
+  for m in (u64 0)..5 do
+    for n in (u64 0)..5 do
+
+      chck (m=n  = (uint m  = uint n)) "uint: $m  = n $n"
+      chck (m<=n = (uint m <= uint n)) "uint: $m <= n $n"
+      chck (uint m+n = (uint m + uint n)) "uint: $m + n $n"
+      if m >= n
+        chck (uint m-n = (uint m - uint n)) "uint: m $m - n $n"
+      chck (uint m*n = (uint m * uint n)) "uint: m $m * n $n"
+      if n != 0
+        chck (uint m/n = (uint m / uint n)) "uint: m $m / n $n"
+        chck (uint m%n = (uint m % uint n)) "uint: m $m % n $n"
+      chck (uint m**n = (uint m ** uint n)) "uint: m $m ** n $n"
 
 
   # test `as_int`
