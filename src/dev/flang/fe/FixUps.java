@@ -34,28 +34,22 @@ import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Feature;
 
-import dev.flang.util.ANY;
 import dev.flang.util.DataOut;
 import dev.flang.util.SourcePosition;
 
 
 /**
- * FixUps is a helper class for LibraryOut to fix up indices and offsets that
- * are known only after everything was written.
+ * FixUps is a helper class for LibraryOut that extends DataOut with methods to
+ * fix up indices and offsets that are known only after feature, types,
+ * etc. were written.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-class FixUps extends ANY
+class FixUps extends DataOut
 {
 
 
   /*----------------------------  variables  ----------------------------*/
-
-
-  /**
-   * Data created for this library module, to be saved as .fum file.
-   */
-  private final DataOut _data;
 
 
   /**
@@ -106,9 +100,9 @@ class FixUps extends ANY
   /**
    * Constructor to write library for given SourceModule.
    */
-  FixUps(DataOut data)
+  FixUps()
   {
-    this._data = data;
+    super();
   }
 
 
@@ -122,7 +116,7 @@ class FixUps extends ANY
    */
   void add(Feature f)
   {
-    _offsetsForFeature.put(f, _data.offset());
+    _offsetsForFeature.put(f, offset());
   }
 
 
@@ -155,7 +149,7 @@ class FixUps extends ANY
         if (o == null)
           {
             _fixUpsF.add(f);
-            _fixUpsFAt.add(_data.offset());
+            _fixUpsFAt.add(offset());
             v = -1;
           }
         else
@@ -163,7 +157,7 @@ class FixUps extends ANY
             v = (int) o;
           }
       }
-    _data.writeInt(v);
+    writeInt(v);
   }
 
 
@@ -173,7 +167,7 @@ class FixUps extends ANY
   void addSourcePosition(SourcePosition pos)
   {
     _fixUpsSourcePositions.add(pos);
-    _fixUpsSourcePositionsAt.add(_data.offset());
+    _fixUpsSourcePositionsAt.add(offset());
   }
 
 
@@ -182,7 +176,7 @@ class FixUps extends ANY
    */
   void addSourceFilePosition(String n)
   {
-    _sourceFilePositions.put(n, _data.offset());
+    _sourceFilePositions.put(n, offset());
   }
 
 
@@ -200,7 +194,7 @@ class FixUps extends ANY
           {
             if (g instanceof LibraryFeature gl)
               {
-                System.out.println("Writing offset for " + g.qualifiedName() + " from " + gl._libModule + "@" + gl._index + " ==> "+_data.offset()+"+"+gl._index);
+                System.out.println("Writing offset for " + g.qualifiedName() + " from " + gl._libModule + "@" + gl._index + " ==> "+offset()+"+"+gl._index);
               }
             else
               {
@@ -211,7 +205,7 @@ class FixUps extends ANY
           {
             if (CHECKS) check
               (o != null);
-            _data.writeIntAt(at, o);
+            writeIntAt(at, o);
           }
       }
     for (var i = 0; i<_fixUpsSourcePositions.size(); i++)
@@ -223,7 +217,7 @@ class FixUps extends ANY
         var o = _sourceFilePositions.get(n) + p.bytePos();
         if (CHECKS) check
           (o > 0);
-        _data.writeIntAt(at, o);
+        writeIntAt(at, o);
       }
   }
 

@@ -94,10 +94,10 @@ class LibraryOut extends ANY
   /**
    * Data created for this library module, to be saved as .fum file.
    */
-  private DataOut _data = new DataOut();
+  private FixUps _data = new FixUps();
 
 
-  private FixUps _fixUps = new FixUps(_data);
+  private FixUps _fixUps = _data;
 
   /*--------------------------  constructors  ---------------------------*/
 
