@@ -28,13 +28,16 @@ package dev.flang.fe;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
 import dev.flang.ast.Feature;
 
 import dev.flang.util.DataOut;
+import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
 
 
@@ -50,6 +53,12 @@ class FixUps extends DataOut
 
 
   /*----------------------------  variables  ----------------------------*/
+
+
+  /**
+   * Set of modules referenced by features written out.
+   */
+  private Set<LibraryModule> _referencedModules = new TreeSet<LibraryModule>((x,y) -> x._name.compareTo(y._name));
 
 
   /**
@@ -150,6 +159,10 @@ class FixUps extends DataOut
           {
             _fixUpsF.add(f);
             _fixUpsFAt.add(offset());
+            if (f instanceof LibraryFeature lf)
+              {
+                _referencedModules.add(lf._libModule);
+              }
             v = -1;
           }
         else
@@ -254,6 +267,18 @@ class FixUps extends DataOut
   int typeCount()
   {
     return _offsetsForType.size();
+  }
+
+
+  /**
+   * Get sorted list of all the library modules that that are referenced by any
+   * features written for this module.
+   */
+  List<LibraryModule> referencedModules()
+  {
+    var l = new List<LibraryModule>();
+    l.addAll(_referencedModules);
+    return l;
   }
 
 }
