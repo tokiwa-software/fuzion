@@ -26,6 +26,8 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.fe;
 
+import java.nio.ByteBuffer;
+
 import java.nio.file.Path;
 
 import java.util.ArrayList;
@@ -61,6 +63,7 @@ import dev.flang.ast.Universe;
 
 import dev.flang.ir.IR;
 
+import dev.flang.util.ANY;
 import dev.flang.util.DataOut;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
@@ -74,7 +77,7 @@ import dev.flang.util.SourcePosition;
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
-class LibraryOut extends DataOut
+class LibraryOut extends ANY
 {
 
 
@@ -91,6 +94,12 @@ class LibraryOut extends DataOut
    * The source code files in this module, indexed by their position.
    */
   private TreeMap<String, SourceFile> _sourceFiles = new TreeMap<>();
+
+
+  /**
+   * Data created for this library module, to be saved as .fum file.
+   */
+  private DataOut _data = new DataOut();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -119,7 +128,7 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    */
 
-    write(FuzionConstants.MIR_FILE_MAGIC);
+    _data.write(FuzionConstants.MIR_FILE_MAGIC);
     innerFeatures(sm._universe);
     sourceFiles();
     fixUps();
@@ -131,6 +140,15 @@ class LibraryOut extends DataOut
 
 
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Create a ByteBuffer instance from the data of this library.
+   */
+  ByteBuffer buffer()
+  {
+    return _data.buffer();
+  }
 
 
   /**
@@ -156,7 +174,7 @@ class LibraryOut extends DataOut
     var m = _sourceModule.declaredFeatures(f);
     if (m == null)
       {
-        writeInt(0);
+        _data.writeInt(0);
       }
     else
       {
@@ -200,13 +218,13 @@ class LibraryOut extends DataOut
               }
           }
 
-        var szPos = offset();
-        writeInt(0);
-        var innerPos = offset();
+        var szPos = _data.offset();
+        _data.writeInt(0);
+        var innerPos = _data.offset();
 
         // write the actual data
         features(innerFeatures);
-        writeIntAt(szPos, offset() - innerPos);
+        _data.writeIntAt(szPos, _data.offset() - innerPos);
       }
   }
 
@@ -290,7 +308,7 @@ class LibraryOut extends DataOut
    */
   void feature(Feature f)
   {
-    _offsetsForFeature.put(f, offset());
+    _offsetsForFeature.put(f, _data.offset());
     var k =
       !f.isConstructor() ? f.kind().ordinal() :
       f.isThisRef()      ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
@@ -309,15 +327,15 @@ class LibraryOut extends DataOut
         k = k | FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE;
       }
     var n = f.featureName();
-    write(k);
+    _data.write(k);
     var bn = n.baseName();
     if (_sourceModule._options._eraseInternalNamesInLib && bn.startsWith(FuzionConstants.INTERNAL_NAME_PREFIX))
       {
         bn = "";
       }
-    writeName(bn);
-    writeInt (n.argCount());  // NYI: use better integer encoding
-    writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
+    _data.writeName(bn);
+    _data.writeInt (n.argCount());  // NYI: use better integer encoding
+    _data.writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
     pos(f.pos());
     if (!f.outer().isUniverse())
       {
@@ -325,7 +343,7 @@ class LibraryOut extends DataOut
       }
     else
       {
-        writeInt(0);
+        _data.writeInt(0);
       }
     if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE) != 0)
       {
@@ -339,23 +357,23 @@ class LibraryOut extends DataOut
       }
     // NYI: Suppress output of inherits for fields, intrinsics, etc.?
     var i = f.inherits();
-    writeInt(i.size());
+    _data.writeInt(i.size());
     for (var p : i)
       {
         code(p, false);
       }
-    writeInt(f.contract().req.size());
+    _data.writeInt(f.contract().req.size());
     for (var c : f.contract().req)
       {
         code(c.cond, false);
       }
-    writeInt(f.contract().ens.size());
+    _data.writeInt(f.contract().ens.size());
     for (var c : f.contract().ens)
       {
         code(c.cond, false);
       }
     var r = f.redefines();
-    writeInt(r.size());
+    _data.writeInt(r.size());
     for(var rf : r)
       {
         writeOffset(rf);
@@ -402,25 +420,25 @@ class LibraryOut extends DataOut
     var off = offset(t);
     if (off >= 0)
       {
-        writeInt(-2);     // NYI: optimization: maybe write just one integer, e.g., -index-2
-        writeInt(off);
+        _data.writeInt(-2);     // NYI: optimization: maybe write just one integer, e.g., -index-2
+        _data.writeInt(off);
       }
     else if (t == Types.t_ADDRESS)
       {
-        writeInt(-4);
+        _data.writeInt(-4);
       }
     else if (t == Types.resolved.universe.thisType())
       {
-        writeInt(-3);
+        _data.writeInt(-3);
       }
     else
       {
-        addOffset(t, offset());
+        addOffset(t, _data.offset());
         if (t.isGenericArgument())
           {
             if (CHECKS) check
               (!t.isRef());
-            writeInt(-1);
+            _data.writeInt(-1);
             writeOffset(t.genericArgument().typeParameter());
           }
         else
@@ -429,9 +447,9 @@ class LibraryOut extends DataOut
             // there is no explicit value type at this phase:
             if (CHECKS) check
               (makeRef || t.isRef() == t.featureOfType().isThisRef());
-            writeInt(t.generics().size());
+            _data.writeInt(t.generics().size());
             writeOffset(t.featureOfType());
-            writeBool(makeRef);
+            _data.writeBool(makeRef);
             for (var gt : t.generics())
               {
                 type(gt);
@@ -464,13 +482,13 @@ class LibraryOut extends DataOut
   }
   void code(Expr code, boolean dumpResult)
   {
-    var szPos = offset();
-    writeInt(0);
-    var codePos = offset();
+    var szPos = _data.offset();
+    _data.writeInt(0);
+    var codePos = _data.offset();
 
     // write the actual code data
     expressions(code, dumpResult, null);
-    writeIntAt(szPos, offset() - codePos);
+    _data.writeIntAt(szPos, _data.offset() - codePos);
   }
 
 
@@ -560,7 +578,7 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    */
         type(u.type());
-        write(u._needed ? 1 : 0);
+        _data.write(u._needed ? 1 : 0);
       }
     else if (s instanceof Box b)
       {
@@ -585,7 +603,7 @@ class LibraryOut extends DataOut
           }
         if (!dumpResult)
           {
-            write(IR.ExprKind.Unit.ordinal());
+            _data.write(IR.ExprKind.Unit.ordinal());
           }
       }
     else if (s instanceof Constant c)
@@ -606,8 +624,8 @@ class LibraryOut extends DataOut
    */
         type(c.type());
         var d = c.data();
-        writeInt(d.length);
-        write(d);
+        _data.writeInt(d.length);
+        _data.write(d);
       }
     else if (s instanceof AbstractCurrent)
       {
@@ -617,11 +635,11 @@ class LibraryOut extends DataOut
       {
         lastPos = expressions(i.cond, lastPos);
         lastPos = exprKindAndPos(IR.ExprKind.Match, lastPos, s.pos());
-        writeInt(2);
-        writeInt(1);
+        _data.writeInt(2);
+        _data.writeInt(1);
         type(Types.resolved.f_TRUE.resultType());
         code(i.block);
-        writeInt(1);
+        _data.writeInt(1);
         type(Types.resolved.f_FALSE.resultType());
         if (i.elseBlock != null)
           {
@@ -677,12 +695,12 @@ class LibraryOut extends DataOut
         var cf = c.calledFeature();
         if (cf.hasOpenGenericsArgList())
           {
-            writeInt(c._actuals.size());
+            _data.writeInt(c._actuals.size());
           }
         if (cf.generics().isOpen())
           {
             n = c._generics.size();
-            writeInt(n);
+            _data.writeInt(n);
           }
         else
           {
@@ -698,11 +716,11 @@ class LibraryOut extends DataOut
           (cf.resultType().isOpenGeneric() == (c.select() >= 0));
         if (cf.resultType().isOpenGeneric())
           {
-            writeInt(c.select());
+            _data.writeInt(c.select());
           }
         if (dumpResult)
           {
-            write(IR.ExprKind.Pop.ordinal());
+            _data.write(IR.ExprKind.Pop.ordinal());
           }
       }
     else if (s instanceof AbstractMatch m)
@@ -721,7 +739,7 @@ class LibraryOut extends DataOut
    *   +--------+--------+---------------+-----------------------------------------------+
    */
         var cs = m.cases();
-        writeInt(cs.size());
+        _data.writeInt(cs.size());
         for (var c : cs)
           {
   /*
@@ -742,7 +760,7 @@ class LibraryOut extends DataOut
             var f = c.field();
             if (f != null)
               {
-                writeInt(-1);
+                _data.writeInt(-1);
                 writeOffset(f);
               }
             else
@@ -750,7 +768,7 @@ class LibraryOut extends DataOut
                 var ts = c.types();
                 if (CHECKS) check
                   (ts.size() > 0);
-                writeInt(ts.size());
+                _data.writeInt(ts.size());
                 for (var t : ts)
                   {
                     type(t);
@@ -850,12 +868,12 @@ class LibraryOut extends DataOut
   {
     if (lastPos == null || lastPos.compareTo(newPos) != 0)
       {
-        write(k.ordinal() | 0x80);
+        _data.write(k.ordinal() | 0x80);
         pos(newPos);
       }
     else
       {
-        write(k.ordinal());
+        _data.write(k.ordinal());
       }
     return newPos;
   }
@@ -880,11 +898,11 @@ class LibraryOut extends DataOut
     if (!pos.isBuiltIn())
       {
         _fixUpsSourcePositions.add(pos);
-        _fixUpsSourcePositionsAt.add(offset());
+        _fixUpsSourcePositionsAt.add(_data.offset());
         var sf = pos._sourceFile;
         _sourceFiles.put(fileName(sf), sf);
       }
-    writeInt(0);
+    _data.writeInt(0);
   }
 
 
@@ -916,15 +934,15 @@ class LibraryOut extends DataOut
    */
   void sourceFiles()
   {
-    writeInt(_sourceFiles.size());
+    _data.writeInt(_sourceFiles.size());
     for (var e : _sourceFiles.entrySet())
       {
         var sf = e.getValue();
         var n = fileName(sf);
-        writeName(n);
-        writeInt(sf.byteLength());
-        _sourceFilePositions.put(n, offset());
-        write(sf.bytes());
+        _data.writeName(n);
+        _data.writeInt(sf.byteLength());
+        _sourceFilePositions.put(n, _data.offset());
+        _data.write(sf.bytes());
       }
   }
 
@@ -994,7 +1012,7 @@ class LibraryOut extends DataOut
         if (o == null)
           {
             _fixUpsF.add(f);
-            _fixUpsFAt.add(offset());
+            _fixUpsFAt.add(_data.offset());
             v = -1;
           }
         else
@@ -1002,7 +1020,7 @@ class LibraryOut extends DataOut
             v = (int) o;
           }
       }
-    writeInt(v);
+    _data.writeInt(v);
   }
 
 
@@ -1018,13 +1036,20 @@ class LibraryOut extends DataOut
         var o = _offsetsForFeature.get(g);
         if (o == null)
           {
-            System.out.println("NYI: writing module depending on other module not supported yet, missing offset for " + g.qualifiedName() + "!");
+            if (g instanceof LibraryFeature gl)
+              {
+                System.out.println("Writing offset for " + g.qualifiedName() + " from " + gl._libModule + "@" + gl._index + " ==> "+_data.offset()+"+"+gl._index);
+              }
+            else
+              {
+                System.out.println("NYI: writing module depending on other module not supported yet, missing offset for " + g.qualifiedName() + "!");
+              }
           }
         else
           {
             if (CHECKS) check
               (o != null);
-            writeIntAt(at, o);
+            _data.writeIntAt(at, o);
           }
       }
     for (var i = 0; i<_fixUpsSourcePositions.size(); i++)
@@ -1036,7 +1061,7 @@ class LibraryOut extends DataOut
         var o = _sourceFilePositions.get(n) + p.bytePos();
         if (CHECKS) check
           (o > 0);
-        writeIntAt(at, o);
+        _data.writeIntAt(at, o);
       }
   }
 
