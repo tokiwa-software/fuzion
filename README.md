@@ -9,7 +9,6 @@
 <!--ts-->
    * [Documentation](#documentation)
    * [Clone](#clone)
-   * [Examples](#examples)
    * [Requirements](#requirements)
      * [Windows](#windows)
    * [Build](#build)
