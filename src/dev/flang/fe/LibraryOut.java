@@ -291,7 +291,6 @@ class LibraryOut extends DataOut
   void feature(Feature f)
   {
     _offsetsForFeature.put(f, offset());
-    var ix = offset();
     var k =
       !f.isConstructor() ? f.kind().ordinal() :
       f.isThisRef()      ? FuzionConstants.MIR_FILE_KIND_CONSTRUCTOR_REF
