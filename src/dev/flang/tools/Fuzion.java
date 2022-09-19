@@ -248,17 +248,6 @@ class Fuzion extends Tool
         (arg != null && arg.startsWith("-"));
 
       _arg = arg;
-      if (usage() == "")
-        {
-          _allBackendArgs_.append(_allBackendArgs_.length() == 0 ? "" : "|").append(arg);
-        }
-      else
-        {
-          if (CHECKS) check
-            (usage().endsWith(" "));
-
-          _allBackendExtraUsage_.append("       @CMD@ " + _arg + " " + usage() + STD_OPTIONS + " --or--\n");
-        }
       if (arg.indexOf("=") >= 0)
         {
           arg = arg.substring(0, arg.indexOf("=")+1);
@@ -326,8 +315,6 @@ class Fuzion extends Tool
     }
   }
 
-  static StringBuilder _allBackendArgs_ = new StringBuilder();
-  static StringBuilder _allBackendExtraUsage_ = new StringBuilder();
   static TreeMap<String, Backend> _allBackends_ = new TreeMap<>();
 
   static { var __ = Backend.undefined; } /* make sure _allBackendArgs_ is initialized */
@@ -462,17 +449,42 @@ class Fuzion extends Tool
 
 
   /**
-   * The basic usage, using STD_OPTIONS as a placeholder for standard
-   * options.
+   * The usage, created from USAGE0() by adding STANDARD_OPTIONS().
+   *
+   * @param xtra include extra options
    */
-  protected String USAGE0()
+  protected String USAGE(boolean xtra)
   {
+    var std = STANDARD_OPTIONS(xtra);
+    var stdBe = "[-modules={<m>,..} [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] [-sourceDirs={<path>,..}] (<main> | <srcfile>.fz | -) ";
+    var aba = new StringBuilder();
+    var abe = new StringBuilder();
+    for (var ab : _allBackends_.entrySet())
+      {
+        var b = ab.getValue();
+        var ba = b._arg;
+        var bu = b.usage();
+        if (bu == "")
+          {
+            if (!ba.startsWith("-X") || xtra)
+              {
+                aba.append(aba.length() == 0 ? "" : "|").append(ba);
+              }
+          }
+        else
+          {
+            if (CHECKS) check
+              (bu.endsWith(" "));
+
+            abe.append("       " + _cmd + " " + ba + " " + bu + std + stdBe + " --or--\n");
+          }
+      }
     return
-      "Usage: " + _cmd + " [-h|--help|-version] [" + _allBackendArgs_ + "] " + STD_OPTIONS + "[-modules={<m>,..} [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] [-sourceDirs={<path>,..}] (<main> | <srcfile>.fz | -)  --or--\n" +
-      _allBackendExtraUsage_.toString().replace("@CMD@", _cmd) +
-      "       " + _cmd + " -pretty " + STD_OPTIONS + " ({<file>} | -)\n" +
-      "       " + _cmd + " -latex " + STD_OPTIONS + "\n" +
-      "       " + _cmd + " -acemode " + STD_OPTIONS + "\n";
+      "Usage: " + _cmd + " [-h|--help|-version] [" + aba + "] " + std + " --or--\n" +
+      abe +
+      "       " + _cmd + " -pretty " + std + " ({<file>} | -)\n" +
+      "       " + _cmd + " -latex " + std + "\n" +
+      "       " + _cmd + " -acemode " + std + "\n";
   }
 
 

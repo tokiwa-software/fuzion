@@ -61,11 +61,6 @@ public abstract class Tool extends ANY
   /*----------------------------  constants  ----------------------------*/
 
 
-  /**
-   * Placeholder within USAGE0() result to hold standard options.
-   */
-  public static final String STD_OPTIONS = "@STANDARD_OPTIONS@";
-
   private static final String XTRA_OPTIONS = "[-X|--Xhelp] [-XjavaProf] " +
     "[" + Errors.MAX_ERROR_MESSAGES_OPTION   + "=<n>] " +
     "[" + Errors.MAX_WARNING_MESSAGES_OPTION + "=<n>] ";
@@ -141,21 +136,11 @@ public abstract class Tool extends ANY
 
 
   /**
-   * The basic usage, using STD_OPTIONS as a placeholder for standard
-   * options.
-   */
-  protected abstract String USAGE0();
-
-
-  /**
-   * The usage, created from USAGE0() by adding STANDARD_OPTIONS().
+   * The usage, must include STANDARD_OPTIONS().
    *
    * @param xtra include extra options
    */
-  protected final String USAGE(boolean xtra)
-  {
-    return USAGE0().replace(STD_OPTIONS, STANDARD_OPTIONS(xtra));
-  }
+  protected abstract String USAGE(boolean xtra);
 
 
   /**

@@ -119,12 +119,13 @@ public class FZJava extends Tool
 
 
   /**
-   * The basic usage, using STD_OPTIONS as a placeholder for standard
-   * options.
+   * The usage, created from USAGE0() by adding STANDARD_OPTIONS().
+   *
+   * @param xtra include extra options
    */
-  protected String USAGE0()
+  protected String USAGE(boolean xtra)
   {
-    return "Usage: " + _cmd + " [-h|--help|-version] " + STD_OPTIONS + "[-to=<dir>] {module}+\n";
+    return "Usage: " + _cmd + " [-h|--help|-version] " + STANDARD_OPTIONS(xtra) + "[-to=<dir>] {module}+\n";
   }
 
 
