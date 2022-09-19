@@ -100,7 +100,7 @@ class Fuzion extends Tool
     {
       String usage()
       {
-        return "[-o=<file>] [-useGC] [-Xdfa=(on|off)]";
+        return "[-o=<file>] [-useGC] [-Xdfa=(on|off)] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -171,7 +171,7 @@ class Fuzion extends Tool
       }
       String usage()
       {
-        return "[-XeraseInternalNamesInLib=(on|off)]";
+        return "[-XeraseInternalNamesInLib=(on|off)] ";
       }
       boolean handleOption(Fuzion f, String o)
       {
@@ -254,6 +254,9 @@ class Fuzion extends Tool
         }
       else
         {
+          if (CHECKS) check
+            (usage().endsWith(" "));
+
           _allBackendExtraUsage_.append("       @CMD@ " + _arg + " " + usage() + STD_OPTIONS + " --or--\n");
         }
       if (arg.indexOf("=") >= 0)
