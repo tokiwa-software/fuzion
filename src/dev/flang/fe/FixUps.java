@@ -58,7 +58,7 @@ class FixUps extends DataOut
   /**
    * Set of modules referenced by features written out.
    */
-  private Set<LibraryModule> _referencedModules = new TreeSet<LibraryModule>((x,y) -> x._name.compareTo(y._name));
+  private Map<LibraryModule, Integer> _referencedModules = new TreeMap<LibraryModule, Integer>((x,y) -> x._name.compareTo(y._name));
 
 
   /**
@@ -161,7 +161,7 @@ class FixUps extends DataOut
             _fixUpsFAt.add(offset());
             if (f instanceof LibraryFeature lf)
               {
-                _referencedModules.add(lf._libModule);
+                _referencedModules.put(lf._libModule, -1);
               }
             v = -1;
           }
@@ -202,24 +202,7 @@ class FixUps extends DataOut
       {
         var g  = _fixUpsF  .get(i);
         var at = _fixUpsFAt.get(i);
-        var o = _offsetsForFeature.get(g);
-        if (o == null)
-          {
-            if (g instanceof LibraryFeature gl)
-              {
-                System.out.println("Writing offset for " + g.qualifiedName() + " from " + gl._libModule + "@" + gl._index + " ==> "+offset()+"+"+gl._index);
-              }
-            else
-              {
-                System.out.println("NYI: writing module depending on other module not supported yet, missing offset for " + g.qualifiedName() + "!");
-              }
-          }
-        else
-          {
-            if (CHECKS) check
-              (o != null);
-            writeIntAt(at, o);
-          }
+        writeIntAt(at, offsetOfFeature(g));
       }
     for (var i = 0; i<_fixUpsSourcePositions.size(); i++)
       {
@@ -232,6 +215,62 @@ class FixUps extends DataOut
           (o > 0);
         writeIntAt(at, o);
       }
+  }
+
+
+  /**
+   * Get the offset to be written for a given Feature.
+   *
+   * If g is an instance of Feature, i.e., it is part of the AST created from
+   * source code, the offset will be the offset in the currently written module
+   * file.
+   *
+   * Otherwise, g is an instance of LibraryFeature and and the result is the
+   * offset of g in its module file plus that module's base.
+   *
+   * @param g a feature referenced within the written module.
+   */
+  int offsetOfFeature(AbstractFeature g)
+  {
+    if (g instanceof LibraryFeature gl)
+      {
+        var bi = moduleBase(gl._libModule);
+        return bi + gl._index;
+      }
+    else
+      {
+        var o = _offsetsForFeature.get(g);
+        if (CHECKS) check
+          (o != null);
+        return o;
+      }
+  }
+
+
+  /**
+   * Get the base offset of a given module.
+   *
+   * The base offset of the first module is the size of this module file.  The
+   * base offset of every subsequence module is that previous module's base
+   * offset plus the previous' modules size.
+   *
+   * @param m a module referenced within the written module.
+   */
+  int moduleBase(LibraryModule m)
+  {
+    var i = _referencedModules.get(m);
+    if (i == -1)
+      {
+        var o = offset();
+        for (var rm : _referencedModules.keySet())
+          {
+            _referencedModules.put(rm, o);
+            int size = rm.data().limit();
+            o = o + size;
+          }
+        i = _referencedModules.get(m);
+      }
+    return i;
   }
 
 
@@ -277,7 +316,7 @@ class FixUps extends DataOut
   List<LibraryModule> referencedModules()
   {
     var l = new List<LibraryModule>();
-    l.addAll(_referencedModules);
+    l.addAll(_referencedModules.keySet());
     return l;
   }
 
