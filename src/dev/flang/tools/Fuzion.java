@@ -141,7 +141,7 @@ class Fuzion extends Tool
     {
       String usage()
       {
-        return new String(""); /* tricky: empty string != "" */
+        return "";
       }
       void process(FuzionOptions options, FUIR fuir)
       {
