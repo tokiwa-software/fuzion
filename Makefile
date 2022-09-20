@@ -281,7 +281,6 @@ $(MOD_BASE): $(BUILD_DIR)/lib $(BUILD_DIR)/bin/fz
 
 $(MOD_TERMINAL): $(MOB_BASE) $(BUILD_DIR)/bin/fz $(FZ_SRC)/modules/terminal/src/terminal.fz
 	mkdir -p $(@D)
-	$(BUILD_DIR)/bin/fz -sourceDirs=$(FZ_SRC)/modules/terminal/src test_terminal
 	$(BUILD_DIR)/bin/fz -sourceDirs=$(FZ_SRC)/modules/terminal/src -saveLib=$@
 
 $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
