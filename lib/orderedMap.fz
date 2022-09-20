@@ -63,7 +63,7 @@ is
                  .map (i -> sortedEntries[i].val)
 
 
-  # get a stream of all key/value pairs in this map
+  # get an array of all key/value pairs in this map
   #
   items Sequence (tuple OK V) is sortedEntries.map (e -> (e.key, e.val))
 

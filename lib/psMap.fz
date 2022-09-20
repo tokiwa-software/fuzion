@@ -245,13 +245,10 @@ O(n log n).
     array r unit unit unit
 
 
-  # get a stream of all key/value pairs in this map
+  # get an array of all key/value pairs in this map
   #
   redef items Sequence (tuple PK V) is
-    res : Sequence (tuple PK V) is
-      redef asStream =>
-        (asKeyArray.map (tuple PK V) (k -> (k, psMap.this[k].get))).asStream
-    res
+    asKeyArray.map (tuple PK V) (k -> (k, psMap.this[k].get))
 
 
   # get the lowest key in this map
