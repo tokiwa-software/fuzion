@@ -189,7 +189,7 @@ public class FrontEnd extends ANY
     try (var ch = (FileChannel) Files.newByteChannel(b, EnumSet.of(StandardOpenOption.READ)))
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
-        return new LibraryModule("base", data, new LibraryModule[0], _universe);
+        return new LibraryModule(data, new LibraryModule[0], _universe);
       }
     catch (IOException io)
       {

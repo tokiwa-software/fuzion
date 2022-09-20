@@ -100,12 +100,6 @@ public class LibraryModule extends Module
 
 
   /**
-   * The module name, used for debug output.
-   */
-  final String _name;
-
-
-  /**
    * The module binary data, contents of .mir file.
    */
   final ByteBuffer _data;
@@ -163,11 +157,10 @@ public class LibraryModule extends Module
   /**
    * Create LibraryModule for given options and sourceDirs.
    */
-  LibraryModule(String name, ByteBuffer data, LibraryModule[] dependsOn, AbstractFeature universe)
+  LibraryModule(ByteBuffer data, LibraryModule[] dependsOn, AbstractFeature universe)
   {
     super(dependsOn);
 
-    _name = name;
     _mir = null;
     _data = data;
     _universe = universe;
@@ -2300,7 +2293,7 @@ SourceFile
    */
   public String toString()
   {
-    return "LibraryModule for '" + _name + "'";
+    return "LibraryModule for '" + name() + "'";
   }
 
 }

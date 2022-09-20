@@ -215,7 +215,7 @@ class LibraryOut extends ANY
    */
   void moduleRef(LibraryModule m)
   {
-    _data.writeName(m._name);
+    _data.writeName(m.name());
     _data.write(m.version());
   }
 

@@ -58,7 +58,7 @@ class FixUps extends DataOut
   /**
    * Set of modules referenced by features written out.
    */
-  private Map<LibraryModule, Integer> _referencedModules = new TreeMap<LibraryModule, Integer>((x,y) -> x._name.compareTo(y._name));
+  private Map<LibraryModule, Integer> _referencedModules = new TreeMap<LibraryModule, Integer>((x,y) -> x.name().compareTo(y.name()));
 
 
   /**
