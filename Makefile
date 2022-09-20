@@ -96,6 +96,7 @@ ALL = \
 	$(BUILD_DIR)/bin/fz \
 	$(BUILD_DIR)/bin/fzjava \
 	$(MOD_BASE) \
+	$(MOD_TERMINAL) \
 	$(MOD_JAVA_BASE) \
 	$(MOD_JAVA_XML) \
 	$(MOD_JAVA_DATATRANSFER) \
