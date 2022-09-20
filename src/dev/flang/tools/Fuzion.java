@@ -369,9 +369,15 @@ class Fuzion extends Tool
 
 
   /**
-   * List of modules added using '-module'.
+   * List of modules added using '-modules'.
    */
   List<String> _modules = new List<>();
+
+
+  /**
+   * List of modules added using '-XdumpModules'.
+   */
+  List<String> _dumpModules = new List<>();
 
 
   /**
@@ -456,7 +462,9 @@ class Fuzion extends Tool
   protected String USAGE(boolean xtra)
   {
     var std = STANDARD_OPTIONS(xtra);
-    var stdBe = "[-modules={<m>,..} [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] [-sourceDirs={<path>,..}] (<main> | <srcfile>.fz | -) ";
+    var stdBe = "[-modules={<m>,..} [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] [-sourceDirs={<path>,..}] " +
+      (xtra ? "[-XdumpModules={<name>,..}] " : "") +
+      "(<main> | <srcfile>.fz | -) ";
     var aba = new StringBuilder();
     var abe = new StringBuilder();
     for (var ab : _allBackends_.entrySet())
@@ -664,6 +672,7 @@ class Fuzion extends Tool
             else if (a.startsWith("-XfuzionHome="            )) { _fuzionHome              = parsePath(a);              }
             else if (a.startsWith("-XloadBaseLib="           )) { _loadBaseLib             = parseOnOffArg(a);          }
             else if (a.startsWith("-modules="                )) { _modules.addAll(parseStringListArg(a));               }
+            else if (a.startsWith("-XdumpModules="           )) { _dumpModules             = parseStringListArg(a);     }
             else if (a.matches("-debug(=\\d+|)"              )) { _debugLevel              = parsePositiveIntArg(a, 1); }
             else if (a.startsWith("-safety="                 )) { _safety                  = parseOnOffArg(a);          }
             else if (a.startsWith("-unsafeIntrinsics="       )) { _enableUnsafeIntrinsics  = parseOnOffArg(a);          }
@@ -716,6 +725,7 @@ class Fuzion extends Tool
                                           _loadBaseLib,
                                           _eraseInternalNamesInLib,
                                           _modules,
+                                          _dumpModules,
                                           _debugLevel,
                                           _safety,
                                           _enableUnsafeIntrinsics,

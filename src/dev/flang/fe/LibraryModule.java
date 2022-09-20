@@ -170,7 +170,12 @@ public class LibraryModule extends Module
     _mir = null;
     _data = data;
     _universe = universe;
-    if (DUMP) System.out.println(dump());
+    var dm = fe._options._dumpModules;
+    if (DUMP ||
+        dm != null && dm.contains(name()))
+      {
+        System.out.println(dump());
+      }
 
     _sourceFiles = new ArrayList<>(sourceFilesCount());
     var sfc = sourceFilesCount();
