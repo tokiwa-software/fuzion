@@ -151,13 +151,19 @@ public class LibraryModule extends Module
   final AbstractFeature _universe;
 
 
+  /**
+   * Modules referenced from this module
+   */
+  final ModuleRef[] _modules;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
   /**
    * Create LibraryModule for given options and sourceDirs.
    */
-  LibraryModule(ByteBuffer data, LibraryModule[] dependsOn, AbstractFeature universe)
+  LibraryModule(FrontEnd fe, ByteBuffer data, LibraryModule[] dependsOn, AbstractFeature universe)
   {
     super(dependsOn);
 
@@ -172,9 +178,39 @@ public class LibraryModule extends Module
       {
         _sourceFiles.add(null);
       }
+    var mrc = moduleRefsCount();
+    _modules = new ModuleRef[mrc];
+    var p = moduleRefsPos();
+    int moduleOffset = _data.limit();
+    for (int i = 0; i < mrc; i++)
+      {
+        var n = moduleRefName(p);
+        var v = moduleRefVersion(p);
+        var mr = new ModuleRef(fe, moduleOffset, n, v);
+        _modules[i] = mr;
+        moduleOffset = moduleOffset + mr.size();
+        p = moduleRefNextPos(p);
+      }
+    fe._modules.put(name(), this);
   }
 
+
   /*-----------------------------  methods  -----------------------------*/
+
+
+  /**
+   * Get the ModuleRef instance with given index.  ModuleRef instances refer to
+   * other modules that this module depennds on.
+   */
+  ModuleRef moduleRef(int offset)
+  {
+    ModuleRef result = null;
+    for (int i = 0; i < _modules.length && offset >= _modules[i]._offset; i++)
+      {
+        result = _modules[i];
+      }
+    return result;
+  }
 
 
   /**
@@ -247,13 +283,24 @@ public class LibraryModule extends Module
    */
   LibraryFeature libraryFeature(int offset)
   {
-    var result = _libraryFeatures.get(offset);
-    if (result == null)
+    if (offset >= 0 && offset <= _data.limit())
       {
-        result = new LibraryFeature(this, offset);
-        _libraryFeatures.put(offset, result);
+        var result = _libraryFeatures.get(offset);
+        if (result == null)
+          {
+            result = new LibraryFeature(this, offset);
+            _libraryFeatures.put(offset, result);
+          }
+        return result;
       }
-    return result;
+    else
+      {
+        var mr = moduleRef(offset);
+        if (CHECKS) check
+          (mr != null);
+
+        return mr._module.libraryFeature(offset - mr._offset);
+      }
   }
 
 

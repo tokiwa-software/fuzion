@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 import java.util.EnumSet;
+import java.util.TreeMap;
 
 import dev.flang.mir.MIR;
 
@@ -47,6 +48,7 @@ import dev.flang.ast.Types;
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
+import dev.flang.util.List;
 import dev.flang.util.SourceDir;
 import dev.flang.util.SourceFile;
 
@@ -135,6 +137,13 @@ public class FrontEnd extends ANY
 
 
   /**
+   * The library modules loaded so far.  Maps the module name, e.g. "base" to
+   * the corresponding LibraryModule instance.
+   */
+  TreeMap<String, LibraryModule> _modules = new TreeMap<>();
+
+
+  /**
    * The module we are compiling. null if !options._loadSources or Errors.count() != 0
    */
   private final SourceModule _module;
@@ -161,13 +170,30 @@ public class FrontEnd extends ANY
       {
         sourceDirs[i] = new SourceDir(sourcePaths[i]);
       }
+    var lms = new List<LibraryModule>();
+    if (options._loadBaseLib)
+      {
+        _baseModule = module(modulePath("base"));
+        lms.add(_baseModule);
+      }
+    else
+      {
+        _baseModule = null;
+      }
     for (int i = 0; i < options._modules.size(); i++)
       {
-        sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(options._modules.get(i))));
+        var m = _options._modules.get(i);
+        var p = modulePath(_options._modules.get(i));
+        if (Files.exists(p))
+          {
+            lms.add(module(p));
+          }
+        else
+          { // NYI: Fallback if module file does not exists use source files instead. Remove this.
+            sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(m)));
+          }
       }
-    LibraryModule[] dependsOn;
-    _baseModule = options._loadBaseLib ? baseModule() : null;
-    dependsOn = _baseModule == null ? new LibraryModule[] { } : new LibraryModule[] { _baseModule };
+    var dependsOn = lms.toArray(LibraryModule[]::new);
     if (options._loadSources)
       {
         _module = new SourceModule(options, sourceDirs, inputFile(options), options._main, dependsOn, universe);
@@ -181,20 +207,33 @@ public class FrontEnd extends ANY
 
 
   /**
-   * Load Base module for given options.
+   * Determine the path to load module 'name' from.  E.g., for module 'base',
+   * this returns the path '<fuzionHome>/modules/base.fum'.
+   *
+   * @þaram a module name, without path or suffix
+   *
+   * @return the path to the module, never null.
    */
-  private LibraryModule baseModule()
+  private Path modulePath(String name)
   {
-    var b = _options._fuzionHome.resolve("modules").resolve("base.fum");
-    try (var ch = (FileChannel) Files.newByteChannel(b, EnumSet.of(StandardOpenOption.READ)))
+    return _options._fuzionHome.resolve("modules").resolve(name + ".fum");
+  }
+
+
+  /**
+   * Load module from given path.
+   */
+  private LibraryModule module(Path p)
+  {
+    try (var ch = (FileChannel) Files.newByteChannel(p, EnumSet.of(StandardOpenOption.READ)))
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
-        return new LibraryModule(data, new LibraryModule[0], _universe);
+        return new LibraryModule(this, data, new LibraryModule[0], _universe);
       }
     catch (IOException io)
       {
         Errors.error("FrontEnd I/O error when reading module file",
-                     "While trying to read file '"+ b + "' received '" + io + "'");
+                     "While trying to read file '"+ p + "' received '" + io + "'");
         return null;
       }
   }
