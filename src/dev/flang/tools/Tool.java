@@ -136,7 +136,7 @@ public abstract class Tool extends ANY
 
 
   /**
-   * The usage, must include STANDARD_OPTIONS().
+   * The usage, must include STANDARD_OPTIONS(xtra).
    *
    * @param xtra include extra options
    */

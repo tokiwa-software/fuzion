@@ -119,7 +119,7 @@ public class FZJava extends Tool
 
 
   /**
-   * The usage, created from USAGE0() by adding STANDARD_OPTIONS().
+   * The usage, includes STANDARD_OPTIONS(xtra).
    *
    * @param xtra include extra options
    */
