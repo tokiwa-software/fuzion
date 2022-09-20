@@ -118,7 +118,7 @@ is
     else if thiz = divisor
       (one, zero)
     else
-      # The here idea is to shift the divisor left as
+      # The idea is to shift the divisor left as
       # far as possible so that the subtraction of this and
       # the shifted divisor is still positive.
       # This is done recursively and the results
@@ -188,13 +188,13 @@ is
   # NYI make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
   # multiply these unsigned ints
   infix *  (other uint) uint is
-    (b1, b2) := equalize other
-    b1
+    data
       .reverse
       .indexed
       .mapSequence ((x) ->
         (i, v) := x
-        b2
+        other
+          .data
           .reverse
           .indexed
           .mapSequence (ox ->
