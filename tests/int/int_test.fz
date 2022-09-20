@@ -17,7 +17,7 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion test int
+#  Source code of Fuzion test int/uint
 #
 #  Author: Michael Lill (michael.lill@tokiwa.software)
 #
@@ -35,6 +35,7 @@ int_test is
       set exitCode := 1
 
 
+  # test basic int operations with small numbers
   for m in (i64 -5)..5 do
     for n in (i64 -5)..5 do
 
@@ -49,10 +50,12 @@ int_test is
       if n >= 0
         chck (int m**n = (int m ** int n)) "int: m $m ** n $n"
 
-
+  # test basic uint operations with small numbers
   for m in (u64 0)..5 do
     for n in (u64 0)..5 do
 
+      chck (uint m>>n  = (uint m  >> uint n)) "uint: $m  >> n $n"
+      chck (uint m<<n  = (uint m  << uint n)) "uint: $m  << n $n"
       chck (m=n  = (uint m  = uint n)) "uint: $m  = n $n"
       chck (m<=n = (uint m <= uint n)) "uint: $m <= n $n"
       chck (uint m+n = (uint m + uint n)) "uint: $m + n $n"
@@ -62,6 +65,43 @@ int_test is
       if n != 0
         chck (uint m/n = (uint m / uint n)) "uint: m $m / n $n"
         chck (uint m%n = (uint m % uint n)) "uint: m $m % n $n"
+      chck (uint m**n = (uint m ** uint n)) "uint: m $m ** n $n"
+
+
+  u32_max := u32s.max.as_u64
+
+
+  # test as int/uint string
+  for m in (u32_max - 5)..u32_max do
+    chck ("$m" = "{ints.from_u64 m}")  "int:  $m as string"
+    chck ("$m" = "{uint m}") "uint: $m as string"
+
+
+  # test uint for numbers larger than u32.max
+  for m in u32_max..(u32_max+5) do
+    for n in u32_max..(u32_max+5) do
+
+      chck (m=n  = (uint m  = uint n)) "uint: $m  = n $n"
+      chck (m<=n = (uint m <= uint n)) "uint: $m <= n $n"
+      chck (uint m+n = (uint m + uint n)) "uint: $m + n $n"
+      if m >= n
+        chck (uint m-n = (uint m - uint n)) "uint: m $m - n $n"
+      if n != 0
+        chck (uint m/n = (uint m / uint n)) "uint: m $m / n $n"
+        chck (uint m%n = (uint m % uint n)) "uint: m $m % n $n"
+
+
+  # test uint multiplication for numbers larger than u32.max
+  for m in u32_max..(u32_max+5) do
+    for n in (u64 0)..(u64 3) do
+
+      chck (uint m*n = (uint m * uint n)) "uint: m $m * n $n"
+
+
+  # test uint exponentation for numbers larger than u32.max
+  for m in u32_max..(u32_max+5) do
+    for n in (u64 0)..(u64 1) do
+
       chck (uint m**n = (uint m ** uint n)) "uint: m $m ** n $n"
 
 
