@@ -179,10 +179,8 @@ public class FrontEndOptions extends FuzionOptions
   Path[] sourcePaths()
   {
     return
-      (_readStdin         ||
-       _inputFile != null ||
-       !_sourceDirs.isEmpty()) ? _sourceDirs.stream().map(x -> Path.of(x)).toArray(Path[]::new)
-                               : new Path[] { Path.of(".") };
+      _sourceDirs == null ? new Path[] { Path.of(".") }
+                          : _sourceDirs.stream().map(x -> Path.of(x)).toArray(Path[]::new);
   }
 
 

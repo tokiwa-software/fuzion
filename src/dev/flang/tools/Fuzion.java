@@ -377,7 +377,7 @@ class Fuzion extends Tool
   /**
    * List of source directories added using '-sourceDir'.
    */
-  List<String> _sourceDirs = new List<>();
+  List<String> _sourceDirs = null;
 
 
   /**
@@ -667,7 +667,7 @@ class Fuzion extends Tool
             else if (a.matches("-debug(=\\d+|)"              )) { _debugLevel              = parsePositiveIntArg(a, 1); }
             else if (a.startsWith("-safety="                 )) { _safety                  = parseOnOffArg(a);          }
             else if (a.startsWith("-unsafeIntrinsics="       )) { _enableUnsafeIntrinsics  = parseOnOffArg(a);          }
-            else if (a.startsWith("-sourceDirs="             )) { _sourceDirs.addAll(parseStringListArg(a));            }
+            else if (a.startsWith("-sourceDirs="             )) { _sourceDirs = new List<>(); _sourceDirs.addAll(parseStringListArg(a)); }
             else if (_backend.handleOption(this, a))
               {
               }

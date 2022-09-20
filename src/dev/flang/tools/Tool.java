@@ -409,9 +409,13 @@ public abstract class Tool extends ANY
       (a.indexOf("=") >= 0);
 
     List<String> result = new List<>();
-    for (var s : a.substring(a.indexOf("=")+1).split(","))
+    var strings = a.substring(a.indexOf("=")+1);
+    if (!strings.equals(""))
       {
-        result.add(s);
+        for (var s : strings.split(","))
+          {
+            result.add(s);
+          }
       }
     return result;
   }
