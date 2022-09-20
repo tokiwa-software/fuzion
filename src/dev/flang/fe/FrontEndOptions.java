@@ -142,7 +142,6 @@ public class FrontEndOptions extends FuzionOptions
     _fuzionHome = fuzionHome;
     _loadBaseLib = loadBaseLib;
     _eraseInternalNamesInLib = eraseInternalNamesInLib;
-    _sourceDirs = sourceDirs;
     _readStdin = readStdin;
     Path inputFile = null;
     if (main != null)
@@ -175,6 +174,11 @@ public class FrontEndOptions extends FuzionOptions
     _dumpModules = dumpModules;
     _main = main;
     _loadSources = loadSources;
+    if (sourceDirs == null)
+      {
+        sourceDirs = inputFile != null || readStdin ? new List<>() : new List<>(".");
+      }
+    _sourceDirs = sourceDirs;
   }
 
 
@@ -186,9 +190,7 @@ public class FrontEndOptions extends FuzionOptions
    */
   Path[] sourcePaths()
   {
-    return
-      _sourceDirs == null ? new Path[] { Path.of(".") }
-                          : _sourceDirs.stream().map(x -> Path.of(x)).toArray(Path[]::new);
+    return _sourceDirs.stream().map(x -> Path.of(x)).toArray(Path[]::new);
   }
 
 
