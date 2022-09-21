@@ -278,7 +278,7 @@ Sequence(T type) ref is
   # the reduction is finished once f yields abort or
   # if the end of the sequence is reached.
   #
-  reduce(R type, init R, f (R,T) -> choice R (abort R)) R is
+  reduce(R type, init R, f (R,T) -> R | abort R) R is
     match asList
       nil => init
       c Cons =>
