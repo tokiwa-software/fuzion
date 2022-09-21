@@ -159,7 +159,7 @@ is
           minus => other.n <= n
 
   redef asString string is
-    int.this.asString 10
+    s.asString + n.asString
 
 
 int (val i64) int is
@@ -202,6 +202,6 @@ sign : choice plus minus, hasEquals sign is
 
   redef asString string is
     match sign.this
-      plus => "+"
+      plus => ""
       minus => "-"
 
