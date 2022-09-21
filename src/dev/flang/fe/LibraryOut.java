@@ -917,7 +917,7 @@ class LibraryOut extends ANY
     if (sd != null && sfp.startsWith(sd))
       {
         var sfr = sd.relativize(sfp);
-        sfp = FuzionConstants.SYMBOLIC_FUZION_HOME.resolve(sfr);
+        sfp = FuzionConstants.SYMBOLIC_FUZION_HOME_LIB_SOURCE.resolve(sfr);
       }
     return sfp.toString();
   }
