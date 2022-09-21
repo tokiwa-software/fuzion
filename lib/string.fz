@@ -493,6 +493,19 @@ string ref : hasHash string, ordered string, strings is
   infix ∉ (s Set string) => string.this.notElementOf s
 
 
+  # return string of at least length l by
+  # padding s to start of string
+  #
+  pad_start(l i32, s string) string
+  pre s.codepointLength = 1
+  is
+    missing := l - codepointLength
+    if missing <= 0
+      string.this
+    else
+      (s * missing) + string.this
+
+
 # strings -- unit type defining features related to string but not
 # requiring an instance
 #

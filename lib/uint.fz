@@ -301,8 +301,20 @@ is
     as_u32.as_i32
 
 
+  # this uint as a string, may contain leading zeros
+  #
+  private asString0 string is
+    if uint.this = zero
+      "0"
+    else
+      mrd := uint 1_000_000_000
+      (q, rem) := uint.this.divide_with_remainder mrd
+      q.asString0 + (rem.data.first (u32 0)).asString.pad_start 9 "0"
+
+
   redef asString string is
-    uint.this.asString 10
+    ascii_code_zero := codepoints.ascii_digit.first.as_u8
+    strings.fromBytes asString0.utf8.dropWhile(x -> x=ascii_code_zero)
 
 
 uint (val u64) uint is
