@@ -102,7 +102,7 @@ is
     abortable (effect_call code)
 
 
-# helper instance for effect.aboratable to wrap call to f() into a ()->unit
+# helper instance for effect.abortable to wrap call to f() into a ()->unit
 #
 private effect_call(redef R type, f () -> R) ref : Function unit is
   res option R := nil
