@@ -216,6 +216,7 @@ public class CFG extends ANY
 
   static
   {
+    put("Type.name"                      , (cfg, cl) -> { } );
     put("safety"                         , (cfg, cl) -> { } );
     put("debug"                          , (cfg, cl) -> { } );
     put("debugLevel"                     , (cfg, cl) -> { } );

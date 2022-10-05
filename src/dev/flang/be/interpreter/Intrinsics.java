@@ -158,6 +158,7 @@ public class Intrinsics extends ANY
 
   static
   {
+    put("Type.name"            , (interpreter, innerClazz) -> args -> Interpreter.value(innerClazz._outer.typeName()));
     put("fuzion.std.args.count", (interpreter, innerClazz) -> args -> new i32Value(1)); /* NYI: args after cmd name not supported yet */
     put("fuzion.std.args.get"  , (interpreter, innerClazz) -> args ->
         {

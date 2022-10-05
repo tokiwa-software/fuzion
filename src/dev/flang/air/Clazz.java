@@ -1906,6 +1906,37 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
+   * For a type clazz such as 'i32.type', this will set the type this clazz
+   * represents.
+   *
+   * NYI: This is currently set in Clazzes.findClasses() when processing
+   * TypeParameters.  It would be nicer (less error prone etc.) to have this
+   * information available directly when this instance of Clazz is created.
+   *
+   * Maybe if we added a type parameter to feature 'Type' or to all instances
+   * inheriting from 'Type', we could have this information available directly.
+   */
+  AbstractType _typeType = null;
+
+
+  /**
+   * For a type clazz such as 'i32.type' return its name, such as 'i32'.
+   */
+  public String typeName()
+  {
+    if (_typeType == null)
+      {
+        Errors.error("*** internal error: type name is not set of '" + this + "'");
+        return "** UNDEF **";
+      }
+    else
+      {
+        return _typeType.asString();
+      }
+  }
+
+
+  /**
    * For a type parameter, return the actual type.
    */
   public Clazz typeParameterActualType()

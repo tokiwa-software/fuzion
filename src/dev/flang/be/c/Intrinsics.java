@@ -68,6 +68,14 @@ public class Intrinsics extends ANY
   static TreeMap<String, IntrinsicCode> _intrinsics_ = new TreeMap<>();
   static
   {
+    put("Type.name"            , (c,cl,outer,in) ->
+        {
+          var tmp = new CIdent("tmp");
+          var str = c._fuir.clazzTypeName(c._fuir.clazzOuterClazz(cl));
+          var rc  = c._fuir.clazzResultClazz(cl);
+          return CStmnt.seq(c.constString(str, tmp),
+                            tmp.castTo(c._types.clazz(rc)).ret());
+        });
     put("safety"               , (c,cl,outer,in) -> (c._options.fuzionSafety() ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debug"                , (c,cl,outer,in) -> (c._options.fuzionDebug()  ? c._names.FZ_TRUE : c._names.FZ_FALSE).ret());
     put("debugLevel"           , (c,cl,outer,in) -> (CExpr.int32const(c._options.fuzionDebugLevel())).ret());
@@ -705,15 +713,9 @@ public class Intrinsics extends ANY
         if (at >= 0)
           {
             // intrinsic is a type parameter, so create type instance:
-            //
-            // NYI: this does not work yet. Eventually. type instances should become
-            // unit types so this should not be needed at all.
             var res = c._names.newTemp();
-            CIdent tname = new CIdent("tname");
             var rc = c._fuir.clazzResultClazz(cl);
             return CStmnt.seq(c.declareAllocAndInitClazzId(rc, res),
-                              c.constString(c._fuir.clazzAsStringNew(at).getBytes(StandardCharsets.UTF_8), tname),
-                              res.deref().field(new CIdent("fields")).field(new CIdent("fzF_0_name")).assign(tname.castTo("void*")),
                               res.ret());
           }
         else
