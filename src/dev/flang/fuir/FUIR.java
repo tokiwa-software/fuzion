@@ -1777,7 +1777,7 @@ hw25 is
       {
       case AdrOf   -> "AdrOf";
       case Assign  -> "Assign to " + clazzAsString(accessedClazz(cl, c, ix));
-      case Box     -> "Box";
+      case Box     -> "Box " + clazzAsString(boxValueClazz(cl, c, ix)) + " => " + clazzAsString(boxResultClazz(cl, c, ix));
       case Unbox   -> "Unbox";
       case Call    -> "Call to " + clazzAsString(accessedClazz(cl, c, ix));
       case Current -> "Current";
