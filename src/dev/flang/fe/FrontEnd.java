@@ -174,7 +174,10 @@ public class FrontEnd extends ANY
     if (options._loadBaseLib)
       {
         _baseModule = module(modulePath("base"));
-        lms.add(_baseModule);
+        if (_baseModule != null)
+          {
+            lms.add(_baseModule);
+          }
       }
     else
       {
@@ -186,7 +189,11 @@ public class FrontEnd extends ANY
         var p = modulePath(_options._modules.get(i));
         if (Files.exists(p))
           {
-            lms.add(module(p));
+            var loaded = module(p);
+            if (loaded != null)
+              {
+                lms.add(loaded);
+              }
           }
         else
           { // NYI: Fallback if module file does not exists use source files instead. Remove this.
