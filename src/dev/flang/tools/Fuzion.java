@@ -137,6 +137,20 @@ class Fuzion extends Tool
         new DFA(options, fuir).dfa();
       }
     },
+
+    /**
+     * backend to dump the IR of the main clazz to stdout
+     *
+     * NYI: make this dump all clazzes or give some way to control what clazzes should be dumped.
+     */
+    dumpFUIR   ("-XdumpFUIR")
+    {
+      void process(FuzionOptions options, FUIR fuir)
+      {
+        fuir.dumpCode(fuir.mainClazzId());
+      }
+    },
+
     effects    ("-effects")
     {
       String usage()
