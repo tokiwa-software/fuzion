@@ -1130,16 +1130,10 @@ public class Clazz extends ANY implements Comparable<Clazz>
     var result = clazzForField_.get(field);
     if (result == null)
       {
-        var fo = field.outer();
-        if (CHECKS) check
-          (Errors.count() > 0 || fo != null);
-
         result =
-          field.isTypeParameter()   ? resultClazz()       :
-          fo == null                ? Clazzes.error.get() :
           field.isOuterRef() &&
-          fo.isOuterRefAdrOfValue() ? actualClazz(Types.t_ADDRESS)
-                                    : lookup(field, select, Call.NO_GENERICS, Clazzes.isUsedAt(field), false).resultClazz();
+          field.outer().isOuterRefAdrOfValue() ? actualClazz(Types.t_ADDRESS)
+                                               : lookup(field, select, Call.NO_GENERICS, Clazzes.isUsedAt(field), false).resultClazz();
         if (select < 0)
           {
             clazzForField_.put(field, result);
