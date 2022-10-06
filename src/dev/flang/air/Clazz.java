@@ -1158,13 +1158,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
           (Errors.count() > 0 || fo != null);
 
         result =
-          field.isTypeParameter() ? resultClazz() :
-          fo == null ? Clazzes.error.get() :
-          field.isOuterRef() && fo.isOuterRefAdrOfValue()     ? actualClazz(Types.t_ADDRESS) :
-          field.isOuterRef() && fo.isOuterRefCopyOfValue() ||
-          !field.isOuterRef() && field != fo.resultField() // NYI: use lookup/resultClazz for all fields
-                                                           ? actualClazz0(field.resultType(), select)
-                                                           : lookup(field, Call.NO_GENERICS, Clazzes.isUsedAt(field)).resultClazz();
+          field.isTypeParameter()   ? resultClazz()       :
+          fo == null                ? Clazzes.error.get() :
+          field.isOuterRef() &&
+          fo.isOuterRefAdrOfValue() ? actualClazz(Types.t_ADDRESS)
+                                    : lookup(field, select, Call.NO_GENERICS, Clazzes.isUsedAt(field), false).resultClazz();
         if (select < 0)
           {
             clazzForField_.put(field, result);
