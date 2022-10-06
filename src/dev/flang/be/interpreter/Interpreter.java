@@ -317,7 +317,8 @@ public class Interpreter extends ANY
           {
             var v = (ValueWithClazz) args.get(0);
             Clazz cl = v.clazz();
-            ca = (Callable) ((DynamicBinding)cl._dynamicBinding).callable(c.calledFeature());
+            var db = (DynamicBinding) cl._dynamicBinding;
+            ca = (Callable) db.callable(c.calledFeature());
           }
         result = ca.call(args);
         FuzionThread.current()._callStack.pop();
