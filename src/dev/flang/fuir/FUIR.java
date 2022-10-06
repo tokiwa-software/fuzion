@@ -268,8 +268,10 @@ public class FUIR extends IR
       {
         for (var cl : Clazzes.all())
           {
-            if (cl._type != Types.t_ADDRESS     // NYI: would be better to not create this dummy clazz in the first place
-                )
+            if (CHECKS) check
+              (cl._type != Types.t_ERROR);
+
+            if (cl._type != Types.t_ADDRESS)     // NYI: would be better to not create this dummy clazz in the first place
               {
                 add(cl);
               }
