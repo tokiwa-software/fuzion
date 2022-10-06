@@ -645,30 +645,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
       (t != null,
        Errors.count() > 0 || !t.isOpenGeneric());
 
-    return actualClazz0(t, -1);
-  }
-
-
-  /**
-   * Convert a given type to the actual runtime clazz within this class. The
-   * formal generics arguments will first be replaced via actualType(t), and the
-   * Clazz will be created from the result.
-   *
-   * NYI: This should be private, it is used only by actualClazz() and at one
-   * location in be/interpreter that should be removed.
-   *
-   * @param t the original type
-   *
-   * @param select specifies the actual type parameter in case
-   * t.isOpenGeneric().
-   */
-  public Clazz actualClazz0(AbstractType t, int select)
-  {
-    if (PRECONDITIONS) require
-      (t != null,
-       Errors.count() > 0 || ((select >= 0) == t.isOpenGeneric()));
-
-    return Clazzes.clazz(actualType(t, select));
+    return Clazzes.clazz(actualType(t, -1));
   }
 
 
