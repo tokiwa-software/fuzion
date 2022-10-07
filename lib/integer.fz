@@ -74,7 +74,7 @@ integer(I (integer I).type) : numeric I is
       b.gcd(thiz % b)  # tail recursion
 
   # create a fraction
-  infix /-/ (other I) => fraction thiz other
+  infix /-/ (other I) => (fraction thiz other).reduce
 
   # create a fraction via unicode fraction slash \u2044 '⁄ '
   infix ⁄ (other I) => integer.this /-/ other
