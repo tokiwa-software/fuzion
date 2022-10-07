@@ -712,11 +712,8 @@ public class Intrinsics extends ANY
         var at = c._fuir.clazzTypeParameterActualType(cl);
         if (at >= 0)
           {
-            // intrinsic is a type parameter, so create type instance:
-            var res = c._names.newTemp();
-            var rc = c._fuir.clazzResultClazz(cl);
-            return CStmnt.seq(c.declareAllocAndInitClazzId(rc, res),
-                              res.ret());
+            // intrinsic is a type parameter, type instances are unit types, so nothing to be done:
+            return CStmnt.EMPTY;
           }
         else
           {

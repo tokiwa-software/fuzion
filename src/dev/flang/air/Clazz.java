@@ -1893,7 +1893,11 @@ public class Clazz extends ANY implements Comparable<Clazz>
    */
   public String typeName()
   {
-    if (_typeType == null)
+    if (isRef()) // the type was boxed, so get the name from the original value type
+      {
+        return asValue().typeName();
+      }
+    else if (_typeType == null)
       {
         Errors.error("*** internal error: type name is not set for '" + this + "'");
         return "** UNDEF **";
@@ -1944,8 +1948,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
     else
       {
         var tf = cf.typeFeature();
-        return Clazzes.create(tf.thisType().asRef(),
-                              _outer == null ? Clazzes.universe.get() : _outer.typeClazz());
+        return Clazzes.create(tf.thisType(),
+                              _outer == null ? Clazzes.universe.get() : _outer.typeClazz().asValue());
       }
   }
 

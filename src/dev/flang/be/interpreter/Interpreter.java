@@ -807,13 +807,9 @@ public class Interpreter extends ANY
             {
               result = (args) -> {
                 var rc = innerClazz.resultClazz();
-                var r = new Instance(rc);
-                var or = rc.feature().outerRef();
-                if (or != null && Clazzes.isUsedAtAll(or))
-                  {
-                    setOuter(rc.feature(), rc, r, new Instance(rc._outer));
-                  }
-                return r;
+                if (CHECKS) check  // check that outer ref, if exists, is unused:
+                  (rc.feature().outerRef() == null || !Clazzes.isUsedAtAll(rc.feature().outerRef()));
+                return new Instance(rc);
               };
               break;
             }
