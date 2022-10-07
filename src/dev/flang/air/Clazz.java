@@ -1895,7 +1895,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (_typeType == null)
       {
-        Errors.error("*** internal error: type name is not set of '" + this + "'");
+        Errors.error("*** internal error: type name is not set for '" + this + "'");
         return "** UNDEF **";
       }
     else
