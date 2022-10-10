@@ -1948,8 +1948,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     else
       {
         var tf = cf.typeFeature();
-        return Clazzes.create(tf.thisType(),
-                              _outer == null ? Clazzes.universe.get() : _outer.typeClazz().asValue());
+        return Clazzes.create(tf.thisType(), _outer.typeClazz());
       }
   }
 
