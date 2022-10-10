@@ -330,7 +330,18 @@ public class LibraryModule extends Module
    */
   List<AbstractFeature> features()
   {
-    return innerFeatures(innerFeaturesPos());
+    var n = moduleNumDeclFeatures();
+    var at = moduleDeclFeaturesPos();
+    for (int i = 0; i < n; i++)
+      {
+        var outer = declFeaturesOuter(at);
+        if (outer == 0)  // outer is universe
+          {
+            return innerFeatures(declFeaturesInnerPos(at));
+          }
+        at = declFeaturesNextPos(at);
+      }
+    return new List<>();
   }
 
 
@@ -600,7 +611,9 @@ Module File
 
               | n      | ModuleRef     | reference to another module
 
-              | 1      | InnerFeatures | inner Features
+              | 1      | int           | number of DeclFeatures entries m
+
+              | m      | DeclFeatures  | features declared in this module
 
               | 1      | SourceFiles   | source code files
 |====
@@ -623,7 +636,9 @@ Module File
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | n      | ModuleRef     | reference to another module                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | InnerFeatures | inner Features                                |
+   *   |        | 1      | int           | number of DeclFeatures entries m              |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | m      | DeclFeatures  | features declared in this module              |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | SourceFiles   | source code files                             |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -689,9 +704,28 @@ Module File
       }
     return at;
   }
-  int innerFeaturesPos()
+  int moduleNumDeclFeaturesPos()
   {
     return moduleRefsNextPos();
+  }
+  int moduleNumDeclFeatures()
+  {
+    return _data.getInt(moduleNumDeclFeaturesPos());
+  }
+  int moduleDeclFeaturesPos()
+  {
+    return moduleNumDeclFeaturesPos() + 4;
+  }
+  int moduleSourceFilesPos()
+  {
+    var n = moduleNumDeclFeatures();
+    var at = moduleDeclFeaturesPos();
+    while (n > 0)
+      {
+        n--;
+        at = declFeaturesNextPos(at);
+      }
+    return at;
   }
 
 
@@ -751,6 +785,52 @@ ModuleRef
   int moduleRefNextPos(int at)
   {
     return moduleRefVersionNextPos(at);
+  }
+
+
+  /*
+--asciidoc--
+
+DeclFeatures
+^^^^^^^^^^^^
+
+[options="header",cols="1,1,2,5"]
+|====
+   |cond.     | repeat | type          | what
+
+.6+|true      | 1      | int           | outer feature index, 0 for outer==universe
+
+              | 1      | InnerFeatures | inner Features
+|====
+
+--asciidoc--
+
+   *   +---------------------------------------------------------------------------------+
+   *   | DeclFeatures                                                                    |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | outer feature index, 0 for outer()==universe  |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | InnerFeatures | inner Features                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+
+  int declFeaturesOuterPos(int at)
+  {
+    return at;
+  }
+  int declFeaturesOuter(int at)
+  {
+    return _data.getInt(declFeaturesOuterPos(at));
+  }
+  int declFeaturesInnerPos(int at)
+  {
+    return declFeaturesOuterPos(at) + 4;
+  }
+  int declFeaturesNextPos(int at)
+  {
+    return innerFeaturesNextPos(declFeaturesInnerPos(at));
   }
 
 
@@ -2161,7 +2241,7 @@ SourceFiles
    */
   int sourceFilesPos()
   {
-    return innerFeaturesNextPos(innerFeaturesPos());
+    return moduleSourceFilesPos();
   }
   int sourceFilesCountPos()
   {
@@ -2294,11 +2374,23 @@ SourceFile
     hd.mark(versionPos(), "module version");
     hd.mark(moduleRefsCountPos(), "module refs count");
     hd.mark(moduleRefsPos(), "module refs");
-    hd.mark(innerFeaturesPos(), "InnerFeatures");
-    dump(hd, features());
+    hd.mark(moduleNumDeclFeaturesPos(), "declFeatures count");
+    var nd = moduleNumDeclFeatures();
+    var at = moduleDeclFeaturesPos();
+    while (nd > 0)
+      {
+        hd.mark(at, "DeclFeatures");
+        hd.mark(declFeaturesInnerPos(at), "InnerFeatures");
+        if (declFeaturesOuter(at) == 0) // NYI: Dump for outer != universe
+          {
+            dump(hd, features());
+          }
+        at = declFeaturesNextPos(at);
+        nd--;
+      }
     hd.mark(sourceFilesPos(), "SourceFiles");
     var n = sourceFilesCount();
-    var at = sourceFilesFirstSourceFilePos();
+    at = sourceFilesFirstSourceFilePos();
     while (n > 0)
       {
         hd.mark(at, "Source: " + sourceFileName(at));

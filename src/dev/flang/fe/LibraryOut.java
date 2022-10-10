@@ -128,7 +128,9 @@ class LibraryOut extends ANY
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | n      | ModuleRef     | reference to another module                   |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | InnerFeatures | inner Features                                |
+   *   |        | 1      | int           | number of DeclFeatures entries m              |
+   *   +        +--------+---------------+-----------------------------------------------+
+   *   |        | m      | DeclFeatures  | features declared in this module              |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | SourceFiles   | source code files                             |
    *   +--------+--------+---------------+-----------------------------------------------+
@@ -152,7 +154,8 @@ class LibraryOut extends ANY
           {
             moduleRef(m);
           }
-        innerFeatures(sm._universe);
+        _data.writeInt(1);
+        declFeatures(sm._universe);
         sourceFiles();
         _data.fixUps(this);
         sm._options.verbosePrintln(2, "" +
@@ -217,6 +220,46 @@ class LibraryOut extends ANY
   {
     _data.writeName(m.name());
     _data.write(m.version());
+  }
+
+
+  /**
+   * Collect the binary data for features declared within given outer feature.
+   *
+   * Data format for declFeatures:
+   *
+   *   +---------------------------------------------------------------------------------+
+   *   | DeclFeatures                                                                    |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | cond.  | repeat | type          | what                                          |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   *   | true   | 1      | int           | outer feature index, 0 for outer()==universe  |
+   *   |        +--------+---------------+-----------------------------------------------+
+   *   |        | 1      | InnerFeatures | inner Features                                |
+   *   +--------+--------+---------------+-----------------------------------------------+
+   */
+  void declFeatures(AbstractFeature outer)
+  {
+    featureIndexOrZeroForUniverse(outer);
+    innerFeatures(outer);
+  }
+
+
+  /**
+   * Write index of given feature f or '0' if 'f' is the universe.
+   *
+   * @param f a feature whose index is to be written.
+   */
+  void featureIndexOrZeroForUniverse(AbstractFeature f)
+  {
+    if (f.isUniverse())
+      {
+        _data.writeInt(0);
+      }
+    else
+      {
+        _data.writeOffset(f);
+      }
   }
 
 
@@ -406,14 +449,7 @@ class LibraryOut extends ANY
     _data.writeInt (n.argCount());  // NYI: use better integer encoding
     _data.writeInt (n._id);         // NYI: id /= 0 only if argCount = 0, so join these two values.
     pos(f.pos());
-    if (!f.outer().isUniverse())
-      {
-        _data.writeOffset(f.outer());
-      }
-    else
-      {
-        _data.writeInt(0);
-      }
+    featureIndexOrZeroForUniverse(f.outer());
     if ((k & FuzionConstants.MIR_FILE_KIND_HAS_TYPE_FEATURE) != 0)
       {
         _data.writeOffset(f.typeFeature());
