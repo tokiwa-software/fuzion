@@ -596,7 +596,7 @@ Module File
 
               | 1      | u128          | module version
 
-              | 1      | int           | number modules this module depends on n
+              | 1      | int           | number of modules this module depends on n
 
               | n      | ModuleRef     | reference to another module
 
@@ -619,7 +619,7 @@ Module File
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | 1      | u128          | module version                                |
    *   +        +--------+---------------+-----------------------------------------------+
-   *   |        | 1      | int           | number modules this module depends on n       |
+   *   |        | 1      | int           | number of modules this module depends on n    |
    *   +        +--------+---------------+-----------------------------------------------+
    *   |        | n      | ModuleRef     | reference to another module                   |
    *   +        +--------+---------------+-----------------------------------------------+
