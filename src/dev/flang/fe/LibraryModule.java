@@ -505,7 +505,7 @@ public class LibraryModule extends Module
    */
   AbstractType type(int at)
   {
-    AbstractType result = _libraryTypes.get(at);
+    var result = _libraryTypes.get(at);
     if (result == null)
       {
         var k = typeKind(at);
@@ -523,43 +523,36 @@ public class LibraryModule extends Module
             var k2 = typeKind(at2);
             if (CHECKS) check
               (k2 == -1 || k2 >= 0);
-            result = type(at2);
+            return type(at2);
             // we do not cache references to types, so don't add this to _libraryTypes for at.
+          }
+        else if (k == -1)
+          {
+            result = new GenericType(this, at, DUMMY_POS, genericArgument(typeTypeParameter(at)));
           }
         else
           {
-            LibraryType res;
-            if (k < 0)
+            if (CHECKS) check
+              (k >= 0);
+            var feature = libraryFeature(typeFeature(at));
+            var makeRef = typeIsRef(at);
+            var generics = Type.NONE;
+            if (k > 0)
               {
-                res = new GenericType(this, at, DUMMY_POS, genericArgument(typeTypeParameter(at)));
-              }
-            else
-              {
-                var feature = libraryFeature(typeFeature(at));
-                var makeRef = typeIsRef(at);
-                var generics = Type.NONE;
-                if (k > 0)
+                var i = typeActualGenericsPos(at);
+                generics = new List<AbstractType>();
+                var gi = 0;
+                while (gi < k)
                   {
-                    var i = typeActualGenericsPos(at);
-                    generics = new List<AbstractType>();
-                    var gi = 0;
-                    while (gi < k)
-                      {
-                        generics.add(type(i));
-                        i = typeNextPos(i);
-                        gi++;
-                      }
+                    generics.add(type(i));
+                    i = typeNextPos(i);
+                    gi++;
                   }
-                else
-                  {
-                    generics = Type.NONE;
-                  }
-                var outer = type(typeOuterPos(at));
-                res = new NormalType(this, at, DUMMY_POS, feature, makeRef ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature, generics, outer);
               }
-            _libraryTypes.put(at, res);
-            result = res;
+            var outer = type(typeOuterPos(at));
+            result = new NormalType(this, at, DUMMY_POS, feature, makeRef ? Type.RefOrVal.Ref : Type.RefOrVal.LikeUnderlyingFeature, generics, outer);
           }
+        _libraryTypes.put(at, result);
       }
     return result;
   }
