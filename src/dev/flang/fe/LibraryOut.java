@@ -137,7 +137,7 @@ class LibraryOut extends ANY
    */
 
     // first, write features just to collect referenced modules
-    innerFeatures(sm._universe);
+    allDeclFeatures(sm);
     var rm = _data.referencedModules();
     _data = null;
 
@@ -154,8 +154,7 @@ class LibraryOut extends ANY
           {
             moduleRef(m);
           }
-        _data.writeInt(1);
-        declFeatures(sm._universe);
+        allDeclFeatures(sm);
         sourceFiles();
         _data.fixUps(this);
         sm._options.verbosePrintln(2, "" +
@@ -220,6 +219,25 @@ class LibraryOut extends ANY
   {
     _data.writeName(m.name());
     _data.write(m.version());
+  }
+
+
+  /**
+   * Write all features declared in given source module into DeclFeatures
+   * sections of a library file.  This include the features declared in the
+   * 'universe' as well as all features declared within outer features that come
+   * from other module files.
+   *
+   * @param sm the source module we are compiling
+   */
+  void allDeclFeatures(SourceModule sm)
+  {
+    _data.writeInt(1 + sm._outerWithDeclarations.size());
+    declFeatures(sm._universe);
+    for (var o : sm._outerWithDeclarations)
+      {
+        declFeatures(o);
+      }
   }
 
 

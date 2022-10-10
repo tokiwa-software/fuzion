@@ -35,6 +35,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -498,6 +499,24 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
+   * Set of all features that are direct outer features of features declared by
+   * sources in this source module and that themselves come from other modules.
+   */
+  TreeSet<LibraryFeature> _outerWithDeclarations = new TreeSet<>
+    (new Comparator<LibraryFeature>()
+     {
+       public int compare(LibraryFeature f1, LibraryFeature f2)
+       {
+         var l1 = f1._libModule;
+         var l2 = f2._libModule;
+         return
+           (l1 != l2) ? l1.name().compareTo(l2.name())
+                      : Integer.signum(f1._index - f2._index);
+       }
+      });
+
+
+  /**
    * set inner's outer feature, find its declared inner features and, recursively, do the
    * same for these inner features.
    *
@@ -519,6 +538,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (outer != null)
       {
         addDeclaredInnerFeature(outer, inner);
+        if (outer instanceof LibraryFeature ol)
+          {
+            _outerWithDeclarations.add(ol);
+          }
       }
     for (var a : inner.arguments())
       {
