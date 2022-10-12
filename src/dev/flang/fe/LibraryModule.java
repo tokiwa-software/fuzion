@@ -263,17 +263,12 @@ public class LibraryModule extends Module
   public SortedMap<FeatureName, AbstractFeature>declaredFeatures(AbstractFeature outer)
   {
     var result = new TreeMap<FeatureName, AbstractFeature>();
-    if (outer instanceof LibraryFeature lf && lf._libModule == this)
+    var l = (outer instanceof LibraryFeature lf && lf._libModule == this)
+      ? lf.declaredFeatures() // the declared features are declared in this module
+      : features(outer);      // the declared features are declared in another module
+    for (var d : l)
       {
-        var l = lf.declaredFeatures();
-        for (var d : l)
-          {
-            result.put(d.featureName(), d);
-          }
-      }
-    else if (outer.isUniverse())
-      {
-        return featuresMap();
+        result.put(d.featureName(), d);  // NYI: handle equally named features from different modules
       }
     return result;
   }
@@ -326,36 +321,26 @@ public class LibraryModule extends Module
 
 
   /**
-   * The features declared within universe by this module
+   * The features declared within outer by this module
+   *
+   * @param outer an outer feature
+   *
+   * @return list of inner features of outer that are declared by this library
+   * module.
    */
-  List<AbstractFeature> features()
+  List<AbstractFeature> features(AbstractFeature outer)
   {
     var n = moduleNumDeclFeatures();
     var at = moduleDeclFeaturesPos();
     for (int i = 0; i < n; i++)
       {
-        var outer = declFeaturesOuter(at);
-        if (outer == 0)  // outer is universe
+        if (feature(declFeaturesOuter(at)) == outer)
           {
             return innerFeatures(declFeaturesInnerPos(at));
           }
         at = declFeaturesNextPos(at);
       }
     return new List<>();
-  }
-
-
-  /**
-   * The features declared within universe by this module
-   */
-  SortedMap<FeatureName, AbstractFeature> featuresMap()
-  {
-    var res = new TreeMap<FeatureName, AbstractFeature>();
-    for (var f : features())
-      {
-        res.put(f.featureName(), f);
-      }
-    return res;
   }
 
 
@@ -391,24 +376,8 @@ public class LibraryModule extends Module
    */
   SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer)
   {
-    var res = new TreeMap<FeatureName, AbstractFeature>();
-    if (outer instanceof LibraryFeature olf)
-      {
-        var declared = olf.declaredFeatures();
-        for (var d : declared)
-          {
-            res.put(d.featureName(), d);
-          }
-        findInheritedFeatures(res, outer);
-      }
-    else if (outer.isUniverse())
-      {
-        var declared = features();
-        for (var d : declared)
-          {
-            res.put(d.featureName(), d);
-          }
-      }
+    var res = declaredFeatures(outer);
+    findInheritedFeatures(res, outer);
     return res;
   }
 

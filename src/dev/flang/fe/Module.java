@@ -191,10 +191,25 @@ public abstract class Module extends ANY
               }
             for (var e : declaredFeatures(outer).entrySet())
               {
-                if (e.getValue() instanceof Feature f)
-                  { // f is a qualified feature that was added as source code
+                var f = e.getValue();
+                if (!(f instanceof LibraryFeature flf && flf._libModule == olf._libModule))
+                  { // f is a qualified feature that was added in a different module
                     var fn = f.featureName();
                     var existing = s.get(fn);
+                    // NYI: We need proper visibility handling, e.g., it might
+                    // be ok to have
+                    //
+                    // * modules 'A', 'B', 'C' where 'A' declares 'a' with a
+                    //   private feature 'a.f' and 'B' adds its own 'a.f' used
+                    //   by 'C' that depends on 'B'
+                    //
+                    // * modules 'A', 'B', 'C', 'D' where 'A' declares 'a' with
+                    //   no inner feature 'a.f', but both B and C declare
+                    //   different 'a.f' that are visible to but not used by 'D'
+                    //
+                    // * same as previous, but there is some syntax for 'D' to
+                    //   chose 'a.[B].f' or 'a.[C].f'.
+                    //
                     if (existing != null)
                       {
                         AstErrors.duplicateFeatureDeclaration(f.pos(), outer, s.get(fn));
