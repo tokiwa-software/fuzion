@@ -27,3 +27,5 @@
 #
 test_terminal is
   say (terminal.blue + terminal.bold + "blue and bold" + terminal.reset)
+
+  say "italic and green".italic.green
