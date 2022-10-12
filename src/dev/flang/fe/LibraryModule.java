@@ -170,13 +170,6 @@ public class LibraryModule extends Module
     _mir = null;
     _data = data;
     _universe = universe;
-    var dm = fe._options._dumpModules;
-    if (DUMP ||
-        dm != null && dm.contains(name()))
-      {
-        System.out.println(dump());
-      }
-
     _sourceFiles = new ArrayList<>(sourceFilesCount());
     var sfc = sourceFilesCount();
     for (int i = 0; i < sfc; i++)
@@ -197,6 +190,13 @@ public class LibraryModule extends Module
         p = moduleRefNextPos(p);
       }
     fe._modules.put(name(), this);
+
+    var dm = fe._options._dumpModules;
+    if (DUMP ||
+        dm != null && dm.contains(name()))
+      {
+        System.out.println(dump());
+      }
   }
 
 
@@ -2350,10 +2350,7 @@ SourceFile
       {
         hd.mark(at, "DeclFeatures");
         hd.mark(declFeaturesInnerPos(at), "InnerFeatures");
-        if (declFeaturesOuter(at) == 0) // NYI: Dump for outer != universe
-          {
-            dump(hd, features());
-          }
+        dump(hd, features(feature(declFeaturesOuter(at))));
         at = declFeaturesNextPos(at);
         nd--;
       }
