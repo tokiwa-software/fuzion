@@ -52,7 +52,7 @@ public terminal is
     public bold                           => "1"
     public dime                           => "2"
     public italic                         => "3"
-    public unterline                      => "4"
+    public underline                      => "4"
     public slow_blink                     => "5"
     public rapid_blink                    => "6"
     public reverse                        => "7"
@@ -141,7 +141,7 @@ public terminal is
   public bold                           => csi + raw.bold + "m"
   public dime                           => csi + raw.dime + "m"
   public italic                         => csi + raw.italic + "m"
-  public unterline                      => csi + raw.unterline + "m"
+  public underline                      => csi + raw.underline + "m"
   public slow_blink                     => csi + raw.slow_blink + "m"
   public rapid_blink                    => csi + raw.rapid_blink + "m"
   public reverse                        => csi + raw.reverse + "m"
@@ -229,7 +229,7 @@ public terminal is
 public string.bold                           => terminal.bold + string.this + terminal.reset
 public string.dime                           => terminal.dime + string.this + terminal.reset
 public string.italic                         => terminal.italic + string.this + terminal.reset
-public string.unterline                      => terminal.unterline + string.this + terminal.reset
+public string.underline                      => terminal.underline + string.this + terminal.reset
 public string.slow_blink                     => terminal.slow_blink + string.this + terminal.reset
 public string.rapid_blink                    => terminal.rapid_blink + string.this + terminal.reset
 # NYI: string.reverse causes a conflict with conststring.reverse since visibility is not supported
