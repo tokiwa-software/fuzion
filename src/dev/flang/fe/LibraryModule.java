@@ -157,6 +157,12 @@ public class LibraryModule extends Module
   final ModuleRef[] _modules;
 
 
+  /**
+   * The front end that loaded this module.
+   */
+  private final FrontEnd _fe;
+
+
   /*--------------------------  constructors  ---------------------------*/
 
 
@@ -167,6 +173,7 @@ public class LibraryModule extends Module
   {
     super(dependsOn);
 
+    _fe = fe;
     _mir = null;
     _data = data;
     _universe = universe;
@@ -290,6 +297,7 @@ public class LibraryModule extends Module
           {
             result = new LibraryFeature(this, offset);
             _libraryFeatures.put(offset, result);
+            _fe.loadInnerFeatures(result);
           }
         return result;
       }

@@ -238,6 +238,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (CHECKS) check
       (_universe != null);
 
+    _res = new Resolution(_options, _universe, this);
     if (_dependsOn.length > 0)
       {
         _universe.setState(Feature.State.RESOLVED);
@@ -254,7 +255,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
       }
 
     _main = parseMain();
-    _res = new Resolution(_options, _universe, this);
     findDeclarations(_universe, null);
     _universe.scheduleForResolution(_res);
     _res.resolve();
@@ -367,9 +367,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
    * During resolution, load all inner classes of this that are
    * defined in separate files.
    */
-  private void loadInnerFeatures(AbstractFeature f)
+  void loadInnerFeatures(AbstractFeature f)
   {
-    if (!_closed)
+    if (!_closed)  /* NYI: restrict this to f.isVisibleFrom(this) or similar */
       {
         for (var root : _sourceDirs)
           {

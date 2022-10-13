@@ -273,6 +273,20 @@ public class FrontEnd extends ANY
     return _module;
   }
 
+
+  /**
+   * During resolution, load all inner classes of this that are
+   * defined in separate files.
+   */
+  void loadInnerFeatures(AbstractFeature f)
+  {
+    var m = module();
+    if (m != null)
+      {
+        m.loadInnerFeatures(f);
+      }
+  }
+
 }
 
 /* end of file */
