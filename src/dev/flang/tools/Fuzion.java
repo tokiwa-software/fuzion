@@ -177,7 +177,7 @@ class Fuzion extends Tool
         new CheckIntrinsics(fe);
       }
     },
-    saveLib("-saveLib=")
+    saveLib("-saveLib=<file>")
     {
       void parseBackendArg(Fuzion f, String a)
       {
