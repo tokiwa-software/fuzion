@@ -96,6 +96,7 @@ class Fuzion extends Tool
         new Interpreter(options, fuir).run();
       }
     },
+
     c          ("-c")
     {
       String usage()
@@ -127,9 +128,13 @@ class Fuzion extends Tool
         new C(new COptions(options, _binaryName_, _useBoehmGC_, _xdfa_), fuir).compile();
       }
     },
+
     java       ("-java"),
+
     classes    ("-classes"),
+
     llvm       ("-llvm"),
+
     dfa        ("-dfa")
     {
       void process(FuzionOptions options, FUIR fuir)
@@ -145,6 +150,7 @@ class Fuzion extends Tool
      */
     dumpFUIR   ("-XdumpFUIR")
     {
+      boolean runsCode() { return false; }
       void process(FuzionOptions options, FUIR fuir)
       {
         fuir.dumpCode(fuir.mainClazzId());
@@ -162,8 +168,10 @@ class Fuzion extends Tool
         new Effects(fuir).find();
       }
     },
+
     checkIntrinsics("-XXcheckIntrinsics")
     {
+      boolean runsCode() { return false; }
       boolean needsSources()
       {
         return false;
@@ -177,8 +185,10 @@ class Fuzion extends Tool
         new CheckIntrinsics(fe);
       }
     },
+
     saveLib("-saveLib=<file>")
     {
+      boolean runsCode() { return false; }
       void parseBackendArg(Fuzion f, String a)
       {
         f._saveLib  = parsePath(a);
@@ -236,6 +246,7 @@ class Fuzion extends Tool
           }
       }
     },
+
     undefined;
 
     /**
@@ -284,6 +295,15 @@ class Fuzion extends Tool
     boolean handleOption(Fuzion f, String o)
     {
       return false;
+    }
+
+    /**
+     * Does this backend run or abstractly interpret the code. If so, it
+     * provides options stetting flags like -debug.
+     */
+    boolean runsCode()
+    {
+      return true;
     }
 
     /**
@@ -476,37 +496,40 @@ class Fuzion extends Tool
   protected String USAGE(boolean xtra)
   {
     var std = STANDARD_OPTIONS(xtra);
-    var stdBe = "[-modules={<m>,..} [-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] [-sourceDirs={<path>,..}] " +
+    var stdRun = "[-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] ";
+    var stdBe = "[-modules={<m>,..} [-sourceDirs={<path>,..}] " +
       (xtra ? "[-XdumpModules={<name>,..}] " : "") +
       "(<main> | <srcfile>.fz | -) ";
-    var aba = new StringBuilder();
-    var abe = new StringBuilder();
-    for (var ab : _allBackends_.entrySet())
+    if (_backend == Backend.undefined)
       {
-        var b = ab.getValue();
-        var ba = b._arg;
-        var bu = b.usage();
-        if (bu == "")
+        var aba = new StringBuilder();
+        var abe = new StringBuilder();
+        for (var ab : _allBackends_.entrySet())
           {
+            var b = ab.getValue();
+            var ba = b._arg;
+            var bu = b.usage();
             if (!ba.startsWith("-X") || xtra)
               {
                 aba.append(aba.length() == 0 ? "" : "|").append(ba);
               }
           }
-        else
-          {
-            if (CHECKS) check
-              (bu.endsWith(" "));
-
-            abe.append("       " + _cmd + " " + ba + " " + bu + std + stdBe + " --or--\n");
-          }
+        return
+          "Usage: " + _cmd + " [-h|--help|-version]  --or--\n" +
+          "       " + _cmd + " [" + aba + "] [-h|--help|-version] [<backend specific options>]  --or--\n" +
+          "       " + _cmd + " -pretty " + std + " ({<file>} | -)  --or--\n" +
+          "       " + _cmd + " -latex " + std + "  --or--\n" +
+          "       " + _cmd + " -acemode " + std + "  --or--\n";
       }
-    return
-      "Usage: " + _cmd + " [-h|--help|-version] [" + aba + "] " + std + " --or--\n" +
-      abe +
-      "       " + _cmd + " -pretty " + std + " ({<file>} | -)\n" +
-      "       " + _cmd + " -latex " + std + "\n" +
-      "       " + _cmd + " -acemode " + std + "\n";
+    else
+      {
+        var b = _backend;
+        var ba = b._arg;
+        var bu = b.usage();
+        return "Usage: " + _cmd + " " + ba + " " + bu +
+                           (b.runsCode() ? stdRun : "") +
+                           stdBe + std;
+      }
   }
 
 
@@ -687,10 +710,10 @@ class Fuzion extends Tool
             else if (a.startsWith("-XloadBaseLib="           )) { _loadBaseLib             = parseOnOffArg(a);          }
             else if (a.startsWith("-modules="                )) { _modules.addAll(parseStringListArg(a));               }
             else if (a.startsWith("-XdumpModules="           )) { _dumpModules             = parseStringListArg(a);     }
-            else if (a.matches("-debug(=\\d+|)"              )) { _debugLevel              = parsePositiveIntArg(a, 1); }
-            else if (a.startsWith("-safety="                 )) { _safety                  = parseOnOffArg(a);          }
-            else if (a.startsWith("-unsafeIntrinsics="       )) { _enableUnsafeIntrinsics  = parseOnOffArg(a);          }
             else if (a.startsWith("-sourceDirs="             )) { _sourceDirs = new List<>(); _sourceDirs.addAll(parseStringListArg(a)); }
+            else if (_backend.runsCode() && a.matches("-debug(=\\d+|)"       )) { _debugLevel              = parsePositiveIntArg(a, 1); }
+            else if (_backend.runsCode() && a.startsWith("-safety="          )) { _safety                  = parseOnOffArg(a);          }
+            else if (_backend.runsCode() && a.startsWith("-unsafeIntrinsics=")) { _enableUnsafeIntrinsics  = parseOnOffArg(a);          }
             else if (_backend.handleOption(this, a))
               {
               }
