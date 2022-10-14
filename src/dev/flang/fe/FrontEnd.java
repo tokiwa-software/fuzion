@@ -186,12 +186,12 @@ public class FrontEnd extends ANY
     for (int i = 0; i < options._modules.size(); i++)
       {
         var m = _options._modules.get(i);
-        var loaded = loadModule(m);
+        var loaded = loadModule(m, true);
         if (loaded != null)
           {
             lms.add(loaded);
           }
-        else
+        else if (Errors.count() == 0)
           { // NYI: Fallback if module file does not exists use source files instead. Remove this.
             sourceDirs[sourcePaths.length + i] = new SourceDir(options._fuzionHome.resolve(Path.of("modules")).resolve(Path.of(m)));
           }
@@ -275,6 +275,12 @@ public class FrontEnd extends ANY
    */
   LibraryModule loadModule(String m)
   {
+    return loadModule(m, false);
+  }
+  LibraryModule loadModule(String m,
+                           boolean ignoreNotFound // NYI: remove when module support is stable
+                           )
+  {
     var result = _modules.get(m);
     if (result != null)
       {
@@ -287,8 +293,15 @@ public class FrontEnd extends ANY
           {
             return module(m, p);
           }
+        else if (ignoreNotFound)
+          {
+            return null;
+          }
         else
           {
+            Errors.error("Module file '"+(m + ".fum")+"' for module '"+m+"' not found, "+
+                         "module directories checked are '" + baseModuleDir() + "' and " +
+                         _options._moduleDirs.toString("'","', '", "'") + ".");
             return null;
           }
       }
