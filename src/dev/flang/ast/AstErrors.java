@@ -825,11 +825,19 @@ public class AstErrors extends ANY
 
   public static void duplicateFeatureDeclaration(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
   {
-    error(pos,
-          "Duplicate feature declaration",
-          "Feature that was declared repeatedly: " + s(f) + "\n" +
-          "originally declared at " + existing.pos().show() + "\n" +
-          "To solve this, consider renaming one of these two features or changing its number of arguments");
+    // suppress error message if errors were reported already and any feature
+    // involved is f_ERROR
+    if (count() == 0 || (f                != Types.f_ERROR &&
+                         f       .outer() != Types.f_ERROR &&
+                         existing         != Types.f_ERROR &&
+                         existing.outer() != Types.f_ERROR    ))
+      {
+        error(pos,
+              "Duplicate feature declaration",
+              "Feature that was declared repeatedly: " + s(f) + "\n" +
+              "originally declared at " + existing.pos().show() + "\n" +
+              "To solve this, consider renaming one of these two features or changing its number of arguments");
+      }
   }
 
   public static void qualifiedDeclarationNotAllowedForField(Feature f)
