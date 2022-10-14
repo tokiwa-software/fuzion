@@ -186,14 +186,10 @@ public class FrontEnd extends ANY
     for (int i = 0; i < options._modules.size(); i++)
       {
         var m = _options._modules.get(i);
-        var p = modulePath(_options._modules.get(i));
-        if (Files.exists(p))
+        var loaded = loadModule(m);
+        if (loaded != null)
           {
-            var loaded = module(p);
-            if (loaded != null)
-              {
-                lms.add(loaded);
-              }
+            lms.add(loaded);
           }
         else
           { // NYI: Fallback if module file does not exists use source files instead. Remove this.
@@ -214,16 +210,34 @@ public class FrontEnd extends ANY
 
 
   /**
+   * Determine the path of the base modules, "$(FUZION)/modules".
+   */
+  private Path baseModuleDir()
+  {
+    return _options._fuzionHome.resolve("modules");
+  }
+
+
+  /**
    * Determine the path to load module 'name' from.  E.g., for module 'base',
    * this returns the path '<fuzionHome>/modules/base.fum'.
    *
-   * @þaram a module name, without path or suffix
+   * @param a module name, without path or suffix
    *
-   * @return the path to the module, never null.
+   * @return the path to the module, null if not found.
    */
   private Path modulePath(String name)
   {
-    return _options._fuzionHome.resolve("modules").resolve(name + ".fum");
+    var n = name + ".fum";
+    var p = baseModuleDir().resolve(n);
+    var i = 0;
+    var mds = _options._moduleDirs;
+    while (!Files.exists(p) && i < mds.size())
+      {
+        p = Path.of(mds.get(i)).resolve(n);
+        i++;
+      }
+    return p;
   }
 
 
@@ -241,6 +255,26 @@ public class FrontEnd extends ANY
       {
         Errors.error("FrontEnd I/O error when reading module file",
                      "While trying to read file '"+ p + "' received '" + io + "'");
+        return null;
+      }
+  }
+
+  /**
+   * Load library module with given module name
+   *
+   * @param m the module name, excluding path or ".fum" suffix
+   *
+   * @return the loaded module or null if it was not found or an error occured.
+   */
+  private LibraryModule loadModule(String m)
+  {
+    var p = modulePath(m);
+    if (p != null)
+      {
+        return module(p);
+      }
+    else
+      {
         return null;
       }
   }
