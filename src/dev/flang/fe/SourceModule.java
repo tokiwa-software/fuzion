@@ -800,8 +800,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
       }
     else if (existing.outer() == outer)
       {
-        // This cannot happen, this case was already handled in addDeclaredInnerFeature:
-        throw new Error();
+        if (Errors.count() == 0)
+          { // This can happen only as the result of previous errors since this
+            // case was already handled in addDeclaredInnerFeature:
+            throw new Error();
+          }
       }
     else if (existing.generics() != FormalGenerics.NONE)
       {
