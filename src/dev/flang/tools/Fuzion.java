@@ -415,7 +415,7 @@ class Fuzion extends Tool
 
 
   /**
-   * List of source directories added using '-sourceDir'.
+   * List of source directories added using '-sourceDirs'.
    */
   List<String> _sourceDirs = null;
 
