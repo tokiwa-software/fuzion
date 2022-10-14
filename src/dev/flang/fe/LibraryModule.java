@@ -191,12 +191,11 @@ public class LibraryModule extends Module
       {
         var n = moduleRefName(p);
         var v = moduleRefVersion(p);
-        var mr = new ModuleRef(fe, moduleOffset, n, v);
+        var mr = new ModuleRef(moduleOffset, n, v, fe.loadModule(n));
         _modules[i] = mr;
         moduleOffset = moduleOffset + mr.size();
         p = moduleRefNextPos(p);
       }
-    fe._modules.put(name(), this);
 
     var dm = fe._options._dumpModules;
     if (DUMP ||

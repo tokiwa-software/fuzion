@@ -140,7 +140,7 @@ public class FrontEnd extends ANY
    * The library modules loaded so far.  Maps the module name, e.g. "base" to
    * the corresponding LibraryModule instance.
    */
-  TreeMap<String, LibraryModule> _modules = new TreeMap<>();
+  private TreeMap<String, LibraryModule> _modules = new TreeMap<>();
 
 
   /**
@@ -173,7 +173,7 @@ public class FrontEnd extends ANY
     var lms = new List<LibraryModule>();
     if (options._loadBaseLib)
       {
-        _baseModule = module(modulePath("base"));
+        _baseModule = module("base", modulePath("base"));
         if (_baseModule != null)
           {
             lms.add(_baseModule);
@@ -244,19 +244,26 @@ public class FrontEnd extends ANY
   /**
    * Load module from given path.
    */
-  private LibraryModule module(Path p)
+  private LibraryModule module(String m, Path p)
   {
+    LibraryModule result = null;
     try (var ch = (FileChannel) Files.newByteChannel(p, EnumSet.of(StandardOpenOption.READ)))
       {
         var data = ch.map(FileChannel.MapMode.READ_ONLY, 0, ch.size());
-        return new LibraryModule(this, data, new LibraryModule[0], _universe);
+        result = new LibraryModule(this, data, new LibraryModule[0], _universe);
+        if (!m.equals(result.name()))
+          {
+            Errors.error("Module name mismatch for module file '" + p + "' expected name '" +
+                         m + "' but found '" + result.name() + "'");
+          }
+        _modules.put(m, result);
       }
     catch (IOException io)
       {
         Errors.error("FrontEnd I/O error when reading module file",
                      "While trying to read file '"+ p + "' received '" + io + "'");
-        return null;
       }
+    return result;
   }
 
   /**
@@ -266,16 +273,24 @@ public class FrontEnd extends ANY
    *
    * @return the loaded module or null if it was not found or an error occured.
    */
-  private LibraryModule loadModule(String m)
+  LibraryModule loadModule(String m)
   {
-    var p = modulePath(m);
-    if (p != null)
+    var result = _modules.get(m);
+    if (result != null)
       {
-        return module(p);
+        return result;
       }
     else
       {
-        return null;
+        var p = modulePath(m);
+        if (p != null)
+          {
+            return module(m, p);
+          }
+        else
+          {
+            return null;
+          }
       }
   }
 

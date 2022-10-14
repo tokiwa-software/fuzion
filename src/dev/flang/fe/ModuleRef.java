@@ -75,12 +75,12 @@ public class ModuleRef extends ANY
   /**
    * Create Module for given offset, name and version
    */
-  ModuleRef(FrontEnd fe, int offset, String name, byte[] version)
+  ModuleRef(int offset, String name, byte[] version, LibraryModule m)
   {
     _offset = offset;
     _name = name;
     _version = version;
-    _module = fe._modules.get(name);
+    _module = m;
   }
 
 
