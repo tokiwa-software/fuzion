@@ -912,18 +912,30 @@ public class AstErrors extends ANY
     return solution;
   }
 
+  static boolean errorInOuterFeatures(AbstractFeature f)
+  {
+    while (f != null && f != Types.f_ERROR)
+      {
+        f = f.outer();
+      }
+    return f == Types.f_ERROR;
+  }
+
   static void calledFeatureNotFound(Call call,
                                     FeatureName calledName,
                                     AbstractFeature targetFeature)
   {
-    var solution = solutionDeclareReturnTypeIfResult(calledName.baseName(),
-                                                     calledName.argCount());
-    error(call.pos(),
-          "Could not find called feature",
-          "Feature not found: " + sbn(calledName) + "\n" +
-          "Target feature: " + s( targetFeature) + "\n" +
-          "In call: " + s(call) + "\n" +
-          solution);
+    if (count() == 0 || !errorInOuterFeatures(targetFeature))
+      {
+        var solution = solutionDeclareReturnTypeIfResult(calledName.baseName(),
+                                                         calledName.argCount());
+        error(call.pos(),
+              "Could not find called feature",
+              "Feature not found: " + sbn(calledName) + "\n" +
+              "Target feature: " + s(targetFeature) + "\n" +
+              "In call: " + s(call) + "\n" +
+              solution);
+      }
   }
 
   static void expectedActualTypeInCall(SourcePosition pos,
