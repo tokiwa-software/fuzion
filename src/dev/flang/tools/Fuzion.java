@@ -409,6 +409,12 @@ class Fuzion extends Tool
 
 
   /**
+   * List of module directories added using '-moduleDirs'.
+   */
+  List<String> _moduleDirs = null;
+
+
+  /**
    * List of modules added using '-XdumpModules'.
    */
   List<String> _dumpModules = new List<>();
@@ -497,7 +503,7 @@ class Fuzion extends Tool
   {
     var std = STANDARD_OPTIONS(xtra);
     var stdRun = "[-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] ";
-    var stdBe = "[-modules={<m>,..} [-sourceDirs={<path>,..}] " +
+    var stdBe = "[-modules={<m>,..}] [-moduleDirs={<path>,..}] [-sourceDirs={<path>,..}] " +
       (xtra ? "[-XdumpModules={<name>,..}] " : "") +
       "(<main> | <srcfile>.fz | -) ";
     if (_backend == Backend.undefined)
@@ -711,6 +717,7 @@ class Fuzion extends Tool
             else if (a.startsWith("-modules="                )) { _modules.addAll(parseStringListArg(a));               }
             else if (a.startsWith("-XdumpModules="           )) { _dumpModules             = parseStringListArg(a);     }
             else if (a.startsWith("-sourceDirs="             )) { _sourceDirs = new List<>(); _sourceDirs.addAll(parseStringListArg(a)); }
+            else if (a.startsWith("-moduleDirs="             )) { _moduleDirs = new List<>(); _moduleDirs.addAll(parseStringListArg(a)); }
             else if (_backend.runsCode() && a.matches("-debug(=\\d+|)"       )) { _debugLevel              = parsePositiveIntArg(a, 1); }
             else if (_backend.runsCode() && a.startsWith("-safety="          )) { _safety                  = parseOnOffArg(a);          }
             else if (_backend.runsCode() && a.startsWith("-unsafeIntrinsics=")) { _enableUnsafeIntrinsics  = parseOnOffArg(a);          }
@@ -762,6 +769,7 @@ class Fuzion extends Tool
                                           _loadBaseLib,
                                           _eraseInternalNamesInLib,
                                           _modules,
+                                          _moduleDirs,
                                           _dumpModules,
                                           _debugLevel,
                                           _safety,

@@ -72,6 +72,12 @@ public class FrontEndOptions extends FuzionOptions
 
 
   /**
+   * Directories to load module files from.
+   */
+  final List<String> _moduleDirs;
+
+
+  /**
    * List of modules to be dumped to stdout after loading
    */
   final List<String> _dumpModules;
@@ -119,6 +125,7 @@ public class FrontEndOptions extends FuzionOptions
                          boolean loadBaseLib,
                          boolean eraseInternalNamesInLib,
                          List<String> modules,
+                         List<String> moduleDirs,
                          List<String> dumpModules,
                          int fuzionDebugLevel,
                          boolean fuzionSafety,
@@ -171,6 +178,7 @@ public class FrontEndOptions extends FuzionOptions
       }
     _inputFile = inputFile;
     _modules = modules;
+    _moduleDirs = moduleDirs;
     _dumpModules = dumpModules;
     _main = main;
     _loadSources = loadSources;
