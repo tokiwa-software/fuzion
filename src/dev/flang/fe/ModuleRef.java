@@ -92,7 +92,7 @@ public class ModuleRef extends ANY
    */
   int size()
   {
-    return 1000000; // NYI
+    return _module._data.limit();
   }
 
 
