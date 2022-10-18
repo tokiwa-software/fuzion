@@ -1097,6 +1097,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         var type_fs = new List<AbstractFeature>();
         var nontype_fs = new List<AbstractFeature>();
         var orig_o = o;
+        _res.resolveDeclarations(o);
         do
           {
             var fs = lookupFeatures(o, name).values();
