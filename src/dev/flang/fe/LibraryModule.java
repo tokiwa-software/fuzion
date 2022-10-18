@@ -502,7 +502,7 @@ public class LibraryModule extends Module
           }
         else if (k == -3)
           {
-            return Types.resolved.universe.thisType();
+            return _fe._universe.thisType();
           }
         else if (k == -2)
           {
