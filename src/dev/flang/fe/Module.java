@@ -168,6 +168,21 @@ public abstract class Module extends ANY
 
 
   /**
+   * During resolution, load all inner features of f that are defined in
+   * separate files within this module.
+   *
+   * NYI: cleanup: See #462: Remove once sub-directries are loaded
+   * directly, not implicitly when outer feature is found
+   *
+   * @param f the outer feature whose inner features should be loaded from
+   * source files in sub directories.
+   */
+  void loadInnerFeatures(AbstractFeature f)
+  { // this is a nop for all but SourceModules.
+  }
+
+
+  /**
    * Get declared and inherited features for given outer Feature as seen by this
    * module.  Result is never null.
    *
@@ -184,6 +199,11 @@ public abstract class Module extends ANY
       {
         if (outer instanceof LibraryFeature olf)
           {
+
+            // NYI: cleanup: See #462: Remove once sub-directries are loaded
+            // directly, not implicitly when outer feature is found
+            loadInnerFeatures(outer);
+
             s = olf._libModule.declaredOrInheritedFeaturesOrNull(outer);
             if (s == null)
               {

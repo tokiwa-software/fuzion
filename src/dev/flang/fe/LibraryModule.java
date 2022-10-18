@@ -296,7 +296,6 @@ public class LibraryModule extends Module
           {
             result = new LibraryFeature(this, offset);
             _libraryFeatures.put(offset, result);
-            _fe.loadInnerFeatures(result);
           }
         return result;
       }

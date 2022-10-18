@@ -621,6 +621,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
                   }
               }
           }
+
+        // NYI: cleanup: See #462: Remove once sub-directries are loaded
+        // directly, not implicitly when outer feature is found
+        for (var inner : s.values())
+          {
+            loadInnerFeatures(inner);
+          }
+
       }
     return s;
   }
