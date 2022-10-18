@@ -680,35 +680,21 @@ public class SourceModule extends Module implements SrcModule, MirModule
           {
             data(cf)._heirs.add(outer);
             _res.resolveDeclarations(cf);
-            if (cf instanceof LibraryFeature clf)
-              {
-                var s = clf._libModule.declaredOrInheritedFeaturesOrNull(cf);
-                if (s != null)
-                  {
-                    for (var fnf : s.entrySet())
-                      {
-                        var fn = fnf.getKey();
-                        var f = fnf.getValue();
-                        if (CHECKS) check
-                          (cf != outer);
 
-                        var newfn = cf.handDown(this, f, fn, p, outer);
-                        addInheritedFeature(outer, p.pos(), newfn, f);
-                      }
-                  }
-              }
-            else
-              {
-                for (var fnf : declaredOrInheritedFeatures(cf).entrySet())
-                  {
-                    var fn = fnf.getKey();
-                    var f = fnf.getValue();
-                    if (CHECKS) check
-                      (cf != outer);
+            // NYI: cleanup: Add abstract method for this to AbstractFeature
+            // with implementation in LibraryFeature and Feature:
+            var s = (cf instanceof LibraryFeature clf) ? clf._libModule.declaredOrInheritedFeaturesOrNull(cf)
+                                                       : declaredOrInheritedFeatures(cf);
 
-                    var newfn = cf.handDown(this, f, fn, p, outer);
-                    addInheritedFeature(outer, p.pos(), newfn, f);
-                  }
+            for (var fnf : s.entrySet())
+              {
+                var fn = fnf.getKey();
+                var f = fnf.getValue();
+                if (CHECKS) check
+                  (cf != outer);
+
+                var newfn = cf.handDown(this, f, fn, p, outer);
+                addInheritedFeature(outer, p.pos(), newfn, f);
               }
           }
       }
