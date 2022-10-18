@@ -317,7 +317,6 @@ $(MOD_JAVA_DATATRANSFER): $(BUILD_DIR)/bin/fzjava
 	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java/java_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java/sun_pkg.fz
-	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java/java/awt_pkg.fz
 	touch $@
 
 $(MOD_JAVA_DESKTOP): $(BUILD_DIR)/bin/fzjava
@@ -332,6 +331,7 @@ $(MOD_JAVA_DESKTOP): $(BUILD_DIR)/bin/fzjava
 	rm -f $(BUILD_DIR)/modules/java.desktop/Java/sun_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.desktop/Java/com/sun_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.desktop/Java/java_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.desktop/Java/java/awt_pkg.fz
 	touch $@
 
 $(BUILD_DIR)/tests: $(FZ_SRC)/tests
