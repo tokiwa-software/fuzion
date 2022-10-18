@@ -681,8 +681,9 @@ public class SourceModule extends Module implements SrcModule, MirModule
             data(cf)._heirs.add(outer);
             _res.resolveDeclarations(cf);
 
-            // NYI: cleanup: Add abstract method for this to AbstractFeature
-            // with implementation in LibraryFeature and Feature:
+            // NYI: cleanup: See #460: Add abstract method for this to
+            // AbstractFeature with implementation in LibraryFeature and
+            // Feature:
             var s = (cf instanceof LibraryFeature clf) ? clf._libModule.declaredOrInheritedFeaturesOrNull(cf)
                                                        : declaredOrInheritedFeatures(cf);
 
