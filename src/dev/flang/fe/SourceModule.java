@@ -369,8 +369,10 @@ public class SourceModule extends Module implements SrcModule, MirModule
    */
   void loadInnerFeatures(AbstractFeature f)
   {
-    if (!_closed)  /* NYI: restrict this to f.isVisibleFrom(this) or similar */
+    if (!f._loadedInner &&
+        !_closed)  /* NYI: restrict this to f.isVisibleFrom(this) or similar */
       {
+        f._loadedInner = true;
         for (var root : _sourceDirs)
           {
             try

@@ -142,6 +142,15 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
   private AbstractFeature _typeFeature = null;
 
 
+  /**
+   * Flag used in dev.flang.fe.SourceModule to avoid endless recursion when
+   * loading inner features from source directories.
+   *
+   * NYI: CLEANUP: Remove when #462 is fixed.
+   */
+  public boolean _loadedInner = false;
+
+
   /*-----------------------------  methods  -----------------------------*/
 
   /**
