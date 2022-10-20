@@ -1,0 +1,56 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test nom
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# test for nom a parser combinator framework
+#
+nom_test =>
+  hex_color(r,g,b u8) is
+    redef asString => "r: $r, g: $g, b: $b"
+
+  is_valid(c codepoint) bool is
+    codepoints.ascii_digit.contains c.val
+      || (u32 0x41 .. 0x46).contains c.val
+
+  parser_two_digit_hex := nom.combinator.map string string u8 (nom.strings.take_while_m_n 2 2 (fun is_valid)) (o1 -> o1.parse_u32(16).val.as_u8)
+  parser_hex_tuple := nom.sequence.preceded (nom.strings.tag "#") (nom.sequence.tuple3 parser_two_digit_hex parser_two_digit_hex parser_two_digit_hex)
+  parser_hex_color := nom.combinator.map string (tuple u8 u8 u8) hex_color parser_hex_tuple (t -> (r,g,b) := t; hex_color r g b)
+
+  match (parser_hex_color.parse "#9F3A10")
+    s nom.success =>
+      say s.out
+    e error =>
+      say e
+
+  match (parser_hex_color.parse "#9F3A1G")
+    s nom.success =>
+      say s.out
+    e error =>
+      say e
+
+  match (parser_hex_color.parse "Hello")
+    s nom.success =>
+      say s.out
+    e error =>
+      say e

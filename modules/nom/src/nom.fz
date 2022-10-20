@@ -1,0 +1,137 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion nom module feature nom, a parser combinator framework
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Port of https://github.com/Geal/nom/ by Geoffroy Couprie
+
+nom is
+
+  parser(I, O type) ref is
+    parse(i I) parse_result I O is abstract
+
+  # the result of parsing, if successful
+  success(I, O type, rest I, out O) is
+
+  parse_result(I, O type) : choice (success I O) error is
+
+
+  # choice combinators
+  branch is
+
+    # return result of first succeeding parser
+    alt(I, O type, parsers Sequence (parser I O)) parser I O is
+      ref : parser I O
+        parse(input I) parse_result I O is
+          parsers
+            .mapSequence (p -> p.parse input)
+            .filter (r -> match r
+                            success => true
+                            error => false)
+            .first (error "alt: no parser successful")
+
+
+  # string parsers
+  strings is
+
+    # matches the of str
+    tag(str string) parser string string
+    is
+      ref : parser string string
+        parse(input string) parse_result string string is
+          if input.startsWith str
+            success (input.substring str.codepointLength) str
+          else
+            error "tag ($str) not found"
+
+    # matches input as often as possible but at least m times and at most n times.
+    take_while_m_n(m, n i32, cond (codepoint) -> bool) parser string string is
+      ref : parser string string
+        parse(input string) parse_result string string
+        is
+          if input.isEmpty
+            error "input is empty"
+          else
+            k :=
+              for i in 1..n
+              while i < input.codepointLength && cond (input.substring i i+1).asCodepoints.first
+              else
+                i
+            if k < m
+              error "not enough codepoints matched, expected $m or more, got $k"
+            else
+              success (input.substring k) (input.substring 0 k)
+
+
+  # combinators applying parsers in sequence
+  sequence is
+
+    # apply p1 then p2 and return their results as a tuple.
+    tuple2(I, O1, O2 type, p1 parser I O1, p2 parser I O2) parser I (tuple O1 O2) is
+      ref : parser I (tuple O1 O2)
+        parse(input I) parse_result I (tuple O1 O2) is
+          match p1.parse(input)
+            s1 success I O1 =>
+              match p2.parse s1.rest
+                s2 success I O2 =>
+                  success s2.rest (s1.out, s2.out)
+                e2 error => e2
+            e1 error => e1
+
+    # apply p1 then p2 then p3 and return their results as a tuple.
+    tuple3(I, O1, O2, O3 type, p1 parser I O1, p2 parser I O2, p3 parser I O3) parser I (tuple O1 O2 O3) is
+      ref : parser I (tuple O1 O2 O3)
+        parse(input I) parse_result I (tuple O1 O2 O3) is
+          match p1.parse(input)
+            s1 success I O1 =>
+              match p2.parse s1.rest
+                s2 success I O2 =>
+                  match p3.parse s2.rest
+                    s3 success I O3 => success s3.rest (s1.out, s2.out, s3.out)
+                    e3 error => e3
+                e2 error => e2
+            e1 error => e1
+
+    # discard the output of the first parser, return the result of the second parser
+    preceded(I, O1, O2 type, p1 parser I O1, p2 parser I O2) parser I O2 is
+      ref : parser I O2
+        parse(input I) parse_result I O2 is
+          match p1.parse input
+            s1 success I O1 =>
+              p2.parse s1.rest
+            e1 error => e1
+
+
+  # general purpose combinators
+  combinator is
+
+    # map the result of parser p
+    map(I, O1, O2 type, p parser I O1, mapper (O1) -> outcome O2) parser I O2 is
+      ref : parser I O2
+        parse(input I) parse_result I O2 is
+          match p.parse input
+            s success I O1 =>
+              match mapper s.out
+                o O2 => success s.rest o
+                e2 error => e2
+            e1 error => e1
