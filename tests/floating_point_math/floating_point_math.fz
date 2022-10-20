@@ -95,6 +95,16 @@ floating_point_math is
     chck (-a_half.round            == -a.one)                                      "{a.name}: round -1/2 = -1"
     chck (-(a.one + a_half).round  == -a.two)                                      "{a.name}: round -3/2 = -2"
 
+    # floor
+    chck (a.zero.floor == a.zero)                                               "{a.name}: floor 0 = 0"
+    chck (a.one.floor  == a.one)                                                "{a.name}: floor 1 = 1"
+    chck (a.ℇ.floor    == a.two)                                                "{a.name}: floor ℇ = 2"
+
+    # ceil
+    chck (a.zero.ceil == a.zero)                                                "{a.name}: ceil 0 = 0"
+    chck (a.one.ceil  == a.one)                                                 "{a.name}: ceil 1 = 1"
+    chck (a.ℇ.ceil    == a.two + a.one)                                         "{a.name}: ceil ℇ = 3"
+
 
   generic_tests f32s.zero
   generic_tests f64s.zero
