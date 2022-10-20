@@ -635,21 +635,6 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Get declared and inherited features for given outer Feature as seen by this
-   * module.  Result may be null if this module does not contribute anything to
-   * outer.
-   *
-   * @param outer the declaring feature
-   */
-  SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer)
-  {
-    return outer.isUniverse()
-      ? declaredFeatures(outer)
-      : data(outer)._declaredOrInheritedFeatures;
-  }
-
-
-  /**
    * During phase RESOLVING_DECLARATIONS, determine the set of declared or
    * inherited features for outer.
    *
@@ -665,7 +650,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
       {
         d._declaredOrInheritedFeatures = new TreeMap<>();
       }
-    findInheritedFeatures(outer);
+    findInheritedFeatures1(outer);
     loadInnerFeatures(outer);
     findDeclaredFeatures(outer);
   }
@@ -678,7 +663,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
    *
    * @param outer the declaring feature
    */
-  private void findInheritedFeatures(Feature outer)
+  private void findInheritedFeatures1(Feature outer)
   {
     for (var p : outer.inherits())
       {
@@ -691,12 +676,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
             data(cf)._heirs.add(outer);
             _res.resolveDeclarations(cf);
 
-            // NYI: cleanup: See #460: Add abstract method for this to
-            // AbstractFeature with implementation in LibraryFeature and
-            // Feature:
-            var s = (cf instanceof LibraryFeature clf) ? clf._libModule.declaredOrInheritedFeaturesOrNull(cf)
-                                                       : declaredOrInheritedFeatures(cf);
-
+            var s = declaredOrInheritedFeatures(cf);
             for (var fnf : s.entrySet())
               {
                 var fn = fnf.getKey();

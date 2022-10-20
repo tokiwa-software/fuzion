@@ -374,32 +374,18 @@ public class LibraryModule extends Module
 
 
   /**
-   * Get declared and inherited features for given outer Feature as seen by this
-   * module.  Result may be null if this module does not contribute anything to
-   * outer.
-   *
-   * @param outer the declaring feature
-   */
-  SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer)
-  {
-    var res = declaredFeatures(outer);
-    findInheritedFeatures(res, outer);
-    return res;
-  }
-
-
-  /**
    * Find all inherited features and add them to declaredOrInheritedFeatures_.
    * In case an existing feature was found, check if there is a conflict and if
    * so, report an error message (repeated inheritance).
    *
-   * NYI: This is somewhat redundant with SourceModule.findInheritedFeatures,
+   * NYI: This is somewhat redundant with SourceModule.findInheritedFeatures1,
    * maybe join these two as Module.findInheritedFeatures?
    *
    * @param outer the declaring feature
    */
-  private void findInheritedFeatures(SortedMap<FeatureName, AbstractFeature> set, AbstractFeature outer)
+  SortedMap<FeatureName, AbstractFeature> findInheritedFeatures2(AbstractFeature outer)
   {
+    var res = declaredFeatures(outer);
     for (var p : outer.inherits())
       {
         var cf = p.calledFeature();
@@ -419,10 +405,11 @@ public class LibraryModule extends Module
                   (cf != outer);
 
                 var newfn = cf.handDown(null /*this*/, f, fn, p, outer);
-                addInheritedFeature(set, outer, p, newfn, f);
+                addInheritedFeature(res, outer, p, newfn, f);
               }
           }
       }
+    return res;
   }
 
 

@@ -141,16 +141,6 @@ public abstract class Module extends ANY
 
 
   /**
-   * Get declared and inherited features for given outer Feature as seen by this
-   * module.  Result may be null if this module does not contribute anything to
-   * outer.
-   *
-   * @param outer the declaring feature
-   */
-  abstract SortedMap<FeatureName, AbstractFeature>declaredOrInheritedFeaturesOrNull(AbstractFeature outer);
-
-
-  /**
    * Get or create the data record for given outer feature.
    *
    * @param outer the feature we need to get the data record from.
@@ -197,19 +187,17 @@ public abstract class Module extends ANY
     var s = d._declaredOrInheritedFeatures;
     if (s == null)
       {
+        s = declaredFeatures(outer);
         if (outer instanceof LibraryFeature olf)
           {
+            var s0 = s;
 
             // NYI: cleanup: See #462: Remove once sub-directries are loaded
             // directly, not implicitly when outer feature is found
             loadInnerFeatures(outer);
 
-            s = olf._libModule.declaredOrInheritedFeaturesOrNull(outer);
-            if (s == null)
-              {
-                s = new TreeMap<>();
-              }
-            for (var e : declaredFeatures(outer).entrySet())
+            s = olf._libModule.findInheritedFeatures2(olf);
+            for (var e : s0.entrySet())
               {
                 var f = e.getValue();
                 if (!(f instanceof LibraryFeature flf && flf._libModule == olf._libModule))
@@ -237,26 +225,6 @@ public abstract class Module extends ANY
                     else
                       {
                         s.put(f.featureName(), f);
-                      }
-                  }
-              }
-          }
-        else if (outer.isUniverse())
-          {
-            s = declaredFeatures(outer);
-          }
-        else
-          {
-            s = new TreeMap<>();
-            for (Module m : _dependsOn)
-              { // NYI: properly obtain set of declared features from m, do we need
-                // to take care for the order and dependencies between modules?
-                var md = m.declaredOrInheritedFeaturesOrNull(outer);
-                if (md != null)
-                  {
-                    for (var e : md.entrySet())
-                      {
-                        s.put(e.getKey(), e.getValue());
                       }
                   }
               }
