@@ -25,14 +25,21 @@
 
 # Port of https://github.com/Geal/nom/ by Geoffroy Couprie
 
+# nom is a parser combinator framework
+# for more information go to:
+# https://github.com/Geal/nom/
 nom is
 
-  parser(I, O type) ref is
-    parse(i I) parse_result I O is abstract
+  # a parser takes an input of type I
+  # and produces either an error
+  # or a result of type O and a rest of type R
+  parser(I, R, O type) ref is
+    parse(i I) parse_result R O is abstract
 
   # the result of parsing, if successful
-  success(I, O type, rest I, out O) is
+  success(R, O type, rest R, out O) is
 
+  # the result of parser.parse
   parse_result(I, O type) : choice (success I O) error is
 
 
@@ -40,9 +47,9 @@ nom is
   branch is
 
     # return result of first succeeding parser
-    alt(I, O type, parsers Sequence (parser I O)) parser I O is
-      ref : parser I O
-        parse(input I) parse_result I O is
+    alt(I, R, O type, parsers Sequence (parser I R O)) parser I R O is
+      ref : parser I R O
+        parse(input I) parse_result R O is
           parsers
             .mapSequence (p -> p.parse input)
             .filter (r -> match r
@@ -52,43 +59,82 @@ nom is
 
 
   # string parsers
-  strings is
+  string_parsers is
 
     # matches the of str
-    tag(str string) parser string string
+    tag(str string) parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint)
     is
-      ref : parser string string
-        parse(input string) parse_result string string is
-          if input.startsWith str
-            success (input.substring str.codepointLength) str
+      ref : parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint)
+        parse(input (Sequence codepoint)) parse_result (Sequence codepoint) (Sequence codepoint) is
+          if (input.zip str.asCodepoints (a,b -> (a,b))) ∀ (x -> (a,b) := x; a=b)
+            success (input.drop str.codepointLength).as_seq str.asCodepoints
           else
             error "tag ($str) not found"
 
     # matches input as often as possible but at least m times and at most n times.
-    take_while_m_n(m, n i32, cond (codepoint) -> bool) parser string string is
-      ref : parser string string
-        parse(input string) parse_result string string
+    take_while_m_n(m, n i32, cond (codepoint) -> bool) parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
+      ref : parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint)
+        parse(input (Sequence codepoint)) parse_result (Sequence codepoint) (Sequence codepoint)
         is
           if input.isEmpty
             error "input is empty"
           else
-            k :=
-              for i in 1..n
-              while i < input.codepointLength && cond (input.substring i i+1).asCodepoints.first
-              else
-                i
-            if k < m
-              error "not enough codepoints matched, expected $m or more, got $k"
+            taken := input
+              .take n
+              .takeWhile (x -> cond x)
+            if taken.count < m
+              error "not enough codepoints matched, expected $m or more, got {taken.count}"
             else
-              success (input.substring k) (input.substring 0 k)
+              success (input.drop taken.count).as_seq taken.as_seq
+
+    # match zero or more whitespace
+    whitespace0 parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
+      ref : parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint)
+        parse(input (Sequence codepoint)) parse_result (Sequence codepoint) (Sequence codepoint) is
+          ws := input.takeWhile (x -> x.isBlank)
+          success ws.as_seq (input.drop ws.count).as_seq
+
+    # match one or more digit
+    digit1 parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
+      take_while1 (c -> codepoints.ascii_digit.contains c.val)
+
+    # take while cond is satisfied, but at least one codepoint
+    take_while1(cond codepoint -> bool) parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) : strings is
+      p := sequence.take_while0 cond
+      ref : parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint)
+        parse(input (Sequence codepoint)) parse_result (Sequence codepoint) (Sequence codepoint) is
+          match p.parse input
+            s success =>
+              if s.out.isEmpty then error "take_while1, no matches" else success s.rest s.out
+            e error => e
+
+    # convert a parser taking a sequence of codepoints to a parser that takes a string
+    to_string_input(O type, p parser (Sequence codepoint) (Sequence codepoint) O) parser string (Sequence codepoint) O is
+      combinator.map_inp string (Sequence codepoint) O p (str -> str.asCodepoints)
+
+    # convert a parser returning a sequence of codepoints to a parser that returns a string
+    to_string_output(I, R type, p parser I R (Sequence codepoint)) parser I R string is
+      combinator.map_res I R (Sequence codepoint) string p (seq -> strings.fromCodepoints seq)
 
 
-  # combinators applying parsers in sequence
+  # parser working on sequences of input
   sequence is
 
+    # take while cond is satisfied
+    take_while0(T type, cond T -> bool) parser (Sequence T) (Sequence T) (Sequence T) is
+      ref : parser (Sequence T) (Sequence T) (Sequence T)
+        parse(input Sequence T) parse_result (Sequence T) (Sequence T) is
+          rest Sequence T := input.dropWhile cond
+          matched Sequence T := input.takeWhile (t -> !(cond t))
+          success rest matched
+
+
+  # general purpose combinators
+  combinator is
+
     # apply p1 then p2 and return their results as a tuple.
-    tuple2(I, O1, O2 type, p1 parser I O1, p2 parser I O2) parser I (tuple O1 O2) is
-      ref : parser I (tuple O1 O2)
+    tuple2(I, O1, O2 type, p1 parser I I O1, p2 parser I I O2) parser I I (tuple O1 O2) is
+      ref : parser I I (tuple O1 O2)
         parse(input I) parse_result I (tuple O1 O2) is
           match p1.parse(input)
             s1 success I O1 =>
@@ -99,8 +145,8 @@ nom is
             e1 error => e1
 
     # apply p1 then p2 then p3 and return their results as a tuple.
-    tuple3(I, O1, O2, O3 type, p1 parser I O1, p2 parser I O2, p3 parser I O3) parser I (tuple O1 O2 O3) is
-      ref : parser I (tuple O1 O2 O3)
+    tuple3(I, O1, O2, O3 type, p1 parser I I O1, p2 parser I I O2, p3 parser I I O3) parser I I (tuple O1 O2 O3) is
+      ref : parser I I (tuple O1 O2 O3)
         parse(input I) parse_result I (tuple O1 O2 O3) is
           match p1.parse(input)
             s1 success I O1 =>
@@ -113,25 +159,43 @@ nom is
             e1 error => e1
 
     # discard the output of the first parser, return the result of the second parser
-    preceded(I, O1, O2 type, p1 parser I O1, p2 parser I O2) parser I O2 is
-      ref : parser I O2
+    preceded(I, O1, O2 type, p1 parser I I O1, p2 parser I I O2) parser I I O2 is
+      ref : parser I I O2
         parse(input I) parse_result I O2 is
           match p1.parse input
             s1 success I O1 =>
               p2.parse s1.rest
             e1 error => e1
 
-
-  # general purpose combinators
-  combinator is
+    # discard p1 and p3, return result of p2
+    delimited(I, O1, O2, O3 type, p1 parser I I O1, p2 parser I I O2, p3 parser I I O3) parser I I O2 is
+      ref : parser I I O2
+        parse(input I) parse_result I O2 is
+          match p1.parse(input)
+            s1 success I O1 =>
+              match p2.parse s1.rest
+                s2 success I O2 =>
+                  match p3.parse s2.rest
+                    s3 success I O3 => success s3.rest s2.out
+                    e3 error => e3
+                e2 error => e2
+            e1 error => e1
 
     # map the result of parser p
-    map(I, O1, O2 type, p parser I O1, mapper (O1) -> outcome O2) parser I O2 is
-      ref : parser I O2
-        parse(input I) parse_result I O2 is
+    map_res(I, R, O1, O2 type, p parser I R O1, mapper O1 -> outcome O2) parser I R O2 is
+      ref : parser I R O2
+        parse(input I) parse_result R O2 is
           match p.parse input
-            s success I O1 =>
+            s success R O1 =>
               match mapper s.out
                 o O2 => success s.rest o
                 e2 error => e2
             e1 error => e1
+
+    # map input to parser p
+    map_inp(I, R, O type, p parser R R O, mapper1 I -> R) parser I R O is
+      ref : parser I R O
+        parse(input I) parse_result R O is
+          match (p.parse (mapper1 input))
+            s success R O => s
+            e error => e

@@ -23,9 +23,9 @@
 #
 # -----------------------------------------------------------------------
 
-# test for nom a parser combinator framework
+# test for nom, a parser combinator framework
 #
-nom_test =>
+nom_test : nom, nom.combinator, nom.string_parsers =>
   hex_color(r,g,b u8) is
     redef asString => "r: $r, g: $g, b: $b"
 
@@ -33,24 +33,40 @@ nom_test =>
     codepoints.ascii_digit.contains c.val
       || (u32 0x41 .. 0x46).contains c.val
 
-  parser_two_digit_hex := nom.combinator.map string string u8 (nom.strings.take_while_m_n 2 2 (fun is_valid)) (o1 -> o1.parse_u32(16).val.as_u8)
-  parser_hex_tuple := nom.sequence.preceded (nom.strings.tag "#") (nom.sequence.tuple3 parser_two_digit_hex parser_two_digit_hex parser_two_digit_hex)
-  parser_hex_color := nom.combinator.map string (tuple u8 u8 u8) hex_color parser_hex_tuple (t -> (r,g,b) := t; hex_color r g b)
+  parser_two_digit_hex := map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) u8 (take_while_m_n 2 2 (fun is_valid)) (o1 -> (strings.fromCodepoints o1).parse_u32(16).val.as_u8)
+  parser_hex_tuple := preceded (tag "#") (tuple3 parser_two_digit_hex parser_two_digit_hex parser_two_digit_hex)
+  parser_hex_color_seq_codepoints := map_res (Sequence codepoint) (Sequence codepoint) (tuple u8 u8 u8) hex_color parser_hex_tuple (t -> (r,g,b) := t; hex_color r g b)
+  parser_hex_color := to_string_input parser_hex_color_seq_codepoints
 
   match (parser_hex_color.parse "#9F3A10")
-    s nom.success =>
+    s success =>
       say s.out
     e error =>
       say e
 
   match (parser_hex_color.parse "#9F3A1G")
-    s nom.success =>
+    s success =>
       say s.out
     e error =>
       say e
 
   match (parser_hex_color.parse "Hello")
-    s nom.success =>
+    s success =>
       say s.out
     e error =>
       say e
+
+  match (parser_hex_color.parse "")
+    s success =>
+      say s.out
+    e error =>
+      say e
+
+  match (to_string_output (to_string_input whitespace0)).parse " Hello"
+    s success =>
+      say s.out
+      say "rest: {s.rest}"
+    e error =>
+      say e
+
+
