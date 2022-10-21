@@ -100,7 +100,7 @@ nom is
       ref : parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint)
         parse(input (Sequence codepoint)) parse_result (Sequence codepoint) (Sequence codepoint) is
           ws := input.takeWhile (x -> x.isBlank)
-          success ws.as_seq (input.drop ws.count).as_seq
+          success (input.drop ws.count).as_seq ws.as_seq
 
     # match one or more digit
     digit1 parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) is
