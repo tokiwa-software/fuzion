@@ -247,11 +247,11 @@ public abstract class Module extends ANY
     if (existing != null)
       {
         if (  this instanceof SourceModule  && f.redefines().contains(existing) ||
-            !(this instanceof SourceModule) && f.outer().inheritsFrom(existing.outer()))  // NYI: better check f.redefines(existing)
+            !(this instanceof SourceModule) && f.outer().inheritsFrom(existing.outer()))  // NYI: cleanup: #478: better check f.redefines(existing)
           { // f redefined existing, so we are fine
           }
         else if (  this instanceof SourceModule  && existing.redefines().contains(f) ||
-                 !(this instanceof SourceModule) && existing.outer().inheritsFrom(f.outer()))  // NYI: better check existing.redefines(f)
+                 !(this instanceof SourceModule) && existing.outer().inheritsFrom(f.outer()))  // NYI: cleanup: #478: better check existing.redefines(f)
           { // existing redefines f, so use existing
             f = existing;
           }
