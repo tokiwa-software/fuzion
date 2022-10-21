@@ -405,6 +405,17 @@ public class SourceModule extends Module implements SrcModule, MirModule
   }
 
 
+  /**
+   * For a SourceModule, resolve all declarations of inner features of f.
+   *
+   * @param f a feature.
+   */
+  void resolveDeclarations(AbstractFeature f)
+  {
+    _res.resolveDeclarations(f);
+  }
+
+
   /*---------------------  collecting data from AST  --------------------*/
 
 
@@ -648,81 +659,14 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var d = data(outer);
     if (d._declaredOrInheritedFeatures == null)
       {
+        // NYI: cleanup: there are two places that initialize
+        // _declaredOrInheritedFeatures: this place and
+        // Module.declaredOrInheritedFeatures(). There should be only one!
         d._declaredOrInheritedFeatures = new TreeMap<>();
       }
-    findInheritedFeatures1(outer);
+    findInheritedFeatures(d._declaredOrInheritedFeatures, outer);
     loadInnerFeatures(outer);
     findDeclaredFeatures(outer);
-  }
-
-
-  /**
-   * Find all inherited features and add them to declaredOrInheritedFeatures_.
-   * In case an existing feature was found, check if there is a conflict and if
-   * so, report an error message (repeated inheritance).
-   *
-   * @param outer the declaring feature
-   */
-  private void findInheritedFeatures1(Feature outer)
-  {
-    for (var p : outer.inherits())
-      {
-        var cf = p.calledFeature();
-        if (CHECKS) check
-          (Errors.count() > 0 || cf != null);
-
-        if (cf != null && cf.isConstructor() || cf.isChoice())
-          {
-            data(cf)._heirs.add(outer);
-            _res.resolveDeclarations(cf);
-
-            var s = declaredOrInheritedFeatures(cf);
-            for (var fnf : s.entrySet())
-              {
-                var fn = fnf.getKey();
-                var f = fnf.getValue();
-                if (CHECKS) check
-                  (cf != outer);
-
-                var newfn = cf.handDown(this, f, fn, p, outer);
-                addInheritedFeature(outer, p.pos(), newfn, f);
-              }
-          }
-      }
-  }
-
-
-  /**
-   * Helper method for findInheritedFeatures and addToHeirs to add a feature
-   * that this feature inherits.
-   *
-   * @param pos the source code position of the inherits call responsible for
-   * the inheritance.
-   *
-   * @param fn the name of the feature, after possible renaming during inheritance
-   *
-   * @param f the feature to be added.
-   */
-  private void addInheritedFeature(AbstractFeature outer, SourcePosition pos, FeatureName fn, AbstractFeature f)
-  {
-    var s = data(outer)._declaredOrInheritedFeatures;
-    var existing = s == null ? null : s.get(fn);
-    if (existing != null)
-      {
-        if (f.redefines().contains(existing))
-          { // f redefined existing, so we are fine
-          }
-        else if (existing.redefines().contains(f))
-          { // existing redefines f, so use existing
-            f = existing;
-          }
-        else if (existing == f && f.generics() != FormalGenerics.NONE ||
-                 existing != f && declaredFeatures(outer).get(fn) == null)
-          { // NYI: Should be ok if existing or f is abstract.
-            AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, existing, f);
-          }
-      }
-    s.put(fn, f);
   }
 
 
@@ -885,7 +829,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
         for (var h : d._heirs)
           {
             var pos = SourcePosition.builtIn; // NYI: Would be nicer to use Call.pos for the inheritance call in h.inhertis
-            addInheritedFeature(h, pos, fn, f);
+            addInheritedFeature(data(outer)._declaredOrInheritedFeatures, h, pos, fn, f);
             addToHeirs(h, fn, f);
           }
       }

@@ -35,6 +35,8 @@ import dev.flang.ast.FormalGenerics;
 import dev.flang.mir.MIR;
 
 import dev.flang.util.ANY;
+import dev.flang.util.Errors;
+import dev.flang.util.HasSourcePosition;
 
 import java.util.Map;
 import java.util.Set;
@@ -173,6 +175,97 @@ public abstract class Module extends ANY
 
 
   /**
+   * For a SourceModule, resolve all declarations of inner features of f.
+   *
+   * @param f a feature.
+   */
+  void resolveDeclarations(AbstractFeature f)
+  {
+    // nothing to be done, code is only in SourceModule.resolveDeclarations.
+  }
+
+
+  /**
+   * Find all inherited features and add them to given set.  In case an existing
+   * feature was found, check if there is a conflict and if so, report an error
+   * message (repeated inheritance).
+   *
+   * @param set the set to add inherited features to
+   *
+   * @param outer the inheriting feature
+   */
+  void findInheritedFeatures(SortedMap<FeatureName, AbstractFeature> set, AbstractFeature outer)
+  {
+    for (var p : outer.inherits())
+      {
+        var cf = p.calledFeature();
+        if (CHECKS) check
+          (Errors.count() > 0 || cf != null);
+
+        if (cf != null && (cf.isConstructor() || cf.isChoice()))
+          {
+            data(cf)._heirs.add(outer);
+            resolveDeclarations(cf);
+
+            for (var fnf : declaredOrInheritedFeatures(cf).entrySet())
+              {
+                var fn = fnf.getKey();
+                var f = fnf.getValue();
+                if (CHECKS) check
+                  (cf != outer);
+
+                var newfn = cf.handDown(null, f, fn, p, outer);
+                addInheritedFeature(set, outer, p, newfn, f);
+              }
+          }
+      }
+  }
+
+
+  /**
+   * Helper method for findInheritedFeatures and addToHeirs to add a feature
+   * that this feature inherits.
+   *
+   * @param set the set to add inherited features to
+   *
+   * @param outer the outer feature that inherits f
+   *
+   * @param pos the source code position of the inherits call responsible for
+   * the inheritance.
+   *
+   * @param fn the name of the feature, after possible renaming during inheritance
+   *
+   * @param f the feature to be added.
+   */
+  void addInheritedFeature(SortedMap<FeatureName, AbstractFeature> set,
+                           AbstractFeature outer,
+                           HasSourcePosition pos,
+                           FeatureName fn,
+                           AbstractFeature f)
+  {
+    var existing = set.get(fn);
+    if (existing != null)
+      {
+        if (  this instanceof SourceModule  && f.redefines().contains(existing) ||
+            !(this instanceof SourceModule) && f.outer().inheritsFrom(existing.outer()))  // NYI: better check f.redefines(existing)
+          { // f redefined existing, so we are fine
+          }
+        else if (  this instanceof SourceModule  && existing.redefines().contains(f) ||
+                 !(this instanceof SourceModule) && existing.outer().inheritsFrom(f.outer()))  // NYI: better check existing.redefines(f)
+          { // existing redefines f, so use existing
+            f = existing;
+          }
+        else if (existing == f && f.generics() != FormalGenerics.NONE ||
+                 existing != f && declaredFeatures(outer).get(fn) == null)
+          { // NYI: Should be ok if existing or f is abstract.
+            AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, existing, f);
+          }
+      }
+    set.put(fn, f);
+  }
+
+
+  /**
    * Get declared and inherited features for given outer Feature as seen by this
    * module.  Result is never null.
    *
@@ -187,17 +280,15 @@ public abstract class Module extends ANY
     var s = d._declaredOrInheritedFeatures;
     if (s == null)
       {
-        s = declaredFeatures(outer);
         if (outer instanceof LibraryFeature olf)
           {
-            var s0 = s;
-
             // NYI: cleanup: See #462: Remove once sub-directries are loaded
             // directly, not implicitly when outer feature is found
             loadInnerFeatures(outer);
 
-            s = olf._libModule.findInheritedFeatures2(olf);
-            for (var e : s0.entrySet())
+            s = olf._libModule.declaredFeatures(olf);
+            olf._libModule.findInheritedFeatures(s, olf);
+            for (var e : declaredFeatures(outer).entrySet())
               {
                 var f = e.getValue();
                 if (!(f instanceof LibraryFeature flf && flf._libModule == olf._libModule))
@@ -229,6 +320,13 @@ public abstract class Module extends ANY
                   }
               }
           }
+        else
+          {
+            s = declaredFeatures(outer);
+          }
+        // NYI: cleanup: there are two places that initialize
+        // _declaredOrInheritedFeatures: this place and
+        // SourceModule.findDeclaredOrInheritedFeatures(). There should be only one!
         d._declaredOrInheritedFeatures = s;
       }
     return s;

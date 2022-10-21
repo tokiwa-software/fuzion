@@ -39,7 +39,6 @@ import java.util.TreeSet;
 
 import dev.flang.ast.AbstractFeature;
 import dev.flang.ast.AbstractType;
-import dev.flang.ast.AstErrors;
 import dev.flang.ast.Env;
 import dev.flang.ast.Expr;
 import dev.flang.ast.Feature;
@@ -53,9 +52,7 @@ import dev.flang.ir.IR;
 
 import dev.flang.mir.MIR;
 
-import dev.flang.util.Errors;
 import dev.flang.util.FuzionConstants;
-import dev.flang.util.HasSourcePosition;
 import dev.flang.util.HexDump;
 import dev.flang.util.List;
 import dev.flang.util.SourceDir;
@@ -370,84 +367,6 @@ public class LibraryModule extends Module
         _innerFeatures.put(at, result);
       }
     return result;
-  }
-
-
-  /**
-   * Find all inherited features and add them to declaredOrInheritedFeatures_.
-   * In case an existing feature was found, check if there is a conflict and if
-   * so, report an error message (repeated inheritance).
-   *
-   * NYI: This is somewhat redundant with SourceModule.findInheritedFeatures1,
-   * maybe join these two as Module.findInheritedFeatures?
-   *
-   * @param outer the declaring feature
-   */
-  SortedMap<FeatureName, AbstractFeature> findInheritedFeatures2(AbstractFeature outer)
-  {
-    var res = declaredFeatures(outer);
-    for (var p : outer.inherits())
-      {
-        var cf = p.calledFeature();
-        if (CHECKS) check
-          (Errors.count() > 0 || cf != null);
-
-        if (cf != null)
-          {
-            var s =
-              ((cf instanceof LibraryFeature clf) ? clf._libModule
-                                                  : this          ).declaredOrInheritedFeatures(cf);
-            for (var fnf : s.entrySet())
-              {
-                var fn = fnf.getKey();
-                var f = fnf.getValue();
-                if (CHECKS) check
-                  (cf != outer);
-
-                var newfn = cf.handDown(null /*this*/, f, fn, p, outer);
-                addInheritedFeature(res, outer, p, newfn, f);
-              }
-          }
-      }
-    return res;
-  }
-
-
-
-  /**
-   * Helper method for findInheritedFeatures and addToHeirs to add a feature
-   * that this feature inherits.
-   *
-   * NYI: This is somewhat redundant with SourceModule.addInheritedFeature,
-   * maybe join these two as Module.addInheritedFeature?
-   *
-   * @param pos the source code position of the inherits call responsible for
-   * the inheritance.
-   *
-   * @param fn the name of the feature, after possible renaming during inheritance
-   *
-   * @param f the feature to be added.
-   */
-  private void addInheritedFeature(SortedMap<FeatureName, AbstractFeature> set, AbstractFeature outer, HasSourcePosition pos, FeatureName fn, AbstractFeature f)
-  {
-    var s = set;
-    var existing = s == null ? null : s.get(fn);
-    if (existing != null)
-      {
-        if (existing.outer().inheritsFrom(f.outer()))  // NYI: better check existing.redefines(f)
-          {
-            f = existing;
-          }
-        else if (f.outer().inheritsFrom(existing.outer()))  // NYI: better check f.redefines(existing)
-          {
-          }
-        else if (existing == f && f.generics() != FormalGenerics.NONE ||
-                 existing != f && declaredFeatures(outer).get(fn) == null)
-          {
-            AstErrors.repeatedInheritanceCannotBeResolved(outer.pos(), outer, fn, existing, f);
-          }
-      }
-    s.put(fn, f);
   }
 
 
