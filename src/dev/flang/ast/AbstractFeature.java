@@ -829,7 +829,7 @@ public abstract class AbstractFeature extends ANY implements Comparable<Abstract
    *
    * - explicit renaming during inheritance
    *
-   * @param module the main SrcModule
+   * @param module the main SrcModule if available (used for debugging only)
    *
    * @param f a feature that is declared in or inherted by this feature
    *
