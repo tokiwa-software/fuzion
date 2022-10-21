@@ -43,6 +43,7 @@ nom is
   parse_result(I, O type) : choice (success I O) error is
 
 
+
   # choice combinators
   branch is
 
@@ -56,6 +57,7 @@ nom is
                             success => true
                             error => false)
             .first (error "alt: no parser successful")
+
 
 
   # string parsers
@@ -120,6 +122,8 @@ nom is
     to_string_parser(R type, p parser (Sequence codepoint) R (Sequence codepoint)) parser string R string is
       to_string_output (to_string_input p)
 
+
+
   # parser working on sequences of input
   sequence is
 
@@ -130,6 +134,7 @@ nom is
           rest Sequence T := input.dropWhile cond
           matched Sequence T := input.takeWhile cond
           success rest matched
+
 
 
   # general purpose combinators
