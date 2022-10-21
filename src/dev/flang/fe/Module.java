@@ -324,7 +324,7 @@ public abstract class Module extends ANY
           {
             s = declaredFeatures(outer);
           }
-        // NYI: cleanup: there are two places that initialize
+        // NYI: cleanup: See #479: there are two places that initialize
         // _declaredOrInheritedFeatures: this place and
         // SourceModule.findDeclaredOrInheritedFeatures(). There should be only one!
         d._declaredOrInheritedFeatures = s;

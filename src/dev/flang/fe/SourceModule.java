@@ -659,7 +659,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     var d = data(outer);
     if (d._declaredOrInheritedFeatures == null)
       {
-        // NYI: cleanup: there are two places that initialize
+        // NYI: cleanup: See #479: there are two places that initialize
         // _declaredOrInheritedFeatures: this place and
         // Module.declaredOrInheritedFeatures(). There should be only one!
         d._declaredOrInheritedFeatures = new TreeMap<>();
