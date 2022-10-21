@@ -139,6 +139,60 @@ nom is
           matched Sequence T := input.takeWhile cond
           success rest matched
 
+    # return result of p1 and p2 as tuple, drop result of p_seq
+    separated_pair(I, R1, R2, R3, O1, O2, O3 type, p1 parser I R1 O1, p_sep parser R1 R2 O2, p2 parser R2 R3 O3) parser I R3 (tuple O1 O3) is
+      ref : parser I R3 (tuple O1 O3)
+        parse(input I) parse_result R3 (tuple O1 O3) is
+          match p1.parse input
+            s1 success =>
+              match p_sep.parse s1.rest
+                s2 success =>
+                  match p2.parse s2.rest
+                    s3 success => success s3.rest (s1.out, s3.out)
+                    e3 error => e3
+                e2 error => e2
+            e1 error => e1
+
+
+
+  # parsers applied multiple times
+  multi is
+
+    # apply parser multiple times, return results as sequence
+    many0 (I, O type, p parser I I O) parser I I (Sequence O) is
+      ref : parser I I (Sequence O)
+        parse(input I) parse_result I (Sequence O) is
+          match p.parse input
+            s1 success I O =>
+              match (parse s1.rest)
+                s2 success I (Sequence O) => success s2.rest ([s1.out]++s2.out).as_seq
+                error => panic "invalid state, many0 must always succeed."
+            # NYI type inference should infer correct type of emtpy array
+            error => success input (lists.empty O).as_seq
+
+    # parse a separated list of values, zero or more values
+    separated_list0(I, O, D type, p_sep parser I I D, p_value parser I I O) parser I I (Sequence O) is
+      ref : parser I I (Sequence O)
+        parse(input I) parse_result I (Sequence O) is
+          match p_value.parse input
+            s1 success =>
+              match (many0 (combinator.preceded p_sep p_value)).parse s1.rest
+                s2 success => success s2.rest ([s1.out]++s2.out).as_seq
+                e error => panic "invalid state, many always succeeds"
+            # NYI type inference should infer correct type of emtpy array
+            error => success input (lists.empty O).as_seq
+
+    # parse a separated list of values, one or more values
+    separated_list1(I, O, D type, p_sep parser I I D, p_value parser I I O) parser I I (Sequence O) is
+      ref : parser I I (Sequence O)
+        parse(input I) parse_result I (Sequence O) is
+          match p_value.parse input
+            s1 success =>
+              match (many0 (combinator.preceded p_sep p_value)).parse s1.rest
+                s2 success => success s2.rest ([s1.out]++s2.out).as_seq
+                error => panic "invalid state, many always succeeds"
+            e error => e
+
 
 
   # general purpose combinators
@@ -209,3 +263,16 @@ nom is
       ref : parser I2 R O
         parse(input I2) parse_result R O is
           p.parse (mapper1 input)
+
+    # convert parser to lazy
+    as_lazy(I, R, O type, p () -> parser I R O) parser I R O is
+      op option (parser I R O) := nil
+      p_cached:= mut op
+      ref : parser I R O
+        parse(input I) parse_result R O is
+          match p_cached.get
+            p parser I R O => p.parse input
+            nil =>
+              p_cached.put (p())
+              parse input
+
