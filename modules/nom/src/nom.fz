@@ -41,6 +41,10 @@ nom is
 
   # the result of parser.parse
   parse_result(I, O type) : choice (success I O) error is
+    redef asString =>
+      match parse_result.this
+        s success => $s
+        e error => $e
 
 
 
