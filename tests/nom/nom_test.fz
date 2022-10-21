@@ -25,7 +25,7 @@
 
 # test for nom, a parser combinator framework
 #
-nom_test : nom, nom.combinator, nom.string_parsers =>
+nom_test : nom, nom.combinator, nom.string_parsers, nom.sequence =>
   hex_color(r,g,b u8) is
     redef asString => "r: $r, g: $g, b: $b"
 
@@ -62,11 +62,19 @@ nom_test : nom, nom.combinator, nom.string_parsers =>
     e error =>
       say e
 
-  match (to_string_output (to_string_input whitespace0)).parse " Hello"
+  match (to_string_parser whitespace0).parse " Hello"
     s success =>
       say s.out
       say "rest: {s.rest}"
     e error =>
       say e
 
+  parser_string := to_string_parser (delimited (tag "\"") (take_while0 codepoint (c-> (c ≠ "\"") & (c ≠ "\\"))) (tag "\""))
+
+  match (parser_string.parse "\"I'm a utf-8 string 😀\"After the string")
+    s success =>
+      say s.out
+      say "rest: {s.rest}"
+    e error =>
+      say e
 

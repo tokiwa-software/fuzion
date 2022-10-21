@@ -109,13 +109,16 @@ nom is
             e error => e
 
     # convert a parser taking a sequence of codepoints to a parser that takes a string
-    to_string_input(O type, p parser (Sequence codepoint) (Sequence codepoint) O) parser string (Sequence codepoint) O is
-      combinator.map_inp string (Sequence codepoint) O p (str -> str.asCodepoints)
+    to_string_input(R, O type, p parser (Sequence codepoint) R O) parser string R O is
+      combinator.map_inp (Sequence codepoint) string R O p (str -> str.asCodepoints)
 
     # convert a parser returning a sequence of codepoints to a parser that returns a string
     to_string_output(I, R type, p parser I R (Sequence codepoint)) parser I R string is
       combinator.map_res I R (Sequence codepoint) string p (seq -> strings.fromCodepoints seq)
 
+    # convert a parser taking and returning to codepoints to a parser taking and returning a string
+    to_string_parser(R type, p parser (Sequence codepoint) R (Sequence codepoint)) parser string R string is
+      to_string_output (to_string_input p)
 
   # parser working on sequences of input
   sequence is
@@ -125,7 +128,7 @@ nom is
       ref : parser (Sequence T) (Sequence T) (Sequence T)
         parse(input Sequence T) parse_result (Sequence T) (Sequence T) is
           rest Sequence T := input.dropWhile cond
-          matched Sequence T := input.takeWhile (t -> !(cond t))
+          matched Sequence T := input.takeWhile cond
           success rest matched
 
 
@@ -193,9 +196,7 @@ nom is
             e1 error => e1
 
     # map input to parser p
-    map_inp(I, R, O type, p parser R R O, mapper1 I -> R) parser I R O is
-      ref : parser I R O
-        parse(input I) parse_result R O is
-          match (p.parse (mapper1 input))
-            s success R O => s
-            e error => e
+    map_inp(I1, I2, R, O type, p parser I1 R O, mapper1 I2 -> I1) parser I2 R O is
+      ref : parser I2 R O
+        parse(input I2) parse_result R O is
+          p.parse (mapper1 input)

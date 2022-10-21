@@ -4,3 +4,5 @@ error: tag (#) not found
 error: input is empty
 Hello
 rest: [ ]
+I'm a utf-8 string 😀
+rest: [A,f,t,e,r, ,t,h,e, ,s,t,r,i,n,g]
