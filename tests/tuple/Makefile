@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = tupletest
+override NAME = tupletest
 include ../positive.mk

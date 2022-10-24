@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = testLists
+override NAME = testLists
 include ../positive.mk

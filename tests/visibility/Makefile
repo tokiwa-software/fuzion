@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = visibility
+override NAME = visibility
 include ../positive.mk

@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = transducertest
+override NAME = transducertest
 include ../positive.mk

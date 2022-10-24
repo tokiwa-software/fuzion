@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = indentation_negative
+override NAME = indentation_negative
 include ../negative.mk

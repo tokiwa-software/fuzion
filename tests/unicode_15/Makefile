@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = unicode_15
+override NAME = unicode_15
 include ../positive.mk

@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = checkGenericConstraint
+override NAME = checkGenericConstraint
 include ../simple.mk

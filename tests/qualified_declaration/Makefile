@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = qualified_declaration
+override NAME = qualified_declaration
 include ../positive.mk
