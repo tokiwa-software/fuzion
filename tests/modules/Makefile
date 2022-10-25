@@ -6,6 +6,7 @@ FZ = ../../bin/fz
 
 .PHONY: all sources_only a ab b clean
 all: sources_only a ab # b (enable to reproduce #482)
+                       # xy (shows problem related to #462)
 
 # run example using all sources directly
 sources_only:
@@ -33,6 +34,13 @@ ab: modules/a.fum modules/b.fum
 # a.fum should maybe be added automatically since b.fum depends on it, see #482
 b: modules/b.fum
 	$(FZ) -sourceDirs=./src         -modules=b   -moduleDirs=modules test_modules $(CHECK)
+
+# NYI: see #462: try loading inner feature 'x.y' from command line while outer
+# 'x' is defined in module, does not work currently.
+xy:
+	mkdir -p modules
+	$(FZ) -sourceDirs=src_x -saveLib=modules/x.fum
+	$(FZ) -sourceDirs=src_y -modules=x -moduleDirs=modules x.y
 
 clean:
 	rm -rf modules *~ */*~ */*/*~
