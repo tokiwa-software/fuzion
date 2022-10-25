@@ -5,12 +5,12 @@ CHECK = && echo $(OK) || (echo $(FAIL); exit 1)
 FZ = ../../bin/fz
 
 .PHONY: all sources_only a ab b int c clean
-all: sources_only a ab # b (enable to reproduce #484)
+all: sources_only a ab b
                        # xy (shows problem related to #462)
 
 int: all
 
-c: sources_only a_c ab_c
+c: sources_only a_c ab_c b_c
 
 # run example using all sources directly
 sources_only:
@@ -43,14 +43,14 @@ ab_c: modules/a.fum modules/b.fum
 	($(FZ) -sourceDirs=./src         -modules=a,b -moduleDirs=modules -c test_modules -o=testbin && ./testbin) $(CHECK)
 
 # run example using b.fum and sources src.
-# a.fum should maybe be added automatically since b.fum depends on it, see #482
+# a.fum is not added automatically, so this causes errors, see #484
 b: modules/b.fum
-	$(FZ) -sourceDirs=./src         -modules=b   -moduleDirs=modules test_modules $(CHECK)
+	make -f b.make int
 
 # compile to C code and run example using b.fum and sources src.
-# a.fum should maybe be added automatically since b.fum depends on it, see #482
+# a.fum is not added automatically, so this causes errors, see #484
 b_c: modules/b.fum
-	($(FZ) -sourceDirs=./src         -modules=b   -moduleDirs=modules -c test_modules -o=testbin && ./testbin) $(CHECK)
+	make -f b.make c
 
 # NYI: see #462: try loading inner feature 'x.y' from command line while outer
 # 'x' is defined in module, does not work currently.
