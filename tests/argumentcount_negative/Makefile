@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = argumentcount_negative
+override NAME = argumentcount_negative
 include ../negative.mk

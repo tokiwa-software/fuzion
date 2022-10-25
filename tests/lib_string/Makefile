@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = stringtest
+override NAME = stringtest
 include ../simple.mk

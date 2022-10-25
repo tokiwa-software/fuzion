@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = generics_negative
+override NAME = generics_negative
 include ../negative.mk

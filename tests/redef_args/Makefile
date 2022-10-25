@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = redef_args
+override NAME = redef_args
 include ../positive.mk

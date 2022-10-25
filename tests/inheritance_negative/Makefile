@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = inheritance_negative
+override NAME = inheritance_negative
 include ../negative.mk

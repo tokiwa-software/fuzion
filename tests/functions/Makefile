@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = functions
+override NAME = functions
 include ../positive.mk

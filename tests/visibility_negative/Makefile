@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = visibility_negative
+override NAME = visibility_negative
 include ../negative.mk

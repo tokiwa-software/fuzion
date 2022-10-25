@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = basicIntegers_negative
+override NAME = basicIntegers_negative
 include ../negative.mk

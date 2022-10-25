@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = dot_type_test
+override NAME = dot_type_test
 include ../simple.mk

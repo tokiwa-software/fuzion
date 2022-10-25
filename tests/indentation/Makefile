@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = indentation
+override NAME = indentation
 include ../simple.mk
