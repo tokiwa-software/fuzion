@@ -1,0 +1,9 @@
+a is
+  x => "a.x defined in module A"
+
+  # make sure a.fum references type features derived from types from base.fum
+  #
+  q =>
+    say (Types.get fuzion.java)
+    say (Types.get fuzion.java.JavaVoid)
+    say (Types.get fuzion.java.JavaObject)
