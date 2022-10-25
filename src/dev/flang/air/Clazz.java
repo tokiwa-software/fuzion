@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -975,7 +974,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (f != null,
-       this != Clazzes.c_void.get());
+       !this.isVoidType());
 
     return lookup(f, -1, actualGenerics, p, false);
   }
@@ -1015,7 +1014,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
   {
     if (PRECONDITIONS) require
       (f != null,
-       this != Clazzes.c_void.get());
+       !this.isVoidType());
 
     Clazz innerClazz = null;
     Clazz[] innerClazzes = null;
@@ -2303,7 +2302,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
     var fields = new List<Clazz>();
     for (var field: feats)
       {
-        if (this != Clazzes.c_void.get() &&
+        if (!this.isVoidType() &&
             field.isField() &&
             field == findRedefinition(field) && // NYI: proper field redefinition handling missing, see tests/redef_args/*
             Clazzes.isUsed(field, this))
@@ -2316,7 +2315,7 @@ public class Clazz extends ANY implements Comparable<Clazz>
                     fields.add(lookup(field, i, Call.NO_GENERICS, Clazzes.isUsedAt(field), false));
                   }
               }
-            else if (this != Clazzes.c_void.get())
+            else
               {
                 fields.add(lookup(field, Call.NO_GENERICS, Clazzes.isUsedAt(field)));
               }
