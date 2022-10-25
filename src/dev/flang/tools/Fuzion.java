@@ -33,6 +33,8 @@ import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.ArrayList;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -91,6 +93,10 @@ class Fuzion extends Tool
   {
     interpreter("-interpreter")
     {
+      boolean takesApplicationArgs()
+      {
+        return true;
+      }
       void process(FuzionOptions options, FUIR fuir)
       {
         new Interpreter(options, fuir).run();
@@ -332,6 +338,14 @@ class Fuzion extends Tool
     }
 
     /**
+     * Does this backend process arguments that are passed to the Fuzion application?
+     */
+    boolean takesApplicationArgs()
+    {
+      return false;
+    }
+
+    /**
      * If this backend processes the front end data directly, this method will
      * do that and return true.
      */
@@ -534,7 +548,8 @@ class Fuzion extends Tool
         var bu = b.usage();
         return "Usage: " + _cmd + " " + ba + " " + bu +
                            (b.runsCode() ? stdRun : "") +
-                           stdBe + std;
+                           stdBe + std +
+                           (b.takesApplicationArgs() ? "[-- <list of arbitrary arguments for envir.args effect>] " : "");
       }
   }
 
@@ -690,9 +705,15 @@ class Fuzion extends Tool
    */
   private Runnable parseArgsForBackend(String[] args)
   {
+    ArrayList<String> argsLeft = null;
+
     for (var a : args)
       {
-        if (!parseGenericArg(a))
+        if (argsLeft != null)
+          {
+            argsLeft.add(a);
+          }
+        else if (!parseGenericArg(a))
           {
             var arg = a;
             if (arg.indexOf("=") >= 0)
@@ -702,6 +723,11 @@ class Fuzion extends Tool
             if (a.equals("-"))
               {
                 _readStdin = true;
+              }
+            else if ((_backend.takesApplicationArgs() || _backend == Backend.undefined) && a.equals("--"))
+              {
+                /* stop argument parsing */
+                argsLeft = new ArrayList<String>();
               }
             else if (_allBackends_.containsKey(arg))
               {
@@ -762,6 +788,7 @@ class Fuzion extends Tool
       {
         fatal("neither property '" + FUZION_HOME_PROPERTY + "' is set nor argument '-XfuzionHome=<path>' is given");
       }
+    final Optional<ArrayList<String>> _argsLeft = Optional.ofNullable(argsLeft);
     return () ->
       {
         var options = new FrontEndOptions(_verbose,
@@ -782,6 +809,7 @@ class Fuzion extends Tool
           {
             options.setTailRec();
           }
+        options.setBackendArgs(_argsLeft.orElse(new ArrayList<String>()));
         timer("prep");
         var fe = new FrontEnd(options);
         timer("fe");
