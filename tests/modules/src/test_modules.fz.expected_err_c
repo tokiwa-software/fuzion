@@ -1,0 +1,25 @@
+
+[32m--CURDIR--/src/test_modules.fz:15:7:[39m [1;31merror 1[0m[1m: Could not find called feature[0m
+[34m  say a.x
+[33m------^[0m
+Feature not found: '[35ma[39m' (no arguments)
+Target feature: '[35mtest_modules[39m'
+In call: '[36ma[39m'
+
+
+[32m--CURDIR--/src/test_modules.fz:16:7:[39m [1;31merror 2[0m[1m: Could not find called feature[0m
+[34m  say a.y
+[33m------^[0m
+Feature not found: '[35ma[39m' (no arguments)
+Target feature: '[35mtest_modules[39m'
+In call: '[36ma[39m'
+
+
+[32m--CURDIR--/src/test_modules.fz:17:7:[39m [1;31merror 3[0m[1m: Could not find called feature[0m
+[34m  say a.z
+[33m------^[0m
+Feature not found: '[35ma[39m' (no arguments)
+Target feature: '[35mtest_modules[39m'
+In call: '[36ma[39m'
+
+3 errors.
