@@ -5,7 +5,7 @@ CHECK = && echo $(OK) || (echo $(FAIL); exit 1)
 FZ = ../../bin/fz
 
 .PHONY: all sources_only a ab b clean
-all: sources_only a ab
+all: sources_only a ab # b (enable to reproduce #482)
 
 # run example using all sources directly
 sources_only:
@@ -28,6 +28,11 @@ modules/b.fum: modules/a.fum
 # run example using a.fum and b.fum and sources src
 ab: modules/a.fum modules/b.fum
 	$(FZ) -sourceDirs=./src         -modules=a,b -moduleDirs=modules test_modules $(CHECK)
+
+# run example using b.fum and sources src.
+# a.fum should maybe be added automatically since b.fum depends on it, see #482
+b: modules/b.fum
+	$(FZ) -sourceDirs=./src         -modules=b   -moduleDirs=modules test_modules $(CHECK)
 
 clean:
 	rm -rf modules *~ */*~ */*/*~
