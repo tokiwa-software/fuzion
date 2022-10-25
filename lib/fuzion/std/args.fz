@@ -31,7 +31,10 @@ private args =>
   count i32 is intrinsic
 
   # intrinsic to get i-th argument as a string
-  get(i i32) string is intrinsic
+  get(i i32) string
+    pre
+      i < count
+    is intrinsic
 
   # return the arguments in an array
   array string count (i -> get i)
