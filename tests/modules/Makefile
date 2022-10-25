@@ -5,7 +5,7 @@ CHECK = && echo $(OK) || (echo $(FAIL); exit 1)
 FZ = ../../bin/fz
 
 .PHONY: all sources_only a ab b clean
-all: sources_only a ab # b (enable to reproduce #482)
+all: sources_only a ab # b (enable to reproduce #484)
                        # xy (shows problem related to #462)
 
 # run example using all sources directly
