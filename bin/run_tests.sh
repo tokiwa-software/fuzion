@@ -33,6 +33,10 @@ BUILD_DIR=$1
 TARGET=$2
 TESTS=$(echo "$BUILD_DIR"/tests/*/)
 rm -rf "$BUILD_DIR"/run_tests.results
+
+# print collected results up until interruption
+trap "echo """"; cat ""$BUILD_DIR""/run_tests.results; exit 130;" INT
+
 for test in $TESTS; do
   if test -n "$VERBOSE"; then
     echo -en "\nrun $test: "
