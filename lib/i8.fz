@@ -168,6 +168,9 @@ i8s : wrappingIntegers i8 is
   redef min => i8 -0x80
   redef max => i8  0x7f
 
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => i8 -1
+
 
 # i8 -- returns value of unit type i8s
 #
