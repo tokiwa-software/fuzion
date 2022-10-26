@@ -918,7 +918,7 @@ public class DFA extends ANY
     put("fuzion.std.err.write"           , cl -> Value.UNIT );
     put("fuzion.std.fileio.read"         , cl -> cl._dfa._bool ); // NYI : manipulation of an array passed as argument needs to be tracked and recorded
     put("fuzion.std.fileio.get_file_size", cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.std.fileio.write"        , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.std.fileio.write"        , cl -> cl._dfa._bool );
     put("fuzion.std.fileio.exists"       , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.std.fileio.delete"       , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.std.fileio.move"         , cl -> NYIintrinsicMissing(cl) );
