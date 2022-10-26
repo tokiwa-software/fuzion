@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This file is part of the Fuzion language implementation.
 #
@@ -26,6 +26,7 @@
 #
 # -----------------------------------------------------------------------
 
+set -euo pipefail
 
 # Run the fuzion example given as an argument $2 using the C backend and store
 # the stdout/stderr output to $2.expected_out_c and $2.expected_err_c.
