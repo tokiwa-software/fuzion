@@ -123,7 +123,7 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.get_file_size", noFileIo); // NYI
+    put("fuzion.std.fileio.get_file_size", noFileIo);
     put("fuzion.std.fileio.write"        , noFileIo); // NYI
     put("fuzion.std.fileio.exists"       , noFileIo); // NYI
     put("fuzion.std.fileio.delete"       , noFileIo); // NYI
