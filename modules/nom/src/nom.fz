@@ -104,7 +104,8 @@ nom is
 
     # take while cond is satisfied, but at least one codepoint
     take_while1(cond codepoint -> bool) : parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint), strings is
-      p := sequence.take_while0 cond
+      # NYI: type necessary currently, crash in both backends
+      p parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) := sequence.take_while0 cond
       parse(input (Sequence codepoint)) parse_result (Sequence codepoint) (Sequence codepoint) is
         match p.parse input
           s success =>
