@@ -69,7 +69,7 @@ string ref : hasHash string, ordered string, strings is
       & utf8.count = other.utf8.count
 
 
-  infix == (other string) => string.this = other    # NYI: replace by 'infix ='
+  infix == (other string) => string.this = other    # NYI: #498: replace by 'infix ='
 
   # does this come before other?
   #
