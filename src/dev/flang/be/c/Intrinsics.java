@@ -123,12 +123,12 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.get_file_size", noFileIo); // NYI
-    put("fuzion.std.fileio.write"        , noFileIo); // NYI
-    put("fuzion.std.fileio.exists"       , noFileIo); // NYI
-    put("fuzion.std.fileio.delete"       , noFileIo); // NYI
-    put("fuzion.std.fileio.move"         , noFileIo); // NYI
-    put("fuzion.std.fileio.create_dir"   , noFileIo); // NYI
+    put("fuzion.std.fileio.get_file_size", noFileIo); // NYI: #158
+    put("fuzion.std.fileio.write"        , noFileIo); // NYI: #158
+    put("fuzion.std.fileio.exists"       , noFileIo); // NYI: #158
+    put("fuzion.std.fileio.delete"       , noFileIo); // NYI: #158
+    put("fuzion.std.fileio.move"         , noFileIo); // NYI: #158
+    put("fuzion.std.fileio.create_dir"   , noFileIo); // NYI: #158
     put("fuzion.std.out.flush" ,
         "fuzion.std.err.flush" , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
     put("fuzion.stdin.nextByte", (c,cl,outer,in) ->
