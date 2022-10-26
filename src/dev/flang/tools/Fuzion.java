@@ -518,8 +518,7 @@ class Fuzion extends Tool
     var std = STANDARD_OPTIONS(xtra);
     var stdRun = "[-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] ";
     var stdBe = "[-modules={<m>,..}] [-moduleDirs={<path>,..}] [-sourceDirs={<path>,..}] " +
-      (xtra ? "[-XdumpModules={<name>,..}] " : "") +
-      "(<main> | <srcfile>.fz | -) ";
+      (xtra ? "[-XdumpModules={<name>,..}] " : "");
     if (_backend == Backend.undefined)
       {
         var aba = new StringBuilder();
@@ -549,7 +548,9 @@ class Fuzion extends Tool
         return "Usage: " + _cmd + " " + ba + " " + bu +
                            (b.runsCode() ? stdRun : "") +
                            stdBe + std +
-                           (b.takesApplicationArgs() ? "[-- <list of arbitrary arguments for envir.args effect>] " : "");
+                           (b.takesApplicationArgs() ? "[--] " : "") +
+                           "(<main> | <srcfile>.fz | -) " +
+                           (b.takesApplicationArgs() ? "[<list of arbitrary arguments for envir.args effect>] " : "");
       }
   }
 
@@ -723,6 +724,11 @@ class Fuzion extends Tool
             if (a.equals("-"))
               {
                 _readStdin = true;
+
+                if (_backend.takesApplicationArgs() || _backend == Backend.undefined)
+                  {
+                    argsLeft = new ArrayList<String>();
+                  }
               }
             else if ((_backend.takesApplicationArgs() || _backend == Backend.undefined) && a.equals("--"))
               {
@@ -761,6 +767,11 @@ class Fuzion extends Tool
             else
               {
                 _main = a;
+
+                if (_backend.takesApplicationArgs() || _backend == Backend.undefined)
+                  {
+                    argsLeft = new ArrayList<String>();
+                  }
               }
           }
       }
@@ -770,7 +781,23 @@ class Fuzion extends Tool
       }
     if (_main == null && !_readStdin && _backend.needsMain())
       {
-        fatal("missing main feature name in command line args");
+        if (argsLeft != null && argsLeft.size() >= 1)
+          {
+            String mainOrStdin = argsLeft.remove(0);
+
+            if (mainOrStdin.equals("-"))
+              {
+                _readStdin = true;
+              }
+            else
+              {
+                _main = mainOrStdin;
+              }
+          }
+        else
+          {
+            fatal("missing main feature name in command line args");
+          }
       }
     if (!_backend.needsMain() && _main != null)
       {
