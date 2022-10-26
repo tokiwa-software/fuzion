@@ -28,15 +28,17 @@
 nom_test : nom, nom.combinator, nom.string_parsers, nom.sequence, nom.branch, nom.multi =>
 
 
-  # NYI helper as long as type inference can figure out types for map_res
-  map_res_helper(O type, p parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint), mapper (Sequence codepoint) -> outcome O) =>
+  # # NYI helper as long as type inference can figure out types for map_res
+  #
+  # NYI: these helpers crash C-backend currently
+  #
+  # error 1: NYI: in nom_test.hex_parser_test no targets for Call to nom_test.ref parser<string, Sequence<codepoint>, nom_test.hex_parser_test.hex_color>.parse target boxed(nom.combinator.ref map_inp<Sequence<codepoint>, string, Sequence<codepoint>, nom_test.hex_parser_test.hex_color>):nom.combinator.map_inp<Sequence<codepoint>, string, Sequence<codepoint>, nom_test.hex_parser_test.hex_color>
+  #
+  map_res_helper(O type, p parser (Sequence codepoint) (Sequence codepoint) (Sequence codepoint), mapper (Sequence codepoint) -> outcome O) parser (Sequence codepoint) (Sequence codepoint) O is
     map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) O p mapper
 
-  # NYI helper as long as type inference can figure out types for map_res
-  map_res_helper2(O1, O2 type, p parser (Sequence codepoint) (Sequence codepoint) O1, mapper O1 -> outcome O2) =>
+  map_res_helper2(O1, O2 type, p parser (Sequence codepoint) (Sequence codepoint) O1, mapper O1 -> outcome O2) parser (Sequence codepoint) (Sequence codepoint) O2 is
     map_res (Sequence codepoint) (Sequence codepoint) O1 O2 p mapper
-
-
 
   simple_parser_test is
     say ((to_string_parser whitespace0).parse "\n \tHello").asString.codepointLength
@@ -45,28 +47,33 @@ nom_test : nom, nom.combinator, nom.string_parsers, nom.sequence, nom.branch, no
 
   hex_parser_test is
     hex_color(r,g,b u8) is
-      redef asString => "r: $r, g: $g, b: $b"
+      redef asString string is
+        "r: $r, g: $g, b: $b"
 
     is_valid(c codepoint) bool is
       codepoints.ascii_digit.contains c.val
         || (u32 0x41 .. 0x46).contains c.val
 
-    parser_two_digit_hex := map_res_helper u8 (take_while_m_n 2 2 (fun is_valid)) (o1 -> (strings.fromCodepoints o1).parse_u32(16).val.as_u8)
+    # example: `A1` => u8
+    parser_two_digit_hex := map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) u8 (take_while_m_n 2 2 (fun is_valid)) (o1 -> (strings.fromCodepoints o1).parse_u32(16).val.as_u8)
+    # example: `#9F3A10` => tuple u8 u8 u8
     parser_hex_tuple := preceded (tag "#") (tuple3 parser_two_digit_hex parser_two_digit_hex parser_two_digit_hex)
-    parser_hex_color_seq_codepoints := map_res_helper2 (tuple u8 u8 u8) hex_color parser_hex_tuple (t -> (r,g,b) := t; hex_color r g b)
+    # example: `#9F3A10` => hex_color
+    parser_hex_color_seq_codepoints := map_res (Sequence codepoint) (Sequence codepoint) (tuple u8 u8 u8) hex_color parser_hex_tuple (t -> (r,g,b) := t; hex_color r g b)
+    # convert parser to take string not codepoints as input
+    # NYI: using this crashes in c backend currently
     parser_hex_color := to_string_input parser_hex_color_seq_codepoints
 
-    say (parser_hex_color.parse "#9F3A10")
-    say (parser_hex_color.parse "#9F3A1G")
-    say (parser_hex_color.parse "Hello")
-    say (parser_hex_color.parse "")
-
+    say (parser_hex_color_seq_codepoints.parse "#9F3A10".asCodepoints).asString   # NYI: asCodepoints, asString necessary, see issue #486
+    say (parser_hex_color_seq_codepoints.parse "#9F3A1G".asCodepoints).asString   # NYI: asCodepoints, asString necessary, see issue #486
+    say (parser_hex_color_seq_codepoints.parse "Hello".asCodepoints).asString     # NYI: asCodepoints, asString necessary, see issue #486
+    say (parser_hex_color_seq_codepoints.parse "".asCodepoints).asString          # NYI: asCodepoints, asString necessary, see issue #486
 
 
   json_parser_test is
 
     json_value : choice string i64 f64 bool nil (Sequence json_value) (map string json_value) is
-      redef asString =>
+      redef asString string is
         match json_value.this
           s string => "string: $s"
           i i64 => "integer: $i"
@@ -77,51 +84,68 @@ nom_test : nom, nom.combinator, nom.string_parsers, nom.sequence, nom.branch, no
           m map => "m: $m"
 
     # NYI escapings
-    parser_string := to_string_output (delimited (tag "\"") (take_while0 codepoint (c-> (c ≠ "\"") & (c ≠ "\\"))) (tag "\""))
+    parser_string parser (Sequence codepoint) (Sequence codepoint) json_value :=
+      map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) json_value (delimited (tag "\"") (take_while0 codepoint (c-> (c ≠ "\"") & (c ≠ "\\"))) (tag "\"")) (x -> strings.fromCodepoints x)
     # NYI fraction, negative numbers, exponents
-    parser_number := map_res_helper i64 (take_while1 (c -> codepoints.ascii_digit.contains c.val)) (x -> (strings.fromCodepoints x).parse_i64)
-    parser_true := map_res_helper bool (tag "true") (x -> true)
-    parser_false := map_res_helper bool (tag "false") (x -> false)
-    parser_null := map_res_helper nil (tag "null") (x -> nil)
+    parser_number parser (Sequence codepoint) (Sequence codepoint) json_value :=
+      map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) json_value (take_while1 (c -> codepoints.ascii_digit.contains c.val)) (x -> (strings.fromCodepoints x).parse_i64.val)
+    parser_true parser (Sequence codepoint) (Sequence codepoint) json_value :=
+      map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) json_value (tag "true") (x -> true)
+    parser_false parser (Sequence codepoint) (Sequence codepoint) json_value :=
+      map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) json_value (tag "false") (x -> false)
+    parser_null parser (Sequence codepoint) (Sequence codepoint) json_value :=
+      map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) json_value (tag "null") (x -> nil)
 
-    # array
-    parser_no_values => map_res_helper (Sequence json_value) whitespace0 (x -> lists.empty json_value)
-    parser_array => delimited (tag "[") (alt [separated_list1 (tag ",") parser_value_delimited_lazy, parser_no_values]) (tag "]")
+    # jarray is
+    #   parser_no_values parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) :=
+    #     map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (Sequence json_value) whitespace0 (x -> lists.empty json_value)
 
-    # object
-    parser_key_value => separated_pair (delimited whitespace0 parser_string whitespace0) (tag ":") parser_value_delimited_lazy
-    parser_no_key_values => map_res_helper (Sequence (tuple string json_value)) whitespace0 (x -> lists.empty (tuple string json_value))
-    parser_object_seq_tuple => delimited (tag "\{") (alt [separated_list1 (tag ",") parser_key_value, parser_no_key_values]) (tag "}")
-    parser_object_map => map_res_helper2 (Sequence (tuple string json_value)) (map string json_value) parser_object_seq_tuple (x -> mapOf x.asArray)
+    #   parser_comma_sep_value parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) :=
+    #     separated_list1 (tag ",") jvalue.parser
 
-    # json value
+    #   parser parser (Sequence codepoint) (Sequence codepoint) (Sequence json_value) is
+    #     delimited (tag "[") (alt [parser_comma_sep_value, parser_no_values]) (tag "]")
 
-    # NYI helper as long as type inference can figure out types for map_res
-    map_res_helper_json_value(O type, p parser (Sequence codepoint) (Sequence codepoint) O, mapper O -> outcome json_value) =>
-      map_res_helper2 O json_value p mapper
+    # jobject is
+    #   parser_key_value parser (Sequence codepoint) (Sequence codepoint) (tuple string json_value) :=
+    #     separated_pair (delimited whitespace0 parser_string whitespace0) (tag ":") jvalue.parser
 
-    parser_value => alt (Sequence codepoint) (Sequence codepoint) json_value [
-      map_res_helper_json_value string parser_string (x->x),
-      map_res_helper_json_value i64 parser_number (x->x),
-      map_res_helper_json_value (map string json_value) parser_object_map (x->x),
-      map_res_helper_json_value (Sequence json_value) parser_array (x->x),
-      map_res_helper_json_value bool parser_true (x->x),
-      map_res_helper_json_value bool parser_false (x->x),
-      map_res_helper_json_value nil parser_null (x->x)
-      ]
-    parser_value_delimited => delimited (Sequence codepoint) (Sequence codepoint) json_value (Sequence codepoint) whitespace0 parser_value whitespace0
-    parser_value_delimited_lazy => (as_lazy (Sequence codepoint) (Sequence codepoint) json_value (() -> parser_value_delimited))
+    #   parser_no_key_values parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple string json_value)) is
+    #     map_res (Sequence codepoint) (Sequence codepoint) (Sequence codepoint) (Sequence (tuple string json_value)) whitespace0 (x -> lists.empty (tuple string json_value))
 
-    parser_json => to_string_input parser_value_delimited_lazy
+    #   parser_key_values parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple string json_value)) is
+    #     separated_list1 (tag ",") parser_key_value
 
-    say ((to_string_input parser_string).parse "\"I'm a utf-8 string 😀\"After the string")
-    say ((to_string_input parser_number).parse "1234asdf")
-    say ((to_string_input parser_true).parse "true")
+    #   parser_object_seq_tuple parser (Sequence codepoint) (Sequence codepoint) (Sequence (tuple string json_value)) is
+    #     delimited (tag "\{") (alt [parser_key_values, parser_no_key_values]) (tag "}")
+    #   parser parser (Sequence codepoint) (Sequence codepoint) (map string json_value) is
+    #     map_res (Sequence codepoint) (Sequence codepoint) (Sequence (tuple string json_value)) (map string json_value) parser_object_seq_tuple (x -> mapOf x.asArray)
+
+    jvalue is
+
+      # parse true, false, [], {}, etc.
+      parser_value parser (Sequence codepoint) (Sequence codepoint) json_value is
+        alt (Sequence codepoint) (Sequence codepoint) json_value [
+          parser_string,
+          parser_number,
+          parser_true,
+          parser_false,
+          parser_null]
+      # parse true, false, [], {}, etc. enclosed in whitespace
+      parser parser (Sequence codepoint) (Sequence codepoint) json_value is
+        delimited (Sequence codepoint) (Sequence codepoint) json_value (Sequence codepoint) whitespace0 parser_value whitespace0
+
+
+    parser_json parser string (Sequence codepoint) json_value is
+      to_string_input jvalue.parser
+
+    say (parser_string.parse "\"I'm a utf-8 string 😀\"After the string".asCodepoints).asString
+    say (parser_number.parse "1234asdf".asCodepoints).asString
+    say (parser_true.parse "true".asCodepoints).asString
     # parser true fails to parse false
-    say ((to_string_input parser_true).parse "false")
-    # expected is an empty list
-    say ((to_string_input parser_no_values).parse " \t \n")
-    # say ((to_string_input parser_value_delimited).parse "\"Hello\"")
+    say (parser_true.parse "false".asCodepoints).asString
+
+    # say (jvalue.parser.parse "\"A string \"".asCodepoints).asString
 
 
 
