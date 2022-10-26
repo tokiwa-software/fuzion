@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This file is part of the Fuzion language implementation.
 #
@@ -36,6 +36,8 @@
 #   FUZION_JAVA_STACK_SIZE the stack size parameter passed to the JAVA command
 #   FUZION_JAVA_OPTIONS    options to be passed to the JAVA command (if set, will
 #                          override stack size)
+
+set -euo pipefail
 
 FUZION_CMD=$0
 FUZION_BIN="$(dirname "$(readlink -f "$0")")"

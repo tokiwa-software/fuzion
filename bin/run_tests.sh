@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This file is part of the Fuzion language implementation.
 #
@@ -25,6 +25,7 @@
 #
 # -----------------------------------------------------------------------
 
+set -euo pipefail
 
 # usage: run_tests.sh <build-dir> <target>
 #
@@ -32,6 +33,8 @@
 BUILD_DIR=$1
 TARGET=$2
 TESTS=$(echo "$BUILD_DIR"/tests/*/)
+VERBOSE="${VERBOSE:-""}"
+
 rm -rf "$BUILD_DIR"/run_tests.results
 
 # print collected results up until interruption
@@ -45,11 +48,11 @@ for test in $TESTS; do
     echo -n "_"
     echo "$test: skipped" >>"$BUILD_DIR"/run_tests.results
   else
-    START_TIME=`date +%s%N | cut -b1-13`
+    START_TIME=$(date +%s%N | cut -b1-13)
     make "$TARGET" -e -C >"$test"/out.txt "$test" 2>/dev/null \
         && (echo -n "." && echo "$test: ok"     >>"$BUILD_DIR"/run_tests.results) \
         || (echo -n "#" && echo "$test: failed" >>"$BUILD_DIR"/run_tests.results)
-    END_TIME=`date +%s%N | cut -b1-13`
+    END_TIME=$(date +%s%N | cut -b1-13)
     if test -n "$VERBOSE"; then
       echo -en " time: $((END_TIME-START_TIME))ms"
     fi
