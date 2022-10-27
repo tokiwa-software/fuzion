@@ -992,7 +992,26 @@ public class Interpreter extends ANY
       }
     if (CHECKS) check
       (vclazz._type.isAssignableFrom(staticTypeOfValue));
-    setFieldSlot(thiz, vclazz, valSlot, v);
+
+    // special case: nested choices
+    //
+    // if the field vclazz is itself a choice
+    // and we do not assign a value which is this exact choice
+    // and value is not of special choice type boolValue
+    // we need to dive deeper into the inner choice
+    // and set the value there first.
+    //
+    if(  vclazz.isChoice()
+      && !(v instanceof ValueWithClazz vc && vc._clazz.compareTo(vclazz) == 0)
+      && !(v instanceof boolValue))
+      {
+        var vInner = tag(vclazz, ((ValueWithClazz)v)._clazz, v);
+        setFieldSlot(thiz, vclazz, valSlot, vInner);
+      }
+    else
+      {
+        setFieldSlot(thiz, vclazz, valSlot, v);
+      }
   }
 
 
