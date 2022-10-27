@@ -920,7 +920,7 @@ public class DFA extends ANY
     put("fuzion.std.fileio.get_file_size", cl -> NYIintrinsicMissing(cl) );
     put("fuzion.std.fileio.write"        , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.std.fileio.exists"       , cl -> NYIintrinsicMissing(cl) );
-    put("fuzion.std.fileio.delete"       , cl -> NYIintrinsicMissing(cl) );
+    put("fuzion.std.fileio.delete"       , cl -> cl._dfa._bool );
     put("fuzion.std.fileio.move"         , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.std.fileio.create_dir"   , cl -> NYIintrinsicMissing(cl) );
     put("fuzion.std.out.flush"           , cl -> Value.UNIT );

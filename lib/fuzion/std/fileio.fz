@@ -137,10 +137,16 @@ public fileio is
                 # the (relative or absolute) file name, using platform specific path separators
                 path string) outcome unit is
     arr := path.utf8.asArray
-    if delete arr.internalArray.data arr.length
-      unit
-    else
-      error "an error occurred while performing the delete operation on the following file/dir: \"$path\""
+    match exists path
+      b bool =>
+        if b = TRUE
+          if delete arr.internalArray.data unit
+            unit
+          else
+            error "an error occurred while performing the delete operation on the following file/dir: \"$path\""
+        else
+          error "file/dir \"$path\" does not exist"
+      err error => err
 
   # intrinsic that deletes the file/dir represented by the path returning TRUE in case of success
   # and FALSE in case of failure
@@ -148,8 +154,8 @@ public fileio is
   private delete(
                  # the internal array data representing the file/dir path in bytes
                  path Object,
-                 # the length of the internal array representing the path
-                 path_length i32) bool is intrinsic
+                 # dummy parameter to avoid duplicate feature name
+                 _ unit) bool is intrinsic
 
   # moves file/dir from an old path to a the new path
   # can rename the file/dir as well by changing the name of the old file/dir to a new name in the new_path

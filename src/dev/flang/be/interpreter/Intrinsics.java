@@ -273,7 +273,7 @@ public class Intrinsics extends ANY
           Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
           try
             {
-              boolean b = Files.deleteIfExists(path);
+              boolean b = Files.deleteIfExists(path); // NYI : not sure whether to keep it or use Files.delete instead because the existence check already takes place in Fuzion 
               return new boolValue(b);
             }
           catch (Exception e)
