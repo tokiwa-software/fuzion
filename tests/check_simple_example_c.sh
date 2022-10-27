@@ -47,7 +47,6 @@ else
 
     rm -f testbin
 
-    # NYI: Use this version to check there are no warnings produced by C compiler:
     (($1 -c "$2" -o=testbin                && ./testbin) 2>tmp_err0.txt | head -n 100) >tmp_out.txt || true # tail my result in 141
 
     # This version dumps stderr output if fz was successful, which essentially ignores C compiler warnings:
