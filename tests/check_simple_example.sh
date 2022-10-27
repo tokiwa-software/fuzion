@@ -56,7 +56,7 @@ else
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=2( .*|)$" && export OPT=-Dfuzion.debugLevel=2
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=1( .*|)$" && export OPT=-Dfuzion.debugLevel=1
     head -n 1 "$2" | grep -q -E "# fuzion.debugLevel=0( .*|)$" && export OPT=-Dfuzion.debugLevel=0
-    $1 "$2" >tmp_out.txt 2>tmp_err0.txt
+    ($1 "$2" >tmp_out.txt 2>tmp_err0.txt) || true
     cat tmp_err0.txt | sed "s|$CURDIR[\\\/]|--CURDIR--/|g" >tmp_err.txt
     rm -rf tmp_err0.txt
     diff "$2".expected_out tmp_out.txt || (echo -e "\033[31;1m*** FAILED\033[0m out on $2")
