@@ -130,7 +130,7 @@ public class Intrinsics extends ANY
         {
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
-            CExpr.decl("int", resultIdent, CExpr.call("remove", new List<>(A1))),
+            CExpr.decl("int", resultIdent, CExpr.call("remove", new List<>(A0.castTo("char *")))),
             CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
             c._names.FZ_FALSE.ret()
             );
