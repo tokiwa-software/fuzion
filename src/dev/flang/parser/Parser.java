@@ -328,7 +328,7 @@ field       : returnType
    */
   Impl handleImplKindOf(SourcePosition pos, Impl p, boolean first, List<Feature> l, List<AbstractCall> inh)
   {
-    if (p.kind_ == Impl.Kind.Of)
+    if (p._kind == Impl.Kind.Of)
       {
         var ng = new List<AbstractType>();
         addFeaturesFromBlock(first, l, p._code, ng, p);
@@ -379,7 +379,7 @@ field       : returnType
   {
     if (s instanceof Block b)
       {
-        b.statements_.forEach(x -> addFeaturesFromBlock(first, list, x, g, p));
+        b._statements.forEach(x -> addFeaturesFromBlock(first, list, x, g, p));
       }
     else if (s instanceof Feature f)
       {
@@ -2790,7 +2790,7 @@ nextValue   : COMMA exprInLine
         // iterations:
         if (skipComma())
           {
-            p2 = new Impl(pos, exprInLine(), p2.kind_);
+            p2 = new Impl(pos, exprInLine(), p2._kind);
           }
       }
     Feature f1 = new Feature(pos,v1,m1,r1,new List<>(n1),

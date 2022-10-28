@@ -27,6 +27,10 @@ on:
       - 'main'
   pull_request: {}
 
+env:
+  PRECONDITIONS: true
+  POSTCONDITIONS: true
+
 jobs:
   run_tests:
     runs-on: ubuntu-22.04

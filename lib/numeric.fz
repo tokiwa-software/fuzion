@@ -117,9 +117,9 @@ numeric(redef T (numeric T).type) : hasHash T, ordered T, numerics T is
   infix **^(other T) T is abstract
 
   # comparison
-  infix == (other T) bool is abstract   // NYI: remove, replace by 'infix ='
+  infix == (other T) bool is abstract   // NYI: #498: remove, replace by 'infix ='
   redef infix = (other T) bool is thiz == other
-  infix != (other T) bool is   // NYI: remove, replace by 'infix /='
+  infix != (other T) bool is   // NYI: #498: remove, replace by 'infix /='
     !(thiz == other)
 
   sign => if numeric.this == zero then 0 else if numeric.this > zero then 1 else -1

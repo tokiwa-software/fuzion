@@ -33,6 +33,7 @@ import java.nio.channels.Channels;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import java.util.ArrayList;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -91,6 +92,10 @@ class Fuzion extends Tool
   {
     interpreter("-interpreter")
     {
+      boolean takesApplicationArgs()
+      {
+        return true;
+      }
       void process(FuzionOptions options, FUIR fuir)
       {
         new Interpreter(options, fuir).run();
@@ -332,6 +337,14 @@ class Fuzion extends Tool
     }
 
     /**
+     * Does this backend process arguments that are passed to the Fuzion application?
+     */
+    boolean takesApplicationArgs()
+    {
+      return false;
+    }
+
+    /**
      * If this backend processes the front end data directly, this method will
      * do that and return true.
      */
@@ -504,8 +517,7 @@ class Fuzion extends Tool
     var std = STANDARD_OPTIONS(xtra);
     var stdRun = "[-debug[=<n>]] [-safety=(on|off)] [-unsafeIntrinsics=(on|off)] ";
     var stdBe = "[-modules={<m>,..}] [-moduleDirs={<path>,..}] [-sourceDirs={<path>,..}] " +
-      (xtra ? "[-XdumpModules={<name>,..}] " : "") +
-      "(<main> | <srcfile>.fz | -) ";
+      (xtra ? "[-XdumpModules={<name>,..}] " : "");
     if (_backend == Backend.undefined)
       {
         var aba = new StringBuilder();
@@ -534,7 +546,10 @@ class Fuzion extends Tool
         var bu = b.usage();
         return "Usage: " + _cmd + " " + ba + " " + bu +
                            (b.runsCode() ? stdRun : "") +
-                           stdBe + std;
+                           stdBe + std +
+                           (b.takesApplicationArgs() ? "[--] " : "") +
+                           "(<main> | <srcfile>.fz | -) " +
+                           (b.takesApplicationArgs() ? "[<list of arbitrary arguments for envir.args effect>] " : "");
       }
   }
 
@@ -690,9 +705,16 @@ class Fuzion extends Tool
    */
   private Runnable parseArgsForBackend(String[] args)
   {
+    ArrayList<String> applicationArgs = new ArrayList<>();
+    boolean getApplicationArgs = false;
+
     for (var a : args)
       {
-        if (!parseGenericArg(a))
+        if (getApplicationArgs)
+          {
+            applicationArgs.add(a);
+          }
+        else if (!parseGenericArg(a))
           {
             var arg = a;
             if (arg.indexOf("=") >= 0)
@@ -702,6 +724,12 @@ class Fuzion extends Tool
             if (a.equals("-"))
               {
                 _readStdin = true;
+                getApplicationArgs = _backend.takesApplicationArgs() || _backend == Backend.undefined;
+              }
+            else if ((_backend.takesApplicationArgs() || _backend == Backend.undefined) && a.equals("--"))
+              {
+                /* stop argument parsing */
+                getApplicationArgs = true;
               }
             else if (_allBackends_.containsKey(arg))
               {
@@ -735,6 +763,7 @@ class Fuzion extends Tool
             else
               {
                 _main = a;
+                getApplicationArgs = _backend.takesApplicationArgs() || _backend == Backend.undefined;
               }
           }
       }
@@ -742,9 +771,18 @@ class Fuzion extends Tool
       {
         _backend = Backend.interpreter;
       }
-    if (_main == null && !_readStdin && _backend.needsMain())
+    if (_backend.needsMain() && _main == null && !_readStdin)
       {
-        fatal("missing main feature name in command line args");
+        if (applicationArgs.size() >= 1)
+          {
+            String mainOrStdin = applicationArgs.remove(0);
+            _readStdin = mainOrStdin.equals("-");
+            _main = _readStdin ? null : mainOrStdin;
+          }
+        else
+          {
+            fatal("missing main feature name in command line args");
+          }
       }
     if (!_backend.needsMain() && _main != null)
       {
@@ -782,6 +820,7 @@ class Fuzion extends Tool
           {
             options.setTailRec();
           }
+        options.setBackendArgs(applicationArgs);
         timer("prep");
         var fe = new FrontEnd(options);
         timer("fe");

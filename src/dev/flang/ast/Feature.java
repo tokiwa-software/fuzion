@@ -241,20 +241,20 @@ public class Feature extends AbstractFeature implements Stmnt
    * and not implemented as a field, this is the result variable. Created during
    * LOADING.
    */
-  private Feature resultField_ = null;
+  private Feature _resultField = null;
 
   /**
    * Flag set during resolveTypes if this feature's code has at least one
    * assignment to the result field.
    */
-  private boolean hasAssignmentsToResult_ = false;
+  private boolean _hasAssignmentsToResult = false;
 
 
   /**
    * For Features with !returnType.isConstructorType(), this will be set to the
    * result type during resolveTypes.
    */
-  private AbstractType resultType_ = null;
+  private AbstractType _resultType = null;
 
 
   /**
@@ -275,7 +275,7 @@ public class Feature extends AbstractFeature implements Stmnt
    * Field containing reference to outer feature, set after
    * RESOLVED_DECLARATIONS.
    */
-  public Feature outerRef_ = null;
+  public Feature _outerRef = null;
 
 
   /**
@@ -286,8 +286,8 @@ public class Feature extends AbstractFeature implements Stmnt
    * This might not become part of the runtime clazz if isChoiceOfOnlyRefs()
    * holds for that classs.
    */
-  public Feature choiceTag_ = null;
-  public AbstractFeature choiceTag() { return choiceTag_; }
+  public Feature _choiceTag = null;
+  public AbstractFeature choiceTag() { return _choiceTag; }
 
 
   /**
@@ -654,10 +654,10 @@ public class Feature extends AbstractFeature implements Stmnt
     this._arguments = a;
     this._featureName = FeatureName.get(n, arguments().size());
     this._inherits   = (i.isEmpty() &&
-                        (p.kind_ != Impl.Kind.FieldActual) &&
-                        (p.kind_ != Impl.Kind.FieldDef   ) &&
-                        (p.kind_ != Impl.Kind.FieldInit  ) &&
-                        (p.kind_ != Impl.Kind.Field      ) &&
+                        (p._kind != Impl.Kind.FieldActual) &&
+                        (p._kind != Impl.Kind.FieldDef   ) &&
+                        (p._kind != Impl.Kind.FieldInit  ) &&
+                        (p._kind != Impl.Kind.Field      ) &&
                         (qname.size() != 1 || (!qname.getFirst().equals(FuzionConstants.OBJECT_NAME  ) &&
                                                !qname.getFirst().equals(FuzionConstants.UNIVERSE_NAME))))
       ? new List<>(new Call(_pos, FuzionConstants.OBJECT_NAME, Expr.NO_EXPRS))
@@ -777,7 +777,7 @@ public class Feature extends AbstractFeature implements Stmnt
     return state().atLeast(State.RESOLVING_TYPES) && isChoiceAfterTypesResolved() ||
           !state().atLeast(State.RESOLVING_TYPES) && isChoiceBeforeTypesResolved()
       ? Kind.Choice
-      : switch (_impl.kind_) {
+      : switch (_impl._kind) {
           case FieldInit, FieldDef, FieldActual, FieldIter, Field -> Kind.Field;
           case TypeParameter                                      -> Kind.TypeParameter;
           case TypeParameterOpen                                  -> Kind.OpenTypeParameter;
@@ -793,7 +793,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public Impl.Kind implKind()
   {
-    return _impl.kind_;
+    return _impl._kind;
   }
 
 
@@ -882,13 +882,13 @@ public class Feature extends AbstractFeature implements Stmnt
 
     if (hasResultField())
       {
-        var t = _impl.kind_ == Impl.Kind.Routine
+        var t = _impl._kind == Impl.Kind.Routine
           ? _returnType.functionReturnType()
           : Types.t_UNDEFINED /* dummy type, will be replaced during TYPES_INFERENCING phase */;
 
         if (CHECKS) check
-          (resultField_ == null);
-        resultField_ = new Feature(res,
+          (_resultField == null);
+        _resultField = new Feature(res,
                                    _pos,
                                    Consts.VISIBILITY_PRIVATE,
                                    t,
@@ -911,7 +911,7 @@ public class Feature extends AbstractFeature implements Stmnt
    */
   public boolean resultInternal()
   {
-    return _impl.kind_ == Impl.Kind.RoutineDef &&
+    return _impl._kind == Impl.Kind.RoutineDef &&
       _featureName.baseName().startsWith(FuzionConstants.INTERNAL_NAME_PREFIX);
   }
 
@@ -1168,7 +1168,7 @@ public class Feature extends AbstractFeature implements Stmnt
             p.loadCalledFeature(res, this);
             if (p instanceof Call cp)
               {
-                cp.isInheritanceCall_ = true;
+                cp._isInheritanceCall = true;
               }
             var parent = p.calledFeature();
             if (CHECKS) check
@@ -1324,7 +1324,7 @@ public class Feature extends AbstractFeature implements Stmnt
             _thisType = tt.resolve(res, this);
           }
 
-        if ((_impl.kind_ == Impl.Kind.FieldActual) && (_impl._initialValue.typeForFeatureResultTypeInferencing() == null))
+        if ((_impl._kind == Impl.Kind.FieldActual) && (_impl._initialValue.typeForFeatureResultTypeInferencing() == null))
           {
             _impl._initialValue.visit(new ResolveTypes(res),
                                      true /* NYI: impl_outerOfInitialValue not set yet */
@@ -1450,7 +1450,7 @@ public class Feature extends AbstractFeature implements Stmnt
   public boolean containsOnlyDeclarations()
   {
     boolean result = true;
-    switch (_impl.kind_)
+    switch (_impl._kind)
       {
       case FieldInit:    // a field with initialization syntactic sugar
       case FieldDef:     // a field with implicit type
@@ -1495,7 +1495,7 @@ public class Feature extends AbstractFeature implements Stmnt
           }
       }
     // choice type must not contain any code, but may contain inner features
-    switch (_impl.kind_)
+    switch (_impl._kind)
       {
       case FieldInit:    // a field with initialization syntactic sugar
       case FieldDef:     // a field with implicit type
@@ -1548,7 +1548,7 @@ public class Feature extends AbstractFeature implements Stmnt
                 if (t == o.thisType())
                   {
                     AstErrors.choiceMustNotReferToOuterValueType(_pos, t);
-                    // o.thisType_ = Types.t_ERROR;  NYI: Do we need this?
+                    // o._thisType = Types.t_ERROR;  NYI: Do we need this?
                     eraseChoiceGenerics();
                   }
                 o = o.outer();
@@ -1564,13 +1564,13 @@ public class Feature extends AbstractFeature implements Stmnt
         p.calledFeature().checkNoClosureAccesses(res, p.pos());
       }
 
-    choiceTag_ = new Feature(res,
+    _choiceTag = new Feature(res,
                              _pos,
                              Consts.VISIBILITY_PRIVATE,
                              Types.resolved.t_i32,
                              FuzionConstants.CHOICE_TAG_NAME,
                              this);
-    choiceTag_.scheduleForResolution(res);
+    _choiceTag.scheduleForResolution(res);
   }
 
 
@@ -1621,7 +1621,7 @@ public class Feature extends AbstractFeature implements Stmnt
         _state = State.TYPES_INFERENCING;
 
         if (CHECKS) check
-          (resultType_ == null
+          (_resultType == null
            || isUniverse() // NYI: HACK: universe is currently resolved twice, once as part of stdlib, and then as part of another module
            );
 
@@ -1631,8 +1631,8 @@ public class Feature extends AbstractFeature implements Stmnt
           }
         choiceTypeCheckAndInternalFields(res);
 
-        resultType_ = resultType();
-        if (resultType_ instanceof Type t)
+        _resultType = resultType();
+        if (_resultType instanceof Type t)
           {
             t.checkChoice(_posOfReturnType);
           }
@@ -1762,7 +1762,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (_state.atLeast(State.LOADED));
 
-    Feature result = resultField_;
+    Feature result = _resultField;
 
     if (POSTCONDITIONS) ensure
       (Errors.count() > 0 || hasResultField() == (result != null));
@@ -1780,7 +1780,7 @@ public class Feature extends AbstractFeature implements Stmnt
       (_state == State.RESOLVING_TYPES ||
        _state == State.RESOLVED_TYPES);
 
-    hasAssignmentsToResult_ = true;
+    _hasAssignmentsToResult = true;
   }
 
 
@@ -1793,7 +1793,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVED_TYPES));
 
-    return hasAssignmentsToResult_;
+    return _hasAssignmentsToResult;
   }
 
 
@@ -1874,15 +1874,15 @@ public class Feature extends AbstractFeature implements Stmnt
     if (CHECKS) check
       (this.outer() == outer);
 
-    if (_impl.kind_ == Impl.Kind.FieldDef    ||
-        _impl.kind_ == Impl.Kind.FieldActual    )
+    if (_impl._kind == Impl.Kind.FieldDef    ||
+        _impl._kind == Impl.Kind.FieldActual    )
       {
         if ((_returnType != NoType.INSTANCE))
           {
             AstErrors.fieldDefMustNotHaveType(_pos, this, _returnType, _impl._initialValue);
           }
       }
-    if (_impl.kind_ == Impl.Kind.RoutineDef)
+    if (_impl._kind == Impl.Kind.RoutineDef)
       {
         if ((_returnType != NoType.INSTANCE))
           {
@@ -2128,7 +2128,7 @@ public class Feature extends AbstractFeature implements Stmnt
         var b = _outer.code();
         if (b instanceof Block)
           {
-            for (var s : ((Block)b).statements_)
+            for (var s : ((Block)b)._statements)
               {
                 if (s == this)
                   {
@@ -2176,22 +2176,22 @@ public class Feature extends AbstractFeature implements Stmnt
     if (CHECKS) check
       (state().atLeast(State.RESOLVING_TYPES));
 
-    if (resultType_ != null)
+    if (_resultType != null)
       {
-        result = resultType_;
+        result = _resultType;
       }
     else if (outer() != null && this == outer().resultField())
       {
         result = (outer() instanceof Feature of) ? of.resultTypeRaw() : outer().resultType();
       }
-    else if (_impl.kind_ == Impl.Kind.FieldDef ||
-             _impl.kind_ == Impl.Kind.FieldActual)
+    else if (_impl._kind == Impl.Kind.FieldDef ||
+             _impl._kind == Impl.Kind.FieldActual)
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
         result = _impl._initialValue.typeForFeatureResultTypeInferencing();
       }
-    else if (_impl.kind_ == Impl.Kind.RoutineDef)
+    else if (_impl._kind == Impl.Kind.RoutineDef)
       {
         if (CHECKS) check
           (!state().atLeast(State.TYPES_INFERENCED));
@@ -2251,8 +2251,8 @@ public class Feature extends AbstractFeature implements Stmnt
   boolean hasThisType()
   {
     return
-      _impl.kind_ != Impl.Kind.Intrinsic &&
-      _impl.kind_ != Impl.Kind.Abstract  &&
+      _impl._kind != Impl.Kind.Intrinsic &&
+      _impl._kind != Impl.Kind.Abstract  &&
       !isField();
   }
 
@@ -2336,7 +2336,7 @@ public class Feature extends AbstractFeature implements Stmnt
   {
     return isRoutine() && _returnType.isConstructorType() ||
       // special handling if this is called before resolveDeclarations:
-      !state().atLeast(State.RESOLVING_DECLARATIONS) && _impl.kind_ == Impl.Kind.Routine && _returnType == NoType.INSTANCE;
+      !state().atLeast(State.RESOLVING_DECLARATIONS) && _impl._kind == Impl.Kind.Routine && _returnType == NoType.INSTANCE;
   }
 
 
@@ -2361,7 +2361,7 @@ public class Feature extends AbstractFeature implements Stmnt
       {
         var outerRefType = isOuterRefAdrOfValue() ? Types.t_ADDRESS
                                                   : this._outer.thisType();
-        outerRef_ = new Feature(res,
+        _outerRef = new Feature(res,
                                 _pos,
                                 Consts.VISIBILITY_PRIVATE,
                                 outerRefType,
@@ -2382,7 +2382,7 @@ public class Feature extends AbstractFeature implements Stmnt
     if (PRECONDITIONS) require
       (_state.atLeast(State.RESOLVED_DECLARATIONS));
 
-    Feature result = outerRef_;
+    Feature result = _outerRef;
 
     if (POSTCONDITIONS) ensure
       (!hasOuterRef() || result != null);

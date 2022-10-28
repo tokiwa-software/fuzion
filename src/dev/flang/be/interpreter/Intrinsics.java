@@ -159,7 +159,7 @@ public class Intrinsics extends ANY
   static
   {
     put("Type.name"            , (interpreter, innerClazz) -> args -> Interpreter.value(innerClazz._outer.typeName()));
-    put("fuzion.std.args.count", (interpreter, innerClazz) -> args -> new i32Value(1)); /* NYI: args after cmd name not supported yet */
+    put("fuzion.std.args.count", (interpreter, innerClazz) -> args -> new i32Value(Interpreter._options_.getBackendArgs().size() + 1));
     put("fuzion.std.args.get"  , (interpreter, innerClazz) -> args ->
         {
           var i = args.get(1).i32Value();
@@ -170,7 +170,7 @@ public class Intrinsics extends ANY
             }
           else
             {
-              return  Interpreter.value("argument#"+i); // NYI: args after cmd name not supported yet
+              return  Interpreter.value(Interpreter._options_.getBackendArgs().get(i - 1));
             }
         });
     put("fuzion.std.out.write", (interpreter, innerClazz) ->

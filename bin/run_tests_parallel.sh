@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This file is part of the Fuzion language implementation.
 #
@@ -25,6 +25,7 @@
 #
 # -----------------------------------------------------------------------
 
+set -euo pipefail
 
 # usage: run_tests_parallel.sh <build-dir> <target>
 #
@@ -60,6 +61,8 @@ renice -n 19 $$ > /dev/null
 BUILD_DIR=$1
 TARGET=$2
 TESTS=$(echo "$BUILD_DIR"/tests/*/)
+VERBOSE="${VERBOSE:-""}"
+
 rm -rf "$BUILD_DIR"/run_tests.results
 
 # print collected results up until interruption
