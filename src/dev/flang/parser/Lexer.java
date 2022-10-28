@@ -1751,7 +1751,7 @@ HEX_TAIL    : "." HEX_DIGITS
       var v =
         ('0' <= d && d <= '9') ? d - (int) '0' :
         ('a' <= d && d <= 'z') ? d - (int) 'a' + 10 :
-        ('A' <= d && d <= 'Z') ? d - (int) 'Z' + 10 : Integer.MAX_VALUE;
+        ('A' <= d && d <= 'Z') ? d - (int) 'A' + 10 : Integer.MAX_VALUE;
       if (v >= _base._base)
         {
           Errors.error(sourcePos(),
