@@ -330,7 +330,7 @@ public class Loop extends ANY
                                 Block.newIfNull(succPos, _successBlock),
                                 _nextIteration);
       }
-    block.statements_.add(_nextIteration);
+    block._statements.add(_nextIteration);
     if (whileCond != null)
       {
         block = Block.fromExpr(new If(whileCond.pos(), whileCond, block, _elseBlock0));
@@ -377,7 +377,7 @@ public class Loop extends ANY
     var result = false;
     for (var f : _indexVars)
       {
-        result = result || f.impl().kind_ == Impl.Kind.FieldIter;
+        result = result || f.impl()._kind == Impl.Kind.FieldIter;
       }
     return result;
   }
@@ -445,7 +445,7 @@ public class Loop extends ANY
     else if (booleanAsImplicitResult(whileCond, untilCond))
       { /* add implicit TRUE / FALSE results to success and else blocks: */
         _successBlock = Block.newIfNull(succPos, _successBlock);
-        _successBlock.statements_.add(BoolConst.TRUE );
+        _successBlock._statements.add(BoolConst.TRUE );
         if (_elseBlock0 == null)
           {
             _elseBlock0 = BoolConst.FALSE;
@@ -455,8 +455,8 @@ public class Loop extends ANY
           {
             var e0 = Block.fromExpr(_elseBlock0);
             var e1 = Block.fromExpr(_elseBlock1);
-            e0.statements_.add(BoolConst.FALSE);
-            e1.statements_.add(BoolConst.FALSE);
+            e0._statements.add(BoolConst.FALSE);
+            e1._statements.add(BoolConst.FALSE);
             _elseBlock0 = e0;
             _elseBlock1 = e1;
           }
@@ -532,11 +532,11 @@ public class Loop extends ANY
         Feature f = ivi.next();
         Feature n = nvi.next();
         if (CHECKS) check
-          (f.impl().kind_ != Impl.Kind.FieldIter);
+          (f.impl()._kind != Impl.Kind.FieldIter);
         var p = f.pos();
         var ia = new Call(p, f.featureName().baseName());
         var na = new Call(p, f.featureName().baseName());
-        var type = (f.impl().kind_ == Impl.Kind.FieldDef)
+        var type = (f.impl()._kind == Impl.Kind.FieldDef)
           ? null        // index var with type inference from initial actual
           : _indexVars.get(i).returnType().functionReturnType();
         var arg = new Feature(p,
@@ -567,7 +567,7 @@ public class Loop extends ANY
       {
         Feature f = ivi.next();
         Feature n = nvi.next();
-        if (f.impl().kind_ == Impl.Kind.FieldIter)
+        if (f.impl()._kind == Impl.Kind.FieldIter)
           {
             if (mustDeclareLoopElse)
               { // we declare loopElse function after all non-iterating index

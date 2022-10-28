@@ -687,7 +687,7 @@ class LibraryOut extends ANY
       }
     else if (s instanceof Unbox u)
       {
-        lastPos = expressions(u.adr_, lastPos);
+        lastPos = expressions(u._adr, lastPos);
         lastPos = exprKindAndPos(IR.ExprKind.Unbox, lastPos, s.pos());
   /*
    *   +---------------------------------------------------------------------------------+
@@ -711,10 +711,10 @@ class LibraryOut extends ANY
     else if (s instanceof AbstractBlock b)
       {
         int i = 0;
-        for (var st : b.statements_)
+        for (var st : b._statements)
           {
             i++;
-            if (i < b.statements_.size())
+            if (i < b._statements.size())
               {
                 lastPos = expressions(st, true, lastPos);
               }

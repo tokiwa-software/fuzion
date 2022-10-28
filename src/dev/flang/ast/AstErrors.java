@@ -233,7 +233,7 @@ public class AstErrors extends ANY
           "Feature implementation using " + code("of") + " must contain only constructors. ",
           "Feature " + sqn(f._qname) + " is not a constructor.\n" +
           "Declaration started at " + ofPos.show() + "\n" +
-          (f.impl().kind_ == Impl.Kind.RoutineDef
+          (f.impl()._kind == Impl.Kind.RoutineDef
            ? ("To solve this, you may replace " + code("=>") + " by " + code("is") + " and " +
               "ensure that the code results in a value of type " + st("unit") + " " +
               "in the declaration of " + sqn(f._qname) + ".\n")
@@ -1518,11 +1518,11 @@ public class AstErrors extends ANY
           typesMsg);
   }
 
-  static void lossOfPrecision(SourcePosition pos, String _originalString, int _base, AbstractType type_)
+  static void lossOfPrecision(SourcePosition pos, String _originalString, int _base, AbstractType _type)
   {
     error(pos,
       "Loss of precision for: " + _originalString,
-      "Expected number given in base " + _base + " to fit into " + type_ + " without loss of precision.");
+      "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
   }
 }
 

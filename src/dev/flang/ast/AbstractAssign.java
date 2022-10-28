@@ -67,7 +67,7 @@ public abstract class AbstractAssign extends ANY implements Stmnt, HasSourcePosi
   boolean _indexVarAllowed = false;
 
 
-  public int tid_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+  public int _tid = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
 
   /*--------------------------  constructors  ---------------------------*/

@@ -211,7 +211,7 @@ public class IR extends ANY
       }
     else if (s instanceof Unbox u)
       {
-        toStack(l, u.adr_);
+        toStack(l, u._adr);
         if (u._needed)
           {
             l.add(u);
@@ -225,10 +225,10 @@ public class IR extends ANY
     else if (s instanceof AbstractBlock b)
       {
         // for (var st : b.statements_)  -- not possible since we need index i
-        for (int i=0; i<b.statements_.size(); i++)
+        for (int i=0; i<b._statements.size(); i++)
           {
-            var st = b.statements_.get(i);
-            toStack(l, st, dumpResult || i < b.statements_.size()-1);
+            var st = b._statements.get(i);
+            toStack(l, st, dumpResult || i < b._statements.size()-1);
           }
       }
     else if (s instanceof AbstractConstant)

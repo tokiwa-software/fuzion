@@ -173,7 +173,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
     if (p != null)
       {
         var stmnts = parseFile(p);
-        ((AbstractBlock) _universe.code()).statements_.addAll(stmnts);
+        ((AbstractBlock) _universe.code())._statements.addAll(stmnts);
         for (var s : stmnts)
           {
             if (s instanceof Feature f)
@@ -671,8 +671,8 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Add all declared features to declaredOrInheritedFeatures_.  In case a
-   * declared feature exists in declaredOrInheritedFeatures_ (because it was
+   * Add all declared features to _declaredOrInheritedFeatures.  In case a
+   * declared feature exists in _declaredOrInheritedFeatures (because it was
    * inherited), check if the declared feature redefines the inherited
    * feature. Otherwise, report an error message.
    *
@@ -696,7 +696,7 @@ public class SourceModule extends Module implements SrcModule, MirModule
   /**
    * Add f with name fn to the declaredOrInherited features of outer.
    *
-   * In case a declared feature exists in declaredOrInheritedFeatures_ (because
+   * In case a declared feature exists in _declaredOrInheritedFeatures (because
    * it was inherited), check if the declared feature redefines the inherited
    * feature. Otherwise, report an error message.
    *
@@ -811,11 +811,11 @@ public class SourceModule extends Module implements SrcModule, MirModule
 
 
   /**
-   * Add feature under given name to declaredOrInheritedFeatures_ of all direct
+   * Add feature under given name to _declaredOrInheritedFeatures of all direct
    * and indirect heirs of this feature.
    *
    * This is used in addDeclaredInnerFeature to add features during syntactic
-   * sugar resolution after declaredOrInheritedFeatures_ has already been set.
+   * sugar resolution after _declaredOrInheritedFeatures has already been set.
    *
    * @param fn the name of the feature, after possible renaming during inheritance
    *

@@ -256,6 +256,9 @@ u128s : wrappingIntegers u128 is
   redef min => u128 0 0
   redef max => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
 
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => u128 0x_ffff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+
 
 # u128 -- returns value of unit type u128s
 #

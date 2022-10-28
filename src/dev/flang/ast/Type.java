@@ -145,7 +145,7 @@ public class Type extends AbstractType
    * actual outer type taken from the type of the outer feature of this type's
    * feature.
    */
-  AbstractType outerCache_;
+  AbstractType _outerCache;
 
 
   /**
@@ -814,7 +814,7 @@ public class Type extends AbstractType
    */
   public AbstractType outer()
   {
-    var result = outerCache_;
+    var result = _outerCache;
     if (result == null)
       {
         result = _outer;
@@ -840,7 +840,7 @@ public class Type extends AbstractType
             if (result != null)
               {
                 result = Types.intern(result);
-                outerCache_ = result;
+                _outerCache = result;
               }
           }
       }
