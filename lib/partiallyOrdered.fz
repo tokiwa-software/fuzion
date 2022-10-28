@@ -46,7 +46,7 @@ is
 
   # get value of type P.
   #
-  # NYI: Once Eiffel-style 'like this' works, we can use 'like this' instead of
+  # NYI: #167: Once Eiffel-style 'like this' works, we can use 'like this' instead of
   # T and no longer need this feature.
   #
   orderedThis P is abstract
