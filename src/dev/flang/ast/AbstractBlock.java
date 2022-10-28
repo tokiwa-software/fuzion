@@ -45,7 +45,7 @@ public abstract class AbstractBlock extends Expr
   /*----------------------------  variables  ----------------------------*/
 
 
-  public List<Stmnt> statements_;
+  public List<Stmnt> _statements;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -58,7 +58,7 @@ public abstract class AbstractBlock extends Expr
    */
   public AbstractBlock(List<Stmnt> s)
   {
-    this.statements_ = s;
+    this._statements = s;
   }
 
 
@@ -77,7 +77,7 @@ public abstract class AbstractBlock extends Expr
    */
   public AbstractBlock visit(FeatureVisitor v, AbstractFeature outer)
   {
-    ListIterator<Stmnt> i = statements_.listIterator();
+    ListIterator<Stmnt> i = _statements.listIterator();
     while (i.hasNext())
       {
         Stmnt s = i.next();
@@ -95,7 +95,7 @@ public abstract class AbstractBlock extends Expr
    */
   public void visitStatements(StatementVisitor v)
   {
-    var s = statements_;
+    var s = _statements;
     for (int i = 0; i < s.size(); i++)
       {
         s.get(i).visitStatements(v);
@@ -126,12 +126,12 @@ public abstract class AbstractBlock extends Expr
    */
   protected int resultExpressionIndex()
   {
-    var i = statements_.size() - 1;
-    while (i >= 0 && (statements_.get(i) instanceof Nop))
+    var i = _statements.size() - 1;
+    while (i >= 0 && (_statements.get(i) instanceof Nop))
       {
         i--;
       }
-    return (i >= 0 && (statements_.get(i) instanceof Expr))
+    return (i >= 0 && (_statements.get(i) instanceof Expr))
       ? i
       : -1;
   }
@@ -148,7 +148,7 @@ public abstract class AbstractBlock extends Expr
   {
     var i = resultExpressionIndex();
     return i >= 0
-      ? (Expr) statements_.get(i)
+      ? (Expr) _statements.get(i)
       : null;
   }
 
@@ -160,7 +160,7 @@ public abstract class AbstractBlock extends Expr
   public boolean containsOnlyDeclarations()
   {
     boolean result = true;
-    for (Stmnt s : statements_)
+    for (Stmnt s : _statements)
       {
         result = result && s.containsOnlyDeclarations();
       }
@@ -195,7 +195,7 @@ public abstract class AbstractBlock extends Expr
    */
   public String toString(String prefix)
   {
-    String s = statements_.toString("\n");
+    String s = _statements.toString("\n");
     StringBuilder sb = new StringBuilder();
     if (s.length() > 0)
       {

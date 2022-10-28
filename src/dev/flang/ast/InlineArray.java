@@ -64,7 +64,7 @@ public class InlineArray extends ExprWithPos
   /**
    * The type of this array.
    */
-  private AbstractType type_;
+  private AbstractType _type;
 
 
   /**
@@ -101,7 +101,7 @@ public class InlineArray extends ExprWithPos
    */
   public AbstractType type()
   {
-    if (type_ == null)
+    if (_type == null)
       {
         AbstractType t = Types.resolved.t_void;
         for (var e : _elements)
@@ -116,11 +116,11 @@ public class InlineArray extends ExprWithPos
             new IncompatibleResultsOnBranches(pos(),
                                               "Incompatible types in array elements",
                                               _elements.iterator());
-            type_ = Types.t_ERROR;
+            _type = Types.t_ERROR;
           }
-        if (type_ == null)
+        if (_type == null)
           {
-            type_ =
+            _type =
               t == null ? Types.t_ERROR :
               Types.intern(new Type(pos(),
                                   "array",
@@ -130,7 +130,7 @@ public class InlineArray extends ExprWithPos
                                   Type.RefOrVal.LikeUnderlyingFeature));
           }
       }
-    return type_;
+    return _type;
   }
 
 
@@ -153,7 +153,7 @@ public class InlineArray extends ExprWithPos
    */
   public Expr propagateExpectedType(Resolution res, AbstractFeature outer, AbstractType t)
   {
-    if (type_ == null)
+    if (_type == null)
       {
         var elementType = elementType(t);
         if (elementType != Types.t_ERROR)
@@ -162,7 +162,7 @@ public class InlineArray extends ExprWithPos
               {
                 e.propagateExpectedType(res, outer, elementType);
               }
-            type_ = t;
+            _type = t;
           }
       }
     return this;
@@ -267,7 +267,7 @@ public class InlineArray extends ExprWithPos
   public void checkTypes()
   {
     if (PRECONDITIONS) require
-      (type_ != null);
+      (_type != null);
 
     var elementType = elementType();
 
@@ -278,7 +278,7 @@ public class InlineArray extends ExprWithPos
       {
         if (!elementType.isAssignableFrom(e))
           {
-            AstErrors.incompatibleTypeInArrayInitialization(e.pos(), type_, elementType, e);
+            AstErrors.incompatibleTypeInArrayInitialization(e.pos(), _type, elementType, e);
           }
       }
   }

@@ -235,7 +235,7 @@ hw25 is
             toStack(code, a);
             code.add(ExprKind.Current);
             // Field clazz means assign value to that field
-            // NYI: code.add((Clazz) cc.getRuntimeData(p.parentCallArgFieldIds_ + i));
+            // NYI: code.add((Clazz) cc.getRuntimeData(p._parentCallArgFieldIds + i));
           }
         addCode(ff, code, p.calledFeature());
       }
