@@ -110,7 +110,7 @@ public class Intrinsics extends ANY
           var readingIdent = new CIdent("reading");
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
-            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
+            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("r")))),
             // Testing if fopen was successful
             CExpr.iff(fileIdent.eq(new CIdent("NULL")), c._names.FZ_FALSE.ret()),
             CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, fileIdent))),
@@ -123,7 +123,20 @@ public class Intrinsics extends ANY
             );
         }
         );
-    put("fuzion.std.fileio.get_file_size", noFileIo); // NYI: #158
+    put("fuzion.std.fileio.get_file_size", (c,cl,outer,in) ->
+        {
+          var statIdent = new CIdent("statbuf");
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("size_t", resultIdent, CExpr.int64const(-1)),
+            CExpr.decl("struct stat", statIdent),
+            // result = size if successful
+            CExpr.iff(CExpr.call("stat", new List<>(A0.castTo("char *"), statIdent.adrOf())).eq(CExpr.int8const(0)), resultIdent.assign(statIdent.field(new CIdent("st_size")))),
+            // result = -1 if it failed
+            resultIdent.ret()
+            );
+        }
+        );
     put("fuzion.std.fileio.write"        , noFileIo); // NYI: #158
     put("fuzion.std.fileio.exists"       , noFileIo); // NYI: #158
     put("fuzion.std.fileio.delete"       , noFileIo); // NYI: #158
