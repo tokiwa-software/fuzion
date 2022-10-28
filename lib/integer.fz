@@ -49,6 +49,16 @@ integer(I (integer I).type) : numeric I is
   infix |  (other I) I is abstract
   infix ^  (other I) I is abstract
 
+  # bitwise NOT
+  prefix ~ I
+    pre
+      is_bounded
+  is abstract
+
+  # bitwise NOT (Unicode alias)
+  prefix ¬ I is
+    ~thiz
+
   # shift operations
   infix >> (other I) I
     pre
@@ -59,6 +69,11 @@ integer(I (integer I).type) : numeric I is
     pre
       safety: other.sign >= 0
   is abstract
+
+  # check if this type of integer is bounded
+  #
+  # returns false unless redefined by a specific implementation of integer
+  is_bounded => false
 
   # greatest common divisor of this and b
   #
