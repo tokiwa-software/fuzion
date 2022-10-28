@@ -34,7 +34,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import java.util.ArrayList;
-import java.util.Optional;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -706,13 +705,14 @@ class Fuzion extends Tool
    */
   private Runnable parseArgsForBackend(String[] args)
   {
-    ArrayList<String> argsLeft = null;
+    ArrayList<String> applicationArgs = new ArrayList<>();
+    boolean getApplicationArgs = false;
 
     for (var a : args)
       {
-        if (argsLeft != null)
+        if (getApplicationArgs)
           {
-            argsLeft.add(a);
+            applicationArgs.add(a);
           }
         else if (!parseGenericArg(a))
           {
@@ -724,16 +724,12 @@ class Fuzion extends Tool
             if (a.equals("-"))
               {
                 _readStdin = true;
-
-                if (_backend.takesApplicationArgs() || _backend == Backend.undefined)
-                  {
-                    argsLeft = new ArrayList<String>();
-                  }
+                getApplicationArgs = _backend.takesApplicationArgs() || _backend == Backend.undefined;
               }
             else if ((_backend.takesApplicationArgs() || _backend == Backend.undefined) && a.equals("--"))
               {
                 /* stop argument parsing */
-                argsLeft = new ArrayList<String>();
+                getApplicationArgs = true;
               }
             else if (_allBackends_.containsKey(arg))
               {
@@ -767,11 +763,7 @@ class Fuzion extends Tool
             else
               {
                 _main = a;
-
-                if (_backend.takesApplicationArgs() || _backend == Backend.undefined)
-                  {
-                    argsLeft = new ArrayList<String>();
-                  }
+                getApplicationArgs = _backend.takesApplicationArgs() || _backend == Backend.undefined;
               }
           }
       }
@@ -779,20 +771,13 @@ class Fuzion extends Tool
       {
         _backend = Backend.interpreter;
       }
-    if (_main == null && !_readStdin && _backend.needsMain())
+    if (_backend.needsMain() && _main == null && !_readStdin)
       {
-        if (argsLeft != null && argsLeft.size() >= 1)
+        if (applicationArgs.size() >= 1)
           {
-            String mainOrStdin = argsLeft.remove(0);
-
-            if (mainOrStdin.equals("-"))
-              {
-                _readStdin = true;
-              }
-            else
-              {
-                _main = mainOrStdin;
-              }
+            String mainOrStdin = applicationArgs.remove(0);
+            _readStdin = mainOrStdin.equals("-");
+            _main = _readStdin ? null : mainOrStdin;
           }
         else
           {
@@ -815,7 +800,6 @@ class Fuzion extends Tool
       {
         fatal("neither property '" + FUZION_HOME_PROPERTY + "' is set nor argument '-XfuzionHome=<path>' is given");
       }
-    final Optional<ArrayList<String>> _argsLeft = Optional.ofNullable(argsLeft);
     return () ->
       {
         var options = new FrontEndOptions(_verbose,
@@ -836,7 +820,7 @@ class Fuzion extends Tool
           {
             options.setTailRec();
           }
-        options.setBackendArgs(_argsLeft.orElse(new ArrayList<String>()));
+        options.setBackendArgs(applicationArgs);
         timer("prep");
         var fe = new FrontEnd(options);
         timer("fe");

@@ -85,7 +85,7 @@ public class Case extends AbstractCase
    * Counter for a unique id for this case statement. This is used to store data
    * in the runtime clazz for this case.
    */
-  public int runtimeClazzId_ = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
+  public int _runtimeClazzId = -1;  // NYI: Used by dev.flang.be.interpreter, REMOVE!
 
 
   /*--------------------------  constructors  ---------------------------*/

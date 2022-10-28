@@ -52,13 +52,13 @@ public class IncompatibleResultsOnBranches extends ANY
   /**
    * The different types in source code order.
    */
-  private List<AbstractType> types_ = new List<>();
+  private List<AbstractType> _types = new List<>();
 
   /**
    * For each type, a list of expressions from different branches that produce
    * this type.
    */
-  private TreeMap<AbstractType, List<SourcePosition>> positions_ = new TreeMap<>();
+  private TreeMap<AbstractType, List<SourcePosition>> _positions = new TreeMap<>();
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -83,9 +83,9 @@ public class IncompatibleResultsOnBranches extends ANY
         add(it.next());
       }
     if (CHECKS) check
-      (types_.size() > 1);
+      (_types.size() > 1);
 
-    AstErrors.incompatibleResultsOnBranches(pos, msg, types_, positions_);
+    AstErrors.incompatibleResultsOnBranches(pos, msg, _types, _positions);
   }
 
 
@@ -93,17 +93,17 @@ public class IncompatibleResultsOnBranches extends ANY
 
 
   /**
-   * Add the given expression to types_ and positions_.
+   * Add the given expression to _types and _positions.
    */
   private void add(Expr e)
   {
     var t = e.type();
-    List<SourcePosition> l = positions_.get(t);
+    List<SourcePosition> l = _positions.get(t);
     if (l == null)
       {
-        types_.add(t);
+        _types.add(t);
         l = new List<>();
-        positions_.put(t, l);
+        _positions.put(t, l);
       }
     l.add(e.posOfLast());
   }

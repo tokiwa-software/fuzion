@@ -34,7 +34,7 @@ import dev.flang.air.Clazz;
 /**
  * ChoiceIdAsRef represents the id stored in the tag of a choice type as a
  * reference.  This can be used to avoid the need for a tag and use the
- * choiceValRef_ field instead.
+ * _choiceValRef field instead.
  *
  * @author Fridtjof Siebert (siebert@tokiwa.software)
  */
@@ -48,7 +48,7 @@ public class ChoiceIdAsRef extends Value
   /**
    *
    */
-  public static ArrayList<ChoiceIdAsRef> preallocated_ = new ArrayList<>();
+  public static ArrayList<ChoiceIdAsRef> _preallocated = new ArrayList<>();
 
 
   /*----------------------------  variables  ----------------------------*/
@@ -57,7 +57,7 @@ public class ChoiceIdAsRef extends Value
   /**
    *
    */
-  final int id_;
+  final int _id;
 
   /*--------------------------  constructors  ---------------------------*/
 
@@ -72,9 +72,9 @@ public class ChoiceIdAsRef extends Value
     if (PRECONDITIONS) require
       (id >= 0);
 
-    this.id_ = id;
+    this._id = id;
 
-    preallocated_.add(this);
+    _preallocated.add(this);
   }
 
 
@@ -102,11 +102,11 @@ public class ChoiceIdAsRef extends Value
     if (clazz._choiceGenerics.size() > 2)
       {
         // make sure all values are preallocated
-        while (preallocated_.size() <= id)
+        while (_preallocated.size() <= id)
           {
-            new ChoiceIdAsRef(preallocated_.size());
+            new ChoiceIdAsRef(_preallocated.size());
           }
-        result = preallocated_.get(id);
+        result = _preallocated.get(id);
       }
     else
       {
@@ -145,7 +145,7 @@ public class ChoiceIdAsRef extends Value
       }
     else if (idAsRef instanceof ChoiceIdAsRef)
       {
-        result = ((ChoiceIdAsRef) idAsRef).id_;
+        result = ((ChoiceIdAsRef) idAsRef)._id;
       }
     else
       {
@@ -170,7 +170,7 @@ public class ChoiceIdAsRef extends Value
    */
   public String toString()
   {
-    return "choiceidasref["+id_+"]";
+    return "choiceidasref["+_id+"]";
   }
 
 }
