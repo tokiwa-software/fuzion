@@ -48,7 +48,7 @@ public class This extends ExprWithPos
   /**
    * the qualified name of the this that is to be accessed.
    */
-  final List<String> qual_;
+  final List<String> _qual;
 
 
   /**
@@ -56,12 +56,12 @@ public class This extends ExprWithPos
    * the current feature this is executed in, i.e. the outer feature of the
    * feature that uses this inherits clause.
    */
-  private AbstractFeature cur_ = null;
+  private AbstractFeature _cur = null;
 
   /**
    * The feature the this expression refers to, i.e,. for a.b.this this is a.b.
    */
-  private AbstractFeature feature_;
+  private AbstractFeature _feature;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -83,8 +83,8 @@ public class This extends ExprWithPos
     if (PRECONDITIONS) require
       (!qual.isEmpty());
 
-    this.qual_ = qual;
-    this.feature_ = null;
+    this._qual = qual;
+    this._feature = null;
   }
 
 
@@ -105,9 +105,9 @@ public class This extends ExprWithPos
       (cur != null,
        f != null);
 
-    this.qual_ = null;
-    this.cur_ = cur;
-    this.feature_ = f;
+    this._qual = null;
+    this._cur = cur;
+    this._feature = f;
   }
 
 
@@ -121,8 +121,8 @@ public class This extends ExprWithPos
   {
     super(pos);
 
-    this.qual_ = null;
-    this.feature_ = null;
+    this._qual = null;
+    this._feature = null;
   }
 
 
@@ -208,14 +208,14 @@ public class This extends ExprWithPos
   public Expr resolveTypes(Resolution res, AbstractFeature outer)
   {
     Type type;
-    if (qual_ != null)
+    if (_qual != null)
       {
         int d = getThisDepth(outer);
         if (d < 0)
           {
             if (CHECKS) check
               (Errors.count() > 0);
-            this.feature_ = Types.f_ERROR;
+            this._feature = Types.f_ERROR;
           }
         else
           {
@@ -224,19 +224,19 @@ public class This extends ExprWithPos
               {
                 f = f.outer();
               }
-            this.feature_ = f;
+            this._feature = f;
           }
       }
     else
       {
-        if (this.feature_ == null)  /* convenience for This(pos) constructor that does not provide outer */
+        if (this._feature == null)  /* convenience for This(pos) constructor that does not provide outer */
           {
-            this.feature_ = outer;
+            this._feature = outer;
           }
       }
 
     Expr getOuter = null;
-    var f = this.feature_;
+    var f = this._feature;
     if (f.isUniverse())
       {
         getOuter = new Universe();
@@ -244,10 +244,10 @@ public class This extends ExprWithPos
     else
       {
         /* NYI: Ugly special handling: In case this has been created as part of
-         * an inherits call, cur_ is outer.outer() since this call is done
+         * an inherits call, _cur is outer.outer() since this call is done
          * before outer is set up.
          */
-        var cur = cur_ == null ? outer : cur_;
+        var cur = _cur == null ? outer : _cur;
         getOuter = new Current(pos(), cur.thisType());
         while (f != Types.f_ERROR && cur != f)
           {
@@ -298,7 +298,7 @@ public class This extends ExprWithPos
   {
     return
       (e instanceof This) &&
-      ((This) e).feature_.isUniverse();
+      ((This) e)._feature.isUniverse();
   }
 
 
@@ -311,12 +311,12 @@ public class This extends ExprWithPos
    */
   private int getThisDepth(AbstractFeature feat)
   {
-    Iterator<String> it = qual_.iterator();
+    Iterator<String> it = _qual.iterator();
     int d = getDepth(0, feat, it.next(), it);
     if (d < 0)
       {
         var qname = new StringBuilder();
-        for (var name : qual_)
+        for (var name : _qual)
           {
             qname.append(qname.length() > 0 ? "." : "")
               .append(name);
@@ -372,13 +372,13 @@ public class This extends ExprWithPos
    */
   public String toString()
   {
-    if (qual_ != null)
+    if (_qual != null)
       {
-        return qual_+".this";
+        return _qual+".this";
       }
-    else if (feature_ != null)
+    else if (_feature != null)
       {
-        return feature_.qualifiedName() + ".this";
+        return _feature.qualifiedName() + ".this";
       }
     else
       {
