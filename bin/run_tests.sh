@@ -59,9 +59,9 @@ for test in $TESTS; do
   fi
 done
 
-OK=$(     cat "$BUILD_DIR"/run_tests.results | grep --count ok$     )
-SKIPPED=$(cat "$BUILD_DIR"/run_tests.results | grep --count skipped$)
-FAILED=$( cat "$BUILD_DIR"/run_tests.results | grep --count failed$ )
+OK=$(     cat "$BUILD_DIR"/run_tests.results | grep --count ok$      || true)
+SKIPPED=$(cat "$BUILD_DIR"/run_tests.results | grep --count skipped$ || true)
+FAILED=$( cat "$BUILD_DIR"/run_tests.results | grep --count failed$  || true)
 
 echo -n " $OK/$(echo "$TESTS" | wc -w) tests passed,"
 echo -n " $SKIPPED skipped,"
