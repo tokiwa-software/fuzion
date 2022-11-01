@@ -627,12 +627,19 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
       case Tag:
         {
           var valuecl = _fuir.tagValueClazz(cl, c, i);  // static clazz of value
-          var value   = pop(stack, valuecl);            // value that will be tagged
           var newcl   = _fuir.tagNewClazz  (cl, c, i);  // static clazz of result
-          int tagNum  = _fuir.clazzChoiceTag(newcl, valuecl);
-          var r = _processor.tag(cl, valuecl, value, newcl, tagNum);
-          push(stack, newcl, r._v0);
-          return r._v1;
+          if(newcl == valuecl)
+            {
+              return _processor.nop();
+            }
+          else
+            {
+              var value   = pop(stack, valuecl);        // value that will be tagged
+              int tagNum  = _fuir.clazzChoiceTag(newcl, valuecl);
+              var r = _processor.tag(cl, valuecl, value, newcl, tagNum);
+              push(stack, newcl, r._v0);
+              return r._v1;
+            }
         }
       case Env:
         {

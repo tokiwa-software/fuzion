@@ -570,10 +570,19 @@ public class Interpreter extends ANY
 
     else if (s instanceof Tag t)
       {
-        Value v      = execute(t._value, staticClazz, cur);
-        Clazz vClazz = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 0);
-        Clazz tClazz = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 1);
-        result = tag(tClazz, vClazz, v);
+        // special case: bools
+        // NYI: why is this necessary?
+        if (t.type().compareTo(Types.resolved.t_bool) == 0)
+          {
+            result = new boolValue(execute(t._value, staticClazz, cur).boolValue());
+          }
+        else
+          {
+            Value v      = execute(t._value, staticClazz, cur);
+            Clazz vClazz = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 0);
+            Clazz tClazz = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 1);
+            result = tag(tClazz, vClazz, v);
+          }
       }
 
     else if (s instanceof Check c)

@@ -1041,7 +1041,12 @@ hw25 is
         var result = switch (clazzKind(cc))
           {
           case Abstract, Choice -> false;
-          case Intrinsic, Routine, Field -> (cc.isInstantiated() || cc.feature().isOuterRef()) && cc != Clazzes.conststring.getIfCreated() && !cc.isAbsurd();
+          case Intrinsic, Routine, Field ->
+            (cc.isInstantiated() || cc.feature().isOuterRef())
+            && cc != Clazzes.conststring.getIfCreated()
+            && !cc.isAbsurd()
+            // NYI: this should not depend on string comparison!
+            && !(cc.feature().qualifiedName().equals("void.absurd"));
           };
         (result ? _needsCode : _doesNotNeedCode).set(cl - CLAZZ_BASE);
         return result;

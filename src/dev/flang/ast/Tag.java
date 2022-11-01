@@ -79,7 +79,16 @@ public class Tag extends Expr
     if (PRECONDITIONS) require
       (value != null);
 
-    this._value = value;
+    // tricky: we might have a nested choice
+    this._value =  taggedType
+      .choiceGenerics()
+      .stream()
+      // if choice generic is a choice and value is assignable to it
+      // we recurse via new Tag(value, choice_generic)
+      // which results in a nested tag.
+      .filter(cg -> cg.isChoice() && cg.isAssignableFrom(value.type()))
+      .findAny().<Expr>map(cg -> new Tag(value, cg))
+      .orElse(value);
     this._taggedType = taggedType;
   }
 
