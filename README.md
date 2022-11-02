@@ -13,7 +13,7 @@ Please check [https://flang.dev](https://flang.dev) for language and implementat
 ## Requirements
 
 - OpenJDK 17, e.g., https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17%2B35/OpenJDK17-jdk_x64_linux_hotspot_17_35.tar.gz
-- clang-10 LLVM C compiler (on ubuntu: sudo apt-get install clang-10)
+- C compiler, clang or gcc (on ubuntu: sudo apt-get install (clang|gcc))
 - GNU make
 - libgc (on debian: sudo apt-get install libgc1 libgc-dev)
 
@@ -31,7 +31,7 @@ Please check [https://flang.dev](https://flang.dev) for language and implementat
 
 ## Build
 
-> Make sure java/javac commands from OpenJDK and clang binary are in $PATH.
+> Make sure java/javac commands from OpenJDK is in $PATH.
 
     cd fuzion
     make
@@ -47,7 +47,9 @@ alternatively, you can build in another directory and use
     cd tests/rosettacode_factors_of_an_integer
     fz factors
 
-To compile the same example (requires clang C compiler):
+To compile the same example (requires C compiler):
+
+> The default compiler is clang. To use another c-compiler set environment variable `CC`.
 
     fz -c factors
     ./factors

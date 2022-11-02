@@ -537,7 +537,9 @@ public class C extends ANY
       }
     Errors.showAndExit();
 
-    var command = new List<String>("clang", "-O3");
+    var envCC = System.getenv("CC");
+    var cc = envCC != null ? envCC : "clang";
+    var command = new List<String>(cc, "-O3");
     if(_options._useBoehmGC)
       {
         command.addAll("-lgc");
