@@ -232,7 +232,7 @@ public class Intrinsics extends ANY
             }
           byte[] pathBytes = (byte[])args.get(1).arrayData()._array;
           Path path = Path.of(new String(pathBytes, StandardCharsets.UTF_8));
-          byte[] fileContent = (byte[])args.get(3).arrayData()._array;
+          byte[] fileContent = (byte[])args.get(2).arrayData()._array;
           try
             {
               Files.write(path, fileContent);

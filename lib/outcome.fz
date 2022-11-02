@@ -123,6 +123,21 @@ outcome(T type) : choice T error /* ...  NYI: this should be open generic! */ is
     outcome.this ? v T     => v.asString
                  | e error => "--$e--"
 
+  # returns o if outcome is ok, otherwise return the outcome's own
+  # error.
+  and (O type, o outcome O) outcome O is
+    if ok
+      o
+    else
+      outcome.this
+
+  # returns o if outcome is not ok, otherwise return this outcome's value.
+  or (o outcome T) outcome T is
+    if !ok
+      o
+    else
+      outcome.this
+
 
 # outcome with 1 argument provides an short-hand to wrap a value into a
 # outcome

@@ -316,7 +316,7 @@ public abstract class Tool extends ANY
   protected int parsePositiveIntArg(String a, int defawlt)
   {
     if (PRECONDITIONS) require
-      (a.split("=").length == 2);
+      (a.split("=").length == 1 || a.split("=").length == 2);
 
     int result = defawlt;
     var s = a.split("=");

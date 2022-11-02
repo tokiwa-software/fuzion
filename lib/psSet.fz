@@ -36,7 +36,7 @@
 #
 psSet
   (K (ordered K).type,
-   psm ref psMap K unit,  # NYI: 'ref' due to lack of 'like this'
+   psm ref psMap K unit,  # NYI: #167: 'ref' due to lack of 'like this'
    dummy unit    # just to distinguish this from routine psSet(vs Sequence K)
   )
   : Set K
@@ -60,7 +60,7 @@ is
 
   # add new element k to this set.
   #
-  add (k K) ref psSet K is  # NYI: 'ref' due to lack of 'like this'
+  add (k K) ref psSet K is  # NYI: #167: 'ref' due to lack of 'like this'
     if has k
       psSet.this
     else
@@ -89,7 +89,7 @@ is
 
   # union of two psSets
   #
-  infix ⋃ (other ref psSet K) => psSet K (psm ⋃ other.psm) unit  # NYI: 'ref' due to lack of 'like this'
+  infix ⋃ (other ref psSet K) => psSet K (psm ⋃ other.psm) unit  # NYI: #167: 'ref' due to lack of 'like this'
 
 
   # intersection of two psSets
@@ -100,7 +100,7 @@ is
 
   # add all elements of the given Sequence to this set
   #
-  addAll (s Sequence K) ref psSet K is  # NYI: 'ref' due to lack of 'like this'
+  addAll (s Sequence K) ref psSet K is  # NYI: #167: 'ref' due to lack of 'like this'
     this_ref ref psSet K := psSet.this
     s.reduce this_ref ((r,k) -> r.add k)
 

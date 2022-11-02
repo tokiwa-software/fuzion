@@ -316,14 +316,14 @@ O(n log n).
   # both psMap.this and other, it will be mapped to psMap.this[k] or to other[k],
   # but it is undefined to which of these two.
   #
-  union (other ref psMap PK V) ref psMap PK V is  # NYI: 'ref' due to lack of 'like this'
+  union (other ref psMap PK V) ref psMap PK V is  # NYI: #167: 'ref' due to lack of 'like this'
     if other.size < size
       other ⋃ psMap.this
     else
 
       # helper to add 'psMap.this.data[l..r]' to 'a' and return the resulting map.
       #
-      addAll (a ref psMap PK V, l i32, r i32) ref psMap PK V is  # NYI: 'ref' due to lack of 'like this'
+      addAll (a ref psMap PK V, l i32, r i32) ref psMap PK V is  # NYI: #167: 'ref' due to lack of 'like this'
         if l > r
           a
         else
@@ -335,7 +335,7 @@ O(n log n).
       # 'tail' elements at indices larger or equal to 'at+sz' added recursively as
       # well.
       #
-      addAll (a ref psMap PK V, at i32, sz i32, tail i32) ref psMap PK V is  # NYI: 'ref' due to lack of 'like this'
+      addAll (a ref psMap PK V, at i32, sz i32, tail i32) ref psMap PK V is  # NYI: #167: 'ref' due to lack of 'like this'
         if sz = 0
           a
         else
@@ -355,7 +355,7 @@ O(n log n).
 
   # infix operator synonyme for union of two psMaps
   #
-  infix ⋃ (other ref psMap PK V) => union other  # NYI: 'ref' due to lack of 'like this'
+  infix ⋃ (other ref psMap PK V) => union other  # NYI: #167: 'ref' due to lack of 'like this'
 
 
 # psMaps -- unit type feature declaring features related to psMap

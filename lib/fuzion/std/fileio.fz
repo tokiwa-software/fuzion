@@ -87,7 +87,7 @@ public fileio is
                # the content of the file as an u8 array
                content array u8) outcome unit is
     arr := path.utf8.asArray
-    if write arr.internalArray.data arr.length content.internalArray.data content.length
+    if write arr.internalArray.data content.internalArray.data content.length
       unit
     else
       error "an error occurred during writing the file: \"$path\""
@@ -98,8 +98,6 @@ public fileio is
   private write(
                 # the internal array data representing the file path in bytes
                 path Object,
-                # the length of the internal array representing the path
-                path_length i32,
                 # the internal array data representing the content bytes to insert in file
                 content Object,
                 # the length of the internal array representing the content

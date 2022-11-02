@@ -1361,7 +1361,7 @@ public class Call extends AbstractCall
             throw new Error("NYI (see #283): Calling open type parameter");
           }
         var tptype = t.resolve(res, tt.featureOfType());
-        if (!tptype.isGenericArgument() && tptype.compareTo(Types.resolved.t_object) != 0)
+        if (!tptype.isGenericArgument())
           {
             tptype = tptype.featureOfType().typeFeature(res).thisType();
           }
