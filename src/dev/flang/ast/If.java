@@ -183,7 +183,7 @@ public class If extends ExprWithPos
   /**
    * true if this If or any nested else-if-branches end with a missing
    * else-branch. If so, there is an execution path that does not take any of
-   * the branches, so the result type is void.
+   * the branches, so the result type is unit.
    */
   private boolean hasUntakenElseBranch()
   {
