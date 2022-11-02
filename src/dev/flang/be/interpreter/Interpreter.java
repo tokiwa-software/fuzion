@@ -33,14 +33,10 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Stack;
-import java.util.TreeMap;
 
 import dev.flang.util.ANY;
 import dev.flang.util.Errors;
-import dev.flang.util.FuzionConstants;
 import dev.flang.util.FuzionOptions;
 import dev.flang.util.List;
 
@@ -570,19 +566,10 @@ public class Interpreter extends ANY
 
     else if (s instanceof Tag t)
       {
-        // special case: bools
-        // NYI: why is this necessary?
-        if (t.type().compareTo(Types.resolved.t_bool) == 0)
-          {
-            result = new boolValue(execute(t._value, staticClazz, cur).boolValue());
-          }
-        else
-          {
-            Value v      = execute(t._value, staticClazz, cur);
-            Clazz vClazz = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 0);
-            Clazz tClazz = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 1);
-            result = tag(tClazz, vClazz, v);
-          }
+        Value v      = execute(t._value, staticClazz, cur);
+        Clazz vClazz = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 0);
+        Clazz tClazz = staticClazz.getRuntimeClazz(t._valAndTaggedClazzId + 1);
+        result = tClazz.equals(vClazz) ? v : tag(tClazz, vClazz, v);
       }
 
     else if (s instanceof Check c)
