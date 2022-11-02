@@ -110,7 +110,7 @@ public class Intrinsics extends ANY
           var readingIdent = new CIdent("reading");
           var resultIdent = new CIdent("result");
           return CStmnt.seq(
-            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"), CExpr.string("r")))),
+            CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
             // Testing if fopen was successful
             CExpr.iff(fileIdent.eq(new CIdent("NULL")), c._names.FZ_FALSE.ret()),
             CExpr.decl("size_t", readingIdent, CExpr.call("fread", new List<>(A1, CExpr.int8const(1), A2, fileIdent))),
