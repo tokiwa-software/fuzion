@@ -62,7 +62,7 @@ public fileio is
                        # the (relative or absolute) file name, using platform specific path separators
                        path string) outcome i64 is
     arr := path.utf8.asArray
-    size := get_file_size arr.internalArray.data arr.length
+    size := get_file_size arr.internalArray.data unit
     if size != -1
       size
     else
@@ -73,8 +73,8 @@ public fileio is
   private get_file_size(
                         # the internal array data representing the file path in bytes
                         path Object,
-                        # the length of the internal array representing the path
-                        path_length i32) i64 is intrinsic
+                        # dummy parameter
+                        _ unit) i64 is intrinsic
 
   # creates a new file using an array of u8 as content and a string as the file path
   # it overwrites the file, if it exists, or creates a new one if it does not exist
