@@ -7,4 +7,5 @@ I'm a utf-8 string 😀
 1234
 true
 error: tag (true) not found
-[]
+"A string "
+(employee  => (name  => "sonoo"), (salary  => 56000), (married  => true))
