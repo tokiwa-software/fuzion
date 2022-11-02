@@ -290,7 +290,7 @@ public class Intrinsics extends ANY
             }
           byte[] oldPathBytes = (byte[])args.get(1).arrayData()._array;
           Path oldPath = Path.of(new String(oldPathBytes, StandardCharsets.UTF_8));
-          byte[] newPathBytes = (byte[])args.get(3).arrayData()._array;
+          byte[] newPathBytes = (byte[])args.get(2).arrayData()._array;
           Path newPath = Path.of(new String(newPathBytes, StandardCharsets.UTF_8));
           try
             {
