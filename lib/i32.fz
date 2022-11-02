@@ -184,6 +184,9 @@ i32s : wrappingIntegers i32 is
   redef min => -0x_8000_0000
   redef max =>  0x_7fff_ffff
 
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => i32 -1
+
 
 # i32 -- returns value of unit type i32s
 #

@@ -209,6 +209,9 @@ u64s : wrappingIntegers u64 is
   redef min => u64 0
   redef max => u64 0x_ffff_ffff_ffff_ffff
 
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => u64 0x_ffff_ffff_ffff_ffff
+
 
 # u64 -- returns value of unit type u64s
 #

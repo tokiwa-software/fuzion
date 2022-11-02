@@ -206,6 +206,9 @@ u32s : wrappingIntegers u32 is
   redef min => u32 0
   redef max => u32 0x_ffff_ffff
 
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => u32 0x_ffff_ffff
+
 
 # u32 -- returns value of unit type u32s
 #
