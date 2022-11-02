@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-override NAME = nested_choice_types
+override NAME = nested_choice_types_test
 include ../simple.mk
