@@ -137,16 +137,10 @@ public fileio is
                 # the (relative or absolute) file name, using platform specific path separators
                 path string) outcome unit is
     arr := path.utf8.asArray
-    match exists path
-      b bool =>
-        if b = TRUE
-          if delete arr.internalArray.data unit
-            unit
-          else
-            error "an error occurred while performing the delete operation on the following file/dir: \"$path\""
-        else
-          error "file/dir \"$path\" does not exist"
-      err error => err
+    if delete arr.internalArray.data unit
+      unit
+    else
+      error "an error occurred while performing the delete operation on the following file/dir: \"$path\""
 
   # intrinsic that deletes the file/dir represented by the path returning TRUE in case of success
   # and FALSE in case of failure
