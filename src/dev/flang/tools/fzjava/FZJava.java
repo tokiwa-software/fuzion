@@ -506,6 +506,11 @@ public class FZJava extends Tool
     if (!_pkgs.contains(pkg))
       {
         _pkgs.add(pkg);
+        if (_existingFeatures.get(pkg.replace("/", ".")) != null)
+          {
+            // do not generate duplicate features
+            return;
+          }
         FeatureWriter.write(this, pkg, "_pkg", FeatureWriter.mangle(pkg.replace("/",".")) + " is\n");
       }
   }

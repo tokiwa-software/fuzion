@@ -318,11 +318,6 @@ class ForClass extends ANY
   {
     var cn  = _class.getName();
     var ccn = FeatureWriter.cleanName(cn);
-    if (fzj._existingFeatures.get(ccn) != null)
-      {
-        // no need to generate that feature again
-        return;
-      }
     var jfn = "Java/" + ccn.replace('.', '/');
     var jtn = typeName(_class);
     var n = jfn.substring(jfn.lastIndexOf("/") + 1);
