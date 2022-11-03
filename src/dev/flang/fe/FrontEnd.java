@@ -85,35 +85,7 @@ public class FrontEnd extends ANY
     {
       return UNIVERSE_NAME;
     }
-
-    public AbstractFeature get(String name, int argcount)
-    {
-      AbstractFeature result = Types.f_ERROR;
-      var d = _module.declaredFeatures(this);
-      var set = (argcount >= 0
-                 ? FeatureName.getAll(d, name, argcount)
-                 : FeatureName.getAll(d, name          )).values();
-      if (set.size() == 1)
-        {
-          for (var f2 : set)
-            {
-              result = f2;
-            }
-        }
-      else if (set.isEmpty())
-        {
-          AstErrors.internallyReferencedFeatureNotFound(pos(), name, this, name);
-        }
-      else
-        { // NYI: This might happen if the user adds additional features
-          // with different argCounts. name should contain argCount to
-          // avoid this
-          AstErrors.internallyReferencedFeatureNotUnique(pos(), name + (argcount >= 0 ? " (" + Errors.argumentsString(argcount) : ""), set);
-        }
-      return result;
-    }
   }
-
 
   /*----------------------------  variables  ----------------------------*/
 
