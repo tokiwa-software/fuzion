@@ -314,7 +314,7 @@ $(MOD_JAVA_XML_FZ_FILES): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
 # wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
-	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.xml -to=$(@D) -verbose=0"
+	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.xml -to=$(@D) -modules=java.base -verbose=0"
 # NYI: cleanup: see #463: manually delete redundant features
 	rm -f $(BUILD_DIR)/modules/java.xml/Java_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.xml/Java/jdk_pkg.fz
@@ -327,7 +327,7 @@ $(MOD_JAVA_DATATRANSFER_FZ_FILES): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
 # wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
-	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.datatransfer -to=$(@D) -verbose=0"
+	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.datatransfer -to=$(@D) -modules=java.base,java.xml -verbose=0"
 # NYI: cleanup: see #463: manually delete redundant features
 	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java_pkg.fz
 	rm -f $(BUILD_DIR)/modules/java.datatransfer/Java/java_pkg.fz
@@ -342,7 +342,7 @@ $(MOD_JAVA_DESKTOP_FZ_FILES): $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
 # wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
-	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.desktop -to=$(@D) -verbose=0"
+	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.desktop -to=$(@D) -modules=java.base,java.xml,java.datatransfer -verbose=0"
 # NYI: cleanup: see #462: manually move these features to the main directory
 # since otherwise they would not be found automatically.
 	mv $(BUILD_DIR)/modules/java.desktop/Java/com/sun/*.fz $(BUILD_DIR)/modules/java.desktop/
