@@ -26,6 +26,12 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 
 package dev.flang.tools.fzjava;
 
+import dev.flang.ast.AbstractFeature;
+
+import dev.flang.fe.FrontEnd;
+import dev.flang.fe.FrontEndOptions;
+import dev.flang.fe.LibraryModule;
+
 import dev.flang.tools.Tool;
 
 import dev.flang.util.Errors;
@@ -85,6 +91,21 @@ public class FZJava extends Tool
    * generated before sub-classes.
    */
   TreeMap<String, ForClass> _classes = new TreeMap<>();
+
+
+  /**
+   * An instance of FrontEnd, which is required to load library modules.
+   */
+  private FrontEnd _fe;
+
+
+  /**
+   * The features that have already been defined in the loaded library modules.
+   * Maps the qualified name of the feature to the qualified name of the feature.
+   * This is a map rather than a set because Java's Sets do not provide efficient
+   * methods for checking whether an element is in a set.
+   */
+  TreeMap<String, String> _existingFeatures = new TreeMap<String, String>();
 
 
   /*--------------------------  static methods  -------------------------*/
@@ -194,6 +215,32 @@ public class FZJava extends Tool
   {
     if (createDestDir())
       {
+        List<String> emptyList = new List<String>();
+        var feOptions = new FrontEndOptions(0,
+                                            _options._fuzionHome,
+                                            true,
+                                            true,
+                                            _options._loadModules,
+                                            _options._moduleDirs,
+                                            emptyList,
+                                            0,
+                                            true,
+                                            true,
+                                            emptyList,
+                                            false,
+                                            null,
+                                            true);
+        _fe = new FrontEnd(feOptions);
+
+        for (var m : _fe._modules.values())
+          {
+            if (m.name() != "base")
+              {
+                recurseDeclaredFeatures(m, _fe._universe);
+              }
+          }
+
+
         for (var m : _options._modules)
           {
             if (!m.endsWith(".jmod"))
@@ -202,6 +249,30 @@ public class FZJava extends Tool
               }
             processModule(m);
           }
+      }
+  }
+
+
+  /**
+   * Add the qualified name of all features declared by a given library module
+   * and that are children of a given feature to _existingFeatures.
+   *
+   * This is usually called with the universe as given feature in the first
+   * iteration. Then the qualified names of all features declared by the given
+   * library module end up in _existingFeatures.
+   *
+   * The recursion here ends because no feature can be both an outer and an inner
+   * feature of some other feature, i.e. the outer-inner relationship defines a
+   * tree of features.
+   */
+  private void recurseDeclaredFeatures(LibraryModule m, AbstractFeature f)
+  {
+    var df = m.declaredFeatures(f);
+
+    for (var fn : df.values())
+      {
+        _existingFeatures.put(fn.qualifiedName(), fn.qualifiedName());
+        recurseDeclaredFeatures(m, fn);
       }
   }
 
