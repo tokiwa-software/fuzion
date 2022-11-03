@@ -1326,7 +1326,7 @@ public class Interpreter extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (   result != null                          // otherwise, there must not be any null
+      (   result != null                          // there must not be any null
        || allowUninitializedRefField              // unless we explicitly allowed uninitialized data
       );
 
