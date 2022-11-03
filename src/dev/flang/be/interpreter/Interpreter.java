@@ -1326,8 +1326,7 @@ public class Interpreter extends ANY
       }
 
     if (POSTCONDITIONS) ensure
-      (   thiz.isChoice()                         // null is used e.g. in Option<T>: choice<T,Null>.
-       || result != null                          // otherwise, there must not be any null
+      (   result != null                          // otherwise, there must not be any null
        || allowUninitializedRefField              // unless we explicitly allowed uninitialized data
       );
 
