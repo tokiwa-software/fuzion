@@ -29,6 +29,7 @@ package dev.flang.tools.fzjava;
 import dev.flang.tools.Tool;
 
 import dev.flang.util.Errors;
+import dev.flang.util.List;
 
 import java.io.IOException;
 
@@ -158,6 +159,14 @@ public class FZJava extends Tool
             else if (a.startsWith("-overwrite="))
               {
                 _options._overwrite = parseOnOffArg(a);
+              }
+            else if (a.startsWith("-modules="))
+              {
+                _options._loadModules.addAll(parseStringListArg(a));
+              }
+            else if (a.startsWith("-moduleDirs="))
+              {
+                _options._moduleDirs.addAll(parseStringListArg(a));
               }
             else if (a.startsWith("-"))
               {
