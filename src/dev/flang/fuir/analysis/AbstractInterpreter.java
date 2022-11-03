@@ -118,8 +118,8 @@ public class AbstractInterpreter<VALUE, RESULT> extends ANY
     public abstract RESULT assignStatic(int tc, int f, int rt, VALUE tvalue, VALUE val);
 
     /**
-     * Perform an assignment of avalue to a field in tvalue. The type of tvalue
-     * might be dynamic (a refernce). See FUIR.acess*().
+     * Perform an assignment of a value to a field in tvalue. The type of tvalue
+     * might be dynamic (a reference). See FUIR.acess*().
      */
     public abstract RESULT              assign(int cl, int c, int i, VALUE tvalue, VALUE avalue);
 
