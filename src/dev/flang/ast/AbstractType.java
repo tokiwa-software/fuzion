@@ -773,8 +773,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                     if ((t1 == t2 ||
                          !t1.isGenericArgument() &&
                          !t2.isGenericArgument() &&
-                         (t1.isAssignableFrom(t2) ||
-                          t2.isAssignableFrom(t1)    )) &&
+                         // NYI introduce method in AbstractType and cleanup all uses of: (!t1.isChoice && t1.isAssignableFrom(t2)) || (t1.isChoice() && t1.equals(t2))
+                         (  (   !t1.isChoice() && t1.isAssignableFrom(t2)
+                             || (t1.isChoice() && t1.equals(t2) ))
+                         || (   !t2.isChoice() && t2.isAssignableFrom(t1)
+                             || (t2.isChoice() && t2.equals(t1) ))
+                              )) &&
                         t1 != Types.t_ERROR &&
                         t2 != Types.t_ERROR)
                       {
