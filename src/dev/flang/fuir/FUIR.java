@@ -30,7 +30,6 @@ import java.nio.charset.StandardCharsets;
 
 import java.util.BitSet;
 import java.util.TreeMap;
-import java.util.stream.Stream;
 
 import dev.flang.air.Clazz;
 import dev.flang.air.Clazzes;
@@ -1693,7 +1692,8 @@ hw25 is
             for (int tix = 0; tix < nt; tix++)
               {
                 var t = f != null ? f.resultType() : ts.get(tix);
-                if (t.isAssignableFrom(cg))
+                if ((!t.isChoice() && t.isAssignableFrom(cg))
+                  || (t.isChoice() && t.equals(cg)))
                   {
                     resultL.add(tag);
                   }

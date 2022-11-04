@@ -1,0 +1,46 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of regression test for issue #556
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+issue556 =>
+  some_choice_including_nil : choice nil string is
+
+  a  some_choice_including_nil := nil
+  b  some_choice_including_nil := "string"
+
+  c := [a,b]
+
+  match (c.nth 0)
+    s some_choice_including_nil =>
+      match s
+        nil nil => say "n2"
+        string string => say "s"
+    nil nil => say "n1"
+
+  match (c.nth 1)
+    s some_choice_including_nil =>
+      match s
+        nil nil => say "n2"
+        string string => say "s"
+    nil nil => say "n1"

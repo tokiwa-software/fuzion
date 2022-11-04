@@ -1531,7 +1531,8 @@ public class Clazz extends ANY implements Comparable<Clazz>
     int index = 0;
     for (Clazz g : _choiceGenerics)
       {
-        if (g._type.isAssignableFrom(staticTypeOfValue))
+        if ((!g._type.isChoice() && g._type.isAssignableFrom(staticTypeOfValue))
+          || (g._type.isChoice() && g._type.equals(staticTypeOfValue)))
           {
             if (CHECKS) check
               (result < 0);
