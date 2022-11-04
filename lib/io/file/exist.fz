@@ -1,0 +1,79 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion standard library feature exist
+#
+#  Author: Wael Youssfi (wael.youssfi@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# exist -- effect wrapping the file exist operation
+#
+private exist(
+  eo Exist_Operation,
+  redef r effectMode.val,
+  _ unit
+) : exists, effect r is
+
+  # Verifies the existence of the file/dir in the path
+  # returns an outcome of boolean in case of success or error in case of failure
+  # the boolean result refers to the existence of the file/dir
+  #
+  exists(path string) =>
+    tmp := eo.exist path
+    replace
+    tmp
+
+# short-hand for creating and installing effects
+#
+exist(f () -> unit) => exist default_exist_operation f
+
+# short-hand for creating and installing effects
+#
+exist(eo Exist_Operation, f () -> unit) =>
+  s := exist eo effectMode.new unit
+  s.use0 f
+  unit
+
+# short-hand for accessing exist effect in current environment and performing the default exist operation using 
+# io.file.exist.exists path
+#
+exists(path string) =>
+  exists.installDefault
+  exist.env.exists path
+
+# reference to the exist operations that could take place
+#
+Exist_Operation ref is
+  exist(path string) outcome bool is abstract
+
+# the default file/dir exist operation via fuzion.std.fileio.exists
+#
+default_exist_operation : Exist_Operation is
+  exist(path string) =>
+    fuzion.std.fileio.exists path
+
+# unit type feature defining features related to exist effect but not requiring an
+# instance.
+#
+exists is
+  # install default effect io.file.exist
+  installDefault unit is
+    if !(effects.exists io.file.exist)
+      _ := exist default_exist_operation effectMode.default unit
