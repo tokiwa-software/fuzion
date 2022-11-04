@@ -24,3 +24,5 @@
 # -----------------------------------------------------------------------
 
 override NAME = fileiotests
+FUZION_OPTIONS = -unsafeIntrinsics=on
+include ../simple.mk
