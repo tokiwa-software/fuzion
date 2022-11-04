@@ -56,6 +56,10 @@ is
 
 # short-hand for creating and installing write effect
 #
+write(f () -> unit) => write default_file_write_handler f
+
+# short-hand for creating and installing write effect
+#
 write(h File_Write_Handler, f () -> unit) =>
   s := write h effectMode.new unit
   s.use0 f
