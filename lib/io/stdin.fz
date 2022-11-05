@@ -35,14 +35,46 @@ private stdin(
   ) : stdins, effect r is
 
 
-  # for a stdin instance installed in the current environment,
-  # install next instance of byteInputHandler,
-  # 'stdin.env' will provide the new instance.
-  #
-  private next => stdin ip.next mode unit
+  # read a single byte from stdin
+  byte =>
+    (stdin ip.next mode unit).ip.get
 
-  nextByte =>
-    next.ip.get
+
+  # an infinite list of either a byte an end_of_file or an error
+  # Caution!: this list is not immutable!
+  # you may iterate only once.
+  # Additionally there may be read more from stdin than what is consumed
+  # via this list.
+  # NYI: How can we lessen these imperfections?
+  bytes list (choice u8 end_of_file error) is
+    list byte ()->bytes
+
+
+  # try reading a codepoint from stdin
+  codepoint =>
+    read_codepoint(read_bytes list u8) choice error end_of_file codepoint is
+      match byte
+        byte u8 =>
+          bytes := read_bytes ++ [byte]
+          match (strings.fromBytes bytes).codepointsAndErrors.first
+            c codepoint => c
+            e error => if bytes.count >= 4 then e else read_codepoint bytes
+        end_of_file => end_of_file
+        e error => e
+
+    read_codepoint (lists.empty u8)
+
+
+  # a - possibly infinite - list of codepoints read from stdin
+  # Caution!: this list is not immutable!
+  # you may iterate only once.
+  # Additionally there may be read more from stdin than what is consumed
+  # via this list.
+  # NYI: How can we lessen these imperfections?
+  codepoints list codepoint is
+    match codepoint
+      c codepoint => list c ()->codepoints
+      * => nil
 
 
   # read n codepoints from stdin
@@ -51,23 +83,10 @@ private stdin(
   read(n i32) outcome string
   pre n >= 0
   is
-    read_codepoint =>
-      read_codepoint(read_bytes list u8) choice error end_of_file codepoint is
-        match nextByte
-          byte u8 =>
-            bytes := read_bytes ++ [byte]
-            match (strings.fromBytes bytes).codepointsAndErrors.first
-              c codepoint => c
-              e error => if bytes.count >= 4 then e else read_codepoint bytes
-          end_of_file => end_of_file
-          e error => e
-
-      read_codepoint (lists.empty u8)
-
     if n = 0
       ""
     else
-      match read_codepoint
+      match codepoint
         error error => error
         end_of_file => ""
         c codepoint =>
@@ -84,7 +103,7 @@ private stdin(
     got_end_of_file := mut false
 
     bytes := streams.generate u8 (() ->
-      match nextByte
+      match byte
         b u8 => if b != ascii.lf then b else nil
         end_of_file end_of_file => got_end_of_file <- true; nil
         error error => any_error <- error; nil)
@@ -101,7 +120,7 @@ private stdin(
 
 
 # type to indicate an `end of file`
-private end_of_file is
+end_of_file is
 
 
 # short-hand for creating and installing stdin effect
