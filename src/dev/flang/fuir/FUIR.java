@@ -2038,8 +2038,8 @@ hw25 is
     if (PRECONDITIONS) require
       (isEffect(cl));
 
-    var or = clazzOuterRef(cl);
-    return clazzResultClazz(or);
+    var oc = clazzOuterClazz(cl);
+    return id(clazz(oc).clazzOfType());
   }
 
 

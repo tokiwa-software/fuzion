@@ -879,7 +879,7 @@ public class Intrinsics extends ANY
     put("effects.exists"  , (interpreter, innerClazz) -> args ->
         {
           var cl = innerClazz.actualGenerics()[0];
-          return new boolValue(FuzionThread.current()._effects.get(cl) != null /* NOTE not containsKey since cl may map to null! */ );
+          return new boolValue(FuzionThread.current()._effects.get(cl.clazzOfType()) != null /* NOTE not containsKey since cl may map to null! */ );
         });
   }
 
@@ -911,12 +911,13 @@ public class Intrinsics extends ANY
         String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzIntrinsicName(cl);
         switch (in)
           {
-          case "effect.replace": check(FuzionThread.current()._effects.get(cl) != null); FuzionThread.current()._effects.put(cl, m   );   break;
-          case "effect.default": if (FuzionThread.current()._effects.get(cl) == null) {  FuzionThread.current()._effects.put(cl, m   ); } break;
+          case "effect.replace": check(FuzionThread.current()._effects.get(cl.clazzOfType()) != null); FuzionThread.current()._effects.put(cl.clazzOfType(), m   );   break;
+          case "effect.default": if (FuzionThread.current()._effects.get(cl.clazzOfType()) == null) {
+            FuzionThread.current()._effects.put(cl.clazzOfType(), m   ); } break;
           case "effect.abortable" :
             {
-              var prev = FuzionThread.current()._effects.get(cl);
-              FuzionThread.current()._effects.put(cl, m);
+              var prev = FuzionThread.current()._effects.get(cl.clazzOfType());
+              FuzionThread.current()._effects.put(cl.clazzOfType(), m);
               var call = Types.resolved.f_function_call;
               var oc = innerClazz.actualGenerics()[0]; //innerClazz.argumentFields()[0].resultClazz();
               var ic = oc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
@@ -935,7 +936,7 @@ public class Intrinsics extends ANY
                     throw a;
                   }
               } finally {
-                FuzionThread.current()._effects.put(cl, prev);
+                FuzionThread.current()._effects.put(cl.clazzOfType(), prev);
               }
             }
           case "effect.abort": throw new Abort(cl);
