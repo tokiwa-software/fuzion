@@ -1,0 +1,47 @@
+# This file is part of the Fuzion language implementation.
+#
+# The Fuzion language implementation is free software: you can redistribute it
+# and/or modify it under the terms of the GNU General Public License as published
+# by the Free Software Foundation, version 3 of the License.
+#
+# The Fuzion language implementation is distributed in the hope that it will be
+# useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+# License for more details.
+#
+# You should have received a copy of the GNU General Public License along with The
+# Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
+
+
+# -----------------------------------------------------------------------
+#
+#  Tokiwa Software GmbH, Germany
+#
+#  Source code of Fuzion test issue536
+#
+#  Author: Michael Lill (michael.lill@tokiwa.software)
+#
+# -----------------------------------------------------------------------
+
+# Regression test for #536: https://github.com/tokiwa-software/fuzion/issues/536
+#
+issue536 is
+
+  # missing else branch, indirect assignment
+  # of unit to choice `outcome unit`
+  log_indirect(a bool) outcome unit is
+    if !a
+        error "a is false"
+
+  say (log_indirect (envir.args.count < 2))
+  say (log_indirect (envir.args.count > 2))
+
+
+  # missing else branch, direct assignment
+  # of unit to result of log_direct
+  log_direct(a bool) unit is
+    if !a
+        unit
+
+  say (log_direct (envir.args.count < 2))
+  say (log_direct (envir.args.count > 2))
