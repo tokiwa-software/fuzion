@@ -39,41 +39,41 @@ fileiotests : fuzion.std.fileio =>
 
   say "$dir exists: {exists dir}"
   match writer.create_dir dir
-    _ unit => say "$dir was created"
-    _ error =>
+    unit => say "$dir was created"
+    error =>
   say "$dir exists: {exists dir}"
 
   say "$file exists: {exists file}"
   match writer.write_all file content.utf8.asArray
-    _ unit => say "$file was created"
-    _ error =>
+    unit => say "$file was created"
+    error =>
   say "$file exists: {exists file}"
 
   match stats.size file
     size i64 => say "$file size is $size"
-    _ error =>
+    error =>
 
   match reader.read_all file
     bytes array u8 =>
       filecontent := strings.fromBytes bytes
       say "file content bytes: $bytes"
       say "file content is $filecontent"
-    _ error =>
+    error =>
 
   match f.delete file
-    _ unit => say "$file was deleted"
-    _ error =>
+    unit => say "$file was deleted"
+    error =>
   say "$file exists: {exists file}"
 
   say "$dir exists: {exists dir}"
   say "$newdir exists: {exists newdir}"
   match f.move dir newdir
-    _ unit => say "$dir is now: $newdir"
-    _ error =>
+    unit => say "$dir is now: $newdir"
+    error =>
   say "$newdir exists: {exists newdir}"
   say "$dir exists: {exists dir}"
 
   match f.delete newdir
-    _ unit => say "$newdir was deleted"
-    _ error =>
+    unit => say "$newdir was deleted"
+    error =>
   say "$newdir exists: {exists newdir}"
