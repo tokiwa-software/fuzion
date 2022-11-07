@@ -89,7 +89,10 @@ public class LibraryFeature extends AbstractFeature
 
 
   /**
-   * Unique index of this feature.
+   * Index of this feature within _libModule._data.
+   *
+   * This index is unique for features within _libModule, i.e., not unique
+   * globally.
    */
   final int _index;
 
@@ -164,6 +167,10 @@ public class LibraryFeature extends AbstractFeature
 
   /**
    * Create LibraryFeature
+   *
+   * @param lib the module this was defined in
+   *
+   * @param index index within lib where this was defined.
    */
   LibraryFeature(LibraryModule lib, int index)
   {
@@ -763,16 +770,14 @@ public class LibraryFeature extends AbstractFeature
       {
         var pre_n  = _libModule.featurePreCondCount (_index);
         var post_n = _libModule.featurePostCondCount(_index);
-        var inv_n  = _libModule.featureInvCondCount (_index);
-        if (pre_n == 0 && post_n == 0 && inv_n == 0)
+        if (pre_n == 0 && post_n == 0)
           {
             _contract = Contract.EMPTY_CONTRACT;
           }
         else
           {
             _contract = new Contract(condList(pre_n , _libModule.featurePreCondPos (_index)),
-                                     condList(post_n, _libModule.featurePostCondPos(_index)),
-                                     condList(inv_n , _libModule.featureInvCondPos (_index)));
+                                     condList(post_n, _libModule.featurePostCondPos(_index)));
           }
       }
     return _contract;

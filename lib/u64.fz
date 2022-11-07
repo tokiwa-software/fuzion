@@ -25,7 +25,7 @@
 
 # u64 -- 64-bit unsigned integer values
 #
-u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
+u64(val u64) : wrappingInteger u64, hasInterval u64, u64s is
 
   redef thiz => u64.this.val
   redef orderedThis => u64.this.val
@@ -133,6 +133,7 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
 #      analysis: result.as_u64 == thiz
     is
       u128 0 thiz
+  as_int  => ints.from_u64 val
 
   low8bits   u8  is intrinsic
   low16bits  u16 is intrinsic
@@ -198,7 +199,7 @@ u64(val u64) : wrappingInteger<u64>, hasInterval<u64>, u64s is
 # u64s -- unit type defining features related to u64 but not requiring an
 # instance
 #
-u64s : wrappingIntegers<u64> is
+u64s : wrappingIntegers u64 is
 
   redef name => "u64"
 
@@ -207,6 +208,9 @@ u64s : wrappingIntegers<u64> is
 
   redef min => u64 0
   redef max => u64 0x_ffff_ffff_ffff_ffff
+
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => u64 0x_ffff_ffff_ffff_ffff
 
 
 # u64 -- returns value of unit type u64s

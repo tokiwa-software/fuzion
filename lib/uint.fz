@@ -19,10 +19,311 @@
 #
 #  Source code of Fuzion standard library feature uint
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# uint -- unsigned integer values of arbitrary size
-#
-uint() : integer<uint> is # NYI
+# unsigned integer of arbitrary size, including zero
+# represented by its bit sequence
+uint (b Sequence u32, _ unit) : hasInterval uint
+is
+
+  # the actually relevant data of this uint.
+  # irrelevant zeros at start are dropped.
+  # zero is represented by the empty list.
+  data := b.dropWhile (x -> x = 0)
+
+  # bitwise operations
+
+  # bitwise and
+  infix & (other uint) uint is
+    (b1, b2) := equalize other
+    uint (b1.zip b2 (x,y)->x&y) unit
+
+  # bitwise or
+  infix | (other uint) uint is
+    (b1, b2) := equalize other
+    uint (b1.zip b2 (x,y)->x|y) unit
+
+  # bitwise xor
+  infix ^ (other uint) uint is
+    (b1, b2) := equalize other
+    uint (b1.zip b2 (x,y)->x^y) unit
+
+
+  # shift operations
+
+  # shift right
+  infix >> (other uint) uint
+  pre other <= uint i32s.max.as_u64
+  is
+    if other = zero
+      thiz
+    else if other >= uint 32
+      (uint (data
+        .reverse
+        .drop (other.as_i32 / 32)) unit) >> (other % (uint 32))
+    else
+      shift := other.as_u32
+      (l,_) := data
+        .reduce (lists.empty u32, u32 0) (r,t ->
+          (res, carry_over) := r
+          next := t>>shift | carry_over
+          (res ++ [next], t << (u32 32)-shift)
+        )
+      uint l unit
+
+
+  # shift left
+  infix << (other uint) uint
+  pre other <= uint i32s.max.as_u64
+  is
+    if other = zero
+      thiz
+    else if other >= uint 32
+      uint (data ++ zeros (other.as_i32 / 32)) unit << other % (uint 32)
+    else
+      shift := other.as_u32
+      (l,carry_over) := data
+        .reverse
+        .reduce (lists.empty u32, u32 0) (r,t ->
+          (res, carry_over) := r
+          next := t<<shift | carry_over
+          ([next] ++ res, t >> ((u32 32)-shift))
+        )
+      uint ([carry_over] ++ l) unit
+
+
+  # return two sequences of equal length
+  # by prepending zero(s) to the shorter sequence
+  private equalize(other uint)
+  post result.values.0.count = result.values.1.count
+    =>
+    if other.data.count < data.count
+      (data.asList, zeros data.count-other.data.count ++ other.data)
+    else
+      (zeros other.data.count-data.count ++ data, other.data.asList)
+
+
+  # divide with remainder the two given positive ints
+  # returns the quotient and the remainder
+  # NYI performance: https://cs.opensource.google/go/go/+/refs/tags/go1.19:src/math/big/natdiv.go
+  private divide_with_remainder (divisor uint) tuple uint uint
+  pre divisor > zero
+  is
+    if thiz = zero
+      (zero, zero)
+    else if thiz < divisor
+      (zero, thiz)
+    else if thiz = divisor
+      (one, zero)
+    else
+      # The idea is to shift the divisor left as
+      # far as possible so that the subtraction of this and
+      # the shifted divisor is still positive.
+      # This is done recursively and the results
+      # are added up.
+      highest_bit_diff uint := highest_bit - divisor.highest_bit
+      shift := if thiz -! (divisor << highest_bit_diff) then highest_bit_diff else highest_bit_diff-one
+      remainder := thiz - (divisor << shift)
+      (q,rem) := remainder.divide_with_remainder divisor
+      ((one << shift) + q, rem)
+
+
+  # the highest 1 bit in this integer
+  # example: uint 0 => 0
+  # example: uint 1 => 1
+  # example: uint 8 => 4
+  highest_bit uint
+  is
+    if uint.this = zero
+      zero
+    else
+      uint ((data.count.as_u32 - 1) * 32 + data.first.highest_bit).as_u64
+
+
+  # add two unsigned ints
+  infix +  (other uint) uint is
+    (b1, b2) := equalize other
+    (d, _, _) := ([u32 0] ++ b1)
+      .reverse
+      .reduce ((lists.empty u32), ([u32 0] ++ b2).reverse, u64 0) (r, t ->
+
+        (bits, rest, carry_over) := r
+
+        sum := t.as_u64 + rest.first.as_u64 + carry_over
+
+        ([sum.low32bits] ++ bits, (rest.drop 1), (sum>>32))
+      )
+
+    uint d unit
+
+
+  # subtract other from this unsigned int
+  infix - (other uint) uint
+  pre thiz >= other
+  is
+    two_pow_32 := ((u64 1)<<32)
+    (b1, b2) := equalize other
+    (r, _) := b1
+      .zip b2 (x, y -> (x,y))
+      .reverse
+      .reduce (lists.empty u32, u64 0) (r,t ->
+        (minuend, subtrahend) := t
+        (res, carry_over) := r
+
+        difference := two_pow_32 + minuend.as_u64 - subtrahend.as_u64 - carry_over
+
+        ([difference.low32bits] ++ res, if difference >= two_pow_32 then u64 0 else u64 1)
+      )
+    uint r unit
+
+
+  # return an array of length n
+  # initialized with u32 zeros.
+  private zeros(n i32) =>
+    array n (_ -> u32 0)
+
+
+  # NYI make faster: https://en.wikipedia.org/wiki/Multiplication_algorithm#Computational_complexity_of_multiplication
+  # multiply these unsigned ints
+  infix *  (other uint) uint is
+    data
+      .reverse
+      .indexed
+      .mapSequence ((x) ->
+        (i, v) := x
+        other
+          .data
+          .reverse
+          .indexed
+          .mapSequence (ox ->
+            (oi,ov) := ox
+            tmp := v.as_u64 * ov.as_u64
+            uint ([(tmp>>32).low32bits , tmp.low32bits] ++ zeros i+oi) unit
+          )
+        )
+      .flatMapSequence uint (x -> x)
+      .fold sum
+
+
+  # divide these unsigned ints
+  infix /  (other uint) uint
+  pre other != zero
+  is
+    (quotient,_) := (divide_with_remainder other)
+    quotient
+
+
+  # modulo
+  # returns the remainder of the division
+  infix %  (other uint) uint is
+    (_,remainder) := (divide_with_remainder other)
+    remainder
+
+
+  # exponentation operator:
+  # this uint to the power of other
+  infix ** (other uint) uint
+  is
+    if other = zero
+      one
+    else if other = one
+      thiz
+    else
+      if other %% (uint 2)
+        tmp := thiz**(other / uint 2)
+        tmp * tmp
+      else
+        thiz * (thiz**(other-one))
+
+
+  # are these unsigned integers equal?
+  infix == (other uint) bool is
+    data.count = other.data.count &
+      ((data.zip other.data (a,b -> a = b)) ∀ (x->x))
+
+
+  # less or equal
+  infix <= (other uint) =>
+    if data.count = other.data.count
+      data
+        # zip the two equally long lists of digits
+        .zip other.data (a,b -> (a,b))
+        # skip to first unequal
+        .dropWhile (x -> (a,b) := x; a = b)
+        # compare
+        .mapSequence (x -> (a,b) := x; a <= b)
+        # fallback, if all are equal
+        .first true
+    else
+      data.count < other.data.count
+
+
+  # checks if operations are allowed
+
+  prefix -! bool is thiz=zero
+  infix +! (other uint) bool is true
+  infix -! (other uint) bool is thiz >= other
+  infix *! (other uint) bool is true
+  infix /! (other uint) bool is other != zero
+  infix %! (other uint) bool is true
+  infix **!(other uint) bool is true
+
+  # exponentation always works, even though it might be
+  # slow for large numbers
+
+  infix **?(other uint) numOption uint is thiz ** other
+  infix **^(other uint) uint is thiz ** other
+
+  orderedThis uint is thiz
+
+  redef zero uint is
+    uint [u32 0] unit
+
+  redef one uint is
+    uint [u32 1] unit
+
+  redef thiz => uint b unit
+
+
+  # this uint as an u32
+  as_u32 u32
+  pre
+    data.count <= 1
+  is
+    data.first (u32 0)
+
+  # this uint as an i32
+  as_i32 i32
+  pre as_u32 <= i32s.max.as_u32
+  is
+    as_u32.as_i32
+
+
+  # this uint as a string, may contain leading zeros
+  #
+  private asString0 string is
+    mrd := uint 1_000_000_000
+    (q, rem) := uint.this.divide_with_remainder mrd
+
+    if q = zero
+      (rem.data.first (u32 0)).asString
+    else
+      q.asString0 + (rem.data.first (u32 0)).asString.pad_start 9 "0"
+
+
+  redef asString string is
+    if uint.this = zero
+      "0"
+    else
+      asString0
+
+
+uint (val u64) uint is
+  uints.from_u64 val
+
+uints is
+  # helper feature to init uint via a u64
+  from_u64(val u64) uint is
+    uint [(val>>32).low32bits , val.low32bits] unit

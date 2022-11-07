@@ -85,7 +85,7 @@ public class AstErrors extends ANY
   }
   static String s(AbstractType t)
   {
-    return st(t.toString());
+    return st(t == null ? "--null--" : t.toString());
   }
   static String s(ReturnType rt)
   {
@@ -193,7 +193,7 @@ public class AstErrors extends ANY
     error(pos,
           "Feature declaration that is implemented using " + code("of") + " must have inherit clause. ",
           "Feature implementation starting at " + ofPos.show() + "\n" +
-          "To slve this, you may add an inherits clause like " + code(": choice ") + " before " + code("of") + "\n");
+          "To solve this, you may add an inherits clause like " + code(": choice ") + " before " + code("of") + "\n");
   }
 
 
@@ -233,7 +233,7 @@ public class AstErrors extends ANY
           "Feature implementation using " + code("of") + " must contain only constructors. ",
           "Feature " + sqn(f._qname) + " is not a constructor.\n" +
           "Declaration started at " + ofPos.show() + "\n" +
-          (f.impl().kind_ == Impl.Kind.RoutineDef
+          (f.impl()._kind == Impl.Kind.RoutineDef
            ? ("To solve this, you may replace " + code("=>") + " by " + code("is") + " and " +
               "ensure that the code results in a value of type " + st("unit") + " " +
               "in the declaration of " + sqn(f._qname) + ".\n")
@@ -524,7 +524,7 @@ public class AstErrors extends ANY
    * i.e., "call" or "type".
    *
    * @param detail2 optional extra lines of detail message giving further
-   * information, like "Calling feature: xyz.f\n" or "Type: Stack<bool,int>\n".
+   * information, like "Calling feature: xyz.f\n" or "Type: Stack bool int\n".
    */
   static void wrongNumberOfGenericArguments(FormalGenerics fg,
                                             List<AbstractType> actualGenerics,
@@ -825,11 +825,30 @@ public class AstErrors extends ANY
 
   public static void duplicateFeatureDeclaration(SourcePosition pos, AbstractFeature f, AbstractFeature existing)
   {
-    error(pos,
-          "Duplicate feature declaration",
-          "Feature that was declared repeatedly: " + s(f) + "\n" +
-          "originally declared at " + existing.pos().show() + "\n" +
-          "To solve this, consider renaming one of these two features or changing its number of arguments");
+    // suppress error message if errors were reported already and any feature
+    // involved is f_ERROR
+    if (count() == 0 || (f                != Types.f_ERROR &&
+                         f       .outer() != Types.f_ERROR &&
+                         existing         != Types.f_ERROR &&
+                         existing.outer() != Types.f_ERROR    ))
+      {
+        // NYI: HACK: see #461: This is an ugly workaround that just ignores the
+        // fact that type features can be defined repeatedly.
+        if (f.qualifiedName().endsWith("#type"))
+          {
+            warning(pos,
+                    "Duplicate feature declaration (ignored since these are type features, see #461)",
+                    "Feature that was declared repeatedly: " + s(f) + "\n" +
+                    "originally declared at " + existing.pos().show() + "\n" +
+                    "To solve this, consider renaming one of these two features or changing its number of arguments");
+            return;
+          }
+        error(pos,
+              "Duplicate feature declaration",
+              "Feature that was declared repeatedly: " + s(f) + "\n" +
+              "originally declared at " + existing.pos().show() + "\n" +
+              "To solve this, consider renaming one of these two features or changing its number of arguments");
+      }
   }
 
   public static void qualifiedDeclarationNotAllowedForField(Feature f)
@@ -904,18 +923,30 @@ public class AstErrors extends ANY
     return solution;
   }
 
+  static boolean errorInOuterFeatures(AbstractFeature f)
+  {
+    while (f != null && f != Types.f_ERROR)
+      {
+        f = f.outer();
+      }
+    return f == Types.f_ERROR;
+  }
+
   static void calledFeatureNotFound(Call call,
                                     FeatureName calledName,
                                     AbstractFeature targetFeature)
   {
-    var solution = solutionDeclareReturnTypeIfResult(calledName.baseName(),
-                                                     calledName.argCount());
-    error(call.pos(),
-          "Could not find called feature",
-          "Feature not found: " + sbn(calledName) + "\n" +
-          "Target feature: " + s( targetFeature) + "\n" +
-          "In call: " + s(call) + "\n" +
-          solution);
+    if (count() == 0 || !errorInOuterFeatures(targetFeature))
+      {
+        var solution = solutionDeclareReturnTypeIfResult(calledName.baseName(),
+                                                         calledName.argCount());
+        error(call.pos(),
+              "Could not find called feature",
+              "Feature not found: " + sbn(calledName) + "\n" +
+              "Target feature: " + s(targetFeature) + "\n" +
+              "In call: " + s(call) + "\n" +
+              solution);
+      }
   }
 
   static void expectedActualTypeInCall(SourcePosition pos,
@@ -1059,7 +1090,7 @@ public class AstErrors extends ANY
   {
     error(pos,
           "Formal generic cannot have generic arguments",
-          "In a type with generic arguments >>A<B><<, the base type >>A<< must not be a formal generic argument.\n" +
+          "In a type with generic arguments >>A B<<, the base type >>A<< must not be a formal generic argument.\n" +
           "Type used: " + s(t) + "\n" +
           "Formal generic used " + s(generic) + "\n" +
           "Formal generic declared in " + generic.typeParameter().pos().show() + "\n");
@@ -1487,11 +1518,11 @@ public class AstErrors extends ANY
           typesMsg);
   }
 
-  static void lossOfPrecision(SourcePosition pos, String _originalString, int _base, AbstractType type_)
+  static void lossOfPrecision(SourcePosition pos, String _originalString, int _base, AbstractType _type)
   {
     error(pos,
       "Loss of precision for: " + _originalString,
-      "Expected number given in base " + _base + " to fit into " + type_ + " without loss of precision.");
+      "Expected number given in base " + _base + " to fit into " + _type + " without loss of precision.");
   }
 }
 

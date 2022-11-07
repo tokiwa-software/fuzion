@@ -33,7 +33,7 @@ Type ref is
 
   # name of this type, including type parameters, e.g. 'option (list i32)'.
   #
-  name string is abstract
+  name string is intrinsic
 
 
   # string representation of this type to be used for debugging.

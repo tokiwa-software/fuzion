@@ -25,12 +25,12 @@
 
 # Set -- an abstract set of values V
 #
-Set(E hasEquals<E>.type) ref : Sequence<E> is
+Set(E (hasEquals E).type) ref : Sequence E is
 
   # number of entries in this set.  May be undefined, i.e., a range of
   # floating point numbers or an infinite set.
   #
-  sizeOption option<i32> is nil
+  sizeOption option i32 is nil
 
 
   # does this set contain the given value?
@@ -40,12 +40,12 @@ Set(E hasEquals<E>.type) ref : Sequence<E> is
 
   # list representation of values in this set
   #
-  redef asList list<E> is abstract
+  redef asList list E is abstract
 
 
   # add new element k to this set.
   #
-  add (k E) Set<E> is abstract
+  add (k E) Set E is abstract
 
 
   redef asString =>
@@ -53,5 +53,5 @@ Set(E hasEquals<E>.type) ref : Sequence<E> is
       "∅"
     else
       ("\{"
-       + asList.map<string>(x -> x.asString).fold(strings.concat ";")
+       + (asList.map string (x -> x.asString)).fold(strings.concat ";")
        + "\}")

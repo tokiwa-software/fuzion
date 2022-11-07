@@ -143,7 +143,7 @@ randomProvider ref is
 randoms is
 
   installDefault is
-    if !(effects.exists<random>)
+    if !effects.exists random
       _ := random simpleRandomProviders.default effectMode.default
 
 

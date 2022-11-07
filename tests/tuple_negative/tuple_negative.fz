@@ -37,61 +37,61 @@ tuple_negative {
   p(s Object) is say s
 
   // start with some generic type inference tests, which are a pre-requisite for tuples to work
-  g1<A>(a A) is
+  g1(A type, a A) is
   g1 "Hello" // should infer <string>
   g1 123    // should infer <i32>
-# chck(g1("Hello").a.length == 5, "g1<A> infer A==string");   // NYI: string.length
-  chck (g1(123).a == 123) "g1<A> infer A==i32"
+# chck(g1("Hello").a.length == 5, "g1 A infer A==string");   // NYI: string.length
+  chck (g1(123).a == 123) "g1 A infer A==i32"
 
-  g1a<A>(a A) A is a
+  g1a(A type, a A) A is a
   itaa := g1a "string" // should infer <string>
   itab := g1a 123      // should infer <i32>
-# chck itaa.length=6 "g1a<A> infer A==string"   // NYI: string.length
-  chck itab=123 "g1a<A> infer A==i32"
+# chck itaa.length=6 "g1a A infer A==string"   // NYI: string.length
+  chck itab=123 "g1a A infer A==i32"
 
-  g1b<AAAA>(a,b,c AAAA) is
+  g1b(AAAA type, a,b,c AAAA) is
   g1bv1 := g1b true true false     // should infer <bool>
   g1bv2 := g1b "string" "A" "test" // should infer <string>
-  chck (g1bv1.a && g1bv1.b && !g1bv1.c) "g1b<AAAA> infer AAAA==bool"
-# chck ((g1bv2.a.length + g1bv2.b.length + g1bv2.c.length) == 11) "g1b<AAAA> infer AAAA==string"   // NYI: string.length
+  chck (g1bv1.a && g1bv1.b && !g1bv1.c) "g1b AAAA infer AAAA==bool"
+# chck ((g1bv2.a.length + g1bv2.b.length + g1bv2.c.length) == 11) "g1b AAAA infer AAAA==string"   // NYI: string.length
 
-  nothing1 tuple<> := tuple<>  ; p "nothing1 is $nothing1" // empty tuple using explicit types
-  nothing2 tuple<> := tuple    ; p "nothing2 is $nothing2" // empty tuple using explicit type and inferring generic
-  nothing3 tuple<> :=        (); p "nothing3 is $nothing3" // empty tuple using explicit type and tuple syntax sugar
-  nothing4 tuple   := tuple<>  ; p "nothing4 is $nothing4" // empty tuple inferring generics and explicit type
+  nothing1 tuple := tuple  ; p "nothing1 is $nothing1" // empty tuple using explicit types
+  nothing2 tuple := tuple  ; p "nothing2 is $nothing2" // empty tuple using explicit type and inferring generic
+  nothing3 tuple :=      (); p "nothing3 is $nothing3" // empty tuple using explicit type and tuple syntax sugar
+  nothing4 tuple   := tuple  ; p "nothing4 is $nothing4" // empty tuple inferring generics and explicit type
   nothing5 tuple   := tuple    ; p "nothing5 is $nothing5" // empty tuple inferring generics and inferring generic
   nothing6 tuple   :=        (); p "nothing6 is $nothing6" // empty tuple inferring generics and tuple syntax sugar
-  nothing7         := tuple<>  ; p "nothing7 is $nothing7" // empty tuple inferring type and explicit type
+  nothing7         := tuple  ; p "nothing7 is $nothing7" // empty tuple inferring type and explicit type
   nothing8         := tuple    ; p "nothing8 is $nothing8" // empty tuple inferring type and inferring generic
   nothing9         :=        (); p "nothing9 is $nothing9" // empty tuple inferring type and tuple syntax sugar
-  ()               := tuple<>  ; p "nothing10 is ()"
-  ()               := tuple    ; p "nothing11 is ()"
-  ()               :=        (); p "nothing12 is ()"
-  ()               := tuple<>  ; p "nothing10 is ()"
-  ()               := tuple    ; p "nothing11 is ()"
-  ()               :=        (); p "nothing12 is ()"
+  ()               := tuple  ; p "nothing10 is ()"
+  ()               := tuple  ; p "nothing11 is ()"
+  ()               :=      (); p "nothing12 is ()"
+  ()               := tuple  ; p "nothing10 is ()"
+  ()               := tuple  ; p "nothing11 is ()"
+  ()               :=      (); p "nothing12 is ()"
   # can't do any chck()s on empty tuples, let's hope everything is fine
 
-  one1 tuple<i32> := tuple<i32> 42 ; p "one1 is {one1.values.0}" // one-tuple using explicit types
-  one2 tuple<i32> := tuple      42 ; p "one2 is {one2.values.0}" // one-tuple using explicit type and inferring generic
-  one3 tuple<i32> :=           (42); p "one3 is {one3.values.0}" //  4. should flag an error, (expr) is not a tuple
-  one4 tuple      := tuple<i32> 42 ; //  5. should flag an error, type inference does not infer generics of result type
-  one5 tuple      := tuple      42 ; //  6. should flag an error, type inference does not infer generics of result type
-  one6 tuple      :=           (42); //  7. should flag an error, type inference does not infer generics of result type
-  one7            := tuple<i32> 42 ; p "one7 is {one7.values.0}" // one-tuple inferring type and explicit type
-  one8            := tuple<i32> 42 ; p "one8 is {one8.values.0}" // one-tuple inferring type and inferring generic
-  one9            :=           (42); p "one9 is {one9.values.0}" //  8. should flag an error, (expr) is not a tuple, one9 is an i32
-  (one10)         := tuple<i32> 42 ; p "one10 is $one10" // one-tuple using destructure and explicit type
-  (one11)         := tuple<i32> 42 ; p "one11 is $one11" // one-tuple using destructure and inferring generic
-  (one12)         :=           (42); p "one12 is $one12" // special case: Destructure i32, which works!
-  (one12b)        :=          (nil); p "one12 is $one12" //  9. should flag an error, (expr) is not a tuple
-  (one13 i32)     := tuple<i32> 42 ; p "one13 is $one13" // one-tuple using destructure and explicit type
-  (one14 i32)     := tuple<i32> 42 ; p "one14 is $one14" // one-tuple using destructure and inferring generic
-  (one15 i32)     :=           (42); p "one15 is $one15" // special case: Destructure i32, which works!
-  one16, one17, one18 i32 := ?;
-  set (one16)     := tuple<i32> 42 ; p "one16 is $one16" // one-tuple using destructure and explicit type
-  set (one17)     := tuple<i32> 42 ; p "one17 is $one17" // one-tuple using destructure and inferring generic
-  set (one18)     :=           (42); p "one18 is $one18" // special case: Destructure i32, which works!
+  one1 tuple i32 := tuple i32  42 ; p "one1 is {one1.values.0}" // one-tuple using explicit types
+  one2 tuple i32 := tuple      42 ; p "one2 is {one2.values.0}" // one-tuple using explicit type and inferring generic
+  one3 tuple i32 :=           (42); p "one3 is {one3.values.0}" //  4. should flag an error, (expr) is not a tuple
+  one4 tuple      := tuple i32 42 ; //  5. should flag an error, type inference does not infer generics of result type
+  one5 tuple      := tuple     42 ; //  6. should flag an error, type inference does not infer generics of result type
+  one6 tuple      :=          (42); //  7. should flag an error, type inference does not infer generics of result type
+  one7            := tuple i32 42 ; p "one7 is {one7.values.0}" // one-tuple inferring type and explicit type
+  one8            := tuple i32 42 ; p "one8 is {one8.values.0}" // one-tuple inferring type and inferring generic
+  one9            :=          (42); p "one9 is {one9.values.0}" //  8. should flag an error, (expr) is not a tuple, one9 is an i32
+  (one10)         := tuple i32 42 ; p "one10 is $one10" // one-tuple using destructure and explicit type
+  (one11)         := tuple i32 42 ; p "one11 is $one11" // one-tuple using destructure and inferring generic
+  (one12)         :=          (42); p "one12 is $one12" // special case: Destructure i32, which works!
+  (one12b)        :=         (nil); p "one12 is $one12" //  9. should flag an error, (expr) is not a tuple
+  (one13 i32)     := tuple i32 42 ; p "one13 is $one13" // one-tuple using destructure and explicit type
+  (one14 i32)     := tuple i32 42 ; p "one14 is $one14" // one-tuple using destructure and inferring generic
+  (one15 i32)     :=          (42); p "one15 is $one15" // special case: Destructure i32, which works!
+  one16, one17, one18 i32 := 42;
+  set (one16)     := tuple i32 42 ; p "one16 is $one16" // one-tuple using destructure and explicit type
+  set (one17)     := tuple i32 42 ; p "one17 is $one17" // one-tuple using destructure and inferring generic
+  set (one18)     :=          (42); p "one18 is $one18" // special case: Destructure i32, which works!
   chck (one1.values.0 == 42) "one1"
   chck (one2.values.0 == 42) "one2"
   chck (one7.values.0 == 42) "one7"
@@ -103,25 +103,25 @@ tuple_negative {
   chck (one16 == 42) "one10"
   chck (one17 == 42) "one10"
 
-  two1 tuple<i32,i32>  := tuple<i32,i32> 4  2 ; p "two1 is {two1.values.0}, {two1.values.1}" // one-tuple using explicit types
-  two2 tuple<i32,i32>  := tuple          4  2 ; p "two2 is {two2.values.0}, {two2.values.1}" // one-tuple using explicit type and inferring generic
-  two3 tuple<i32,i32>  :=               (4, 2); p "two3 is {two3.values.0}, {two3.values.1}" // one-tuple using explicit type and tuple syntax sugar
-  two4 tuple           := tuple<i32,i32> 4  2 ; // 12. should flag an error, type inference does not infer generics of result type
-  two5 tuple           := tuple          4  2 ; // 13. should flag an error, type inference does not infer generics of result type
-  two6 tuple           :=               (4, 2); // 14. should flag an error, type inference does not infer generics of result type
-  two7                 := tuple<i32,i32> 4  2 ; p "two7 is {two7.values.0}, {two7.values.1}" // one-tuple inferring type and explicit type
-  two8                 := tuple<i32,i32> 4  2 ; p "two8 is {two8.values.0}, {two8.values.1}" // one-tuple inferring type and inferring generic
-  two9                 :=               (4, 2); p "two9 is {two9.values.0}, {two9.values.1}" // one-tuple inferring type and tuple syntax sugar
-  (two10a, two10b)     := tuple<i32,i32> 4  2 ; p "two10 is $two10a, $two10b" // two-tuple using destructure and explicit types
-  (two11a, two11b)     := tuple          4  2 ; p "two11 is $two11a, $two11b" // two-tuple using destructure and inferring generic
-  (two12a, two12b)     :=               (4, 2); p "two12 is $two12a, $two12b" // two-tuple using destructure and tuple syntax sugar
-  (two13a, two13b i32) := tuple<i32,i32> 4  2 ; p "two13 is $two13a, $two13b" // two-tuple using destructure and explicit types
-  (two14a, two14b i32) := tuple          4  2 ; p "two14 is $two14a, $two14b" // two-tuple using destructure and inferring generic
-  (two15a, two15b i32) :=               (4, 2); p "two15 is $two15a, $two15b" // two-tuple using destructure and tuple syntax sugar
-  two16a, two16b, two17a, two17b, two18a, two18b i32 := ?;
-  set (two16a, two16b) := tuple<i32,i32> 4  2 ; p "two16 is $two16a, $two16b" // two-tuple using destructure and explicit types
-  set (two17a, two17b) := tuple          4  2 ; p "two17 is $two17a, $two17b" // two-tuple using destructure and inferring generic
-  set (two18a, two18b) :=               (4, 2); p "two18 is $two18a, $two18b" // two-tuple using destructure and tuple syntax sugar
+  two1 tuple i32 i32  := tuple i32 i32 4  2 ; p "two1 is {two1.values.0}, {two1.values.1}" // one-tuple using explicit types
+  two2 tuple i32 i32  := tuple         4  2 ; p "two2 is {two2.values.0}, {two2.values.1}" // one-tuple using explicit type and inferring generic
+  two3 tuple i32 i32  :=              (4, 2); p "two3 is {two3.values.0}, {two3.values.1}" // one-tuple using explicit type and tuple syntax sugar
+  two4 tuple           := tuple i32 i32 4  2 ; // 12. should flag an error, type inference does not infer generics of result type
+  two5 tuple           := tuple         4  2 ; // 13. should flag an error, type inference does not infer generics of result type
+  two6 tuple           :=              (4, 2); // 14. should flag an error, type inference does not infer generics of result type
+  two7                 := tuple i32 i32 4  2 ; p "two7 is {two7.values.0}, {two7.values.1}" // one-tuple inferring type and explicit type
+  two8                 := tuple i32 i32 4  2 ; p "two8 is {two8.values.0}, {two8.values.1}" // one-tuple inferring type and inferring generic
+  two9                 :=              (4, 2); p "two9 is {two9.values.0}, {two9.values.1}" // one-tuple inferring type and tuple syntax sugar
+  (two10a, two10b)     := tuple i32 i32 4  2 ; p "two10 is $two10a, $two10b" // two-tuple using destructure and explicit types
+  (two11a, two11b)     := tuple         4  2 ; p "two11 is $two11a, $two11b" // two-tuple using destructure and inferring generic
+  (two12a, two12b)     :=              (4, 2); p "two12 is $two12a, $two12b" // two-tuple using destructure and tuple syntax sugar
+  (two13a, two13b i32) := tuple i32 i32 4  2 ; p "two13 is $two13a, $two13b" // two-tuple using destructure and explicit types
+  (two14a, two14b i32) := tuple         4  2 ; p "two14 is $two14a, $two14b" // two-tuple using destructure and inferring generic
+  (two15a, two15b i32) :=              (4, 2); p "two15 is $two15a, $two15b" // two-tuple using destructure and tuple syntax sugar
+  two16a, two16b, two17a, two17b, two18a, two18b i32 := 42;
+  set (two16a, two16b) := tuple i32 i32 4  2 ; p "two16 is $two16a, $two16b" // two-tuple using destructure and explicit types
+  set (two17a, two17b) := tuple         4  2 ; p "two17 is $two17a, $two17b" // two-tuple using destructure and inferring generic
+  set (two18a, two18b) :=              (4, 2); p "two18 is $two18a, $two18b" // two-tuple using destructure and tuple syntax sugar
   chck (two1.values.0 == 4 && two1.values.1 == 2) "two1"
   chck (two2.values.0 == 4 && two2.values.1 == 2) "two2"
   chck (two3.values.0 == 4 && two3.values.1 == 2) "two3"
@@ -139,7 +139,7 @@ tuple_negative {
   chck (two18a == 4 && two18b == 2) "two18"
 
   t10 (i32, bool) => (3, false) // 15. should flag an error, no syntactic sugar for tuple types
-  t10 tuple<i32, bool> is (3, false)
+  t10 tuple i32 bool is (3, false)
   p "tuple t10 is {t10.values.0}, {t10.values.1}"
   chck (t10.values.0 == 3    ) "t10.values.0"
   chck (t10.values.1 == false) "t10.values.1"
@@ -164,8 +164,8 @@ tuple_negative {
   chck (t10a1 == 3) "t10a1"
   chck !t10a2 "t10a2"
 
-  t10b1 i32 := ?
-  t10b2 bool := ?
+  t10b1 i32 := 42
+  t10b2 bool := 42
   ib (i i32, b bool) is
   set (t10b1, t10b2) := ib 33 true
   p "tuple t10b1/2 = ib is {t10b1}, {t10b2}"
@@ -192,7 +192,7 @@ tuple_negative {
   chck (t11a.values.1 == 25) "second must be 25"
   chck (t11a.values.2 == 125) "third must be 25"
 
-  t12a1,t12a2,t12a3 i32 := ?
+  t12a1,t12a2,t12a3 i32 := 42
   set (t12a1,t12a2,t12a3) := t11 4
   chck (t12a1 ==  4) "first must be 4"
   chck (t12a2 == 16) "second must be 16"
@@ -213,7 +213,7 @@ tuple_negative {
   chck (t12g2 == 49) "second must be 49"
   chck (t12g3 == 343) "third must be 343"
 
-  t12h1, t12h2, t12h3 i32 := ?
+  t12h1, t12h2, t12h3 i32 := 42
   set (_,_,t12h3) := t11 8; chck (t12h3 == 512) "t12h3 must be 512"
   set (_,t12h2,_) := t11 8; chck (t12h2 ==  64) "t12h2 must be 64"
   set (t12h1,_,_) := t11 8; chck (t12h1 ==   8) "t12h1 must be 8"
@@ -233,8 +233,8 @@ tuple_negative {
   (_,_)     := (12, 23)
   (_,_)     := (true, 23)
 
-  t13a1, t13a3 i32 := ?
-  t13a2 bool := ?
+  t13a1, t13a3 i32 := 42
+  t13a2 bool := 42
   set (t13a1,_,_)            := (01, 12, 23); chck (t13a1 == 01) "t13a1 must be 01"
   set (_,t13a2,_)            := (01, 12, 23); // 24. should flag an error, illegal type
   set (_,_,t13a3)            := (01, 12, 23); chck (t13a3 == 23) "t13a3 must be 23"
@@ -248,8 +248,8 @@ tuple_negative {
   (_,t13d2,_)                := (01, 12, 23); chck (t13d2 == 12) "t13d2 must be 12"
   (_,_,t13d3)                := (01, 12, 23); chck (t13d3 == 23) "t13d3 must be 23"
 
-  t14a1, t14a3 i32 := ?;
-  t14a2 bool := ?;
+  t14a1, t14a3 i32 := 42;
+  t14a2 bool := 42;
   set (t14a1,_,_)            := (01, true, 23); chck (t14a1 == 01) "t14a1 must be 01"
   set (_,t14a2,_)            := (01, true, 23); chck (t14a2      ) "t14a2 must be true"
   set (_,_,t14a3)            := (01, true, 23); chck (t14a3 == 23) "t14a3 must be 23"
@@ -263,8 +263,8 @@ tuple_negative {
   (_,t14d2,_)                := (01, true, 23); chck (t14d2      ) "t14d2 must be true"
   (_,_,t14d3)                := (01, true, 23); chck (t14d3 == 23) "t14d3 must be 23"
 
-  t15a1, t15a3 i32 := ?;
-  t15a2 bool := ?;
+  t15a1, t15a3 i32 := 42;
+  t15a2 bool := 42;
   set (t15a1,_,_)            := (01, true, 23); chck (t15a1 == 01) "t15a1 must be 01"
   set (_,t15a2,_)            := (01, true, 23); chck (t15a2      ) "t15a2 must be true"
   set (_,_,t15a3)            := (01, true, 23); chck (t15a3 == 23) "t15a3 must be 23"

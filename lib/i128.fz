@@ -25,7 +25,7 @@
 
 # i128 -- 128-bit signed integer values
 #
-i128(hi i64, lo u64) : wrappingInteger<i128>, hasInterval<i128>, i128s is
+i128(hi i64, lo u64) : wrappingInteger i128, hasInterval i128, i128s is
   redef infix + (other i128) i128 is panic "NYI: i128 is not supported"
   redef infix - (other i128) i128 is panic "NYI: i128 is not supported"
   redef infix * (other i128) i128 is panic "NYI: i128 is not supported"
@@ -39,7 +39,7 @@ i128(hi i64, lo u64) : wrappingInteger<i128>, hasInterval<i128>, i128s is
 # i128s -- unit type defining features related to i128 but not requiring an
 # instance
 #
-i128s : wrappingIntegers<i128> is
+i128s : wrappingIntegers i128 is
 
   redef name => "i128"
 
@@ -48,6 +48,9 @@ i128s : wrappingIntegers<i128> is
 
   redef min => i128 -0x_8000_0000_0000_0000 0
   redef max => i128  0x_7fff_ffff_ffff_ffff 0x_ffff_ffff_ffff_ffff
+
+  # returns the number in whose bit representation all bits are ones
+  redef all_bits_set => i128 -1 0x_ffff_ffff_ffff_ffff
 
 
 # i128 -- returns value of unit type i128s

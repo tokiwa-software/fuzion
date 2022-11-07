@@ -19,10 +19,189 @@
 #
 #  Source code of Fuzion standard library feature int
 #
-#  Author: Fridtjof Siebert (siebert@tokiwa.software)
+#  Author: Michael Lill (michael.lill@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
 # int -- signed integer values of arbitrary size
 #
-int (val i64) : integer<int> is # NYI
+int (s sign, n uint) : hasInterval int
+is
+
+  # normalize the sign => no minus zero
+  ns := if n = n.zero then plus else s
+
+  max int is
+    panic "invalid, there is no max int."
+
+
+  redef thiz => int ns n
+
+  name string is
+    "int"
+
+  redef zero int is
+    int plus n.zero
+
+  redef one int is
+    int plus n.one
+
+
+  redef prefix - int is
+    match ns
+      plus => int minus n
+      minus => int plus n
+
+
+  # add this int to other
+  infix +  (other int) int is
+    if ns = other.ns
+      int ns n+other.n
+    else
+      match ns
+        plus => thiz - (-other)
+        minus => other - (-thiz)
+
+
+  # subtract other from this int
+  infix - (other int) int is
+    match other.ns
+      plus =>
+        match ns
+          plus =>
+            if n >= other.n
+              int plus (n - other.n)
+            else
+              int minus (other.n - n)
+          minus => -(-int.this + other)
+      # minus, minus => plus
+      minus => int.this + -other
+
+
+  # the sign of the result of the
+  # multiplication or division of thiz and other
+  private result_sign_mul_div(other int) sign is
+    if ns = other.ns then plus else minus
+
+
+  # multiply this int by other
+  infix *  (other int) int is
+    int (result_sign_mul_div other) n*other.n
+
+
+  # divide this int by other
+  infix /  (other int) int
+  pre other != zero
+  is
+    s sign := result_sign_mul_div other
+    int s n/other.n
+
+
+  # modulo, returns the remainder of the
+  # division of this int by other
+  infix %  (other int) int is
+    int ns n%other.n
+
+
+  # exponentation operator:
+  # this int to the power of other
+  infix ** (other int) int
+  pre other >= zero
+  is
+    match s
+      plus => int plus (n ** other.n)
+      minus =>
+        s sign := if other %% (int 2) then plus else minus
+        int s (n ** other.n)
+
+
+  # all operations are allowed for all ints
+  # except for division where we need to
+  # check for division by zero
+
+  prefix -! bool is true
+  infix +! (other int) bool is true
+  infix -! (other int) bool is true
+  infix *! (other int) bool is true
+  infix /! (other int) bool is
+    other != zero
+  infix %! (other int) bool is true
+
+  infix **!(other int) bool is
+    other >= zero  # 0 and 1 ** -other would be okay but we disallow nonetheless
+
+  infix **?(other int) numOption int is
+    match other.ns
+      plus => thiz ** other
+      minus => nil # 0 and 1 ** -other would be okay but we disallow nonetheless
+
+  infix **^(other int) int is
+    match other.ns
+      plus => thiz ** other
+      minus => panic "negativ exponent is not allowed." # 0 or 1 ** -other would be okay but we disallow nonetheless
+
+  # are these two ints equal?
+  infix == (other int) bool is
+    ns = other.ns & n = other.n
+
+  orderedThis int is int ns n
+
+  # is less or equal
+  infix <= (other int) bool is
+    match ns
+      plus =>
+        match other.ns
+          plus => n <= other.n
+          minus => false
+      minus =>
+        match other.ns
+          plus => true
+          minus => other.n <= n
+
+  redef asString string is
+    s.asString + n.asString
+
+
+int (val i64) int is
+  ints.from_i64 val
+
+
+ints is
+  # helper feature to init int via an i64
+  from_i64(val i64) int is
+    s sign := if val < 0 then minus else plus
+    n u64 := if val = i64s.min
+               i64.max.as_u64 + 1
+             else if val < 0
+               (-val).as_u64
+             else val.as_u64
+    int s (uints.from_u64 n)
+
+  # helper feature to init int via a u64
+  from_u64(val u64) int is
+    int plus (uints.from_u64 val)
+
+  # helper feature to init int via an i32
+  from_i32(val i32) int is
+    from_i64 val.as_i64
+
+
+plus is
+minus is
+sign : choice plus minus, hasEquals sign is
+  infix = (o sign) bool is
+    match sign.this
+      plus =>
+        match o
+          plus => true
+          minus => false
+      minus =>
+        match o
+          plus => false
+          minus => true
+
+  redef asString string is
+    match sign.this
+      plus => ""
+      minus => "-"
+

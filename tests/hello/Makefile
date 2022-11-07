@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = HelloWorld
+override NAME = HelloWorld
 include ../positive.mk

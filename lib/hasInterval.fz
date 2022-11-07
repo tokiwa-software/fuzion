@@ -25,7 +25,7 @@
 
 # hasInterval -- feature for integers that can define an interval
 #
-hasInterval(H hasInterval<H>.type) : integer<H> is
+hasInterval(H (hasInterval H).type) : integer H is
   max  H is abstract
 /*
   zero T is abstract
@@ -45,7 +45,7 @@ hasInterval(H hasInterval<H>.type) : integer<H> is
   #   a <  b: the interval from a to b, both inclusive
   #   a == b: the interval containing only one element, a
   #   a >  b: an empty interval
-  infix .. (upper H) : Set<H> is
+  infix .. (upper H) : Set H is
 
     lower H is thiz
     # lower => hasInterval.this  # NYI: This does not work yet since the result type when doing clazz layout is hasInterval and not the actual clazz (i32, etc)
@@ -60,7 +60,7 @@ hasInterval(H hasInterval<H>.type) : integer<H> is
         f x
 
     # create a stream of all the elements of this interval, in order.
-    redef asStream ref : stream<H> is
+    redef asStream ref : stream H is
       x := numOption lower
       redef hasNext bool is x.exists && x.val <= upper
       redef next H is res := x.val; set x := x +? one; res
@@ -80,10 +80,10 @@ hasInterval(H hasInterval<H>.type) : integer<H> is
     # that a negative step will produce a non-empty stream for an empty interval with
     # lower > upper!
     #
-    infix : (step H) : Set<H> is
+    infix : (step H) : Set H is
 
       # create a stream of all the elements of this interval, in order.
-      redef asStream ref : stream<H> is
+      redef asStream ref : stream H is
         x := numOption lower
         redef hasNext bool is
           (step > zero && x.exists && x.val <= upper ||
@@ -93,9 +93,9 @@ hasInterval(H hasInterval<H>.type) : integer<H> is
 
       # list representation of values in this interval
       #
-      redef asList list<H> is
-        cons (head H) :  Cons<H, list<H>> is
-          tail list<H> is
+      redef asList list H is
+        cons (head H) :  Cons H (list H) is
+          tail list H is
             (lower+?step ? nil    => nil
                          | next H => (next..upper:step).asList)
         if (step > zero && lower <= upper ||
@@ -112,21 +112,21 @@ hasInterval(H hasInterval<H>.type) : integer<H> is
 
       # use map implementation from Sequence:
       #
-      map<B>(f H -> B)  => mapSequence f
+      map(B type, f H -> B)  => mapSequence f
 
 
     # create a list from this interval
     #
-    redef asList list<H> is
-      cons (head H) : Cons<H, list<H>> is
-        tail list<H> is
-          if (head >= upper) nil else cons head+head.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is hasInterval<i32>, it should be i32.
+    redef asList list H is
+      cons (head H) : Cons H (list H) is
+        tail list H is
+          if (head >= upper) nil else cons head+head.one // NYI should be '+ one', but does not work yet since outer.outer.outer.clazz is hasInterval i32, it should be i32.
       if (lower > upper) nil else cons lower
 
 
     # use map implementation from Sequence:
     #
-    map<B>(f H -> B)  => mapSequence f
+    map(B type, f H -> B)  => mapSequence f
 
 
     # string representation of this interval, e.g., "1..10"

@@ -27,15 +27,15 @@ typecheck_negative is
 
   assign is
 
-    A<T> is
-      B<U> is
-        C<V> is
+    A(T type) is
+      B(U type) is
+        C(V type) is
 
-    p := A<i32>.B<u64>.C<bool>
-    q := A<i64>.B<u64>.C<bool>
-    r := A<i32>.B<bool>.C<bool>
-    s := A<i32>.B<u64>.C<u32>
-    t := A<i32>.B<u64>.C<u32>
+    p := ((A i32).B u64).C bool
+    q := ((A i64).B u64).C bool
+    r := ((A i32).B bool).C bool
+    s := ((A i32).B u64).C u32
+    t := ((A i32).B u64).C u32
     set q := p // 1. should flag an error, illegal assignment
     set r := p // 2. should flag an error, illegal assignment
     set q := r // 3. should flag an error, illegal assignment
@@ -45,15 +45,15 @@ typecheck_negative is
     set s := r // 7. should flag an error, illegal assignment
     set t := s
 
-    D<T> ref is
-      E<U> ref is
-        F<V> ref is
+    D(T type) ref is
+      E(U type) ref is
+        F(V type) ref is
 
-    u := D<i32>.E<u64>.F<bool>
-    v := D<i64>.E<u64>.F<bool>
-    w := D<i32>.E<bool>.F<bool>
-    x := D<i32>.E<u64>.F<u32>
-    y := D<i32>.E<u64>.F<u32>
+    u := ((D i32).E u64).F bool
+    v := ((D i64).E u64).F bool
+    w := ((D i32).E bool).F bool
+    x := ((D i32).E u64).F u32
+    y := ((D i32).E u64).F u32
     set v := u // 8. should flag an error, illegal assignment
     set w := u // 9. should flag an error, illegal assignment
     set v := w // 10. should flag an error, illegal assignment

@@ -45,7 +45,7 @@ public class StrConst extends Constant
   /**
    *
    */
-  public String str;
+  public String _str;
 
 
   /*--------------------------  constructors  ---------------------------*/
@@ -60,21 +60,8 @@ public class StrConst extends Constant
    */
   public StrConst(SourcePosition pos, String s)
   {
-    this(pos, s, true);
-  }
-
-
-  /**
-   * Constructor
-   *
-   * @param pos the sourcecode position, used for error messages.
-   *
-   * @param s
-   */
-  public StrConst(SourcePosition pos, String s, boolean quoted)
-  {
     super(pos);
-    this.str = quoted ? s.substring(1,s.length()-1) : s;
+    this._str = s;
   }
 
 
@@ -115,7 +102,7 @@ public class StrConst extends Constant
    */
   public byte[] data()
   {
-    return str.getBytes(StandardCharsets.UTF_8);
+    return _str.getBytes(StandardCharsets.UTF_8);
   }
 
 
@@ -126,7 +113,7 @@ public class StrConst extends Constant
    */
   public String toString()
   {
-    return "\""+str+"\"";
+    return "\"" + _str + "\"";
   }
 
 }

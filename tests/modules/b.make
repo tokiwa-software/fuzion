@@ -17,14 +17,14 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature java.lang.System
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# java.lang.System -- NYI: remove?
-#
-public java.lang.System is
-  out java.io.PrintStream is
-    fuzion.java.getStaticField<java.io.PrintStream>("java.lang.System","out")
+override MAKEFILE_DIR = $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+override TEST_DIR = $(realpath $(MAKEFILE_DIR)/modules)
+override NAME = $(TEST_DIR)/src/test_modules
+override FUZION_OPTIONS = -sourceDirs=$(TEST_DIR)/src -modules=b -moduleDirs=$(TEST_DIR)/modules
+include ../simple.mk

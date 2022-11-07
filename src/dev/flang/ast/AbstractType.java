@@ -272,9 +272,6 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
   {
     var actlT = expr.type();
 
-    if (CHECKS) check
-      (actlT == Types.intern(actlT));
-
     return isAssignableFromOrContainsError(actlT) &&
       (!expr.isCallToOuterRef() && !(expr instanceof Current) || actlT.isRef() || actlT.isChoice());
   }
@@ -361,7 +358,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
           {
             for (var t : actualTypes(featureOfType(), g, generics()))
               {
-                if (Types.intern(t).isAssignableFrom(actual))
+                if (CHECKS) check
+                  (Errors.count() > 0 || t != null);
+                if (t != null &&
+                    Types.intern(t).isAssignableFrom(actual))
                   {
                     result = true;
                   }
@@ -472,7 +472,12 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
             boolean changes = false;
             for (var t: genericsToReplace)
               {
-                changes = changes || t.actualType(f, actualGenerics) != t;
+                if (CHECKS) check
+                  (Errors.count() > 0 || t != null);
+                if (t != null)
+                  {
+                    changes = changes || t.actualType(f, actualGenerics) != t;
+                  }
               }
             if (changes)
               {
@@ -530,7 +535,10 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
               {
                 for (var t: generics())
                   {
-                    if (t.dependsOnGenerics())
+                    if (CHECKS) check
+                      (Errors.count() > 0 || t != null);
+                    if (t != null &&
+                        t.dependsOnGenerics())
                       {
                         result = YesNo.yes;
                       }
@@ -893,7 +901,14 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
                       {
                         var tgt = tg.next();
                         var ogt = og.next();
-                        result = tgt.compareTo(ogt);
+
+                        if (CHECKS) check
+                          (Errors.count() > 0 || tgt != null && ogt != null);
+
+                        if (tgt != null && ogt != null)
+                          {
+                            result = tgt.compareTo(ogt);
+                          }
                       }
                   }
               }
@@ -967,15 +982,15 @@ public abstract class AbstractType extends ANY implements Comparable<AbstractTyp
         result = outer
               + (isRef() != featureOfType().isThisRef() ? (isRef() ? "ref " : "value ") : "" )
               + featureOfType().featureName().baseName();
-      }
-    for (var g : generics())
-      {
-        var gs = g.asString();
-        if (gs.indexOf(" ") >= 0)
+        for (var g : generics())
           {
-            gs = "(" + gs + ")";
+            var gs = g.asString();
+            if (gs.indexOf(" ") >= 0)
+              {
+                gs = "(" + gs + ")";
+              }
+            result = result + " " + gs;
           }
-        result = result + " " + gs;
       }
     return result;
   }

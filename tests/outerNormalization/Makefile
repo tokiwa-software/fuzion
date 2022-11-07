@@ -23,5 +23,5 @@
 #
 # -----------------------------------------------------------------------
 
-NAME = outerNormalization
+override NAME = outerNormalization
 include ../simple.mk

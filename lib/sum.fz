@@ -31,7 +31,7 @@
 #   say (sum l)     # '6'
 #
 #
-sum<T: numeric<T>> (l Sequence<T>)
+sum(T (numeric T).type, l Sequence T)
   pre
     debug: !l.isEmpty   # sum does not work (yet) for empty Sequence
   =>
@@ -54,10 +54,12 @@ sum<T: numeric<T>> (l Sequence<T>)
 #
 # NYI: When we move numerics.sum to numeric.type.sum, we should not need this any longer.
 #
-sum0<U: numerics<T>, T: numeric<T>> (
+sum0(
   # the numeric type we are summing, unit value
+  U (numerics T).type,
+  T (numeric T).type,
   n U,
-  l Sequence<T>
+  l Sequence T
   )
   =>
   l.fold n.sum

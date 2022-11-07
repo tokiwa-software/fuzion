@@ -166,7 +166,6 @@ public class Types extends ANY
     public final AbstractFeature f_fuzion_sys_array_length;
     public final AbstractFeature f_fuzion_sys_array_data;
     public final AbstractFeature f_Type;
-    public final AbstractFeature f_Type_name;
     public final AbstractFeature f_Types;
     public final AbstractFeature f_Types_get;
     public static interface CreateType
@@ -225,7 +224,6 @@ public class Types extends ANY
       f_fuzion_sys_array_data      = f_fuzion_sys_array.get(mod, "data");
       f_fuzion_sys_array_length    = f_fuzion_sys_array.get(mod, "length");
       f_Type                       = universe.get(mod, "Type");
-      f_Type_name                  = f_Type.get(mod, "name");
       f_Types                      = universe.get(mod, "Types");
       f_Types_get                  = f_Types.get(mod, "get");
       resolved = this;
@@ -279,6 +277,7 @@ public class Types extends ANY
     t_ADDRESS   = new Type(ADDRESS_NAME  );
     t_UNDEFINED = new Type(UNDEFINED_NAME);
     t_ERROR     = new Type(ERROR_NAME    );
+    f_ERROR     = new Feature(true);
   }
 
 

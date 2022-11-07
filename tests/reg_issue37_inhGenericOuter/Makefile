@@ -17,14 +17,11 @@
 #
 #  Tokiwa Software GmbH, Germany
 #
-#  Source code of Fuzion standard library feature java.lang
+#  Source code of Fuzion test Makefile
 #
 #  Author: Fridtjof Siebert (siebert@tokiwa.software)
 #
 # -----------------------------------------------------------------------
 
-# java.lang -- NYI: remove?
-#
-public java.lang is
-  public System_out java.io.PrintStream is
-    fuzion.java.getStaticField<java.io.PrintStream>("java.lang.System","out")
+NAME = inheritGenericOuter
+include ../simple.mk

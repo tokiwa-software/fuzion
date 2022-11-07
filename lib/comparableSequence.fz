@@ -25,7 +25,7 @@
 
 # comparable_sequence -- a Sequence that inherits from hasEquals
 #
-comparable_sequence<A: hasEquals<A>>(from Sequence<A>) : Sequence<A>, hasEquals<comparable_sequence<A>>
+comparable_sequence(A (hasEquals A).type, from Sequence A) : Sequence A, hasEquals (comparable_sequence A)
 is
 
   # create a list from this Sequence.
@@ -34,7 +34,7 @@ is
 
 
   # equality check implementation for inherited hasEquals
-  infix = (o comparable_sequence<A>) bool is
+  infix = (o comparable_sequence A) bool is
     fa := from.asArray
     oa := o.asArray
     if fa.count != oa.count
