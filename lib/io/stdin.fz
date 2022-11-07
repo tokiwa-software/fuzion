@@ -40,8 +40,8 @@ private stdin(
     (stdin ip.next mode unit).ip.get
 
 
-  # an infinite list of either a byte an end_of_file or an error
-  # Caution!: this list is not immutable!
+  # an infinite list of either a byte, an end_of_file or an error
+  # Caution!: this list is not immutable since it is constructed lazily by reading from stdin!
   # you may iterate only once.
   # Additionally there may be read more from stdin than what is consumed
   # via this list.
@@ -66,7 +66,7 @@ private stdin(
 
 
   # a - possibly infinite - list of codepoints read from stdin
-  # Caution!: this list is not immutable!
+  # Caution!: this list is not immutable since it is constructed lazily by reading from stdin!
   # you may iterate only once.
   # Additionally there may be read more from stdin than what is consumed
   # via this list.
