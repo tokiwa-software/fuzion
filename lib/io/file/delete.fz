@@ -30,10 +30,13 @@ private delete(
     redef r effectMode.val
   ) : deletes, effect r is
 
-    # deletes the file/dir represented by the path
-    # returns an outcome of unit in case of success or error in case of failure
+    # deletes the file/dir found in the path
+    # returns unit as outcome in case of successful deletion and error in case of failure
+    # if the targeted dir has content, then the return value will be error and the deletion will not take place
     #
-    delete(path string) =>
+    delete(
+           # the (relative or absolute) dir name, using platform specific path separators
+           path string) =>
         tmp := dop.delete path
         replace
         tmp

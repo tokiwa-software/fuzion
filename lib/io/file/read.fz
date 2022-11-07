@@ -32,10 +32,12 @@ private read(
   ) : reads, effect r is
 
   # reads all bytes from the file in the path
-  # returns a byte array representing the content of the file if it exists
-  # returns an error in case the file in the path does not exist
+  # returns outcome u8, a byte array representing the content of the file if the operation was successful
+  # returns an error in case the operation fails
   #
-  read_all(path string) =>
+  read_all(
+          # the (relative or absolute) file name, using platform specific path separators
+          path string) =>
     content := ro.read path
     replace
     content

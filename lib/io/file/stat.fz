@@ -30,9 +30,11 @@ private stat(
   redef r effectMode.val
   ) : stats, effect r is
 
-  # retrieves the file size in bytes as an i64 value and returns -1 in case of an error
+  # retrieves the file size in bytes as an outcome i64 value and returns error in case the operation fails
   #
-  size(path string) =>
+  size(
+      # the (relative or absolute) file name, using platform specific path separators
+      path string) =>
     tmp := ps.size path
     replace
     tmp
