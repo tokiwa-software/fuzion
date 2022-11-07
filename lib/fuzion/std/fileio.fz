@@ -62,7 +62,7 @@ public fileio is
                        # the (relative or absolute) file name, using platform specific path separators
                        path string) outcome i64 is
     arr := fuzion.sys.c_string path
-    size := get_file_size arr path.utf8.asArray.length
+    size := get_file_size arr path.byteLength
     if size != -1
       size
     else
@@ -110,7 +110,7 @@ public fileio is
                 # the (relative or absolute) file/directory name, using platform specific path separators
                 path string) outcome bool is
     arr := fuzion.sys.c_string path
-    rslt := exists arr path.utf8.asArray.length
+    rslt := exists arr path.byteLength
     if rslt = 1
       true
     else if rslt = 0
@@ -160,7 +160,7 @@ public fileio is
               new_path string) outcome unit is
     arr0 := fuzion.sys.c_string old_path
     arr1 := fuzion.sys.c_string new_path
-    if move arr0 old_path.utf8.asArray.length arr1 new_path.utf8.asArray.length
+    if move arr0 old_path.byteLength arr1 new_path.byteLength
       unit
     else
       error "an error occurred while performing the following move operation: \"$old_path\" --> \"$new_path\""
