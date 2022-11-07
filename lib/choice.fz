@@ -37,7 +37,7 @@
 #
 # which is equivalent to
 #
-#   choice<A, B, C, ...>
+#   choice A B C ...
 #
 # The parser will directly convert the first notation into a choice type
 # with actual generics.
@@ -51,7 +51,7 @@
 #
 # Named choice types can be constructed through inheritance, i.e.,
 #
-#   C : choice<A,B> is {}
+#   C : choice A B is {}
 #
 # creates a choice type of A and B with the name C.  Two named choice types
 # D and E that inherit from choice with the same actual generic arguments in
@@ -79,12 +79,12 @@
 # Now we define the choice type using the wrapped i32 types, which are
 # distinct:
 #
-#   temp centigrade | fahrenheit := ...
+#   hasFever(temp centigrade | fahrenheit) bool is ...
 #
-# When assigning values to temp, we need to wrap the values accordingly:
+# When passing arguments to this feature, we need to wrap them accordingly:
 #
-#   set temp := centigrade 37
-#   set temp := fahrenheit 99
+#   hasFever (centigrade 37)
+#   hasFever (fahrenheit 99)
 #
 # When matching the choice type, we use the wrapper types and access the
 # argument field 'degrees' to access the i32 stored inside
@@ -105,6 +105,6 @@
 #
 choice(CHOICE_ELEMENT_TYPE type...) is
 
-#  a<X> X
+#  a(X type) X
 #    pre
 #      choice.this ? X => true, *=> false;

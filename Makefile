@@ -296,7 +296,7 @@ $(BUILD_DIR)/bin/fzjava: $(FZ_SRC)/bin/fzjava $(CLASS_FILES_TOOLS_FZJAVA)
 	cp -rf $(FZ_SRC)/bin/fzjava $@
 	chmod +x $@
 
-$(MOD_JAVA_BASE_FZ_FILES): $(BUILD_DIR)/bin/fzjava
+$(MOD_JAVA_BASE_FZ_FILES): $(MOD_BASE) $(BUILD_DIR)/bin/fzjava
 	rm -rf $(@D)
 	mkdir -p $(@D)
 # wrapping in /bin/bash -c "..." is a workaround for building on windows, bash (mingw)
