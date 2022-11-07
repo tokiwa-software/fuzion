@@ -39,8 +39,8 @@ public fileio is
     match get_file_size path
       num i64 =>
         file := array num.as_i32 i->(u8 0) # allocating an array the size of the file
-        arr := path.utf8.asArray # transforms the path to a utf8 byte array
-        read arr.internalArray.data file.internalArray.data file.length // NYI: error handling for the read feature
+        arr := fuzion.sys.c_string path # transforms the path to a utf8 byte array
+        read arr file.internalArray.data file.length // NYI: error handling for the read feature
         file
       error error =>
         error
@@ -61,8 +61,8 @@ public fileio is
   public get_file_size(
                        # the (relative or absolute) file name, using platform specific path separators
                        path string) outcome i64 is
-    arr := path.utf8.asArray
-    size := get_file_size arr.internalArray.data arr.length
+    arr := fuzion.sys.c_string path
+    size := get_file_size arr path.utf8.asArray.length
     if size != -1
       size
     else
@@ -86,8 +86,8 @@ public fileio is
                path string,
                # the content of the file as an u8 array
                content array u8) outcome unit is
-    arr := path.utf8.asArray
-    if write arr.internalArray.data content.internalArray.data content.length
+    arr := fuzion.sys.c_string path
+    if write arr content.internalArray.data content.length
       unit
     else
       error "an error occurred during writing the file: \"$path\""
@@ -109,8 +109,8 @@ public fileio is
   public exists(
                 # the (relative or absolute) file/directory name, using platform specific path separators
                 path string) outcome bool is
-    arr := path.utf8.asArray
-    rslt := exists arr.internalArray.data arr.length
+    arr := fuzion.sys.c_string path
+    rslt := exists arr path.utf8.asArray.length
     if rslt = 1
       true
     else if rslt = 0
@@ -134,8 +134,8 @@ public fileio is
   public delete(
                 # the (relative or absolute) file name, using platform specific path separators
                 path string) outcome unit is
-    arr := path.utf8.asArray
-    if delete arr.internalArray.data unit
+    arr := fuzion.sys.c_string path
+    if delete arr unit
       unit
     else
       error "an error occurred while performing the delete operation on the following file/dir: \"$path\""
@@ -158,9 +158,9 @@ public fileio is
               old_path string,
               # the new (relative or absolute) file name, using platform specific path separators
               new_path string) outcome unit is
-    arr0 := old_path.utf8.asArray
-    arr1 := new_path.utf8.asArray
-    if move arr0.internalArray.data arr0.length arr1.internalArray.data arr1.length
+    arr0 := fuzion.sys.c_string old_path
+    arr1 := fuzion.sys.c_string new_path
+    if move arr0 old_path.utf8.asArray.length arr1 new_path.utf8.asArray.length
       unit
     else
       error "an error occurred while performing the following move operation: \"$old_path\" --> \"$new_path\""
@@ -184,8 +184,8 @@ public fileio is
   public create_dir(
                 # the (relative or absolute) dir name, using platform specific path separators
                 path string) outcome unit is
-    arr := path.utf8.asArray
-    if create_dir arr.internalArray.data unit
+    arr := fuzion.sys.c_string path
+    if create_dir arr unit
       unit
     else
       error "an error occurred while creating the following directory: \"$path\""
