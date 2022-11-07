@@ -356,7 +356,7 @@ public class If extends ExprWithPos
     // special case, default else-branch returning `unit`:
     // there is no explicit else-branch but we assign if to a field which
     // we can assign `unit` to. Thus we generate a default else branch.
-    if(hasUntakenElseBranch() && r.resultType().isAssignableFrom(Types.resolved.t_unit))
+    if (hasUntakenElseBranch() && r.resultType().isAssignableFrom(Types.resolved.t_unit))
       {
         var unit = new Call(pos(), null, "unit").resolveTypes(res, outer);
         elseBlock = new Block(pos(), new List<Stmnt>(unit))
