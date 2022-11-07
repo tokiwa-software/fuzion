@@ -28,31 +28,38 @@
 
 set -euo pipefail
 
-if test "$(cat /proc/sys/kernel/perf_event_paranoid)" -eq 0
+if test "$(cat /proc/sys/kernel/perf_event_paranoid)" -ge 2
 then
   echo "please set kernel parameter: perf event paranoid"
   echo "example: sudo sysctl kernel.perf_event_paranoid=1"
   exit 1
 fi
 
-SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
-
-if [[ -d "$HOME/.cache/async-profiler" ]]
-then
-  git -C "$HOME/.cache/async-profiler" fetch
-  git -C "$HOME/.cache/async-profiler" pull
+if [ -v XDG_CACHE_HOME ]; then
+  mkdir -p "$XDG_CACHE_HOME"
 else
-  mkdir -p "$HOME/.cache"
-  git clone https://github.com/jvm-profiling-tools/async-profiler "$HOME/.cache/async-profiler"
+  echo "XDG_CACHE_HOME is not set. please set it."
+  exit 1
 fi
 
-make -C "$HOME/.cache/async-profiler"
+SCRIPTPATH="$(dirname "$(readlink -f "$0")")"
+
+if [[ -d "$XDG_CACHE_HOME/async-profiler" ]]
+then
+  git -C "$XDG_CACHE_HOME/async-profiler" fetch
+  git -C "$XDG_CACHE_HOME/async-profiler" pull
+else
+  mkdir -p "$XDG_CACHE_HOME"
+  git clone https://github.com/jvm-profiling-tools/async-profiler "$XDG_CACHE_HOME/async-profiler"
+fi
+
+make -C "$XDG_CACHE_HOME/async-profiler"
 
 HTML_FILE=/tmp/$(date +%y%m%d-%H%M%S)_flamegraph.html
 
-FUZION_JAVA_OPTIONS=-agentpath:"$HOME"/.cache/async-profiler/build/libasyncProfiler.so=start,event=cpu,file="$HTML_FILE"
+FUZION_JAVA_OPTIONS="-agentpath:$XDG_CACHE_HOME/async-profiler/build/libasyncProfiler.so=start,event=cpu,file=$HTML_FILE"
 export FUZION_JAVA_OPTIONS
 
 "$SCRIPTPATH/../build/bin/fz" "$@"
 
-x-www-browser "$HTML_FILE"
+xdg-open "$HTML_FILE"

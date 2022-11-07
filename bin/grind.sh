@@ -28,7 +28,13 @@
 
 set -euo pipefail
 
-mkdir -p "$HOME/.cache"
+if [ -v XDG_CACHE_HOME ]; then
+  mkdir -p "$XDG_CACHE_HOME"
+else
+  echo "XDG_CACHE_HOME is not set. please set it."
+  exit 1
+fi
+
 
 TOOL=
 if [ "$1" = "callgrind" ] || [ "$1" = "cachegrind" ]
@@ -40,10 +46,10 @@ else
 fi
 
 # compile
-fz -c -o=/home/sam/.cache/fz_c_out "${@:2}"
+fz -c -o="$XDG_CACHE_HOME/fz_c_out" "${@:2}"
 
 # grind
-valgrind --tool="$TOOL" "--$TOOL-out-file=$HOME/.cache/fz_c_out.grind" "$HOME/.cache/fz_c_out"
+valgrind --tool="$TOOL" "--$TOOL-out-file=$XDG_CACHE_HOME/fz_c_out.grind" "$XDG_CACHE_HOME/fz_c_out"
 
 # display
-kcachegrind "$HOME/.cache/fz_c_out.grind"
+kcachegrind "$XDG_CACHE_HOME/fz_c_out.grind"
