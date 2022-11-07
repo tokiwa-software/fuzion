@@ -149,7 +149,8 @@ public class Intrinsics extends ANY
           return CStmnt.seq(
             CExpr.decl("FILE *", fileIdent, CExpr.call("fopen", new List<>(A0.castTo("char *"),CExpr.string("r")))),
             // Testing if fopen was successful hence file/dir exists
-            CExpr.iff(CExpr.notEq(fileIdent ,new CIdent("NULL")), CExpr.int8const(1).ret()),
+            CExpr.iff(CExpr.notEq(fileIdent ,new CIdent("NULL")), 
+            CExpr.iff(CExpr.eq(CExpr.call("fclose", new List<>(fileIdent)), CExpr.int8const(0)), CExpr.int8const(1).ret())),
             // If errno is ENOENT, file/dir does not exist
             CExpr.iff(CExpr.eq(new CIdent("errno"),new CIdent("ENOENT")), CExpr.int8const(0).ret()),
             // else return -1 to represent other errors
