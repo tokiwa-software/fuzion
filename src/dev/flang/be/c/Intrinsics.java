@@ -155,7 +155,16 @@ public class Intrinsics extends ANY
         }
         );
     put("fuzion.std.fileio.move"         , noFileIo); // NYI: #158
-    put("fuzion.std.fileio.create_dir"   , noFileIo); // NYI: #158
+    put("fuzion.std.fileio.create_dir"   , (c,cl,outer,in) ->
+        {
+          var resultIdent = new CIdent("result");
+          return CStmnt.seq(
+            CExpr.decl("int", resultIdent, CExpr.call("mkdir", new List<>(A0.castTo("char *"), new CIdent("S_IRWXU")))),
+            CExpr.iff(resultIdent.eq(new CIdent("0")), c._names.FZ_TRUE.ret()),
+            c._names.FZ_FALSE.ret()
+            );
+        }
+        );
     put("fuzion.std.out.flush" ,
         "fuzion.std.err.flush" , (c,cl,outer,in) -> CExpr.call("fflush", new List<>(outOrErr(in))));
     put("fuzion.stdin.nextByte", (c,cl,outer,in) ->
