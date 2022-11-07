@@ -131,7 +131,7 @@ public class FrontEnd extends ANY
 
 
   /**
-   * The base module if it was loade from base.fum, null otherwise.
+   * The base module if it was loaded from base.fum, null otherwise.
    */
   public final LibraryModule _baseModule;
 

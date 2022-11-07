@@ -249,7 +249,7 @@ public class FUIR extends IR
 
 
   /**
-   * Add cl to the set of clazzes in this FUIR and assign an id to to.
+   * Add cl to the set of clazzes in this FUIR and assign an id to cl.
    */
   private void add(Clazz cl)
   {
@@ -632,7 +632,7 @@ public class FUIR extends IR
    * @param valuecl a clazz id of a static clazz of a value that is stored in an
    * instance of cl.
    *
-   * @return id of the valuecl, correspods to the value to be stored in the tag.
+   * @return id of the valuecl, corresponds to the value to be stored in the tag.
    */
   public int clazzChoiceTag(int cl, int valuecl)
   {
