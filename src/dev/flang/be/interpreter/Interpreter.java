@@ -610,7 +610,7 @@ public class Interpreter extends ANY
     else if (s instanceof Env v)
       {
         Clazz vClazz = staticClazz.getRuntimeClazz(v._clazzId);
-        result = FuzionThread.current()._effects.get(vClazz.clazzOfType());
+        result = FuzionThread.current()._effects.get(vClazz.effectType());
         if (result == null)
           {
             Errors.fatal("*** effect for " + vClazz + " not present in current environment\n" +

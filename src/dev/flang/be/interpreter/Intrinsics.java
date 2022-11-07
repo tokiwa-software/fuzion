@@ -879,7 +879,7 @@ public class Intrinsics extends ANY
     put("effects.exists"  , (interpreter, innerClazz) -> args ->
         {
           var cl = innerClazz.actualGenerics()[0];
-          return new boolValue(FuzionThread.current()._effects.get(cl.clazzOfType()) != null /* NOTE not containsKey since cl may map to null! */ );
+          return new boolValue(FuzionThread.current()._effects.get(cl.effectType()) != null /* NOTE not containsKey since cl may map to null! */ );
         });
   }
 
@@ -909,15 +909,16 @@ public class Intrinsics extends ANY
         var m = args.get(0);
         var cl = innerClazz._outer;
         String in = innerClazz.feature().qualifiedName();   // == _fuir.clazzIntrinsicName(cl);
+        var et = cl.effectType();
         switch (in)
           {
-          case "effect.replace": check(FuzionThread.current()._effects.get(cl.clazzOfType()) != null); FuzionThread.current()._effects.put(cl.clazzOfType(), m   );   break;
-          case "effect.default": if (FuzionThread.current()._effects.get(cl.clazzOfType()) == null) {
-            FuzionThread.current()._effects.put(cl.clazzOfType(), m   ); } break;
+          case "effect.replace": check(FuzionThread.current()._effects.get(et) != null); FuzionThread.current()._effects.put(et, m   );   break;
+          case "effect.default": if (FuzionThread.current()._effects.get(et) == null) {
+            FuzionThread.current()._effects.put(et, m   ); } break;
           case "effect.abortable" :
             {
-              var prev = FuzionThread.current()._effects.get(cl.clazzOfType());
-              FuzionThread.current()._effects.put(cl.clazzOfType(), m);
+              var prev = FuzionThread.current()._effects.get(et);
+              FuzionThread.current()._effects.put(et, m);
               var call = Types.resolved.f_function_call;
               var oc = innerClazz.actualGenerics()[0]; //innerClazz.argumentFields()[0].resultClazz();
               var ic = oc.lookup(call, Call.NO_GENERICS, Clazzes.isUsedAt(call));
@@ -936,10 +937,10 @@ public class Intrinsics extends ANY
                     throw a;
                   }
               } finally {
-                FuzionThread.current()._effects.put(cl.clazzOfType(), prev);
+                FuzionThread.current()._effects.put(et, prev);
               }
             }
-          case "effect.abort": throw new Abort(cl);
+          case "effect.abort": throw new Abort(et);
           default: throw new Error("unexected effect intrinsic '"+innerClazz+"'");
           }
         return Value.EMPTY_VALUE;

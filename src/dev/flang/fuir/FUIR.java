@@ -2039,7 +2039,7 @@ hw25 is
       (isEffect(cl));
 
     var oc = clazzOuterClazz(cl);
-    return id(clazz(oc).clazzOfType());
+    return id(clazz(oc).effectType());
   }
 
 

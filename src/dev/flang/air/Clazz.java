@@ -1934,12 +1934,12 @@ public class Clazz extends ANY implements Comparable<Clazz>
 
 
   /**
-   * the clazz of the type of this clazz
+   * The original type of this clazz as defined in the source code, disregarding the actual outer clazz that may inherit from this
    */
-  public Clazz clazzOfType()
+  public Clazz effectType()
   {
-    if(PRECONDITIONS)
-      require(feature().hasTypeFeature());
+    if(PRECONDITIONS) require
+      (feature().hasTypeFeature());
     return Clazzes.clazz(_type);
   }
 
