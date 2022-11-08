@@ -23,7 +23,7 @@
 #
 # -----------------------------------------------------------------------
 
-fileiotests : fuzion.std.fileio =>
+fileiotests =>
 
   dir := "testdir"
   newdir := "newdir"
@@ -37,17 +37,17 @@ fileiotests : fuzion.std.fileio =>
   reader := f.read
   stats := f.stat
 
-  say "$dir exists: {exists dir}"
+  say "$dir exists: {stats.exists dir}"
   match writer.create_dir dir
     unit => say "$dir was created"
     error =>
-  say "$dir exists: {exists dir}"
+  say "$dir exists: {stats.exists dir}"
 
-  say "$file exists: {exists file}"
+  say "$file exists: {stats.exists file}"
   match writer.write_all file content.utf8.asArray
     unit => say "$file was created"
     error =>
-  say "$file exists: {exists file}"
+  say "$file exists: {stats.exists file}"
 
   match stats.size file
     size i64 => say "$file size is $size"
@@ -63,17 +63,17 @@ fileiotests : fuzion.std.fileio =>
   match f.delete file
     unit => say "$file was deleted"
     error =>
-  say "$file exists: {exists file}"
+  say "$file exists: {stats.exists file}"
 
-  say "$dir exists: {exists dir}"
-  say "$newdir exists: {exists newdir}"
+  say "$dir exists: {stats.exists dir}"
+  say "$newdir exists: {stats.exists newdir}"
   match f.move dir newdir
     unit => say "$dir is now: $newdir"
     error =>
-  say "$newdir exists: {exists newdir}"
-  say "$dir exists: {exists dir}"
+  say "$newdir exists: {stats.exists newdir}"
+  say "$dir exists: {stats.exists dir}"
 
   match f.delete newdir
     unit => say "$newdir was deleted"
     error =>
-  say "$newdir exists: {exists newdir}"
+  say "$newdir exists: {stats.exists newdir}"
