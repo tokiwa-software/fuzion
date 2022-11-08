@@ -40,6 +40,17 @@ private read(
     replace
     content
 
+# short-hand for installing and creating effects
+#
+read(f () -> unit) => read default_read_operation f
+
+# short-hand for installing and creating effects
+#
+read(ro Read_Operation, f () -> unit) =>
+  s := read ro effectMode.new unit
+  s.use0 f # NYI : FUZION/lib/effect.fz:98:7: error 1: Precondition does not hold
+  unit
+
 # short-hand for accessing read effect in current environment
 #
 read => 
