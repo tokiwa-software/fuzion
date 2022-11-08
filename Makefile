@@ -644,9 +644,6 @@ $(MOD_JAVA_XML_CRYPTO_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_
 	rm -rf $(@D)
 	mkdir -p $(@D)
 	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.xml.crypto -to=$(@D) -modules=java.xml,java.base -verbose=0"
-# NYI: Still creates duplicate features for some reason.
-	rm -f $(BUILD_DIR)/modules/java.xml.crypto/Java/javax/xml_pkg.fz
-	rm -f $(BUILD_DIR)/modules/java.xml.crypto/Java/org_pkg.fz
 	touch $@
 $(MOD_JDK_ACCESSIBILITY_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_DESKTOP)
 	rm -rf $(@D)
@@ -812,10 +809,6 @@ $(MOD_JDK_XML_DOM_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA
 	rm -rf $(@D)
 	mkdir -p $(@D)
 	/bin/bash -c "$(BUILD_DIR)/bin/fzjava jdk.xml.dom -to=$(@D) -modules=java.base,java.xml -verbose=0"
-# NYI: Still creates duplicate features for some reason.
-	rm -f $(BUILD_DIR)/modules/jdk.xml.dom/Java/org_pkg.fz
-	rm -f $(BUILD_DIR)/modules/jdk.xml.dom/Java/org/w3c_pkg.fz
-	rm -f $(BUILD_DIR)/modules/jdk.xml.dom/Java/org/w3c/dom_pkg.fz
 	touch $@
 $(MOD_JDK_ZIPFS_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)

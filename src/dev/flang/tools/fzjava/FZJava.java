@@ -232,13 +232,7 @@ public class FZJava extends Tool
                                             true);
         _fe = new FrontEnd(feOptions);
 
-        for (var m : _fe._modules.values())
-          {
-            if (m.name() != "base")
-              {
-                recurseDeclaredFeatures(m, _fe._universe);
-              }
-          }
+        recurseDeclaredFeatures(_fe, _fe._universe);
 
 
         for (var m : _options._modules)
@@ -254,25 +248,28 @@ public class FZJava extends Tool
 
 
   /**
-   * Add the qualified name of all features declared by a given library module
+   * Add the qualified name of all features declared by all the loaded modules
    * and that are children of a given feature to _existingFeatures.
    *
    * This is usually called with the universe as given feature in the first
-   * iteration. Then the qualified names of all features declared by the given
-   * library module end up in _existingFeatures.
+   * iteration. Then the qualified names of all features declared by the loaded
+   * library modules end up in _existingFeatures.
    *
    * The recursion here ends because no feature can be both an outer and an inner
    * feature of some other feature, i.e. the outer-inner relationship defines a
    * tree of features.
    */
-  private void recurseDeclaredFeatures(LibraryModule m, AbstractFeature f)
+  private void recurseDeclaredFeatures(FrontEnd fe, AbstractFeature f)
   {
-    var df = m.declaredFeatures(f);
-
-    for (var fn : df.values())
+    for (var m : fe._modules.values())
       {
-        _existingFeatures.put(fn.qualifiedName(), fn.qualifiedName());
-        recurseDeclaredFeatures(m, fn);
+        var df = m.declaredFeatures(f);
+
+        for (var fn : df.values())
+          {
+            _existingFeatures.put(fn.qualifiedName(), fn.qualifiedName());
+            recurseDeclaredFeatures(fe, fn);
+          }
       }
   }
 
