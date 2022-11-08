@@ -240,7 +240,7 @@ public class FZJava extends Tool
   /**
    * Create Fuzion features to interface Java code for given module.
    *
-   * @param a module such as 'java.base.mod'
+   * @param m a module such as 'java.base.mod'
    */
   void processModule(String m)
   {
