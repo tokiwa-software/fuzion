@@ -26,20 +26,44 @@
 # write -- effect providing writing operations for files
 #
 private write(
-    fwh File_Write_Handler,
-    redef r effectMode.val
-  ) : writes, effect r is
+  fwh File_Write_Handler,
 
-    # takes an array of bytes and writes all of it into the file presented in the path
-    # in case the file does not exist it creates it,
-    # in case the file exists it overwrites it,
-    # this feature works when the directories present in the path exist otherwise an error will be returned
-    # in case of success a unit type will be the outcome otherwise an error will be the outcome
-    #
-    write_all(path string, content array u8) =>
-        tmp := fwh.write path content
-        replace
-        tmp
+  redef r effectMode.val,
+  
+  _ unit
+  ) : writes, effect r
+is
+
+  # takes an array of bytes and writes all of it into the file presented in the path
+  # in case the file does not exist it creates it,
+  # in case the file exists it overwrites it,
+  # this feature works when the directories present in the path exist otherwise an error will be returned
+  # in case of success a unit type will be the outcome otherwise an error will be the outcome
+  #
+  write_all(path string, content array u8) =>
+    tmp := fwh.write path content
+    replace
+    tmp
+  
+  # creates a directory using the specified path
+  # parent directories in the path should exist otherwise, no creation will take place and an error will be the outcome
+  # in case of successful creation a unit type will be the outcome
+  #
+  create_dir(path string) =>
+    tmp := fwh.mkdir path
+    replace
+    tmp
+
+# short-hand for creating and installing write effect
+#
+write(f () -> unit) => write default_file_write_handler f
+
+# short-hand for creating and installing write effect
+#
+write(h File_Write_Handler, f () -> unit) =>
+  s := write h effectMode.new unit
+  s.use0 f
+  unit
 
 # short-hand for accessing write effect in current environment
 #
@@ -50,19 +74,24 @@ write =>
 # reference to the writing operations that could take place
 #
 File_Write_Handler ref is
-    write(path string, content array u8) outcome unit is abstract
+  write(path string, content array u8) outcome unit is abstract
+  
+  mkdir(path string) outcome unit is abstract
 
 # the default file writing handler writing bytes into files via fuzion.std.fileio.write
 #
 default_file_write_handler : File_Write_Handler is
-    write(path string, content array u8) =>
-        fuzion.std.fileio.write path content
+  write(path string, content array u8) =>
+    fuzion.std.fileio.write path content
+  
+  mkdir(path string) =>
+    fuzion.std.fileio.create_dir path
 
 # unit type feature defining features related to write effect but not requiring an
 # instance.
 #
 writes is
-    # install default effect io.file.write
-    installDefault unit is
-        if !(effects.exists io.file.write)
-            _ := write default_file_write_handler effectMode.default
+  # install default effect io.file.write
+  installDefault unit is
+    if !(effects.exists io.file.write)
+      _ := write default_file_write_handler effectMode.default unit

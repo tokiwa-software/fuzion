@@ -27,7 +27,6 @@ Fuzion language implementation.  If not, see <https://www.gnu.org/licenses/>.
 package dev.flang.ast;
 
 import java.util.Iterator;
-import java.util.TreeMap;
 
 import dev.flang.util.List;
 import dev.flang.util.SourcePosition;
@@ -353,6 +352,15 @@ public class If extends ExprWithPos
     if (elseIf != null)
       {
         elseIf = elseIf.assignToField(res, outer, r);
+      }
+    // special case, default else-branch returning `unit`:
+    // there is no explicit else-branch but we assign if to a field which
+    // we can assign `unit` to. Thus we generate a default else branch.
+    if (hasUntakenElseBranch() && r.resultType().isAssignableFrom(Types.resolved.t_unit))
+      {
+        var unit = new Call(pos(), null, "unit").resolveTypes(res, outer);
+        elseBlock = new Block(pos(), new List<Stmnt>(unit))
+          .assignToField(res, outer, r);
       }
     return this;
   }
