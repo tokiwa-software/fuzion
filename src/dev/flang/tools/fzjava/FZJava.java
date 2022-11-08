@@ -30,7 +30,6 @@ import dev.flang.ast.AbstractFeature;
 
 import dev.flang.fe.FrontEnd;
 import dev.flang.fe.FrontEndOptions;
-import dev.flang.fe.LibraryModule;
 
 import dev.flang.tools.Tool;
 
