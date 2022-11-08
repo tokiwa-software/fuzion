@@ -39,6 +39,17 @@ private move(
         replace
         tmp
 
+# short-hand for creating and installing effects
+#
+move(f () -> unit) => move default_move_operation f
+
+# short-hand for creating and installing effects
+#
+move(mop Move_Operation, f () -> unit) => # NYI : overload
+    s := move mop effectMode.new unit
+    s.use0 f
+    unit
+
 # short-hand for accessing move effect in current environment and performing the default move operation using 
 # io.file.move.move old_path new_path
 #
