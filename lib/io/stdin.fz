@@ -123,16 +123,11 @@ private stdin(
 end_of_file is
 
 
-# short-hand for creating and installing stdin effect
-stdin(h byteInputHandler, f () -> unit) =>
-  s := stdin h effectMode.new unit
-  s.use0 f
-  unit
-
 # short-hand for accessing stdin effect in current environment
 stdin =>
   stdins.installDefault
   stdin.env
+
 
 # unit feature providing static helpers
 stdins is
