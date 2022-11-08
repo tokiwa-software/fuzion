@@ -276,21 +276,15 @@ FUZION_JAVA_MODULES = \
 					$(MOD_JAVA_NET_HTTP) \
 					$(MOD_JAVA_PREFS) \
 					$(MOD_JAVA_RMI) \
-					$(MOD_JAVA_SCRIPTING)
-# NYI: Depends on java.xml.crypto, which causes problems (see NYI below).
-#					$(MOD_JAVA_SE) \
-# this comment is necessary for otherwise, the lines below are commented too.
-FUZION_JAVA_MODULES += \
+					$(MOD_JAVA_SCRIPTING) \
+					$(MOD_JAVA_SE) \
 					$(MOD_JAVA_SECURITY_JGSS) \
 					$(MOD_JAVA_SECURITY_SASL) \
 					$(MOD_JAVA_SMARTCARDIO) \
 					$(MOD_JAVA_SQL) \
 					$(MOD_JAVA_SQL_ROWSET) \
-					$(MOD_JAVA_TRANSACTION_XA)
-# NYI: Still creates duplicate features for some reason.
-#					$(MOD_JAVA_XML_CRYPTO) \
-# this comment is necessary for otherwise, the lines below are commented too.
-FUZION_JAVA_MODULES += \
+					$(MOD_JAVA_TRANSACTION_XA) \
+					$(MOD_JAVA_XML_CRYPTO) \
 					$(MOD_JDK_ACCESSIBILITY) \
 					$(MOD_JDK_ATTACH) \
 					$(MOD_JDK_CHARSETS) \
@@ -322,11 +316,8 @@ FUZION_JAVA_MODULES += \
 					$(MOD_JDK_NIO_MAPMODE) \
 					$(MOD_JDK_SCTP) \
 					$(MOD_JDK_SECURITY_AUTH) \
-					$(MOD_JDK_SECURITY_JGSS)
-# NYI: Still creates duplicate features for some reason.
-#					$(MOD_JDK_XML_DOM) \
-# this comment is necessary for otherwise, the lines below are commented too.
-FUZION_JAVA_MODULES += \
+					$(MOD_JDK_SECURITY_JGSS) \
+					$(MOD_JDK_XML_DOM) \
 					$(MOD_JDK_ZIPFS)
 
 FUZION_FILES = \
@@ -653,6 +644,9 @@ $(MOD_JAVA_XML_CRYPTO_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_
 	rm -rf $(@D)
 	mkdir -p $(@D)
 	/bin/bash -c "$(BUILD_DIR)/bin/fzjava java.xml.crypto -to=$(@D) -modules=java.xml,java.base -verbose=0"
+# NYI: Still creates duplicate features for some reason.
+	rm -f $(BUILD_DIR)/modules/java.xml.crypto/Java/javax/xml_pkg.fz
+	rm -f $(BUILD_DIR)/modules/java.xml.crypto/Java/org_pkg.fz
 	touch $@
 $(MOD_JDK_ACCESSIBILITY_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA_DESKTOP)
 	rm -rf $(@D)
@@ -818,6 +812,10 @@ $(MOD_JDK_XML_DOM_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE) $(MOD_JAVA
 	rm -rf $(@D)
 	mkdir -p $(@D)
 	/bin/bash -c "$(BUILD_DIR)/bin/fzjava jdk.xml.dom -to=$(@D) -modules=java.base,java.xml -verbose=0"
+# NYI: Still creates duplicate features for some reason.
+	rm -f $(BUILD_DIR)/modules/jdk.xml.dom/Java/org_pkg.fz
+	rm -f $(BUILD_DIR)/modules/jdk.xml.dom/Java/org/w3c_pkg.fz
+	rm -f $(BUILD_DIR)/modules/jdk.xml.dom/Java/org/w3c/dom_pkg.fz
 	touch $@
 $(MOD_JDK_ZIPFS_FZ_FILES): $(BUILD_DIR)/bin/fzjava $(MOD_JAVA_BASE)
 	rm -rf $(@D)
