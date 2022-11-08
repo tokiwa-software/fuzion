@@ -256,7 +256,7 @@ public class If extends ExprWithPos
    */
   public If visit(FeatureVisitor v, AbstractFeature outer)
   {
-    CreateDefaultElseIfMissing();
+    createDefaultElseIfMissing();
     cond = cond.visit(v, outer);
     block = block.visit(v, outer);
     if (elseBlock != null)
@@ -386,12 +386,12 @@ public class If extends ExprWithPos
    * If there is no else / elseif, create a default else
    * branch returning unit.
    */
-  private void CreateDefaultElseIfMissing()
+  private void createDefaultElseIfMissing()
   {
     if (elseBlock == null && elseIf == null)
       {
         var unit = new Call(pos(), "unit");
-        elseBlock = new Block(pos(), new List<Stmnt>(unit));
+        elseBlock = new Block(pos(), new List<>(unit));
       }
   }
 
@@ -406,11 +406,9 @@ public class If extends ExprWithPos
     if (PRECONDITIONS) require
       (elseBlock != null || elseIf != null);
 
-    if (elseBlock != null)
-      {
-        return elseBlock;
-      }
-    return elseIf;
+    return
+      elseBlock != null ? elseBlock
+                        : elseIf;
   }
 
   /**
