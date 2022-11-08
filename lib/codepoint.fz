@@ -108,3 +108,21 @@ codepoints is
   # values guaranteed never to be a legal unicode character
   #
   notACharacter => u32 0xfffe .. 0xffff
+
+
+  # return the number of bytes of this utf-8 character
+  # by examining the first byte
+  #
+  # NYI: implement num_utf8_bytes(first_byte u8) => (~first_byte).leadingZeroes+1.
+  num_utf8_bytes (first_byte u8) outcome i32 is
+    c := first_byte.as_u32 << 24
+    if utf8EncodedInOneByte.contains c
+      1
+    else if utf8EncodedInTwoBytes.contains c
+      2
+    else if utf8EncodedInThreeBytes.contains c
+      3
+    else if utf8EncodedInFourBytes.contains c
+      3
+    else
+      error "first byte is not the start of utf-8 character."
